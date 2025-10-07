@@ -308,6 +308,9 @@
         <div class="footer">
             <p>Innioasis Y1 Theme Installer &copy; 2025 | <a href="https://innioasis.app" target="_blank">innioasis.app</a></p>
             <p style="margin-top: 10px; font-size: 0.85rem; opacity: 0.8;">
+                Made with 🩵 by Y1 users, <em>for</em> Y1 users
+            </p>
+            <p style="margin-top: 5px; font-size: 0.85rem; opacity: 0.8;">
                 Works best on Chrome, Edge, or other Chromium-based browsers with File System Access API support
             </p>
         </div>
@@ -375,19 +378,17 @@
             showStatus('📦 Loading available themes...', 'info');
 
             try {
-                // Fetch manifest from same directory as index.html
-                const response = await fetch('manifest.json');
-                
-                if (response.ok) {
-                    const manifest = await response.json();
-                    themes = manifest.themes || [];
+                // Try to use File System Access API to read local directories
+                if ('showDirectoryPicker' in window && deviceFolderHandle) {
+                    // We have access to a directory, let's discover themes from the same location
+                    themes = await discoverLocalThemes();
                 } else {
-                    // Fallback: try to discover themes by common names
+                    // Fallback: try to discover themes by checking for common theme folders
                     themes = await discoverThemes();
                 }
 
                 if (themes.length === 0) {
-                    showStatus('⚠️ No themes found. Please ensure manifest.json exists with theme list.', 'error');
+                    showStatus('⚠️ No themes found. Ensure theme folders exist in the same directory as this page.', 'error');
                     return;
                 }
 
@@ -396,15 +397,7 @@
 
             } catch (error) {
                 console.error('Error loading themes:', error);
-                // Try to discover themes anyway
-                themes = await discoverThemes();
-                
-                if (themes.length > 0) {
-                    renderThemes();
-                    showStatus(`✅ Found ${themes.length} theme${themes.length > 1 ? 's' : ''} (manual discovery)`, 'success');
-                } else {
-                    showStatus('❌ Error loading themes. Ensure manifest.json exists in same directory.', 'error');
-                }
+                showStatus('❌ Error loading themes. Please refresh the page and try again.', 'error');
             }
         }
 
