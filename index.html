@@ -210,6 +210,26 @@
             background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
         }
 
+        .install-btn.update {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+        }
+
+        .install-btn.update:hover {
+            background: linear-gradient(135deg, #138496 0%, #0e6674 100%);
+        }
+
+        .theme-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .theme-actions .install-btn {
+            flex: 1;
+            min-width: 100px;
+        }
+
         .theme-screenshot {
             width: 240px;
             height: 180px;
@@ -222,12 +242,17 @@
             justify-content: center;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             border: 3px solid #333;
+            position: relative;
         }
 
         .theme-screenshot img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transition: opacity 0.3s ease-in-out;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
 
         .theme-screenshot.no-preview {
@@ -248,6 +273,27 @@
             font-size: 0.95rem;
             text-align: center;
             margin-bottom: 15px;
+        }
+
+        .theme-description {
+            margin-bottom: 5px;
+        }
+
+        .theme-author {
+            font-size: 0.8rem;
+            color: #888;
+            font-style: italic;
+        }
+
+        .author-link {
+            color: #667eea;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .author-link:hover {
+            color: #764ba2;
+            text-decoration: underline;
         }
 
         .install-btn {
@@ -367,6 +413,14 @@
             status.className = `status ${type}`;
         }
 
+        // Hide device connection interface after successful connection
+        function hideDeviceConnectionInterface() {
+            const connectionSection = document.querySelector('.connection-section');
+            if (connectionSection) {
+                connectionSection.style.display = 'none';
+            }
+        }
+
         // Select device folder
         async function selectDeviceFolder() {
             try {
@@ -392,6 +446,10 @@
                 deviceFolderHandle = themesFolder;
                 document.getElementById('device-status').textContent = `✅ Connected to: ${deviceFolderHandle.name}`;
                 document.getElementById('controls').style.display = 'flex';
+                
+                // Hide the device connection interface
+                hideDeviceConnectionInterface();
+                
                 showStatus('✅ Device connected! Select themes below and click Install.', 'success');
 
                 // Load themes from local directories
@@ -407,17 +465,38 @@
 
         // Load themes from server-side directories and device-side installed themes
         async function loadLocalThemes() {
-            showStatus('📦 Loading available themes...', 'info');
+            showStatus('📦 Loading themes...', 'info');
 
             try {
-                // First, discover themes available on the server (same directory as HTML)
-                const serverThemes = await discoverServerThemes();
-                
-                // If device is connected, also check what's already installed
+                // If device is connected, load installed themes first for instant display
                 let installedThemes = [];
                 if (deviceFolderHandle) {
+                    showStatus('📱 Loading installed themes...', 'info');
                     installedThemes = await discoverInstalledThemes();
+                    
+                    // Show installed themes immediately
+                    if (installedThemes.length > 0) {
+                        const themeMap = new Map();
+                        installedThemes.forEach(installedTheme => {
+                            themeMap.set(installedTheme.folder, {
+                                name: installedTheme.name,
+                                folder: installedTheme.folder,
+                                screenshot: installedTheme.screenshot,
+                                description: 'Loading...',
+                                installed: true,
+                                installedPath: installedTheme.path,
+                                availableOnServer: null // Unknown until server check
+                            });
+                        });
+                        themes = Array.from(themeMap.values());
+                        renderThemes();
+                        showStatus(`📱 ${installedThemes.length} installed theme${installedThemes.length > 1 ? 's' : ''} loaded. Checking server...`, 'info');
+                    }
                 }
+                
+                // Then discover themes available on the server
+                showStatus('🌐 Checking available themes...', 'info');
+                const serverThemes = await discoverServerThemes();
 
                 // Create a map to track all themes (both server and device)
                 const themeMap = new Map();
@@ -428,7 +507,9 @@
                         ...serverTheme,
                         installed: false,
                         installedPath: null,
-                        availableOnServer: true
+                        availableOnServer: true,
+                        author: serverTheme.author || 'Unknown',
+                        authorUrl: serverTheme.authorUrl || null
                     });
                 });
 
@@ -441,7 +522,9 @@
                             ...existing,
                             installed: true,
                             installedPath: installedTheme.path,
-                            screenshot: installedTheme.screenshot || existing.screenshot
+                            screenshot: installedTheme.screenshot || existing.screenshot,
+                            author: existing.author || installedTheme.author || 'Unknown',
+                            authorUrl: existing.authorUrl || installedTheme.authorUrl || null
                         });
                     } else {
                         // Theme only exists on device (not on server)
@@ -449,7 +532,9 @@
                             name: installedTheme.name,
                             folder: installedTheme.folder,
                             screenshot: installedTheme.screenshot,
-                            description: 'Custom Theme (Device Only)',
+                            description: installedTheme.description || 'Custom Theme (Device Only)',
+                            author: installedTheme.author || 'Unknown',
+                            authorUrl: installedTheme.authorUrl || null,
                             installed: true,
                             installedPath: installedTheme.path,
                             availableOnServer: false
@@ -508,11 +593,17 @@
                         // Try to find a screenshot in this directory
                         const screenshotUrl = await findScreenshotInDirectory(themeName);
                         
+                        // Try to get theme info from config.json
+                        const themeInfo = await getThemeInfo(themeName);
+                        
                         discovered.push({
-                            name: themeName,
+                            name: themeInfo.title || themeName,
                             folder: themeName,
                             screenshot: screenshotUrl,
-                            description: `Y1 Theme: ${themeName}`
+                            description: themeInfo.description || `Y1 Theme: ${themeName}`,
+                            author: themeInfo.author || 'Unknown',
+                            authorUrl: themeInfo.authorUrl || null,
+                            themeInfo: themeInfo
                         });
                     }
                 }
@@ -530,7 +621,7 @@
             return discovered;
         }
 
-        // Find screenshot file in a theme directory using GitHub API
+        // Find screenshot files in a theme directory using GitHub API
         async function findScreenshotInDirectory(themeName) {
             try {
                 const response = await fetch(`https://api.github.com/repos/team-slide/InnioasisY1Themes/contents/${encodeURIComponent(themeName)}`);
@@ -541,15 +632,27 @@
 
                 const contents = await response.json();
                 
-                // Look for screenshot files
-                const screenshotFile = contents.find(item => 
-                    item.type === 'file' && 
-                    /^screenshot.*\.(png|jpg|jpeg)$/i.test(item.name)
-                );
+                // Look for all screenshot files (gif, png, jpg, jpeg)
+                const screenshotFiles = contents
+                    .filter(item => 
+                        item.type === 'file' && 
+                        /^screenshot.*\.(gif|png|jpg|jpeg)$/i.test(item.name)
+                    )
+                    .map(item => ({
+                        name: item.name,
+                        url: item.download_url,
+                        isGif: /\.gif$/i.test(item.name)
+                    }))
+                    .sort((a, b) => {
+                        // GIF first, then alphabetical
+                        if (a.isGif && !b.isGif) return -1;
+                        if (!a.isGif && b.isGif) return 1;
+                        return a.name.localeCompare(b.name);
+                    });
                 
-                if (screenshotFile) {
-                    // Return the raw GitHub content URL for the image
-                    return screenshotFile.download_url;
+                if (screenshotFiles.length > 0) {
+                    // Return array of screenshots or single URL for backward compatibility
+                    return screenshotFiles.length === 1 ? screenshotFiles[0].url : screenshotFiles;
                 }
                 
             } catch (error) {
@@ -557,6 +660,76 @@
             }
             
             return null;
+        }
+
+        // Get theme information from config.json file on device
+        async function getThemeInfoFromDevice(themeHandle) {
+            try {
+                const configHandle = await themeHandle.getFileHandle('config.json');
+                const configFile = await configHandle.getFile();
+                const configText = await configFile.text();
+                const config = JSON.parse(configText);
+                
+                // Parse theme_info section from config.json
+                const themeInfo = config.theme_info || {};
+                
+                return {
+                    title: themeInfo.title || themeHandle.name,
+                    author: themeInfo.author || 'Unknown',
+                    authorUrl: themeInfo.authorUrl || null,
+                    description: themeInfo.description || `Y1 Theme: ${themeHandle.name}`,
+                    ...themeInfo
+                };
+                
+            } catch (error) {
+                console.error(`Error reading config.json from device for ${themeHandle.name}:`, error);
+                // Return default info if config.json doesn't exist or can't be read
+                return {
+                    title: themeHandle.name,
+                    author: 'Unknown',
+                    description: `Y1 Theme: ${themeHandle.name}`
+                };
+            }
+        }
+
+        // Get theme information from config.json file
+        async function getThemeInfo(themeName) {
+            try {
+                const response = await fetch(`https://raw.githubusercontent.com/team-slide/InnioasisY1Themes/main/${encodeURIComponent(themeName)}/config.json`);
+                
+                if (!response.ok) {
+                    // Return default info if config.json doesn't exist
+                return {
+                    title: themeName,
+                    author: 'Unknown',
+                    authorUrl: null,
+                    description: `Y1 Theme: ${themeName}`
+                };
+                }
+
+                const config = await response.json();
+                
+                // Parse theme_info section from config.json
+                const themeInfo = config.theme_info || {};
+                
+                return {
+                    title: themeInfo.title || themeName,
+                    author: themeInfo.author || 'Unknown',
+                    authorUrl: themeInfo.authorUrl || null,
+                    description: themeInfo.description || `Y1 Theme: ${themeName}`,
+                    ...themeInfo
+                };
+                
+            } catch (error) {
+                console.error(`Error fetching theme info for ${themeName}:`, error);
+                // Return default info if parsing fails
+                return {
+                    title: themeName,
+                    author: 'Unknown',
+                    authorUrl: null,
+                    description: `Y1 Theme: ${themeName}`
+                };
+            }
         }
 
         // Fallback method for theme discovery (when GitHub API fails)
@@ -592,7 +765,9 @@
                             name: themeName,
                             folder: themeName,
                             screenshot: screenshotUrl,
-                            description: `Y1 Theme: ${themeName}`
+                            description: `Y1 Theme: ${themeName}`,
+                            author: 'Unknown',
+                            authorUrl: null
                         });
                     }
                 } catch (error) {
@@ -629,31 +804,52 @@
                         }
 
                         if (hasThemeFiles) {
-                            // Try to find a screenshot file on the device
-                            let screenshotUrl = null;
+                            // Try to find screenshot files on the device
+                            let screenshots = [];
                             try {
                                 for await (const [fileName, fileHandle] of handle.entries()) {
                                     if (fileHandle.kind === 'file' && 
-                                        /^screenshot.*\.(png|jpg|jpeg)$/i.test(fileName)) {
+                                        /^screenshot.*\.(gif|png|jpg|jpeg)$/i.test(fileName)) {
                                         // Create a blob URL from the device file
                                         try {
                                             const file = await fileHandle.getFile();
-                                            screenshotUrl = URL.createObjectURL(file);
-                                            break;
+                                            const blobUrl = URL.createObjectURL(file);
+                                            screenshots.push({
+                                                name: fileName,
+                                                url: blobUrl,
+                                                isGif: /\.gif$/i.test(fileName)
+                                            });
                                         } catch (err) {
                                             console.error(`Error reading screenshot ${fileName}:`, err);
                                         }
                                     }
                                 }
                             } catch (error) {
-                                console.error(`Error searching for screenshot in ${name}:`, error);
+                                console.error(`Error searching for screenshots in ${name}:`, error);
                             }
+
+                            // Sort screenshots: GIF first, then alphabetical
+                            screenshots.sort((a, b) => {
+                                if (a.isGif && !b.isGif) return -1;
+                                if (!a.isGif && b.isGif) return 1;
+                                return a.name.localeCompare(b.name);
+                            });
+
+                            // Use array if multiple screenshots, single URL if only one
+                            const screenshotData = screenshots.length === 1 ? screenshots[0].url : 
+                                                   screenshots.length > 1 ? screenshots : null;
+
+                            // Try to get theme info from config.json on device
+                            const themeInfo = await getThemeInfoFromDevice(handle);
 
                             installed.push({
                                 folder: name,
                                 path: handle.name,
-                                name: name,
-                                screenshot: screenshotUrl
+                                name: themeInfo.title || name,
+                                screenshot: screenshotData,
+                                author: themeInfo.author || 'Unknown',
+                                description: themeInfo.description || 'Custom Theme (Device Only)',
+                                themeInfo: themeInfo
                             });
                         }
                     }
@@ -669,32 +865,121 @@
         function renderThemes() {
             const grid = document.getElementById('theme-grid');
             
-            grid.innerHTML = themes.map((theme, index) => `
-                <div class="theme-card ${theme.installed ? 'installed' : ''} ${!theme.availableOnServer && theme.installed ? 'device-only' : ''}" id="theme-${index}" onclick="toggleTheme(${index})">
-                    <div class="theme-screenshot ${theme.screenshot ? '' : 'no-preview'}" id="screenshot-${index}">
-                        ${theme.screenshot ? `<img src="${theme.screenshot}" alt="${theme.name}">` : '🎨'}
+            grid.innerHTML = themes.map((theme, index) => {
+                const isInstalled = theme.installed;
+                const isOnServer = theme.availableOnServer === true;
+                const isDeviceOnly = !isOnServer && isInstalled;
+                const isUpdatable = isInstalled && isOnServer;
+                
+                return `
+                <div class="theme-card ${isInstalled ? 'installed' : ''} ${isDeviceOnly ? 'device-only' : ''}" id="theme-${index}" onclick="toggleTheme(${index})">
+                    <div class="theme-screenshot ${theme.screenshot ? '' : 'no-preview'}" id="screenshot-${index}" data-theme-index="${index}">
+                        ${theme.screenshot ? '' : '🎨'}
                     </div>
                     <div class="theme-name">
                         ${theme.name}
-                        ${theme.installed ? '<span class="installed-badge">✓ Installed</span>' : ''}
-                        ${!theme.availableOnServer && theme.installed ? '<span class="device-only-badge">📱 Custom</span>' : ''}
+                        ${isInstalled ? '<span class="installed-badge">✓ Installed</span>' : ''}
+                        ${isDeviceOnly ? '<span class="device-only-badge">📱 Custom</span>' : ''}
                     </div>
-                    <div class="theme-info">${theme.description || 'Y1 Theme'}</div>
-                    ${theme.availableOnServer !== false ? `
-                        <button class="install-btn ${theme.installed ? 'uninstall' : 'install'}" 
-                                onclick="${theme.installed ? `uninstallSingleTheme(${index}, event)` : `installSingleTheme(${index}, event)`}" 
-                                ${!deviceFolderHandle ? 'disabled' : ''}>
-                            ${theme.installed ? '🗑️ Uninstall' : '📥 Install'}
-                        </button>
-                    ` : `
-                        <button class="install-btn uninstall" 
-                                onclick="uninstallSingleTheme(${index}, event)" 
-                                ${!deviceFolderHandle ? 'disabled' : ''}>
-                            🗑️ Uninstall
-                        </button>
-                    `}
+                    <div class="theme-info">
+                        <div class="theme-description">${theme.description || 'Y1 Theme'}</div>
+                        <div class="theme-author">
+                            by ${theme.authorUrl ? 
+                                `<a href="${theme.authorUrl}" target="_blank" class="author-link">${theme.author || 'Unknown'}</a>` : 
+                                (theme.author || 'Unknown')
+                            }
+                        </div>
+                    </div>
+                    <div class="theme-actions">
+                        ${isUpdatable ? `
+                            <button class="install-btn update" 
+                                    onclick="updateSingleTheme(${index}, event)" 
+                                    ${!deviceFolderHandle ? 'disabled' : ''}>
+                                🔄 Update
+                            </button>
+                            <button class="install-btn uninstall" 
+                                    onclick="uninstallSingleTheme(${index}, event)" 
+                                    ${!deviceFolderHandle ? 'disabled' : ''}>
+                                🗑️ Uninstall
+                            </button>
+                        ` : isDeviceOnly ? `
+                            <button class="install-btn uninstall" 
+                                    onclick="uninstallSingleTheme(${index}, event)" 
+                                    ${!deviceFolderHandle ? 'disabled' : ''}>
+                                🗑️ Uninstall
+                            </button>
+                        ` : `
+                            <button class="install-btn install" 
+                                    onclick="installSingleTheme(${index}, event)" 
+                                    ${!deviceFolderHandle ? 'disabled' : ''}>
+                                📥 Install
+                            </button>
+                        `}
+                    </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
+            
+            // Initialize screenshot slideshows after rendering
+            initializeScreenshotSlideshows();
+        }
+
+        // Initialize screenshot slideshows for themes with multiple screenshots
+        function initializeScreenshotSlideshows() {
+            themes.forEach((theme, index) => {
+                const container = document.getElementById(`screenshot-${index}`);
+                if (!container || !theme.screenshot) return;
+
+                // Check if screenshot is an array (multiple screenshots)
+                const screenshots = Array.isArray(theme.screenshot) ? theme.screenshot : [{ url: theme.screenshot, isGif: false }];
+                
+                if (screenshots.length === 0) return;
+
+                // Clear container
+                container.innerHTML = '';
+
+                // Create img elements for each screenshot
+                screenshots.forEach((screenshot, imgIndex) => {
+                    const img = document.createElement('img');
+                    img.src = screenshot.url;
+                    img.alt = theme.name;
+                    img.style.display = imgIndex === 0 ? 'block' : 'none';
+                    img.dataset.screenshotIndex = imgIndex;
+                    container.appendChild(img);
+                });
+
+                // If multiple screenshots, start slideshow
+                if (screenshots.length > 1) {
+                    startScreenshotSlideshow(container, screenshots);
+                }
+            });
+        }
+
+        // Start screenshot slideshow for a theme
+        function startScreenshotSlideshow(container, screenshots) {
+            let currentIndex = 0;
+            const images = container.querySelectorAll('img');
+            
+            function showNextScreenshot() {
+                // Hide current image
+                images[currentIndex].style.display = 'none';
+                
+                // Move to next image
+                currentIndex = (currentIndex + 1) % screenshots.length;
+                
+                // Show next image
+                images[currentIndex].style.display = 'block';
+                
+                // Determine interval: 10 seconds for GIF, 3 seconds for others
+                const interval = screenshots[currentIndex].isGif ? 10000 : 3000;
+                
+                // Schedule next transition
+                setTimeout(showNextScreenshot, interval);
+            }
+            
+            // Start slideshow after initial display time
+            const firstInterval = screenshots[0].isGif ? 10000 : 3000;
+            setTimeout(showNextScreenshot, firstInterval);
         }
 
         // Toggle theme selection
@@ -786,6 +1071,29 @@
             } catch (error) {
                 console.error('Uninstallation error:', error);
                 showStatus(`❌ Error uninstalling ${theme.name}: ${error.message}`, 'error');
+            }
+        }
+
+        async function updateSingleTheme(index, event) {
+            event.stopPropagation();
+            
+            if (!deviceFolderHandle) {
+                showStatus('❌ Please select your device folder first.', 'error');
+                return;
+            }
+
+            const theme = themes[index];
+            showStatus(`🔄 Updating ${theme.name}...`, 'info');
+
+            try {
+                await installThemeToDevice(theme, (current, total) => {
+                    showStatus(`🔄 Updating ${theme.name}... (${current}/${total} files)`, 'info');
+                });
+                renderThemes();
+                showStatus(`✅ Successfully updated ${theme.name}!`, 'success');
+            } catch (error) {
+                console.error('Update error:', error);
+                showStatus(`❌ Error updating ${theme.name}: ${error.message}`, 'error');
             }
         }
 
