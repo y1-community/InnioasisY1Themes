@@ -178,6 +178,26 @@
             background: linear-gradient(135deg, #f8fbff 0%, #e8f4fd 100%);
         }
 
+        .theme-card.installed {
+            border-color: #28a745;
+            background: linear-gradient(135deg, #f8fff9 0%, #e8f5e8 100%);
+        }
+
+        .installed-badge {
+            font-size: 0.8rem;
+            color: #28a745;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .install-btn.uninstall {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+
+        .install-btn.uninstall:hover {
+            background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+        }
+
         .theme-screenshot {
             width: 240px;
             height: 180px;
@@ -373,19 +393,29 @@
             }
         }
 
-        // Load themes from directories in the same location as HTML file
+        // Load themes from server-side directories and device-side installed themes
         async function loadLocalThemes() {
             showStatus('📦 Loading available themes...', 'info');
 
             try {
-                // Try to use File System Access API to read local directories
-                if ('showDirectoryPicker' in window && deviceFolderHandle) {
-                    // We have access to a directory, let's discover themes from the same location
-                    themes = await discoverLocalThemes();
-                } else {
-                    // Fallback: try to discover themes by checking for common theme folders
-                    themes = await discoverThemes();
+                // First, discover themes available on the server (same directory as HTML)
+                const serverThemes = await discoverServerThemes();
+                
+                // If device is connected, also check what's already installed
+                let installedThemes = [];
+                if (deviceFolderHandle) {
+                    installedThemes = await discoverInstalledThemes();
                 }
+
+                // Merge server themes with installation status
+                themes = serverThemes.map(serverTheme => {
+                    const installed = installedThemes.find(installed => installed.folder === serverTheme.folder);
+                    return {
+                        ...serverTheme,
+                        installed: !!installed,
+                        installedPath: installed ? installed.path : null
+                    };
+                });
 
                 if (themes.length === 0) {
                     showStatus('⚠️ No themes found. Ensure theme folders exist in the same directory as this page.', 'error');
@@ -401,8 +431,8 @@
             }
         }
 
-        // Discover themes by trying common theme names
-        async function discoverThemes() {
+        // Discover themes available on the server (same directory as HTML)
+        async function discoverServerThemes() {
             const commonThemes = [
                 'Aero', 'Aquarium', 'Be', 'Cupertino', 'GTA3', 'HughBliss',
                 'IOS Theme', 'LCD', 'Melody Munchkin', 'Woodstock', 'XFiles',
@@ -414,23 +444,76 @@
             for (const themeName of commonThemes) {
                 try {
                     const folderName = themeName.replace(/ /g, '%20');
-                    const testUrl = `${folderName}/screenshot.png`;
-                    const response = await fetch(testUrl, { method: 'HEAD' });
                     
-                    if (response.ok) {
+                    // Look for screenshot files with various extensions
+                    const screenshotExtensions = ['png', 'jpg', 'jpeg'];
+                    let screenshotUrl = null;
+                    
+                    for (const ext of screenshotExtensions) {
+                        const testUrl = `${folderName}/screenshot.${ext}`;
+                        const response = await fetch(testUrl, { method: 'HEAD' });
+                        if (response.ok) {
+                            screenshotUrl = testUrl;
+                            break;
+                        }
+                    }
+                    
+                    // If we found a screenshot, the theme folder exists
+                    if (screenshotUrl) {
                         discovered.push({
                             name: themeName,
                             folder: themeName,
-                            screenshot: testUrl,
+                            screenshot: screenshotUrl,
                             description: `Y1 Theme: ${themeName}`
                         });
                     }
                 } catch (error) {
-                    // Theme doesn't exist, skip
+                    // Theme folder doesn't exist on server, skip
                 }
             }
 
             return discovered;
+        }
+
+        // Discover themes already installed on the user's device
+        async function discoverInstalledThemes() {
+            if (!deviceFolderHandle) return [];
+
+            const installed = [];
+
+            try {
+                // Iterate through device's Themes folder to see what's installed
+                for await (const [name, handle] of deviceFolderHandle.entries()) {
+                    if (handle.kind === 'directory') {
+                        // Check if this directory contains theme files
+                        let hasThemeFiles = false;
+                        try {
+                            for await (const [fileName, fileHandle] of handle.entries()) {
+                                if (fileHandle.kind === 'file' && 
+                                    (fileName.endsWith('.json') || fileName.endsWith('.png'))) {
+                                    hasThemeFiles = true;
+                                    break;
+                                }
+                            }
+                        } catch (error) {
+                            // Can't read directory, skip
+                            continue;
+                        }
+
+                        if (hasThemeFiles) {
+                            installed.push({
+                                folder: name,
+                                path: handle.name,
+                                name: name
+                            });
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error discovering installed themes:', error);
+            }
+
+            return installed;
         }
 
         // Render themes
@@ -438,15 +521,19 @@
             const grid = document.getElementById('theme-grid');
             
             grid.innerHTML = themes.map((theme, index) => `
-                <div class="theme-card" id="theme-${index}" onclick="toggleTheme(${index})">
+                <div class="theme-card ${theme.installed ? 'installed' : ''}" id="theme-${index}" onclick="toggleTheme(${index})">
                     <div class="theme-screenshot ${theme.screenshot ? '' : 'no-preview'}" id="screenshot-${index}">
                         ${theme.screenshot ? `<img src="${theme.screenshot}" alt="${theme.name}">` : '🎨'}
                     </div>
-                    <div class="theme-name">${theme.name}</div>
+                    <div class="theme-name">
+                        ${theme.name}
+                        ${theme.installed ? '<span class="installed-badge">✓ Installed</span>' : ''}
+                    </div>
                     <div class="theme-info">${theme.description || 'Y1 Theme'}</div>
-                    <button class="install-btn" onclick="installSingleTheme(${index}, event)" 
+                    <button class="install-btn ${theme.installed ? 'uninstall' : 'install'}" 
+                            onclick="${theme.installed ? `uninstallSingleTheme(${index}, event)` : `installSingleTheme(${index}, event)`}" 
                             ${!deviceFolderHandle ? 'disabled' : ''}>
-                        📥 Install Theme
+                        ${theme.installed ? '🗑️ Uninstall' : '📥 Install'}
                     </button>
                 </div>
             `).join('');
@@ -509,10 +596,36 @@
 
             try {
                 await installThemeToDevice(theme);
+                // Mark theme as installed and refresh display
+                themes[index].installed = true;
+                renderThemes();
                 showStatus(`✅ Successfully installed ${theme.name}!`, 'success');
             } catch (error) {
                 console.error('Installation error:', error);
                 showStatus(`❌ Error installing ${theme.name}: ${error.message}`, 'error');
+            }
+        }
+
+        async function uninstallSingleTheme(index, event) {
+            event.stopPropagation();
+            
+            if (!deviceFolderHandle) {
+                showStatus('❌ Please select your device folder first.', 'error');
+                return;
+            }
+
+            const theme = themes[index];
+            showStatus(`🗑️ Uninstalling ${theme.name}...`, 'info');
+
+            try {
+                await uninstallThemeFromDevice(theme);
+                // Mark theme as not installed and refresh display
+                themes[index].installed = false;
+                renderThemes();
+                showStatus(`✅ Successfully uninstalled ${theme.name}!`, 'success');
+            } catch (error) {
+                console.error('Uninstallation error:', error);
+                showStatus(`❌ Error uninstalling ${theme.name}: ${error.message}`, 'error');
             }
         }
 
@@ -578,6 +691,16 @@
                 } catch (error) {
                     console.error(`Error copying file ${file}:`, error);
                 }
+            }
+        }
+
+        async function uninstallThemeFromDevice(theme) {
+            // Remove theme folder from device
+            try {
+                await deviceFolderHandle.removeEntry(theme.folder, { recursive: true });
+            } catch (error) {
+                console.error(`Error removing theme folder ${theme.folder}:`, error);
+                throw error;
             }
         }
 
