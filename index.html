@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Innioasis Y1 Theme Installer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .reddit-link {
+            display: block;
+            text-align: center;
+            padding: 12px;
+            background: #f8f9fa;
+            color: #666;
+            text-decoration: none;
+            font-size: 0.9rem;
+            border-bottom: 1px solid #e0e0e0;
+            transition: background 0.3s;
+        }
+
+        .reddit-link:hover {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .device-selection {
+            background: linear-gradient(135deg, #f8fbff 0%, #e8f4fd 100%);
+            border: 2px solid #4facfe;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .device-selection h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .device-selection p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.6);
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .theme-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            background: white;
+        }
+
+        .theme-card:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2);
+        }
+
+        .theme-card.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #f8fbff 0%, #e8f4fd 100%);
+        }
+
+        .theme-screenshot {
+            width: 240px;
+            height: 180px;
+            margin: 0 auto 15px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: 3px solid #333;
+        }
+
+        .theme-screenshot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .theme-screenshot.no-preview {
+            color: white;
+            font-size: 3rem;
+        }
+
+        .theme-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .theme-info {
+            color: #666;
+            font-size: 0.95rem;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .install-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .install-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .install-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9rem;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        @media (max-width: 768px) {
+            .theme-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="https://www.reddit.com/r/innioasis/comments/1jwetyl/innioasis_y1_theme_megathread/" 
+           target="_blank" 
+           class="reddit-link">
+            Theme not here? Check the themes megathread at r/innioasis
+        </a>
+
+        <div class="header">
+            <h1>🎨 Innioasis Y1 Theme Installer</h1>
+            <p>Install themes directly to your Y1 device</p>
+        </div>
+
+        <div class="content">
+            <div class="device-selection">
+                <h2>📱 Connect Your Device</h2>
+                <p>Connect your Innioasis Y1 via USB and enable USB Storage Mode.<br>
+                Click the button below to select your device's Themes folder.</p>
+                <button class="btn" onclick="selectDeviceFolder()">
+                    📂 Select Y1 Themes Folder
+                </button>
+                <p id="device-status" style="margin-top: 15px; color: #666; font-weight: 600;"></p>
+            </div>
+
+            <div id="status" class="status"></div>
+
+            <div class="controls" style="display: none;" id="controls">
+                <button class="btn btn-secondary" onclick="selectAllThemes()">✓ Select All</button>
+                <button class="btn btn-secondary" onclick="selectNoneThemes()">✗ Select None</button>
+                <button class="btn" onclick="installSelected()" id="install-btn">
+                    🚀 Install Selected Themes
+                </button>
+            </div>
+
+            <div id="theme-grid" class="theme-grid"></div>
+        </div>
+
+        <div class="footer">
+            <p>Innioasis Y1 Theme Installer &copy; 2025 | <a href="https://innioasis.app" target="_blank">innioasis.app</a></p>
+            <p style="margin-top: 10px; font-size: 0.85rem; opacity: 0.8;">
+                Works best on Chrome, Edge, or other Chromium-based browsers with File System Access API support
+            </p>
+        </div>
+    </div>
+
+    <script>
+        let themes = [];
+        let deviceFolderHandle = null;
+        let selectedThemes = new Set();
+
+        // Check if File System Access API is supported
+        if (!('showDirectoryPicker' in window)) {
+            document.addEventListener('DOMContentLoaded', () => {
+                showStatus('⚠️ Your browser doesn\'t support direct installation. Please use Chrome, Edge, or another Chromium-based browser for the best experience.', 'error');
+            });
+        }
+
+        // Show status message
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+
+        // Select device folder
+        async function selectDeviceFolder() {
+            try {
+                // Request directory access
+                deviceFolderHandle = await window.showDirectoryPicker({
+                    mode: 'readwrite'
+                });
+
+                // Verify or create Themes folder
+                let themesFolder = deviceFolderHandle;
+                
+                // Check if user selected the device root or Themes folder
+                if (deviceFolderHandle.name.toLowerCase() !== 'themes') {
+                    // Try to get or create Themes subfolder
+                    try {
+                        themesFolder = await deviceFolderHandle.getDirectoryHandle('Themes', { create: true });
+                    } catch (error) {
+                        showStatus('⚠️ Please select or create a "Themes" folder on your device.', 'error');
+                        return;
+                    }
+                }
+
+                deviceFolderHandle = themesFolder;
+                document.getElementById('device-status').textContent = `✅ Connected to: ${deviceFolderHandle.name}`;
+                document.getElementById('controls').style.display = 'flex';
+                showStatus('✅ Device connected! Select themes below and click Install.', 'success');
+
+                // Load themes from local directories
+                await loadLocalThemes();
+
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    console.error('Error selecting folder:', error);
+                    showStatus('❌ Error accessing device. Make sure USB Storage Mode is enabled.', 'error');
+                }
+            }
+        }
+
+        // Load themes from directories in the same location as HTML file
+        async function loadLocalThemes() {
+            showStatus('📦 Loading available themes...', 'info');
+
+            try {
+                // Fetch manifest from same directory as index.html
+                const response = await fetch('manifest.json');
+                
+                if (response.ok) {
+                    const manifest = await response.json();
+                    themes = manifest.themes || [];
+                } else {
+                    // Fallback: try to discover themes by common names
+                    themes = await discoverThemes();
+                }
+
+                if (themes.length === 0) {
+                    showStatus('⚠️ No themes found. Please ensure manifest.json exists with theme list.', 'error');
+                    return;
+                }
+
+                renderThemes();
+                showStatus(`✅ Found ${themes.length} theme${themes.length > 1 ? 's' : ''}!`, 'success');
+
+            } catch (error) {
+                console.error('Error loading themes:', error);
+                // Try to discover themes anyway
+                themes = await discoverThemes();
+                
+                if (themes.length > 0) {
+                    renderThemes();
+                    showStatus(`✅ Found ${themes.length} theme${themes.length > 1 ? 's' : ''} (manual discovery)`, 'success');
+                } else {
+                    showStatus('❌ Error loading themes. Ensure manifest.json exists in same directory.', 'error');
+                }
+            }
+        }
+
+        // Discover themes by trying common theme names
+        async function discoverThemes() {
+            const commonThemes = [
+                'Aero', 'Aquarium', 'Be', 'Cupertino', 'GTA3', 'HughBliss',
+                'IOS Theme', 'LCD', 'Melody Munchkin', 'Woodstock', 'XFiles',
+                'iPod-ish'
+            ];
+
+            const discovered = [];
+
+            for (const themeName of commonThemes) {
+                try {
+                    const folderName = themeName.replace(/ /g, '%20');
+                    const testUrl = `${folderName}/screenshot.png`;
+                    const response = await fetch(testUrl, { method: 'HEAD' });
+                    
+                    if (response.ok) {
+                        discovered.push({
+                            name: themeName,
+                            folder: themeName,
+                            screenshot: testUrl,
+                            description: `Y1 Theme: ${themeName}`
+                        });
+                    }
+                } catch (error) {
+                    // Theme doesn't exist, skip
+                }
+            }
+
+            return discovered;
+        }
+
+        // Render themes
+        function renderThemes() {
+            const grid = document.getElementById('theme-grid');
+            
+            grid.innerHTML = themes.map((theme, index) => `
+                <div class="theme-card" id="theme-${index}" onclick="toggleTheme(${index})">
+                    <div class="theme-screenshot ${theme.screenshot ? '' : 'no-preview'}" id="screenshot-${index}">
+                        ${theme.screenshot ? `<img src="${theme.screenshot}" alt="${theme.name}">` : '🎨'}
+                    </div>
+                    <div class="theme-name">${theme.name}</div>
+                    <div class="theme-info">${theme.description || 'Y1 Theme'}</div>
+                    <button class="install-btn" onclick="installSingleTheme(${index}, event)" 
+                            ${!deviceFolderHandle ? 'disabled' : ''}>
+                        📥 Install Theme
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Toggle theme selection
+        function toggleTheme(index) {
+            const card = document.getElementById(`theme-${index}`);
+            
+            if (selectedThemes.has(index)) {
+                selectedThemes.delete(index);
+                card.classList.remove('selected');
+            } else {
+                selectedThemes.add(index);
+                card.classList.add('selected');
+            }
+
+            updateInstallButton();
+        }
+
+        // Select all themes
+        function selectAllThemes() {
+            themes.forEach((_, index) => {
+                selectedThemes.add(index);
+                document.getElementById(`theme-${index}`).classList.add('selected');
+            });
+            updateInstallButton();
+        }
+
+        // Deselect all themes
+        function selectNoneThemes() {
+            selectedThemes.clear();
+            themes.forEach((_, index) => {
+                document.getElementById(`theme-${index}`).classList.remove('selected');
+            });
+            updateInstallButton();
+        }
+
+        // Update install button text
+        function updateInstallButton() {
+            const btn = document.getElementById('install-btn');
+            if (selectedThemes.size > 0) {
+                btn.textContent = `🚀 Install ${selectedThemes.size} Selected Theme${selectedThemes.size > 1 ? 's' : ''}`;
+            } else {
+                btn.textContent = '🚀 Install Selected Themes';
+            }
+        }
+
+        // Install single theme
+        async function installSingleTheme(index, event) {
+            event.stopPropagation();
+            
+            if (!deviceFolderHandle) {
+                showStatus('❌ Please select your device folder first.', 'error');
+                return;
+            }
+
+            const theme = themes[index];
+            showStatus(`📥 Installing ${theme.name}...`, 'info');
+
+            try {
+                await installThemeToDevice(theme);
+                showStatus(`✅ Successfully installed ${theme.name}!`, 'success');
+            } catch (error) {
+                console.error('Installation error:', error);
+                showStatus(`❌ Error installing ${theme.name}: ${error.message}`, 'error');
+            }
+        }
+
+        // Install selected themes
+        async function installSelected() {
+            if (selectedThemes.size === 0) {
+                showStatus('⚠️ Please select at least one theme to install.', 'error');
+                return;
+            }
+
+            if (!deviceFolderHandle) {
+                showStatus('❌ Please select your device folder first.', 'error');
+                return;
+            }
+
+            let installed = 0;
+            let failed = 0;
+
+            for (const index of selectedThemes) {
+                const theme = themes[index];
+                showStatus(`📥 Installing ${theme.name}... (${installed + failed + 1}/${selectedThemes.size})`, 'info');
+
+                try {
+                    await installThemeToDevice(theme);
+                    installed++;
+                } catch (error) {
+                    console.error(`Error installing ${theme.name}:`, error);
+                    failed++;
+                }
+            }
+
+            if (failed === 0) {
+                showStatus(`✅ Successfully installed ${installed} theme${installed > 1 ? 's' : ''}!`, 'success');
+            } else {
+                showStatus(`⚠️ Installed ${installed} theme${installed > 1 ? 's' : ''}, ${failed} failed.`, 'error');
+            }
+
+            // Clear selection
+            selectNoneThemes();
+        }
+
+        // Install theme to device
+        async function installThemeToDevice(theme) {
+            // Create theme folder on device
+            const themeFolderHandle = await deviceFolderHandle.getDirectoryHandle(theme.folder, { create: true });
+
+            // Get list of files in theme
+            const themeFilesUrl = `${theme.folder.replace(/ /g, '%20')}/`;
+            
+            // Fetch file list (this would need to be provided by manifest or server directory listing)
+            const files = await getThemeFiles(theme.folder);
+
+            // Copy each file
+            for (const file of files) {
+                try {
+                    const response = await fetch(`${themeFilesUrl}${file}`);
+                    const blob = await response.blob();
+                    
+                    const fileHandle = await themeFolderHandle.getFileHandle(file, { create: true });
+                    const writable = await fileHandle.createWritable();
+                    await writable.write(blob);
+                    await writable.close();
+                } catch (error) {
+                    console.error(`Error copying file ${file}:`, error);
+                }
+            }
+        }
+
+        // Get theme files (would be provided by manifest or server)
+        async function getThemeFiles(themeFolderName) {
+            try {
+                const response = await fetch(`themes/${themeFolderName.replace(/ /g, '%20')}/files.json`);
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.files || [];
+                }
+            } catch (error) {
+                console.error('Error fetching file list:', error);
+            }
+
+            // Fallback: common Y1 theme files
+            return [
+                'screenshot.png',
+                'theme.json',
+                'background.png',
+                'icons.png'
+            ];
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('✅ Y1 Theme Installer loaded');
+            
+            // Show initial instructions
+            showStatus('👆 Click "Select Y1 Themes Folder" above to get started!', 'info');
+        });
+    </script>
+</body>
+</html>
+
