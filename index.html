@@ -431,8 +431,81 @@
             }
         }
 
-        // Discover themes available on the server (same directory as HTML)
+        // Discover themes available on the server using GitHub API
         async function discoverServerThemes() {
+            const discovered = [];
+
+            try {
+                // Fetch directory listing from GitHub repository
+                const response = await fetch('https://api.github.com/repos/team-slide/InnioasisY1Themes/contents');
+                
+                if (!response.ok) {
+                    throw new Error(`GitHub API error: ${response.status}`);
+                }
+
+                const contents = await response.json();
+                
+                // Filter for directories and check for screenshots
+                for (const item of contents) {
+                    if (item.type === 'dir' && !['.github', '.git', 'README.md'].includes(item.name)) {
+                        const themeName = item.name;
+                        
+                        // Try to find a screenshot in this directory
+                        const screenshotUrl = await findScreenshotInDirectory(themeName);
+                        
+                        discovered.push({
+                            name: themeName,
+                            folder: themeName,
+                            screenshot: screenshotUrl,
+                            description: `Y1 Theme: ${themeName}`
+                        });
+                    }
+                }
+
+                console.log(`Found ${discovered.length} themes from GitHub repository`);
+                
+            } catch (error) {
+                console.error('Error fetching themes from GitHub:', error);
+                showStatus('⚠️ Could not fetch themes from GitHub. Using fallback method...', 'error');
+                
+                // Fallback: try to discover themes by checking for common theme folders
+                return await discoverThemesFallback();
+            }
+
+            return discovered;
+        }
+
+        // Find screenshot file in a theme directory using GitHub API
+        async function findScreenshotInDirectory(themeName) {
+            try {
+                const response = await fetch(`https://api.github.com/repos/team-slide/InnioasisY1Themes/contents/${encodeURIComponent(themeName)}`);
+                
+                if (!response.ok) {
+                    return null;
+                }
+
+                const contents = await response.json();
+                
+                // Look for screenshot files
+                const screenshotFile = contents.find(item => 
+                    item.type === 'file' && 
+                    /^screenshot.*\.(png|jpg|jpeg)$/i.test(item.name)
+                );
+                
+                if (screenshotFile) {
+                    // Return the raw GitHub content URL for the image
+                    return screenshotFile.download_url;
+                }
+                
+            } catch (error) {
+                console.error(`Error finding screenshot for ${themeName}:`, error);
+            }
+            
+            return null;
+        }
+
+        // Fallback method for theme discovery (when GitHub API fails)
+        async function discoverThemesFallback() {
             const commonThemes = [
                 'Aero', 'Aquarium', 'Be', 'Cupertino', 'GTA3', 'HughBliss',
                 'IOS Theme', 'LCD', 'Melody Munchkin', 'Woodstock', 'XFiles',
@@ -672,22 +745,29 @@
             // Create theme folder on device
             const themeFolderHandle = await deviceFolderHandle.getDirectoryHandle(theme.folder, { create: true });
 
-            // Get list of files in theme
-            const themeFilesUrl = `${theme.folder.replace(/ /g, '%20')}/`;
-            
-            // Fetch file list (this would need to be provided by manifest or server directory listing)
+            // Get list of files in theme using GitHub API
             const files = await getThemeFiles(theme.folder);
 
-            // Copy each file
+            // Copy each file from GitHub raw URLs
             for (const file of files) {
                 try {
-                    const response = await fetch(`${themeFilesUrl}${file}`);
+                    // Use GitHub raw URL for downloading files
+                    const rawUrl = `https://raw.githubusercontent.com/team-slide/InnioasisY1Themes/main/${encodeURIComponent(theme.folder)}/${encodeURIComponent(file)}`;
+                    const response = await fetch(rawUrl);
+                    
+                    if (!response.ok) {
+                        console.error(`Failed to fetch ${file}: ${response.status}`);
+                        continue;
+                    }
+                    
                     const blob = await response.blob();
                     
                     const fileHandle = await themeFolderHandle.getFileHandle(file, { create: true });
                     const writable = await fileHandle.createWritable();
                     await writable.write(blob);
                     await writable.close();
+                    
+                    console.log(`✅ Copied ${file}`);
                 } catch (error) {
                     console.error(`Error copying file ${file}:`, error);
                 }
@@ -704,19 +784,39 @@
             }
         }
 
-        // Get theme files (would be provided by manifest or server)
+        // Get theme files using GitHub API
         async function getThemeFiles(themeFolderName) {
             try {
-                const response = await fetch(`${themeFolderName.replace(/ /g, '%20')}/files.json`);
+                // Try to get files list from GitHub API
+                const response = await fetch(`https://api.github.com/repos/team-slide/InnioasisY1Themes/contents/${encodeURIComponent(themeFolderName)}`);
+                
                 if (response.ok) {
-                    const data = await response.json();
-                    return data.files || [];
+                    const contents = await response.json();
+                    
+                    // Extract file names from the directory listing
+                    const files = contents
+                        .filter(item => item.type === 'file')
+                        .map(item => item.name);
+                    
+                    console.log(`Found ${files.length} files in ${themeFolderName}:`, files);
+                    return files;
                 }
             } catch (error) {
-                console.error('Error fetching file list:', error);
+                console.error('Error fetching theme files from GitHub:', error);
             }
 
-            // Fallback: common Y1 theme files
+            // Fallback: try files.json from the theme directory
+            try {
+                const filesResponse = await fetch(`${themeFolderName.replace(/ /g, '%20')}/files.json`);
+                if (filesResponse.ok) {
+                    const filesData = await filesResponse.json();
+                    return filesData.files || [];
+                }
+            } catch (error) {
+                console.error('Error fetching files.json:', error);
+            }
+
+            // Final fallback: return common theme files
             return [
                 'screenshot.png',
                 'theme.json',
