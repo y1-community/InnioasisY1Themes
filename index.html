@@ -183,11 +183,23 @@
             background: linear-gradient(135deg, #f8fff9 0%, #e8f5e8 100%);
         }
 
+        .theme-card.device-only {
+            border-color: #ff9800;
+            background: linear-gradient(135deg, #fff9f0 0%, #fff3e0 100%);
+        }
+
         .installed-badge {
             font-size: 0.8rem;
             color: #28a745;
             font-weight: 600;
             margin-left: 10px;
+        }
+
+        .device-only-badge {
+            font-size: 0.8rem;
+            color: #ff9800;
+            font-weight: 600;
+            margin-left: 5px;
         }
 
         .install-btn.uninstall {
@@ -407,23 +419,66 @@
                     installedThemes = await discoverInstalledThemes();
                 }
 
-                // Merge server themes with installation status
-                themes = serverThemes.map(serverTheme => {
-                    const installed = installedThemes.find(installed => installed.folder === serverTheme.folder);
-                    return {
+                // Create a map to track all themes (both server and device)
+                const themeMap = new Map();
+
+                // Add all server themes
+                serverThemes.forEach(serverTheme => {
+                    themeMap.set(serverTheme.folder, {
                         ...serverTheme,
-                        installed: !!installed,
-                        installedPath: installed ? installed.path : null
-                    };
+                        installed: false,
+                        installedPath: null,
+                        availableOnServer: true
+                    });
                 });
 
+                // Add or update with installed themes
+                installedThemes.forEach(installedTheme => {
+                    if (themeMap.has(installedTheme.folder)) {
+                        // Theme exists on server, mark as installed
+                        const existing = themeMap.get(installedTheme.folder);
+                        themeMap.set(installedTheme.folder, {
+                            ...existing,
+                            installed: true,
+                            installedPath: installedTheme.path,
+                            screenshot: installedTheme.screenshot || existing.screenshot
+                        });
+                    } else {
+                        // Theme only exists on device (not on server)
+                        themeMap.set(installedTheme.folder, {
+                            name: installedTheme.name,
+                            folder: installedTheme.folder,
+                            screenshot: installedTheme.screenshot,
+                            description: 'Custom Theme (Device Only)',
+                            installed: true,
+                            installedPath: installedTheme.path,
+                            availableOnServer: false
+                        });
+                    }
+                });
+
+                // Convert map to array
+                themes = Array.from(themeMap.values());
+
                 if (themes.length === 0) {
-                    showStatus('⚠️ No themes found. Ensure theme folders exist in the same directory as this page.', 'error');
+                    showStatus('⚠️ No themes found. Connect your device or check the theme repository.', 'error');
                     return;
                 }
 
                 renderThemes();
-                showStatus(`✅ Found ${themes.length} theme${themes.length > 1 ? 's' : ''}!`, 'success');
+                const installedCount = themes.filter(t => t.installed).length;
+                const serverCount = themes.filter(t => t.availableOnServer).length;
+                const deviceOnlyCount = themes.filter(t => !t.availableOnServer && t.installed).length;
+                
+                let statusMsg = `✅ Found ${themes.length} theme${themes.length > 1 ? 's' : ''}`;
+                if (installedCount > 0) {
+                    statusMsg += ` (${installedCount} installed`;
+                    if (deviceOnlyCount > 0) {
+                        statusMsg += `, ${deviceOnlyCount} custom`;
+                    }
+                    statusMsg += ')';
+                }
+                showStatus(statusMsg + '!', 'success');
 
             } catch (error) {
                 console.error('Error loading themes:', error);
@@ -574,10 +629,31 @@
                         }
 
                         if (hasThemeFiles) {
+                            // Try to find a screenshot file on the device
+                            let screenshotUrl = null;
+                            try {
+                                for await (const [fileName, fileHandle] of handle.entries()) {
+                                    if (fileHandle.kind === 'file' && 
+                                        /^screenshot.*\.(png|jpg|jpeg)$/i.test(fileName)) {
+                                        // Create a blob URL from the device file
+                                        try {
+                                            const file = await fileHandle.getFile();
+                                            screenshotUrl = URL.createObjectURL(file);
+                                            break;
+                                        } catch (err) {
+                                            console.error(`Error reading screenshot ${fileName}:`, err);
+                                        }
+                                    }
+                                }
+                            } catch (error) {
+                                console.error(`Error searching for screenshot in ${name}:`, error);
+                            }
+
                             installed.push({
                                 folder: name,
                                 path: handle.name,
-                                name: name
+                                name: name,
+                                screenshot: screenshotUrl
                             });
                         }
                     }
@@ -594,20 +670,29 @@
             const grid = document.getElementById('theme-grid');
             
             grid.innerHTML = themes.map((theme, index) => `
-                <div class="theme-card ${theme.installed ? 'installed' : ''}" id="theme-${index}" onclick="toggleTheme(${index})">
+                <div class="theme-card ${theme.installed ? 'installed' : ''} ${!theme.availableOnServer && theme.installed ? 'device-only' : ''}" id="theme-${index}" onclick="toggleTheme(${index})">
                     <div class="theme-screenshot ${theme.screenshot ? '' : 'no-preview'}" id="screenshot-${index}">
                         ${theme.screenshot ? `<img src="${theme.screenshot}" alt="${theme.name}">` : '🎨'}
                     </div>
                     <div class="theme-name">
                         ${theme.name}
                         ${theme.installed ? '<span class="installed-badge">✓ Installed</span>' : ''}
+                        ${!theme.availableOnServer && theme.installed ? '<span class="device-only-badge">📱 Custom</span>' : ''}
                     </div>
                     <div class="theme-info">${theme.description || 'Y1 Theme'}</div>
-                    <button class="install-btn ${theme.installed ? 'uninstall' : 'install'}" 
-                            onclick="${theme.installed ? `uninstallSingleTheme(${index}, event)` : `installSingleTheme(${index}, event)`}" 
-                            ${!deviceFolderHandle ? 'disabled' : ''}>
-                        ${theme.installed ? '🗑️ Uninstall' : '📥 Install'}
-                    </button>
+                    ${theme.availableOnServer !== false ? `
+                        <button class="install-btn ${theme.installed ? 'uninstall' : 'install'}" 
+                                onclick="${theme.installed ? `uninstallSingleTheme(${index}, event)` : `installSingleTheme(${index}, event)`}" 
+                                ${!deviceFolderHandle ? 'disabled' : ''}>
+                            ${theme.installed ? '🗑️ Uninstall' : '📥 Install'}
+                        </button>
+                    ` : `
+                        <button class="install-btn uninstall" 
+                                onclick="uninstallSingleTheme(${index}, event)" 
+                                ${!deviceFolderHandle ? 'disabled' : ''}>
+                            🗑️ Uninstall
+                        </button>
+                    `}
                 </div>
             `).join('');
         }
@@ -668,7 +753,9 @@
             showStatus(`📥 Installing ${theme.name}...`, 'info');
 
             try {
-                await installThemeToDevice(theme);
+                await installThemeToDevice(theme, (current, total) => {
+                    showStatus(`📥 Installing ${theme.name}... (${current}/${total} files)`, 'info');
+                });
                 // Mark theme as installed and refresh display
                 themes[index].installed = true;
                 renderThemes();
@@ -714,21 +801,41 @@
                 return;
             }
 
+            const totalThemes = selectedThemes.size;
             let installed = 0;
             let failed = 0;
+            let currentTheme = 0;
 
             for (const index of selectedThemes) {
                 const theme = themes[index];
-                showStatus(`📥 Installing ${theme.name}... (${installed + failed + 1}/${selectedThemes.size})`, 'info');
-
+                currentTheme++;
+                
                 try {
-                    await installThemeToDevice(theme);
+                    showStatus(`📥 [${currentTheme}/${totalThemes}] Installing ${theme.name}...`, 'info');
+                    
+                    await installThemeToDevice(theme, (current, total) => {
+                        showStatus(`📥 [${currentTheme}/${totalThemes}] ${theme.name}: ${current}/${total} files`, 'info');
+                    });
+                    
+                    // Mark theme as installed
+                    themes[index].installed = true;
                     installed++;
+                    
+                    showStatus(`✅ [${currentTheme}/${totalThemes}] ${theme.name} installed!`, 'success');
+                    
+                    // Small delay to show success message
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                    
                 } catch (error) {
                     console.error(`Error installing ${theme.name}:`, error);
                     failed++;
+                    showStatus(`❌ [${currentTheme}/${totalThemes}] Failed to install ${theme.name}`, 'error');
+                    await new Promise(resolve => setTimeout(resolve, 500));
                 }
             }
+
+            // Refresh display to show installed themes
+            renderThemes();
 
             if (failed === 0) {
                 showStatus(`✅ Successfully installed ${installed} theme${installed > 1 ? 's' : ''}!`, 'success');
@@ -741,16 +848,25 @@
         }
 
         // Install theme to device
-        async function installThemeToDevice(theme) {
+        async function installThemeToDevice(theme, progressCallback = null) {
             // Create theme folder on device
             const themeFolderHandle = await deviceFolderHandle.getDirectoryHandle(theme.folder, { create: true });
 
             // Get list of files in theme using GitHub API
             const files = await getThemeFiles(theme.folder);
+            const totalFiles = files.length;
+            let currentFile = 0;
 
             // Copy each file from GitHub raw URLs
             for (const file of files) {
                 try {
+                    currentFile++;
+                    
+                    // Update progress
+                    if (progressCallback) {
+                        progressCallback(currentFile, totalFiles);
+                    }
+                    
                     // Use GitHub raw URL for downloading files
                     const rawUrl = `https://raw.githubusercontent.com/team-slide/InnioasisY1Themes/main/${encodeURIComponent(theme.folder)}/${encodeURIComponent(file)}`;
                     const response = await fetch(rawUrl);
@@ -767,7 +883,7 @@
                     await writable.write(blob);
                     await writable.close();
                     
-                    console.log(`✅ Copied ${file}`);
+                    console.log(`✅ Copied ${file} (${currentFile}/${totalFiles})`);
                 } catch (error) {
                     console.error(`Error copying file ${file}:`, error);
                 }
@@ -777,10 +893,31 @@
         async function uninstallThemeFromDevice(theme) {
             // Remove theme folder from device
             try {
+                // Request permission if needed (browser will prompt user)
+                const permission = await deviceFolderHandle.queryPermission({ mode: 'readwrite' });
+                
+                if (permission !== 'granted') {
+                    const requestPermission = await deviceFolderHandle.requestPermission({ mode: 'readwrite' });
+                    if (requestPermission !== 'granted') {
+                        throw new Error('Permission denied to delete files');
+                    }
+                }
+                
+                // Now remove the theme folder
                 await deviceFolderHandle.removeEntry(theme.folder, { recursive: true });
             } catch (error) {
                 console.error(`Error removing theme folder ${theme.folder}:`, error);
-                throw error;
+                
+                // Provide more user-friendly error messages
+                if (error.name === 'NotFoundError') {
+                    throw new Error('Theme folder not found on device');
+                } else if (error.name === 'InvalidModificationError') {
+                    throw new Error('Cannot delete theme - folder may be in use');
+                } else if (error.message.includes('Permission denied')) {
+                    throw new Error('Permission denied - please allow file deletion when prompted');
+                } else {
+                    throw error;
+                }
             }
         }
 
