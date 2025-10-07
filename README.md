@@ -7,9 +7,9 @@ You can specify information about your theme by adding the below to your themes 
 ```
 {
     "theme_info": {
-        "title": "Aero Theme",
+        "title": "My Theme",
         "author": "John Doe",
         "authorUrl": "https://johndoe.com",
-        "description": "A beautiful Windows Aero-inspired theme with glass effects and smooth animations"
+        "description": "A gorgeous theme for the Innioasis Y1 inspired by..."
     },
 ```
