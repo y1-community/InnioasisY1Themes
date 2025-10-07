@@ -591,7 +591,7 @@
         // Get theme files (would be provided by manifest or server)
         async function getThemeFiles(themeFolderName) {
             try {
-                const response = await fetch(`themes/${themeFolderName.replace(/ /g, '%20')}/files.json`);
+                const response = await fetch(`${themeFolderName.replace(/ /g, '%20')}/files.json`);
                 if (response.ok) {
                     const data = await response.json();
                     return data.files || [];
