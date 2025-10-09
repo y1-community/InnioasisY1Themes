@@ -1,8 +1,21 @@
 # Innioasis Y1 Themes for Original System Menus
 
-## To submit a theme to this repository for listing on the themes directory, simply fork the repository and then submit the theme folder in a PR with your theme's info added to its config.json file and any screenshots you'd like to show included in the folder as screenshot.jpg, screenshot2.jpeg screenshot.gif for example - you can include a series of screenshots if you wish. animated gifs will show first in theme previews.
+# To submit a theme to this repository for listing on the themes directory you can do it
 
-You can specify information about your theme by adding the below to your themes config.json - this will be parsed by the theme directory - perhaps use the URL to showcase an online portfolio, a website your theme's reddit post, or perhaps a cause you care about, specifying this information is optional and I'll aim to add themes and credits where I see them myself also - If you do of course not want a theme listed please submit a PR or email teamslide@proton.me for removal.
+
+# Via Google Drive
+## You upload your theme folder to this [Google Drive folder](
+
+# Via GitHub
+simply fork the repository and then 
+
+# How to add information and screenshots.
+
+When uploading the theme folder in plase if you can, add info to its config.json file (or include it in a text file and I can help place the info in your config.json file for you :)
+
+and add any screenshots you'd like to show included in the folder as screenshot.jpg, screenshot2.jpeg screenshot.gif for example - you can include a series of screenshots if you wish. animated gifs will show first in theme previews.
+
+You can manually add information about your theme by adding the below to your themes config.json - this will be parsed by the theme directory - perhaps use the URL to showcase an online portfolio, a website your theme's reddit post, or perhaps a cause you care about
 
 ```
 {
@@ -13,3 +26,6 @@ You can specify information about your theme by adding the below to your themes 
         "description": "A gorgeous theme for the Innioasis Y1 inspired by..."
     },
 ```
+
+# Collation of existing themes
+I will try and add and document authors for themes where I find them online, if of course you do not wish for your theme to be listed on https://themes.innioasis.app or on the Google Drive or repo, please don't hesitate to contact us at teamslide@proton.me or submit an issue on this repository.
