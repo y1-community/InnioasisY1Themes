@@ -1,6 +1,7 @@
 ### Innioasis Y1 Themes for Original System Menus - 
 
-### To submit a theme to this repository for listing on the themes directory you can do it
+### Want a new theme for your Y1? [Get started here](https://themes.innioasis.app) 
+### Make themes? To submit a theme to this repository for listing on the themes directory you can do it
 
 ### Via Google Drive
 You upload your theme folder to this [Google Drive folder](https://drive.google.com/drive/folders/1a6ztowRCbqww6LSOetUM9oUS9v10IKeF?usp=drive_link) taking care to add information and screenshots if you have the time (Optional - I'll put descriptions on the current themes and take screenshots soon - although you're welcome to submit your own edits, descriptions and URL as you please)
