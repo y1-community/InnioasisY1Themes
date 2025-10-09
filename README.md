@@ -1,10 +1,10 @@
-# Innioasis Y1 Themes for Original System Menus
+# Innioasis Y1 Themes for Original System Menus - 
 
 # To submit a theme to this repository for listing on the themes directory you can do it
 
 
 # Via Google Drive
-## You upload your theme folder to this [Google Drive folder](
+## You upload your theme folder to this [Google Drive folder](https://drive.google.com/drive/folders/1a6ztowRCbqww6LSOetUM9oUS9v10IKeF?usp=drive_link) taking care to add information and screenshots if you can (I'll try to add these where possible in spare time)
 
 # Via GitHub
 simply fork the repository and then 
