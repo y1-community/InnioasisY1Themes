@@ -4,10 +4,10 @@
 
 
 # Via Google Drive
-## You upload your theme folder to this [Google Drive folder](https://drive.google.com/drive/folders/1a6ztowRCbqww6LSOetUM9oUS9v10IKeF?usp=drive_link) taking care to add information and screenshots if you can (I'll try to add these where possible in spare time)
+## You upload your theme folder to this [Google Drive folder](https://drive.google.com/drive/folders/1a6ztowRCbqww6LSOetUM9oUS9v10IKeF?usp=drive_link) taking care to add information and screenshots if you have the time (Optional - I'll put descriptions on the current themes and take screenshots soon - although you're welcome to submit your own edits, descriptions and URL as you please)
 
 # Via GitHub
-simply fork the repository and then 
+simply fork the repository and then add your information and screenshots
 
 # How to add information and screenshots.
 
