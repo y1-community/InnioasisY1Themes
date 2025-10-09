@@ -1,8 +1,14 @@
 {
+    "theme_info": {
+        "title": "YellowSub",
+        "author": "Neither-Classic2058",
+        "authorUrl": "https://www.reddit.com/r/innioasis/comments/1nyn0jz/yellow_submarine_20_theme_y1_stock_firmware/",
+        "description": "This theme is inspired by the Beatles and the Yellow Submarine movie."
+    },
     "themeCover": "cover_YS.png",
     "desktopWallpaper": "desk_bg001_YS.png",
-    "globalWallpaper": "desk_bg001_YS.png",
-    "COMMENT_fontFamily": "YellowSubmarine.TTF",
+    "globalWallpaper": "global_bg001_YS.png",
+    "fontFamily": "opensans-condbold.ttf",
     "itemConfig": {
         "itemTextColor": "#ffffff",
         "itemSelectedTextColor": "#000000",
@@ -69,7 +75,7 @@
         "keyToneOff": "Key tone_off@1x.png",
         "keyVibrationOn": "Key vibration_on@1x.png",
         "keyVibrationOff": "Key vibration_off@1x.png",
-        "wallpaper": "Wallpapper@1x.png",
+        "wallpaper": "Wallpaper@1x.png",
         "backlight_10": "Backlight_001@1x.png",
         "backlight_15": "Backlight_003@1x.png",
         "backlight_30": "Backlight_004@1x.png",
@@ -100,6 +106,18 @@
         "blDisconnected": "",
         "headsetWithMic": "",
         "headsetWithoutMic": "",
-        "statusBarColor": ""
+        "statusBarColor": "",
+                "battery": [
+           "battery.001.png",
+           "battery.002.png",
+           "battery.003.png",
+           "battery.004.png"
+        ],
+        "batteryCharging": [
+           "batterycharge.001.png",
+           "batterycharge.002.png",
+           "batterycharge.003.png",
+           "batterycharge.004.png"
+        ]
     }
 }

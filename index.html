@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Innioasis Y1 Theme Installer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -49,8 +50,8 @@
             display: block;
             text-align: center;
             padding: 12px;
-            background: #f8f9fa;
-            color: #666;
+            background: #FF4500;
+            color: white;
             text-decoration: none;
             font-size: 0.9rem;
             border-bottom: 1px solid #e0e0e0;
@@ -58,8 +59,8 @@
         }
 
         .reddit-link:hover {
-            background: #e9ecef;
-            color: #333;
+            background: #e63e00;
+            color: white;
         }
 
         .content {
@@ -375,6 +376,7 @@
             <div class="controls" style="display: none;" id="controls">
                 <button class="btn btn-secondary" onclick="selectAllThemes()">✓ Select All</button>
                 <button class="btn btn-secondary" onclick="selectNoneThemes()">✗ Select None</button>
+                <button class="btn btn-secondary" onclick="refreshDeviceThemes()" id="refresh-btn" style="display: none;">🔄 Refresh Device</button>
                 <button class="btn" onclick="installSelected()" id="install-btn">
                     🚀 Install Selected Themes
                 </button>
@@ -384,7 +386,7 @@
         </div>
 
         <div class="footer">
-            <p>BETA | <a href="https://themes.innioasis.app" target="_blank">themes.innioasis.app</a></p>
+            <p>BETA | <a href="https://themes.innioasis.app" target="_blank">themes.innioasis.app</a> | <a href="https://www.reddit.com/r/innioasis/comments/1jwetyl/innioasis_y1_theme_megathread/" target="_blank">Submit your Theme</a></p>
             <p style="margin-top: 10px; font-size: 0.85rem; opacity: 0.8;">
                 Made with 🩵 by Y1 users, <em>for</em> Y1 users
             </p>
@@ -402,7 +404,13 @@
         // Check if File System Access API is supported
         if (!('showDirectoryPicker' in window)) {
             document.addEventListener('DOMContentLoaded', () => {
-                showStatus('⚠️ Your browser doesn\'t support direct installation. Please use Chrome, Edge, or another Chromium-based browser for the best experience.', 'error');
+                showStatus('📱 Mobile/Safari detected - themes will download as ZIP files instead of direct installation.', 'info');
+                // Show mobile-friendly instructions
+                showMobileInstructions();
+                // Hide refresh button and update install button for mobile
+                document.getElementById('refresh-btn').style.display = 'none';
+                document.getElementById('install-btn').onclick = downloadSelected;
+                document.getElementById('install-btn').textContent = '📦 Download Selected Themes';
             });
         }
 
@@ -413,9 +421,29 @@
             status.className = `status ${type}`;
         }
 
+        // Show mobile-friendly instructions
+        function showMobileInstructions() {
+            const deviceSelection = document.querySelector('.device-selection');
+            if (deviceSelection) {
+                deviceSelection.innerHTML = `
+                    <h2>📱 Mobile/Safari Download Mode</h2>
+                    <p>Your browser doesn't support direct installation. Themes will be downloaded as ZIP files that you can extract to your Y1 device.</p>
+                    <p><strong>Instructions:</strong><br>
+                    1. Download the theme ZIP file<br>
+                    2. Extract the ZIP file<br>
+                    3. Copy the theme folder to your Y1's Themes directory<br>
+                    4. Safely eject your Y1 device</p>
+                    <button class="btn" onclick="loadThemesForDownload()">
+                        📦 View Available Themes
+                    </button>
+                    <p id="device-status" style="margin-top: 15px; color: #666; font-weight: 600;"></p>
+                `;
+            }
+        }
+
         // Hide device connection interface after successful connection
         function hideDeviceConnectionInterface() {
-            const connectionSection = document.querySelector('.connection-section');
+            const connectionSection = document.querySelector('.device-selection');
             if (connectionSection) {
                 connectionSection.style.display = 'none';
             }
@@ -446,6 +474,7 @@
                 deviceFolderHandle = themesFolder;
                 document.getElementById('device-status').textContent = `✅ Connected to: ${deviceFolderHandle.name}`;
                 document.getElementById('controls').style.display = 'flex';
+                document.getElementById('refresh-btn').style.display = 'inline-block';
                 
                 // Hide the device connection interface
                 hideDeviceConnectionInterface();
@@ -454,6 +483,14 @@
 
                 // Load themes from local directories
                 await loadLocalThemes();
+                
+                // Scroll to theme grid after a short delay
+                setTimeout(() => {
+                    const themeGrid = document.getElementById('theme-grid');
+                    if (themeGrid) {
+                        themeGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }, 300);
 
             } catch (error) {
                 if (error.name !== 'AbortError') {
@@ -654,12 +691,49 @@
                     // Return array of screenshots or single URL for backward compatibility
                     return screenshotFiles.length === 1 ? screenshotFiles[0].url : screenshotFiles;
                 }
+
+                // Fallback: look for alternative image files
+                const fallbackFiles = contents
+                    .filter(item => 
+                        item.type === 'file' && 
+                        /\.(png|jpg|jpeg)$/i.test(item.name) &&
+                        (/^download\.(jpg|jpeg)$/i.test(item.name) ||
+                         /bg.*\.png$/i.test(item.name) ||
+                         /^cover\.png$/i.test(item.name) ||
+                         /^desk\.png$/i.test(item.name))
+                    )
+                    .map(item => ({
+                        name: item.name,
+                        url: item.download_url,
+                        isGif: false
+                    }))
+                    .sort((a, b) => {
+                        // Prioritize: cover.png > download.jpg > bg*.png
+                        const aPriority = getFallbackPriority(a.name);
+                        const bPriority = getFallbackPriority(b.name);
+                        if (aPriority !== bPriority) return aPriority - bPriority;
+                        return a.name.localeCompare(b.name);
+                    });
+                
+                if (fallbackFiles.length > 0) {
+                    return fallbackFiles.length === 1 ? fallbackFiles[0].url : fallbackFiles;
+                }
                 
             } catch (error) {
                 console.error(`Error finding screenshot for ${themeName}:`, error);
             }
             
             return null;
+        }
+
+        // Get priority for fallback images (lower number = higher priority)
+        function getFallbackPriority(filename) {
+            const name = filename.toLowerCase();
+            if (name === 'cover.png') return 1;
+            if (name === 'desk.png') return 2;
+            if (name === 'download.jpg' || name === 'download.jpeg') return 3;
+            if (/bg.*\.png$/.test(name)) return 4;
+            return 5;
         }
 
         // Get theme information from config.json file on device
@@ -750,12 +824,26 @@
                     const screenshotExtensions = ['png', 'jpg', 'jpeg'];
                     let screenshotUrl = null;
                     
+                    // First try screenshot files
                     for (const ext of screenshotExtensions) {
                         const testUrl = `${folderName}/screenshot.${ext}`;
                         const response = await fetch(testUrl, { method: 'HEAD' });
                         if (response.ok) {
                             screenshotUrl = testUrl;
                             break;
+                        }
+                    }
+                    
+                    // If no screenshot found, try fallback images
+                    if (!screenshotUrl) {
+                        const fallbackFiles = ['cover.png', 'desk.png', 'download.jpg'];
+                        for (const fallbackFile of fallbackFiles) {
+                            const testUrl = `${folderName}/${fallbackFile}`;
+                            const response = await fetch(testUrl, { method: 'HEAD' });
+                            if (response.ok) {
+                                screenshotUrl = testUrl;
+                                break;
+                            }
                         }
                     }
                     
@@ -807,6 +895,7 @@
                             // Try to find screenshot files on the device
                             let screenshots = [];
                             try {
+                                // First, look for actual screenshot files
                                 for await (const [fileName, fileHandle] of handle.entries()) {
                                     if (fileHandle.kind === 'file' && 
                                         /^screenshot.*\.(gif|png|jpg|jpeg)$/i.test(fileName)) {
@@ -823,6 +912,36 @@
                                             console.error(`Error reading screenshot ${fileName}:`, err);
                                         }
                                     }
+                                }
+                                
+                                // If no screenshots found, look for fallback images
+                                if (screenshots.length === 0) {
+                                    for await (const [fileName, fileHandle] of handle.entries()) {
+                                        if (fileHandle.kind === 'file' && 
+                                            /^(download\.jpg|.*bg.*\.png|cover\.png|desk\.png)$/i.test(fileName)) {
+                                            // Create a blob URL from the device file
+                                            try {
+                                                const file = await fileHandle.getFile();
+                                                const blobUrl = URL.createObjectURL(file);
+                                                screenshots.push({
+                                                    name: fileName,
+                                                    url: blobUrl,
+                                                    isGif: false,
+                                                    isFallback: true
+                                                });
+                                            } catch (err) {
+                                                console.error(`Error reading fallback image ${fileName}:`, err);
+                                            }
+                                        }
+                                    }
+                                    
+                                    // Sort fallback images by priority
+                                    screenshots.sort((a, b) => {
+                                        const priorities = { 'cover.png': 0, 'desk.png': 1, 'download.jpg': 2 };
+                                        const aPriority = priorities[a.name.toLowerCase()] ?? 3;
+                                        const bPriority = priorities[b.name.toLowerCase()] ?? 3;
+                                        return aPriority - bPriority;
+                                    });
                                 }
                             } catch (error) {
                                 console.error(`Error searching for screenshots in ${name}:`, error);
@@ -864,6 +983,7 @@
         // Render themes
         function renderThemes() {
             const grid = document.getElementById('theme-grid');
+            const isMobileMode = !('showDirectoryPicker' in window);
             
             grid.innerHTML = themes.map((theme, index) => {
                 const isInstalled = theme.installed;
@@ -910,9 +1030,9 @@
                             </button>
                         ` : `
                             <button class="install-btn install" 
-                                    onclick="installSingleTheme(${index}, event)" 
-                                    ${!deviceFolderHandle ? 'disabled' : ''}>
-                                📥 Install
+                                    onclick="${isMobileMode ? 'downloadSingleTheme' : 'installSingleTheme'}(${index}, event)" 
+                                    ${!isMobileMode && !deviceFolderHandle ? 'disabled' : ''}>
+                                ${isMobileMode ? '📦 Download' : '📥 Install'}
                             </button>
                         `}
                     </div>
@@ -1035,19 +1155,29 @@
             }
 
             const theme = themes[index];
-            showStatus(`📥 Installing ${theme.name}...`, 'info');
+            const button = event.target;
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.textContent = '📥 Installing...';
 
             try {
                 await installThemeToDevice(theme, (current, total) => {
-                    showStatus(`📥 Installing ${theme.name}... (${current}/${total} files)`, 'info');
+                    button.textContent = `📥 ${current}/${total} files`;
                 });
                 // Mark theme as installed and refresh display
                 themes[index].installed = true;
-                renderThemes();
-                showStatus(`✅ Successfully installed ${theme.name}!`, 'success');
+                button.textContent = '✅ Installed!';
+                setTimeout(() => {
+                    // Quick refresh to update installation status
+                    quickRefreshDeviceThemes();
+                }, 800);
             } catch (error) {
                 console.error('Installation error:', error);
-                showStatus(`❌ Error installing ${theme.name}: ${error.message}`, 'error');
+                button.textContent = `❌ Failed`;
+                button.disabled = false;
+                setTimeout(() => {
+                    button.textContent = originalText;
+                }, 2000);
             }
         }
 
@@ -1060,17 +1190,27 @@
             }
 
             const theme = themes[index];
-            showStatus(`🗑️ Uninstalling ${theme.name}...`, 'info');
+            const button = event.target;
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.textContent = '🗑️ Removing...';
 
             try {
                 await uninstallThemeFromDevice(theme);
                 // Mark theme as not installed and refresh display
                 themes[index].installed = false;
-                renderThemes();
-                showStatus(`✅ Successfully uninstalled ${theme.name}!`, 'success');
+                button.textContent = '✅ Removed!';
+                setTimeout(() => {
+                    // Quick refresh to update installation status
+                    quickRefreshDeviceThemes();
+                }, 800);
             } catch (error) {
                 console.error('Uninstallation error:', error);
-                showStatus(`❌ Error uninstalling ${theme.name}: ${error.message}`, 'error');
+                button.textContent = `❌ Failed`;
+                button.disabled = false;
+                setTimeout(() => {
+                    button.textContent = originalText;
+                }, 2000);
             }
         }
 
@@ -1083,17 +1223,27 @@
             }
 
             const theme = themes[index];
-            showStatus(`🔄 Updating ${theme.name}...`, 'info');
+            const button = event.target;
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.textContent = '🔄 Updating...';
 
             try {
                 await installThemeToDevice(theme, (current, total) => {
-                    showStatus(`🔄 Updating ${theme.name}... (${current}/${total} files)`, 'info');
+                    button.textContent = `🔄 ${current}/${total} files`;
                 });
-                renderThemes();
-                showStatus(`✅ Successfully updated ${theme.name}!`, 'success');
+                button.textContent = '✅ Updated!';
+                setTimeout(() => {
+                    // Quick refresh to update installation status
+                    quickRefreshDeviceThemes();
+                }, 800);
             } catch (error) {
                 console.error('Update error:', error);
-                showStatus(`❌ Error updating ${theme.name}: ${error.message}`, 'error');
+                button.textContent = `❌ Failed`;
+                button.disabled = false;
+                setTimeout(() => {
+                    button.textContent = originalText;
+                }, 2000);
             }
         }
 
@@ -1113,23 +1263,26 @@
             let installed = 0;
             let failed = 0;
             let currentTheme = 0;
+            const installBtn = document.getElementById('install-btn');
+            const originalText = installBtn.textContent;
+            installBtn.disabled = true;
 
             for (const index of selectedThemes) {
                 const theme = themes[index];
                 currentTheme++;
                 
                 try {
-                    showStatus(`📥 [${currentTheme}/${totalThemes}] Installing ${theme.name}...`, 'info');
+                    installBtn.textContent = `📥 [${currentTheme}/${totalThemes}] Installing ${theme.name}...`;
                     
                     await installThemeToDevice(theme, (current, total) => {
-                        showStatus(`📥 [${currentTheme}/${totalThemes}] ${theme.name}: ${current}/${total} files`, 'info');
+                        installBtn.textContent = `📥 [${currentTheme}/${totalThemes}] ${theme.name}: ${current}/${total}`;
                     });
                     
                     // Mark theme as installed
                     themes[index].installed = true;
                     installed++;
                     
-                    showStatus(`✅ [${currentTheme}/${totalThemes}] ${theme.name} installed!`, 'success');
+                    installBtn.textContent = `✅ [${currentTheme}/${totalThemes}] ${theme.name} installed!`;
                     
                     // Small delay to show success message
                     await new Promise(resolve => setTimeout(resolve, 300));
@@ -1137,25 +1290,127 @@
                 } catch (error) {
                     console.error(`Error installing ${theme.name}:`, error);
                     failed++;
-                    showStatus(`❌ [${currentTheme}/${totalThemes}] Failed to install ${theme.name}`, 'error');
+                    installBtn.textContent = `❌ [${currentTheme}/${totalThemes}] Failed: ${theme.name}`;
                     await new Promise(resolve => setTimeout(resolve, 500));
                 }
             }
 
-            // Refresh display to show installed themes
-            renderThemes();
+            // Quick refresh to show newly installed themes
+            await quickRefreshDeviceThemes();
 
             if (failed === 0) {
-                showStatus(`✅ Successfully installed ${installed} theme${installed > 1 ? 's' : ''}!`, 'success');
+                installBtn.textContent = `✅ Installed ${installed} theme${installed > 1 ? 's' : ''}!`;
             } else {
-                showStatus(`⚠️ Installed ${installed} theme${installed > 1 ? 's' : ''}, ${failed} failed.`, 'error');
+                installBtn.textContent = `⚠️ ${installed} installed, ${failed} failed`;
             }
 
-            // Clear selection
-            selectNoneThemes();
+            // Re-enable button and restore text after delay
+            setTimeout(() => {
+                installBtn.disabled = false;
+                installBtn.textContent = originalText;
+            }, 3000);
+
+        // Clear selection
+        selectNoneThemes();
+    }
+
+    // Refresh/re-enumerate device themes
+    async function refreshDeviceThemes() {
+        if (!deviceFolderHandle) {
+            showStatus('❌ Please select your device folder first.', 'error');
+            return;
         }
 
-        // Install theme to device
+        const refreshBtn = event.target;
+        const originalText = refreshBtn.textContent;
+        refreshBtn.disabled = true;
+        refreshBtn.textContent = '🔄 Refreshing...';
+
+        try {
+            // Reload themes to discover newly installed ones
+            await loadLocalThemes();
+            refreshBtn.textContent = '✅ Refreshed!';
+            
+            setTimeout(() => {
+                refreshBtn.disabled = false;
+                refreshBtn.textContent = originalText;
+            }, 1500);
+            
+        } catch (error) {
+            console.error('Error refreshing device themes:', error);
+            refreshBtn.textContent = '❌ Failed';
+            refreshBtn.disabled = false;
+            setTimeout(() => {
+                refreshBtn.textContent = originalText;
+            }, 2000);
+        }
+    }
+
+    // Quick refresh that only updates device themes without full reload
+    async function quickRefreshDeviceThemes() {
+        if (!deviceFolderHandle) return;
+
+        try {
+            // Only discover newly installed themes on device
+            const installedThemes = await discoverInstalledThemes();
+            
+            // Create a map to track all themes (both server and device)
+            const themeMap = new Map();
+
+            // Add all existing themes first (preserving server themes)
+            themes.forEach(theme => {
+                themeMap.set(theme.folder, { ...theme });
+            });
+
+            // Update with current installed themes
+            installedThemes.forEach(installedTheme => {
+                if (themeMap.has(installedTheme.folder)) {
+                    // Update existing theme with current installation status
+                    const existing = themeMap.get(installedTheme.folder);
+                    themeMap.set(installedTheme.folder, {
+                        ...existing,
+                        installed: true,
+                        installedPath: installedTheme.path,
+                        screenshot: installedTheme.screenshot || existing.screenshot
+                    });
+                } else {
+                    // Theme only exists on device (not on server)
+                    themeMap.set(installedTheme.folder, {
+                        name: installedTheme.name,
+                        folder: installedTheme.folder,
+                        screenshot: installedTheme.screenshot,
+                        description: installedTheme.description || 'Custom Theme (Device Only)',
+                        author: installedTheme.author || 'Unknown',
+                        authorUrl: installedTheme.authorUrl || null,
+                        installed: true,
+                        installedPath: installedTheme.path,
+                        availableOnServer: false
+                    });
+                }
+            });
+
+            // Mark themes as not installed if they're not in the device folder
+            for (const [folderName, theme] of themeMap.entries()) {
+                const isInstalled = installedThemes.some(t => t.folder === folderName);
+                if (!isInstalled && theme.installed) {
+                    themeMap.set(folderName, {
+                        ...theme,
+                        installed: false,
+                        installedPath: null
+                    });
+                }
+            }
+
+            // Update themes array and render
+            themes = Array.from(themeMap.values());
+            renderThemes();
+            
+        } catch (error) {
+            console.error('Error in quick refresh:', error);
+        }
+    }
+
+    // Install theme to device
         async function installThemeToDevice(theme, progressCallback = null) {
             // Create theme folder on device
             const themeFolderHandle = await deviceFolderHandle.getDirectoryHandle(theme.folder, { create: true });
@@ -1198,7 +1453,7 @@
             }
         }
 
-        async function uninstallThemeFromDevice(theme) {
+        async function uninstallThemeFromDevice(theme, retryCount = 0) {
             // Remove theme folder from device
             try {
                 // Request permission if needed (browser will prompt user)
@@ -1216,13 +1471,29 @@
             } catch (error) {
                 console.error(`Error removing theme folder ${theme.folder}:`, error);
                 
+                // If permission error and we haven't retried yet, try requesting permissions again
+                if ((error.name === 'NotAllowedError' || error.message.includes('Permission denied') || error.name === 'SecurityError') && retryCount === 0) {
+                    console.log('Permission error detected, requesting fresh permissions...');
+                    
+                    // Request fresh permissions
+                    try {
+                        const freshPermission = await deviceFolderHandle.requestPermission({ mode: 'readwrite' });
+                        if (freshPermission === 'granted') {
+                            // Retry the deletion with fresh permissions
+                            return await uninstallThemeFromDevice(theme, 1);
+                        }
+                    } catch (permError) {
+                        console.error('Failed to get fresh permissions:', permError);
+                    }
+                }
+                
                 // Provide more user-friendly error messages
                 if (error.name === 'NotFoundError') {
                     throw new Error('Theme folder not found on device');
                 } else if (error.name === 'InvalidModificationError') {
                     throw new Error('Cannot delete theme - folder may be in use');
-                } else if (error.message.includes('Permission denied')) {
-                    throw new Error('Permission denied - please allow file deletion when prompted');
+                } else if (error.name === 'NotAllowedError' || error.message.includes('Permission denied') || error.name === 'SecurityError') {
+                    throw new Error('Permission denied - please allow file deletion when prompted and try again');
                 } else {
                     throw error;
                 }
@@ -1270,12 +1541,201 @@
             ];
         }
 
+        // Download single theme for mobile/Safari users
+        async function downloadSingleTheme(index, event) {
+            event.stopPropagation();
+            
+            const theme = themes[index];
+            const button = event.target;
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.textContent = '📦 Downloading...';
+
+            try {
+                await downloadThemeAsZip(theme, (progress) => {
+                    button.textContent = `📦 ${progress}%`;
+                });
+                
+                button.textContent = '✅ Downloaded!';
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }, 2000);
+            } catch (error) {
+                console.error('Download error:', error);
+                button.textContent = `❌ Failed`;
+                button.disabled = false;
+                setTimeout(() => {
+                    button.textContent = originalText;
+                }, 2000);
+            }
+        }
+
+        // Download selected themes for mobile/Safari users
+        async function downloadSelected() {
+            if (selectedThemes.size === 0) {
+                showStatus('⚠️ Please select at least one theme to download.', 'error');
+                return;
+            }
+
+            const totalThemes = selectedThemes.size;
+            let downloaded = 0;
+            let failed = 0;
+            let currentTheme = 0;
+            const installBtn = document.getElementById('install-btn');
+            const originalText = installBtn.textContent;
+            installBtn.disabled = true;
+
+            for (const index of selectedThemes) {
+                const theme = themes[index];
+                currentTheme++;
+                
+                try {
+                    installBtn.textContent = `📦 [${currentTheme}/${totalThemes}] Downloading ${theme.name}...`;
+                    
+                    await downloadThemeAsZip(theme, (progress) => {
+                        installBtn.textContent = `📦 [${currentTheme}/${totalThemes}] ${theme.name}: ${progress}%`;
+                    });
+                    
+                    downloaded++;
+                    installBtn.textContent = `✅ [${currentTheme}/${totalThemes}] ${theme.name} downloaded!`;
+                    
+                    // Small delay to show success message
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                    
+                } catch (error) {
+                    console.error(`Error downloading ${theme.name}:`, error);
+                    failed++;
+                    installBtn.textContent = `❌ [${currentTheme}/${totalThemes}] Failed: ${theme.name}`;
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            }
+
+            if (failed === 0) {
+                installBtn.textContent = `✅ Downloaded ${downloaded} theme${downloaded > 1 ? 's' : ''}!`;
+            } else {
+                installBtn.textContent = `⚠️ ${downloaded} downloaded, ${failed} failed`;
+            }
+
+            // Re-enable button and restore text after delay
+            setTimeout(() => {
+                installBtn.disabled = false;
+                installBtn.textContent = originalText;
+            }, 3000);
+
+            // Clear selection
+            selectNoneThemes();
+        }
+
+        // Download theme as ZIP file
+        async function downloadThemeAsZip(theme, progressCallback = null) {
+            if (typeof JSZip === 'undefined') {
+                throw new Error('JSZip library not loaded');
+            }
+
+            const zip = new JSZip();
+            const themeFolder = zip.folder(theme.folder);
+
+            try {
+                // Get list of files in theme using GitHub API
+                const files = await getThemeFiles(theme.folder);
+                const totalFiles = files.length;
+                let currentFile = 0;
+
+                // Add each file to the ZIP
+                for (const file of files) {
+                    try {
+                        currentFile++;
+                        
+                        // Update progress
+                        if (progressCallback) {
+                            const progress = Math.round((currentFile / totalFiles) * 100);
+                            progressCallback(progress);
+                        }
+                        
+                        // Download file from GitHub
+                        const rawUrl = `https://raw.githubusercontent.com/team-slide/InnioasisY1Themes/main/${encodeURIComponent(theme.folder)}/${encodeURIComponent(file)}`;
+                        const response = await fetch(rawUrl);
+                        
+                        if (!response.ok) {
+                            console.error(`Failed to fetch ${file}: ${response.status}`);
+                            continue;
+                        }
+                        
+                        const blob = await response.blob();
+                        const arrayBuffer = await blob.arrayBuffer();
+                        
+                        // Add file to ZIP
+                        themeFolder.file(file, arrayBuffer);
+                        
+                        console.log(`✅ Added ${file} to ZIP (${currentFile}/${totalFiles})`);
+                    } catch (error) {
+                        console.error(`Error adding file ${file} to ZIP:`, error);
+                    }
+                }
+
+                // Generate and download ZIP
+                const zipBlob = await zip.generateAsync({ type: 'blob' });
+                
+                // Create download link
+                const url = URL.createObjectURL(zipBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${theme.folder}.zip`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                console.log(`✅ ZIP downloaded: ${theme.folder}.zip`);
+                
+            } catch (error) {
+                console.error('Error creating ZIP:', error);
+                throw error;
+            }
+        }
+
+        // Load themes for download mode (mobile/Safari)
+        async function loadThemesForDownload() {
+            showStatus('📦 Loading themes for download...', 'info');
+            
+            try {
+                // Discover themes available on the server
+                const serverThemes = await discoverServerThemes();
+                themes = serverThemes.map(theme => ({
+                    ...theme,
+                    installed: false,
+                    installedPath: null,
+                    availableOnServer: true,
+                    author: theme.author || 'Unknown',
+                    authorUrl: theme.authorUrl || null
+                }));
+
+                if (themes.length === 0) {
+                    showStatus('⚠️ No themes found on server.', 'error');
+                    return;
+                }
+
+                // Show controls and render themes
+                document.getElementById('controls').style.display = 'flex';
+                renderThemes();
+                
+                showStatus(`✅ Found ${themes.length} theme${themes.length > 1 ? 's' : ''} available for download!`, 'success');
+                
+            } catch (error) {
+                console.error('Error loading themes for download:', error);
+                showStatus('❌ Error loading themes. Please refresh the page and try again.', 'error');
+            }
+        }
+
         // Initialize on load
         document.addEventListener('DOMContentLoaded', () => {
             console.log('✅ Y1 Theme Installer loaded');
             
-            // Show initial instructions
-            showStatus('👆 Click "Select Y1 Themes Folder" above to get started!', 'info');
+            if ('showDirectoryPicker' in window) {
+                // Show initial instructions for desktop users
+                showStatus('👆 Click "Select Y1 Themes Folder" above to get started!', 'info');
+            }
         });
     </script>
 </body>
