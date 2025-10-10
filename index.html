@@ -951,11 +951,11 @@
             // Only load screenshots when specifically requested (on-demand)
             // This prevents loading screenshots for all themes upfront
             
-            const screenshotExtensions = ['png', 'jpg', 'jpeg', 'gif'];
-            const coverExtensions = ['png', 'jpg', 'jpeg'];
-            const fallbackFiles = ['desk.png', 'download.jpg'];
+            const screenshotExtensions = ['gif', 'png', 'jpg', 'jpeg']; // GIF first for animations
+            const coverExtensions = ['gif', 'png', 'jpg', 'jpeg']; // GIF first for animations
+            const fallbackFiles = ['desk.gif', 'desk.png', 'download.gif', 'download.jpg']; // GIF first
             
-            // Create all possible file paths
+            // Create all possible file paths with proper priority
             const allPaths = [
                 ...screenshotExtensions.map(ext => ({ path: `./${encodeURIComponent(themeName)}/screenshot.${ext}`, priority: 1 })),
                 ...coverExtensions.map(ext => ({ path: `./${encodeURIComponent(themeName)}/cover.${ext}`, priority: 2 })),
@@ -1024,10 +1024,11 @@
         // Ultra-fast screenshot finding - try all common files in parallel
         async function findLocalScreenshotFast(themeName) {
             // Try all common screenshot files in parallel for maximum speed
+            // GIFs are prioritized for animations, then PNG for quality, then JPEG
             const commonFiles = [
-                'screenshot.png', 'screenshot.jpg', 'screenshot.jpeg',
-                'cover.png', 'cover.jpg', 'cover.jpeg',
-                'desk.png', 'download.jpg'
+                'screenshot.gif', 'screenshot.png', 'screenshot.jpg', 'screenshot.jpeg',
+                'cover.gif', 'cover.png', 'cover.jpg', 'cover.jpeg',
+                'desk.gif', 'desk.png', 'download.gif', 'download.jpg'
             ];
             
             console.log(`🔍 Looking for screenshots in ${themeName}...`);
