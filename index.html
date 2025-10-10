@@ -782,7 +782,7 @@
             return discovered;
         }
 
-        // Discover themes from local directory - BLAZING FAST with aggressive optimization
+        // Discover themes from local directory - DYNAMIC discovery without hardcoded names
         async function discoverLocalThemes() {
             try {
                 // Try to fetch a directory listing from the current domain
@@ -803,34 +803,105 @@
                     }));
                 }
             } catch (error) {
-                console.log('No themes.json, using instant discovery...');
+                console.log('No themes.json, using dynamic discovery...');
             }
 
-            // INSTANT discovery: assume all themes exist, validate later
-            const commonThemes = [
-                'Aero', 'Aquarium', 'Be', 'Cupertino', 'GTA3', 'GZA', 'HughBliss',
-                'IOS Theme', 'LCD', 'Melody Munchkin', 'Prisoner', 'TwinPeaks',
-                'Win95Theme', 'Woodstock', 'Wu-Tang', 'XFiles', 'YellowSub', 'iPod-ish'
-            ];
+            // DYNAMIC discovery: scan actual directory structure
+            console.log('🔍 Scanning directory structure for themes...');
+            
+            // Try to get directory listing from server (if supported)
+            const discoveredFolders = await discoverThemeDirectories();
+            
+            if (discoveredFolders.length > 0) {
+                console.log(`✅ Found ${discoveredFolders.length} theme directories dynamically`);
+                
+                // Show themes IMMEDIATELY with folder names
+                const instantThemes = discoveredFolders.map(folderName => ({
+                    name: folderName,
+                    folder: folderName,
+                    screenshot: null,
+                    description: `Loading...`,
+                    author: 'Loading...',
+                    authorUrl: null,
+                    themeInfo: {},
+                    loading: true // Flag to update later
+                }));
 
-            // Show themes IMMEDIATELY with folder names
-            const instantThemes = commonThemes.map(themeName => ({
-                name: themeName,
-                folder: themeName,
-                screenshot: null,
-                description: `Loading...`,
-                author: 'Loading...',
-                authorUrl: null,
-                themeInfo: {},
-                loading: true // Flag to update later
-            }));
+                // Load config.json files in parallel in background (non-blocking)
+                setTimeout(() => {
+                    loadThemeDetailsInBackground(instantThemes);
+                }, 0);
 
-            // Load config.json files in parallel in background (non-blocking)
-            setTimeout(() => {
-                loadThemeDetailsInBackground(instantThemes);
-            }, 0);
+                return instantThemes;
+            } else {
+                console.log('⚠️ Could not discover directories, falling back to GitHub API');
+                return [];
+            }
+        }
 
-            return instantThemes;
+        // Discover theme directories dynamically without hardcoded names
+        async function discoverThemeDirectories() {
+            const discoveredFolders = [];
+            
+            // Try multiple approaches to discover directories
+            try {
+                // Approach 1: Try to fetch a directory listing (works on some servers)
+                const response = await fetch('./', { 
+                    headers: { 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' }
+                });
+                
+                if (response.ok) {
+                    const html = await response.text();
+                    // Parse HTML directory listing for folder links
+                    const folderMatches = html.match(/href="([^"]+\/)"[^>]*>([^<]+)<\/a>/g);
+                    if (folderMatches) {
+                        folderMatches.forEach(match => {
+                            const hrefMatch = match.match(/href="([^"]+)\/"/);
+                            const nameMatch = match.match(/>([^<]+)<\/a>/);
+                            if (hrefMatch && nameMatch) {
+                                const folderName = hrefMatch[1];
+                                // Skip common non-theme directories
+                                if (!['.', '..', '.git', '.github', 'node_modules', 'css', 'js', 'images'].includes(folderName)) {
+                                    discoveredFolders.push(folderName);
+                                }
+                            }
+                        });
+                    }
+                }
+            } catch (error) {
+                console.log('Directory listing not supported, trying other methods...');
+            }
+
+            // Approach 2: Try common theme folder patterns if directory listing failed
+            if (discoveredFolders.length === 0) {
+                console.log('Trying common theme folder patterns...');
+                const commonPatterns = [
+                    // Try some common theme names as fallback
+                    'Aero', 'Aquarium', 'Be', 'Cupertino', 'GTA3', 'GZA', 'HughBliss',
+                    'IOS Theme', 'LCD', 'Melody Munchkin', 'Prisoner', 'TwinPeaks',
+                    'Win95Theme', 'Woodstock', 'Wu-Tang', 'XFiles', 'YellowSub', 'iPod-ish'
+                ];
+                
+                // Test each pattern in parallel
+                const patternTests = await Promise.allSettled(
+                    commonPatterns.map(async (pattern) => {
+                        try {
+                            const response = await fetch(`./${encodeURIComponent(pattern)}/config.json`, { method: 'HEAD' });
+                            return response.ok ? pattern : null;
+                        } catch (error) {
+                            return null;
+                        }
+                    })
+                );
+                
+                patternTests.forEach(result => {
+                    if (result.status === 'fulfilled' && result.value) {
+                        discoveredFolders.push(result.value);
+                    }
+                });
+            }
+
+            return discoveredFolders;
         }
 
         // Background loading of theme details - doesn't block UI
