@@ -843,64 +843,120 @@
         async function discoverThemeDirectories() {
             const discoveredFolders = [];
             
+            console.log('🔍 Starting dynamic directory discovery...');
+            
             // Try multiple approaches to discover directories
             try {
                 // Approach 1: Try to fetch a directory listing (works on some servers)
+                console.log('📁 Trying HTML directory listing...');
                 const response = await fetch('./', { 
                     headers: { 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' }
                 });
                 
                 if (response.ok) {
                     const html = await response.text();
+                    console.log('✅ Got directory listing HTML, parsing...');
+                    
                     // Parse HTML directory listing for folder links
                     const folderMatches = html.match(/href="([^"]+\/)"[^>]*>([^<]+)<\/a>/g);
                     if (folderMatches) {
+                        console.log(`Found ${folderMatches.length} potential folder links`);
                         folderMatches.forEach(match => {
                             const hrefMatch = match.match(/href="([^"]+)\/"/);
                             const nameMatch = match.match(/>([^<]+)<\/a>/);
                             if (hrefMatch && nameMatch) {
                                 const folderName = hrefMatch[1];
                                 // Skip common non-theme directories
-                                if (!['.', '..', '.git', '.github', 'node_modules', 'css', 'js', 'images'].includes(folderName)) {
+                                if (!['.', '..', '.git', '.github', 'node_modules', 'css', 'js', 'images', 'index.html', 'themes.json'].includes(folderName)) {
+                                    console.log(`📂 Found theme folder: ${folderName}`);
                                     discoveredFolders.push(folderName);
                                 }
                             }
                         });
+                    } else {
+                        console.log('❌ No folder links found in directory listing');
                     }
+                } else {
+                    console.log(`❌ Directory listing failed: ${response.status}`);
                 }
             } catch (error) {
-                console.log('Directory listing not supported, trying other methods...');
+                console.log(`❌ Directory listing error: ${error.message}`);
             }
 
-            // Approach 2: Try common theme folder patterns if directory listing failed
-            if (discoveredFolders.length === 0) {
-                console.log('Trying common theme folder patterns...');
-                const commonPatterns = [
-                    // Try some common theme names as fallback
-                    'Aero', 'Aquarium', 'Be', 'Cupertino', 'GTA3', 'GZA', 'HughBliss',
-                    'IOS Theme', 'LCD', 'Melody Munchkin', 'Prisoner', 'TwinPeaks',
-                    'Win95Theme', 'Woodstock', 'Wu-Tang', 'XFiles', 'YellowSub', 'iPod-ish'
-                ];
-                
-                // Test each pattern in parallel
-                const patternTests = await Promise.allSettled(
-                    commonPatterns.map(async (pattern) => {
-                        try {
-                            const response = await fetch(`./${encodeURIComponent(pattern)}/config.json`, { method: 'HEAD' });
-                            return response.ok ? pattern : null;
-                        } catch (error) {
-                            return null;
+            // Approach 2: Always try pattern testing as backup/addition
+            console.log('🔍 Trying pattern-based discovery...');
+            
+            // First, try to discover any folders by testing common patterns
+            const commonPatterns = [
+                // Try some common theme names as fallback
+                'Aero', 'Aquarium', 'Be', 'Cupertino', 'GTA3', 'GZA', 'HughBliss',
+                'IOS Theme', 'LCD', 'Melody Munchkin', 'Prisoner', 'TwinPeaks',
+                'Win95Theme', 'Woodstock', 'Wu-Tang', 'XFiles', 'YellowSub', 'iPod-ish'
+            ];
+            
+            // Test each pattern in parallel
+            const patternTests = await Promise.allSettled(
+                commonPatterns.map(async (pattern) => {
+                    try {
+                        const response = await fetch(`./${encodeURIComponent(pattern)}/config.json`, { method: 'HEAD' });
+                        const exists = response.ok;
+                        if (exists) {
+                            console.log(`✅ Found theme via pattern: ${pattern}`);
                         }
-                    })
-                );
-                
-                patternTests.forEach(result => {
-                    if (result.status === 'fulfilled' && result.value) {
-                        discoveredFolders.push(result.value);
+                        return exists ? pattern : null;
+                    } catch (error) {
+                        return null;
                     }
-                });
-            }
+                })
+            );
+            
+            patternTests.forEach(result => {
+                if (result.status === 'fulfilled' && result.value && !discoveredFolders.includes(result.value)) {
+                    discoveredFolders.push(result.value);
+                }
+            });
 
+            // Approach 3: Try to discover any folder by testing for common files
+            console.log('🔍 Trying file-based discovery...');
+            const commonFiles = ['config.json', 'cover.png', 'screenshot.png', 'screenshot.gif'];
+            
+            // Test a broader range of potential folder names
+            const potentialFolders = [];
+            for (let i = 0; i < 100; i++) {
+                potentialFolders.push(`Theme${i}`);
+                potentialFolders.push(`theme${i}`);
+            }
+            
+            // Also test some common naming patterns
+            const commonNames = ['Test', 'Demo', 'Sample', 'New', 'Custom', 'MyTheme', 'Theme1', 'Theme2'];
+            potentialFolders.push(...commonNames);
+            
+            // Test all potential folders in parallel
+            const folderTests = await Promise.allSettled(
+                potentialFolders.map(async (folderName) => {
+                    for (const testFile of commonFiles) {
+                        try {
+                            const response = await fetch(`./${encodeURIComponent(folderName)}/${testFile}`, { method: 'HEAD' });
+                            if (response.ok) {
+                                console.log(`✅ Found theme via file test: ${folderName} (has ${testFile})`);
+                                return folderName;
+                            }
+                        } catch (error) {
+                            // Continue to next file
+                        }
+                    }
+                    return null;
+                })
+            );
+            
+            folderTests.forEach(result => {
+                if (result.status === 'fulfilled' && result.value && !discoveredFolders.includes(result.value)) {
+                    discoveredFolders.push(result.value);
+                }
+            });
+
+            console.log(`🎯 Total discovered folders: ${discoveredFolders.length}`);
+            console.log('Discovered folders:', discoveredFolders);
             return discoveredFolders;
         }
 
