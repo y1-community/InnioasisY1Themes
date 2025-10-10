@@ -908,72 +908,62 @@
             return existingFiles.length > 0 ? existingFiles[0].path : null;
         }
 
-        // Load screenshots on-demand with intelligent prefetching
+        // Load screenshots aggressively - don't wait for visibility
         async function loadScreenshotsOnDemand() {
             const screenshotContainers = document.querySelectorAll('.theme-screenshot');
             
-            // Use Intersection Observer for ultra-efficient lazy loading
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(async (entry) => {
-                    if (entry.isIntersecting) {
-                        const container = entry.target;
-                        const themeIndex = container.dataset.themeIndex;
-                        const theme = themes[themeIndex];
+            // Load all screenshots immediately in parallel
+            const screenshotPromises = Array.from(screenshotContainers).map(async (container) => {
+                const themeIndex = container.dataset.themeIndex;
+                const theme = themes[themeIndex];
+                
+                if (theme && !theme.screenshot && !theme.screenshotLoading) {
+                    theme.screenshotLoading = true;
+                    
+                    // Try to find screenshot for this theme
+                    const screenshotUrl = await findLocalScreenshotFast(theme.folder);
+                    if (screenshotUrl) {
+                        // Update the theme object
+                        themes[themeIndex].screenshot = screenshotUrl;
                         
-                        if (theme && !theme.screenshot && !theme.screenshotLoading) {
-                            theme.screenshotLoading = true; // Prevent duplicate loads
-                            
-                            // Load screenshot only when visible
-                            const screenshotUrl = await findLocalScreenshotFast(theme.folder);
-                            if (screenshotUrl) {
-                                // Update the theme object
-                                themes[themeIndex].screenshot = screenshotUrl;
-                                
-                                // Update the display
-                                container.innerHTML = `<img src="${screenshotUrl}" alt="${theme.name}" style="width: 100%; height: 100%; object-fit: cover;">`;
-                            }
-                            
-                            // Stop observing this element
-                            observer.unobserve(container);
-                        }
+                        // Update the display
+                        container.innerHTML = `<img src="${screenshotUrl}" alt="${theme.name}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                        return true;
                     }
-                });
-            }, {
-                rootMargin: '50px' // Start loading slightly before visible
+                }
+                return false;
             });
             
-            // Observe all screenshot containers
-            screenshotContainers.forEach(container => {
-                observer.observe(container);
-            });
+            // Wait for all screenshots to load
+            const results = await Promise.all(screenshotPromises);
+            const loadedCount = results.filter(r => r).length;
+            console.log(`✅ Loaded ${loadedCount} screenshots`);
         }
 
-        // Ultra-fast screenshot finding with aggressive caching
+        // Ultra-fast screenshot finding - try all common files in parallel
         async function findLocalScreenshotFast(themeName) {
-            // Try most common files first (avoid HEAD requests)
+            // Try all common screenshot files in parallel for maximum speed
             const commonFiles = [
-                'screenshot.png',
-                'screenshot.jpg',
-                'cover.png',
-                'cover.jpg',
-                'desk.png'
+                'screenshot.png', 'screenshot.jpg', 'screenshot.jpeg',
+                'cover.png', 'cover.jpg', 'cover.jpeg',
+                'desk.png', 'download.jpg'
             ];
             
-            // Try to load the most likely file directly
-            for (const file of commonFiles) {
-                const path = `./${encodeURIComponent(themeName)}/${file}`;
-                try {
-                    // Try to load image directly (fastest method)
+            // Check all files in parallel using HEAD requests
+            const fileChecks = await Promise.allSettled(
+                commonFiles.map(async (file) => {
+                    const path = `./${encodeURIComponent(themeName)}/${file}`;
                     const response = await fetch(path, { method: 'HEAD' });
-                    if (response.ok) {
-                        return path;
-                    }
-                } catch (error) {
-                    // File doesn't exist, try next
-                }
-            }
+                    return { path, exists: response.ok };
+                })
+            );
             
-            return null;
+            // Find the first existing file
+            const existingFile = fileChecks.find(check => 
+                check.status === 'fulfilled' && check.value.exists
+            );
+            
+            return existingFile ? existingFile.value.path : null;
         }
 
         // Find screenshot files in a theme directory using GitHub API
