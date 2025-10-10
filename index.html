@@ -911,11 +911,14 @@
         // Load screenshots aggressively - don't wait for visibility
         async function loadScreenshotsOnDemand() {
             const screenshotContainers = document.querySelectorAll('.theme-screenshot');
+            console.log(`🖼️ Loading screenshots for ${screenshotContainers.length} themes...`);
             
             // Load all screenshots immediately in parallel
-            const screenshotPromises = Array.from(screenshotContainers).map(async (container) => {
+            const screenshotPromises = Array.from(screenshotContainers).map(async (container, index) => {
                 const themeIndex = container.dataset.themeIndex;
                 const theme = themes[themeIndex];
+                
+                console.log(`📸 Processing theme ${index + 1}/${screenshotContainers.length}: ${theme.folder}`);
                 
                 if (theme && !theme.screenshot && !theme.screenshotLoading) {
                     theme.screenshotLoading = true;
@@ -928,8 +931,15 @@
                         
                         // Update the display
                         container.innerHTML = `<img src="${screenshotUrl}" alt="${theme.name}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                        console.log(`✅ Updated display for ${theme.folder} with ${screenshotUrl}`);
                         return true;
+                    } else {
+                        console.log(`❌ No screenshot found for ${theme.folder}`);
                     }
+                } else if (theme.screenshot) {
+                    console.log(`⏭️ Screenshot already exists for ${theme.folder}: ${theme.screenshot}`);
+                } else {
+                    console.log(`⏭️ Skipping ${theme.folder} (already loading or no theme)`);
                 }
                 return false;
             });
@@ -937,7 +947,7 @@
             // Wait for all screenshots to load
             const results = await Promise.all(screenshotPromises);
             const loadedCount = results.filter(r => r).length;
-            console.log(`✅ Loaded ${loadedCount} screenshots`);
+            console.log(`🎉 Final result: Loaded ${loadedCount} screenshots out of ${screenshotContainers.length} themes`);
         }
 
         // Ultra-fast screenshot finding - try all common files in parallel
@@ -949,12 +959,21 @@
                 'desk.png', 'download.jpg'
             ];
             
+            console.log(`🔍 Looking for screenshots in ${themeName}...`);
+            
             // Check all files in parallel using HEAD requests
             const fileChecks = await Promise.allSettled(
                 commonFiles.map(async (file) => {
                     const path = `./${encodeURIComponent(themeName)}/${file}`;
-                    const response = await fetch(path, { method: 'HEAD' });
-                    return { path, exists: response.ok };
+                    try {
+                        const response = await fetch(path, { method: 'HEAD' });
+                        const exists = response.ok;
+                        console.log(`${exists ? '✅' : '❌'} ${path} - ${exists ? 'found' : 'not found'}`);
+                        return { path, exists };
+                    } catch (error) {
+                        console.log(`❌ ${path} - error: ${error.message}`);
+                        return { path, exists: false };
+                    }
                 })
             );
             
@@ -963,7 +982,13 @@
                 check.status === 'fulfilled' && check.value.exists
             );
             
-            return existingFile ? existingFile.value.path : null;
+            if (existingFile) {
+                console.log(`🎯 Using screenshot: ${existingFile.value.path}`);
+                return existingFile.value.path;
+            } else {
+                console.log(`⚠️ No screenshots found for ${themeName}`);
+                return null;
+            }
         }
 
         // Find screenshot files in a theme directory using GitHub API
