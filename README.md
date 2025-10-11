@@ -17,6 +17,8 @@ and add any screenshots you'd like to show included in the folder as screenshot.
 
 You can manually add information about your theme by adding the below to your themes config.json - this will be parsed by the theme directory - perhaps use the URL to showcase an online portfolio, a website your theme's reddit post, or perhaps a cause you care about
 
+On config,json replace the first line; the single '{', with the below template, with your theme details: 
+
 ```
 {
     "theme_info": {
