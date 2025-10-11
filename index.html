@@ -662,16 +662,23 @@
                         // Update theme map with installation status
                         installedThemes.forEach(installedTheme => {
                             if (themeMap.has(installedTheme.folder)) {
-                                // Theme exists on server, mark as installed
+                                // Theme exists on server, mark as installed but keep server info
                                 const existing = themeMap.get(installedTheme.folder);
                                 themeMap.set(installedTheme.folder, {
                                     ...existing,
                                     installed: true,
                                     installedPath: installedTheme.path,
-                                    screenshot: installedTheme.screenshot || existing.screenshot
+                                    // Prefer device screenshot if available, otherwise use server screenshot
+                                    screenshot: installedTheme.screenshot || existing.screenshot,
+                                    // Keep server metadata (description, author, etc.) as authoritative
+                                    // Only use device info if server info is missing
+                                    name: existing.name || installedTheme.name,
+                                    description: existing.description || installedTheme.description || 'Y1 Theme',
+                                    author: existing.author || installedTheme.author || 'Unknown',
+                                    authorUrl: existing.authorUrl || installedTheme.authorUrl || null
                                 });
                             } else {
-                                // Theme only exists on device (not on server)
+                                // Theme only exists on device (not on server) - device-only themes
                                 themeMap.set(installedTheme.folder, {
                                     name: installedTheme.name,
                                     folder: installedTheme.folder,
@@ -1165,16 +1172,19 @@
                             themes[themeIndex].coverImage = discoveredMedia.cover;
                             themes[themeIndex].screenshotGallery = discoveredMedia.screenshots;
                             themes[themeIndex].screenshot = discoveredMedia.cover; // Show cover initially
+                            themes[themeIndex].noScale = discoveredMedia.noScale; // Preserve aspect ratio flag
                             
-                            // Display cover initially
-                            container.innerHTML = `<img src="${discoveredMedia.cover}" alt="${theme.name}" class="theme-cover-image" style="width: 100%; height: 100%; object-fit: cover;">`;
+                            // Display cover initially with appropriate object-fit
+                            const objectFit = discoveredMedia.noScale ? 'contain' : 'cover';
+                            container.innerHTML = `<img src="${discoveredMedia.cover}" alt="${theme.name}" class="theme-cover-image" style="width: 100%; height: 100%; object-fit: ${objectFit};">`;
                             
                             // Mark for transition setup
                             container.dataset.hasCoverTransition = 'true';
                             container.dataset.coverPath = discoveredMedia.cover;
+                            container.dataset.coverNoScale = discoveredMedia.noScale ? 'true' : 'false';
                             container.dataset.galleryPaths = JSON.stringify(discoveredMedia.screenshots);
                             
-                            console.log(`✅ Loaded cover + ${discoveredMedia.screenshots.length} screenshot(s) for ${theme.folder}`);
+                            console.log(`✅ Loaded cover + ${discoveredMedia.screenshots.length} screenshot(s) for ${theme.folder} (${discoveredMedia.noScale ? 'aspect-preserved' : 'cropped'})`);
                             return true;
                         } else {
                             // Single image (backward compatible)
@@ -1289,11 +1299,15 @@
                 // Clear existing content
                 container.innerHTML = '';
                 
+                // Check if this cover should preserve aspect ratio
+                const noScale = container.dataset.coverNoScale === 'true';
+                const objectFit = noScale ? 'contain' : 'cover';
+                
                 // Show cover image
                 const img = document.createElement('img');
                 img.src = coverPath;
                 img.alt = themeName;
-                img.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
+                img.style.cssText = `width: 100%; height: 100%; object-fit: ${objectFit};`;
                 img.classList.add('theme-cover-image', 'fade-in');
                 container.appendChild(img);
             }
@@ -1392,8 +1406,26 @@
                     return screenshotGif.path;
                 }
                 
-                // Check for no-scale cover (preserve aspect ratio - includes _noscale and _web)
+                // Check for covers (both regular and no-scale) and screenshots
                 const noScaleCover = existingFiles.find(f => f.isNoScale && f.isCover);
+                const regularCover = existingFiles.find(f => f.isCover && !f.isNoScale);
+                const screenshots = existingFiles.filter(f => f.isScreenshot);
+                
+                // Prioritize no-scale cover over regular cover
+                const coverToUse = noScaleCover || regularCover;
+                
+                // If we have both cover and screenshots, return an object with both
+                if (coverToUse && screenshots.length > 0) {
+                    console.log(`🎯 Found cover: ${coverToUse.path} (${noScaleCover ? 'aspect-preserved' : 'cropped'}) and ${screenshots.length} screenshot(s)`);
+                    return {
+                        cover: coverToUse.path,
+                        screenshots: screenshots.map(s => s.path),
+                        hasCoverTransition: true,
+                        noScale: !!noScaleCover  // Flag to use object-fit: contain
+                    };
+                }
+                
+                // If only no-scale cover exists (no screenshots)
                 if (noScaleCover) {
                     console.log(`📐 Found aspect-ratio-preserving cover: ${noScaleCover.path} - using object-fit: contain`);
                     return {
@@ -1402,18 +1434,10 @@
                     };
                 }
                 
-                // Return both cover and screenshots for transition feature
-                const cover = existingFiles.find(f => f.isCover && !f.isNoScale);
-                const screenshots = existingFiles.filter(f => f.isScreenshot);
-                
-                // If we have both cover and screenshots, return an object with both
-                if (cover && screenshots.length > 0) {
-                    console.log(`🎯 Found cover: ${cover.path} and ${screenshots.length} screenshot(s)`);
-                    return {
-                        cover: cover.path,
-                        screenshots: screenshots.map(s => s.path),
-                        hasCoverTransition: true
-                    };
+                // If only regular cover exists (no screenshots)
+                if (regularCover) {
+                    console.log(`🖼️ Found regular cover: ${regularCover.path}`);
+                    return regularCover.path;
                 }
                 
                 // Otherwise return the first available image (backward compatible)
@@ -2219,7 +2243,13 @@
                         ...existing,
                         installed: true,
                         installedPath: installedTheme.path,
-                        screenshot: installedTheme.screenshot || existing.screenshot
+                        // Prefer device screenshot if available, otherwise use server screenshot
+                        screenshot: installedTheme.screenshot || existing.screenshot,
+                        // Keep server metadata as authoritative
+                        name: existing.name || installedTheme.name,
+                        description: existing.description || installedTheme.description || 'Y1 Theme',
+                        author: existing.author || installedTheme.author || 'Unknown',
+                        authorUrl: existing.authorUrl || installedTheme.authorUrl || null
                     });
                 } else {
                     // Theme only exists on device (not on server)
