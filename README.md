@@ -17,7 +17,7 @@ and add any screenshots you'd like to show included in the folder as screenshot.
 
 You can manually add information about your theme by adding the below to your themes config.json - this will be parsed by the theme directory - perhaps use the URL to showcase an online portfolio, a website your theme's reddit post, or perhaps a cause you care about
 
-On config,json replace the first line; the single '{', with the below template, with your theme details: 
+1. On your theme's config.json replace the first line; the single '{', with the below template, with your theme details: 
 
 ```
 {
@@ -29,5 +29,20 @@ On config,json replace the first line; the single '{', with the below template, 
     },
 ```
 
+2. Similarly add your theme details to the theme list, replace line 5 (the single '{' below "themes") of themes.json with your theme's details, a template below, leave out anything you don't have avaialble (screenshot, or URL for example) - here's a template
+
+```
+4. {
+      "name": "MyTheme",
+      "folder": "MyTheme",
+      "screenshot": "./MyTheme/screenshot.jpg",
+      "description": "A gorgeous theme for the Innioasis Y1 inspired by...",
+      "author": "Neither-Classic2058",
+      "authorUrl": "https://johndoe.com"
+    },
+```
+
 ### Collation of existing themes
 I will try and add and document authors for themes where I find them online, if of course you do not wish for your theme to be listed on https://themes.innioasis.app or on the Google Drive or repo, please don't hesitate to contact us at teamslide@proton.me or submit an issue on this repository.
+
+If adding someone else's theme, please make sure you credit them in the theme details and provide a link to where you found it in the 'authorUrl'
