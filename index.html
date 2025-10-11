@@ -1351,65 +1351,106 @@
 
         // Ultra-fast screenshot finding - try all common files in parallel
         async function findLocalScreenshotFast(themeName) {
-            // Try all common screenshot files in parallel for maximum speed
-            // Priority: screenshot.gif first (animated GIFs always show), then cover.*, then other screenshots
-            // Exception: screenshot.gif takes priority over cover images for better visual impact
-            const commonFiles = [
-                // Animated GIF first (highest priority - always show if available)
-                'screenshot.gif',
-                // No-scale cover variations (preserve aspect ratio - check these first)
-                // These include _noscale and _web suffixes with various cover name patterns
-                'cover_noscale.gif', 'cover_noscale.png', 'cover_noscale.jpg', 'cover_noscale.jpeg',
-                'cover_web.gif', 'cover_web.png', 'cover_web.jpg', 'cover_web.jpeg',
-                'gregcover_noscale.png', 'gregcover_web.png', 'GregCover_web.png', 'gregCover_web.png',
-                '@Be_cover_noscale.png', '@Be_cover_web.png',
-                '@Cup_cover_noscale.png', '@Cup_cover_web.png',
-                '@Pris_cover_noscale.png', '@Pris_cover_web.png',
-                // Cover variations (will be shown initially unless GIF exists)
-                'cover.gif', 'cover.png', 'cover.jpg', 'cover.jpeg',
-                '@Be_cover.png', '@Cup_cover.png', '@Pris_cover.png',
-                'gregcover.png', 'gregcover.gif', 'gregcover.jpg', 'gregcover2.jpg',
-                'GregCover.png', 'GregCover.gif', 'GregCover.jpg', 'gregCover.png',
-                'cover_WS.png', 'cover_YS.png',
-                // Other screenshots (will be used for gallery after transition)
-                'screenshot.png', 'screenshot.jpg', 'screenshot.jpeg',
-                'screenshot1.jpg', 'screenshot1.png', 'screenshot2.jpg', 'screenshot2.png',
-                // Only include numbered files if they're clearly screenshots (be more selective)
-                // Note: Removed generic numbered files as they might be random images
-                // Fallbacks
-                'desk.gif', 'desk.png', 'download.gif', 'download.jpg'
-            ];
-            
             console.log(`🔍 Looking for images in ${themeName}...`);
             
-            // Check all files in parallel using HEAD requests
-            const fileChecks = await Promise.allSettled(
-                commonFiles.map(async (file, index) => {
-                    const path = `./${encodeURIComponent(themeName)}/${file}`;
-                    try {
-                        const response = await fetch(path, { method: 'HEAD' });
-                        const exists = response.ok;
-                        console.log(`${exists ? '✅' : '❌'} ${path} - ${exists ? 'found' : 'not found'}`);
-                        // Categorize files (case-insensitive)
-                        const fileLower = file.toLowerCase();
-                        const isCover = fileLower.includes('cover');
-                        // Only treat files with 'screenshot' in the name as screenshots (be more selective)
-                        const isScreenshot = fileLower.includes('screenshot');
-                        // Check for _noscale or _web suffixes (both preserve aspect ratio)
-                        const isNoScale = fileLower.includes('_noscale') || fileLower.includes('_web');
-                        return { path, exists, priority: index, isCover, isScreenshot, isNoScale, file };
-                    } catch (error) {
-                        console.log(`❌ ${path} - error: ${error.message}`);
-                        return { path, exists: false, priority: index, isCover: false, isScreenshot: false, isNoScale: false, file: '' };
-                    }
-                })
-            );
+            // Try to get directory listing to find all files dynamically
+            let discoveredFiles = [];
             
-            // Find all existing files and sort by priority
-            const existingFiles = fileChecks
-                .filter(check => check.status === 'fulfilled' && check.value.exists)
-                .map(check => check.value)
-                .sort((a, b) => a.priority - b.priority);
+            try {
+                // Try to fetch directory listing
+                const response = await fetch(`./${encodeURIComponent(themeName)}/`, { 
+                    headers: { 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' }
+                });
+                
+                if (response.ok) {
+                    const html = await response.text();
+                    // Parse HTML directory listing for image files
+                    const fileMatches = html.match(/href="([^"]+\.(png|jpg|jpeg|gif))"[^>]*>([^<]+)<\/a>/g);
+                    if (fileMatches) {
+                        fileMatches.forEach(match => {
+                            const hrefMatch = match.match(/href="([^"]+)"/);
+                            const nameMatch = match.match(/>([^<]+)<\/a>/);
+                            if (hrefMatch && nameMatch) {
+                                const fileName = nameMatch[1];
+                                const filePath = hrefMatch[1];
+                                // Skip absolute URLs and common non-theme files
+                                if (!filePath.match(/^(https?:)?\/\//) && 
+                                    !['index.html', 'config.json'].includes(fileName)) {
+                                    discoveredFiles.push({
+                                        file: fileName,
+                                        path: `./${encodeURIComponent(themeName)}/${fileName}`,
+                                        exists: true
+                                    });
+                                }
+                            }
+                        });
+                    }
+                }
+            } catch (error) {
+                console.log('Directory listing not supported, using fallback patterns...');
+            }
+            
+            // Fallback to common patterns if directory listing failed
+            if (discoveredFiles.length === 0) {
+                const commonFiles = [
+                    'screenshot.gif', 'screenshot.png', 'screenshot.jpg', 'screenshot.jpeg',
+                    'cover.gif', 'cover.png', 'cover.jpg', 'cover.jpeg',
+                    'gregcover.png', 'gregcover.gif', 'gregcover.jpg', 'gregcover2.jpg',
+                    'GregCover.png', 'GregCover.gif', 'GregCover.jpg', 'gregCover.png',
+                    'cover_WS.png', 'cover_YS.png', '@Be_cover.png', '@Cup_cover.png', '@Pris_cover.png',
+                    'screenshot1.jpg', 'screenshot1.png', 'screenshot2.jpg', 'screenshot2.png',
+                    'desk.gif', 'desk.png', 'download.gif', 'download.jpg'
+                ];
+                
+                // Check common files in parallel
+                const fileChecks = await Promise.allSettled(
+                    commonFiles.map(async (file) => {
+                        const path = `./${encodeURIComponent(themeName)}/${file}`;
+                        try {
+                            const response = await fetch(path, { method: 'HEAD' });
+                            return response.ok ? { file, path, exists: true } : null;
+                        } catch (error) {
+                            return null;
+                        }
+                    })
+                );
+                
+                fileChecks.forEach(result => {
+                    if (result.status === 'fulfilled' && result.value) {
+                        discoveredFiles.push(result.value);
+                    }
+                });
+            }
+            
+            // Process discovered files
+            const fileChecks = discoveredFiles.map((fileInfo, index) => {
+                console.log(`✅ ${fileInfo.path} - found`);
+                // Categorize files (case-insensitive)
+                const fileLower = fileInfo.file.toLowerCase();
+                const isCover = fileLower.includes('cover');
+                const isScreenshot = fileLower.includes('screenshot');
+                // Check for _noscale or _web suffixes (both preserve aspect ratio) - WILDCARD SUPPORT
+                const isNoScale = fileLower.includes('_noscale') || fileLower.includes('_web');
+                
+                // Priority: screenshot.gif first, then no-scale covers, then regular covers, then screenshots
+                let priority = index;
+                if (fileLower === 'screenshot.gif') priority = 0;
+                else if (isNoScale && isCover) priority = 1;
+                else if (isCover && !isNoScale) priority = 2;
+                else if (isScreenshot) priority = 3;
+                else priority = 4;
+                
+                return { 
+                    ...fileInfo, 
+                    priority, 
+                    isCover, 
+                    isScreenshot, 
+                    isNoScale
+                };
+            });
+            
+            // Sort files by priority
+            const existingFiles = fileChecks.sort((a, b) => a.priority - b.priority);
             
             if (themeName === 'Aero') {
                 console.log(`🔍 Aero theme - Found ${existingFiles.length} files:`);
