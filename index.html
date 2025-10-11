@@ -163,10 +163,50 @@
             border: 2px solid #e0e0e0;
             border-radius: 15px;
             padding: 20px;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
             position: relative;
             background: white;
+            animation: slideInUp 0.4s ease-out backwards;
+        }
+
+        .theme-card:nth-child(1) { animation-delay: 0.05s; }
+        .theme-card:nth-child(2) { animation-delay: 0.1s; }
+        .theme-card:nth-child(3) { animation-delay: 0.15s; }
+        .theme-card:nth-child(4) { animation-delay: 0.2s; }
+        .theme-card:nth-child(5) { animation-delay: 0.25s; }
+        .theme-card:nth-child(6) { animation-delay: 0.3s; }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .theme-card.loading {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .theme-card.loading .theme-screenshot::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
 
         .theme-checkbox {
@@ -264,30 +304,78 @@
             width: 240px;
             height: 180px;
             margin: 0 auto 15px;
-            border-radius: 8px;
+            border-radius: 12px;
             overflow: hidden;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            border: 3px solid #333;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.1);
             position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .theme-card:hover .theme-screenshot {
+            box-shadow: 0 12px 32px rgba(102, 126, 234, 0.3);
+            transform: translateY(-4px);
         }
 
         .theme-screenshot img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: opacity 0.3s ease-in-out;
+            transition: opacity 0.5s ease-in-out;
             position: absolute;
             top: 0;
             left: 0;
         }
 
+        .theme-screenshot img.fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(1.05);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
         .theme-screenshot.no-preview {
             color: white;
             font-size: 3rem;
+        }
+
+        /* Badge for themes with hover gallery */
+        .theme-screenshot[data-has-cover-transition="true"]::before {
+            content: '🎬';
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(102, 126, 234, 0.95);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            z-index: 10;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .theme-card:hover .theme-screenshot[data-has-cover-transition="true"]::before {
+            opacity: 1;
+        }
+
+        /* Hide badge when showing gallery */
+        .theme-screenshot[data-has-cover-transition="true"]:has(.gallery-image)::before {
+            opacity: 0;
         }
 
         .theme-name {
@@ -919,7 +1007,8 @@
                     // Try some common theme names as fallback
                     'Aero', 'Aquarium', 'Be', 'Cupertino', 'GTA3', 'GZA', 'HughBliss',
                     'IOS Theme', 'LCD', 'Melody Munchkin', 'Prisoner', 'TwinPeaks',
-                    'Win95Theme', 'Woodstock', 'Wu-Tang', 'XFiles', 'YellowSub', 'iPod-ish'
+                    'Win95Theme', 'Woodstock', 'Wu-Tang', 'XFiles', 'YellowSub', 'iPod-ish',
+                    'yPod', 'yPodDark', 'Girlypop', 'JulesVerne', 'NeonNights'
                 ];
                 
                 // Test each pattern in parallel
@@ -1057,22 +1146,51 @@
                     theme.screenshotLoading = true;
                     
                     // Try to find actual screenshot in theme folder (source of truth)
-                    const discoveredScreenshot = await findLocalScreenshotFast(theme.folder);
+                    const discoveredMedia = await findLocalScreenshotFast(theme.folder);
                     
-                    if (discoveredScreenshot) {
-                        // Update with discovered screenshot (even if themes.json had one)
-                        const oldScreenshot = theme.screenshot;
-                        themes[themeIndex].screenshot = discoveredScreenshot;
-                        
-                        // Update the display
-                        container.innerHTML = `<img src="${discoveredScreenshot}" alt="${theme.name}" style="width: 100%; height: 100%; object-fit: cover;">`;
-                        
-                        if (oldScreenshot && oldScreenshot !== discoveredScreenshot) {
-                            console.log(`🔄 Updated screenshot for ${theme.folder}: ${oldScreenshot} → ${discoveredScreenshot}`);
-                        } else {
-                            console.log(`✅ Loaded screenshot for ${theme.folder}: ${discoveredScreenshot}`);
+                    if (discoveredMedia) {
+                        // Check if we got a no-scale cover (preserve aspect ratio)
+                        if (discoveredMedia.noScale) {
+                            themes[themeIndex].screenshot = discoveredMedia.path;
+                            themes[themeIndex].noScale = true;
+                            
+                            // Display with object-fit: contain to preserve aspect ratio
+                            container.innerHTML = `<img src="${discoveredMedia.path}" alt="${theme.name}" class="theme-noscale-image" style="width: 100%; height: 100%; object-fit: contain;">`;
+                            
+                            console.log(`✅ Loaded aspect-ratio-preserving cover for ${theme.folder}: ${discoveredMedia.path}`);
+                            return true;
                         }
-                        return true;
+                        // Check if we got cover + screenshots object (new format)
+                        else if (discoveredMedia.hasCoverTransition) {
+                            themes[themeIndex].coverImage = discoveredMedia.cover;
+                            themes[themeIndex].screenshotGallery = discoveredMedia.screenshots;
+                            themes[themeIndex].screenshot = discoveredMedia.cover; // Show cover initially
+                            
+                            // Display cover initially
+                            container.innerHTML = `<img src="${discoveredMedia.cover}" alt="${theme.name}" class="theme-cover-image" style="width: 100%; height: 100%; object-fit: cover;">`;
+                            
+                            // Mark for transition setup
+                            container.dataset.hasCoverTransition = 'true';
+                            container.dataset.coverPath = discoveredMedia.cover;
+                            container.dataset.galleryPaths = JSON.stringify(discoveredMedia.screenshots);
+                            
+                            console.log(`✅ Loaded cover + ${discoveredMedia.screenshots.length} screenshot(s) for ${theme.folder}`);
+                            return true;
+                        } else {
+                            // Single image (backward compatible)
+                            const oldScreenshot = theme.screenshot;
+                            themes[themeIndex].screenshot = discoveredMedia;
+                            
+                            // Update the display
+                            container.innerHTML = `<img src="${discoveredMedia}" alt="${theme.name}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                            
+                            if (oldScreenshot && oldScreenshot !== discoveredMedia) {
+                                console.log(`🔄 Updated screenshot for ${theme.folder}: ${oldScreenshot} → ${discoveredMedia}`);
+                            } else {
+                                console.log(`✅ Loaded screenshot for ${theme.folder}: ${discoveredMedia}`);
+                            }
+                            return true;
+                        }
                     } else {
                         console.log(`❌ No screenshot found for ${theme.folder}`);
                     }
@@ -1086,25 +1204,157 @@
             const results = await Promise.all(screenshotPromises);
             const loadedCount = results.filter(r => r).length;
             console.log(`🎉 Final result: Loaded/verified ${loadedCount} screenshots out of ${screenshotContainers.length} themes`);
+            
+            // Setup cover-to-gallery transitions
+            setupCoverToGalleryTransitions();
+        }
+
+        // Setup cover-to-gallery transition for themes with both cover and screenshots
+        function setupCoverToGalleryTransitions() {
+            const containersWithTransition = document.querySelectorAll('.theme-screenshot[data-has-cover-transition="true"]');
+            
+            if (containersWithTransition.length === 0) {
+                console.log('No themes with cover-to-gallery transition found');
+                return;
+            }
+            
+            console.log(`🎬 Setting up cover-to-gallery transitions for ${containersWithTransition.length} theme(s)`);
+            
+            // Setup hover triggers for each container
+            containersWithTransition.forEach(container => {
+                const themeCard = container.closest('.theme-card');
+                const coverPath = container.dataset.coverPath;
+                const galleryPaths = JSON.parse(container.dataset.galleryPaths || '[]');
+                
+                if (!coverPath || galleryPaths.length === 0) return;
+                
+                let galleryInterval = null;
+                let isShowingGallery = false;
+                
+                // Show gallery on hover
+                themeCard.addEventListener('mouseenter', () => {
+                    if (isShowingGallery) return;
+                    isShowingGallery = true;
+                    
+                    console.log(`🖱️ Hover detected, showing gallery`);
+                    showGallery(container, galleryPaths);
+                    
+                    // Start slideshow if multiple screenshots
+                    if (galleryPaths.length > 1) {
+                        galleryInterval = startGallerySlideshow(container, galleryPaths.length);
+                    }
+                });
+                
+                // Revert to cover on mouse leave
+                themeCard.addEventListener('mouseleave', () => {
+                    if (!isShowingGallery) return;
+                    isShowingGallery = false;
+                    
+                    console.log(`👋 Mouse left, reverting to cover`);
+                    
+                    // Stop slideshow
+                    if (galleryInterval) {
+                        clearInterval(galleryInterval);
+                        galleryInterval = null;
+                    }
+                    
+                    showCover(container, coverPath);
+                });
+            });
+            
+            // Function to show gallery screenshots
+            function showGallery(container, galleryPaths) {
+                const themeName = container.closest('.theme-card')?.querySelector('.theme-name')?.textContent || 'Unknown';
+                
+                // Clear existing content
+                container.innerHTML = '';
+                
+                // Create images for gallery
+                galleryPaths.forEach((path, index) => {
+                    const img = document.createElement('img');
+                    img.src = path;
+                    img.alt = themeName;
+                    img.style.cssText = 'width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; transition: opacity 0.5s ease-in-out;';
+                    img.style.opacity = index === 0 ? '1' : '0';
+                    img.dataset.galleryIndex = index;
+                    img.classList.add('gallery-image');
+                    container.appendChild(img);
+                });
+            }
+            
+            // Function to show cover image
+            function showCover(container, coverPath) {
+                const themeName = container.closest('.theme-card')?.querySelector('.theme-name')?.textContent || 'Unknown';
+                
+                // Clear existing content
+                container.innerHTML = '';
+                
+                // Show cover image
+                const img = document.createElement('img');
+                img.src = coverPath;
+                img.alt = themeName;
+                img.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
+                img.classList.add('theme-cover-image', 'fade-in');
+                container.appendChild(img);
+            }
+            
+            // Function to run gallery slideshow
+            function startGallerySlideshow(container, imageCount) {
+                let currentIndex = 0;
+                
+                const interval = setInterval(() => {
+                    const images = container.querySelectorAll('.gallery-image');
+                    
+                    // If images are gone (user left), stop the interval
+                    if (images.length === 0) {
+                        clearInterval(interval);
+                        return;
+                    }
+                    
+                    // Fade out current
+                    images[currentIndex].style.opacity = '0';
+                    
+                    // Move to next
+                    currentIndex = (currentIndex + 1) % imageCount;
+                    
+                    // Fade in next
+                    images[currentIndex].style.opacity = '1';
+                }, 3000);
+                
+                return interval;
+            }
         }
 
         // Ultra-fast screenshot finding - try all common files in parallel
         async function findLocalScreenshotFast(themeName) {
             // Try all common screenshot files in parallel for maximum speed
-            // Priority: screenshot.* > *cover*.* > desk.* > download.*
-            // GIFs are prioritized for animations, then PNG for quality, then JPEG
+            // Priority: screenshot.gif first (animated GIFs always show), then cover.*, then other screenshots
+            // Exception: screenshot.gif takes priority over cover images for better visual impact
             const commonFiles = [
-                // Screenshots first (highest priority)
-                'screenshot.gif', 'screenshot.png', 'screenshot.jpg', 'screenshot.jpeg',
-                // Cover variations (any filename containing "cover")
+                // Animated GIF first (highest priority - always show if available)
+                'screenshot.gif',
+                // No-scale cover variations (preserve aspect ratio - check these first)
+                // These include _noscale and _web suffixes with various cover name patterns
+                'cover_noscale.gif', 'cover_noscale.png', 'cover_noscale.jpg', 'cover_noscale.jpeg',
+                'cover_web.gif', 'cover_web.png', 'cover_web.jpg', 'cover_web.jpeg',
+                'gregcover_noscale.png', 'gregcover_web.png', 'GregCover_web.png', 'gregCover_web.png',
+                '@Be_cover_noscale.png', '@Be_cover_web.png',
+                '@Cup_cover_noscale.png', '@Cup_cover_web.png',
+                '@Pris_cover_noscale.png', '@Pris_cover_web.png',
+                // Cover variations (will be shown initially unless GIF exists)
                 'cover.gif', 'cover.png', 'cover.jpg', 'cover.jpeg',
                 '@Be_cover.png', '@Cup_cover.png', '@Pris_cover.png',
-                'gregcover.png', 'cover_WS.png', 'cover_YS.png',
+                'gregcover.png', 'gregcover.gif', 'gregcover.jpg', 'gregcover2.jpg',
+                'GregCover.png', 'GregCover.gif', 'GregCover.jpg', 'gregCover.png',
+                'cover_WS.png', 'cover_YS.png',
+                // Other screenshots (will be used for gallery after transition)
+                'screenshot.png', 'screenshot.jpg', 'screenshot.jpeg',
+                'screenshot1.jpg', 'screenshot1.png', 'screenshot2.jpg', 'screenshot2.png',
                 // Fallbacks
                 'desk.gif', 'desk.png', 'download.gif', 'download.jpg'
             ];
             
-            console.log(`🔍 Looking for screenshots in ${themeName}...`);
+            console.log(`🔍 Looking for images in ${themeName}...`);
             
             // Check all files in parallel using HEAD requests
             const fileChecks = await Promise.allSettled(
@@ -1114,11 +1364,16 @@
                         const response = await fetch(path, { method: 'HEAD' });
                         const exists = response.ok;
                         console.log(`${exists ? '✅' : '❌'} ${path} - ${exists ? 'found' : 'not found'}`);
-                        // Return priority based on index (lower index = higher priority)
-                        return { path, exists, priority: index };
+                        // Categorize files (case-insensitive)
+                        const fileLower = file.toLowerCase();
+                        const isCover = fileLower.includes('cover');
+                        const isScreenshot = fileLower.includes('screenshot');
+                        // Check for _noscale or _web suffixes (both preserve aspect ratio)
+                        const isNoScale = fileLower.includes('_noscale') || fileLower.includes('_web');
+                        return { path, exists, priority: index, isCover, isScreenshot, isNoScale, file };
                     } catch (error) {
                         console.log(`❌ ${path} - error: ${error.message}`);
-                        return { path, exists: false, priority: index };
+                        return { path, exists: false, priority: index, isCover: false, isScreenshot: false, isNoScale: false, file: '' };
                     }
                 })
             );
@@ -1130,10 +1385,42 @@
                 .sort((a, b) => a.priority - b.priority);
             
             if (existingFiles.length > 0) {
-                console.log(`🎯 Using screenshot: ${existingFiles[0].path}`);
+                // Check if screenshot.gif exists (highest priority - show directly, no cover transition)
+                const screenshotGif = existingFiles.find(f => f.file === 'screenshot.gif');
+                if (screenshotGif) {
+                    console.log(`🎬 Found animated GIF: ${screenshotGif.path} - showing directly`);
+                    return screenshotGif.path;
+                }
+                
+                // Check for no-scale cover (preserve aspect ratio - includes _noscale and _web)
+                const noScaleCover = existingFiles.find(f => f.isNoScale && f.isCover);
+                if (noScaleCover) {
+                    console.log(`📐 Found aspect-ratio-preserving cover: ${noScaleCover.path} - using object-fit: contain`);
+                    return {
+                        path: noScaleCover.path,
+                        noScale: true
+                    };
+                }
+                
+                // Return both cover and screenshots for transition feature
+                const cover = existingFiles.find(f => f.isCover && !f.isNoScale);
+                const screenshots = existingFiles.filter(f => f.isScreenshot);
+                
+                // If we have both cover and screenshots, return an object with both
+                if (cover && screenshots.length > 0) {
+                    console.log(`🎯 Found cover: ${cover.path} and ${screenshots.length} screenshot(s)`);
+                    return {
+                        cover: cover.path,
+                        screenshots: screenshots.map(s => s.path),
+                        hasCoverTransition: true
+                    };
+                }
+                
+                // Otherwise return the first available image (backward compatible)
+                console.log(`🎯 Using image: ${existingFiles[0].path}`);
                 return existingFiles[0].path;
             } else {
-                console.log(`⚠️ No screenshots found for ${themeName}`);
+                console.log(`⚠️ No images found for ${themeName}`);
                 return null;
             }
         }
@@ -1580,8 +1867,23 @@
                 const container = document.getElementById(`screenshot-${index}`);
                 if (!container || !theme.screenshot) return;
 
-                // Check if screenshot is an array (multiple screenshots)
-                const screenshots = Array.isArray(theme.screenshot) ? theme.screenshot : [{ url: theme.screenshot, isGif: false }];
+                // Normalize screenshot data to array format
+                let screenshots = [];
+                if (Array.isArray(theme.screenshot)) {
+                    // Already an array, ensure each item has url property
+                    screenshots = theme.screenshot.map(s => {
+                        if (typeof s === 'string') {
+                            return { url: s, isGif: s.toLowerCase().endsWith('.gif') };
+                        }
+                        return s;
+                    });
+                } else if (typeof theme.screenshot === 'string') {
+                    // Single screenshot string
+                    screenshots = [{ 
+                        url: theme.screenshot, 
+                        isGif: theme.screenshot.toLowerCase().endsWith('.gif') 
+                    }];
+                }
                 
                 if (screenshots.length === 0) return;
 
@@ -1593,8 +1895,10 @@
                     const img = document.createElement('img');
                     img.src = screenshot.url;
                     img.alt = theme.name;
+                    img.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
                     img.style.display = imgIndex === 0 ? 'block' : 'none';
                     img.dataset.screenshotIndex = imgIndex;
+                    img.classList.add('fade-in');
                     container.appendChild(img);
                 });
 
@@ -2249,9 +2553,20 @@
         // Initialize on load
         document.addEventListener('DOMContentLoaded', async () => {
             console.log('✅ Y1 Theme Installer loaded');
+            console.log('📊 Starting theme discovery...');
             
-            // Load themes immediately when page loads
-            await loadLocalThemes();
+            try {
+                // Load themes immediately when page loads
+                await loadLocalThemes();
+                console.log(`✅ Theme loading complete! Found ${themes.length} themes`);
+                
+                if (themes.length > 0) {
+                    console.log('📋 Themes loaded:', themes.map(t => t.name).join(', '));
+                }
+            } catch (error) {
+                console.error('❌ Error loading themes:', error);
+                showStatus('❌ Error loading themes. Please refresh the page.', 'error');
+            }
             
             if ('showDirectoryPicker' in window) {
                 // Show initial instructions for desktop users
