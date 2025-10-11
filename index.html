@@ -1148,7 +1148,7 @@
                 
                 console.log(`📸 Processing theme ${index + 1}/${screenshotContainers.length}: ${theme.folder}`);
                 
-                // If screenshot from themes.json doesn't exist, discover from theme folder
+                // Always check theme folder for cover transitions and better screenshots
                 if (theme && !theme.screenshotLoading) {
                     theme.screenshotLoading = true;
                     
@@ -1157,7 +1157,7 @@
                     
                     if (discoveredMedia) {
                         // Check if we got a no-scale cover (preserve aspect ratio)
-                        if (discoveredMedia.noScale) {
+                        if (discoveredMedia.noScale && !discoveredMedia.hasCoverTransition) {
                             themes[themeIndex].screenshot = discoveredMedia.path;
                             themes[themeIndex].noScale = true;
                             
@@ -1185,6 +1185,16 @@
                             container.dataset.galleryPaths = JSON.stringify(discoveredMedia.screenshots);
                             
                             console.log(`✅ Loaded cover + ${discoveredMedia.screenshots.length} screenshot(s) for ${theme.folder} (${discoveredMedia.noScale ? 'aspect-preserved' : 'cropped'})`);
+                            return true;
+                        }
+                        // Check if we got a regular cover-only theme (no screenshots)
+                        else if (discoveredMedia.path && !discoveredMedia.hasCoverTransition) {
+                            themes[themeIndex].screenshot = discoveredMedia.path;
+                            
+                            // Display with object-fit: cover (regular cropping)
+                            container.innerHTML = `<img src="${discoveredMedia.path}" alt="${theme.name}" class="theme-cover-image" style="width: 100%; height: 100%; object-fit: cover;">`;
+                            
+                            console.log(`✅ Loaded regular cover for ${theme.folder}: ${discoveredMedia.path}`);
                             return true;
                         } else {
                             // Single image (backward compatible)
@@ -1364,9 +1374,8 @@
                 // Other screenshots (will be used for gallery after transition)
                 'screenshot.png', 'screenshot.jpg', 'screenshot.jpeg',
                 'screenshot1.jpg', 'screenshot1.png', 'screenshot2.jpg', 'screenshot2.png',
-                // Numbered screenshots (common pattern for galleries)
-                '1.png', '2.png', '3.png', '4.png', '5.png', '6.png', '7.png', '8.png', '9.png', '10.png',
-                '1.jpg', '2.jpg', '3.jpg', '4.jpg', '5.jpg', '6.jpg', '7.jpg', '8.jpg', '9.jpg', '10.jpg',
+                // Only include numbered files if they're clearly screenshots (be more selective)
+                // Note: Removed generic numbered files as they might be random images
                 // Fallbacks
                 'desk.gif', 'desk.png', 'download.gif', 'download.jpg'
             ];
@@ -1384,7 +1393,8 @@
                         // Categorize files (case-insensitive)
                         const fileLower = file.toLowerCase();
                         const isCover = fileLower.includes('cover');
-                        const isScreenshot = fileLower.includes('screenshot') || /^\d+\.(png|jpg|jpeg)$/.test(fileLower);
+                        // Only treat files with 'screenshot' in the name as screenshots (be more selective)
+                        const isScreenshot = fileLower.includes('screenshot');
                         // Check for _noscale or _web suffixes (both preserve aspect ratio)
                         const isNoScale = fileLower.includes('_noscale') || fileLower.includes('_web');
                         return { path, exists, priority: index, isCover, isScreenshot, isNoScale, file };
@@ -1445,14 +1455,18 @@
                     console.log(`📐 Found aspect-ratio-preserving cover: ${noScaleCover.path} - using object-fit: contain`);
                     return {
                         path: noScaleCover.path,
-                        noScale: true
+                        noScale: true,
+                        hasCoverTransition: false  // No gallery, just show cover
                     };
                 }
                 
                 // If only regular cover exists (no screenshots)
                 if (regularCover) {
                     console.log(`🖼️ Found regular cover: ${regularCover.path}`);
-                    return regularCover.path;
+                    return {
+                        path: regularCover.path,
+                        hasCoverTransition: false  // No gallery, just show cover
+                    };
                 }
                 
                 // Otherwise return the first available image (backward compatible)
