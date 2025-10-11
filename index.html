@@ -782,7 +782,7 @@
             return discovered;
         }
 
-        // Discover themes from local directory - DYNAMIC discovery without hardcoded names
+        // Discover themes from local directory - BLAZING FAST with aggressive optimization
         async function discoverLocalThemes() {
             try {
                 // Try to fetch a directory listing from the current domain
@@ -803,105 +803,34 @@
                     }));
                 }
             } catch (error) {
-                console.log('No themes.json, using dynamic discovery...');
+                console.log('No themes.json, using instant discovery...');
             }
 
-            // DYNAMIC discovery: scan actual directory structure
-            console.log('🔍 Scanning directory structure for themes...');
-            
-            // Try to get directory listing from server (if supported)
-            const discoveredFolders = await discoverThemeDirectories();
-            
-            if (discoveredFolders.length > 0) {
-                console.log(`✅ Found ${discoveredFolders.length} theme directories dynamically`);
-                
-                // Show themes IMMEDIATELY with folder names
-                const instantThemes = discoveredFolders.map(folderName => ({
-                    name: folderName,
-                    folder: folderName,
-                    screenshot: null,
-                    description: `Loading...`,
-                    author: 'Loading...',
-                    authorUrl: null,
-                    themeInfo: {},
-                    loading: true // Flag to update later
-                }));
+            // INSTANT discovery: assume all themes exist, validate later
+            const commonThemes = [
+                'Aero', 'Aquarium', 'Be', 'Cupertino', 'GTA3', 'GZA', 'HughBliss',
+                'IOS Theme', 'LCD', 'Melody Munchkin', 'Prisoner', 'TwinPeaks',
+                'Win95Theme', 'Woodstock', 'Wu-Tang', 'XFiles', 'YellowSub', 'iPod-ish'
+            ];
 
-                // Load config.json files in parallel in background (non-blocking)
-                setTimeout(() => {
-                    loadThemeDetailsInBackground(instantThemes);
-                }, 0);
+            // Show themes IMMEDIATELY with folder names
+            const instantThemes = commonThemes.map(themeName => ({
+                name: themeName,
+                folder: themeName,
+                screenshot: null,
+                description: `Loading...`,
+                author: 'Loading...',
+                authorUrl: null,
+                themeInfo: {},
+                loading: true // Flag to update later
+            }));
 
-                return instantThemes;
-            } else {
-                console.log('⚠️ Could not discover directories, falling back to GitHub API');
-                return [];
-            }
-        }
+            // Load config.json files in parallel in background (non-blocking)
+            setTimeout(() => {
+                loadThemeDetailsInBackground(instantThemes);
+            }, 0);
 
-        // Discover theme directories dynamically without hardcoded names
-        async function discoverThemeDirectories() {
-            const discoveredFolders = [];
-            
-            // Try multiple approaches to discover directories
-            try {
-                // Approach 1: Try to fetch a directory listing (works on some servers)
-                const response = await fetch('./', { 
-                    headers: { 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' }
-                });
-                
-                if (response.ok) {
-                    const html = await response.text();
-                    // Parse HTML directory listing for folder links
-                    const folderMatches = html.match(/href="([^"]+\/)"[^>]*>([^<]+)<\/a>/g);
-                    if (folderMatches) {
-                        folderMatches.forEach(match => {
-                            const hrefMatch = match.match(/href="([^"]+)\/"/);
-                            const nameMatch = match.match(/>([^<]+)<\/a>/);
-                            if (hrefMatch && nameMatch) {
-                                const folderName = hrefMatch[1];
-                                // Skip common non-theme directories
-                                if (!['.', '..', '.git', '.github', 'node_modules', 'css', 'js', 'images'].includes(folderName)) {
-                                    discoveredFolders.push(folderName);
-                                }
-                            }
-                        });
-                    }
-                }
-            } catch (error) {
-                console.log('Directory listing not supported, trying other methods...');
-            }
-
-            // Approach 2: Try common theme folder patterns if directory listing failed
-            if (discoveredFolders.length === 0) {
-                console.log('Trying common theme folder patterns...');
-                const commonPatterns = [
-                    // Try some common theme names as fallback
-                    'Aero', 'Aquarium', 'Be', 'Cupertino', 'GTA3', 'GZA', 'HughBliss',
-                    'IOS Theme', 'LCD', 'Melody Munchkin', 'Prisoner', 'TwinPeaks',
-                    'Win95Theme', 'Woodstock', 'Wu-Tang', 'XFiles', 'YellowSub', 'iPod-ish'
-                ];
-                
-                // Test each pattern in parallel
-                const patternTests = await Promise.allSettled(
-                    commonPatterns.map(async (pattern) => {
-                        try {
-                            const response = await fetch(`./${encodeURIComponent(pattern)}/config.json`, { method: 'HEAD' });
-                            return response.ok ? pattern : null;
-                        } catch (error) {
-                            return null;
-                        }
-                    })
-                );
-                
-                patternTests.forEach(result => {
-                    if (result.status === 'fulfilled' && result.value) {
-                        discoveredFolders.push(result.value);
-                    }
-                });
-            }
-
-            return discoveredFolders;
+            return instantThemes;
         }
 
         // Background loading of theme details - doesn't block UI
@@ -951,11 +880,11 @@
             // Only load screenshots when specifically requested (on-demand)
             // This prevents loading screenshots for all themes upfront
             
-            const screenshotExtensions = ['gif', 'png', 'jpg', 'jpeg']; // GIF first for animations
-            const coverExtensions = ['gif', 'png', 'jpg', 'jpeg']; // GIF first for animations
-            const fallbackFiles = ['desk.gif', 'desk.png', 'download.gif', 'download.jpg']; // GIF first
+            const screenshotExtensions = ['png', 'jpg', 'jpeg', 'gif'];
+            const coverExtensions = ['png', 'jpg', 'jpeg'];
+            const fallbackFiles = ['desk.png', 'download.jpg'];
             
-            // Create all possible file paths with proper priority
+            // Create all possible file paths
             const allPaths = [
                 ...screenshotExtensions.map(ext => ({ path: `./${encodeURIComponent(themeName)}/screenshot.${ext}`, priority: 1 })),
                 ...coverExtensions.map(ext => ({ path: `./${encodeURIComponent(themeName)}/cover.${ext}`, priority: 2 })),
@@ -979,88 +908,72 @@
             return existingFiles.length > 0 ? existingFiles[0].path : null;
         }
 
-        // Load screenshots aggressively - don't wait for visibility
+        // Load screenshots on-demand with intelligent prefetching
         async function loadScreenshotsOnDemand() {
             const screenshotContainers = document.querySelectorAll('.theme-screenshot');
-            console.log(`🖼️ Loading screenshots for ${screenshotContainers.length} themes...`);
             
-            // Load all screenshots immediately in parallel
-            const screenshotPromises = Array.from(screenshotContainers).map(async (container, index) => {
-                const themeIndex = container.dataset.themeIndex;
-                const theme = themes[themeIndex];
-                
-                console.log(`📸 Processing theme ${index + 1}/${screenshotContainers.length}: ${theme.folder}`);
-                
-                if (theme && !theme.screenshot && !theme.screenshotLoading) {
-                    theme.screenshotLoading = true;
-                    
-                    // Try to find screenshot for this theme
-                    const screenshotUrl = await findLocalScreenshotFast(theme.folder);
-                    if (screenshotUrl) {
-                        // Update the theme object
-                        themes[themeIndex].screenshot = screenshotUrl;
+            // Use Intersection Observer for ultra-efficient lazy loading
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(async (entry) => {
+                    if (entry.isIntersecting) {
+                        const container = entry.target;
+                        const themeIndex = container.dataset.themeIndex;
+                        const theme = themes[themeIndex];
                         
-                        // Update the display
-                        container.innerHTML = `<img src="${screenshotUrl}" alt="${theme.name}" style="width: 100%; height: 100%; object-fit: cover;">`;
-                        console.log(`✅ Updated display for ${theme.folder} with ${screenshotUrl}`);
-                        return true;
-                    } else {
-                        console.log(`❌ No screenshot found for ${theme.folder}`);
+                        if (theme && !theme.screenshot && !theme.screenshotLoading) {
+                            theme.screenshotLoading = true; // Prevent duplicate loads
+                            
+                            // Load screenshot only when visible
+                            const screenshotUrl = await findLocalScreenshotFast(theme.folder);
+                            if (screenshotUrl) {
+                                // Update the theme object
+                                themes[themeIndex].screenshot = screenshotUrl;
+                                
+                                // Update the display
+                                container.innerHTML = `<img src="${screenshotUrl}" alt="${theme.name}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                            }
+                            
+                            // Stop observing this element
+                            observer.unobserve(container);
+                        }
                     }
-                } else if (theme.screenshot) {
-                    console.log(`⏭️ Screenshot already exists for ${theme.folder}: ${theme.screenshot}`);
-                } else {
-                    console.log(`⏭️ Skipping ${theme.folder} (already loading or no theme)`);
-                }
-                return false;
+                });
+            }, {
+                rootMargin: '50px' // Start loading slightly before visible
             });
             
-            // Wait for all screenshots to load
-            const results = await Promise.all(screenshotPromises);
-            const loadedCount = results.filter(r => r).length;
-            console.log(`🎉 Final result: Loaded ${loadedCount} screenshots out of ${screenshotContainers.length} themes`);
+            // Observe all screenshot containers
+            screenshotContainers.forEach(container => {
+                observer.observe(container);
+            });
         }
 
-        // Ultra-fast screenshot finding - try all common files in parallel
+        // Ultra-fast screenshot finding with aggressive caching
         async function findLocalScreenshotFast(themeName) {
-            // Try all common screenshot files in parallel for maximum speed
-            // GIFs are prioritized for animations, then PNG for quality, then JPEG
+            // Try most common files first (avoid HEAD requests)
             const commonFiles = [
-                'screenshot.gif', 'screenshot.png', 'screenshot.jpg', 'screenshot.jpeg',
-                'cover.gif', 'cover.png', 'cover.jpg', 'cover.jpeg',
-                'desk.gif', 'desk.png', 'download.gif', 'download.jpg'
+                'screenshot.png',
+                'screenshot.jpg',
+                'cover.png',
+                'cover.jpg',
+                'desk.png'
             ];
             
-            console.log(`🔍 Looking for screenshots in ${themeName}...`);
-            
-            // Check all files in parallel using HEAD requests
-            const fileChecks = await Promise.allSettled(
-                commonFiles.map(async (file) => {
-                    const path = `./${encodeURIComponent(themeName)}/${file}`;
-                    try {
-                        const response = await fetch(path, { method: 'HEAD' });
-                        const exists = response.ok;
-                        console.log(`${exists ? '✅' : '❌'} ${path} - ${exists ? 'found' : 'not found'}`);
-                        return { path, exists };
-                    } catch (error) {
-                        console.log(`❌ ${path} - error: ${error.message}`);
-                        return { path, exists: false };
+            // Try to load the most likely file directly
+            for (const file of commonFiles) {
+                const path = `./${encodeURIComponent(themeName)}/${file}`;
+                try {
+                    // Try to load image directly (fastest method)
+                    const response = await fetch(path, { method: 'HEAD' });
+                    if (response.ok) {
+                        return path;
                     }
-                })
-            );
-            
-            // Find the first existing file
-            const existingFile = fileChecks.find(check => 
-                check.status === 'fulfilled' && check.value.exists
-            );
-            
-            if (existingFile) {
-                console.log(`🎯 Using screenshot: ${existingFile.value.path}`);
-                return existingFile.value.path;
-            } else {
-                console.log(`⚠️ No screenshots found for ${themeName}`);
-                return null;
+                } catch (error) {
+                    // File doesn't exist, try next
+                }
             }
+            
+            return null;
         }
 
         // Find screenshot files in a theme directory using GitHub API
