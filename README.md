@@ -11,7 +11,7 @@ simply fork the repository and then add your information and screenshots, then s
 
 ### How to add information and screenshots.
 
-When uploading the theme folder in place, if you can, add info to its config.json file (or include it in a text file and I can help place the info in your config.json file for you :)
+When uploading the theme folder, if you have a moment, can you please add info to its config.json file (or include it in a text file and I can help place the info in your config.json file for you :)
 
 and add any screenshots you'd like to show included in the folder as screenshot.jpg, screenshot2.jpeg screenshot.gif for example - you can include a series of screenshots if you wish. animated gifs will show first in theme previews.
 
