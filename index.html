@@ -530,6 +530,17 @@
         }
 
         // Load themes from server-side directories and device-side installed themes
+        // 
+        // DATA PRECEDENCE HIERARCHY (Source of Truth):
+        // 1. config.json in theme directory = AUTHORITATIVE SOURCE
+        // 2. themes.json = FAST CACHE ONLY (for initial display)
+        // 3. Auto-discovery = FINDS THEMES NOT IN CACHE
+        //
+        // FLOW:
+        // - themes.json provides instant initial display (if available)
+        // - ALL themes refresh from config.json in background (authoritative)
+        // - Screenshots discovered from theme folders (if not in themes.json)
+        // - New theme folders auto-discovered and added (no duplication)
         async function loadLocalThemes() {
             showStatus('📦 Loading themes...', 'info');
 
@@ -795,7 +806,7 @@
                     const themesData = await response.json();
                     console.log('✅ Found themes.json - instant load!');
                     
-                    // Process themes from JSON
+                    // Process themes from JSON - mark them as needing config.json refresh
                     themesFromJson = (themesData.themes || []).map(themeData => {
                         jsonThemeFolders.add(themeData.folder);
                         return {
@@ -806,11 +817,12 @@
                             author: themeData.author || 'Unknown',
                             authorUrl: themeData.authorUrl || null,
                             themeInfo: themeData,
-                            fromJson: true
+                            fromJson: true,
+                            needsConfigRefresh: true // Mark for config.json refresh
                         };
                     });
                     
-                    console.log(`📋 Loaded ${themesFromJson.length} themes from themes.json`);
+                    console.log(`📋 Loaded ${themesFromJson.length} themes from themes.json (will refresh from config.json)`);
                 }
             } catch (error) {
                 console.log('No themes.json found, will discover all themes dynamically...');
@@ -836,23 +848,28 @@
                     authorUrl: null,
                     themeInfo: {},
                     loading: true,
-                    fromJson: false
+                    fromJson: false,
+                    needsConfigRefresh: true
                 }));
                 
                 // Merge JSON themes with newly discovered themes
                 const allThemes = [...themesFromJson, ...newThemes];
                 
-                // Load details for newly discovered themes in background
-                if (newThemes.length > 0) {
-                    setTimeout(() => {
-                        loadThemeDetailsInBackground(allThemes);
-                    }, 0);
-                }
+                // Load config.json for ALL themes in background (both from JSON and newly discovered)
+                setTimeout(() => {
+                    loadThemeDetailsInBackground(allThemes);
+                }, 0);
                 
                 return allThemes;
             } else if (themesFromJson.length > 0) {
-                // Only themes from JSON, no new discoveries
-                console.log('✅ All themes loaded from themes.json, no new themes found');
+                // Only themes from JSON, but still refresh from config.json
+                console.log('✅ All themes loaded from themes.json, refreshing from config.json...');
+                
+                // Load config.json for all themes from JSON in background
+                setTimeout(() => {
+                    loadThemeDetailsInBackground(themesFromJson);
+                }, 0);
+                
                 return themesFromJson;
             } else {
                 // No JSON and no discovered folders
@@ -928,18 +945,19 @@
         }
 
         // Background loading of theme details - doesn't block UI
+        // Refreshes ALL themes from their config.json files (source of truth)
         async function loadThemeDetailsInBackground(instantThemes) {
-            // Only load details for themes that need it (those with loading: true)
+            // Load config.json for ALL themes that need refresh (from JSON or newly discovered)
             const themesToLoad = instantThemes
                 .map((theme, index) => ({ theme, index }))
-                .filter(({ theme }) => theme.loading === true);
+                .filter(({ theme }) => theme.needsConfigRefresh === true);
             
             if (themesToLoad.length === 0) {
-                console.log('ℹ️ No themes need background loading (all from themes.json)');
+                console.log('ℹ️ No themes need config.json refresh');
                 return;
             }
             
-            console.log(`⏳ Loading details for ${themesToLoad.length} newly discovered theme(s)...`);
+            console.log(`⏳ Refreshing ${themesToLoad.length} theme(s) from config.json (source of truth)...`);
             
             const configPromises = themesToLoad.map(async ({ theme, index }) => {
                 try {
@@ -948,13 +966,14 @@
                         const config = await configResponse.json();
                         const themeInfo = config?.theme_info || {};
                         
-                        // Update the theme object in place
+                        // Update the theme object with authoritative data from config.json
                         themes[index].name = themeInfo.title || theme.folder;
                         themes[index].description = themeInfo.description || `Y1 Theme: ${theme.folder}`;
                         themes[index].author = themeInfo.author || 'Unknown';
                         themes[index].authorUrl = themeInfo.authorUrl || null;
                         themes[index].themeInfo = themeInfo;
                         themes[index].loading = false;
+                        themes[index].needsConfigRefresh = false;
                         
                         return true;
                     } else {
@@ -963,7 +982,8 @@
                         return false;
                     }
                 } catch (error) {
-                    // Theme doesn't exist
+                    // Theme doesn't exist or error loading config
+                    console.warn(`Failed to load config.json for ${theme.folder}:`, error);
                     themes[index].exists = false;
                     return false;
                 }
@@ -975,11 +995,11 @@
             // Filter out non-existent themes
             themes = themes.filter(theme => theme.exists !== false);
             
-            // Re-render with updated data
+            // Re-render with updated authoritative data
             renderThemes();
             
             const successCount = results.filter(r => r).length;
-            console.log(`✅ Loaded details for ${successCount} newly discovered theme(s)`);
+            console.log(`✅ Refreshed ${successCount} theme(s) with authoritative data from config.json`);
         }
 
         // Find screenshot for local theme directory - on-demand loading only
@@ -1020,6 +1040,7 @@
         }
 
         // Load screenshots aggressively - don't wait for visibility
+        // Discovers screenshots from theme folders if not in themes.json or to verify/update
         async function loadScreenshotsOnDemand() {
             const screenshotContainers = document.querySelectorAll('.theme-screenshot');
             console.log(`🖼️ Loading screenshots for ${screenshotContainers.length} themes...`);
@@ -1031,26 +1052,32 @@
                 
                 console.log(`📸 Processing theme ${index + 1}/${screenshotContainers.length}: ${theme.folder}`);
                 
-                if (theme && !theme.screenshot && !theme.screenshotLoading) {
+                // If screenshot from themes.json doesn't exist, discover from theme folder
+                if (theme && !theme.screenshotLoading) {
                     theme.screenshotLoading = true;
                     
-                    // Try to find screenshot for this theme
-                    const screenshotUrl = await findLocalScreenshotFast(theme.folder);
-                    if (screenshotUrl) {
-                        // Update the theme object
-                        themes[themeIndex].screenshot = screenshotUrl;
+                    // Try to find actual screenshot in theme folder (source of truth)
+                    const discoveredScreenshot = await findLocalScreenshotFast(theme.folder);
+                    
+                    if (discoveredScreenshot) {
+                        // Update with discovered screenshot (even if themes.json had one)
+                        const oldScreenshot = theme.screenshot;
+                        themes[themeIndex].screenshot = discoveredScreenshot;
                         
                         // Update the display
-                        container.innerHTML = `<img src="${screenshotUrl}" alt="${theme.name}" style="width: 100%; height: 100%; object-fit: cover;">`;
-                        console.log(`✅ Updated display for ${theme.folder} with ${screenshotUrl}`);
+                        container.innerHTML = `<img src="${discoveredScreenshot}" alt="${theme.name}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                        
+                        if (oldScreenshot && oldScreenshot !== discoveredScreenshot) {
+                            console.log(`🔄 Updated screenshot for ${theme.folder}: ${oldScreenshot} → ${discoveredScreenshot}`);
+                        } else {
+                            console.log(`✅ Loaded screenshot for ${theme.folder}: ${discoveredScreenshot}`);
+                        }
                         return true;
                     } else {
                         console.log(`❌ No screenshot found for ${theme.folder}`);
                     }
-                } else if (theme.screenshot) {
-                    console.log(`⏭️ Screenshot already exists for ${theme.folder}: ${theme.screenshot}`);
-                } else {
-                    console.log(`⏭️ Skipping ${theme.folder} (already loading or no theme)`);
+                } else if (!theme) {
+                    console.log(`⏭️ No theme data for index ${themeIndex}`);
                 }
                 return false;
             });
@@ -1058,7 +1085,7 @@
             // Wait for all screenshots to load
             const results = await Promise.all(screenshotPromises);
             const loadedCount = results.filter(r => r).length;
-            console.log(`🎉 Final result: Loaded ${loadedCount} screenshots out of ${screenshotContainers.length} themes`);
+            console.log(`🎉 Final result: Loaded/verified ${loadedCount} screenshots out of ${screenshotContainers.length} themes`);
         }
 
         // Ultra-fast screenshot finding - try all common files in parallel
