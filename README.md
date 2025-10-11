@@ -32,7 +32,7 @@ You can manually add information about your theme by adding the below to your th
 2. Similarly add your theme details to the theme list, replace line 5 (the single '{' below "themes") of themes.json with your theme's details, a template below, leave out anything you don't have avaialble (screenshot, or URL for example) - here's a template
 
 ```
-4. {
+ {
       "name": "MyTheme",
       "folder": "MyTheme",
       "screenshot": "./MyTheme/screenshot.jpg",
