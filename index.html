@@ -1364,6 +1364,9 @@
                 // Other screenshots (will be used for gallery after transition)
                 'screenshot.png', 'screenshot.jpg', 'screenshot.jpeg',
                 'screenshot1.jpg', 'screenshot1.png', 'screenshot2.jpg', 'screenshot2.png',
+                // Numbered screenshots (common pattern for galleries)
+                '1.png', '2.png', '3.png', '4.png', '5.png', '6.png', '7.png', '8.png', '9.png', '10.png',
+                '1.jpg', '2.jpg', '3.jpg', '4.jpg', '5.jpg', '6.jpg', '7.jpg', '8.jpg', '9.jpg', '10.jpg',
                 // Fallbacks
                 'desk.gif', 'desk.png', 'download.gif', 'download.jpg'
             ];
@@ -1381,7 +1384,7 @@
                         // Categorize files (case-insensitive)
                         const fileLower = file.toLowerCase();
                         const isCover = fileLower.includes('cover');
-                        const isScreenshot = fileLower.includes('screenshot');
+                        const isScreenshot = fileLower.includes('screenshot') || /^\d+\.(png|jpg|jpeg)$/.test(fileLower);
                         // Check for _noscale or _web suffixes (both preserve aspect ratio)
                         const isNoScale = fileLower.includes('_noscale') || fileLower.includes('_web');
                         return { path, exists, priority: index, isCover, isScreenshot, isNoScale, file };
@@ -1397,6 +1400,11 @@
                 .filter(check => check.status === 'fulfilled' && check.value.exists)
                 .map(check => check.value)
                 .sort((a, b) => a.priority - b.priority);
+            
+            if (themeName === 'Aero') {
+                console.log(`🔍 Aero theme - Found ${existingFiles.length} files:`);
+                existingFiles.forEach(f => console.log(`  ${f.file} - cover: ${f.isCover}, screenshot: ${f.isScreenshot}, noScale: ${f.isNoScale}`));
+            }
             
             if (existingFiles.length > 0) {
                 // Check if screenshot.gif exists (highest priority - show directly, no cover transition)
@@ -1416,13 +1424,20 @@
                 
                 // If we have both cover and screenshots, return an object with both
                 if (coverToUse && screenshots.length > 0) {
-                    console.log(`🎯 Found cover: ${coverToUse.path} (${noScaleCover ? 'aspect-preserved' : 'cropped'}) and ${screenshots.length} screenshot(s)`);
+                    console.log(`🎯 Found cover: ${coverToUse.path} (${noScaleCover ? 'aspect-preserved' : 'cropped'}) and ${screenshots.length} screenshot(s):`);
+                    screenshots.forEach((s, i) => console.log(`  ${i + 1}. ${s.path} (${s.file})`));
                     return {
                         cover: coverToUse.path,
                         screenshots: screenshots.map(s => s.path),
                         hasCoverTransition: true,
                         noScale: !!noScaleCover  // Flag to use object-fit: contain
                     };
+                }
+                
+                // Debug: Show what we found but didn't match
+                if (coverToUse && screenshots.length === 0) {
+                    console.log(`⚠️ Found cover: ${coverToUse.path} but NO screenshots found`);
+                    console.log(`   Available files:`, existingFiles.map(f => `${f.file} (cover: ${f.isCover}, screenshot: ${f.isScreenshot}, noScale: ${f.isNoScale})`));
                 }
                 
                 // If only no-scale cover exists (no screenshots)
