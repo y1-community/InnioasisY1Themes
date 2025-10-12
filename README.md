@@ -9,11 +9,16 @@ You upload your theme folder to this [Google Drive folder](https://drive.google.
 ### Via GitHub
 simply fork the repository and then add your information and screenshots, then submit a PR that we can merge into the website
 
+
 ### How to add information and screenshots.
 
 When uploading the theme folder, if you have a moment, can you please add info to its config.json file (or include it in a text file and I can help place the info in your config.json file for you :)
 
 and add any screenshots you'd like to show included in the folder as screenshot.jpg, screenshot2.jpeg screenshot.gif for example - you can include a series of screenshots if you wish. animated gifs will show first in theme previews.
+
+### Taking Screenshots:
+Innioasis Updater includes Toolkit, which has a Remote Control tool that you can use to capture static images of the Y1's screen. It takes around 10 secs to make an initial connection 
+(you'll need to have updated your firmware with Innioasis Updater at least once to enable screenshotting if your Y1 came with 2.1.9 or earlier - this is as the ability to screenshot isn't enabled out of the box and is added by Innioasis Updater during the updates process)
 
 ### Editing the .json files (Don't panic if you don't code - editing it is explained below in layman's terms without needing to know how to code, when submitting changes, mistakes here will be noticed anyway so don't be afraid of getting it wrong:
 
@@ -32,6 +37,7 @@ You can manually add information about your theme by adding the below to your th
 ```
 
 2. Similarly to add your theme details to the theme list (this is used for faster listings), where it would go alphabetically, see this template:
+   (Where you can specify a screenshot - match the filename and theme folder name to a name of theme and the screenshot respectively - or alternatively the cover file if unable or don't have the time to take screenshot of Y1 - )
 
  ```
  {
@@ -43,6 +49,7 @@ You can manually add information about your theme by adding the below to your th
       "authorUrl": "https://johndoe.com"
     },
 ```
+
   
 For example, at the time of writing when adding Lain-Ish, I placed it above LCD
 
