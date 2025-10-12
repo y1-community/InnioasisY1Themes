@@ -16,17 +16,6 @@ When uploading the theme folder, if you have a moment, can you please add info t
 
 and add any screenshots you'd like to show included in the folder as screenshot.jpg, screenshot2.jpeg screenshot.gif for example - you can include a series of screenshots if you wish. animated gifs will show first in theme previews.
 
-
-### Taking Screenshots:
-Innioasis Updater includes Toolkit, which has a Remote Control tool that you can use to capture static images of the Y1's screen. It takes around 10 secs to make an initial connection 
-(you'll need to have updated your firmware with Innioasis Updater at least once to enable screenshotting if your Y1 came with 2.1.9 or earlier - this is as the ability to screenshot isn't enabled out of the box and is added by Innioasis Updater during the updates process)
-
-
-
-#### Editing the .json files (Don't panic if you don't code - editing it is explained below in layman's terms without needing to know how to code, when submitting changes, mistakes here will be noticed anyway so don't be afraid of getting it wrong:
-
-You can manually add information about your theme by adding the below to your themes config.json - this will be parsed by the theme directory - perhaps use the URL to showcase an online portfolio, a website your theme's reddit post, or perhaps a cause you care about
-
 ### Adding credits / description data to your theme:
 
 1. On your theme's *config.json* at the very top, replace the single '{', with the below template, with your theme details: 
@@ -40,6 +29,17 @@ You can manually add information about your theme by adding the below to your th
         "description": "A gorgeous theme for the Innioasis Y1 inspired by..."
     },
 ```
+### Taking Screenshots:
+Innioasis Updater includes Toolkit, which has a Remote Control tool that you can use to capture static images of the Y1's screen. It takes around 10 secs to make an initial connection 
+(you'll need to have updated your firmware with Innioasis Updater at least once to enable screenshotting if your Y1 came with 2.1.9 or earlier - this is as the ability to screenshot isn't enabled out of the box and is added by Innioasis Updater during the updates process)
+
+
+
+#### Editing the .json files (Don't panic if you don't code - editing it is explained below in layman's terms without needing to know how to code, when submitting changes, mistakes here will be noticed anyway so don't be afraid of getting it wrong:
+
+You can manually add information about your theme by adding the below to your themes config.json - this will be parsed by the theme directory - perhaps use the URL to showcase an online portfolio, a website your theme's reddit post, or perhaps a cause you care about
+
+
 
 2. Similarly to add your theme details to the theme list (this is used for faster listings), where it would go alphabetically, see this template:
    (Where you can specify a screenshot - match the filename and theme folder name to a name of theme and the screenshot respectively - or alternatively the cover file if unable or don't have the time to take screenshot of Y1 - )
