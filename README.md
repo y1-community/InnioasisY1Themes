@@ -16,7 +16,7 @@ When uploading the theme folder, if you have a moment, can you please add info t
 
 and add any screenshots you'd like to show included in the folder as screenshot.jpg, screenshot2.jpeg screenshot.gif for example - you can include a series of screenshots if you wish. animated gifs will show first in theme previews.
 
-### Adding credits / description data to your theme:'s config file
+### Adding credits / description data to your theme's config file
 
 1. On your theme's *config.json* at the very top, replace the single '{', with the below template, replacing the details with your own:
 
