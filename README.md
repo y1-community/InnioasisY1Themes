@@ -17,7 +17,7 @@ and add any screenshots you'd like to show included in the folder as screenshot.
 
 You can manually add information about your theme by adding the below to your themes config.json - this will be parsed by the theme directory - perhaps use the URL to showcase an online portfolio, a website your theme's reddit post, or perhaps a cause you care about
 
-1. On your theme's config.json replace the first line; the single '{', with the below template, with your theme details: 
+1. On your theme's *config.json* at the very top, replace the single '{', with the below template, with your theme details: 
 
 ```
 {
@@ -29,7 +29,14 @@ You can manually add information about your theme by adding the below to your th
     },
 ```
 
-2. Similarly add your theme details to the theme list, replace line 5 (the single '{' below "themes") of themes.json with your theme's details, a template below, leave out anything you don't have avaialble (screenshot, or URL for example) - here's a template
+2. Similarly to add your theme details to the theme list (this is used for faster listings), where it would go alphabetically
+  
+For example, at the time of writing when adding Lain-Ish, I placed it above LCD
+
+If it has to go between two themes:
+look for "    }," at the end of the theme you need to place yours after put your cursor at the end of the comma and press enter to create a new line, on that line place the below.
+
+If your theme sits at the very top, for example if it is called Apple or Aadvark, instead replace the single {
 
 ```
  {
