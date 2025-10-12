@@ -60,17 +60,13 @@ If it has to go above a theme (usually because it's the first alphabetically, e.
 ```
 {
 ```
+and paste your template and details, in the position shown below
 
 ```
 ---*create a new line here and paste the template, enter your details----
 {
 ```
 
-
-```
----*create a new line here and paste the template, enter your details----
-{
-```
 
 
 ### Collation of existing themes
