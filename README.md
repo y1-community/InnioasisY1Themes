@@ -51,9 +51,13 @@ look for
 
 ```
     },
---- *create a new line here and paste the template, enter your details* ----
 ```
 create a line below it with Enter (make sure its after the ',' and place it like this:
+
+```
+    },
+--- *create a new line below }, and paste the template, enter your details* ----
+```
 
 If it has to go above a theme (usually because it's the first alphabetically, e.g your theme would go before 'Aero') then look for:
 
@@ -63,7 +67,7 @@ If it has to go above a theme (usually because it's the first alphabetically, e.
 and paste your template and details, in the position shown below
 
 ```
----*create a new line here and paste the template, enter your details----
+---*create a new line above { and paste the template, enter your details----
 {
 ```
 
