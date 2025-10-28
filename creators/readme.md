@@ -652,9 +652,9 @@ Here's a complete, fully-documented example:
 
 ### Theme Directory Location
 
-Themes must be placed in:
+Themes must be placed on your Y1's storage in:
 ```
-/storage/sdcard0/Themes/YourThemeName/
+Themes/YourThemeName/
 ```
 
 ### Installation Steps
@@ -1015,13 +1015,6 @@ Creating a complete theme requires:
 - Color schemes for all UI elements
 
 **Start simple**, test frequently, and add complexity gradually!
-
----
-
-## Version History
-
-- **v1.0** - Initial theme system
-- **v2.7.2** - Current version with Calculator, Calendar, and eBook support
 
 ---
 
