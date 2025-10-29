@@ -814,10 +814,12 @@ An overlay image applied to the settings screen:
 - Shows how to create atmospheric themes
 
 ### MelodyMuncher
-- More complex theme with playful elements
-- Includes custom font and desktop mask
-- Demonstrates advanced features and creative theming
-- Shows how to balance functionality with visual appeal
+- **Perfect for beginners**: Non-coders can use this as an excellent starting point
+- **Learn by doing**: Replace images where you feel necessary and experiment with color codes
+- **Safe experimentation**: Make small edits to `config.json` to learn the ropes
+- **More complex theme**: Includes custom font and desktop mask
+- **Demonstrates advanced features**: Shows how to balance functionality with visual appeal
+- **Educational value**: Great for understanding how themes work through hands-on modification
 
 ---
 
