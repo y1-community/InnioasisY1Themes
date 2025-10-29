@@ -35,32 +35,76 @@ This guide provides comprehensive instructions for creating custom themes for th
 ├── global_bg001.png        # Global wallpaper
 ├── mask.png                # Desktop mask overlay (OPTIONAL)
 │
-├── Main Menu Icons/
-│   ├── Now Playing.png
-│   ├── Music.png
-│   ├── Videos.png
-│   ├── Audiobooks.png
-│   ├── Photos.png
-│   ├── FM Radio.png
-│   ├── Bluetooth.png
-│   ├── Settings.png
-│   ├── Shuffle Quick.png
-│   ├── calculator.png
-│   ├── calendar.png
-│   └── ebook.png
+├── Now Playing.png         # Main menu icons
+├── Music.png
+├── Videos.png
+├── Audiobooks.png
+├── Photos.png
+├── FM Radio.png
+├── Bluetooth.png
+├── Settings.png
+├── Shuffle Quick.png
+├── calculator.png
+├── calendar.png
+├── ebook.png
 │
-├── UI Element Images/
-│   ├── 1.png               # Selected item background
-│   ├── 2.png               # Right arrow
-│   ├── 3.png               # Dialog option background
-│   ├── 4.png               # Dialog option selected
-│   └── ...
+├── 1.png                   # UI element images
+├── 2.png                   # Right arrow
+├── 3.png                   # Dialog option background
+├── 4.png                   # Dialog option selected
+├── 5.png                   # Dialog background
+├── 6.png                   # Progress bar background
+├── 7.png                   # Progress bar fill
+├── 8.png                   # Volume bar background
+├── 9.png                   # Volume bar fill
+├── 10.png                  # Battery background
+├── 11.png                  # Battery fill
+├── 12.png                  # Signal strength background
+├── 13.png                  # Signal strength fill
+├── 14.png                  # Bluetooth icon
+├── 15.png                  # Headphone icon
+├── 16.png                  # Microphone icon
+├── 17.png                  # Speaker icon
+├── 18.png                  # USB icon
 │
-└── Settings Icons/
-    ├── Shutdown@1x.png
-    ├── Launcher.png
-    ├── Brightness@1x.png
-    └── ... (many more)
+├── About.png               # Settings icons
+├── Audio.png
+├── Bluetooth.png
+├── Display.png
+├── Language.png
+├── Power.png
+├── Storage.png
+├── System.png
+├── Time.png
+├── Update.png
+├── WiFi.png
+├── About_selected.png
+├── Audio_selected.png
+├── Bluetooth_selected.png
+├── Display_selected.png
+├── Language_selected.png
+├── Power_selected.png
+├── Storage_selected.png
+├── System_selected.png
+├── Time_selected.png
+├── Update_selected.png
+├── WiFi_selected.png
+│
+├── battery_0.png           # Status bar icons
+├── battery_1.png
+├── battery_2.png
+├── battery_3.png
+├── battery_4.png
+├── battery_5.png
+├── bluetooth_off.png
+├── bluetooth_on.png
+├── signal_0.png
+├── signal_1.png
+├── signal_2.png
+├── signal_3.png
+├── signal_4.png
+├── wifi_off.png
+└── wifi_on.png
 ```
 
 ---
