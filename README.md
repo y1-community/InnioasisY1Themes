@@ -110,14 +110,8 @@ Edit the `config.json` file to change colors:
 
 Once you're comfortable with image replacement, you can create themes from scratch with full control over every element.
 
-### **Step 1: Plan Your Theme**
 
-**🎯 Define your vision:**
-- **Style**: Minimalist, retro, colorful, dark, etc.
-- **Color palette**: 3-5 main colors that work together
-- **Mood**: Professional, playful, elegant, etc.
-
-### **Step 2: Create All Required Images**
+### **Step 1: Create All Required Images**
 
 **📁 Essential files you must create:**
 - `config.json` - Theme configuration (REQUIRED)
