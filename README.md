@@ -110,8 +110,14 @@ Edit the `config.json` file to change colors:
 
 Once you're comfortable with image replacement, you can create themes from scratch with full control over every element.
 
+### **Step 1: Plan Your Theme**
 
-### **Step 1: Create All Required Images**
+**🎯 Define your vision:**
+- **Style**: Minimalist, retro, colorful, dark, etc.
+- **Color palette**: 3-5 main colors that work together
+- **Mood**: Professional, playful, elegant, etc.
+
+### **Step 2: Create All Required Images**
 
 **📁 Essential files you must create:**
 - `config.json` - Theme configuration (REQUIRED)
@@ -146,6 +152,8 @@ Create a complete `config.json` with all sections:
     // ... more configuration sections
 }
 ```
+
+**📋 Complete Example**: See the full MelodyMuncher config.json at [github.com/y1-community/InnioasisY1Themes/blob/main/MelodyMuncher/config.json](https://github.com/y1-community/InnioasisY1Themes/blob/main/MelodyMuncher/config.json) for a complete reference.
 
 ### **Step 4: Advanced Customization**
 
@@ -1217,6 +1225,8 @@ Add theme metadata to your `config.json` file at the very top. Replace the openi
     // ... rest of your config
 }
 ```
+
+**📋 Complete Example**: See the full MelodyMuncher config.json at [github.com/y1-community/InnioasisY1Themes/blob/main/MelodyMuncher/config.json](https://github.com/y1-community/InnioasisY1Themes/blob/main/MelodyMuncher/config.json) for a complete reference.
 
 **Field Descriptions:**
 - **title**: Your theme's display name
