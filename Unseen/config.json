@@ -32,7 +32,10 @@
         "fm": "transparent.png",
         "bluetooth": "transparent.png",
         "settings": "transparent.png",
-        "shuffleQuick": "transparent.png"
+        "shuffleQuick": "transparent.png",
+        "calendar": "transparent.png",
+        "calculator": "transparent.png",
+        "ebook": "transparent.png"
     },
     "fileConfig": {
         "folderIcon": "",
@@ -82,6 +85,7 @@
         "displayBatteryOff": "transparent.png",
         "dateTime": "transparent.png",
         "language": "transparent.png",
+        "launcher": "transparent.png",
         "factoryReset": "transparent.png",
         "clearCache": "transparent.png",
         "theme": "transparent.png",

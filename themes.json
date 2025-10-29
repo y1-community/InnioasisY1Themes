@@ -1,0 +1,238 @@
+{
+  "version": "1.0",
+  "generated": "2025-10-11",
+  "themes": [
+    {
+      "name": "Aero",
+      "folder": "Aero",
+      "screenshot": "./Aero/screenshot.jpg",
+      "description": "This theme is inspired by Windows Vista.",
+      "author": "Neither-Classic2058",
+      "authorUrl": "https://www.reddit.com/r/innioasis/comments/1n6nhw9/repost_aero_theme_y1_stock_firmware/"
+    },
+    {
+      "name": "Aquarium",
+      "folder": "Aquarium",
+      "screenshot": "./Aquarium/screenshot.gif",
+      "description": "This theme is a little bit of an experiment. The angelfish moves as you spin the wheel to select a menu item.",
+      "author": "Neither-Classic2058",
+      "authorUrl": "https://www.reddit.com/r/innioasis/comments/1o0f1w4/aquarium_10_theme_y1_stock_firmware/"
+    },
+    {
+      "name": "Be",
+      "folder": "Be",
+      "screenshot": "./Be/screenshot.jpg",
+      "description": "This theme is inspired by the BeOS operating system.",
+      "author": "Neither-Classic2058",
+      "authorUrl": "https://www.reddit.com/r/innioasis/comments/1nxad3j/be_theme_10_y1_stock_firmware/"
+    },
+    {
+      "name": "Cupertino",
+      "folder": "Cupertino",
+      "screenshot": "./Cupertino/screenshot.jpg",
+      "description": "This theme is inspired by the Apple iPod Classic within the limits of the stock firmware.",
+      "author": "Neither-Classic2058",
+      "authorUrl": "https://www.reddit.com/r/innioasis/comments/1nb62yr/cupertino_theme_v20_y1_stock_firmware/"
+    },
+        {
+      "name": "Elsie D",
+      "folder": "ElsieD",
+      "screenshot": "./ElsieD/screenshot.jpg",
+      "description": "An LCD-inspired theme",
+      "author": "Neither-Classic2058",
+      "authorUrl": "https://www.reddit.com/r/innioasis/comments/1ogqh9r/elsie_d_theme_v10_y1_stock_firmware/"
+    },
+    {
+      "name": "Girlypop",
+      "folder": "Girlypop",
+      "screenshot": "./Girlypop/gregcover.png",
+      "description": "A hello kitty aesthetic theme for the y2k girly",
+      "author": "u/Infinite_Painter_497",
+      "authorUrl": "https://www.reddit.com/u/Infinite_Painter_497"
+    },
+    {
+      "name": "GTA3",
+      "folder": "GTA3",
+      "screenshot": "./GTA3/cover.png",
+      "description": "Y1 Theme: GTA3",
+      "author": "Unknown",
+      "authorUrl": null
+    },
+    {
+      "name": "GZA",
+      "folder": "GZA",
+      "screenshot": "./GZA/cover.png",
+      "description": "Y1 Theme: GZA",
+      "author": "Unknown",
+      "authorUrl": null
+    },
+    {
+      "name": "HughBliss",
+      "folder": "HughBliss",
+      "screenshot": "./HughBliss/cover.png",
+      "description": "Sam and Max inspired Y1 theme",
+      "author": "u/maxime-le-mal",
+      "authorUrl": "https://www.reddit.com/r/innioasis/comments/1jwetyl/comment/mopi6qw/"
+    },
+    {
+      "name": "IOS Theme",
+      "folder": "IOS Theme",
+      "screenshot": "./IOS Theme/gregcover.png",
+      "description": "Y1 Theme: IOS Theme",
+      "author": "Unknown",
+      "authorUrl": null
+    },
+    {
+      "name": "iPod-ish",
+      "folder": "iPod-ish",
+      "screenshot": "./iPod-ish/gregcover.png",
+      "description": "Y1 Theme: iPod-ish",
+      "author": "Unknown",
+      "authorUrl": null
+    },
+    {
+      "name": "JulesVerne",
+      "folder": "JulesVerne",
+      "screenshot": "./JulesVerne/screenshot.jpg",
+      "description": "A Steam Punk-inspired theme",
+      "author": "Neither-Classic2058",
+      "authorUrl": ""
+    },
+        {
+      "name": "Lain-ish",
+      "folder": "Lain-ish",
+      "screenshot": "./Lain-ish/gregcover.png",
+      "description": "A theme inspired by Lain",
+      "author": "u/ZealousidealLeg1432",
+      "authorUrl": "https://www.reddit.com/r/innioasis/comments/1o3n4zc/i_fixed_my_mp3_heres_a_lain_theme_4_u_guys/"
+    },
+    {
+      "name": "LCD",
+      "folder": "LCD",
+      "screenshot": "./LCD/cover.png",
+      "description": "Classic iPod LCD theme. Using Chicago font.",
+      "author": "ope-nz | u/Normal-Curve-1642",
+      "authorUrl": "https://github.com/ope-nz/InnoasisY1Themes"
+    },
+    {
+      "name": "Melody Munchkin",
+      "folder": "Melody Munchkin",
+      "screenshot": "./Melody Munchkin/cover.png",
+      "description": "Y1 Theme: Melody Munchkin",
+      "author": "Unknown",
+      "authorUrl": null
+    }, 
+        {
+      "name": "MonsterVision",
+      "folder": "MonsterVision",
+      "screenshot": "./MonsterVision/screenshot.jpg",
+      "description": "A Universal Monsters-inspired theme. This is a throwback to the 1970s when over-the-air TV was all there was.",
+      "author": "Neither-Classic2058",
+      "authorUrl": "https://www.reddit.com/r/innioasis/comments/1o8b1y9/monstervision_10_theme_y1_stock_firmware/"
+    },
+    {
+      "name": "Naruto",
+      "folder": "Naruto",
+      "description": "A theme inspired by Naruto.",
+      "author": "u/Terrible-Young-3477",
+      "authorUrl": "https://www.reddit.com/r/innioasis/comments/1m9ofl5/naruto_theme_v20_update_naruto_font_added/"
+    },
+    {
+      "name": "NeonNights",
+      "folder": "NeonNights",
+      "screenshot": "./NeonNights/screenshot.jpg",
+      "description": "A dark neon theme that is easier to use with the limitations of the stock theme support.",
+      "author": "Neither-Classic2058",
+      "authorUrl": ""
+    },
+    {
+      "name": "Prisoner",
+      "folder": "Prisoner",
+      "screenshot": "./Prisoner/screenshot.jpg",
+      "description": "This theme is inspired by the classic 1960s TV series The Prisoner.",
+      "author": "Neither-Classic2058",
+      "authorUrl": "https://www.reddit.com/r/innioasis/comments/1nom6mr/the_prisoner_theme_10_y1_stock_firmware/"
+    },
+    {
+      "name": "SpongeBob Purple Pineapple",
+      "folder": "SB_PurplePineapple",
+      "screenshot": "./SB_PurplePineapple/screenshot.jpeg",
+      "description": "A theme inspired by SpongeBob SquarePants.",
+      "author": "u/Terrible-Young-3477",
+      "authorUrl": "https://www.reddit.com/r/innioasis/comments/1mldl88/spongebob_theme/"
+    },
+    {
+      "name": "RDR",
+      "folder": "RDR",
+      "screenshot": "./RDR/Cover.png",
+      "description": "A theme inspired by Red Dead Redemption.",
+      "author": "u/Terrible-Young-3477",
+      "authorUrl": "https://www.reddit.com/r/innioasis/comments/1mdn475/red_dead_redemption_theme/"
+    },
+    {
+      "name": "TwinPeaks",
+      "folder": "TwinPeaks",
+      "screenshot": "./TwinPeaks/screenshot.jpg",
+      "description": "This theme depicts some of the memorable and quirky characters from the original series.",
+      "author": "Neither-Classic2058",
+      "authorUrl": "https://www.reddit.com/r/innioasis/comments/1n8bvzs/twinpeaks_theme_y1_stock_firmware/"
+    },
+    {
+      "name": "Win95",
+      "folder": "Win95Theme",
+      "screenshot": "./Win95Theme/Cover.png",
+      "description": "Theme inspired by the nostalgic and history-making OS from Microsoft",
+      "author": "Acrobatic_Bar8183",
+      "authorUrl": "https://www.reddit.com/r/innioasis/comments/1jwetyl/comment/mt6rwci/"
+    },
+    {
+      "name": "Woodstock",
+      "folder": "Woodstock",
+      "screenshot": "./Woodstock/cover_WS.png",
+      "description": "Y1 Theme: Woodstock",
+      "author": "Unknown",
+      "authorUrl": null
+    },
+    {
+      "name": "Wu-Tang",
+      "folder": "Wu-Tang",
+      "screenshot": "./Wu-Tang/cover.png",
+      "description": "Y1 Theme: Wu-Tang",
+      "author": "Unknown",
+      "authorUrl": null
+    },
+    {
+      "name": "XFiles",
+      "folder": "XFiles",
+      "screenshot": "./XFiles/screenshot.jpg",
+      "description": "This theme is inspired by the X-Files TV series.",
+      "author": "Neither-Classic2058",
+      "authorUrl": "https://www.reddit.com/r/innioasis/comments/1ncxbpd/the_xfiles_theme_y1_stock_firmware/"
+    },
+    {
+      "name": "YellowSub",
+      "folder": "YellowSub",
+      "screenshot": "./YellowSub/screenshot.jpg",
+      "description": "This theme is inspired by the Beatles and the Yellow Submarine movie.",
+      "author": "Neither-Classic2058",
+      "authorUrl": "https://www.reddit.com/r/innioasis/comments/1nyn0jz/yellow_submarine_20_theme_y1_stock_firmware/"
+    },
+    {
+      "name": "yPod",
+      "folder": "yPod",
+      "screenshot": "./yPod/screenshot.png",
+      "description": "A light iPod inspired theme.",
+      "author": "AkikoKumagara",
+      "authorUrl": "https://www.github.com/AkikoKumagara/"
+    },    
+    {
+      "name": "yPodDark",
+      "folder": "yPodDark",
+      "screenshot": "./yPodDark/screenshot1.jpg",
+      "description": "A dark iPod inspired theme.",
+      "author": "AkikoKumagara",
+      "authorUrl": "https://www.github.com/AkikoKumagara/"
+    }
+  ]
+}
+
