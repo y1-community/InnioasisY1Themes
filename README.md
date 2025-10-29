@@ -803,7 +803,7 @@ An overlay image applied to the settings screen:
 ## Example Themes Included
 
 ### HoloPebble
-- A sleek, modern theme inspired by Android's Holo design language
+- A sleek, glassmorphic theme included with the Innioasis Y1
 - Clean, minimalist interface with blue accent colors
 - Demonstrates professional theme design principles
 - Good starting point for customization
@@ -814,10 +814,12 @@ An overlay image applied to the settings screen:
 - Shows how to create atmospheric themes
 
 ### MelodyMuncher
-- More complex theme with playful elements
-- Includes custom font and desktop mask
-- Demonstrates advanced features and creative theming
-- Shows how to balance functionality with visual appeal
+- **Perfect for beginners**: Non-coders can use this as an excellent starting point
+- **Learn by doing**: Replace images where you feel necessary and experiment with color codes
+- **Safe experimentation**: Make small edits to `config.json` to learn the ropes
+- **More complex theme**: Includes custom font and desktop mask
+- **Demonstrates advanced features**: Shows how to balance functionality with visual appeal
+- **Educational value**: Great for understanding how themes work through hands-on modification
 
 ---
 
@@ -1044,55 +1046,75 @@ Add theme metadata to your `config.json` file at the very top. Replace the openi
 - **authorUrl**: Link to your portfolio, Reddit post, website, or a cause you support (must be safe for work)
 - **description**: Brief description of your theme's inspiration and features
 
-### Multiple Ways to Submit Your Theme
+---
 
-There are several ways to share your themes with the community. Choose the method that works best for you:
+## 🎨 **Multiple Ways to Submit Your Theme**
 
-#### Method 1: Google Drive Upload (Easiest for Artists)
+There are several ways to share your themes with the community. Choose the method that works best for you!
 
-The simplest way to share your theme is by uploading it to the community Google Drive folder.
+---
 
-**Steps:**
-1. Go to [Google Drive Themes Folder](https://drive.google.com/drive/u/0/folders/1a6ztowRCbqww6LSOetUM9v10IKeF)
-2. Click "New" → "Folder upload"
-3. Select your complete theme folder (e.g., `HoloPebble/`)
-4. Upload the folder with all your theme files
-5. The community will organize and add it to the official listings
+### 🌟 **Method 1: Google Drive Upload** 
+*Perfect for: Artists, designers, anyone who wants simplicity*
 
-**Benefits:**
-- No technical knowledge required
-- Just drag and drop your theme folder
-- Community handles the technical setup
-- Your theme gets added to themes.innioasis.app automatically
+The **easiest** way to share your theme is by uploading it to the community Google Drive folder.
 
-#### Method 2: Reddit Community Post (Great for Showcasing)
+#### **Simple Steps:**
+1. **Go to**: [Community Themes Folder](https://drive.google.com/drive/u/0/folders/1a6ztowRCbqww6LSOetUM9v10IKeF)
+2. **Click**: "New" → "Folder upload" 
+3. **Select**: Your complete theme folder (e.g., `HoloPebble/`)
+4. **Upload**: The folder with all your theme files
+5. **Done!** The community will organize and add it to the official listings
 
-Share your theme on r/innioasis to get community feedback and showcase your work.
+#### **Why This Works:**
+- ✅ **No technical knowledge required**
+- ✅ **Just drag and drop your theme folder**  
+- ✅ **Community handles the technical setup**
+- ✅ **Your theme gets added to themes.innioasis.app automatically**
 
-**Post Preparation:**
-1. **Title Format**: `[Theme] YourThemeName - Brief Description`
-   - Example: `[Theme] HoloPebble - Modern Android-inspired design`
-2. **Include Screenshots**: Upload images showing your theme in action
-3. **Theme Information**: Include this metadata in your post:
+---
+
+### 🎯 **Method 2: Reddit Community Post**
+*Perfect for: Showcasing work, getting feedback, building recognition*
+
+Share your theme on **r/innioasis** to get community feedback and showcase your creative work.
+
+#### **Post Preparation:**
+
+**📝 Title Format:**
+```
+[Theme] YourThemeName - Brief Description
+```
+*Example: `[Theme] HoloPebble - Glassmorphic theme with clean design`*
+
+**📸 Include Screenshots:** 
+Upload 2-3 images showing your theme in action
+
+**📋 Important**: Make sure your `config.json` file includes the `theme_info` section with your metadata:
 
 ```json
 {
-    "title": "HoloPebble",
-    "author": "Your Name",
-    "authorUrl": "https://your-reddit-profile.com",
-    "description": "A sleek, modern theme inspired by Android's Holo design language with clean blue accents"
+    "theme_info": {
+        "title": "HoloPebble",
+        "author": "Your Name", 
+        "authorUrl": "https://your-reddit-profile.com",
+        "description": "A sleek, glassmorphic theme included with the Innioasis Y1 with clean blue accents"
+    }
 }
 ```
 
-**Post Content Template:**
+**Note**: This metadata should be in your theme's `config.json` file, not in the Reddit post itself. The community will use this information when adding your theme to the official listings.
+
+#### **📝 Post Content Template:**
+
 ```
 ## Theme: HoloPebble
 
-**Description:** A sleek, modern theme inspired by Android's Holo design language
+**Description:** A sleek, glassmorphic theme included with the Innioasis Y1
 
 **Features:**
 - Clean, minimalist interface
-- Blue accent colors
+- Blue accent colors  
 - Professional design principles
 - Easy to read in all lighting conditions
 
@@ -1104,104 +1126,126 @@ Share your theme on r/innioasis to get community feedback and showcase your work
 **Portfolio:** https://yourwebsite.com
 ```
 
-**Benefits:**
-- Get immediate community feedback
-- Showcase your creative process
-- Build recognition as a theme creator
-- Connect with other Y1 users
+#### **🎉 Benefits:**
+- ✅ **Get immediate community feedback**
+- ✅ **Showcase your creative process** 
+- ✅ **Build recognition as a theme creator**
+- ✅ **Connect with other Y1 users**
 
-#### Method 3: GitHub Repository (For Developers)
+---
 
-### GitHub Contribution Guide (For Beginners)
+### 🚀 **Method 3: GitHub Repository**
+*Perfect for: Developers, version control, automatic website listing*
+
+For those comfortable with technical workflows, GitHub provides the most robust submission method.
+
+#### **What is GitHub?**
+GitHub is a website where developers store and share code. Think of it like **Google Drive for software projects**. The Y1 themes are stored in a GitHub "repository" (like a shared folder).
+
+#### **Why Use GitHub?**
+- ✅ **Free hosting**: Your themes get hosted on themes.innioasis.app automatically
+- ✅ **Easy sharing**: Others can download and use your themes  
+- ✅ **Version history**: Track changes and updates to your themes
+- ✅ **Community**: Get feedback and suggestions from other theme creators
+
+---
+
+## 🛠️ **GitHub Contribution Guide (For Beginners)**
 
 If you're new to GitHub or prefer a simpler approach, this section explains how to contribute themes using GitHub's web interface without needing to install any software.
 
-#### What is GitHub?
+#### **🎯 Simple Browser-Based Method**
 
-GitHub is a website where developers store and share code. Think of it like Google Drive, but specifically for software projects. The Y1 themes are stored in a GitHub "repository" (like a shared folder).
+**📝 Step 1: Create a GitHub Account**
+1. **Go to**: [github.com](https://github.com)
+2. **Click**: "Sign up" and create a free account  
+3. **Verify**: Your email address
 
-#### Why Use GitHub?
+---
 
-- **Free hosting**: Your themes get hosted on themes.innioasis.app automatically
-- **Easy sharing**: Others can download and use your themes
-- **Version history**: Track changes and updates to your themes
-- **Community**: Get feedback and suggestions from other theme creators
+**🍴 Step 2: Fork the Repository**
+1. **Go to**: [github.com/y1-community/InnioasisY1Themes](https://github.com/y1-community/InnioasisY1Themes)
+2. **Click**: The "Fork" button (top-right corner)
+3. **Result**: This creates your own copy of the themes repository
 
-#### Simple Browser-Based Method
+---
 
-**Step 1: Create a GitHub Account**
-1. Go to [github.com](https://github.com)
-2. Click "Sign up" and create a free account
-3. Verify your email address
-
-**Step 2: Fork the Repository**
-1. Go to [github.com/y1-community/InnioasisY1Themes](https://github.com/y1-community/InnioasisY1Themes)
-2. Click the "Fork" button (top-right corner)
-3. This creates your own copy of the themes repository
-
-**Step 3: Add Your Theme Files**
-1. In your forked repository, click "Add file" → "Upload files"
-2. Create a new folder by typing `HoloPebble/` in the file path
-3. Upload all your theme files:
+**📁 Step 3: Add Your Theme Files**
+1. **In your forked repository**: Click "Add file" → "Upload files"
+2. **Create folder**: Type `HoloPebble/` in the file path
+3. **Upload files**:
    - `config.json` (with theme_info section)
    - `cover.png`
-   - `screenshot.jpg`
+   - `screenshot.jpg` 
    - All your theme images
-4. Click "Commit changes"
+4. **Click**: "Commit changes"
 
-**Step 4: Update the Theme List**
-1. Find and click on `themes.json` in your repository
-2. Click the pencil icon (Edit) to edit the file
-3. Add your theme entry in alphabetical order:
+---
+
+**📋 Step 4: Update the Theme List**
+*Note: This step is only needed if you're submitting directly via GitHub PR*
+
+1. **Find**: Click on `themes.json` in your repository
+2. **Edit**: Click the pencil icon (Edit) to edit the file
+3. **Add entry**: Add your theme entry in alphabetical order:
 
 ```json
 {
     "name": "HoloPebble",
     "folder": "HoloPebble", 
     "screenshot": "./HoloPebble/screenshot.jpg",
-    "description": "A sleek, modern theme inspired by Android's Holo design language",
+    "description": "A sleek, glassmorphic theme included with the Innioasis Y1",
     "author": "Your Name",
     "authorUrl": "https://yourwebsite.com"
 }
 ```
 
-4. Click "Commit changes"
+4. **Save**: Click "Commit changes"
 
-**Step 5: Submit Your Theme**
-1. Click "Contribute" → "Open pull request"
-2. Add a title like "Add HoloPebble by YourName"
-3. Write a description of your theme
-4. Click "Create pull request"
+**Important**: If you're using Google Drive or Reddit submission methods, you don't need to edit `themes.json` - the community will handle this for you.
 
-#### What Happens Next?
+---
 
-1. **Review**: The repository maintainers will review your theme
-2. **Approval**: If everything looks good, they'll approve your pull request
-3. **Live**: Your theme will appear on themes.innioasis.app automatically
-4. **Notification**: You'll get an email when your theme is approved
+**🚀 Step 5: Submit Your Theme**
+1. **Click**: "Contribute" → "Open pull request"
+2. **Title**: "Add HoloPebble by YourName"
+3. **Description**: Write a description of your theme
+4. **Submit**: Click "Create pull request"
 
-#### Troubleshooting
+#### **🎉 What Happens Next?**
 
-**"I can't find the Fork button"**
-- Make sure you're logged into GitHub
-- The button is in the top-right corner of the repository page
+1. **📋 Review**: The repository maintainers will review your theme
+2. **✅ Approval**: If everything looks good, they'll approve your pull request  
+3. **🌐 Live**: Your theme will appear on themes.innioasis.app automatically
+4. **📧 Notification**: You'll get an email when your theme is approved
 
-**"My theme isn't showing up"**
-- Check that your `config.json` has the `theme_info` section
-- Verify all image files are uploaded correctly
-- Make sure your `themes.json` entry is in the right alphabetical position
+---
 
-**"I made a mistake"**
-- You can edit files by clicking the pencil icon
-- Commit changes to save your edits
-- You can also delete files if needed
+#### **🛠️ Troubleshooting**
 
-#### Alternative: Ask for Help
+**❓ "I can't find the Fork button"**
+- ✅ Make sure you're logged into GitHub
+- ✅ The button is in the top-right corner of the repository page
+
+**❓ "My theme isn't showing up"**  
+- ✅ Check that your `config.json` has the `theme_info` section
+- ✅ Verify all image files are uploaded correctly
+- ✅ Make sure your `themes.json` entry is in the right alphabetical position
+
+**❓ "I made a mistake"**
+- ✅ You can edit files by clicking the pencil icon
+- ✅ Commit changes to save your edits  
+- ✅ You can also delete files if needed
+
+---
+
+#### **🆘 Need More Help?**
 
 If you're still having trouble:
-1. Contact the team at teamslide@proton.me
-2. Submit an issue on the GitHub repository
-3. Ask for help in the Y1 community forums
+
+1. **📧 Contact**: teamslide@proton.me
+2. **🐛 Submit Issue**: On the GitHub repository  
+3. **💬 Community**: Ask for help on r/innioasis at [www.reddit.com/r/innioasis](https://www.reddit.com/r/innioasis)
 
 ---
 
@@ -1220,7 +1264,7 @@ Don't worry if the JSON editing seems intimidating! Here are some resources to h
 
 **Community Support**:
 - Contact teamslide@proton.me for direct help
-- Ask questions in the Y1 community forums
+- Ask questions on r/innioasis at [www.reddit.com/r/innioasis](https://www.reddit.com/r/innioasis)
 - Submit an issue on the GitHub repository if you get stuck
 
 ### Theme Directory Guidelines
@@ -1264,14 +1308,6 @@ Creating a complete theme requires:
 
 **Start simple**, test frequently, and add complexity gradually!
 
----
-
-## Version History
-
-- **v1.0** - Initial theme system
-- **v2.7.2** - Current version with Calculator, Calendar, and eBook support
-
----
 
 **Happy Theming! 🎨**
 
