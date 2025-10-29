@@ -803,7 +803,7 @@ An overlay image applied to the settings screen:
 ## Example Themes Included
 
 ### HoloPebble
-- A sleek, modern theme inspired by Android's Holo design language
+- A sleek, glassmorphic theme included with the Innioasis Y1
 - Clean, minimalist interface with blue accent colors
 - Demonstrates professional theme design principles
 - Good starting point for customization
@@ -1083,29 +1083,32 @@ Share your theme on **r/innioasis** to get community feedback and showcase your 
 ```
 [Theme] YourThemeName - Brief Description
 ```
-*Example: `[Theme] HoloPebble - Modern Android-inspired design`*
+*Example: `[Theme] HoloPebble - Glassmorphic theme with clean design`*
 
 **📸 Include Screenshots:** 
 Upload 2-3 images showing your theme in action
 
-**📋 Theme Information:** 
-Include this metadata in your post:
+**📋 Important**: Make sure your `config.json` file includes the `theme_info` section with your metadata:
 
 ```json
 {
-    "title": "HoloPebble",
-    "author": "Your Name", 
-    "authorUrl": "https://your-reddit-profile.com",
-    "description": "A sleek, modern theme inspired by Android's Holo design language with clean blue accents"
+    "theme_info": {
+        "title": "HoloPebble",
+        "author": "Your Name", 
+        "authorUrl": "https://your-reddit-profile.com",
+        "description": "A sleek, glassmorphic theme included with the Innioasis Y1 with clean blue accents"
+    }
 }
 ```
+
+**Note**: This metadata should be in your theme's `config.json` file, not in the Reddit post itself. The community will use this information when adding your theme to the official listings.
 
 #### **📝 Post Content Template:**
 
 ```
 ## Theme: HoloPebble
 
-**Description:** A sleek, modern theme inspired by Android's Holo design language
+**Description:** A sleek, glassmorphic theme included with the Innioasis Y1
 
 **Features:**
 - Clean, minimalist interface
@@ -1178,6 +1181,8 @@ If you're new to GitHub or prefer a simpler approach, this section explains how 
 ---
 
 **📋 Step 4: Update the Theme List**
+*Note: This step is only needed if you're submitting directly via GitHub PR*
+
 1. **Find**: Click on `themes.json` in your repository
 2. **Edit**: Click the pencil icon (Edit) to edit the file
 3. **Add entry**: Add your theme entry in alphabetical order:
@@ -1187,13 +1192,15 @@ If you're new to GitHub or prefer a simpler approach, this section explains how 
     "name": "HoloPebble",
     "folder": "HoloPebble", 
     "screenshot": "./HoloPebble/screenshot.jpg",
-    "description": "A sleek, modern theme inspired by Android's Holo design language",
+    "description": "A sleek, glassmorphic theme included with the Innioasis Y1",
     "author": "Your Name",
     "authorUrl": "https://yourwebsite.com"
 }
 ```
 
 4. **Save**: Click "Commit changes"
+
+**Important**: If you're using Google Drive or Reddit submission methods, you don't need to edit `themes.json` - the community will handle this for you.
 
 ---
 
@@ -1236,7 +1243,7 @@ If you're still having trouble:
 
 1. **📧 Contact**: teamslide@proton.me
 2. **🐛 Submit Issue**: On the GitHub repository  
-3. **💬 Community**: Ask for help in the Y1 community forums
+3. **💬 Community**: Ask for help on r/innioasis at [www.reddit.com/r/innioasis](https://www.reddit.com/r/innioasis)
 
 ---
 
@@ -1255,7 +1262,7 @@ Don't worry if the JSON editing seems intimidating! Here are some resources to h
 
 **Community Support**:
 - Contact teamslide@proton.me for direct help
-- Ask questions in the Y1 community forums
+- Ask questions on r/innioasis at [www.reddit.com/r/innioasis](https://www.reddit.com/r/innioasis)
 - Submit an issue on the GitHub repository if you get stuck
 
 ### Theme Directory Guidelines
