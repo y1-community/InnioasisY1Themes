@@ -1,5 +1,4 @@
-# Theme Creation Guide for com.innioasis.y1
-
+# Theme Creation Guide for Innioasis Y1
 ## Overview
 
 This guide provides step-by-step instructions for creating custom themes for the Innioasis Y1 music player. Choose your experience level to get started!
