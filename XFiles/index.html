@@ -1986,134 +1986,124 @@
                 // Clear loading message
                 carouselWrapper.innerHTML = '';
                 
-                // Only show images that are defined in config.json
-                // First, get all image filenames from config.json (with all variations)
-                const configImageFiles = new Set();
-                imageUsageMap.forEach((keys, filename) => {
-                    configImageFiles.add(filename);
+                // Build a list of all config key -> image filename mappings
+                // This allows the same image to appear multiple times if used in multiple places
+                const configImageEntries = []; // Array of {filename, configKey, url}
+                const imageCache = new Map(); // Cache loaded images to avoid re-fetching
+                
+                // Iterate through all config keys that reference images
+                imageUsageMap.forEach((configKeys, filename) => {
+                    // For each config key that uses this filename, create an entry
+                    configKeys.forEach(configKey => {
+                        configImageEntries.push({
+                            filename: filename,
+                            configKey: configKey
+                        });
+                    });
                 });
                 
-                // Test which images actually exist AND are in config.json
-                // This filters out non-existent files AND caches them for download/install
-                const loadedImages = [];
-                const loadPromises = imageFiles.map((image) => {
-                    return new Promise(async (resolve) => {
-                        // Check if this image is referenced in config.json
-                        const imageName = image.name;
-                        let isInConfig = configImageFiles.has(imageName);
-                        
-                        // Try variations if not found
-                        if (!isInConfig) {
-                            const nameWithoutPrefix = imageName.replace(/^@[^_]+_/, '');
-                            isInConfig = configImageFiles.has(nameWithoutPrefix);
-                        }
-                        if (!isInConfig) {
-                            const baseName = imageName.replace(/\.[^.]+$/, '');
-                            isInConfig = configImageFiles.has(baseName);
-                        }
-                        if (!isInConfig) {
-                            const baseNameWithoutPrefix = imageName.replace(/^@[^_]+_/, '').replace(/\.[^.]+$/, '');
-                            isInConfig = configImageFiles.has(baseNameWithoutPrefix);
-                        }
-                        
-                        // Only process images that are in config.json
-                        if (!isInConfig) {
-                            resolve();
-                            return;
-                        }
-                        
-                        try {
-                            // Fetch the image and cache it
-                            const response = await fetch(image.url);
-                            if (response.ok) {
-                                const blob = await response.blob();
-                                const arrayBuffer = await blob.arrayBuffer();
-                                
-                                // Cache the file for download/install
-                                fileCache.set(image.name, {
-                                    blob: blob,
-                                    arrayBuffer: arrayBuffer,
-                                    url: image.download_url
-                                });
-                                
-                                // Create object URL for display
-                                const objectUrl = URL.createObjectURL(blob);
-                                
-                                loadedImages.push({
-                                    ...image,
-                                    objectUrl: objectUrl
-                                });
-                            }
-                        } catch (err) {
-                            // Image doesn't exist or failed to load, skip it
-                        }
-                        resolve();
+                if (configImageEntries.length === 0) {
+                    carouselWrapper.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">No images found in config.json</div>';
+                    if (carouselInfo) carouselInfo.textContent = '0 / 0';
+                    return;
+                }
+                
+                // Load all unique images and create gallery items for each config usage
+                const loadedImageData = []; // Array of {filename, url, objectUrl, configKey}
+                const uniqueFilenames = new Set();
+                
+                // First, collect all unique filenames we need to load
+                configImageEntries.forEach(entry => {
+                    uniqueFilenames.add(entry.filename);
+                });
+                
+                // Load each unique image once
+                const loadPromises = Array.from(uniqueFilenames).map(async (filename) => {
+                    // Try to find the actual file in imageFiles or construct URL
+                    let imageUrl = `./${encodeURIComponent(filename)}`;
+                    let foundInFiles = imageFiles.find(f => {
+                        const fName = f.name;
+                        return fName === filename || 
+                               fName.replace(/^@[^_]+_/, '') === filename ||
+                               fName.replace(/\.[^.]+$/, '') === filename ||
+                               fName.replace(/^@[^_]+_/, '').replace(/\.[^.]+$/, '') === filename;
                     });
+                    
+                    if (foundInFiles) {
+                        imageUrl = foundInFiles.url;
+                    }
+                    
+                    try {
+                        // Fetch the image and cache it
+                        const response = await fetch(imageUrl);
+                        if (response.ok) {
+                            const blob = await response.blob();
+                            const arrayBuffer = await blob.arrayBuffer();
+                            
+                            // Cache the file for download/install
+                            fileCache.set(filename, {
+                                blob: blob,
+                                arrayBuffer: arrayBuffer,
+                                url: imageUrl
+                            });
+                            
+                            // Create object URL for display
+                            const objectUrl = URL.createObjectURL(blob);
+                            
+                            imageCache.set(filename, {
+                                url: imageUrl,
+                                objectUrl: objectUrl,
+                                blob: blob
+                            });
+                        }
+                    } catch (err) {
+                        // Image doesn't exist or failed to load, skip it
+                        console.warn(`Could not load image: ${filename}`, err);
+                    }
                 });
                 
                 await Promise.all(loadPromises);
                 
-                // Sort by config key name for consistent display
-                loadedImages.sort((a, b) => {
-                    // Get config keys for sorting
-                    const aKeys = imageUsageMap.get(a.name) || imageUsageMap.get(a.name.replace(/^@[^_]+_/, '')) || imageUsageMap.get(a.name.replace(/\.[^.]+$/, '')) || [];
-                    const bKeys = imageUsageMap.get(b.name) || imageUsageMap.get(b.name.replace(/^@[^_]+_/, '')) || imageUsageMap.get(b.name.replace(/\.[^.]+$/, '')) || [];
-                    const aKey = aKeys[0] || a.name;
-                    const bKey = bKeys[0] || b.name;
-                    return aKey.localeCompare(bKey);
+                // Now create gallery items - one for each config key usage
+                // This means the same image can appear multiple times if used in multiple places
+                configImageEntries.forEach(entry => {
+                    const cached = imageCache.get(entry.filename);
+                    if (cached) {
+                        loadedImageData.push({
+                            filename: entry.filename,
+                            url: cached.url,
+                            objectUrl: cached.objectUrl,
+                            configKey: entry.configKey
+                        });
+                    }
                 });
                 
-                if (loadedImages.length === 0) {
+                // Sort by config key name for consistent display
+                loadedImageData.sort((a, b) => a.configKey.localeCompare(b.configKey));
+                
+                if (loadedImageData.length === 0) {
                     carouselWrapper.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">No images found</div>';
                     if (carouselInfo) carouselInfo.textContent = '0 / 0';
                     return;
                 }
                 
-                // Create carousel items for successfully loaded images that are in config.json
-                // Images are clickable and open in lightbox (like screenshots)
-                loadedImages.forEach((image) => {
+                // Create carousel items - one for each config key usage
+                // Same image can appear multiple times if used in multiple config keys
+                loadedImageData.forEach((imageData) => {
                     const item = document.createElement('div');
                     item.className = 'image-carousel-item';
-                    item.onclick = () => openLightbox(image.objectUrl || image.url);
+                    item.onclick = () => openLightbox(imageData.objectUrl || imageData.url);
                     item.style.cursor = 'pointer';
                     
                     const img = document.createElement('img');
-                    img.src = image.objectUrl || image.url;
-                    img.alt = image.name;
+                    img.src = imageData.objectUrl || imageData.url;
+                    img.alt = imageData.filename;
                     img.loading = 'lazy';
                     
                     const label = document.createElement('div');
                     label.className = 'image-name';
-                    
-                    // Get config.json usage for this image
-                    // Try multiple lookup strategies (already handled in the map creation)
-                    const imageName = image.name;
-                    let usageKeys = imageUsageMap.get(imageName);
-                    
-                    // If not found, try without @ prefix pattern
-                    if (!usageKeys || usageKeys.length === 0) {
-                        const nameWithoutPrefix = imageName.replace(/^@[^_]+_/, '');
-                        usageKeys = imageUsageMap.get(nameWithoutPrefix);
-                    }
-                    
-                    // If still not found, try just the base name without extension
-                    if (!usageKeys || usageKeys.length === 0) {
-                        const baseName = imageName.replace(/\.[^.]+$/, '');
-                        usageKeys = imageUsageMap.get(baseName);
-                    }
-                    
-                    // Also try base name without prefix
-                    if (!usageKeys || usageKeys.length === 0) {
-                        const baseNameWithoutPrefix = imageName.replace(/^@[^_]+_/, '').replace(/\.[^.]+$/, '');
-                        usageKeys = imageUsageMap.get(baseNameWithoutPrefix);
-                    }
-                    
-                    // Display config key name(s) - should always be found since we filtered above
-                    if (usageKeys && usageKeys.length > 0) {
-                        // Show the config key name(s) - join multiple with comma
-                        label.textContent = usageKeys.join(', ');
-                        label.title = image.name; // Show filename on hover
-                    }
+                    label.textContent = imageData.configKey;
+                    label.title = imageData.filename; // Show filename on hover
                     
                     item.appendChild(img);
                     item.appendChild(label);
