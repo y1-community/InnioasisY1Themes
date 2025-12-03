@@ -6,34 +6,27 @@ You can edit this theme even if you've never used GitHub before.
 
 ### Quick Start
 
-**Option 1: Just upload your theme folder**
+**Just upload your theme folder**
 
 At minimum, you can upload a theme folder with images and it will appear on the website. However, it's better to include a config.json file with your theme information.
 
-**Option 2: Use the MelodyMuncher template (recommended)**
-
-1. Go to themes.innioasis.app/MelodyMuncher
-2. Download the theme as a ZIP
-3. Copy the MelodyMuncher folder and rename it
-4. Replace images with your own (keep the same file names)
-5. Edit config.json to set your theme name, author, and description
-6. Upload your folder to GitHub
-
-The MelodyMuncher template already has config.json set up correctly, so you just need to fill in your details.
-
-### Editing This Theme
+### Updating This Theme
 
 1. Go to github.com/y1-community/InnioasisY1Themes
 2. Click "Fork" (makes your own copy)
-3. Find this theme's folder
-4. Click any file, then click the pencil icon to edit
-5. Make your changes
-6. Click "Commit changes"
-7. Click "Contribute" then "Open pull request"
+3. Navigate to this theme's folder in your fork
+4. Click "Add file" → "Upload files"
+5. Drag and drop your updated files (or entire folder) into the upload area
+   - You can upload individual files or replace the entire folder
+   - GitHub will show which files are new, changed, or deleted
+6. Scroll down and click "Commit changes"
+7. Click "Contribute" → "Open pull request" to submit your changes
+
+**Note:** You can also edit individual files by clicking them and using the pencil icon, but uploading files is easier when you have multiple changes or new images.
 
 ### What is config.json?
 
-This file contains your theme's name, author, description, and colors. If you copy MelodyMuncher from themes.innioasis.app, the config.json is already there and ready to edit.
+This file contains your theme's name, author, description, and colors. You can create one by copying the structure from another theme's config.json file.
 
 ---
 

@@ -6,20 +6,9 @@ You can edit this theme even if you've never used GitHub before.
 
 ### Quick Start
 
-**Option 1: Just upload your theme folder**
+**Just upload your theme folder**
 
 At minimum, you can upload a theme folder with images and it will appear on the website. However, it's better to include a config.json file with your theme information.
-
-**Option 2: Use the MelodyMuncher template (recommended)**
-
-1. Go to themes.innioasis.app/MelodyMuncher
-2. Download the theme as a ZIP
-3. Copy the MelodyMuncher folder and rename it
-4. Replace images with your own (keep the same file names)
-5. Edit config.json to set your theme name, author, and description
-6. Upload your folder to GitHub
-
-The MelodyMuncher template already has config.json set up correctly, so you just need to fill in your details.
 
 ### Updating This Theme
 
@@ -37,7 +26,7 @@ The MelodyMuncher template already has config.json set up correctly, so you just
 
 ### What is config.json?
 
-This file contains your theme's name, author, description, and colors. If you copy MelodyMuncher from themes.innioasis.app, the config.json is already there and ready to edit.
+This file contains your theme's name, author, description, and colors. You can create one by copying the structure from another theme's config.json file.
 
 ---
 
