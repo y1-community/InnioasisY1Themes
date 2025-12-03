@@ -3106,23 +3106,11 @@
                 // Button text color: Use selected/highlighted text item color (most appropriate choice)
                 // Priority: itemSelectedTextColor (for selected list items) first, as buttons use selected background images
                 // Then menuItemSelectedTextColor (for menu items), then dialog option selected text color
+                // Respect the original color from config.json - text shadow will ensure legibility
                 let buttonTextColor = itemConfig.itemSelectedTextColor || 
                                       menuConfig.menuItemSelectedTextColor || 
                                       dialogConfig.dialogOptionSelectedTextColor ||
                                       '#ffffff'; // Fallback to white if not configured
-                
-                // Sanity check: Ensure sufficient contrast between text and background
-                // If we have a background image, we'll analyze it asynchronously and update the button
-                // For now, use sync version with color-based analysis
-                const imageUrl = selectedBgImage && selectedBgImage.trim() !== '' 
-                    ? `./${encodeURIComponent(theme.folder)}/${encodeURIComponent(selectedBgImage)}`
-                    : null;
-                
-                // Initial contrast check using sync version (color-based)
-                buttonTextColor = ensureContrastSync(buttonTextColor, buttonBgColor);
-                
-                // Store theme folder for async image analysis
-                const themeFolderForAnalysis = theme.folder;
                 
                 // Arrow icon - fits within button height (doesn't expand button)
                 const arrowIcon = hasArrow 
@@ -3130,7 +3118,8 @@
                     : '';
                 
                 // Build button style with theme colors, image, and font
-                const buttonStyle = `${buttonBgStyle} color: ${buttonTextColor}; ${fontStyle}`;
+                // Add text shadow for legibility regardless of background
+                const buttonStyle = `${buttonBgStyle} color: ${buttonTextColor}; ${fontStyle} text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 0 2px rgba(0, 0, 0, 0.8);`;
                 
                 // Get author display name (for display - show "Author not listed" instead of "All")
                 const authorDisplay = theme.author === 'Unknown' ? 'Author not listed' : (theme.author || 'Author not listed');
@@ -3218,87 +3207,6 @@
             setTimeout(() => {
                 loadScreenshotsOnDemand();
             }, 100);
-            
-            // Analyze background images and update button text colors asynchronously
-            updateButtonTextColorsFromImages();
-        }
-        
-        // Update button text colors based on background image analysis
-        async function updateButtonTextColorsFromImages() {
-            const buttons = document.querySelectorAll('.install-btn[data-theme-folder]');
-            
-            for (const button of buttons) {
-                const themeFolder = button.getAttribute('data-theme-folder');
-                const theme = allThemes.find(t => t.folder === themeFolder);
-                if (!theme || !theme.themeConfig) continue;
-                
-                const itemConfig = theme.themeConfig.itemConfig || {};
-                const menuConfig = theme.themeConfig.menuConfig || {};
-                const dialogConfig = theme.themeConfig.dialogConfig || {};
-                
-                // Get background image
-                let selectedBgImage = itemConfig.itemSelectedBackground || 
-                                     menuConfig.menuItemSelectedBackground || 
-                                     dialogConfig.dialogOptionSelectedBackground || 
-                                     '1.png';
-                
-                if (!selectedBgImage || selectedBgImage.trim() === '') continue;
-                
-                const imageUrl = `./${encodeURIComponent(themeFolder)}/${encodeURIComponent(selectedBgImage)}`;
-                
-                // Get original text color
-                const originalTextColor = itemConfig.itemSelectedTextColor || 
-                                         menuConfig.menuItemSelectedTextColor || 
-                                         dialogConfig.dialogOptionSelectedTextColor ||
-                                         '#ffffff';
-                
-                // Get background color for contrast calculation
-                const buttonBgColor = menuConfig.menuBackgroundColor || 
-                                    dialogConfig.dialogBackgroundColor || 
-                                    itemConfig.itemBackgroundColor ||
-                                    '#667eea';
-                
-                try {
-                    const imageLum = await analyzeImageLuminance(imageUrl);
-                    
-                    // Determine best text color based on image luminance
-                    let bestTextColor = originalTextColor;
-                    const originalContrast = getContrastRatio(originalTextColor, buttonBgColor);
-                    
-                    // If image is light (luminance > 0.5), prefer black text
-                    // If image is dark (luminance < 0.5), prefer white text
-                    const preferredColor = imageLum > 0.5 ? '#000000' : '#ffffff';
-                    const preferredContrast = getContrastRatio(preferredColor, buttonBgColor);
-                    
-                    // Use preferred color if it has better contrast, or if original doesn't meet minimum
-                    if (preferredContrast >= 4.5 && (preferredContrast > originalContrast || originalContrast < 4.5)) {
-                        bestTextColor = preferredColor;
-                    } else if (originalContrast >= 4.5) {
-                        // Original has sufficient contrast, but check if both are light
-                        const textRgb = hexToRgb(originalTextColor);
-                        if (textRgb) {
-                            const textLum = getLuminance(textRgb);
-                            // If both text and image are light, prefer black for better readability
-                            if (textLum > 0.5 && imageLum > 0.5 && originalContrast < 7) {
-                                bestTextColor = '#000000';
-                            } else {
-                                bestTextColor = originalTextColor;
-                            }
-                        }
-                    } else {
-                        bestTextColor = preferredColor;
-                    }
-                    
-                    // Update the button color if it changed
-                    const currentColor = button.style.color || window.getComputedStyle(button).color;
-                    if (bestTextColor !== currentColor) {
-                        button.style.color = bestTextColor;
-                    }
-                } catch (e) {
-                    // If image analysis fails, keep the existing color
-                    console.warn(`Failed to analyze image for ${themeFolder}:`, e);
-                }
-            }
         }
 
         // Initialize screenshot slideshows for themes with multiple screenshots
