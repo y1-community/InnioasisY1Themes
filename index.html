@@ -2810,13 +2810,15 @@
                 const menuConfig = themeConfig.menuConfig || {};
                 const dialogConfig = themeConfig.dialogConfig || {};
                 
-                // Get background color (prefer menuBackgroundColor, fallback to dialogBackgroundColor)
-                const bgColor = menuConfig.menuBackgroundColor || dialogConfig.dialogBackgroundColor || '#667eea';
-                // Get selected text color (prefer menuItemSelectedTextColor, fallback to itemSelectedTextColor)
-                const selectedTextColor = menuConfig.menuItemSelectedTextColor || itemConfig.itemSelectedTextColor || '#ffffff';
+                // Button background = selected text color (the color that stands out on selected items)
+                const buttonBgColor = menuConfig.menuItemSelectedTextColor || itemConfig.itemSelectedTextColor || '#667eea';
+                // Button text = menu background color (what stands out against the selected text color)
+                // Fallback to unselected text color if menu background isn't available
+                const buttonTextColor = menuConfig.menuBackgroundColor || dialogConfig.dialogBackgroundColor || 
+                                      menuConfig.menuItemTextColor || itemConfig.itemTextColor || '#ffffff';
                 
                 // Build button style with theme colors
-                const buttonStyle = `background-color: ${bgColor}; color: ${selectedTextColor}; ${fontStyle}`;
+                const buttonStyle = `background-color: ${buttonBgColor}; color: ${buttonTextColor}; ${fontStyle}`;
                 
                 // Get author display name (for filtering)
                 const authorDisplay = theme.author === 'Unknown' ? 'All' : (theme.author || 'All');
