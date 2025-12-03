@@ -1593,17 +1593,27 @@
 
         // Screenshot URL cache to avoid repeated requests
         const screenshotCache = new Map();
+        let isRendering = false; // Flag to prevent re-renders during screenshot loading
         
         // Load screenshots - STATIC APPROACH: Use themes.json data first, no HEAD requests
         async function loadScreenshotsOnDemand() {
+            // Don't load screenshots if we're currently rendering
+            if (isRendering) {
+                setTimeout(loadScreenshotsOnDemand, 200);
+                return;
+            }
+            
             const screenshotContainers = document.querySelectorAll('.theme-screenshot');
+            if (screenshotContainers.length === 0) return;
+            
             console.log(`🖼️ Loading screenshots for ${screenshotContainers.length} themes (static mode)...`);
 
             // Load all screenshots immediately in parallel
             const screenshotPromises = Array.from(screenshotContainers).map(async (container, index) => {
                 const themeIndex = container.dataset.themeIndex;
-                const theme = themes[themeIndex];
-
+                if (!themeIndex || themeIndex === 'undefined') return false;
+                
+                const theme = themes[parseInt(themeIndex)];
                 if (!theme) return false;
 
                 // PRIORITY 1: Use screenshot from themes.json if available (static, no requests needed)
@@ -1614,7 +1624,10 @@
                     const cacheKey = `${theme.folder}:${theme.screenshot}`;
                     if (screenshotCache.has(cacheKey)) {
                         const cachedUrl = screenshotCache.get(cacheKey);
-                        container.innerHTML = `<img src="${cachedUrl}" alt="${theme.name}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">`;
+                        // Only update if container still exists and matches
+                        if (container && container.dataset.themeIndex === themeIndex) {
+                            container.innerHTML = `<img src="${cachedUrl}" alt="${theme.name}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">`;
+                        }
                         return true;
                     }
                     
@@ -1622,8 +1635,10 @@
                     const screenshotUrl = theme.screenshot;
                     screenshotCache.set(cacheKey, screenshotUrl);
                     
-                    container.innerHTML = `<img src="${screenshotUrl}" alt="${theme.name}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy" onerror="this.style.display='none'; this.parentElement.innerHTML='🎨';">`;
-                    console.log(`✅ Using screenshot from themes.json: ${theme.folder}`);
+                    // Only update if container still exists and matches
+                    if (container && container.dataset.themeIndex === themeIndex) {
+                        container.innerHTML = `<img src="${screenshotUrl}" alt="${theme.name}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy" onerror="this.style.display='none'; this.parentElement.innerHTML='🎨';">`;
+                    }
                     return true;
                 }
 
@@ -1635,6 +1650,9 @@
                     const discoveredMedia = await findLocalScreenshotFast(theme.folder);
 
                     if (discoveredMedia) {
+                        // Only update if container still exists and matches
+                        if (!container || container.dataset.themeIndex !== themeIndex) return false;
+                        
                         // Check if we got a no-scale cover (preserve aspect ratio)
                         if (discoveredMedia.noScale && !discoveredMedia.hasCoverTransition) {
                             themes[themeIndex].screenshot = discoveredMedia.path;
@@ -1642,8 +1660,6 @@
 
                             // Display with object-fit: contain to preserve aspect ratio
                             container.innerHTML = `<img src="${discoveredMedia.path}" alt="${theme.name}" class="theme-noscale-image" style="width: 100%; height: 100%; object-fit: contain;">`;
-
-                            console.log(`✅ Loaded aspect-ratio-preserving cover for ${theme.folder}: ${discoveredMedia.path}`);
                             return true;
                         }
                         // Check if we got cover + screenshots object (new format)
@@ -1662,8 +1678,6 @@
                             container.dataset.coverPath = discoveredMedia.cover;
                             container.dataset.coverNoScale = discoveredMedia.noScale ? 'true' : 'false';
                             container.dataset.galleryPaths = JSON.stringify(discoveredMedia.screenshots);
-
-                            console.log(`✅ Loaded cover + ${discoveredMedia.screenshots.length} screenshot(s) for ${theme.folder} (${discoveredMedia.noScale ? 'aspect-preserved' : 'cropped'})`);
                             return true;
                         }
                         // Check if we got a regular cover-only theme (no screenshots)
@@ -1672,29 +1686,16 @@
 
                             // Display with object-fit: cover (regular cropping)
                             container.innerHTML = `<img src="${discoveredMedia.path}" alt="${theme.name}" class="theme-cover-image" style="width: 100%; height: 100%; object-fit: cover;">`;
-
-                            console.log(`✅ Loaded regular cover for ${theme.folder}: ${discoveredMedia.path}`);
                             return true;
                         } else {
                             // Single image (backward compatible)
-                            const oldScreenshot = theme.screenshot;
                             themes[themeIndex].screenshot = discoveredMedia;
 
                             // Update the display
                             container.innerHTML = `<img src="${discoveredMedia}" alt="${theme.name}" style="width: 100%; height: 100%; object-fit: cover;">`;
-
-                            if (oldScreenshot && oldScreenshot !== discoveredMedia) {
-                                console.log(`🔄 Updated screenshot for ${theme.folder}: ${oldScreenshot} → ${discoveredMedia}`);
-                            } else {
-                                console.log(`✅ Loaded screenshot for ${theme.folder}: ${discoveredMedia}`);
-                            }
                             return true;
                         }
-                    } else {
-                        console.log(`❌ No screenshot found for ${theme.folder}`);
                     }
-                } else if (!theme) {
-                    console.log(`⏭️ No theme data for index ${themeIndex}`);
                 }
                 return false;
             });
@@ -2409,10 +2410,8 @@
                             fontUrl: fontUrl
                         });
                         
-                        // Re-render to apply font (only if already rendered)
-                        if (document.getElementById('theme-grid') && document.getElementById('theme-grid').children.length > 0) {
-                            applyFiltersAndPagination();
-                        }
+                        // Don't trigger re-render for font loading - fonts will apply on next render
+                        // Re-rendering here causes flashing
                         
                         return themeFonts.get(themeFolder);
                     } catch (e) {
@@ -2428,6 +2427,10 @@
 
         // Render themes
         async function renderThemes() {
+            // Prevent re-renders during rendering
+            if (isRendering) return;
+            isRendering = true;
+            
             const grid = document.getElementById('theme-grid');
             const isMobileMode = !('showDirectoryPicker' in window);
             
@@ -2440,7 +2443,7 @@
             // Update author filter options
             updateAuthorFilter();
 
-            // Load fonts for all themes in background
+            // Load fonts for all themes in background (don't trigger re-render)
             themes.forEach(theme => {
                 loadThemeFont(theme.folder).catch(err => {
                     console.warn(`Failed to load font for ${theme.folder}:`, err);
@@ -2512,7 +2515,7 @@
                     <div class="theme-share-icon" onclick="shareThemeLink('${theme.folder}', event)" title="Share this theme"></div>
                     <a href="${theme.folder}/index.html" onclick="event.stopPropagation();" style="text-decoration: none; display: block;">
                         <div class="theme-screenshot ${theme.screenshot ? '' : 'no-preview'}" id="screenshot-${displayIndex}" data-theme-index="${displayIndex}">
-                            ${theme.screenshot ? '' : '🎨'}
+                            ${theme.screenshot ? `<img src="${theme.screenshot}" alt="${theme.name}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy" onerror="this.style.display='none'; this.parentElement.innerHTML='🎨';">` : '🎨'}
                         </div>
                     </a>
                     <div class="theme-name" style="${fontStyle}">
@@ -2561,6 +2564,9 @@
 
             // Initialize screenshot slideshows after rendering
             initializeScreenshotSlideshows();
+
+            // Mark rendering as complete
+            isRendering = false;
 
             // Load screenshots on-demand for better performance
             setTimeout(() => {
