@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MelodyMuncher Theme - Official Innioasis Y1 Community Themes</title>
-    <meta name="description" content="Download MelodyMuncher theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. Y1 Theme: MelodyMuncher">
+    <meta name="description" content="Download MelodyMuncher theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. Theme for Innioasis Y1: MelodyMuncher">
     <meta name="keywords" content="Innioasis Y1, Y1 themes, MP3 player themes, MelodyMuncher, Y1 customization, official Y1 themes">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
@@ -28,7 +28,6 @@
             width: 100%;
             text-align: center;
             margin-bottom: 20px;
-            position: relative;
         }
         h1 {
             margin-bottom: 10px;
@@ -114,6 +113,26 @@
             transform: translateY(-1px);
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
+        /* Ensure button content is always visible above background */
+        .btn > span {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            gap: 8px;
+            position: relative;
+            z-index: 2;
+        }
+        .btn > span > span:first-child {
+            position: relative;
+            z-index: 3;
+            flex: 1;
+            text-align: left;
+        }
+        .btn img {
+            position: relative;
+            z-index: 3;
+        }
         /* Arrow icon - hidden by default, shown on hover/tap/keyboard selection */
         .btn .arrow-icon {
             height: 100%;
@@ -134,6 +153,11 @@
             .btn:active .arrow-icon {
                 display: block;
             }
+        }
+        
+        @font-face {
+            font-family: 'ThemeFont';
+            src: url('font.ttf');
         }
         
         .header-section {
@@ -199,84 +223,45 @@
             color: #bbb;
         }
         .back-link {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            color: #667eea;
+            display: block;
+            margin-top: 20px;
+            color: #666;
             text-decoration: none;
             font-size: 0.9rem;
-            font-weight: 500;
-            z-index: 10;
-            transition: opacity 0.2s;
         }
         .back-link:hover {
-            opacity: 0.8;
             text-decoration: underline;
         }
-        
-        /* Loading Spinner */
-        .loading-spinner {
+        /* Existing CSS */
+        .bg-cycle {
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 9999;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .loading-text {
-            color: #666;
-            font-size: 0.9rem;
-        }
-        
-        .container.loading {
-            opacity: 0.3;
-            pointer-events: none;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            filter: blur(20px) brightness(0.5);
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
         }
     </style>
 </head>
 <body>
-    <!-- Loading Spinner -->
-    <div id="loading-spinner" class="loading-spinner">
-        <div class="spinner"></div>
-        <div class="loading-text">Loading theme information...</div>
-    </div>
-    
-    <div class="container" id="main-container">
+    {background_cycle_html}
+    <div class="container">
         <div class="header-section">
             <div class="header-text">
-                <h1 id="theme-name" >MelodyMuncher</h1>
-                <div class="author" id="theme-author">
-                    Innioasis Y1 theme by Unknown
-                </div>
-                <p class="description" id="theme-description">Y1 Theme: MelodyMuncher</p>
+                <!-- Title and subtitle removed; using About line instead -->
+                <h2 style="font-family: 'ThemeFont', sans-serif;">About the MelodyMuncher Theme for Innioasis Y1</h2>
+                <p class="description" id="theme-description">Theme for Innioasis Y1: MelodyMuncher</p>
             </div>
-            
+            <img src="cover.png" alt="MelodyMuncher cover" class="cover-image" onclick="openLightbox('cover.png')">
         </div>
         
         <div class="screenshots-section">
-            <h3 >Screenshots</h3>
+            <h3 style="font-family: 'ThemeFont', sans-serif;">Screenshots</h3>
             <p>No screenshots available.</p>
         </div>
         
@@ -289,14 +274,13 @@
 
         <!-- SEO Content -->
         <div class="seo-content" style="margin-top: 40px; text-align: left; color: #666; font-size: 0.9rem; line-height: 1.6;">
-            <h2 >About the MelodyMuncher Theme for Innioasis Y1</h2>
-            <p>This theme was made by <strong>Unknown</strong>. Y1 Theme: MelodyMuncher</p>
+            <p>This theme was made by <strong>Unknown</strong>. Theme for Innioasis Y1: MelodyMuncher</p>
         </div>
         
-        <a href="../index.html" class="back-link">← Back to All Themes</a>
-        
-        <div style="margin-top: 30px; font-size: 1rem; color: #888; text-align: center;">
-            <a href="https://github.com/y1-community/InnioasisY1Themes/tree/main/MelodyMuncher#readme" target="_blank" style="color: #888; text-decoration: none; font-weight: 500;">✏️ Edit or Update this Theme</a>
+        <div style="margin-top: 30px; font-size: 0.9rem; color: #888;">
+            <a href="../index.html" class="back-link">← Back to All Themes</a>
+            <span style="margin: 0 10px;">|</span>
+            <a href="https://github.com/y1-community/InnioasisY1Themes/tree/main/MelodyMuncher#readme" target="_blank" style="color: #888; text-decoration: none;">✏️ Edit or Update this Theme</a>
         </div>
     </div>
 
@@ -644,347 +628,28 @@
             }
         }
 
-        // Store hardcoded fallback values (last resort)
-        const hardcodedData = {
-            name: 'MelodyMuncher',
-            author: 'Unknown',
-            description: 'Y1 Theme: MelodyMuncher',
-            folder: 'MelodyMuncher'
-        };
-        
-        // Dynamic Data Loading - Priority: themes.json (root) > config.json (local) > hardcoded
+        // Dynamic Data Loading
         document.addEventListener('DOMContentLoaded', async () => {
-            const loadingSpinner = document.getElementById('loading-spinner');
-            const mainContainer = document.getElementById('main-container');
-            let themeData = null;
-            let folderName = '';
-            
-            // Extract folder name from URL
             const currentPath = window.location.pathname;
+            let folderName = '';
             const pathParts = currentPath.split('/');
             if (pathParts[pathParts.length - 1].toLowerCase() === 'index.html' || pathParts[pathParts.length - 1] === '') {
                 folderName = pathParts[pathParts.length - 2];
             } else {
                 folderName = pathParts[pathParts.length - 1];
             }
+            
             folderName = decodeURIComponent(folderName);
-            
-            // Show loading spinner and dim container
-            if (loadingSpinner) loadingSpinner.style.display = 'flex';
-            if (mainContainer) mainContainer.classList.add('loading');
-            
-            // Set timeout to show hardcoded info if loading takes too long (3 seconds)
-            const timeoutId = setTimeout(() => {
-                if (!themeData) {
-                    console.log('Loading timeout - using hardcoded fallback data');
-                    applyThemeData(hardcodedData, folderName);
-                    hideLoadingSpinner();
-                }
-            }, 3000);
-            
-            // PRIORITY 1: Try to load from config.json (same directory) - most authoritative
-            let configData = null;
-            try {
-                const configResponse = await fetch('./config.json');
-                if (configResponse.ok) {
-                    const config = await configResponse.json();
-                    const themeInfo = config?.theme_info || {};
-                    
-                    // Extract data from config.json (even if theme_info is empty, we can use folder name)
-                    configData = {
-                        name: themeInfo.title || null,
-                        author: themeInfo.author || null,
-                        authorUrl: themeInfo.authorUrl || null,
-                        description: themeInfo.description || null,
-                        folder: folderName // Always use folder name from URL
-                    };
-                    console.log('✅ Loaded theme data from config.json');
-                }
-            } catch (error) {
-                console.log('Could not load config.json:', error);
-            }
-            
-            // PRIORITY 2: Try to load from themes.json (root directory) - fallback for missing config.json data
-            let themesJsonData = null;
-            try {
-                const themesResponse = await fetch('../themes.json');
-                if (themesResponse.ok) {
-                    const themesData = await themesResponse.json();
-                    const theme = themesData.themes?.find(t => 
-                        t.folder === folderName || 
-                        t.folder.toLowerCase() === folderName.toLowerCase()
-                    );
-                    
-                    if (theme) {
-                        themesJsonData = {
-                            name: theme.name || theme.folder,
-                            author: theme.author || 'Unknown',
-                            authorUrl: theme.authorUrl || null,
-                            description: theme.description || `Y1 Theme: ${theme.folder}`,
-                            folder: theme.folder
-                        };
-                        console.log('✅ Loaded theme data from themes.json');
-                    }
-                }
-            } catch (error) {
-                console.log('Could not load themes.json:', error);
-            }
-            
-            // Merge data: config.json takes priority, then themes.json, then hardcoded fallback
-            themeData = {
-                name: configData?.name || themesJsonData?.name || hardcodedData.name,
-                author: configData?.author || themesJsonData?.author || hardcodedData.author,
-                authorUrl: configData?.authorUrl !== undefined ? configData.authorUrl : (themesJsonData?.authorUrl || null),
-                description: configData?.description || themesJsonData?.description || hardcodedData.description,
-                folder: folderName || themesJsonData?.folder || hardcodedData.folder
-            };
-            
-            // Clear timeout if we got data
-            clearTimeout(timeoutId);
-            
-            // Apply loaded data or fallback to hardcoded
-            if (themeData) {
-                applyThemeData(themeData, folderName);
-            } else {
-                console.log('Using hardcoded fallback data');
-                applyThemeData(hardcodedData, folderName);
-            }
-            
-            // Load config.json for button styling (theme colors, fonts, images)
-            await applyThemeButtonStyling(folderName);
-            
-            hideLoadingSpinner();
-            
+
             // Check for File System Access API support
             if ('showDirectoryPicker' in window) {
-                document.getElementById('install-btn').style.display = 'inline-flex';
+                document.getElementById('install-btn').style.display = 'inline-block';
             }
         });
-        
-        // Apply theme data to page elements
-        function applyThemeData(data, folderName) {
-            // Update title
-            const themeNameEl = document.getElementById('theme-name');
-            if (themeNameEl) {
-                themeNameEl.textContent = data.name;
-            }
-            
-            // Update page title and meta tags
-            document.title = `${data.name} Theme - Official Innioasis Y1 Community Themes`;
-            const metaDescription = document.querySelector('meta[name="description"]');
-            if (metaDescription) {
-                metaDescription.content = `Download ${data.name} theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. ${data.description}`;
-            }
-            
-            // Update author display - link to authorUrl if available
-            const themeAuthorEl = document.getElementById('theme-author');
-            if (themeAuthorEl) {
-                if (data.authorUrl && data.authorUrl.trim() !== '') {
-                    themeAuthorEl.innerHTML = `Innioasis Y1 theme by <a href="${data.authorUrl}" target="_blank" rel="noopener noreferrer" style="color: #667eea; text-decoration: none;">${data.author}</a>`;
-                } else {
-                    themeAuthorEl.textContent = `Innioasis Y1 theme by ${data.author}`;
-                }
-            }
-            
-            // Update description
-            const themeDescriptionEl = document.getElementById('theme-description');
-            if (themeDescriptionEl) {
-                themeDescriptionEl.textContent = data.description;
-            }
-            
-            // Update SEO content
-            const seoContent = document.querySelector('.seo-content p');
-            if (seoContent) {
-                if (data.authorUrl && data.authorUrl.trim() !== '') {
-                    seoContent.innerHTML = `This theme was made by <strong><a href="${data.authorUrl}" target="_blank" rel="noopener noreferrer" style="color: #667eea; text-decoration: none;">${data.author}</a></strong>. ${data.description}`;
-                } else {
-                    seoContent.innerHTML = `This theme was made by <strong>${data.author}</strong>. ${data.description}`;
-                }
-            }
-            
-            // Update SEO heading
-            const seoHeading = document.querySelector('.seo-content h2');
-            if (seoHeading) {
-                seoHeading.textContent = `About the ${data.name} Theme for Innioasis Y1`;
-            }
-            
-            // Update GitHub edit link
-            const editLink = document.querySelector('a[href*="github.com/y1-community/InnioasisY1Themes/tree/main/"]');
-            if (editLink) {
-                editLink.href = `https://github.com/y1-community/InnioasisY1Themes/tree/main/${encodeURIComponent(data.folder || folderName)}#readme`;
-                // Update text if it contains the folder name
-                if (editLink.textContent.includes('MelodyMuncher')) {
-                    editLink.textContent = editLink.textContent.replace('MelodyMuncher', data.folder || folderName);
-                }
-            }
-            
-            // Store folder name globally for install/download functions
-            window.themeFolderName = data.folder || folderName;
-        }
-        
-        // Apply theme button styling from config.json (colors, fonts, backgrounds, arrow icons)
-        async function applyThemeButtonStyling(folderName) {
-            try {
-                const configResponse = await fetch('./config.json');
-                if (!configResponse.ok) return;
-                
-                const config = await configResponse.json();
-                const itemConfig = config?.itemConfig || {};
-                const menuConfig = config?.menuConfig || {};
-                const dialogConfig = config?.dialogConfig || {};
-                
-                // Load theme font if available
-                let fontStyle = '';
-                try {
-                    const configStr = JSON.stringify(config);
-                    const fontMatches = configStr.match(/"([^"]*\.ttf[^"]*)"/gi);
-                    if (fontMatches && fontMatches.length > 0) {
-                        const fontName = fontMatches[0].replace(/"/g, '');
-                        const fontUrl = `./${encodeURIComponent(fontName)}`;
-                        const safeFontName = folderName.replace(/[^a-zA-Z0-9]/g, '-');
-                        const fontFace = new FontFace(
-                            `theme-font-${safeFontName}`,
-                            `url(${fontUrl})`
-                        );
-                        await fontFace.load();
-                        document.fonts.add(fontFace);
-                        fontStyle = `font-family: '${fontFace.family}', sans-serif;`;
-                    }
-                } catch (e) {
-                    console.warn('Could not load theme font:', e);
-                }
-                
-                // Find arrow icon - try config first, then common patterns
-                let arrowIconFile = itemConfig.itemRightArrow || null;
-                if (!arrowIconFile || arrowIconFile.trim() === '') {
-                    // Try common patterns
-                    const commonArrows = ['2.png', 'RightArrow.png', 'rightArrow.png'];
-                    // We'll check if these exist by trying to load them
-                    arrowIconFile = '2.png'; // Default to 2.png
-                }
-                
-                // Get selected background image - check config first, then patterns, then 1.png
-                let selectedBgImage = itemConfig.itemSelectedBackground || 
-                                     menuConfig.menuItemSelectedBackground || 
-                                     dialogConfig.dialogOptionSelectedBackground || null;
-                if (!selectedBgImage || selectedBgImage.trim() === '') {
-                    selectedBgImage = '1.png'; // High priority fallback
-                }
-                
-                // Button background style - ALWAYS ensure there's a background color fallback even when using background-image
-                let buttonBgStyle = '';
-                let buttonBgColor = null;
-                
-                // Determine background color first (for fallback)
-                // Use actual background colors, not text colors
-                // Priority: menuBackgroundColor > dialogBackgroundColor > itemBackgroundColor > default
-                buttonBgColor = menuConfig.menuBackgroundColor || 
-                              dialogConfig.dialogBackgroundColor || 
-                              itemConfig.itemBackgroundColor ||
-                              '#667eea'; // Default fallback
-                
-                if (selectedBgImage && selectedBgImage.trim() !== '') {
-                    const imageUrl = `./${encodeURIComponent(selectedBgImage)}`;
-                    // Always include background-color as fallback in case image fails to load
-                    buttonBgStyle = `background-color: ${buttonBgColor}; background-image: url('${imageUrl}'); background-size: 100% 100%; background-repeat: no-repeat; background-position: center;`;
-                } else {
-                    buttonBgStyle = `background-color: ${buttonBgColor};`;
-                }
-                
-                // Button text color - priority: itemSelectedTextColor > menuItemSelectedTextColor > dialogOptionSelectedTextColor
-                let buttonTextColor = itemConfig.itemSelectedTextColor || 
-                                      menuConfig.menuItemSelectedTextColor || 
-                                      dialogConfig.dialogOptionSelectedTextColor ||
-                                      '#ffffff';
-                
-                // Sanity check: Ensure sufficient contrast between text and background
-                buttonTextColor = ensureContrast(buttonTextColor, buttonBgColor);
-                
-                // Apply styles to install and download buttons
-                const installBtn = document.getElementById('install-btn');
-                const downloadBtn = document.getElementById('download-btn');
-                
-                if (installBtn) {
-                    installBtn.style.cssText = `${buttonBgStyle} color: ${buttonTextColor}; ${fontStyle} position: relative; z-index: 1;`;
-                    // Ensure button content is properly structured
-                    if (!installBtn.querySelector('span')) {
-                        const textSpan = document.createElement('span');
-                        textSpan.style.cssText = 'display: flex; align-items: center; justify-content: space-between; width: 100%; position: relative; z-index: 2;';
-                        const textInner = document.createElement('span');
-                        textInner.style.cssText = 'position: relative; z-index: 3; flex: 1; text-align: left;';
-                        textInner.textContent = installBtn.textContent.trim();
-                        textSpan.appendChild(textInner);
-                        installBtn.innerHTML = '';
-                        installBtn.appendChild(textSpan);
-                    }
-                    // Add arrow icon if available and not already present
-                    if (arrowIconFile && !installBtn.querySelector('.arrow-icon')) {
-                        const arrowImg = document.createElement('img');
-                        arrowImg.src = `./${encodeURIComponent(arrowIconFile)}`;
-                        arrowImg.alt = '→';
-                        arrowImg.className = 'arrow-icon';
-                        arrowImg.style.cssText = 'position: relative; z-index: 3; flex-shrink: 0;';
-                        arrowImg.onerror = () => arrowImg.remove(); // Remove if image doesn't exist
-                        const span = installBtn.querySelector('span');
-                        if (span) {
-                            const arrowSpan = document.createElement('span');
-                            arrowSpan.style.cssText = 'position: relative; z-index: 3; flex-shrink: 0;';
-                            arrowSpan.appendChild(arrowImg);
-                            span.appendChild(arrowSpan);
-                        }
-                    }
-                }
-                
-                if (downloadBtn) {
-                    downloadBtn.style.cssText = `${buttonBgStyle} color: ${buttonTextColor}; ${fontStyle} position: relative; z-index: 1;`;
-                    // Ensure button content is properly structured
-                    if (!downloadBtn.querySelector('span')) {
-                        const textSpan = document.createElement('span');
-                        textSpan.style.cssText = 'display: flex; align-items: center; justify-content: space-between; width: 100%; position: relative; z-index: 2;';
-                        const textInner = document.createElement('span');
-                        textInner.style.cssText = 'position: relative; z-index: 3; flex: 1; text-align: left;';
-                        textInner.textContent = downloadBtn.textContent.trim();
-                        textSpan.appendChild(textInner);
-                        downloadBtn.innerHTML = '';
-                        downloadBtn.appendChild(textSpan);
-                    }
-                    // Add arrow icon if available and not already present
-                    if (arrowIconFile && !downloadBtn.querySelector('.arrow-icon')) {
-                        const arrowImg = document.createElement('img');
-                        arrowImg.src = `./${encodeURIComponent(arrowIconFile)}`;
-                        arrowImg.alt = '→';
-                        arrowImg.className = 'arrow-icon';
-                        arrowImg.style.cssText = 'position: relative; z-index: 3; flex-shrink: 0;';
-                        arrowImg.onerror = () => arrowImg.remove(); // Remove if image doesn't exist
-                        const span = downloadBtn.querySelector('span');
-                        if (span) {
-                            const arrowSpan = document.createElement('span');
-                            arrowSpan.style.cssText = 'position: relative; z-index: 3; flex-shrink: 0;';
-                            arrowSpan.appendChild(arrowImg);
-                            span.appendChild(arrowSpan);
-                        }
-                    }
-                }
-            } catch (error) {
-                console.warn('Could not apply theme button styling:', error);
-            }
-        }
-        
-        // Hide loading spinner
-        function hideLoadingSpinner() {
-            const loadingSpinner = document.getElementById('loading-spinner');
-            const mainContainer = document.getElementById('main-container');
-            if (loadingSpinner) {
-                loadingSpinner.style.display = 'none';
-            }
-            if (mainContainer) {
-                mainContainer.classList.remove('loading');
-            }
-        }
 
         // Install Theme directly to device
         async function installTheme() {
-            const folderName = window.themeFolderName || 'MelodyMuncher';
+            const folderName = 'MelodyMuncher';
             const btn = document.getElementById('install-btn');
             const status = document.getElementById('download-status');
             
@@ -1063,9 +728,8 @@
 
         // Download theme as ZIP
         async function downloadTheme() {
-            const folderName = window.themeFolderName || 'MelodyMuncher';
-            const themeNameEl = document.getElementById('theme-name');
-            const themeName = themeNameEl ? themeNameEl.textContent : folderName;
+            const folderName = 'MelodyMuncher';
+            const themeName = 'MelodyMuncher';
             const btn = document.getElementById('download-btn');
             const status = document.getElementById('download-status');
             
@@ -1151,5 +815,24 @@
             }
         });
     </script>
+<div class="bg-cycle"></div>
+<script>
+    // Background cycling logic
+    const bgImages = [{background_images}];
+    if (bgImages.length) {
+        const bgDiv = document.querySelector('.bg-cycle');
+        let idx = 0;
+        const setBg = () => {
+            bgDiv.style.backgroundImage = `url('${bgImages[idx]}')`;
+            bgDiv.style.opacity = '1';
+            setTimeout(() => {
+                bgDiv.style.opacity = '0';
+            }, 5000);
+            idx = (idx + 1) % bgImages.length;
+        };
+        setBg();
+        setInterval(setBg, 6000);
+    }
+</script>
 </body>
 </html>

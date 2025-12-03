@@ -1847,9 +1847,140 @@
             return (lighter + 0.05) / (darker + 0.05);
         }
         
+        // Analyze image to determine average luminance
+        // Returns a promise that resolves to the average luminance (0-1)
+        async function analyzeImageLuminance(imageUrl) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                
+                img.onload = function() {
+                    try {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
+                        
+                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        const data = imageData.data;
+                        let totalLum = 0;
+                        let pixelCount = 0;
+                        
+                        // Sample pixels (every 10th pixel for performance)
+                        for (let i = 0; i < data.length; i += 40) { // RGBA = 4 bytes, so 40 = every 10th pixel
+                            const r = data[i] / 255;
+                            const g = data[i + 1] / 255;
+                            const b = data[i + 2] / 255;
+                            
+                            // Calculate luminance for this pixel
+                            const rLum = r <= 0.03928 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, 2.4);
+                            const gLum = g <= 0.03928 ? g / 12.92 : Math.pow((g + 0.055) / 1.055, 2.4);
+                            const bLum = b <= 0.03928 ? b / 12.92 : Math.pow((b + 0.055) / 1.055, 2.4);
+                            
+                            const pixelLum = 0.2126 * rLum + 0.7152 * gLum + 0.0722 * bLum;
+                            totalLum += pixelLum;
+                            pixelCount++;
+                        }
+                        
+                        const avgLum = pixelCount > 0 ? totalLum / pixelCount : 0.5;
+                        resolve(avgLum);
+                    } catch (e) {
+                        // If image analysis fails, return neutral luminance
+                        resolve(0.5);
+                    }
+                };
+                
+                img.onerror = function() {
+                    // If image fails to load, return neutral luminance
+                    resolve(0.5);
+                };
+                
+                // Set a timeout to avoid hanging
+                setTimeout(() => resolve(0.5), 2000);
+                
+                img.src = imageUrl;
+            });
+        }
+        
         // Ensure sufficient contrast between text and background colors
         // Returns adjusted text color if needed (WCAG AA requires 4.5:1 for normal text)
-        function ensureContrast(textColor, bgColor, minContrast = 4.5) {
+        // bgImageUrl: optional image URL to analyze for better contrast detection
+        async function ensureContrast(textColor, bgColor, minContrast = 4.5, bgImageUrl = null) {
+            if (!textColor || !bgColor) return textColor || '#ffffff';
+            
+            // Handle non-hex colors (skip if not hex)
+            if (!textColor.startsWith('#') || !bgColor.startsWith('#')) {
+                return textColor;
+            }
+            
+            // If we have a background image, analyze it to determine the best text color
+            let effectiveBgLum = null;
+            if (bgImageUrl) {
+                try {
+                    effectiveBgLum = await analyzeImageLuminance(bgImageUrl);
+                } catch (e) {
+                    // Fall through to color-based analysis
+                }
+            }
+            
+            // If we don't have image luminance, calculate from background color
+            if (effectiveBgLum === null) {
+                const bgRgb = hexToRgb(bgColor);
+                if (bgRgb) {
+                    effectiveBgLum = getLuminance(bgRgb);
+                } else {
+                    effectiveBgLum = 0.5; // Neutral fallback
+                }
+            }
+            
+            // Check contrast with original text color
+            const contrast = getContrastRatio(textColor, bgColor);
+            
+            // If original color has sufficient contrast, preserve it (especially if it's white/light)
+            if (contrast >= minContrast) {
+                // Additional check: if the original color is white/light and background is also light,
+                // we might want to switch to black for better readability
+                const textRgb = hexToRgb(textColor);
+                if (textRgb) {
+                    const textLum = getLuminance(textRgb);
+                    // If both text and background are light (luminance > 0.5), prefer black text
+                    if (textLum > 0.5 && effectiveBgLum > 0.5 && contrast < 7) {
+                        // Original is light on light - switch to black
+                        const blackContrast = getContrastRatio('#000000', bgColor);
+                        if (blackContrast >= minContrast && blackContrast > contrast) {
+                            return '#000000';
+                        }
+                    }
+                }
+                return textColor; // Contrast is sufficient, preserve original
+            }
+            
+            // Contrast is too low - adjust text color based on background luminance
+            // If background is light (luminance > 0.5), use black text; if dark, use white text
+            const adjustedColor = effectiveBgLum > 0.5 ? '#000000' : '#ffffff';
+            
+            // Verify the adjusted color has sufficient contrast
+            const adjustedContrast = getContrastRatio(adjustedColor, bgColor);
+            if (adjustedContrast >= minContrast) {
+                return adjustedColor;
+            }
+            
+            // If still not enough contrast, try a more extreme adjustment
+            // For very light backgrounds, use very dark text
+            if (effectiveBgLum > 0.7) {
+                return '#000000';
+            }
+            // For very dark backgrounds, use very light text
+            if (effectiveBgLum < 0.3) {
+                return '#ffffff';
+            }
+            
+            return adjustedColor;
+        }
+        
+        // Synchronous version for immediate use (uses color-based analysis only)
+        function ensureContrastSync(textColor, bgColor, minContrast = 4.5) {
             if (!textColor || !bgColor) return textColor || '#ffffff';
             
             // Handle non-hex colors (skip if not hex)
@@ -1860,7 +1991,21 @@
             const contrast = getContrastRatio(textColor, bgColor);
             
             if (contrast >= minContrast) {
-                return textColor; // Contrast is sufficient
+                // Additional check: if both text and background are light, prefer black
+                const textRgb = hexToRgb(textColor);
+                const bgRgb = hexToRgb(bgColor);
+                if (textRgb && bgRgb) {
+                    const textLum = getLuminance(textRgb);
+                    const bgLum = getLuminance(bgRgb);
+                    // If both are light (luminance > 0.5), prefer black text
+                    if (textLum > 0.5 && bgLum > 0.5 && contrast < 7) {
+                        const blackContrast = getContrastRatio('#000000', bgColor);
+                        if (blackContrast >= minContrast && blackContrast > contrast) {
+                            return '#000000';
+                        }
+                    }
+                }
+                return textColor;
             }
             
             // Contrast is too low - adjust text color
@@ -1879,11 +2024,9 @@
             }
             
             // If still not enough contrast, try a more extreme adjustment
-            // For very light backgrounds, use very dark text
             if (bgLum > 0.7) {
                 return '#000000';
             }
-            // For very dark backgrounds, use very light text
             if (bgLum < 0.3) {
                 return '#ffffff';
             }
@@ -2969,7 +3112,17 @@
                                       '#ffffff'; // Fallback to white if not configured
                 
                 // Sanity check: Ensure sufficient contrast between text and background
-                buttonTextColor = ensureContrast(buttonTextColor, buttonBgColor);
+                // If we have a background image, we'll analyze it asynchronously and update the button
+                // For now, use sync version with color-based analysis
+                const imageUrl = selectedBgImage && selectedBgImage.trim() !== '' 
+                    ? `./${encodeURIComponent(theme.folder)}/${encodeURIComponent(selectedBgImage)}`
+                    : null;
+                
+                // Initial contrast check using sync version (color-based)
+                buttonTextColor = ensureContrastSync(buttonTextColor, buttonBgColor);
+                
+                // Store theme folder for async image analysis
+                const themeFolderForAnalysis = theme.folder;
                 
                 // Arrow icon - fits within button height (doesn't expand button)
                 const arrowIcon = hasArrow 
@@ -3027,6 +3180,7 @@
                             </a>
                         ` : `
                             <button class="install-btn install" 
+                                    data-theme-folder="${theme.folder}"
                                     onclick="${isMobileMode || !deviceFolderHandle ? 'downloadSingleTheme' : 'installSingleTheme'}(${allThemesIndex >= 0 ? allThemesIndex : displayIndex}, event)"
                                     style="${buttonStyle} position: relative; z-index: 1;">
                                 <span style="display: flex; align-items: center; justify-content: space-between; width: 100%; position: relative; z-index: 2;">
@@ -3064,6 +3218,87 @@
             setTimeout(() => {
                 loadScreenshotsOnDemand();
             }, 100);
+            
+            // Analyze background images and update button text colors asynchronously
+            updateButtonTextColorsFromImages();
+        }
+        
+        // Update button text colors based on background image analysis
+        async function updateButtonTextColorsFromImages() {
+            const buttons = document.querySelectorAll('.install-btn[data-theme-folder]');
+            
+            for (const button of buttons) {
+                const themeFolder = button.getAttribute('data-theme-folder');
+                const theme = allThemes.find(t => t.folder === themeFolder);
+                if (!theme || !theme.themeConfig) continue;
+                
+                const itemConfig = theme.themeConfig.itemConfig || {};
+                const menuConfig = theme.themeConfig.menuConfig || {};
+                const dialogConfig = theme.themeConfig.dialogConfig || {};
+                
+                // Get background image
+                let selectedBgImage = itemConfig.itemSelectedBackground || 
+                                     menuConfig.menuItemSelectedBackground || 
+                                     dialogConfig.dialogOptionSelectedBackground || 
+                                     '1.png';
+                
+                if (!selectedBgImage || selectedBgImage.trim() === '') continue;
+                
+                const imageUrl = `./${encodeURIComponent(themeFolder)}/${encodeURIComponent(selectedBgImage)}`;
+                
+                // Get original text color
+                const originalTextColor = itemConfig.itemSelectedTextColor || 
+                                         menuConfig.menuItemSelectedTextColor || 
+                                         dialogConfig.dialogOptionSelectedTextColor ||
+                                         '#ffffff';
+                
+                // Get background color for contrast calculation
+                const buttonBgColor = menuConfig.menuBackgroundColor || 
+                                    dialogConfig.dialogBackgroundColor || 
+                                    itemConfig.itemBackgroundColor ||
+                                    '#667eea';
+                
+                try {
+                    const imageLum = await analyzeImageLuminance(imageUrl);
+                    
+                    // Determine best text color based on image luminance
+                    let bestTextColor = originalTextColor;
+                    const originalContrast = getContrastRatio(originalTextColor, buttonBgColor);
+                    
+                    // If image is light (luminance > 0.5), prefer black text
+                    // If image is dark (luminance < 0.5), prefer white text
+                    const preferredColor = imageLum > 0.5 ? '#000000' : '#ffffff';
+                    const preferredContrast = getContrastRatio(preferredColor, buttonBgColor);
+                    
+                    // Use preferred color if it has better contrast, or if original doesn't meet minimum
+                    if (preferredContrast >= 4.5 && (preferredContrast > originalContrast || originalContrast < 4.5)) {
+                        bestTextColor = preferredColor;
+                    } else if (originalContrast >= 4.5) {
+                        // Original has sufficient contrast, but check if both are light
+                        const textRgb = hexToRgb(originalTextColor);
+                        if (textRgb) {
+                            const textLum = getLuminance(textRgb);
+                            // If both text and image are light, prefer black for better readability
+                            if (textLum > 0.5 && imageLum > 0.5 && originalContrast < 7) {
+                                bestTextColor = '#000000';
+                            } else {
+                                bestTextColor = originalTextColor;
+                            }
+                        }
+                    } else {
+                        bestTextColor = preferredColor;
+                    }
+                    
+                    // Update the button color if it changed
+                    const currentColor = button.style.color || window.getComputedStyle(button).color;
+                    if (bestTextColor !== currentColor) {
+                        button.style.color = bestTextColor;
+                    }
+                } catch (e) {
+                    // If image analysis fails, keep the existing color
+                    console.warn(`Failed to analyze image for ${themeFolder}:`, e);
+                }
+            }
         }
 
         // Initialize screenshot slideshows for themes with multiple screenshots
