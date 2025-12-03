@@ -72,20 +72,25 @@
             color: #888;
         }
         .btn {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             text-decoration: none;
             padding: 12px 30px;
-            border-radius: 50px;
-            font-weight: bold;
+            border-radius: 8px;
+            font-weight: 600;
             transition: transform 0.2s, box-shadow 0.2s;
             margin: 10px;
             border: none;
             cursor: pointer;
             font-size: 1rem;
+            min-height: 44px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            position: relative;
         }
-        .btn:hover {
+        .btn:hover, .btn:focus {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
@@ -102,11 +107,33 @@
             padding: 8px 15px;
             font-size: 0.9rem;
             box-shadow: none;
+            text-shadow: none;
         }
         .btn.share:hover {
             background: #f5f5f5;
             transform: translateY(-1px);
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        /* Arrow icon - hidden by default, shown on hover/tap/keyboard selection */
+        .btn .arrow-icon {
+            height: 100%;
+            max-height: 100%;
+            width: auto;
+            flex-shrink: 0;
+            object-fit: contain;
+            display: none;
+            margin-left: 8px;
+        }
+        .btn:hover .arrow-icon,
+        .btn:focus .arrow-icon,
+        .btn:active .arrow-icon {
+            display: block;
+        }
+        /* For mobile tap */
+        @media (hover: none) {
+            .btn:active .arrow-icon {
+                display: block;
+            }
         }
         
         .header-section {
@@ -655,7 +682,30 @@
                 }
             }, 3000);
             
-            // PRIORITY 1: Try to load from themes.json (root directory)
+            // PRIORITY 1: Try to load from config.json (same directory) - most authoritative
+            let configData = null;
+            try {
+                const configResponse = await fetch('./config.json');
+                if (configResponse.ok) {
+                    const config = await configResponse.json();
+                    const themeInfo = config?.theme_info || {};
+                    
+                    // Extract data from config.json (even if theme_info is empty, we can use folder name)
+                    configData = {
+                        name: themeInfo.title || null,
+                        author: themeInfo.author || null,
+                        authorUrl: themeInfo.authorUrl || null,
+                        description: themeInfo.description || null,
+                        folder: folderName // Always use folder name from URL
+                    };
+                    console.log('✅ Loaded theme data from config.json');
+                }
+            } catch (error) {
+                console.log('Could not load config.json:', error);
+            }
+            
+            // PRIORITY 2: Try to load from themes.json (root directory) - fallback for missing config.json data
+            let themesJsonData = null;
             try {
                 const themesResponse = await fetch('../themes.json');
                 if (themesResponse.ok) {
@@ -666,7 +716,7 @@
                     );
                     
                     if (theme) {
-                        themeData = {
+                        themesJsonData = {
                             name: theme.name || theme.folder,
                             author: theme.author || 'Unknown',
                             authorUrl: theme.authorUrl || null,
@@ -680,26 +730,14 @@
                 console.log('Could not load themes.json:', error);
             }
             
-            // PRIORITY 2: Try to load from config.json (same directory) - more authoritative
-            try {
-                const configResponse = await fetch('./config.json');
-                if (configResponse.ok) {
-                    const config = await configResponse.json();
-                    const themeInfo = config?.theme_info || {};
-                    
-                    // Merge with themes.json data, but config.json takes precedence
-                    themeData = {
-                        name: themeInfo.title || themeData?.name || hardcodedData.name,
-                        author: themeInfo.author || themeData?.author || hardcodedData.author,
-                        authorUrl: themeInfo.authorUrl || themeData?.authorUrl || null,
-                        description: themeInfo.description || themeData?.description || hardcodedData.description,
-                        folder: folderName || themeData?.folder || hardcodedData.folder
-                    };
-                    console.log('✅ Loaded theme data from config.json');
-                }
-            } catch (error) {
-                console.log('Could not load config.json:', error);
-            }
+            // Merge data: config.json takes priority, then themes.json, then hardcoded fallback
+            themeData = {
+                name: configData?.name || themesJsonData?.name || hardcodedData.name,
+                author: configData?.author || themesJsonData?.author || hardcodedData.author,
+                authorUrl: configData?.authorUrl !== undefined ? configData.authorUrl : (themesJsonData?.authorUrl || null),
+                description: configData?.description || themesJsonData?.description || hardcodedData.description,
+                folder: folderName || themesJsonData?.folder || hardcodedData.folder
+            };
             
             // Clear timeout if we got data
             clearTimeout(timeoutId);
@@ -712,11 +750,14 @@
                 applyThemeData(hardcodedData, folderName);
             }
             
+            // Load config.json for button styling (theme colors, fonts, images)
+            await applyThemeButtonStyling(folderName);
+            
             hideLoadingSpinner();
             
             // Check for File System Access API support
             if ('showDirectoryPicker' in window) {
-                document.getElementById('install-btn').style.display = 'inline-block';
+                document.getElementById('install-btn').style.display = 'inline-flex';
             }
         });
         
@@ -779,6 +820,110 @@
             
             // Store folder name globally for install/download functions
             window.themeFolderName = data.folder || folderName;
+        }
+        
+        // Apply theme button styling from config.json (colors, fonts, backgrounds, arrow icons)
+        async function applyThemeButtonStyling(folderName) {
+            try {
+                const configResponse = await fetch('./config.json');
+                if (!configResponse.ok) return;
+                
+                const config = await configResponse.json();
+                const itemConfig = config?.itemConfig || {};
+                const menuConfig = config?.menuConfig || {};
+                const dialogConfig = config?.dialogConfig || {};
+                
+                // Load theme font if available
+                let fontStyle = '';
+                try {
+                    const configStr = JSON.stringify(config);
+                    const fontMatches = configStr.match(/"([^"]*\.ttf[^"]*)"/gi);
+                    if (fontMatches && fontMatches.length > 0) {
+                        const fontName = fontMatches[0].replace(/"/g, '');
+                        const fontUrl = `./${encodeURIComponent(fontName)}`;
+                        const safeFontName = folderName.replace(/[^a-zA-Z0-9]/g, '-');
+                        const fontFace = new FontFace(
+                            `theme-font-${safeFontName}`,
+                            `url(${fontUrl})`
+                        );
+                        await fontFace.load();
+                        document.fonts.add(fontFace);
+                        fontStyle = `font-family: '${fontFace.family}', sans-serif;`;
+                    }
+                } catch (e) {
+                    console.warn('Could not load theme font:', e);
+                }
+                
+                // Find arrow icon - try config first, then common patterns
+                let arrowIconFile = itemConfig.itemRightArrow || null;
+                if (!arrowIconFile || arrowIconFile.trim() === '') {
+                    // Try common patterns
+                    const commonArrows = ['2.png', 'RightArrow.png', 'rightArrow.png'];
+                    // We'll check if these exist by trying to load them
+                    arrowIconFile = '2.png'; // Default to 2.png
+                }
+                
+                // Get selected background image - check config first, then patterns, then 1.png
+                let selectedBgImage = itemConfig.itemSelectedBackground || 
+                                     menuConfig.menuItemSelectedBackground || 
+                                     dialogConfig.dialogOptionSelectedBackground || null;
+                if (!selectedBgImage || selectedBgImage.trim() === '') {
+                    selectedBgImage = '1.png'; // High priority fallback
+                }
+                
+                // Button background style
+                let buttonBgStyle = '';
+                if (selectedBgImage && selectedBgImage.trim() !== '') {
+                    const imageUrl = `./${encodeURIComponent(selectedBgImage)}`;
+                    buttonBgStyle = `background-image: url('${imageUrl}'); background-size: 100% 100%; background-repeat: no-repeat; background-position: center;`;
+                } else {
+                    // Use theme color from config
+                    let buttonBgColor = itemConfig.itemSelectedTextColor || 
+                                       menuConfig.menuItemSelectedTextColor ||
+                                       menuConfig.menuBackgroundColor || 
+                                       dialogConfig.dialogBackgroundColor || 
+                                       '#667eea';
+                    buttonBgStyle = `background-color: ${buttonBgColor};`;
+                }
+                
+                // Button text color - priority: itemSelectedTextColor > menuItemSelectedTextColor > dialogOptionSelectedTextColor
+                const buttonTextColor = itemConfig.itemSelectedTextColor || 
+                                      menuConfig.menuItemSelectedTextColor || 
+                                      dialogConfig.dialogOptionSelectedTextColor ||
+                                      '#ffffff';
+                
+                // Apply styles to install and download buttons
+                const installBtn = document.getElementById('install-btn');
+                const downloadBtn = document.getElementById('download-btn');
+                
+                if (installBtn) {
+                    installBtn.style.cssText = `${buttonBgStyle} color: ${buttonTextColor}; ${fontStyle}`;
+                    // Add arrow icon if available and not already present
+                    if (arrowIconFile && !installBtn.querySelector('.arrow-icon')) {
+                        const arrowImg = document.createElement('img');
+                        arrowImg.src = `./${encodeURIComponent(arrowIconFile)}`;
+                        arrowImg.alt = '→';
+                        arrowImg.className = 'arrow-icon';
+                        arrowImg.onerror = () => arrowImg.remove(); // Remove if image doesn't exist
+                        installBtn.appendChild(arrowImg);
+                    }
+                }
+                
+                if (downloadBtn) {
+                    downloadBtn.style.cssText = `${buttonBgStyle} color: ${buttonTextColor}; ${fontStyle}`;
+                    // Add arrow icon if available and not already present
+                    if (arrowIconFile && !downloadBtn.querySelector('.arrow-icon')) {
+                        const arrowImg = document.createElement('img');
+                        arrowImg.src = `./${encodeURIComponent(arrowIconFile)}`;
+                        arrowImg.alt = '→';
+                        arrowImg.className = 'arrow-icon';
+                        arrowImg.onerror = () => arrowImg.remove(); // Remove if image doesn't exist
+                        downloadBtn.appendChild(arrowImg);
+                    }
+                }
+            } catch (error) {
+                console.warn('Could not apply theme button styling:', error);
+            }
         }
         
         // Hide loading spinner
