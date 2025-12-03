@@ -6,27 +6,6 @@
     <title>Be Theme - Official Innioasis Y1 Community Themes</title>
     <meta name="description" content="Download Be theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. This theme is inspired by the BeOS operating system. Community Maintainers: Ryan Specter + Dmitri Medina">
     <meta name="keywords" content="Innioasis Y1, Y1 themes, MP3 player themes, Be, Y1 customization, official Y1 themes, Ryan Specter, Dmitri Medina">
-    
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://themes.innioasis.app/Be/">
-    <meta property="og:title" content="Be Theme - Official Innioasis Y1 Community Themes">
-    <meta property="og:description" content="Download Be theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. This theme is inspired by the BeOS operating system. Community Maintainers: Ryan Specter + Dmitri Medina">
-    <meta property="og:image" content="https://themes.innioasis.app/Be/@Be_cover.png">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:site_name" content="Themes for Innioasis Y1">
-    
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:url" content="https://themes.innioasis.app/Be/">
-    <meta name="twitter:title" content="Be Theme - Official Innioasis Y1 Community Themes">
-    <meta name="twitter:description" content="Download Be theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. This theme is inspired by the BeOS operating system. Community Maintainers: Ryan Specter + Dmitri Medina">
-    <meta name="twitter:image" content="https://themes.innioasis.app/Be/@Be_cover.png">
-    
-    <!-- Additional Social Media / Search Engine Meta Tags -->
-    <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://themes.innioasis.app/Be/">
     <script type="application/ld+json">
     {{
         "@context": "https://schema.org",
@@ -36,7 +15,6 @@
         "operatingSystem": "Innioasis Y1",
         "description": "Download Be theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. This theme is inspired by the BeOS operating system. Community Maintainers: Ryan Specter + Dmitri Medina",
         "url": "https://themes.innioasis.app/Be/",
-        "image": "https://themes.innioasis.app/Be/@Be_cover.png",
         "publisher": {{
             "@type": "Organization",
             "name": "Innioasis Y1 Community",
@@ -219,7 +197,7 @@
             display: block;
         }
         
-        .reddit-favicon, .social-favicon {
+        .reddit-favicon {
             display: inline-block;
             width: 16px;
             height: 16px;
@@ -228,10 +206,29 @@
             opacity: 0.8;
             transition: opacity 0.2s;
         }
-        .reddit-favicon:hover, .social-favicon:hover {
+        .reddit-favicon:hover {
             opacity: 1;
         }
-        .reddit-favicon img, .social-favicon img {
+        .reddit-favicon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        /* Social media favicons */
+        .social-favicon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            margin-left: 4px;
+            vertical-align: middle;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        .social-favicon:hover {
+            opacity: 1;
+        }
+        .social-favicon img {
             width: 100%;
             height: 100%;
             object-fit: contain;
@@ -1521,8 +1518,6 @@
         async function loadAuthorInfo() {
             try {
                 let author = 'u/Neither-Classic2058';
-                // Remove any erroneous "$" prefix from author name
-                author = author.replace(/^\$+/, '');
                 let authorUrl = null;
                 let description = 'This theme is inspired by the BeOS operating system.';
                 
@@ -1567,6 +1562,11 @@
                     }
                 }
                 
+                // Set authorUrl for Innioasis-made themes if not already set
+                if ((author === 'Innioasis' || author.toLowerCase() === 'innioasis') && !authorUrl) {
+                    authorUrl = 'https://www.innioasis.com';
+                }
+                
                 // Update author display with link if authorUrl is available
                 const authorDisplay = document.getElementById('author-display');
                 const descriptionDisplay = document.getElementById('description-display');
@@ -1578,96 +1578,104 @@
                     // Helper function to detect social media platform from URL
                     function getSocialIcon(url) {
                         if (!url) return null;
+                        
                         const urlLower = url.toLowerCase();
                         
-                        // Reddit
-                        if (urlLower.includes('reddit.com/user/') || urlLower.includes('reddit.com/u/')) {
-                            return {
-                                icon: 'https://www.redditstatic.com/desktop2x/img/favicon/favicon-16x16.png',
-                                alt: 'Reddit',
-                                class: 'reddit-favicon'
-                            };
+                        // Check if it's a Reddit profile URL (don't show icon, Reddit favicon handles this)
+                        if (/reddit\.com\/(user|u)\//i.test(url)) {
+                            return null; // Reddit is handled separately
                         }
+                        
                         // Pinterest
-                        if (urlLower.includes('pinterest.com') || urlLower.includes('pinterest.')) {
+                        if (/pinterest\.(com|co\.uk|ca|au|de|fr|it|es|nl|pl|ru|jp|kr|in|br|mx)/i.test(url)) {
                             return {
                                 icon: 'https://www.pinterest.com/favicon.ico',
                                 alt: 'Pinterest',
                                 class: 'social-favicon'
                             };
                         }
+                        
                         // Instagram
-                        if (urlLower.includes('instagram.com')) {
+                        if (/instagram\.com/i.test(url)) {
                             return {
                                 icon: 'https://www.instagram.com/static/images/ico/favicon.ico',
                                 alt: 'Instagram',
                                 class: 'social-favicon'
                             };
                         }
+                        
                         // DeviantArt
-                        if (urlLower.includes('deviantart.com')) {
+                        if (/deviantart\.com/i.test(url)) {
                             return {
                                 icon: 'https://www.deviantart.com/favicon.ico',
                                 alt: 'DeviantArt',
                                 class: 'social-favicon'
                             };
                         }
+                        
                         // Behance
-                        if (urlLower.includes('behance.net')) {
+                        if (/behance\.net/i.test(url)) {
                             return {
                                 icon: 'https://www.behance.net/favicon.ico',
                                 alt: 'Behance',
                                 class: 'social-favicon'
                             };
                         }
+                        
                         // GitHub
-                        if (urlLower.includes('github.com')) {
+                        if (/github\.com/i.test(url)) {
                             return {
                                 icon: 'https://github.com/favicon.ico',
                                 alt: 'GitHub',
                                 class: 'social-favicon'
                             };
                         }
+                        
                         // Twitter/X
-                        if (urlLower.includes('twitter.com') || urlLower.includes('x.com')) {
+                        if (/(twitter\.com|x\.com)/i.test(url)) {
                             return {
                                 icon: 'https://abs.twimg.com/favicons/twitter.ico',
-                                alt: 'Twitter',
+                                alt: 'Twitter/X',
                                 class: 'social-favicon'
                             };
                         }
-                        // Regular website (not Reddit) - show globe icon
-                        if (!urlLower.includes('reddit.com')) {
+                        
+                        // YouTube
+                        if (/youtube\.com|youtu\.be/i.test(url)) {
                             return {
-                                icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTggMUMxMS44NjYgMSAxNSA0LjEzNCAxNSA4QzE1IDExLjg2NiAxMS44NjYgMTUgOCAxNUM0LjEzNCAxNSAxIDExLjg2NiAxIDhDMSA0LjEzNCA0LjEzNCAxIDggMVoiIHN0cm9rZT0iIzY2N2VlYSIgc3Ryb2tlLXdpZHRoPSIxLjUiIGZpbGw9Im5vbmUiLz4KPHBhdGggZD0iTTggMlYxNCIgc3Ryb2tlPSIjNjY3ZWVhIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8cGF0aCBkPSJNMTQgOEgyIiBzdHJva2U9IiM2NjdlZWEiIHN0cm9rZS13aWR0aD0iMS41Ii8+CjxwYXRoIGQ9Ik0xMS4zIDEwLjdMMyA0LjMiIHN0cm9rZT0iIzY2N2VlYSIgc3Ryb2tlLXdpZHRoPSIxLjUiLz4KPHBhdGggZD0iTTExLjMgNS4zTDMgMTEuNyIgc3Ryb2tlPSIjNjY3ZWVhIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8L3N2Zz4K',
-                                alt: 'Website',
+                                icon: 'https://www.youtube.com/favicon.ico',
+                                alt: 'YouTube',
                                 class: 'social-favicon'
                             };
                         }
-                        return null;
+                        
+                        // Default: web/internet globe icon for regular websites
+                        return {
+                            icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iOCIgY3k9IjgiIHI9IjciIHN0cm9rZT0iIzY2N2VlYSIgc3Ryb2tlLXdpZHRoPSIxLjUiLz4KPHBhdGggZD0iTTggMUMyIDMgMiA1IDIgOEMyIDExIDIgMTMgOCAxNUMxNCAxMyAxNCAxMSAxNCA4QzE0IDUgMTQgMyA4IDFaIiBzdHJva2U9IiM2NjdlZWEiIHN0cm9rZS13aWR0aD0iMS41Ii8+CjxwYXRoIGQ9Ik0xIDhIMTVNOCAxVjE1IiBzdHJva2U9IiM2NjdlZWEiIHN0cm9rZS13aWR0aD0iMS41Ii8+Cjwvc3ZnPgo=',
+                            alt: 'Website',
+                            class: 'social-favicon'
+                        };
                     }
                     
-                    // Detect Reddit username (u/username pattern) in author name
+                    // Detect Reddit username (u/username pattern)
                     const redditUsernameMatch = author.match(/u\/([^\/\s]+)/i);
                     let redditUsername = null;
                     let redditFaviconHtml = '';
                     
                     if (redditUsernameMatch) {
                         redditUsername = redditUsernameMatch[1];
-                        // Create Reddit favicon that links to reddit.com/user/username
-                        redditFaviconHtml = `<a href="https://reddit.com/user/${redditUsername}" target="_blank" rel="noopener noreferrer" class="reddit-favicon" onclick="event.stopPropagation();" style="display: inline-block; width: 16px; height: 16px; margin-left: 4px; vertical-align: middle; opacity: 0.8; transition: opacity 0.2s;"><img src="https://www.redditstatic.com/desktop2x/img/favicon/favicon-16x16.png" alt="Reddit" style="width: 100%; height: 100%; object-fit: contain;"></a>`;
+                        // Only show Reddit favicon if authorUrl is NOT a Reddit profile URL
+                        // or if there's no authorUrl
+                        const isRedditUrl = authorUrl && /reddit\.com\/(user|u)\//i.test(authorUrl);
+                        if (!isRedditUrl || !authorUrl) {
+                            // Create Reddit favicon that links to reddit.com/user/username
+                            redditFaviconHtml = `<a href="https://reddit.com/user/${redditUsername}" target="_blank" rel="noopener noreferrer" class="reddit-favicon" onclick="event.stopPropagation();" style="display: inline-block; width: 16px; height: 16px; margin-left: 4px; vertical-align: middle; opacity: 0.8; transition: opacity 0.2s;"><img src="https://www.redditstatic.com/desktop2x/img/favicon/favicon-16x16.png" alt="Reddit" style="width: 100%; height: 100%; object-fit: contain;"></a>`;
+                        }
                     }
                     
-                    // Check if authorUrl is a Reddit profile (if so, don't show separate Reddit favicon if already shown)
-                    let authorUrlIsReddit = false;
-                    if (authorUrl) {
-                        const urlLower = authorUrl.toLowerCase();
-                        authorUrlIsReddit = urlLower.includes('reddit.com/user/') || urlLower.includes('reddit.com/u/');
-                    }
-                    
-                    // Get social icon for authorUrl (if not Reddit or if Reddit username not in author name)
+                    // Get social media icon for authorUrl (if not Reddit)
                     let socialIconHtml = '';
-                    if (authorUrl && (!authorUrlIsReddit || !redditUsernameMatch)) {
+                    if (authorUrl) {
                         const socialIcon = getSocialIcon(authorUrl);
                         if (socialIcon) {
                             socialIconHtml = `<a href="${authorUrl}" target="_blank" rel="noopener noreferrer" class="${socialIcon.class}" onclick="event.stopPropagation();" style="display: inline-block; width: 16px; height: 16px; margin-left: 4px; vertical-align: middle; opacity: 0.8; transition: opacity 0.2s;"><img src="${socialIcon.icon}" alt="${socialIcon.alt}" style="width: 100%; height: 100%; object-fit: contain;"></a>`;
@@ -1675,7 +1683,7 @@
                     }
                     
                     if (authorUrl) {
-                        // Author name links to authorUrl, show appropriate favicon(s)
+                        // Author name links to authorUrl, Reddit favicon links to Reddit profile, social icon links to authorUrl
                         authorDisplay.innerHTML = `<a href="${authorUrl}" target="_blank" rel="noopener noreferrer" style="color: #667eea; text-decoration: none; border-bottom: 1px solid #667eea; transition: all 0.2s;">$u/Neither-Classic2058</a>${redditFaviconHtml}${socialIconHtml}`;
                         // Add hover effect
                         const authorLink = authorDisplay.querySelector('a:not(.reddit-favicon):not(.social-favicon)');
@@ -2856,12 +2864,12 @@
     <div class="bg-cycle"></div>
 <script>
     // Background cycling logic
-    const bgImages = ['@be_itemselectedbackground.png', '@be_itembackground.png', '@be_itembackgroundclear.png', '@be_dialogoptionselectedbackground.png'];
+    const bgImages = ['./Wallpaper%401x.png', './%40Be_globalwallpaper.png', './%40Be_itemSelectedBackground.png', './%40Be_itemBackground.png', './desk_bg001.png', './%40Be_itemBackgroundClear.png', './%40Be_cover.png', './%40Be_dialogOptionSelectedBackground.png'];
     if (bgImages.length) {
         const bgDiv = document.querySelector('.bg-cycle');
         let idx = 0;
         const setBg = () => {
-            bgDiv.style.backgroundImage = `url('${bgImages[idx]}')`;
+            bgDiv.style.backgroundImage = `url(${bgImages[idx]})`;
             bgDiv.style.opacity = '1';
             setTimeout(() => {
                 bgDiv.style.opacity = '0';
