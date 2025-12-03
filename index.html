@@ -1724,6 +1724,22 @@
                             if (selectedFiles.length > 0) {
                                 themes[index].selectedBgImageFile = selectedFiles[0];
                             }
+                            
+                            // Find files matching 1*.png pattern (prioritize suffixed versions)
+                            const oneFiles = files.filter(f => 
+                                /^1.*\.(png|jpg|jpeg|gif|svg)$/i.test(f)
+                            );
+                            if (oneFiles.length > 0) {
+                                // Sort: files with suffixes (like 1_YS.png) come before plain 1.png
+                                oneFiles.sort((a, b) => {
+                                    const aIsPlain = /^1\.(png|jpg|jpeg|gif|svg)$/i.test(a);
+                                    const bIsPlain = /^1\.(png|jpg|jpeg|gif|svg)$/i.test(b);
+                                    if (!aIsPlain && bIsPlain) return -1; // a (with suffix) comes first
+                                    if (aIsPlain && !bIsPlain) return 1;   // b (with suffix) comes first
+                                    return a.localeCompare(b); // Alphabetical for same type
+                                });
+                                themes[index].onePngFile = oneFiles[0];
+                            }
                         } catch (error) {
                             // File discovery failed, continue without pattern-matched files
                         }
@@ -1742,6 +1758,9 @@
                             }
                             if (themes[index].selectedBgImageFile) {
                                 allThemes[allThemesIndex].selectedBgImageFile = themes[index].selectedBgImageFile;
+                            }
+                            if (themes[index].onePngFile) {
+                                allThemes[allThemesIndex].onePngFile = themes[index].onePngFile;
                             }
                         }
 
@@ -3053,8 +3072,11 @@
                 const fontInfo = themeFonts.get(theme.folder);
                 const fontStyle = fontInfo ? `font-family: '${fontInfo.fontFamily}', sans-serif;` : '';
                 
-                // Extract theme colors from config
-                const themeConfig = theme.themeConfig || {};
+                // Get full theme from allThemes to ensure we have the latest config
+                const fullTheme = allThemes.find(t => t.folder === theme.folder) || theme;
+                
+                // Extract theme colors from config (prioritize allThemes config which is more up-to-date)
+                const themeConfig = fullTheme.themeConfig || theme.themeConfig || {};
                 const itemConfig = themeConfig.itemConfig || {};
                 const menuConfig = themeConfig.menuConfig || {};
                 const dialogConfig = themeConfig.dialogConfig || {};
@@ -3062,23 +3084,21 @@
                 // Get arrow icon - try config first, then look for *RightArrow*.* pattern
                 let arrowIconFile = itemConfig.itemRightArrow || null;
                 if (!arrowIconFile || arrowIconFile.trim() === '') {
-                    // Try to find *RightArrow*.* pattern from theme files (check both displayed theme and allThemes)
-                    const fullTheme = allThemes.find(t => t.folder === theme.folder) || theme;
+                    // Try to find *RightArrow*.* pattern from theme files
                     arrowIconFile = fullTheme.arrowIconFile || theme.arrowIconFile || null;
                 }
                 const hasArrow = arrowIconFile && arrowIconFile.trim() !== '';
                 
-                // Try to get selected background image - check config first, then patterns, then 1.png
+                // Try to get selected background image - check config first, then patterns, then 1*.png
                 let selectedBgImage = itemConfig.itemSelectedBackground || menuConfig.menuItemSelectedBackground || 
                                      dialogConfig.dialogOptionSelectedBackground || null;
                 if (!selectedBgImage || selectedBgImage.trim() === '') {
-                    // Try to find *Selected*.* pattern from theme files (check both displayed theme and allThemes)
-                    const fullTheme = allThemes.find(t => t.folder === theme.folder) || theme;
+                    // Try to find *Selected*.* pattern from theme files
                     selectedBgImage = fullTheme.selectedBgImageFile || theme.selectedBgImageFile || null;
                 }
-                // High priority fallback: 1.png (common selected background image)
+                // High priority fallback: 1*.png files (prioritize suffixed versions like 1_YS.png over 1.png)
                 if (!selectedBgImage || selectedBgImage.trim() === '') {
-                    selectedBgImage = '1.png';
+                    selectedBgImage = fullTheme.onePngFile || theme.onePngFile || '1.png';
                 }
                 
                 // Button background = selected background image if available, otherwise use theme color, then fallback
