@@ -582,15 +582,13 @@
         </div>
 
         <!-- Feature Support Section -->
-        <!-- This section shows features from config.json that are not supported by this theme -->
-        <!-- Features are checked against MelodyMuncher's complete config.json (100% spec usage) -->
+        <!-- This section shows upcoming or region-specific features that need images added -->
         <div id="feature-support-section" style="margin-top: 30px; display: none;">
-            <h3 style="font-family: 'ThemeFont', sans-serif;">Feature Support</h3>
             <div id="unsupported-features" style="background: #f9f9f9; border-radius: 8px; padding: 15px; border-left: 4px solid #ff9800;">
                 <p style="margin: 0 0 10px 0; font-weight: 600; color: #666;">To the creator:</p>
-                <p style="margin: 0 0 10px 0; font-size: 0.9rem; color: #666;">Add these images to your theme to ensure compatibility with:</p>
+                <p style="margin: 0 0 10px 0; font-size: 0.9rem; color: #666;">Add these images to your theme to ensure compatibility with these upcoming or region-specific features:</p>
                 <ul id="unsupported-features-list" style="margin: 0 0 10px 0; padding-left: 20px; color: #888; list-style-type: disc;">
-                    <!-- Features will be populated dynamically -->
+                    <!-- Features will be populated dynamically with links to config.json -->
                 </ul>
                 <p style="margin: 10px 0 0 0; font-size: 0.85rem; color: #999; font-style: italic;">
                     These features may not be available to users at present but are defined in the theme spec in firmware 2.8.2 and are to be expected in future releases and where features are only available in certain regions.
@@ -1244,69 +1242,18 @@
                 // Format: { key: 'configKey', displayName: 'Display Name', section: 'homePageConfig' | 'settingConfig' }
                 // For self-explanatory features (like "backlight_60"), displayName is the key itself
                 // For features needing explanation, provide a friendly displayName
-                const allFeatures = [
-                    // homePageConfig features
-                    { key: 'ebook', displayName: 'E-book Reader', section: 'homePageConfig' },
-                    { key: 'calculator', displayName: 'Calculator', section: 'homePageConfig' },
-                    { key: 'calendar', displayName: 'Calendar', section: 'homePageConfig' },
-                    
-                    // settingConfig features (comprehensive list from MelodyMuncher)
-                    { key: 'settingMask', displayName: 'settingMask', section: 'settingConfig' },
-                    { key: 'shutdown', displayName: 'shutdown', section: 'settingConfig' },
-                    { key: 'timedShutdown_off', displayName: 'timedShutdown_off', section: 'settingConfig' },
-                    { key: 'timedShutdown_10', displayName: 'timedShutdown_10', section: 'settingConfig' },
-                    { key: 'timedShutdown_20', displayName: 'timedShutdown_20', section: 'settingConfig' },
-                    { key: 'timedShutdown_30', displayName: 'timedShutdown_30', section: 'settingConfig' },
-                    { key: 'timedShutdown_60', displayName: 'timedShutdown_60', section: 'settingConfig' },
-                    { key: 'timedShutdown_90', displayName: 'timedShutdown_90', section: 'settingConfig' },
-                    { key: 'timedShutdown_120', displayName: 'timedShutdown_120', section: 'settingConfig' },
-                    { key: 'shuffleOn', displayName: 'shuffleOn', section: 'settingConfig' },
-                    { key: 'shuffleOff', displayName: 'shuffleOff', section: 'settingConfig' },
-                    { key: 'repeatOff', displayName: 'repeatOff', section: 'settingConfig' },
-                    { key: 'repeatAll', displayName: 'repeatAll', section: 'settingConfig' },
-                    { key: 'repeatOne', displayName: 'repeatOne', section: 'settingConfig' },
-                    { key: 'equalizer_normal', displayName: 'equalizer_normal', section: 'settingConfig' },
-                    { key: 'equalizer_classical', displayName: 'equalizer_classical', section: 'settingConfig' },
-                    { key: 'equalizer_dance', displayName: 'equalizer_dance', section: 'settingConfig' },
-                    { key: 'equalizer_flat', displayName: 'equalizer_flat', section: 'settingConfig' },
-                    { key: 'equalizer_folk', displayName: 'equalizer_folk', section: 'settingConfig' },
-                    { key: 'equalizer_heavymetal', displayName: 'equalizer_heavymetal', section: 'settingConfig' },
-                    { key: 'equalizer_hiphop', displayName: 'equalizer_hiphop', section: 'settingConfig' },
-                    { key: 'equalizer_jazz', displayName: 'equalizer_jazz', section: 'settingConfig' },
-                    { key: 'equalizer_pop', displayName: 'equalizer_pop', section: 'settingConfig' },
-                    { key: 'equalizer_rock', displayName: 'equalizer_rock', section: 'settingConfig' },
-                    { key: 'keyLockOn', displayName: 'keyLockOn', section: 'settingConfig' },
-                    { key: 'keyLockOff', displayName: 'keyLockOff', section: 'settingConfig' },
-                    { key: 'keyToneOn', displayName: 'keyToneOn', section: 'settingConfig' },
-                    { key: 'keyToneOff', displayName: 'keyToneOff', section: 'settingConfig' },
-                    { key: 'keyVibrationOn', displayName: 'keyVibrationOn', section: 'settingConfig' },
-                    { key: 'keyVibrationOff', displayName: 'keyVibrationOff', section: 'settingConfig' },
-                    { key: 'wallpaper', displayName: 'wallpaper', section: 'settingConfig' },
-                    { key: 'backlight_10', displayName: 'backlight_10', section: 'settingConfig' },
-                    { key: 'backlight_15', displayName: 'backlight_15', section: 'settingConfig' },
-                    { key: 'backlight_30', displayName: 'backlight_30', section: 'settingConfig' },
-                    { key: 'backlight_45', displayName: 'backlight_45', section: 'settingConfig' },
-                    { key: 'backlight_60', displayName: 'backlight_60', section: 'settingConfig' },
-                    { key: 'backlight_120', displayName: 'backlight_120', section: 'settingConfig' },
-                    { key: 'backlight_300', displayName: 'backlight_300', section: 'settingConfig' },
-                    { key: 'backlight_always', displayName: 'backlight_always', section: 'settingConfig' },
-                    { key: 'brightness', displayName: 'brightness', section: 'settingConfig' },
-                    { key: 'displayBatteryOn', displayName: 'displayBatteryOn', section: 'settingConfig' },
-                    { key: 'displayBatteryOff', displayName: 'displayBatteryOff', section: 'settingConfig' },
-                    { key: 'dateTime', displayName: 'dateTime', section: 'settingConfig' },
-                    { key: 'language', displayName: 'language', section: 'settingConfig' },
-                    { key: 'launcher', displayName: 'Rockbox Icon', section: 'settingConfig' },
-                    { key: 'factoryReset', displayName: 'factoryReset', section: 'settingConfig' },
-                    { key: 'clearCache', displayName: 'clearCache', section: 'settingConfig' },
-                    { key: 'theme', displayName: 'theme', section: 'settingConfig' },
-                    { key: 'fileExtensionOn', displayName: 'fileExtensionOn', section: 'settingConfig' },
-                    { key: 'fileExtensionOff', displayName: 'fileExtensionOff', section: 'settingConfig' }
+                // Only check the 4 specific upcoming/region-specific features in settingConfig
+                const upcomingFeaturesToCheck = [
+                    { key: 'ebook', displayName: 'E-book Reader', section: 'settingConfig', configKey: 'ebook' },
+                    { key: 'calculator', displayName: 'Calculator', section: 'settingConfig', configKey: 'calculator' },
+                    { key: 'calendar', displayName: 'Calendar', section: 'settingConfig', configKey: 'calendar' },
+                    { key: 'launcher', displayName: 'Rockbox / Alternative Launcher Icon', section: 'settingConfig', configKey: 'launcher' }
                 ];
                 
                 const unsupportedFeatures = [];
                 
-                // Check each feature
-                for (const feature of allFeatures) {
+                // Check each upcoming feature
+                for (const feature of upcomingFeaturesToCheck) {
                     const section = config[feature.section] || {};
                     const featureValue = section[feature.key];
                     
@@ -1318,7 +1265,7 @@
                     if (!featureValue || 
                         (typeof featureValue === 'string' && featureValue.trim() === '') ||
                         typeof featureValue !== 'string') {
-                        unsupportedFeatures.push(feature.displayName);
+                        unsupportedFeatures.push(feature);
                     }
                 }
                 
@@ -1326,11 +1273,14 @@
                 if (unsupportedFeatures.length > 0) {
                     const section = document.getElementById('feature-support-section');
                     const list = document.getElementById('unsupported-features-list');
+                    const folderName = 'TwinPeaks';
                     
                     if (section && list) {
-                        list.innerHTML = unsupportedFeatures.map(feature => 
-                            `<li style="margin-bottom: 5px;">${feature}</li>`
-                        ).join('');
+                        list.innerHTML = unsupportedFeatures.map(feature => {
+                            // Create GitHub link to config.json
+                            const githubUrl = `https://github.com/y1-community/InnioasisY1Themes/blob/main/${encodeURIComponent(folderName)}/config.json`;
+                            return `<li style="margin-bottom: 5px;"><a href="${githubUrl}" target="_blank" rel="noopener noreferrer" style="color: #667eea; text-decoration: none; border-bottom: 1px solid #667eea;">${feature.displayName}</a> - "${feature.configKey}" in "settingConfig"</li>`;
+                        }).join('');
                         section.style.display = 'block';
                     }
                 }
