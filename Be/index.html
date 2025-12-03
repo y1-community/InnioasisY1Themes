@@ -106,13 +106,16 @@
             background: transparent;
             color: #666;
             border: 1px solid #ddd;
-            padding: 8px 15px;
-            font-size: 0.9rem;
+            padding: 12px 16px;
+            font-size: 0.95rem;
             box-shadow: none;
             text-shadow: none;
+            width: 100%;
         }
         .btn.share:hover {
             background: #f5f5f5;
+            border-color: #667eea;
+            color: #667eea;
             /* No transform - buttons should not grow on hover */
         }
         /* Ensure button content is always visible above background */
@@ -142,15 +145,19 @@
             z-index: 3;
         }
         /* Arrow icon - hidden on desktop by default, shown on hover/focus/active */
+        /* Use opacity/visibility to prevent layout shifts */
         .btn .arrow-icon {
             height: 100%;
             max-height: 100%;
-            width: auto;
+            width: 0;
+            overflow: hidden;
             flex-shrink: 0;
-            display: none;
-            margin-left: 8px;
+            opacity: 0;
+            visibility: hidden;
+            margin-left: 0;
             position: relative;
             z-index: 3;
+            transition: opacity 0.2s, visibility 0.2s, width 0.2s, margin-left 0.2s;
         }
         
         .btn .arrow-icon img {
@@ -166,14 +173,20 @@
         @media (hover: hover) {
             .btn:hover .arrow-icon,
             .btn:focus .arrow-icon {
-                display: block;
+                opacity: 1;
+                visibility: visible;
+                width: auto;
+                margin-left: 8px;
             }
         }
         
         /* Show arrow on mobile (always visible) */
         @media (hover: none) {
             .btn .arrow-icon {
-                display: block;
+                opacity: 1;
+                visibility: visible;
+                width: auto;
+                margin-left: 8px;
             }
         }
         
@@ -337,6 +350,35 @@
         .lightbox-close:hover {
             color: #bbb;
         }
+        .lightbox-edit-btn {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(102, 126, 234, 0.9);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+        }
+        .lightbox-edit-btn:hover {
+            background: rgba(102, 126, 234, 1);
+            transform: translateX(-50%) translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+        }
+        .lightbox-edit-btn:active {
+            transform: translateX(-50%) translateY(0);
+        }
         .back-link {
             display: block;
             margin-top: 20px;
@@ -370,6 +412,12 @@
         }
         .download-link-small:hover {
             text-decoration: underline;
+        }
+        /* Button group - constrained width to match home page theme card buttons */
+        .button-group {
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
         }
         /* Install Instructions Modal */
         .install-modal {
@@ -457,15 +505,17 @@
     All theme data (name, author, description, colors, images) should be loaded
     from config.json or themes.json when possible, not from hardcoded HTML.
     -->
-    {background_cycle_html}
     <div class="container">
         <div class="header-section">
             <div class="header-text">
                 <!-- Title and subtitle removed; using About line instead -->
                 <h2 style="font-family: 'ThemeFont', sans-serif;">About the Be Theme for Innioasis Y1</h2>
                 <p class="description" id="theme-description">This theme is inspired by the BeOS operating system.</p>
+                <p class="author-info" style="margin-top: 15px; color: #666; font-size: 0.9rem; font-style: italic;">
+                    Theme created by <strong id="author-display">u/Neither-Classic2058</strong>
+                </p>
             </div>
-            
+            <img src="@Be_cover.png" alt="Be cover" class="cover-image" onclick="openLightbox('@Be_cover.png')">
         </div>
         
         
@@ -505,6 +555,11 @@
                 </span>
             </button>
             <a href="#" id="download-link-small" onclick="downloadTheme(); return false;" class="download-link-small" style="display: none;">📦 Download ZIP instead</a>
+            <button onclick="shareTheme()" class="btn share" style="margin-top: 10px;">
+                <span style="display: flex; align-items: center; justify-content: center; width: 100%;">
+                    <span>🔗 Share this Theme</span>
+                </span>
+            </button>
         </div>
         <div id="download-status" style="margin-top: 10px; color: #666; display: none;">Starting download...</div>
 
@@ -514,11 +569,12 @@
                 <span class="install-modal-close" onclick="closeInstallModal()">&times;</span>
                 <h3>Prepare Your Y1 Device</h3>
                 <p>Before installing, please follow these steps:</p>
-                <ol>
+                <ol id="install-steps-list">
                     <li><strong>Power up your Y1 device</strong></li>
-                    <li><strong>Connect your Y1 to your computer via USB</strong></li>
+                    <li><strong>Connect your Y1 to your device via USB</strong></li>
                     <li><strong>Enable USB storage mode</strong> on your Y1 (if prompted)</li>
-                    <li>On the next screen, <strong>select the "Themes" folder</strong> on your Y1 device</li>
+                    <li id="android-step" style="display: none;"><strong>On Android:</strong> Press the <strong>☰ (three lines/hamburger menu)</strong> button at the top left of the file picker, then navigate to and select your Y1's <strong>"Themes" folder</strong> from the USB drive</li>
+                    <li id="desktop-step"><strong>On the next screen, select the "Themes" folder</strong> on your Y1 device</li>
                 </ol>
                 <p style="color: #666; font-size: 0.9rem; margin-top: 15px;">The installation will automatically copy all theme files to your device.</p>
                 <button class="install-modal-btn" onclick="proceedWithInstall()">Continue to Folder Selection</button>
@@ -531,19 +587,20 @@
         <div id="feature-support-section" style="margin-top: 30px; display: none;">
             <h3 style="font-family: 'ThemeFont', sans-serif;">Feature Support</h3>
             <div id="unsupported-features" style="background: #f9f9f9; border-radius: 8px; padding: 15px; border-left: 4px solid #ff9800;">
-                <p style="margin: 0 0 10px 0; font-weight: 600; color: #666;">⚠️ Features Not Supported by This Theme:</p>
-                <ul id="unsupported-features-list" style="margin: 0; padding-left: 20px; color: #888; list-style-type: disc;">
+                <p style="margin: 0 0 10px 0; font-weight: 600; color: #666;">To the creator:</p>
+                <p style="margin: 0 0 10px 0; font-size: 0.9rem; color: #666;">Add these images to your theme to ensure compatibility with:</p>
+                <ul id="unsupported-features-list" style="margin: 0 0 10px 0; padding-left: 20px; color: #888; list-style-type: disc;">
                     <!-- Features will be populated dynamically -->
                 </ul>
                 <p style="margin: 10px 0 0 0; font-size: 0.85rem; color: #999; font-style: italic;">
-                    These features may not be enabled for users yet, but theme creators should consider adding support for future system software releases. Feature names match those used in config.json (e.g., "backlight_60" = backlight setting at 60%).
+                    These features may not be available to users at present but are defined in the theme spec in firmware 2.8.2 and are to be expected in future releases and where features are only available in certain regions.
                 </p>
             </div>
         </div>
         
         <!-- SEO Content -->
         <div class="seo-content" style="margin-top: 40px; text-align: left; color: #666; font-size: 0.9rem; line-height: 1.6;">
-            <p>This theme was made by <strong>u/Neither-Classic2058</strong>. This theme is inspired by the BeOS operating system.</p>
+            <p><span id="description-display">This theme is inspired by the BeOS operating system.</span></p>
         </div>
         
         <div style="margin-top: 30px; font-size: 0.9rem; color: #888;">
@@ -557,6 +614,10 @@
     <div id="lightbox" class="lightbox" onclick="closeLightbox()">
         <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
         <img class="lightbox-content" id="lightbox-img" onclick="event.stopPropagation()">
+        <a id="lightbox-edit-btn" class="lightbox-edit-btn" href="#" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">
+            <span>✏️</span>
+            <span>View/Edit on GitHub</span>
+        </a>
     </div>
 
     <!-- Toast Notification -->
@@ -1059,12 +1120,25 @@
             
             folderName = decodeURIComponent(folderName);
 
-            // Check for File System Access API support
+            // Check for File System Access API support (works on Chrome desktop and Android)
             if ('showDirectoryPicker' in window) {
                 document.getElementById('install-btn').style.display = 'inline-block';
                 // Hide full download button, show small link
                 document.getElementById('download-btn-full').style.display = 'none';
                 document.getElementById('download-link-small').style.display = 'inline';
+                
+                // Detect Android and update install instructions
+                const isAndroid = /Android/i.test(navigator.userAgent);
+                const androidStep = document.getElementById('android-step');
+                const desktopStep = document.getElementById('desktop-step');
+                
+                if (isAndroid && androidStep && desktopStep) {
+                    androidStep.style.display = 'list-item';
+                    desktopStep.style.display = 'none';
+                } else if (androidStep && desktopStep) {
+                    androidStep.style.display = 'none';
+                    desktopStep.style.display = 'list-item';
+                }
             }
             
             // Apply theme button styling
@@ -1072,7 +1146,90 @@
             
             // Check for unsupported features
             await checkFeatureSupport();
+            
+            // Load and update author information with authorUrl link
+            await loadAuthorInfo();
         });
+        
+        // Load author information from config.json (priority) or themes.json (fallback)
+        async function loadAuthorInfo() {
+            try {
+                let author = 'u/Neither-Classic2058';
+                let authorUrl = null;
+                let description = 'This theme is inspired by the BeOS operating system.';
+                
+                // Try to load from config.json first (authoritative source)
+                try {
+                    const configResponse = await fetch('./config.json');
+                    if (configResponse.ok) {
+                        const config = await configResponse.json();
+                        if (config.author) author = config.author;
+                        if (config.authorUrl) authorUrl = config.authorUrl;
+                        if (config.description) description = config.description;
+                    }
+                } catch (e) {
+                    console.warn('Could not load config.json:', e);
+                }
+                
+                // Fallback to themes.json if authorUrl not found in config.json
+                if (!authorUrl) {
+                    try {
+                        const themesResponse = await fetch('../themes.json');
+                        if (themesResponse.ok) {
+                            const themesData = await themesResponse.json();
+                            const currentPath = window.location.pathname;
+                            let folderName = '';
+                            const pathParts = currentPath.split('/');
+                            if (pathParts[pathParts.length - 1].toLowerCase() === 'index.html' || pathParts[pathParts.length - 1] === '') {
+                                folderName = pathParts[pathParts.length - 2];
+                            } else {
+                                folderName = pathParts[pathParts.length - 1];
+                            }
+                            folderName = decodeURIComponent(folderName);
+                            
+                            const theme = themesData.themes.find(t => t.folder === folderName);
+                            if (theme) {
+                                if (theme.author) author = theme.author;
+                                if (theme.authorUrl) authorUrl = theme.authorUrl;
+                                if (theme.description) description = theme.description;
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Could not load themes.json:', e);
+                    }
+                }
+                
+                // Update author display with link if authorUrl is available
+                const authorDisplay = document.getElementById('author-display');
+                const descriptionDisplay = document.getElementById('description-display');
+                
+                if (authorDisplay) {
+                    if (authorUrl) {
+                        authorDisplay.innerHTML = `<a href="${authorUrl}" target="_blank" rel="noopener noreferrer" style="color: #667eea; text-decoration: none; border-bottom: 1px solid #667eea; transition: all 0.2s;">$u/Neither-Classic2058</a>`;
+                        // Add hover effect
+                        const authorLink = authorDisplay.querySelector('a');
+                        if (authorLink) {
+                            authorLink.addEventListener('mouseenter', function() {
+                                this.style.color = '#764ba2';
+                                this.style.borderBottomColor = '#764ba2';
+                            });
+                            authorLink.addEventListener('mouseleave', function() {
+                                this.style.color = '#667eea';
+                                this.style.borderBottomColor = '#667eea';
+                            });
+                        }
+                    } else {
+                        authorDisplay.textContent = author;
+                    }
+                }
+                
+                if (descriptionDisplay) {
+                    descriptionDisplay.textContent = description;
+                }
+            } catch (error) {
+                console.warn('Could not load author information:', error);
+            }
+        }
         
         // Check which features are not supported by this theme
         async function checkFeatureSupport() {
@@ -1228,35 +1385,78 @@
                 btn.textContent = '⏳ Installing...';
                 status.textContent = 'Fetching file list...';
 
-                // 2. Get files from GitHub
-                const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${folderName}`;
-                const response = await fetch(apiUrl);
-                if (!response.ok) throw new Error('Failed to fetch file list');
-                const files = await response.json();
+                // 2. Get all files from GitHub (recursive - handles subdirectories)
+                async function getAllFilesRecursive(path = folderName, basePath = '') {
+                    const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${path}`;
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) {
+                        console.warn(`Failed to fetch ${path}, trying alternative method`);
+                        return [];
+                    }
+                    const items = await response.json();
+                    const allFiles = [];
+                    
+                    for (const item of items) {
+                        if (item.type === 'file') {
+                            allFiles.push({
+                                name: basePath ? `${basePath}/${item.name}` : item.name,
+                                download_url: item.download_url,
+                                path: item.path
+                            });
+                        } else if (item.type === 'dir') {
+                            // Recursively get files from subdirectories
+                            const subPath = item.path;
+                            const subBasePath = basePath ? `${basePath}/${item.name}` : item.name;
+                            const subFiles = await getAllFilesRecursive(subPath, subBasePath);
+                            allFiles.push(...subFiles);
+                        }
+                    }
+                    
+                    return allFiles;
+                }
+                
+                const allFiles = await getAllFilesRecursive();
+                
+                if (allFiles.length === 0) {
+                    throw new Error('No files found. The theme may be empty or the repository structure has changed.');
+                }
 
                 // 3. Create theme folder on device
                 const themeDir = await dirHandle.getDirectoryHandle(folderName, { create: true });
 
                 let processed = 0;
-                const total = files.filter(f => f.type === 'file').length;
+                const total = allFiles.length;
 
-                // 4. Download and write each file
-                for (const file of files) {
-                    if (file.type === 'file') {
-                        status.textContent = `Installing ${file.name} (${processed + 1}/${total})...`;
-                        
-                        // Fetch content
-                        const fileResponse = await fetch(file.download_url);
-                        const blob = await fileResponse.blob();
-                        
-                        // Write to device
-                        const fileHandle = await themeDir.getFileHandle(file.name, { create: true });
-                        const writable = await fileHandle.createWritable();
-                        await writable.write(blob);
-                        await writable.close();
-                        
-                        processed++;
+                // 4. Download and write each file (handles nested paths)
+                for (const file of allFiles) {
+                    status.textContent = `Installing ${file.name} (${processed + 1}/${total})...`;
+                    
+                    // Handle nested paths - create subdirectories if needed
+                    const pathParts = file.name.split('/');
+                    let currentDir = themeDir;
+                    
+                    // Create subdirectories if file is in a subdirectory
+                    for (let i = 0; i < pathParts.length - 1; i++) {
+                        currentDir = await currentDir.getDirectoryHandle(pathParts[i], { create: true });
                     }
+                    
+                    const fileName = pathParts[pathParts.length - 1];
+                    
+                    // Fetch content
+                    const fileResponse = await fetch(file.download_url);
+                    if (!fileResponse.ok) {
+                        console.warn(`Failed to fetch ${file.name}, skipping...`);
+                        continue;
+                    }
+                    const blob = await fileResponse.blob();
+                    
+                    // Write to device
+                    const fileHandle = await currentDir.getFileHandle(fileName, { create: true });
+                    const writable = await fileHandle.createWritable();
+                    await writable.write(blob);
+                    await writable.close();
+                    
+                    processed++;
                 }
 
                 btn.textContent = '✅ Installed!';
@@ -1296,24 +1496,65 @@
                 // Create a folder inside the zip with the theme name
                 const themeFolder = zip.folder(folderName);
                 
-                // Get all files from GitHub
-                const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${folderName}`;
-                const response = await fetch(apiUrl);
-                if (!response.ok) throw new Error('Failed to fetch file list');
-                const files = await response.json();
+                // Get all files from GitHub (recursive - handles subdirectories)
+                async function getAllFilesRecursive(path = folderName, basePath = '') {
+                    const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${path}`;
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) {
+                        console.warn(`Failed to fetch ${path}, trying alternative method`);
+                        return [];
+                    }
+                    const items = await response.json();
+                    const allFiles = [];
+                    
+                    for (const item of items) {
+                        if (item.type === 'file') {
+                            allFiles.push({
+                                name: basePath ? `${basePath}/${item.name}` : item.name,
+                                download_url: item.download_url,
+                                path: item.path
+                            });
+                        } else if (item.type === 'dir') {
+                            // Recursively get files from subdirectories
+                            const subPath = item.path;
+                            const subBasePath = basePath ? `${basePath}/${item.name}` : item.name;
+                            const subFiles = await getAllFilesRecursive(subPath, subBasePath);
+                            allFiles.push(...subFiles);
+                        }
+                    }
+                    
+                    return allFiles;
+                }
+                
+                const allFiles = await getAllFilesRecursive();
+                
+                if (allFiles.length === 0) {
+                    throw new Error('No files found. The theme may be empty or the repository structure has changed.');
+                }
                 
                 let processed = 0;
-                const total = files.filter(f => f.type === 'file').length;
+                const total = allFiles.length;
                 
-                // Download each file
-                for (const file of files) {
-                    if (file.type === 'file') {
-                        status.textContent = `Downloading ${file.name} (${processed + 1}/${total})...`;
+                // Download each file (handles nested paths)
+                for (const file of allFiles) {
+                    status.textContent = `Downloading ${file.name} (${processed + 1}/${total})...`;
+                    
+                    try {
                         const fileResponse = await fetch(file.download_url);
+                        if (!fileResponse.ok) {
+                            console.warn(`Failed to fetch ${file.name}, skipping...`);
+                            continue;
+                        }
                         const blob = await fileResponse.blob();
                         const arrayBuffer = await blob.arrayBuffer();
-                        themeFolder.file(file.name, arrayBuffer);
+                        
+                        // Handle nested paths in ZIP
+                        const zipPath = file.name;
+                        themeFolder.file(zipPath, arrayBuffer);
                         processed++;
+                    } catch (err) {
+                        console.warn(`Error downloading ${file.name}:`, err);
+                        // Continue with other files
                     }
                 }
                 
@@ -1350,9 +1591,32 @@
         function openLightbox(imgSrc) {
             const lightbox = document.getElementById('lightbox');
             const lightboxImg = document.getElementById('lightbox-img');
+            const editBtn = document.getElementById('lightbox-edit-btn');
+            
             lightboxImg.src = imgSrc;
             lightbox.classList.add('active');
             document.body.style.overflow = 'hidden';
+            
+            // Extract filename from image source and construct GitHub URL
+            // Image source format: ./filename.png or ./themeFolder/filename.png
+            // We need: https://github.com/y1-community/InnioasisY1Themes/tree/main/{folderName}/{filename}
+            const folderName = 'Be';
+            let filename = '';
+            
+            // Remove leading ./ if present
+            const cleanSrc = imgSrc.replace(/^\.\//, '');
+            
+            // If the path contains a folder (shouldn't happen for theme page images, but handle it)
+            if (cleanSrc.includes('/')) {
+                const parts = cleanSrc.split('/');
+                filename = parts[parts.length - 1];
+            } else {
+                filename = cleanSrc;
+            }
+            
+            // Construct GitHub URL
+            const githubUrl = `https://github.com/y1-community/InnioasisY1Themes/tree/main/${encodeURIComponent(folderName)}/${encodeURIComponent(filename)}`;
+            editBtn.href = githubUrl;
         }
 
         function closeLightbox() {
@@ -1517,10 +1781,10 @@
             loadThemeImages();
         });
     </script>
-<div class="bg-cycle"></div>
+    <div class="bg-cycle"></div>
 <script>
     // Background cycling logic
-    const bgImages = [{background_images}];
+    const bgImages = ['@be_itemselectedbackground.png', '@be_itembackground.png', '@be_itembackgroundclear.png', '@be_dialogoptionselectedbackground.png'];
     if (bgImages.length) {
         const bgDiv = document.querySelector('.bg-cycle');
         let idx = 0;

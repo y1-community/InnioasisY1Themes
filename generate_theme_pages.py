@@ -203,13 +203,16 @@ html_template = """<!DOCTYPE html>
             background: transparent;
             color: #666;
             border: 1px solid #ddd;
-            padding: 8px 15px;
-            font-size: 0.9rem;
+            padding: 12px 16px;
+            font-size: 0.95rem;
             box-shadow: none;
             text-shadow: none;
+            width: 100%;
         }
         .btn.share:hover {
             background: #f5f5f5;
+            border-color: #667eea;
+            color: #667eea;
             /* No transform - buttons should not grow on hover */
         }
         /* Ensure button content is always visible above background */
@@ -239,15 +242,19 @@ html_template = """<!DOCTYPE html>
             z-index: 3;
         }
         /* Arrow icon - hidden on desktop by default, shown on hover/focus/active */
+        /* Use opacity/visibility to prevent layout shifts */
         .btn .arrow-icon {
             height: 100%;
             max-height: 100%;
-            width: auto;
+            width: 0;
+            overflow: hidden;
             flex-shrink: 0;
-            display: none;
-            margin-left: 8px;
+            opacity: 0;
+            visibility: hidden;
+            margin-left: 0;
             position: relative;
             z-index: 3;
+            transition: opacity 0.2s, visibility 0.2s, width 0.2s, margin-left 0.2s;
         }
         
         .btn .arrow-icon img {
@@ -263,14 +270,20 @@ html_template = """<!DOCTYPE html>
         @media (hover: hover) {
             .btn:hover .arrow-icon,
             .btn:focus .arrow-icon {
-                display: block;
+                opacity: 1;
+                visibility: visible;
+                width: auto;
+                margin-left: 8px;
             }
         }
         
         /* Show arrow on mobile (always visible) */
         @media (hover: none) {
             .btn .arrow-icon {
-                display: block;
+                opacity: 1;
+                visibility: visible;
+                width: auto;
+                margin-left: 8px;
             }
         }
         {font_css}
@@ -625,6 +638,11 @@ html_template = """<!DOCTYPE html>
                 </span>
             </button>
             <a href="#" id="download-link-small" onclick="downloadTheme(); return false;" class="download-link-small" style="display: none;">📦 Download ZIP instead</a>
+            <button onclick="shareTheme()" class="btn share" style="margin-top: 10px;">
+                <span style="display: flex; align-items: center; justify-content: center; width: 100%;">
+                    <span>🔗 Share this Theme</span>
+                </span>
+            </button>
         </div>
         <div id="download-status" style="margin-top: 10px; color: #666; display: none;">Starting download...</div>
 
@@ -1450,35 +1468,78 @@ html_template = """<!DOCTYPE html>
                 btn.textContent = '⏳ Installing...';
                 status.textContent = 'Fetching file list...';
 
-                // 2. Get files from GitHub
-                const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${folderName}`;
-                const response = await fetch(apiUrl);
-                if (!response.ok) throw new Error('Failed to fetch file list');
-                const files = await response.json();
+                // 2. Get all files from GitHub (recursive - handles subdirectories)
+                async function getAllFilesRecursive(path = folderName, basePath = '') {
+                    const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${path}`;
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) {
+                        console.warn(`Failed to fetch ${path}, trying alternative method`);
+                        return [];
+                    }
+                    const items = await response.json();
+                    const allFiles = [];
+                    
+                    for (const item of items) {
+                        if (item.type === 'file') {
+                            allFiles.push({
+                                name: basePath ? `${basePath}/${item.name}` : item.name,
+                                download_url: item.download_url,
+                                path: item.path
+                            });
+                        } else if (item.type === 'dir') {
+                            // Recursively get files from subdirectories
+                            const subPath = item.path;
+                            const subBasePath = basePath ? `${basePath}/${item.name}` : item.name;
+                            const subFiles = await getAllFilesRecursive(subPath, subBasePath);
+                            allFiles.push(...subFiles);
+                        }
+                    }
+                    
+                    return allFiles;
+                }
+                
+                const allFiles = await getAllFilesRecursive();
+                
+                if (allFiles.length === 0) {
+                    throw new Error('No files found. The theme may be empty or the repository structure has changed.');
+                }
 
                 // 3. Create theme folder on device
                 const themeDir = await dirHandle.getDirectoryHandle(folderName, { create: true });
 
                 let processed = 0;
-                const total = files.filter(f => f.type === 'file').length;
+                const total = allFiles.length;
 
-                // 4. Download and write each file
-                for (const file of files) {
-                    if (file.type === 'file') {
-                        status.textContent = `Installing ${file.name} (${processed + 1}/${total})...`;
-                        
-                        // Fetch content
-                        const fileResponse = await fetch(file.download_url);
-                        const blob = await fileResponse.blob();
-                        
-                        // Write to device
-                        const fileHandle = await themeDir.getFileHandle(file.name, { create: true });
-                        const writable = await fileHandle.createWritable();
-                        await writable.write(blob);
-                        await writable.close();
-                        
-                        processed++;
+                // 4. Download and write each file (handles nested paths)
+                for (const file of allFiles) {
+                    status.textContent = `Installing ${file.name} (${processed + 1}/${total})...`;
+                    
+                    // Handle nested paths - create subdirectories if needed
+                    const pathParts = file.name.split('/');
+                    let currentDir = themeDir;
+                    
+                    // Create subdirectories if file is in a subdirectory
+                    for (let i = 0; i < pathParts.length - 1; i++) {
+                        currentDir = await currentDir.getDirectoryHandle(pathParts[i], { create: true });
                     }
+                    
+                    const fileName = pathParts[pathParts.length - 1];
+                    
+                    // Fetch content
+                    const fileResponse = await fetch(file.download_url);
+                    if (!fileResponse.ok) {
+                        console.warn(`Failed to fetch ${file.name}, skipping...`);
+                        continue;
+                    }
+                    const blob = await fileResponse.blob();
+                    
+                    // Write to device
+                    const fileHandle = await currentDir.getFileHandle(fileName, { create: true });
+                    const writable = await fileHandle.createWritable();
+                    await writable.write(blob);
+                    await writable.close();
+                    
+                    processed++;
                 }
 
                 btn.textContent = '✅ Installed!';
@@ -1518,24 +1579,65 @@ html_template = """<!DOCTYPE html>
                 // Create a folder inside the zip with the theme name
                 const themeFolder = zip.folder(folderName);
                 
-                // Get all files from GitHub
-                const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${folderName}`;
-                const response = await fetch(apiUrl);
-                if (!response.ok) throw new Error('Failed to fetch file list');
-                const files = await response.json();
+                // Get all files from GitHub (recursive - handles subdirectories)
+                async function getAllFilesRecursive(path = folderName, basePath = '') {
+                    const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${path}`;
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) {
+                        console.warn(`Failed to fetch ${path}, trying alternative method`);
+                        return [];
+                    }
+                    const items = await response.json();
+                    const allFiles = [];
+                    
+                    for (const item of items) {
+                        if (item.type === 'file') {
+                            allFiles.push({
+                                name: basePath ? `${basePath}/${item.name}` : item.name,
+                                download_url: item.download_url,
+                                path: item.path
+                            });
+                        } else if (item.type === 'dir') {
+                            // Recursively get files from subdirectories
+                            const subPath = item.path;
+                            const subBasePath = basePath ? `${basePath}/${item.name}` : item.name;
+                            const subFiles = await getAllFilesRecursive(subPath, subBasePath);
+                            allFiles.push(...subFiles);
+                        }
+                    }
+                    
+                    return allFiles;
+                }
+                
+                const allFiles = await getAllFilesRecursive();
+                
+                if (allFiles.length === 0) {
+                    throw new Error('No files found. The theme may be empty or the repository structure has changed.');
+                }
                 
                 let processed = 0;
-                const total = files.filter(f => f.type === 'file').length;
+                const total = allFiles.length;
                 
-                // Download each file
-                for (const file of files) {
-                    if (file.type === 'file') {
-                        status.textContent = `Downloading ${file.name} (${processed + 1}/${total})...`;
+                // Download each file (handles nested paths)
+                for (const file of allFiles) {
+                    status.textContent = `Downloading ${file.name} (${processed + 1}/${total})...`;
+                    
+                    try {
                         const fileResponse = await fetch(file.download_url);
+                        if (!fileResponse.ok) {
+                            console.warn(`Failed to fetch ${file.name}, skipping...`);
+                            continue;
+                        }
                         const blob = await fileResponse.blob();
                         const arrayBuffer = await blob.arrayBuffer();
-                        themeFolder.file(file.name, arrayBuffer);
+                        
+                        // Handle nested paths in ZIP
+                        const zipPath = file.name;
+                        themeFolder.file(zipPath, arrayBuffer);
                         processed++;
+                    } catch (err) {
+                        console.warn(`Error downloading ${file.name}:`, err);
+                        // Continue with other files
                     }
                 }
                 

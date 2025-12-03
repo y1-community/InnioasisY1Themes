@@ -2824,10 +2824,17 @@
         function applyFiltersAndPagination() {
             // Filter by author and device-only
             filteredThemes = allThemes.filter(theme => {
-                // Device-only filter: if enabled, only show themes that are on device but not on website
+                // Device-only filter logic:
+                // - If enabled: only show themes that are on device but NOT on website
+                // - If disabled: show all themes from website (exclude device-only themes, but include themes on both)
+                const isDeviceOnly = theme.installed && !theme.availableOnServer;
+                
                 if (showDeviceOnly) {
-                    const isDeviceOnly = theme.installed && !theme.availableOnServer;
+                    // Filter ON: only show device-only themes
                     if (!isDeviceOnly) return false;
+                } else {
+                    // Filter OFF: exclude device-only themes (show only website themes, including those also on device)
+                    if (isDeviceOnly) return false;
                 }
                 
                 // Author filter
@@ -3246,13 +3253,7 @@
                                 </span>
                             </button>
                         ` : isDeviceOnly ? `
-                            <a href="https://github.com/y1-community/InnioasisY1Themes/tree/main?tab=readme-ov-file#-method-3-github-repository" target="_blank" onclick="event.stopPropagation();" style="display: inline-block; width: 100%; text-decoration: none;">
-                                <button class="install-btn" style="${buttonStyle} position: relative; z-index: 1; cursor: pointer;">
-                                    <span style="display: flex; align-items: center; justify-content: space-between; width: 100%; position: relative; z-index: 2;">
-                                        <span style="position: relative; z-index: 3; flex: 1; text-align: left;">Add to website</span>
-                                    </span>
-                                </button>
-                            </a>
+                            <!-- Device-only themes don't need Install/Download button - they're already on device -->
                         ` : `
                             <button class="install-btn install" 
                                     data-theme-folder="${theme.folder}"
@@ -3274,11 +3275,19 @@
                             </a>
                         </div>
                     </div>
-                    <div class="theme-edit-link" style="margin-top: 10px; text-align: center; padding-top: 10px; border-top: 1px solid #e0e0e0;">
-                        <a href="https://github.com/y1-community/InnioasisY1Themes/tree/main/${encodeURIComponent(theme.folder)}#readme" target="_blank" onclick="event.stopPropagation();" style="color: #888; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; transition: color 0.2s;">
-                            ✏️ Edit
-                        </a>
-                    </div>
+                    ${isDeviceOnly ? `
+                        <div class="theme-edit-link" style="margin-top: 10px; text-align: center; padding-top: 10px; border-top: 1px solid #e0e0e0;">
+                            <a href="https://github.com/y1-community/InnioasisY1Themes/tree/main?tab=readme-ov-file#-method-3-github-repository" target="_blank" onclick="event.stopPropagation();" style="color: #888; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; transition: color 0.2s;">
+                                ➕ Add to website
+                            </a>
+                        </div>
+                    ` : `
+                        <div class="theme-edit-link" style="margin-top: 10px; text-align: center; padding-top: 10px; border-top: 1px solid #e0e0e0;">
+                            <a href="https://github.com/y1-community/InnioasisY1Themes/tree/main/${encodeURIComponent(theme.folder)}#readme" target="_blank" onclick="event.stopPropagation();" style="color: #888; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; transition: color 0.2s;">
+                                ✏️ Edit
+                            </a>
+                        </div>
+                    `}
                 </div>
                 `;
             }).join('');
