@@ -505,7 +505,7 @@
 
         .install-btn {
             width: 100%;
-            padding: 12px;
+            padding: 12px 16px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
@@ -514,6 +514,9 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
+            text-align: left;
+            display: flex;
+            align-items: center;
         }
 
         .install-btn:hover {
@@ -2874,10 +2877,14 @@
                     buttonBgStyle = `background-color: ${buttonBgColor};`;
                 }
                 
-                // Button text = menu background color (what stands out against the selected background)
-                // Fallback to unselected text color if menu background isn't available
-                const buttonTextColor = menuConfig.menuBackgroundColor || dialogConfig.dialogBackgroundColor || 
-                                      menuConfig.menuItemTextColor || itemConfig.itemTextColor || '#ffffff';
+                // Button text = selected menu item text color (the color that stands out on selected items)
+                const buttonTextColor = menuConfig.menuItemSelectedTextColor || itemConfig.itemSelectedTextColor || '#ffffff';
+                
+                // Get itemRightArrow icon (2.png) for button
+                const itemRightArrow = itemConfig.itemRightArrow || null;
+                const arrowIcon = itemRightArrow && itemRightArrow.trim() !== '' 
+                    ? `<img src="./${encodeURIComponent(theme.folder)}/${encodeURIComponent(itemRightArrow)}" alt="→" style="height: 1em; width: auto; vertical-align: middle; margin-left: auto; display: block;">`
+                    : '';
                 
                 // Build button style with theme colors and image
                 const buttonStyle = `${buttonBgStyle} color: ${buttonTextColor}; ${fontStyle}`;
@@ -2918,7 +2925,9 @@
                                     onclick="updateSingleTheme(${allThemesIndex >= 0 ? allThemesIndex : displayIndex}, event)" 
                                     style="${buttonStyle}"
                                     ${!deviceFolderHandle ? 'disabled' : ''}>
-                                🔄 Update
+                                <span style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                                    <span>🔄 Update</span>${arrowIcon}
+                                </span>
                             </button>
                         ` : isDeviceOnly ? `
                             <!-- No button for device-only themes (not available on server) -->
@@ -2926,7 +2935,9 @@
                             <button class="install-btn install" 
                                     onclick="${isMobileMode || !deviceFolderHandle ? 'downloadSingleTheme' : 'installSingleTheme'}(${allThemesIndex >= 0 ? allThemesIndex : displayIndex}, event)"
                                     style="${buttonStyle}">
-                                ${isMobileMode || !deviceFolderHandle ? '📦 Download' : '📥 Install'}
+                                <span style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                                    <span>${isMobileMode || !deviceFolderHandle ? '📦 Download' : '📥 Install'}</span>${arrowIcon}
+                                </span>
                             </button>
                         `}
                         <a href="#" class="share-link-mobile" onclick="shareThemeLink('${theme.folder}', event); return false;" style="display: none; margin-top: 8px; text-align: center; color: #667eea; text-decoration: none; ${fontStyle}">
