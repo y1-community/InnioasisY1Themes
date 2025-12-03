@@ -565,6 +565,22 @@
                 </button>
             </div>
 
+            <!-- Filters and Pagination Controls -->
+            <div id="filters-container" style="display: none; margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                <div style="display: flex; flex-wrap: wrap; gap: 15px; align-items: center; margin-bottom: 15px;">
+                    <label for="author-filter" style="font-weight: 600; color: #333;">Filter by Author:</label>
+                    <select id="author-filter" onchange="handleAuthorFilterChange()" style="padding: 8px 12px; border: 2px solid #667eea; border-radius: 8px; font-size: 1rem; background: white; cursor: pointer;">
+                        <option value="All">All</option>
+                    </select>
+                    <span id="theme-count" style="margin-left: auto; color: #666; font-weight: 500;"></span>
+                </div>
+                <div id="pagination-controls" style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 15px;">
+                    <button id="prev-page" onclick="changePage(-1)" class="btn btn-secondary" disabled>← Previous</button>
+                    <span id="page-info" style="padding: 0 15px; font-weight: 600; color: #333;"></span>
+                    <button id="next-page" onclick="changePage(1)" class="btn btn-secondary">Next →</button>
+                </div>
+            </div>
+
             <div id="theme-grid" class="theme-grid"></div>
 
             <div class="info-cards-grid"
@@ -923,6 +939,15 @@
         ];
         let deviceFolderHandle = null;
         let selectedThemes = new Set();
+        
+        // Pagination and filtering variables
+        let currentPage = 1;
+        let themesPerPage = 12;
+        let selectedAuthor = 'All';
+        let allThemes = []; // Store all themes before filtering
+        let filteredThemes = []; // Themes after filtering
+        let displayedThemes = []; // Themes for current page
+        let themeFonts = new Map(); // Cache loaded fonts for themes
 
         // Check if File System Access API is supported
         if (!('showDirectoryPicker' in window)) {
@@ -1119,13 +1144,17 @@
                 // Convert map to array
                 themes = Array.from(themeMap.values());
 
-
                 if (themes.length === 0) {
                     showStatus('⚠️ No themes found. Connect your device or check the theme repository.', 'error');
                     return;
                 }
 
-                renderThemes();
+                // Sort themes alphabetically
+                sortThemes();
+                
+                // Store all themes and apply filters/pagination
+                allThemes = [...themes];
+                applyFiltersAndPagination();
                 const installedCount = themes.filter(t => t.installed).length;
                 const serverCount = themes.filter(t => t.availableOnServer).length;
                 const deviceOnlyCount = themes.filter(t => !t.availableOnServer && t.installed).length;
@@ -1147,11 +1176,58 @@
         }
 
         // Discover themes available on the server with caching
+        // FIXED: Always use themes.json first for GitHub Pages compatibility
         async function discoverServerThemes() {
             let discovered = [];
 
             try {
-                // First try to discover themes from local directory listing
+                // ALWAYS try themes.json first - this works on both local and GitHub Pages
+                try {
+                    const response = await fetch('./themes.json');
+                    if (response.ok) {
+                        const themesData = await response.json();
+                        console.log('✅ Found themes.json - using as primary source!');
+                        
+                        // Process themes from JSON
+                        discovered = (themesData.themes || []).map(themeData => ({
+                            name: themeData.name || themeData.folder,
+                            folder: themeData.folder,
+                            screenshot: themeData.screenshot || null,
+                            description: themeData.description || `Y1 Theme: ${themeData.folder}`,
+                            author: themeData.author || 'Unknown',
+                            authorUrl: themeData.authorUrl || null,
+                            themeInfo: themeData,
+                            fromJson: true,
+                            needsConfigRefresh: true // Mark for config.json refresh
+                        }));
+
+                        console.log(`📋 Loaded ${discovered.length} themes from themes.json`);
+                        
+                        // Try to discover additional themes not in JSON (for local development)
+                        try {
+                            const localThemes = await discoverLocalThemes();
+                            const jsonFolders = new Set(discovered.map(t => t.folder));
+                            const additionalThemes = localThemes.filter(t => !jsonFolders.has(t.folder));
+                            if (additionalThemes.length > 0) {
+                                console.log(`🆕 Found ${additionalThemes.length} additional theme(s) not in themes.json`);
+                                discovered = [...discovered, ...additionalThemes];
+                            }
+                        } catch (localError) {
+                            console.log('Local discovery not available (expected on GitHub Pages)');
+                        }
+                        
+                        // Load config.json for all themes in background
+                        setTimeout(() => {
+                            loadThemeDetailsInBackground(discovered);
+                        }, 0);
+                        
+                        return discovered;
+                    }
+                } catch (jsonError) {
+                    console.log('themes.json not found, trying other methods...');
+                }
+
+                // If themes.json fails, try local directory listing (for local development)
                 const localThemes = await discoverLocalThemes();
                 if (localThemes.length > 0) {
                     console.log(`Found ${localThemes.length} themes from local directory`);
@@ -1171,8 +1247,9 @@
                             if (updatedThemes.length > 0) {
                                 console.log(`Refreshed ${updatedThemes.length} themes from remote`);
                                 // Update the themes array and re-render
-                                themes = updatedThemes;
-                                renderThemes();
+                                allThemes = updatedThemes;
+                                sortThemes();
+                                applyFiltersAndPagination();
                                 showStatus(`✅ Refreshed ${updatedThemes.length} themes from server!`, 'success');
                             }
                         }).catch(error => {
@@ -1507,9 +1584,11 @@
 
             // Filter out non-existent themes
             themes = themes.filter(theme => theme.exists !== false);
+            allThemes = [...themes];
 
             // Re-render with updated authoritative data
-            renderThemes();
+            sortThemes();
+            applyFiltersAndPagination();
 
             const successCount = results.filter(r => r).length;
             console.log(`✅ Refreshed ${successCount} theme(s) with authoritative data from config.json`);
@@ -2310,32 +2389,324 @@
             return installed;
         }
 
+        // Sort themes alphabetically by name
+        function sortThemes() {
+            themes.sort((a, b) => {
+                const nameA = (a.name || a.folder || '').toLowerCase();
+                const nameB = (b.name || b.folder || '').toLowerCase();
+                return nameA.localeCompare(nameB);
+            });
+        }
+
+        // Get all unique authors from themes (replace "Unknown" with "All")
+        function getUniqueAuthors() {
+            const authors = new Set();
+            allThemes.forEach(theme => {
+                const author = theme.author || 'Unknown';
+                authors.add(author === 'Unknown' ? 'All' : author);
+            });
+            return Array.from(authors).sort();
+        }
+
+        // Update author filter dropdown
+        function updateAuthorFilter() {
+            const authorFilter = document.getElementById('author-filter');
+            if (!authorFilter) return;
+            
+            const currentValue = authorFilter.value;
+            authorFilter.innerHTML = '<option value="All">All</option>';
+            
+            const authors = getUniqueAuthors();
+            authors.forEach(author => {
+                if (author !== 'All') {
+                    const option = document.createElement('option');
+                    option.value = author;
+                    option.textContent = author;
+                    authorFilter.appendChild(option);
+                }
+            });
+            
+            // Restore selection if it still exists
+            if (currentValue && authors.includes(currentValue)) {
+                authorFilter.value = currentValue;
+                selectedAuthor = currentValue;
+            }
+        }
+
+        // Apply filters and pagination
+        function applyFiltersAndPagination() {
+            // Filter by author
+            filteredThemes = allThemes.filter(theme => {
+                if (selectedAuthor === 'All') {
+                    return true;
+                }
+                const themeAuthor = theme.author || 'Unknown';
+                return (themeAuthor === 'Unknown' ? 'All' : themeAuthor) === selectedAuthor;
+            });
+
+            // Calculate pagination
+            const totalPages = Math.ceil(filteredThemes.length / themesPerPage);
+            currentPage = Math.min(currentPage, Math.max(1, totalPages));
+            
+            // Get themes for current page
+            const startIndex = (currentPage - 1) * themesPerPage;
+            const endIndex = startIndex + themesPerPage;
+            displayedThemes = filteredThemes.slice(startIndex, endIndex);
+            
+            // Update themes array for rendering
+            themes = displayedThemes;
+            
+            // Update UI
+            updatePaginationControls();
+            updateThemeCount();
+            renderThemes();
+        }
+
+        // Handle author filter change
+        function handleAuthorFilterChange() {
+            const authorFilter = document.getElementById('author-filter');
+            if (!authorFilter) return;
+            
+            selectedAuthor = authorFilter.value;
+            currentPage = 1; // Reset to first page
+            applyFiltersAndPagination();
+        }
+
+        // Change page
+        function changePage(direction) {
+            const totalPages = Math.ceil(filteredThemes.length / themesPerPage);
+            const newPage = currentPage + direction;
+            
+            if (newPage >= 1 && newPage <= totalPages) {
+                currentPage = newPage;
+                applyFiltersAndPagination();
+                
+                // Scroll to top of theme grid
+                const themeGrid = document.getElementById('theme-grid');
+                if (themeGrid) {
+                    themeGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        }
+
+        // Update pagination controls
+        function updatePaginationControls() {
+            const prevBtn = document.getElementById('prev-page');
+            const nextBtn = document.getElementById('next-page');
+            const pageInfo = document.getElementById('page-info');
+            
+            if (!prevBtn || !nextBtn || !pageInfo) return;
+            
+            const totalPages = Math.ceil(filteredThemes.length / themesPerPage);
+            
+            prevBtn.disabled = currentPage <= 1;
+            nextBtn.disabled = currentPage >= totalPages;
+            
+            if (totalPages > 0) {
+                pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+            } else {
+                pageInfo.textContent = 'No themes';
+            }
+        }
+
+        // Update theme count display
+        function updateThemeCount() {
+            const themeCount = document.getElementById('theme-count');
+            if (!themeCount) return;
+            
+            const total = filteredThemes.length;
+            const start = total > 0 ? (currentPage - 1) * themesPerPage + 1 : 0;
+            const end = Math.min(currentPage * themesPerPage, total);
+            
+            if (total > 0) {
+                themeCount.textContent = `Showing ${start}-${end} of ${total} theme${total !== 1 ? 's' : ''}`;
+            } else {
+                themeCount.textContent = 'No themes found';
+            }
+        }
+
+        // Find and load TTF font for a theme
+        async function loadThemeFont(themeFolder) {
+            // Check cache first
+            if (themeFonts.has(themeFolder)) {
+                return themeFonts.get(themeFolder);
+            }
+            
+            try {
+                let fontUrl = null;
+                let fontName = null;
+                
+                // First, try to get config.json to see if there's a font reference
+                try {
+                    const configResponse = await fetch(`./${encodeURIComponent(themeFolder)}/config.json`);
+                    if (configResponse.ok) {
+                        const config = await configResponse.json();
+                        // Check for font references in config - look for .ttf in any string value
+                        const configStr = JSON.stringify(config);
+                        const fontMatches = configStr.match(/"([^"]*\.ttf[^"]*)"/gi);
+                        if (fontMatches && fontMatches.length > 0) {
+                            // Get the first TTF reference found
+                            fontName = fontMatches[0].replace(/"/g, '');
+                            fontUrl = `./${encodeURIComponent(themeFolder)}/${encodeURIComponent(fontName)}`;
+                        }
+                    }
+                } catch (e) {
+                    // Config.json might not exist or be accessible
+                }
+                
+                // If no font from config, try common patterns
+                if (!fontUrl) {
+                    const fontPatterns = [
+                        'font.ttf', 'Font.ttf', 'FONT.ttf',
+                        'theme.ttf', 'Theme.ttf',
+                        '*.ttf', '*.TTF'
+                    ];
+                    
+                    for (const pattern of fontPatterns) {
+                        if (pattern.startsWith('*')) continue; // Skip wildcard patterns for now
+                        try {
+                            const testUrl = `./${encodeURIComponent(themeFolder)}/${pattern}`;
+                            const response = await fetch(testUrl, { method: 'HEAD' });
+                            if (response.ok) {
+                                fontUrl = testUrl;
+                                fontName = pattern;
+                                break;
+                            }
+                        } catch (e) {
+                            // Continue to next pattern
+                        }
+                    }
+                }
+                
+                // If still no font, try to discover from directory (GitHub API)
+                if (!fontUrl) {
+                    try {
+                        // Try GitHub API if we're on GitHub Pages
+                        const hostname = window.location.hostname;
+                        if (hostname.includes('github.io') || hostname.includes('innioasis.app') || hostname.includes('themes.innioasis.app')) {
+                            const apiUrl = `https://api.github.com/repos/team-slide/InnioasisY1Themes/contents/${encodeURIComponent(themeFolder)}`;
+                            const response = await fetch(apiUrl);
+                            if (response.ok) {
+                                const contents = await response.json();
+                                const ttfFile = contents.find(item => 
+                                    item.type === 'file' && 
+                                    (item.name.toLowerCase().endsWith('.ttf'))
+                                );
+                                if (ttfFile) {
+                                    // Use raw.githubusercontent.com for direct access
+                                    fontUrl = `https://raw.githubusercontent.com/team-slide/InnioasisY1Themes/main/${encodeURIComponent(themeFolder)}/${encodeURIComponent(ttfFile.name)}`;
+                                    fontName = ttfFile.name;
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.log(`Could not discover TTF for ${themeFolder} via GitHub API:`, e);
+                    }
+                }
+                
+                // If still no font, try to list directory files (for local development)
+                if (!fontUrl) {
+                    try {
+                        // Try to fetch directory listing HTML
+                        const dirResponse = await fetch(`./${encodeURIComponent(themeFolder)}/`);
+                        if (dirResponse.ok) {
+                            const html = await dirResponse.text();
+                            // Look for TTF files in HTML directory listing
+                            const ttfMatches = html.match(/href="([^"]+\.ttf)"/gi);
+                            if (ttfMatches && ttfMatches.length > 0) {
+                                fontName = ttfMatches[0].replace(/href="([^"]+)"/i, '$1');
+                                fontUrl = `./${encodeURIComponent(themeFolder)}/${fontName}`;
+                            }
+                        }
+                    } catch (e) {
+                        // Directory listing not available
+                    }
+                }
+                
+                if (fontUrl) {
+                    // Load the font
+                    try {
+                        const safeFontName = themeFolder.replace(/[^a-zA-Z0-9]/g, '-');
+                        const fontFace = new FontFace(
+                            `theme-font-${safeFontName}`,
+                            `url(${fontUrl})`
+                        );
+                        await fontFace.load();
+                        document.fonts.add(fontFace);
+                        
+                        themeFonts.set(themeFolder, {
+                            fontFamily: fontFace.family,
+                            fontUrl: fontUrl
+                        });
+                        
+                        // Re-render to apply font (only if already rendered)
+                        if (document.getElementById('theme-grid') && document.getElementById('theme-grid').children.length > 0) {
+                            applyFiltersAndPagination();
+                        }
+                        
+                        return themeFonts.get(themeFolder);
+                    } catch (e) {
+                        console.warn(`Failed to load font for ${themeFolder}:`, e);
+                    }
+                }
+            } catch (error) {
+                console.warn(`Error loading font for ${themeFolder}:`, error);
+            }
+            
+            return null;
+        }
+
         // Render themes
-        function renderThemes() {
+        async function renderThemes() {
             const grid = document.getElementById('theme-grid');
             const isMobileMode = !('showDirectoryPicker' in window);
+            
+            // Show filters container if we have themes
+            const filtersContainer = document.getElementById('filters-container');
+            if (filtersContainer) {
+                filtersContainer.style.display = allThemes.length > 0 ? 'block' : 'none';
+            }
+            
+            // Update author filter options
+            updateAuthorFilter();
 
-            grid.innerHTML = themes.map((theme, index) => {
+            // Load fonts for all themes in background
+            themes.forEach(theme => {
+                loadThemeFont(theme.folder).catch(err => {
+                    console.warn(`Failed to load font for ${theme.folder}:`, err);
+                });
+            });
+
+            grid.innerHTML = themes.map((theme, originalIndex) => {
                 // Filter out "creators" theme
                 if (theme.folder.toLowerCase() === 'creators' || theme.name.toLowerCase() === 'creators') {
                     return '';
                 }
 
+                // Find the original index in allThemes for selection tracking
+                const allThemesIndex = allThemes.findIndex(t => t.folder === theme.folder);
                 const isInstalled = theme.installed;
                 const isOnServer = theme.availableOnServer === true;
                 const isDeviceOnly = !isOnServer && isInstalled;
                 const isUpdatable = isInstalled && isOnServer;
 
-                const isSelected = selectedThemes.has(index);
+                const isSelected = allThemesIndex >= 0 && selectedThemes.has(allThemesIndex);
+                
+                // Get font for this theme
+                const fontInfo = themeFonts.get(theme.folder);
+                const fontStyle = fontInfo ? `font-family: '${fontInfo.fontFamily}', sans-serif;` : '';
+                
+                // Use display index for UI, but store original index for selection
+                const displayIndex = themes.indexOf(theme);
 
                 return `
-                <div class="theme-card ${isInstalled ? 'installed' : ''} ${isDeviceOnly ? 'device-only' : ''} ${isSelected ? 'selected' : ''}" id="theme-${index}" onclick="toggleTheme(${index})">
-                    <div class="theme-checkbox ${isSelected ? 'checked' : ''}" onclick="toggleTheme(${index}, event)"></div>
-                    <div class="theme-screenshot ${theme.screenshot ? '' : 'no-preview'}" id="screenshot-${index}" data-theme-index="${index}">
+                <div class="theme-card ${isInstalled ? 'installed' : ''} ${isDeviceOnly ? 'device-only' : ''} ${isSelected ? 'selected' : ''}" id="theme-${displayIndex}" onclick="toggleTheme(${allThemesIndex >= 0 ? allThemesIndex : displayIndex})">
+                    <div class="theme-checkbox ${isSelected ? 'checked' : ''}" onclick="toggleTheme(${allThemesIndex >= 0 ? allThemesIndex : displayIndex}, event)"></div>
+                    <div class="theme-screenshot ${theme.screenshot ? '' : 'no-preview'}" id="screenshot-${displayIndex}" data-theme-index="${displayIndex}">
                         ${theme.screenshot ? '' : '🎨'}
                     </div>
-                    <div class="theme-name">
-                        <a href="${theme.folder}/index.html" style="color: inherit; text-decoration: none; cursor: pointer;" onclick="event.stopPropagation();">
+                    <div class="theme-name" style="${fontStyle}">
+                        <a href="${theme.folder}/index.html" style="color: inherit; text-decoration: none; cursor: pointer; ${fontStyle}" onclick="event.stopPropagation();">
                             ${theme.name}
                         </a>
                         ${isInstalled ? '<span class="installed-badge">✓ On your Y1</span>' : ''}
@@ -2344,15 +2715,15 @@
                         <div class="theme-description">${theme.description || 'Y1 Theme'}</div>
                         <div class="theme-author">
                             by ${theme.authorUrl ?
-                        `<a href="${theme.authorUrl}" target="_blank" class="author-link">${theme.author || 'Unknown'}</a>` :
-                        (theme.author || 'Unknown')
+                        `<a href="${theme.authorUrl}" target="_blank" class="author-link">${theme.author || 'All'}</a>` :
+                        (theme.author === 'Unknown' ? 'All' : (theme.author || 'All'))
                     }
                         </div>
                     </div>
                     <div class="theme-actions">
                         ${isUpdatable ? `
                             <button class="install-btn update" 
-                                    onclick="updateSingleTheme(${index}, event)" 
+                                    onclick="updateSingleTheme(${allThemesIndex >= 0 ? allThemesIndex : displayIndex}, event)" 
                                     ${!deviceFolderHandle ? 'disabled' : ''}>
                                 🔄 Update
                             </button>
@@ -2360,7 +2731,7 @@
                             <!-- No button for device-only themes (not available on server) -->
                         ` : `
                             <button class="install-btn install" 
-                                    onclick="${isMobileMode || !deviceFolderHandle ? 'downloadSingleTheme' : 'installSingleTheme'}(${index}, event)">
+                                    onclick="${isMobileMode || !deviceFolderHandle ? 'downloadSingleTheme' : 'installSingleTheme'}(${allThemesIndex >= 0 ? allThemesIndex : displayIndex}, event)">
                                 ${isMobileMode || !deviceFolderHandle ? '📦 Download' : '📥 Install'}
                             </button>
                         `}
@@ -2791,7 +3162,9 @@
 
                 // Update themes array and render
                 themes = Array.from(themeMap.values());
-                renderThemes();
+                sortThemes();
+                allThemes = [...themes];
+                applyFiltersAndPagination();
 
             } catch (error) {
                 console.error('Error in quick refresh:', error);
