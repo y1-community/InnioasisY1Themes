@@ -590,6 +590,9 @@ html_template = """<!DOCTYPE html>
                 <!-- Title and subtitle removed; using About line instead -->
                 <h2 {title_style}>About the {name} Theme for Innioasis Y1</h2>
                 <p class="description" id="theme-description">{description}</p>
+                <p class="author-info" style="margin-top: 15px; color: #666; font-size: 0.9rem; font-style: italic;">
+                    Theme created by <strong id="author-display">{author}</strong>
+                </p>
             </div>
             {cover_html}
         </div>
@@ -631,11 +634,12 @@ html_template = """<!DOCTYPE html>
                 <span class="install-modal-close" onclick="closeInstallModal()">&times;</span>
                 <h3>Prepare Your Y1 Device</h3>
                 <p>Before installing, please follow these steps:</p>
-                <ol>
+                <ol id="install-steps-list">
                     <li><strong>Power up your Y1 device</strong></li>
-                    <li><strong>Connect your Y1 to your computer via USB</strong></li>
+                    <li><strong>Connect your Y1 to your device via USB</strong></li>
                     <li><strong>Enable USB storage mode</strong> on your Y1 (if prompted)</li>
-                    <li>On the next screen, <strong>select the "Themes" folder</strong> on your Y1 device</li>
+                    <li id="android-step" style="display: none;"><strong>On Android:</strong> Press the <strong>☰ (three lines/hamburger menu)</strong> button at the top left of the file picker, then navigate to and select your Y1's <strong>"Themes" folder</strong> from the USB drive</li>
+                    <li id="desktop-step"><strong>On the next screen, select the "Themes" folder</strong> on your Y1 device</li>
                 </ol>
                 <p style="color: #666; font-size: 0.9rem; margin-top: 15px;">The installation will automatically copy all theme files to your device.</p>
                 <button class="install-modal-btn" onclick="proceedWithInstall()">Continue to Folder Selection</button>
@@ -661,7 +665,7 @@ html_template = """<!DOCTYPE html>
         
         <!-- SEO Content -->
         <div class="seo-content" style="margin-top: 40px; text-align: left; color: #666; font-size: 0.9rem; line-height: 1.6;">
-            <p>This theme was made by <strong id="author-display">{author}</strong>. <span id="description-display">{description}</span></p>
+            <p><span id="description-display">{description}</span></p>
         </div>
         
         <div style="margin-top: 30px; font-size: 0.9rem; color: #888;">
@@ -1181,12 +1185,25 @@ html_template = """<!DOCTYPE html>
             
             folderName = decodeURIComponent(folderName);
 
-            // Check for File System Access API support
+            // Check for File System Access API support (works on Chrome desktop and Android)
             if ('showDirectoryPicker' in window) {
                 document.getElementById('install-btn').style.display = 'inline-block';
                 // Hide full download button, show small link
                 document.getElementById('download-btn-full').style.display = 'none';
                 document.getElementById('download-link-small').style.display = 'inline';
+                
+                // Detect Android and update install instructions
+                const isAndroid = /Android/i.test(navigator.userAgent);
+                const androidStep = document.getElementById('android-step');
+                const desktopStep = document.getElementById('desktop-step');
+                
+                if (isAndroid && androidStep && desktopStep) {
+                    androidStep.style.display = 'list-item';
+                    desktopStep.style.display = 'none';
+                } else if (androidStep && desktopStep) {
+                    androidStep.style.display = 'none';
+                    desktopStep.style.display = 'list-item';
+                }
             }
             
             // Apply theme button styling
@@ -1253,7 +1270,19 @@ html_template = """<!DOCTYPE html>
                 
                 if (authorDisplay) {
                     if (authorUrl) {
-                        authorDisplay.innerHTML = `<a href="${authorUrl}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">${author}</a>`;
+                        authorDisplay.innerHTML = `<a href="${authorUrl}" target="_blank" rel="noopener noreferrer" style="color: #667eea; text-decoration: none; border-bottom: 1px solid #667eea; transition: all 0.2s;">${author}</a>`;
+                        // Add hover effect
+                        const authorLink = authorDisplay.querySelector('a');
+                        if (authorLink) {
+                            authorLink.addEventListener('mouseenter', function() {
+                                this.style.color = '#764ba2';
+                                this.style.borderBottomColor = '#764ba2';
+                            });
+                            authorLink.addEventListener('mouseleave', function() {
+                                this.style.color = '#667eea';
+                                this.style.borderBottomColor = '#667eea';
+                            });
+                        }
                     } else {
                         authorDisplay.textContent = author;
                     }
