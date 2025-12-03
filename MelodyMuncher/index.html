@@ -898,10 +898,13 @@
                 }
                 
                 // Button text color - priority: itemSelectedTextColor > menuItemSelectedTextColor > dialogOptionSelectedTextColor
-                const buttonTextColor = itemConfig.itemSelectedTextColor || 
+                let buttonTextColor = itemConfig.itemSelectedTextColor || 
                                       menuConfig.menuItemSelectedTextColor || 
                                       dialogConfig.dialogOptionSelectedTextColor ||
                                       '#ffffff';
+                
+                // Sanity check: Ensure sufficient contrast between text and background
+                buttonTextColor = ensureContrast(buttonTextColor, buttonBgColor);
                 
                 // Apply styles to install and download buttons
                 const installBtn = document.getElementById('install-btn');

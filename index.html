@@ -743,12 +743,10 @@
                     <select id="author-filter" onchange="handleAuthorFilterChange()" style="padding: 8px 12px; border: 2px solid #667eea; border-radius: 8px; font-size: 1rem; background: white; cursor: pointer;">
                         <option value="All">All</option>
                     </select>
-                    ${deviceFolderHandle ? `
-                    <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; color: #333; cursor: pointer; margin-left: 20px;">
+                    <label id="device-only-filter-label" style="display: none; align-items: center; gap: 8px; font-weight: 600; color: #333; cursor: pointer; margin-left: 20px;">
                         <input type="checkbox" id="device-only-filter" onchange="handleDeviceOnlyFilterChange()" style="width: 18px; height: 18px; cursor: pointer;">
                         Manage on Device Themes
                     </label>
-                    ` : ''}
                     <span id="theme-count" style="margin-left: auto; color: #666; font-weight: 500;"></span>
                 </div>
             </div>
@@ -1261,6 +1259,12 @@
                 document.getElementById('device-status').textContent = `✅ Connected to: ${deviceFolderHandle.name}`;
                 document.getElementById('controls').style.display = 'flex';
                 document.getElementById('refresh-btn').style.display = 'inline-block';
+                
+                // Show device-only filter checkbox
+                const deviceOnlyFilterLabel = document.getElementById('device-only-filter-label');
+                if (deviceOnlyFilterLabel) {
+                    deviceOnlyFilterLabel.style.display = 'flex';
+                }
 
                 // Hide the device connection interface
                 hideDeviceConnectionInterface();
@@ -1775,6 +1779,82 @@
         // Screenshot URL cache to avoid repeated requests
         const screenshotCache = new Map();
         let isRendering = false; // Flag to prevent re-renders during screenshot loading
+        
+        // Color contrast checking utilities
+        // Convert hex color to RGB
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+        
+        // Calculate relative luminance (WCAG formula)
+        function getLuminance(rgb) {
+            const [r, g, b] = [rgb.r / 255, rgb.g / 255, rgb.b / 255].map(val => {
+                return val <= 0.03928 ? val / 12.92 : Math.pow((val + 0.055) / 1.055, 2.4);
+            });
+            return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        }
+        
+        // Calculate contrast ratio between two colors
+        function getContrastRatio(color1, color2) {
+            const rgb1 = hexToRgb(color1);
+            const rgb2 = hexToRgb(color2);
+            if (!rgb1 || !rgb2) return 1; // Invalid colors, return minimum contrast
+            
+            const lum1 = getLuminance(rgb1);
+            const lum2 = getLuminance(rgb2);
+            const lighter = Math.max(lum1, lum2);
+            const darker = Math.min(lum1, lum2);
+            return (lighter + 0.05) / (darker + 0.05);
+        }
+        
+        // Ensure sufficient contrast between text and background colors
+        // Returns adjusted text color if needed (WCAG AA requires 4.5:1 for normal text)
+        function ensureContrast(textColor, bgColor, minContrast = 4.5) {
+            if (!textColor || !bgColor) return textColor || '#ffffff';
+            
+            // Handle non-hex colors (skip if not hex)
+            if (!textColor.startsWith('#') || !bgColor.startsWith('#')) {
+                return textColor;
+            }
+            
+            const contrast = getContrastRatio(textColor, bgColor);
+            
+            if (contrast >= minContrast) {
+                return textColor; // Contrast is sufficient
+            }
+            
+            // Contrast is too low - adjust text color
+            const bgRgb = hexToRgb(bgColor);
+            if (!bgRgb) return textColor;
+            
+            const bgLum = getLuminance(bgRgb);
+            
+            // If background is dark, use white text; if light, use black text
+            const adjustedColor = bgLum > 0.5 ? '#000000' : '#ffffff';
+            
+            // Verify the adjusted color has sufficient contrast
+            const adjustedContrast = getContrastRatio(adjustedColor, bgColor);
+            if (adjustedContrast >= minContrast) {
+                return adjustedColor;
+            }
+            
+            // If still not enough contrast, try a more extreme adjustment
+            // For very light backgrounds, use very dark text
+            if (bgLum > 0.7) {
+                return '#000000';
+            }
+            // For very dark backgrounds, use very light text
+            if (bgLum < 0.3) {
+                return '#ffffff';
+            }
+            
+            return adjustedColor;
+        }
         
         // Try to load cover images as fallback when screenshot fails
         async function tryLoadCoverAsFallback(container, themeFolder, themeName) {
@@ -2742,9 +2822,9 @@
             if (filtersContainer) {
                 filtersContainer.style.display = allThemes.length > 0 ? 'block' : 'none';
                 // Update device-only filter visibility based on device connection
-                const deviceOnlyFilterContainer = filtersContainer.querySelector('label[for="device-only-filter"]');
-                if (deviceOnlyFilterContainer) {
-                    deviceOnlyFilterContainer.style.display = deviceFolderHandle ? 'flex' : 'none';
+                const deviceOnlyFilterLabel = document.getElementById('device-only-filter-label');
+                if (deviceOnlyFilterLabel) {
+                    deviceOnlyFilterLabel.style.display = deviceFolderHandle ? 'flex' : 'none';
                 }
             }
             
@@ -2842,10 +2922,13 @@
                 // Button text color: Use selected/highlighted text item color (most appropriate choice)
                 // Priority: itemSelectedTextColor (for selected list items) first, as buttons use selected background images
                 // Then menuItemSelectedTextColor (for menu items), then dialog option selected text color
-                const buttonTextColor = itemConfig.itemSelectedTextColor || 
+                let buttonTextColor = itemConfig.itemSelectedTextColor || 
                                       menuConfig.menuItemSelectedTextColor || 
                                       dialogConfig.dialogOptionSelectedTextColor ||
                                       '#ffffff'; // Fallback to white if not configured
+                
+                // Sanity check: Ensure sufficient contrast between text and background
+                buttonTextColor = ensureContrast(buttonTextColor, buttonBgColor);
                 
                 // Arrow icon - fits within button height (doesn't expand button)
                 const arrowIcon = hasArrow 
