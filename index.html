@@ -1443,12 +1443,12 @@
         }
 
         // Discover theme directories dynamically without hardcoded names
+        // STATIC: Only uses directory listing, no HEAD requests
         async function discoverThemeDirectories() {
             const discoveredFolders = [];
 
-            // Try multiple approaches to discover directories
+            // Try to fetch a directory listing (works on GitHub Pages)
             try {
-                // Approach 1: Try to fetch a directory listing (works on some servers)
                 const response = await fetch('./', {
                     headers: { 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' }
                 });
@@ -1465,7 +1465,7 @@
                                 const folderName = hrefMatch[1];
                                 // Skip absolute URLs (http://, https://, //) and common non-theme directories
                                 if (!folderName.match(/^(https?:)?\/\//) &&
-                                    !['.', '..', '.git', '.github', 'node_modules', 'css', 'js', 'images'].includes(folderName)) {
+                                    !['.', '..', '.git', '.github', 'node_modules', 'css', 'js', 'images', 'creators'].includes(folderName)) {
                                     discoveredFolders.push(folderName);
                                 }
                             }
@@ -1473,39 +1473,11 @@
                     }
                 }
             } catch (error) {
-                console.log('Directory listing not supported, trying other methods...');
+                console.log('Directory listing not supported, will rely on themes.json only');
             }
 
-            // Approach 2: Try common theme folder patterns if directory listing failed
-            if (discoveredFolders.length === 0) {
-                console.log('Trying common theme folder patterns...');
-                const commonPatterns = [
-                    // Try some common theme names as fallback
-                    'Aero', 'Aquarium', 'Be', 'Cupertino', 'GTA3', 'GZA', 'HughBliss',
-                    'IOS Theme', 'LCD', 'MelodyMuncher', 'Prisoner', 'TwinPeaks',
-                    'Win95Theme', 'Woodstock', 'Wu-Tang', 'XFiles', 'YellowSub', 'iPod-ish',
-                    'yPod', 'yPodDark', 'Girlypop', 'JulesVerne', 'NeonNights'
-                ];
-
-                // Test each pattern in parallel
-                const patternTests = await Promise.allSettled(
-                    commonPatterns.map(async (pattern) => {
-                        try {
-                            const response = await fetch(`./${encodeURIComponent(pattern)}/config.json`, { method: 'HEAD' });
-                            return response.ok ? pattern : null;
-                        } catch (error) {
-                            return null;
-                        }
-                    })
-                );
-
-                patternTests.forEach(result => {
-                    if (result.status === 'fulfilled' && result.value) {
-                        discoveredFolders.push(result.value);
-                    }
-                });
-            }
-
+            // If directory listing works, return discovered folders
+            // Otherwise, themes.json should have all themes listed
             return discoveredFolders;
         }
 
@@ -1619,24 +1591,47 @@
             return existingFiles.length > 0 ? existingFiles[0].path : null;
         }
 
-        // Load screenshots aggressively - don't wait for visibility
-        // Discovers screenshots from theme folders if not in themes.json or to verify/update
+        // Screenshot URL cache to avoid repeated requests
+        const screenshotCache = new Map();
+        
+        // Load screenshots - STATIC APPROACH: Use themes.json data first, no HEAD requests
         async function loadScreenshotsOnDemand() {
             const screenshotContainers = document.querySelectorAll('.theme-screenshot');
-            console.log(`🖼️ Loading screenshots for ${screenshotContainers.length} themes...`);
+            console.log(`🖼️ Loading screenshots for ${screenshotContainers.length} themes (static mode)...`);
 
             // Load all screenshots immediately in parallel
             const screenshotPromises = Array.from(screenshotContainers).map(async (container, index) => {
                 const themeIndex = container.dataset.themeIndex;
                 const theme = themes[themeIndex];
 
-                console.log(`📸 Processing theme ${index + 1}/${screenshotContainers.length}: ${theme.folder}`);
+                if (!theme) return false;
 
-                // Always check theme folder for cover transitions and better screenshots
-                if (theme && !theme.screenshotLoading) {
+                // PRIORITY 1: Use screenshot from themes.json if available (static, no requests needed)
+                if (theme.screenshot && !theme.screenshotLoading) {
+                    theme.screenshotLoading = true;
+                    
+                    // Check cache first
+                    const cacheKey = `${theme.folder}:${theme.screenshot}`;
+                    if (screenshotCache.has(cacheKey)) {
+                        const cachedUrl = screenshotCache.get(cacheKey);
+                        container.innerHTML = `<img src="${cachedUrl}" alt="${theme.name}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">`;
+                        return true;
+                    }
+                    
+                    // Use screenshot URL directly from themes.json (static file, already converted to HTTPS)
+                    const screenshotUrl = theme.screenshot;
+                    screenshotCache.set(cacheKey, screenshotUrl);
+                    
+                    container.innerHTML = `<img src="${screenshotUrl}" alt="${theme.name}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy" onerror="this.style.display='none'; this.parentElement.innerHTML='🎨';">`;
+                    console.log(`✅ Using screenshot from themes.json: ${theme.folder}`);
+                    return true;
+                }
+
+                // PRIORITY 2: Only if no screenshot in themes.json, use static fallback paths (no HEAD requests)
+                if (!theme.screenshot && !theme.screenshotLoading) {
                     theme.screenshotLoading = true;
 
-                    // Try to find actual screenshot in theme folder (source of truth)
+                    // Use static fallback paths - browser will load first available, handle 404s gracefully
                     const discoveredMedia = await findLocalScreenshotFast(theme.folder);
 
                     if (discoveredMedia) {
@@ -1833,108 +1828,39 @@
             }
         }
 
-        // Ultra-fast screenshot finding - try all common files in parallel
+        // Ultra-fast screenshot finding - STATIC: Return paths without HEAD requests
+        // Browser will handle 404s naturally, avoiding rate limits
         async function findLocalScreenshotFast(themeName) {
-            console.log(`🔍 Looking for images in ${themeName}...`);
+            // STATIC APPROACH: Return common screenshot paths in priority order
+            // No HEAD requests - browser will load first available, handle 404s gracefully
+            const commonFiles = [
+                { file: 'screenshot.gif', priority: 0, isScreenshot: true, isCover: false, isNoScale: false },
+                { file: 'screenshot.png', priority: 1, isScreenshot: true, isCover: false, isNoScale: false },
+                { file: 'screenshot.jpg', priority: 2, isScreenshot: true, isCover: false, isNoScale: false },
+                { file: 'cover_noscale.png', priority: 3, isScreenshot: false, isCover: true, isNoScale: true },
+                { file: 'cover.png', priority: 4, isScreenshot: false, isCover: true, isNoScale: false },
+                { file: 'cover.jpg', priority: 5, isScreenshot: false, isCover: true, isNoScale: false },
+                { file: 'gregcover.png', priority: 6, isScreenshot: false, isCover: true, isNoScale: false }
+            ];
 
-            // Try to get directory listing to find all files dynamically
-            let discoveredFiles = [];
-
-            try {
-                // Try to fetch directory listing
-                const response = await fetch(`./${encodeURIComponent(themeName)}/`, {
-                    headers: { 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' }
-                });
-
-                if (response.ok) {
-                    const html = await response.text();
-                    // Parse HTML directory listing for image files
-                    const fileMatches = html.match(/href="([^"]+\.(png|jpg|jpeg|gif))"[^>]*>([^<]+)<\/a>/g);
-                    if (fileMatches) {
-                        fileMatches.forEach(match => {
-                            const hrefMatch = match.match(/href="([^"]+)"/);
-                            const nameMatch = match.match(/>([^<]+)<\/a>/);
-                            if (hrefMatch && nameMatch) {
-                                const fileName = nameMatch[1];
-                                const filePath = hrefMatch[1];
-                                // Skip absolute URLs and common non-theme files
-                                if (!filePath.match(/^(https?:)?\/\//) &&
-                                    !['index.html', 'config.json'].includes(fileName)) {
-                                    discoveredFiles.push({
-                                        file: fileName,
-                                        path: `./${encodeURIComponent(themeName)}/${fileName}`,
-                                        exists: true
-                                    });
-                                }
-                            }
-                        });
-                    }
-                }
-            } catch (error) {
-                console.log('Directory listing not supported, using fallback patterns...');
-            }
-
-            // Fallback to common patterns if directory listing failed
-            // STATIC APPROACH: Don't check if files exist - just return paths in priority order
-            // Browser will handle 404s naturally, avoiding rate limits
-            if (discoveredFiles.length === 0) {
-                const commonFiles = [
-                    'screenshot.gif', 'screenshot.png', 'screenshot.jpg', 'screenshot.jpeg',
-                    'cover.gif', 'cover.png', 'cover.jpg', 'cover.jpeg',
-                    'gregcover.png', 'cover_WS.png', 'cover_YS.png',
-                    'desk.gif', 'desk.png', 'download.gif', 'download.jpg'
-                ];
-
-                // Just create paths without checking - browser will load first available
-                commonFiles.forEach(file => {
-                    discoveredFiles.push({
-                        file: file,
-                        path: `./${encodeURIComponent(themeName)}/${file}`,
-                        exists: true // Assume exists, browser will handle 404
-                    });
-                });
-            }
-
-            // Process discovered files
-            const fileChecks = discoveredFiles.map((fileInfo, index) => {
-                console.log(`✅ ${fileInfo.path} - found`);
-                // Categorize files (case-insensitive)
-                const fileLower = fileInfo.file.toLowerCase();
-                const isCover = fileLower.includes('cover');
-                const isScreenshot = fileLower.includes('screenshot');
-                // Check for _noscale or _web suffixes (both preserve aspect ratio) - WILDCARD SUPPORT
-                const isNoScale = fileLower.includes('_noscale') || fileLower.includes('_web');
-
-                // Priority: screenshot.gif first, then no-scale covers, then regular covers, then screenshots
-                let priority = index;
-                if (fileLower === 'screenshot.gif') priority = 0;
-                else if (isNoScale && isCover) priority = 1;
-                else if (isCover && !isNoScale) priority = 2;
-                else if (isScreenshot) priority = 3;
-                else priority = 4;
-
-                return {
-                    ...fileInfo,
-                    priority,
-                    isCover,
-                    isScreenshot,
-                    isNoScale
-                };
-            });
+            // Return paths in priority order - browser will try first available
+            const discoveredFiles = commonFiles.map(({ file, priority, isScreenshot, isCover, isNoScale }) => ({
+                file: file,
+                path: `./${encodeURIComponent(themeName)}/${encodeURIComponent(file)}`,
+                priority: priority,
+                isScreenshot: isScreenshot,
+                isCover: isCover,
+                isNoScale: isNoScale,
+                exists: true // Assume exists, browser will handle 404
+            }));
 
             // Sort files by priority
-            const existingFiles = fileChecks.sort((a, b) => a.priority - b.priority);
-
-            if (themeName === 'Aero') {
-                console.log(`🔍 Aero theme - Found ${existingFiles.length} files:`);
-                existingFiles.forEach(f => console.log(`  ${f.file} - cover: ${f.isCover}, screenshot: ${f.isScreenshot}, noScale: ${f.isNoScale}`));
-            }
+            const existingFiles = discoveredFiles.sort((a, b) => a.priority - b.priority);
 
             if (existingFiles.length > 0) {
                 // Check if screenshot.gif exists (highest priority - show directly, no cover transition)
                 const screenshotGif = existingFiles.find(f => f.file === 'screenshot.gif');
                 if (screenshotGif) {
-                    console.log(`🎬 Found animated GIF: ${screenshotGif.path} - showing directly`);
                     return screenshotGif.path;
                 }
 
@@ -1948,8 +1874,6 @@
 
                 // If we have both cover and screenshots, return an object with both
                 if (coverToUse && screenshots.length > 0) {
-                    console.log(`🎯 Found cover: ${coverToUse.path} (${noScaleCover ? 'aspect-preserved' : 'cropped'}) and ${screenshots.length} screenshot(s):`);
-                    screenshots.forEach((s, i) => console.log(`  ${i + 1}. ${s.path} (${s.file})`));
                     return {
                         cover: coverToUse.path,
                         screenshots: screenshots.map(s => s.path),
@@ -1958,15 +1882,8 @@
                     };
                 }
 
-                // Debug: Show what we found but didn't match
-                if (coverToUse && screenshots.length === 0) {
-                    console.log(`⚠️ Found cover: ${coverToUse.path} but NO screenshots found`);
-                    console.log(`   Available files:`, existingFiles.map(f => `${f.file} (cover: ${f.isCover}, screenshot: ${f.isScreenshot}, noScale: ${f.isNoScale})`));
-                }
-
                 // If only no-scale cover exists (no screenshots)
                 if (noScaleCover) {
-                    console.log(`📐 Found aspect-ratio-preserving cover: ${noScaleCover.path} - using object-fit: contain`);
                     return {
                         path: noScaleCover.path,
                         noScale: true,
@@ -1976,7 +1893,6 @@
 
                 // If only regular cover exists (no screenshots)
                 if (regularCover) {
-                    console.log(`🖼️ Found regular cover: ${regularCover.path}`);
                     return {
                         path: regularCover.path,
                         hasCoverTransition: false  // No gallery, just show cover
@@ -1984,10 +1900,8 @@
                 }
 
                 // Otherwise return the first available image (backward compatible)
-                console.log(`🎯 Using image: ${existingFiles[0].path}`);
                 return existingFiles[0].path;
             } else {
-                console.log(`⚠️ No images found for ${themeName}`);
                 return null;
             }
         }
@@ -2092,6 +2006,7 @@
         }
 
         // Fallback method for theme discovery (when GitHub API fails)
+        // STATIC: No HEAD requests - just return common themes with static screenshot paths
         async function discoverThemesFallback() {
             const commonThemes = [
                 'Aero', 'Aquarium', 'Be', 'Cupertino', 'GTA3', 'HughBliss',
@@ -2099,66 +2014,24 @@
                 'iPod-ish'
             ];
 
+            const baseUrl = window.location.origin;
             const discovered = [];
 
+            // Return themes with static screenshot paths - browser will handle 404s
             for (const themeName of commonThemes) {
-                try {
-                    const folderName = themeName.replace(/ /g, '%20');
+                const folderName = encodeURIComponent(themeName);
+                
+                // Use static screenshot path - browser will load if available
+                const screenshotUrl = `${baseUrl}/${folderName}/cover.png`;
 
-                    // Look for screenshot files with various extensions
-                    const screenshotExtensions = ['png', 'jpg', 'jpeg'];
-                    let screenshotUrl = null;
-
-                    // First try screenshot files
-                    for (const ext of screenshotExtensions) {
-                        const testUrl = `${folderName}/screenshot.${ext}`;
-                        const response = await fetch(testUrl, { method: 'HEAD' });
-                        if (response.ok) {
-                            screenshotUrl = testUrl;
-                            break;
-                        }
-                    }
-
-                    // If no screenshot found, try cover files first
-                    if (!screenshotUrl) {
-                        const coverFiles = ['cover.png', 'cover.jpg', 'cover.jpeg'];
-                        for (const coverFile of coverFiles) {
-                            const testUrl = `${folderName}/${coverFile}`;
-                            const response = await fetch(testUrl, { method: 'HEAD' });
-                            if (response.ok) {
-                                screenshotUrl = testUrl;
-                                break;
-                            }
-                        }
-                    }
-
-                    // If still no image found, try other fallback images
-                    if (!screenshotUrl) {
-                        const fallbackFiles = ['desk.png', 'download.jpg'];
-                        for (const fallbackFile of fallbackFiles) {
-                            const testUrl = `${folderName}/${fallbackFile}`;
-                            const response = await fetch(testUrl, { method: 'HEAD' });
-                            if (response.ok) {
-                                screenshotUrl = testUrl;
-                                break;
-                            }
-                        }
-                    }
-
-                    // If we found a screenshot, the theme folder exists
-                    if (screenshotUrl) {
-                        discovered.push({
-                            name: themeName,
-                            folder: themeName,
-                            screenshot: screenshotUrl,
-                            description: `Y1 Theme: ${themeName}`,
-                            author: 'Unknown',
-                            authorUrl: null
-                        });
-                    }
-                } catch (error) {
-                    // Theme folder doesn't exist on server, skip
-                }
+                discovered.push({
+                    name: themeName,
+                    folder: themeName,
+                    screenshot: screenshotUrl,
+                    description: `Y1 Theme: ${themeName}`,
+                    author: 'Unknown',
+                    authorUrl: null
+                });
             }
 
             return discovered;
@@ -2486,28 +2359,16 @@
                     // Config.json might not exist or be accessible
                 }
                 
-                // If no font from config, try common patterns
+                // STATIC: If no font from config, try common patterns (no HEAD requests)
                 if (!fontUrl) {
                     const fontPatterns = [
                         'font.ttf', 'Font.ttf', 'FONT.ttf',
-                        'theme.ttf', 'Theme.ttf',
-                        '*.ttf', '*.TTF'
+                        'theme.ttf', 'Theme.ttf'
                     ];
                     
-                    for (const pattern of fontPatterns) {
-                        if (pattern.startsWith('*')) continue; // Skip wildcard patterns for now
-                        try {
-                            const testUrl = `./${encodeURIComponent(themeFolder)}/${pattern}`;
-                            const response = await fetch(testUrl, { method: 'HEAD' });
-                            if (response.ok) {
-                                fontUrl = testUrl;
-                                fontName = pattern;
-                                break;
-                            }
-                        } catch (e) {
-                            // Continue to next pattern
-                        }
-                    }
+                    // Use first common pattern - browser will handle 404s
+                    fontName = fontPatterns[0];
+                    fontUrl = `./${encodeURIComponent(themeFolder)}/${fontName}`;
                 }
                 
                 // No GitHub API fallback - use only direct HTTPS URLs to avoid rate limits
