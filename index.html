@@ -1253,117 +1253,56 @@
             }
         }
 
-        // Discover themes available on the server with caching
-        // FIXED: Always use themes.json first for GitHub Pages compatibility
+        // Discover themes available on the server - STATIC: Only uses themes.json, no API calls
+        // FIXED: Always use themes.json first for GitHub Pages compatibility, avoid GitHub API
         async function discoverServerThemes() {
             let discovered = [];
 
             try {
-                // ALWAYS try themes.json first - this works on both local and GitHub Pages
-                try {
-                    const response = await fetch('./themes.json');
-                    if (response.ok) {
-                        const themesData = await response.json();
-                        console.log('✅ Found themes.json - using as primary source!');
-                        
-                        // Process themes from JSON
-                        // Convert relative screenshot paths to absolute HTTPS URLs
-                        discovered = (themesData.themes || []).map(themeData => {
-                            let screenshot = themeData.screenshot || null;
-                            // Convert relative paths to absolute HTTPS URLs
-                            if (screenshot && typeof screenshot === 'string' && screenshot.startsWith('./')) {
-                                const baseUrl = window.location.origin;
-                                screenshot = screenshot.replace(/^\.\//, `${baseUrl}/`);
-                            }
-                            
-                            return {
-                                name: themeData.name || themeData.folder,
-                                folder: themeData.folder,
-                                screenshot: screenshot,
-                                description: themeData.description || `Y1 Theme: ${themeData.folder}`,
-                                author: themeData.author || 'Unknown',
-                                authorUrl: themeData.authorUrl || null,
-                                themeInfo: themeData,
-                                fromJson: true,
-                                needsConfigRefresh: true // Mark for config.json refresh
-                            };
-                        });
-
-                        console.log(`📋 Loaded ${discovered.length} themes from themes.json`);
-                        
-                        // Try to discover additional themes not in JSON (for local development)
-                        try {
-                            const localThemes = await discoverLocalThemes();
-                            const jsonFolders = new Set(discovered.map(t => t.folder));
-                            const additionalThemes = localThemes.filter(t => !jsonFolders.has(t.folder));
-                            if (additionalThemes.length > 0) {
-                                console.log(`🆕 Found ${additionalThemes.length} additional theme(s) not in themes.json`);
-                                discovered = [...discovered, ...additionalThemes];
-                            }
-                        } catch (localError) {
-                            console.log('Local discovery not available (expected on GitHub Pages)');
+                // ALWAYS use themes.json - this is the static source of truth for GitHub Pages
+                const response = await fetch('./themes.json');
+                if (response.ok) {
+                    const themesData = await response.json();
+                    console.log('✅ Found themes.json - using as primary source!');
+                    
+                    // Process themes from JSON
+                    // Convert relative screenshot paths to absolute HTTPS URLs
+                    discovered = (themesData.themes || []).map(themeData => {
+                        let screenshot = themeData.screenshot || null;
+                        // Convert relative paths to absolute HTTPS URLs
+                        if (screenshot && typeof screenshot === 'string' && screenshot.startsWith('./')) {
+                            const baseUrl = window.location.origin;
+                            screenshot = screenshot.replace(/^\.\//, `${baseUrl}/`);
                         }
                         
-                        // Load config.json for all themes in background
-                        setTimeout(() => {
-                            loadThemeDetailsInBackground(discovered);
-                        }, 0);
-                        
-                        return discovered;
-                    }
-                } catch (jsonError) {
-                    console.log('themes.json not found, trying other methods...');
+                        return {
+                            name: themeData.name || themeData.folder,
+                            folder: themeData.folder,
+                            screenshot: screenshot,
+                            description: themeData.description || `Y1 Theme: ${themeData.folder}`,
+                            author: themeData.author || 'Unknown',
+                            authorUrl: themeData.authorUrl || null,
+                            themeInfo: themeData,
+                            fromJson: true,
+                            needsConfigRefresh: true // Mark for config.json refresh
+                        };
+                    });
+
+                    console.log(`📋 Loaded ${discovered.length} themes from themes.json`);
+                    
+                    // Load config.json for all themes in background (uses direct HTTPS, no API)
+                    setTimeout(() => {
+                        loadThemeDetailsInBackground(discovered);
+                    }, 0);
+                    
+                    return discovered;
+                } else {
+                    console.error('themes.json not found or not accessible');
+                    showStatus('⚠️ Could not load themes.json. Please refresh the page.', 'error');
                 }
-
-                // If themes.json fails, try local directory listing (for local development)
-                const localThemes = await discoverLocalThemes();
-                if (localThemes.length > 0) {
-                    console.log(`Found ${localThemes.length} themes from local directory`);
-                    return localThemes;
-                }
-
-                // If local discovery fails, try cached themes from device
-                if (deviceFolderHandle) {
-                    discovered = await loadCachedThemes();
-                    if (discovered.length > 0) {
-                        console.log(`Found ${discovered.length} cached themes from device`);
-                        // Show cached themes immediately, then refresh in background
-                        showStatus('📱 Showing cached themes, refreshing from server...', 'info');
-
-                        // Start background refresh
-                        refreshThemesFromRemote().then(updatedThemes => {
-                            if (updatedThemes.length > 0) {
-                                console.log(`Refreshed ${updatedThemes.length} themes from remote`);
-                                // Update the themes array and re-render
-                                allThemes = updatedThemes;
-                                sortThemes();
-                                applyFiltersAndPagination();
-                                showStatus(`✅ Refreshed ${updatedThemes.length} themes from server!`, 'success');
-                            }
-                        }).catch(error => {
-                            console.error('Background refresh failed:', error);
-                            showStatus('⚠️ Using cached themes (refresh failed)', 'error');
-                        });
-
-                        return discovered;
-                    }
-                }
-
-                // If no cache, try GitHub API
-                console.log('No cached themes, trying GitHub API...');
-                discovered = await fetchThemesFromGitHub();
-
-                // Cache the themes for future use
-                if (deviceFolderHandle && discovered.length > 0) {
-                    await cacheThemes(discovered);
-                }
-
             } catch (error) {
-                console.error('Error fetching themes:', error);
-                showStatus('⚠️ Could not fetch themes. Using fallback method...', 'error');
-
-                // Fallback: try to discover themes by checking for common theme folders
-                discovered = await discoverThemesFallback();
+                console.error('Error loading themes.json:', error);
+                showStatus('⚠️ Could not load themes.json. Please refresh the page.', 'error');
             }
 
             return discovered;
@@ -1416,72 +1355,8 @@
             }
         }
 
-        // Refresh themes from remote source (GitHub API)
-        async function refreshThemesFromRemote() {
-            try {
-                const themes = await fetchThemesFromGitHub();
-
-                // Update cache with new themes
-                if (deviceFolderHandle && themes.length > 0) {
-                    await cacheThemes(themes);
-                }
-
-                return themes;
-            } catch (error) {
-                console.error('Failed to refresh themes from remote:', error);
-                throw error;
-            }
-        }
-
-        // Fetch themes from GitHub API
-        async function fetchThemesFromGitHub() {
-            const response = await fetch('https://api.github.com/repos/team-slide/InnioasisY1Themes/contents');
-
-            if (!response.ok) {
-                throw new Error(`GitHub API error: ${response.status}`);
-            }
-
-            const contents = await response.json();
-            const discovered = [];
-
-            // Filter for directories and check for screenshots
-            for (const item of contents) {
-                if (item.type === 'dir' && !['.github', '.git', 'README.md'].includes(item.name)) {
-                    const themeName = item.name;
-
-                    // Try to get theme info from config.json first (uses direct HTTPS)
-                    const themeInfo = await getThemeInfo(themeName);
-                    
-                    // Try to find a screenshot in this directory (uses direct HTTPS, minimal API usage)
-                    const screenshotUrl = await findScreenshotInDirectory(themeName);
-                    
-                    // Try to get full config for theme colors
-                    let themeConfig = null;
-                    try {
-                        const configResponse = await fetch(`https://raw.githubusercontent.com/team-slide/InnioasisY1Themes/main/${encodeURIComponent(themeName)}/config.json`);
-                        if (configResponse.ok) {
-                            themeConfig = await configResponse.json();
-                        }
-                    } catch (e) {
-                        // Config fetch failed, continue without it
-                    }
-
-                    discovered.push({
-                        name: themeInfo.title || themeName,
-                        folder: themeName,
-                        screenshot: screenshotUrl,
-                        description: themeInfo.description || `Y1 Theme: ${themeName}`,
-                        author: themeInfo.author || 'Unknown',
-                        authorUrl: themeInfo.authorUrl || null,
-                        themeInfo: themeInfo,
-                        themeConfig: themeConfig
-                    });
-                }
-            }
-
-            console.log(`Found ${discovered.length} themes from GitHub repository`);
-            return discovered;
-        }
+        // REMOVED: fetchThemesFromGitHub() - No longer using GitHub API to avoid rate limits
+        // All themes should come from themes.json (static file)
 
         // Discover themes from local directory - DYNAMIC discovery without hardcoded names
         async function discoverLocalThemes() {
@@ -2000,34 +1875,23 @@
             }
 
             // Fallback to common patterns if directory listing failed
+            // STATIC APPROACH: Don't check if files exist - just return paths in priority order
+            // Browser will handle 404s naturally, avoiding rate limits
             if (discoveredFiles.length === 0) {
                 const commonFiles = [
                     'screenshot.gif', 'screenshot.png', 'screenshot.jpg', 'screenshot.jpeg',
                     'cover.gif', 'cover.png', 'cover.jpg', 'cover.jpeg',
-                    'gregcover.png', 'gregcover.gif', 'gregcover.jpg', 'gregcover2.jpg',
-                    'GregCover.png', 'GregCover.gif', 'GregCover.jpg', 'gregCover.png',
-                    'cover_WS.png', 'cover_YS.png', '@Be_cover.png', '@Cup_cover.png', '@Pris_cover.png',
-                    'screenshot1.jpg', 'screenshot1.png', 'screenshot2.jpg', 'screenshot2.png',
+                    'gregcover.png', 'cover_WS.png', 'cover_YS.png',
                     'desk.gif', 'desk.png', 'download.gif', 'download.jpg'
                 ];
 
-                // Check common files in parallel
-                const fileChecks = await Promise.allSettled(
-                    commonFiles.map(async (file) => {
-                        const path = `./${encodeURIComponent(themeName)}/${file}`;
-                        try {
-                            const response = await fetch(path, { method: 'HEAD' });
-                            return response.ok ? { file, path, exists: true } : null;
-                        } catch (error) {
-                            return null;
-                        }
-                    })
-                );
-
-                fileChecks.forEach(result => {
-                    if (result.status === 'fulfilled' && result.value) {
-                        discoveredFiles.push(result.value);
-                    }
+                // Just create paths without checking - browser will load first available
+                commonFiles.forEach(file => {
+                    discoveredFiles.push({
+                        file: file,
+                        path: `./${encodeURIComponent(themeName)}/${file}`,
+                        exists: true // Assume exists, browser will handle 404
+                    });
                 });
             }
 
@@ -2128,115 +1992,24 @@
             }
         }
 
-        // Find screenshot files in a theme directory - uses direct HTTPS URLs, avoids GitHub API
+        // Find screenshot files in a theme directory - STATIC: uses only direct URLs, no API calls
+        // This function is only used as fallback - themes.json should have screenshot paths
         async function findScreenshotInDirectory(themeName) {
-            // Try direct HTTPS URLs first (no API call needed)
+            // STATIC APPROACH: Just return common screenshot paths without checking
+            // Let the browser handle 404s naturally - no HEAD requests to avoid rate limits
             const baseUrl = window.location.origin;
-            const screenshotExtensions = ['gif', 'png', 'jpg', 'jpeg'];
-            const coverVariations = [
-                'cover.gif', 'cover.png', 'cover.jpg', 'cover.jpeg',
-                'gregcover.png', 'cover_WS.png', 'cover_YS.png'
+            
+            // Return common screenshot paths in priority order (browser will load first available)
+            const commonScreenshots = [
+                `${baseUrl}/${encodeURIComponent(themeName)}/screenshot.gif`,
+                `${baseUrl}/${encodeURIComponent(themeName)}/screenshot.png`,
+                `${baseUrl}/${encodeURIComponent(themeName)}/cover.png`,
+                `${baseUrl}/${encodeURIComponent(themeName)}/cover.jpg`,
+                `${baseUrl}/${encodeURIComponent(themeName)}/gregcover.png`
             ];
             
-            // Priority order: screenshot.* > cover.* > fallback files
-            const allFiles = [
-                ...screenshotExtensions.map(ext => ({ name: `screenshot.${ext}`, priority: 1, type: 'screenshot' })),
-                ...coverVariations.map(name => ({ name, priority: 2, type: 'cover' })),
-                { name: 'desk.png', priority: 3, type: 'fallback' },
-                { name: 'desk.gif', priority: 3, type: 'fallback' },
-                { name: 'download.jpg', priority: 4, type: 'fallback' }
-            ];
-            
-            // Try direct URLs in parallel
-            const checks = await Promise.allSettled(
-                allFiles.map(async ({ name, priority, type }) => {
-                    // Try current domain first
-                    const url1 = `${baseUrl}/${encodeURIComponent(themeName)}/${encodeURIComponent(name)}`;
-                    try {
-                        const response = await fetch(url1, { method: 'HEAD' });
-                        if (response.ok) {
-                            return { name, url: url1, priority, type, isGif: name.toLowerCase().endsWith('.gif') };
-                        }
-                    } catch (e) {
-                        // Continue to next URL
-                    }
-                    
-                    // Try raw.githubusercontent.com as fallback
-                    const url2 = `https://raw.githubusercontent.com/team-slide/InnioasisY1Themes/main/${encodeURIComponent(themeName)}/${encodeURIComponent(name)}`;
-                    try {
-                        const response = await fetch(url2, { method: 'HEAD' });
-                        if (response.ok) {
-                            return { name, url: url2, priority, type, isGif: name.toLowerCase().endsWith('.gif') };
-                        }
-                    } catch (e) {
-                        // Continue
-                    }
-                    
-                    return null;
-                })
-            );
-            
-            const foundFiles = checks
-                .filter(check => check.status === 'fulfilled' && check.value)
-                .map(check => check.value)
-                .sort((a, b) => {
-                    // Sort by priority first
-                    if (a.priority !== b.priority) return a.priority - b.priority;
-                    // Then GIF first
-                    if (a.isGif && !b.isGif) return -1;
-                    if (!a.isGif && b.isGif) return 1;
-                    return a.name.localeCompare(b.name);
-                });
-            
-            if (foundFiles.length > 0) {
-                // Group by type
-                const screenshots = foundFiles.filter(f => f.type === 'screenshot');
-                const covers = foundFiles.filter(f => f.type === 'cover');
-                
-                if (screenshots.length > 0) {
-                    return screenshots.length === 1 ? screenshots[0].url : screenshots.map(f => f.url);
-                }
-                
-                if (covers.length > 0) {
-                    return covers.length === 1 ? covers[0].url : covers.map(f => f.url);
-                }
-                
-                // Fallback files
-                return foundFiles[0].url;
-            }
-            
-            // Only use GitHub API as absolute last resort (minimal usage)
-            try {
-                const response = await fetch(`https://api.github.com/repos/team-slide/InnioasisY1Themes/contents/${encodeURIComponent(themeName)}`);
-                if (!response.ok) {
-                    return null;
-                }
-                
-                const contents = await response.json();
-                const screenshotFiles = contents
-                    .filter(item =>
-                        item.type === 'file' &&
-                        /^screenshot.*\.(gif|png|jpg|jpeg)$/i.test(item.name)
-                    )
-                    .map(item => ({
-                        name: item.name,
-                        url: item.download_url,
-                        isGif: /\.gif$/i.test(item.name)
-                    }))
-                    .sort((a, b) => {
-                        if (a.isGif && !b.isGif) return -1;
-                        if (!a.isGif && b.isGif) return 1;
-                        return a.name.localeCompare(b.name);
-                    });
-                
-                if (screenshotFiles.length > 0) {
-                    return screenshotFiles.length === 1 ? screenshotFiles[0].url : screenshotFiles.map(f => f.url);
-                }
-            } catch (error) {
-                console.error(`Error finding screenshot for ${themeName}:`, error);
-            }
-            
-            return null;
+            // Return first path - browser will handle 404 gracefully
+            return commonScreenshots[0];
         }
 
         // Get priority for fallback images (lower number = higher priority)
@@ -2737,31 +2510,8 @@
                     }
                 }
                 
-                // If still no font, try to discover from directory (GitHub API)
-                if (!fontUrl) {
-                    try {
-                        // Try GitHub API if we're on GitHub Pages
-                        const hostname = window.location.hostname;
-                        if (hostname.includes('github.io') || hostname.includes('innioasis.app') || hostname.includes('themes.innioasis.app')) {
-                            const apiUrl = `https://api.github.com/repos/team-slide/InnioasisY1Themes/contents/${encodeURIComponent(themeFolder)}`;
-                            const response = await fetch(apiUrl);
-                            if (response.ok) {
-                                const contents = await response.json();
-                                const ttfFile = contents.find(item => 
-                                    item.type === 'file' && 
-                                    (item.name.toLowerCase().endsWith('.ttf'))
-                                );
-                                if (ttfFile) {
-                                    // Use raw.githubusercontent.com for direct access
-                                    fontUrl = `https://raw.githubusercontent.com/team-slide/InnioasisY1Themes/main/${encodeURIComponent(themeFolder)}/${encodeURIComponent(ttfFile.name)}`;
-                                    fontName = ttfFile.name;
-                                }
-                            }
-                        }
-                    } catch (e) {
-                        console.log(`Could not discover TTF for ${themeFolder} via GitHub API:`, e);
-                    }
-                }
+                // No GitHub API fallback - use only direct HTTPS URLs to avoid rate limits
+                // Fonts should be referenced in config.json or use common naming patterns
                 
                 // If still no font, try to list directory files (for local development)
                 if (!fontUrl) {
@@ -2880,10 +2630,10 @@
                 // Button text = selected menu item text color (the color that stands out on selected items)
                 const buttonTextColor = menuConfig.menuItemSelectedTextColor || itemConfig.itemSelectedTextColor || '#ffffff';
                 
-                // Get itemRightArrow icon (2.png) for button
+                // Get itemRightArrow icon (2.png) for button - full button height (has padding built in)
                 const itemRightArrow = itemConfig.itemRightArrow || null;
                 const arrowIcon = itemRightArrow && itemRightArrow.trim() !== '' 
-                    ? `<img src="./${encodeURIComponent(theme.folder)}/${encodeURIComponent(itemRightArrow)}" alt="→" style="height: 1em; width: auto; vertical-align: middle; flex-shrink: 0;">`
+                    ? `<img src="./${encodeURIComponent(theme.folder)}/${encodeURIComponent(itemRightArrow)}" alt="→" style="height: 100%; width: auto; vertical-align: middle; flex-shrink: 0; object-fit: contain;">`
                     : '';
                 
                 // Build button style with theme colors and image
@@ -2926,7 +2676,7 @@
                                     style="${buttonStyle}"
                                     ${!deviceFolderHandle ? 'disabled' : ''}>
                                 <span style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                                    <span>🔄 Update</span>${arrowIcon}
+                                    <span>Update</span>${arrowIcon}
                                 </span>
                             </button>
                         ` : isDeviceOnly ? `
@@ -2936,7 +2686,7 @@
                                     onclick="${isMobileMode || !deviceFolderHandle ? 'downloadSingleTheme' : 'installSingleTheme'}(${allThemesIndex >= 0 ? allThemesIndex : displayIndex}, event)"
                                     style="${buttonStyle}">
                                 <span style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                                    <span>${isMobileMode || !deviceFolderHandle ? '📦 Download' : '📥 Install'}</span>${arrowIcon}
+                                    <span>${isMobileMode || !deviceFolderHandle ? 'Download' : 'Install'}</span>${arrowIcon}
                                 </span>
                             </button>
                         `}
@@ -3463,28 +3213,9 @@
             }
         }
 
-        // Get theme files using GitHub API
+        // Get theme files - STATIC: Only uses files.json, no API calls
         async function getThemeFiles(themeFolderName) {
-            try {
-                // Try to get files list from GitHub API
-                const response = await fetch(`https://api.github.com/repos/team-slide/InnioasisY1Themes/contents/${encodeURIComponent(themeFolderName)}`);
-
-                if (response.ok) {
-                    const contents = await response.json();
-
-                    // Extract file names from the directory listing
-                    const files = contents
-                        .filter(item => item.type === 'file')
-                        .map(item => item.name);
-
-                    console.log(`Found ${files.length} files in ${themeFolderName}:`, files);
-                    return files;
-                }
-            } catch (error) {
-                console.error('Error fetching theme files from GitHub:', error);
-            }
-
-            // Fallback: try files.json from the theme directory
+            // Try to get files.json if it exists (static file, no API)
             try {
                 const filesResponse = await fetch(`${themeFolderName.replace(/ /g, '%20')}/files.json`);
                 if (filesResponse.ok) {
