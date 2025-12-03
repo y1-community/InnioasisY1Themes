@@ -21,9 +21,10 @@ If you can edit images in Canva, you can create a theme. No coding needed.
 4. Upload to GitHub:
    - Go to github.com/y1-community/InnioasisY1Themes
    - Click "Fork" (makes your copy)
-   - Click "Add file" → "Upload files"
-   - Drag your theme folder in
-   - Click "Commit changes"
+   - In your fork, click "Add file" → "Upload files"
+   - Drag your entire theme folder into the upload area
+   - GitHub will show all files being uploaded
+   - Scroll down and click "Commit changes"
    - Click "Contribute" → "Open pull request"
 
 Your theme will be reviewed and added to the website.
@@ -32,9 +33,16 @@ Your theme will be reviewed and added to the website.
 
 Downloading MelodyMuncher from themes.innioasis.app ensures you get config.json already set up correctly. You just fill in your details instead of creating it from scratch.
 
-### Editing This Theme
+### Updating This Theme
 
-Fork the repository, find this folder, click any file, click pencil icon, make changes, commit, create pull request.
+To update this theme:
+1. Fork the repository at github.com/y1-community/InnioasisY1Themes
+2. Navigate to the MelodyMuncher folder in your fork
+3. Click "Add file" → "Upload files"
+4. Drag your updated files or entire folder
+5. Commit changes and create a pull request
+
+You can also edit individual files by clicking them and using the pencil icon, but uploading is easier for multiple files or new images.
 
 ---
 

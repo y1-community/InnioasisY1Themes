@@ -683,11 +683,33 @@
             position: relative;
             z-index: 3;
         }
-
-        .install-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        
+        /* Arrow icon - hidden on desktop by default, shown on hover/focus/active */
+        .install-btn .arrow-icon {
+            height: 100%;
+            max-height: 100%;
+            width: auto;
+            flex-shrink: 0;
+            display: none;
+            margin-left: 8px;
         }
+        
+        /* Show arrow on hover for desktop */
+        @media (hover: hover) {
+            .install-btn:hover .arrow-icon,
+            .install-btn:focus .arrow-icon {
+                display: block;
+            }
+        }
+        
+        /* Show arrow on mobile (always visible) */
+        @media (hover: none) {
+            .install-btn .arrow-icon {
+                display: block;
+            }
+        }
+
+        /* Buttons should not grow on hover - removed transform */
 
         .install-btn:disabled {
             opacity: 0.5;
@@ -848,7 +870,7 @@
         </div>
 
         <div class="footer">
-            <p style="margin-bottom: 10px;"><strong>Community Maintainers:</strong> <a href="https://ryanspecter.uk" target="_blank" style="color: #667eea; text-decoration: underline;">Ryan Specter</a> & <a href="https://reddit.com/r/dmitrimedina" target="_blank" style="color: #667eea; text-decoration: underline;">Dmitri Medina</a></p>
+            <p style="margin-bottom: 10px;"><strong>Community Maintainers:</strong> <a href="https://ryanspecter.uk" target="_blank" style="color: #667eea; text-decoration: underline;">Ryan Specter</a> & <a href="https://reddit.com/user/dmitrimedina" target="_blank" style="color: #667eea; text-decoration: underline;">Dmitri Medina</a></p>
             <p>BETA | This site is open source. <a
                     href="https://github.com/y1-community/InnioasisY1Themes/edit/main/index.html"
                     target="_blank">Improve this page.</a> | <a
@@ -3114,6 +3136,27 @@
                 // Try to get selected background image - check config first, then patterns, then 1*.png
                 let selectedBgImage = itemConfig.itemSelectedBackground || menuConfig.menuItemSelectedBackground || 
                                      dialogConfig.dialogOptionSelectedBackground || null;
+                
+                // IMPORTANT: Always prefer suffixed versions (e.g., "1_YS.png") over plain "1.png"
+                // Even if config.json specifies "1.png", if "1_YS.png" exists, use it instead
+                if (selectedBgImage && selectedBgImage.trim() !== '') {
+                    // Check if this is a plain "1.png" type file (not already suffixed)
+                    const isPlainOnePng = /^1\.(png|jpg|jpeg|gif|svg)$/i.test(selectedBgImage);
+                    if (isPlainOnePng) {
+                        // Config has "1.png" - check if suffixed version exists and ALWAYS prefer it
+                        const suffixedVersion = fullTheme.onePngFile || theme.onePngFile;
+                        if (suffixedVersion && /^1_.*\.(png|jpg|jpeg|gif|svg)$/i.test(suffixedVersion)) {
+                            selectedBgImage = suffixedVersion; // ALWAYS prefer suffixed version over plain 1.png
+                        }
+                    }
+                }
+                
+                // Also check: if no config value but we have a discovered onePngFile, use it (already prioritized)
+                // This ensures suffixed versions are used even when config doesn't specify
+                if ((!selectedBgImage || selectedBgImage.trim() === '') && (fullTheme.onePngFile || theme.onePngFile)) {
+                    selectedBgImage = fullTheme.onePngFile || theme.onePngFile;
+                }
+                
                 if (!selectedBgImage || selectedBgImage.trim() === '') {
                     // Try to find *Selected*.* pattern from theme files
                     selectedBgImage = fullTheme.selectedBgImageFile || theme.selectedBgImageFile || null;
@@ -3155,8 +3198,9 @@
                                       '#ffffff'; // Fallback to white if not configured
                 
                 // Arrow icon - fits within button height (doesn't expand button)
+                // Wrapped in span with class for CSS control (hidden on desktop, shown on hover/mobile)
                 const arrowIcon = hasArrow 
-                    ? `<img src="./${encodeURIComponent(theme.folder)}/${encodeURIComponent(arrowIconFile)}" alt="→" style="height: 100%; max-height: 100%; width: auto; flex-shrink: 0; object-fit: contain; display: block;">`
+                    ? `<span class="arrow-icon"><img src="./${encodeURIComponent(theme.folder)}/${encodeURIComponent(arrowIconFile)}" alt="→" style="height: 100%; max-height: 100%; width: auto; flex-shrink: 0; object-fit: contain; display: block;"></span>`
                     : '';
                 
                 // Build button style with theme colors, image, and font
