@@ -949,16 +949,92 @@
         let themeFonts = new Map(); // Cache loaded fonts for themes
 
         // Check if File System Access API is supported
-        if (!('showDirectoryPicker' in window)) {
+        const hasFileSystemAccess = 'showDirectoryPicker' in window;
+        
+        if (!hasFileSystemAccess) {
             document.addEventListener('DOMContentLoaded', () => {
                 showStatus('📱 Mobile/Safari detected - themes will download as ZIP files instead of direct installation.', 'info');
                 // Show mobile-friendly instructions
                 showMobileInstructions();
                 // Hide refresh button and update install button for mobile
-                document.getElementById('refresh-btn').style.display = 'none';
-                document.getElementById('install-btn').onclick = downloadSelected;
-                document.getElementById('install-btn').textContent = '📦 Download Selected Themes';
+                const refreshBtn = document.getElementById('refresh-btn');
+                const installBtn = document.getElementById('install-btn');
+                if (refreshBtn) refreshBtn.style.display = 'none';
+                if (installBtn) {
+                    installBtn.onclick = downloadSelected;
+                    installBtn.textContent = '📦 Download Selected Themes';
+                }
             });
+        }
+        
+        // Update installation instructions based on browser capabilities
+        function updateInstallInstructions() {
+            const heading = document.getElementById('install-heading');
+            const instructions = document.getElementById('install-instructions');
+            
+            if (!heading || !instructions) return;
+            
+            if (hasFileSystemAccess) {
+                // Desktop browsers with File System Access API (Chrome, Edge, Opera)
+                heading.textContent = 'How do I install themes?';
+                instructions.innerHTML = `
+                    <p style="margin-bottom: 15px;">
+                        <strong>From this website<sup>1</sup>:</strong> Connect your Y1 to your computer
+                        and click "Select Y1 Themes Folder" above.
+                    </p>
+
+                    <p style="margin-bottom: 15px;">
+                        <strong>Easy way:</strong> Get a theme from the Toolkit in <a
+                            href="https://innioasis.app/installguide.html" target="_blank"
+                            style="color: #667eea; text-decoration: none;">Innioasis Updater</a>, then drag the ZIP
+                        file into the Updater window (or click "browse files"). It'll automatically send it to your
+                        Y1 when it's connected and powered on.
+                    </p>
+
+                    <p style="margin-bottom: 15px;">
+                        <strong>About Innioasis Updater:</strong> It has a Toolkit that helps you install both
+                        regular Y1 themes and Rockbox themes. It also handles firmware updates and Rockbox
+                        installation. <a href="https://innioasis.app/installguide.html" target="_blank"
+                            style="color: #667eea; text-decoration: none;">Get it here</a>.
+                    </p>
+
+                    <p
+                        style="margin-bottom: 0; font-size: 0.85rem; color: #666; border-top: 1px solid #ddd; padding-top: 10px;">
+                        <sup>1</sup> Chrome, Edge, or Opera only
+                    </p>
+                `;
+            } else {
+                // Safari or mobile browsers (no File System Access API)
+                heading.textContent = 'How do I install themes?';
+                instructions.innerHTML = `
+                    <p style="margin-bottom: 15px;">
+                        <strong>Download and install:</strong> Themes download as ZIP files. Unzip them and put
+                        the folder into your Y1's <code>Themes</code> folder.
+                    </p>
+
+                    <p style="margin-bottom: 15px;">
+                        <strong>Easy way:</strong> Get a theme from the Toolkit in <a
+                            href="https://innioasis.app/installguide.html" target="_blank"
+                            style="color: #667eea; text-decoration: none;">Innioasis Updater</a>, then drag the ZIP
+                        file into the Updater window (or click "browse files"). It'll automatically send it to your
+                        Y1 when it's connected and powered on.
+                    </p>
+
+                    <p style="margin-bottom: 15px;">
+                        <strong>About Innioasis Updater:</strong> It has a Toolkit that helps you install both
+                        regular Y1 themes and Rockbox themes. It also handles firmware updates and Rockbox
+                        installation. <a href="https://innioasis.app/installguide.html" target="_blank"
+                            style="color: #667eea; text-decoration: none;">Get it here</a>.
+                    </p>
+                `;
+            }
+        }
+        
+        // Update instructions when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', updateInstallInstructions);
+        } else {
+            updateInstallInstructions();
         }
 
         // Show status message
