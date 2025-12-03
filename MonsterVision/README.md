@@ -1,4 +1,4 @@
-# Contributing to This Theme
+# How to Update or Edit this Theme
 
 ## Making Changes to This Theme
 
@@ -29,6 +29,71 @@ Your changes will be reviewed and, if approved, merged into the main repository!
 ### Tip
 
 Uploading or changing a theme's folder to GitHub will make it appear on the website (at the bare minimum the site will display in alphabetical order themes listed in `themes.json` or not listed, provided it has a directory name, `config.json`, and a `*cover*.*` file available).
+
+---
+
+## Theme Information and URLs
+
+### Where Theme Information is Stored
+
+Theme information can be stored in two places, with different priorities:
+
+#### 1. `config.json` (Same Directory - Highest Priority)
+
+The `config.json` file in your theme's folder is the **most authoritative** source for theme information. It should contain a `theme_info` section:
+
+```json
+{
+    "theme_info": {
+        "title": "Aero",
+        "author": "u/YourUsername",
+        "authorUrl": "https://www.reddit.com/user/YourUsername",
+        "description": "A description of your theme."
+    },
+    ...
+}
+```
+
+**Priority:** Information in `config.json` takes precedence over `themes.json` when both are present.
+
+#### 2. `themes.json` (Root Directory - Fallback)
+
+The `themes.json` file in the repository root serves as a fast cache for the main page. It contains an array of theme objects:
+
+```json
+{
+    "themes": [
+        {
+            "name": "Aero",
+            "folder": "Aero",
+            "screenshot": "./Aero/screenshot.jpg",
+            "description": "This theme is inspired by Windows Vista.",
+            "author": "u/Neither-Classic2058",
+            "authorUrl": "https://www.reddit.com/r/innioasis/comments/..."
+        },
+        ...
+    ]
+}
+```
+
+**Priority:** Used as a fallback if `config.json` doesn't contain theme information, or for initial page load performance.
+
+### Theme URLs and Social Sharing
+
+Each theme automatically receives a unique URL based on its folder name:
+
+**Format:** `https://themes.innioasis.app/[ThemeFolderName]`
+
+**Example:** If your theme folder is named `Aero`, the theme's URL will be:
+- `https://themes.innioasis.app/Aero`
+
+This URL is useful for:
+- **Social Sharing:** Share your theme directly on social media platforms
+- **Direct Links:** Link to your theme from forums, Reddit, or other websites
+- **Bookmarking:** Users can bookmark specific themes
+- **SEO:** Search engines can index individual theme pages
+
+The URL is automatically generated from the theme's folder name, so make sure your folder name is descriptive and URL-friendly (use letters, numbers, and hyphens, avoid spaces and special characters).
 
 ---
 
@@ -65,4 +130,3 @@ The Innioasis Updater Toolkit is the easiest way to install themes, as it handle
 ---
 
 **Note:** After installation, restart your Y1 device and select this theme from the Settings menu to apply it.
-
