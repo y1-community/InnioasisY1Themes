@@ -1715,6 +1715,72 @@
         const screenshotCache = new Map();
         let isRendering = false; // Flag to prevent re-renders during screenshot loading
         
+        // Try to load cover images as fallback when screenshot fails
+        async function tryLoadCoverAsFallback(container, themeFolder, themeName) {
+            if (!container || !themeFolder) return false;
+            
+            // Common cover image patterns in priority order
+            const coverPatterns = [
+                'cover.png',
+                'cover.jpg',
+                'cover.jpeg',
+                'cover.gif',
+                'gregcover.png',
+                'cover_noscale.png',
+                'Cover.png',
+                'Cover.jpg',
+                '@Be_cover.png',
+                '@Cup_cover.png',
+                '@Pris_cover.png',
+                'cover_WS.png',
+                'cover_YS.png'
+            ];
+            
+            // Try each cover pattern
+            for (const coverFile of coverPatterns) {
+                const coverUrl = `./${encodeURIComponent(themeFolder)}/${encodeURIComponent(coverFile)}`;
+                
+                // Test if image exists by trying to load it
+                try {
+                    const img = new Image();
+                    await new Promise((resolve, reject) => {
+                        img.onload = () => resolve(true);
+                        img.onerror = () => reject(new Error('Image not found'));
+                        img.src = coverUrl;
+                    });
+                    
+                    // Image loaded successfully - update container
+                    if (container && container.dataset.themeIndex) {
+                        container.innerHTML = `<img src="${coverUrl}" alt="${themeName}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy" onerror="this.style.display='none'; this.parentElement.innerHTML='🎨';">`;
+                        return true;
+                    }
+                } catch (e) {
+                    // Image doesn't exist, try next pattern
+                    continue;
+                }
+            }
+            
+            // No cover images found
+            return false;
+        }
+        
+        // Handle screenshot error - try cover images as fallback
+        async function handleScreenshotError(imgElement, themeFolder, themeName) {
+            const container = imgElement.parentElement;
+            if (!container) return;
+            
+            // Try to load cover images as fallback
+            const fallbackLoaded = await tryLoadCoverAsFallback(container, themeFolder, themeName);
+            if (!fallbackLoaded) {
+                // No cover found either, show placeholder
+                imgElement.style.display = 'none';
+                container.innerHTML = '🎨';
+            }
+        }
+        
+        // Make function available globally for inline handlers
+        window.handleScreenshotError = handleScreenshotError;
+        
         // Load screenshots - STATIC APPROACH: Use themes.json data first, no HEAD requests
         async function loadScreenshotsOnDemand() {
             // Don't load screenshots if we're currently rendering
@@ -1746,7 +1812,22 @@
                         const cachedUrl = screenshotCache.get(cacheKey);
                         // Only update if container still exists and matches
                         if (container && container.dataset.themeIndex === themeIndex) {
-                            container.innerHTML = `<img src="${cachedUrl}" alt="${theme.name}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">`;
+                            const img = document.createElement('img');
+                            img.src = cachedUrl;
+                            img.alt = theme.name;
+                            img.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
+                            img.loading = 'lazy';
+                            img.onerror = async function() {
+                                const fallbackLoaded = await tryLoadCoverAsFallback(container, theme.folder, theme.name);
+                                if (!fallbackLoaded) {
+                                    this.style.display = 'none';
+                                    if (container) {
+                                        container.innerHTML = '🎨';
+                                    }
+                                }
+                            };
+                            container.innerHTML = '';
+                            container.appendChild(img);
                         }
                         return true;
                     }
@@ -1757,7 +1838,24 @@
                     
                     // Only update if container still exists and matches
                     if (container && container.dataset.themeIndex === themeIndex) {
-                        container.innerHTML = `<img src="${screenshotUrl}" alt="${theme.name}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy" onerror="this.style.display='none'; this.parentElement.innerHTML='🎨';">`;
+                        const img = document.createElement('img');
+                        img.src = screenshotUrl;
+                        img.alt = theme.name;
+                        img.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
+                        img.loading = 'lazy';
+                        img.onerror = async function() {
+                            // Try to load cover images as fallback
+                            const fallbackLoaded = await tryLoadCoverAsFallback(container, theme.folder, theme.name);
+                            if (!fallbackLoaded) {
+                                // No cover found either, show placeholder
+                                this.style.display = 'none';
+                                if (container) {
+                                    container.innerHTML = '🎨';
+                                }
+                            }
+                        };
+                        container.innerHTML = '';
+                        container.appendChild(img);
                     }
                     return true;
                 }
@@ -2688,8 +2786,8 @@
                     <div class="theme-checkbox ${isSelected ? 'checked' : ''}" onclick="toggleTheme(${allThemesIndex >= 0 ? allThemesIndex : displayIndex}, event)"></div>
                     <div class="theme-share-icon" onclick="shareThemeLink('${theme.folder}', event)" title="Share this theme"></div>
                     <a href="${theme.folder}/index.html" onclick="event.stopPropagation();" style="text-decoration: none; display: block;">
-                        <div class="theme-screenshot ${theme.screenshot ? '' : 'no-preview'}" id="screenshot-${displayIndex}" data-theme-index="${displayIndex}">
-                            ${theme.screenshot ? `<img src="${theme.screenshot}" alt="${theme.name}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy" onerror="this.style.display='none'; this.parentElement.innerHTML='🎨';">` : '🎨'}
+                        <div class="theme-screenshot ${theme.screenshot ? '' : 'no-preview'}" id="screenshot-${displayIndex}" data-theme-index="${displayIndex}" data-theme-folder="${theme.folder}">
+                            ${theme.screenshot ? `<img src="${theme.screenshot}" alt="${theme.name}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy" onerror="handleScreenshotError(this, '${theme.folder}', '${theme.name.replace(/'/g, "\\'")}');">` : '🎨'}
                         </div>
                     </a>
                     <div class="theme-name" style="${fontStyle}">
