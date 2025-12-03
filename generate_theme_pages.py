@@ -383,7 +383,7 @@ html_template = """<!DOCTYPE html>
     <div id="toast" style="visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #333; color: #fff; text-align: center; border-radius: 2px; padding: 16px; position: fixed; z-index: 1; left: 50%; bottom: 30px; font-size: 17px;">Link Copied to Clipboard!</div>
 
     <div class="footer" style="margin-top: 50px; text-align: center; color: #eee; font-size: 0.9rem; padding-bottom: 20px;">
-        <p><strong>Community Maintainers:</strong> Ryan Specter & Dmitri Medina (<a href="https://reddit.com/r/dmitrimedina" target="_blank" style="color: #fff; text-decoration: underline;">reddit.com/r/dmitrimedina</a>)</p>
+        <p><strong>Community Maintainers:</strong> Ryan Specter & <a href="https://reddit.com/r/dmitrimedina" target="_blank" style="color: #fff; text-decoration: underline;">Dmitri Medina</a></p>
         <p>BETA | This site is open source. <a href="https://github.com/y1-community/InnioasisY1Themes" target="_blank" style="color: #fff;">Contribute on GitHub</a></p>
     </div>
 
