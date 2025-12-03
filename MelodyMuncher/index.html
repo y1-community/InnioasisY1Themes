@@ -876,18 +876,12 @@
                 let buttonBgColor = null;
                 
                 // Determine background color first (for fallback)
-                const selectedTextColor = itemConfig.itemSelectedTextColor || menuConfig.menuItemSelectedTextColor;
-                if (selectedTextColor && selectedTextColor.startsWith('#')) {
-                    buttonBgColor = selectedTextColor;
-                }
-                
-                // Fallback to background colors
-                if (!buttonBgColor) {
-                    buttonBgColor = menuConfig.menuBackgroundColor || 
-                                  dialogConfig.dialogBackgroundColor || 
-                                  itemConfig.itemBackgroundColor ||
-                                  '#667eea'; // Default fallback
-                }
+                // Use actual background colors, not text colors
+                // Priority: menuBackgroundColor > dialogBackgroundColor > itemBackgroundColor > default
+                buttonBgColor = menuConfig.menuBackgroundColor || 
+                              dialogConfig.dialogBackgroundColor || 
+                              itemConfig.itemBackgroundColor ||
+                              '#667eea'; // Default fallback
                 
                 if (selectedBgImage && selectedBgImage.trim() !== '') {
                     const imageUrl = `./${encodeURIComponent(selectedBgImage)}`;

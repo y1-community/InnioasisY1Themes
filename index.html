@@ -2945,19 +2945,12 @@
                 let buttonBgColor = null;
                 
                 // Determine background color first (for fallback)
-                // Try to use a similar color from the theme palette
-                const selectedTextColor = itemConfig.itemSelectedTextColor || menuConfig.menuItemSelectedTextColor;
-                if (selectedTextColor && selectedTextColor.startsWith('#')) {
-                    buttonBgColor = selectedTextColor;
-                }
-                
-                // Fallback to background colors
-                if (!buttonBgColor) {
-                    buttonBgColor = menuConfig.menuBackgroundColor || 
-                                  dialogConfig.dialogBackgroundColor || 
-                                  itemConfig.itemBackgroundColor ||
-                                  '#667eea'; // Default fallback
-                }
+                // Use actual background colors, not text colors
+                // Priority: menuBackgroundColor > dialogBackgroundColor > itemBackgroundColor > default
+                buttonBgColor = menuConfig.menuBackgroundColor || 
+                              dialogConfig.dialogBackgroundColor || 
+                              itemConfig.itemBackgroundColor ||
+                              '#667eea'; // Default fallback
                 
                 if (selectedBgImage && selectedBgImage.trim() !== '') {
                     const baseUrl = window.location.origin;
