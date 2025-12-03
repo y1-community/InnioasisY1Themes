@@ -530,6 +530,47 @@
             color: #333;
             margin-bottom: 10px;
             text-align: center;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        .theme-name a {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .theme-info-icon {
+            font-size: 0.9rem;
+            color: #667eea;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            cursor: pointer;
+            font-style: normal;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: rgba(102, 126, 234, 0.1);
+            line-height: 1;
+        }
+        
+        .theme-card:hover .theme-info-icon,
+        .theme-name:hover .theme-info-icon {
+            opacity: 1;
+        }
+        
+        /* Always show on mobile */
+        @media (max-width: 768px) {
+            .theme-info-icon {
+                opacity: 1;
+            }
         }
 
         .theme-info {
@@ -2803,6 +2844,7 @@
                     <div class="theme-name" style="${fontStyle}">
                         <a href="${theme.folder}/index.html" style="color: inherit; text-decoration: none; cursor: pointer; ${fontStyle}" onclick="event.stopPropagation();">
                             ${theme.name}
+                            <span class="theme-info-icon" title="View theme details">ℹ</span>
                         </a>
                         ${isInstalled ? '<span class="installed-badge">✓ On your Y1</span>' : ''}
                     </div>

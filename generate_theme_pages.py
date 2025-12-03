@@ -165,20 +165,25 @@ html_template = """<!DOCTYPE html>
             color: #888;
         }
         .btn {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             text-decoration: none;
             padding: 12px 30px;
-            border-radius: 50px;
-            font-weight: bold;
+            border-radius: 8px;
+            font-weight: 600;
             transition: transform 0.2s, box-shadow 0.2s;
             margin: 10px;
             border: none;
             cursor: pointer;
             font-size: 1rem;
+            min-height: 44px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            position: relative;
         }
-        .btn:hover {
+        .btn:hover, .btn:focus {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
@@ -195,11 +200,53 @@ html_template = """<!DOCTYPE html>
             padding: 8px 15px;
             font-size: 0.9rem;
             box-shadow: none;
+            text-shadow: none;
         }
         .btn.share:hover {
             background: #f5f5f5;
             transform: translateY(-1px);
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        /* Ensure button content is always visible above background */
+        .btn > span {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            gap: 8px;
+            position: relative;
+            z-index: 2;
+        }
+        .btn > span > span:first-child {
+            position: relative;
+            z-index: 3;
+            flex: 1;
+            text-align: left;
+        }
+        .btn img {
+            position: relative;
+            z-index: 3;
+        }
+        /* Arrow icon - hidden by default, shown on hover/tap/keyboard selection */
+        .btn .arrow-icon {
+            height: 100%;
+            max-height: 100%;
+            width: auto;
+            flex-shrink: 0;
+            object-fit: contain;
+            display: none;
+            margin-left: 8px;
+        }
+        .btn:hover .arrow-icon,
+        .btn:focus .arrow-icon,
+        .btn:active .arrow-icon {
+            display: block;
+        }
+        /* For mobile tap */
+        @media (hover: none) {
+            .btn:active .arrow-icon {
+                display: block;
+            }
         }
         {font_css}
         .header-section {
