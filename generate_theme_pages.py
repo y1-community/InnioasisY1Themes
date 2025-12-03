@@ -27,6 +27,33 @@ def get_images(folder):
             
     return cover_image, screenshots
 
+def get_preview_image(folder):
+    """Find preview image for social media (priority: *preview*.png, *screenshot*.*, *cover*.*)"""
+    extensions = ['*.png', '*.jpg', '*.jpeg', '*.gif', '*.PNG', '*.JPG', '*.JPEG', '*.GIF']
+    images = []
+    for ext in extensions:
+        images.extend(glob.glob(os.path.join(folder, ext)))
+    
+    preview_image = None
+    
+    for img_path in sorted(images):
+        filename = os.path.basename(img_path)
+        lower_name = filename.lower()
+        name_without_ext = os.path.splitext(lower_name)[0]
+        
+        # Priority 1: *preview*.png
+        if 'preview' in name_without_ext and filename.lower().endswith('.png'):
+            preview_image = filename
+            break
+        # Priority 2: *screenshot*.*
+        elif 'screenshot' in name_without_ext and not preview_image:
+            preview_image = filename
+        # Priority 3: *cover*.* (only if no screenshot found)
+        elif 'cover' in name_without_ext and not preview_image:
+            preview_image = filename
+    
+    return preview_image
+
 def get_font(folder):
     fonts = glob.glob(os.path.join(folder, '*.ttf'))
     if fonts:
@@ -103,6 +130,27 @@ html_template = """<!DOCTYPE html>
     <title>{name} Theme - Official Innioasis Y1 Community Themes</title>
     <meta name="description" content="Download {name} theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. {description} Community Maintainers: Ryan Specter + Dmitri Medina">
     <meta name="keywords" content="Innioasis Y1, Y1 themes, MP3 player themes, {name}, Y1 customization, official Y1 themes, Ryan Specter, Dmitri Medina">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://themes.innioasis.app/{folder}/">
+    <meta property="og:title" content="{name} Theme - Official Innioasis Y1 Community Themes">
+    <meta property="og:description" content="Download {name} theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. {description} Community Maintainers: Ryan Specter + Dmitri Medina">
+    <meta property="og:image" content="{og_image}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:site_name" content="Themes for Innioasis Y1">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://themes.innioasis.app/{folder}/">
+    <meta name="twitter:title" content="{name} Theme - Official Innioasis Y1 Community Themes">
+    <meta name="twitter:description" content="Download {name} theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. {description} Community Maintainers: Ryan Specter + Dmitri Medina">
+    <meta name="twitter:image" content="{og_image}">
+    
+    <!-- Additional Social Media / Search Engine Meta Tags -->
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://themes.innioasis.app/{folder}/">
     <script type="application/ld+json">
     {{
         "@context": "https://schema.org",
@@ -112,6 +160,7 @@ html_template = """<!DOCTYPE html>
         "operatingSystem": "Innioasis Y1",
         "description": "Download {name} theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. {description} Community Maintainers: Ryan Specter + Dmitri Medina",
         "url": "https://themes.innioasis.app/{folder}/",
+        "image": "{og_image}",
         "publisher": {{
             "@type": "Organization",
             "name": "Innioasis Y1 Community",
@@ -2928,9 +2977,20 @@ for theme in themes:
     if os.path.exists(folder):
         cover_image, screenshots = get_images(folder)
         font_file = get_font(folder)
+        preview_image = get_preview_image(folder)
     else:
         cover_image, screenshots = None, []
         font_file = None
+        preview_image = None
+    
+    # Build absolute URL for social media preview image
+    og_image = 'https://themes.innioasis.app/og-image.png'  # Default fallback
+    if preview_image:
+        og_image = f'https://themes.innioasis.app/{folder}/{preview_image}'
+    elif cover_image:
+        og_image = f'https://themes.innioasis.app/{folder}/{cover_image}'
+    elif screenshots:
+        og_image = f'https://themes.innioasis.app/{folder}/{screenshots[0]}'
     
     # Font CSS (must be defined before building HTML that uses title_style)
         font_css = ''
@@ -3016,6 +3076,7 @@ for theme in themes:
     content = content.replace('{author}', author)
     content = content.replace('{folder}', folder)
     content = content.replace('{cover_html}', cover_html)
+    content = content.replace('{og_image}', og_image)
     content = content.replace('{screenshots_section_html}', screenshots_section_html)
     content = content.replace('{font_css}', font_css)
     content = content.replace('{title_style}', title_style)
