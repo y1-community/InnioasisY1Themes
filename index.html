@@ -172,6 +172,9 @@
             position: relative;
             background: white;
             animation: slideInUp 0.4s ease-out backwards;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
 
         .theme-card:nth-child(1) {
@@ -378,7 +381,8 @@
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
-            margin-top: 10px;
+            margin-top: auto;
+            padding-top: 15px;
         }
 
         .theme-actions .install-btn {
@@ -480,6 +484,10 @@
             font-size: 0.95rem;
             text-align: center;
             margin-bottom: 15px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
         }
 
         .theme-description {
@@ -517,6 +525,28 @@
             text-align: left;
             display: flex;
             align-items: center;
+            justify-content: space-between;
+            min-height: 44px;
+            max-height: 44px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        
+        .install-btn img {
+            height: 100%;
+            max-height: 100%;
+            width: auto;
+            flex-shrink: 0;
+            object-fit: contain;
+            display: block;
+        }
+        
+        .install-btn span {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            gap: 8px;
         }
 
         .install-btn:hover {
@@ -552,6 +582,13 @@
 
             .header h1 {
                 font-size: 1.8rem;
+            }
+            
+            .install-btn {
+                padding: 10px 14px;
+                font-size: 1.1rem;
+                min-height: 48px;
+                max-height: 48px;
             }
         }
     </style>
@@ -2443,12 +2480,17 @@
             // Update author filter options
             updateAuthorFilter();
 
-            // Load fonts for all themes in background (don't trigger re-render)
-            themes.forEach(theme => {
-                loadThemeFont(theme.folder).catch(err => {
-                    console.warn(`Failed to load font for ${theme.folder}:`, err);
-                });
-            });
+            // Pre-load fonts for all themes before rendering (wait for critical fonts)
+            const fontPromises = themes.map(theme => loadThemeFont(theme.folder).catch(err => {
+                console.warn(`Failed to load font for ${theme.folder}:`, err);
+                return null;
+            }));
+            
+            // Wait for fonts to load before rendering (with timeout to not block too long)
+            await Promise.race([
+                Promise.all(fontPromises),
+                new Promise(resolve => setTimeout(resolve, 500)) // Max 500ms wait
+            ]);
 
             grid.innerHTML = themes.map((theme, originalIndex) => {
                 // Filter out "creators" theme
@@ -2465,7 +2507,7 @@
 
                 const isSelected = allThemesIndex >= 0 && selectedThemes.has(allThemesIndex);
                 
-                // Get font for this theme
+                // Get font for this theme - apply to titles and buttons
                 const fontInfo = themeFonts.get(theme.folder);
                 const fontStyle = fontInfo ? `font-family: '${fontInfo.fontFamily}', sans-serif;` : '';
                 
@@ -2475,32 +2517,45 @@
                 const menuConfig = themeConfig.menuConfig || {};
                 const dialogConfig = themeConfig.dialogConfig || {};
                 
+                // Get itemRightArrow icon (2.png) for button - check if available
+                const itemRightArrow = itemConfig.itemRightArrow || null;
+                const hasArrow = itemRightArrow && itemRightArrow.trim() !== '';
+                
                 // Try to get selected background image (preferred)
                 const selectedBgImage = itemConfig.itemSelectedBackground || menuConfig.menuItemSelectedBackground || 
                                        dialogConfig.dialogOptionSelectedBackground || null;
                 
-                // Button background = selected background image if available, otherwise selected text color
+                // Button background = selected background image if available, otherwise use selected background color
                 let buttonBgStyle = '';
                 if (selectedBgImage && selectedBgImage.trim() !== '') {
                     const baseUrl = window.location.origin;
                     const imageUrl = `./${encodeURIComponent(theme.folder)}/${encodeURIComponent(selectedBgImage)}`;
                     buttonBgStyle = `background-image: url('${imageUrl}'); background-size: 100% 100%; background-repeat: no-repeat; background-position: center;`;
                 } else {
-                    // Fallback to selected text color as solid background
-                    const buttonBgColor = menuConfig.menuItemSelectedTextColor || itemConfig.itemSelectedTextColor || '#667eea';
+                    // Use selected background color from theme (the color that selected items use)
+                    // Priority: selected background colors, then general background colors, then fallback
+                    // Note: menuItemSelectedBackground and itemSelectedBackground might be image filenames, not colors
+                    // So we check for actual color properties first
+                    const buttonBgColor = menuConfig.menuBackgroundColor || 
+                                         dialogConfig.dialogBackgroundColor || 
+                                         itemConfig.itemBackgroundColor ||
+                                         '#667eea'; // Default fallback
                     buttonBgStyle = `background-color: ${buttonBgColor};`;
                 }
                 
-                // Button text = selected menu item text color (the color that stands out on selected items)
-                const buttonTextColor = menuConfig.menuItemSelectedTextColor || itemConfig.itemSelectedTextColor || '#ffffff';
+                // Button text color: ALWAYS use selected/highlighted menu text item color (most appropriate choice)
+                // This is the color that stands out on selected/highlighted menu items
+                const buttonTextColor = menuConfig.menuItemSelectedTextColor || 
+                                      itemConfig.itemSelectedTextColor || 
+                                      dialogConfig.dialogOptionSelectedTextColor ||
+                                      '#ffffff'; // Fallback to white if not configured
                 
-                // Get itemRightArrow icon (2.png) for button - full button height (has padding built in)
-                const itemRightArrow = itemConfig.itemRightArrow || null;
-                const arrowIcon = itemRightArrow && itemRightArrow.trim() !== '' 
-                    ? `<img src="./${encodeURIComponent(theme.folder)}/${encodeURIComponent(itemRightArrow)}" alt="→" style="height: 100%; width: auto; vertical-align: middle; flex-shrink: 0; object-fit: contain;">`
+                // Arrow icon - fits within button height (doesn't expand button)
+                const arrowIcon = hasArrow 
+                    ? `<img src="./${encodeURIComponent(theme.folder)}/${encodeURIComponent(itemRightArrow)}" alt="→" style="height: 100%; max-height: 100%; width: auto; flex-shrink: 0; object-fit: contain; display: block;">`
                     : '';
                 
-                // Build button style with theme colors and image
+                // Build button style with theme colors, image, and font
                 const buttonStyle = `${buttonBgStyle} color: ${buttonTextColor}; ${fontStyle}`;
                 
                 // Get author display name (for filtering)
@@ -3082,23 +3137,60 @@
 
         // Get theme files - STATIC: Only uses files.json, no API calls
         async function getThemeFiles(themeFolderName) {
-            // Try to get files.json if it exists (static file, no API)
+            // PRIORITY 1: Try to get files.json if it exists (static file, no API)
             try {
-                const filesResponse = await fetch(`${themeFolderName.replace(/ /g, '%20')}/files.json`);
+                const filesResponse = await fetch(`./${encodeURIComponent(themeFolderName)}/files.json`);
                 if (filesResponse.ok) {
                     const filesData = await filesResponse.json();
-                    return filesData.files || [];
+                    if (filesData.files && filesData.files.length > 0) {
+                        return filesData.files;
+                    }
                 }
             } catch (error) {
-                console.error('Error fetching files.json:', error);
+                console.log('files.json not found, trying directory listing...');
             }
 
-            // Final fallback: return common theme files
+            // PRIORITY 2: Try directory listing (works on GitHub Pages and local servers)
+            try {
+                const dirResponse = await fetch(`./${encodeURIComponent(themeFolderName)}/`, {
+                    headers: { 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' }
+                });
+                if (dirResponse.ok) {
+                    const html = await dirResponse.text();
+                    // Parse HTML directory listing for file links
+                    const fileMatches = html.match(/href="([^"]+)"[^>]*>([^<]+)<\/a>/g);
+                    if (fileMatches) {
+                        const files = [];
+                        fileMatches.forEach(match => {
+                            const hrefMatch = match.match(/href="([^"]+)"/);
+                            const nameMatch = match.match(/>([^<]+)<\/a>/);
+                            if (hrefMatch && nameMatch) {
+                                const fileName = nameMatch[1];
+                                const filePath = hrefMatch[1];
+                                // Skip directories, parent links, and common non-theme files
+                                if (!filePath.match(/\/$/) && 
+                                    !['../', './', 'index.html'].includes(fileName) &&
+                                    !fileName.startsWith('.')) {
+                                    files.push(fileName);
+                                }
+                            }
+                        });
+                        if (files.length > 0) {
+                            return files;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.log('Directory listing not available, using fallback...');
+            }
+
+            // PRIORITY 3: Return common theme files (static fallback)
             return [
+                'config.json',
                 'screenshot.png',
-                'theme.json',
-                'background.png',
-                'icons.png'
+                'cover.png',
+                'screenshot.gif',
+                'index.html'
             ];
         }
 
@@ -3106,8 +3198,22 @@
         async function downloadSingleTheme(index, event) {
             event.stopPropagation();
 
-            const theme = themes[index];
-            const button = event.target;
+            // Use allThemes to get the correct theme (not just displayed themes)
+            // Index could be from displayedThemes or allThemes, so check both
+            let theme = allThemes[index];
+            if (!theme && themes[index]) {
+                // If not found in allThemes, try to find by folder name from displayed themes
+                const displayedTheme = themes[index];
+                theme = allThemes.find(t => t.folder === displayedTheme.folder);
+            }
+            
+            if (!theme) {
+                console.error('Theme not found at index:', index);
+                alert('Download failed: Theme not found');
+                return;
+            }
+
+            const button = event.target.closest('button') || event.target;
             const originalText = button.textContent;
             button.disabled = true;
             button.textContent = '📦 Downloading...';
@@ -3127,7 +3233,7 @@
             } catch (error) {
                 console.error('Download failed:', error);
                 button.textContent = '❌ Failed';
-                alert(`Download failed: ${error.message}`);
+                alert(`Download failed: ${error.message || error}`);
                 setTimeout(() => {
                     button.textContent = originalText;
                     button.disabled = false;
@@ -3270,12 +3376,30 @@
                             progressCallback(progress);
                         }
 
-                        // Download file from GitHub
-                        const rawUrl = `https://raw.githubusercontent.com/team-slide/InnioasisY1Themes/main/${encodeURIComponent(theme.folder)}/${encodeURIComponent(file)}`;
-                        const response = await fetch(rawUrl);
+                        // Download file - try relative/local URL first, then GitHub as fallback
+                        let fileUrl = null;
+                        let response = null;
+                        
+                        // PRIORITY 1: Try relative URL (works on local server and GitHub Pages)
+                        try {
+                            fileUrl = `./${encodeURIComponent(theme.folder)}/${encodeURIComponent(file)}`;
+                            response = await fetch(fileUrl);
+                            if (!response.ok) throw new Error('Not found');
+                        } catch (error) {
+                            // PRIORITY 2: Try current domain with theme folder
+                            try {
+                                fileUrl = `${window.location.origin}/${encodeURIComponent(theme.folder)}/${encodeURIComponent(file)}`;
+                                response = await fetch(fileUrl);
+                                if (!response.ok) throw new Error('Not found');
+                            } catch (error2) {
+                                // PRIORITY 3: Fallback to GitHub raw URL (only if needed)
+                                fileUrl = `https://raw.githubusercontent.com/team-slide/InnioasisY1Themes/main/${encodeURIComponent(theme.folder)}/${encodeURIComponent(file)}`;
+                                response = await fetch(fileUrl);
+                            }
+                        }
 
-                        if (!response.ok) {
-                            console.error(`Failed to fetch ${file}: ${response.status}`);
+                        if (!response || !response.ok) {
+                            console.error(`Failed to fetch ${file} from ${fileUrl}: ${response?.status || 'unknown'}`);
                             continue;
                         }
 
