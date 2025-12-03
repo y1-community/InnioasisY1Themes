@@ -427,6 +427,64 @@
         .lightbox-edit-btn:active {
             transform: translateX(-50%) translateY(0);
         }
+        
+        /* Config.json info display in lightbox */
+        .lightbox-config-info {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            z-index: 1001;
+            backdrop-filter: blur(10px);
+        }
+        
+        .lightbox-config-header {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        
+        .lightbox-config-explanation {
+            font-size: 0.9rem;
+            color: #ddd;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
+        .lightbox-config-details {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .lightbox-config-item {
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        
+        .lightbox-config-item strong {
+            color: #fff;
+            display: inline-block;
+            min-width: 100px;
+        }
+        
+        .lightbox-config-item code {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+            font-size: 0.85rem;
+            color: #fff;
+            word-break: break-all;
+        }
         .back-link {
             display: block;
             margin-top: 20px;
@@ -568,7 +626,9 @@
         
         
         
-        <div class="image-carousel-section">
+        <!-- Image carousel section - dynamically shown/hidden based on available images -->
+        <!-- This section is hidden by default and only shown when images are loaded -->
+        <div class="image-carousel-section" id="image-carousel-section" style="display: none;">
             <h3 style="font-size: 1rem; margin-bottom: 15px; color: #667eea;">All Theme Images</h3>
             <div class="image-carousel-container">
                 <div class="image-carousel-wrapper" id="image-carousel-wrapper">
@@ -658,6 +718,19 @@
             <span>✏️</span>
             <span>View/Edit on GitHub</span>
         </a>
+        <!-- Config.json info display (shown for gallery images) -->
+        <div id="lightbox-config-info" class="lightbox-config-info" onclick="event.stopPropagation()" style="display: none;">
+            <div class="lightbox-config-header">Theme Construction Info</div>
+            <div class="lightbox-config-explanation">This information helps you understand how a theme is constructed:</div>
+            <div class="lightbox-config-details">
+                <div class="lightbox-config-item">
+                    <strong>Config Key:</strong> <code id="lightbox-config-key"></code>
+                </div>
+                <div class="lightbox-config-item">
+                    <strong>Image File:</strong> <code id="lightbox-image-name"></code>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Toast Notification -->
@@ -1805,41 +1878,63 @@
         }
 
         // Lightbox functions
-        function openLightbox(imgSrc) {
+        function openLightbox(imgSrc, configKey = null, imageName = null) {
             const lightbox = document.getElementById('lightbox');
             const lightboxImg = document.getElementById('lightbox-img');
             const editBtn = document.getElementById('lightbox-edit-btn');
+            const configInfo = document.getElementById('lightbox-config-info');
+            const configKeyEl = document.getElementById('lightbox-config-key');
+            const imageNameEl = document.getElementById('lightbox-image-name');
             
             lightboxImg.src = imgSrc;
             lightbox.classList.add('active');
             document.body.style.overflow = 'hidden';
             
+            // Show config.json info if this is from the gallery (has configKey)
+            if (configKey && imageName) {
+                configKeyEl.textContent = configKey;
+                imageNameEl.textContent = imageName;
+                configInfo.style.display = 'block';
+            } else {
+                configInfo.style.display = 'none';
+            }
+            
             // Extract filename from image source and construct GitHub URL
             // Image source format: ./filename.png or ./themeFolder/filename.png
             // We need: https://github.com/y1-community/InnioasisY1Themes/tree/main/{folderName}/{filename}
             const folderName = 'Lain-ish';
-            let filename = '';
+            let filename = imageName || '';
             
-            // Remove leading ./ if present
-            const cleanSrc = imgSrc.replace(/^\.\//, '');
-            
-            // If the path contains a folder (shouldn't happen for theme page images, but handle it)
-            if (cleanSrc.includes('/')) {
-                const parts = cleanSrc.split('/');
-                filename = parts[parts.length - 1];
-            } else {
-                filename = cleanSrc;
+            if (!filename) {
+                // Remove leading ./ if present
+                const cleanSrc = imgSrc.replace(/^\.\//, '');
+                
+                // If the path contains a folder (shouldn't happen for theme page images, but handle it)
+                if (cleanSrc.includes('/')) {
+                    const parts = cleanSrc.split('/');
+                    filename = parts[parts.length - 1];
+                } else {
+                    filename = cleanSrc;
+                }
+                // Remove query params if any
+                filename = filename.split('?')[0];
             }
             
             // Construct GitHub URL
             const githubUrl = `https://github.com/y1-community/InnioasisY1Themes/tree/main/${encodeURIComponent(folderName)}/${encodeURIComponent(filename)}`;
             editBtn.href = githubUrl;
+            editBtn.style.display = 'inline-flex';
         }
 
         function closeLightbox() {
             const lightbox = document.getElementById('lightbox');
+            const configInfo = document.getElementById('lightbox-config-info');
             lightbox.classList.remove('active');
             document.body.style.overflow = 'auto';
+            // Hide config info when closing
+            if (configInfo) {
+                configInfo.style.display = 'none';
+            }
         }
 
         // Close lightbox on ESC key
@@ -1994,8 +2089,11 @@
                 });
                 
                 if (configImageEntries.length === 0) {
-                    carouselWrapper.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">No images found in config.json</div>';
-                    if (carouselInfo) carouselInfo.textContent = '0 / 0';
+                    // Hide the entire carousel section if no images found
+                    const carouselSection = document.getElementById('image-carousel-section');
+                    if (carouselSection) {
+                        carouselSection.style.display = 'none';
+                    }
                     return;
                 }
                 
@@ -2073,9 +2171,18 @@
                 loadedImageData.sort((a, b) => a.configKey.localeCompare(b.configKey));
                 
                 if (loadedImageData.length === 0) {
-                    carouselWrapper.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">No images found</div>';
-                    if (carouselInfo) carouselInfo.textContent = '0 / 0';
+                    // Hide the entire carousel section if no images loaded
+                    const carouselSection = document.getElementById('image-carousel-section');
+                    if (carouselSection) {
+                        carouselSection.style.display = 'none';
+                    }
                     return;
+                }
+                
+                // Show the carousel section now that we have images
+                const carouselSection = document.getElementById('image-carousel-section');
+                if (carouselSection) {
+                    carouselSection.style.display = 'block';
                 }
                 
                 // Create carousel items - one for each config key usage
@@ -2083,7 +2190,12 @@
                 loadedImageData.forEach((imageData) => {
                     const item = document.createElement('div');
                     item.className = 'image-carousel-item';
-                    item.onclick = () => openLightbox(imageData.objectUrl || imageData.url);
+                    // Pass config key and filename to openLightbox for gallery images
+                    item.onclick = () => openLightbox(
+                        imageData.objectUrl || imageData.url,
+                        imageData.configKey,
+                        imageData.filename
+                    );
                     item.style.cursor = 'pointer';
                     
                     const img = document.createElement('img');
@@ -2107,7 +2219,11 @@
                 
             } catch (error) {
                 console.error('Error loading theme images:', error);
-                carouselWrapper.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">Error loading images</div>';
+                // Hide the entire carousel section on error
+                const carouselSection = document.getElementById('image-carousel-section');
+                if (carouselSection) {
+                    carouselSection.style.display = 'none';
+                }
             }
         }
         
