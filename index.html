@@ -330,12 +330,19 @@
             display: none !important;
         }
         
+        .theme-actions-mobile {
+            display: none;
+        }
+        
         @media (max-width: 768px) {
             .theme-share-icon {
                 display: none;
             }
-            .share-link-mobile {
-                display: block !important;
+            .theme-actions-mobile {
+                display: flex !important;
+            }
+            .theme-edit-link:not(.theme-actions-mobile .theme-edit-link) {
+                display: none !important;
             }
         }
         
@@ -394,10 +401,41 @@
         
         .theme-edit-link a {
             transition: color 0.2s;
+            font-size: 0.9rem;
         }
         
         .theme-edit-link a:hover {
             color: #667eea !important;
+        }
+        
+        /* Mobile: Share and Edit on same line */
+        @media (max-width: 768px) {
+            .theme-actions-mobile {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 15px;
+                margin-top: 10px;
+                padding-top: 10px;
+                border-top: 1px solid #e0e0e0;
+            }
+            
+            .share-link-mobile {
+                display: inline-block !important;
+                margin-top: 0 !important;
+                font-size: 0.85rem;
+            }
+            
+            .theme-edit-link {
+                margin-top: 0;
+                padding-top: 0;
+                border-top: none;
+                display: inline-block;
+            }
+            
+            .theme-edit-link a {
+                font-size: 0.85rem;
+            }
         }
 
         .theme-actions .install-btn {
@@ -2686,12 +2724,19 @@
                                 </span>
                             </button>
                         `}
-                        <a href="#" class="share-link-mobile" onclick="shareThemeLink('${theme.folder}', event); return false;" style="display: none; margin-top: 8px; text-align: center; color: #667eea; text-decoration: none; ${fontStyle}">
+                    </div>
+                    <div class="theme-actions-mobile" style="display: none;">
+                        <a href="#" class="share-link-mobile" onclick="shareThemeLink('${theme.folder}', event); return false;" style="color: #667eea; text-decoration: none; ${fontStyle}">
                             🔗 Share
                         </a>
+                        <div class="theme-edit-link">
+                            <a href="https://github.com/y1-community/InnioasisY1Themes/tree/main/${encodeURIComponent(theme.folder)}" target="_blank" onclick="event.stopPropagation();" style="color: #888; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; transition: color 0.2s;">
+                                ✏️ Edit
+                            </a>
+                        </div>
                     </div>
                     <div class="theme-edit-link" style="margin-top: 10px; text-align: center; padding-top: 10px; border-top: 1px solid #e0e0e0;">
-                        <a href="https://github.com/y1-community/InnioasisY1Themes/tree/main/${encodeURIComponent(theme.folder)}" target="_blank" onclick="event.stopPropagation();" style="color: #888; text-decoration: none; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 4px; transition: color 0.2s;">
+                        <a href="https://github.com/y1-community/InnioasisY1Themes/tree/main/${encodeURIComponent(theme.folder)}" target="_blank" onclick="event.stopPropagation();" style="color: #888; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; transition: color 0.2s;">
                             ✏️ Edit
                         </a>
                     </div>
