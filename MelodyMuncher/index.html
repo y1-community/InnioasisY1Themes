@@ -180,10 +180,56 @@
         .back-link:hover {
             text-decoration: underline;
         }
+        /* Loading Spinner */
+        .loading-spinner {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .container.loading {
+            opacity: 0.3;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Loading Spinner -->
+    <div id="loading-spinner" class="loading-spinner">
+        <div class="spinner"></div>
+        <div class="loading-text">Loading theme information...</div>
+    </div>
+    
+    <div class="container" id="main-container">
         <div class="header-section">
             <div class="header-text">
                 <h1 id="theme-name" >MelodyMuncher</h1>
@@ -564,28 +610,181 @@
             }
         }
 
-        // Dynamic Data Loading
+        // Store hardcoded fallback values (last resort)
+        const hardcodedData = {
+            name: 'MelodyMuncher',
+            author: 'Unknown',
+            description: 'Y1 Theme: MelodyMuncher',
+            folder: 'MelodyMuncher'
+        };
+        
+        // Dynamic Data Loading - Priority: themes.json (root) > config.json (local) > hardcoded
         document.addEventListener('DOMContentLoaded', async () => {
-            const currentPath = window.location.pathname;
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const mainContainer = document.getElementById('main-container');
+            let themeData = null;
             let folderName = '';
+            
+            // Extract folder name from URL
+            const currentPath = window.location.pathname;
             const pathParts = currentPath.split('/');
             if (pathParts[pathParts.length - 1].toLowerCase() === 'index.html' || pathParts[pathParts.length - 1] === '') {
                 folderName = pathParts[pathParts.length - 2];
             } else {
                 folderName = pathParts[pathParts.length - 1];
             }
-            
             folderName = decodeURIComponent(folderName);
-
+            
+            // Show loading spinner and dim container
+            if (loadingSpinner) loadingSpinner.style.display = 'flex';
+            if (mainContainer) mainContainer.classList.add('loading');
+            
+            // Set timeout to show hardcoded info if loading takes too long (3 seconds)
+            const timeoutId = setTimeout(() => {
+                if (!themeData) {
+                    console.log('Loading timeout - using hardcoded fallback data');
+                    applyThemeData(hardcodedData, folderName);
+                    hideLoadingSpinner();
+                }
+            }, 3000);
+            
+            // PRIORITY 1: Try to load from themes.json (root directory)
+            try {
+                const themesResponse = await fetch('../themes.json');
+                if (themesResponse.ok) {
+                    const themesData = await themesResponse.json();
+                    const theme = themesData.themes?.find(t => 
+                        t.folder === folderName || 
+                        t.folder.toLowerCase() === folderName.toLowerCase()
+                    );
+                    
+                    if (theme) {
+                        themeData = {
+                            name: theme.name || theme.folder,
+                            author: theme.author || 'Unknown',
+                            authorUrl: theme.authorUrl || null,
+                            description: theme.description || `Y1 Theme: ${theme.folder}`,
+                            folder: theme.folder
+                        };
+                        console.log('✅ Loaded theme data from themes.json');
+                    }
+                }
+            } catch (error) {
+                console.log('Could not load themes.json:', error);
+            }
+            
+            // PRIORITY 2: Try to load from config.json (same directory) - more authoritative
+            try {
+                const configResponse = await fetch('./config.json');
+                if (configResponse.ok) {
+                    const config = await configResponse.json();
+                    const themeInfo = config?.theme_info || {};
+                    
+                    // Merge with themes.json data, but config.json takes precedence
+                    themeData = {
+                        name: themeInfo.title || themeData?.name || hardcodedData.name,
+                        author: themeInfo.author || themeData?.author || hardcodedData.author,
+                        authorUrl: themeInfo.authorUrl || themeData?.authorUrl || null,
+                        description: themeInfo.description || themeData?.description || hardcodedData.description,
+                        folder: folderName || themeData?.folder || hardcodedData.folder
+                    };
+                    console.log('✅ Loaded theme data from config.json');
+                }
+            } catch (error) {
+                console.log('Could not load config.json:', error);
+            }
+            
+            // Clear timeout if we got data
+            clearTimeout(timeoutId);
+            
+            // Apply loaded data or fallback to hardcoded
+            if (themeData) {
+                applyThemeData(themeData, folderName);
+            } else {
+                console.log('Using hardcoded fallback data');
+                applyThemeData(hardcodedData, folderName);
+            }
+            
+            hideLoadingSpinner();
+            
             // Check for File System Access API support
             if ('showDirectoryPicker' in window) {
                 document.getElementById('install-btn').style.display = 'inline-block';
             }
         });
+        
+        // Apply theme data to page elements
+        function applyThemeData(data, folderName) {
+            // Update title
+            const themeNameEl = document.getElementById('theme-name');
+            if (themeNameEl) {
+                themeNameEl.textContent = data.name;
+            }
+            
+            // Update page title and meta tags
+            document.title = `${data.name} Theme - Official Innioasis Y1 Community Themes`;
+            const metaDescription = document.querySelector('meta[name="description"]');
+            if (metaDescription) {
+                metaDescription.content = `Download ${data.name} theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. ${data.description}`;
+            }
+            
+            // Update author display - link to authorUrl if available
+            const themeAuthorEl = document.getElementById('theme-author');
+            if (themeAuthorEl) {
+                if (data.authorUrl && data.authorUrl.trim() !== '') {
+                    themeAuthorEl.innerHTML = `Innioasis Y1 theme by <a href="${data.authorUrl}" target="_blank" rel="noopener noreferrer" style="color: #667eea; text-decoration: none;">${data.author}</a>`;
+                } else {
+                    themeAuthorEl.textContent = `Innioasis Y1 theme by ${data.author}`;
+                }
+            }
+            
+            // Update description
+            const themeDescriptionEl = document.getElementById('theme-description');
+            if (themeDescriptionEl) {
+                themeDescriptionEl.textContent = data.description;
+            }
+            
+            // Update SEO content
+            const seoContent = document.querySelector('.seo-content p');
+            if (seoContent) {
+                if (data.authorUrl && data.authorUrl.trim() !== '') {
+                    seoContent.innerHTML = `This theme was made by <strong><a href="${data.authorUrl}" target="_blank" rel="noopener noreferrer" style="color: #667eea; text-decoration: none;">${data.author}</a></strong>. ${data.description}`;
+                } else {
+                    seoContent.innerHTML = `This theme was made by <strong>${data.author}</strong>. ${data.description}`;
+                }
+            }
+            
+            // Update SEO heading
+            const seoHeading = document.querySelector('.seo-content h2');
+            if (seoHeading) {
+                seoHeading.textContent = `About the ${data.name} Theme for Innioasis Y1`;
+            }
+            
+            // Update GitHub edit link
+            const editLink = document.querySelector('a[href*="github.com/y1-community/InnioasisY1Themes/tree/main/"]');
+            if (editLink) {
+                editLink.href = `https://github.com/y1-community/InnioasisY1Themes/tree/main/${encodeURIComponent(data.folder || folderName)}`;
+            }
+            
+            // Store folder name globally for install/download functions
+            window.themeFolderName = data.folder || folderName;
+        }
+        
+        // Hide loading spinner
+        function hideLoadingSpinner() {
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const mainContainer = document.getElementById('main-container');
+            if (loadingSpinner) {
+                loadingSpinner.style.display = 'none';
+            }
+            if (mainContainer) {
+                mainContainer.classList.remove('loading');
+            }
+        }
 
         // Install Theme directly to device
         async function installTheme() {
-            const folderName = 'MelodyMuncher';
+            const folderName = window.themeFolderName || 'MelodyMuncher';
             const btn = document.getElementById('install-btn');
             const status = document.getElementById('download-status');
             
@@ -664,8 +863,9 @@
 
         // Download theme as ZIP
         async function downloadTheme() {
-            const folderName = 'MelodyMuncher';
-            const themeName = 'MelodyMuncher';
+            const folderName = window.themeFolderName || 'MelodyMuncher';
+            const themeNameEl = document.getElementById('theme-name');
+            const themeName = themeNameEl ? themeNameEl.textContent : folderName;
             const btn = document.getElementById('download-btn');
             const status = document.getElementById('download-status');
             

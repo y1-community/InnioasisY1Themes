@@ -2662,10 +2662,7 @@
                     <div class="theme-info">
                         <div class="theme-description">${theme.description || 'Y1 Theme'}</div>
                         <div class="theme-author">
-                            by ${theme.authorUrl ?
-                        `<a href="${theme.authorUrl}" target="_blank" class="author-link" onclick="event.stopPropagation();">${authorDisplay}</a>` :
-                        `<span class="author-link" style="cursor: pointer; text-decoration: underline;" onclick="event.stopPropagation(); filterByAuthor('${authorDisplay}');">${authorDisplay}</span>`
-                    }
+                            by <span class="author-link" style="cursor: pointer; text-decoration: underline;" onclick="event.stopPropagation(); filterByAuthor('${authorDisplay}');">${authorDisplay}</span>
                         </div>
                     </div>
                     <div class="theme-actions">
@@ -2693,8 +2690,8 @@
                             🔗 Share
                         </a>
                     </div>
-                    <div class="theme-edit-link">
-                        <a href="https://github.com/y1-community/InnioasisY1Themes/tree/main/${encodeURIComponent(theme.folder)}" target="_blank" onclick="event.stopPropagation();" style="color: #888; text-decoration: none; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 4px;">
+                    <div class="theme-edit-link" style="margin-top: 10px; text-align: center; padding-top: 10px; border-top: 1px solid #e0e0e0;">
+                        <a href="https://github.com/y1-community/InnioasisY1Themes/tree/main/${encodeURIComponent(theme.folder)}" target="_blank" onclick="event.stopPropagation();" style="color: #888; text-decoration: none; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 4px; transition: color 0.2s;">
                             ✏️ Edit
                         </a>
                     </div>
