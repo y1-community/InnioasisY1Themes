@@ -2562,13 +2562,17 @@
                 }
                 const hasArrow = arrowIconFile && arrowIconFile.trim() !== '';
                 
-                // Try to get selected background image - check config first, then *Selected*.* pattern
+                // Try to get selected background image - check config first, then patterns, then 1.png
                 let selectedBgImage = itemConfig.itemSelectedBackground || menuConfig.menuItemSelectedBackground || 
                                      dialogConfig.dialogOptionSelectedBackground || null;
                 if (!selectedBgImage || selectedBgImage.trim() === '') {
                     // Try to find *Selected*.* pattern from theme files (check both displayed theme and allThemes)
                     const fullTheme = allThemes.find(t => t.folder === theme.folder) || theme;
                     selectedBgImage = fullTheme.selectedBgImageFile || theme.selectedBgImageFile || null;
+                }
+                // High priority fallback: 1.png (common selected background image)
+                if (!selectedBgImage || selectedBgImage.trim() === '') {
+                    selectedBgImage = '1.png';
                 }
                 
                 // Button background = selected background image if available, otherwise use theme color, then fallback
