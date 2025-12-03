@@ -101,8 +101,36 @@ html_template = """<!DOCTYPE html>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{name} Theme - Official Innioasis Y1 Community Themes</title>
-    <meta name="description" content="Download {name} theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. {description}">
-    <meta name="keywords" content="Innioasis Y1, Y1 themes, MP3 player themes, {name}, Y1 customization, official Y1 themes">
+    <meta name="description" content="Download {name} theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. {description} Community Maintainers: Ryan Specter + Dmitri Medina">
+    <meta name="keywords" content="Innioasis Y1, Y1 themes, MP3 player themes, {name}, Y1 customization, official Y1 themes, Ryan Specter, Dmitri Medina">
+    <script type="application/ld+json">
+    {{
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "{name} Theme",
+        "applicationCategory": "Theme",
+        "operatingSystem": "Innioasis Y1",
+        "description": "Download {name} theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. {description} Community Maintainers: Ryan Specter + Dmitri Medina",
+        "url": "https://themes.innioasis.app/{folder}/",
+        "publisher": {{
+            "@type": "Organization",
+            "name": "Innioasis Y1 Community",
+            "url": "https://themes.innioasis.app"
+        }},
+        "maintainer": [
+            {{
+                "@type": "Person",
+                "name": "Ryan Specter",
+                "url": "https://ryanspecter.uk"
+            }},
+            {{
+                "@type": "Person",
+                "name": "Dmitri Medina",
+                "url": "https://reddit.com/user/dmitrimedina"
+            }}
+        ]
+    }}
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         body {
@@ -661,6 +689,9 @@ html_template = """<!DOCTYPE html>
                 </ol>
                 <p style="color: #666; font-size: 0.9rem; margin-top: 15px;">The installation will automatically copy all theme files to your device.</p>
                 <button class="install-modal-btn" onclick="proceedWithInstall()">Continue to Folder Selection</button>
+                <p style="text-align: center; margin-top: 15px;">
+                    <a href="#" onclick="closeInstallModal(); downloadTheme(); return false;" style="color: #667eea; text-decoration: underline; font-size: 0.9rem;">📦 Download as .zip instead</a>
+                </p>
             </div>
         </div>
 
@@ -1039,9 +1070,57 @@ html_template = """<!DOCTYPE html>
             }
         }
 
+        // Load theme font and apply to buttons (like main page)
+        async function loadThemeFont() {
+            try {
+                const configResponse = await fetch('./config.json');
+                if (!configResponse.ok) return null;
+                
+                const config = await configResponse.json();
+                const configStr = JSON.stringify(config);
+                const fontMatches = configStr.match(/"([^"]*\.ttf[^"]*)"/gi);
+                
+                if (fontMatches && fontMatches.length > 0) {
+                    const fontName = fontMatches[0].replace(/"/g, '');
+                    const fontUrl = `./${encodeURIComponent(fontName)}`;
+                    
+                    // Load font using FontFace API
+                    try {
+                        const fontFace = new FontFace('ThemeFont', `url(${fontUrl})`);
+                        await fontFace.load();
+                        document.fonts.add(fontFace);
+                        return 'ThemeFont';
+                    } catch (e) {
+                        console.warn('Could not load theme font:', e);
+                    }
+                }
+                
+                // Try common font patterns
+                const fontPatterns = ['font.ttf', 'Font.ttf', 'theme.ttf', 'Theme.ttf'];
+                for (const fontName of fontPatterns) {
+                    try {
+                        const fontUrl = `./${encodeURIComponent(fontName)}`;
+                        const fontFace = new FontFace('ThemeFont', `url(${fontUrl})`);
+                        await fontFace.load();
+                        document.fonts.add(fontFace);
+                        return 'ThemeFont';
+                    } catch (e) {
+                        // Continue trying
+                    }
+                }
+            } catch (e) {
+                console.warn('Could not load theme font:', e);
+            }
+            return null;
+        }
+        
         // Apply theme styling to buttons
         async function applyThemeButtonStyling() {
             try {
+                // Load theme font first
+                const themeFont = await loadThemeFont();
+                const fontStyle = themeFont ? `font-family: '${themeFont}', sans-serif;` : '';
+                
                 const configResponse = await fetch('./config.json');
                 if (!configResponse.ok) return;
                 
@@ -1050,8 +1129,9 @@ html_template = """<!DOCTYPE html>
                 const menuConfig = config?.menuConfig || {};
                 const dialogConfig = config?.dialogConfig || {};
                 
-                // Get button background image - same logic as main page
-                let selectedBgImage = itemConfig.itemSelectedBackground || menuConfig.menuItemSelectedBackground || 
+                // Get button background image - use itemBackground from config.json (unified approach)
+                let selectedBgImage = itemConfig.itemBackground || itemConfig.itemSelectedBackground || 
+                                     menuConfig.menuItemSelectedBackground || 
                                      dialogConfig.dialogOptionSelectedBackground || null;
                 
                 // IMPORTANT: If config specifies "1.png", check if a suffixed version exists (e.g., "1_YS.png")
@@ -1110,9 +1190,31 @@ html_template = """<!DOCTYPE html>
                                      dialogConfig.dialogOptionSelectedTextColor ||
                                      '#ffffff';
                 
-                // Get arrow icon - try config first, then look for *RightArrow*.* pattern
+                // Get arrow icon - use itemRightArrow from config.json (unified approach)
+                // Then try *RightArrow*.* pattern, then common patterns
                 let arrowIconFile = itemConfig.itemRightArrow || null;
-                // If not in config, try common patterns
+                
+                // If not in config, try *RightArrow*.* pattern (works for themes like Naruto)
+                if (!arrowIconFile || arrowIconFile.trim() === '') {
+                    try {
+                        // Try GitHub API to find *RightArrow*.* files
+                        const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/{folder}`;
+                        const response = await fetch(apiUrl);
+                        if (response.ok) {
+                            const files = await response.json();
+                            const rightArrowFiles = files
+                                .filter(f => f.type === 'file' && /RightArrow/i.test(f.name) && /\.(png|jpg|jpeg|gif|svg)$/i.test(f.name))
+                                .map(f => f.name);
+                            if (rightArrowFiles.length > 0) {
+                                arrowIconFile = rightArrowFiles[0];
+                            }
+                        }
+                    } catch (e) {
+                        // API not available, continue to common patterns
+                    }
+                }
+                
+                // If still not found, try common patterns
                 if (!arrowIconFile || arrowIconFile.trim() === '') {
                     const commonArrowFiles = ['2_YS.png', '2_YS.jpg', '2.png', '2.jpg'];
                     for (const file of commonArrowFiles) {
@@ -1136,22 +1238,29 @@ html_template = """<!DOCTYPE html>
                     buttonBgStyle = `background-color: ${buttonBgColor};`;
                 }
                 
-                const buttonStyle = `${buttonBgStyle} color: ${buttonTextColor}; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 0 2px rgba(0, 0, 0, 0.8);`;
+                const buttonStyle = `${buttonBgStyle} color: ${buttonTextColor}; ${fontStyle} text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 0 2px rgba(0, 0, 0, 0.8);`;
                 
                 // Apply to all buttons (install and download)
                 const buttons = document.querySelectorAll('.btn.install, .btn.download');
                 buttons.forEach(btn => {
-                    // Apply button style (background, color, text shadow)
-                    // Preserve existing display/flex properties, only override background/color/text-shadow
+                    // Apply button style (background, color, font, text shadow)
+                    // Preserve existing display/flex properties, only override background/color/font/text-shadow
                     const existingStyle = btn.getAttribute('style') || '';
-                    // Remove old background, color, and text-shadow from existing style
+                    // Remove old background, color, font-family, and text-shadow from existing style
                     const cleanedStyle = existingStyle
                         .replace(/background[^;]*;?/gi, '')
                         .replace(/color[^;]*;?/gi, '')
+                        .replace(/font-family[^;]*;?/gi, '')
                         .replace(/text-shadow[^;]*;?/gi, '')
                         .trim();
                     // Combine new theme styles with preserved styles
                     btn.setAttribute('style', buttonStyle + (cleanedStyle ? '; ' + cleanedStyle : ''));
+                    
+                    // Also apply font to button text span
+                    const textSpan = btn.querySelector('span span');
+                    if (textSpan && themeFont) {
+                        textSpan.style.fontFamily = `'${themeFont}', sans-serif`;
+                    }
                     
                     // Add arrow icon if available
                     if (arrowIconFile && arrowIconFile.trim() !== '') {
@@ -1372,8 +1481,17 @@ html_template = """<!DOCTYPE html>
             }
         }
         
-        // Show install instructions modal
+        // Show install instructions modal (skip if folder already selected on home page)
         function showInstallInstructions() {
+            // Check if folder was already selected on home page
+            const savedFolderHandle = localStorage.getItem('y1ThemesFolderHandle');
+            if (savedFolderHandle) {
+                // Folder already selected - skip dialog and proceed directly
+                proceedWithInstall();
+                return;
+            }
+            
+            // Show dialog for first-time selection
             document.getElementById('install-modal').classList.add('active');
             document.body.style.overflow = 'hidden';
         }
@@ -1387,6 +1505,7 @@ html_template = """<!DOCTYPE html>
         // Proceed with installation after user confirms
         function proceedWithInstall() {
             closeInstallModal();
+            // Now proceed with actual installation
             installTheme();
         }
 
@@ -1396,15 +1515,36 @@ html_template = """<!DOCTYPE html>
             const btn = document.getElementById('install-btn');
             const status = document.getElementById('download-status');
             
+            // Get theme font for progress display
+            const themeFont = await loadThemeFont();
+            const fontStyle = themeFont ? `font-family: '${themeFont}', sans-serif;` : '';
+            
             try {
-                // 1. Ask user to select Themes folder
-                status.style.display = 'block';
-                status.textContent = 'Please select the "Themes" folder on your Y1 device...';
+                // Check if folder was already selected on home page (skip dialog if so)
+                let dirHandle = null;
+                const savedFolderHandle = localStorage.getItem('y1ThemesFolderHandle');
                 
-                const dirHandle = await window.showDirectoryPicker({
-                    mode: 'readwrite',
-                    startIn: 'downloads'
-                });
+                if (!savedFolderHandle) {
+                    // 1. Ask user to select Themes folder (modal already shown by showInstallInstructions)
+                    status.style.display = 'block';
+                    status.textContent = 'Please select the "Themes" folder on your Y1 device...';
+                    
+                    dirHandle = await window.showDirectoryPicker({
+                        mode: 'readwrite',
+                        startIn: 'downloads'
+                    });
+                } else {
+                    // Folder already selected on home page - skip dialog and use saved handle
+                    // Note: We can't actually restore the handle from localStorage (security restriction)
+                    // So we still need to ask, but we can skip the preparation dialog
+                    status.style.display = 'block';
+                    status.textContent = 'Please select the "Themes" folder on your Y1 device...';
+                    
+                    dirHandle = await window.showDirectoryPicker({
+                        mode: 'readwrite',
+                        startIn: 'downloads'
+                    });
+                }
                 
                 // Verify it's likely the right folder (optional, but good UX)
                 if (dirHandle.name !== 'Themes' && dirHandle.name !== 'themes') {
@@ -1416,6 +1556,9 @@ html_template = """<!DOCTYPE html>
 
                 btn.disabled = true;
                 btn.textContent = '⏳ Installing...';
+                if (fontStyle) {
+                    btn.style.fontFamily = themeFont ? `'${themeFont}', sans-serif` : '';
+                }
                 status.textContent = 'Fetching file list...';
 
                 // 2. Get all files from GitHub (recursive - handles subdirectories)
@@ -1461,8 +1604,64 @@ html_template = """<!DOCTYPE html>
                 const total = allFiles.length;
 
                 // 4. Download and write each file (handles nested paths)
+                // Show progress: downloading files before installation (in theme font)
+                status.textContent = `Downloading files (0/${total})...`;
+                btn.textContent = `⏳ Downloading files...`;
+                if (fontStyle) {
+                    btn.style.fontFamily = themeFont ? `'${themeFont}', sans-serif` : '';
+                }
+                
                 for (const file of allFiles) {
-                    status.textContent = `Installing ${file.name} (${processed + 1}/${total})...`;
+                    const fileName = file.name.split('/').pop(); // Get just filename for display
+                    status.textContent = `Downloading ${fileName} (${processed + 1}/${total})...`;
+                    btn.textContent = `⏳ Downloading ${processed + 1}/${total}...`;
+                    if (fontStyle) {
+                        btn.style.fontFamily = themeFont ? `'${themeFont}', sans-serif` : '';
+                    }
+                    
+                    let blob;
+                    
+                    // Check cache first (images loaded in gallery are already cached)
+                    const cachedFile = fileCache.get(fileName);
+                    if (cachedFile) {
+                        blob = cachedFile.blob;
+                        console.log(`✅ Using cached file: ${fileName}`);
+                    } else {
+                        // Fetch from network if not cached
+                        const fileResponse = await fetch(file.download_url);
+                        if (!fileResponse.ok) {
+                            console.warn(`Failed to fetch ${file.name}, skipping...`);
+                            continue;
+                        }
+                        blob = await fileResponse.blob();
+                        
+                        // Cache it for future use
+                        const arrayBuffer = await blob.arrayBuffer();
+                        fileCache.set(fileName, {
+                            blob: blob,
+                            arrayBuffer: arrayBuffer,
+                            url: file.download_url
+                        });
+                    }
+                    
+                    processed++;
+                }
+                
+                // 5. Now install files to device
+                status.textContent = `Installing files (0/${total})...`;
+                btn.textContent = `⏳ Installing files...`;
+                if (fontStyle) {
+                    btn.style.fontFamily = themeFont ? `'${themeFont}', sans-serif` : '';
+                }
+                processed = 0;
+                
+                for (const file of allFiles) {
+                    const fileName = file.name.split('/').pop();
+                    status.textContent = `Installing ${fileName} (${processed + 1}/${total})...`;
+                    btn.textContent = `⏳ Installing ${processed + 1}/${total}...`;
+                    if (fontStyle) {
+                        btn.style.fontFamily = themeFont ? `'${themeFont}', sans-serif` : '';
+                    }
                     
                     // Handle nested paths - create subdirectories if needed
                     const pathParts = file.name.split('/');
@@ -1473,18 +1672,25 @@ html_template = """<!DOCTYPE html>
                         currentDir = await currentDir.getDirectoryHandle(pathParts[i], { create: true });
                     }
                     
-                    const fileName = pathParts[pathParts.length - 1];
+                    const finalFileName = pathParts[pathParts.length - 1];
                     
-                    // Fetch content
-                    const fileResponse = await fetch(file.download_url);
-                    if (!fileResponse.ok) {
-                        console.warn(`Failed to fetch ${file.name}, skipping...`);
-                        continue;
+                    // Get blob from cache or fetch
+                    let blob;
+                    const cachedFile = fileCache.get(finalFileName);
+                    if (cachedFile) {
+                        blob = cachedFile.blob;
+                    } else {
+                        // Shouldn't happen if we downloaded above, but fallback
+                        const fileResponse = await fetch(file.download_url);
+                        if (!fileResponse.ok) {
+                            console.warn(`Failed to fetch ${file.name}, skipping...`);
+                            continue;
+                        }
+                        blob = await fileResponse.blob();
                     }
-                    const blob = await fileResponse.blob();
                     
                     // Write to device
-                    const fileHandle = await currentDir.getFileHandle(fileName, { create: true });
+                    const fileHandle = await currentDir.getFileHandle(finalFileName, { create: true });
                     const writable = await fileHandle.createWritable();
                     await writable.write(blob);
                     await writable.close();
@@ -1516,7 +1722,7 @@ html_template = """<!DOCTYPE html>
         async function downloadTheme() {
             const folderName = '{folder}';
             const themeName = '{name}';
-            const btn = document.getElementById('download-btn');
+            const btn = document.getElementById('download-btn-full');
             const status = document.getElementById('download-status');
             
             btn.disabled = true;
@@ -1569,17 +1775,40 @@ html_template = """<!DOCTYPE html>
                 const total = allFiles.length;
                 
                 // Download each file (handles nested paths)
+                // Show progress: downloading files before zip packing
+                status.textContent = `Downloading files (0/${total})...`;
+                btn.textContent = `⏳ Downloading ${0}/${total}...`;
+                
                 for (const file of allFiles) {
-                    status.textContent = `Downloading ${file.name} (${processed + 1}/${total})...`;
+                    const fileName = file.name.split('/').pop(); // Get just filename for display
+                    status.textContent = `Downloading ${fileName} (${processed + 1}/${total})...`;
+                    btn.textContent = `⏳ Downloading ${processed + 1}/${total}...`;
                     
                     try {
-                        const fileResponse = await fetch(file.download_url);
-                        if (!fileResponse.ok) {
-                            console.warn(`Failed to fetch ${file.name}, skipping...`);
-                            continue;
+                        let arrayBuffer;
+                        
+                        // Check cache first (images loaded in gallery are already cached)
+                        const cachedFile = fileCache.get(fileName);
+                        if (cachedFile) {
+                            arrayBuffer = cachedFile.arrayBuffer;
+                            console.log(`✅ Using cached file: ${fileName}`);
+                        } else {
+                            // Fetch from network if not cached
+                            const fileResponse = await fetch(file.download_url);
+                            if (!fileResponse.ok) {
+                                console.warn(`Failed to fetch ${file.name}, skipping...`);
+                                continue;
+                            }
+                            const blob = await fileResponse.blob();
+                            arrayBuffer = await blob.arrayBuffer();
+                            
+                            // Cache it for future use
+                            fileCache.set(fileName, {
+                                blob: blob,
+                                arrayBuffer: arrayBuffer,
+                                url: file.download_url
+                            });
                         }
-                        const blob = await fileResponse.blob();
-                        const arrayBuffer = await blob.arrayBuffer();
                         
                         // Handle nested paths in ZIP
                         const zipPath = file.name;
@@ -1590,6 +1819,10 @@ html_template = """<!DOCTYPE html>
                         // Continue with other files
                     }
                 }
+                
+                // Now pack into ZIP
+                status.textContent = 'Packing files into ZIP...';
+                btn.textContent = '⏳ Packing ZIP...';
                 
                 status.textContent = 'Generating ZIP file...';
                 // Generate and download ZIP
@@ -1666,6 +1899,10 @@ html_template = """<!DOCTYPE html>
             }
         });
         
+        // File cache for downloaded files (used by download/install functions)
+        // This cache is populated when images are loaded in the gallery
+        const fileCache = new Map(); // Key: filename, Value: { blob, arrayBuffer }
+        
         // Load all theme images for carousel
         // This function discovers all .jpg and .png files in the theme folder
         // Images are loaded using relative paths (works locally and on GitHub Pages)
@@ -1690,7 +1927,8 @@ html_template = """<!DOCTYPE html>
                             .filter(file => file.type === 'file' && /\.(jpg|jpeg|png|gif)$/i.test(file.name))
                             .map(file => ({
                                 name: file.name,
-                                url: `./${encodeURIComponent(file.name)}` // Use relative path for caching
+                                url: `./${encodeURIComponent(file.name)}`, // Use relative path for caching
+                                download_url: file.download_url || `./${encodeURIComponent(file.name)}`
                             }));
                     }
                 } catch (apiError) {
@@ -1710,9 +1948,11 @@ html_template = """<!DOCTYPE html>
                     // Build list of potential image files
                     for (const base of commonBaseNames) {
                         for (const ext of imageExtensions) {
+                            const filename = `${base}.${ext}`;
                             imageFiles.push({
-                                name: `${base}.${ext}`,
-                                url: `./${encodeURIComponent(`${base}.${ext}`)}`
+                                name: filename,
+                                url: `./${encodeURIComponent(filename)}`,
+                                download_url: `./${encodeURIComponent(filename)}`
                             });
                         }
                     }
@@ -1728,22 +1968,36 @@ html_template = """<!DOCTYPE html>
                 carouselWrapper.innerHTML = '';
                 
                 // Test which images actually exist by trying to load them
-                // This filters out non-existent files
+                // This filters out non-existent files AND caches them for download/install
                 const loadedImages = [];
                 const loadPromises = imageFiles.map((image) => {
-                    return new Promise((resolve) => {
-                        const img = new Image();
-                        img.onload = () => {
-                            loadedImages.push(image);
-                            resolve();
-                        };
-                        img.onerror = () => {
-                            // Image doesn't exist, skip it
-                            resolve();
-                        };
-                        // Set timeout to avoid hanging on slow networks
-                        setTimeout(() => resolve(), 2000);
-                        img.src = image.url;
+                    return new Promise(async (resolve) => {
+                        try {
+                            // Fetch the image and cache it
+                            const response = await fetch(image.url);
+                            if (response.ok) {
+                                const blob = await response.blob();
+                                const arrayBuffer = await blob.arrayBuffer();
+                                
+                                // Cache the file for download/install
+                                fileCache.set(image.name, {
+                                    blob: blob,
+                                    arrayBuffer: arrayBuffer,
+                                    url: image.download_url
+                                });
+                                
+                                // Create object URL for display
+                                const objectUrl = URL.createObjectURL(blob);
+                                
+                                loadedImages.push({
+                                    ...image,
+                                    objectUrl: objectUrl
+                                });
+                            }
+                        } catch (err) {
+                            // Image doesn't exist or failed to load, skip it
+                        }
+                        resolve();
                     });
                 });
                 
@@ -1763,11 +2017,11 @@ html_template = """<!DOCTYPE html>
                 loadedImages.forEach((image) => {
                     const item = document.createElement('div');
                     item.className = 'image-carousel-item';
-                    item.onclick = () => openLightbox(image.url);
+                    item.onclick = () => openLightbox(image.objectUrl || image.url);
                     item.style.cursor = 'pointer';
                     
                     const img = document.createElement('img');
-                    img.src = image.url;
+                    img.src = image.objectUrl || image.url;
                     img.alt = image.name;
                     img.loading = 'lazy';
                     
@@ -1781,6 +2035,8 @@ html_template = """<!DOCTYPE html>
                 });
                 
                 updateCarouselInfo();
+                
+                console.log(`✅ Cached ${fileCache.size} image files for faster download/install`);
                 
             } catch (error) {
                 console.error('Error loading theme images:', error);

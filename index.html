@@ -6,9 +6,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Themes for Innioasis Y1 - Official Community Repository</title>
     <meta name="description"
-        content="The official source for Innioasis Y1 MP3 player themes. Browse our curated collection of community-created themes to customize your device. Safe, free, and easy to install.">
+        content="The official source for Innioasis Y1 MP3 player themes. Browse our curated collection of community-created themes to customize your device. Safe, free, and easy to install. Community Maintainers: Ryan Specter + Dmitri Medina">
     <meta name="keywords"
-        content="Innioasis Y1, Y1 Themes, MP3 Player Themes, Innioasis, Rockbox Themes, Custom Themes, Official Y1 Themes">
+        content="Innioasis Y1, Y1 Themes, MP3 Player Themes, Innioasis, Rockbox Themes, Custom Themes, Official Y1 Themes, Ryan Specter, Dmitri Medina">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Themes for Innioasis Y1",
+        "url": "https://themes.innioasis.app",
+        "description": "The official source for Innioasis Y1 MP3 player themes. Browse our curated collection of community-created themes to customize your device. Safe, free, and easy to install. Community Maintainers: Ryan Specter + Dmitri Medina",
+        "publisher": {
+            "@type": "Organization",
+            "name": "Innioasis Y1 Community",
+            "url": "https://themes.innioasis.app"
+        },
+        "maintainer": [
+            {
+                "@type": "Person",
+                "name": "Ryan Specter",
+                "url": "https://ryanspecter.uk"
+            },
+            {
+                "@type": "Person",
+                "name": "Dmitri Medina",
+                "url": "https://reddit.com/user/dmitrimedina"
+            }
+        ]
+    }
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         * {
@@ -729,7 +755,13 @@
         @media (hover: hover) {
             .install-btn:hover .arrow-icon,
             .install-btn:focus .arrow-icon,
-            .install-btn:active .arrow-icon {
+            .install-btn:active .arrow-icon,
+            .install-btn.update:hover .arrow-icon,
+            .install-btn.update:focus .arrow-icon,
+            .install-btn.update:active .arrow-icon,
+            .install-btn.install:hover .arrow-icon,
+            .install-btn.install:focus .arrow-icon,
+            .install-btn.install:active .arrow-icon {
                 opacity: 1;
                 visibility: visible;
                 width: auto;
@@ -1335,6 +1367,9 @@
                 deviceFolderHandle = await window.showDirectoryPicker({
                     mode: 'readwrite'
                 });
+                
+                // Store flag in localStorage to indicate folder was selected (for theme pages)
+                localStorage.setItem('y1ThemesFolderHandle', 'selected');
 
                 // Verify or create Themes folder
                 let themesFolder = deviceFolderHandle;
@@ -3178,8 +3213,9 @@
                 }
                 const hasArrow = arrowIconFile && arrowIconFile.trim() !== '';
                 
-                // Try to get selected background image - check config first, then patterns, then 1*.png
-                let selectedBgImage = itemConfig.itemSelectedBackground || menuConfig.menuItemSelectedBackground || 
+                // Try to get selected background image - use itemBackground from config.json (unified approach)
+                let selectedBgImage = itemConfig.itemBackground || itemConfig.itemSelectedBackground || 
+                                     menuConfig.menuItemSelectedBackground || 
                                      dialogConfig.dialogOptionSelectedBackground || null;
                 
                 // IMPORTANT: Always prefer suffixed versions (e.g., "1_YS.png") over plain "1.png"
