@@ -2874,10 +2874,8 @@
                     buttonBgStyle = `background-color: ${buttonBgColor};`;
                 }
                 
-                // Button text = menu background color (what stands out against the selected background)
-                // Fallback to unselected text color if menu background isn't available
-                const buttonTextColor = menuConfig.menuBackgroundColor || dialogConfig.dialogBackgroundColor || 
-                                      menuConfig.menuItemTextColor || itemConfig.itemTextColor || '#ffffff';
+                // Button text = selected menu item text color (the color that stands out on selected items)
+                const buttonTextColor = menuConfig.menuItemSelectedTextColor || itemConfig.itemSelectedTextColor || '#ffffff';
                 
                 // Build button style with theme colors and image
                 const buttonStyle = `${buttonBgStyle} color: ${buttonTextColor}; ${fontStyle}`;
