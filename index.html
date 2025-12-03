@@ -1421,7 +1421,7 @@
                 // Sort themes alphabetically
                 sortThemes();
                 
-                // Store all themes and apply filters/pagination
+                // Store all themes - config.json has already been loaded, so we can render now
                 allThemes = [...themes];
                 applyFiltersAndPagination();
                 const installedCount = themes.filter(t => t.installed).length;
@@ -1481,10 +1481,8 @@
 
                     console.log(`📋 Loaded ${discovered.length} themes from themes.json`);
                     
-                    // Load config.json for all themes in background (uses direct HTTPS, no API)
-                    setTimeout(() => {
-                        loadThemeDetailsInBackground(discovered);
-                    }, 0);
+                    // Load config.json for all themes BEFORE returning (paced loading)
+                    await loadThemeDetailsInBackground(discovered);
                     
                     return discovered;
                 } else {
@@ -1685,10 +1683,16 @@
                 return;
             }
 
-            console.log(`⏳ Refreshing ${themesToLoad.length} theme(s) from config.json (source of truth)...`);
+            console.log(`⏳ Loading config.json for ${themesToLoad.length} theme(s) before rendering...`);
 
-            const configPromises = themesToLoad.map(async ({ theme, index }) => {
-                try {
+            // Load config.json files in batches to pace network requests
+            const BATCH_SIZE = 10;
+            const allConfigPromises = [];
+            
+            for (let i = 0; i < themesToLoad.length; i += BATCH_SIZE) {
+                const batch = themesToLoad.slice(i, i + BATCH_SIZE);
+                const batchPromises = batch.map(async ({ theme, index }) => {
+                    try {
                     const configResponse = await fetch(`./${encodeURIComponent(theme.folder)}/config.json`);
                     if (configResponse.ok) {
                         const config = await configResponse.json();
@@ -1774,20 +1778,38 @@
                     // Theme doesn't exist or error loading config
                     console.warn(`Failed to load config.json for ${theme.folder}:`, error);
                     themes[index].exists = false;
-                    return false;
+                        return false;
+                    }
+                });
+                
+                // Wait for this batch to complete before starting next batch
+                const batchResults = await Promise.all(batchPromises);
+                allConfigPromises.push(...batchResults);
+                
+                // Small delay between batches to avoid overwhelming the network
+                if (i + BATCH_SIZE < themesToLoad.length) {
+                    await new Promise(resolve => setTimeout(resolve, 50));
                 }
-            });
+            }
 
             // Wait for all configs to load
-            const results = await Promise.all(configPromises);
+            const results = allConfigPromises;
 
             // Filter out non-existent themes
-            themes = themes.filter(theme => theme.exists !== false);
+            const validThemes = themes.filter(theme => theme.exists !== false);
+            
+            // Update themes array with valid themes
+            themes.length = 0;
+            themes.push(...validThemes);
+            
+            // Update allThemes to match
             allThemes = [...themes];
 
-            // Re-render with updated authoritative data
+            // Sort with updated data
             sortThemes();
-            applyFiltersAndPagination();
+            
+            // Note: Don't call applyFiltersAndPagination here - it will be called by loadLocalThemes
+            // after discoverServerThemes completes, ensuring we only render once
 
             const successCount = results.filter(r => r).length;
             console.log(`✅ Refreshed ${successCount} theme(s) with authoritative data from config.json`);
