@@ -1,4 +1,27 @@
-# How to Update or Edit this Theme
+# How to Create, Update, or Edit Themes
+
+## 🎨 Recommended Starting Base for New Theme Creation
+
+**The MelodyMuncher theme is recommended as the ideal starting point for creating new themes!**
+
+This theme provides a clean, well-structured foundation that includes:
+- ✅ Complete `config.json` with all necessary configuration options
+- ✅ All standard UI element images (1.png, 2.png, etc.)
+- ✅ Proper folder structure and file organization
+- ✅ Example `index.html` for theme pages
+- ✅ Comprehensive documentation
+
+**To create a new theme based on MelodyMuncher:**
+
+1. **Fork the repository** - Create your own copy of [github.com/y1-community/InnioasisY1Themes](https://github.com/y1-community/InnioasisY1Themes)
+2. **Copy the MelodyMuncher folder** - Duplicate the `MelodyMuncher` folder and rename it to your theme's name
+3. **Customize your theme** - Edit `config.json`, replace images, modify colors, and add your own assets
+4. **Update theme information** - Edit the `theme_info` section in `config.json` with your theme's details
+5. **Submit your theme** - Create a pull request to add your new theme to the repository
+
+Using MelodyMuncher as a base ensures you have all the necessary files and a working configuration to build upon, making theme creation faster and easier!
+
+---
 
 ## About This Repository
 
