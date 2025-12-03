@@ -565,23 +565,27 @@
                 </button>
             </div>
 
-            <!-- Filters and Pagination Controls -->
+            <!-- Filters Controls -->
             <div id="filters-container" style="display: none; margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 10px;">
-                <div style="display: flex; flex-wrap: wrap; gap: 15px; align-items: center; margin-bottom: 15px;">
+                <div style="display: flex; flex-wrap: wrap; gap: 15px; align-items: center;">
                     <label for="author-filter" style="font-weight: 600; color: #333;">Filter by Author:</label>
                     <select id="author-filter" onchange="handleAuthorFilterChange()" style="padding: 8px 12px; border: 2px solid #667eea; border-radius: 8px; font-size: 1rem; background: white; cursor: pointer;">
                         <option value="All">All</option>
                     </select>
                     <span id="theme-count" style="margin-left: auto; color: #666; font-weight: 500;"></span>
                 </div>
-                <div id="pagination-controls" style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 15px;">
+            </div>
+
+            <div id="theme-grid" class="theme-grid"></div>
+
+            <!-- Pagination Controls (at bottom) -->
+            <div id="pagination-container" style="display: none; margin: 30px 0 20px 0; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                <div id="pagination-controls" style="display: flex; justify-content: center; align-items: center; gap: 10px;">
                     <button id="prev-page" onclick="changePage(-1)" class="btn btn-secondary" disabled>← Previous</button>
                     <span id="page-info" style="padding: 0 15px; font-weight: 600; color: #333;"></span>
                     <button id="next-page" onclick="changePage(1)" class="btn btn-secondary">Next →</button>
                 </div>
             </div>
-
-            <div id="theme-grid" class="theme-grid"></div>
 
             <div class="info-cards-grid"
                 style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-top: 30px;">
@@ -1189,17 +1193,27 @@
                         console.log('✅ Found themes.json - using as primary source!');
                         
                         // Process themes from JSON
-                        discovered = (themesData.themes || []).map(themeData => ({
-                            name: themeData.name || themeData.folder,
-                            folder: themeData.folder,
-                            screenshot: themeData.screenshot || null,
-                            description: themeData.description || `Y1 Theme: ${themeData.folder}`,
-                            author: themeData.author || 'Unknown',
-                            authorUrl: themeData.authorUrl || null,
-                            themeInfo: themeData,
-                            fromJson: true,
-                            needsConfigRefresh: true // Mark for config.json refresh
-                        }));
+                        // Convert relative screenshot paths to absolute HTTPS URLs
+                        discovered = (themesData.themes || []).map(themeData => {
+                            let screenshot = themeData.screenshot || null;
+                            // Convert relative paths to absolute HTTPS URLs
+                            if (screenshot && typeof screenshot === 'string' && screenshot.startsWith('./')) {
+                                const baseUrl = window.location.origin;
+                                screenshot = screenshot.replace(/^\.\//, `${baseUrl}/`);
+                            }
+                            
+                            return {
+                                name: themeData.name || themeData.folder,
+                                folder: themeData.folder,
+                                screenshot: screenshot,
+                                description: themeData.description || `Y1 Theme: ${themeData.folder}`,
+                                author: themeData.author || 'Unknown',
+                                authorUrl: themeData.authorUrl || null,
+                                themeInfo: themeData,
+                                fromJson: true,
+                                needsConfigRefresh: true // Mark for config.json refresh
+                            };
+                        });
 
                         console.log(`📋 Loaded ${discovered.length} themes from themes.json`);
                         
@@ -1361,11 +1375,11 @@
                 if (item.type === 'dir' && !['.github', '.git', 'README.md'].includes(item.name)) {
                     const themeName = item.name;
 
-                    // Try to find a screenshot in this directory
-                    const screenshotUrl = await findScreenshotInDirectory(themeName);
-
-                    // Try to get theme info from config.json
+                    // Try to get theme info from config.json first (uses direct HTTPS)
                     const themeInfo = await getThemeInfo(themeName);
+                    
+                    // Try to find a screenshot in this directory (uses direct HTTPS, minimal API usage)
+                    const screenshotUrl = await findScreenshotInDirectory(themeName);
 
                     discovered.push({
                         name: themeInfo.title || themeName,
@@ -2015,18 +2029,91 @@
             }
         }
 
-        // Find screenshot files in a theme directory using GitHub API
+        // Find screenshot files in a theme directory - uses direct HTTPS URLs, avoids GitHub API
         async function findScreenshotInDirectory(themeName) {
+            // Try direct HTTPS URLs first (no API call needed)
+            const baseUrl = window.location.origin;
+            const screenshotExtensions = ['gif', 'png', 'jpg', 'jpeg'];
+            const coverVariations = [
+                'cover.gif', 'cover.png', 'cover.jpg', 'cover.jpeg',
+                'gregcover.png', 'cover_WS.png', 'cover_YS.png'
+            ];
+            
+            // Priority order: screenshot.* > cover.* > fallback files
+            const allFiles = [
+                ...screenshotExtensions.map(ext => ({ name: `screenshot.${ext}`, priority: 1, type: 'screenshot' })),
+                ...coverVariations.map(name => ({ name, priority: 2, type: 'cover' })),
+                { name: 'desk.png', priority: 3, type: 'fallback' },
+                { name: 'desk.gif', priority: 3, type: 'fallback' },
+                { name: 'download.jpg', priority: 4, type: 'fallback' }
+            ];
+            
+            // Try direct URLs in parallel
+            const checks = await Promise.allSettled(
+                allFiles.map(async ({ name, priority, type }) => {
+                    // Try current domain first
+                    const url1 = `${baseUrl}/${encodeURIComponent(themeName)}/${encodeURIComponent(name)}`;
+                    try {
+                        const response = await fetch(url1, { method: 'HEAD' });
+                        if (response.ok) {
+                            return { name, url: url1, priority, type, isGif: name.toLowerCase().endsWith('.gif') };
+                        }
+                    } catch (e) {
+                        // Continue to next URL
+                    }
+                    
+                    // Try raw.githubusercontent.com as fallback
+                    const url2 = `https://raw.githubusercontent.com/team-slide/InnioasisY1Themes/main/${encodeURIComponent(themeName)}/${encodeURIComponent(name)}`;
+                    try {
+                        const response = await fetch(url2, { method: 'HEAD' });
+                        if (response.ok) {
+                            return { name, url: url2, priority, type, isGif: name.toLowerCase().endsWith('.gif') };
+                        }
+                    } catch (e) {
+                        // Continue
+                    }
+                    
+                    return null;
+                })
+            );
+            
+            const foundFiles = checks
+                .filter(check => check.status === 'fulfilled' && check.value)
+                .map(check => check.value)
+                .sort((a, b) => {
+                    // Sort by priority first
+                    if (a.priority !== b.priority) return a.priority - b.priority;
+                    // Then GIF first
+                    if (a.isGif && !b.isGif) return -1;
+                    if (!a.isGif && b.isGif) return 1;
+                    return a.name.localeCompare(b.name);
+                });
+            
+            if (foundFiles.length > 0) {
+                // Group by type
+                const screenshots = foundFiles.filter(f => f.type === 'screenshot');
+                const covers = foundFiles.filter(f => f.type === 'cover');
+                
+                if (screenshots.length > 0) {
+                    return screenshots.length === 1 ? screenshots[0].url : screenshots.map(f => f.url);
+                }
+                
+                if (covers.length > 0) {
+                    return covers.length === 1 ? covers[0].url : covers.map(f => f.url);
+                }
+                
+                // Fallback files
+                return foundFiles[0].url;
+            }
+            
+            // Only use GitHub API as absolute last resort (minimal usage)
             try {
                 const response = await fetch(`https://api.github.com/repos/team-slide/InnioasisY1Themes/contents/${encodeURIComponent(themeName)}`);
-
                 if (!response.ok) {
                     return null;
                 }
-
+                
                 const contents = await response.json();
-
-                // Look for all screenshot files (gif, png, jpg, jpeg)
                 const screenshotFiles = contents
                     .filter(item =>
                         item.type === 'file' &&
@@ -2038,65 +2125,18 @@
                         isGif: /\.gif$/i.test(item.name)
                     }))
                     .sort((a, b) => {
-                        // GIF first, then alphabetical
                         if (a.isGif && !b.isGif) return -1;
                         if (!a.isGif && b.isGif) return 1;
                         return a.name.localeCompare(b.name);
                     });
-
+                
                 if (screenshotFiles.length > 0) {
-                    // Return array of screenshots or single URL for backward compatibility
-                    return screenshotFiles.length === 1 ? screenshotFiles[0].url : screenshotFiles;
+                    return screenshotFiles.length === 1 ? screenshotFiles[0].url : screenshotFiles.map(f => f.url);
                 }
-
-                // Fallback: look for ANY file containing "cover" in the name
-                let fallbackFiles = contents
-                    .filter(item =>
-                        item.type === 'file' &&
-                        /cover/i.test(item.name) &&
-                        /\.(gif|png|jpg|jpeg)$/i.test(item.name)
-                    )
-                    .map(item => ({
-                        name: item.name,
-                        url: item.download_url,
-                        isGif: /\.gif$/i.test(item.name),
-                        priority: 1
-                    }));
-
-                // If no cover files found, look for other fallback images
-                if (fallbackFiles.length === 0) {
-                    fallbackFiles = contents
-                        .filter(item =>
-                            item.type === 'file' &&
-                            /\.(gif|png|jpg|jpeg)$/i.test(item.name) &&
-                            (/^download\.(jpg|jpeg|gif|png)$/i.test(item.name) ||
-                                /bg.*\.png$/i.test(item.name) ||
-                                /^desk\.(png|gif)$/i.test(item.name))
-                        )
-                        .map(item => ({
-                            name: item.name,
-                            url: item.download_url,
-                            isGif: /\.gif$/i.test(item.name),
-                            priority: getFallbackPriority(item.name)
-                        }))
-                        .sort((a, b) => {
-                            // Prioritize: desk.* > download.* > bg*.*
-                            if (a.priority !== b.priority) return a.priority - b.priority;
-                            // Within same priority, prefer GIF
-                            if (a.isGif && !b.isGif) return -1;
-                            if (!a.isGif && b.isGif) return 1;
-                            return a.name.localeCompare(b.name);
-                        });
-                }
-
-                if (fallbackFiles.length > 0) {
-                    return fallbackFiles.length === 1 ? fallbackFiles[0].url : fallbackFiles;
-                }
-
             } catch (error) {
                 console.error(`Error finding screenshot for ${themeName}:`, error);
             }
-
+            
             return null;
         }
 
@@ -2494,18 +2534,21 @@
             const prevBtn = document.getElementById('prev-page');
             const nextBtn = document.getElementById('next-page');
             const pageInfo = document.getElementById('page-info');
+            const paginationContainer = document.getElementById('pagination-container');
             
-            if (!prevBtn || !nextBtn || !pageInfo) return;
+            if (!prevBtn || !nextBtn || !pageInfo || !paginationContainer) return;
             
             const totalPages = Math.ceil(filteredThemes.length / themesPerPage);
             
             prevBtn.disabled = currentPage <= 1;
             nextBtn.disabled = currentPage >= totalPages;
             
-            if (totalPages > 0) {
+            if (totalPages > 1) {
                 pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+                paginationContainer.style.display = 'block';
             } else {
-                pageInfo.textContent = 'No themes';
+                pageInfo.textContent = '';
+                paginationContainer.style.display = 'none';
             }
         }
 
