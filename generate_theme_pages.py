@@ -540,7 +540,7 @@ html_template = """<!DOCTYPE html>
         
         <div class="button-group" style="display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap; margin-top: 30px;">
             <button id="install-btn" onclick="showInstallInstructions()" class="btn install" style="display: none;">🚀 Install on Y1</button>
-            <button id="download-btn" onclick="downloadTheme()" class="btn download" id="download-btn-full">📦 Download ZIP</button>
+            <button id="download-btn-full" onclick="downloadTheme()" class="btn download">📦 Download ZIP</button>
             <a href="#" id="download-link-small" onclick="downloadTheme(); return false;" class="download-link-small" style="display: none;">📦 Download ZIP instead</a>
             <button id="share-btn" onclick="shareTheme()" class="btn share">🔗 Share</button>
         </div>
@@ -1124,6 +1124,7 @@ html_template = """<!DOCTYPE html>
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeLightbox();
+                closeInstallModal();
             }
         });
     </script>

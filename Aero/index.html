@@ -182,6 +182,99 @@
             color: #667eea;
             margin-bottom: 15px;
         }
+        /* Image Carousel */
+        .image-carousel-section {
+            margin: 30px 0;
+        }
+        .image-carousel-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+        .image-carousel-container {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .image-carousel-wrapper {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: #667eea #f5f5f5;
+            padding: 5px 0;
+        }
+        .image-carousel-wrapper::-webkit-scrollbar {
+            height: 6px;
+        }
+        .image-carousel-wrapper::-webkit-scrollbar-track {
+            background: #f5f5f5;
+            border-radius: 3px;
+        }
+        .image-carousel-wrapper::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 3px;
+        }
+        .image-carousel-item {
+            flex: 0 0 auto;
+            width: 120px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .image-carousel-item:hover {
+            transform: scale(1.05);
+        }
+        .image-carousel-item img {
+            width: 100%;
+            height: 80px;
+            object-fit: contain;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            padding: 4px;
+        }
+        .image-carousel-item .image-name {
+            margin-top: 5px;
+            font-size: 0.75rem;
+            color: #666;
+            word-break: break-word;
+            line-height: 1.2;
+        }
+        .image-carousel-nav {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .image-carousel-nav-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .image-carousel-nav-btn:hover {
+            background: #5568d3;
+        }
+        .image-carousel-nav-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .image-carousel-nav-info {
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #666;
+            padding: 0 10px;
+        }
         /* Lightbox */
         .lightbox {
             display: none;
@@ -241,6 +334,83 @@
             opacity: 0;
             transition: opacity 1s ease-in-out;
         }
+        /* Download link when install is available */
+        .download-link-small {
+            font-size: 0.85rem;
+            color: #667eea;
+            text-decoration: none;
+            margin-left: 10px;
+        }
+        .download-link-small:hover {
+            text-decoration: underline;
+        }
+        /* Install Instructions Modal */
+        .install-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+        }
+        .install-modal.active {
+            display: flex;
+        }
+        .install-modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .install-modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #999;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .install-modal-close:hover {
+            color: #333;
+        }
+        .install-modal h3 {
+            margin-top: 0;
+            color: #667eea;
+            font-size: 1.3rem;
+        }
+        .install-modal ol {
+            margin: 20px 0;
+            padding-left: 25px;
+        }
+        .install-modal li {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+        .install-modal-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+        }
+        .install-modal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
     </style>
 </head>
 <body>
@@ -264,12 +434,44 @@
             </div>
         </div>
         
+        <div class="image-carousel-section">
+            <h3 >All Theme Images</h3>
+            <div class="image-carousel-container">
+                <div class="image-carousel-wrapper" id="image-carousel-wrapper">
+                    <div style="text-align: center; padding: 20px; color: #999;">Loading images...</div>
+                </div>
+                <div class="image-carousel-nav">
+                    <button class="image-carousel-nav-btn" id="carousel-prev" onclick="scrollCarousel(-1)">← Prev</button>
+                    <div class="image-carousel-nav-info" id="carousel-info">- / -</div>
+                    <button class="image-carousel-nav-btn" id="carousel-next" onclick="scrollCarousel(1)">Next →</button>
+                </div>
+            </div>
+        </div>
+        
         <div class="button-group" style="display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap; margin-top: 30px;">
-            <button id="install-btn" onclick="installTheme()" class="btn install" style="display: none;">🚀 Install on Y1</button>
-            <button id="download-btn" onclick="downloadTheme()" class="btn download">📦 Download ZIP</button>
+            <button id="install-btn" onclick="showInstallInstructions()" class="btn install" style="display: none;">🚀 Install on Y1</button>
+            <button id="download-btn-full" onclick="downloadTheme()" class="btn download">📦 Download ZIP</button>
+            <a href="#" id="download-link-small" onclick="downloadTheme(); return false;" class="download-link-small" style="display: none;">📦 Download ZIP instead</a>
             <button id="share-btn" onclick="shareTheme()" class="btn share">🔗 Share</button>
         </div>
         <div id="download-status" style="margin-top: 10px; color: #666; display: none;">Starting download...</div>
+
+        <!-- Install Instructions Modal -->
+        <div id="install-modal" class="install-modal" onclick="if(event.target === this) closeInstallModal()">
+            <div class="install-modal-content" onclick="event.stopPropagation()">
+                <span class="install-modal-close" onclick="closeInstallModal()">&times;</span>
+                <h3>Prepare Your Y1 Device</h3>
+                <p>Before installing, please follow these steps:</p>
+                <ol>
+                    <li><strong>Power up your Y1 device</strong></li>
+                    <li><strong>Connect your Y1 to your computer via USB</strong></li>
+                    <li><strong>Enable USB storage mode</strong> on your Y1 (if prompted)</li>
+                    <li>On the next screen, <strong>select the "Themes" folder</strong> on your Y1 device</li>
+                </ol>
+                <p style="color: #666; font-size: 0.9rem; margin-top: 15px;">The installation will automatically copy all theme files to your device.</p>
+                <button class="install-modal-btn" onclick="proceedWithInstall()">Continue to Folder Selection</button>
+            </div>
+        </div>
 
         <!-- SEO Content -->
         <div class="seo-content" style="margin-top: 40px; text-align: left; color: #666; font-size: 0.9rem; line-height: 1.6;">
@@ -643,8 +845,29 @@
             // Check for File System Access API support
             if ('showDirectoryPicker' in window) {
                 document.getElementById('install-btn').style.display = 'inline-block';
+                // Hide full download button, show small link
+                document.getElementById('download-btn-full').style.display = 'none';
+                document.getElementById('download-link-small').style.display = 'inline';
             }
         });
+        
+        // Show install instructions modal
+        function showInstallInstructions() {
+            document.getElementById('install-modal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // Close install instructions modal
+        function closeInstallModal() {
+            document.getElementById('install-modal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Proceed with installation after user confirms
+        function proceedWithInstall() {
+            closeInstallModal();
+            installTheme();
+        }
 
         // Install Theme directly to device
         async function installTheme() {
@@ -811,6 +1034,7 @@
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeLightbox();
+                closeInstallModal();
             }
         });
     </script>

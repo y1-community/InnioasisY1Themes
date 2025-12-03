@@ -1,194 +1,150 @@
-# How to Update or Edit this Theme
+# How to Create or Edit Themes
 
-## About This Repository
+## For Beginners
 
-**Important:** The GitHub repository at [github.com/y1-community/InnioasisY1Themes](https://github.com/y1-community/InnioasisY1Themes) is where [themes.innioasis.app](https://themes.innioasis.app) is hosted. This means:
+If you can edit images in Canva or similar apps, you can create a theme. You don't need to know coding.
 
-- ✅ **Anyone can edit themes** - The repository is open for contributions from the community
-- ✅ **Changes appear on the website** - Updates to themes in this repository automatically appear on themes.innioasis.app
-- ✅ **You can improve any theme** - Feel free to fix bugs, update images, improve descriptions, or enhance any theme
-- ✅ **No permission needed** - Just fork, edit, and submit a pull request
+### What This Is
 
-### How Themes Are Added to the Website
+This is a shared folder where anyone can add themes for the Y1 music player. When you add a theme here, it automatically appears on themes.innioasis.app.
 
-Themes appear on [themes.innioasis.app](https://themes.innioasis.app) through two main methods:
+### Creating Your First Theme
 
-#### 1. **Self Submission** (Recommended for Theme Creators)
+**Step 1: Get a GitHub account**
 
-If you've created a theme, you can add it yourself by:
+Go to github.com and sign up. It's free and takes about 2 minutes.
 
-1. **Forking the repository** - Create your own copy of [github.com/y1-community/InnioasisY1Themes](https://github.com/y1-community/InnioasisY1Themes)
-2. **Making your edits** - Add your theme folder, update `config.json`, add images, etc.
-3. **Submitting a pull request** - Request to merge your changes back into the main repository
-4. **Automatic publication** - Once approved and merged, your theme automatically appears on themes.innioasis.app
+**Step 2: Copy the MelodyMuncher theme**
 
-This method gives you full control over how your theme is presented and ensures accurate information.
+This theme is the best starting point. It has everything you need already set up.
 
-#### 2. **Curation by Maintainers**
+1. Go to github.com/y1-community/InnioasisY1Themes
+2. Click the green "Code" button
+3. Click "Download ZIP"
+4. Extract the ZIP file on your computer
+5. Open the MelodyMuncher folder
 
-The repository maintainers actively search for themes on social media platforms (like Reddit's r/innioasis community) and other online sources. When they find a theme:
+**Step 3: Make it yours**
 
-- **Automatic upload** - The maintainers add the theme to the repository on your behalf
-- **Proper attribution** - Your original post and profile are linked via the `authorUrl` field
-- **Community benefit** - Your theme becomes available to all Y1 users, even if you're not familiar with GitHub
+1. Rename the MelodyMuncher folder to your theme name (use letters and numbers only, like "MyTheme")
+2. Replace the images with your own:
+   - Open images in Canva or any image editor
+   - Make them the same size as the originals
+   - Save them with the same file names (cover.png, 1.png, 2.png, etc.)
+3. Edit config.json:
+   - Open it in any text editor
+   - Find "title" and change it to your theme name
+   - Find "author" and change it to your name or username
+   - Find "description" and write what your theme is about
+   - To change colors, find codes like "#ffffff" (white) or "#000000" (black) and replace them. You can find color codes at htmlcolorcodes.com
 
-If you've shared your theme online and it appears on themes.innioasis.app, you can still edit it yourself using the self-submission method above!
+**Step 4: Upload to GitHub**
 
-## Making Changes to This Theme
+1. Go to github.com and sign in
+2. Go to github.com/y1-community/InnioasisY1Themes
+3. Click "Fork" in the top right (this makes your own copy)
+4. In your copy, click "Add file" then "Upload files"
+5. Drag your entire theme folder into the upload area
+6. Scroll down, type a message like "Added MyTheme", and click "Commit changes"
+7. Click "Contribute" then "Open pull request"
+8. Click "Create pull request"
 
-If you'd like to update, improve, or fix this theme, here's how to contribute:
+That's it. Your theme will be reviewed and added to the website.
 
-### Step 1: Fork the Repository
+### Editing an Existing Theme
 
-1. Visit the [main repository](https://github.com/y1-community/InnioasisY1Themes)
-2. Click the **"Fork"** button in the top-right corner
-3. This creates a copy of the repository in your GitHub account
+1. Fork the repository (click "Fork" button)
+2. Find the theme you want to edit
+3. Click on any file (like an image or config.json)
+4. Click the pencil icon to edit
+5. Make your changes
+6. Click "Commit changes"
+7. Create a pull request
 
-### Step 2: Make Your Changes
+### Common Questions
 
-1. In your forked repository, navigate to this theme's folder
-2. Make your changes (update images, modify `config.json`, add files, etc.)
-3. Commit your changes with a clear message describing what you changed
+**What image sizes should I use?**
+Keep them similar to the originals. Most UI images are 100-200 pixels wide. Cover images can be 400-600 pixels wide.
 
-### Step 3: Create a Pull Request
+**Can I use images from the internet?**
+Only if you have permission or they're free to use. Check the license.
 
-1. Go to your forked repository on GitHub
-2. Click **"Contribute"** or **"New Pull Request"**
-3. Select your fork as the source and the main repository as the destination
-4. Add a description of your changes
-5. Click **"Create Pull Request"**
+**What if I make a mistake?**
+Just edit the file again and make another change. It's that simple.
 
-Your changes will be reviewed and, if approved, merged into the main repository!
-
-### Tip
-
-Uploading or changing a theme's folder to GitHub will make it appear on the website (at the bare minimum the site will display in alphabetical order themes listed in `themes.json` or not listed, provided it has a directory name, `config.json`, and a `*cover*.*` file available).
+**How long until my theme appears?**
+Usually within a few hours after your pull request is approved.
 
 ---
 
-## Theme Information and URLs
+## For Advanced Users
 
-### Where Theme Information is Stored
+### Repository Structure
 
-Theme information can be stored in two places, with different priorities:
+This repository hosts themes.innioasis.app. All themes here automatically appear on the website.
 
-#### 1. `config.json` (Same Directory - Highest Priority)
+### Theme Information Priority
 
-The `config.json` file in your theme's folder is the **most authoritative** source for theme information. It should contain a `theme_info` section:
+1. config.json (in theme folder) - highest priority
+2. themes.json (root directory) - fallback cache
+3. Folder name - last resort
+
+### config.json Structure
 
 ```json
 {
     "theme_info": {
-        "title": "Aero",
-        "author": "u/YourUsername",
-        "authorUrl": "https://www.reddit.com/user/YourUsername",
-        "description": "A description of your theme."
+        "title": "Theme Name",
+        "author": "u/Username",
+        "authorUrl": "https://example.com",
+        "description": "Description"
     },
-    ...
+    "itemConfig": {
+        "itemSelectedTextColor": "#ffffff",
+        "itemSelectedBackground": "1.png",
+        "itemRightArrow": "2.png"
+    },
+    "menuConfig": {
+        "menuBackgroundColor": "#000000",
+        "menuItemSelectedTextColor": "#ffffff",
+        "menuItemSelectedBackground": "1.png"
+    }
 }
 ```
 
-**Priority:** Information in `config.json` takes precedence over `themes.json` when both are present.
+The authorUrl field can point to any link (Reddit post, portfolio, social media, etc.) and will be linked from author mentions on the theme page.
 
-**Important:** The `authorUrl` field can be used for **any link of the author's choice** - this could be:
-- A link to the original source/announcement for the theme (e.g., Reddit post, forum thread)
-- The author's portfolio or personal website
-- The author's social media profile
-- Any other relevant link the author wants to share
+### Theme URLs
 
-This URL will be automatically linked from all mentions of the author's name on the theme's `index.html` description page, making it easy for users to find more information about the theme or the author's other work.
+Each theme gets a URL: https://themes.innioasis.app/[ThemeFolderName]
 
-#### 2. `themes.json` (Root Directory - Fallback)
+An index.html file is required in the theme folder for the URL to work. The index.html automatically loads theme information from config.json, so you don't need to edit it manually.
 
-The `themes.json` file in the repository root serves as a fast cache for the main page. It contains an array of theme objects:
+### File Naming
 
-```json
-{
-    "themes": [
-        {
-            "name": "Aero",
-            "folder": "Aero",
-            "screenshot": "./Aero/screenshot.jpg",
-            "description": "This theme is inspired by Windows Vista.",
-            "author": "u/Neither-Classic2058",
-            "authorUrl": "https://www.reddit.com/r/innioasis/comments/..."
-        },
-        ...
-    ]
-}
-```
+- Cover: cover.png or any file with "cover" in the name
+- Screenshots: screenshot.png or files with "screenshot" in the name
+- UI elements: 1.png (selected background), 2.png (right arrow), etc.
+- Suffixed variants: 1_YS.png takes priority over 1.png when both exist
 
-**Priority:** Used as a fallback if `config.json` doesn't contain theme information, or for initial page load performance.
+### Starting Base
 
-**Note:** The `authorUrl` in `themes.json` works the same way as in `config.json` - it can point to any link the author chooses (original source, portfolio, social media, etc.) and will be linked from author mentions on the theme's description page.
-
-### Theme URLs and Social Sharing
-
-Each theme automatically receives a unique URL based on its folder name:
-
-**Format:** `https://themes.innioasis.app/[ThemeFolderName]`
-
-**Example:** If your theme folder is named `Aero`, the theme's URL will be:
-- `https://themes.innioasis.app/Aero`
-
-**⚠️ Important: `index.html` is Required for Theme URLs**
-
-For a theme to be accessible via its URL and shareable, **you must include an `index.html` file** in your theme's folder. Without `index.html`, users will not be able to:
-- Visit the theme's dedicated page
-- Share the theme's URL on social media
-- Link directly to the theme from other websites
-- Bookmark the theme page
-
-**How it works:**
-- When you place an `index.html` file in your theme folder, GitHub Pages automatically serves it when someone visits `https://themes.innioasis.app/[YourThemeFolder]`
-- The main themes page links to individual themes using the format `[ThemeFolder]/index.html`
-- If `index.html` is missing, the link will result in a 404 error
-
-**Getting started:**
-- You can copy the `index.html` template from another theme's folder
-- The `index.html` file will automatically load theme information from `config.json` and `themes.json` (as described above)
-- You don't need to manually edit `index.html` - it will dynamically display your theme's information
-
-This URL is useful for:
-- **Social Sharing:** Share your theme directly on social media platforms
-- **Direct Links:** Link to your theme from forums, Reddit, or other websites
-- **Bookmarking:** Users can bookmark specific themes
-- **SEO:** Search engines can index individual theme pages
-
-The URL is automatically generated from the theme's folder name, so make sure your folder name is descriptive and URL-friendly (use letters, numbers, and hyphens, avoid spaces and special characters).
+The MelodyMuncher theme is recommended as the starting point. It includes complete config.json, all standard UI images, proper folder structure, and example index.html.
 
 ---
 
-## Installation Methods
+## Installation
 
-### Method 1: Direct Installation (Desktop - Chrome, Edge, or Opera)
+**Method 1: Direct Install (Chrome, Edge, Opera)**
 
-1. Connect your Y1 device to your computer via USB
-2. Power on your Y1 device
-3. Visit the theme's page on [themes.innioasis.app](https://themes.innioasis.app)
-4. Click the **"🚀 Install on Y1"** button
-5. Select your Y1's **Themes** folder when prompted
-6. The theme will be automatically installed!
+Connect Y1 via USB, visit the theme page, click "Install on Y1", select the Themes folder.
 
-### Method 2: ZIP Download
+**Method 2: ZIP Download**
 
-1. Visit the theme's page on [themes.innioasis.app](https://themes.innioasis.app)
-2. Click the **"📦 Download ZIP"** button
-3. Extract the downloaded ZIP file
-4. Copy the theme folder to your Y1's **Themes** directory
-5. Safely eject your Y1 device
+Download ZIP, extract, copy theme folder to Y1's Themes directory.
 
-### Method 3: Innioasis Updater Toolkit (Recommended)
+**Method 3: Innioasis Updater Toolkit**
 
-1. Download and install [Innioasis Updater](https://innioasis.app/installguide.html)
-2. Open the **Toolkit** section in Innioasis Updater
-3. Browse or search for this theme
-4. Drag the theme ZIP file into the Updater window (or click "browse files")
-5. Connect your Y1 device and power it on
-6. The Updater will automatically send the theme to your Y1 when connected
+Download Innioasis Updater, use the Toolkit section, drag theme ZIP into it, connect Y1.
 
-The Innioasis Updater Toolkit is the easiest way to install themes, as it handles both regular Y1 themes and Rockbox themes, plus firmware updates and Rockbox installation.
-
----
-
-**Note:** After installation, restart your Y1 device and select this theme from the Settings menu to apply it.
+After installation, restart your Y1 and select the theme from Settings to apply it.
