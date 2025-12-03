@@ -197,10 +197,12 @@
             display: block;
         }
         
-        /* Show arrow on hover for desktop */
+        /* Show arrow on hover for desktop (or mobile with mouse) */
+        /* @media (hover: hover) means device has hover capability (mouse, trackpad, etc.) */
         @media (hover: hover) {
             .btn:hover .arrow-icon,
-            .btn:focus .arrow-icon {
+            .btn:focus .arrow-icon,
+            .btn:active .arrow-icon {
                 opacity: 1;
                 visibility: visible;
                 width: auto;
@@ -1054,8 +1056,8 @@
                 const menuConfig = config?.menuConfig || {};
                 const dialogConfig = config?.dialogConfig || {};
                 
-                // Get button background image - use itemBackground from config.json (unified approach)
-                let selectedBgImage = itemConfig.itemBackground || itemConfig.itemSelectedBackground || 
+                // Get button background image - prioritize itemSelectedBackground (buttons are selected items)
+                let selectedBgImage = itemConfig.itemSelectedBackground || itemConfig.itemBackground || 
                                      menuConfig.menuItemSelectedBackground || 
                                      dialogConfig.dialogOptionSelectedBackground || null;
                 
@@ -1109,11 +1111,19 @@
                                   itemConfig.itemBackgroundColor ||
                                   '#667eea';
                 
-                // Get button text color
+                // Get button text color - prioritize itemSelectedTextColor (matches selected background)
                 let buttonTextColor = itemConfig.itemSelectedTextColor || 
                                      menuConfig.menuItemSelectedTextColor || 
                                      dialogConfig.dialogOptionSelectedTextColor ||
                                      '#ffffff';
+                
+                // Normalize color format (ensure # prefix if it's a hex color)
+                if (buttonTextColor && !buttonTextColor.startsWith('#')) {
+                    // If it's a 6-digit hex without #, add it
+                    if (/^[0-9A-Fa-f]{6}$/.test(buttonTextColor)) {
+                        buttonTextColor = '#' + buttonTextColor;
+                    }
+                }
                 
                 // Get arrow icon - use itemRightArrow from config.json (unified approach)
                 // Then try *RightArrow*.* pattern, then common patterns

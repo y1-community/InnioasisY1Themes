@@ -3213,8 +3213,8 @@
                 }
                 const hasArrow = arrowIconFile && arrowIconFile.trim() !== '';
                 
-                // Try to get selected background image - use itemBackground from config.json (unified approach)
-                let selectedBgImage = itemConfig.itemBackground || itemConfig.itemSelectedBackground || 
+                // Try to get selected background image - prioritize itemSelectedBackground (buttons are selected items)
+                let selectedBgImage = itemConfig.itemSelectedBackground || itemConfig.itemBackground || 
                                      menuConfig.menuItemSelectedBackground || 
                                      dialogConfig.dialogOptionSelectedBackground || null;
                 
@@ -3277,6 +3277,14 @@
                                       menuConfig.menuItemSelectedTextColor || 
                                       dialogConfig.dialogOptionSelectedTextColor ||
                                       '#ffffff'; // Fallback to white if not configured
+                
+                // Normalize color format (ensure # prefix if it's a hex color)
+                if (buttonTextColor && !buttonTextColor.startsWith('#')) {
+                    // If it's a 6-digit hex without #, add it
+                    if (/^[0-9A-Fa-f]{6}$/.test(buttonTextColor)) {
+                        buttonTextColor = '#' + buttonTextColor;
+                    }
+                }
                 
                 // Arrow icon - fits within button height (doesn't expand button)
                 // Wrapped in span with class for CSS control (hidden on desktop, shown on hover/mobile)
