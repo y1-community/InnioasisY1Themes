@@ -197,7 +197,7 @@
             display: block;
         }
         
-        .reddit-favicon {
+        .reddit-favicon, .social-favicon {
             display: inline-block;
             width: 16px;
             height: 16px;
@@ -206,10 +206,10 @@
             opacity: 0.8;
             transition: opacity 0.2s;
         }
-        .reddit-favicon:hover {
+        .reddit-favicon:hover, .social-favicon:hover {
             opacity: 1;
         }
-        .reddit-favicon img {
+        .reddit-favicon img, .social-favicon img {
             width: 100%;
             height: 100%;
             object-fit: contain;
@@ -333,6 +333,39 @@
             word-break: break-word;
             line-height: 1.2;
         }
+        
+        /* JSON file icon display */
+        .image-carousel-item .json-icon {
+            width: 100%;
+            height: 80px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-sizing: border-box;
+        }
+        
+        .image-carousel-item .json-icon svg {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .image-carousel-item .json-icon .file-label {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+        }
         .image-carousel-nav {
             display: flex;
             justify-content: center;
@@ -434,12 +467,14 @@
             bottom: 80px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.9);
             color: white;
-            padding: 20px 30px;
+            padding: 0;
             border-radius: 12px;
-            max-width: 600px;
+            max-width: 800px;
             width: 90%;
+            max-height: 60vh;
+            overflow-y: auto;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
             z-index: 1001;
             backdrop-filter: blur(10px);
@@ -448,26 +483,120 @@
         .lightbox-config-header {
             font-size: 1.1rem;
             font-weight: 600;
-            margin-bottom: 10px;
+            margin: 20px 20px 10px 20px;
             color: #fff;
         }
         
         .lightbox-config-explanation {
             font-size: 0.9rem;
             color: #ddd;
-            margin-bottom: 15px;
+            margin: 0 20px 15px 20px;
             line-height: 1.4;
         }
         
-        .lightbox-config-details {
+        .lightbox-config-file-link {
+            margin: 0 20px 15px 20px;
+            font-size: 0.9rem;
+        }
+        
+        .lightbox-config-file-link a {
+            color: #58a6ff;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .lightbox-config-file-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .lightbox-config-code-container {
+            background: #0d1117;
+            border-top: 1px solid #30363d;
+            border-bottom: 1px solid #30363d;
+            margin: 0;
+            padding: 0;
+            overflow-x: auto;
+        }
+        
+        .lightbox-config-code-header {
+            background: #161b22;
+            padding: 8px 16px;
+            border-bottom: 1px solid #30363d;
             display: flex;
-            flex-direction: column;
-            gap: 10px;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #8b949e;
+        }
+        
+        .lightbox-config-code-header strong {
+            color: #c9d1d9;
+        }
+        
+        .lightbox-config-code {
+            padding: 16px;
+            margin: 0;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: #c9d1d9;
+            background: #0d1117;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        
+        .lightbox-config-code-line {
+            display: block;
+            padding: 0 8px;
+        }
+        
+        .lightbox-config-code-line.highlight {
+            background: rgba(187, 128, 9, 0.15);
+            border-left: 3px solid #d29922;
+        }
+        
+        .lightbox-config-code-line-number {
+            display: inline-block;
+            width: 40px;
+            text-align: right;
+            padding-right: 16px;
+            color: #6e7681;
+            user-select: none;
+            margin-right: 8px;
+        }
+        
+        .lightbox-config-code-line-content {
+            color: #c9d1d9;
+        }
+        
+        .lightbox-config-code-line-content .string {
+            color: #a5d6ff;
+        }
+        
+        .lightbox-config-code-line-content .key {
+            color: #79c0ff;
+        }
+        
+        .lightbox-config-code-line-content .number {
+            color: #79c0ff;
+        }
+        
+        .lightbox-config-code-line-content .boolean {
+            color: #ff7b72;
+        }
+        
+        .lightbox-config-code-line-content .null {
+            color: #ff7b72;
+        }
+        
+        .lightbox-config-details {
+            padding: 15px 20px 20px 20px;
         }
         
         .lightbox-config-item {
             font-size: 0.9rem;
             line-height: 1.6;
+            margin-bottom: 8px;
         }
         
         .lightbox-config-item strong {
@@ -629,7 +758,7 @@
         <!-- Image carousel section - dynamically shown/hidden based on available images -->
         <!-- This section is hidden by default and only shown when images are loaded -->
         <div class="image-carousel-section" id="image-carousel-section" style="display: none;">
-            <h3 style="font-family: 'ThemeFont', sans-serif; font-size: 1rem; margin-bottom: 15px; color: #667eea;">All Theme Images</h3>
+            <h3 style="font-family: 'ThemeFont', sans-serif; font-size: 1rem; margin-bottom: 15px; color: #667eea;">All Theme Assets</h3>
             <div class="image-carousel-container">
                 <div class="image-carousel-wrapper" id="image-carousel-wrapper">
                     <div style="text-align: center; padding: 20px; color: #999;">Loading images...</div>
@@ -645,22 +774,20 @@
         <div class="button-group" style="margin-top: 30px;">
             <button id="install-btn" onclick="showInstallInstructions()" class="btn install" style="display: none;">
                 <span style="display: flex; align-items: center; justify-content: space-between; width: 100%; position: relative; z-index: 2;">
-                    <span style="position: relative; z-index: 3; flex: 1; text-align: left;">Install</span>
+                    <span class="btn-text" style="position: relative; z-index: 3; flex: 1; text-align: left;">Install</span>
                 </span>
             </button>
             <button id="download-btn-full" onclick="downloadTheme()" class="btn download">
                 <span style="display: flex; align-items: center; justify-content: space-between; width: 100%; position: relative; z-index: 2;">
-                    <span style="position: relative; z-index: 3; flex: 1; text-align: left;">Download</span>
+                    <span class="btn-text" style="position: relative; z-index: 3; flex: 1; text-align: left;">Download</span>
                 </span>
             </button>
-            <a href="#" id="download-link-small" onclick="downloadTheme(); return false;" class="download-link-small" style="display: none;">📦 Download ZIP instead</a>
             <button onclick="shareTheme()" class="btn share" style="margin-top: 10px;">
                 <span style="display: flex; align-items: center; justify-content: center; width: 100%;">
                     <span>🔗 Share this Theme</span>
                 </span>
             </button>
         </div>
-        <div id="download-status" style="margin-top: 10px; color: #666; display: none;">Starting download...</div>
 
         <!-- Install Instructions Modal -->
         <div id="install-modal" class="install-modal" onclick="if(event.target === this) closeInstallModal()">
@@ -678,7 +805,10 @@
                 <p style="color: #666; font-size: 0.9rem; margin-top: 15px;">The installation will automatically copy all theme files to your device.</p>
                 <button class="install-modal-btn" onclick="proceedWithInstall()">Continue to Folder Selection</button>
                 <p style="text-align: center; margin-top: 15px;">
-                    <a href="#" onclick="closeInstallModal(); downloadTheme(); return false;" style="color: #667eea; text-decoration: underline; font-size: 0.9rem;">📦 Download as .zip instead</a>
+                    <a href="#" onclick="closeInstallModal(); downloadTheme(); return false;" style="color: #667eea; text-decoration: underline; font-size: 0.9rem;">💾 Save .zip for later</a>
+                </p>
+                <p style="color: #666; font-size: 0.85rem; margin-top: 10px; text-align: center; font-style: italic;">
+                    After downloading, extract the ZIP file and place the folder containing config.json into the "Themes" folder on your Y1 device.
                 </p>
             </div>
         </div>
@@ -722,10 +852,17 @@
         <div id="lightbox-config-info" class="lightbox-config-info" onclick="event.stopPropagation()" style="display: none;">
             <div class="lightbox-config-header">Theme Construction Info</div>
             <div class="lightbox-config-explanation">This information helps you understand how a theme is constructed:</div>
-            <div class="lightbox-config-details">
-                <div class="lightbox-config-item">
-                    <strong>Config Key:</strong> <code id="lightbox-config-key"></code>
+            <div class="lightbox-config-file-link">
+                <a id="lightbox-config-file-link" href="#" target="_blank" rel="noopener noreferrer">config.json</a>
+            </div>
+            <div class="lightbox-config-code-container">
+                <div class="lightbox-config-code-header">
+                    <span><strong id="lightbox-config-key-display"></strong></span>
+                    <span>Line <strong id="lightbox-config-line-number"></strong></span>
                 </div>
+                <pre class="lightbox-config-code" id="lightbox-config-code"></pre>
+            </div>
+            <div class="lightbox-config-details">
                 <div class="lightbox-config-item">
                     <strong>Image File:</strong> <code id="lightbox-image-name"></code>
                 </div>
@@ -1322,9 +1459,8 @@
             // Check for File System Access API support (works on Chrome desktop and Android)
             if ('showDirectoryPicker' in window) {
                 document.getElementById('install-btn').style.display = 'inline-block';
-                // Hide full download button, show small link
+                // Hide full download button (no separate download link - only in modal)
                 document.getElementById('download-btn-full').style.display = 'none';
-                document.getElementById('download-link-small').style.display = 'inline';
                 
                 // Detect Android and update install instructions
                 const isAndroid = /Android/i.test(navigator.userAgent);
@@ -1354,6 +1490,8 @@
         async function loadAuthorInfo() {
             try {
                 let author = 'ope-nz | u/Normal-Curve-1642';
+                // Remove any erroneous "$" prefix from author name
+                author = author.replace(/^\$+/, '');
                 let authorUrl = null;
                 let description = 'Classic iPod LCD theme. Using Chicago font.';
                 
@@ -1403,7 +1541,82 @@
                 const descriptionDisplay = document.getElementById('description-display');
                 
                 if (authorDisplay) {
-                    // Detect Reddit username (u/username pattern)
+                    // Remove any erroneous "$" prefix from author name
+                    author = author.replace(/^\$+/, '');
+                    
+                    // Helper function to detect social media platform from URL
+                    function getSocialIcon(url) {
+                        if (!url) return null;
+                        const urlLower = url.toLowerCase();
+                        
+                        // Reddit
+                        if (urlLower.includes('reddit.com/user/') || urlLower.includes('reddit.com/u/')) {
+                            return {
+                                icon: 'https://www.redditstatic.com/desktop2x/img/favicon/favicon-16x16.png',
+                                alt: 'Reddit',
+                                class: 'reddit-favicon'
+                            };
+                        }
+                        // Pinterest
+                        if (urlLower.includes('pinterest.com') || urlLower.includes('pinterest.')) {
+                            return {
+                                icon: 'https://www.pinterest.com/favicon.ico',
+                                alt: 'Pinterest',
+                                class: 'social-favicon'
+                            };
+                        }
+                        // Instagram
+                        if (urlLower.includes('instagram.com')) {
+                            return {
+                                icon: 'https://www.instagram.com/static/images/ico/favicon.ico',
+                                alt: 'Instagram',
+                                class: 'social-favicon'
+                            };
+                        }
+                        // DeviantArt
+                        if (urlLower.includes('deviantart.com')) {
+                            return {
+                                icon: 'https://www.deviantart.com/favicon.ico',
+                                alt: 'DeviantArt',
+                                class: 'social-favicon'
+                            };
+                        }
+                        // Behance
+                        if (urlLower.includes('behance.net')) {
+                            return {
+                                icon: 'https://www.behance.net/favicon.ico',
+                                alt: 'Behance',
+                                class: 'social-favicon'
+                            };
+                        }
+                        // GitHub
+                        if (urlLower.includes('github.com')) {
+                            return {
+                                icon: 'https://github.com/favicon.ico',
+                                alt: 'GitHub',
+                                class: 'social-favicon'
+                            };
+                        }
+                        // Twitter/X
+                        if (urlLower.includes('twitter.com') || urlLower.includes('x.com')) {
+                            return {
+                                icon: 'https://abs.twimg.com/favicons/twitter.ico',
+                                alt: 'Twitter',
+                                class: 'social-favicon'
+                            };
+                        }
+                        // Regular website (not Reddit) - show globe icon
+                        if (!urlLower.includes('reddit.com')) {
+                            return {
+                                icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTggMUMxMS44NjYgMSAxNSA0LjEzNCAxNSA4QzE1IDExLjg2NiAxMS44NjYgMTUgOCAxNUM0LjEzNCAxNSAxIDExLjg2NiAxIDhDMSA0LjEzNCA0LjEzNCAxIDggMVoiIHN0cm9rZT0iIzY2N2VlYSIgc3Ryb2tlLXdpZHRoPSIxLjUiIGZpbGw9Im5vbmUiLz4KPHBhdGggZD0iTTggMlYxNCIgc3Ryb2tlPSIjNjY3ZWVhIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8cGF0aCBkPSJNMTQgOEgyIiBzdHJva2U9IiM2NjdlZWEiIHN0cm9rZS13aWR0aD0iMS41Ii8+CjxwYXRoIGQ9Ik0xMS4zIDEwLjdMMyA0LjMiIHN0cm9rZT0iIzY2N2VlYSIgc3Ryb2tlLXdpZHRoPSIxLjUiLz4KPHBhdGggZD0iTTExLjMgNS4zTDMgMTEuNyIgc3Ryb2tlPSIjNjY3ZWVhIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8L3N2Zz4K',
+                                alt: 'Website',
+                                class: 'social-favicon'
+                            };
+                        }
+                        return null;
+                    }
+                    
+                    // Detect Reddit username (u/username pattern) in author name
                     const redditUsernameMatch = author.match(/u\/([^\/\s]+)/i);
                     let redditUsername = null;
                     let redditFaviconHtml = '';
@@ -1414,11 +1627,27 @@
                         redditFaviconHtml = `<a href="https://reddit.com/user/${redditUsername}" target="_blank" rel="noopener noreferrer" class="reddit-favicon" onclick="event.stopPropagation();" style="display: inline-block; width: 16px; height: 16px; margin-left: 4px; vertical-align: middle; opacity: 0.8; transition: opacity 0.2s;"><img src="https://www.redditstatic.com/desktop2x/img/favicon/favicon-16x16.png" alt="Reddit" style="width: 100%; height: 100%; object-fit: contain;"></a>`;
                     }
                     
+                    // Check if authorUrl is a Reddit profile (if so, don't show separate Reddit favicon if already shown)
+                    let authorUrlIsReddit = false;
                     if (authorUrl) {
-                        // Author name links to authorUrl, Reddit favicon links to Reddit profile
-                        authorDisplay.innerHTML = `<a href="${authorUrl}" target="_blank" rel="noopener noreferrer" style="color: #667eea; text-decoration: none; border-bottom: 1px solid #667eea; transition: all 0.2s;">$ope-nz | u/Normal-Curve-1642</a>${redditFaviconHtml}`;
+                        const urlLower = authorUrl.toLowerCase();
+                        authorUrlIsReddit = urlLower.includes('reddit.com/user/') || urlLower.includes('reddit.com/u/');
+                    }
+                    
+                    // Get social icon for authorUrl (if not Reddit or if Reddit username not in author name)
+                    let socialIconHtml = '';
+                    if (authorUrl && (!authorUrlIsReddit || !redditUsernameMatch)) {
+                        const socialIcon = getSocialIcon(authorUrl);
+                        if (socialIcon) {
+                            socialIconHtml = `<a href="${authorUrl}" target="_blank" rel="noopener noreferrer" class="${socialIcon.class}" onclick="event.stopPropagation();" style="display: inline-block; width: 16px; height: 16px; margin-left: 4px; vertical-align: middle; opacity: 0.8; transition: opacity 0.2s;"><img src="${socialIcon.icon}" alt="${socialIcon.alt}" style="width: 100%; height: 100%; object-fit: contain;"></a>`;
+                        }
+                    }
+                    
+                    if (authorUrl) {
+                        // Author name links to authorUrl, show appropriate favicon(s)
+                        authorDisplay.innerHTML = `<a href="${authorUrl}" target="_blank" rel="noopener noreferrer" style="color: #667eea; text-decoration: none; border-bottom: 1px solid #667eea; transition: all 0.2s;">$ope-nz | u/Normal-Curve-1642</a>${redditFaviconHtml}${socialIconHtml}`;
                         // Add hover effect
-                        const authorLink = authorDisplay.querySelector('a:not(.reddit-favicon)');
+                        const authorLink = authorDisplay.querySelector('a:not(.reddit-favicon):not(.social-favicon)');
                         if (authorLink) {
                             authorLink.addEventListener('mouseenter', function() {
                                 this.style.color = '#764ba2';
@@ -1526,6 +1755,51 @@
             document.body.style.overflow = 'auto';
         }
         
+        // Helper function to update button text while preserving structure (text + arrow icon)
+        function updateButtonText(button, newText) {
+            if (!button) return;
+            // Find the text span with class "btn-text" or first span inside the flex container
+            const textSpan = button.querySelector('.btn-text') || button.querySelector('span > span:first-child');
+            if (textSpan) {
+                textSpan.textContent = newText;
+            } else {
+                // Fallback if structure is different
+                const flexContainer = button.querySelector('span');
+                if (flexContainer) {
+                    const firstChild = flexContainer.querySelector('span:first-child');
+                    if (firstChild) {
+                        firstChild.textContent = newText;
+                    } else {
+                        button.textContent = newText;
+                    }
+                } else {
+                    button.textContent = newText;
+                }
+            }
+        }
+        
+        // Helper function to reset button to original state
+        function resetButton(button, originalText, originalClass) {
+            if (!button) return;
+            button.disabled = false;
+            updateButtonText(button, originalText);
+            if (originalClass) {
+                button.className = originalClass;
+            }
+            // Ensure button is visible and in correct state
+            if (button.id === 'install-btn') {
+                // Install button should be visible if File System Access API is supported
+                if ('showDirectoryPicker' in window) {
+                    button.style.display = 'inline-block';
+                }
+            } else if (button.id === 'download-btn-full') {
+                // Download button should be visible if File System Access API is NOT supported
+                if (!('showDirectoryPicker' in window)) {
+                    button.style.display = 'inline-block';
+                }
+            }
+        }
+        
         // Proceed with installation after user confirms
         function proceedWithInstall() {
             closeInstallModal();
@@ -1537,7 +1811,10 @@
         async function installTheme() {
             const folderName = 'LCD';
             const btn = document.getElementById('install-btn');
-            const status = document.getElementById('download-status');
+            
+            // Store original button state
+            const originalText = 'Install';
+            const originalClass = btn.className;
             
             // Get theme font for progress display
             const themeFont = await loadThemeFont();
@@ -1550,8 +1827,7 @@
                 
                 if (!savedFolderHandle) {
                     // 1. Ask user to select Themes folder (modal already shown by showInstallInstructions)
-                    status.style.display = 'block';
-                    status.textContent = 'Please select the "Themes" folder on your Y1 device...';
+                    updateButtonText(btn, 'Select Themes folder...');
                     
                     dirHandle = await window.showDirectoryPicker({
                         mode: 'readwrite',
@@ -1561,8 +1837,7 @@
                     // Folder already selected on home page - skip dialog and use saved handle
                     // Note: We can't actually restore the handle from localStorage (security restriction)
                     // So we still need to ask, but we can skip the preparation dialog
-                    status.style.display = 'block';
-                    status.textContent = 'Please select the "Themes" folder on your Y1 device...';
+                    updateButtonText(btn, 'Select Themes folder...');
                     
                     dirHandle = await window.showDirectoryPicker({
                         mode: 'readwrite',
@@ -1573,17 +1848,16 @@
                 // Verify it's likely the right folder (optional, but good UX)
                 if (dirHandle.name !== 'Themes' && dirHandle.name !== 'themes') {
                     if (!confirm(`You selected "${dirHandle.name}", but usually this should be the "Themes" folder. Continue?`)) {
-                        status.textContent = 'Installation cancelled.';
+                        resetButton(btn, originalText, originalClass);
                         return;
                     }
                 }
 
                 btn.disabled = true;
-                btn.textContent = '⏳ Installing...';
+                updateButtonText(btn, '⏳ Fetching files...');
                 if (fontStyle) {
                     btn.style.fontFamily = themeFont ? `'${themeFont}', sans-serif` : '';
                 }
-                status.textContent = 'Fetching file list...';
 
                 // 2. Get all files from GitHub (recursive - handles subdirectories)
                 async function getAllFilesRecursive(path = folderName, basePath = '') {
@@ -1628,17 +1902,15 @@
                 const total = allFiles.length;
 
                 // 4. Download and write each file (handles nested paths)
-                // Show progress: downloading files before installation (in theme font)
-                status.textContent = `Downloading files (0/${total})...`;
-                btn.textContent = `⏳ Downloading files...`;
+                // Show progress inside button
+                updateButtonText(btn, `⏳ Downloading 0/${total}...`);
                 if (fontStyle) {
                     btn.style.fontFamily = themeFont ? `'${themeFont}', sans-serif` : '';
                 }
                 
                 for (const file of allFiles) {
-                    const fileName = file.name.split('/').pop(); // Get just filename for display
-                    status.textContent = `Downloading ${fileName} (${processed + 1}/${total})...`;
-                    btn.textContent = `⏳ Downloading ${processed + 1}/${total}...`;
+                    processed++;
+                    updateButtonText(btn, `⏳ Downloading ${processed}/${total}...`);
                     if (fontStyle) {
                         btn.style.fontFamily = themeFont ? `'${themeFont}', sans-serif` : '';
                     }
@@ -1668,21 +1940,18 @@
                         });
                     }
                     
-                    processed++;
                 }
                 
                 // 5. Now install files to device
-                status.textContent = `Installing files (0/${total})...`;
-                btn.textContent = `⏳ Installing files...`;
+                processed = 0;
+                updateButtonText(btn, `⏳ Installing 0/${total}...`);
                 if (fontStyle) {
                     btn.style.fontFamily = themeFont ? `'${themeFont}', sans-serif` : '';
                 }
-                processed = 0;
                 
                 for (const file of allFiles) {
-                    const fileName = file.name.split('/').pop();
-                    status.textContent = `Installing ${fileName} (${processed + 1}/${total})...`;
-                    btn.textContent = `⏳ Installing ${processed + 1}/${total}...`;
+                    processed++;
+                    updateButtonText(btn, `⏳ Installing ${processed}/${total}...`);
                     if (fontStyle) {
                         btn.style.fontFamily = themeFont ? `'${themeFont}', sans-serif` : '';
                     }
@@ -1719,26 +1988,24 @@
                     await writable.write(blob);
                     await writable.close();
                     
-                    processed++;
                 }
 
-                btn.textContent = '✅ Installed!';
-                status.textContent = 'Theme installed successfully! You can now disconnect your device.';
+                updateButtonText(btn, '✅ Installed!');
                 setTimeout(() => {
-                    btn.disabled = false;
-                    btn.textContent = '🚀 Install on Y1';
-                }, 3000);
+                    resetButton(btn, originalText, originalClass);
+                }, 2000);
 
             } catch (error) {
                 console.error('Installation error:', error);
                 if (error.name === 'AbortError') {
-                    status.textContent = 'Installation cancelled.';
+                    updateButtonText(btn, '❌ Cancelled');
                 } else {
-                    status.textContent = 'Installation failed: ' + error.message;
+                    updateButtonText(btn, '❌ Failed');
                     alert('Installation failed. Please try downloading the ZIP instead.');
                 }
-                btn.disabled = false;
-                btn.textContent = '🚀 Install on Y1';
+                setTimeout(() => {
+                    resetButton(btn, originalText, originalClass);
+                }, 2000);
             }
         }
 
@@ -1747,12 +2014,20 @@
             const folderName = 'LCD';
             const themeName = 'LCD';
             const btn = document.getElementById('download-btn-full');
-            const status = document.getElementById('download-status');
+            
+            // Store original button state
+            const originalText = 'Download';
+            const originalClass = btn.className;
+            
+            // Get theme font for progress display
+            const themeFont = await loadThemeFont();
+            const fontStyle = themeFont ? `font-family: '${themeFont}', sans-serif;` : '';
             
             btn.disabled = true;
-            btn.textContent = '⏳ Downloading...';
-            status.style.display = 'block';
-            status.textContent = 'Fetching file list...';
+            updateButtonText(btn, '⏳ Fetching files...');
+            if (fontStyle) {
+                btn.style.fontFamily = themeFont ? `'${themeFont}', sans-serif` : '';
+            }
             
             try {
                 const zip = new JSZip();
@@ -1877,32 +2152,297 @@
             }
         }
 
-        // Lightbox functions
-        function openLightbox(imgSrc, configKey = null, imageName = null) {
+        // Helper function to find line number in config.json text for a given key path
+        function findConfigKeyLine(configText, keyPath) {
+            const lines = configText.split('
+');
+            const keyParts = keyPath.split('.');
+            
+            // Try to find the key in the config
+            // For nested keys like "itemConfig.itemSelectedBackground", we need to find:
+            // 1. The section (e.g., "itemConfig": {)
+            // 2. The key within that section (e.g., "itemSelectedBackground": "...")
+            
+            let currentSection = null;
+            let inTargetSection = false;
+            let braceDepth = 0;
+            let sectionBraceDepth = 0;
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                const trimmed = line.trim();
+                
+                // Track brace depth to know when we're inside objects
+                braceDepth += (line.match(/{/g) || []).length;
+                braceDepth -= (line.match(/}/g) || []).length;
+                
+                // Check if this line starts a section (e.g., "itemConfig": {)
+                if (keyParts.length > 1) {
+                    const sectionName = keyParts[0];
+                    if (trimmed.startsWith(`"${sectionName}"`) && trimmed.includes('{')) {
+                        currentSection = sectionName;
+                        inTargetSection = true;
+                        sectionBraceDepth = braceDepth;
+                    }
+                }
+                
+                // If we're in the target section, look for the key
+                if (inTargetSection || keyParts.length === 1) {
+                    const targetKey = keyParts[keyParts.length - 1];
+                    // Match key with quotes and colon (e.g., "itemSelectedBackground":)
+                    const keyPattern = new RegExp(`"${targetKey}"\s*:`);
+                    if (keyPattern.test(trimmed)) {
+                        // Check if we're still in the right section (for nested keys)
+                        if (keyParts.length > 1) {
+                            // Make sure we're at the right brace depth (within the section)
+                            if (braceDepth > sectionBraceDepth) {
+                                return i + 1; // Line numbers are 1-indexed
+                            }
+                        } else {
+                            return i + 1;
+                        }
+                    }
+                }
+                
+                // Reset section tracking if we've left the section
+                if (inTargetSection && braceDepth <= sectionBraceDepth && trimmed.includes('}')) {
+                    inTargetSection = false;
+                }
+            }
+            
+            return null; // Key not found
+        }
+        
+        // Helper function to extract code snippet around a line
+        function extractCodeSnippet(configText, lineNumber, contextLines = 5) {
+            const lines = configText.split('
+');
+            const startLine = Math.max(0, lineNumber - contextLines - 1);
+            const endLine = Math.min(lines.length, lineNumber + contextLines);
+            const snippetLines = lines.slice(startLine, endLine);
+            
+            return {
+                lines: snippetLines,
+                startLine: startLine + 1, // 1-indexed
+                highlightLine: lineNumber
+            };
+        }
+        
+        // Helper function to syntax highlight JSON code
+        function highlightJSONCode(line) {
+            // Simple JSON syntax highlighting
+            // Process in order: keys, strings, numbers, booleans, null
+            // Note: line is already HTML-escaped
+            let highlighted = line;
+            
+            // Highlight keys (quoted strings followed by colon)
+            highlighted = highlighted.replace(/("([^"\]|\.)*")\s*:/g, '<span class="key">$1</span>:');
+            
+            // Highlight string values (quoted strings after colon, but not keys)
+            // Match ": "value"" pattern
+            highlighted = highlighted.replace(/:\s*("([^"\]|\.)*")/g, ': <span class="string">$1</span>');
+            
+            // Highlight numbers (after colon, not inside strings)
+            highlighted = highlighted.replace(/:\s*(\d+\.?\d*)(?![^<]*<\/span>)/g, ': <span class="number">$1</span>');
+            
+            // Highlight booleans
+            highlighted = highlighted.replace(/:\s*(true|false)(?![^<]*<\/span>)/g, ': <span class="boolean">$1</span>');
+            
+            // Highlight null
+            highlighted = highlighted.replace(/:\s*(null)(?![^<]*<\/span>)/g, ': <span class="null">$1</span>');
+            
+            return highlighted;
+        }
+        
+        // Function to open full config.json in lightbox
+        async function openConfigJSON() {
             const lightbox = document.getElementById('lightbox');
             const lightboxImg = document.getElementById('lightbox-img');
             const editBtn = document.getElementById('lightbox-edit-btn');
             const configInfo = document.getElementById('lightbox-config-info');
-            const configKeyEl = document.getElementById('lightbox-config-key');
+            const configKeyDisplay = document.getElementById('lightbox-config-key-display');
+            const configLineNumber = document.getElementById('lightbox-config-line-number');
+            const configCode = document.getElementById('lightbox-config-code');
+            const configFileLink = document.getElementById('lightbox-config-file-link');
             const imageNameEl = document.getElementById('lightbox-image-name');
             
+            // Hide the image, show config info
+            lightboxImg.style.display = 'none';
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // Show config.json info
+            configInfo.style.display = 'block';
+            configKeyDisplay.textContent = 'config.json';
+            configLineNumber.textContent = 'Full file';
+            imageNameEl.textContent = 'config.json';
+            
+            try {
+                const configResponse = await fetch('./config.json');
+                if (configResponse.ok) {
+                    const configText = await configResponse.text();
+                    const lines = configText.split('
+');
+                    
+                    // Build GitHub link
+                    const currentPath = window.location.pathname;
+                    let folderName = '';
+                    const pathParts = currentPath.split('/');
+                    if (pathParts[pathParts.length - 1].toLowerCase() === 'index.html' || pathParts[pathParts.length - 1] === '') {
+                        folderName = pathParts[pathParts.length - 2];
+                    } else {
+                        folderName = pathParts[pathParts.length - 1];
+                    }
+                    folderName = decodeURIComponent(folderName);
+                    
+                    const githubUrl = `https://github.com/y1-community/InnioasisY1Themes/blob/main/${encodeURIComponent(folderName)}/config.json`;
+                    configFileLink.href = githubUrl;
+                    configFileLink.textContent = 'config.json';
+                    
+                    // Display full file with syntax highlighting
+                    let codeHTML = '';
+                    lines.forEach((line, index) => {
+                        const lineNumber = index + 1;
+                        // Escape HTML first, then apply syntax highlighting
+                        const escapedLine = line
+                            .replace(/&/g, '&amp;')
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;')
+                            .replace(/"/g, '&quot;')
+                            .replace(/'/g, '&#039;');
+                        const highlightedLine = highlightJSONCode(escapedLine);
+                        codeHTML += `<span class="lightbox-config-code-line">`;
+                        codeHTML += `<span class="lightbox-config-code-line-number">${lineNumber}</span>`;
+                        codeHTML += `<span class="lightbox-config-code-line-content">${highlightedLine}</span>`;
+                        codeHTML += `</span>
+`;
+                    });
+                    configCode.innerHTML = codeHTML;
+                }
+            } catch (error) {
+                console.warn('Could not load config.json:', error);
+                configCode.textContent = '// Could not load config.json';
+            }
+            
+            // Set edit button to link to config.json
+            const currentPath = window.location.pathname;
+            let folderName = '';
+            const pathParts = currentPath.split('/');
+            if (pathParts[pathParts.length - 1].toLowerCase() === 'index.html' || pathParts[pathParts.length - 1] === '') {
+                folderName = pathParts[pathParts.length - 2];
+            } else {
+                folderName = pathParts[pathParts.length - 1];
+            }
+            folderName = decodeURIComponent(folderName);
+            editBtn.href = `https://github.com/y1-community/InnioasisY1Themes/blob/main/${encodeURIComponent(folderName)}/config.json`;
+            editBtn.style.display = 'inline-flex';
+        }
+        
+        // Lightbox functions
+        async function openLightbox(imgSrc, configKey = null, imageName = null) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            const editBtn = document.getElementById('lightbox-edit-btn');
+            const configInfo = document.getElementById('lightbox-config-info');
+            const configKeyDisplay = document.getElementById('lightbox-config-key-display');
+            const configLineNumber = document.getElementById('lightbox-config-line-number');
+            const configCode = document.getElementById('lightbox-config-code');
+            const configFileLink = document.getElementById('lightbox-config-file-link');
+            const imageNameEl = document.getElementById('lightbox-image-name');
+            
+            // Show the image
+            lightboxImg.style.display = 'block';
             lightboxImg.src = imgSrc;
             lightbox.classList.add('active');
             document.body.style.overflow = 'hidden';
             
             // Show config.json info if this is from the gallery (has configKey)
             if (configKey && imageName) {
-                configKeyEl.textContent = configKey;
-                imageNameEl.textContent = imageName;
                 configInfo.style.display = 'block';
+                configKeyDisplay.textContent = configKey;
+                imageNameEl.textContent = imageName;
+                
+                // Fetch config.json as text to find line numbers
+                try {
+                    const configResponse = await fetch('./config.json');
+                    if (configResponse.ok) {
+                        const configText = await configResponse.text();
+                        
+                        // Find the line number for this config key
+                        const lineNumber = findConfigKeyLine(configText, configKey);
+                        
+                        if (lineNumber) {
+                            // Extract code snippet
+                            const snippet = extractCodeSnippet(configText, lineNumber, 5);
+                            
+                            // Build GitHub link to the specific line
+                            const currentPath = window.location.pathname;
+                            let folderName = '';
+                            const pathParts = currentPath.split('/');
+                            if (pathParts[pathParts.length - 1].toLowerCase() === 'index.html' || pathParts[pathParts.length - 1] === '') {
+                                folderName = pathParts[pathParts.length - 2];
+                            } else {
+                                folderName = pathParts[pathParts.length - 1];
+                            }
+                            folderName = decodeURIComponent(folderName);
+                            
+                            const githubUrl = `https://github.com/y1-community/InnioasisY1Themes/blob/main/${encodeURIComponent(folderName)}/config.json#L${lineNumber}`;
+                            configFileLink.href = githubUrl;
+                            configFileLink.textContent = 'config.json';
+                            
+                            // Display line number
+                            configLineNumber.textContent = lineNumber;
+                            
+                            // Display code snippet with syntax highlighting
+                            let codeHTML = '';
+                            snippet.lines.forEach((line, index) => {
+                                const actualLineNumber = snippet.startLine + index;
+                                const isHighlight = actualLineNumber === snippet.highlightLine;
+                                // Escape HTML first, then apply syntax highlighting
+                                const escapedLine = line
+                                    .replace(/&/g, '&amp;')
+                                    .replace(/</g, '&lt;')
+                                    .replace(/>/g, '&gt;')
+                                    .replace(/"/g, '&quot;')
+                                    .replace(/'/g, '&#039;');
+                                const highlightedLine = highlightJSONCode(escapedLine);
+                                codeHTML += `<span class="lightbox-config-code-line ${isHighlight ? 'highlight' : ''}">`;
+                                codeHTML += `<span class="lightbox-config-code-line-number">${actualLineNumber}</span>`;
+                                codeHTML += `<span class="lightbox-config-code-line-content">${highlightedLine}</span>`;
+                                codeHTML += `</span>
+`;
+                            });
+                            configCode.innerHTML = codeHTML;
+                        } else {
+                            // Key not found - show basic info
+                            configLineNumber.textContent = '?';
+                            configCode.textContent = '// Config key not found in config.json';
+                            const currentPath = window.location.pathname;
+                            let folderName = '';
+                            const pathParts = currentPath.split('/');
+                            if (pathParts[pathParts.length - 1].toLowerCase() === 'index.html' || pathParts[pathParts.length - 1] === '') {
+                                folderName = pathParts[pathParts.length - 2];
+                            } else {
+                                folderName = pathParts[pathParts.length - 1];
+                            }
+                            folderName = decodeURIComponent(folderName);
+                            configFileLink.href = `https://github.com/y1-community/InnioasisY1Themes/blob/main/${encodeURIComponent(folderName)}/config.json`;
+                            configFileLink.textContent = 'config.json';
+                        }
+                    }
+                } catch (error) {
+                    console.warn('Could not load config.json for code display:', error);
+                    configLineNumber.textContent = '?';
+                    configCode.textContent = '// Could not load config.json';
+                }
             } else {
                 configInfo.style.display = 'none';
             }
             
-            // Extract filename from image source and construct GitHub URL
+            // Extract filename from image source and construct GitHub URL for edit button
             // Image source format: ./filename.png or ./themeFolder/filename.png
             // We need: https://github.com/y1-community/InnioasisY1Themes/tree/main/{folderName}/{filename}
-            const folderName = 'LCD';
+            let editFolderName = 'LCD';
             let filename = imageName || '';
             
             if (!filename) {
@@ -1920,20 +2460,25 @@
                 filename = filename.split('?')[0];
             }
             
-            // Construct GitHub URL
-            const githubUrl = `https://github.com/y1-community/InnioasisY1Themes/tree/main/${encodeURIComponent(folderName)}/${encodeURIComponent(filename)}`;
+            // Construct GitHub URL for image edit button
+            const githubUrl = `https://github.com/y1-community/InnioasisY1Themes/tree/main/${encodeURIComponent(editFolderName)}/${encodeURIComponent(filename)}`;
             editBtn.href = githubUrl;
             editBtn.style.display = 'inline-flex';
         }
 
         function closeLightbox() {
             const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
             const configInfo = document.getElementById('lightbox-config-info');
             lightbox.classList.remove('active');
             document.body.style.overflow = 'auto';
             // Hide config info when closing
             if (configInfo) {
                 configInfo.style.display = 'none';
+            }
+            // Reset image display
+            if (lightboxImg) {
+                lightboxImg.style.display = 'block';
             }
         }
 
@@ -2088,14 +2633,8 @@
                     });
                 });
                 
-                if (configImageEntries.length === 0) {
-                    // Hide the entire carousel section if no images found
-                    const carouselSection = document.getElementById('image-carousel-section');
-                    if (carouselSection) {
-                        carouselSection.style.display = 'none';
-                    }
-                    return;
-                }
+                // Always show config.json, even if no images
+                // Don't return early - we'll add config.json and show the section
                 
                 // Load all unique images and create gallery items for each config usage
                 const loadedImageData = []; // Array of {filename, url, objectUrl, configKey}
@@ -2170,20 +2709,50 @@
                 // Sort by config key name for consistent display
                 loadedImageData.sort((a, b) => a.configKey.localeCompare(b.configKey));
                 
-                if (loadedImageData.length === 0) {
-                    // Hide the entire carousel section if no images loaded
-                    const carouselSection = document.getElementById('image-carousel-section');
-                    if (carouselSection) {
-                        carouselSection.style.display = 'none';
-                    }
-                    return;
-                }
-                
-                // Show the carousel section now that we have images
+                // Show the carousel section (always show config.json at minimum)
                 const carouselSection = document.getElementById('image-carousel-section');
                 if (carouselSection) {
                     carouselSection.style.display = 'block';
                 }
+                
+                // Add config.json as the first item (always shown)
+                const configItem = document.createElement('div');
+                configItem.className = 'image-carousel-item';
+                configItem.onclick = () => openConfigJSON();
+                configItem.style.cursor = 'pointer';
+                
+                // Create JSON file icon (document with settings cog)
+                const jsonIcon = document.createElement('div');
+                jsonIcon.className = 'json-icon';
+                jsonIcon.innerHTML = `
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Document background -->
+                        <rect x="20" y="15" width="60" height="70" rx="2" fill="#f0f0f0" stroke="#ccc" stroke-width="2"/>
+                        <!-- Document fold corner -->
+                        <path d="M 20 15 L 35 15 L 35 30 L 20 30 Z" fill="#ddd" stroke="#ccc" stroke-width="1"/>
+                        <!-- Settings cog icon -->
+                        <g transform="translate(50, 50)">
+                            <circle cx="0" cy="0" r="12" fill="none" stroke="#667eea" stroke-width="2.5"/>
+                            <circle cx="0" cy="0" r="6" fill="#667eea"/>
+                            <path d="M -8 -8 L -12 -12 M 8 -8 L 12 -12 M -8 8 L -12 12 M 8 8 L 12 12" 
+                                  stroke="#667eea" stroke-width="2" stroke-linecap="round"/>
+                            <circle cx="0" cy="-12" r="2" fill="#667eea"/>
+                            <circle cx="0" cy="12" r="2" fill="#667eea"/>
+                            <circle cx="12" cy="0" r="2" fill="#667eea"/>
+                            <circle cx="-12" cy="0" r="2" fill="#667eea"/>
+                        </g>
+                    </svg>
+                    <span class="file-label">.json</span>
+                `;
+                
+                const configLabel = document.createElement('div');
+                configLabel.className = 'image-name';
+                configLabel.textContent = 'config.json';
+                configLabel.title = 'config.json';
+                
+                configItem.appendChild(jsonIcon);
+                configItem.appendChild(configLabel);
+                carouselWrapper.appendChild(configItem);
                 
                 // Create carousel items - one for each config key usage
                 // Same image can appear multiple times if used in multiple config keys

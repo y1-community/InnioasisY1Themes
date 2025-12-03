@@ -657,7 +657,7 @@
             color: #764ba2;
             text-decoration: underline;
         }
-        .reddit-favicon {
+        .reddit-favicon, .social-favicon {
             display: inline-block;
             width: 16px;
             height: 16px;
@@ -666,10 +666,10 @@
             opacity: 0.8;
             transition: opacity 0.2s;
         }
-        .reddit-favicon:hover {
+        .reddit-favicon:hover, .social-favicon:hover {
             opacity: 1;
         }
-        .reddit-favicon img {
+        .reddit-favicon img, .social-favicon img {
             width: 100%;
             height: 100%;
             object-fit: contain;
@@ -3297,14 +3297,105 @@
                 const buttonStyle = `${buttonBgStyle} color: ${buttonTextColor}; ${fontStyle} text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 0 2px rgba(0, 0, 0, 0.8);`;
                 
                 // Get author display name (for display - show "Author not listed" instead of "All")
-                const authorDisplay = theme.author === 'Unknown' ? 'Author not listed' : (theme.author || 'Author not listed');
+                // Remove any erroneous "$" prefix from author name
+                let cleanAuthor = theme.author || 'Unknown';
+                cleanAuthor = cleanAuthor.replace(/^\$+/, '');
+                const authorDisplay = cleanAuthor === 'Unknown' ? 'Author not listed' : cleanAuthor;
                 
-                // Detect Reddit username (u/username pattern) and add favicon
-                const redditUsernameMatch = theme.author && theme.author.match(/u\/([^\/\s]+)/i);
+                // Helper function to detect social media platform from URL
+                function getSocialIcon(url) {
+                    if (!url) return null;
+                    const urlLower = url.toLowerCase();
+                    
+                    // Reddit
+                    if (urlLower.includes('reddit.com/user/') || urlLower.includes('reddit.com/u/')) {
+                        return {
+                            icon: 'https://www.redditstatic.com/desktop2x/img/favicon/favicon-16x16.png',
+                            alt: 'Reddit',
+                            class: 'reddit-favicon'
+                        };
+                    }
+                    // Pinterest
+                    if (urlLower.includes('pinterest.com') || urlLower.includes('pinterest.')) {
+                        return {
+                            icon: 'https://www.pinterest.com/favicon.ico',
+                            alt: 'Pinterest',
+                            class: 'social-favicon'
+                        };
+                    }
+                    // Instagram
+                    if (urlLower.includes('instagram.com')) {
+                        return {
+                            icon: 'https://www.instagram.com/static/images/ico/favicon.ico',
+                            alt: 'Instagram',
+                            class: 'social-favicon'
+                        };
+                    }
+                    // DeviantArt
+                    if (urlLower.includes('deviantart.com')) {
+                        return {
+                            icon: 'https://www.deviantart.com/favicon.ico',
+                            alt: 'DeviantArt',
+                            class: 'social-favicon'
+                        };
+                    }
+                    // Behance
+                    if (urlLower.includes('behance.net')) {
+                        return {
+                            icon: 'https://www.behance.net/favicon.ico',
+                            alt: 'Behance',
+                            class: 'social-favicon'
+                        };
+                    }
+                    // GitHub
+                    if (urlLower.includes('github.com')) {
+                        return {
+                            icon: 'https://github.com/favicon.ico',
+                            alt: 'GitHub',
+                            class: 'social-favicon'
+                        };
+                    }
+                    // Twitter/X
+                    if (urlLower.includes('twitter.com') || urlLower.includes('x.com')) {
+                        return {
+                            icon: 'https://abs.twimg.com/favicons/twitter.ico',
+                            alt: 'Twitter',
+                            class: 'social-favicon'
+                        };
+                    }
+                    // Regular website (not Reddit) - show globe icon
+                    if (!urlLower.includes('reddit.com')) {
+                        return {
+                            icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTggMUMxMS44NjYgMSAxNSA0LjEzNCAxNSA4QzE1IDExLjg2NiAxMS44NjYgMTUgOCAxNUM0LjEzNCAxNSAxIDExLjg2NiAxIDhDMSA0LjEzNCA0LjEzNCAxIDggMVoiIHN0cm9rZT0iIzY2N2VlYSIgc3Ryb2tlLXdpZHRoPSIxLjUiIGZpbGw9Im5vbmUiLz4KPHBhdGggZD0iTTggMlYxNCIgc3Ryb2tlPSIjNjY3ZWVhIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8cGF0aCBkPSJNMTQgOEgyIiBzdHJva2U9IiM2NjdlZWEiIHN0cm9rZS13aWR0aD0iMS41Ii8+CjxwYXRoIGQ9Ik0xMS4zIDEwLjdMMyA0LjMiIHN0cm9rZT0iIzY2N2VlYSIgc3Ryb2tlLXdpZHRoPSIxLjUiLz4KPHBhdGggZD0iTTExLjMgNS4zTDMgMTEuNyIgc3Ryb2tlPSIjNjY3ZWVhIiBzdHJva2Utd2lkdGg9IjEuNSIvPgo8L3N2Zz4K',
+                            alt: 'Website',
+                            class: 'social-favicon'
+                        };
+                    }
+                    return null;
+                }
+                
+                // Detect Reddit username (u/username pattern) in author name
+                const redditUsernameMatch = cleanAuthor && cleanAuthor.match(/u\/([^\/\s]+)/i);
                 let redditFaviconHtml = '';
                 if (redditUsernameMatch) {
                     const redditUsername = redditUsernameMatch[1];
                     redditFaviconHtml = `<a href="https://reddit.com/user/${redditUsername}" target="_blank" rel="noopener noreferrer" class="reddit-favicon" onclick="event.stopPropagation();" style="display: inline-block; width: 16px; height: 16px; margin-left: 4px; vertical-align: middle; opacity: 0.8; transition: opacity 0.2s;"><img src="https://www.redditstatic.com/desktop2x/img/favicon/favicon-16x16.png" alt="Reddit" style="width: 100%; height: 100%; object-fit: contain;"></a>`;
+                }
+                
+                // Check if authorUrl is a Reddit profile
+                let authorUrlIsReddit = false;
+                if (theme.authorUrl) {
+                    const urlLower = theme.authorUrl.toLowerCase();
+                    authorUrlIsReddit = urlLower.includes('reddit.com/user/') || urlLower.includes('reddit.com/u/');
+                }
+                
+                // Get social icon for authorUrl (if not Reddit or if Reddit username not in author name)
+                let socialIconHtml = '';
+                if (theme.authorUrl && (!authorUrlIsReddit || !redditUsernameMatch)) {
+                    const socialIcon = getSocialIcon(theme.authorUrl);
+                    if (socialIcon) {
+                        socialIconHtml = `<a href="${theme.authorUrl}" target="_blank" rel="noopener noreferrer" class="${socialIcon.class}" onclick="event.stopPropagation();" style="display: inline-block; width: 16px; height: 16px; margin-left: 4px; vertical-align: middle; opacity: 0.8; transition: opacity 0.2s;"><img src="${socialIcon.icon}" alt="${socialIcon.alt}" style="width: 100%; height: 100%; object-fit: contain;"></a>`;
+                    }
                 }
                 
                 // Use display index for UI, but store original index for selection
@@ -3329,7 +3420,7 @@
                     <div class="theme-info">
                         <div class="theme-description">${theme.description || 'Y1 Theme'}</div>
                         <div class="theme-author">
-                            by <span class="author-link" style="cursor: pointer; text-decoration: underline;" onclick="event.stopPropagation(); filterByAuthor('${authorDisplay}');">${authorDisplay}</span>${redditFaviconHtml}
+                            by <span class="author-link" style="cursor: pointer; text-decoration: underline;" onclick="event.stopPropagation(); filterByAuthor('${authorDisplay}');">${authorDisplay}</span>${redditFaviconHtml}${socialIconHtml}
                         </div>
                     </div>
                     <div class="theme-actions">
@@ -3516,6 +3607,30 @@
             updateInstallButton();
         }
 
+        // Helper function to update button text while preserving structure (text + arrow icon)
+        function updateButtonText(button, newText) {
+            if (!button) return;
+            // Find the text span (first span inside the flex container)
+            const textSpan = button.querySelector('span > span:first-child');
+            if (textSpan) {
+                textSpan.textContent = newText;
+            } else {
+                // Fallback: if structure is broken, restore it
+                const arrowIcon = button.querySelector('.arrow-icon');
+                const arrowHtml = arrowIcon ? arrowIcon.outerHTML : '';
+                button.innerHTML = `<span style="display: flex; align-items: center; justify-content: space-between; width: 100%; position: relative; z-index: 2;">
+                    <span style="position: relative; z-index: 3; flex: 1; text-align: left;">${newText}</span>${arrowHtml}
+                </span>`;
+            }
+        }
+
+        // Helper function to get button text
+        function getButtonText(button) {
+            if (!button) return '';
+            const textSpan = button.querySelector('span > span:first-child');
+            return textSpan ? textSpan.textContent : button.textContent;
+        }
+
         // Update install button text
         function updateInstallButton() {
             const btn = document.getElementById('install-btn');
@@ -3523,15 +3638,15 @@
 
             if (selectedThemes.size > 0) {
                 if (isDownloadMode) {
-                    btn.textContent = `📦 Download ${selectedThemes.size} Selected Theme${selectedThemes.size > 1 ? 's' : ''}`;
+                    updateButtonText(btn, `📦 Download ${selectedThemes.size} Selected Theme${selectedThemes.size > 1 ? 's' : ''}`);
                 } else {
-                    btn.textContent = `🚀 Install ${selectedThemes.size} Selected Theme${selectedThemes.size > 1 ? 's' : ''}`;
+                    updateButtonText(btn, `🚀 Install ${selectedThemes.size} Selected Theme${selectedThemes.size > 1 ? 's' : ''}`);
                 }
             } else {
                 if (isDownloadMode) {
-                    btn.textContent = '📦 Download Selected Themes';
+                    updateButtonText(btn, '📦 Download Selected Themes');
                 } else {
-                    btn.textContent = '🚀 Install Selected Themes';
+                    updateButtonText(btn, '🚀 Install Selected Themes');
                 }
             }
         }
@@ -3546,28 +3661,31 @@
             }
 
             const theme = themes[index];
-            const button = event.target;
-            const originalText = button.textContent;
+            const button = event.target.closest('.install-btn') || event.target;
+            const originalText = getButtonText(button);
             button.disabled = true;
-            button.textContent = '📥 Installing...';
+            updateButtonText(button, '📥 Installing...');
 
             try {
                 await installThemeToDevice(theme, (current, total) => {
-                    button.textContent = `📥 ${current}/${total} files`;
+                    updateButtonText(button, `📥 ${current}/${total} files`);
                 });
                 // Mark theme as installed and refresh display
                 themes[index].installed = true;
-                button.textContent = '✅ Installed!';
+                updateButtonText(button, '✅ Installed!');
                 setTimeout(() => {
                     // Quick refresh to update installation status
                     quickRefreshDeviceThemes();
-                }, 800);
+                    // Reset button after refresh
+                    button.disabled = false;
+                    updateButtonText(button, 'Install');
+                }, 2000);
             } catch (error) {
                 console.error('Installation error:', error);
-                button.textContent = `❌ Failed`;
+                updateButtonText(button, '❌ Failed');
                 button.disabled = false;
                 setTimeout(() => {
-                    button.textContent = originalText;
+                    updateButtonText(button, originalText || 'Install');
                 }, 2000);
             }
         }
@@ -3581,26 +3699,29 @@
             }
 
             const theme = themes[index];
-            const button = event.target;
-            const originalText = button.textContent;
+            const button = event.target.closest('.install-btn') || event.target;
+            const originalText = getButtonText(button);
             button.disabled = true;
-            button.textContent = '🗑️ Removing...';
+            updateButtonText(button, '🗑️ Removing...');
 
             try {
                 await uninstallThemeFromDevice(theme);
                 // Mark theme as not installed and refresh display
                 themes[index].installed = false;
-                button.textContent = '✅ Removed!';
+                updateButtonText(button, '✅ Removed!');
                 setTimeout(() => {
                     // Quick refresh to update installation status
                     quickRefreshDeviceThemes();
-                }, 800);
+                    // Reset button after refresh
+                    button.disabled = false;
+                    updateButtonText(button, 'Install');
+                }, 2000);
             } catch (error) {
                 console.error('Uninstallation error:', error);
-                button.textContent = `❌ Failed`;
+                updateButtonText(button, '❌ Failed');
                 button.disabled = false;
                 setTimeout(() => {
-                    button.textContent = originalText;
+                    updateButtonText(button, originalText || 'Install');
                 }, 2000);
             }
         }
@@ -3614,26 +3735,29 @@
             }
 
             const theme = themes[index];
-            const button = event.target;
-            const originalText = button.textContent;
+            const button = event.target.closest('.install-btn') || event.target;
+            const originalText = getButtonText(button);
             button.disabled = true;
-            button.textContent = '🔄 Updating...';
+            updateButtonText(button, '🔄 Updating...');
 
             try {
                 await installThemeToDevice(theme, (current, total) => {
-                    button.textContent = `🔄 ${current}/${total} files`;
+                    updateButtonText(button, `🔄 ${current}/${total} files`);
                 });
-                button.textContent = '✅ Updated!';
+                updateButtonText(button, '✅ Updated!');
                 setTimeout(() => {
                     // Quick refresh to update installation status
                     quickRefreshDeviceThemes();
-                }, 800);
+                    // Reset button after refresh
+                    button.disabled = false;
+                    updateButtonText(button, 'Update');
+                }, 2000);
             } catch (error) {
                 console.error('Update error:', error);
-                button.textContent = `❌ Failed`;
+                updateButtonText(button, '❌ Failed');
                 button.disabled = false;
                 setTimeout(() => {
-                    button.textContent = originalText;
+                    updateButtonText(button, originalText || 'Update');
                 }, 2000);
             }
         }
@@ -3656,7 +3780,7 @@
             let failed = 0;
             let currentTheme = 0;
             const installBtn = document.getElementById('install-btn');
-            const originalText = installBtn.textContent;
+            const originalText = getButtonText(installBtn);
             installBtn.disabled = true;
 
             for (const index of selectedThemes) {
@@ -3664,17 +3788,17 @@
                 currentTheme++;
 
                 try {
-                    installBtn.textContent = `📥 [${currentTheme}/${totalThemes}] Installing ${theme.name}...`;
+                    updateButtonText(installBtn, `📥 [${currentTheme}/${totalThemes}] Installing ${theme.name}...`);
 
                     await installThemeToDevice(theme, (current, total) => {
-                        installBtn.textContent = `📥 [${currentTheme}/${totalThemes}] ${theme.name}: ${current}/${total}`;
+                        updateButtonText(installBtn, `📥 [${currentTheme}/${totalThemes}] ${theme.name}: ${current}/${total}`);
                     });
 
                     // Mark theme as installed
                     themes[index].installed = true;
                     installed++;
 
-                    installBtn.textContent = `✅ [${currentTheme}/${totalThemes}] ${theme.name} installed!`;
+                    updateButtonText(installBtn, `✅ [${currentTheme}/${totalThemes}] ${theme.name} installed!`);
 
                     // Small delay to show success message
                     await new Promise(resolve => setTimeout(resolve, 300));
@@ -3682,7 +3806,7 @@
                 } catch (error) {
                     console.error(`Error installing ${theme.name}:`, error);
                     failed++;
-                    installBtn.textContent = `❌ [${currentTheme}/${totalThemes}] Failed: ${theme.name}`;
+                    updateButtonText(installBtn, `❌ [${currentTheme}/${totalThemes}] Failed: ${theme.name}`);
                     await new Promise(resolve => setTimeout(resolve, 500));
                 }
             }
@@ -3691,15 +3815,15 @@
             await quickRefreshDeviceThemes();
 
             if (failed === 0) {
-                installBtn.textContent = `✅ Installed ${installed} theme${installed > 1 ? 's' : ''}!`;
+                updateButtonText(installBtn, `✅ Installed ${installed} theme${installed > 1 ? 's' : ''}!`);
             } else {
-                installBtn.textContent = `⚠️ ${installed} installed, ${failed} failed`;
+                updateButtonText(installBtn, `⚠️ ${installed} installed, ${failed} failed`);
             }
 
             // Re-enable button and restore text after delay
             setTimeout(() => {
                 installBtn.disabled = false;
-                installBtn.textContent = originalText;
+                updateInstallButton(); // Use updateInstallButton to restore proper state
             }, 3000);
 
             // Clear selection
@@ -3978,29 +4102,30 @@
                 return;
             }
 
-            const button = event.target.closest('button') || event.target;
-            const originalText = button.textContent;
+            const button = event.target.closest('.install-btn') || event.target;
+            const originalText = getButtonText(button);
             button.disabled = true;
-            button.textContent = '📦 Downloading...';
+            updateButtonText(button, '📦 Downloading...');
 
             try {
                 await downloadThemeAsZip(theme, (progress) => {
-                    button.textContent = `📦 ${progress}%`;
+                    updateButtonText(button, `📦 ${progress}%`);
                 });
 
-                button.textContent = '✅ Downloaded!';
+                updateButtonText(button, '✅ Downloaded!');
                 // Show installation instructions after successful download
                 showDownloadInstructions();
                 setTimeout(() => {
-                    button.textContent = originalText;
                     button.disabled = false;
+                    updateButtonText(button, originalText || 'Download');
                 }, 2000);
             } catch (error) {
                 console.error('Download failed:', error);
-                button.textContent = '❌ Failed';
+                updateButtonText(button, '❌ Failed');
                 alert(`Download failed: ${error.message || error}`);
                 setTimeout(() => {
-                    button.textContent = originalText;
+                    button.disabled = false;
+                    updateButtonText(button, originalText || 'Download');
                     button.disabled = false;
                 }, 2000);
             }
@@ -4069,7 +4194,7 @@
             let failed = 0;
             let currentTheme = 0;
             const installBtn = document.getElementById('install-btn');
-            const originalText = installBtn.textContent;
+            const originalText = getButtonText(installBtn);
             installBtn.disabled = true;
 
             for (const index of selectedThemes) {
@@ -4077,14 +4202,14 @@
                 currentTheme++;
 
                 try {
-                    installBtn.textContent = `📦 [${currentTheme}/${totalThemes}] Downloading ${theme.name}...`;
+                    updateButtonText(installBtn, `📦 [${currentTheme}/${totalThemes}] Downloading ${theme.name}...`);
 
                     await downloadThemeAsZip(theme, (progress) => {
-                        installBtn.textContent = `📦 [${currentTheme}/${totalThemes}] ${theme.name}: ${progress}%`;
+                        updateButtonText(installBtn, `📦 [${currentTheme}/${totalThemes}] ${theme.name}: ${progress}%`);
                     });
 
                     downloaded++;
-                    installBtn.textContent = `✅ [${currentTheme}/${totalThemes}] ${theme.name} downloaded!`;
+                    updateButtonText(installBtn, `✅ [${currentTheme}/${totalThemes}] ${theme.name} downloaded!`);
 
                     // Small delay to show success message
                     await new Promise(resolve => setTimeout(resolve, 300));
@@ -4092,23 +4217,23 @@
                 } catch (error) {
                     console.error(`Error downloading ${theme.name}:`, error);
                     failed++;
-                    installBtn.textContent = `❌ [${currentTheme}/${totalThemes}] Failed: ${theme.name}`;
+                    updateButtonText(installBtn, `❌ [${currentTheme}/${totalThemes}] Failed: ${theme.name}`);
                     await new Promise(resolve => setTimeout(resolve, 500));
                 }
             }
 
             if (failed === 0) {
-                installBtn.textContent = `✅ Downloaded ${downloaded} theme${downloaded > 1 ? 's' : ''}!`;
+                updateButtonText(installBtn, `✅ Downloaded ${downloaded} theme${downloaded > 1 ? 's' : ''}!`);
                 // Show installation instructions after successful download
                 showDownloadInstructions();
             } else {
-                installBtn.textContent = `⚠️ ${downloaded} downloaded, ${failed} failed`;
+                updateButtonText(installBtn, `⚠️ ${downloaded} downloaded, ${failed} failed`);
             }
 
             // Re-enable button and restore text after delay
             setTimeout(() => {
                 installBtn.disabled = false;
-                installBtn.textContent = originalText;
+                updateInstallButton(); // Use updateInstallButton to restore proper state
             }, 3000);
 
             // Clear selection
