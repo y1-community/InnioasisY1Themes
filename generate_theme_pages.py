@@ -71,15 +71,23 @@ except FileNotFoundError:
     themes = []
 
 # 2. Scan directories for new themes
-# A theme is a folder with a 'cover.*' image
+# A theme is a folder with either:
+# - A config.json file, OR
+# - A cover/screenshot image (*cover*.* or *screenshot*.*)
 all_dirs = [d for d in os.listdir('.') if os.path.isdir(d) and not d.startswith('.')]
 known_folders = {t['folder'] for t in themes}
 
 for folder in all_dirs:
-    # Check for cover image using get_images
-    cover_image, _ = get_images(folder)
+    # Check if folder has config.json
+    config_path = os.path.join(folder, 'config.json')
+    has_config = os.path.exists(config_path)
     
-    if cover_image:
+    # Check for cover/screenshot image using get_images
+    cover_image, screenshots = get_images(folder)
+    has_cover_or_screenshot = cover_image is not None or len(screenshots) > 0
+    
+    # Theme must have either config.json OR cover/screenshot image
+    if has_config or has_cover_or_screenshot:
         if folder not in known_folders:
             print(f"Discovered new theme: {folder}")
             
@@ -104,10 +112,28 @@ for folder in all_dirs:
                 except Exception as e:
                     print(f"Error reading config.json for {folder}: {e}")
             
+            # Add screenshot/cover image if found
+            if cover_image:
+                theme_data['screenshot'] = f'./{folder}/{cover_image}'
+            elif screenshots:
+                # Use first screenshot found
+                theme_data['screenshot'] = f'./{folder}/{screenshots[0]}'
+            
             themes.append(theme_data)
             known_folders.add(folder)
 
-# 3. Write back to themes.json to ensure index.html sees them
+# 3. Update existing themes in themes.json to add screenshots if missing
+for theme in themes:
+    if 'screenshot' not in theme or not theme['screenshot']:
+        folder = theme['folder']
+        if os.path.exists(folder):
+            cover_image, screenshots = get_images(folder)
+            if cover_image:
+                theme['screenshot'] = f'./{folder}/{cover_image}'
+            elif screenshots:
+                theme['screenshot'] = f'./{folder}/{screenshots[0]}'
+
+# 4. Write back to themes.json to ensure index.html sees them
 with open('themes.json', 'w') as f:
     json.dump({'themes': themes}, f, indent=4)
 

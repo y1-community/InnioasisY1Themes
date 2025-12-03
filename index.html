@@ -468,7 +468,7 @@
                 justify-content: center;
                 align-items: center;
                 gap: 15px;
-                margin-top: 10px;
+            margin-top: 10px;
                 padding-top: 10px;
                 border-top: 1px solid #e0e0e0;
             }
@@ -785,7 +785,7 @@
                 visibility: visible;
                 width: auto;
                 margin-left: 8px;
-            }
+        }
         }
         
         /* Show arrow on mobile (always visible) */
@@ -1220,7 +1220,7 @@
             {
                 "name": "yPod",
                 "folder": "yPod",
-                "screenshot": "./yPod/screenshot.png",
+                "screenshot": "./yPod/screenshot.jpg",
                 "description": "A light iPod inspired theme.",
                 "author": "u/AkikoKumagara",
                 "authorUrl": "https://www.github.com/AkikoKumagara/"
@@ -1572,6 +1572,7 @@
                     
                     // Process themes from JSON
                     // Convert relative screenshot paths to absolute HTTPS URLs
+                    // If no screenshot in JSON, will be discovered from folder later
                     discovered = (themesData.themes || []).map(themeData => {
                         let screenshot = themeData.screenshot || null;
                         // Convert relative paths to absolute HTTPS URLs
@@ -1593,18 +1594,19 @@
                         return {
                             name: themeData.name || themeData.folder,
                             folder: themeData.folder,
-                            screenshot: screenshot,
+                            screenshot: screenshot, // May be null, will be discovered from folder if missing
                             description: themeData.description || `Y1 Theme: ${themeData.folder}`,
                             author: cleanAuthor,
                             authorUrl: authorUrl,
                             themeInfo: themeData,
                             fromJson: true,
-                            needsConfigRefresh: true // Mark for config.json refresh
+                            needsConfigRefresh: true, // Mark for config.json refresh
+                            needsScreenshotDiscovery: !screenshot // Mark if screenshot needs to be discovered
                         };
                     });
 
                     console.log(`📋 Loaded ${discovered.length} themes from themes.json`);
-                    
+
                     // Load config.json for all themes BEFORE returning (paced loading)
                     await loadThemeDetailsInBackground(discovered);
                     
@@ -1816,7 +1818,7 @@
             for (let i = 0; i < themesToLoad.length; i += BATCH_SIZE) {
                 const batch = themesToLoad.slice(i, i + BATCH_SIZE);
                 const batchPromises = batch.map(async ({ theme, index }) => {
-                    try {
+                try {
                     const configResponse = await fetch(`./${encodeURIComponent(theme.folder)}/config.json`);
                     if (configResponse.ok) {
                         const config = await configResponse.json();
@@ -1833,6 +1835,26 @@
                         
                         // Store theme config for styling buttons
                         themes[index].themeConfig = config;
+                        
+                        // If screenshot is missing, try to discover it from folder
+                        if (!themes[index].screenshot) {
+                            const discoveredScreenshot = await findScreenshotFromFolder(theme.folder);
+                            if (discoveredScreenshot) {
+                                // Convert to absolute URL if needed
+                                let screenshotUrl = discoveredScreenshot;
+                                if (screenshotUrl.startsWith('./')) {
+                                    const baseUrl = window.location.origin;
+                                    screenshotUrl = screenshotUrl.replace(/^\.\//, `${baseUrl}/`);
+                                }
+                                themes[index].screenshot = screenshotUrl;
+                                
+                                // Also update in allThemes
+                                const allThemesIndex = allThemes.findIndex(t => t.folder === theme.folder);
+                                if (allThemesIndex >= 0) {
+                                    allThemes[allThemesIndex].screenshot = screenshotUrl;
+                                }
+                            }
+                        }
                         
                         // Discover *RightArrow*.* and *Selected*.* files from directory listing
                         try {
@@ -1910,9 +1932,9 @@
                     // Theme doesn't exist or error loading config
                     console.warn(`Failed to load config.json for ${theme.folder}:`, error);
                     themes[index].exists = false;
-                        return false;
-                    }
-                });
+                    return false;
+                }
+            });
                 
                 // Wait for this batch to complete before starting next batch
                 const batchResults = await Promise.all(batchPromises);
@@ -1929,7 +1951,7 @@
 
             // Filter out non-existent themes
             const validThemes = themes.filter(theme => theme.exists !== false);
-            
+
             // Update themes array with valid themes
             themes.length = 0;
             themes.push(...validThemes);
@@ -1945,6 +1967,59 @@
 
             const successCount = results.filter(r => r).length;
             console.log(`✅ Refreshed ${successCount} theme(s) with authoritative data from config.json`);
+        }
+
+        // Find cover/screenshot image from theme folder
+        // Priority: screenshot.* > *cover*.* > desk.* > download.*
+        async function findScreenshotFromFolder(themeFolder) {
+            const screenshotExtensions = ['gif', 'png', 'jpg', 'jpeg'];
+            const coverPatterns = [
+                'cover.gif', 'cover.png', 'cover.jpg', 'cover.jpeg',
+                '@Be_cover.png', '@Cup_cover.png', '@Pris_cover.png',
+                'gregcover.png', 'cover_WS.png', 'cover_YS.png'
+            ];
+            const fallbackFiles = ['desk.gif', 'desk.png', 'download.gif', 'download.jpg'];
+            
+            // Try screenshot files first
+            for (const ext of screenshotExtensions) {
+                const path = `./${encodeURIComponent(themeFolder)}/screenshot.${ext}`;
+                try {
+                    const response = await fetch(path, { method: 'HEAD' });
+                    if (response.ok) {
+                        return path;
+                    }
+                } catch (e) {
+                    // Continue trying
+                }
+            }
+            
+            // Try cover patterns
+            for (const pattern of coverPatterns) {
+                const path = `./${encodeURIComponent(themeFolder)}/${pattern}`;
+                try {
+                    const response = await fetch(path, { method: 'HEAD' });
+                    if (response.ok) {
+                        return path;
+                    }
+                } catch (e) {
+                    // Continue trying
+                }
+            }
+            
+            // Try fallback files
+            for (const file of fallbackFiles) {
+                const path = `./${encodeURIComponent(themeFolder)}/${file}`;
+                try {
+                    const response = await fetch(path, { method: 'HEAD' });
+                    if (response.ok) {
+                        return path;
+                    }
+                } catch (e) {
+                    // Continue trying
+                }
+            }
+            
+            return null;
         }
 
         // Find screenshot for local theme directory - on-demand loading only
@@ -2290,14 +2365,14 @@
             const screenshotPromises = Array.from(screenshotContainers).map(async (container, index) => {
                 const themeIndex = container.dataset.themeIndex;
                 if (!themeIndex || themeIndex === 'undefined') return false;
-                
+
                 const theme = themes[parseInt(themeIndex)];
                 if (!theme) return false;
 
                 // PRIORITY 1: Use screenshot from themes.json if available (static, no requests needed)
                 if (theme.screenshot && !theme.screenshotLoading) {
                     theme.screenshotLoading = true;
-                    
+
                     // Check cache first
                     const cacheKey = `${theme.folder}:${theme.screenshot}`;
                     if (screenshotCache.has(cacheKey)) {
@@ -2544,9 +2619,9 @@
         async function findLocalScreenshotFast(themeName) {
             // STATIC APPROACH: Return common screenshot paths in priority order
             // No HEAD requests - browser will load first available, handle 404s gracefully
-            const commonFiles = [
+                const commonFiles = [
                 { file: 'screenshot.gif', priority: 0, isScreenshot: true, isCover: false, isNoScale: false },
-                { file: 'screenshot.png', priority: 1, isScreenshot: true, isCover: false, isNoScale: false },
+                { file: 'screenshot.jpg', priority: 1, isScreenshot: true, isCover: false, isNoScale: false },
                 { file: 'screenshot.jpg', priority: 2, isScreenshot: true, isCover: false, isNoScale: false },
                 { file: 'cover_noscale.png', priority: 3, isScreenshot: false, isCover: true, isNoScale: true },
                 { file: 'cover.png', priority: 4, isScreenshot: false, isCover: true, isNoScale: false },
@@ -2627,7 +2702,7 @@
             // Return common screenshot paths in priority order (browser will load first available)
             const commonScreenshots = [
                 `${baseUrl}/${encodeURIComponent(themeName)}/screenshot.gif`,
-                `${baseUrl}/${encodeURIComponent(themeName)}/screenshot.png`,
+                `${baseUrl}/${encodeURIComponent(themeName)}/screenshot.jpg`,
                 `${baseUrl}/${encodeURIComponent(themeName)}/cover.png`,
                 `${baseUrl}/${encodeURIComponent(themeName)}/cover.jpg`,
                 `${baseUrl}/${encodeURIComponent(themeName)}/gregcover.png`
@@ -2731,18 +2806,18 @@
             // Return themes with static screenshot paths - browser will handle 404s
             for (const themeName of commonThemes) {
                 const folderName = encodeURIComponent(themeName);
-                
+
                 // Use static screenshot path - browser will load if available
                 const screenshotUrl = `${baseUrl}/${folderName}/cover.png`;
 
-                discovered.push({
-                    name: themeName,
-                    folder: themeName,
-                    screenshot: screenshotUrl,
-                    description: `Y1 Theme: ${themeName}`,
-                    author: 'Unknown',
-                    authorUrl: null
-                });
+                        discovered.push({
+                            name: themeName,
+                            folder: themeName,
+                            screenshot: screenshotUrl,
+                            description: `Y1 Theme: ${themeName}`,
+                            author: 'Unknown',
+                            authorUrl: null
+                        });
             }
 
             return discovered;
@@ -3187,7 +3262,7 @@
             
             const grid = document.getElementById('theme-grid');
             const isMobileMode = !('showDirectoryPicker' in window);
-            
+
             // Show filters container if we have themes
             const filtersContainer = document.getElementById('filters-container');
             if (filtersContainer) {
@@ -3453,7 +3528,7 @@
                     <a href="${theme.folder}/index.html" onclick="event.stopPropagation();" style="text-decoration: none; display: block;">
                         <div class="theme-screenshot ${theme.screenshot ? '' : 'no-preview'}" id="screenshot-${displayIndex}" data-theme-index="${displayIndex}" data-theme-folder="${theme.folder}">
                             ${theme.screenshot ? `<img src="${theme.screenshot}" alt="${theme.name}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy" onerror="handleScreenshotError(this, '${theme.folder}', '${theme.name.replace(/'/g, "\\'")}');">` : '🎨'}
-                        </div>
+                    </div>
                     </a>
                     <div class="theme-name" style="${fontStyle}">
                         <a href="${theme.folder}/index.html" style="color: inherit; text-decoration: none; cursor: pointer; ${fontStyle}" onclick="event.stopPropagation();">
@@ -3499,7 +3574,7 @@
                             <a href="https://github.com/y1-community/InnioasisY1Themes/tree/main/${encodeURIComponent(theme.folder)}#readme" target="_blank" onclick="event.stopPropagation();" style="color: #888; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; transition: color 0.2s;">
                                 ✏️ Edit
                             </a>
-                        </div>
+                    </div>
                     </div>
                     ${isDeviceOnly ? `
                         <div class="theme-edit-link" style="margin-top: 10px; text-align: center; padding-top: 10px; border-top: 1px solid #e0e0e0;">
@@ -4121,7 +4196,7 @@
             // PRIORITY 3: Return common theme files (static fallback)
             return [
                 'config.json',
-                'screenshot.png',
+                'screenshot.jpg',
                 'cover.png',
                 'screenshot.gif',
                 'index.html'

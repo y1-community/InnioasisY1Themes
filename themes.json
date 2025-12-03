@@ -149,7 +149,8 @@
             "folder": "Naruto",
             "description": "A theme inspired by Naruto.",
             "author": "u/Terrible-Young-3477",
-            "authorUrl": "https://www.reddit.com/r/innioasis/comments/1m9ofl5/naruto_theme_v20_update_naruto_font_added/"
+            "authorUrl": "https://www.reddit.com/r/innioasis/comments/1m9ofl5/naruto_theme_v20_update_naruto_font_added/",
+            "screenshot": "./Naruto/Cover.PNG"
         },
         {
             "name": "NeonNights",
@@ -242,7 +243,7 @@
         {
             "name": "yPod",
             "folder": "yPod",
-            "screenshot": "./yPod/screenshot.png",
+            "screenshot": "./yPod/screenshot.jpg",
             "description": "A light iPod inspired theme.",
             "author": "u/AkikoKumagara",
             "authorUrl": "https://www.github.com/AkikoKumagara/"
@@ -260,21 +261,24 @@
             "name": "HoloBubble",
             "author": "Innioasis",
             "authorUrl": "https://www.innioasis.com",
-            "description": "A holographic bubble-inspired theme created by Innioasis for the Y1 device."
+            "description": "A holographic bubble-inspired theme created by Innioasis for the Y1 device.",
+            "screenshot": "./HoloBubble/cover.png"
         },
         {
             "folder": "Unseen",
             "name": "Unseen",
             "author": "Innioasis",
             "authorUrl": "https://www.innioasis.com",
-            "description": "A minimalist theme with subtle visual elements, created by Innioasis for the Y1 device."
+            "description": "A minimalist theme with subtle visual elements, created by Innioasis for the Y1 device.",
+            "screenshot": "./Unseen/cover.png"
         },
         {
             "folder": "MelodyMuncher",
             "name": "MelodyMuncher",
             "author": "Innioasis",
             "authorUrl": "https://www.innioasis.com",
-            "description": "The official reference theme by Innioasis, featuring comprehensive theme specification support and serving as a template for theme creators."
+            "description": "The official reference theme by Innioasis, featuring comprehensive theme specification support and serving as a template for theme creators.",
+            "screenshot": "./MelodyMuncher/cover.png"
         }
     ]
 }
