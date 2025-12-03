@@ -172,13 +172,6 @@
             position: relative;
             background: white;
             animation: slideInUp 0.4s ease-out backwards;
-            aspect-ratio: 4 / 3;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
         }
 
         .theme-card:nth-child(1) {
@@ -279,203 +272,17 @@
 
         .theme-card.selected {
             border-color: #667eea;
-            /* Background image/color from theme takes precedence, overlay with slight tint */
-            position: relative;
-        }
-        
-        .theme-card.selected::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(248, 251, 255, 0.3) 0%, rgba(232, 244, 253, 0.3) 100%);
-            pointer-events: none;
-            z-index: 0;
+            background: linear-gradient(135deg, #f8fbff 0%, #e8f4fd 100%);
         }
 
         .theme-card.installed {
             border-color: #28a745;
-            /* Background image/color from theme takes precedence, overlay with slight tint */
-            position: relative;
-        }
-        
-        .theme-card.installed::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(248, 255, 249, 0.3) 0%, rgba(232, 245, 232, 0.3) 100%);
-            pointer-events: none;
-            z-index: 0;
+            background: linear-gradient(135deg, #f8fff9 0%, #e8f5e8 100%);
         }
 
         .theme-card.device-only {
             border-color: #ff9800;
-            /* Background image/color from theme takes precedence, overlay with slight tint */
-            position: relative;
-        }
-        
-        .theme-card.device-only::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(255, 249, 240, 0.3) 0%, rgba(255, 243, 224, 0.3) 100%);
-            pointer-events: none;
-            z-index: 0;
-        }
-        
-        /* Blurred background overlay for desktop */
-        .theme-card-overlay-bg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 0;
-            pointer-events: none;
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-        }
-        
-        .theme-card-overlay-tint {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 1;
-            pointer-events: none;
-        }
-        
-        /* Desktop overlay content (shown on hover) */
-        .theme-card-overlay-content {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 20px;
-            background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.75) 50%, rgba(0, 0, 0, 0.5) 80%, transparent 100%);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            z-index: 3;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            pointer-events: none;
-        }
-        
-        .theme-card:hover .theme-card-overlay-content,
-        .theme-card:focus-within .theme-card-overlay-content {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: auto;
-        }
-        
-        .theme-card-overlay-content .theme-name {
-            color: #ffffff;
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-        }
-        
-        .theme-card-overlay-content .theme-name a {
-            color: #ffffff;
-        }
-        
-        /* Show theme name on card for desktop (always visible) */
-        @media (min-width: 768px) {
-            .theme-card-overlay-content .theme-name {
-                position: absolute;
-                top: 15px;
-                left: 15px;
-                right: 50px;
-                padding: 8px 12px;
-                background: rgba(0, 0, 0, 0.65);
-                backdrop-filter: blur(8px);
-                -webkit-backdrop-filter: blur(8px);
-                border-radius: 8px;
-                margin-bottom: 0;
-                font-size: 1.1rem;
-                z-index: 4;
-                text-align: left;
-            }
-            
-            .theme-card-overlay-content .theme-name a {
-                display: block;
-            }
-        }
-        
-        .theme-card-overlay-content .theme-info {
-            color: rgba(255, 255, 255, 0.95);
-            margin-bottom: 12px;
-        }
-        
-        .theme-card-overlay-content .theme-description {
-            font-size: 0.95rem;
-            margin-bottom: 6px;
-            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
-        }
-        
-        .theme-card-overlay-content .theme-author {
-            font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.85);
-            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
-        }
-        
-        .theme-card-overlay-content .author-link {
-            color: rgba(255, 255, 255, 0.95);
-        }
-        
-        .theme-card-overlay-content .author-link:hover {
-            color: #ffffff;
-        }
-        
-        /* Mobile content (below card) */
-        .theme-card-mobile-content {
-            position: relative;
-            z-index: 2;
-            padding-top: 15px;
-        }
-        
-        /* Ensure content is above background overlays */
-        .theme-card > *:not(.theme-card-overlay-bg):not(.theme-card-overlay-tint) {
-            position: relative;
-            z-index: 2;
-        }
-        
-        /* Hide mobile content on desktop, show overlay content */
-        @media (min-width: 768px) {
-            .theme-card-mobile-content {
-                display: none;
-            }
-            
-            .theme-card-overlay-content {
-                display: block;
-            }
-        }
-        
-        /* Show mobile content on mobile, hide overlay content */
-        @media (max-width: 767px) {
-            .theme-card-mobile-content {
-                display: block;
-            }
-            
-            .theme-card-overlay-content {
-                display: none;
-            }
-            
-            .theme-card {
-                padding-bottom: 20px;
-            }
+            background: linear-gradient(135deg, #fff9f0 0%, #fff3e0 100%);
         }
 
         .installed-badge {
@@ -666,31 +473,6 @@
             color: #333;
             margin-bottom: 10px;
             text-align: center;
-            position: relative;
-            z-index: 2;
-        }
-        
-        /* Desktop: show theme name on card (always visible) */
-        @media (min-width: 768px) {
-            .theme-card .theme-card-overlay-content .theme-name {
-                position: absolute;
-                top: 15px;
-                left: 15px;
-                right: 50px;
-                padding: 8px 12px;
-                background: rgba(0, 0, 0, 0.65);
-                backdrop-filter: blur(8px);
-                -webkit-backdrop-filter: blur(8px);
-                border-radius: 8px;
-                margin-bottom: 0;
-                font-size: 1.1rem;
-                z-index: 4;
-                text-align: left;
-            }
-            
-            .theme-card .theme-card-overlay-content .theme-name a {
-                display: block;
-            }
         }
 
         .theme-info {
@@ -723,19 +505,15 @@
 
         .install-btn {
             width: 100%;
-            padding: 12px 16px;
+            padding: 12px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
             border-radius: 8px;
-            font-size: 1.2rem;
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
-            text-align: left;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
         }
 
         .install-btn:hover {
@@ -1487,26 +1265,12 @@
                         
                         // Process themes from JSON
                         // Convert relative screenshot paths to absolute HTTPS URLs
-                        // Also load card backgrounds in parallel
-                        const themePromises = (themesData.themes || []).map(async (themeData) => {
+                        discovered = (themesData.themes || []).map(themeData => {
                             let screenshot = themeData.screenshot || null;
                             // Convert relative paths to absolute HTTPS URLs
                             if (screenshot && typeof screenshot === 'string' && screenshot.startsWith('./')) {
                                 const baseUrl = window.location.origin;
                                 screenshot = screenshot.replace(/^\.\//, `${baseUrl}/`);
-                            }
-                            
-                            // Try to load config.json to get card background
-                            let cardBackgroundImage = null;
-                            let themeConfig = null;
-                            try {
-                                const configResponse = await fetch(`./${encodeURIComponent(themeData.folder)}/config.json`);
-                                if (configResponse.ok) {
-                                    themeConfig = await configResponse.json();
-                                    cardBackgroundImage = await findThemeCardBackground(themeData.folder, themeConfig);
-                                }
-                            } catch (e) {
-                                // Config not available yet, will be loaded in background
                             }
                             
                             return {
@@ -1517,14 +1281,10 @@
                                 author: themeData.author || 'Unknown',
                                 authorUrl: themeData.authorUrl || null,
                                 themeInfo: themeData,
-                                themeConfig: themeConfig,
-                                cardBackgroundImage: cardBackgroundImage,
                                 fromJson: true,
                                 needsConfigRefresh: true // Mark for config.json refresh
                             };
                         });
-                        
-                        discovered = await Promise.all(themePromises);
 
                         console.log(`📋 Loaded ${discovered.length} themes from themes.json`);
                         
@@ -1904,22 +1664,6 @@
                         
                         // Store theme config for styling buttons
                         themes[index].themeConfig = config;
-                        
-                        // Find and store card background image
-                        findThemeCardBackground(theme.folder, config).then(bgImage => {
-                            themes[index].cardBackgroundImage = bgImage;
-                            // Also update in allThemes array
-                            const allThemesIndex = allThemes.findIndex(t => t.folder === theme.folder);
-                            if (allThemesIndex >= 0) {
-                                allThemes[allThemesIndex].cardBackgroundImage = bgImage;
-                            }
-                            // Re-render if this theme is currently displayed
-                            if (displayedThemes.some(t => t.folder === theme.folder)) {
-                                applyFiltersAndPagination();
-                            }
-                        }).catch(err => {
-                            console.warn(`Failed to find card background for ${theme.folder}:`, err);
-                        });
                         
                         // Also update in allThemes array
                         const allThemesIndex = allThemes.findIndex(t => t.folder === theme.folder);
@@ -2827,11 +2571,6 @@
 
         // Apply filters and pagination
         function applyFiltersAndPagination() {
-            // Ensure allThemes is initialized
-            if (!allThemes || allThemes.length === 0) {
-                allThemes = [...themes];
-            }
-            
             // Filter by author
             filteredThemes = allThemes.filter(theme => {
                 if (selectedAuthor === 'All') {
@@ -2841,18 +2580,9 @@
                 return (themeAuthor === 'Unknown' ? 'All' : themeAuthor) === selectedAuthor;
             });
 
-            // Ensure filteredThemes is initialized
-            if (!filteredThemes || filteredThemes.length === 0) {
-                filteredThemes = [...allThemes];
-            }
-
             // Calculate pagination
             const totalPages = Math.ceil(filteredThemes.length / themesPerPage);
-            if (totalPages === 0) {
-                currentPage = 1;
-            } else {
-                currentPage = Math.min(currentPage, Math.max(1, totalPages));
-            }
+            currentPage = Math.min(currentPage, Math.max(1, totalPages));
             
             // Get themes for current page
             const startIndex = (currentPage - 1) * themesPerPage;
@@ -2897,15 +2627,10 @@
 
         // Change page
         function changePage(direction) {
-            // Ensure filteredThemes is initialized
-            if (!filteredThemes || filteredThemes.length === 0) {
-                filteredThemes = allThemes && allThemes.length > 0 ? [...allThemes] : [];
-            }
-            
             const totalPages = Math.ceil(filteredThemes.length / themesPerPage);
             const newPage = currentPage + direction;
             
-            if (newPage >= 1 && newPage <= totalPages && totalPages > 0) {
+            if (newPage >= 1 && newPage <= totalPages) {
                 currentPage = newPage;
                 applyFiltersAndPagination();
                 
@@ -2926,15 +2651,10 @@
             
             if (!prevBtn || !nextBtn || !pageInfo || !paginationContainer) return;
             
-            // Ensure filteredThemes is initialized
-            if (!filteredThemes || filteredThemes.length === 0) {
-                filteredThemes = allThemes && allThemes.length > 0 ? [...allThemes] : [];
-            }
-            
             const totalPages = Math.ceil(filteredThemes.length / themesPerPage);
             
             prevBtn.disabled = currentPage <= 1;
-            nextBtn.disabled = currentPage >= totalPages || totalPages === 0;
+            nextBtn.disabled = currentPage >= totalPages;
             
             if (totalPages > 1) {
                 pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
@@ -2961,60 +2681,6 @@
             }
         }
 
-        // Find theme background image for card background (4:3 aspect ratio)
-        async function findThemeCardBackground(themeFolder, themeConfig) {
-            if (!themeConfig) return null;
-            
-            // Priority order: desk_bg*.* > *bg*.* > wallpaper*.*
-            const patterns = [
-                // From config.json desktopWallpaper
-                themeConfig.desktopWallpaper,
-                // From config.json globalWallpaper  
-                themeConfig.globalWallpaper,
-                // From config.json settingConfig.wallpaper
-                themeConfig.settingConfig?.wallpaper,
-                // Common desk_bg patterns
-                'desk_bg001.png', 'desk_bg.png', 'desk_bg001.jpg', 'desk_bg.jpg',
-                // Common global_bg patterns
-                'global_bg001.png', 'global_bg.png', 'global_bg001.jpg', 'global_bg.jpg',
-                // Common wallpaper patterns
-                'Wallpaper@1x.png', 'wallpaper.png', 'Wallpaper.png', 'wallpaper.jpg'
-            ];
-            
-            // Filter out empty/null values
-            const validPatterns = patterns.filter(p => p && p.trim() !== '');
-            
-            // Try each pattern
-            for (const pattern of validPatterns) {
-                try {
-                    const url = `./${encodeURIComponent(themeFolder)}/${encodeURIComponent(pattern)}`;
-                    const response = await fetch(url, { method: 'HEAD' });
-                    if (response.ok) {
-                        return url;
-                    }
-                } catch (e) {
-                    // Continue to next pattern
-                }
-            }
-            
-            return null;
-        }
-        
-        // Get theme background color as fallback
-        function getThemeBackgroundColor(themeConfig) {
-            if (!themeConfig) return null;
-            
-            const menuConfig = themeConfig.menuConfig || {};
-            const dialogConfig = themeConfig.dialogConfig || {};
-            const statusConfig = themeConfig.statusConfig || {};
-            
-            // Try various background colors in priority order
-            return menuConfig.menuBackgroundColor || 
-                   dialogConfig.dialogBackgroundColor || 
-                   statusConfig.statusBarColor ||
-                   null;
-        }
-        
         // Find and load TTF font for a theme
         async function loadThemeFont(themeFolder) {
             // Check cache first
@@ -3208,14 +2874,10 @@
                     buttonBgStyle = `background-color: ${buttonBgColor};`;
                 }
                 
-                // Button text = selected menu item text color (the color that stands out on selected items)
-                const buttonTextColor = menuConfig.menuItemSelectedTextColor || itemConfig.itemSelectedTextColor || '#ffffff';
-                
-                // Get itemRightArrow icon (2.png) for button
-                const itemRightArrow = itemConfig.itemRightArrow || null;
-                const arrowIcon = itemRightArrow && itemRightArrow.trim() !== '' 
-                    ? `<img src="./${encodeURIComponent(theme.folder)}/${encodeURIComponent(itemRightArrow)}" alt="→" style="height: 1em; width: auto; vertical-align: middle; margin-left: 8px; display: inline-block; opacity: 0.9;">`
-                    : '';
+                // Button text = menu background color (what stands out against the selected background)
+                // Fallback to unselected text color if menu background isn't available
+                const buttonTextColor = menuConfig.menuBackgroundColor || dialogConfig.dialogBackgroundColor || 
+                                      menuConfig.menuItemTextColor || itemConfig.itemTextColor || '#ffffff';
                 
                 // Build button style with theme colors and image
                 const buttonStyle = `${buttonBgStyle} color: ${buttonTextColor}; ${fontStyle}`;
@@ -3223,135 +2885,53 @@
                 // Get author display name (for filtering)
                 const authorDisplay = theme.author === 'Unknown' ? 'All' : (theme.author || 'All');
                 
-                // Extract theme colors for overlay effects
-                const menuBgColor = menuConfig.menuBackgroundColor || '#000000';
-                const menuTextColor = menuConfig.menuTextColor || '#ffffff';
-                const selectedTextColor = menuConfig.menuItemSelectedTextColor || itemConfig.itemSelectedTextColor || '#ffffff';
-                const dialogBgColor = dialogConfig.dialogBackgroundColor || menuBgColor;
-                
-                // Create overlay tint color (use selected text color with opacity for tint)
-                const overlayTint = selectedTextColor || menuTextColor;
-                
-                // Get theme background for card
-                const cardBgImage = theme.cardBackgroundImage || null;
-                const cardBgColor = getThemeBackgroundColor(themeConfig);
-                let cardBgStyle = '';
-                if (cardBgImage) {
-                    cardBgStyle = `background-image: url('${cardBgImage}');`;
-                } else if (cardBgColor) {
-                    cardBgStyle = `background-color: ${cardBgColor};`;
-                }
-                
                 // Use display index for UI, but store original index for selection
                 const displayIndex = themes.indexOf(theme);
 
-                // Create overlay background with blur and tint
-                const overlayBgStyle = cardBgImage 
-                    ? `background-image: url('${cardBgImage}'); filter: blur(8px) brightness(0.7); transform: scale(1.1);`
-                    : cardBgColor 
-                        ? `background-color: ${cardBgColor}; filter: brightness(0.6);`
-                        : '';
-                
-                const overlayTintStyle = overlayTint ? `background: linear-gradient(to bottom, ${overlayTint}22, ${overlayTint}44);` : '';
-                
                 return `
-                <div class="theme-card ${isInstalled ? 'installed' : ''} ${isDeviceOnly ? 'device-only' : ''} ${isSelected ? 'selected' : ''}" id="theme-${displayIndex}" onclick="toggleTheme(${allThemesIndex >= 0 ? allThemesIndex : displayIndex})" style="${cardBgStyle}">
-                    <!-- Blurred background overlay for desktop -->
-                    <div class="theme-card-overlay-bg" style="${overlayBgStyle}"></div>
-                    <div class="theme-card-overlay-tint" style="${overlayTintStyle}"></div>
-                    
+                <div class="theme-card ${isInstalled ? 'installed' : ''} ${isDeviceOnly ? 'device-only' : ''} ${isSelected ? 'selected' : ''}" id="theme-${displayIndex}" onclick="toggleTheme(${allThemesIndex >= 0 ? allThemesIndex : displayIndex})">
                     <div class="theme-checkbox ${isSelected ? 'checked' : ''}" onclick="toggleTheme(${allThemesIndex >= 0 ? allThemesIndex : displayIndex}, event)"></div>
                     <div class="theme-share-icon" onclick="shareThemeLink('${theme.folder}', event)" title="Share this theme"></div>
-                    
-                    <a href="${theme.folder}/index.html" onclick="event.stopPropagation();" style="text-decoration: none; display: block; position: relative; z-index: 2;">
+                    <a href="${theme.folder}/index.html" onclick="event.stopPropagation();" style="text-decoration: none; display: block;">
                         <div class="theme-screenshot ${theme.screenshot ? '' : 'no-preview'}" id="screenshot-${displayIndex}" data-theme-index="${displayIndex}">
                             ${theme.screenshot ? '' : '🎨'}
                         </div>
                     </a>
-                    
-                    <!-- Desktop overlay content -->
-                    <div class="theme-card-overlay-content">
-                        <div class="theme-name" style="${fontStyle}">
-                            <a href="${theme.folder}/index.html" style="color: inherit; text-decoration: none; cursor: pointer; ${fontStyle}" onclick="event.stopPropagation();">
-                                ${theme.name}
-                            </a>
-                            ${isInstalled ? '<span class="installed-badge">✓ On your Y1</span>' : ''}
-                        </div>
-                        <div class="theme-info">
-                            <div class="theme-description">${theme.description || 'Y1 Theme'}</div>
-                            <div class="theme-author">
-                                by ${theme.authorUrl ?
-                            `<a href="${theme.authorUrl}" target="_blank" class="author-link" onclick="event.stopPropagation();">${authorDisplay}</a>` :
-                            `<span class="author-link" style="cursor: pointer; text-decoration: underline;" onclick="event.stopPropagation(); filterByAuthor('${authorDisplay}');">${authorDisplay}</span>`
-                        }
-                            </div>
-                        </div>
-                        <div class="theme-actions">
-                            ${isUpdatable ? `
-                                <button class="install-btn update" 
-                                        onclick="updateSingleTheme(${allThemesIndex >= 0 ? allThemesIndex : displayIndex}, event)" 
-                                        style="${buttonStyle}"
-                                        ${!deviceFolderHandle ? 'disabled' : ''}>
-                                    <span style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                                        <span>Update</span>${arrowIcon}
-                                    </span>
-                                </button>
-                            ` : isDeviceOnly ? `
-                                <!-- No button for device-only themes (not available on server) -->
-                            ` : `
-                                <button class="install-btn install" 
-                                        onclick="${isMobileMode || !deviceFolderHandle ? 'downloadSingleTheme' : 'installSingleTheme'}(${allThemesIndex >= 0 ? allThemesIndex : displayIndex}, event)"
-                                        style="${buttonStyle}">
-                                    <span style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                                        <span>${isMobileMode || !deviceFolderHandle ? 'Download' : 'Install'}</span>${arrowIcon}
-                                    </span>
-                                </button>
-                            `}
+                    <div class="theme-name" style="${fontStyle}">
+                        <a href="${theme.folder}/index.html" style="color: inherit; text-decoration: none; cursor: pointer; ${fontStyle}" onclick="event.stopPropagation();">
+                            ${theme.name}
+                        </a>
+                        ${isInstalled ? '<span class="installed-badge">✓ On your Y1</span>' : ''}
+                    </div>
+                    <div class="theme-info">
+                        <div class="theme-description">${theme.description || 'Y1 Theme'}</div>
+                        <div class="theme-author">
+                            by ${theme.authorUrl ?
+                        `<a href="${theme.authorUrl}" target="_blank" class="author-link" onclick="event.stopPropagation();">${authorDisplay}</a>` :
+                        `<span class="author-link" style="cursor: pointer; text-decoration: underline;" onclick="event.stopPropagation(); filterByAuthor('${authorDisplay}');">${authorDisplay}</span>`
+                    }
                         </div>
                     </div>
-                    
-                    <!-- Mobile content (below card) -->
-                    <div class="theme-card-mobile-content">
-                        <div class="theme-name" style="${fontStyle}">
-                            <a href="${theme.folder}/index.html" style="color: inherit; text-decoration: none; cursor: pointer; ${fontStyle}" onclick="event.stopPropagation();">
-                                ${theme.name}
-                            </a>
-                            ${isInstalled ? '<span class="installed-badge">✓ On your Y1</span>' : ''}
-                        </div>
-                        <div class="theme-info">
-                            <div class="theme-description">${theme.description || 'Y1 Theme'}</div>
-                            <div class="theme-author">
-                                by ${theme.authorUrl ?
-                            `<a href="${theme.authorUrl}" target="_blank" class="author-link" onclick="event.stopPropagation();">${authorDisplay}</a>` :
-                            `<span class="author-link" style="cursor: pointer; text-decoration: underline;" onclick="event.stopPropagation(); filterByAuthor('${authorDisplay}');">${authorDisplay}</span>`
-                        }
-                            </div>
-                        </div>
-                        <div class="theme-actions">
-                            ${isUpdatable ? `
-                                <button class="install-btn update" 
-                                        onclick="updateSingleTheme(${allThemesIndex >= 0 ? allThemesIndex : displayIndex}, event)" 
-                                        style="${buttonStyle}"
-                                        ${!deviceFolderHandle ? 'disabled' : ''}>
-                                    <span style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                                        <span>Update</span>${arrowIcon}
-                                    </span>
-                                </button>
-                            ` : isDeviceOnly ? `
-                                <!-- No button for device-only themes (not available on server) -->
-                            ` : `
-                                <button class="install-btn install" 
-                                        onclick="${isMobileMode || !deviceFolderHandle ? 'downloadSingleTheme' : 'installSingleTheme'}(${allThemesIndex >= 0 ? allThemesIndex : displayIndex}, event)"
-                                        style="${buttonStyle}">
-                                    <span style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                                        <span>${isMobileMode || !deviceFolderHandle ? 'Download' : 'Install'}</span>${arrowIcon}
-                                    </span>
-                                </button>
-                            `}
-                            <a href="#" class="share-link-mobile" onclick="shareThemeLink('${theme.folder}', event); return false;" style="display: none; margin-top: 8px; text-align: center; color: #667eea; text-decoration: none; ${fontStyle}">
-                                🔗 Share
-                            </a>
-                        </div>
+                    <div class="theme-actions">
+                        ${isUpdatable ? `
+                            <button class="install-btn update" 
+                                    onclick="updateSingleTheme(${allThemesIndex >= 0 ? allThemesIndex : displayIndex}, event)" 
+                                    style="${buttonStyle}"
+                                    ${!deviceFolderHandle ? 'disabled' : ''}>
+                                🔄 Update
+                            </button>
+                        ` : isDeviceOnly ? `
+                            <!-- No button for device-only themes (not available on server) -->
+                        ` : `
+                            <button class="install-btn install" 
+                                    onclick="${isMobileMode || !deviceFolderHandle ? 'downloadSingleTheme' : 'installSingleTheme'}(${allThemesIndex >= 0 ? allThemesIndex : displayIndex}, event)"
+                                    style="${buttonStyle}">
+                                ${isMobileMode || !deviceFolderHandle ? '📦 Download' : '📥 Install'}
+                            </button>
+                        `}
+                        <a href="#" class="share-link-mobile" onclick="shareThemeLink('${theme.folder}', event); return false;" style="display: none; margin-top: 8px; text-align: center; color: #667eea; text-decoration: none; ${fontStyle}">
+                            🔗 Share
+                        </a>
                     </div>
                 </div>
                 `;
