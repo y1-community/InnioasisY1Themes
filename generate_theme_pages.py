@@ -10,6 +10,7 @@ def get_images(folder):
         images.extend(glob.glob(os.path.join(folder, ext)))
     
     # Separate cover and screenshots
+    # Cover image: match *cover*.* pattern (e.g., cover.png, gregcover.jpg, cover_image.png)
     cover_image = None
     screenshots = []
     
@@ -18,7 +19,8 @@ def get_images(folder):
         lower_name = filename.lower()
         name_without_ext = os.path.splitext(lower_name)[0]
         
-        if name_without_ext == 'cover' and not cover_image:
+        # Match any filename containing "cover" (wildcard pattern *cover*.*)
+        if 'cover' in name_without_ext and not cover_image:
             cover_image = filename
         elif 'screenshot' in lower_name:
             screenshots.append(filename)
@@ -80,6 +82,7 @@ for folder in all_dirs:
                         # Update only if keys exist
                         if 'name' in config: theme_data['name'] = config['name']
                         if 'author' in config: theme_data['author'] = config['author']
+                        if 'authorUrl' in config: theme_data['authorUrl'] = config['authorUrl']
                         if 'description' in config: theme_data['description'] = config['description']
                 except Exception as e:
                     print(f"Error reading config.json for {folder}: {e}")
@@ -611,19 +614,20 @@ html_template = """<!DOCTYPE html>
         <div id="feature-support-section" style="margin-top: 30px; display: none;">
             <h3 {title_style}>Feature Support</h3>
             <div id="unsupported-features" style="background: #f9f9f9; border-radius: 8px; padding: 15px; border-left: 4px solid #ff9800;">
-                <p style="margin: 0 0 10px 0; font-weight: 600; color: #666;">⚠️ Features Not Supported by This Theme:</p>
-                <ul id="unsupported-features-list" style="margin: 0; padding-left: 20px; color: #888; list-style-type: disc;">
+                <p style="margin: 0 0 10px 0; font-weight: 600; color: #666;">To the creator:</p>
+                <p style="margin: 0 0 10px 0; font-size: 0.9rem; color: #666;">Add these images to your theme to ensure compatibility with:</p>
+                <ul id="unsupported-features-list" style="margin: 0 0 10px 0; padding-left: 20px; color: #888; list-style-type: disc;">
                     <!-- Features will be populated dynamically -->
                 </ul>
                 <p style="margin: 10px 0 0 0; font-size: 0.85rem; color: #999; font-style: italic;">
-                    These features may not be enabled for users yet, but theme creators should consider adding support for future system software releases. Feature names match those used in config.json (e.g., "backlight_60" = backlight setting at 60%).
+                    These features may not be available to users at present but are defined in the theme spec in firmware 2.8.2 and are to be expected in future releases and where features are only available in certain regions.
                 </p>
             </div>
         </div>
         
         <!-- SEO Content -->
         <div class="seo-content" style="margin-top: 40px; text-align: left; color: #666; font-size: 0.9rem; line-height: 1.6;">
-            <p>This theme was made by <strong>{author}</strong>. {description}</p>
+            <p>This theme was made by <strong id="author-display">{author}</strong>. <span id="description-display">{description}</span></p>
         </div>
         
         <div style="margin-top: 30px; font-size: 0.9rem; color: #888;">
@@ -1152,7 +1156,78 @@ html_template = """<!DOCTYPE html>
             
             // Check for unsupported features
             await checkFeatureSupport();
+            
+            // Load and update author information with authorUrl link
+            await loadAuthorInfo();
         });
+        
+        // Load author information from config.json (priority) or themes.json (fallback)
+        async function loadAuthorInfo() {
+            try {
+                let author = '{author}';
+                let authorUrl = null;
+                let description = '{description}';
+                
+                // Try to load from config.json first (authoritative source)
+                try {
+                    const configResponse = await fetch('./config.json');
+                    if (configResponse.ok) {
+                        const config = await configResponse.json();
+                        if (config.author) author = config.author;
+                        if (config.authorUrl) authorUrl = config.authorUrl;
+                        if (config.description) description = config.description;
+                    }
+                } catch (e) {
+                    console.warn('Could not load config.json:', e);
+                }
+                
+                // Fallback to themes.json if authorUrl not found in config.json
+                if (!authorUrl) {
+                    try {
+                        const themesResponse = await fetch('../themes.json');
+                        if (themesResponse.ok) {
+                            const themesData = await themesResponse.json();
+                            const currentPath = window.location.pathname;
+                            let folderName = '';
+                            const pathParts = currentPath.split('/');
+                            if (pathParts[pathParts.length - 1].toLowerCase() === 'index.html' || pathParts[pathParts.length - 1] === '') {
+                                folderName = pathParts[pathParts.length - 2];
+                            } else {
+                                folderName = pathParts[pathParts.length - 1];
+                            }
+                            folderName = decodeURIComponent(folderName);
+                            
+                            const theme = themesData.themes.find(t => t.folder === folderName);
+                            if (theme) {
+                                if (theme.author) author = theme.author;
+                                if (theme.authorUrl) authorUrl = theme.authorUrl;
+                                if (theme.description) description = theme.description;
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Could not load themes.json:', e);
+                    }
+                }
+                
+                // Update author display with link if authorUrl is available
+                const authorDisplay = document.getElementById('author-display');
+                const descriptionDisplay = document.getElementById('description-display');
+                
+                if (authorDisplay) {
+                    if (authorUrl) {
+                        authorDisplay.innerHTML = `<a href="${authorUrl}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">${author}</a>`;
+                    } else {
+                        authorDisplay.textContent = author;
+                    }
+                }
+                
+                if (descriptionDisplay) {
+                    descriptionDisplay.textContent = description;
+                }
+            } catch (error) {
+                console.warn('Could not load author information:', error);
+            }
+        }
         
         // Check which features are not supported by this theme
         async function checkFeatureSupport() {

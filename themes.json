@@ -258,20 +258,23 @@
         {
             "folder": "HoloBubble",
             "name": "HoloBubble",
-            "author": "Unknown",
-            "description": "Theme for Innioasis Y1: HoloBubble"
+            "author": "Innioasis",
+            "authorUrl": "https://www.innioasis.com",
+            "description": "A holographic bubble-inspired theme created by Innioasis for the Y1 device."
         },
         {
             "folder": "Unseen",
             "name": "Unseen",
-            "author": "Unknown",
-            "description": "Theme for Innioasis Y1: Unseen"
+            "author": "Innioasis",
+            "authorUrl": "https://www.innioasis.com",
+            "description": "A minimalist theme with subtle visual elements, created by Innioasis for the Y1 device."
         },
         {
             "folder": "MelodyMuncher",
             "name": "MelodyMuncher",
-            "author": "Unknown",
-            "description": "Theme for Innioasis Y1: MelodyMuncher"
+            "author": "Innioasis",
+            "authorUrl": "https://www.innioasis.com",
+            "description": "The official reference theme by Innioasis, featuring comprehensive theme specification support and serving as a template for theme creators."
         }
     ]
 }
