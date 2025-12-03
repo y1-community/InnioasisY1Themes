@@ -1383,12 +1383,14 @@
                 // Format: { key: 'configKey', displayName: 'Display Name', section: 'homePageConfig' | 'settingConfig' }
                 // For self-explanatory features (like "backlight_60"), displayName is the key itself
                 // For features needing explanation, provide a friendly displayName
-                // Only check the 4 specific upcoming/region-specific features in settingConfig
+                // Only check the 4 specific upcoming/region-specific features
+                // Note: ebook, calculator, calendar are in homePageConfig in MelodyMuncher
+                // launcher is in settingConfig
                 const upcomingFeaturesToCheck = [
-                    { key: 'ebook', displayName: 'E-book Reader', section: 'settingConfig', configKey: 'ebook' },
-                    { key: 'calculator', displayName: 'Calculator', section: 'settingConfig', configKey: 'calculator' },
-                    { key: 'calendar', displayName: 'Calendar', section: 'settingConfig', configKey: 'calendar' },
-                    { key: 'launcher', displayName: 'Rockbox / Alternative Launcher Icon', section: 'settingConfig', configKey: 'launcher' }
+                    { key: 'ebook', displayName: 'E-book Reader', section: 'homePageConfig', configKey: 'ebook', imageFile: 'ebook.png' },
+                    { key: 'calculator', displayName: 'Calculator', section: 'homePageConfig', configKey: 'calculator', imageFile: 'calculator.png' },
+                    { key: 'calendar', displayName: 'Calendar', section: 'homePageConfig', configKey: 'calendar', imageFile: 'calendar.png' },
+                    { key: 'launcher', displayName: 'Rockbox / Alternative Launcher Icon', section: 'settingConfig', configKey: 'launcher', imageFile: 'Launcher.png' }
                 ];
                 
                 const unsupportedFeatures = [];
@@ -1414,13 +1416,13 @@
                 if (unsupportedFeatures.length > 0) {
                     const section = document.getElementById('feature-support-section');
                     const list = document.getElementById('unsupported-features-list');
-                    const folderName = 'Win95Theme';
                     
                     if (section && list) {
                         list.innerHTML = unsupportedFeatures.map(feature => {
-                            // Create GitHub link to config.json
-                            const githubUrl = `https://github.com/y1-community/InnioasisY1Themes/blob/main/${encodeURIComponent(folderName)}/config.json`;
-                            return `<li style="margin-bottom: 5px;"><a href="${githubUrl}" target="_blank" rel="noopener noreferrer" style="color: #667eea; text-decoration: none; border-bottom: 1px solid #667eea;">${feature.displayName}</a> - "${feature.configKey}" in "settingConfig"</li>`;
+                            // Create GitHub link to the example image in MelodyMuncher
+                            const exampleImageUrl = `https://github.com/y1-community/InnioasisY1Themes/blob/main/MelodyMuncher/${encodeURIComponent(feature.imageFile)}`;
+                            const sectionName = feature.section === 'homePageConfig' ? 'homePageConfig' : 'settingConfig';
+                            return `<li style="margin-bottom: 5px;"><a href="${exampleImageUrl}" target="_blank" rel="noopener noreferrer" style="color: #667eea; text-decoration: none; border-bottom: 1px solid #667eea;">${feature.displayName}</a> - "${feature.configKey}" in "${sectionName}"</li>`;
                         }).join('');
                         section.style.display = 'block';
                     }
@@ -1864,6 +1866,65 @@
             if (!carouselWrapper) return;
             
             try {
+                // Load config.json to map images to their usage
+                let config = null;
+                let imageUsageMap = new Map(); // Maps filename -> array of config keys
+                
+                try {
+                    const configResponse = await fetch('./config.json');
+                    if (configResponse.ok) {
+                        config = await configResponse.json();
+                        
+                        // Helper function to recursively search for image references
+                        function findImageReferences(obj, prefix = '') {
+                            for (const [key, value] of Object.entries(obj)) {
+                                if (typeof value === 'string' && /\.(png|jpg|jpeg|gif|svg)$/i.test(value)) {
+                                    // Extract filename and create multiple lookup keys
+                                    const fullPath = value.split('/').pop();
+                                    const filename = fullPath;
+                                    
+                                    // Create lookup keys:
+                                    // 1. Full filename (e.g., "@Be_itemSelectedBackground.png")
+                                    // 2. Without @ prefix pattern (e.g., "itemSelectedBackground.png")
+                                    // 3. Base name without extension (e.g., "itemSelectedBackground")
+                                    
+                                    const keys = [filename];
+                                    
+                                    // Try removing @ prefix pattern (e.g., @Be_ or @Theme_)
+                                    const withoutPrefix = filename.replace(/^@[^_]+_/, '');
+                                    if (withoutPrefix !== filename) {
+                                        keys.push(withoutPrefix);
+                                    }
+                                    
+                                    // Base name without extension
+                                    const baseName = filename.replace(/\.[^.]+$/, '');
+                                    const baseNameWithoutPrefix = withoutPrefix.replace(/\.[^.]+$/, '');
+                                    keys.push(baseName, baseNameWithoutPrefix);
+                                    
+                                    // Store the config key for all variations
+                                    const fullKey = prefix ? `${prefix}.${key}` : key;
+                                    keys.forEach(lookupKey => {
+                                        if (!imageUsageMap.has(lookupKey)) {
+                                            imageUsageMap.set(lookupKey, []);
+                                        }
+                                        if (!imageUsageMap.get(lookupKey).includes(fullKey)) {
+                                            imageUsageMap.get(lookupKey).push(fullKey);
+                                        }
+                                    });
+                                } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                                    const newPrefix = prefix ? `${prefix}.${key}` : key;
+                                    findImageReferences(value, newPrefix);
+                                }
+                            }
+                        }
+                        
+                        // Search all config sections
+                        findImageReferences(config);
+                    }
+                } catch (e) {
+                    console.warn('Could not load config.json for image mapping:', e);
+                }
+                
                 let imageFiles = [];
                 
                 // Strategy 1: Try GitHub API to get file list (if available)
@@ -1976,7 +2037,38 @@
                     
                     const label = document.createElement('div');
                     label.className = 'image-name';
-                    label.textContent = image.name;
+                    
+                    // Get config.json usage for this image
+                    // Try multiple lookup strategies (already handled in the map creation)
+                    const imageName = image.name;
+                    let usageKeys = imageUsageMap.get(imageName);
+                    
+                    // If not found, try without @ prefix pattern
+                    if (!usageKeys || usageKeys.length === 0) {
+                        const nameWithoutPrefix = imageName.replace(/^@[^_]+_/, '');
+                        usageKeys = imageUsageMap.get(nameWithoutPrefix);
+                    }
+                    
+                    // If still not found, try just the base name without extension
+                    if (!usageKeys || usageKeys.length === 0) {
+                        const baseName = imageName.replace(/\.[^.]+$/, '');
+                        usageKeys = imageUsageMap.get(baseName);
+                    }
+                    
+                    // Also try base name without prefix
+                    if (!usageKeys || usageKeys.length === 0) {
+                        const baseNameWithoutPrefix = imageName.replace(/^@[^_]+_/, '').replace(/\.[^.]+$/, '');
+                        usageKeys = imageUsageMap.get(baseNameWithoutPrefix);
+                    }
+                    
+                    // Display config key name(s) if found, otherwise fall back to filename
+                    if (usageKeys && usageKeys.length > 0) {
+                        // Show the config key name(s) - join multiple with comma
+                        label.textContent = usageKeys.join(', ');
+                        label.title = image.name; // Show filename on hover
+                    } else {
+                        label.textContent = image.name;
+                    }
                     
                     item.appendChild(img);
                     item.appendChild(label);
