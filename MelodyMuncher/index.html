@@ -871,18 +871,29 @@
                     selectedBgImage = '1.png'; // High priority fallback
                 }
                 
-                // Button background style
+                // Button background style - ALWAYS ensure there's a background color fallback even when using background-image
                 let buttonBgStyle = '';
+                let buttonBgColor = null;
+                
+                // Determine background color first (for fallback)
+                const selectedTextColor = itemConfig.itemSelectedTextColor || menuConfig.menuItemSelectedTextColor;
+                if (selectedTextColor && selectedTextColor.startsWith('#')) {
+                    buttonBgColor = selectedTextColor;
+                }
+                
+                // Fallback to background colors
+                if (!buttonBgColor) {
+                    buttonBgColor = menuConfig.menuBackgroundColor || 
+                                  dialogConfig.dialogBackgroundColor || 
+                                  itemConfig.itemBackgroundColor ||
+                                  '#667eea'; // Default fallback
+                }
+                
                 if (selectedBgImage && selectedBgImage.trim() !== '') {
                     const imageUrl = `./${encodeURIComponent(selectedBgImage)}`;
-                    buttonBgStyle = `background-image: url('${imageUrl}'); background-size: 100% 100%; background-repeat: no-repeat; background-position: center;`;
+                    // Always include background-color as fallback in case image fails to load
+                    buttonBgStyle = `background-color: ${buttonBgColor}; background-image: url('${imageUrl}'); background-size: 100% 100%; background-repeat: no-repeat; background-position: center;`;
                 } else {
-                    // Use theme color from config
-                    let buttonBgColor = itemConfig.itemSelectedTextColor || 
-                                       menuConfig.menuItemSelectedTextColor ||
-                                       menuConfig.menuBackgroundColor || 
-                                       dialogConfig.dialogBackgroundColor || 
-                                       '#667eea';
                     buttonBgStyle = `background-color: ${buttonBgColor};`;
                 }
                 
@@ -897,28 +908,64 @@
                 const downloadBtn = document.getElementById('download-btn');
                 
                 if (installBtn) {
-                    installBtn.style.cssText = `${buttonBgStyle} color: ${buttonTextColor}; ${fontStyle}`;
+                    installBtn.style.cssText = `${buttonBgStyle} color: ${buttonTextColor}; ${fontStyle} position: relative; z-index: 1;`;
+                    // Ensure button content is properly structured
+                    if (!installBtn.querySelector('span')) {
+                        const textSpan = document.createElement('span');
+                        textSpan.style.cssText = 'display: flex; align-items: center; justify-content: space-between; width: 100%; position: relative; z-index: 2;';
+                        const textInner = document.createElement('span');
+                        textInner.style.cssText = 'position: relative; z-index: 3; flex: 1; text-align: left;';
+                        textInner.textContent = installBtn.textContent.trim();
+                        textSpan.appendChild(textInner);
+                        installBtn.innerHTML = '';
+                        installBtn.appendChild(textSpan);
+                    }
                     // Add arrow icon if available and not already present
                     if (arrowIconFile && !installBtn.querySelector('.arrow-icon')) {
                         const arrowImg = document.createElement('img');
                         arrowImg.src = `./${encodeURIComponent(arrowIconFile)}`;
                         arrowImg.alt = '→';
                         arrowImg.className = 'arrow-icon';
+                        arrowImg.style.cssText = 'position: relative; z-index: 3; flex-shrink: 0;';
                         arrowImg.onerror = () => arrowImg.remove(); // Remove if image doesn't exist
-                        installBtn.appendChild(arrowImg);
+                        const span = installBtn.querySelector('span');
+                        if (span) {
+                            const arrowSpan = document.createElement('span');
+                            arrowSpan.style.cssText = 'position: relative; z-index: 3; flex-shrink: 0;';
+                            arrowSpan.appendChild(arrowImg);
+                            span.appendChild(arrowSpan);
+                        }
                     }
                 }
                 
                 if (downloadBtn) {
-                    downloadBtn.style.cssText = `${buttonBgStyle} color: ${buttonTextColor}; ${fontStyle}`;
+                    downloadBtn.style.cssText = `${buttonBgStyle} color: ${buttonTextColor}; ${fontStyle} position: relative; z-index: 1;`;
+                    // Ensure button content is properly structured
+                    if (!downloadBtn.querySelector('span')) {
+                        const textSpan = document.createElement('span');
+                        textSpan.style.cssText = 'display: flex; align-items: center; justify-content: space-between; width: 100%; position: relative; z-index: 2;';
+                        const textInner = document.createElement('span');
+                        textInner.style.cssText = 'position: relative; z-index: 3; flex: 1; text-align: left;';
+                        textInner.textContent = downloadBtn.textContent.trim();
+                        textSpan.appendChild(textInner);
+                        downloadBtn.innerHTML = '';
+                        downloadBtn.appendChild(textSpan);
+                    }
                     // Add arrow icon if available and not already present
                     if (arrowIconFile && !downloadBtn.querySelector('.arrow-icon')) {
                         const arrowImg = document.createElement('img');
                         arrowImg.src = `./${encodeURIComponent(arrowIconFile)}`;
                         arrowImg.alt = '→';
                         arrowImg.className = 'arrow-icon';
+                        arrowImg.style.cssText = 'position: relative; z-index: 3; flex-shrink: 0;';
                         arrowImg.onerror = () => arrowImg.remove(); // Remove if image doesn't exist
-                        downloadBtn.appendChild(arrowImg);
+                        const span = downloadBtn.querySelector('span');
+                        if (span) {
+                            const arrowSpan = document.createElement('span');
+                            arrowSpan.style.cssText = 'position: relative; z-index: 3; flex-shrink: 0;';
+                            arrowSpan.appendChild(arrowImg);
+                            span.appendChild(arrowSpan);
+                        }
                     }
                 }
             } catch (error) {
