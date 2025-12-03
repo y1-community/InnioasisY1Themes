@@ -384,6 +384,21 @@
             margin-top: auto;
             padding-top: 15px;
         }
+        
+        .theme-edit-link {
+            text-align: center;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .theme-edit-link a {
+            transition: color 0.2s;
+        }
+        
+        .theme-edit-link a:hover {
+            color: #667eea !important;
+        }
 
         .theme-actions .install-btn {
             flex: 1;
@@ -2676,6 +2691,11 @@
                         `}
                         <a href="#" class="share-link-mobile" onclick="shareThemeLink('${theme.folder}', event); return false;" style="display: none; margin-top: 8px; text-align: center; color: #667eea; text-decoration: none; ${fontStyle}">
                             🔗 Share
+                        </a>
+                    </div>
+                    <div class="theme-edit-link">
+                        <a href="https://github.com/y1-community/InnioasisY1Themes/tree/main/${encodeURIComponent(theme.folder)}" target="_blank" onclick="event.stopPropagation();" style="color: #888; text-decoration: none; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 4px;">
+                            ✏️ Edit
                         </a>
                     </div>
                 </div>
