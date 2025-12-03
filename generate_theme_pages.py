@@ -429,6 +429,35 @@ html_template = """<!DOCTYPE html>
         .lightbox-close:hover {
             color: #bbb;
         }
+        .lightbox-edit-btn {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(102, 126, 234, 0.9);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+        }
+        .lightbox-edit-btn:hover {
+            background: rgba(102, 126, 234, 1);
+            transform: translateX(-50%) translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+        }
+        .lightbox-edit-btn:active {
+            transform: translateX(-50%) translateY(0);
+        }
         .back-link {
             display: block;
             margin-top: 20px;
@@ -462,6 +491,12 @@ html_template = """<!DOCTYPE html>
         }
         .download-link-small:hover {
             text-decoration: underline;
+        }
+        /* Button group - constrained width to match home page theme card buttons */
+        .button-group {
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
         }
         /* Install Instructions Modal */
         .install-modal {
@@ -549,7 +584,6 @@ html_template = """<!DOCTYPE html>
     All theme data (name, author, description, colors, images) should be loaded
     from config.json or themes.json when possible, not from hardcoded HTML.
     -->
-    {background_cycle_html}
     <div class="container">
         <div class="header-section">
             <div class="header-text">
@@ -641,6 +675,10 @@ html_template = """<!DOCTYPE html>
     <div id="lightbox" class="lightbox" onclick="closeLightbox()">
         <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
         <img class="lightbox-content" id="lightbox-img" onclick="event.stopPropagation()">
+        <a id="lightbox-edit-btn" class="lightbox-edit-btn" href="#" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">
+            <span>✏️</span>
+            <span>View/Edit on GitHub</span>
+        </a>
     </div>
 
     <!-- Toast Notification -->
@@ -1505,9 +1543,32 @@ html_template = """<!DOCTYPE html>
         function openLightbox(imgSrc) {
             const lightbox = document.getElementById('lightbox');
             const lightboxImg = document.getElementById('lightbox-img');
+            const editBtn = document.getElementById('lightbox-edit-btn');
+            
             lightboxImg.src = imgSrc;
             lightbox.classList.add('active');
             document.body.style.overflow = 'hidden';
+            
+            // Extract filename from image source and construct GitHub URL
+            // Image source format: ./filename.png or ./themeFolder/filename.png
+            // We need: https://github.com/y1-community/InnioasisY1Themes/tree/main/{folderName}/{filename}
+            const folderName = '{folder}';
+            let filename = '';
+            
+            // Remove leading ./ if present
+            const cleanSrc = imgSrc.replace(/^\.\//, '');
+            
+            // If the path contains a folder (shouldn't happen for theme page images, but handle it)
+            if (cleanSrc.includes('/')) {
+                const parts = cleanSrc.split('/');
+                filename = parts[parts.length - 1];
+            } else {
+                filename = cleanSrc;
+            }
+            
+            // Construct GitHub URL
+            const githubUrl = `https://github.com/y1-community/InnioasisY1Themes/tree/main/${encodeURIComponent(folderName)}/${encodeURIComponent(filename)}`;
+            editBtn.href = githubUrl;
         }
 
         function closeLightbox() {
@@ -1672,25 +1733,7 @@ html_template = """<!DOCTYPE html>
             loadThemeImages();
         });
     </script>
-<div class="bg-cycle"></div>
-<script>
-    // Background cycling logic
-    const bgImages = [{background_images}];
-    if (bgImages.length) {
-        const bgDiv = document.querySelector('.bg-cycle');
-        let idx = 0;
-        const setBg = () => {
-            bgDiv.style.backgroundImage = `url('${bgImages[idx]}')`;
-            bgDiv.style.opacity = '1';
-            setTimeout(() => {
-                bgDiv.style.opacity = '0';
-            }, 5000);
-            idx = (idx + 1) % bgImages.length;
-        };
-        setBg();
-        setInterval(setBg, 6000);
-    }
-</script>
+    {background_cycle_html}
 </body>
 </html>
 """
@@ -1759,6 +1802,33 @@ for theme in themes:
         '''
         title_style = 'style="font-family: \'ThemeFont\', sans-serif;"'
 
+    # Get background images for cycling
+    backgrounds = get_backgrounds(folder) if os.path.exists(folder) else []
+    background_images_str = ', '.join([f"'{bg}'" for bg in backgrounds]) if backgrounds else ''
+    
+    # Generate background cycle HTML
+    background_cycle_html = ''
+    if backgrounds:
+        background_cycle_html = f'''<div class="bg-cycle"></div>
+<script>
+    // Background cycling logic
+    const bgImages = [{background_images_str}];
+    if (bgImages.length) {{
+        const bgDiv = document.querySelector('.bg-cycle');
+        let idx = 0;
+        const setBg = () => {{
+            bgDiv.style.backgroundImage = `url('${{bgImages[idx]}}')`;
+            bgDiv.style.opacity = '1';
+            setTimeout(() => {{
+                bgDiv.style.opacity = '0';
+            }}, 5000);
+            idx = (idx + 1) % bgImages.length;
+        }};
+        setBg();
+        setInterval(setBg, 6000);
+    }}
+</script>'''
+    
     # Generate HTML using replace instead of format to avoid brace issues
     content = html_template
     content = content.replace('{name}', name)
@@ -1769,6 +1839,8 @@ for theme in themes:
     content = content.replace('{screenshots_section_html}', screenshots_section_html)
     content = content.replace('{font_css}', font_css)
     content = content.replace('{title_style}', title_style)
+    content = content.replace('{background_cycle_html}', background_cycle_html)
+    content = content.replace('{background_images}', background_images_str)
     
     # Write to index.html in theme folder
     if not os.path.exists(folder):
