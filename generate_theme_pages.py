@@ -369,7 +369,7 @@ html_template = """<!DOCTYPE html>
         <div style="margin-top: 30px; font-size: 0.9rem; color: #888;">
             <a href="../index.html" class="back-link">← Back to All Themes</a>
             <span style="margin: 0 10px;">|</span>
-            <a href="https://github.com/y1-community/InnioasisY1Themes/tree/main/{folder}" target="_blank" style="color: #888; text-decoration: none;">✏️ Edit or Update this Theme</a>
+            <a href="https://github.com/y1-community/InnioasisY1Themes/tree/main/{folder}#readme" target="_blank" style="color: #888; text-decoration: none;">✏️ Edit or Update this Theme</a>
         </div>
     </div>
 

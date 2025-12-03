@@ -296,7 +296,7 @@
         <a href="../index.html" class="back-link">← Back to All Themes</a>
         
         <div style="margin-top: 30px; font-size: 1rem; color: #888; text-align: center;">
-            <a href="https://github.com/y1-community/InnioasisY1Themes/tree/main/MelodyMuncher" target="_blank" style="color: #888; text-decoration: none; font-weight: 500;">✏️ Edit or Update this Theme</a>
+            <a href="https://github.com/y1-community/InnioasisY1Themes/tree/main/MelodyMuncher#readme" target="_blank" style="color: #888; text-decoration: none; font-weight: 500;">✏️ Edit or Update this Theme</a>
         </div>
     </div>
 
@@ -811,7 +811,7 @@
             // Update GitHub edit link
             const editLink = document.querySelector('a[href*="github.com/y1-community/InnioasisY1Themes/tree/main/"]');
             if (editLink) {
-                editLink.href = `https://github.com/y1-community/InnioasisY1Themes/tree/main/${encodeURIComponent(data.folder || folderName)}`;
+                editLink.href = `https://github.com/y1-community/InnioasisY1Themes/tree/main/${encodeURIComponent(data.folder || folderName)}#readme`;
                 // Update text if it contains the folder name
                 if (editLink.textContent.includes('MelodyMuncher')) {
                     editLink.textContent = editLink.textContent.replace('MelodyMuncher', data.folder || folderName);

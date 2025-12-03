@@ -1,5 +1,14 @@
 # How to Update or Edit this Theme
 
+## About This Repository
+
+**Important:** The GitHub repository at [github.com/y1-community/InnioasisY1Themes](https://github.com/y1-community/InnioasisY1Themes) is where [themes.innioasis.app](https://themes.innioasis.app) is hosted. This means:
+
+- ✅ **Anyone can edit themes** - The repository is open for contributions from the community
+- ✅ **Changes appear on the website** - Updates to themes in this repository automatically appear on themes.innioasis.app
+- ✅ **You can improve any theme** - Feel free to fix bugs, update images, improve descriptions, or enhance any theme
+- ✅ **No permission needed** - Just fork, edit, and submit a pull request
+
 ## Making Changes to This Theme
 
 If you'd like to update, improve, or fix this theme, here's how to contribute:
