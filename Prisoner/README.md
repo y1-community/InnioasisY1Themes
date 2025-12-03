@@ -9,6 +9,31 @@
 - ✅ **You can improve any theme** - Feel free to fix bugs, update images, improve descriptions, or enhance any theme
 - ✅ **No permission needed** - Just fork, edit, and submit a pull request
 
+### How Themes Are Added to the Website
+
+Themes appear on [themes.innioasis.app](https://themes.innioasis.app) through two main methods:
+
+#### 1. **Self Submission** (Recommended for Theme Creators)
+
+If you've created a theme, you can add it yourself by:
+
+1. **Forking the repository** - Create your own copy of [github.com/y1-community/InnioasisY1Themes](https://github.com/y1-community/InnioasisY1Themes)
+2. **Making your edits** - Add your theme folder, update `config.json`, add images, etc.
+3. **Submitting a pull request** - Request to merge your changes back into the main repository
+4. **Automatic publication** - Once approved and merged, your theme automatically appears on themes.innioasis.app
+
+This method gives you full control over how your theme is presented and ensures accurate information.
+
+#### 2. **Curation by Maintainers**
+
+The repository maintainers actively search for themes on social media platforms (like Reddit's r/innioasis community) and other online sources. When they find a theme:
+
+- **Automatic upload** - The maintainers add the theme to the repository on your behalf
+- **Proper attribution** - Your original post and profile are linked via the `authorUrl` field
+- **Community benefit** - Your theme becomes available to all Y1 users, even if you're not familiar with GitHub
+
+If you've shared your theme online and it appears on themes.innioasis.app, you can still edit it yourself using the self-submission method above!
+
 ## Making Changes to This Theme
 
 If you'd like to update, improve, or fix this theme, here's how to contribute:
