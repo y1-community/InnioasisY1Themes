@@ -2291,7 +2291,9 @@
                         ${theme.screenshot ? '' : '🎨'}
                     </div>
                     <div class="theme-name">
-                        ${theme.name}
+                        <a href="${theme.folder}/index.html" style="color: inherit; text-decoration: none; cursor: default;" onclick="event.stopPropagation();">
+                            ${theme.name}
+                        </a>
                         ${isInstalled ? '<span class="installed-badge">✓ On your Y1</span>' : ''}
                     </div>
                     <div class="theme-info">
@@ -2314,9 +2316,8 @@
                             <!-- No button for device-only themes (not available on server) -->
                         ` : `
                             <button class="install-btn install" 
-                                    onclick="${isMobileMode ? 'downloadSingleTheme' : 'installSingleTheme'}(${index}, event)" 
-                                    ${!isMobileMode && !deviceFolderHandle ? 'disabled' : ''}>
-                                ${isMobileMode ? '📦 Download' : '📥 Install'}
+                                    onclick="${isMobileMode || !deviceFolderHandle ? 'downloadSingleTheme' : 'installSingleTheme'}(${index}, event)">
+                                ${isMobileMode || !deviceFolderHandle ? '📦 Download' : '📥 Install'}
                             </button>
                         `}
                     </div>
