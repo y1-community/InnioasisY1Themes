@@ -8,7 +8,7 @@ with open('themes.json', 'r') as f:
 
 themes = data['themes']
 
-# HTML Template with Support Toolbar
+# HTML Template with Download Button
 html_template = """<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,6 +16,7 @@ html_template = """<!DOCTYPE html>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{name} - Innioasis Y1 Theme</title>
     <meta name="description" content="{description}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         body {{
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -88,10 +89,16 @@ html_template = """<!DOCTYPE html>
             font-weight: bold;
             transition: transform 0.2s, box-shadow 0.2s;
             margin: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
         }}
         .btn:hover {{
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }}
+        .btn.download {{
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
         }}
         .back-link {{
             display: block;
@@ -115,277 +122,15 @@ html_template = """<!DOCTYPE html>
         {gallery_html}
         
         <a href="../index.html" class="btn">Install this Theme</a>
+        <button onclick="downloadTheme()" class="btn download">📦 Download ZIP</button>
         
         <a href="../index.html" class="back-link">← Back to All Themes</a>
     </div>
 
-    <!-- Neomorphic Floating Support Us Toolbar -->
-    <div id="support-toolbar-container">
-        <style>
-            #support-toolbar {{
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                z-index: 10000;
-                display: flex;
-                gap: 10px;
-                align-items: center;
-                font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-                background: #f0f0f3;
-                padding: 8px 12px;
-                border-radius: 50px;
-                box-shadow:
-                    8px 8px 16px rgba(163, 177, 198, 0.6),
-                    -8px -8px 16px rgba(255, 255, 255, 0.5);
-                transition: all 0.3s ease;
-                flex-wrap: wrap;
-                max-width: calc(100vw - 40px);
-            }}
-
-            .support-toolbar-btn {{
-                background: #f0f0f3;
-                border: none;
-                border-radius: 25px;
-                padding: 10px 18px;
-                cursor: pointer;
-                font-size: 13px;
-                font-weight: 600;
-                color: #2d2d2d;
-                text-decoration: none;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                box-shadow:
-                    4px 4px 8px rgba(163, 177, 198, 0.6),
-                    -4px -4px 8px rgba(255, 255, 255, 0.5);
-                transition: all 0.3s ease;
-                white-space: nowrap;
-            }}
-
-            .support-toolbar-btn:hover {{
-                box-shadow:
-                    2px 2px 4px rgba(163, 177, 198, 0.6),
-                    -2px -2px 4px rgba(255, 255, 255, 0.5);
-                transform: translateY(-1px);
-            }}
-
-            .support-toolbar-btn:active {{
-                box-shadow:
-                    inset 2px 2px 4px rgba(163, 177, 198, 0.6),
-                    inset -2px -2px 4px rgba(255, 255, 255, 0.5);
-                transform: translateY(0);
-            }}
-
-            .support-toolbar-btn.primary {{
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                box-shadow:
-                    4px 4px 8px rgba(102, 126, 234, 0.4),
-                    -4px -4px 8px rgba(118, 75, 162, 0.3);
-            }}
-
-            .support-toolbar-btn.primary:hover {{
-                box-shadow:
-                    2px 2px 4px rgba(102, 126, 234, 0.4),
-                    -2px -2px 4px rgba(118, 75, 162, 0.3);
-            }}
-
-            .support-toolbar-icon {{
-                font-size: 16px;
-                display: inline-block;
-                line-height: 1;
-            }}
-
-            #donate-options {{
-                display: none;
-                gap: 10px;
-                align-items: center;
-                flex-wrap: wrap;
-            }}
-
-            #donate-options.expanded {{
-                display: flex;
-            }}
-
-            .crypto-address {{
-                display: flex;
-                flex-direction: column;
-                gap: 4px;
-                padding: 8px 12px;
-                background: #f0f0f3;
-                border-radius: 12px;
-                box-shadow:
-                    2px 2px 4px rgba(163, 177, 198, 0.6),
-                    -2px -2px 4px rgba(255, 255, 255, 0.5);
-                min-width: 140px;
-            }}
-
-            .crypto-label {{
-                font-size: 11px;
-                font-weight: 700;
-                color: #667eea;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-                display: flex;
-                align-items: center;
-                gap: 6px;
-            }}
-
-            .crypto-copy-hint {{
-                font-size: 9px;
-                font-weight: 400;
-                color: #86868b;
-                text-transform: none;
-                letter-spacing: 0;
-            }}
-
-            .crypto-code {{
-                font-size: 10px;
-                font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
-                color: #2d2d2d;
-                word-break: break-all;
-                cursor: pointer;
-                padding: 4px 6px;
-                background: rgba(0, 0, 0, 0.05);
-                border-radius: 6px;
-                transition: all 0.2s ease;
-            }}
-
-            .crypto-code:hover {{
-                background: rgba(0, 0, 0, 0.1);
-            }}
-
-            .crypto-code.copied {{
-                background: rgba(34, 197, 94, 0.2);
-                color: #22c55e;
-            }}
-
-            @media (max-width: 768px) {{
-                #support-toolbar {{
-                    bottom: 15px;
-                    right: 15px;
-                    left: 15px;
-                    justify-content: center;
-                    padding: 6px 10px;
-                    gap: 8px;
-                    border-radius: 25px;
-                }}
-
-                .support-toolbar-btn {{
-                    padding: 8px 14px;
-                    font-size: 12px;
-                }}
-
-                .support-toolbar-icon {{
-                    font-size: 16px;
-                }}
-
-                .crypto-address {{
-                    min-width: 120px;
-                    padding: 6px 10px;
-                }}
-
-                .crypto-code {{
-                    font-size: 9px;
-                }}
-            }}
-        </style>
-        <div id="support-toolbar">
-            <a href="https://innioasis.app/support_devs.html" class="support-toolbar-btn primary" target="_blank"
-                rel="noopener noreferrer">
-                <span class="support-toolbar-icon">💙</span>
-                <span>Get Involved / Submit Themes</span>
-            </a>
-            <button id="donate-toggle" class="support-toolbar-btn" type="button">
-                <span class="support-toolbar-icon">💳</span>
-                <span>Donate</span>
-            </button>
-            <div id="donate-options">
-                <a href="https://revolut.me/rspecter" class="support-toolbar-btn" target="_blank"
-                    rel="noopener noreferrer">
-                    <span class="support-toolbar-icon">💸</span>
-                    <span>Revolut</span>
-                </a>
-                <a href="https://ko-fi.com/teamslide" class="support-toolbar-btn" target="_blank"
-                    rel="noopener noreferrer">
-                    <span class="support-toolbar-icon">☕</span>
-                    <span>Ko-fi</span>
-                </a>
-                <a href="https://paypal.me/respectyarn" class="support-toolbar-btn" target="_blank"
-                    rel="noopener noreferrer">
-                    <span class="support-toolbar-icon">💳</span>
-                    <span>PayPal</span>
-                </a>
-                <div class="crypto-address">
-                    <span class="crypto-label">
-                        Bitcoin
-                        <span class="crypto-copy-hint">(click to copy)</span>
-                    </span>
-                    <code class="crypto-code" id="btc-address"
-                        onclick="copyCryptoAddress('bc1q9vsjqjr6pjuc3vrgverx0v9ydst8s82ck4kpue', 'btc-address')"
-                        title="Click to copy">bc1q9vsjqjr6pjuc3vrgverx0v9ydst8s82ck4kpue</code>
-                </div>
-                <div class="crypto-address">
-                    <span class="crypto-label">
-                        Ethereum
-                        <span class="crypto-copy-hint">(click to copy)</span>
-                    </span>
-                    <code class="crypto-code" id="eth-address"
-                        onclick="copyCryptoAddress('0x3eec22630ca9fd77D22d362bF6C50dE29D3B84c4', 'eth-address')"
-                        title="Click to copy">0x3eec22630ca9fd77D22d362bF6C50dE29D3B84c4</code>
-                </div>
-            </div>
-        </div>
-        <script>
-            (function () {{
-                const donateToggle = document.getElementById('donate-toggle');
-                const donateOptions = document.getElementById('donate-options');
-
-                donateToggle.addEventListener('click', function (e) {{
-                    e.preventDefault();
-                    e.stopPropagation();
-                    donateOptions.classList.toggle('expanded');
-                }});
-
-                // Close when clicking outside
-                document.addEventListener('click', function (e) {{
-                    if (!e.target.closest('#support-toolbar-container')) {{
-                        donateOptions.classList.remove('expanded');
-                    }}
-                }});
-
-                function copyCryptoAddress(address, elementId) {{
-                    navigator.clipboard.writeText(address).then(function () {{
-                        const element = document.getElementById(elementId);
-                        const originalText = element.textContent;
-                        element.textContent = 'Copied!';
-                        element.classList.add('copied');
-                        setTimeout(function () {{
-                            element.textContent = originalText;
-                            element.classList.remove('copied');
-                        }}, 2000);
-                    }}).catch(function (err) {{
-                        console.error('Failed to copy: ', err);
-                        alert('Failed to copy to clipboard. Please copy manually: ' + address);
-                    }});
-                }}
-
-                // Make copyCryptoAddress available globally
-                window.copyCryptoAddress = copyCryptoAddress;
-            }})();
-        </script>
-    </div>
-    </div>
     <script>
         // Dynamic Data Loading
         document.addEventListener('DOMContentLoaded', async () => {{
             const currentPath = window.location.pathname;
-            // Assumes structure is /ThemeName/index.html
-            // We need to handle both local file system and server paths
-            // For local file system, we might need to rely on the folder name being the theme folder name
-            
-            // Get the folder name. 
-            // If path ends with index.html, go up one level.
             let folderName = '';
             const pathParts = currentPath.split('/');
             if (pathParts[pathParts.length - 1].toLowerCase() === 'index.html' || pathParts[pathParts.length - 1] === '') {{
@@ -394,7 +139,6 @@ html_template = """<!DOCTYPE html>
                 folderName = pathParts[pathParts.length - 1];
             }}
             
-            // Decode URI component to handle spaces/special chars in folder name
             folderName = decodeURIComponent(folderName);
 
             const themeNameEl = document.getElementById('theme-name');
@@ -430,19 +174,58 @@ html_template = """<!DOCTYPE html>
                 console.log('Could not load config.json', e);
             }}
         }});
+
+        // Download theme as ZIP
+        async function downloadTheme() {{
+            const folderName = '{folder}';
+            const themeName = '{name}';
+            
+            try {{
+                const zip = new JSZip();
+                const themeFolder = zip.folder(folderName);
+                
+                // Get all files from GitHub
+                const apiUrl = `https://api.github.com/repos/team-slide/InnioasisY1Themes/contents/${{folderName}}`;
+                const response = await fetch(apiUrl);
+                const files = await response.json();
+                
+                // Download each file
+                for (const file of files) {{
+                    if (file.type === 'file') {{
+                        const fileResponse = await fetch(file.download_url);
+                        const blob = await fileResponse.blob();
+                        const arrayBuffer = await blob.arrayBuffer();
+                        themeFolder.file(file.name, arrayBuffer);
+                    }}
+                }}
+                
+                // Generate and download ZIP
+                const zipBlob = await zip.generateAsync({{ type: 'blob' }});
+                const url = URL.createObjectURL(zipBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${{folderName}}.zip`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }} catch (error) {{
+                console.error('Error downloading theme:', error);
+                alert('Error downloading theme. Please try again.');
+            }}
+        }}
     </script>
 </body>
 </html>
 """
 
 def get_images(folder):
-    # Extensions to look for
     extensions = ['*.png', '*.jpg', '*.jpeg', '*.gif', '*.PNG', '*.JPG', '*.JPEG', '*.GIF']
     images = []
     for ext in extensions:
         images.extend(glob.glob(os.path.join(folder, ext)))
     
-    # Deduplicate based on lowercase filename and filter for cover/screenshot
+    # Deduplicate and filter for cover/screenshot
     seen = set()
     unique_images = []
     allowed_names = {'cover', 'screenshot'}
@@ -452,7 +235,6 @@ def get_images(folder):
         lower_name = filename.lower()
         name_without_ext = os.path.splitext(lower_name)[0]
         
-        # Check if the name (without extension) is 'cover' or 'screenshot'
         if name_without_ext in allowed_names:
             if lower_name not in seen:
                 seen.add(lower_name)
@@ -463,7 +245,7 @@ def get_images(folder):
 for theme in themes:
     folder = theme['folder']
     name = theme['name']
-    description = theme.get('description', f'Y1 Theme: {name}')
+    description = theme.get('description', f'Y1 Theme: {{name}}')
     author = theme.get('author', 'Unknown')
     
     # Get all images in the folder
@@ -478,8 +260,8 @@ for theme in themes:
         for img in images:
             gallery_html += f'''
             <div class="gallery-item">
-                <img src="{img}" alt="{name} - {img}" class="screenshot">
-                <span class="image-label">{img}</span>
+                <img src="{{img}}" alt="{{name}} - {{img}}" class="screenshot">
+                <span class="image-label">{{img}}</span>
             </div>
             '''
         gallery_html += '</div>'
@@ -490,6 +272,7 @@ for theme in themes:
         name=name,
         description=description,
         author=author,
+        folder=folder,
         gallery_html=gallery_html
     )
     
