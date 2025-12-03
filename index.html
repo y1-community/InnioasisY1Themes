@@ -172,6 +172,13 @@
             position: relative;
             background: white;
             animation: slideInUp 0.4s ease-out backwards;
+            aspect-ratio: 4 / 3;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
         }
 
         .theme-card:nth-child(1) {
@@ -1265,12 +1272,26 @@
                         
                         // Process themes from JSON
                         // Convert relative screenshot paths to absolute HTTPS URLs
-                        discovered = (themesData.themes || []).map(themeData => {
+                        // Also load card backgrounds in parallel
+                        const themePromises = (themesData.themes || []).map(async (themeData) => {
                             let screenshot = themeData.screenshot || null;
                             // Convert relative paths to absolute HTTPS URLs
                             if (screenshot && typeof screenshot === 'string' && screenshot.startsWith('./')) {
                                 const baseUrl = window.location.origin;
                                 screenshot = screenshot.replace(/^\.\//, `${baseUrl}/`);
+                            }
+                            
+                            // Try to load config.json to get card background
+                            let cardBackgroundImage = null;
+                            let themeConfig = null;
+                            try {
+                                const configResponse = await fetch(`./${encodeURIComponent(themeData.folder)}/config.json`);
+                                if (configResponse.ok) {
+                                    themeConfig = await configResponse.json();
+                                    cardBackgroundImage = await findThemeCardBackground(themeData.folder, themeConfig);
+                                }
+                            } catch (e) {
+                                // Config not available yet, will be loaded in background
                             }
                             
                             return {
@@ -1281,10 +1302,14 @@
                                 author: themeData.author || 'Unknown',
                                 authorUrl: themeData.authorUrl || null,
                                 themeInfo: themeData,
+                                themeConfig: themeConfig,
+                                cardBackgroundImage: cardBackgroundImage,
                                 fromJson: true,
                                 needsConfigRefresh: true // Mark for config.json refresh
                             };
                         });
+                        
+                        discovered = await Promise.all(themePromises);
 
                         console.log(`📋 Loaded ${discovered.length} themes from themes.json`);
                         
@@ -1664,6 +1689,22 @@
                         
                         // Store theme config for styling buttons
                         themes[index].themeConfig = config;
+                        
+                        // Find and store card background image
+                        findThemeCardBackground(theme.folder, config).then(bgImage => {
+                            themes[index].cardBackgroundImage = bgImage;
+                            // Also update in allThemes array
+                            const allThemesIndex = allThemes.findIndex(t => t.folder === theme.folder);
+                            if (allThemesIndex >= 0) {
+                                allThemes[allThemesIndex].cardBackgroundImage = bgImage;
+                            }
+                            // Re-render if this theme is currently displayed
+                            if (displayedThemes.some(t => t.folder === theme.folder)) {
+                                applyFiltersAndPagination();
+                            }
+                        }).catch(err => {
+                            console.warn(`Failed to find card background for ${theme.folder}:`, err);
+                        });
                         
                         // Also update in allThemes array
                         const allThemesIndex = allThemes.findIndex(t => t.folder === theme.folder);
@@ -2681,6 +2722,60 @@
             }
         }
 
+        // Find theme background image for card background (4:3 aspect ratio)
+        async function findThemeCardBackground(themeFolder, themeConfig) {
+            if (!themeConfig) return null;
+            
+            // Priority order: desk_bg*.* > *bg*.* > wallpaper*.*
+            const patterns = [
+                // From config.json desktopWallpaper
+                themeConfig.desktopWallpaper,
+                // From config.json globalWallpaper  
+                themeConfig.globalWallpaper,
+                // From config.json settingConfig.wallpaper
+                themeConfig.settingConfig?.wallpaper,
+                // Common desk_bg patterns
+                'desk_bg001.png', 'desk_bg.png', 'desk_bg001.jpg', 'desk_bg.jpg',
+                // Common global_bg patterns
+                'global_bg001.png', 'global_bg.png', 'global_bg001.jpg', 'global_bg.jpg',
+                // Common wallpaper patterns
+                'Wallpaper@1x.png', 'wallpaper.png', 'Wallpaper.png', 'wallpaper.jpg'
+            ];
+            
+            // Filter out empty/null values
+            const validPatterns = patterns.filter(p => p && p.trim() !== '');
+            
+            // Try each pattern
+            for (const pattern of validPatterns) {
+                try {
+                    const url = `./${encodeURIComponent(themeFolder)}/${encodeURIComponent(pattern)}`;
+                    const response = await fetch(url, { method: 'HEAD' });
+                    if (response.ok) {
+                        return url;
+                    }
+                } catch (e) {
+                    // Continue to next pattern
+                }
+            }
+            
+            return null;
+        }
+        
+        // Get theme background color as fallback
+        function getThemeBackgroundColor(themeConfig) {
+            if (!themeConfig) return null;
+            
+            const menuConfig = themeConfig.menuConfig || {};
+            const dialogConfig = themeConfig.dialogConfig || {};
+            const statusConfig = themeConfig.statusConfig || {};
+            
+            // Try various background colors in priority order
+            return menuConfig.menuBackgroundColor || 
+                   dialogConfig.dialogBackgroundColor || 
+                   statusConfig.statusBarColor ||
+                   null;
+        }
+        
         // Find and load TTF font for a theme
         async function loadThemeFont(themeFolder) {
             // Check cache first
@@ -2883,11 +2978,21 @@
                 // Get author display name (for filtering)
                 const authorDisplay = theme.author === 'Unknown' ? 'All' : (theme.author || 'All');
                 
+                // Get theme background for card
+                const cardBgImage = theme.cardBackgroundImage || null;
+                const cardBgColor = getThemeBackgroundColor(themeConfig);
+                let cardBgStyle = '';
+                if (cardBgImage) {
+                    cardBgStyle = `background-image: url('${cardBgImage}');`;
+                } else if (cardBgColor) {
+                    cardBgStyle = `background-color: ${cardBgColor};`;
+                }
+                
                 // Use display index for UI, but store original index for selection
                 const displayIndex = themes.indexOf(theme);
 
                 return `
-                <div class="theme-card ${isInstalled ? 'installed' : ''} ${isDeviceOnly ? 'device-only' : ''} ${isSelected ? 'selected' : ''}" id="theme-${displayIndex}" onclick="toggleTheme(${allThemesIndex >= 0 ? allThemesIndex : displayIndex})">
+                <div class="theme-card ${isInstalled ? 'installed' : ''} ${isDeviceOnly ? 'device-only' : ''} ${isSelected ? 'selected' : ''}" id="theme-${displayIndex}" onclick="toggleTheme(${allThemesIndex >= 0 ? allThemesIndex : displayIndex})" style="${cardBgStyle}">
                     <div class="theme-checkbox ${isSelected ? 'checked' : ''}" onclick="toggleTheme(${allThemesIndex >= 0 ? allThemesIndex : displayIndex}, event)"></div>
                     <div class="theme-share-icon" onclick="shareThemeLink('${theme.folder}', event)" title="Share this theme"></div>
                     <a href="${theme.folder}/index.html" onclick="event.stopPropagation();" style="text-decoration: none; display: block;">
