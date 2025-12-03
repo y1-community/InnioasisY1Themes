@@ -56,6 +56,14 @@ The `config.json` file in your theme's folder is the **most authoritative** sour
 
 **Priority:** Information in `config.json` takes precedence over `themes.json` when both are present.
 
+**Important:** The `authorUrl` field can be used for **any link of the author's choice** - this could be:
+- A link to the original source/announcement for the theme (e.g., Reddit post, forum thread)
+- The author's portfolio or personal website
+- The author's social media profile
+- Any other relevant link the author wants to share
+
+This URL will be automatically linked from all mentions of the author's name on the theme's `index.html` description page, making it easy for users to find more information about the theme or the author's other work.
+
 #### 2. `themes.json` (Root Directory - Fallback)
 
 The `themes.json` file in the repository root serves as a fast cache for the main page. It contains an array of theme objects:
@@ -78,6 +86,8 @@ The `themes.json` file in the repository root serves as a fast cache for the mai
 
 **Priority:** Used as a fallback if `config.json` doesn't contain theme information, or for initial page load performance.
 
+**Note:** The `authorUrl` in `themes.json` works the same way as in `config.json` - it can point to any link the author chooses (original source, portfolio, social media, etc.) and will be linked from author mentions on the theme's description page.
+
 ### Theme URLs and Social Sharing
 
 Each theme automatically receives a unique URL based on its folder name:
@@ -86,6 +96,24 @@ Each theme automatically receives a unique URL based on its folder name:
 
 **Example:** If your theme folder is named `Aero`, the theme's URL will be:
 - `https://themes.innioasis.app/Aero`
+
+**⚠️ Important: `index.html` is Required for Theme URLs**
+
+For a theme to be accessible via its URL and shareable, **you must include an `index.html` file** in your theme's folder. Without `index.html`, users will not be able to:
+- Visit the theme's dedicated page
+- Share the theme's URL on social media
+- Link directly to the theme from other websites
+- Bookmark the theme page
+
+**How it works:**
+- When you place an `index.html` file in your theme folder, GitHub Pages automatically serves it when someone visits `https://themes.innioasis.app/[YourThemeFolder]`
+- The main themes page links to individual themes using the format `[ThemeFolder]/index.html`
+- If `index.html` is missing, the link will result in a 404 error
+
+**Getting started:**
+- You can copy the `index.html` template from another theme's folder
+- The `index.html` file will automatically load theme information from `config.json` and `themes.json` (as described above)
+- You don't need to manually edit `index.html` - it will dynamically display your theme's information
 
 This URL is useful for:
 - **Social Sharing:** Share your theme directly on social media platforms

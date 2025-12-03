@@ -743,6 +743,12 @@
                     <select id="author-filter" onchange="handleAuthorFilterChange()" style="padding: 8px 12px; border: 2px solid #667eea; border-radius: 8px; font-size: 1rem; background: white; cursor: pointer;">
                         <option value="All">All</option>
                     </select>
+                    ${deviceFolderHandle ? `
+                    <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; color: #333; cursor: pointer; margin-left: 20px;">
+                        <input type="checkbox" id="device-only-filter" onchange="handleDeviceOnlyFilterChange()" style="width: 18px; height: 18px; cursor: pointer;">
+                        Manage on Device Themes
+                    </label>
+                    ` : ''}
                     <span id="theme-count" style="margin-left: auto; color: #666; font-weight: 500;"></span>
                 </div>
             </div>
@@ -1091,6 +1097,7 @@
         let currentPage = 1;
         let themesPerPage = 12;
         let selectedAuthor = 'All';
+        let showDeviceOnly = false; // Filter for device-only themes
         let allThemes = []; // Store all themes before filtering
         let filteredThemes = []; // Themes after filtering
         let displayedThemes = []; // Themes for current page
@@ -2494,8 +2501,15 @@
 
         // Apply filters and pagination
         function applyFiltersAndPagination() {
-            // Filter by author
+            // Filter by author and device-only
             filteredThemes = allThemes.filter(theme => {
+                // Device-only filter: if enabled, only show themes that are on device but not on website
+                if (showDeviceOnly) {
+                    const isDeviceOnly = theme.installed && !theme.availableOnServer;
+                    if (!isDeviceOnly) return false;
+                }
+                
+                // Author filter
                 if (selectedAuthor === 'All') {
                     return true;
                 }
@@ -2531,6 +2545,16 @@
             if (!authorFilter) return;
             
             selectedAuthor = authorFilter.value;
+            currentPage = 1; // Reset to first page
+            applyFiltersAndPagination();
+        }
+        
+        // Handle device-only filter change
+        function handleDeviceOnlyFilterChange() {
+            const deviceOnlyFilter = document.getElementById('device-only-filter');
+            if (!deviceOnlyFilter) return;
+            
+            showDeviceOnly = deviceOnlyFilter.checked;
             currentPage = 1; // Reset to first page
             applyFiltersAndPagination();
         }
@@ -2717,6 +2741,11 @@
             const filtersContainer = document.getElementById('filters-container');
             if (filtersContainer) {
                 filtersContainer.style.display = allThemes.length > 0 ? 'block' : 'none';
+                // Update device-only filter visibility based on device connection
+                const deviceOnlyFilterContainer = filtersContainer.querySelector('label[for="device-only-filter"]');
+                if (deviceOnlyFilterContainer) {
+                    deviceOnlyFilterContainer.style.display = deviceFolderHandle ? 'flex' : 'none';
+                }
             }
             
             // Update author filter options
@@ -2865,7 +2894,13 @@
                                 </span>
                             </button>
                         ` : isDeviceOnly ? `
-                            <!-- No button for device-only themes (not available on server) -->
+                            <a href="https://github.com/y1-community/InnioasisY1Themes/tree/main?tab=readme-ov-file#-method-3-github-repository" target="_blank" onclick="event.stopPropagation();" style="display: inline-block; width: 100%; text-decoration: none;">
+                                <button class="install-btn" style="${buttonStyle} position: relative; z-index: 1; cursor: pointer;">
+                                    <span style="display: flex; align-items: center; justify-content: space-between; width: 100%; position: relative; z-index: 2;">
+                                        <span style="position: relative; z-index: 3; flex: 1; text-align: left;">Add to website</span>
+                                    </span>
+                                </button>
+                            </a>
                         ` : `
                             <button class="install-btn install" 
                                     onclick="${isMobileMode || !deviceFolderHandle ? 'downloadSingleTheme' : 'installSingleTheme'}(${allThemesIndex >= 0 ? allThemesIndex : displayIndex}, event)"
