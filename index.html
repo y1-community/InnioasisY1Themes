@@ -125,6 +125,33 @@
         .btn-secondary:hover {
             box-shadow: 0 6px 20px rgba(79, 172, 254, 0.6);
         }
+        
+        /* Compact pagination styling */
+        .pagination-btn {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            min-width: auto;
+        }
+        
+        /* More compact pagination on desktop */
+        @media (min-width: 769px) {
+            #pagination-container-top,
+            #pagination-container-bottom {
+                padding: 8px 16px;
+                margin: 15px 0 10px 0;
+            }
+            
+            .pagination-btn {
+                padding: 6px 12px;
+                font-size: 0.85rem;
+            }
+            
+            #page-info-top,
+            #page-info-bottom {
+                padding: 0 10px;
+                font-size: 0.9rem;
+            }
+        }
 
         .status {
             padding: 15px;
@@ -751,14 +778,23 @@
                 </div>
             </div>
 
+            <!-- Pagination Controls (at top) -->
+            <div id="pagination-container-top" style="display: none; margin: 20px 0 10px 0; padding: 12px 20px; background: #f8f9fa; border-radius: 10px;">
+                <div id="pagination-controls-top" style="display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <button id="prev-page-top" onclick="changePage(-1)" class="btn btn-secondary pagination-btn" disabled>← Prev</button>
+                    <span id="page-info-top" style="padding: 0 12px; font-weight: 600; color: #333; font-size: 0.95rem;"></span>
+                    <button id="next-page-top" onclick="changePage(1)" class="btn btn-secondary pagination-btn">Next →</button>
+                </div>
+            </div>
+
             <div id="theme-grid" class="theme-grid"></div>
 
             <!-- Pagination Controls (at bottom) -->
-            <div id="pagination-container" style="display: none; margin: 30px 0 20px 0; padding: 20px; background: #f8f9fa; border-radius: 10px;">
-                <div id="pagination-controls" style="display: flex; justify-content: center; align-items: center; gap: 10px;">
-                    <button id="prev-page" onclick="changePage(-1)" class="btn btn-secondary" disabled>← Previous</button>
-                    <span id="page-info" style="padding: 0 15px; font-weight: 600; color: #333;"></span>
-                    <button id="next-page" onclick="changePage(1)" class="btn btn-secondary">Next →</button>
+            <div id="pagination-container-bottom" style="display: none; margin: 20px 0 30px 0; padding: 12px 20px; background: #f8f9fa; border-radius: 10px;">
+                <div id="pagination-controls-bottom" style="display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <button id="prev-page-bottom" onclick="changePage(-1)" class="btn btn-secondary pagination-btn" disabled>← Prev</button>
+                    <span id="page-info-bottom" style="padding: 0 12px; font-weight: 600; color: #333; font-size: 0.95rem;"></span>
+                    <button id="next-page-bottom" onclick="changePage(1)" class="btn btn-secondary pagination-btn">Next →</button>
                 </div>
             </div>
 
@@ -2677,25 +2713,38 @@
 
         // Update pagination controls
         function updatePaginationControls() {
-            const prevBtn = document.getElementById('prev-page');
-            const nextBtn = document.getElementById('next-page');
-            const pageInfo = document.getElementById('page-info');
-            const paginationContainer = document.getElementById('pagination-container');
+            // Update both top and bottom pagination
+            const prevBtnTop = document.getElementById('prev-page-top');
+            const nextBtnTop = document.getElementById('next-page-top');
+            const pageInfoTop = document.getElementById('page-info-top');
+            const paginationContainerTop = document.getElementById('pagination-container-top');
             
-            if (!prevBtn || !nextBtn || !pageInfo || !paginationContainer) return;
+            const prevBtnBottom = document.getElementById('prev-page-bottom');
+            const nextBtnBottom = document.getElementById('next-page-bottom');
+            const pageInfoBottom = document.getElementById('page-info-bottom');
+            const paginationContainerBottom = document.getElementById('pagination-container-bottom');
             
             const totalPages = Math.ceil(filteredThemes.length / themesPerPage);
             
-            prevBtn.disabled = currentPage <= 1;
-            nextBtn.disabled = currentPage >= totalPages;
-            
-            if (totalPages > 1) {
-                pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
-                paginationContainer.style.display = 'block';
-            } else {
-                pageInfo.textContent = '';
-                paginationContainer.style.display = 'none';
+            // Helper function to update a pagination set
+            function updatePaginationSet(prevBtn, nextBtn, pageInfo, container) {
+                if (!prevBtn || !nextBtn || !pageInfo || !container) return;
+                
+                prevBtn.disabled = currentPage <= 1;
+                nextBtn.disabled = currentPage >= totalPages;
+                
+                if (totalPages > 1) {
+                    pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+                    container.style.display = 'block';
+                } else {
+                    pageInfo.textContent = '';
+                    container.style.display = 'none';
+                }
             }
+            
+            // Update both pagination sets
+            updatePaginationSet(prevBtnTop, nextBtnTop, pageInfoTop, paginationContainerTop);
+            updatePaginationSet(prevBtnBottom, nextBtnBottom, pageInfoBottom, paginationContainerBottom);
         }
 
         // Update theme count display
