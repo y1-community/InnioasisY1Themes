@@ -2883,7 +2883,7 @@
                 // Get itemRightArrow icon (2.png) for button
                 const itemRightArrow = itemConfig.itemRightArrow || null;
                 const arrowIcon = itemRightArrow && itemRightArrow.trim() !== '' 
-                    ? `<img src="./${encodeURIComponent(theme.folder)}/${encodeURIComponent(itemRightArrow)}" alt="→" style="height: 1em; width: auto; vertical-align: middle; margin-left: auto; display: block;">`
+                    ? `<img src="./${encodeURIComponent(theme.folder)}/${encodeURIComponent(itemRightArrow)}" alt="→" style="height: 1em; width: auto; vertical-align: middle; flex-shrink: 0;">`
                     : '';
                 
                 // Build button style with theme colors and image
