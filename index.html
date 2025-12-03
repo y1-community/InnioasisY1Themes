@@ -1552,6 +1552,28 @@
                         // Store theme config for styling buttons
                         themes[index].themeConfig = config;
                         
+                        // Discover *RightArrow*.* and *Selected*.* files from directory listing
+                        try {
+                            const files = await getThemeFiles(theme.folder);
+                            // Find files matching *RightArrow*.* pattern
+                            const rightArrowFiles = files.filter(f => 
+                                /RightArrow/i.test(f) && /\.(png|jpg|jpeg|gif|svg)$/i.test(f)
+                            );
+                            if (rightArrowFiles.length > 0) {
+                                themes[index].arrowIconFile = rightArrowFiles[0];
+                            }
+                            
+                            // Find files matching *Selected*.* pattern
+                            const selectedFiles = files.filter(f => 
+                                /Selected/i.test(f) && /\.(png|jpg|jpeg|gif|svg)$/i.test(f)
+                            );
+                            if (selectedFiles.length > 0) {
+                                themes[index].selectedBgImageFile = selectedFiles[0];
+                            }
+                        } catch (error) {
+                            // File discovery failed, continue without pattern-matched files
+                        }
+                        
                         // Also update in allThemes array
                         const allThemesIndex = allThemes.findIndex(t => t.folder === theme.folder);
                         if (allThemesIndex >= 0) {
@@ -1560,6 +1582,13 @@
                             allThemes[allThemesIndex].description = themeInfo.description || `Y1 Theme: ${theme.folder}`;
                             allThemes[allThemesIndex].author = themeInfo.author || 'Unknown';
                             allThemes[allThemesIndex].authorUrl = themeInfo.authorUrl || null;
+                            // Copy discovered files
+                            if (themes[index].arrowIconFile) {
+                                allThemes[allThemesIndex].arrowIconFile = themes[index].arrowIconFile;
+                            }
+                            if (themes[index].selectedBgImageFile) {
+                                allThemes[allThemesIndex].selectedBgImageFile = themes[index].selectedBgImageFile;
+                            }
                         }
 
                         return true;
@@ -2221,11 +2250,12 @@
             });
         }
 
-        // Get all unique authors from themes (replace "Unknown" with "All")
+        // Get all unique authors from themes (replace "Unknown" with "All" for filter dropdown)
         function getUniqueAuthors() {
             const authors = new Set();
             allThemes.forEach(theme => {
                 const author = theme.author || 'Unknown';
+                // Use "All" for filter dropdown, but display will show "Author not listed"
                 authors.add(author === 'Unknown' ? 'All' : author);
             });
             return Array.from(authors).sort();
@@ -2264,7 +2294,11 @@
                     return true;
                 }
                 const themeAuthor = theme.author || 'Unknown';
-                return (themeAuthor === 'Unknown' ? 'All' : themeAuthor) === selectedAuthor;
+                // Handle both "All" (filter) and "Author not listed" (display) for Unknown authors
+                if (selectedAuthor === 'Author not listed') {
+                    return themeAuthor === 'Unknown';
+                }
+                return themeAuthor === selectedAuthor;
             });
 
             // Calculate pagination
@@ -2299,8 +2333,10 @@
         function filterByAuthor(authorName) {
             const authorFilter = document.getElementById('author-filter');
             if (authorFilter && authorName) {
-                authorFilter.value = authorName;
-                selectedAuthor = authorName;
+                // Convert "Author not listed" to "All" for the filter dropdown
+                const filterValue = authorName === 'Author not listed' ? 'All' : authorName;
+                authorFilter.value = filterValue;
+                selectedAuthor = filterValue;
                 currentPage = 1; // Reset to first page
                 applyFiltersAndPagination();
                 
@@ -2517,49 +2553,74 @@
                 const menuConfig = themeConfig.menuConfig || {};
                 const dialogConfig = themeConfig.dialogConfig || {};
                 
-                // Get itemRightArrow icon (2.png) for button - check if available
-                const itemRightArrow = itemConfig.itemRightArrow || null;
-                const hasArrow = itemRightArrow && itemRightArrow.trim() !== '';
+                // Get arrow icon - try config first, then look for *RightArrow*.* pattern
+                let arrowIconFile = itemConfig.itemRightArrow || null;
+                if (!arrowIconFile || arrowIconFile.trim() === '') {
+                    // Try to find *RightArrow*.* pattern from theme files (check both displayed theme and allThemes)
+                    const fullTheme = allThemes.find(t => t.folder === theme.folder) || theme;
+                    arrowIconFile = fullTheme.arrowIconFile || theme.arrowIconFile || null;
+                }
+                const hasArrow = arrowIconFile && arrowIconFile.trim() !== '';
                 
-                // Try to get selected background image (preferred)
-                const selectedBgImage = itemConfig.itemSelectedBackground || menuConfig.menuItemSelectedBackground || 
-                                       dialogConfig.dialogOptionSelectedBackground || null;
+                // Try to get selected background image - check config first, then *Selected*.* pattern
+                let selectedBgImage = itemConfig.itemSelectedBackground || menuConfig.menuItemSelectedBackground || 
+                                     dialogConfig.dialogOptionSelectedBackground || null;
+                if (!selectedBgImage || selectedBgImage.trim() === '') {
+                    // Try to find *Selected*.* pattern from theme files (check both displayed theme and allThemes)
+                    const fullTheme = allThemes.find(t => t.folder === theme.folder) || theme;
+                    selectedBgImage = fullTheme.selectedBgImageFile || theme.selectedBgImageFile || null;
+                }
                 
-                // Button background = selected background image if available, otherwise use selected background color
+                // Button background = selected background image if available, otherwise use theme color, then fallback
                 let buttonBgStyle = '';
                 if (selectedBgImage && selectedBgImage.trim() !== '') {
                     const baseUrl = window.location.origin;
                     const imageUrl = `./${encodeURIComponent(theme.folder)}/${encodeURIComponent(selectedBgImage)}`;
                     buttonBgStyle = `background-image: url('${imageUrl}'); background-size: 100% 100%; background-repeat: no-repeat; background-position: center;`;
                 } else {
-                    // Use selected background color from theme (the color that selected items use)
-                    // Priority: selected background colors, then general background colors, then fallback
-                    // Note: menuItemSelectedBackground and itemSelectedBackground might be image filenames, not colors
-                    // So we check for actual color properties first
-                    const buttonBgColor = menuConfig.menuBackgroundColor || 
-                                         dialogConfig.dialogBackgroundColor || 
-                                         itemConfig.itemBackgroundColor ||
-                                         '#667eea'; // Default fallback
+                    // Use theme color from config - try to extract color from selected text color or background colors
+                    // Priority: Extract dominant color from selected text color (often matches theme palette)
+                    // Then use menu/dialog background colors, then fallback
+                    let buttonBgColor = null;
+                    
+                    // Try to use a similar color from the theme palette
+                    // If selected text color is light, use a darker version; if dark, use a lighter version
+                    const selectedTextColor = itemConfig.itemSelectedTextColor || menuConfig.menuItemSelectedTextColor;
+                    if (selectedTextColor && selectedTextColor.startsWith('#')) {
+                        // Use the selected text color as a base, but make it slightly darker/lighter for background
+                        // For now, just use it directly - it's from the theme's palette
+                        buttonBgColor = selectedTextColor;
+                    }
+                    
+                    // Fallback to background colors
+                    if (!buttonBgColor) {
+                        buttonBgColor = menuConfig.menuBackgroundColor || 
+                                      dialogConfig.dialogBackgroundColor || 
+                                      itemConfig.itemBackgroundColor ||
+                                      '#667eea'; // Default fallback
+                    }
+                    
                     buttonBgStyle = `background-color: ${buttonBgColor};`;
                 }
                 
-                // Button text color: ALWAYS use selected/highlighted menu text item color (most appropriate choice)
-                // This is the color that stands out on selected/highlighted menu items
-                const buttonTextColor = menuConfig.menuItemSelectedTextColor || 
-                                      itemConfig.itemSelectedTextColor || 
+                // Button text color: Use selected/highlighted text item color (most appropriate choice)
+                // Priority: itemSelectedTextColor (for selected list items) first, as buttons use selected background images
+                // Then menuItemSelectedTextColor (for menu items), then dialog option selected text color
+                const buttonTextColor = itemConfig.itemSelectedTextColor || 
+                                      menuConfig.menuItemSelectedTextColor || 
                                       dialogConfig.dialogOptionSelectedTextColor ||
                                       '#ffffff'; // Fallback to white if not configured
                 
                 // Arrow icon - fits within button height (doesn't expand button)
                 const arrowIcon = hasArrow 
-                    ? `<img src="./${encodeURIComponent(theme.folder)}/${encodeURIComponent(itemRightArrow)}" alt="→" style="height: 100%; max-height: 100%; width: auto; flex-shrink: 0; object-fit: contain; display: block;">`
+                    ? `<img src="./${encodeURIComponent(theme.folder)}/${encodeURIComponent(arrowIconFile)}" alt="→" style="height: 100%; max-height: 100%; width: auto; flex-shrink: 0; object-fit: contain; display: block;">`
                     : '';
                 
                 // Build button style with theme colors, image, and font
                 const buttonStyle = `${buttonBgStyle} color: ${buttonTextColor}; ${fontStyle}`;
                 
-                // Get author display name (for filtering)
-                const authorDisplay = theme.author === 'Unknown' ? 'All' : (theme.author || 'All');
+                // Get author display name (for display - show "Author not listed" instead of "All")
+                const authorDisplay = theme.author === 'Unknown' ? 'Author not listed' : (theme.author || 'Author not listed');
                 
                 // Use display index for UI, but store original index for selection
                 const displayIndex = themes.indexOf(theme);
