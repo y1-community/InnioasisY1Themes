@@ -303,7 +303,7 @@
         .theme-share-icon {
             position: absolute;
             top: 10px;
-            right: 10px;
+            left: 10px;
             width: 36px;
             height: 36px;
             background: rgba(255, 255, 255, 0.95);
@@ -321,6 +321,27 @@
 
         .theme-card:hover .theme-share-icon {
             opacity: 1;
+        }
+        
+        .share-link-mobile {
+            display: none !important;
+        }
+        
+        @media (max-width: 768px) {
+            .theme-share-icon {
+                display: none;
+            }
+            .share-link-mobile {
+                display: block !important;
+            }
+        }
+        
+        .author-link {
+            transition: opacity 0.2s;
+        }
+        
+        .author-link:hover {
+            opacity: 0.8;
         }
 
         .theme-share-icon:hover {
@@ -369,6 +390,8 @@
             width: 240px;
             height: 180px;
             margin: 0 auto 15px;
+            cursor: pointer;
+            position: relative;
             border-radius: 12px;
             overflow: hidden;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -1380,6 +1403,17 @@
                     
                     // Try to find a screenshot in this directory (uses direct HTTPS, minimal API usage)
                     const screenshotUrl = await findScreenshotInDirectory(themeName);
+                    
+                    // Try to get full config for theme colors
+                    let themeConfig = null;
+                    try {
+                        const configResponse = await fetch(`https://raw.githubusercontent.com/team-slide/InnioasisY1Themes/main/${encodeURIComponent(themeName)}/config.json`);
+                        if (configResponse.ok) {
+                            themeConfig = await configResponse.json();
+                        }
+                    } catch (e) {
+                        // Config fetch failed, continue without it
+                    }
 
                     discovered.push({
                         name: themeInfo.title || themeName,
@@ -1388,7 +1422,8 @@
                         description: themeInfo.description || `Y1 Theme: ${themeName}`,
                         author: themeInfo.author || 'Unknown',
                         authorUrl: themeInfo.authorUrl || null,
-                        themeInfo: themeInfo
+                        themeInfo: themeInfo,
+                        themeConfig: themeConfig
                     });
                 }
             }
@@ -1578,6 +1613,19 @@
                         themes[index].themeInfo = themeInfo;
                         themes[index].loading = false;
                         themes[index].needsConfigRefresh = false;
+                        
+                        // Store theme config for styling buttons
+                        themes[index].themeConfig = config;
+                        
+                        // Also update in allThemes array
+                        const allThemesIndex = allThemes.findIndex(t => t.folder === theme.folder);
+                        if (allThemesIndex >= 0) {
+                            allThemes[allThemesIndex].themeConfig = config;
+                            allThemes[allThemesIndex].name = themeInfo.title || theme.folder;
+                            allThemes[allThemesIndex].description = themeInfo.description || `Y1 Theme: ${theme.folder}`;
+                            allThemes[allThemesIndex].author = themeInfo.author || 'Unknown';
+                            allThemes[allThemesIndex].authorUrl = themeInfo.authorUrl || null;
+                        }
 
                         return true;
                     } else {
@@ -2511,6 +2559,23 @@
             currentPage = 1; // Reset to first page
             applyFiltersAndPagination();
         }
+        
+        // Filter by author when clicking author name
+        function filterByAuthor(authorName) {
+            const authorFilter = document.getElementById('author-filter');
+            if (authorFilter && authorName) {
+                authorFilter.value = authorName;
+                selectedAuthor = authorName;
+                currentPage = 1; // Reset to first page
+                applyFiltersAndPagination();
+                
+                // Scroll to top of filters
+                const filtersContainer = document.getElementById('filters-container');
+                if (filtersContainer) {
+                    filtersContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        }
 
         // Change page
         function changePage(direction) {
@@ -2739,15 +2804,35 @@
                 const fontInfo = themeFonts.get(theme.folder);
                 const fontStyle = fontInfo ? `font-family: '${fontInfo.fontFamily}', sans-serif;` : '';
                 
+                // Extract theme colors from config
+                const themeConfig = theme.themeConfig || {};
+                const itemConfig = themeConfig.itemConfig || {};
+                const menuConfig = themeConfig.menuConfig || {};
+                const dialogConfig = themeConfig.dialogConfig || {};
+                
+                // Get background color (prefer menuBackgroundColor, fallback to dialogBackgroundColor)
+                const bgColor = menuConfig.menuBackgroundColor || dialogConfig.dialogBackgroundColor || '#667eea';
+                // Get selected text color (prefer menuItemSelectedTextColor, fallback to itemSelectedTextColor)
+                const selectedTextColor = menuConfig.menuItemSelectedTextColor || itemConfig.itemSelectedTextColor || '#ffffff';
+                
+                // Build button style with theme colors
+                const buttonStyle = `background-color: ${bgColor}; color: ${selectedTextColor}; ${fontStyle}`;
+                
+                // Get author display name (for filtering)
+                const authorDisplay = theme.author === 'Unknown' ? 'All' : (theme.author || 'All');
+                
                 // Use display index for UI, but store original index for selection
                 const displayIndex = themes.indexOf(theme);
 
                 return `
                 <div class="theme-card ${isInstalled ? 'installed' : ''} ${isDeviceOnly ? 'device-only' : ''} ${isSelected ? 'selected' : ''}" id="theme-${displayIndex}" onclick="toggleTheme(${allThemesIndex >= 0 ? allThemesIndex : displayIndex})">
                     <div class="theme-checkbox ${isSelected ? 'checked' : ''}" onclick="toggleTheme(${allThemesIndex >= 0 ? allThemesIndex : displayIndex}, event)"></div>
-                    <div class="theme-screenshot ${theme.screenshot ? '' : 'no-preview'}" id="screenshot-${displayIndex}" data-theme-index="${displayIndex}">
-                        ${theme.screenshot ? '' : '🎨'}
-                    </div>
+                    <div class="theme-share-icon" onclick="shareThemeLink('${theme.folder}', event)" title="Share this theme"></div>
+                    <a href="${theme.folder}/index.html" onclick="event.stopPropagation();" style="text-decoration: none; display: block;">
+                        <div class="theme-screenshot ${theme.screenshot ? '' : 'no-preview'}" id="screenshot-${displayIndex}" data-theme-index="${displayIndex}">
+                            ${theme.screenshot ? '' : '🎨'}
+                        </div>
+                    </a>
                     <div class="theme-name" style="${fontStyle}">
                         <a href="${theme.folder}/index.html" style="color: inherit; text-decoration: none; cursor: pointer; ${fontStyle}" onclick="event.stopPropagation();">
                             ${theme.name}
@@ -2758,8 +2843,8 @@
                         <div class="theme-description">${theme.description || 'Y1 Theme'}</div>
                         <div class="theme-author">
                             by ${theme.authorUrl ?
-                        `<a href="${theme.authorUrl}" target="_blank" class="author-link">${theme.author || 'All'}</a>` :
-                        (theme.author === 'Unknown' ? 'All' : (theme.author || 'All'))
+                        `<a href="${theme.authorUrl}" target="_blank" class="author-link" onclick="event.stopPropagation();">${authorDisplay}</a>` :
+                        `<span class="author-link" style="cursor: pointer; text-decoration: underline;" onclick="event.stopPropagation(); filterByAuthor('${authorDisplay}');">${authorDisplay}</span>`
                     }
                         </div>
                     </div>
@@ -2767,6 +2852,7 @@
                         ${isUpdatable ? `
                             <button class="install-btn update" 
                                     onclick="updateSingleTheme(${allThemesIndex >= 0 ? allThemesIndex : displayIndex}, event)" 
+                                    style="${buttonStyle}"
                                     ${!deviceFolderHandle ? 'disabled' : ''}>
                                 🔄 Update
                             </button>
@@ -2774,17 +2860,15 @@
                             <!-- No button for device-only themes (not available on server) -->
                         ` : `
                             <button class="install-btn install" 
-                                    onclick="${isMobileMode || !deviceFolderHandle ? 'downloadSingleTheme' : 'installSingleTheme'}(${allThemesIndex >= 0 ? allThemesIndex : displayIndex}, event)">
+                                    onclick="${isMobileMode || !deviceFolderHandle ? 'downloadSingleTheme' : 'installSingleTheme'}(${allThemesIndex >= 0 ? allThemesIndex : displayIndex}, event)"
+                                    style="${buttonStyle}">
                                 ${isMobileMode || !deviceFolderHandle ? '📦 Download' : '📥 Install'}
                             </button>
                         `}
-                        <button class="install-btn share" 
-                                onclick="shareThemeLink('${theme.folder}', event)" 
-                                style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); margin-top: 8px;">
+                        <a href="#" class="share-link-mobile" onclick="shareThemeLink('${theme.folder}', event); return false;" style="display: none; margin-top: 8px; text-align: center; color: #667eea; text-decoration: none; ${fontStyle}">
                             🔗 Share
-                        </button>
+                        </a>
                     </div>
-                    <div class="theme-share-icon" onclick="shareThemeLink('${theme.folder}', event)" title="Share this theme"></div>
                 </div>
                 `;
             }).join('');
