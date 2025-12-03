@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lain-ish Theme - Official Innioasis Y1 Community Themes</title>
-    <meta name="description" content="Download Lain-ish theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. A theme inspired by Lain">
-    <meta name="keywords" content="Innioasis Y1, Y1 themes, MP3 player themes, Lain-ish, Y1 customization, official Y1 themes">
+    <title>MelodyMuncher Theme - Official Innioasis Y1 Community Themes</title>
+    <meta name="description" content="Download MelodyMuncher theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. Theme for Innioasis Y1: MelodyMuncher">
+    <meta name="keywords" content="Innioasis Y1, Y1 themes, MP3 player themes, MelodyMuncher, Y1 customization, official Y1 themes">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         body {
@@ -108,6 +108,11 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         
+        @font-face {
+            font-family: 'ThemeFont';
+            src: url('font.ttf');
+        }
+        
         .header-section {
             display: flex;
             align-items: center;
@@ -186,17 +191,17 @@
     <div class="container">
         <div class="header-section">
             <div class="header-text">
-                <h1 id="theme-name" >Lain-ish</h1>
+                <h1 id="theme-name" style="font-family: 'ThemeFont', sans-serif;">MelodyMuncher</h1>
                 <div class="author" id="theme-author">
-                    Innioasis Y1 theme by u/ZealousidealLeg1432
+                    Innioasis Y1 theme by Unknown
                 </div>
-                <p class="description" id="theme-description">A theme inspired by Lain</p>
+                <p class="description" id="theme-description">Theme for Innioasis Y1: MelodyMuncher</p>
             </div>
-            
+            <img src="cover.png" alt="MelodyMuncher cover" class="cover-image" onclick="openLightbox('cover.png')">
         </div>
         
         <div class="screenshots-section">
-            <h3 >Screenshots</h3>
+            <h3 style="font-family: 'ThemeFont', sans-serif;">Screenshots</h3>
             <p>No screenshots available.</p>
         </div>
         
@@ -209,14 +214,14 @@
 
         <!-- SEO Content -->
         <div class="seo-content" style="margin-top: 40px; text-align: left; color: #666; font-size: 0.9rem; line-height: 1.6;">
-            <h2 >About the Lain-ish Theme for Innioasis Y1</h2>
-            <p>This theme was made by <strong>u/ZealousidealLeg1432</strong>. A theme inspired by Lain</p>
+            <h2 style="font-family: 'ThemeFont', sans-serif;">About the MelodyMuncher Theme for Innioasis Y1</h2>
+            <p>This theme was made by <strong>Unknown</strong>. Theme for Innioasis Y1: MelodyMuncher</p>
         </div>
         
         <div style="margin-top: 30px; font-size: 0.9rem; color: #888;">
             <a href="../index.html" class="back-link">← Back to All Themes</a>
             <span style="margin: 0 10px;">|</span>
-            <a href="https://github.com/y1-community/InnioasisY1Themes/tree/main/Lain-ish" target="_blank" style="color: #888; text-decoration: none;">✏️ Edit or Update this Theme</a>
+            <a href="https://github.com/y1-community/InnioasisY1Themes/tree/main/MelodyMuncher" target="_blank" style="color: #888; text-decoration: none;">✏️ Edit or Update this Theme</a>
         </div>
     </div>
 
@@ -585,7 +590,7 @@
 
         // Install Theme directly to device
         async function installTheme() {
-            const folderName = 'Lain-ish';
+            const folderName = 'MelodyMuncher';
             const btn = document.getElementById('install-btn');
             const status = document.getElementById('download-status');
             
@@ -664,8 +669,8 @@
 
         // Download theme as ZIP
         async function downloadTheme() {
-            const folderName = 'Lain-ish';
-            const themeName = 'Lain-ish';
+            const folderName = 'MelodyMuncher';
+            const themeName = 'MelodyMuncher';
             const btn = document.getElementById('download-btn');
             const status = document.getElementById('download-status');
             

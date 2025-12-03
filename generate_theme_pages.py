@@ -1,24 +1,108 @@
 import json
 import os
 import glob
+import urllib.parse
 
-# Read themes.json
-with open('themes.json', 'r') as f:
-    data = json.load(f)
+def get_images(folder):
+    extensions = ['*.png', '*.jpg', '*.jpeg', '*.gif', '*.PNG', '*.JPG', '*.JPEG', '*.GIF']
+    images = []
+    for ext in extensions:
+        images.extend(glob.glob(os.path.join(folder, ext)))
+    
+    # Separate cover and screenshots
+    cover_image = None
+    screenshots = []
+    
+    for img_path in sorted(images):
+        filename = os.path.basename(img_path)
+        lower_name = filename.lower()
+        name_without_ext = os.path.splitext(lower_name)[0]
+        
+        if name_without_ext == 'cover' and not cover_image:
+            cover_image = filename
+        elif 'screenshot' in lower_name:
+            screenshots.append(filename)
+            
+    return cover_image, screenshots
 
-themes = data['themes']
+def get_font(folder):
+    fonts = glob.glob(os.path.join(folder, '*.ttf'))
+    if fonts:
+        return os.path.basename(fonts[0])
+    return None
 
-# HTML Template with Download Button
+# New: Get background images for blurred cycling
+def get_backgrounds(folder):
+    extensions = ['*.png', '*.jpg', '*.jpeg', '*.gif', '*.PNG', '*.JPG', '*.JPEG', '*.GIF']
+    backgrounds = []
+    for ext in extensions:
+        for path in glob.glob(os.path.join(folder, ext)):
+            filename = os.path.basename(path).lower()
+            name_without_ext = os.path.splitext(filename)[0]
+            if 'background' in name_without_ext:
+                backgrounds.append(filename)
+    return backgrounds
+
+# 1. Load existing themes.json
+try:
+    with open('themes.json', 'r') as f:
+        data = json.load(f)
+        themes = data.get('themes', [])
+except FileNotFoundError:
+    themes = []
+
+# 2. Scan directories for new themes
+# A theme is a folder with a 'cover.*' image
+all_dirs = [d for d in os.listdir('.') if os.path.isdir(d) and not d.startswith('.')]
+known_folders = {t['folder'] for t in themes}
+
+for folder in all_dirs:
+    # Check for cover image using get_images
+    cover_image, _ = get_images(folder)
+    
+    if cover_image:
+        if folder not in known_folders:
+            print(f"Discovered new theme: {folder}")
+            
+            # Try to read config.json
+            theme_data = {
+                'folder': folder,
+                'name': folder, # Default
+                'author': 'Unknown',
+                'description': f'Theme for Innioasis Y1: {folder}'
+            }
+            
+            config_path = os.path.join(folder, 'config.json')
+            if os.path.exists(config_path):
+                try:
+                    with open(config_path, 'r') as cf:
+                        config = json.load(cf)
+                        # Update only if keys exist
+                        if 'name' in config: theme_data['name'] = config['name']
+                        if 'author' in config: theme_data['author'] = config['author']
+                        if 'description' in config: theme_data['description'] = config['description']
+                except Exception as e:
+                    print(f"Error reading config.json for {folder}: {e}")
+            
+            themes.append(theme_data)
+            known_folders.add(folder)
+
+# 3. Write back to themes.json to ensure index.html sees them
+with open('themes.json', 'w') as f:
+    json.dump({'themes': themes}, f, indent=4)
+
+# HTML Template (Using single braces for CSS/JS, placeholders will be replaced via .replace())
 html_template = """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{name} - Innioasis Y1 Theme</title>
-    <meta name="description" content="{description}">
+    <title>{name} Theme - Official Innioasis Y1 Community Themes</title>
+    <meta name="description" content="Download {name} theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. {description}">
+    <meta name="keywords" content="Innioasis Y1, Y1 themes, MP3 player themes, {name}, Y1 customization, official Y1 themes">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
-        body {{
+        body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
@@ -28,8 +112,8 @@ html_template = """<!DOCTYPE html>
             display: flex;
             flex-direction: column;
             align-items: center;
-        }}
-        .container {{
+        }
+        .container {
             background: white;
             padding: 40px;
             border-radius: 20px;
@@ -38,48 +122,49 @@ html_template = """<!DOCTYPE html>
             width: 100%;
             text-align: center;
             margin-bottom: 20px;
-        }}
-        h1 {{
+        }
+        h1 {
             margin-bottom: 10px;
             color: #333;
-        }}
-        .author {{
+        }
+        .author {
             color: #666;
             margin-bottom: 20px;
             font-style: italic;
-        }}
-        .description {{
+        }
+        .description {
             line-height: 1.6;
             margin-bottom: 30px;
             color: #444;
-        }}
-        .gallery {{
+        }
+        .gallery {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
-        }}
-        .gallery-item {{
+        }
+        .gallery-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-        }}
-        .screenshot {{
+        }
+        .screenshot {
             width: 100%;
             border-radius: 10px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             object-fit: contain;
             transition: transform 0.2s;
-        }}
-        .screenshot:hover {{
+            cursor: pointer;
+        }
+        .screenshot:hover {
             transform: scale(1.02);
-        }}
-        .image-label {{
+        }
+        .image-label {
             margin-top: 8px;
             font-size: 0.8rem;
             color: #888;
-        }}
-        .btn {{
+        }
+        .btn {
             display: inline-block;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -92,196 +177,795 @@ html_template = """<!DOCTYPE html>
             border: none;
             cursor: pointer;
             font-size: 1rem;
-        }}
-        .btn:hover {{
+        }
+        .btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }}
-        .btn.download {{
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }}
-        .back-link {{
+        }
+        .btn.install {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .btn.download {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        .btn.share {
+            background: transparent;
+            color: #666;
+            border: 1px solid #ddd;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            box-shadow: none;
+        }
+        .btn.share:hover {
+            background: #f5f5f5;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        {font_css}
+        .header-section {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+        .header-text {
+            flex: 1;
+        }
+        .cover-image {
+            width: 200px;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .cover-image:hover {
+            transform: scale(1.05);
+        }
+        .screenshots-section {
+            margin: 30px 0;
+        }
+        .screenshots-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        /* Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            justify-content: center;
+            align-items: center;
+        }
+        .lightbox.active {
+            display: flex;
+        }
+        .lightbox-content {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 5px;
+            box-shadow: 0 0 20px rgba(255,255,255,0.2);
+        }
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .lightbox-close:hover {
+            color: #bbb;
+        }
+        .back-link {
             display: block;
             margin-top: 20px;
             color: #666;
             text-decoration: none;
             font-size: 0.9rem;
-        }}
-        .back-link:hover {{
+        }
+        .back-link:hover {
             text-decoration: underline;
-        }}
+        }
+        /* Existing CSS */
+        .bg-cycle {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            filter: blur(20px) brightness(0.5);
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
     </style>
 </head>
 <body>
+    {background_cycle_html}
     <div class="container">
-        <h1 id="theme-name">{name}</h1>
-        <div class="author" id="theme-author">by {author}</div>
+        <div class="header-section">
+            <div class="header-text">
+                <!-- Title and subtitle removed; using About line instead -->
+                <h2 {title_style}>About the {name} Theme for Innioasis Y1</h2>
+                <p class="description" id="theme-description">{description}</p>
+            </div>
+            {cover_html}
+        </div>
         
-        <p class="description" id="theme-description">{description}</p>
+        <div class="screenshots-section">
+            <h3 {title_style}>Screenshots</h3>
+            {gallery_html}
+        </div>
         
-        {gallery_html}
+        <div class="button-group" style="display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap; margin-top: 30px;">
+            <button id="install-btn" onclick="installTheme()" class="btn install" style="display: none;">🚀 Install on Y1</button>
+            <button id="download-btn" onclick="downloadTheme()" class="btn download">📦 Download ZIP</button>
+            <button id="share-btn" onclick="shareTheme()" class="btn share">🔗 Share</button>
+        </div>
+        <div id="download-status" style="margin-top: 10px; color: #666; display: none;">Starting download...</div>
+
+        <!-- SEO Content -->
+        <div class="seo-content" style="margin-top: 40px; text-align: left; color: #666; font-size: 0.9rem; line-height: 1.6;">
+            <p>This theme was made by <strong>{author}</strong>. {description}</p>
+        </div>
         
-        <a href="../index.html" class="btn">Install this Theme</a>
-        <button onclick="downloadTheme()" class="btn download">📦 Download ZIP</button>
-        
-        <a href="../index.html" class="back-link">← Back to All Themes</a>
+        <div style="margin-top: 30px; font-size: 0.9rem; color: #888;">
+            <a href="../index.html" class="back-link">← Back to All Themes</a>
+            <span style="margin: 0 10px;">|</span>
+            <a href="https://github.com/y1-community/InnioasisY1Themes/tree/main/{folder}" target="_blank" style="color: #888; text-decoration: none;">✏️ Edit or Update this Theme</a>
+        </div>
     </div>
 
+    <!-- Lightbox Modal -->
+    <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+        <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+        <img class="lightbox-content" id="lightbox-img" onclick="event.stopPropagation()">
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" style="visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #333; color: #fff; text-align: center; border-radius: 2px; padding: 16px; position: fixed; z-index: 1; left: 50%; bottom: 30px; font-size: 17px;">Link Copied to Clipboard!</div>
+
+    <div class="footer" style="margin-top: 50px; text-align: center; color: #eee; font-size: 0.9rem; padding-bottom: 20px;">
+        <p><strong>Lead Maintainer:</strong> <a href="https://ryanspecter.uk" target="_blank" style="color: #fff; text-decoration: underline;">Ryan Specter</a></p>
+        <p>BETA | This site is open source. <a href="https://github.com/y1-community/InnioasisY1Themes" target="_blank" style="color: #fff;">Contribute on GitHub</a></p>
+    </div>
+
+    <!-- Support Toolbar -->
+    <style>
+        #support-toolbar {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+            padding: 8px 12px;
+            background: #f0f0f3;
+            border-radius: 30px;
+            box-shadow:
+                8px 8px 16px rgba(163, 177, 198, 0.6),
+                -8px -8px 16px rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+            flex-wrap: wrap;
+        }
+
+        .support-toolbar-btn {
+            background: #f0f0f3;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 18px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: #2d2d2d;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow:
+                4px 4px 8px rgba(163, 177, 198, 0.6),
+                -4px -4px 8px rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .support-toolbar-btn:hover {
+            box-shadow:
+                2px 2px 4px rgba(163, 177, 198, 0.6),
+                -2px -2px 4px rgba(255, 255, 255, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .support-toolbar-btn:active {
+            box-shadow:
+                inset 2px 2px 4px rgba(163, 177, 198, 0.6),
+                inset -2px -2px 4px rgba(255, 255, 255, 0.5);
+            transform: translateY(0);
+        }
+
+        .support-toolbar-btn.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow:
+                4px 4px 8px rgba(102, 126, 234, 0.4),
+                -4px -4px 8px rgba(118, 75, 162, 0.3);
+        }
+
+        .support-toolbar-btn.primary:hover {
+            box-shadow:
+                2px 2px 4px rgba(102, 126, 234, 0.4),
+                -2px -2px 4px rgba(118, 75, 162, 0.3);
+        }
+
+        .support-toolbar-icon {
+            font-size: 16px;
+            display: inline-block;
+            line-height: 1;
+        }
+
+        #donate-options {
+            display: none;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        #donate-options.expanded {
+            display: flex;
+        }
+
+        .crypto-address {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 8px 12px;
+            background: #f0f0f3;
+            border-radius: 12px;
+            box-shadow:
+                2px 2px 4px rgba(163, 177, 198, 0.6),
+                -2px -2px 4px rgba(255, 255, 255, 0.5);
+            min-width: 140px;
+        }
+
+        .crypto-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #667eea;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .crypto-copy-hint {
+            font-size: 9px;
+            font-weight: 400;
+            color: #86868b;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+        .crypto-code {
+            font-size: 10px;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+            color: #2d2d2d;
+            word-break: break-all;
+            cursor: pointer;
+            padding: 4px 6px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .crypto-code:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .crypto-code.copied {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        @media (max-width: 768px) {
+            #support-toolbar {
+                bottom: 15px;
+                right: 15px;
+                left: 15px;
+                justify-content: center;
+                padding: 6px 10px;
+                gap: 8px;
+                border-radius: 25px;
+            }
+
+            .support-toolbar-btn {
+                padding: 8px 14px;
+                font-size: 12px;
+            }
+
+            .support-toolbar-icon {
+                font-size: 16px;
+            }
+
+            .crypto-address {
+                min-width: 120px;
+                padding: 6px 10px;
+            }
+
+            .crypto-code {
+                font-size: 9px;
+            }
+        }
+
+        @media (prefers-color-scheme: dark) {
+            #support-toolbar {
+                background: #2d2d2d;
+                box-shadow:
+                    8px 8px 16px rgba(0, 0, 0, 0.4),
+                    -8px -8px 16px rgba(60, 60, 60, 0.3);
+            }
+
+            .support-toolbar-btn {
+                background: #2d2d2d;
+                color: #e0e0e0;
+                box-shadow:
+                    4px 4px 8px rgba(0, 0, 0, 0.4),
+                    -4px -4px 8px rgba(60, 60, 60, 0.3);
+            }
+
+            .support-toolbar-btn:hover {
+                box-shadow:
+                    2px 2px 4px rgba(0, 0, 0, 0.4),
+                    -2px -2px 4px rgba(60, 60, 60, 0.3);
+            }
+
+            .support-toolbar-btn:active {
+                box-shadow:
+                    inset 2px 2px 4px rgba(0, 0, 0, 0.4),
+                    inset -2px -2px 4px rgba(60, 60, 60, 0.3);
+            }
+
+            .crypto-address {
+                background: #2d2d2d;
+                box-shadow:
+                    2px 2px 4px rgba(0, 0, 0, 0.4),
+                    -2px -2px 4px rgba(60, 60, 60, 0.3);
+            }
+
+            .crypto-code {
+                color: #e0e0e0;
+                background: rgba(255, 255, 255, 0.05);
+            }
+
+            .crypto-code:hover {
+                background: rgba(255, 255, 255, 0.1);
+            }
+        }
+    </style>
+    <div id="support-toolbar">
+        <a href="https://www.reddit.com/r/innioasis/comments/1p7kur3/comment/nqyhti6/" class="support-toolbar-btn primary" target="_blank"
+            rel="noopener noreferrer">
+            <span class="support-toolbar-icon">💙</span>
+            <span>Submit Themes</span>
+        </a>
+        <button id="donate-toggle" class="support-toolbar-btn" type="button">
+            <span class="support-toolbar-icon">💳</span>
+            <span>Donate</span>
+        </button>
+        <div id="donate-options">
+            <a href="https://revolut.me/rspecter" class="support-toolbar-btn" target="_blank"
+                rel="noopener noreferrer">
+                <span class="support-toolbar-icon">💸</span>
+                <span>Revolut</span>
+            </a>
+            <a href="https://ko-fi.com/teamslide" class="support-toolbar-btn" target="_blank"
+                rel="noopener noreferrer">
+                <span class="support-toolbar-icon">☕</span>
+                <span>Ko-fi</span>
+            </a>
+            <a href="https://paypal.me/respectyarn" class="support-toolbar-btn" target="_blank"
+                rel="noopener noreferrer">
+                <span class="support-toolbar-icon">💳</span>
+                <span>PayPal</span>
+            </a>
+            <div class="crypto-address">
+                <span class="crypto-label">
+                    Bitcoin
+                    <span class="crypto-copy-hint">(click to copy)</span>
+                </span>
+                <code class="crypto-code" id="btc-address"
+                    onclick="copyCryptoAddress('bc1q9vsjqjr6pjuc3vrgverx0v9ydst8s82ck4kpue', 'btc-address')"
+                    title="Click to copy">bc1q9vsjqjr6pjuc3vrgverx0v9ydst8s82ck4kpue</code>
+            </div>
+            <div class="crypto-address">
+                <span class="crypto-label">
+                    Ethereum
+                    <span class="crypto-copy-hint">(click to copy)</span>
+                </span>
+                <code class="crypto-code" id="eth-address"
+                    onclick="copyCryptoAddress('0x3eec22630ca9fd77D22d362bF6C50dE29D3B84c4', 'eth-address')"
+                    title="Click to copy">0x3eec22630ca9fd77D22d362bF6C50dE29D3B84c4</code>
+            </div>
+        </div>
+    </div>
     <script>
+        (function () {
+            const donateToggle = document.getElementById('donate-toggle');
+            const donateOptions = document.getElementById('donate-options');
+
+            donateToggle.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                donateOptions.classList.toggle('expanded');
+            });
+
+            // Close when clicking outside
+            document.addEventListener('click', function (e) {
+                if (!e.target.closest('#support-toolbar')) {
+                    donateOptions.classList.remove('expanded');
+                }
+            });
+
+            function copyCryptoAddress(address, elementId) {
+                navigator.clipboard.writeText(address).then(function () {
+                    const element = document.getElementById(elementId);
+                    const originalText = element.textContent;
+                    element.textContent = 'Copied!';
+                    element.classList.add('copied');
+                    setTimeout(function () {
+                        element.textContent = originalText;
+                        element.classList.remove('copied');
+                    }, 2000);
+                }).catch(function (err) {
+                    console.error('Failed to copy: ', err);
+                    alert('Failed to copy to clipboard. Please copy manually: ' + address);
+                });
+            }
+
+            // Make copyCryptoAddress available globally
+            window.copyCryptoAddress = copyCryptoAddress;
+        })();
+    </script>
+
+    <script>
+        // Share Theme Function
+        async function shareTheme() {
+            const url = window.location.href;
+            const title = document.title;
+            const text = "Check out this theme for Innioasis Y1!";
+
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: title,
+                        text: text,
+                        url: url
+                    });
+                    console.log('Shared successfully');
+                } catch (err) {
+                    console.log('Error sharing:', err);
+                }
+            } else {
+                // Fallback to clipboard
+                navigator.clipboard.writeText(url).then(() => {
+                    const toast = document.getElementById("toast");
+                    toast.style.visibility = "visible";
+                    setTimeout(() => { toast.style.visibility = "hidden"; }, 3000);
+                }).catch(err => {
+                    console.error('Failed to copy: ', err);
+                    alert('Failed to copy link. URL: ' + url);
+                });
+            }
+        }
+
         // Dynamic Data Loading
-        document.addEventListener('DOMContentLoaded', async () => {{
+        document.addEventListener('DOMContentLoaded', async () => {
             const currentPath = window.location.pathname;
             let folderName = '';
             const pathParts = currentPath.split('/');
-            if (pathParts[pathParts.length - 1].toLowerCase() === 'index.html' || pathParts[pathParts.length - 1] === '') {{
+            if (pathParts[pathParts.length - 1].toLowerCase() === 'index.html' || pathParts[pathParts.length - 1] === '') {
                 folderName = pathParts[pathParts.length - 2];
-            }} else {{
+            } else {
                 folderName = pathParts[pathParts.length - 1];
-            }}
+            }
             
             folderName = decodeURIComponent(folderName);
 
-            const themeNameEl = document.getElementById('theme-name');
-            const themeAuthorEl = document.getElementById('theme-author');
-            const themeDescEl = document.getElementById('theme-description');
+            // Check for File System Access API support
+            if ('showDirectoryPicker' in window) {
+                document.getElementById('install-btn').style.display = 'inline-block';
+            }
+        });
 
-            // 1. Fetch from themes.json (Fast Cache)
-            try {{
-                const response = await fetch('../themes.json');
-                if (response.ok) {{
-                    const data = await response.json();
-                    const theme = data.themes.find(t => t.folder === folderName);
-                    if (theme) {{
-                        if (theme.name) themeNameEl.textContent = theme.name;
-                        if (theme.author) themeAuthorEl.textContent = 'by ' + theme.author;
-                        if (theme.description) themeDescEl.textContent = theme.description;
-                    }}
-                }}
-            }} catch (e) {{
-                console.log('Could not load themes.json', e);
-            }}
+        // Install Theme directly to device
+        async function installTheme() {
+            const folderName = '{folder}';
+            const btn = document.getElementById('install-btn');
+            const status = document.getElementById('download-status');
+            
+            try {
+                // 1. Ask user to select Themes folder
+                status.style.display = 'block';
+                status.textContent = 'Please select the "Themes" folder on your Y1 device...';
+                
+                const dirHandle = await window.showDirectoryPicker({
+                    mode: 'readwrite',
+                    startIn: 'downloads'
+                });
+                
+                // Verify it's likely the right folder (optional, but good UX)
+                if (dirHandle.name !== 'Themes' && dirHandle.name !== 'themes') {
+                    if (!confirm(`You selected "${dirHandle.name}", but usually this should be the "Themes" folder. Continue?`)) {
+                        status.textContent = 'Installation cancelled.';
+                        return;
+                    }
+                }
 
-            // 2. Fetch from config.json (Authoritative)
-            try {{
-                const response = await fetch('config.json');
-                if (response.ok) {{
-                    const config = await response.json();
-                    if (config.name) themeNameEl.textContent = config.name;
-                    if (config.author) themeAuthorEl.textContent = 'by ' + config.author;
-                    if (config.description) themeDescEl.textContent = config.description;
-                }}
-            }} catch (e) {{
-                console.log('Could not load config.json', e);
-            }}
-        }});
+                btn.disabled = true;
+                btn.textContent = '⏳ Installing...';
+                status.textContent = 'Fetching file list...';
+
+                // 2. Get files from GitHub
+                const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${folderName}`;
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error('Failed to fetch file list');
+                const files = await response.json();
+
+                // 3. Create theme folder on device
+                const themeDir = await dirHandle.getDirectoryHandle(folderName, { create: true });
+
+                let processed = 0;
+                const total = files.filter(f => f.type === 'file').length;
+
+                // 4. Download and write each file
+                for (const file of files) {
+                    if (file.type === 'file') {
+                        status.textContent = `Installing ${file.name} (${processed + 1}/${total})...`;
+                        
+                        // Fetch content
+                        const fileResponse = await fetch(file.download_url);
+                        const blob = await fileResponse.blob();
+                        
+                        // Write to device
+                        const fileHandle = await themeDir.getFileHandle(file.name, { create: true });
+                        const writable = await fileHandle.createWritable();
+                        await writable.write(blob);
+                        await writable.close();
+                        
+                        processed++;
+                    }
+                }
+
+                btn.textContent = '✅ Installed!';
+                status.textContent = 'Theme installed successfully! You can now disconnect your device.';
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.textContent = '🚀 Install on Y1';
+                }, 3000);
+
+            } catch (error) {
+                console.error('Installation error:', error);
+                if (error.name === 'AbortError') {
+                    status.textContent = 'Installation cancelled.';
+                } else {
+                    status.textContent = 'Installation failed: ' + error.message;
+                    alert('Installation failed. Please try downloading the ZIP instead.');
+                }
+                btn.disabled = false;
+                btn.textContent = '🚀 Install on Y1';
+            }
+        }
 
         // Download theme as ZIP
-        async function downloadTheme() {{
+        async function downloadTheme() {
             const folderName = '{folder}';
             const themeName = '{name}';
+            const btn = document.getElementById('download-btn');
+            const status = document.getElementById('download-status');
             
-            try {{
+            btn.disabled = true;
+            btn.textContent = '⏳ Downloading...';
+            status.style.display = 'block';
+            status.textContent = 'Fetching file list...';
+            
+            try {
                 const zip = new JSZip();
+                // Create a folder inside the zip with the theme name
                 const themeFolder = zip.folder(folderName);
                 
                 // Get all files from GitHub
-                const apiUrl = `https://api.github.com/repos/team-slide/InnioasisY1Themes/contents/${{folderName}}`;
+                const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${folderName}`;
                 const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error('Failed to fetch file list');
                 const files = await response.json();
                 
+                let processed = 0;
+                const total = files.filter(f => f.type === 'file').length;
+                
                 // Download each file
-                for (const file of files) {{
-                    if (file.type === 'file') {{
+                for (const file of files) {
+                    if (file.type === 'file') {
+                        status.textContent = `Downloading ${file.name} (${processed + 1}/${total})...`;
                         const fileResponse = await fetch(file.download_url);
                         const blob = await fileResponse.blob();
                         const arrayBuffer = await blob.arrayBuffer();
                         themeFolder.file(file.name, arrayBuffer);
-                    }}
-                }}
+                        processed++;
+                    }
+                }
                 
+                status.textContent = 'Generating ZIP file...';
                 // Generate and download ZIP
-                const zipBlob = await zip.generateAsync({{ type: 'blob' }});
+                const zipBlob = await zip.generateAsync({ type: 'blob' });
                 const url = URL.createObjectURL(zipBlob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `${{folderName}}.zip`;
+                a.download = `${folderName}.zip`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-            }} catch (error) {{
+                
+                btn.textContent = '✅ Download Complete';
+                status.textContent = 'Download started!';
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.textContent = '📦 Download ZIP';
+                    status.style.display = 'none';
+                }, 3000);
+                
+            } catch (error) {
                 console.error('Error downloading theme:', error);
+                btn.textContent = '❌ Error';
+                status.textContent = 'Download failed. Please try again.';
                 alert('Error downloading theme. Please try again.');
-            }}
-        }}
+                btn.disabled = false;
+            }
+        }
+
+        // Lightbox functions
+        function openLightbox(imgSrc) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            lightboxImg.src = imgSrc;
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            lightbox.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close lightbox on ESC key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeLightbox();
+            }
+        });
     </script>
+<div class="bg-cycle"></div>
+<script>
+    // Background cycling logic
+    const bgImages = [{background_images}];
+    if (bgImages.length) {
+        const bgDiv = document.querySelector('.bg-cycle');
+        let idx = 0;
+        const setBg = () => {
+            bgDiv.style.backgroundImage = `url('${bgImages[idx]}')`;
+            bgDiv.style.opacity = '1';
+            setTimeout(() => {
+                bgDiv.style.opacity = '0';
+            }, 5000);
+            idx = (idx + 1) % bgImages.length;
+        };
+        setBg();
+        setInterval(setBg, 6000);
+    }
+</script>
 </body>
 </html>
 """
 
-def get_images(folder):
-    extensions = ['*.png', '*.jpg', '*.jpeg', '*.gif', '*.PNG', '*.JPG', '*.JPEG', '*.GIF']
-    images = []
-    for ext in extensions:
-        images.extend(glob.glob(os.path.join(folder, ext)))
-    
-    # Deduplicate and filter for cover/screenshot
-    seen = set()
-    unique_images = []
-    allowed_names = {'cover', 'screenshot'}
-    
-    for img_path in sorted(images):
-        filename = os.path.basename(img_path)
-        lower_name = filename.lower()
-        name_without_ext = os.path.splitext(lower_name)[0]
-        
-        if name_without_ext in allowed_names:
-            if lower_name not in seen:
-                seen.add(lower_name)
-                unique_images.append(filename)
-            
-    return unique_images
-
 for theme in themes:
     folder = theme['folder']
     name = theme['name']
-    description = theme.get('description', f'Y1 Theme: {{name}}')
+    description = theme.get('description', f'Y1 Theme: {name}')
     author = theme.get('author', 'Unknown')
     
-    # Get all images in the folder
+    # Get cover and screenshots
     if os.path.exists(folder):
-        images = get_images(folder)
+        cover_image, screenshots = get_images(folder)
+        font_file = get_font(folder)
     else:
-        images = []
+        cover_image, screenshots = None, []
+        font_file = None
         
-    # Build gallery HTML
-    if images:
+    # Build gallery HTML with cover next to title and screenshots below
+    gallery_html = ''
+    
+    # Cover image (will be positioned next to title via CSS)
+    cover_html = ''
+    if cover_image:
+        # Use simple quote for onclick to avoid f-string backslash issues
+        cover_html = f'''<img src="{cover_image}" alt="{name} cover" class="cover-image" onclick="openLightbox('{cover_image}')">'''
+    
+    # Screenshots section
+    if screenshots:
         gallery_html = '<div class="gallery">'
-        for img in images:
+        for img in screenshots:
             gallery_html += f'''
             <div class="gallery-item">
-                <img src="{{img}}" alt="{{name}} - {{img}}" class="screenshot">
-                <span class="image-label">{{img}}</span>
+                <img src="{img}" alt="{name} screenshot" class="screenshot" onclick="openLightbox('{img}')">
             </div>
             '''
         gallery_html += '</div>'
     else:
-        gallery_html = '<p>No preview images available.</p>'
+        gallery_html = '<p>No screenshots available.</p>'
+
+    # Font CSS
+    font_css = ''
+    title_style = ''
+    if font_file:
+        font_css = f'''
+        @font-face {{
+            font-family: 'ThemeFont';
+            src: url('{font_file}');
+        }}
+        '''
+        title_style = 'style="font-family: \'ThemeFont\', sans-serif;"'
+
+    # Generate HTML using replace instead of format to avoid brace issues
+    content = html_template
+    content = content.replace('{name}', name)
+    content = content.replace('{description}', description)
+    content = content.replace('{author}', author)
+    content = content.replace('{folder}', folder)
+    content = content.replace('{cover_html}', cover_html)
+    content = content.replace('{gallery_html}', gallery_html)
+    content = content.replace('{font_css}', font_css)
+    content = content.replace('{title_style}', title_style)
     
-    content = html_template.format(
-        name=name,
-        description=description,
-        author=author,
-        folder=folder,
-        gallery_html=gallery_html
-    )
-    
-    # Create directory if it doesn't exist
+    # Write to index.html in theme folder
     if not os.path.exists(folder):
         os.makedirs(folder)
         
     with open(os.path.join(folder, 'index.html'), 'w') as f:
         f.write(content)
-    print(f"Generated index.html for {folder} with {len(images)} images")
+        
+    print(f'Generated page for {name}')
 
-print("Done!")
+# Generate Sitemap
+base_url = "https://themes.innioasis.app"
+sitemap_content = '<?xml version="1.0" encoding="UTF-8"?>\n'
+sitemap_content += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+
+# Add main page
+sitemap_content += f'  <url>\n    <loc>{base_url}/</loc>\n    <changefreq>daily</changefreq>\n    <priority>1.0</priority>\n  </url>\n'
+
+# Add theme pages
+for theme in themes:
+    folder = theme['folder']
+    encoded_folder = urllib.parse.quote(folder)
+    sitemap_content += f'  <url>\n    <loc>{base_url}/{encoded_folder}/</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>\n'
+
+sitemap_content += '</urlset>'
+
+with open('sitemap.xml', 'w') as f:
+    f.write(sitemap_content)
+
+print('Generated sitemap.xml')
+print('All theme pages generated successfully!')
