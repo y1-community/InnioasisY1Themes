@@ -294,6 +294,24 @@ html_template = """<!DOCTYPE html>
             display: block;
         }
         
+        .reddit-favicon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            margin-left: 4px;
+            vertical-align: middle;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        .reddit-favicon:hover {
+            opacity: 1;
+        }
+        .reddit-favicon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
         /* Show arrow on hover for desktop (or mobile with mouse) */
         /* @media (hover: hover) means device has hover capability (mouse, trackpad, etc.) */
         @media (hover: hover) {
@@ -1404,10 +1422,22 @@ html_template = """<!DOCTYPE html>
                 const descriptionDisplay = document.getElementById('description-display');
                 
                 if (authorDisplay) {
+                    // Detect Reddit username (u/username pattern)
+                    const redditUsernameMatch = author.match(/u\/([^\/\s]+)/i);
+                    let redditUsername = null;
+                    let redditFaviconHtml = '';
+                    
+                    if (redditUsernameMatch) {
+                        redditUsername = redditUsernameMatch[1];
+                        // Create Reddit favicon that links to reddit.com/user/username
+                        redditFaviconHtml = `<a href="https://reddit.com/user/${redditUsername}" target="_blank" rel="noopener noreferrer" class="reddit-favicon" onclick="event.stopPropagation();" style="display: inline-block; width: 16px; height: 16px; margin-left: 4px; vertical-align: middle; opacity: 0.8; transition: opacity 0.2s;"><img src="https://www.redditstatic.com/desktop2x/img/favicon/favicon-16x16.png" alt="Reddit" style="width: 100%; height: 100%; object-fit: contain;"></a>`;
+                    }
+                    
                     if (authorUrl) {
-                        authorDisplay.innerHTML = `<a href="${authorUrl}" target="_blank" rel="noopener noreferrer" style="color: #667eea; text-decoration: none; border-bottom: 1px solid #667eea; transition: all 0.2s;">${author}</a>`;
+                        // Author name links to authorUrl, Reddit favicon links to Reddit profile
+                        authorDisplay.innerHTML = `<a href="${authorUrl}" target="_blank" rel="noopener noreferrer" style="color: #667eea; text-decoration: none; border-bottom: 1px solid #667eea; transition: all 0.2s;">${author}</a>${redditFaviconHtml}`;
                         // Add hover effect
-                        const authorLink = authorDisplay.querySelector('a');
+                        const authorLink = authorDisplay.querySelector('a:not(.reddit-favicon)');
                         if (authorLink) {
                             authorLink.addEventListener('mouseenter', function() {
                                 this.style.color = '#764ba2';
@@ -1419,7 +1449,8 @@ html_template = """<!DOCTYPE html>
                             });
                         }
                     } else {
-                        authorDisplay.textContent = author;
+                        // No authorUrl - just display author name with Reddit favicon if detected
+                        authorDisplay.innerHTML = `${author}${redditFaviconHtml}`;
                     }
                 }
                 
