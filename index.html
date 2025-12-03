@@ -2810,15 +2810,29 @@
                 const menuConfig = themeConfig.menuConfig || {};
                 const dialogConfig = themeConfig.dialogConfig || {};
                 
-                // Button background = selected text color (the color that stands out on selected items)
-                const buttonBgColor = menuConfig.menuItemSelectedTextColor || itemConfig.itemSelectedTextColor || '#667eea';
-                // Button text = menu background color (what stands out against the selected text color)
+                // Try to get selected background image (preferred)
+                const selectedBgImage = itemConfig.itemSelectedBackground || menuConfig.menuItemSelectedBackground || 
+                                       dialogConfig.dialogOptionSelectedBackground || null;
+                
+                // Button background = selected background image if available, otherwise selected text color
+                let buttonBgStyle = '';
+                if (selectedBgImage && selectedBgImage.trim() !== '') {
+                    const baseUrl = window.location.origin;
+                    const imageUrl = `./${encodeURIComponent(theme.folder)}/${encodeURIComponent(selectedBgImage)}`;
+                    buttonBgStyle = `background-image: url('${imageUrl}'); background-size: 100% 100%; background-repeat: no-repeat; background-position: center;`;
+                } else {
+                    // Fallback to selected text color as solid background
+                    const buttonBgColor = menuConfig.menuItemSelectedTextColor || itemConfig.itemSelectedTextColor || '#667eea';
+                    buttonBgStyle = `background-color: ${buttonBgColor};`;
+                }
+                
+                // Button text = menu background color (what stands out against the selected background)
                 // Fallback to unselected text color if menu background isn't available
                 const buttonTextColor = menuConfig.menuBackgroundColor || dialogConfig.dialogBackgroundColor || 
                                       menuConfig.menuItemTextColor || itemConfig.itemTextColor || '#ffffff';
                 
-                // Build button style with theme colors
-                const buttonStyle = `background-color: ${buttonBgColor}; color: ${buttonTextColor}; ${fontStyle}`;
+                // Build button style with theme colors and image
+                const buttonStyle = `${buttonBgStyle} color: ${buttonTextColor}; ${fontStyle}`;
                 
                 // Get author display name (for filtering)
                 const authorDisplay = theme.author === 'Unknown' ? 'All' : (theme.author || 'All');
