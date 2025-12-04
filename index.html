@@ -105,6 +105,7 @@
             padding: 25px;
             margin-bottom: 30px;
             text-align: center;
+            transition: all 0.3s ease;
         }
 
         .device-selection h2 {
@@ -117,6 +118,155 @@
             color: #666;
             margin-bottom: 20px;
             line-height: 1.6;
+        }
+        
+        /* Mobile: Collapse device-selection to a hint when file system access is available */
+        @media (max-width: 768px) {
+            .device-selection.mobile-collapsed {
+                padding: 12px 15px;
+                margin-bottom: 15px;
+                cursor: pointer;
+            }
+            
+            .device-selection.mobile-collapsed h2 {
+                font-size: 1rem;
+                margin-bottom: 0;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+            
+            .device-selection.mobile-collapsed h2::after {
+                content: '▼';
+                font-size: 0.8rem;
+                transition: transform 0.3s;
+            }
+            
+            .device-selection.mobile-collapsed.expanded h2::after {
+                transform: rotate(180deg);
+            }
+            
+            .device-selection.mobile-collapsed > p,
+            .device-selection.mobile-collapsed > button {
+                display: none;
+            }
+            
+            .device-selection.mobile-collapsed.expanded > p,
+            .device-selection.mobile-collapsed.expanded > button {
+                display: block;
+            }
+            
+            .device-selection.mobile-collapsed #device-status {
+                display: none;
+            }
+            
+            .device-selection.mobile-collapsed.expanded #device-status {
+                display: block;
+            }
+        }
+        
+        /* Mobile Install Dialog */
+        .mobile-install-dialog {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .mobile-install-dialog.show {
+            display: flex;
+        }
+        
+        .mobile-install-dialog-content {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .mobile-install-dialog-content h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 1.3rem;
+        }
+        
+        .mobile-install-dialog-content ol {
+            margin: 15px 0;
+            padding-left: 25px;
+        }
+        
+        .mobile-install-dialog-content li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+            color: #666;
+        }
+        
+        .mobile-install-dialog-content .dialog-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .mobile-install-dialog-content .dialog-buttons button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .mobile-install-dialog-content .dialog-buttons .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .mobile-install-dialog-content .dialog-buttons .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .mobile-install-dialog-content .dialog-buttons button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        .mobile-install-dialog-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #666;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        
+        .mobile-install-dialog-close:hover {
+            background: #f0f0f0;
+            color: #333;
         }
 
         .btn {
@@ -852,7 +1002,7 @@
         </div>
 
         <div class="content">
-            <div class="device-selection">
+            <div class="device-selection" id="device-selection">
                 <h2>📱 Connect Your Device</h2>
                 <p>Connect your Innioasis Y1 via USB and enable USB Storage Mode.<br>
                     Click the button below to select your device's Themes folder.</p>
@@ -860,6 +1010,30 @@
                     📂 Select Y1 Themes Folder
                 </button>
                 <p id="device-status" style="margin-top: 15px; color: #666; font-weight: 600;"></p>
+            </div>
+            
+            <!-- Mobile Install Dialog -->
+            <div class="mobile-install-dialog" id="mobile-install-dialog">
+                <div class="mobile-install-dialog-content">
+                    <button class="mobile-install-dialog-close" onclick="closeMobileInstallDialog()">&times;</button>
+                    <h3>📱 Prepare Your Y1 for Installation</h3>
+                    <p style="margin-bottom: 15px; color: #666;">Before installing themes, please prepare your Y1 device:</p>
+                    <ol>
+                        <li><strong>Power up your Y1 device</strong></li>
+                        <li><strong>Connect your Y1 to your mobile device via USB</strong></li>
+                        <li><strong>Enable USB storage mode</strong> on your Y1 (if prompted)</li>
+                        <li><strong>On Android:</strong> Press the <strong>☰ (three lines/hamburger menu)</strong> button at the top left of the file picker, then navigate to and select your Y1's <strong>"Themes" folder</strong> from the USB drive</li>
+                        <li><strong>On the next screen, select the "Themes" folder</strong> on your Y1 device</li>
+                    </ol>
+                    <p style="color: #666; font-size: 0.9rem; margin-top: 15px;">The installation will automatically copy all theme files to your device.</p>
+                    <div class="dialog-buttons">
+                        <button class="btn-primary" onclick="proceedWithMobileInstall()">Continue to Folder Selection</button>
+                        <button class="btn-secondary" onclick="closeMobileInstallDialog(); downloadSelected();">💾 Download ZIP Instead</button>
+                    </div>
+                    <p style="text-align: center; margin-top: 15px; font-size: 0.85rem; color: #999; font-style: italic;">
+                        After downloading, extract the ZIP file and place the folder containing config.json into the "Themes" folder on your Y1 device.
+                    </p>
+                </div>
             </div>
 
             <div id="status" class="status"></div>
@@ -1250,6 +1424,12 @@
         // Check if File System Access API is supported
         const hasFileSystemAccess = 'showDirectoryPicker' in window;
         
+        // Detect mobile device
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                   (window.innerWidth <= 768);
+        }
+        
         if (!hasFileSystemAccess) {
             document.addEventListener('DOMContentLoaded', () => {
                 showStatus('📱 Mobile/Safari detected - themes will download as ZIP files instead of direct installation.', 'info');
@@ -1264,7 +1444,52 @@
                     installBtn.textContent = '📦 Download Selected Themes';
                 }
             });
+        } else if (isMobileDevice()) {
+            // Mobile device with file system access - collapse device-selection card
+            document.addEventListener('DOMContentLoaded', () => {
+                const deviceSelection = document.getElementById('device-selection');
+                if (deviceSelection) {
+                    deviceSelection.classList.add('mobile-collapsed');
+                    
+                    // Make it expandable on click
+                    const h2 = deviceSelection.querySelector('h2');
+                    if (h2) {
+                        h2.style.cursor = 'pointer';
+                        h2.addEventListener('click', () => {
+                            deviceSelection.classList.toggle('expanded');
+                        });
+                    }
+                }
+            });
         }
+        
+        // Mobile install dialog functions
+        function showMobileInstallDialog() {
+            const dialog = document.getElementById('mobile-install-dialog');
+            if (dialog) {
+                dialog.classList.add('show');
+            }
+        }
+        
+        function closeMobileInstallDialog() {
+            const dialog = document.getElementById('mobile-install-dialog');
+            if (dialog) {
+                dialog.classList.remove('show');
+            }
+        }
+        
+        function proceedWithMobileInstall() {
+            closeMobileInstallDialog();
+            selectDeviceFolder();
+        }
+        
+        // Close dialog when clicking outside
+        document.addEventListener('click', (e) => {
+            const dialog = document.getElementById('mobile-install-dialog');
+            if (dialog && e.target === dialog) {
+                closeMobileInstallDialog();
+            }
+        });
         
         // Update installation instructions based on browser capabilities
         function updateInstallInstructions() {
@@ -1375,7 +1600,13 @@
         function hideDeviceConnectionInterface() {
             const connectionSection = document.querySelector('.device-selection');
             if (connectionSection) {
-                connectionSection.style.display = 'none';
+                // On mobile, keep it visible but collapsed; on desktop, hide it completely
+                if (isMobileDevice() && hasFileSystemAccess) {
+                    connectionSection.classList.add('mobile-collapsed');
+                    connectionSection.classList.remove('expanded');
+                } else {
+                    connectionSection.style.display = 'none';
+                }
             }
         }
 
@@ -3889,8 +4120,14 @@
                 return;
             }
 
-            // If no device folder is selected, use download mode instead
+            // If no device folder is selected
             if (!deviceFolderHandle) {
+                // On mobile devices with file system access, show dialog with instructions
+                if (hasFileSystemAccess && isMobileDevice()) {
+                    showMobileInstallDialog();
+                    return;
+                }
+                // On desktop or devices without file system access, use download mode
                 await downloadSelected();
                 return;
             }
