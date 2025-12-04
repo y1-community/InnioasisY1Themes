@@ -4144,22 +4144,42 @@
             }
         }
 
-        // Get theme files - STATIC: Only uses files.json, no API calls
+        // Get theme files - Uses multiple methods to get ALL files
         async function getThemeFiles(themeFolderName) {
+            const allFiles = new Set();
+            
             // PRIORITY 1: Try to get files.json if it exists (static file, no API)
             try {
                 const filesResponse = await fetch(`./${encodeURIComponent(themeFolderName)}/files.json`);
                 if (filesResponse.ok) {
                     const filesData = await filesResponse.json();
                     if (filesData.files && filesData.files.length > 0) {
-                        return filesData.files;
+                        filesData.files.forEach(file => allFiles.add(file));
+                        console.log(`✅ files.json returned ${filesData.files.length} files`);
                     }
                 }
             } catch (error) {
-                console.log('files.json not found, trying directory listing...');
+                console.log('files.json not found, trying other methods...');
             }
 
-            // PRIORITY 2: Try directory listing (works on GitHub Pages and local servers)
+            // PRIORITY 2: Use GitHub API to get all files
+            try {
+                const response = await fetch(`https://api.github.com/repos/team-slide/InnioasisY1Themes/contents/${encodeURIComponent(themeFolderName)}`);
+                if (response.ok) {
+                    const contents = await response.json();
+                    const apiFiles = contents
+                        .filter(item => item.type === 'file')
+                        .map(item => item.name);
+                    apiFiles.forEach(file => allFiles.add(file));
+                    console.log(`✅ GitHub API returned ${apiFiles.length} files`);
+                } else {
+                    console.warn(`GitHub API returned status ${response.status}`);
+                }
+            } catch (error) {
+                console.warn('Error fetching theme files from GitHub API:', error);
+            }
+
+            // PRIORITY 3: Try directory listing (works on GitHub Pages and local servers)
             try {
                 const dirResponse = await fetch(`./${encodeURIComponent(themeFolderName)}/`, {
                     headers: { 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' }
@@ -4169,7 +4189,6 @@
                     // Parse HTML directory listing for file links
                     const fileMatches = html.match(/href="([^"]+)"[^>]*>([^<]+)<\/a>/g);
                     if (fileMatches) {
-                        const files = [];
                         fileMatches.forEach(match => {
                             const hrefMatch = match.match(/href="([^"]+)"/);
                             const nameMatch = match.match(/>([^<]+)<\/a>/);
@@ -4180,27 +4199,52 @@
                                 if (!filePath.match(/\/$/) && 
                                     !['../', './', 'index.html'].includes(fileName) &&
                                     !fileName.startsWith('.')) {
-                                    files.push(fileName);
+                                    allFiles.add(fileName);
                                 }
                             }
                         });
-                        if (files.length > 0) {
-                            return files;
-                        }
+                        console.log(`✅ Directory listing found files, total: ${allFiles.size}`);
                     }
                 }
             } catch (error) {
-                console.log('Directory listing not available, using fallback...');
+                console.log('Directory listing not available');
             }
 
-            // PRIORITY 3: Return common theme files (static fallback)
-            return [
-                'config.json',
-                'screenshot.jpg',
-                'cover.png',
-                'screenshot.gif',
-                'index.html'
-            ];
+            // PRIORITY 4: Parse config.json to get all referenced files
+            try {
+                const configResponse = await fetch(`https://raw.githubusercontent.com/team-slide/InnioasisY1Themes/main/${encodeURIComponent(themeFolderName)}/config.json`);
+                if (configResponse.ok) {
+                    const config = await configResponse.json();
+                    allFiles.add('config.json');
+                    
+                    // Extract all file references from config.json
+                    function extractFiles(obj, files) {
+                        if (typeof obj === 'string') {
+                            // Check if it looks like a file path
+                            if (obj.match(/\.(png|jpg|jpeg|gif|webp|svg|ttf|otf|json)$/i)) {
+                                files.add(obj);
+                            }
+                        } else if (Array.isArray(obj)) {
+                            obj.forEach(item => extractFiles(item, files));
+                        } else if (obj && typeof obj === 'object') {
+                            Object.values(obj).forEach(value => extractFiles(value, files));
+                        }
+                    }
+                    
+                    extractFiles(config, allFiles);
+                    console.log(`✅ Config.json parsing added files, total: ${allFiles.size}`);
+                }
+            } catch (error) {
+                console.warn('Could not parse config.json for file extraction:', error);
+            }
+
+            // PRIORITY 5: Add common theme files as fallback (always include these)
+            const commonFiles = ['config.json', 'cover.png', 'screenshot.jpg', 'screenshot.png', 'screenshot.gif'];
+            commonFiles.forEach(file => allFiles.add(file));
+            
+            const fileArray = Array.from(allFiles);
+            console.log(`📦 Total files to download: ${fileArray.length}`);
+            return fileArray;
         }
 
         // Download single theme for mobile/Safari users

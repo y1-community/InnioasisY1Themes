@@ -57,6 +57,38 @@
             text-align: center;
             margin-bottom: 20px;
         }
+        .header-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 40px;
+            text-align: left;
+            margin-bottom: 40px;
+        }
+        .header-text {
+            flex: 1;
+        }
+        .cover-image {
+            width: 200px;
+            height: 200px;
+            object-fit: contain;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            background: white;
+            padding: 10px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .cover-image:hover {
+            transform: scale(1.05) rotate(2deg);
+        }
+        @media (max-width: 600px) {
+            .header-section {
+                flex-direction: column-reverse;
+                text-align: center;
+                gap: 20px;
+            }
+        }
         h1 {
             margin-bottom: 10px;
             color: #333;
@@ -146,515 +178,298 @@
             color: #667eea;
             /* No transform - buttons should not grow on hover */
         }
-        /* Ensure button content is always visible above background */
-        .btn > span {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-            gap: 8px;
-            position: relative;
-            z-index: 2;
+
+        .btn-secondary:hover {
+            background: #f8fbff;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
         }
-        .btn > span > span:first-child {
-            position: relative;
-            z-index: 3;
-            flex: 1;
-            text-align: left;
+
+        .install-btn {
+            background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%); /* Green gradient for install */
+            box-shadow: 0 4px 15px rgba(0, 176, 155, 0.4);
         }
-        .btn img {
-            height: 100%;
-            max-height: 100%;
-            width: auto;
-            flex-shrink: 0;
-            object-fit: contain;
-            display: block;
-            position: relative;
-            z-index: 3;
+
+        .install-btn:hover {
+            box-shadow: 0 6px 20px rgba(0, 176, 155, 0.6);
         }
-        /* Arrow icon - hidden on desktop by default, shown on hover/focus/active */
-        /* Use opacity/visibility to prevent layout shifts */
-        .btn .arrow-icon {
-            height: 100%;
-            max-height: 100%;
-            width: 0;
-            overflow: hidden;
-            flex-shrink: 0;
-            opacity: 0;
-            visibility: hidden;
-            margin-left: 0;
-            position: relative;
-            z-index: 3;
-            transition: opacity 0.2s, visibility 0.2s, width 0.2s, margin-left 0.2s;
+
+        .download-link {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9rem;
         }
-        
-        .btn .arrow-icon img {
-            height: 100%;
-            max-height: 100%;
-            width: auto;
-            flex-shrink: 0;
-            object-fit: contain;
-            display: block;
-        }
-        
-        .reddit-favicon {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            margin-left: 4px;
-            vertical-align: middle;
-            opacity: 0.8;
-            transition: opacity 0.2s;
-        }
-        .reddit-favicon:hover {
-            opacity: 1;
-        }
-        .reddit-favicon img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-        
-        /* Social media favicons */
-        .social-favicon {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            margin-left: 4px;
-            vertical-align: middle;
-            opacity: 0.8;
-            transition: opacity 0.2s;
-        }
-        .social-favicon:hover {
-            opacity: 1;
-        }
-        .social-favicon img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-        
-        /* Show arrow on hover for desktop (or mobile with mouse) */
-        /* @media (hover: hover) means device has hover capability (mouse, trackpad, etc.) */
-        @media (hover: hover) {
-            .btn:hover .arrow-icon,
-            .btn:focus .arrow-icon,
-            .btn:active .arrow-icon {
-                opacity: 1;
-                visibility: visible;
-                width: auto;
-                margin-left: 8px;
-            }
-        }
-        
-        /* Show arrow on mobile (always visible) */
-        @media (hover: none) {
-            .btn .arrow-icon {
-                opacity: 1;
-                visibility: visible;
-                width: auto;
-                margin-left: 8px;
-            }
-        }
-        
-        @font-face {
-            font-family: 'ThemeFont';
-            src: url('None');
-        }
-        
-        .header-section {
-            display: flex;
-            align-items: center;
-            gap: 30px;
-            margin-bottom: 20px;
-        }
-        .header-text {
-            flex: 1;
-        }
-        .cover-image {
-            width: 200px;
-            height: auto;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .cover-image:hover {
-            transform: scale(1.05);
-        }
-        .screenshots-section {
-            margin: 30px 0;
-        }
-        .screenshots-section h3 {
+
+        .download-link a {
             color: #667eea;
-            margin-bottom: 15px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
         }
-        /* Image Carousel */
+
+        .download-link a:hover {
+            text-decoration: underline;
+        }
+
+        .meta-info {
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            line-height: 1.6;
+        }
+
+        .meta-info a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .meta-info a:hover {
+            text-decoration: underline;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #888;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .back-link:hover {
+            color: #667eea;
+        }
+
+        /* Gallery Styling */
         .image-carousel-section {
-            margin: 30px 0;
+            margin: 40px 0;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
         }
+
         .image-carousel-section h3 {
             color: #667eea;
-            margin-bottom: 15px;
-            font-size: 1rem;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            text-align: center;
+            font-weight: 600;
         }
+
         .image-carousel-container {
             position: relative;
-            width: 100%;
-            overflow: hidden;
-            background: #f5f5f5;
-            border-radius: 8px;
-            padding: 10px;
         }
+
         .image-carousel-wrapper {
             display: flex;
-            gap: 10px;
+            gap: 15px;
             overflow-x: auto;
+            padding: 10px 5px;
             scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
             scrollbar-width: thin;
-            scrollbar-color: #667eea #f5f5f5;
-            padding: 5px 0;
         }
-        .image-carousel-wrapper::-webkit-scrollbar {
-            height: 6px;
-        }
-        .image-carousel-wrapper::-webkit-scrollbar-track {
-            background: #f5f5f5;
-            border-radius: 3px;
-        }
-        .image-carousel-wrapper::-webkit-scrollbar-thumb {
-            background: #667eea;
-            border-radius: 3px;
-        }
+
         .image-carousel-item {
-            flex: 0 0 auto;
-            width: 120px;
-            text-align: center;
+            flex: 0 0 160px;
+            background: white;
+            border-radius: 12px;
+            padding: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
             cursor: pointer;
-            transition: transform 0.2s;
+            border: 1px solid #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
+
         .image-carousel-item:hover {
-            transform: scale(1.05);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-color: #667eea;
         }
+
         .image-carousel-item img {
             width: 100%;
-            height: 80px;
+            height: 100px;
             object-fit: contain;
-            background: white;
-            border-radius: 4px;
-            border: 1px solid #ddd;
-            padding: 4px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
         }
+
         .image-carousel-item .image-name {
-            margin-top: 5px;
             font-size: 0.75rem;
             color: #666;
-            word-break: break-word;
-            line-height: 1.2;
-        }
-        
-        /* JSON file icon display */
-        .image-carousel-item .json-icon {
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
             width: 100%;
-            height: 80px;
-            background: white;
-            border-radius: 4px;
-            border: 1px solid #ddd;
-            padding: 8px;
+            font-weight: 500;
+            padding: 0 5px;
+        }
+
+        /* JSON Icon Styling */
+        .json-icon {
+            width: 100%;
+            height: 100px;
             display: flex;
             align-items: center;
             justify-content: center;
+            background: #f8f9fa;
+            border-radius: 6px;
+            margin-bottom: 8px;
             position: relative;
-            box-sizing: border-box;
         }
         
-        .image-carousel-item .json-icon svg {
-            width: 100%;
-            height: 100%;
+        .json-icon svg {
+            width: 50px;
+            height: 50px;
         }
-        
-        .image-carousel-item .json-icon .file-label {
-            position: absolute;
-            bottom: 4px;
-            right: 4px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-size: 0.65rem;
-            font-weight: 600;
-            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
-        }
-        .image-carousel-nav {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 10px;
-        }
-        .image-carousel-nav-btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 6px 12px;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .image-carousel-nav-btn:hover {
-            background: #5568d3;
-        }
-        .image-carousel-nav-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        .image-carousel-nav-info {
-            display: flex;
-            align-items: center;
-            font-size: 0.85rem;
-            color: #666;
-            padding: 0 10px;
-        }
+
         /* Lightbox */
         .lightbox {
             display: none;
             position: fixed;
-            z-index: 1000;
+            z-index: 2000;
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.9);
+            background-color: rgba(0,0,0,0.95);
+            backdrop-filter: blur(5px);
             justify-content: center;
             align-items: center;
         }
+
         .lightbox.active {
             display: flex;
         }
+
         .lightbox-content {
             max-width: 90%;
-            max-height: 90%;
-            border-radius: 5px;
-            box-shadow: 0 0 20px rgba(255,255,255,0.2);
+            max-height: 85vh;
+            border-radius: 8px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
         }
+
         .lightbox-close {
             position: absolute;
             top: 20px;
             right: 30px;
-            color: #f1f1f1;
+            color: white;
             font-size: 40px;
-            font-weight: bold;
+            font-weight: 300;
             cursor: pointer;
             transition: 0.3s;
+            line-height: 1;
         }
+
         .lightbox-close:hover {
-            color: #bbb;
+            color: #667eea;
+            transform: rotate(90deg);
         }
+
         .lightbox-edit-btn {
             position: absolute;
             bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(102, 126, 234, 0.9);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
+            background: white;
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 30px;
             text-decoration: none;
-            display: inline-flex;
+            font-weight: 600;
+            display: flex;
             align-items: center;
             gap: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             transition: all 0.3s;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            z-index: 1001;
         }
+
         .lightbox-edit-btn:hover {
-            background: rgba(102, 126, 234, 1);
             transform: translateX(-50%) translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            color: #667eea;
         }
-        .lightbox-edit-btn:active {
-            transform: translateX(-50%) translateY(0);
-        }
-        
-        /* Config.json info display in lightbox */
+
+        /* Config Info in Lightbox */
         .lightbox-config-info {
             position: absolute;
-            bottom: 80px;
+            bottom: 90px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.9);
-            color: white;
-            padding: 0;
-            border-radius: 12px;
-            max-width: 800px;
-            width: 90%;
-            max-height: 60vh;
-            overflow-y: auto;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            z-index: 1001;
-            backdrop-filter: blur(10px);
-        }
-        
-        .lightbox-config-header {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin: 20px 20px 10px 20px;
+            background: rgba(0, 0, 0, 0.8);
             color: #fff;
-        }
-        
-        .lightbox-config-explanation {
+            padding: 15px;
+            border-radius: 8px;
+            max-width: 90%;
+            width: 600px;
+            font-family: monospace;
             font-size: 0.9rem;
-            color: #ddd;
-            margin: 0 20px 15px 20px;
+            border: 1px solid #444;
+        }
+
+        .lightbox-config-key {
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .lightbox-config-code {
+            background: #1e1e1e;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre;
+            color: #d4d4d4;
+            margin-top: 5px;
+            font-size: 0.85rem;
             line-height: 1.4;
         }
-        
-        .lightbox-config-file-link {
-            margin: 0 20px 15px 20px;
-            font-size: 0.9rem;
-        }
-        
-        .lightbox-config-file-link a {
-            color: #58a6ff;
-            text-decoration: none;
-            font-weight: 500;
-        }
-        
-        .lightbox-config-file-link a:hover {
-            text-decoration: underline;
-        }
-        
-        .lightbox-config-code-container {
-            background: #0d1117;
-            border-top: 1px solid #30363d;
-            border-bottom: 1px solid #30363d;
-            margin: 0;
-            padding: 0;
-            overflow-x: auto;
-        }
-        
-        .lightbox-config-code-header {
-            background: #161b22;
-            padding: 8px 16px;
-            border-bottom: 1px solid #30363d;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.85rem;
-            color: #8b949e;
-        }
-        
-        .lightbox-config-code-header strong {
-            color: #c9d1d9;
-        }
-        
-        .lightbox-config-code {
-            padding: 16px;
-            margin: 0;
-            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
-            font-size: 0.85rem;
-            line-height: 1.6;
-            color: #c9d1d9;
-            background: #0d1117;
-            white-space: pre;
-            overflow-x: auto;
-        }
-        
+
         .lightbox-config-code-line {
             display: block;
-            padding: 0 8px;
         }
-        
+
         .lightbox-config-code-line.highlight {
-            background: rgba(187, 128, 9, 0.15);
-            border-left: 3px solid #d29922;
+            background-color: rgba(102, 126, 234, 0.2);
+            border-left: 2px solid #667eea;
         }
-        
+
         .lightbox-config-code-line-number {
+            color: #858585;
+            margin-right: 10px;
             display: inline-block;
-            width: 40px;
+            width: 25px;
             text-align: right;
-            padding-right: 16px;
-            color: #6e7681;
             user-select: none;
-            margin-right: 8px;
         }
-        
-        .lightbox-config-code-line-content {
-            color: #c9d1d9;
-        }
-        
-        .lightbox-config-code-line-content .string {
-            color: #a5d6ff;
-        }
-        
-        .lightbox-config-code-line-content .key {
-            color: #79c0ff;
-        }
-        
-        .lightbox-config-code-line-content .number {
-            color: #79c0ff;
-        }
-        
-        .lightbox-config-code-line-content .boolean {
-            color: #ff7b72;
-        }
-        
-        .lightbox-config-code-line-content .null {
-            color: #ff7b72;
-        }
-        
-        .lightbox-config-details {
-            padding: 15px 20px 20px 20px;
-        }
-        
-        .lightbox-config-item {
-            font-size: 0.9rem;
-            line-height: 1.6;
-            margin-bottom: 8px;
-        }
-        
-        .lightbox-config-item strong {
-            color: #fff;
-            display: inline-block;
-            min-width: 100px;
-        }
-        
-        .lightbox-config-item code {
-            background: rgba(255, 255, 255, 0.15);
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
-            font-size: 0.85rem;
-            color: #fff;
-            word-break: break-all;
-        }
-        .back-link {
-            display: block;
-            margin-top: 20px;
-            color: #666;
-            text-decoration: none;
-            font-size: 0.9rem;
-        }
-        .back-link:hover {
-            text-decoration: underline;
-        }
-        /* Existing CSS */
+
+        .key { color: #9cdcfe; }
+        .string { color: #ce9178; }
+        .number { color: #b5cea8; }
+        .boolean { color: #569cd6; }
+        .null { color: #569cd6; }
+
+        /* Background Cycle */
         .bg-cycle {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            z-index: -1;
             background-size: cover;
             background-position: center;
-            filter: blur(20px) brightness(0.5);
-            z-index: -1;
-            opacity: 0;
             transition: opacity 1s ease-in-out;
         }
         /* Download link when install is available */
@@ -740,6 +555,14 @@
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
+        
+        /* Custom Font CSS */
+        
+        @font-face {
+            font-family: 'ThemeFont';
+            src: url('None');
+        }
+        
     </style>
 </head>
 <body>
@@ -1206,6 +1029,7 @@
     </script>
 
     <script>
+        console.log('✅ Main script tag loaded and executing');
         // Share Theme Function
         async function shareTheme() {
             const url = window.location.href;
@@ -2528,20 +2352,68 @@
                 closeInstallModal();
             }
         });
-        
         // File cache for downloaded files (used by download/install functions)
         // This cache is populated when images are loaded in the gallery
         const fileCache = new Map(); // Key: filename, Value: { blob, arrayBuffer }
         
+        // Load theme background dynamically
+        async function loadThemeBackground() {
+            try {
+                // Try to load config.json to find background
+                const configResponse = await fetch('./config.json');
+                if (!configResponse.ok) return;
+                
+                const config = await configResponse.json();
+                
+                // Priority list for background images
+                const bgCandidates = [
+                    config.desktopWallpaper,
+                    config.globalWallpaper,
+                    config.themeCover,
+                    'Background1.png',
+                    'background.png',
+                    'wallpaper.png',
+                    '1.png'
+                ].filter(Boolean); // Remove null/undefined
+                
+                // Try to load candidates one by one
+                for (const filename of bgCandidates) {
+                    // Clean filename (remove path if present, though config usually has just filename)
+                    const cleanName = filename.split('/').pop();
+                    const url = `./${encodeURIComponent(cleanName)}`;
+                    
+                    try {
+                        const response = await fetch(url, { method: 'HEAD' });
+                        if (response.ok) {
+                            // Found a valid background!
+                            const bgElement = document.querySelector('.bg-cycle');
+                            if (bgElement) {
+                                bgElement.style.backgroundImage = `url('${url}')`;
+                                bgElement.style.opacity = '1';
+                                console.log(`Loaded background: ${cleanName}`);
+                                return;
+                            }
+                        }
+                    } catch (e) {
+                        // Continue to next candidate
+                    }
+                }
+            } catch (e) {
+                console.warn('Error loading theme background:', e);
+            }
+        }
+
         // Load all theme images for carousel
         // This function discovers all .jpg and .png files in the theme folder
         // Images are loaded using relative paths (works locally and on GitHub Pages)
         // This also helps speed up ZIP downloads as images are already cached in browser
         async function loadThemeImages() {
+            console.log('🖼️ loadThemeImages() called');
             const folderName = 'Aero';
             const carouselWrapper = document.getElementById('image-carousel-wrapper');
             const carouselInfo = document.getElementById('carousel-info');
             
+            console.log('📦 carouselWrapper:', carouselWrapper);
             if (!carouselWrapper) return;
             
             try {
@@ -2624,8 +2496,31 @@
                     console.log('GitHub API not available, using pattern discovery');
                 }
                 
-                // Strategy 2: If API didn't work or returned no files, try common patterns
-                // This works for local development and GitHub Pages
+                // Strategy 2: Use files found in config.json!
+                // This is critical if GitHub API fails and files aren't in the common list
+                if (imageUsageMap.size > 0) {
+                    const configFiles = new Set();
+                    // Extract original filenames from the map keys (we need to be careful as keys include variations)
+                    // But we can just try to load all unique keys that look like filenames
+                    imageUsageMap.forEach((_, key) => {
+                        if (/\.(png|jpg|jpeg|gif|svg)$/i.test(key)) {
+                            configFiles.add(key);
+                        }
+                    });
+                    
+                    configFiles.forEach(filename => {
+                        // Check if already in imageFiles
+                        if (!imageFiles.some(f => f.name === filename)) {
+                            imageFiles.push({
+                                name: filename,
+                                url: `./${encodeURIComponent(filename)}`,
+                                download_url: `./${encodeURIComponent(filename)}`
+                            });
+                        }
+                    });
+                }
+                
+                // Strategy 3: Common patterns fallback
                 if (imageFiles.length === 0) {
                     const imageExtensions = ['png', 'jpg', 'jpeg', 'gif'];
                     const commonBaseNames = [
@@ -2647,7 +2542,14 @@
                     }
                 }
                 
-                if (imageFiles.length === 0) {
+                // Always show the carousel section if we have config.json or images
+                // Don't hide it just because imageFiles might be empty (though it shouldn't be now)
+                const carouselSection = document.getElementById('image-carousel-section');
+                if (carouselSection) {
+                    carouselSection.style.display = 'block';
+                }
+                
+                if (imageFiles.length === 0 && !config) {
                     carouselWrapper.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">No images found</div>';
                     if (carouselInfo) carouselInfo.textContent = '0 / 0';
                     return;
@@ -2813,8 +2715,10 @@
                     
                     const label = document.createElement('div');
                     label.className = 'image-name';
-                    label.textContent = imageData.configKey;
-                    label.title = imageData.filename; // Show filename on hover
+                    // Clean up the label: remove section prefix if present (e.g., "itemConfig.itemSelectedBackground" -> "itemSelectedBackground")
+                    const cleanLabel = imageData.configKey.split('.').pop();
+                    label.textContent = cleanLabel;
+                    label.title = `${imageData.configKey} (${imageData.filename})`; // Show full info on hover
                     
                     item.appendChild(img);
                     item.appendChild(label);
@@ -2858,7 +2762,9 @@
         
         // Load images when page loads
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('🎯 DOMContentLoaded fired, calling loadThemeImages...');
             loadThemeImages();
+            loadThemeBackground();
         });
     </script>
     <div class="bg-cycle"></div>
