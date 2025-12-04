@@ -108,10 +108,10 @@
             font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
-            text-align: center;
+            text-align: left;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
             min-height: 44px;
             max-height: 44px;
             box-sizing: border-box;
@@ -150,7 +150,7 @@
         .btn > span {
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
             width: 100%;
             gap: 8px;
             position: relative;
@@ -159,8 +159,8 @@
         .btn > span > span:first-child {
             position: relative;
             z-index: 3;
-            text-align: center;
-            flex: 0 1 auto;
+            flex: 1;
+            text-align: left;
         }
         .btn img {
             height: 100%;
@@ -570,6 +570,47 @@
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
+        
+        /* Loading animations - subtle pulse effect */
+        @keyframes loading-pulse {
+            0%, 100% {
+                opacity: 0.4;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+        
+        @keyframes loading-shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+            100% {
+                background-position: 1000px 0;
+            }
+        }
+        
+        .loading-placeholder {
+            animation: loading-pulse 1.5s ease-in-out infinite;
+            background: linear-gradient(90deg, #f0f0f0 0%, #e0e0e0 50%, #f0f0f0 100%);
+            background-size: 1000px 100%;
+            border-radius: 4px;
+            min-height: 1em;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        .loading-text {
+            animation: loading-pulse 1.5s ease-in-out infinite;
+            color: #999 !important;
+        }
+        
+        .loading-skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading-shimmer 1.5s ease-in-out infinite;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -593,13 +634,19 @@
         <div class="header-section">
             <div class="header-text">
                 <!-- Title and subtitle removed; using About line instead -->
-                <h2 id="theme-title" style="font-size: 1rem; margin-bottom: 15px; color: #667eea; visibility: hidden;">Loading...</h2>
-                <p class="description" id="theme-description" style="visibility: hidden;">Loading...</p>
+                <h2 id="theme-title" style="font-size: 1rem; margin-bottom: 15px; color: #667eea;">
+                    <span class="loading-placeholder" style="width: 300px; height: 1.2em; display: inline-block;"></span>
+                </h2>
+                <p class="description" id="theme-description">
+                    <span class="loading-placeholder" style="width: 400px; height: 1.2em; display: inline-block;"></span>
+                </p>
                 <p class="author-info" style="margin-top: 15px; color: #666; font-size: 0.9rem; font-style: italic;">
-                    Theme created by <strong id="author-display" style="visibility: hidden;">Loading...</strong>
+                    Theme created by <strong id="author-display">
+                        <span class="loading-placeholder" style="width: 150px; height: 1em; display: inline-block;"></span>
+                    </strong>
                 </p>
             </div>
-            <img src="cover.png" alt="Theme cover" class="cover-image" onclick="openLightbox('cover.png')" id="cover-image">
+            <img src="" alt="Theme cover" class="cover-image" id="cover-image" style="display: none;">
         </div>
         
         
@@ -609,7 +656,10 @@
             <h3 style="font-size: 1.1rem; margin-bottom: 15px; color: #667eea; font-weight: 600;">Screenshots</h3>
             <div class="screenshots-carousel-container" style="position: relative; width: 100%; overflow: hidden; background: #f5f5f5; border-radius: 8px; padding: 15px;">
                 <div class="screenshots-carousel-wrapper" id="screenshots-carousel-wrapper" style="display: flex; gap: 15px; overflow-x: auto; scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: #667eea #f5f5f5; padding: 5px 0;">
-                    <div style="text-align: center; padding: 40px; color: #999; width: 100%;">Loading screenshots...</div>
+                    <div style="text-align: center; padding: 40px; color: #999; width: 100%;">
+                        <div class="loading-skeleton" style="width: 250px; height: 180px; margin: 0 auto; border-radius: 6px;"></div>
+                        <p style="margin-top: 15px;" class="loading-text">Loading screenshots...</p>
+                    </div>
                 </div>
                 <div class="screenshots-carousel-nav" style="display: flex; justify-content: center; gap: 8px; margin-top: 15px;">
                     <button class="image-carousel-nav-btn" id="screenshots-prev" onclick="scrollScreenshotsCarousel(-1)">← Prev</button>
@@ -623,7 +673,15 @@
             <h3 style="font-size: 1rem; margin-bottom: 15px; color: #667eea;">Theme Assets</h3>
             <div class="image-carousel-container">
                 <div class="image-carousel-wrapper" id="image-carousel-wrapper">
-                    <div style="text-align: center; padding: 20px; color: #999;">Loading images...</div>
+                    <div style="text-align: center; padding: 20px; color: #999;">
+                        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                            <div class="loading-skeleton" style="width: 120px; height: 80px; border-radius: 4px;"></div>
+                            <div class="loading-skeleton" style="width: 120px; height: 80px; border-radius: 4px;"></div>
+                            <div class="loading-skeleton" style="width: 120px; height: 80px; border-radius: 4px;"></div>
+                            <div class="loading-skeleton" style="width: 120px; height: 80px; border-radius: 4px;"></div>
+                        </div>
+                        <p style="margin-top: 15px;" class="loading-text">Loading theme assets...</p>
+                    </div>
                 </div>
                 <div class="image-carousel-nav">
                     <button class="image-carousel-nav-btn" id="carousel-prev" onclick="scrollCarousel(-1)">← Prev</button>
@@ -635,13 +693,13 @@
         
         <div class="button-group" style="margin-top: 30px;">
             <button id="install-btn" onclick="showInstallInstructions()" class="btn install" style="display: none;">
-                <span style="display: flex; align-items: center; justify-content: center; width: 100%; position: relative; z-index: 2;">
-                    <span style="position: relative; z-index: 3; text-align: center; flex: 0 1 auto;">Install</span>
+                <span style="display: flex; align-items: center; justify-content: space-between; width: 100%; position: relative; z-index: 2;">
+                    <span style="position: relative; z-index: 3; flex: 1; text-align: left;">Install</span>
                 </span>
             </button>
             <button id="download-btn-full" onclick="downloadTheme()" class="btn download">
-                <span style="display: flex; align-items: center; justify-content: center; width: 100%; position: relative; z-index: 2;">
-                    <span style="position: relative; z-index: 3; text-align: center; flex: 0 1 auto;">Download</span>
+                <span style="display: flex; align-items: center; justify-content: space-between; width: 100%; position: relative; z-index: 2;">
+                    <span style="position: relative; z-index: 3; flex: 1; text-align: left;">Download</span>
                 </span>
             </button>
             <a href="#" id="download-link-small" onclick="downloadTheme(); return false;" class="download-link-small" style="display: none;">📦 Download ZIP instead</a>
@@ -691,7 +749,9 @@
         
         <!-- SEO Content -->
         <div class="seo-content" style="margin-top: 40px; text-align: left; color: #666; font-size: 0.9rem; line-height: 1.6;">
-            <p><span id="description-display" style="visibility: hidden;">Loading...</span></p>
+            <p><span id="description-display">
+                <span class="loading-placeholder" style="width: 500px; height: 1.2em; display: inline-block;"></span>
+            </span></p>
         </div>
         
         <div style="margin-top: 30px; font-size: 0.9rem; color: #888;">
@@ -1345,6 +1405,101 @@
             await loadAuthorInfo();
         });
         
+        // Load cover image using wildcard *cover*.* pattern with format prioritization (GIF > JPG > PNG)
+        async function loadCoverImage(themeTitle) {
+            const coverImage = document.getElementById('cover-image');
+            if (!coverImage) return;
+            
+            const folderName = getFolderName();
+            let coverFiles = [];
+            
+            // Strategy 1: Try GitHub API to get file list
+            try {
+                const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${encodeURIComponent(folderName)}`;
+                const response = await fetch(apiUrl);
+                if (response.ok) {
+                    const files = await response.json();
+                    // Filter for *cover*.* pattern (case-insensitive)
+                    const allCoverFiles = files
+                        .filter(file => file.type === 'file' && 
+                                /\.(gif|jpg|jpeg|png)$/i.test(file.name) &&
+                                /cover/i.test(file.name))
+                        .map(file => file.name);
+                    
+                    // Deduplicate: If multiple formats exist for same base name, keep only the best one
+                    // Priority: GIF > JPG/JPEG > PNG
+                    const fileMap = new Map(); // base name -> best format
+                    const extensionPriority = { 'gif': 1, 'jpg': 2, 'jpeg': 2, 'png': 3 };
+                    
+                    allCoverFiles.forEach(filename => {
+                        const ext = filename.split('.').pop().toLowerCase();
+                        const baseName = filename.substring(0, filename.lastIndexOf('.'));
+                        const priority = extensionPriority[ext] || 99;
+                        
+                        if (!fileMap.has(baseName) || priority < fileMap.get(baseName).priority) {
+                            fileMap.set(baseName, { filename, priority });
+                        }
+                    });
+                    
+                    coverFiles = Array.from(fileMap.values()).map(item => item.filename);
+                }
+            } catch (apiError) {
+                console.log('GitHub API not available for cover, using pattern discovery');
+            }
+            
+            // Strategy 2: If API didn't work, try common cover patterns with format prioritization
+            if (coverFiles.length === 0) {
+                // Try wildcard patterns with format prioritization (GIF > JPG > PNG)
+                const coverBases = [
+                    'cover', 'gregcover', 'cover_noscale', 'cover_WS', 'cover_YS',
+                    '@Be_cover', '@Cup_cover', '@Pris_cover'
+                ];
+                const extensions = ['gif', 'jpg', 'jpeg', 'png']; // Priority order
+                
+                // Test each base with each extension, in priority order
+                for (const base of coverBases) {
+                    for (const ext of extensions) {
+                        const pattern = `${base}.${ext}`;
+                        try {
+                            const response = await fetch(`./${encodeURIComponent(pattern)}`, { method: 'HEAD' });
+                            if (response.ok) {
+                                coverFiles.push(pattern);
+                                break; // Found best format for this base, move to next base
+                            }
+                        } catch (e) {
+                            // Continue trying
+                        }
+                    }
+                }
+            }
+            
+            // Final sort by extension priority: GIF > JPG > PNG
+            if (coverFiles.length > 0) {
+                const extensionPriority = { 'gif': 1, 'jpg': 2, 'jpeg': 2, 'png': 3 };
+                coverFiles.sort((a, b) => {
+                    const extA = a.split('.').pop().toLowerCase();
+                    const extB = b.split('.').pop().toLowerCase();
+                    const priorityA = extensionPriority[extA] || 99;
+                    const priorityB = extensionPriority[extB] || 99;
+                    return priorityA - priorityB;
+                });
+                
+                const coverFile = coverFiles[0];
+                coverImage.src = `./${encodeURIComponent(coverFile)}`;
+                coverImage.alt = `${themeTitle || 'Theme'} cover`;
+                coverImage.onclick = () => openLightbox(`./${encodeURIComponent(coverFile)}`, coverFile);
+                coverImage.style.display = 'block';
+                
+                // Handle image load error
+                coverImage.onerror = function() {
+                    this.style.display = 'none';
+                };
+            } else {
+                // No cover image found - hide it
+                coverImage.style.display = 'none';
+            }
+        }
+        
         // Load theme information from config.json (priority) or themes.json (fallback)
         async function loadAuthorInfo() {
             try {
@@ -1439,25 +1594,35 @@
                     title = folderName || 'Theme';
                 }
                 
-                // Update title
+                // Update title - replace loading placeholder
                 const titleElement = document.getElementById('theme-title');
                 if (titleElement) {
-                    titleElement.textContent = `About the ${title} Theme for Innioasis Y1`;
-                    titleElement.style.visibility = 'visible';
+                    titleElement.innerHTML = `About the ${title} Theme for Innioasis Y1`;
+                    titleElement.style.transition = 'opacity 0.3s ease-in';
                 }
                 
-                // Update description (top section)
+                // Update description (top section) - replace loading placeholder
                 const themeDescriptionElement = document.getElementById('theme-description');
                 if (themeDescriptionElement) {
-                    themeDescriptionElement.textContent = description || '';
-                    themeDescriptionElement.style.visibility = description ? 'visible' : 'hidden';
+                    if (description) {
+                        themeDescriptionElement.innerHTML = description;
+                        themeDescriptionElement.style.transition = 'opacity 0.3s ease-in';
+                    } else {
+                        themeDescriptionElement.innerHTML = '';
+                        themeDescriptionElement.style.display = 'none';
+                    }
                 }
                 
-                // Update description (bottom section - SEO)
+                // Update description (bottom section - SEO) - replace loading placeholder
                 const descriptionDisplay = document.getElementById('description-display');
                 if (descriptionDisplay) {
-                    descriptionDisplay.textContent = description || '';
-                    descriptionDisplay.style.visibility = description ? 'visible' : 'hidden';
+                    if (description) {
+                        descriptionDisplay.innerHTML = description;
+                        descriptionDisplay.style.transition = 'opacity 0.3s ease-in';
+                    } else {
+                        descriptionDisplay.innerHTML = '';
+                        descriptionDisplay.style.display = 'none';
+                    }
                 }
                 
                 // Update author display with link if authorUrl is available
@@ -1571,11 +1736,8 @@
                     editLink.href = `https://github.com/y1-community/InnioasisY1Themes/tree/main/${encodeURIComponent(folderName)}#readme`;
                 }
                 
-                // Update cover image alt text
-                const coverImage = document.getElementById('cover-image');
-                if (coverImage) {
-                    coverImage.alt = `${title} cover`;
-                }
+                // Load cover image dynamically with wildcard pattern
+                await loadCoverImage(title);
                 
             } catch (error) {
                 console.warn('Could not load theme information:', error);
@@ -2114,15 +2276,33 @@
                     if (response.ok) {
                         const files = await response.json();
                         // Filter for *screenshot*.* and *cover*.* patterns (case-insensitive)
-                        screenshotFiles = files
+                        const allScreenshotFiles = files
                             .filter(file => file.type === 'file' && 
-                                    /\.(jpg|jpeg|png|gif)$/i.test(file.name) &&
+                                    /\.(gif|jpg|jpeg|png)$/i.test(file.name) &&
                                     (/screenshot/i.test(file.name) || /cover/i.test(file.name)))
                             .map(file => ({
                                 name: file.name,
                                 url: `./${encodeURIComponent(file.name)}`,
                                 download_url: file.download_url || `./${encodeURIComponent(file.name)}`
                             }));
+                        
+                        // Deduplicate: If multiple formats exist for same base name, keep only the best one
+                        // Priority: GIF > JPG/JPEG > PNG
+                        const screenshotMap = new Map(); // base name -> best format
+                        const extensionPriority = { 'gif': 1, 'jpg': 2, 'jpeg': 2, 'png': 3 };
+                        
+                        allScreenshotFiles.forEach(file => {
+                            const filename = file.name;
+                            const ext = filename.split('.').pop().toLowerCase();
+                            const baseName = filename.substring(0, filename.lastIndexOf('.'));
+                            const priority = extensionPriority[ext] || 99;
+                            
+                            if (!screenshotMap.has(baseName) || priority < screenshotMap.get(baseName).priority) {
+                                screenshotMap.set(baseName, { file, priority });
+                            }
+                        });
+                        
+                        screenshotFiles = Array.from(screenshotMap.values()).map(item => item.file);
                     }
                 } catch (apiError) {
                     console.log('GitHub API not available for screenshots, using pattern discovery');
