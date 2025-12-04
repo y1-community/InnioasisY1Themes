@@ -2380,12 +2380,17 @@
             }, 300);
         }
         
-        // Helper function to sync JSON highlighting with current asset
+        // Helper function to sync JSON highlighting with current asset (acts as navigation breadcrumb)
         function syncJsonHighlighting() {
             if (!window.assetNavigation.assets || window.assetNavigation.currentIndex < 0) return;
             
             const asset = window.assetNavigation.assets[window.assetNavigation.currentIndex];
             if (!asset) return;
+            
+            // Skip highlighting for special assets that don't have JSON context
+            if (asset.type === 'special' && (asset.filename === 'index.html' || asset.filename === 'config.json')) {
+                return;
+            }
             
             // Find JSON context in the wrapper
             const lightboxContentWrapper = document.getElementById('lightbox-content-wrapper');
@@ -2394,27 +2399,51 @@
             const jsonPre = lightboxContentWrapper.querySelector('pre[id^="lightbox-json-"], pre[id^="font-json-"], pre[id^="image-json-"]');
             if (!jsonPre) return;
             
-            // Try multiple strategies to find the resource line
-            let context = null;
-            if (asset.resourceValue && window.findJsonContextForResource) {
-                context = window.findJsonContextForResource(asset.resourceValue, 0);
+            // PRIMARY: Use config key to find the exact line (1:1 mapping)
+            let lineNumber = null;
+            if (asset.configKey && window.configKeyLineNumbers) {
+                lineNumber = window.configKeyLineNumbers.get(asset.configKey);
             }
-            if (!context && asset.filename && window.findJsonContextForResource) {
-                context = window.findJsonContextForResource(asset.filename, 0);
-            }
-            if (!context) return;
             
-            const targetLine = jsonPre.querySelector(`.json-line[data-line="${context.lineNumber}"]`);
+            // Fallback: Try to find by resource value or filename
+            if (!lineNumber) {
+                let context = null;
+                if (asset.configKey && window.findJsonContextForResource) {
+                    // Try with config key as primary identifier
+                    context = window.findJsonContextForResource(asset.resourceValue || asset.filename, 0, asset.configKey);
+                }
+                if (!context && asset.resourceValue && window.findJsonContextForResource) {
+                    context = window.findJsonContextForResource(asset.resourceValue, 0);
+                }
+                if (!context && asset.filename && window.findJsonContextForResource) {
+                    context = window.findJsonContextForResource(asset.filename, 0);
+                }
+                if (context && context.lineNumber) {
+                    lineNumber = context.lineNumber;
+                }
+            }
+            
+            if (!lineNumber) return;
+            
+            const targetLine = jsonPre.querySelector(`.json-line[data-line="${lineNumber}"]`);
             if (targetLine) {
-                // Clear all highlights
+                // Clear all previous navigation highlights (breadcrumb indicators)
                 jsonPre.querySelectorAll('.json-line').forEach(l => {
-                    // Don't clear theme info highlights, only resource highlights
+                    // Don't clear theme info highlights, only navigation breadcrumb highlights
                     if (!l.querySelector('.json-theme-info')) {
                         l.style.background = '';
+                        l.style.borderLeft = '';
+                        l.style.paddingLeft = '';
                     }
                 });
-                // Highlight target line persistently
-                targetLine.style.background = 'rgba(102, 126, 234, 0.3)';
+                
+                // Highlight target line as navigation breadcrumb (more prominent styling)
+                targetLine.style.background = 'rgba(102, 126, 234, 0.25)';
+                targetLine.style.borderLeft = '4px solid #667eea';
+                targetLine.style.paddingLeft = '8px';
+                targetLine.style.transition = 'all 0.3s ease';
+                
+                // Scroll to show the highlighted line (breadcrumb indicator)
                 targetLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }
@@ -2475,21 +2504,55 @@
                 const resourceFilename = resource.getAttribute('data-resource-filename') || resourceValue.split('/').pop();
                 
                 // Find matching asset in navigation list and update index
+                // Try to find by config key first (for 1:1 mapping), then fallback to filename
                 if (window.assetNavigation.assets) {
-                    const assetIndex = window.assetNavigation.assets.findIndex(a => 
-                        (a.type === 'image' || a.type === 'font') && 
-                        (a.filename === resourceFilename || a.resourceValue === resourceValue)
-                    );
+                    // Extract config key from the line if possible (look for the key before the resource)
+                    let configKey = null;
+                    const lineText = line.textContent || '';
+                    // Try to extract config key from the JSON structure
+                    const keyMatch = lineText.match(/"([^"]+)":\s*"[^"]*"/);
+                    if (keyMatch) {
+                        // Try to build full path by looking at parent lines
+                        const parentLines = [];
+                        let currentLine = line;
+                        for (let i = 0; i < 5 && currentLine; i++) {
+                            currentLine = currentLine.previousElementSibling;
+                            if (currentLine && currentLine.classList.contains('json-line')) {
+                                const match = currentLine.textContent.match(/"([^"]+)":/);
+                                if (match) {
+                                    parentLines.unshift(match[1]);
+                                }
+                            }
+                        }
+                        if (parentLines.length > 0) {
+                            configKey = parentLines.join('.') + '.' + keyMatch[1];
+                        } else {
+                            configKey = keyMatch[1];
+                        }
+                    }
+                    
+                    let assetIndex = -1;
+                    // Try to find by config key first
+                    if (configKey) {
+                        assetIndex = window.assetNavigation.assets.findIndex(a => 
+                            a.configKey === configKey
+                        );
+                    }
+                    // Fallback to filename/resourceValue matching
+                    if (assetIndex < 0) {
+                        assetIndex = window.assetNavigation.assets.findIndex(a => 
+                            (a.type === 'image' || a.type === 'font') && 
+                            (a.filename === resourceFilename || a.resourceValue === resourceValue)
+                        );
+                    }
                     if (assetIndex >= 0) {
                         window.assetNavigation.currentIndex = assetIndex;
                         syncNavigationButtons();
                     }
                 }
                 
-                // Highlight and scroll to this line
-                jsonPre.querySelectorAll('.json-line').forEach(l => l.style.background = '');
-                line.style.background = 'rgba(102, 126, 234, 0.3)';
-                line.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Use syncJsonHighlighting to update breadcrumb (it will handle highlighting)
+                syncJsonHighlighting();
                 
                 // Preview the asset
                 setTimeout(() => {
@@ -2506,6 +2569,10 @@
                         const localFontUrl = getLocalUrl(resourceValue);
                         openLightbox('font-preview', resourceValue, null, fontUrl, localFontUrl, window.assetNavigation.currentImageCache, null, resourceValue);
                     }
+                    // Sync highlighting again after lightbox opens
+                    setTimeout(() => {
+                        syncJsonHighlighting();
+                    }, 300);
                 }, 100);
             }
         }
@@ -2572,7 +2639,7 @@
                 closeLightbox();
             }
         });
-        
+
         // Lightbox functions
         function openLightbox(imgSrc, filename = null, extraData = null, fontUrl = null, localFontUrl = null, imageCache = null, fontFileData = null, jsonResourceValue = null) {
             const lightbox = document.getElementById('lightbox');
@@ -2583,6 +2650,9 @@
             const lightboxJsonContext = document.getElementById('lightbox-json-context');
             
             const folderName = getFolderName();
+            
+            // Show navigation buttons immediately when lightbox opens (before any content loads)
+            syncNavigationButtons();
             
             // Always clear and hide the separate JSON context panel first (to prevent duplicates)
             if (lightboxJsonContext) {
@@ -2612,6 +2682,7 @@
                 `;
                 filenameDisplay.style.display = 'none';
                 editBtn.style.display = 'none';
+                syncNavigationButtons();
                 lightbox.classList.add('active');
                 document.body.style.overflow = 'hidden';
                 return;
@@ -2700,6 +2771,7 @@
                 const githubUrl = `https://github.com/y1-community/InnioasisY1Themes/blob/main/${encodeURIComponent(folderName)}/index.html`;
                 editBtn.href = githubUrl;
                 editBtn.style.display = 'inline-flex';
+                syncNavigationButtons();
                 lightbox.classList.add('active');
                 document.body.style.overflow = 'hidden';
                 return;
@@ -3106,12 +3178,30 @@
                 window.configJsonImageCache = imageCache; // Store image cache
                 window.configJsonFontFile = fontFile; // Store font file
                 
-                // Enhanced findJsonContextForResource function - finds line by filename or full path
-                window.findJsonContextForResource = function(resourceValue, contextLines = 3) {
+                // Enhanced findJsonContextForResource function - finds line by config key (primary) or filename
+                window.findJsonContextForResource = function(resourceValue, contextLines = 3, configKey = null) {
                     if (!window.configJsonData || !resourceValue) return null;
                     const formattedJsonLines = JSON.stringify(window.configJsonData, null, 2).split('\n');
                     
-                    // Extract filename from resourceValue (handle paths)
+                    // FIRST: Try to find by config key (primary identifier for 1:1 mapping)
+                    if (configKey && window.configKeyLineNumbers) {
+                        const lineNum = window.configKeyLineNumbers.get(configKey);
+                        if (lineNum) {
+                            const targetLineIndex = lineNum - 1; // Convert to 0-based index
+                            const start = Math.max(0, targetLineIndex - contextLines);
+                            const end = Math.min(formattedJsonLines.length, targetLineIndex + contextLines + 1);
+                            const context = formattedJsonLines.slice(start, end);
+                            const targetRelativeIndex = targetLineIndex - start;
+                            return {
+                                lines: context,
+                                targetLineIndex: targetRelativeIndex,
+                                lineNumber: lineNum,
+                                startLineNumber: start + 1
+                            };
+                        }
+                    }
+                    
+                    // Fallback: Extract filename from resourceValue (handle paths)
                     const filename = resourceValue.split('/').pop();
                     const filenameNoExt = filename.replace(/\.[^.]+$/, '');
                     
@@ -3403,10 +3493,13 @@
                 editBtn.href = githubUrl;
                 editBtn.style.display = 'inline-flex';
                 
-                // Sync JSON highlighting and navigation buttons after opening
+                // Show navigation buttons immediately
+                syncNavigationButtons();
+                
+                // Sync JSON highlighting after opening
                 setTimeout(() => {
                     syncJsonHighlighting();
-                    syncNavigationButtons();
+                    syncNavigationButtons(); // Sync again after highlighting
                 }, 300);
                 
                 lightbox.classList.add('active');
@@ -3419,18 +3512,18 @@
             
             // If filename not provided, extract from imgSrc
             if (!actualFilename) {
-                // Remove leading ./ if present
-                const cleanSrc = imgSrc.replace(/^\.\//, '');
-                
+            // Remove leading ./ if present
+            const cleanSrc = imgSrc.replace(/^\.\//, '');
+            
                 // Handle blob: URLs (from carousel)
                 if (imgSrc.startsWith('blob:')) {
                     actualFilename = cleanSrc.split('/').pop();
                 } else {
                     // If the path contains a folder
-                    if (cleanSrc.includes('/')) {
-                        const parts = cleanSrc.split('/');
+            if (cleanSrc.includes('/')) {
+                const parts = cleanSrc.split('/');
                         actualFilename = parts[parts.length - 1];
-                    } else {
+            } else {
                         actualFilename = cleanSrc;
                     }
                 }
@@ -3545,7 +3638,8 @@
                     };
                 }
                 
-                if (window.createInteractiveJson) {
+                // Only show JSON context for image/font previews, NOT for config.json or index.html
+                if (imgSrc !== 'config-json' && imgSrc !== 'index-html' && window.createInteractiveJson) {
                 const configData = window.configJsonData;
                 const imgCache = window.configJsonImageCache || imageCache;
                 window.assetNavigation.currentImageCache = imgCache;
@@ -3555,24 +3649,31 @@
                 const totalLines = fullJsonHtml.split('\n').length;
                 const uniqueId = 'image-json-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
                 
-                // Find the correct line number for this resource
-                // Try multiple strategies to find the matching line
+                // Find the correct line number for this resource using config key (primary) or filename
                 const resourceValue = jsonResourceValue || actualFilename;
                 let scrollToLine = 1;
                 
-                if (resourceValue && window.findJsonContextForResource) {
-                    // Try with resourceValue first (full path if available)
-                    let context = window.findJsonContextForResource(resourceValue, 0);
-                    
-                    // If not found, try with just the filename
-                    if (!context && actualFilename) {
-                        context = window.findJsonContextForResource(actualFilename, 0);
+                // Get config key from current asset if available
+                let configKey = null;
+                if (window.assetNavigation.assets && window.assetNavigation.currentIndex >= 0) {
+                    const currentAsset = window.assetNavigation.assets[window.assetNavigation.currentIndex];
+                    configKey = currentAsset ? currentAsset.configKey : null;
+                }
+                
+                if ((resourceValue || configKey) && window.findJsonContextForResource) {
+                    // PRIMARY: Try with config key first (for 1:1 mapping)
+                    let context = null;
+                    if (configKey) {
+                        context = window.findJsonContextForResource(resourceValue || actualFilename, 0, configKey);
                     }
                     
-                    // If still not found, try extracting filename from resourceValue
-                    if (!context && resourceValue.includes('/')) {
-                        const extractedFilename = resourceValue.split('/').pop();
-                        context = window.findJsonContextForResource(extractedFilename, 0);
+                    // Fallback: Try with resourceValue/filename
+                    if (!context && resourceValue) {
+                        context = window.findJsonContextForResource(resourceValue, 0);
+                    }
+                    
+                    if (!context && actualFilename) {
+                        context = window.findJsonContextForResource(actualFilename, 0);
                     }
                     
                     if (context && context.lineNumber) {
@@ -3580,19 +3681,21 @@
                     }
                 }
                 
+                // Create expandable JSON preview - primary view that can fill the space
                 imageJsonContextHtml = `
                     <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                            <div style="font-size: 0.8rem; color: #999; font-weight: 600;">config.json navigation (click lines or use ↑↓):</div>
-                            <div style="display: flex; gap: 8px;">
+                            <div style="font-size: 0.85rem; color: #667eea; font-weight: 600;">config.json (click lines or use ↑↓ to navigate):</div>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <button id="json-expand-btn-${uniqueId}" onclick="event.stopPropagation(); toggleJsonExpand('${uniqueId}')" style="background: #667eea; color: white; border: none; border-radius: 4px; padding: 4px 12px; cursor: pointer; font-size: 0.75rem; transition: all 0.2s;" onmouseover="this.style.background='#5568d3'" onmouseout="this.style.background='#667eea'" title="Expand/collapse JSON view">⛶</button>
                                 <button onclick="event.stopPropagation(); navigateJsonLine(-1)" style="background: #667eea; color: white; border: none; border-radius: 4px; width: 30px; height: 30px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='#5568d3'" onmouseout="this.style.background='#667eea'">↑</button>
                                 <button onclick="event.stopPropagation(); navigateJsonLine(1)" style="background: #667eea; color: white; border: none; border-radius: 4px; width: 30px; height: 30px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='#5568d3'" onmouseout="this.style.background='#667eea'">↓</button>
                             </div>
                         </div>
-                        <div style="background: #2d2d2d; border-radius: 4px; overflow: hidden; position: relative; max-height: 200px; overflow-y: auto;">
-                            <pre id="${uniqueId}" style="color: #f8f8f2; padding: 10px; padding-left: 42px; overflow-x: auto; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.7rem; line-height: 1.3; margin: 0; white-space: pre; word-wrap: normal; position: relative;"><code>${fullJsonHtml}</code></pre>
-                            <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 32px; background: #1e1e1e; color: #858585; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.7rem; padding: 10px 4px; text-align: right; user-select: none; line-height: 1.3;">
-                                ${Array.from({length: totalLines}, (_, i) => `<div style="line-height: 1.3;">${i + 1}</div>`).join('')}
+                        <div id="json-container-${uniqueId}" style="background: #2d2d2d; border-radius: 4px; overflow: hidden; position: relative; max-height: 400px; overflow-y: auto; transition: max-height 0.3s ease;">
+                            <pre id="${uniqueId}" style="color: #f8f8f2; padding: 10px; padding-left: 42px; overflow-x: auto; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.75rem; line-height: 1.4; margin: 0; white-space: pre; word-wrap: normal; position: relative;"><code>${fullJsonHtml}</code></pre>
+                            <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 32px; background: #1e1e1e; color: #858585; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.75rem; padding: 10px 4px; text-align: right; user-select: none; line-height: 1.4;">
+                                ${Array.from({length: totalLines}, (_, i) => `<div style="line-height: 1.4;">${i + 1}</div>`).join('')}
                             </div>
                         </div>
                     </div>
@@ -3796,11 +3899,21 @@
                     const response = await fetch(apiUrl);
                     if (response.ok) {
                         const files = await response.json();
+                        console.log(`GitHub API returned ${files.length} files for ${folderName}`);
+                        
                         // Filter for *screenshot*.* patterns only (exclude covers - case-insensitive)
+                        // Match any file that contains "screenshot" anywhere in the name
                         const allScreenshotFiles = files
-                            .filter(file => file.type === 'file' && 
-                                    /\.(gif|jpg|jpeg|png)$/i.test(file.name) &&
-                                    /screenshot/i.test(file.name))
+                            .filter(file => {
+                                if (file.type !== 'file') return false;
+                                // Must be an image file
+                                if (!/\.(gif|jpg|jpeg|png)$/i.test(file.name)) return false;
+                                // Must contain "screenshot" (case-insensitive)
+                                if (!/screenshot/i.test(file.name)) return false;
+                                // Exclude cover files (they have their own section)
+                                if (/cover/i.test(file.name)) return false;
+                                return true;
+                            })
                             .map(file => ({
                                 name: file.name,
                                 url: getGitHubRawUrl(file.name), // Use GitHub raw URL for faster loading
@@ -3816,6 +3929,7 @@
                         allScreenshotFiles.forEach(file => {
                             const filename = file.name;
                             const ext = filename.split('.').pop().toLowerCase();
+                            // Extract base name (everything before the last dot)
                             const baseName = filename.substring(0, filename.lastIndexOf('.'));
                             const priority = extensionPriority[ext] || 99;
                             
@@ -3825,54 +3939,117 @@
                         });
                         
                         screenshotFiles = Array.from(screenshotMap.values()).map(item => item.file);
+                        
+                        console.log(`Found ${screenshotFiles.length} screenshot files via GitHub API for ${folderName}`);
+                    } else {
+                        console.warn(`GitHub API returned ${response.status} for screenshots, will try fallback`);
                     }
                 } catch (apiError) {
-                    console.log('GitHub API not available for screenshots, using pattern discovery');
+                    console.log('GitHub API not available for screenshots, using pattern discovery:', apiError.message);
                 }
                 
-                // Strategy 2: If API didn't work, try common patterns
+                // Strategy 2: If API didn't work, try common patterns and check if files exist
                 if (screenshotFiles.length === 0) {
-                    const imageExtensions = ['png', 'jpg', 'jpeg', 'gif'];
+                    console.log('GitHub API fallback: trying pattern discovery for screenshots');
+                    const imageExtensions = ['gif', 'jpg', 'jpeg', 'png']; // GIF first for priority
                     const screenshotPatterns = [];
                     
-                    // Try numbered screenshots (screenshot1.jpg through screenshot20.jpg)
-                    for (let i = 1; i <= 20; i++) {
-                        for (const ext of imageExtensions) {
-                            screenshotPatterns.push(`screenshot${i}.${ext}`);
-                        }
-                    }
-                    
-                    // Try base screenshot patterns
+                    // Try base screenshot patterns first (screenshot.jpg, screenshot.png, etc.)
                     for (const ext of imageExtensions) {
                         screenshotPatterns.push(`screenshot.${ext}`, `Screenshot.${ext}`, `SCREENSHOT.${ext}`);
                     }
                     
-                    // Note: Cover patterns are excluded - covers are only shown in the cover image at top right
-                    
-                    // Build list of potential screenshot files and deduplicate by base name
-                    const discoveredScreenshotMap = new Map(); // base name -> best format
-                    const extensionPriority = { 'gif': 1, 'jpg': 2, 'jpeg': 2, 'png': 3 };
-                    
-                    for (const filename of screenshotPatterns) {
-                        const ext = filename.split('.').pop().toLowerCase();
-                        const baseName = filename.substring(0, filename.lastIndexOf('.'));
-                        const priority = extensionPriority[ext] || 99;
-                        
-                        if (!discoveredScreenshotMap.has(baseName) || priority < discoveredScreenshotMap.get(baseName).priority) {
-                            discoveredScreenshotMap.set(baseName, {
-                                name: filename,
-                                priority: priority
-                            });
+                    // Try numbered screenshots (screenshot1.jpg through screenshot30.jpg)
+                    for (let i = 1; i <= 30; i++) {
+                        for (const ext of imageExtensions) {
+                            screenshotPatterns.push(`screenshot${i}.${ext}`);
+                            screenshotPatterns.push(`Screenshot${i}.${ext}`);
+                            screenshotPatterns.push(`screenshot_${i}.${ext}`);
+                            screenshotPatterns.push(`Screenshot_${i}.${ext}`);
                         }
                     }
                     
-                    // Convert map to array
-                    screenshotFiles = Array.from(discoveredScreenshotMap.values()).map(item => ({
-                        name: item.name,
-                        url: getGitHubRawUrl(item.name),
-                        localUrl: `./${encodeURIComponent(item.name)}`,
-                        download_url: getGitHubRawUrl(item.name)
-                    }));
+                    // Try variations with underscores, dashes, etc.
+                    for (const ext of imageExtensions) {
+                        screenshotPatterns.push(`screenshot_theme.${ext}`, `theme_screenshot.${ext}`);
+                    }
+                    
+                    // Note: Cover patterns are excluded - covers are only shown in the cover image at top right
+                    
+                    // Check which files actually exist by trying to load them directly (more reliable than HEAD)
+                    const existingScreenshots = [];
+                    const screenshotCheckPromises = screenshotPatterns.map(async (filename) => {
+                        // Try local URL first (more reliable for GitHub Pages)
+                        const localUrl = `./${encodeURIComponent(filename)}`;
+                        try {
+                            const response = await fetch(localUrl, { method: 'HEAD' });
+                            if (response.ok && response.headers.get('content-type')?.startsWith('image/')) {
+                                return { filename, url: localUrl, exists: true };
+                            }
+                        } catch (e) {
+                            // HEAD failed, try full fetch with timeout
+                            try {
+                                const controller = new AbortController();
+                                const timeoutId = setTimeout(() => controller.abort(), 3000);
+                                const response = await fetch(localUrl, { signal: controller.signal });
+                                clearTimeout(timeoutId);
+                                if (response.ok && response.headers.get('content-type')?.startsWith('image/')) {
+                                    return { filename, url: localUrl, exists: true };
+                                }
+                            } catch (e2) {
+                                // File doesn't exist or failed to load
+                            }
+                        }
+                        
+                        // Try GitHub raw URL as fallback
+                        const githubUrl = getGitHubRawUrl(filename);
+                        try {
+                            const controller = new AbortController();
+                            const timeoutId = setTimeout(() => controller.abort(), 3000);
+                            const response = await fetch(githubUrl, { method: 'HEAD', signal: controller.signal });
+                            clearTimeout(timeoutId);
+                            if (response.ok && response.headers.get('content-type')?.startsWith('image/')) {
+                                return { filename, url: githubUrl, exists: true };
+                            }
+                        } catch (e) {
+                            // GitHub URL failed
+                        }
+                        return null;
+                    });
+                    
+                    const checkResults = await Promise.all(screenshotCheckPromises);
+                    const foundFiles = checkResults.filter(r => r !== null);
+                    
+                    if (foundFiles.length > 0) {
+                        // Deduplicate by base name with format priority
+                        const discoveredScreenshotMap = new Map();
+                        const extensionPriority = { 'gif': 1, 'jpg': 2, 'jpeg': 2, 'png': 3 };
+                        
+                        foundFiles.forEach(item => {
+                            const filename = item.filename;
+                            const ext = filename.split('.').pop().toLowerCase();
+                            // Extract base name - handle both "screenshot.jpg" and "screenshot2.jpg" correctly
+                            const baseName = filename.substring(0, filename.lastIndexOf('.'));
+                            const priority = extensionPriority[ext] || 99;
+                            
+                            if (!discoveredScreenshotMap.has(baseName) || priority < discoveredScreenshotMap.get(baseName).priority) {
+                                discoveredScreenshotMap.set(baseName, {
+                                    name: filename,
+                                    url: item.url,
+                                    priority: priority
+                                });
+                            }
+                        });
+                        
+                        screenshotFiles = Array.from(discoveredScreenshotMap.values()).map(item => ({
+                            name: item.name,
+                            url: item.url,
+                            localUrl: `./${encodeURIComponent(item.name)}`,
+                            download_url: item.url
+                        }));
+                        
+                        console.log(`Found ${screenshotFiles.length} screenshot files via pattern discovery for ${folderName}`);
+                    }
                 }
                 
                 if (screenshotFiles.length === 0) {
@@ -3887,51 +4064,97 @@
                 // Load and display screenshots
                 const loadedScreenshots = [];
                 
-                for (const file of screenshotFiles) {
+                // Load screenshots in parallel for better performance
+                const loadPromises = screenshotFiles.map(async (file) => {
                     try {
-                        // Try GitHub raw URL first (faster), then fallback to local
-                        let imageUrl = file.url; // GitHub raw URL
-                        let response = await fetch(imageUrl, { method: 'HEAD' });
+                        // Try local URL first (more reliable for GitHub Pages), then GitHub raw URL
+                        let imageUrl = file.localUrl || file.url;
+                        let loaded = false;
                         
-                        // If GitHub URL fails, try local URL
-                        if (!response.ok && file.localUrl) {
-                            imageUrl = file.localUrl;
-                            response = await fetch(imageUrl, { method: 'HEAD' });
+                        // Try local URL first
+                        if (file.localUrl) {
+                            try {
+                                const controller = new AbortController();
+                                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                                const response = await fetch(file.localUrl, { signal: controller.signal });
+                                clearTimeout(timeoutId);
+                                
+                                if (response.ok) {
+                                    const blob = await response.blob();
+                                    if (blob.type.startsWith('image/')) {
+                                        imageUrl = file.localUrl;
+                                        loaded = true;
+                                        
+                                        const objectUrl = URL.createObjectURL(blob);
+                                        const arrayBuffer = await blob.arrayBuffer();
+                                        fileCache.set(file.name, {
+                                            blob: blob,
+                                            arrayBuffer: arrayBuffer,
+                                            url: imageUrl
+                                        });
+                                        
+                                        return {
+                                            name: file.name,
+                                            url: imageUrl,
+                                            objectUrl: objectUrl
+                                        };
+                                    }
+                                }
+                            } catch (e) {
+                                console.log(`Local URL failed for ${file.name}, trying GitHub URL...`);
+                            }
                         }
                         
-                        if (response.ok) {
-                            // File exists, load it
-                            const fullResponse = await fetch(imageUrl);
-                            if (fullResponse.ok) {
-                                const blob = await fullResponse.blob();
-                                const objectUrl = URL.createObjectURL(blob);
+                        // If local failed, try GitHub raw URL
+                        if (!loaded && file.url && file.url !== file.localUrl) {
+                            try {
+                                const controller = new AbortController();
+                                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                                const response = await fetch(file.url, { signal: controller.signal });
+                                clearTimeout(timeoutId);
                                 
-                                // Cache for download/install
-                                const arrayBuffer = await blob.arrayBuffer();
-                                fileCache.set(file.name, {
-                                    blob: blob,
-                                    arrayBuffer: arrayBuffer,
-                                    url: imageUrl
-                                });
-                                
-                                loadedScreenshots.push({
-                                    name: file.name,
-                                    url: imageUrl,
-                                    objectUrl: objectUrl
-                                });
+                                if (response.ok) {
+                                    const blob = await response.blob();
+                                    if (blob.type.startsWith('image/')) {
+                                        imageUrl = file.url;
+                                        
+                                        const objectUrl = URL.createObjectURL(blob);
+                                        const arrayBuffer = await blob.arrayBuffer();
+                                        fileCache.set(file.name, {
+                                            blob: blob,
+                                            arrayBuffer: arrayBuffer,
+                                            url: imageUrl
+                                        });
+                                        
+                                        return {
+                                            name: file.name,
+                                            url: imageUrl,
+                                            objectUrl: objectUrl
+                                        };
+                                    }
+                                }
+                            } catch (e) {
+                                console.warn(`Failed to load screenshot ${file.name} from GitHub URL:`, e.message);
                             }
                         }
                     } catch (err) {
-                        // File doesn't exist, skip it
-                        continue;
+                        console.warn(`Failed to load screenshot ${file.name}:`, err.message);
+                        return null;
                     }
-                }
+                    return null;
+                });
+                
+                const loadResults = await Promise.all(loadPromises);
+                loadedScreenshots.push(...loadResults.filter(r => r !== null));
                 
                 if (loadedScreenshots.length === 0) {
+                    console.warn(`No screenshots could be loaded for ${folderName}`);
                     screenshotsWrapper.innerHTML = '<div style="text-align: center; padding: 40px; color: #999; width: 100%;">No screenshots found</div>';
                     if (screenshotsInfo) screenshotsInfo.textContent = '0 / 0';
                     return;
                 }
+                
+                console.log(`Successfully loaded ${loadedScreenshots.length} screenshots for ${folderName}`);
                 
                 // Sort by filename for consistent display
                 loadedScreenshots.sort((a, b) => a.name.localeCompare(b.name));
@@ -4076,13 +4299,53 @@
                             window.configJsonFontFile = fontFile;
                         }
                         
-                        // Build a map of resource values to line numbers in the formatted JSON
-                        // This will be used to sort assets by their appearance order in config.json
+                        // Build maps for tracking line numbers
+                        // Map config keys to line numbers (primary mapping for 1:1 correlation)
+                        window.configKeyLineNumbers = new Map();
+                        // Map filenames to line numbers (for fallback/backward compatibility)
                         window.resourceLineNumbers = new Map();
                         const formattedJson = JSON.stringify(config, null, 2);
                         const jsonLines = formattedJson.split('\n');
                         
-                        // Find line numbers for each resource (images and fonts)
+                        // Build config key -> line number mapping by parsing the JSON structure
+                        const buildConfigKeyLineMap = () => {
+                            const keyLineMap = new Map();
+                            const traverse = (obj, path = '', lineNumber = 1) => {
+                                if (typeof obj === 'object' && obj !== null && !Array.isArray(obj)) {
+                                    Object.keys(obj).forEach(key => {
+                                        const fullKey = path ? `${path}.${key}` : key;
+                                        const value = obj[key];
+                                        
+                                        // Search for this key-value pair in the formatted JSON
+                                        for (let i = 0; i < jsonLines.length; i++) {
+                                            const line = jsonLines[i];
+                                            // Match key and value together on the same line
+                                            if (line.includes(`"${key}"`) && typeof value === 'string' && line.includes(`"${value}"`)) {
+                                                // Also check if value is an image or font file
+                                                if (/\.(png|jpg|jpeg|gif|svg|ttf|otf)$/i.test(value)) {
+                                                    keyLineMap.set(fullKey, i + 1);
+                                                }
+                                                break;
+                                            }
+                                        }
+                                        
+                                        if (typeof value === 'object' && value !== null) {
+                                            traverse(value, fullKey, lineNumber);
+                                        }
+                                    });
+                                }
+                            };
+                            traverse(config);
+                            return keyLineMap;
+                        };
+                        
+                        // Build config key to line number mapping
+                        const keyLineMap = buildConfigKeyLineMap();
+                        keyLineMap.forEach((lineNum, configKey) => {
+                            window.configKeyLineNumbers.set(configKey, lineNum);
+                        });
+                        
+                        // Also build filename -> line number map (for fallback)
                         jsonLines.forEach((line, index) => {
                             const lineNum = index + 1;
                             // Check for image files
@@ -4333,15 +4596,22 @@
                 configImageEntries.forEach(entry => {
                     const cached = imageCache.get(entry.filename);
                     if (cached) {
-                        // Get line number for this asset (from resourceLineNumbers map)
-                        const lineNumber = window.resourceLineNumbers ? window.resourceLineNumbers.get(entry.filename) : 9999;
+                        // Get line number for this asset - use config key as primary identifier
+                        let lineNumber = 9999;
+                        if (window.configKeyLineNumbers && entry.configKey) {
+                            lineNumber = window.configKeyLineNumbers.get(entry.configKey) || 9999;
+                        }
+                        // Fallback to filename-based lookup if config key not found
+                        if (lineNumber === 9999 && window.resourceLineNumbers) {
+                            lineNumber = window.resourceLineNumbers.get(entry.filename) || 9999;
+                        }
                         loadedImageData.push({
                             filename: entry.filename,
                             url: cached.url,
                             objectUrl: cached.objectUrl,
                             configKey: entry.configKey,
                             isTransparent: cached.isTransparent || false,
-                            lineNumber: lineNumber || 9999 // Default to end if line number not found
+                            lineNumber: lineNumber // Store line number for this config key
                         });
                     }
                 });
@@ -4358,14 +4628,14 @@
                 window.assetNavigation.assets = [];
                 window.assetNavigation.currentImageCache = imageCache;
                 
-                // Add index.html
+                // Add index.html (always first)
                 window.assetNavigation.assets.push({
                     type: 'special',
                     filename: 'index.html',
                     displayName: 'index.html'
                 });
                 
-                // Add config.json
+                // Add config.json (always second)
                 if (config) {
                     window.assetNavigation.assets.push({
                         type: 'special',
@@ -4374,43 +4644,57 @@
                     });
                 }
                 
-                // Add font (third)
+                // Combine all config-based assets (font, themeCover, images) into one list
+                // and sort by their line number in config.json
+                const allConfigAssets = [];
+                
+                // Add font if it exists
                 if (fontFile) {
-                    const fontLineNumber = window.resourceLineNumbers ? window.resourceLineNumbers.get(fontFile) : 9999;
-                    window.assetNavigation.assets.push({
+                    // Get line number for font from config key mapping (fontFamily)
+                    let fontLineNumber = 9999;
+                    if (window.configKeyLineNumbers) {
+                        fontLineNumber = window.configKeyLineNumbers.get('fontFamily') || 9999;
+                    }
+                    // Fallback to resource line numbers
+                    if (fontLineNumber === 9999 && window.resourceLineNumbers) {
+                        fontLineNumber = window.resourceLineNumbers.get(fontFile) || 9999;
+                    }
+                    allConfigAssets.push({
                         type: 'font',
                         filename: fontFile,
                         displayName: `fontFamily: ${fontFile}`,
                         resourceValue: fontFile,
-                        lineNumber: fontLineNumber || 9999
+                        configKey: 'fontFamily',
+                        lineNumber: fontLineNumber
                     });
                 }
                 
-                // Add all images sorted by line number (JSON appearance order)
-                // One entry per unique filename, keeping the first occurrence's config key and line number
-                const uniqueImageFiles = new Map();
-                loadedImageData.forEach(imageData => {
-                    if (!uniqueImageFiles.has(imageData.filename)) {
-                        uniqueImageFiles.set(imageData.filename, {
-                            type: 'image',
-                            filename: imageData.filename,
-                            displayName: imageData.configKey,
-                            resourceValue: imageData.filename,
-                            objectUrl: imageData.objectUrl,
-                            url: imageData.url,
-                            lineNumber: imageData.lineNumber
-                        });
-                    }
-                });
+                // Add all images (includes themeCover and other images)
+                const imageAssets = loadedImageData.map(imageData => ({
+                    type: 'image',
+                    filename: imageData.filename,
+                    displayName: imageData.configKey, // Use config key as display name
+                    resourceValue: imageData.filename,
+                    configKey: imageData.configKey, // Store config key for line finding
+                    objectUrl: imageData.objectUrl,
+                    url: imageData.url,
+                    lineNumber: imageData.lineNumber
+                }));
+                allConfigAssets.push(...imageAssets);
                 
-                // Convert to array and sort by line number
-                const sortedImages = Array.from(uniqueImageFiles.values()).sort((a, b) => {
+                // Sort all config-based assets by line number (JSON appearance order)
+                allConfigAssets.sort((a, b) => {
                     if (a.lineNumber !== b.lineNumber) {
                         return a.lineNumber - b.lineNumber;
                     }
-                    return a.filename.localeCompare(b.filename);
+                    // If same line number, sort by config key name
+                    const keyA = a.configKey || a.displayName;
+                    const keyB = b.configKey || b.displayName;
+                    return keyA.localeCompare(keyB);
                 });
-                window.assetNavigation.assets.push(...sortedImages);
+                
+                // Add all sorted config assets to navigation
+                window.assetNavigation.assets.push(...allConfigAssets);
                 
                 // Collect unique transparent files and their config keys
                 const transparentAssetsList = [];
@@ -4481,7 +4765,7 @@
                                 window.assetNavigation.currentIndex = configIndex;
                             }
                         }
-                        openLightbox('config-json', null, config, null, null, imageCache, fontFile);
+                        openLightbox('config-json', 'config.json', config, null, null, imageCache, fontFile);
                     };
                     configItem.style.cursor = 'pointer';
                     
@@ -4584,9 +4868,9 @@
                 // Create carousel items for images only - in navigation order (sorted by line number)
                 // Special items (index.html, config.json, font) are already added above
                 // Get all image assets from navigation array (excluding special items)
-                const imageAssets = window.assetNavigation.assets.filter(a => a.type === 'image');
+                const imageAssetsForCarousel = window.assetNavigation.assets.filter(a => a.type === 'image');
                 
-                imageAssets.forEach((asset) => {
+                imageAssetsForCarousel.forEach((asset) => {
                     const item = document.createElement('div');
                     item.className = 'image-carousel-item';
                     item.style.cursor = 'pointer';
@@ -4595,10 +4879,20 @@
                         e.stopPropagation();
                         // Find and set asset index BEFORE opening lightbox
                         if (window.assetNavigation.assets) {
-                            const assetIndex = window.assetNavigation.assets.findIndex(a => 
-                                a.type === 'image' && 
-                                (a.filename === asset.filename || a.resourceValue === asset.resourceValue)
-                            );
+                            // Try to find by config key first (for 1:1 mapping)
+                            let assetIndex = -1;
+                            if (asset.configKey) {
+                                assetIndex = window.assetNavigation.assets.findIndex(a => 
+                                    a.configKey === asset.configKey
+                                );
+                            }
+                            // Fallback to filename/resourceValue matching
+                            if (assetIndex < 0) {
+                                assetIndex = window.assetNavigation.assets.findIndex(a => 
+                                    a.type === 'image' && 
+                                    (a.filename === asset.filename || a.resourceValue === asset.resourceValue)
+                                );
+                            }
                             if (assetIndex >= 0) {
                                 window.assetNavigation.currentIndex = assetIndex;
                             }
@@ -4618,10 +4912,10 @@
                         transparentIndicator.appendChild(transparentLabel);
                         item.appendChild(transparentIndicator);
                     } else {
-                        const img = document.createElement('img');
+                    const img = document.createElement('img');
                         img.src = asset.objectUrl || asset.url;
                         img.alt = asset.filename;
-                        img.loading = 'lazy';
+                    img.loading = 'lazy';
                         item.appendChild(img);
                     }
                     
