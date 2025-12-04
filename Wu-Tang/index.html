@@ -1699,15 +1699,22 @@
                         errorDiv.id = 'config-missing-warning';
                         errorDiv.style.cssText = 'background: #fff3cd; border: 2px solid #ff9800; border-radius: 8px; padding: 20px; margin-bottom: 30px; color: #856404;';
                         errorDiv.innerHTML = `
-                            <h3 style="color: #ff9800; margin-top: 0; margin-bottom: 15px;">⚠️ config.json File Missing</h3>
+                            <h3 style="color: #ff9800; margin-top: 0; margin-bottom: 15px;">📄 About the index.html Template</h3>
                             <p style="margin-bottom: 15px; line-height: 1.6;">
-                                This theme page requires a <code style="background: rgba(255, 152, 0, 0.1); padding: 2px 6px; border-radius: 3px; font-family: monospace;">config.json</code> file in the theme folder to display theme information, assets, and screenshots.
+                                This <code style="background: rgba(255, 152, 0, 0.1); padding: 2px 6px; border-radius: 3px; font-family: monospace;">index.html</code> file acts as a template that automatically displays your theme's information, screenshots, and assets. It reads from your <code style="background: rgba(255, 152, 0, 0.1); padding: 2px 6px; border-radius: 3px; font-family: monospace;">config.json</code> file to create a dedicated page for your theme on <strong>themes.innioasis.app</strong>.
                             </p>
                             <p style="margin-bottom: 15px; line-height: 1.6;">
-                                <strong>Theme creators:</strong> Please download the latest <code style="background: rgba(255, 152, 0, 0.1); padding: 2px 6px; border-radius: 3px; font-family: monospace;">index.html</code> file from the <a href="https://themes.innioasis.app/theme_html/" target="_blank" style="color: #667eea; text-decoration: underline; font-weight: 600;">theme_html directory</a> and place it in your theme folder before uploading to the repository.
+                                <strong>To give your theme its own page:</strong> Copy this <code style="background: rgba(255, 152, 0, 0.1); padding: 2px 6px; border-radius: 3px; font-family: monospace;">index.html</code> file into your theme's folder. When you upload your theme folder to the repository, it will automatically get its own page at <code style="background: rgba(255, 152, 0, 0.1); padding: 2px 6px; border-radius: 3px; font-family: monospace;">themes.innioasis.app/YourThemeName</code>.
                             </p>
+                            <p style="margin-bottom: 15px; line-height: 1.6;">
+                                <strong>You can:</strong>
+                            </p>
+                            <ul style="margin: 0 0 15px 20px; line-height: 1.8; color: #856404;">
+                                <li>Copy <code style="background: rgba(255, 152, 0, 0.1); padding: 2px 6px; border-radius: 3px; font-family: monospace;">index.html</code> from another theme's folder</li>
+                                <li>Download the latest template from <a href="https://themes.innioasis.app/yourTheme/" target="_blank" style="color: #667eea; text-decoration: underline; font-weight: 600;">themes.innioasis.app/yourTheme</a></li>
+                            </ul>
                             <p style="margin-top: 20px; margin-bottom: 0;">
-                                <a href="https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/theme_html/index.html" download="index.html" target="_blank" style="display: inline-block; background: #667eea; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600; margin-right: 10px;">📥 Download index.html Template</a>
+                                <a href="https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/yourTheme/index.html" download="index.html" target="_blank" style="display: inline-block; background: #667eea; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600; margin-right: 10px;">📥 Download index.html Template</a>
                                 <a href="https://github.com/y1-community/InnioasisY1Themes" target="_blank" style="color: #667eea; text-decoration: underline;">Learn more on GitHub →</a>
                             </p>
                         `;
@@ -2688,6 +2695,140 @@
                 return;
             }
             
+            if (imgSrc === 'transparent-placeholder' && extraData) {
+                // Show transparent placeholder explanation
+                lightboxImg.style.display = 'none';
+                lightboxContentWrapper.style.display = 'block';
+                const configKey = extraData.configKey || filename || 'Unknown';
+                const displayName = extraData.displayName || configKey;
+                
+                // Generate JSON context if available
+                let jsonContextHtml = '';
+                if (window.configJsonData && window.createInteractiveJson) {
+                    // Similar to image preview JSON context generation
+                    const configData = window.configJsonData;
+                    const imgCache = window.configJsonImageCache || imageCache;
+                    const fontFileData = window.configJsonFontFile || null;
+                    const fullJsonResult = window.createInteractiveJson(configData, imgCache, fontFileData, 0, '', 1);
+                    const fullJsonHtml = fullJsonResult.html;
+                    const totalLines = fullJsonHtml.split('\n').length;
+                    const uniqueId = 'transparent-json-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                    
+                    // Find line number for this config key
+                    let scrollToLine = 1;
+                    if (window.configKeyLineNumbers && configKey) {
+                        scrollToLine = window.configKeyLineNumbers.get(configKey) || 1;
+                    }
+                    
+                    jsonContextHtml = `
+                        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                                <div style="font-size: 0.85rem; color: #667eea; font-weight: 600;">config.json (click lines or use ↑↓ to navigate):</div>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <button onclick="event.stopPropagation(); navigateJsonLine(-1)" style="background: #667eea; color: white; border: none; border-radius: 4px; width: 30px; height: 30px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='#5568d3'" onmouseout="this.style.background='#667eea'">↑</button>
+                                    <button onclick="event.stopPropagation(); navigateJsonLine(1)" style="background: #667eea; color: white; border: none; border-radius: 4px; width: 30px; height: 30px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='#5568d3'" onmouseout="this.style.background='#667eea'">↓</button>
+                                </div>
+                            </div>
+                            <div id="json-container-${uniqueId}" style="background: #2d2d2d; border-radius: 4px; overflow: hidden; position: relative; max-height: 400px; overflow-y: auto; transition: max-height 0.3s ease;">
+                                <pre id="${uniqueId}" style="color: #f8f8f2; padding: 10px; padding-left: 42px; overflow-x: auto; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.75rem; line-height: 1.4; margin: 0; white-space: pre; word-wrap: normal; position: relative;"><code>${fullJsonHtml}</code></pre>
+                                <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 32px; background: #1e1e1e; color: #858585; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.75rem; padding: 10px 4px; text-align: right; user-select: none; line-height: 1.4;">
+                                    ${Array.from({length: totalLines}, (_, i) => `<div style="line-height: 1.4;">${i + 1}</div>`).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Make lines clickable after a delay
+                    setTimeout(() => {
+                        const jsonPre = document.getElementById(uniqueId);
+                        if (jsonPre) {
+                            if (scrollToLine > 1) {
+                                const targetLine = jsonPre.querySelector(`.json-line[data-line="${scrollToLine}"]`);
+                                if (targetLine) {
+                                    targetLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    targetLine.style.background = 'rgba(102, 126, 234, 0.25)';
+                                    targetLine.style.borderLeft = '4px solid #667eea';
+                                    targetLine.style.paddingLeft = '8px';
+                                }
+                            }
+                            // Make lines clickable (similar to image preview)
+                            jsonPre.querySelectorAll('.json-line').forEach(line => {
+                                const lineNum = parseInt(line.getAttribute('data-line'));
+                                if (lineNum) {
+                                    line.style.cursor = 'pointer';
+                                    line.onclick = function(e) {
+                                        e.stopPropagation();
+                                        const resource = line.querySelector('.json-resource');
+                                        if (resource) {
+                                            const resourceType = resource.getAttribute('data-resource-type');
+                                            const resourceValue = resource.getAttribute('data-resource-value');
+                                            const resourceFilename = resource.getAttribute('data-resource-filename') || resourceValue.split('/').pop();
+                                            
+                                            if (window.assetNavigation && window.assetNavigation.assets) {
+                                                const assetIndex = findAssetIndex(resourceFilename, resourceValue, resourceValue);
+                                                if (assetIndex >= 0) {
+                                                    window.assetNavigation.currentIndex = assetIndex;
+                                                }
+                                            }
+                                            
+                                            if (resourceType === 'image') {
+                                                const cached = imgCache ? imgCache.get(resourceFilename) : null;
+                                                if (cached && cached.objectUrl) {
+                                                    openLightbox(cached.objectUrl, resourceFilename, null, null, null, imgCache, null, resourceValue);
+                                                } else {
+                                                    const githubUrl = getGitHubRawUrl(resourceFilename);
+                                                    openLightbox(githubUrl, resourceFilename, null, null, null, imgCache, null, resourceValue);
+                                                }
+                                            } else if (resourceType === 'font') {
+                                                const fontUrl = getGitHubRawUrl(resourceValue);
+                                                const localFontUrl = getLocalUrl(resourceValue);
+                                                openLightbox('font-preview', resourceValue, null, fontUrl, localFontUrl, imgCache, null, resourceValue);
+                                            }
+                                        }
+                                    };
+                                }
+                            });
+                            
+                            setTimeout(() => {
+                                syncJsonHighlighting();
+                            }, 50);
+                        }
+                    }, 100);
+                }
+                
+                lightboxContentWrapper.innerHTML = `
+                    <h3 style="margin-top: 0; color: #667eea; margin-bottom: 20px;">Transparent Placeholder Asset</h3>
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea; margin-bottom: 20px;">
+                        <p style="margin: 0 0 15px 0; line-height: 1.6; color: #333;">
+                            This theme asset uses a <strong>transparent placeholder image</strong> (<code style="background: rgba(102, 126, 234, 0.1); padding: 2px 6px; border-radius: 3px; font-family: monospace;">${filename || 'transparent.png'}</code>).
+                        </p>
+                        <p style="margin: 0 0 15px 0; line-height: 1.6; color: #333;">
+                            <strong>Config Key:</strong> <code style="background: rgba(102, 126, 234, 0.1); padding: 2px 6px; border-radius: 3px; font-family: monospace;">${configKey}</code>
+                        </p>
+                        <p style="margin: 0; line-height: 1.6; color: #666; font-size: 0.9rem;">
+                            Transparent placeholder images are used when a theme doesn't need to display an image for a particular UI element. The system will use default styling instead.
+                        </p>
+                    </div>
+                    <div style="background: linear-gradient(45deg, #f0f0f0 25%, transparent 25%), linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f0f0f0 75%), linear-gradient(-45deg, transparent 75%, #f0f0f0 75%); background-size: 12px 12px; background-position: 0 0, 0 6px, 6px -6px, -6px 0px; border-radius: 8px; border: 2px dashed #ddd; padding: 60px 20px; text-align: center; margin-bottom: 20px;">
+                        <div style="font-size: 3rem; margin-bottom: 10px; opacity: 0.5;">🔲</div>
+                        <div style="color: #999; font-size: 0.9rem; font-weight: 600;">Transparent Placeholder</div>
+                        <div style="color: #bbb; font-size: 0.8rem; margin-top: 5px;">No image file required</div>
+                    </div>
+                    ${jsonContextHtml}
+                `;
+                filenameDisplay.textContent = displayName;
+                filenameDisplay.style.display = 'block';
+                editBtn.style.display = 'none';
+                syncNavigationButtons();
+                setTimeout(() => {
+                    syncJsonHighlighting();
+                    syncNavigationButtons();
+                }, 300);
+                lightbox.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                return;
+            }
+            
             if (imgSrc === 'index-html') {
                 // Show index.html explainer
                 lightboxImg.style.display = 'none';
@@ -2707,7 +2848,7 @@
                     </div>
                     <div style="text-align: center; margin-top: 20px;">
                         <button id="download-index-html-btn" style="display: inline-block; background: #667eea; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; margin-right: 10px; border: none; cursor: pointer; font-size: 1rem;">📥 Download index.html</button>
-                        <a href="https://themes.innioasis.app/theme_html/" target="_blank" style="display: inline-block; color: #667eea; text-decoration: underline; padding: 12px 0;">Learn more →</a>
+                        <a href="https://themes.innioasis.app/yourTheme/" target="_blank" style="display: inline-block; color: #667eea; text-decoration: underline; padding: 12px 0;">Learn more →</a>
                     </div>
                 `;
                 
@@ -3709,10 +3850,18 @@
                             const targetLine = jsonPre.querySelector(`.json-line[data-line="${scrollToLine}"]`);
                             if (targetLine) {
                                 // Clear all existing highlights first
-                                jsonPre.querySelectorAll('.json-line').forEach(l => l.style.background = '');
+                                jsonPre.querySelectorAll('.json-line').forEach(l => {
+                                    if (!l.querySelector('.json-theme-info')) {
+                                        l.style.background = '';
+                                        l.style.borderLeft = '';
+                                        l.style.paddingLeft = '';
+                                    }
+                                });
                                 targetLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
                                 // Keep highlight persistent (don't fade)
-                                targetLine.style.background = 'rgba(102, 126, 234, 0.3)';
+                                targetLine.style.background = 'rgba(102, 126, 234, 0.25)';
+                                targetLine.style.borderLeft = '4px solid #667eea';
+                                targetLine.style.paddingLeft = '8px';
                             }
                         }
                         
@@ -3730,7 +3879,7 @@
                                         const resourceFilename = resource.getAttribute('data-resource-filename') || resourceValue.split('/').pop();
                                         
                                         // Find and set asset index BEFORE opening lightbox to sync navigation
-                                        if (window.assetNavigation.assets) {
+                                        if (window.assetNavigation && window.assetNavigation.assets) {
                                             const assetIndex = findAssetIndex(resourceFilename, resourceValue, resourceValue);
                                             if (assetIndex >= 0) {
                                                 window.assetNavigation.currentIndex = assetIndex;
@@ -3754,6 +3903,11 @@
                                 };
                             }
                         });
+                        
+                        // After JSON context is fully rendered and click handlers are set, sync highlighting
+                        setTimeout(() => {
+                            syncJsonHighlighting();
+                        }, 50);
                     }
                 }, 100);
                 }
@@ -3826,11 +3980,19 @@
             // Sync navigation buttons immediately (show for all navigable assets) - BEFORE opening lightbox
             syncNavigationButtons();
             
-            // Sync JSON highlighting after opening
-            setTimeout(() => {
-                syncJsonHighlighting();
-                syncNavigationButtons(); // Sync again after highlighting
-            }, 300);
+            // Sync JSON highlighting after JSON context is fully rendered (for images/fonts)
+            // Note: For images/fonts, JSON context is rendered above and syncJsonHighlighting is called
+            // after the JSON HTML is inserted and click handlers are set up (see setTimeout above)
+            // For other asset types, sync immediately
+            if (imgSrc !== 'config-json' && imgSrc !== 'index-html' && imgSrc !== 'transparent-assets') {
+                // JSON context will call syncJsonHighlighting after it's ready (see setTimeout above)
+            } else {
+                // For special assets, sync immediately
+                setTimeout(() => {
+                    syncJsonHighlighting();
+                    syncNavigationButtons(); // Sync again after highlighting
+                }, 300);
+            }
             
             // Construct GitHub URL using blob/main to view the actual file
             const githubUrl = `https://github.com/y1-community/InnioasisY1Themes/blob/main/${encodeURIComponent(folderName)}/${encodeURIComponent(actualFilename)}`;
@@ -4434,18 +4596,20 @@
                 const imageCache = new Map(); // Cache loaded images to avoid re-fetching
                 
                 // Iterate through all config keys that reference images
-                // Only include PNG files (exclude transparent files - they're handled separately)
+                // Include transparent files as individual items (one per config key usage)
                 imageUsageMap.forEach((configKeys, filename) => {
-                    // Skip transparent files and non-PNG files
-                    if (/^transparent\./i.test(filename) || !/\.png$/i.test(filename)) {
+                    // Skip non-PNG files (but include transparent files)
+                    if (!/\.png$/i.test(filename)) {
                         return;
                     }
                     
                     // For each config key that uses this filename, create an entry
+                    // This allows transparent.png to appear multiple times (once per config key)
                     configKeys.forEach(configKey => {
                         configImageEntries.push({
                             filename: filename,
-                            configKey: configKey
+                            configKey: configKey,
+                            isTransparent: /^transparent\./i.test(filename)
                         });
                     });
                 });
@@ -4455,15 +4619,22 @@
                     // config.json is missing - show error message for theme creators
                     carouselWrapper.innerHTML = `
                         <div style="text-align: center; padding: 30px; color: #666; max-width: 600px; margin: 0 auto;">
-                            <h4 style="color: #ff9800; margin-bottom: 15px;">⚠️ config.json Not Found</h4>
+                            <h4 style="color: #ff9800; margin-bottom: 15px;">📄 About the index.html Template</h4>
                             <p style="margin-bottom: 15px; line-height: 1.6;">
-                                This theme page requires a <code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">config.json</code> file in the theme folder to display theme assets and information.
+                                This <code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">index.html</code> file acts as a template that automatically displays your theme's information, screenshots, and assets. It reads from your <code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">config.json</code> file to create a dedicated page for your theme on <strong>themes.innioasis.app</strong>.
                             </p>
                             <p style="margin-bottom: 15px; line-height: 1.6;">
-                                <strong>Theme creators:</strong> Please download the latest <code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">index.html</code> file from the <a href="https://themes.innioasis.app/theme_html/" target="_blank" style="color: #667eea; text-decoration: underline;">theme_html directory</a> and place it in your theme folder before uploading to the repository.
+                                <strong>To give your theme its own page:</strong> Copy this <code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">index.html</code> file into your theme's folder. When you upload your theme folder to the repository, it will automatically get its own page at <code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">themes.innioasis.app/YourThemeName</code>.
                             </p>
+                            <p style="margin-bottom: 15px; line-height: 1.6;">
+                                <strong>You can:</strong>
+                            </p>
+                            <ul style="margin: 0 0 15px 20px; line-height: 1.8; text-align: left; display: inline-block;">
+                                <li>Copy <code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">index.html</code> from another theme's folder</li>
+                                <li>Download the latest template from <a href="https://themes.innioasis.app/yourTheme/" target="_blank" style="color: #667eea; text-decoration: underline;">themes.innioasis.app/yourTheme</a></li>
+                            </ul>
                             <p style="margin-top: 20px;">
-                                <a href="https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/theme_html/index.html" download="index.html" target="_blank" style="display: inline-block; background: #667eea; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;">📥 Download index.html Template</a>
+                                <a href="https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/yourTheme/index.html" download="index.html" target="_blank" style="display: inline-block; background: #667eea; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;">📥 Download index.html Template</a>
                             </p>
                         </div>
                     `;
@@ -4594,25 +4765,40 @@
                 // Now create gallery items - one for each config key usage
                 // This means the same image can appear multiple times if used in multiple places
                 configImageEntries.forEach(entry => {
-                    const cached = imageCache.get(entry.filename);
-                    if (cached) {
-                        // Get line number for this asset - use config key as primary identifier
-                        let lineNumber = 9999;
-                        if (window.configKeyLineNumbers && entry.configKey) {
-                            lineNumber = window.configKeyLineNumbers.get(entry.configKey) || 9999;
-                        }
-                        // Fallback to filename-based lookup if config key not found
-                        if (lineNumber === 9999 && window.resourceLineNumbers) {
-                            lineNumber = window.resourceLineNumbers.get(entry.filename) || 9999;
-                        }
+                    // Get line number for this asset - use config key as primary identifier
+                    let lineNumber = 9999;
+                    if (window.configKeyLineNumbers && entry.configKey) {
+                        lineNumber = window.configKeyLineNumbers.get(entry.configKey) || 9999;
+                    }
+                    // Fallback to filename-based lookup if config key not found
+                    if (lineNumber === 9999 && window.resourceLineNumbers) {
+                        lineNumber = window.resourceLineNumbers.get(entry.filename) || 9999;
+                    }
+                    
+                    // Handle transparent files (they may not exist in file system, but are valid config entries)
+                    if (entry.isTransparent) {
+                        // Transparent assets don't need to be loaded from file system
                         loadedImageData.push({
                             filename: entry.filename,
-                            url: cached.url,
-                            objectUrl: cached.objectUrl,
+                            url: null, // No actual file
+                            objectUrl: null, // No actual file
                             configKey: entry.configKey,
-                            isTransparent: cached.isTransparent || false,
-                            lineNumber: lineNumber // Store line number for this config key
+                            isTransparent: true,
+                            lineNumber: lineNumber
                         });
+                    } else {
+                        // Regular images - only add if they were successfully loaded/cached
+                        const cached = imageCache.get(entry.filename);
+                        if (cached) {
+                            loadedImageData.push({
+                                filename: entry.filename,
+                                url: cached.url,
+                                objectUrl: cached.objectUrl,
+                                configKey: entry.configKey,
+                                isTransparent: cached.isTransparent || false,
+                                lineNumber: lineNumber
+                            });
+                        }
                     }
                 });
                 
@@ -4798,6 +4984,22 @@
                         // Create font preview thumbnail
                         const fontItem = document.createElement('div');
                         fontItem.className = 'image-carousel-item';
+                        fontItem.style.cursor = 'pointer';
+                        
+                        // Set onclick handler IMMEDIATELY (not in async block)
+                        fontItem.onclick = function(e) {
+                            e.stopPropagation();
+                            // Find and set asset index BEFORE opening lightbox
+                            if (window.assetNavigation.assets) {
+                                const fontIndex = window.assetNavigation.assets.findIndex(a => 
+                                    a.type === 'font' && (a.filename === fontFile || a.resourceValue === fontFile)
+                                );
+                                if (fontIndex >= 0) {
+                                    window.assetNavigation.currentIndex = fontIndex;
+                                }
+                            }
+                            openLightbox('font-preview', fontFile, null, fontUrl, localFontUrl, imageCache, fontFile, fontFile);
+                        };
                         
                         // Create canvas for font preview thumbnail
                         const canvas = document.createElement('canvas');
@@ -4805,8 +5007,30 @@
                         canvas.height = 80;
                         const ctx = canvas.getContext('2d');
                         
-                        // Try to load font and draw preview
-                        const loadFontPreview = async () => {
+                        // Show placeholder immediately
+                        ctx.fillStyle = '#f0f0f0';
+                        ctx.fillRect(0, 0, 120, 80);
+                        ctx.fillStyle = '#666';
+                        ctx.font = 'bold 20px sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText('Aa', 60, 40);
+                        
+                        const thumbnailImg = document.createElement('img');
+                        thumbnailImg.src = canvas.toDataURL();
+                        thumbnailImg.style.cssText = 'width: 120px; height: 80px; object-fit: contain; border-radius: 4px; background: white;';
+                        thumbnailImg.alt = fontFile;
+                        
+                        const label = document.createElement('div');
+                        label.className = 'image-name';
+                        label.textContent = `fontFamily: ${fontFile}`;
+                        
+                        fontItem.appendChild(thumbnailImg);
+                        fontItem.appendChild(label);
+                        carouselWrapper.appendChild(fontItem);
+                        
+                        // Try to load font and update preview thumbnail (async, but item is already clickable)
+                        (async () => {
                             try {
                                 const fontFace = new FontFace('PreviewFont', `url(${fontUrl})`);
                                 await fontFace.load();
@@ -4819,47 +5043,14 @@
                                 ctx.textAlign = 'center';
                                 ctx.textBaseline = 'middle';
                                 ctx.fillText('AaBbCc', 60, 40);
+                                
+                                // Update thumbnail image with loaded font preview
+                                thumbnailImg.src = canvas.toDataURL();
                             } catch (e) {
-                                // Fallback: show font icon
-                                ctx.fillStyle = '#f0f0f0';
-                                ctx.fillRect(0, 0, 120, 80);
-                                ctx.fillStyle = '#666';
-                                ctx.font = 'bold 20px sans-serif';
-                                ctx.textAlign = 'center';
-                                ctx.textBaseline = 'middle';
-                                ctx.fillText('Aa', 60, 40);
+                                // Keep placeholder if font fails to load
+                                console.log('Font preview failed, using placeholder:', e);
                             }
-                        };
-                        
-                        loadFontPreview().then(() => {
-                            fontItem.onclick = function(e) {
-                                e.stopPropagation();
-                                // Find and set asset index BEFORE opening lightbox
-                                if (window.assetNavigation.assets) {
-                                    const fontIndex = window.assetNavigation.assets.findIndex(a => 
-                                        a.type === 'font' && (a.filename === fontFile || a.resourceValue === fontFile)
-                                    );
-                                    if (fontIndex >= 0) {
-                                        window.assetNavigation.currentIndex = fontIndex;
-                                    }
-                                }
-                                openLightbox('font-preview', fontFile, null, fontUrl, localFontUrl, imageCache, null, fontFile);
-                            };
-                            fontItem.style.cursor = 'pointer';
-                            
-                            const thumbnailImg = document.createElement('img');
-                            thumbnailImg.src = canvas.toDataURL();
-                            thumbnailImg.style.cssText = 'width: 120px; height: 80px; object-fit: contain; border-radius: 4px; background: white;';
-                            thumbnailImg.alt = fontFile;
-                            
-                            const label = document.createElement('div');
-                            label.className = 'image-name';
-                            label.textContent = `fontFamily: ${fontFile}`;
-                            
-                            fontItem.appendChild(thumbnailImg);
-                            fontItem.appendChild(label);
-                            carouselWrapper.appendChild(fontItem);
-                        });
+                        })();
                     } catch (e) {
                         console.warn('Could not create font preview:', e);
                     }
@@ -4877,8 +5068,8 @@
                     
                     item.onclick = function(e) {
                         e.stopPropagation();
-                        // Find and set asset index BEFORE opening lightbox
-                        if (window.assetNavigation.assets) {
+                        // Find and set asset index BEFORE opening lightbox (critical for navigation)
+                        if (window.assetNavigation && window.assetNavigation.assets) {
                             // Try to find by config key first (for 1:1 mapping)
                             let assetIndex = -1;
                             if (asset.configKey) {
@@ -4895,28 +5086,56 @@
                             }
                             if (assetIndex >= 0) {
                                 window.assetNavigation.currentIndex = assetIndex;
+                            } else {
+                                console.warn('Could not find asset index for:', asset);
                             }
                         }
-                        openLightbox(asset.objectUrl || asset.url, asset.filename, null, null, null, imageCache, null, asset.resourceValue || asset.filename);
+                        // Handle transparent placeholder assets differently
+                        if (asset.isTransparent && (!asset.objectUrl && !asset.url)) {
+                            // Open transparent asset with explanatory message
+                            openLightbox('transparent-placeholder', asset.filename, {
+                                configKey: asset.configKey,
+                                displayName: asset.displayName
+                            }, null, null, imageCache, null, asset.resourceValue || asset.filename);
+                        } else {
+                            // Open lightbox with correct parameters - JSON highlighting will sync after JSON context is rendered
+                            openLightbox(asset.objectUrl || asset.url, asset.filename, null, null, null, imageCache, null, asset.resourceValue || asset.filename);
+                        }
                     };
                     
-                    // Check if image is fully transparent
-                    const cached = imageCache.get(asset.filename);
-                    if (cached && cached.isTransparent) {
-                        // Show transparent indicator instead of image
+                    // Check if this is a transparent placeholder asset
+                    if (asset.isTransparent && (!asset.objectUrl && !asset.url)) {
+                        // Show transparent placeholder indicator with explanatory text
                         const transparentIndicator = document.createElement('div');
-                        transparentIndicator.style.cssText = 'width: 100%; height: 80px; display: flex; align-items: center; justify-content: center; background-image: linear-gradient(45deg, #f0f0f0 25%, transparent 25%), linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f0f0f0 75%), linear-gradient(-45deg, transparent 75%, #f0f0f0 75%); background-size: 12px 12px; background-position: 0 0, 0 6px, 6px -6px, -6px 0px; border-radius: 4px; border: 1px solid #ddd; padding: 4px; box-sizing: border-box;';
+                        transparentIndicator.style.cssText = 'width: 100%; height: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; background-image: linear-gradient(45deg, #f0f0f0 25%, transparent 25%), linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f0f0f0 75%), linear-gradient(-45deg, transparent 75%, #f0f0f0 75%); background-size: 12px 12px; background-position: 0 0, 0 6px, 6px -6px, -6px 0px; border-radius: 4px; border: 1px solid #ddd; padding: 8px; box-sizing: border-box;';
+                        const transparentIcon = document.createElement('div');
+                        transparentIcon.style.cssText = 'font-size: 1.5rem; margin-bottom: 4px; opacity: 0.6;';
+                        transparentIcon.textContent = '🔲';
                         const transparentLabel = document.createElement('div');
-                        transparentLabel.style.cssText = 'text-align: center; color: #999; font-size: 0.7rem; font-weight: 600; padding: 5px; background: rgba(255, 255, 255, 0.9); border-radius: 3px;';
-                        transparentLabel.textContent = 'Transparent (No Image)';
+                        transparentLabel.style.cssText = 'text-align: center; color: #666; font-size: 0.65rem; font-weight: 600; padding: 3px 6px; background: rgba(255, 255, 255, 0.95); border-radius: 3px; line-height: 1.2;';
+                        transparentLabel.textContent = 'Transparent Placeholder';
+                        transparentIndicator.appendChild(transparentIcon);
                         transparentIndicator.appendChild(transparentLabel);
                         item.appendChild(transparentIndicator);
                     } else {
-                    const img = document.createElement('img');
-                        img.src = asset.objectUrl || asset.url;
-                        img.alt = asset.filename;
-                    img.loading = 'lazy';
-                        item.appendChild(img);
+                        // Check if image is fully transparent (detected transparency)
+                        const cached = imageCache.get(asset.filename);
+                        if (cached && cached.isTransparent) {
+                            // Show transparent indicator instead of image
+                            const transparentIndicator = document.createElement('div');
+                            transparentIndicator.style.cssText = 'width: 100%; height: 80px; display: flex; align-items: center; justify-content: center; background-image: linear-gradient(45deg, #f0f0f0 25%, transparent 25%), linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f0f0f0 75%), linear-gradient(-45deg, transparent 75%, #f0f0f0 75%); background-size: 12px 12px; background-position: 0 0, 0 6px, 6px -6px, -6px 0px; border-radius: 4px; border: 1px solid #ddd; padding: 4px; box-sizing: border-box;';
+                            const transparentLabel = document.createElement('div');
+                            transparentLabel.style.cssText = 'text-align: center; color: #999; font-size: 0.7rem; font-weight: 600; padding: 5px; background: rgba(255, 255, 255, 0.9); border-radius: 3px;';
+                            transparentLabel.textContent = 'Transparent (No Image)';
+                            transparentIndicator.appendChild(transparentLabel);
+                            item.appendChild(transparentIndicator);
+                        } else {
+                            const img = document.createElement('img');
+                            img.src = asset.objectUrl || asset.url;
+                            img.alt = asset.filename;
+                            img.loading = 'lazy';
+                            item.appendChild(img);
+                        }
                     }
                     
                     const label = document.createElement('div');

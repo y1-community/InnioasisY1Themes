@@ -44,6 +44,15 @@ To update this theme:
 
 You can also edit individual files by clicking them and using the pencil icon, but uploading is easier for multiple files or new images.
 
+### Give Your Theme Its Own Page
+
+This theme uses an `index.html` template that automatically displays your theme's information, screenshots, and assets. To give your new theme its own page on **themes.innioasis.app**:
+
+1. **Copy `index.html`** from one theme's folder (like this one) to your new theme's folder, OR
+2. **Download the template** from [themes.innioasis.app/yourTheme](https://themes.innioasis.app/yourTheme/) and place it in your theme folder
+
+When you upload your theme folder to the repository, it will automatically get its own page at `themes.innioasis.app/YourThemeName`. The `index.html` file reads from your `config.json` to display theme information automatically.
+
 ---
 
 ## For Advanced Users
