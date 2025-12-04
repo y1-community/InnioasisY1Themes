@@ -57,6 +57,12 @@
             text-align: center;
             margin-bottom: 20px;
         }
+        /* Scale theme pages to 150% on desktop */
+        @media (min-width: 768px) {
+            html {
+                font-size: 150%;
+            }
+        }
         h1 {
             margin-bottom: 10px;
             color: #333;
@@ -427,6 +433,33 @@
             max-height: 90%;
             border-radius: 5px;
             box-shadow: 0 0 20px rgba(255,255,255,0.2);
+            font-size: 1.1rem; /* Better legibility */
+        }
+        .lightbox-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .lightbox-content p {
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        .lightbox-content pre, .lightbox-content code {
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        @media (max-width: 767px) {
+            .lightbox-content {
+                max-width: 95%;
+                max-height: 95%;
+                font-size: 1rem;
+                padding: 15px;
+            }
+            .lightbox-content h3 {
+                font-size: 1.3rem;
+            }
+            .lightbox-content pre, .lightbox-content code {
+                font-size: 0.85rem;
+            }
         }
         .lightbox-close {
             position: absolute;
@@ -1681,13 +1714,13 @@
                 }
                 
                 // Fallback to themes.json
-                try {
-                    const themesResponse = await fetch('../themes.json');
-                    if (themesResponse.ok) {
-                        const themesData = await themesResponse.json();
-                        const theme = themesData.themes.find(t => t.folder === folderName);
+                    try {
+                        const themesResponse = await fetch('../themes.json');
+                        if (themesResponse.ok) {
+                            const themesData = await themesResponse.json();
+                            const theme = themesData.themes.find(t => t.folder === folderName);
                         
-                        if (theme) {
+                            if (theme) {
                             // Only use values from themes.json if not already loaded from config.json
                             if (!title || title === folderName) {
                                 if (theme.name) title = theme.name;
@@ -1695,10 +1728,10 @@
                             if (!author && theme.author) author = theme.author;
                             if (!authorUrl && theme.authorUrl) authorUrl = theme.authorUrl;
                             if (!description && theme.description) description = theme.description;
+                            }
                         }
-                    }
-                } catch (e) {
-                    console.warn('Could not load themes.json:', e);
+                    } catch (e) {
+                        console.warn('Could not load themes.json:', e);
                 }
                 
                 // Final fallback: use folder name for title if still not set
@@ -1743,34 +1776,34 @@
                 if (authorDisplay) {
                     // Use author if available, otherwise hide
                     if (author) {
-                        // Detect Reddit username (u/username pattern)
-                        const redditUsernameMatch = author.match(/u\/([^\/\s]+)/i);
-                        let redditUsername = null;
-                        let redditFaviconHtml = '';
-                        
-                        if (redditUsernameMatch) {
-                            redditUsername = redditUsernameMatch[1];
-                            // Create Reddit favicon that links to reddit.com/user/username
-                            redditFaviconHtml = `<a href="https://reddit.com/user/${redditUsername}" target="_blank" rel="noopener noreferrer" class="reddit-favicon" onclick="event.stopPropagation();" style="display: inline-block; width: 16px; height: 16px; margin-left: 4px; vertical-align: middle; opacity: 0.8; transition: opacity 0.2s;"><img src="https://www.redditstatic.com/desktop2x/img/favicon/favicon-16x16.png" alt="Reddit" style="width: 100%; height: 100%; object-fit: contain;"></a>`;
-                        }
-                        
-                        if (authorUrl) {
-                            // Author name links to authorUrl, Reddit favicon links to Reddit profile
+                    // Detect Reddit username (u/username pattern)
+                    const redditUsernameMatch = author.match(/u\/([^\/\s]+)/i);
+                    let redditUsername = null;
+                    let redditFaviconHtml = '';
+                    
+                    if (redditUsernameMatch) {
+                        redditUsername = redditUsernameMatch[1];
+                        // Create Reddit favicon that links to reddit.com/user/username
+                        redditFaviconHtml = `<a href="https://reddit.com/user/${redditUsername}" target="_blank" rel="noopener noreferrer" class="reddit-favicon" onclick="event.stopPropagation();" style="display: inline-block; width: 16px; height: 16px; margin-left: 4px; vertical-align: middle; opacity: 0.8; transition: opacity 0.2s;"><img src="https://www.redditstatic.com/desktop2x/img/favicon/favicon-16x16.png" alt="Reddit" style="width: 100%; height: 100%; object-fit: contain;"></a>`;
+                    }
+                    
+                    if (authorUrl) {
+                        // Author name links to authorUrl, Reddit favicon links to Reddit profile
                             authorDisplay.innerHTML = `<a href="${authorUrl}" target="_blank" rel="noopener noreferrer" style="color: #667eea; text-decoration: none; border-bottom: 1px solid #667eea; transition: all 0.2s;">${author}</a>${redditFaviconHtml}`;
-                            // Add hover effect
-                            const authorLink = authorDisplay.querySelector('a:not(.reddit-favicon)');
-                            if (authorLink) {
-                                authorLink.addEventListener('mouseenter', function() {
-                                    this.style.color = '#764ba2';
-                                    this.style.borderBottomColor = '#764ba2';
-                                });
-                                authorLink.addEventListener('mouseleave', function() {
-                                    this.style.color = '#667eea';
-                                    this.style.borderBottomColor = '#667eea';
-                                });
-                            }
-                        } else {
-                            // No authorUrl - just display author name with Reddit favicon if detected
+                        // Add hover effect
+                        const authorLink = authorDisplay.querySelector('a:not(.reddit-favicon)');
+                        if (authorLink) {
+                            authorLink.addEventListener('mouseenter', function() {
+                                this.style.color = '#764ba2';
+                                this.style.borderBottomColor = '#764ba2';
+                            });
+                            authorLink.addEventListener('mouseleave', function() {
+                                this.style.color = '#667eea';
+                                this.style.borderBottomColor = '#667eea';
+                            });
+                        }
+                    } else {
+                        // No authorUrl - just display author name with Reddit favicon if detected
                             authorDisplay.innerHTML = `${author}${redditFaviconHtml}`;
                         }
                         authorDisplay.style.visibility = 'visible';
@@ -2561,7 +2594,7 @@
                 lightboxContentWrapper.innerHTML = `
                     <h3 style="margin-top: 0; color: #667eea; margin-bottom: 20px;">config.json</h3>
                     <p style="color: #666; margin-bottom: 15px; font-size: 0.9rem;">Hover or tap on image filenames and font names to preview them. Click on JSON context lines to jump to that location.</p>
-                    <div id="resource-preview-popup" style="display: none; position: fixed; z-index: 1003; background: white; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); padding: 15px; max-width: 350px; pointer-events: none;"></div>
+                    <div id="resource-preview-popup" style="display: none; position: fixed; z-index: 10003; background: white; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); padding: 15px; max-width: 400px; pointer-events: none; font-size: 1rem;"></div>
                     <div style="background: #2d2d2d; border-radius: 4px; overflow: hidden; position: relative;">
                         <pre id="json-preview-pre" style="color: #f8f8f2; padding: 20px; padding-left: 60px; overflow-x: auto; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.85rem; line-height: 1.5; margin: 0; max-height: 60vh; overflow-y: auto; white-space: pre; word-wrap: normal; position: relative;"><code>${interactiveJson}</code></pre>
                         <div id="json-line-numbers" style="position: absolute; left: 0; top: 0; bottom: 0; width: 50px; background: #1e1e1e; color: #858585; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.85rem; padding: 20px 5px; text-align: right; user-select: none; line-height: 1.5;"></div>
@@ -2600,17 +2633,22 @@
                     const popup = document.getElementById('resource-preview-popup');
                     if (!popup) return;
                     
-                    const rect = event.target.getBoundingClientRect();
-                    let popupLeft = rect.right + 10;
-                    let popupTop = rect.top - 10;
+                    // Use mouse position for better cursor following
+                    const mouseX = event.clientX || (event.touches && event.touches[0] ? event.touches[0].clientX : 0);
+                    const mouseY = event.clientY || (event.touches && event.touches[0] ? event.touches[0].clientY : 0);
+                    
+                    let popupLeft = mouseX + 15;
+                    let popupTop = mouseY + 15;
                     
                     // Adjust if popup would go off screen
-                    if (popupLeft + 350 > window.innerWidth) {
-                        popupLeft = rect.left - 360;
+                    if (popupLeft + 400 > window.innerWidth) {
+                        popupLeft = mouseX - 415; // Show to the left of cursor
                     }
-                    if (popupTop < 0) {
-                        popupTop = 10;
+                    if (popupTop + 300 > window.innerHeight) {
+                        popupTop = mouseY - 315; // Show above cursor
                     }
+                    if (popupLeft < 10) popupLeft = 10;
+                    if (popupTop < 10) popupTop = 10;
                     
                     popup.style.left = popupLeft + 'px';
                     popup.style.top = popupTop + 'px';
@@ -2624,15 +2662,15 @@
                             const isTargetLine = idx === context.targetLineIndex;
                             const escapedLine = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                             const lineNum = startLineNum + idx;
-                            return `<div style="display: flex; font-family: 'SF Mono', 'Monaco', monospace; font-size: 0.7rem; line-height: 1.4; cursor: pointer; padding: 2px 0;" onclick="event.stopPropagation(); scrollToJsonLine(${lineNum})" onmouseover="this.style.background='#e8f4f8'" onmouseout="this.style.background='transparent'">
-                                <span style="color: #999; margin-right: 8px; min-width: 30px; text-align: right; user-select: none;">${lineNum}</span>
-                                <span style="color: ${isTargetLine ? '#333' : '#999'}; opacity: ${isTargetLine ? '1' : '0.6'}; flex: 1;">${escapedLine || ' '}</span>
+                            return `<div style="display: flex; font-family: 'SF Mono', 'Monaco', monospace; font-size: 0.9rem; line-height: 1.5; cursor: pointer; padding: 4px 0;" onclick="event.stopPropagation(); scrollToJsonLineAndPreview(${lineNum}, '${type}', '${value.replace(/'/g, "\\'")}', '${filename ? filename.replace(/'/g, "\\'") : ''}')" onmouseover="this.style.background='#e8f4f8'" onmouseout="this.style.background='transparent'">
+                                <span style="color: #999; margin-right: 10px; min-width: 35px; text-align: right; user-select: none; font-size: 0.85rem;">${lineNum}</span>
+                                <span style="color: ${isTargetLine ? '#333' : '#999'}; opacity: ${isTargetLine ? '1' : '0.6'}; flex: 1; ${isTargetLine ? 'font-weight: 600;' : ''}">${escapedLine || ' '}</span>
                             </div>`;
                         }).join('');
                         contextHtml = `
                             <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #eee;">
-                                <div style="font-size: 0.7rem; color: #999; margin-bottom: 6px; font-weight: 600;">JSON Context (click line to jump):</div>
-                                <div style="background: #f8f9fa; padding: 8px; border-radius: 4px; max-height: 120px; overflow-y: auto;">
+                                <div style="font-size: 0.85rem; color: #999; margin-bottom: 8px; font-weight: 600;">JSON Context (click line to jump & preview):</div>
+                                <div style="background: #f8f9fa; padding: 10px; border-radius: 4px; max-height: 150px; overflow-y: auto;">
                                     ${contextLinesHtml}
                                 </div>
                             </div>
@@ -2644,24 +2682,24 @@
                         const cached = imageCache ? imageCache.get(displayFilename) : null;
                         if (cached && cached.objectUrl) {
                             popup.innerHTML = `
-                                <div style="font-size: 0.75rem; color: #333; margin-bottom: 8px; font-family: monospace; text-align: center; font-weight: 600;">${displayFilename}</div>
-                                <img src="${cached.objectUrl}" style="max-width: 280px; max-height: 200px; border-radius: 4px; display: block; margin: 0 auto;" alt="${displayFilename}">
+                                <div style="font-size: 1rem; color: #333; margin-bottom: 10px; font-family: monospace; text-align: center; font-weight: 600;">${displayFilename}</div>
+                                <img src="${cached.objectUrl}" style="max-width: 320px; max-height: 240px; border-radius: 4px; display: block; margin: 0 auto;" alt="${displayFilename}">
                                 ${contextHtml}
                             `;
                         } else {
                             const githubUrl = getGitHubRawUrl(displayFilename);
                             popup.innerHTML = `
-                                <div style="font-size: 0.75rem; color: #333; margin-bottom: 8px; font-family: monospace; text-align: center; font-weight: 600;">${displayFilename}</div>
-                                <img src="${githubUrl}" style="max-width: 280px; max-height: 200px; border-radius: 4px; display: block; margin: 0 auto;" alt="${displayFilename}" onerror="this.parentElement.innerHTML='<div style=\\'padding: 20px; text-align: center; color: #999;\\'>Image not available</div><div style=\\'font-size: 0.75rem; color: #999; margin-top: 8px; font-family: monospace; text-align: center;\\'>${displayFilename}</div>${contextHtml}'">
+                                <div style="font-size: 1rem; color: #333; margin-bottom: 10px; font-family: monospace; text-align: center; font-weight: 600;">${displayFilename}</div>
+                                <img src="${githubUrl}" style="max-width: 320px; max-height: 240px; border-radius: 4px; display: block; margin: 0 auto;" alt="${displayFilename}" onerror="this.parentElement.innerHTML='<div style=\\'padding: 20px; text-align: center; color: #999; font-size: 1rem;\\'>Image not available</div><div style=\\'font-size: 1rem; color: #999; margin-top: 8px; font-family: monospace; text-align: center;\\'>${displayFilename}</div>${contextHtml}'">
                                 ${contextHtml}
                             `;
                         }
                     } else if (type === 'font') {
                         const fontFilename = value.split('/').pop();
                         popup.innerHTML = `
-                            <div style="font-size: 0.75rem; color: #333; margin-bottom: 12px; font-family: monospace; text-align: center; font-weight: 600;">${fontFilename}</div>
-                            <div style="padding: 10px; text-align: center; background: #f8f9fa; border-radius: 4px;">
-                                <div style="font-size: 24px; font-family: 'PreviewFontPopup', sans-serif; margin-bottom: 10px;">AaBbCc 123</div>
+                            <div style="font-size: 1rem; color: #333; margin-bottom: 12px; font-family: monospace; text-align: center; font-weight: 600;">${fontFilename}</div>
+                            <div style="padding: 15px; text-align: center; background: #f8f9fa; border-radius: 4px;">
+                                <div style="font-size: 32px; font-family: 'PreviewFontPopup', sans-serif; margin-bottom: 10px;">AaBbCc 123</div>
                             </div>
                             ${contextHtml}
                         `;
@@ -2725,6 +2763,29 @@
                     }
                 };
                 
+                // Function to scroll to JSON line AND show asset preview
+                window.scrollToJsonLineAndPreview = function(lineNumber, type, value, filename) {
+                    // First scroll to the line
+                    window.scrollToJsonLine(lineNumber);
+                    
+                    // Then show the asset preview in lightbox
+                    setTimeout(() => {
+                        if (type === 'image') {
+                            const cached = imageCache ? imageCache.get(filename) : null;
+                            if (cached && cached.objectUrl) {
+                                openLightbox(cached.objectUrl, filename, null, null, null, imageCache, null, value);
+                            } else {
+                                const githubUrl = getGitHubRawUrl(filename);
+                                openLightbox(githubUrl, filename, null, null, null, imageCache, null, value);
+                            }
+                        } else if (type === 'font') {
+                            const fontUrl = getGitHubRawUrl(value);
+                            const localFontUrl = getLocalUrl(value);
+                            openLightbox('font-preview', value, null, fontUrl, localFontUrl, imageCache, null, value);
+                        }
+                    }, 300); // Small delay to let scroll complete
+                };
+                
                 filenameDisplay.textContent = 'config.json';
                 filenameDisplay.style.display = 'block';
                 const githubUrl = `https://github.com/y1-community/InnioasisY1Themes/blob/main/${encodeURIComponent(folderName)}/config.json`;
@@ -2750,15 +2811,16 @@
                             const isTargetLine = idx === context.targetLineIndex;
                             const escapedLine = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                             const lineNum = startLineNum + idx;
-                            return `<div onclick="if(window.scrollToJsonLine) window.scrollToJsonLine(${lineNum})" style="display: flex; font-family: 'SF Mono', 'Monaco', monospace; font-size: 0.7rem; line-height: 1.4; cursor: pointer; padding: 2px 0;" onmouseover="this.style.background='#e8f4f8'" onmouseout="this.style.background='transparent'">
-                                <span style="color: #999; margin-right: 8px; min-width: 30px; text-align: right; user-select: none;">${lineNum}</span>
+                            const escapedValue = filename.replace(/'/g, "\\'");
+                            return `<div onclick="if(window.scrollToJsonLineAndPreview) window.scrollToJsonLineAndPreview(${lineNum}, 'font', '${escapedValue}', '')" style="display: flex; font-family: 'SF Mono', 'Monaco', monospace; font-size: 0.9rem; line-height: 1.5; cursor: pointer; padding: 4px 0;" onmouseover="this.style.background='#e8f4f8'" onmouseout="this.style.background='transparent'">
+                                <span style="color: #999; margin-right: 10px; min-width: 35px; text-align: right; user-select: none; font-size: 0.85rem;">${lineNum}</span>
                                 <span style="color: ${isTargetLine ? '#333' : '#999'}; opacity: ${isTargetLine ? '1' : '0.6'}; flex: 1; ${isTargetLine ? 'font-weight: 600;' : ''}">${escapedLine || ' '}</span>
                             </div>`;
                         }).join('');
                         jsonContextHtml = `
                             <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
-                                <div style="font-size: 0.8rem; color: #999; margin-bottom: 8px; font-weight: 600;">Defined in config.json (click line to jump):</div>
-                                <div style="background: #f8f9fa; padding: 12px; border-radius: 4px; max-height: 150px; overflow-y: auto;">
+                                <div style="font-size: 0.95rem; color: #999; margin-bottom: 10px; font-weight: 600;">Defined in config.json (click line to jump & preview):</div>
+                                <div style="background: #f8f9fa; padding: 12px; border-radius: 4px; max-height: 180px; overflow-y: auto;">
                                     ${contextLinesHtml}
                                 </div>
                             </div>
@@ -2767,8 +2829,8 @@
                 }
                 
                 lightboxContentWrapper.innerHTML = `
-                    <h3 style="margin-top: 0; color: #667eea; margin-bottom: 20px;">Font Preview: ${filename}</h3>
-                    <div style="font-size: 0.75rem; color: #666; margin-bottom: 12px; font-family: monospace; text-align: center; font-weight: 600;">${filename}</div>
+                    <h3 style="margin-top: 0; color: #667eea; margin-bottom: 20px; font-size: 1.5rem;">Font Preview: ${filename}</h3>
+                    <div style="font-size: 1rem; color: #666; margin-bottom: 15px; font-family: monospace; text-align: center; font-weight: 600;">${filename}</div>
                     <div id="font-preview-container" style="background: white; padding: 30px; border-radius: 4px; border: 1px solid #ddd;">
                         <p style="font-size: 48px; margin: 20px 0; font-family: 'PreviewFontDisplay', sans-serif;">AaBbCc 123</p>
                         <p style="font-size: 36px; margin: 20px 0; font-family: 'PreviewFontDisplay', sans-serif;">The quick brown fox jumps over the lazy dog</p>
@@ -2820,19 +2882,19 @@
             
             // If filename not provided, extract from imgSrc
             if (!actualFilename) {
-                // Remove leading ./ if present
-                const cleanSrc = imgSrc.replace(/^\.\//, '');
-                
+            // Remove leading ./ if present
+            const cleanSrc = imgSrc.replace(/^\.\//, '');
+            
                 // Handle blob: URLs (from carousel) - try to get from data attribute
                 if (imgSrc.startsWith('blob:')) {
                     // Try to find the element that triggered this (if available)
                     actualFilename = cleanSrc.split('/').pop();
                 } else {
-                    // If the path contains a folder (shouldn't happen for theme page images, but handle it)
-                    if (cleanSrc.includes('/')) {
-                        const parts = cleanSrc.split('/');
+            // If the path contains a folder (shouldn't happen for theme page images, but handle it)
+            if (cleanSrc.includes('/')) {
+                const parts = cleanSrc.split('/');
                         actualFilename = parts[parts.length - 1];
-                    } else {
+            } else {
                         actualFilename = cleanSrc;
                     }
                 }
@@ -2853,18 +2915,20 @@
                 const context = window.findJsonContextForResource(jsonResourceValue, 3);
                 if (context) {
                     const startLineNum = context.lineNumber - context.targetLineIndex;
+                    const escapedFilename = actualFilename.replace(/'/g, "\\'");
+                    const escapedValue = jsonResourceValue.replace(/'/g, "\\'");
                     const contextLinesHtml = context.lines.map((line, idx) => {
                         const isTargetLine = idx === context.targetLineIndex;
                         const escapedLine = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                         const lineNum = startLineNum + idx;
-                        return `<div onclick="if(window.scrollToJsonLine) window.scrollToJsonLine(${lineNum})" style="display: flex; font-family: 'SF Mono', 'Monaco', monospace; font-size: 0.7rem; line-height: 1.4; cursor: pointer; padding: 2px 0;" onmouseover="this.style.background='#e8f4f8'" onmouseout="this.style.background='transparent'">
-                            <span style="color: #999; margin-right: 8px; min-width: 30px; text-align: right; user-select: none;">${lineNum}</span>
+                        return `<div onclick="if(window.scrollToJsonLineAndPreview) window.scrollToJsonLineAndPreview(${lineNum}, 'image', '${escapedValue}', '${escapedFilename}')" style="display: flex; font-family: 'SF Mono', 'Monaco', monospace; font-size: 0.9rem; line-height: 1.5; cursor: pointer; padding: 4px 0;" onmouseover="this.style.background='#e8f4f8'" onmouseout="this.style.background='transparent'">
+                            <span style="color: #999; margin-right: 10px; min-width: 35px; text-align: right; user-select: none; font-size: 0.85rem;">${lineNum}</span>
                             <span style="color: ${isTargetLine ? '#333' : '#999'}; opacity: ${isTargetLine ? '1' : '0.6'}; flex: 1; ${isTargetLine ? 'font-weight: 600;' : ''}">${escapedLine || ' '}</span>
                         </div>`;
                     }).join('');
                     lightboxJsonContext.innerHTML = `
-                        <div style="font-size: 0.75rem; color: #999; margin-bottom: 6px; font-weight: 600;">Defined in config.json (click line to jump):</div>
-                        <div style="max-height: 150px; overflow-y: auto;">
+                        <div style="font-size: 0.95rem; color: #999; margin-bottom: 10px; font-weight: 600;">Defined in config.json (click line to jump & preview):</div>
+                        <div style="max-height: 180px; overflow-y: auto; background: #f8f9fa; padding: 12px; border-radius: 4px;">
                             ${contextLinesHtml}
                         </div>
                     `;
@@ -3153,33 +3217,33 @@
                                     }
                                     // Check for image files
                                     else if (/\.(png|jpg|jpeg|gif|svg)$/i.test(value)) {
-                                        // Extract filename and create multiple lookup keys
-                                        const fullPath = value.split('/').pop();
-                                        const filename = fullPath;
+                                    // Extract filename and create multiple lookup keys
+                                    const fullPath = value.split('/').pop();
+                                    const filename = fullPath;
                                         
                                         // Check if this is a transparent file
                                         const isTransparent = /^transparent\./i.test(filename);
-                                        
-                                        // Create lookup keys:
-                                        // 1. Full filename (e.g., "@Be_itemSelectedBackground.png")
-                                        // 2. Without @ prefix pattern (e.g., "itemSelectedBackground.png")
-                                        // 3. Base name without extension (e.g., "itemSelectedBackground")
-                                        
-                                        const keys = [filename];
-                                        
-                                        // Try removing @ prefix pattern (e.g., @Be_ or @Theme_)
-                                        const withoutPrefix = filename.replace(/^@[^_]+_/, '');
-                                        if (withoutPrefix !== filename) {
-                                            keys.push(withoutPrefix);
-                                        }
-                                        
-                                        // Base name without extension
-                                        const baseName = filename.replace(/\.[^.]+$/, '');
-                                        const baseNameWithoutPrefix = withoutPrefix.replace(/\.[^.]+$/, '');
-                                        keys.push(baseName, baseNameWithoutPrefix);
-                                        
-                                        // Store the config key for all variations
-                                        const fullKey = prefix ? `${prefix}.${key}` : key;
+                                    
+                                    // Create lookup keys:
+                                    // 1. Full filename (e.g., "@Be_itemSelectedBackground.png")
+                                    // 2. Without @ prefix pattern (e.g., "itemSelectedBackground.png")
+                                    // 3. Base name without extension (e.g., "itemSelectedBackground")
+                                    
+                                    const keys = [filename];
+                                    
+                                    // Try removing @ prefix pattern (e.g., @Be_ or @Theme_)
+                                    const withoutPrefix = filename.replace(/^@[^_]+_/, '');
+                                    if (withoutPrefix !== filename) {
+                                        keys.push(withoutPrefix);
+                                    }
+                                    
+                                    // Base name without extension
+                                    const baseName = filename.replace(/\.[^.]+$/, '');
+                                    const baseNameWithoutPrefix = withoutPrefix.replace(/\.[^.]+$/, '');
+                                    keys.push(baseName, baseNameWithoutPrefix);
+                                    
+                                    // Store the config key for all variations
+                                    const fullKey = prefix ? `${prefix}.${key}` : key;
                                         
                                         if (isTransparent) {
                                             // Track transparent files separately
@@ -3193,14 +3257,14 @@
                                             });
                                         } else {
                                             // Track regular image files
-                                            keys.forEach(lookupKey => {
-                                                if (!imageUsageMap.has(lookupKey)) {
-                                                    imageUsageMap.set(lookupKey, []);
-                                                }
-                                                if (!imageUsageMap.get(lookupKey).includes(fullKey)) {
-                                                    imageUsageMap.get(lookupKey).push(fullKey);
-                                                }
-                                            });
+                                    keys.forEach(lookupKey => {
+                                        if (!imageUsageMap.has(lookupKey)) {
+                                            imageUsageMap.set(lookupKey, []);
+                                        }
+                                        if (!imageUsageMap.get(lookupKey).includes(fullKey)) {
+                                            imageUsageMap.get(lookupKey).push(fullKey);
+                                        }
+                                    });
                                         }
                                     }
                                 } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
@@ -3477,10 +3541,15 @@
                 indexHtmlItem.onclick = () => openLightbox('index-html', null, null);
                 indexHtmlItem.style.cursor = 'pointer';
                 
-                // Create HTML icon/preview thumbnail
+                // Create HTML icon/preview thumbnail with HTML file symbol
                 const htmlThumbnailDiv = document.createElement('div');
-                htmlThumbnailDiv.style.cssText = 'width: 120px; height: 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-family: monospace; font-size: 0.7rem; text-align: center; padding: 10px; box-sizing: border-box;';
-                htmlThumbnailDiv.innerHTML = '&lt;html&gt;<br/>&nbsp;&nbsp;...<br/>&lt;/html&gt;';
+                htmlThumbnailDiv.style.cssText = 'width: 120px; height: 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-size: 2.5rem; text-align: center; padding: 10px; box-sizing: border-box; position: relative;';
+                htmlThumbnailDiv.innerHTML = '📄';
+                // Add HTML badge
+                const htmlBadge = document.createElement('div');
+                htmlBadge.style.cssText = 'position: absolute; bottom: 8px; right: 8px; background: rgba(255,255,255,0.9); color: #667eea; font-size: 0.65rem; font-weight: 700; padding: 2px 5px; border-radius: 3px; font-family: monospace;';
+                htmlBadge.textContent = 'HTML';
+                htmlThumbnailDiv.appendChild(htmlBadge);
                 
                 const htmlLabel = document.createElement('div');
                 htmlLabel.className = 'image-name';
@@ -3497,10 +3566,15 @@
                     configItem.onclick = () => openLightbox('config-json', null, config, imageCache, fontFile);
                     configItem.style.cursor = 'pointer';
                     
-                    // Create JSON icon/preview thumbnail
+                    // Create JSON icon/preview thumbnail with cog/settings symbol
                     const thumbnailDiv = document.createElement('div');
-                    thumbnailDiv.style.cssText = 'width: 120px; height: 80px; background: #2d2d2d; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #f8f8f2; font-family: monospace; font-size: 0.7rem; text-align: center; padding: 10px; box-sizing: border-box; border: 2px solid #555;';
-                    thumbnailDiv.innerHTML = '{<br/>&nbsp;&nbsp;...<br/>}';
+                    thumbnailDiv.style.cssText = 'width: 120px; height: 80px; background: #2d2d2d; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #f8f8f2; font-size: 2.2rem; text-align: center; padding: 10px; box-sizing: border-box; border: 2px solid #555; position: relative;';
+                    thumbnailDiv.innerHTML = '⚙';
+                    // Add JSON badge
+                    const jsonBadge = document.createElement('div');
+                    jsonBadge.style.cssText = 'position: absolute; bottom: 8px; right: 8px; background: rgba(255,255,255,0.9); color: #2d2d2d; font-size: 0.6rem; font-weight: 700; padding: 2px 5px; border-radius: 3px; font-family: monospace;';
+                    jsonBadge.textContent = 'JSON';
+                    thumbnailDiv.appendChild(jsonBadge);
                     
                     const label = document.createElement('div');
                     label.className = 'image-name';
@@ -3596,10 +3670,10 @@
                         transparentIndicator.appendChild(transparentLabel);
                         item.appendChild(transparentIndicator);
                     } else {
-                        const img = document.createElement('img');
-                        img.src = imageData.objectUrl || imageData.url;
-                        img.alt = imageData.filename;
-                        img.loading = 'lazy';
+                    const img = document.createElement('img');
+                    img.src = imageData.objectUrl || imageData.url;
+                    img.alt = imageData.filename;
+                    img.loading = 'lazy';
                         item.appendChild(img);
                     }
                     
