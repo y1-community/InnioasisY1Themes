@@ -108,10 +108,10 @@
             font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
-            text-align: center;
+            text-align: left;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
             min-height: 44px;
             max-height: 44px;
             box-sizing: border-box;
@@ -150,7 +150,7 @@
         .btn > span {
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
             width: 100%;
             gap: 8px;
             position: relative;
@@ -159,8 +159,8 @@
         .btn > span > span:first-child {
             position: relative;
             z-index: 3;
-            text-align: center;
-            flex: 0 1 auto;
+            flex: 1;
+            text-align: left;
         }
         .btn img {
             height: 100%;
@@ -174,26 +174,24 @@
         }
         /* Arrow icon - hidden on desktop by default, shown on hover/focus/active */
         /* Use opacity/visibility to prevent layout shifts */
-        /* Positioned absolutely so it doesn't affect text centering */
+        /* Arrow icon matches button height for aesthetic consistency */
         .btn .arrow-icon {
-            height: 100%;
-            max-height: 100%;
+            height: 44px;
+            max-height: 44px;
             width: 0;
             overflow: hidden;
             flex-shrink: 0;
             opacity: 0;
             visibility: hidden;
-            position: absolute;
-            right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
+            margin-left: 0;
+            position: relative;
             z-index: 3;
-            transition: opacity 0.2s, visibility 0.2s, width 0.2s;
+            transition: opacity 0.2s, visibility 0.2s, width 0.2s, margin-left 0.2s;
         }
         
         .btn .arrow-icon img {
             height: 100%;
-            max-height: 100%;
+            max-height: 44px;
             width: auto;
             flex-shrink: 0;
             object-fit: contain;
@@ -227,6 +225,7 @@
                 opacity: 1;
                 visibility: visible;
                 width: auto;
+                margin-left: 8px;
             }
         }
         
@@ -236,6 +235,7 @@
                 opacity: 1;
                 visibility: visible;
                 width: auto;
+                margin-left: 8px;
             }
         }
         
@@ -585,13 +585,13 @@
         
         <div class="button-group" style="margin-top: 30px;">
             <button id="install-btn" onclick="showInstallInstructions()" class="btn install" style="display: none;">
-                <span style="display: flex; align-items: center; justify-content: center; width: 100%; position: relative; z-index: 2;">
-                    <span style="position: relative; z-index: 3; text-align: center; flex: 0 1 auto;">Install</span>
+                <span style="display: flex; align-items: center; justify-content: space-between; width: 100%; position: relative; z-index: 2;">
+                    <span style="position: relative; z-index: 3; flex: 1; text-align: left;">Install</span>
                 </span>
             </button>
             <button id="download-btn-full" onclick="downloadTheme()" class="btn download">
-                <span style="display: flex; align-items: center; justify-content: center; width: 100%; position: relative; z-index: 2;">
-                    <span style="position: relative; z-index: 3; text-align: center; flex: 0 1 auto;">Download</span>
+                <span style="display: flex; align-items: center; justify-content: space-between; width: 100%; position: relative; z-index: 2;">
+                    <span style="position: relative; z-index: 3; flex: 1; text-align: left;">Download</span>
                 </span>
             </button>
             <a href="#" id="download-link-small" onclick="downloadTheme(); return false;" class="download-link-small" style="display: none;">📦 Download ZIP instead</a>
@@ -2147,25 +2147,56 @@
                 
                 // Load each unique image once
                 const loadPromises = Array.from(uniqueFilenames).map(async (filename) => {
-                    // Try to find the actual file in imageFiles or construct URL
-                    let imageUrl = `./${encodeURIComponent(filename)}`;
+                    // Try multiple strategies to find the actual file
+                    let imageUrl = null;
+                    
+                    // Strategy 1: Direct filename match in imageFiles
                     let foundInFiles = imageFiles.find(f => {
                         const fName = f.name;
                         return fName === filename || 
-                               fName.replace(/^@[^_]+_/, '') === filename ||
-                               fName.replace(/\.[^.]+$/, '') === filename ||
-                               fName.replace(/^@[^_]+_/, '').replace(/\.[^.]+$/, '') === filename;
+                               fName.toLowerCase() === filename.toLowerCase();
                     });
                     
                     if (foundInFiles) {
                         imageUrl = foundInFiles.url;
+                    } else {
+                        // Strategy 2: Try direct path
+                        imageUrl = `./${encodeURIComponent(filename)}`;
+                        
+                        // Strategy 3: Try to find similar filenames (case-insensitive, without @ prefix)
+                        const filenameLower = filename.toLowerCase();
+                        const filenameBase = filename.replace(/^@[^_]+_/, '');
+                        const filenameBaseLower = filenameBase.toLowerCase();
+                        
+                        foundInFiles = imageFiles.find(f => {
+                            const fName = f.name;
+                            const fNameLower = fName.toLowerCase();
+                            return fNameLower === filenameLower || 
+                                   fNameLower === filenameBaseLower ||
+                                   fName.replace(/^@[^_]+_/, '').toLowerCase() === filenameBaseLower;
+                        });
+                        
+                        if (foundInFiles) {
+                            imageUrl = foundInFiles.url;
+                        }
+                    }
+                    
+                    if (!imageUrl) {
+                        // Fallback: try direct filename
+                        imageUrl = `./${encodeURIComponent(filename)}`;
                     }
                     
                     try {
                         // Fetch the image and cache it
-                        const response = await fetch(imageUrl);
-                        if (response.ok) {
-                            const blob = await response.blob();
+                        const response = await fetch(imageUrl, { method: 'HEAD' });
+                        if (!response.ok) {
+                            // Try direct filename if HEAD failed
+                            imageUrl = `./${encodeURIComponent(filename)}`;
+                        }
+                        
+                        const fullResponse = await fetch(imageUrl);
+                        if (fullResponse.ok) {
+                            const blob = await fullResponse.blob();
                             const arrayBuffer = await blob.arrayBuffer();
                             
                             // Cache the file for download/install
@@ -2183,6 +2214,8 @@
                                 objectUrl: objectUrl,
                                 blob: blob
                             });
+                        } else {
+                            console.warn(`Could not load image: ${filename} (HTTP ${fullResponse.status})`);
                         }
                     } catch (err) {
                         // Image doesn't exist or failed to load, skip it
