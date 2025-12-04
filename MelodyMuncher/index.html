@@ -301,26 +301,40 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             border-color: #667eea;
         }
+        
+        .image-carousel-item:hover img {
+            transform: scale(1.05);
+        }
 
         .image-carousel-item img {
             width: 100%;
-            height: 100px;
+            height: 120px;
             object-fit: contain;
             border-radius: 8px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             background: #f8f9fa;
+            transition: transform 0.2s ease;
+        }
+        
+        .image-carousel-item:hover img {
+            transform: scale(1.05);
         }
 
         .image-carousel-item .image-name {
-            font-size: 0.75rem;
-            color: #666;
+            font-size: 0.8rem;
+            color: #333;
             text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            white-space: normal;
+            overflow: visible;
             width: 100%;
-            font-weight: 500;
-            padding: 0 5px;
+            font-weight: 600;
+            padding: 5px;
+            line-height: 1.3;
+            word-break: break-word;
+            min-height: 2.6em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         /* JSON Icon Styling */
@@ -594,7 +608,8 @@
         <div class="header-section">
             <div class="header-text">
                 <!-- Title and subtitle removed; using About line instead -->
-                <h2 style="font-family: 'ThemeFont', sans-serif; font-size: 1rem; margin-bottom: 15px; color: #667eea;">About the Theme for Innioasis Y1</h2>
+                <h1 id="theme-title" style="font-family: 'ThemeFont', sans-serif; font-size: 2.5rem; font-weight: 700; margin-bottom: 20px; color: #333; line-height: 1.2;">Theme Name Placeholder</h1>
+                <h2 style="font-family: 'ThemeFont', sans-serif; font-size: 1.1rem; margin-bottom: 15px; color: #667eea; font-weight: 500;">About the Theme for Innioasis Y1</h2>
                 <p class="description" id="theme-description">Theme description placeholder - will be replaced with actual theme description from config.json or themes.json.</p>
                 <p class="author-info" style="margin-top: 15px; color: #666; font-size: 0.9rem; font-style: italic;">
                     Theme created by <strong id="author-display">Innioasis</strong>
@@ -1423,6 +1438,48 @@
                 // Set authorUrl for Innioasis-made themes if not already set
                 if ((author === 'Innioasis' || author.toLowerCase() === 'innioasis') && !authorUrl) {
                     authorUrl = 'https://www.innioasis.com';
+                }
+                
+                // Update page title and meta tags with actual theme data
+                if (themeName && themeName !== 'Theme Name Placeholder') {
+                    document.title = `${themeName} Theme - Official Innioasis Y1 Community Themes`;
+                    
+                    // Update meta description
+                    const metaDescription = document.querySelector('meta[name="description"]');
+                    if (metaDescription) {
+                        metaDescription.content = `Download ${themeName} theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. ${description} Community Maintainers: Ryan Specter + Dmitri Medina`;
+                    }
+                    
+                    // Update meta keywords
+                    const metaKeywords = document.querySelector('meta[name="keywords"]');
+                    if (metaKeywords) {
+                        metaKeywords.content = `Innioasis Y1, Y1 themes, MP3 player themes, ${themeName}, Y1 customization, official Y1 themes, Ryan Specter, Dmitri Medina`;
+                    }
+                    
+                    // Update schema.org structured data
+                    const schemaScript = document.querySelector('script[type="application/ld+json"]');
+                    if (schemaScript) {
+                        try {
+                            const schemaData = JSON.parse(schemaScript.textContent);
+                            schemaData.name = `${themeName} Theme`;
+                            schemaData.description = `Download ${themeName} theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. ${description} Community Maintainers: Ryan Specter + Dmitri Medina`;
+                            schemaScript.textContent = JSON.stringify(schemaData, null, 2);
+                        } catch (e) {
+                            console.warn('Could not update schema.org data:', e);
+                        }
+                    }
+                    
+                    // Update main title (h1)
+                    const themeTitle = document.getElementById('theme-title');
+                    if (themeTitle) {
+                        themeTitle.textContent = themeName;
+                    }
+                    
+                    // Update heading (h2)
+                    const heading = document.querySelector('h2');
+                    if (heading && heading.id !== 'theme-title') {
+                        heading.textContent = `About the ${themeName} Theme for Innioasis Y1`;
+                    }
                 }
                 
                 // Update author display with link if authorUrl is available
@@ -2758,12 +2815,21 @@
         }
 
         // Load all theme images for carousel
-        // This function discovers all .jpg and .png files in the theme folder
-        // Images are loaded using relative paths (works locally and on GitHub Pages)
-        // This also helps speed up ZIP downloads as images are already cached in browser
+        // This function discovers all images referenced in config.json
+        // Images are displayed with their config key names as captions
+        // Clicking an image opens it in the lightbox
         async function loadThemeImages() {
             console.log('🖼️ loadThemeImages() called');
-            const folderName = 'MelodyMuncher';
+            // Get folderName dynamically from URL
+            const currentPath = window.location.pathname;
+            let folderName = '';
+            const pathParts = currentPath.split('/');
+            if (pathParts[pathParts.length - 1].toLowerCase() === 'index.html' || pathParts[pathParts.length - 1] === '') {
+                folderName = pathParts[pathParts.length - 2];
+            } else {
+                folderName = pathParts[pathParts.length - 1];
+            }
+            folderName = decodeURIComponent(folderName);
             const carouselWrapper = document.getElementById('image-carousel-wrapper');
             const carouselInfo = document.getElementById('carousel-info');
             
