@@ -1516,12 +1516,10 @@
                             const themeFolder = match[1];
                             const downloadCount = asset.download_count || 0;
                             stats.set(themeFolder, downloadCount);
-                            
-                            // Silently download the stat file in background (for tracking)
-                            if (downloadCount > 0) {
-                                fetch(asset.browser_download_url).catch(() => {
-                                    // Silently fail - we just want to trigger the download count
-                                });
+                            // Store browser download URL for manual download later
+                            if (asset.browser_download_url) {
+                                if (!window.statFileUrls) window.statFileUrls = new Map();
+                                window.statFileUrls.set(themeFolder, asset.browser_download_url);
                             }
                         }
                     }
@@ -1543,6 +1541,28 @@
             // Re-render themes to show download counts
             if (allThemes.length > 0) {
                 renderThemes();
+            }
+        }
+
+        // Manually download stat file for a theme (only called when user downloads/installs)
+        async function downloadStatFile(themeFolder) {
+            try {
+                // Get stat file URL from stored map
+                if (!window.statFileUrls) {
+                    // If stat file URLs not loaded yet, fetch release stats first
+                    await fetchReleaseDownloadStats();
+                }
+                
+                const statFileUrl = window.statFileUrls?.get(themeFolder);
+                if (statFileUrl) {
+                    // Silently download the stat file in background (for tracking)
+                    fetch(statFileUrl).catch(() => {
+                        // Silently fail - we just want to trigger the download count
+                    });
+                }
+            } catch (error) {
+                // Silently fail - stat file download is optional
+                console.warn('Could not download stat file for', themeFolder, error);
             }
         }
 
@@ -4147,6 +4167,12 @@
                 await installThemeToDevice(theme, (current, total) => {
                     updateButtonText(button, `📥 ${current}/${total} files`);
                 });
+                
+                // Download stat file for tracking (manual trigger only)
+                downloadStatFile(theme.folder).catch(() => {
+                    // Silently fail - stat file download is optional
+                });
+                
                 // Mark theme as installed and refresh display
                 themes[index].installed = true;
                 updateButtonText(button, '✅ Installed!');
@@ -4221,6 +4247,12 @@
                 await installThemeToDevice(theme, (current, total) => {
                     updateButtonText(button, `🔄 ${current}/${total} files`);
                 });
+                
+                // Download stat file for tracking (manual trigger only)
+                downloadStatFile(theme.folder).catch(() => {
+                    // Silently fail - stat file download is optional
+                });
+                
                 updateButtonText(button, '✅ Updated!');
                 setTimeout(() => {
                     // Quick refresh to update installation status
@@ -4275,6 +4307,11 @@
 
                     await installThemeToDevice(theme, (current, total) => {
                         updateButtonText(installBtn, `📥 [${currentTheme}/${totalThemes}] ${theme.name}: ${current}/${total}`);
+                    });
+
+                    // Download stat file for tracking (manual trigger only)
+                    downloadStatFile(theme.folder).catch(() => {
+                        // Silently fail - stat file download is optional
                     });
 
                     // Mark theme as installed
@@ -4733,6 +4770,11 @@
 
                     await downloadThemeAsZip(theme, (progress) => {
                         updateButtonText(installBtn, `📦 [${currentTheme}/${totalThemes}] ${theme.name}: ${progress}%`);
+                    });
+
+                    // Download stat file for tracking (manual trigger only)
+                    downloadStatFile(theme.folder).catch(() => {
+                        // Silently fail - stat file download is optional
                     });
 
                     downloaded++;
