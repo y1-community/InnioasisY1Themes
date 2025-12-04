@@ -2392,19 +2392,23 @@
                 }, null, null, window.assetNavigation.currentImageCache, null, asset.resourceValue || asset.filename);
             }
             
-            // Sync navigation buttons and JSON highlighting after opening
+            // Sync navigation buttons immediately
+            syncNavigationButtons();
+            
             // Use multiple attempts to ensure highlighting works when JSON context is ready
-            setTimeout(() => {
-                syncNavigationButtons();
-                const attemptSync = (attempts = 0) => {
-                    if (attempts > 10) return;
-                    const highlighted = syncJsonHighlighting();
-                    if (!highlighted && attempts < 10) {
-                        setTimeout(() => attemptSync(attempts + 1), 100);
-                    }
-                };
-                attemptSync();
-            }, 300);
+            // Start immediately, then retry with increasing delays
+            const attemptSync = (attempts = 0) => {
+                if (attempts > 15) return; // Increased max attempts
+                const highlighted = syncJsonHighlighting();
+                if (!highlighted && attempts < 15) {
+                    // Use shorter delays for first few attempts, then longer
+                    const delay = attempts < 5 ? 50 : attempts < 10 ? 100 : 200;
+                    setTimeout(() => attemptSync(attempts + 1), delay);
+                }
+            };
+            // Try immediately, then retry
+            attemptSync();
+            setTimeout(() => attemptSync(1), 50);
         }
         
         // Helper function to sync JSON highlighting with current asset (acts as navigation breadcrumb)
@@ -2420,11 +2424,19 @@
                 return false;
             }
             
-            // Find JSON context in the wrapper
+            // Find JSON context in the wrapper - try multiple selectors
             const lightboxContentWrapper = document.getElementById('lightbox-content-wrapper');
             if (!lightboxContentWrapper || lightboxContentWrapper.style.display === 'none') return false;
             
-            const jsonPre = lightboxContentWrapper.querySelector('pre[id^="lightbox-json-"], pre[id^="font-json-"], pre[id^="image-json-"]');
+            // Try to find JSON preview in various locations
+            let jsonPre = lightboxContentWrapper.querySelector('pre[id^="lightbox-json-"], pre[id^="font-json-"], pre[id^="image-json-"]');
+            // Also check for JSON previews in the main lightbox content
+            if (!jsonPre) {
+                const lightbox = document.getElementById('lightbox');
+                if (lightbox) {
+                    jsonPre = lightbox.querySelector('pre[id^="lightbox-json-"], pre[id^="font-json-"], pre[id^="image-json-"], pre[id^="json-preview-"], pre[id^="transparent-json-"]');
+                }
+            }
             if (!jsonPre) return false;
             
             // PRIMARY: Use config key to find the exact line (1:1 mapping)
@@ -2476,7 +2488,7 @@
                 targetLine.style.paddingLeft = '8px';
                 targetLine.style.transition = 'all 0.3s ease';
                 
-                // Scroll to show the highlighted line (breadcrumb indicator)
+                // Scroll to show the highlighted line (breadcrumb indicator) - use immediate scroll for better UX
                 targetLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 return true;
             }
@@ -3614,11 +3626,18 @@
                 // Show navigation buttons immediately
                 syncNavigationButtons();
                 
-                // Sync JSON highlighting after opening
-                setTimeout(() => {
-                    syncJsonHighlighting();
-                    syncNavigationButtons(); // Sync again after highlighting
-                }, 300);
+                // Sync JSON highlighting immediately with retry mechanism
+                syncNavigationButtons();
+                const attemptSync = (attempts = 0) => {
+                    if (attempts > 15) return;
+                    const highlighted = syncJsonHighlighting();
+                    if (!highlighted && attempts < 15) {
+                        const delay = attempts < 5 ? 50 : attempts < 10 ? 100 : 200;
+                        setTimeout(() => attemptSync(attempts + 1), delay);
+                    }
+                };
+                attemptSync();
+                setTimeout(() => attemptSync(1), 50);
                 
                 lightbox.classList.add('active');
                 document.body.style.overflow = 'hidden';
@@ -3852,6 +3871,10 @@
                                 targetLine.style.paddingLeft = '8px';
                             }
                         }
+                        // Also sync highlighting using the navigation system for consistency
+                        setTimeout(() => {
+                            syncJsonHighlighting();
+                        }, 50);
                         
                         // Make all JSON lines clickable
                         jsonPre.querySelectorAll('.json-line').forEach(line => {
@@ -3937,15 +3960,17 @@
                         // After JSON context is fully rendered and click handlers are set, sync highlighting immediately
                         // Use multiple attempts to ensure highlighting works
                         const attemptSyncHighlighting = (attempts = 0) => {
-                            if (attempts > 10) return; // Max 10 attempts
+                            if (attempts > 15) return; // Max 15 attempts
                             const highlighted = syncJsonHighlighting();
-                            if (!highlighted && attempts < 10) {
-                                setTimeout(() => attemptSyncHighlighting(attempts + 1), 50);
+                            if (!highlighted && attempts < 15) {
+                                const delay = attempts < 5 ? 50 : attempts < 10 ? 100 : 200;
+                                setTimeout(() => attemptSyncHighlighting(attempts + 1), delay);
                             }
                         };
-                        setTimeout(() => attemptSyncHighlighting(), 50);
-                        setTimeout(() => attemptSyncHighlighting(), 200);
-                        setTimeout(() => attemptSyncHighlighting(), 500);
+                        // Try immediately, then retry with delays
+                        attemptSyncHighlighting();
+                        setTimeout(() => attemptSyncHighlighting(1), 50);
+                        setTimeout(() => attemptSyncHighlighting(2), 150);
                     }
                 }, 100);
                 }
@@ -4057,19 +4082,20 @@
             // Sync navigation buttons immediately (show for all navigable assets) - BEFORE opening lightbox
             syncNavigationButtons();
             
-            // Sync JSON highlighting after JSON context is fully rendered (for images/fonts)
-            // Note: For images/fonts, JSON context is rendered above and syncJsonHighlighting is called
-            // after the JSON HTML is inserted and click handlers are set up (see setTimeout above)
-            // For other asset types, sync immediately
-            if (imgSrc !== 'config-json' && imgSrc !== 'index-html' && imgSrc !== 'transparent-assets') {
-                // JSON context will call syncJsonHighlighting after it's ready (see setTimeout above)
-            } else {
-                // For special assets, sync immediately
-                setTimeout(() => {
-                    syncJsonHighlighting();
-                    syncNavigationButtons(); // Sync again after highlighting
-                }, 300);
-            }
+            // Sync JSON highlighting immediately with retry mechanism for all asset types
+            syncNavigationButtons();
+            const attemptSyncHighlighting = (attempts = 0) => {
+                if (attempts > 15) return;
+                const highlighted = syncJsonHighlighting();
+                if (!highlighted && attempts < 15) {
+                    const delay = attempts < 5 ? 50 : attempts < 10 ? 100 : 200;
+                    setTimeout(() => attemptSyncHighlighting(attempts + 1), delay);
+                }
+            };
+            // Try immediately, then retry with delays
+            attemptSyncHighlighting();
+            setTimeout(() => attemptSyncHighlighting(1), 50);
+            setTimeout(() => attemptSyncHighlighting(2), 150);
             
             // Construct GitHub URL using blob/main to view the actual file
             const githubUrl = `https://github.com/y1-community/InnioasisY1Themes/blob/main/${encodeURIComponent(folderName)}/${encodeURIComponent(actualFilename)}`;
@@ -5241,10 +5267,10 @@
                     
                     const label = document.createElement('div');
                     label.className = 'image-name';
-                    // Show item name and line number if available
+                    // Show line number as prefix, then item name
                     let labelText = asset.displayName || asset.filename;
                     if (asset.lineNumber && asset.lineNumber !== 9999) {
-                        labelText = `${labelText} (L${asset.lineNumber})`;
+                        labelText = `${asset.lineNumber}. ${labelText}`;
                     }
                     label.textContent = labelText;
                     label.title = asset.filename + (asset.configKey ? ` (${asset.configKey})` : ''); // Show filename and config key on hover

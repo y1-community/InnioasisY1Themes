@@ -2392,19 +2392,450 @@
                 }, null, null, window.assetNavigation.currentImageCache, null, asset.resourceValue || asset.filename);
             }
             
-            // Sync navigation buttons and JSON highlighting after opening
+            // Sync navigation buttons immediately
+            syncNavigationButtons();
+            
             // Use multiple attempts to ensure highlighting works when JSON context is ready
-            setTimeout(() => {
-                syncNavigationButtons();
-                const attemptSync = (attempts = 0) => {
-                    if (attempts > 10) return;
-                    const highlighted = syncJsonHighlighting();
-                    if (!highlighted && attempts < 10) {
-                        setTimeout(() => attemptSync(attempts + 1), 100);
+            // Start immediately, then retry with increasing delays
+            const attemptSync = (attempts = 0) => {
+                if (attempts > 15) return; // Increased max attempts
+                const highlighted = syncJsonHighlighting();
+                if (!highlighted && attempts < 15) {
+                    // Use shorter delays for first few attempts, then longer
+                    const delay = attempts < 5 ? 50 : attempts < 10 ? 100 : 200;
+                    setTimeout(() => attemptSync(attempts + 1), delay);
+                }
+            };
+            // Try immediately, then retry
+            attemptSync();
+            setTimeout(() => attemptSync(1), 50);
+        }
+        
+        // Helper function to sync JSON highlighting with current asset (acts as navigation breadcrumb)
+        // Returns true if highlighting was successful, false otherwise
+        function syncJsonHighlighting() {
+            if (!window.assetNavigation.assets || window.assetNavigation.currentIndex < 0) return false;
+            
+            const asset = window.assetNavigation.assets[window.assetNavigation.currentIndex];
+            if (!asset) return false;
+            
+            // Skip highlighting for special assets that don't have JSON context
+            if (asset.type === 'special' && (asset.filename === 'index.html' || asset.filename === 'config.json')) {
+                return false;
+            }
+            
+            // Find JSON context in the wrapper - try multiple selectors
+            const lightboxContentWrapper = document.getElementById('lightbox-content-wrapper');
+            if (!lightboxContentWrapper || lightboxContentWrapper.style.display === 'none') return false;
+            
+            // Try to find JSON preview in various locations
+            let jsonPre = lightboxContentWrapper.querySelector('pre[id^="lightbox-json-"], pre[id^="font-json-"], pre[id^="image-json-"]');
+            // Also check for JSON previews in the main lightbox content
+            if (!jsonPre) {
+                const lightbox = document.getElementById('lightbox');
+                if (lightbox) {
+                    jsonPre = lightbox.querySelector('pre[id^="lightbox-json-"], pre[id^="font-json-"], pre[id^="image-json-"], pre[id^="json-preview-"], pre[id^="transparent-json-"]');
+                }
+            }
+            if (!jsonPre) return false;
+            
+            // PRIMARY: Use config key to find the exact line (1:1 mapping)
+            let lineNumber = null;
+            if (asset.configKey && window.configKeyLineNumbers) {
+                lineNumber = window.configKeyLineNumbers.get(asset.configKey);
+            }
+            
+            // Fallback: Try to find by resource value or filename
+            if (!lineNumber) {
+                let context = null;
+                if (asset.configKey && window.findJsonContextForResource) {
+                    // Try with config key as primary identifier
+                    context = window.findJsonContextForResource(asset.resourceValue || asset.filename, 0, asset.configKey);
+                }
+                if (!context && asset.resourceValue && window.findJsonContextForResource) {
+                    context = window.findJsonContextForResource(asset.resourceValue, 0);
+                }
+                if (!context && asset.filename && window.findJsonContextForResource) {
+                    context = window.findJsonContextForResource(asset.filename, 0);
+                }
+                if (context && context.lineNumber) {
+                    lineNumber = context.lineNumber;
+                }
+            }
+            
+            // Also try using asset's stored line number if available
+            if (!lineNumber && asset.lineNumber && asset.lineNumber !== 9999) {
+                lineNumber = asset.lineNumber;
+            }
+            
+            if (!lineNumber) return false;
+            
+            const targetLine = jsonPre.querySelector(`.json-line[data-line="${lineNumber}"]`);
+            if (targetLine) {
+                // Clear all previous navigation highlights (breadcrumb indicators)
+                jsonPre.querySelectorAll('.json-line').forEach(l => {
+                    // Don't clear theme info highlights, only navigation breadcrumb highlights
+                    if (!l.querySelector('.json-theme-info')) {
+                        l.style.background = '';
+                        l.style.borderLeft = '';
+                        l.style.paddingLeft = '';
                     }
-                };
-                attemptSync();
-            }, 300);
+                });
+                
+                // Highlight target line as navigation breadcrumb (more prominent styling)
+                targetLine.style.background = 'rgba(102, 126, 234, 0.25)';
+                targetLine.style.borderLeft = '4px solid #667eea';
+                targetLine.style.paddingLeft = '8px';
+                targetLine.style.transition = 'all 0.3s ease';
+                
+                // Scroll to show the highlighted line (breadcrumb indicator) - use immediate scroll for better UX
+                targetLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return true;
+            }
+            return false;
+        }
+        
+        function navigateJsonLine(direction) {
+            // Navigate by JSON line order - find the next/previous asset based on line number
+            if (!window.assetNavigation.assets || window.assetNavigation.assets.length === 0) return;
+            
+            // Get all assets that have line numbers (exclude index.html and config.json from JSON line navigation)
+            const assetsWithLines = window.assetNavigation.assets.filter(a => 
+                a.lineNumber && a.lineNumber !== 9999 && 
+                a.type !== 'special' && 
+                !(a.filename === 'index.html' || a.filename === 'config.json')
+            );
+            
+            if (assetsWithLines.length === 0) return;
+            
+            // Sort assets by line number (JSON order)
+            const sortedAssets = [...assetsWithLines].sort((a, b) => {
+                if (a.lineNumber !== b.lineNumber) {
+                    return a.lineNumber - b.lineNumber;
+                }
+                // If same line number, sort by config key
+                const keyA = a.configKey || '';
+                const keyB = b.configKey || '';
+                return keyA.localeCompare(keyB);
+            });
+            
+            // Find current asset's position in sorted list
+            const currentAsset = window.assetNavigation.assets[window.assetNavigation.currentIndex];
+            if (!currentAsset) return;
+            
+            let currentSortedIndex = -1;
+            if (currentAsset.lineNumber && currentAsset.lineNumber !== 9999) {
+                // Find by line number and config key (for multiple instances of same file)
+                currentSortedIndex = sortedAssets.findIndex(a => {
+                    if (a.lineNumber === currentAsset.lineNumber) {
+                        // If config keys match, it's the same asset
+                        if (a.configKey && currentAsset.configKey) {
+                            return a.configKey === currentAsset.configKey;
+                        }
+                        // Otherwise match by filename/resourceValue
+                        return (a.filename === currentAsset.filename || a.resourceValue === currentAsset.resourceValue);
+                    }
+                    return false;
+                });
+            }
+            
+            // If not found by line number, try to find by config key or filename
+            if (currentSortedIndex === -1 && currentAsset.configKey) {
+                currentSortedIndex = sortedAssets.findIndex(a => a.configKey === currentAsset.configKey);
+            }
+            if (currentSortedIndex === -1) {
+                currentSortedIndex = sortedAssets.findIndex(a => 
+                    a.filename === currentAsset.filename || 
+                    a.resourceValue === currentAsset.resourceValue
+                );
+            }
+            
+            // If still not found, use the first asset
+            if (currentSortedIndex === -1) currentSortedIndex = 0;
+            
+            // Navigate to next/previous asset in line order
+            let nextSortedIndex = currentSortedIndex + direction;
+            if (nextSortedIndex < 0) nextSortedIndex = sortedAssets.length - 1;
+            if (nextSortedIndex >= sortedAssets.length) nextSortedIndex = 0;
+            
+            const nextAsset = sortedAssets[nextSortedIndex];
+            if (!nextAsset) return;
+            
+            // Find the index of this asset in the main navigation array
+            let targetAssetIndex = -1;
+            if (nextAsset.configKey) {
+                // Find by config key first (for 1:1 mapping with multiple file instances)
+                targetAssetIndex = window.assetNavigation.assets.findIndex(a => 
+                    a.configKey === nextAsset.configKey && 
+                    a.lineNumber === nextAsset.lineNumber
+                );
+            }
+            
+            // Fallback to filename/resourceValue matching
+            if (targetAssetIndex < 0) {
+                targetAssetIndex = window.assetNavigation.assets.findIndex(a => 
+                    (a.type === 'image' || a.type === 'font') && 
+                    (a.filename === nextAsset.filename || a.resourceValue === nextAsset.resourceValue) &&
+                    a.lineNumber === nextAsset.lineNumber
+                );
+            }
+            
+            if (targetAssetIndex >= 0) {
+                // Navigate to the asset
+                navigateAsset(targetAssetIndex - window.assetNavigation.currentIndex);
+            }
+        }
+        
+        function syncNavigationButtons() {
+            const navLeft = document.getElementById('lightbox-nav-left');
+            const navRight = document.getElementById('lightbox-nav-right');
+            if (navLeft && navRight && window.assetNavigation.assets && window.assetNavigation.assets.length > 1) {
+                // Always show buttons when lightbox is active (no keypress needed)
+                navLeft.style.display = window.assetNavigation.currentIndex > 0 ? 'block' : 'none';
+                navRight.style.display = window.assetNavigation.currentIndex < window.assetNavigation.assets.length - 1 ? 'block' : 'none';
+            } else {
+                // Hide if no assets or only one asset
+                if (navLeft) navLeft.style.display = 'none';
+                if (navRight) navRight.style.display = 'none';
+            }
+        }
+        
+        // Enhanced function to find asset index by any identifier
+        function findAssetIndex(filename, resourceValue, jsonResourceValue) {
+            if (!window.assetNavigation.assets || window.assetNavigation.assets.length === 0) return -1;
+            
+            // Try multiple matching strategies
+            let assetIndex = window.assetNavigation.assets.findIndex(a => {
+                if (a.filename === filename) return true;
+                if (a.resourceValue === filename) return true;
+                if (a.resourceValue === resourceValue) return true;
+                if (a.resourceValue === jsonResourceValue) return true;
+                if (jsonResourceValue && a.filename === jsonResourceValue) return true;
+                if (jsonResourceValue && a.resourceValue === jsonResourceValue) return true;
+                
+                // Try extracting just the filename from paths
+                const aFilename = a.filename ? a.filename.split('/').pop() : '';
+                const aResourceValue = a.resourceValue ? a.resourceValue.split('/').pop() : '';
+                const searchFilename = filename ? filename.split('/').pop() : '';
+                const searchResourceValue = resourceValue ? resourceValue.split('/').pop() : '';
+                const searchJsonResource = jsonResourceValue ? jsonResourceValue.split('/').pop() : '';
+                
+                if (aFilename === searchFilename) return true;
+                if (aResourceValue === searchFilename) return true;
+                if (aFilename === searchResourceValue) return true;
+                if (aResourceValue === searchResourceValue) return true;
+                if (searchJsonResource && (aFilename === searchJsonResource || aResourceValue === searchJsonResource)) return true;
+                
+                return false;
+            });
+            
+            return assetIndex;
+        }
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            const lightbox = document.getElementById('lightbox');
+            if (!lightbox || !lightbox.classList.contains('active')) return;
+            
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                e.preventDefault();
+                navigateAsset(e.key === 'ArrowRight' ? 1 : -1);
+            } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                navigateJsonLine(e.key === 'ArrowDown' ? 1 : -1);
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                closeLightbox();
+            }
+        });
+
+        // Lightbox functions
+        function openLightbox(imgSrc, filename = null, extraData = null, fontUrl = null, localFontUrl = null, imageCache = null, fontFileData = null, jsonResourceValue = null) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            const lightboxContentWrapper = document.getElementById('lightbox-content-wrapper');
+            const editBtn = document.getElementById('lightbox-edit-btn');
+            const filenameDisplay = document.getElementById('lightbox-filename');
+            const lightboxJsonContext = document.getElementById('lightbox-json-context');
+            
+            const folderName = getFolderName();
+            
+            // Show navigation buttons immediately when lightbox opens (before any content loads)
+            syncNavigationButtons();
+            
+            // Always clear and hide the separate JSON context panel first (to prevent duplicates)
+            if (lightboxJsonContext) {
+                lightboxJsonContext.style.display = 'none';
+                lightboxJsonContext.innerHTML = '';
+            }
+            
+            // Clear any existing JSON contexts in wrappers
+            const allJsonContexts = document.querySelectorAll('[id^="lightbox-json-"], [id^="font-json-"], [id^="mini-json-"], [id^="image-json-"]');
+            allJsonContexts.forEach(ctx => {
+                if (ctx && ctx.parentElement) {
+                    ctx.innerHTML = '';
+                }
+            });
+            
+            // Handle special content types
+            if (imgSrc === 'transparent-assets' && extraData) {
+                // Show transparent assets list
+                lightboxImg.style.display = 'none';
+                lightboxContentWrapper.style.display = 'block';
+                lightboxContentWrapper.innerHTML = `
+                    <h3 style="margin-top: 0; color: #667eea; margin-bottom: 20px;">Transparent Assets Usage</h3>
+                    <p style="color: #666; margin-bottom: 20px;">These config keys use transparent image files:</p>
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        ${extraData.map(key => `<li style="padding: 10px; margin: 5px 0; background: #f5f5f5; border-radius: 4px; font-family: monospace; font-size: 0.9rem;">${key}</li>`).join('')}
+                    </ul>
+                `;
+                filenameDisplay.style.display = 'none';
+                editBtn.style.display = 'none';
+                syncNavigationButtons();
+                lightbox.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                return;
+            }
+            
+            if (imgSrc === 'transparent-placeholder' && extraData) {
+                // Show transparent placeholder explanation
+                lightboxImg.style.display = 'none';
+                lightboxContentWrapper.style.display = 'block';
+                const configKey = extraData.configKey || filename || 'Unknown';
+                const displayName = extraData.displayName || configKey;
+                
+                // Generate JSON context if available
+                let jsonContextHtml = '';
+                if (window.configJsonData && window.createInteractiveJson) {
+                    // Similar to image preview JSON context generation
+                    const configData = window.configJsonData;
+                    const imgCache = window.configJsonImageCache || imageCache;
+                    const fontFileData = window.configJsonFontFile || null;
+                    const fullJsonResult = window.createInteractiveJson(configData, imgCache, fontFileData, 0, '', 1);
+                    const fullJsonHtml = fullJsonResult.html;
+                    // Count actual JSON lines by extracting max line number from data-line attributes
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = fullJsonHtml;
+                    const jsonLineElements = tempDiv.querySelectorAll('.json-line');
+                    let maxLineNumber = 0;
+                    jsonLineElements.forEach(el => {
+                        const lineNum = parseInt(el.getAttribute('data-line')) || 0;
+                        if (lineNum > maxLineNumber) maxLineNumber = lineNum;
+                    });
+                    const totalLines = maxLineNumber > 0 ? maxLineNumber : fullJsonHtml.split('
+').length;
+                    const uniqueId = 'transparent-json-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                    
+                    // Find line number for this config key
+                    let scrollToLine = 1;
+                    if (window.configKeyLineNumbers && configKey) {
+                        scrollToLine = window.configKeyLineNumbers.get(configKey) || 1;
+                    }
+                    
+                    jsonContextHtml = `
+                        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                                <div style="font-size: 0.85rem; color: #667eea; font-weight: 600;">config.json (click lines or use ↑↓ to navigate):</div>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <button onclick="event.stopPropagation(); navigateJsonLine(-1)" style="background: #667eea; color: white; border: none; border-radius: 4px; width: 30px; height: 30px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='#5568d3'" onmouseout="this.style.background='#667eea'">↑</button>
+                                    <button onclick="event.stopPropagation(); navigateJsonLine(1)" style="background: #667eea; color: white; border: none; border-radius: 4px; width: 30px; height: 30px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='#5568d3'" onmouseout="this.style.background='#667eea'">↓</button>
+                                </div>
+                            </div>
+                            <div id="json-container-${uniqueId}" style="background: #2d2d2d; border-radius: 4px; overflow: hidden; position: relative; max-height: 400px; overflow-y: auto; transition: max-height 0.3s ease;">
+                                <pre id="${uniqueId}" style="color: #f8f8f2; padding: 10px; padding-left: 42px; overflow-x: auto; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.75rem; line-height: 1.4; margin: 0; white-space: pre; word-wrap: normal; position: relative;"><code>${fullJsonHtml}</code></pre>
+                                <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 32px; background: #1e1e1e; color: #858585; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.75rem; padding: 10px 4px; text-align: right; user-select: none; line-height: 1.4;">
+                                    ${Array.from({length: totalLines}, (_, i) => `<div style="line-height: 1.4;">${i + 1}</div>`).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Make lines clickable after a delay
+                    setTimeout(() => {
+                        const jsonPre = document.getElementById(uniqueId);
+                        if (jsonPre) {
+                            if (scrollToLine > 1) {
+                                const targetLine = jsonPre.querySelector(`.json-line[data-line="${scrollToLine}"]`);
+                                if (targetLine) {
+                                    targetLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    targetLine.style.background = 'rgba(102, 126, 234, 0.25)';
+                                    targetLine.style.borderLeft = '4px solid #667eea';
+                                    targetLine.style.paddingLeft = '8px';
+                                }
+                            }
+                            // Make lines clickable (similar to image preview)
+                            jsonPre.querySelectorAll('.json-line').forEach(line => {
+                                const lineNum = parseInt(line.getAttribute('data-line'));
+                                if (lineNum) {
+                                    line.style.cursor = 'pointer';
+                                    line.onclick = function(e) {
+                                        e.stopPropagation();
+                                        const resource = line.querySelector('.json-resource');
+                                        if (resource) {
+                                            const resourceType = resource.getAttribute('data-resource-type');
+                                            const resourceValue = resource.getAttribute('data-resource-value');
+                                            const resourceFilename = resource.getAttribute('data-resource-filename') || resourceValue.split('/').pop();
+                                            
+                                            if (window.assetNavigation && window.assetNavigation.assets) {
+                                                const assetIndex = findAssetIndex(resourceFilename, resourceValue, resourceValue);
+                                                if (assetIndex >= 0) {
+                                                    window.assetNavigation.currentIndex = assetIndex;
+                                                }
+                                            }
+                                            
+                                            if (resourceType === 'image') {
+                                                const cached = imgCache ? imgCache.get(resourceFilename) : null;
+                                                if (cached && cached.objectUrl) {
+                                                    openLightbox(cached.objectUrl, resourceFilename, null, null, null, imgCache, null, resourceValue);
+                                                } else {
+                                                    const githubUrl = getGitHubRawUrl(resourceFilename);
+                                                    openLightbox(githubUrl, resourceFilename, null, null, null, imgCache, null, resourceValue);
+                                                }
+                                            } else if (resourceType === 'font') {
+                                                const fontUrl = getGitHubRawUrl(resourceValue);
+                                                const localFontUrl = getLocalUrl(resourceValue);
+                                                openLightbox('font-preview', resourceValue, null, fontUrl, localFontUrl, imgCache, null, resourceValue);
+                                            }
+                                        }
+                                    };
+                                }
+                            });
+                            
+                            setTimeout(() => {
+                                syncJsonHighlighting();
+                            }, 50);
+                        }
+                    }, 100);
+                }
+                
+                lightboxContentWrapper.innerHTML = `
+                    <h3 style="margin-top: 0; color: #667eea; margin-bottom: 20px;">Transparent Placeholder Asset</h3>
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea; margin-bottom: 20px;">
+                        <p style="margin: 0 0 15px 0; line-height: 1.6; color: #333;">
+                            This theme asset uses a <strong>transparent placeholder image</strong> (<code style="background: rgba(102, 126, 234, 0.1); padding: 2px 6px; border-radius: 3px; font-family: monospace;">${filename || 'transparent.png'}</code>).
+                        </p>
+                        <p style="margin: 0 0 15px 0; line-height: 1.6; color: #333;">
+                            <strong>Config Key:</strong> <code style="background: rgba(102, 126, 234, 0.1); padding: 2px 6px; border-radius: 3px; font-family: monospace;">${configKey}</code>
+                        </p>
+                        <p style="margin: 0; line-height: 1.6; color: #666; font-size: 0.9rem;">
+                            Transparent placeholder images are used when a theme doesn't need to display an image for a particular UI element. The system will use default styling instead.
+                        </p>
+                    </div>
+                    <div style="background: linear-gradient(45deg, #f0f0f0 25%, transparent 25%), linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f0f0f0 75%), linear-gradient(-45deg, transparent 75%, #f0f0f0 75%); background-size: 12px 12px; background-position: 0 0, 0 6px, 6px -6px, -6px 0px; border-radius: 8px; border: 2px dashed #ddd; padding: 60px 20px; text-align: center; margin-bottom: 20px;">
+                        <div style="font-size: 3rem; margin-bottom: 10px; opacity: 0.5;">🔲</div>
+                        <div style="color: #999; font-size: 0.9rem; font-weight: 600;">Transparent Placeholder</div>
+                        <div style="color: #bbb; font-size: 0.8rem; margin-top: 5px;">No image file required</div>
+                    </div>
+                    ${jsonContextHtml}
+                `;
+                filenameDisplay.textContent = displayName;
+                filenameDisplay.style.display = 'block';
+                editBtn.style.display = 'none';
+                syncNavigationButtons();
+                setTimeout(() => {
+                    syncJsonHighlighting();
+                    syncNavigationButtons();
+                }, 300);
         }
         
         // Helper function to sync JSON highlighting with current asset (acts as navigation breadcrumb)
@@ -2424,7 +2855,14 @@
             const lightboxContentWrapper = document.getElementById('lightbox-content-wrapper');
             if (!lightboxContentWrapper || lightboxContentWrapper.style.display === 'none') return false;
             
-            const jsonPre = lightboxContentWrapper.querySelector('pre[id^="lightbox-json-"], pre[id^="font-json-"], pre[id^="image-json-"]');
+            let jsonPre = lightboxContentWrapper.querySelector('pre[id^="lightbox-json-"], pre[id^="font-json-"], pre[id^="image-json-"]');
+            // Also check for JSON previews in the main lightbox content
+            if (!jsonPre) {
+                const lightbox = document.getElementById('lightbox');
+                if (lightbox) {
+                    jsonPre = lightbox.querySelector('pre[id^="lightbox-json-"], pre[id^="font-json-"], pre[id^="image-json-"], pre[id^="json-preview-"], pre[id^="transparent-json-"]');
+                }
+            }
             if (!jsonPre) return false;
             
             // PRIMARY: Use config key to find the exact line (1:1 mapping)
@@ -3614,11 +4052,18 @@
                 // Show navigation buttons immediately
                 syncNavigationButtons();
                 
-                // Sync JSON highlighting after opening
-                setTimeout(() => {
-                    syncJsonHighlighting();
-                    syncNavigationButtons(); // Sync again after highlighting
-                }, 300);
+                // Sync JSON highlighting immediately with retry mechanism
+                syncNavigationButtons();
+                const attemptSync = (attempts = 0) => {
+                    if (attempts > 15) return;
+                    const highlighted = syncJsonHighlighting();
+                    if (!highlighted && attempts < 15) {
+                        const delay = attempts < 5 ? 50 : attempts < 10 ? 100 : 200;
+                        setTimeout(() => attemptSync(attempts + 1), delay);
+                    }
+                };
+                attemptSync();
+                setTimeout(() => attemptSync(1), 50);
                 
                 lightbox.classList.add('active');
                 document.body.style.overflow = 'hidden';
@@ -4057,18 +4502,20 @@
             // Sync navigation buttons immediately (show for all navigable assets) - BEFORE opening lightbox
             syncNavigationButtons();
             
-            // Sync JSON highlighting after JSON context is fully rendered (for images/fonts)
-            // Note: For images/fonts, JSON context is rendered above and syncJsonHighlighting is called
-            // after the JSON HTML is inserted and click handlers are set up (see setTimeout above)
-            // For other asset types, sync immediately
-            if (imgSrc !== 'config-json' && imgSrc !== 'index-html' && imgSrc !== 'transparent-assets') {
-                // JSON context will call syncJsonHighlighting after it's ready (see setTimeout above)
-            } else {
-                // For special assets, sync immediately
-                setTimeout(() => {
-                    syncJsonHighlighting();
-                    syncNavigationButtons(); // Sync again after highlighting
-                }, 300);
+            // Sync JSON highlighting immediately with retry mechanism for all asset types
+            syncNavigationButtons();
+            const attemptSyncHighlighting = (attempts = 0) => {
+                if (attempts > 15) return;
+                const highlighted = syncJsonHighlighting();
+                if (!highlighted && attempts < 15) {
+                    const delay = attempts < 5 ? 50 : attempts < 10 ? 100 : 200;
+                    setTimeout(() => attemptSyncHighlighting(attempts + 1), delay);
+                }
+            };
+            // Try immediately, then retry with delays
+            attemptSyncHighlighting();
+            setTimeout(() => attemptSyncHighlighting(1), 50);
+            setTimeout(() => attemptSyncHighlighting(2), 150);
             }
             
             // Construct GitHub URL using blob/main to view the actual file
@@ -5244,7 +5691,7 @@
                     // Show item name and line number if available
                     let labelText = asset.displayName || asset.filename;
                     if (asset.lineNumber && asset.lineNumber !== 9999) {
-                        labelText = `${labelText} (L${asset.lineNumber})`;
+                        labelText = `${asset.lineNumber}. ${labelText}`;
                     }
                     label.textContent = labelText;
                     label.title = asset.filename + (asset.configKey ? ` (${asset.configKey})` : ''); // Show filename and config key on hover
