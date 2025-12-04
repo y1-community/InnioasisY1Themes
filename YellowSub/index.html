@@ -773,6 +773,7 @@
         <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
         <img class="lightbox-content" id="lightbox-img" onclick="event.stopPropagation()">
         <div id="lightbox-content-wrapper" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); max-width: 90%; max-height: 80%; overflow-y: auto; background: white; border-radius: 8px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 1001;" onclick="event.stopPropagation()"></div>
+        <div id="lightbox-json-context" style="display: none; position: absolute; bottom: 140px; left: 50%; transform: translateX(-50%); max-width: 90%; background: rgba(255, 255, 255, 0.95); border-radius: 8px; padding: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 1002; max-height: 200px; overflow-y: auto;" onclick="event.stopPropagation()"></div>
         <div id="lightbox-filename" style="position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.8); color: white; padding: 8px 16px; border-radius: 4px; font-size: 0.9rem; max-width: 90%; text-align: center; word-break: break-word; z-index: 1002;"></div>
         <a id="lightbox-edit-btn" class="lightbox-edit-btn" href="#" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">
             <span>✏️</span>
@@ -2297,7 +2298,7 @@
         }
 
         // Lightbox functions
-        function openLightbox(imgSrc, filename = null, extraData = null, fontUrl = null, localFontUrl = null, imageCache = null, fontFileData = null) {
+        function openLightbox(imgSrc, filename = null, extraData = null, fontUrl = null, localFontUrl = null, imageCache = null, fontFileData = null, jsonResourceValue = null) {
             const lightbox = document.getElementById('lightbox');
             const lightboxImg = document.getElementById('lightbox-img');
             const lightboxContentWrapper = document.getElementById('lightbox-content-wrapper');
@@ -2343,10 +2344,66 @@
                         </p>
                     </div>
                     <div style="text-align: center; margin-top: 20px;">
-                        <a href="https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/theme_html/index.html" download="index.html" target="_blank" style="display: inline-block; background: #667eea; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; margin-right: 10px;">📥 Download index.html</a>
+                        <button id="download-index-html-btn" style="display: inline-block; background: #667eea; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; margin-right: 10px; border: none; cursor: pointer; font-size: 1rem;">📥 Download index.html</button>
                         <a href="https://themes.innioasis.app/theme_html/" target="_blank" style="display: inline-block; color: #667eea; text-decoration: underline; padding: 12px 0;">Learn more →</a>
                     </div>
                 `;
+                
+                // Add download handler for index.html
+                const downloadBtn = document.getElementById('download-index-html-btn');
+                if (downloadBtn) {
+                    downloadBtn.onclick = async function(e) {
+                        e.stopPropagation();
+                        const btn = this;
+                        const originalText = btn.textContent;
+                        btn.textContent = '⏳ Downloading...';
+                        btn.disabled = true;
+                        
+                        try {
+                            // Fetch the index.html from the theme's directory
+                            const indexUrl = getGitHubRawUrl('index.html');
+                            const response = await fetch(indexUrl);
+                            if (!response.ok) {
+                                // Fallback to local
+                                const localUrl = getLocalUrl('index.html');
+                                const localResponse = await fetch(localUrl);
+                                if (!localResponse.ok) throw new Error('Could not fetch index.html');
+                                const blob = await localResponse.blob();
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = 'index.html';
+                                document.body.appendChild(a);
+                                a.click();
+                                document.body.removeChild(a);
+                                URL.revokeObjectURL(url);
+                            } else {
+                                const blob = await response.blob();
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = 'index.html';
+                                document.body.appendChild(a);
+                                a.click();
+                                document.body.removeChild(a);
+                                URL.revokeObjectURL(url);
+                            }
+                            btn.textContent = '✅ Downloaded!';
+                            setTimeout(() => {
+                                btn.textContent = originalText;
+                                btn.disabled = false;
+                            }, 2000);
+                        } catch (error) {
+                            console.error('Error downloading index.html:', error);
+                            btn.textContent = '❌ Error';
+                            setTimeout(() => {
+                                btn.textContent = originalText;
+                                btn.disabled = false;
+                            }, 2000);
+                        }
+                    };
+                }
+                
                 filenameDisplay.textContent = 'index.html';
                 filenameDisplay.style.display = 'block';
                 const githubUrl = `https://github.com/y1-community/InnioasisY1Themes/blob/main/${encodeURIComponent(folderName)}/index.html`;
@@ -2362,10 +2419,15 @@
                 lightboxImg.style.display = 'none';
                 lightboxContentWrapper.style.display = 'block';
                 
-                // Create interactive JSON viewer
-                const createInteractiveJson = (obj, imageCache, fontFileData, indent = 0) => {
+                // Theme info keys that should be highlighted
+                const themeInfoKeys = ['title', 'author', 'authorUrl', 'description', 'name'];
+                const themeInfoPaths = ['theme_info.title', 'theme_info.author', 'theme_info.authorUrl', 'theme_info.description', 'theme_info.name'];
+                
+                // Create interactive JSON viewer with line numbers and highlighting
+                const createInteractiveJson = (obj, imageCache, fontFileData, indent = 0, path = '', lineNumber = 1) => {
                     let html = '';
                     const indentStr = '  '.repeat(indent);
+                    let currentLine = lineNumber;
                     
                     const escapeHtml = (str) => {
                         return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -2375,26 +2437,36 @@
                         return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r');
                     };
                     
+                    const isThemeInfoKey = (key, currentPath) => {
+                        return themeInfoKeys.includes(key) || themeInfoPaths.some(p => currentPath.includes(p));
+                    };
+                    
                     if (Array.isArray(obj)) {
-                        html += '[\n';
+                        html += `<span class="json-line" data-line="${currentLine++}">[</span>\n`;
                         obj.forEach((item, index) => {
-                            html += indentStr + '  ';
+                            html += `<span class="json-line" data-line="${currentLine}">${indentStr}  `;
                             if (typeof item === 'object' && item !== null) {
-                                html += createInteractiveJson(item, imageCache, fontFileData, indent + 1);
+                                const result = createInteractiveJson(item, imageCache, fontFileData, indent + 1, path, currentLine);
+                                html += result.html;
+                                currentLine = result.lineNumber;
                             } else {
                                 html += JSON.stringify(item);
                             }
                             if (index < obj.length - 1) html += ',';
-                            html += '\n';
+                            html += `</span>\n`;
+                            currentLine++;
                         });
-                        html += indentStr + ']';
+                        html += `<span class="json-line" data-line="${currentLine++}">${indentStr}]</span>`;
                     } else if (typeof obj === 'object' && obj !== null) {
-                        html += '{\n';
+                        html += `<span class="json-line" data-line="${currentLine++}">{</span>\n`;
                         const keys = Object.keys(obj);
                         keys.forEach((key, index) => {
                             const value = obj[key];
-                            html += indentStr + '  ';
-                            html += `<span style="color: #f92672;">"${escapeHtml(key)}"</span>: `;
+                            const currentPath = path ? `${path}.${key}` : key;
+                            const isThemeInfo = isThemeInfoKey(key, currentPath);
+                            const lineNum = currentLine;
+                            html += `<span class="json-line" data-line="${lineNum}" style="${isThemeInfo ? 'background: rgba(102, 126, 234, 0.1); padding: 2px 0; display: block;' : ''}">${indentStr}  `;
+                            html += `<span style="color: ${isThemeInfo ? '#667eea' : '#f92672'}; font-weight: ${isThemeInfo ? '600' : 'normal'};">"${escapeHtml(key)}"</span>: `;
                             
                             if (typeof value === 'string') {
                                 const escapedValue = escapeHtml(value);
@@ -2411,25 +2483,28 @@
                                 else if (/\.(ttf|otf|woff|woff2)$/i.test(value) || (key === 'fontFamily' && value)) {
                                     html += `<span class="json-resource" data-resource-type="font" data-resource-value="${escapedValue}" style="color: #a6e22e; cursor: pointer; text-decoration: underline;" onmouseover="showResourcePreview(event, 'font', '${jsEscapedValue}')" onmouseout="hideResourcePreview()" onclick="event.stopPropagation(); openResourcePreview('font', '${jsEscapedValue}')">"${escapedValue}"</span>`;
                                 }
-                                // Regular string
+                                // Regular string - highlight if theme info
                                 else {
-                                    html += `<span style="color: #e6db74;">"${escapedValue}"</span>`;
+                                    html += `<span style="color: ${isThemeInfo ? '#667eea' : '#e6db74'}; font-weight: ${isThemeInfo ? '600' : 'normal'};">"${escapedValue}"</span>`;
                                 }
                             } else if (typeof value === 'object' && value !== null) {
-                                html += createInteractiveJson(value, imageCache, fontFileData, indent + 1);
+                                const result = createInteractiveJson(value, imageCache, fontFileData, indent + 1, currentPath, currentLine);
+                                html += result.html;
+                                currentLine = result.lineNumber;
                             } else {
                                 html += `<span style="color: #ae81ff;">${JSON.stringify(value)}</span>`;
                             }
                             
                             if (index < keys.length - 1) html += ',';
-                            html += '\n';
+                            html += `</span>\n`;
+                            currentLine++;
                         });
-                        html += indentStr + '}';
+                        html += `<span class="json-line" data-line="${currentLine++}">${indentStr}}</span>`;
                     } else {
                         html += JSON.stringify(obj);
                     }
                     
-                    return html;
+                    return { html, lineNumber: currentLine };
                 };
                 
                 // Store formatted JSON with line numbers for context lookup
@@ -2451,7 +2526,8 @@
                 };
                 buildResourceContext(extraData);
                 
-                const interactiveJson = createInteractiveJson(extraData, imageCache, fontFileData);
+                const interactiveJsonResult = createInteractiveJson(extraData, imageCache, fontFileData, 0, '', 1);
+                const interactiveJson = interactiveJsonResult.html;
                 
                 // Helper to find JSON context lines for a resource
                 const findJsonContext = (resourceValue, contextLines = 3) => {
@@ -2477,16 +2553,47 @@
                     return {
                         lines: context,
                         targetLineIndex: targetRelativeIndex,
-                        lineNumber: targetLineIndex + 1
+                        lineNumber: targetLineIndex + 1,
+                        startLineNumber: start + 1
                     };
                 };
                 
                 lightboxContentWrapper.innerHTML = `
                     <h3 style="margin-top: 0; color: #667eea; margin-bottom: 20px;">config.json</h3>
-                    <p style="color: #666; margin-bottom: 15px; font-size: 0.9rem;">Hover or tap on image filenames and font names to preview them.</p>
+                    <p style="color: #666; margin-bottom: 15px; font-size: 0.9rem;">Hover or tap on image filenames and font names to preview them. Click on JSON context lines to jump to that location.</p>
                     <div id="resource-preview-popup" style="display: none; position: fixed; z-index: 1003; background: white; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); padding: 15px; max-width: 350px; pointer-events: none;"></div>
-                    <pre style="background: #2d2d2d; color: #f8f8f2; padding: 20px; border-radius: 4px; overflow-x: auto; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.85rem; line-height: 1.5; margin: 0; max-height: 60vh; overflow-y: auto; white-space: pre; word-wrap: normal; position: relative;"><code>${interactiveJson}</code></pre>
+                    <div style="background: #2d2d2d; border-radius: 4px; overflow: hidden; position: relative;">
+                        <pre id="json-preview-pre" style="color: #f8f8f2; padding: 20px; padding-left: 60px; overflow-x: auto; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.85rem; line-height: 1.5; margin: 0; max-height: 60vh; overflow-y: auto; white-space: pre; word-wrap: normal; position: relative;"><code>${interactiveJson}</code></pre>
+                        <div id="json-line-numbers" style="position: absolute; left: 0; top: 0; bottom: 0; width: 50px; background: #1e1e1e; color: #858585; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.85rem; padding: 20px 5px; text-align: right; user-select: none; line-height: 1.5;"></div>
+                    </div>
                 `;
+                
+                // Generate line numbers
+                const jsonPre = document.getElementById('json-preview-pre');
+                const lineNumbersDiv = document.getElementById('json-line-numbers');
+                if (jsonPre && lineNumbersDiv) {
+                    const lines = interactiveJson.split('\n');
+                    lineNumbersDiv.innerHTML = lines.map((_, i) => `<div style="line-height: 1.5;">${i + 1}</div>`).join('');
+                    
+                    // Make JSON lines clickable to scroll to that line
+                    jsonPre.querySelectorAll('.json-line').forEach(line => {
+                        const lineNum = parseInt(line.getAttribute('data-line'));
+                        if (lineNum) {
+                            line.style.cursor = 'pointer';
+                            line.onclick = function(e) {
+                                e.stopPropagation();
+                                // Scroll to this line
+                                line.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                // Highlight briefly
+                                const originalBg = line.style.background;
+                                line.style.background = 'rgba(102, 126, 234, 0.3)';
+                                setTimeout(() => {
+                                    line.style.background = originalBg;
+                                }, 1000);
+                            };
+                        }
+                    });
+                }
                 
                 // Add preview functions to window
                 window.showResourcePreview = function(event, type, value, filename) {
@@ -2512,14 +2619,19 @@
                     const context = findJsonContext(value, 2);
                     let contextHtml = '';
                     if (context) {
+                        const startLineNum = context.lineNumber - context.targetLineIndex;
                         const contextLinesHtml = context.lines.map((line, idx) => {
                             const isTargetLine = idx === context.targetLineIndex;
                             const escapedLine = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                            return `<div style="font-family: 'SF Mono', 'Monaco', monospace; font-size: 0.7rem; color: ${isTargetLine ? '#333' : '#999'}; opacity: ${isTargetLine ? '1' : '0.6'}; line-height: 1.4;">${escapedLine || ' '}</div>`;
+                            const lineNum = startLineNum + idx;
+                            return `<div style="display: flex; font-family: 'SF Mono', 'Monaco', monospace; font-size: 0.7rem; line-height: 1.4; cursor: pointer; padding: 2px 0;" onclick="event.stopPropagation(); scrollToJsonLine(${lineNum})" onmouseover="this.style.background='#e8f4f8'" onmouseout="this.style.background='transparent'">
+                                <span style="color: #999; margin-right: 8px; min-width: 30px; text-align: right; user-select: none;">${lineNum}</span>
+                                <span style="color: ${isTargetLine ? '#333' : '#999'}; opacity: ${isTargetLine ? '1' : '0.6'}; flex: 1;">${escapedLine || ' '}</span>
+                            </div>`;
                         }).join('');
                         contextHtml = `
                             <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #eee;">
-                                <div style="font-size: 0.7rem; color: #999; margin-bottom: 6px; font-weight: 600;">JSON Context:</div>
+                                <div style="font-size: 0.7rem; color: #999; margin-bottom: 6px; font-weight: 600;">JSON Context (click line to jump):</div>
                                 <div style="background: #f8f9fa; padding: 8px; border-radius: 4px; max-height: 120px; overflow-y: auto;">
                                     ${contextLinesHtml}
                                 </div>
@@ -2578,15 +2690,15 @@
                     if (type === 'image') {
                         const cached = imageCache ? imageCache.get(filename) : null;
                         if (cached && cached.objectUrl) {
-                            openLightbox(cached.objectUrl, filename);
+                            openLightbox(cached.objectUrl, filename, null, null, null, imageCache, null, value);
                         } else {
                             const githubUrl = getGitHubRawUrl(filename);
-                            openLightbox(githubUrl, filename);
+                            openLightbox(githubUrl, filename, null, null, null, imageCache, null, value);
                         }
                     } else if (type === 'font') {
                         const fontUrl = getGitHubRawUrl(value);
                         const localFontUrl = getLocalUrl(value);
-                        openLightbox('font-preview', value, null, fontUrl, localFontUrl);
+                        openLightbox('font-preview', value, null, fontUrl, localFontUrl, imageCache, null, value);
                     }
                 };
                 
@@ -2595,6 +2707,23 @@
                     return findJsonContext(resourceValue, contextLines);
                 };
                 window.formattedJsonLinesForContext = formattedJsonLines;
+                
+                // Function to scroll to a specific line in JSON preview
+                window.scrollToJsonLine = function(lineNumber) {
+                    const jsonPre = document.getElementById('json-preview-pre');
+                    if (!jsonPre) return;
+                    
+                    const lineElement = jsonPre.querySelector(`.json-line[data-line="${lineNumber}"]`);
+                    if (lineElement) {
+                        lineElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        // Highlight briefly
+                        const originalBg = lineElement.style.background;
+                        lineElement.style.background = 'rgba(102, 126, 234, 0.3)';
+                        setTimeout(() => {
+                            lineElement.style.background = originalBg;
+                        }, 1500);
+                    }
+                };
                 
                 filenameDisplay.textContent = 'config.json';
                 filenameDisplay.style.display = 'block';
@@ -2607,11 +2736,39 @@
             }
             
             if (imgSrc === 'font-preview' && filename && fontUrl) {
-                // Show font preview
+                // Show font preview with JSON context if available
                 lightboxImg.style.display = 'none';
                 lightboxContentWrapper.style.display = 'block';
+                
+                // Try to get JSON context if available
+                let jsonContextHtml = '';
+                if (window.findJsonContextForResource) {
+                    const context = window.findJsonContextForResource(filename, 3);
+                    if (context) {
+                        const startLineNum = context.lineNumber - context.targetLineIndex;
+                        const contextLinesHtml = context.lines.map((line, idx) => {
+                            const isTargetLine = idx === context.targetLineIndex;
+                            const escapedLine = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                            const lineNum = startLineNum + idx;
+                            return `<div onclick="if(window.scrollToJsonLine) window.scrollToJsonLine(${lineNum})" style="display: flex; font-family: 'SF Mono', 'Monaco', monospace; font-size: 0.7rem; line-height: 1.4; cursor: pointer; padding: 2px 0;" onmouseover="this.style.background='#e8f4f8'" onmouseout="this.style.background='transparent'">
+                                <span style="color: #999; margin-right: 8px; min-width: 30px; text-align: right; user-select: none;">${lineNum}</span>
+                                <span style="color: ${isTargetLine ? '#333' : '#999'}; opacity: ${isTargetLine ? '1' : '0.6'}; flex: 1; ${isTargetLine ? 'font-weight: 600;' : ''}">${escapedLine || ' '}</span>
+                            </div>`;
+                        }).join('');
+                        jsonContextHtml = `
+                            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+                                <div style="font-size: 0.8rem; color: #999; margin-bottom: 8px; font-weight: 600;">Defined in config.json (click line to jump):</div>
+                                <div style="background: #f8f9fa; padding: 12px; border-radius: 4px; max-height: 150px; overflow-y: auto;">
+                                    ${contextLinesHtml}
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+                
                 lightboxContentWrapper.innerHTML = `
                     <h3 style="margin-top: 0; color: #667eea; margin-bottom: 20px;">Font Preview: ${filename}</h3>
+                    <div style="font-size: 0.75rem; color: #666; margin-bottom: 12px; font-family: monospace; text-align: center; font-weight: 600;">${filename}</div>
                     <div id="font-preview-container" style="background: white; padding: 30px; border-radius: 4px; border: 1px solid #ddd;">
                         <p style="font-size: 48px; margin: 20px 0; font-family: 'PreviewFontDisplay', sans-serif;">AaBbCc 123</p>
                         <p style="font-size: 36px; margin: 20px 0; font-family: 'PreviewFontDisplay', sans-serif;">The quick brown fox jumps over the lazy dog</p>
@@ -2619,6 +2776,7 @@
                         <p style="font-size: 18px; margin: 20px 0; font-family: 'PreviewFontDisplay', sans-serif;">Lowercase and UPPERCASE letters</p>
                         <p style="font-size: 14px; margin: 20px 0; font-family: 'PreviewFontDisplay', sans-serif;">Numbers: 0123456789</p>
                     </div>
+                    ${jsonContextHtml}
                 `;
                 
                 // Load font for preview
@@ -2684,9 +2842,38 @@
             actualFilename = actualFilename.split('?')[0].split('#')[0];
             
             // Display filename in lightbox
+            const lightboxJsonContext = document.getElementById('lightbox-json-context');
             if (filenameDisplay) {
                 filenameDisplay.textContent = actualFilename;
                 filenameDisplay.style.display = 'block';
+            }
+            
+            // Show JSON context if available (when opened from config.json)
+            if (jsonResourceValue && window.findJsonContextForResource && lightboxJsonContext) {
+                const context = window.findJsonContextForResource(jsonResourceValue, 3);
+                if (context) {
+                    const startLineNum = context.lineNumber - context.targetLineIndex;
+                    const contextLinesHtml = context.lines.map((line, idx) => {
+                        const isTargetLine = idx === context.targetLineIndex;
+                        const escapedLine = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        const lineNum = startLineNum + idx;
+                        return `<div onclick="if(window.scrollToJsonLine) window.scrollToJsonLine(${lineNum})" style="display: flex; font-family: 'SF Mono', 'Monaco', monospace; font-size: 0.7rem; line-height: 1.4; cursor: pointer; padding: 2px 0;" onmouseover="this.style.background='#e8f4f8'" onmouseout="this.style.background='transparent'">
+                            <span style="color: #999; margin-right: 8px; min-width: 30px; text-align: right; user-select: none;">${lineNum}</span>
+                            <span style="color: ${isTargetLine ? '#333' : '#999'}; opacity: ${isTargetLine ? '1' : '0.6'}; flex: 1; ${isTargetLine ? 'font-weight: 600;' : ''}">${escapedLine || ' '}</span>
+                        </div>`;
+                    }).join('');
+                    lightboxJsonContext.innerHTML = `
+                        <div style="font-size: 0.75rem; color: #999; margin-bottom: 6px; font-weight: 600;">Defined in config.json (click line to jump):</div>
+                        <div style="max-height: 150px; overflow-y: auto;">
+                            ${contextLinesHtml}
+                        </div>
+                    `;
+                    lightboxJsonContext.style.display = 'block';
+                } else {
+                    lightboxJsonContext.style.display = 'none';
+                }
+            } else {
+                if (lightboxJsonContext) lightboxJsonContext.style.display = 'none';
             }
             
             // Construct GitHub URL using blob/main to view the actual file
@@ -2710,6 +2897,11 @@
             if (lightboxContentWrapper) {
                 lightboxContentWrapper.style.display = 'none';
                 lightboxContentWrapper.innerHTML = '';
+            }
+            const lightboxJsonContext = document.getElementById('lightbox-json-context');
+            if (lightboxJsonContext) {
+                lightboxJsonContext.style.display = 'none';
+                lightboxJsonContext.innerHTML = '';
             }
             if (filenameDisplay) {
                 filenameDisplay.style.display = 'none';
@@ -3278,7 +3470,7 @@
                     return;
                 }
                 
-                // Create carousel items - starting with special/spinal resources first
+                // Create carousel items - starting with spinal resources first
                 // 1. index.html (first)
                 const indexHtmlItem = document.createElement('div');
                 indexHtmlItem.className = 'image-carousel-item';
@@ -3363,7 +3555,7 @@
                         };
                         
                         loadFontPreview().then(() => {
-                            fontItem.onclick = () => openLightbox('font-preview', fontFile, fontUrl, localFontUrl);
+                            fontItem.onclick = () => openLightbox('font-preview', fontFile, null, fontUrl, localFontUrl, imageCache, null, fontFile);
                             fontItem.style.cursor = 'pointer';
                             
                             const thumbnailImg = document.createElement('img');
@@ -3389,7 +3581,8 @@
                 loadedImageData.forEach((imageData) => {
                     const item = document.createElement('div');
                     item.className = 'image-carousel-item';
-                    item.onclick = () => openLightbox(imageData.objectUrl || imageData.url, imageData.filename);
+                    // Pass resource value for JSON context when opened from config.json
+                    item.onclick = () => openLightbox(imageData.objectUrl || imageData.url, imageData.filename, null, null, null, imageCache, null, imageData.filename);
                     item.style.cursor = 'pointer';
                     
                     // Check if image is fully transparent
@@ -3418,27 +3611,6 @@
                     item.appendChild(label);
                     carouselWrapper.appendChild(item);
                 });
-                
-                // 4. Transparent assets summary (if present) - after spinal resources but before regular images
-                if (uniqueTransparentFiles > 0) {
-                    const transparentItem = document.createElement('div');
-                    transparentItem.className = 'image-carousel-item';
-                    transparentItem.onclick = () => openLightbox('transparent-assets', null, uniqueTransparentConfigKeys);
-                    transparentItem.style.cursor = 'pointer';
-                    
-                    // Create a simple thumbnail showing the count
-                    const thumbnailDiv = document.createElement('div');
-                    thumbnailDiv.style.cssText = 'width: 120px; height: 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.9rem; text-align: center; padding: 10px; box-sizing: border-box;';
-                    thumbnailDiv.textContent = `${uniqueTransparentFiles} transparent asset${uniqueTransparentFiles > 1 ? 's' : ''}`;
-                    
-                    const label = document.createElement('div');
-                    label.className = 'image-name';
-                    label.textContent = `Uses ${uniqueTransparentFiles} transparent asset${uniqueTransparentFiles > 1 ? 's' : ''}`;
-                    
-                    transparentItem.appendChild(thumbnailDiv);
-                    transparentItem.appendChild(label);
-                    carouselWrapper.appendChild(transparentItem);
-                }
                 
                 updateCarouselInfo();
                 
