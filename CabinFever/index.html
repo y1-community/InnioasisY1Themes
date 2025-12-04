@@ -3930,6 +3930,31 @@
                             window.configJsonFontFile = fontFile;
                         }
                         
+                        // Build a map of resource values to line numbers in the formatted JSON
+                        // This will be used to sort assets by their appearance order in config.json
+                        window.resourceLineNumbers = new Map();
+                        const formattedJson = JSON.stringify(config, null, 2);
+                        const jsonLines = formattedJson.split('\n');
+                        
+                        // Find line numbers for each resource (images and fonts)
+                        jsonLines.forEach((line, index) => {
+                            const lineNum = index + 1;
+                            // Check for image files
+                            const imageMatch = line.match(/"([^"]*\.(png|jpg|jpeg|gif|svg))"/i);
+                            if (imageMatch) {
+                                const filename = imageMatch[1].split('/').pop();
+                                if (!window.resourceLineNumbers.has(filename)) {
+                                    window.resourceLineNumbers.set(filename, lineNum);
+                                }
+                            }
+                            // Check for font files
+                            if (fontFile && line.includes(fontFile)) {
+                                if (!window.resourceLineNumbers.has(fontFile)) {
+                                    window.resourceLineNumbers.set(fontFile, lineNum);
+                                }
+                            }
+                        });
+                        
                         // Also store createInteractiveJson function if available (it's defined in config.json preview section)
                         // We'll ensure it's available when needed
                     }
@@ -4162,18 +4187,26 @@
                 configImageEntries.forEach(entry => {
                     const cached = imageCache.get(entry.filename);
                     if (cached) {
+                        // Get line number for this asset (from resourceLineNumbers map)
+                        const lineNumber = window.resourceLineNumbers ? window.resourceLineNumbers.get(entry.filename) : 9999;
                         loadedImageData.push({
                             filename: entry.filename,
                             url: cached.url,
                             objectUrl: cached.objectUrl,
                             configKey: entry.configKey,
-                            isTransparent: cached.isTransparent || false
+                            isTransparent: cached.isTransparent || false,
+                            lineNumber: lineNumber || 9999 // Default to end if line number not found
                         });
                     }
                 });
                 
-                // Sort by config key name for consistent display
-                loadedImageData.sort((a, b) => a.configKey.localeCompare(b.configKey));
+                // Sort by line number (JSON appearance order), then by config key name as tiebreaker
+                loadedImageData.sort((a, b) => {
+                    if (a.lineNumber !== b.lineNumber) {
+                        return a.lineNumber - b.lineNumber;
+                    }
+                    return a.configKey.localeCompare(b.configKey);
+                });
                 
                 // Build comprehensive asset list for navigation (includes all assets in order)
                 window.assetNavigation.assets = [];
@@ -4195,17 +4228,20 @@
                     });
                 }
                 
-                // Add font
+                // Add font (third)
                 if (fontFile) {
+                    const fontLineNumber = window.resourceLineNumbers ? window.resourceLineNumbers.get(fontFile) : 9999;
                     window.assetNavigation.assets.push({
                         type: 'font',
                         filename: fontFile,
                         displayName: `fontFamily: ${fontFile}`,
-                        resourceValue: fontFile
+                        resourceValue: fontFile,
+                        lineNumber: fontLineNumber || 9999
                     });
                 }
                 
-                // Add all images (one entry per unique filename, keeping the first config key)
+                // Add all images sorted by line number (JSON appearance order)
+                // One entry per unique filename, keeping the first occurrence's config key and line number
                 const uniqueImageFiles = new Map();
                 loadedImageData.forEach(imageData => {
                     if (!uniqueImageFiles.has(imageData.filename)) {
@@ -4215,11 +4251,20 @@
                             displayName: imageData.configKey,
                             resourceValue: imageData.filename,
                             objectUrl: imageData.objectUrl,
-                            url: imageData.url
+                            url: imageData.url,
+                            lineNumber: imageData.lineNumber
                         });
                     }
                 });
-                window.assetNavigation.assets.push(...Array.from(uniqueImageFiles.values()));
+                
+                // Convert to array and sort by line number
+                const sortedImages = Array.from(uniqueImageFiles.values()).sort((a, b) => {
+                    if (a.lineNumber !== b.lineNumber) {
+                        return a.lineNumber - b.lineNumber;
+                    }
+                    return a.filename.localeCompare(b.filename);
+                });
+                window.assetNavigation.assets.push(...sortedImages);
                 
                 // Collect unique transparent files and their config keys
                 const transparentAssetsList = [];
@@ -4246,7 +4291,10 @@
                 // 1. index.html (first)
                 const indexHtmlItem = document.createElement('div');
                 indexHtmlItem.className = 'image-carousel-item';
-                indexHtmlItem.onclick = () => openLightbox('index-html', null, null);
+                indexHtmlItem.onclick = function(e) {
+                    e.stopPropagation();
+                    openLightbox('index-html', null, null);
+                };
                 indexHtmlItem.style.cursor = 'pointer';
                 
                 // Create HTML icon/preview thumbnail with HTML file symbol
@@ -4271,7 +4319,10 @@
                 if (config) {
                     const configItem = document.createElement('div');
                     configItem.className = 'image-carousel-item';
-                    configItem.onclick = () => openLightbox('config-json', null, config, null, null, imageCache, fontFile);
+                    configItem.onclick = function(e) {
+                        e.stopPropagation();
+                        openLightbox('config-json', null, config, null, null, imageCache, fontFile);
+                    };
                     configItem.style.cursor = 'pointer';
                     
                     // Create JSON icon/preview thumbnail with cog/settings symbol
@@ -4337,7 +4388,10 @@
                         };
                         
                         loadFontPreview().then(() => {
-                            fontItem.onclick = () => openLightbox('font-preview', fontFile, null, fontUrl, localFontUrl, imageCache, null, fontFile);
+                            fontItem.onclick = function(e) {
+                                e.stopPropagation();
+                                openLightbox('font-preview', fontFile, null, fontUrl, localFontUrl, imageCache, null, fontFile);
+                            };
                             fontItem.style.cursor = 'pointer';
                             
                             const thumbnailImg = document.createElement('img');
@@ -4358,17 +4412,24 @@
                     }
                 }
                 
-                // Create carousel items - one for each config key usage
-                // Same image can appear multiple times if used in multiple config keys
-                loadedImageData.forEach((imageData) => {
+                // Create carousel items for images only - in navigation order (sorted by line number)
+                // Special items (index.html, config.json, font) are already added above
+                // Get all image assets from navigation array (excluding special items)
+                const imageAssets = window.assetNavigation.assets.filter(a => a.type === 'image');
+                
+                imageAssets.forEach((asset) => {
                     const item = document.createElement('div');
                     item.className = 'image-carousel-item';
-                    // Pass resource value for JSON context when opened from config.json
-                    item.onclick = () => openLightbox(imageData.objectUrl || imageData.url, imageData.filename, null, null, null, imageCache, null, imageData.filename);
                     item.style.cursor = 'pointer';
                     
+                    item.onclick = function(e) {
+                        e.stopPropagation();
+                        openLightbox(asset.objectUrl || asset.url, asset.filename, null, null, null, imageCache, null, asset.resourceValue || asset.filename);
+                    };
+                    
                     // Check if image is fully transparent
-                    if (imageData.isTransparent) {
+                    const cached = imageCache.get(asset.filename);
+                    if (cached && cached.isTransparent) {
                         // Show transparent indicator instead of image
                         const transparentIndicator = document.createElement('div');
                         transparentIndicator.style.cssText = 'width: 100%; height: 80px; display: flex; align-items: center; justify-content: center; background-image: linear-gradient(45deg, #f0f0f0 25%, transparent 25%), linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f0f0f0 75%), linear-gradient(-45deg, transparent 75%, #f0f0f0 75%); background-size: 12px 12px; background-position: 0 0, 0 6px, 6px -6px, -6px 0px; border-radius: 4px; border: 1px solid #ddd; padding: 4px; box-sizing: border-box;';
@@ -4378,19 +4439,19 @@
                         transparentIndicator.appendChild(transparentLabel);
                         item.appendChild(transparentIndicator);
                     } else {
-                    const img = document.createElement('img');
-                    img.src = imageData.objectUrl || imageData.url;
-                    img.alt = imageData.filename;
-                    img.loading = 'lazy';
+                        const img = document.createElement('img');
+                        img.src = asset.objectUrl || asset.url;
+                        img.alt = asset.filename;
+                        img.loading = 'lazy';
                         item.appendChild(img);
                     }
                     
                     const label = document.createElement('div');
                     label.className = 'image-name';
-                    label.textContent = imageData.configKey;
-                    label.title = imageData.filename; // Show filename on hover
-                    
+                    label.textContent = asset.displayName;
+                    label.title = asset.filename; // Show filename on hover
                     item.appendChild(label);
+                    
                     carouselWrapper.appendChild(item);
                 });
                 
@@ -4433,4 +4494,6 @@
     </script>
     
 </body>
+</html>
+
 </html>
