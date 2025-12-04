@@ -1726,34 +1726,136 @@
                     btn.style.fontFamily = themeFont ? `'${themeFont}', sans-serif` : '';
                 }
 
-                // 2. Get all files from GitHub (recursive - handles subdirectories)
-                async function getAllFilesRecursive(path = folderName, basePath = '') {
-                    const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${path}`;
-                    const response = await fetch(apiUrl);
-                    if (!response.ok) {
-                        console.warn(`Failed to fetch ${path}, trying alternative method`);
-                        return [];
+                                // 2. Get all files from GitHub (recursive - handles subdirectories) with multiple fallbacks
+                async function getAllFilesRecursive(path = folderName, basePath = '', allFilesMap = new Map()) {
+                    // PRIORITY 1: Try GitHub API (recursive)
+                    try {
+                        const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${path}`;
+                        const response = await fetch(apiUrl);
+                        if (response.ok) {
+                            const items = await response.json();
+                            
+                            for (const item of items) {
+                                if (item.type === 'file') {
+                                    const fileName = basePath ? `${basePath}/${item.name}` : item.name;
+                                    if (!allFilesMap.has(fileName)) {
+                                        allFilesMap.set(fileName, {
+                                            name: fileName,
+                                            download_url: item.download_url,
+                                            path: item.path
+                                        });
+                                    }
+                                } else if (item.type === 'dir') {
+                                    // Recursively get files from subdirectories
+                                    const subPath = item.path;
+                                    const subBasePath = basePath ? `${basePath}/${item.name}` : item.name;
+                                    await getAllFilesRecursive(subPath, subBasePath, allFilesMap);
+                                }
+                            }
+                            console.log(`✅ GitHub API found ${allFilesMap.size} files`);
+                        }
+                    } catch (error) {
+                        console.warn(`GitHub API failed for ${path}, trying fallbacks...`, error);
                     }
-                    const items = await response.json();
-                    const allFiles = [];
                     
-                    for (const item of items) {
-                        if (item.type === 'file') {
-                            allFiles.push({
-                                name: basePath ? `${basePath}/${item.name}` : item.name,
-                                download_url: item.download_url,
-                                path: item.path
+                    // PRIORITY 2: HTTPS Directory Listing (only for root folder to avoid recursion issues)
+                    if (path === folderName && basePath === '') {
+                        try {
+                            const dirUrl = `https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/${encodeURIComponent(folderName)}/`;
+                            const dirResponse = await fetch(dirUrl, {
+                                headers: { 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' }
                             });
-                        } else if (item.type === 'dir') {
-                            // Recursively get files from subdirectories
-                            const subPath = item.path;
-                            const subBasePath = basePath ? `${basePath}/${item.name}` : item.name;
-                            const subFiles = await getAllFilesRecursive(subPath, subBasePath);
-                            allFiles.push(...subFiles);
+                            if (dirResponse.ok) {
+                                const html = await dirResponse.text();
+                                // Parse HTML directory listing for file links
+                                const fileMatches = html.match(/href="([^"]+)"[^>]*>([^<]+)<\/a>/g);
+                                if (fileMatches) {
+                                    fileMatches.forEach(match => {
+                                        const hrefMatch = match.match(/href="([^"]+)"/);
+                                        const nameMatch = match.match(/>([^<]+)<\/a>/);
+                                        if (hrefMatch && nameMatch) {
+                                            const fileName = nameMatch[1];
+                                            // Skip directories, parent links, and common non-theme files
+                                            if (!fileName.match(/\/$/) && 
+                                                !['../', './', 'index.html', 'README.md'].includes(fileName) &&
+                                                !fileName.startsWith('.')) {
+                                                if (!allFilesMap.has(fileName)) {
+                                                    allFilesMap.set(fileName, {
+                                                        name: fileName,
+                                                        download_url: `https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/${encodeURIComponent(folderName)}/${encodeURIComponent(fileName)}`,
+                                                        path: `${folderName}/${fileName}`
+                                                    });
+                                                }
+                                            }
+                                        }
+                                    });
+                                    console.log(`✅ HTTPS directory listing found files, total: ${allFilesMap.size}`);
+                                }
+                            }
+                        } catch (error) {
+                            console.warn('HTTPS directory listing failed:', error);
                         }
                     }
                     
-                    return allFiles;
+                    // PRIORITY 3: Parse config.json to extract all referenced files
+                    if (path === folderName && basePath === '') {
+                        try {
+                            const configUrl = `https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/${encodeURIComponent(folderName)}/config.json`;
+                            const configResponse = await fetch(configUrl);
+                            if (configResponse.ok) {
+                                const config = await configResponse.json();
+                                
+                                // Always add config.json
+                                if (!allFilesMap.has('config.json')) {
+                                    allFilesMap.set('config.json', {
+                                        name: 'config.json',
+                                        download_url: configUrl,
+                                        path: `${folderName}/config.json`
+                                    });
+                                }
+                                
+                                // Extract all file references from config.json
+                                function extractFiles(obj, files) {
+                                    if (typeof obj === 'string') {
+                                        // Check if it looks like a file path
+                                        if (obj.match(/\.(png|jpg|jpeg|gif|webp|svg|ttf|otf|json)$/i)) {
+                                            if (!allFilesMap.has(obj)) {
+                                                allFilesMap.set(obj, {
+                                                    name: obj,
+                                                    download_url: `https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/${encodeURIComponent(folderName)}/${encodeURIComponent(obj)}`,
+                                                    path: `${folderName}/${obj}`
+                                                });
+                                            }
+                                        }
+                                    } else if (Array.isArray(obj)) {
+                                        obj.forEach(item => extractFiles(item, files));
+                                    } else if (obj && typeof obj === 'object') {
+                                        Object.values(obj).forEach(value => extractFiles(value, files));
+                                    }
+                                }
+                                
+                                extractFiles(config, allFilesMap);
+                                console.log(`✅ Config.json parsing added files, total: ${allFilesMap.size}`);
+                            }
+                        } catch (error) {
+                            console.warn('Could not parse config.json for file extraction:', error);
+                        }
+                    }
+                    
+                    // PRIORITY 4: Add common theme files as fallback
+                    const commonFiles = ['config.json', 'cover.png', 'screenshot.jpg', 'screenshot.png', 'screenshot.gif'];
+                    commonFiles.forEach(file => {
+                        if (!allFilesMap.has(file)) {
+                            allFilesMap.set(file, {
+                                name: file,
+                                download_url: `https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/${encodeURIComponent(folderName)}/${encodeURIComponent(file)}`,
+                                path: `${folderName}/${file}`
+                            });
+                        }
+                    });
+                    
+                    // Convert Map to Array
+                    return Array.from(allFilesMap.values());
                 }
                 
                 const allFiles = await getAllFilesRecursive();
@@ -1901,34 +2003,136 @@
                 // Create a folder inside the zip with the theme name
                 const themeFolder = zip.folder(folderName);
                 
-                // Get all files from GitHub (recursive - handles subdirectories)
-                async function getAllFilesRecursive(path = folderName, basePath = '') {
-                    const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${path}`;
-                    const response = await fetch(apiUrl);
-                    if (!response.ok) {
-                        console.warn(`Failed to fetch ${path}, trying alternative method`);
-                        return [];
+                                // Get Get all files from GitHub (recursive - handles subdirectories) with multiple fallbacks
+                async function getAllFilesRecursive(path = folderName, basePath = '', allFilesMap = new Map()) {
+                    // PRIORITY 1: Try GitHub API (recursive)
+                    try {
+                        const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${path}`;
+                        const response = await fetch(apiUrl);
+                        if (response.ok) {
+                            const items = await response.json();
+                            
+                            for (const item of items) {
+                                if (item.type === 'file') {
+                                    const fileName = basePath ? `${basePath}/${item.name}` : item.name;
+                                    if (!allFilesMap.has(fileName)) {
+                                        allFilesMap.set(fileName, {
+                                            name: fileName,
+                                            download_url: item.download_url,
+                                            path: item.path
+                                        });
+                                    }
+                                } else if (item.type === 'dir') {
+                                    // Recursively get files from subdirectories
+                                    const subPath = item.path;
+                                    const subBasePath = basePath ? `${basePath}/${item.name}` : item.name;
+                                    await getAllFilesRecursive(subPath, subBasePath, allFilesMap);
+                                }
+                            }
+                            console.log(`✅ GitHub API found ${allFilesMap.size} files`);
+                        }
+                    } catch (error) {
+                        console.warn(`GitHub API failed for ${path}, trying fallbacks...`, error);
                     }
-                    const items = await response.json();
-                    const allFiles = [];
                     
-                    for (const item of items) {
-                        if (item.type === 'file') {
-                            allFiles.push({
-                                name: basePath ? `${basePath}/${item.name}` : item.name,
-                                download_url: item.download_url,
-                                path: item.path
+                    // PRIORITY 2: HTTPS Directory Listing (only for root folder to avoid recursion issues)
+                    if (path === folderName && basePath === '') {
+                        try {
+                            const dirUrl = `https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/${encodeURIComponent(folderName)}/`;
+                            const dirResponse = await fetch(dirUrl, {
+                                headers: { 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' }
                             });
-                        } else if (item.type === 'dir') {
-                            // Recursively get files from subdirectories
-                            const subPath = item.path;
-                            const subBasePath = basePath ? `${basePath}/${item.name}` : item.name;
-                            const subFiles = await getAllFilesRecursive(subPath, subBasePath);
-                            allFiles.push(...subFiles);
+                            if (dirResponse.ok) {
+                                const html = await dirResponse.text();
+                                // Parse HTML directory listing for file links
+                                const fileMatches = html.match(/href="([^"]+)"[^>]*>([^<]+)<\/a>/g);
+                                if (fileMatches) {
+                                    fileMatches.forEach(match => {
+                                        const hrefMatch = match.match(/href="([^"]+)"/);
+                                        const nameMatch = match.match(/>([^<]+)<\/a>/);
+                                        if (hrefMatch && nameMatch) {
+                                            const fileName = nameMatch[1];
+                                            // Skip directories, parent links, and common non-theme files
+                                            if (!fileName.match(/\/$/) && 
+                                                !['../', './', 'index.html', 'README.md'].includes(fileName) &&
+                                                !fileName.startsWith('.')) {
+                                                if (!allFilesMap.has(fileName)) {
+                                                    allFilesMap.set(fileName, {
+                                                        name: fileName,
+                                                        download_url: `https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/${encodeURIComponent(folderName)}/${encodeURIComponent(fileName)}`,
+                                                        path: `${folderName}/${fileName}`
+                                                    });
+                                                }
+                                            }
+                                        }
+                                    });
+                                    console.log(`✅ HTTPS directory listing found files, total: ${allFilesMap.size}`);
+                                }
+                            }
+                        } catch (error) {
+                            console.warn('HTTPS directory listing failed:', error);
                         }
                     }
                     
-                    return allFiles;
+                    // PRIORITY 3: Parse config.json to extract all referenced files
+                    if (path === folderName && basePath === '') {
+                        try {
+                            const configUrl = `https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/${encodeURIComponent(folderName)}/config.json`;
+                            const configResponse = await fetch(configUrl);
+                            if (configResponse.ok) {
+                                const config = await configResponse.json();
+                                
+                                // Always add config.json
+                                if (!allFilesMap.has('config.json')) {
+                                    allFilesMap.set('config.json', {
+                                        name: 'config.json',
+                                        download_url: configUrl,
+                                        path: `${folderName}/config.json`
+                                    });
+                                }
+                                
+                                // Extract all file references from config.json
+                                function extractFiles(obj, files) {
+                                    if (typeof obj === 'string') {
+                                        // Check if it looks like a file path
+                                        if (obj.match(/\.(png|jpg|jpeg|gif|webp|svg|ttf|otf|json)$/i)) {
+                                            if (!allFilesMap.has(obj)) {
+                                                allFilesMap.set(obj, {
+                                                    name: obj,
+                                                    download_url: `https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/${encodeURIComponent(folderName)}/${encodeURIComponent(obj)}`,
+                                                    path: `${folderName}/${obj}`
+                                                });
+                                            }
+                                        }
+                                    } else if (Array.isArray(obj)) {
+                                        obj.forEach(item => extractFiles(item, files));
+                                    } else if (obj && typeof obj === 'object') {
+                                        Object.values(obj).forEach(value => extractFiles(value, files));
+                                    }
+                                }
+                                
+                                extractFiles(config, allFilesMap);
+                                console.log(`✅ Config.json parsing added files, total: ${allFilesMap.size}`);
+                            }
+                        } catch (error) {
+                            console.warn('Could not parse config.json for file extraction:', error);
+                        }
+                    }
+                    
+                    // PRIORITY 4: Add common theme files as fallback
+                    const commonFiles = ['config.json', 'cover.png', 'screenshot.jpg', 'screenshot.png', 'screenshot.gif'];
+                    commonFiles.forEach(file => {
+                        if (!allFilesMap.has(file)) {
+                            allFilesMap.set(file, {
+                                name: file,
+                                download_url: `https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/${encodeURIComponent(folderName)}/${encodeURIComponent(file)}`,
+                                path: `${folderName}/${file}`
+                            });
+                        }
+                    });
+                    
+                    // Convert Map to Array
+                    return Array.from(allFilesMap.values());
                 }
                 
                 const allFiles = await getAllFilesRecursive();
