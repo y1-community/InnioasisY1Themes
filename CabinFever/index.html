@@ -2711,7 +2711,16 @@
                     const fontFileData = window.configJsonFontFile || null;
                     const fullJsonResult = window.createInteractiveJson(configData, imgCache, fontFileData, 0, '', 1);
                     const fullJsonHtml = fullJsonResult.html;
-                    const totalLines = fullJsonHtml.split('\n').length;
+                    // Count actual JSON lines by extracting max line number from data-line attributes
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = fullJsonHtml;
+                    const jsonLineElements = tempDiv.querySelectorAll('.json-line');
+                    let maxLineNumber = 0;
+                    jsonLineElements.forEach(el => {
+                        const lineNum = parseInt(el.getAttribute('data-line')) || 0;
+                        if (lineNum > maxLineNumber) maxLineNumber = lineNum;
+                    });
+                    const totalLines = maxLineNumber > 0 ? maxLineNumber : fullJsonHtml.split('\n').length;
                     const uniqueId = 'transparent-json-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
                     
                     // Find line number for this config key
@@ -3787,7 +3796,18 @@
                 const fontFileData = window.configJsonFontFile || null;
                 const fullJsonResult = window.createInteractiveJson(configData, imgCache, fontFileData, 0, '', 1);
                 const fullJsonHtml = fullJsonResult.html;
-                const totalLines = fullJsonHtml.split('\n').length;
+                // Count actual JSON lines by extracting max line number from data-line attributes
+                // Create a temporary div to parse the HTML and count lines
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = fullJsonHtml;
+                const jsonLineElements = tempDiv.querySelectorAll('.json-line');
+                let maxLineNumber = 0;
+                jsonLineElements.forEach(el => {
+                    const lineNum = parseInt(el.getAttribute('data-line')) || 0;
+                    if (lineNum > maxLineNumber) maxLineNumber = lineNum;
+                });
+                // Use the max line number from data-line attributes, or fallback to split count
+                const totalLines = maxLineNumber > 0 ? maxLineNumber : fullJsonHtml.split('\n').length;
                 const uniqueId = 'image-json-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
                 
                 // Find the correct line number for this resource using config key (primary) or filename
@@ -3878,9 +3898,45 @@
                                         const resourceValue = resource.getAttribute('data-resource-value');
                                         const resourceFilename = resource.getAttribute('data-resource-filename') || resourceValue.split('/').pop();
                                         
+                                        // Extract config key from the line structure
+                                        let configKey = null;
+                                        const lineText = line.textContent || '';
+                                        const keyMatch = lineText.match(/"([^"]+)":\s*"[^"]*"/);
+                                        if (keyMatch) {
+                                            // Build full path by traversing up to parent lines
+                                            const parentKeys = [];
+                                            let currentLineEl = line.previousElementSibling;
+                                            let depth = 0;
+                                            // Traverse up to find parent object keys (max 5 levels deep)
+                                            while (currentLineEl && depth < 5 && parentKeys.length < 5) {
+                                                if (currentLineEl.classList && currentLineEl.classList.contains('json-line')) {
+                                                    const parentText = currentLineEl.textContent || '';
+                                                    const parentKeyMatch = parentText.match(/"([^"]+)":/);
+                                                    if (parentKeyMatch && !parentText.includes('{') && !parentText.includes('[')) {
+                                                        parentKeys.unshift(parentKeyMatch[1]);
+                                                    }
+                                                }
+                                                currentLineEl = currentLineEl.previousElementSibling;
+                                                depth++;
+                                            }
+                                            if (parentKeys.length > 0) {
+                                                configKey = parentKeys.join('.') + '.' + keyMatch[1];
+                                            } else {
+                                                configKey = keyMatch[1];
+                                            }
+                                        }
+                                        
                                         // Find and set asset index BEFORE opening lightbox to sync navigation
                                         if (window.assetNavigation && window.assetNavigation.assets) {
-                                            const assetIndex = findAssetIndex(resourceFilename, resourceValue, resourceValue);
+                                            let assetIndex = -1;
+                                            // Try to find by config key first (handles multiple instances)
+                                            if (configKey) {
+                                                assetIndex = window.assetNavigation.assets.findIndex(a => a.configKey === configKey);
+                                            }
+                                            // Fallback to filename matching
+                                            if (assetIndex < 0) {
+                                                assetIndex = findAssetIndex(resourceFilename, resourceValue, resourceValue);
+                                            }
                                             if (assetIndex >= 0) {
                                                 window.assetNavigation.currentIndex = assetIndex;
                                             }
@@ -3899,6 +3955,12 @@
                                             const localFontUrl = getLocalUrl(resourceValue);
                                             openLightbox('font-preview', resourceValue, null, fontUrl, localFontUrl, imgCache, null, resourceValue);
                                         }
+                                    } else {
+                                        // Line doesn't contain a resource, just highlight it
+                                        line.style.background = 'rgba(102, 126, 234, 0.1)';
+                                        setTimeout(() => {
+                                            line.style.background = '';
+                                        }, 1000);
                                     }
                                 };
                             }
@@ -4855,13 +4917,21 @@
                     });
                 }
                 
+                // Helper function to extract just the item name from config key
+                // e.g., "homePageConfig.bluetooth" -> "bluetooth"
+                const extractItemName = (configKey) => {
+                    if (!configKey) return configKey;
+                    const parts = configKey.split('.');
+                    return parts[parts.length - 1]; // Return last part after the dot
+                };
+                
                 // Add all images (includes themeCover and other images)
                 const imageAssets = loadedImageData.map(imageData => ({
                     type: 'image',
                     filename: imageData.filename,
-                    displayName: imageData.configKey, // Use config key as display name
+                    displayName: extractItemName(imageData.configKey), // Extract just item name
                     resourceValue: imageData.filename,
-                    configKey: imageData.configKey, // Store config key for line finding
+                    configKey: imageData.configKey, // Store full config key for line finding
                     objectUrl: imageData.objectUrl,
                     url: imageData.url,
                     lineNumber: imageData.lineNumber
@@ -5140,8 +5210,13 @@
                     
                     const label = document.createElement('div');
                     label.className = 'image-name';
-                    label.textContent = asset.displayName;
-                    label.title = asset.filename; // Show filename on hover
+                    // Show item name and line number if available
+                    let labelText = asset.displayName || asset.filename;
+                    if (asset.lineNumber && asset.lineNumber !== 9999) {
+                        labelText = `${labelText} (L${asset.lineNumber})`;
+                    }
+                    label.textContent = labelText;
+                    label.title = asset.filename + (asset.configKey ? ` (${asset.configKey})` : ''); // Show filename and config key on hover
                     item.appendChild(label);
                     
                     carouselWrapper.appendChild(item);
