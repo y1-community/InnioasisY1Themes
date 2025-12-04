@@ -1866,54 +1866,7 @@
                 let processed = 0;
                 const total = allFiles.length;
 
-                // 4. Download and write each file (handles nested paths)
-                // Show progress inside button
-                updateButtonText(btn, `⏳ Downloading 0/${total}...`);
-                if (fontStyle) {
-                    btn.style.fontFamily = themeFont ? `'${themeFont}', sans-serif` : '';
-                }
-                
-                for (const file of allFiles) {
-                    processed++;
-                    updateButtonText(btn, `⏳ Downloading ${processed}/${total}...`);
-                    if (fontStyle) {
-                        btn.style.fontFamily = themeFont ? `'${themeFont}', sans-serif` : '';
-                    }
-                    
-                    let blob;
-                    
-                    // Check cache first (images loaded in gallery are already cached)
-                    const cachedFile = fileCache.get(fileName);
-                    if (cachedFile) {
-                        blob = cachedFile.blob;
-                        console.log(`✅ Using cached file: ${fileName}`);
-                    } else {
-                        // Fetch from network if not cached
-                        const fileResponse = await fetch(file.download_url);
-                        if (!fileResponse.ok) {
-                            console.warn(`Failed to fetch ${file.name}, skipping...`);
-                            continue;
-                        }
-                        blob = await fileResponse.blob();
-                        
-                        // Cache it for future use
-                        const arrayBuffer = await blob.arrayBuffer();
-                        fileCache.set(fileName, {
-                            blob: blob,
-                            arrayBuffer: arrayBuffer,
-                            url: file.download_url
-                        });
-                    }
-                    
-                }
-                
-                // 5. Now install files to device
-                processed = 0;
-                updateButtonText(btn, `⏳ Installing 0/${total}...`);
-                if (fontStyle) {
-                    btn.style.fontFamily = themeFont ? `'${themeFont}', sans-serif` : '';
-                }
-                
+                // 4. Install files to device (1:1 copy, overwriting existing files)
                 for (const file of allFiles) {
                     processed++;
                     updateButtonText(btn, `⏳ Installing ${processed}/${total}...`);
@@ -1932,27 +1885,37 @@
                     
                     const finalFileName = pathParts[pathParts.length - 1];
                     
-                    // Get blob from cache or fetch
+                    // Fetch file content
                     let blob;
                     const cachedFile = fileCache.get(finalFileName);
                     if (cachedFile) {
                         blob = cachedFile.blob;
+                        console.log(`✅ Using cached file: ${finalFileName}`);
                     } else {
-                        // Shouldn't happen if we downloaded above, but fallback
+                        // Fetch from network
                         const fileResponse = await fetch(file.download_url);
                         if (!fileResponse.ok) {
                             console.warn(`Failed to fetch ${file.name}, skipping...`);
                             continue;
                         }
                         blob = await fileResponse.blob();
+                        
+                        // Cache it for future use
+                        const arrayBuffer = await blob.arrayBuffer();
+                        fileCache.set(finalFileName, {
+                            blob: blob,
+                            arrayBuffer: arrayBuffer,
+                            url: file.download_url
+                        });
                     }
                     
-                    // Write to device
+                    // Write to device (overwrites existing files)
                     const fileHandle = await currentDir.getFileHandle(finalFileName, { create: true });
                     const writable = await fileHandle.createWritable();
                     await writable.write(blob);
                     await writable.close();
                     
+                    console.log(`✅ Installed ${file.name} (${processed}/${total})`);
                 }
 
                 updateButtonText(btn, '✅ Installed!');
