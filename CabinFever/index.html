@@ -2297,7 +2297,7 @@
         }
 
         // Lightbox functions
-        function openLightbox(imgSrc, filename = null, extraData = null, fontUrl = null, localFontUrl = null) {
+        function openLightbox(imgSrc, filename = null, extraData = null, fontUrl = null, localFontUrl = null, imageCache = null, fontFileData = null) {
             const lightbox = document.getElementById('lightbox');
             const lightboxImg = document.getElementById('lightbox-img');
             const lightboxContentWrapper = document.getElementById('lightbox-content-wrapper');
@@ -2325,15 +2325,277 @@
                 return;
             }
             
-            if (imgSrc === 'config-json' && extraData) {
-                // Show formatted config.json
+            if (imgSrc === 'index-html') {
+                // Show index.html explainer
                 lightboxImg.style.display = 'none';
                 lightboxContentWrapper.style.display = 'block';
-                const formattedJson = JSON.stringify(extraData, null, 2);
+                lightboxContentWrapper.innerHTML = `
+                    <h3 style="margin-top: 0; color: #667eea; margin-bottom: 20px;">index.html Template</h3>
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea; margin-bottom: 20px;">
+                        <p style="margin: 0 0 15px 0; line-height: 1.6; color: #333;">
+                            This <code style="background: rgba(102, 126, 234, 0.1); padding: 2px 6px; border-radius: 3px; font-family: monospace;">index.html</code> file can be downloaded and placed in your own theme folder.
+                        </p>
+                        <p style="margin: 0 0 15px 0; line-height: 1.6; color: #333;">
+                            When you upload your theme to the <strong>GitHub Innioasis Y1 Themes Repository</strong>, this file will automatically create a dedicated page for your theme on <strong>themes.innioasis.app</strong>.
+                        </p>
+                        <p style="margin: 0; line-height: 1.6; color: #333;">
+                            The page will automatically display your theme information, screenshots, and assets from your <code style="background: rgba(102, 126, 234, 0.1); padding: 2px 6px; border-radius: 3px; font-family: monospace;">config.json</code> file.
+                        </p>
+                    </div>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <a href="${getGitHubRawUrl('index.html')}" download="index.html" target="_blank" style="display: inline-block; background: #667eea; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; margin-right: 10px;">📥 Download index.html</a>
+                        <a href="https://themes.innioasis.app/theme_html/" target="_blank" style="display: inline-block; color: #667eea; text-decoration: underline; padding: 12px 0;">Learn more →</a>
+                    </div>
+                `;
+                filenameDisplay.textContent = 'index.html';
+                filenameDisplay.style.display = 'block';
+                const githubUrl = `https://github.com/y1-community/InnioasisY1Themes/blob/main/${encodeURIComponent(folderName)}/index.html`;
+                editBtn.href = githubUrl;
+                editBtn.style.display = 'inline-flex';
+                lightbox.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                return;
+            }
+            
+            if (imgSrc === 'config-json' && extraData) {
+                // Show formatted config.json with interactive previews
+                lightboxImg.style.display = 'none';
+                lightboxContentWrapper.style.display = 'block';
+                
+                // Create interactive JSON viewer
+                const createInteractiveJson = (obj, imageCache, fontFileData, indent = 0) => {
+                    let html = '';
+                    const indentStr = '  '.repeat(indent);
+                    
+                    const escapeHtml = (str) => {
+                        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                    };
+                    
+                    const escapeJs = (str) => {
+                        return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r');
+                    };
+                    
+                    if (Array.isArray(obj)) {
+                        html += '[\n';
+                        obj.forEach((item, index) => {
+                            html += indentStr + '  ';
+                            if (typeof item === 'object' && item !== null) {
+                                html += createInteractiveJson(item, imageCache, fontFileData, indent + 1);
+                            } else {
+                                html += JSON.stringify(item);
+                            }
+                            if (index < obj.length - 1) html += ',';
+                            html += '\n';
+                        });
+                        html += indentStr + ']';
+                    } else if (typeof obj === 'object' && obj !== null) {
+                        html += '{\n';
+                        const keys = Object.keys(obj);
+                        keys.forEach((key, index) => {
+                            const value = obj[key];
+                            html += indentStr + '  ';
+                            html += `<span style="color: #f92672;">"${escapeHtml(key)}"</span>: `;
+                            
+                            if (typeof value === 'string') {
+                                const escapedValue = escapeHtml(value);
+                                const jsEscapedValue = escapeJs(value);
+                                
+                                // Check if it's an image file
+                                if (/\.(png|jpg|jpeg|gif|svg)$/i.test(value)) {
+                                    const filename = value.split('/').pop();
+                                    const escapedFilename = escapeHtml(filename);
+                                    const jsEscapedFilename = escapeJs(filename);
+                                    html += `<span class="json-resource" data-resource-type="image" data-resource-value="${escapedValue}" data-resource-filename="${escapedFilename}" style="color: #a6e22e; cursor: pointer; text-decoration: underline; position: relative;" onmouseover="showResourcePreview(event, 'image', '${jsEscapedValue}', '${jsEscapedFilename}')" onmouseout="hideResourcePreview()" onclick="event.stopPropagation(); openResourcePreview('image', '${jsEscapedValue}', '${jsEscapedFilename}')">"${escapedValue}"</span>`;
+                                }
+                                // Check if it's a font file
+                                else if (/\.(ttf|otf|woff|woff2)$/i.test(value) || (key === 'fontFamily' && value)) {
+                                    html += `<span class="json-resource" data-resource-type="font" data-resource-value="${escapedValue}" style="color: #a6e22e; cursor: pointer; text-decoration: underline;" onmouseover="showResourcePreview(event, 'font', '${jsEscapedValue}')" onmouseout="hideResourcePreview()" onclick="event.stopPropagation(); openResourcePreview('font', '${jsEscapedValue}')">"${escapedValue}"</span>`;
+                                }
+                                // Regular string
+                                else {
+                                    html += `<span style="color: #e6db74;">"${escapedValue}"</span>`;
+                                }
+                            } else if (typeof value === 'object' && value !== null) {
+                                html += createInteractiveJson(value, imageCache, fontFileData, indent + 1);
+                            } else {
+                                html += `<span style="color: #ae81ff;">${JSON.stringify(value)}</span>`;
+                            }
+                            
+                            if (index < keys.length - 1) html += ',';
+                            html += '\n';
+                        });
+                        html += indentStr + '}';
+                    } else {
+                        html += JSON.stringify(obj);
+                    }
+                    
+                    return html;
+                };
+                
+                // Store formatted JSON with line numbers for context lookup
+                const formattedJsonLines = JSON.stringify(extraData, null, 2).split('\n');
+                const resourceContextMap = new Map(); // Map resource value to JSON path/context
+                
+                // Build resource context map
+                const buildResourceContext = (obj, path = '') => {
+                    for (const [key, value] of Object.entries(obj)) {
+                        const currentPath = path ? `${path}.${key}` : key;
+                        if (typeof value === 'string') {
+                            if (/\.(png|jpg|jpeg|gif|svg|ttf|otf|woff|woff2)$/i.test(value) || (key === 'fontFamily' && value)) {
+                                resourceContextMap.set(value, currentPath);
+                            }
+                        } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                            buildResourceContext(value, currentPath);
+                        }
+                    }
+                };
+                buildResourceContext(extraData);
+                
+                const interactiveJson = createInteractiveJson(extraData, imageCache, fontFileData);
+                
+                // Helper to find JSON context lines for a resource
+                const findJsonContext = (resourceValue, contextLines = 3) => {
+                    const escapedValue = JSON.stringify(resourceValue);
+                    const lines = formattedJsonLines;
+                    let targetLineIndex = -1;
+                    
+                    // Find the line containing this resource
+                    for (let i = 0; i < lines.length; i++) {
+                        if (lines[i].includes(resourceValue)) {
+                            targetLineIndex = i;
+                            break;
+                        }
+                    }
+                    
+                    if (targetLineIndex === -1) return null;
+                    
+                    const start = Math.max(0, targetLineIndex - contextLines);
+                    const end = Math.min(lines.length, targetLineIndex + contextLines + 1);
+                    const context = lines.slice(start, end);
+                    const targetRelativeIndex = targetLineIndex - start;
+                    
+                    return {
+                        lines: context,
+                        targetLineIndex: targetRelativeIndex,
+                        lineNumber: targetLineIndex + 1
+                    };
+                };
+                
                 lightboxContentWrapper.innerHTML = `
                     <h3 style="margin-top: 0; color: #667eea; margin-bottom: 20px;">config.json</h3>
-                    <pre style="background: #2d2d2d; color: #f8f8f2; padding: 20px; border-radius: 4px; overflow-x: auto; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.85rem; line-height: 1.5; margin: 0; max-height: 60vh; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word;"><code>${formattedJson.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
+                    <p style="color: #666; margin-bottom: 15px; font-size: 0.9rem;">Hover or tap on image filenames and font names to preview them.</p>
+                    <div id="resource-preview-popup" style="display: none; position: fixed; z-index: 1003; background: white; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); padding: 15px; max-width: 350px; pointer-events: none;"></div>
+                    <pre style="background: #2d2d2d; color: #f8f8f2; padding: 20px; border-radius: 4px; overflow-x: auto; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.85rem; line-height: 1.5; margin: 0; max-height: 60vh; overflow-y: auto; white-space: pre; word-wrap: normal; position: relative;"><code>${interactiveJson}</code></pre>
                 `;
+                
+                // Add preview functions to window
+                window.showResourcePreview = function(event, type, value, filename) {
+                    const popup = document.getElementById('resource-preview-popup');
+                    if (!popup) return;
+                    
+                    const rect = event.target.getBoundingClientRect();
+                    let popupLeft = rect.right + 10;
+                    let popupTop = rect.top - 10;
+                    
+                    // Adjust if popup would go off screen
+                    if (popupLeft + 350 > window.innerWidth) {
+                        popupLeft = rect.left - 360;
+                    }
+                    if (popupTop < 0) {
+                        popupTop = 10;
+                    }
+                    
+                    popup.style.left = popupLeft + 'px';
+                    popup.style.top = popupTop + 'px';
+                    
+                    // Find JSON context
+                    const context = findJsonContext(value, 2);
+                    let contextHtml = '';
+                    if (context) {
+                        const contextLinesHtml = context.lines.map((line, idx) => {
+                            const isTargetLine = idx === context.targetLineIndex;
+                            const escapedLine = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                            return `<div style="font-family: 'SF Mono', 'Monaco', monospace; font-size: 0.7rem; color: ${isTargetLine ? '#333' : '#999'}; opacity: ${isTargetLine ? '1' : '0.6'}; line-height: 1.4;">${escapedLine || ' '}</div>`;
+                        }).join('');
+                        contextHtml = `
+                            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #eee;">
+                                <div style="font-size: 0.7rem; color: #999; margin-bottom: 6px; font-weight: 600;">JSON Context:</div>
+                                <div style="background: #f8f9fa; padding: 8px; border-radius: 4px; max-height: 120px; overflow-y: auto;">
+                                    ${contextLinesHtml}
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    if (type === 'image') {
+                        const displayFilename = filename || value.split('/').pop();
+                        const cached = imageCache ? imageCache.get(displayFilename) : null;
+                        if (cached && cached.objectUrl) {
+                            popup.innerHTML = `
+                                <div style="font-size: 0.75rem; color: #333; margin-bottom: 8px; font-family: monospace; text-align: center; font-weight: 600;">${displayFilename}</div>
+                                <img src="${cached.objectUrl}" style="max-width: 280px; max-height: 200px; border-radius: 4px; display: block; margin: 0 auto;" alt="${displayFilename}">
+                                ${contextHtml}
+                            `;
+                        } else {
+                            const githubUrl = getGitHubRawUrl(displayFilename);
+                            popup.innerHTML = `
+                                <div style="font-size: 0.75rem; color: #333; margin-bottom: 8px; font-family: monospace; text-align: center; font-weight: 600;">${displayFilename}</div>
+                                <img src="${githubUrl}" style="max-width: 280px; max-height: 200px; border-radius: 4px; display: block; margin: 0 auto;" alt="${displayFilename}" onerror="this.parentElement.innerHTML='<div style=\\'padding: 20px; text-align: center; color: #999;\\'>Image not available</div><div style=\\'font-size: 0.75rem; color: #999; margin-top: 8px; font-family: monospace; text-align: center;\\'>${displayFilename}</div>${contextHtml}'">
+                                ${contextHtml}
+                            `;
+                        }
+                    } else if (type === 'font') {
+                        const fontFilename = value.split('/').pop();
+                        popup.innerHTML = `
+                            <div style="font-size: 0.75rem; color: #333; margin-bottom: 12px; font-family: monospace; text-align: center; font-weight: 600;">${fontFilename}</div>
+                            <div style="padding: 10px; text-align: center; background: #f8f9fa; border-radius: 4px;">
+                                <div style="font-size: 24px; font-family: 'PreviewFontPopup', sans-serif; margin-bottom: 10px;">AaBbCc 123</div>
+                            </div>
+                            ${contextHtml}
+                        `;
+                        // Try to load font
+                        (async () => {
+                            try {
+                                const fontUrl = getGitHubRawUrl(value);
+                                const fontFace = new FontFace('PreviewFontPopup', `url(${fontUrl})`);
+                                await fontFace.load();
+                                document.fonts.add(fontFace);
+                            } catch (e) {
+                                // Font load failed, ignore
+                            }
+                        })();
+                    }
+                    
+                    popup.style.display = 'block';
+                };
+                
+                window.hideResourcePreview = function() {
+                    const popup = document.getElementById('resource-preview-popup');
+                    if (popup) popup.style.display = 'none';
+                };
+                
+                window.openResourcePreview = function(type, value, filename) {
+                    if (type === 'image') {
+                        const cached = imageCache ? imageCache.get(filename) : null;
+                        if (cached && cached.objectUrl) {
+                            openLightbox(cached.objectUrl, filename);
+                        } else {
+                            const githubUrl = getGitHubRawUrl(filename);
+                            openLightbox(githubUrl, filename);
+                        }
+                    } else if (type === 'font') {
+                        const fontUrl = getGitHubRawUrl(value);
+                        const localFontUrl = getLocalUrl(value);
+                        openLightbox('font-preview', value, null, fontUrl, localFontUrl);
+                    }
+                };
+                
+                // Store context finder for use in full previews
+                window.findJsonContextForResource = function(resourceValue, contextLines = 3) {
+                    return findJsonContext(resourceValue, contextLines);
+                };
+                window.formattedJsonLinesForContext = formattedJsonLines;
+                
                 filenameDisplay.textContent = 'config.json';
                 filenameDisplay.style.display = 'block';
                 const githubUrl = `https://github.com/y1-community/InnioasisY1Themes/blob/main/${encodeURIComponent(folderName)}/config.json`;
@@ -2345,9 +2607,31 @@
             }
             
             if (imgSrc === 'font-preview' && filename && fontUrl) {
-                // Show font preview
+                // Show font preview with JSON context if available
                 lightboxImg.style.display = 'none';
                 lightboxContentWrapper.style.display = 'block';
+                
+                // Try to get JSON context if available
+                let jsonContextHtml = '';
+                if (window.findJsonContextForResource) {
+                    const context = window.findJsonContextForResource(filename, 3);
+                    if (context) {
+                        const contextLinesHtml = context.lines.map((line, idx) => {
+                            const isTargetLine = idx === context.targetLineIndex;
+                            const escapedLine = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                            return `<div style="font-family: 'SF Mono', 'Monaco', monospace; font-size: 0.75rem; color: ${isTargetLine ? '#333' : '#999'}; opacity: ${isTargetLine ? '1' : '0.6'}; line-height: 1.4;">${escapedLine || ' '}</div>`;
+                        }).join('');
+                        jsonContextHtml = `
+                            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+                                <div style="font-size: 0.8rem; color: #999; margin-bottom: 8px; font-weight: 600;">Defined in config.json:</div>
+                                <div style="background: #f8f9fa; padding: 12px; border-radius: 4px; max-height: 150px; overflow-y: auto;">
+                                    ${contextLinesHtml}
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+                
                 lightboxContentWrapper.innerHTML = `
                     <h3 style="margin-top: 0; color: #667eea; margin-bottom: 20px;">Font Preview: ${filename}</h3>
                     <div id="font-preview-container" style="background: white; padding: 30px; border-radius: 4px; border: 1px solid #ddd;">
@@ -2357,6 +2641,7 @@
                         <p style="font-size: 18px; margin: 20px 0; font-family: 'PreviewFontDisplay', sans-serif;">Lowercase and UPPERCASE letters</p>
                         <p style="font-size: 14px; margin: 20px 0; font-family: 'PreviewFontDisplay', sans-serif;">Numbers: 0123456789</p>
                     </div>
+                    ${jsonContextHtml}
                 `;
                 
                 // Load font for preview
@@ -3016,28 +3301,48 @@
                     return;
                 }
                 
-                // Create carousel items - starting with transparent assets summary if present
-                if (uniqueTransparentFiles > 0) {
-                    const transparentItem = document.createElement('div');
-                    transparentItem.className = 'image-carousel-item';
-                    transparentItem.onclick = () => openLightbox('transparent-assets', null, uniqueTransparentConfigKeys);
-                    transparentItem.style.cursor = 'pointer';
+                // Create carousel items - starting with spinal resources first
+                // 1. index.html (first)
+                const indexHtmlItem = document.createElement('div');
+                indexHtmlItem.className = 'image-carousel-item';
+                indexHtmlItem.onclick = () => openLightbox('index-html', null, null);
+                indexHtmlItem.style.cursor = 'pointer';
+                
+                // Create HTML icon/preview thumbnail
+                const htmlThumbnailDiv = document.createElement('div');
+                htmlThumbnailDiv.style.cssText = 'width: 120px; height: 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-family: monospace; font-size: 0.7rem; text-align: center; padding: 10px; box-sizing: border-box;';
+                htmlThumbnailDiv.innerHTML = '&lt;html&gt;<br/>&nbsp;&nbsp;...<br/>&lt;/html&gt;';
+                
+                const htmlLabel = document.createElement('div');
+                htmlLabel.className = 'image-name';
+                htmlLabel.textContent = 'index.html';
+                
+                indexHtmlItem.appendChild(htmlThumbnailDiv);
+                indexHtmlItem.appendChild(htmlLabel);
+                carouselWrapper.appendChild(indexHtmlItem);
+                
+                // 2. config.json (second)
+                if (config) {
+                    const configItem = document.createElement('div');
+                    configItem.className = 'image-carousel-item';
+                    configItem.onclick = () => openLightbox('config-json', null, config, imageCache, fontFile);
+                    configItem.style.cursor = 'pointer';
                     
-                    // Create a simple thumbnail showing the count
+                    // Create JSON icon/preview thumbnail
                     const thumbnailDiv = document.createElement('div');
-                    thumbnailDiv.style.cssText = 'width: 120px; height: 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.9rem; text-align: center; padding: 10px; box-sizing: border-box;';
-                    thumbnailDiv.textContent = `${uniqueTransparentFiles} transparent asset${uniqueTransparentFiles > 1 ? 's' : ''}`;
+                    thumbnailDiv.style.cssText = 'width: 120px; height: 80px; background: #2d2d2d; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #f8f8f2; font-family: monospace; font-size: 0.7rem; text-align: center; padding: 10px; box-sizing: border-box; border: 2px solid #555;';
+                    thumbnailDiv.innerHTML = '{<br/>&nbsp;&nbsp;...<br/>}';
                     
                     const label = document.createElement('div');
                     label.className = 'image-name';
-                    label.textContent = `Uses ${uniqueTransparentFiles} transparent asset${uniqueTransparentFiles > 1 ? 's' : ''}`;
+                    label.textContent = 'config.json';
                     
-                    transparentItem.appendChild(thumbnailDiv);
-                    transparentItem.appendChild(label);
-                    carouselWrapper.appendChild(transparentItem);
+                    configItem.appendChild(thumbnailDiv);
+                    configItem.appendChild(label);
+                    carouselWrapper.appendChild(configItem);
                 }
                 
-                // Add font asset if present
+                // 3. fontFamily (third)
                 if (fontFile) {
                     // Load font and create preview thumbnail
                     try {
@@ -3136,27 +3441,6 @@
                     item.appendChild(label);
                     carouselWrapper.appendChild(item);
                 });
-                
-                // Add config.json as last asset item
-                if (config) {
-                    const configItem = document.createElement('div');
-                    configItem.className = 'image-carousel-item';
-                    configItem.onclick = () => openLightbox('config-json', null, config);
-                    configItem.style.cursor = 'pointer';
-                    
-                    // Create JSON icon/preview thumbnail
-                    const thumbnailDiv = document.createElement('div');
-                    thumbnailDiv.style.cssText = 'width: 120px; height: 80px; background: #2d2d2d; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #f8f8f2; font-family: monospace; font-size: 0.7rem; text-align: center; padding: 10px; box-sizing: border-box; border: 2px solid #555;';
-                    thumbnailDiv.innerHTML = '{<br/>&nbsp;&nbsp;...<br/>}';
-                    
-                    const label = document.createElement('div');
-                    label.className = 'image-name';
-                    label.textContent = 'config.json';
-                    
-                    configItem.appendChild(thumbnailDiv);
-                    configItem.appendChild(label);
-                    carouselWrapper.appendChild(configItem);
-                }
                 
                 updateCarouselInfo();
                 
