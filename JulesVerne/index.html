@@ -2518,7 +2518,26 @@
                                 }
                                 // Regular string - highlight if theme info
                                 else {
-                                    html += `<span style="color: ${isThemeInfo ? '#667eea' : '#e6db74'}; font-weight: ${isThemeInfo ? '600' : 'normal'};">"${escapedValue}"</span>`;
+                                    let tooltipText = '';
+                                    if (isThemeInfo) {
+                                        if (key === 'title' || currentPath.includes('title')) {
+                                            tooltipText = 'Theme title displayed on the theme page';
+                                        } else if (key === 'author' || currentPath.includes('author')) {
+                                            tooltipText = 'Theme author name displayed on the theme page';
+                                        } else if (key === 'authorUrl' || currentPath.includes('authorUrl')) {
+                                            tooltipText = 'Link to the theme author profile or website';
+                                        } else if (key === 'description' || currentPath.includes('description')) {
+                                            tooltipText = 'Theme description displayed on the theme page';
+                                        } else if (key === 'name' || currentPath.includes('name')) {
+                                            tooltipText = 'Theme name used for identification';
+                                        } else {
+                                            tooltipText = 'Theme information used to populate the theme page';
+                                        }
+                                        const escapedTooltip = escapeJs(tooltipText);
+                                        html += `<span class="json-theme-info" data-tooltip="${escapeHtml(tooltipText)}" style="color: #667eea; font-weight: 600; cursor: help; position: relative; border-bottom: 1px dotted #667eea;" onmouseover="showThemeInfoTooltip(event, '${escapedTooltip}')" onmouseout="hideThemeInfoTooltip()">"${escapedValue}"</span>`;
+                                    } else {
+                                        html += `<span style="color: #e6db74;">"${escapedValue}"</span>`;
+                                    }
                                 }
                             } else if (typeof value === 'object' && value !== null) {
                                 const result = createInteractiveJson(value, imageCache, fontFileData, indent + 1, currentPath, currentLine);
@@ -2561,6 +2580,9 @@
                 
                 const interactiveJsonResult = createInteractiveJson(extraData, imageCache, fontFileData, 0, '', 1);
                 const interactiveJson = interactiveJsonResult.html;
+                
+                // Store createInteractiveJson function globally for use in tooltips
+                window.createInteractiveJson = createInteractiveJson;
                 
                 // Helper to find JSON context lines for a resource
                 const findJsonContext = (resourceValue, contextLines = 3) => {
@@ -2633,48 +2655,80 @@
                     const popup = document.getElementById('resource-preview-popup');
                     if (!popup) return;
                     
-                    // Use mouse position for better cursor following
-                    const mouseX = event.clientX || (event.touches && event.touches[0] ? event.touches[0].clientX : 0);
-                    const mouseY = event.clientY || (event.touches && event.touches[0] ? event.touches[0].clientY : 0);
+                    // Use mouse position for better cursor following - update on mousemove
+                    const updatePosition = (e) => {
+                        const mouseX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+                        const mouseY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+                        
+                        let popupLeft = mouseX + 20;
+                        let popupTop = mouseY + 20;
+                        
+                        // Adjust if popup would go off screen
+                        if (popupLeft + 400 > window.innerWidth) {
+                            popupLeft = mouseX - 420; // Show to the left of cursor
+                        }
+                        if (popupTop + 300 > window.innerHeight) {
+                            popupTop = mouseY - 320; // Show above cursor
+                        }
+                        if (popupLeft < 10) popupLeft = 10;
+                        if (popupTop < 10) popupTop = 10;
+                        
+                        popup.style.left = popupLeft + 'px';
+                        popup.style.top = popupTop + 'px';
+                    };
                     
-                    let popupLeft = mouseX + 15;
-                    let popupTop = mouseY + 15;
+                    // Initial position
+                    updatePosition(event);
                     
-                    // Adjust if popup would go off screen
-                    if (popupLeft + 400 > window.innerWidth) {
-                        popupLeft = mouseX - 415; // Show to the left of cursor
-                    }
-                    if (popupTop + 300 > window.innerHeight) {
-                        popupTop = mouseY - 315; // Show above cursor
-                    }
-                    if (popupLeft < 10) popupLeft = 10;
-                    if (popupTop < 10) popupTop = 10;
+                    // Update position on mouse move
+                    const moveHandler = (e) => updatePosition(e);
+                    document.addEventListener('mousemove', moveHandler);
+                    popup._moveHandler = moveHandler; // Store for cleanup
                     
-                    popup.style.left = popupLeft + 'px';
-                    popup.style.top = popupTop + 'px';
-                    
-                    // Find JSON context
-                    const context = findJsonContext(value, 2);
+                    // Generate full interactive JSON for mini preview
                     let contextHtml = '';
-                    if (context) {
-                        const startLineNum = context.lineNumber - context.targetLineIndex;
-                        const contextLinesHtml = context.lines.map((line, idx) => {
-                            const isTargetLine = idx === context.targetLineIndex;
-                            const escapedLine = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                            const lineNum = startLineNum + idx;
-                            return `<div style="display: flex; font-family: 'SF Mono', 'Monaco', monospace; font-size: 0.9rem; line-height: 1.5; cursor: pointer; padding: 4px 0;" onclick="event.stopPropagation(); scrollToJsonLineAndPreview(${lineNum}, '${type}', '${value.replace(/'/g, "\\'")}', '${filename ? filename.replace(/'/g, "\\'") : ''}')" onmouseover="this.style.background='#e8f4f8'" onmouseout="this.style.background='transparent'">
-                                <span style="color: #999; margin-right: 10px; min-width: 35px; text-align: right; user-select: none; font-size: 0.85rem;">${lineNum}</span>
-                                <span style="color: ${isTargetLine ? '#333' : '#999'}; opacity: ${isTargetLine ? '1' : '0.6'}; flex: 1; ${isTargetLine ? 'font-weight: 600;' : ''}">${escapedLine || ' '}</span>
-                            </div>`;
-                        }).join('');
+                    if (window.configJsonData && window.createInteractiveJson) {
+                        const configData = window.configJsonData;
+                        const imgCache = window.configJsonImageCache || imageCache;
+                        const fontFileData = window.configJsonFontFile || null;
+                        const fullJsonResult = createInteractiveJson(configData, imgCache, fontFileData, 0, '', 1);
+                        const fullJsonHtml = fullJsonResult.html;
+                        const totalLines = fullJsonHtml.split('\n').length;
+                        const uniqueId = 'mini-json-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                        
+                        // Find target line for scrolling
+                        const context = findJsonContext(value, 0);
+                        let scrollToLine = 1;
+                        if (context) {
+                            scrollToLine = context.lineNumber;
+                        }
+                        
                         contextHtml = `
                             <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #eee;">
-                                <div style="font-size: 0.85rem; color: #999; margin-bottom: 8px; font-weight: 600;">JSON Context (click line to jump & preview):</div>
-                                <div style="background: #f8f9fa; padding: 10px; border-radius: 4px; max-height: 150px; overflow-y: auto;">
-                                    ${contextLinesHtml}
+                                <div style="font-size: 0.85rem; color: #999; margin-bottom: 8px; font-weight: 600;">Full config.json (scroll to find assets, click line to preview):</div>
+                                <div style="background: #2d2d2d; border-radius: 4px; overflow: hidden; position: relative; max-height: 250px; overflow-y: auto;">
+                                    <pre id="${uniqueId}" style="color: #f8f8f2; padding: 15px; padding-left: 50px; overflow-x: auto; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.75rem; line-height: 1.5; margin: 0; white-space: pre; word-wrap: normal; position: relative;"><code>${fullJsonHtml}</code></pre>
+                                    <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 40px; background: #1e1e1e; color: #858585; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.75rem; padding: 15px 5px; text-align: right; user-select: none; line-height: 1.5;">
+                                        ${Array.from({length: totalLines}, (_, i) => `<div style="line-height: 1.5;">${i + 1}</div>`).join('')}
+                                    </div>
                                 </div>
                             </div>
                         `;
+                        
+                        // Scroll to target line after rendering
+                        setTimeout(() => {
+                            const miniPre = document.getElementById(uniqueId);
+                            if (miniPre) {
+                                const targetLine = miniPre.querySelector(`.json-line[data-line="${scrollToLine}"]`);
+                                if (targetLine) {
+                                    targetLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    targetLine.style.background = 'rgba(102, 126, 234, 0.3)';
+                                    setTimeout(() => {
+                                        targetLine.style.background = '';
+                                    }, 2000);
+                                }
+                            }
+                        }, 100);
                     }
                     
                     if (type === 'image') {
@@ -2721,7 +2775,56 @@
                 
                 window.hideResourcePreview = function() {
                     const popup = document.getElementById('resource-preview-popup');
-                    if (popup) popup.style.display = 'none';
+                    if (popup) {
+                        popup.style.display = 'none';
+                        // Remove mousemove handler
+                        if (popup._moveHandler) {
+                            document.removeEventListener('mousemove', popup._moveHandler);
+                            popup._moveHandler = null;
+                        }
+                    }
+                };
+                
+                // Theme info tooltip functions
+                window.showThemeInfoTooltip = function(event, tooltipText) {
+                    const popup = document.getElementById('resource-preview-popup');
+                    if (!popup) return;
+                    
+                    const updatePosition = (e) => {
+                        const mouseX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+                        const mouseY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+                        
+                        let popupLeft = mouseX + 20;
+                        let popupTop = mouseY + 20;
+                        
+                        if (popupLeft + 300 > window.innerWidth) {
+                            popupLeft = mouseX - 320;
+                        }
+                        if (popupTop + 100 > window.innerHeight) {
+                            popupTop = mouseY - 120;
+                        }
+                        if (popupLeft < 10) popupLeft = 10;
+                        if (popupTop < 10) popupTop = 10;
+                        
+                        popup.style.left = popupLeft + 'px';
+                        popup.style.top = popupTop + 'px';
+                    };
+                    
+                    updatePosition(event);
+                    
+                    popup.innerHTML = `
+                        <div style="font-size: 0.9rem; color: #333; font-weight: 600; margin-bottom: 6px;">Theme Info</div>
+                        <div style="font-size: 0.85rem; color: #666; line-height: 1.4;">${tooltipText}</div>
+                    `;
+                    popup.style.display = 'block';
+                    
+                    const moveHandler = (e) => updatePosition(e);
+                    document.addEventListener('mousemove', moveHandler);
+                    popup._moveHandler = moveHandler;
+                };
+                
+                window.hideThemeInfoTooltip = function() {
+                    window.hideResourcePreview();
                 };
                 
                 window.openResourcePreview = function(type, value, filename) {
@@ -2745,6 +2848,9 @@
                     return findJsonContext(resourceValue, contextLines);
                 };
                 window.formattedJsonLinesForContext = formattedJsonLines;
+                window.configJsonData = extraData; // Store config for use in tooltips
+                window.configJsonImageCache = imageCache; // Store image cache
+                window.configJsonFontFile = fontFile; // Store font file
                 
                 // Function to scroll to a specific line in JSON preview
                 window.scrollToJsonLine = function(lineNumber) {
@@ -2801,31 +2907,76 @@
                 lightboxImg.style.display = 'none';
                 lightboxContentWrapper.style.display = 'block';
                 
-                // Try to get JSON context if available
+                // Generate full interactive JSON for mini preview
                 let jsonContextHtml = '';
-                if (window.findJsonContextForResource) {
-                    const context = window.findJsonContextForResource(filename, 3);
+                if (window.configJsonData && window.createInteractiveJson) {
+                    const configData = window.configJsonData;
+                    const imgCache = window.configJsonImageCache || imageCache;
+                    const fontFileData = window.configJsonFontFile || null;
+                    const fullJsonResult = window.createInteractiveJson(configData, imgCache, fontFileData, 0, '', 1);
+                    const fullJsonHtml = fullJsonResult.html;
+                    const totalLines = fullJsonHtml.split('\n').length;
+                    const uniqueId = 'font-json-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                    
+                    // Find target line for scrolling
+                    const context = window.findJsonContextForResource ? window.findJsonContextForResource(filename, 0) : null;
+                    let scrollToLine = 1;
                     if (context) {
-                        const startLineNum = context.lineNumber - context.targetLineIndex;
-                        const contextLinesHtml = context.lines.map((line, idx) => {
-                            const isTargetLine = idx === context.targetLineIndex;
-                            const escapedLine = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                            const lineNum = startLineNum + idx;
-                            const escapedValue = filename.replace(/'/g, "\\'");
-                            return `<div onclick="if(window.scrollToJsonLineAndPreview) window.scrollToJsonLineAndPreview(${lineNum}, 'font', '${escapedValue}', '')" style="display: flex; font-family: 'SF Mono', 'Monaco', monospace; font-size: 0.9rem; line-height: 1.5; cursor: pointer; padding: 4px 0;" onmouseover="this.style.background='#e8f4f8'" onmouseout="this.style.background='transparent'">
-                                <span style="color: #999; margin-right: 10px; min-width: 35px; text-align: right; user-select: none; font-size: 0.85rem;">${lineNum}</span>
-                                <span style="color: ${isTargetLine ? '#333' : '#999'}; opacity: ${isTargetLine ? '1' : '0.6'}; flex: 1; ${isTargetLine ? 'font-weight: 600;' : ''}">${escapedLine || ' '}</span>
-                            </div>`;
-                        }).join('');
-                        jsonContextHtml = `
-                            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
-                                <div style="font-size: 0.95rem; color: #999; margin-bottom: 10px; font-weight: 600;">Defined in config.json (click line to jump & preview):</div>
-                                <div style="background: #f8f9fa; padding: 12px; border-radius: 4px; max-height: 180px; overflow-y: auto;">
-                                    ${contextLinesHtml}
+                        scrollToLine = context.lineNumber;
+                    }
+                    
+                    const escapedValue = filename.replace(/'/g, "\\'");
+                    
+                    jsonContextHtml = `
+                        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+                            <div style="font-size: 0.95rem; color: #999; margin-bottom: 10px; font-weight: 600;">Full config.json (scroll to find assets, click line to preview):</div>
+                            <div style="background: #2d2d2d; border-radius: 4px; overflow: hidden; position: relative; max-height: 250px; overflow-y: auto;">
+                                <pre id="${uniqueId}" style="color: #f8f8f2; padding: 15px; padding-left: 50px; overflow-x: auto; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.85rem; line-height: 1.5; margin: 0; white-space: pre; word-wrap: normal; position: relative;"><code>${fullJsonHtml}</code></pre>
+                                <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 40px; background: #1e1e1e; color: #858585; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.85rem; padding: 15px 5px; text-align: right; user-select: none; line-height: 1.5;">
+                                    ${Array.from({length: totalLines}, (_, i) => `<div style="line-height: 1.5;">${i + 1}</div>`).join('')}
                                 </div>
                             </div>
-                        `;
-                    }
+                        </div>
+                    `;
+                    
+                    // Scroll to target line and make lines clickable
+                    setTimeout(() => {
+                        const jsonPre = document.getElementById(uniqueId);
+                        if (jsonPre) {
+                            const targetLine = jsonPre.querySelector(`.json-line[data-line="${scrollToLine}"]`);
+                            if (targetLine) {
+                                targetLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                targetLine.style.background = 'rgba(102, 126, 234, 0.3)';
+                                setTimeout(() => {
+                                    targetLine.style.background = '';
+                                }, 2000);
+                            }
+                            
+                            // Make resource lines clickable
+                            jsonPre.querySelectorAll('.json-resource').forEach(resource => {
+                                const resourceType = resource.getAttribute('data-resource-type');
+                                const resourceValue = resource.getAttribute('data-resource-value');
+                                const resourceFilename = resource.getAttribute('data-resource-filename') || resourceValue.split('/').pop();
+                                
+                                resource.onclick = function(e) {
+                                    e.stopPropagation();
+                                    if (resourceType === 'image') {
+                                        const cached = imgCache ? imgCache.get(resourceFilename) : null;
+                                        if (cached && cached.objectUrl) {
+                                            openLightbox(cached.objectUrl, resourceFilename, null, null, null, imgCache, null, resourceValue);
+                                        } else {
+                                            const githubUrl = getGitHubRawUrl(resourceFilename);
+                                            openLightbox(githubUrl, resourceFilename, null, null, null, imgCache, null, resourceValue);
+                                        }
+                                    } else if (resourceType === 'font') {
+                                        const fontUrl = getGitHubRawUrl(resourceValue);
+                                        const localFontUrl = getLocalUrl(resourceValue);
+                                        openLightbox('font-preview', resourceValue, null, fontUrl, localFontUrl, imgCache, null, resourceValue);
+                                    }
+                                };
+                            });
+                        }
+                    }, 100);
                 }
                 
                 lightboxContentWrapper.innerHTML = `
@@ -2910,32 +3061,75 @@
                 filenameDisplay.style.display = 'block';
             }
             
-            // Show JSON context if available (when opened from config.json)
-            if (jsonResourceValue && window.findJsonContextForResource && lightboxJsonContext) {
-                const context = window.findJsonContextForResource(jsonResourceValue, 3);
+            // Show full interactive JSON if available (when opened from config.json)
+            if (jsonResourceValue && window.configJsonData && window.createInteractiveJson && lightboxJsonContext) {
+                const configData = window.configJsonData;
+                const imgCache = window.configJsonImageCache || imageCache;
+                const fontFileData = window.configJsonFontFile || null;
+                const fullJsonResult = window.createInteractiveJson(configData, imgCache, fontFileData, 0, '', 1);
+                const fullJsonHtml = fullJsonResult.html;
+                const totalLines = fullJsonHtml.split('\n').length;
+                const uniqueId = 'lightbox-json-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                
+                // Find target line for scrolling
+                const context = window.findJsonContextForResource ? window.findJsonContextForResource(jsonResourceValue, 0) : null;
+                let scrollToLine = 1;
                 if (context) {
-                    const startLineNum = context.lineNumber - context.targetLineIndex;
-                    const escapedFilename = actualFilename.replace(/'/g, "\\'");
-                    const escapedValue = jsonResourceValue.replace(/'/g, "\\'");
-                    const contextLinesHtml = context.lines.map((line, idx) => {
-                        const isTargetLine = idx === context.targetLineIndex;
-                        const escapedLine = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                        const lineNum = startLineNum + idx;
-                        return `<div onclick="if(window.scrollToJsonLineAndPreview) window.scrollToJsonLineAndPreview(${lineNum}, 'image', '${escapedValue}', '${escapedFilename}')" style="display: flex; font-family: 'SF Mono', 'Monaco', monospace; font-size: 0.9rem; line-height: 1.5; cursor: pointer; padding: 4px 0;" onmouseover="this.style.background='#e8f4f8'" onmouseout="this.style.background='transparent'">
-                            <span style="color: #999; margin-right: 10px; min-width: 35px; text-align: right; user-select: none; font-size: 0.85rem;">${lineNum}</span>
-                            <span style="color: ${isTargetLine ? '#333' : '#999'}; opacity: ${isTargetLine ? '1' : '0.6'}; flex: 1; ${isTargetLine ? 'font-weight: 600;' : ''}">${escapedLine || ' '}</span>
-                        </div>`;
-                    }).join('');
-                    lightboxJsonContext.innerHTML = `
-                        <div style="font-size: 0.95rem; color: #999; margin-bottom: 10px; font-weight: 600;">Defined in config.json (click line to jump & preview):</div>
-                        <div style="max-height: 180px; overflow-y: auto; background: #f8f9fa; padding: 12px; border-radius: 4px;">
-                            ${contextLinesHtml}
-                        </div>
-                    `;
-                    lightboxJsonContext.style.display = 'block';
-                } else {
-                    lightboxJsonContext.style.display = 'none';
+                    scrollToLine = context.lineNumber;
                 }
+                
+                const escapedFilename = actualFilename.replace(/'/g, "\\'");
+                const escapedValue = jsonResourceValue.replace(/'/g, "\\'");
+                
+                lightboxJsonContext.innerHTML = `
+                    <div style="font-size: 0.95rem; color: #999; margin-bottom: 10px; font-weight: 600;">Full config.json (scroll to find assets, click line to preview):</div>
+                    <div style="background: #2d2d2d; border-radius: 4px; overflow: hidden; position: relative; max-height: 250px; overflow-y: auto;">
+                        <pre id="${uniqueId}" style="color: #f8f8f2; padding: 15px; padding-left: 50px; overflow-x: auto; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.85rem; line-height: 1.5; margin: 0; white-space: pre; word-wrap: normal; position: relative;"><code>${fullJsonHtml}</code></pre>
+                        <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 40px; background: #1e1e1e; color: #858585; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.85rem; padding: 15px 5px; text-align: right; user-select: none; line-height: 1.5;">
+                            ${Array.from({length: totalLines}, (_, i) => `<div style="line-height: 1.5;">${i + 1}</div>`).join('')}
+                        </div>
+                    </div>
+                `;
+                lightboxJsonContext.style.display = 'block';
+                
+                // Scroll to target line and make lines clickable
+                setTimeout(() => {
+                    const jsonPre = document.getElementById(uniqueId);
+                    if (jsonPre) {
+                        const targetLine = jsonPre.querySelector(`.json-line[data-line="${scrollToLine}"]`);
+                        if (targetLine) {
+                            targetLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            targetLine.style.background = 'rgba(102, 126, 234, 0.3)';
+                            setTimeout(() => {
+                                targetLine.style.background = '';
+                            }, 2000);
+                        }
+                        
+                        // Make resource lines clickable
+                        jsonPre.querySelectorAll('.json-resource').forEach(resource => {
+                            const resourceType = resource.getAttribute('data-resource-type');
+                            const resourceValue = resource.getAttribute('data-resource-value');
+                            const resourceFilename = resource.getAttribute('data-resource-filename') || resourceValue.split('/').pop();
+                            
+                            resource.onclick = function(e) {
+                                e.stopPropagation();
+                                if (resourceType === 'image') {
+                                    const cached = imgCache ? imgCache.get(resourceFilename) : null;
+                                    if (cached && cached.objectUrl) {
+                                        openLightbox(cached.objectUrl, resourceFilename, null, null, null, imgCache, null, resourceValue);
+                                    } else {
+                                        const githubUrl = getGitHubRawUrl(resourceFilename);
+                                        openLightbox(githubUrl, resourceFilename, null, null, null, imgCache, null, resourceValue);
+                                    }
+                                } else if (resourceType === 'font') {
+                                    const fontUrl = getGitHubRawUrl(resourceValue);
+                                    const localFontUrl = getLocalUrl(resourceValue);
+                                    openLightbox('font-preview', resourceValue, null, fontUrl, localFontUrl, imgCache, null, resourceValue);
+                                }
+                            };
+                        });
+                    }
+                }, 100);
             } else {
                 if (lightboxJsonContext) lightboxJsonContext.style.display = 'none';
             }
