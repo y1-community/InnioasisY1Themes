@@ -1420,6 +1420,131 @@
         let filteredThemes = []; // Themes after filtering
         let displayedThemes = []; // Themes for current page
         let themeFonts = new Map(); // Cache loaded fonts for themes
+        let downloadCounts = new Map(); // Store download counts for each theme
+
+        // Format download count for display
+        function formatDownloadCount(count) {
+            if (count >= 1000000) {
+                return (count / 1000000).toFixed(1) + 'M';
+            } else if (count >= 1000) {
+                return (count / 1000).toFixed(1) + 'K';
+            }
+            return count.toString();
+        }
+
+        // Fetch GitHub tokens from remote config
+        async function fetchGitHubTokens() {
+            try {
+                const response = await fetch('https://innioasis.app/config.ini');
+                if (!response.ok) return [];
+                
+                const text = await response.text();
+                const tokens = [];
+                
+                // Parse INI format (simple key=value)
+                const lines = text.split('\n');
+                for (const line of lines) {
+                    const trimmed = line.trim();
+                    if (!trimmed || trimmed.startsWith('#')) continue;
+                    
+                    const match = trimmed.match(/^(.+?)\s*=\s*(.+)$/);
+                    if (match) {
+                        const key = match[1].trim();
+                        let value = match[2].trim();
+                        
+                        // Check if it's a GitHub token (with or without prefix)
+                        if (key.toLowerCase().includes('github') || key.toLowerCase().includes('token')) {
+                            // Add github_pat_ prefix if missing
+                            if (value && !value.startsWith('github_pat_')) {
+                                value = 'github_pat_' + value;
+                            }
+                            if (value) tokens.push(value);
+                        }
+                    }
+                }
+                
+                return tokens;
+            } catch (error) {
+                console.warn('Could not fetch tokens from config.ini:', error);
+                return [];
+            }
+        }
+
+        // Fetch GitHub release download stats
+        async function fetchReleaseDownloadStats() {
+            const repo = 'y1-community/InnioasisY1Themes';
+            const stats = new Map();
+            
+            try {
+                // Try unauthenticated first
+                let response = await fetch(`https://api.github.com/repos/${repo}/releases/latest`);
+                
+                // If unauthenticated fails, try with tokens
+                if (!response.ok && response.status === 403) {
+                    const tokens = await fetchGitHubTokens();
+                    
+                    for (const token of tokens) {
+                        try {
+                            response = await fetch(`https://api.github.com/repos/${repo}/releases/latest`, {
+                                headers: {
+                                    'Authorization': `token ${token}`,
+                                    'Accept': 'application/vnd.github.v3+json'
+                                }
+                            });
+                            
+                            if (response.ok) break;
+                        } catch (e) {
+                            console.warn('Token failed, trying next...', e);
+                            continue;
+                        }
+                    }
+                }
+                
+                if (!response.ok) {
+                    console.warn('Could not fetch release stats:', response.status, response.statusText);
+                    return stats;
+                }
+                
+                const release = await response.json();
+                
+                // Process all assets in the release
+                if (release.assets && Array.isArray(release.assets)) {
+                    for (const asset of release.assets) {
+                        // Check if asset name matches {themeFolder}_stat pattern
+                        const match = asset.name.match(/^(.+?)_stat$/);
+                        if (match) {
+                            const themeFolder = match[1];
+                            const downloadCount = asset.download_count || 0;
+                            stats.set(themeFolder, downloadCount);
+                            
+                            // Silently download the stat file in background (for tracking)
+                            if (downloadCount > 0) {
+                                fetch(asset.browser_download_url).catch(() => {
+                                    // Silently fail - we just want to trigger the download count
+                                });
+                            }
+                        }
+                    }
+                }
+                
+                console.log(`✅ Loaded download stats for ${stats.size} themes`);
+            } catch (error) {
+                console.warn('Error fetching release download stats:', error);
+            }
+            
+            return stats;
+        }
+
+        // Load download stats on page load
+        async function loadDownloadStats() {
+            const stats = await fetchReleaseDownloadStats();
+            downloadCounts = stats;
+            
+            // Re-render themes to show download counts
+            if (allThemes.length > 0) {
+                renderThemes();
+            }
+        }
 
         // Check if File System Access API is supported
         const hasFileSystemAccess = 'showDirectoryPicker' in window;
@@ -3773,6 +3898,7 @@
                         <div class="theme-author">
                             by <span class="author-link" style="cursor: pointer; text-decoration: underline;" onclick="event.stopPropagation(); filterByAuthor('${authorDisplay}');">${authorDisplay}</span>${redditFaviconHtml}${socialIconHtml}
                         </div>
+                        ${downloadCounts.has(theme.folder) ? `<div class="theme-download-count" style="margin-top: 8px; font-size: 0.85rem; color: #888;">📥 ${formatDownloadCount(downloadCounts.get(theme.folder))} downloads</div>` : ''}
                     </div>
                     <div class="theme-actions">
                         ${isUpdatable ? `
@@ -4738,6 +4864,11 @@
         document.addEventListener('DOMContentLoaded', async () => {
             console.log('✅ Y1 Theme Installer loaded');
             console.log('📊 Starting theme discovery...');
+            
+            // Load download stats in background (non-blocking)
+            loadDownloadStats().catch(err => {
+                console.warn('Failed to load download stats:', err);
+            });
 
             try {
                 // Load themes immediately when page loads

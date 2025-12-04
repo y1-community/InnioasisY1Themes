@@ -713,6 +713,38 @@ html_template = """<!DOCTYPE html>
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
         
+        /* Loading spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            border-top-color: #667eea;
+            animation: spin 1s ease-in-out infinite;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            color: #999;
+            font-style: italic;
+        }
+        
+        .content-loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        
+        .content-loaded {
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+        
         /* Custom Font CSS */
         {font_css}
     </style>
@@ -741,10 +773,14 @@ html_template = """<!DOCTYPE html>
         <div class="header-section">
             <div class="header-text">
                 <!-- Title and subtitle removed; using About line instead -->
-                <h2 {title_style}>About the Theme for Innioasis Y1</h2>
-                <p class="description" id="theme-description">Theme description placeholder - will be replaced with actual theme description from config.json or themes.json.</p>
-                <p class="author-info" style="margin-top: 15px; color: #666; font-size: 0.9rem; font-style: italic;">
-                    Theme created by <strong id="author-display">Author placeholder</strong>
+                <h1 id="theme-title" style="font-family: 'ThemeFont', sans-serif; font-size: 2.5rem; font-weight: 700; margin-bottom: 20px; color: #333; line-height: 1.2;">
+                    <span class="loading-spinner"></span>
+                    <span class="loading-text">Loading theme...</span>
+                </h1>
+                <h2 id="theme-about-heading" style="font-family: 'ThemeFont', sans-serif; font-size: 1.1rem; margin-bottom: 15px; color: #667eea; font-weight: 500; display: none;"></h2>
+                <p class="description" id="theme-description" style="display: none;"></p>
+                <p class="author-info" style="margin-top: 15px; color: #666; font-size: 0.9rem; font-style: italic; display: none;" id="author-info">
+                    Theme created by <strong id="author-display">Loading...</strong>
                 </p>
             </div>
             {cover_html}
@@ -827,7 +863,7 @@ html_template = """<!DOCTYPE html>
         
         <!-- SEO Content -->
         <div class="seo-content" style="margin-top: 40px; text-align: left; color: #666; font-size: 0.9rem; line-height: 1.6;">
-            <p><span id="description-display">Theme description placeholder - will be replaced with actual theme description from config.json or themes.json.</span></p>
+            <p><span id="description-display" style="display: none;"></span></p>
         </div>
         
         <div style="margin-top: 30px; font-size: 0.9rem; color: #888;">

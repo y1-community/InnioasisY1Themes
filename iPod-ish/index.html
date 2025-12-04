@@ -101,6 +101,38 @@
             margin-bottom: 10px;
             color: #333;
         }
+        
+        /* Loading spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            border-top-color: #667eea;
+            animation: spin 1s ease-in-out infinite;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            color: #999;
+            font-style: italic;
+        }
+        
+        .content-loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        
+        .content-loaded {
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
         .author {
             color: #666;
             margin-bottom: 20px;
@@ -608,14 +640,18 @@
         <div class="header-section">
             <div class="header-text">
                 <!-- Title and subtitle removed; using About line instead -->
-                <h1 id="theme-title" style="font-family: 'ThemeFont', sans-serif; font-size: 2.5rem; font-weight: 700; margin-bottom: 20px; color: #333; line-height: 1.2;">Theme Name Placeholder</h1>
-                <h2 style="font-family: 'ThemeFont', sans-serif; font-size: 1.1rem; margin-bottom: 15px; color: #667eea; font-weight: 500;">About the Theme for Innioasis Y1</h2>
-                <p class="description" id="theme-description">Theme description placeholder - will be replaced with actual theme description from config.json or themes.json.</p>
-                <p class="author-info" style="margin-top: 15px; color: #666; font-size: 0.9rem; font-style: italic;">
-                    Theme created by <strong id="author-display">Innioasis</strong>
+                <h1 id="theme-title" style="font-family: 'ThemeFont', sans-serif; font-size: 2.5rem; font-weight: 700; margin-bottom: 20px; color: #333; line-height: 1.2;">
+                    <span class="loading-spinner"></span>
+                    <span class="loading-text">Loading theme...</span>
+                </h1>
+                <h2 id="theme-about-heading" style="font-family: 'ThemeFont', sans-serif; font-size: 1.1rem; margin-bottom: 15px; color: #667eea; font-weight: 500; display: none;"></h2>
+                <p class="description" id="theme-description" style="display: none;"></p>
+                <p class="author-info" style="margin-top: 15px; color: #666; font-size: 0.9rem; font-style: italic; display: none;" id="author-info">
+                    Theme created by <strong id="author-display">Loading...</strong>
                 </p>
+                <div id="theme-download-count" style="margin-top: 10px; font-size: 0.85rem; color: #888; display: none;"></div>
             </div>
-            <img src="cover.png" alt="Theme cover image" class="cover-image" onclick="openLightbox('cover.png')">
+            <img id="cover-image" src="" alt="Theme cover image" class="cover-image" style="display: none;" onclick="openLightbox(this.src.replace('./', ''))">
         </div>
         
         
@@ -695,7 +731,7 @@
         
         <!-- SEO Content -->
         <div class="seo-content" style="margin-top: 40px; text-align: left; color: #666; font-size: 0.9rem; line-height: 1.6;">
-            <p><span id="description-display">Theme description placeholder - will be replaced with actual theme description from config.json or themes.json.</span></p>
+            <p><span id="description-display" style="display: none;"></span></p>
         </div>
         
         <div style="margin-top: 30px; font-size: 0.9rem; color: #888;">
@@ -1353,24 +1389,58 @@
                 }
             }
             
+            // Load and update theme information FIRST (before other operations)
+            // This ensures users never see placeholders - data loads immediately
+            // Use folder name as initial value, then update with real data
+            const currentPath = window.location.pathname;
+            let initialFolderName = '';
+            const pathParts = currentPath.split('/');
+            if (pathParts[pathParts.length - 1].toLowerCase() === 'index.html' || pathParts[pathParts.length - 1] === '') {
+                initialFolderName = pathParts[pathParts.length - 2];
+            } else {
+                initialFolderName = pathParts[pathParts.length - 1];
+            }
+            initialFolderName = decodeURIComponent(initialFolderName);
+            const formattedInitialName = initialFolderName.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2');
+            
+            // Set initial title immediately (folder name, not placeholder)
+            const themeTitle = document.getElementById('theme-title');
+            if (themeTitle && themeTitle.innerHTML.includes('Loading')) {
+                themeTitle.innerHTML = formattedInitialName;
+            }
+            
+            // Load real data (will update if available)
+            loadAuthorInfo().catch(err => {
+                console.warn('Error loading theme info, using folder name:', err);
+            });
+            
             // Apply theme button styling
             await applyThemeButtonStyling();
             
             // Check for unsupported features
             await checkFeatureSupport();
-            
-            // Load and update author information with authorUrl link
-            await loadAuthorInfo();
         });
         
         // Load theme information from config.json (priority) or themes.json (fallback)
         // This function replaces all placeholder text with actual theme data
         async function loadAuthorInfo() {
             try {
-                let author = 'Author placeholder';
+                // Get folderName first for fallback
+                const currentPath = window.location.pathname;
+                let folderName = '';
+                const pathParts = currentPath.split('/');
+                if (pathParts[pathParts.length - 1].toLowerCase() === 'index.html' || pathParts[pathParts.length - 1] === '') {
+                    folderName = pathParts[pathParts.length - 2];
+                } else {
+                    folderName = pathParts[pathParts.length - 1];
+                }
+                folderName = decodeURIComponent(folderName);
+                
+                // Initialize with folder name as fallback (better than placeholder)
+                let author = 'Unknown';
                 let authorUrl = null;
-                let description = 'Theme description placeholder - will be replaced with actual theme description from config.json or themes.json.';
-                let themeName = 'Theme Name Placeholder';
+                let description = '';
+                let themeName = folderName; // Use folder name as default, not placeholder
                 
                 // Try to load from config.json first (authoritative source)
                 try {
@@ -1406,33 +1476,36 @@
                     console.warn('Could not load config.json:', e);
                 }
                 
-                // Fallback to themes.json if authorUrl not found in config.json
-                if (!authorUrl) {
-                    try {
-                        const themesResponse = await fetch('../themes.json');
-                        if (themesResponse.ok) {
-                            const themesData = await themesResponse.json();
-                            const currentPath = window.location.pathname;
-                            let folderName = '';
-                            const pathParts = currentPath.split('/');
-                            if (pathParts[pathParts.length - 1].toLowerCase() === 'index.html' || pathParts[pathParts.length - 1] === '') {
-                                folderName = pathParts[pathParts.length - 2];
-                            } else {
-                                folderName = pathParts[pathParts.length - 1];
-                            }
-                            folderName = decodeURIComponent(folderName);
-                            
-                            const theme = themesData.themes.find(t => t.folder === folderName);
-                            if (theme) {
+                // Fallback to themes.json for any missing data
+                try {
+                    const themesResponse = await fetch('../themes.json');
+                    if (themesResponse.ok) {
+                        const themesData = await themesResponse.json();
+                        const theme = themesData.themes.find(t => t.folder === folderName);
+                        if (theme) {
+                            // Only use themes.json values if not already set from config.json
+                            if (!themeName || themeName === folderName) {
                                 if (theme.name) themeName = theme.name;
+                            }
+                            if (!author || author === 'Unknown') {
                                 if (theme.author) author = theme.author;
+                            }
+                            if (!authorUrl) {
                                 if (theme.authorUrl) authorUrl = theme.authorUrl;
+                            }
+                            if (!description) {
                                 if (theme.description) description = theme.description;
                             }
                         }
-                    } catch (e) {
-                        console.warn('Could not load themes.json:', e);
                     }
+                } catch (e) {
+                    console.warn('Could not load themes.json:', e);
+                }
+                
+                // Final fallback: if themeName is still folder name, try to format it nicely
+                if (themeName === folderName) {
+                    // Convert folder names like "iOS26Theme" to "iOS 26 Theme"
+                    themeName = folderName.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2');
                 }
                 
                 // Set authorUrl for Innioasis-made themes if not already set
@@ -1440,46 +1513,48 @@
                     authorUrl = 'https://www.innioasis.com';
                 }
                 
-                // Update page title and meta tags with actual theme data
-                if (themeName && themeName !== 'Theme Name Placeholder') {
-                    document.title = `${themeName} Theme - Official Innioasis Y1 Community Themes`;
-                    
-                    // Update meta description
-                    const metaDescription = document.querySelector('meta[name="description"]');
-                    if (metaDescription) {
-                        metaDescription.content = `Download ${themeName} theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. ${description} Community Maintainers: Ryan Specter + Dmitri Medina`;
+                // Always update page title and meta tags (even if it's just folder name)
+                // Never show "Theme Name Placeholder" to users
+                document.title = `${themeName} Theme - Official Innioasis Y1 Community Themes`;
+                
+                // Update meta description
+                const metaDescription = document.querySelector('meta[name="description"]');
+                if (metaDescription) {
+                    const descText = description || `A theme for Innioasis Y1 MP3 player.`;
+                    metaDescription.content = `Download ${themeName} theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. ${descText} Community Maintainers: Ryan Specter + Dmitri Medina`;
+                }
+                
+                // Update meta keywords
+                const metaKeywords = document.querySelector('meta[name="keywords"]');
+                if (metaKeywords) {
+                    metaKeywords.content = `Innioasis Y1, Y1 themes, MP3 player themes, ${themeName}, Y1 customization, official Y1 themes, Ryan Specter, Dmitri Medina`;
+                }
+                
+                // Update schema.org structured data
+                const schemaScript = document.querySelector('script[type="application/ld+json"]');
+                if (schemaScript) {
+                    try {
+                        const schemaData = JSON.parse(schemaScript.textContent);
+                        schemaData.name = `${themeName} Theme`;
+                        const descText = description || `A theme for Innioasis Y1 MP3 player.`;
+                        schemaData.description = `Download ${themeName} theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. ${descText} Community Maintainers: Ryan Specter + Dmitri Medina`;
+                        schemaScript.textContent = JSON.stringify(schemaData, null, 2);
+                    } catch (e) {
+                        console.warn('Could not update schema.org data:', e);
                     }
-                    
-                    // Update meta keywords
-                    const metaKeywords = document.querySelector('meta[name="keywords"]');
-                    if (metaKeywords) {
-                        metaKeywords.content = `Innioasis Y1, Y1 themes, MP3 player themes, ${themeName}, Y1 customization, official Y1 themes, Ryan Specter, Dmitri Medina`;
-                    }
-                    
-                    // Update schema.org structured data
-                    const schemaScript = document.querySelector('script[type="application/ld+json"]');
-                    if (schemaScript) {
-                        try {
-                            const schemaData = JSON.parse(schemaScript.textContent);
-                            schemaData.name = `${themeName} Theme`;
-                            schemaData.description = `Download ${themeName} theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. ${description} Community Maintainers: Ryan Specter + Dmitri Medina`;
-                            schemaScript.textContent = JSON.stringify(schemaData, null, 2);
-                        } catch (e) {
-                            console.warn('Could not update schema.org data:', e);
-                        }
-                    }
-                    
-                    // Update main title (h1)
-                    const themeTitle = document.getElementById('theme-title');
-                    if (themeTitle) {
-                        themeTitle.textContent = themeName;
-                    }
-                    
-                    // Update heading (h2)
-                    const heading = document.querySelector('h2');
-                    if (heading && heading.id !== 'theme-title') {
-                        heading.textContent = `About the ${themeName} Theme for Innioasis Y1`;
-                    }
+                }
+                
+                // Update main title (h1) - ALWAYS update, never show placeholder
+                const themeTitle = document.getElementById('theme-title');
+                if (themeTitle) {
+                    themeTitle.innerHTML = themeName; // Remove loading spinner
+                }
+                
+                // Update heading (h2) and show it
+                const heading = document.getElementById('theme-about-heading');
+                if (heading) {
+                    heading.textContent = `About the ${themeName} Theme for Innioasis Y1`;
+                    heading.style.display = 'block';
                 }
                 
                 // Update author display with link if authorUrl is available
@@ -1619,10 +1694,66 @@
                 }
                 
                 if (descriptionDisplay) {
-                    descriptionDisplay.textContent = description;
+                    // Only show description if we have one, otherwise leave it empty or show a generic message
+                    if (description && description.trim()) {
+                        descriptionDisplay.textContent = description;
+                        descriptionDisplay.style.display = 'inline';
+                        // Also show the description paragraph
+                        const descPara = descriptionDisplay.closest('p');
+                        if (descPara) descPara.style.display = 'block';
+                    } else {
+                        descriptionDisplay.style.display = 'none';
+                        // Hide or show minimal text if no description available
+                        descriptionDisplay.textContent = '';
+                        descriptionDisplay.style.display = 'none';
+                    }
                 }
+                
+                // Also update the description in the header section
+                const headerDescription = document.getElementById('theme-description');
+                if (headerDescription) {
+                    if (description && description.trim()) {
+                        headerDescription.textContent = description;
+                        headerDescription.style.display = 'block';
+                    } else {
+                        headerDescription.style.display = 'none';
+                    }
+                }
+                
+                // Load cover image dynamically
+                await loadCoverImage();
+                
+                // Load download stats for this theme
+                await loadThemeDownloadStats(folderName);
             } catch (error) {
                 console.warn('Could not load author information:', error);
+                // On error, ensure we at least have folder name displayed
+                const currentPath = window.location.pathname;
+                let folderName = '';
+                const pathParts = currentPath.split('/');
+                if (pathParts[pathParts.length - 1].toLowerCase() === 'index.html' || pathParts[pathParts.length - 1] === '') {
+                    folderName = pathParts[pathParts.length - 2];
+                } else {
+                    folderName = pathParts[pathParts.length - 1];
+                }
+                folderName = decodeURIComponent(folderName);
+                const formattedName = folderName.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2');
+                
+                const themeTitle = document.getElementById('theme-title');
+                if (themeTitle) {
+                    themeTitle.innerHTML = formattedName;
+                }
+                
+                const heading = document.getElementById('theme-about-heading');
+                if (heading) {
+                    heading.textContent = `About the ${formattedName} Theme for Innioasis Y1`;
+                    heading.style.display = 'block';
+                }
+                
+                const authorInfo = document.getElementById('author-info');
+                if (authorInfo) {
+                    authorInfo.style.display = 'block';
+                }
             }
         }
         
@@ -2716,7 +2847,16 @@
             // Extract filename from image source and construct GitHub URL for edit button
             // Image source format: ./filename.png or ./themeFolder/filename.png
             // We need: https://github.com/y1-community/InnioasisY1Themes/tree/main/{folderName}/{filename}
-            let editFolderName = 'MelodyMuncher';
+            // Get folderName dynamically from URL
+            const currentPath = window.location.pathname;
+            let editFolderName = '';
+            const pathParts = currentPath.split('/');
+            if (pathParts[pathParts.length - 1].toLowerCase() === 'index.html' || pathParts[pathParts.length - 1] === '') {
+                editFolderName = pathParts[pathParts.length - 2];
+            } else {
+                editFolderName = pathParts[pathParts.length - 1];
+            }
+            editFolderName = decodeURIComponent(editFolderName);
             let filename = imageName || '';
             
             if (!filename) {
@@ -2766,6 +2906,198 @@
         // File cache for downloaded files (used by download/install functions)
         // This cache is populated when images are loaded in the gallery
         const fileCache = new Map(); // Key: filename, Value: { blob, arrayBuffer }
+        
+        // Load cover image dynamically from config.json or discover via wildcards
+        async function loadCoverImage() {
+            const coverImg = document.getElementById('cover-image');
+            if (!coverImg) return;
+            
+            let coverImagePath = null;
+            
+            // Priority 1: Get from config.json
+            try {
+                const configResponse = await fetch('./config.json');
+                if (configResponse.ok) {
+                    const config = await configResponse.json();
+                    if (config.themeCover) {
+                        coverImagePath = config.themeCover;
+                    } else if (config.theme_info && config.theme_info.cover) {
+                        coverImagePath = config.theme_info.cover;
+                    }
+                }
+            } catch (e) {
+                console.warn('Could not load config.json for cover image:', e);
+            }
+            
+            // Priority 2: Try wildcard patterns (*cover*.*)
+            if (!coverImagePath) {
+                const coverPatterns = [
+                    'cover.png', 'cover.jpg', 'cover.jpeg', 'cover.gif',
+                    'Cover.png', 'Cover.jpg', 'Cover.jpeg', 'Cover.gif',
+                    'themeCover.png', 'themeCover.jpg',
+                    'gregcover.png', 'gregcover.jpg'
+                ];
+                
+                for (const pattern of coverPatterns) {
+                    try {
+                        const testResponse = await fetch(`./${pattern}`, { method: 'HEAD' });
+                        if (testResponse.ok) {
+                            coverImagePath = pattern;
+                            break;
+                        }
+                    } catch (e) {
+                        // Continue trying
+                    }
+                }
+            }
+            
+            // Priority 3: Try GitHub API to find *cover*.* files
+            if (!coverImagePath) {
+                try {
+                    const currentPath = window.location.pathname;
+                    let folderName = '';
+                    const pathParts = currentPath.split('/');
+                    if (pathParts[pathParts.length - 1].toLowerCase() === 'index.html' || pathParts[pathParts.length - 1] === '') {
+                        folderName = pathParts[pathParts.length - 2];
+                    } else {
+                        folderName = pathParts[pathParts.length - 1];
+                    }
+                    folderName = decodeURIComponent(folderName);
+                    
+                    const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${encodeURIComponent(folderName)}`;
+                    const response = await fetch(apiUrl);
+                    if (response.ok) {
+                        const files = await response.json();
+                        const coverFiles = files
+                            .filter(f => f.type === 'file' && /cover/i.test(f.name) && /\.(png|jpg|jpeg|gif)$/i.test(f.name))
+                            .map(f => f.name);
+                        if (coverFiles.length > 0) {
+                            coverImagePath = coverFiles[0];
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Could not use GitHub API for cover image:', e);
+                }
+            }
+            
+            // Set cover image if found
+            if (coverImagePath) {
+                coverImg.src = `./${encodeURIComponent(coverImagePath)}`;
+                coverImg.alt = `${coverImagePath} - Theme cover`;
+                coverImg.style.display = 'block';
+                coverImg.onclick = () => openLightbox(coverImagePath);
+            } else {
+                // Hide cover image if not found
+                coverImg.style.display = 'none';
+            }
+        }
+        
+        // Format download count for display
+        function formatDownloadCount(count) {
+            if (count >= 1000000) {
+                return (count / 1000000).toFixed(1) + 'M';
+            } else if (count >= 1000) {
+                return (count / 1000).toFixed(1) + 'K';
+            }
+            return count.toString();
+        }
+
+        // Fetch GitHub tokens from remote config
+        async function fetchGitHubTokens() {
+            try {
+                const response = await fetch('https://innioasis.app/config.ini');
+                if (!response.ok) return [];
+                
+                const text = await response.text();
+                const tokens = [];
+                
+                // Parse INI format (simple key=value)
+                const lines = text.split('\n');
+                for (const line of lines) {
+                    const trimmed = line.trim();
+                    if (!trimmed || trimmed.startsWith('#')) continue;
+                    
+                    const match = trimmed.match(/^(.+?)\s*=\s*(.+)$/);
+                    if (match) {
+                        const key = match[1].trim();
+                        let value = match[2].trim();
+                        
+                        // Check if it's a GitHub token (with or without prefix)
+                        if (key.toLowerCase().includes('github') || key.toLowerCase().includes('token')) {
+                            // Add github_pat_ prefix if missing
+                            if (value && !value.startsWith('github_pat_')) {
+                                value = 'github_pat_' + value;
+                            }
+                            if (value) tokens.push(value);
+                        }
+                    }
+                }
+                
+                return tokens;
+            } catch (error) {
+                console.warn('Could not fetch tokens from config.ini:', error);
+                return [];
+            }
+        }
+
+        // Load download stats for a specific theme
+        async function loadThemeDownloadStats(themeFolder) {
+            const downloadCountEl = document.getElementById('theme-download-count');
+            if (!downloadCountEl) return;
+            
+            const repo = 'y1-community/InnioasisY1Themes';
+            const statFileName = `${themeFolder}_stat`;
+            
+            try {
+                // Try unauthenticated first
+                let response = await fetch(`https://api.github.com/repos/${repo}/releases/latest`);
+                
+                // If unauthenticated fails, try with tokens
+                if (!response.ok && response.status === 403) {
+                    const tokens = await fetchGitHubTokens();
+                    
+                    for (const token of tokens) {
+                        try {
+                            response = await fetch(`https://api.github.com/repos/${repo}/releases/latest`, {
+                                headers: {
+                                    'Authorization': `token ${token}`,
+                                    'Accept': 'application/vnd.github.v3+json'
+                                }
+                            });
+                            
+                            if (response.ok) break;
+                        } catch (e) {
+                            console.warn('Token failed, trying next...', e);
+                            continue;
+                        }
+                    }
+                }
+                
+                if (!response.ok) {
+                    console.warn('Could not fetch release stats:', response.status);
+                    return;
+                }
+                
+                const release = await response.json();
+                
+                // Find the stat file for this theme
+                if (release.assets && Array.isArray(release.assets)) {
+                    const statAsset = release.assets.find(asset => asset.name === statFileName);
+                    if (statAsset && statAsset.download_count > 0) {
+                        const count = statAsset.download_count;
+                        downloadCountEl.textContent = `📥 ${formatDownloadCount(count)} downloads`;
+                        downloadCountEl.style.display = 'block';
+                        
+                        // Silently download the stat file in background (for tracking)
+                        fetch(statAsset.browser_download_url).catch(() => {
+                            // Silently fail - we just want to trigger the download count
+                        });
+                    }
+                }
+            } catch (error) {
+                console.warn('Error fetching download stats:', error);
+            }
+        }
         
         // Load theme background dynamically
         async function loadThemeBackground() {
