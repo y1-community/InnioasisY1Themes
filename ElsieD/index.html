@@ -2368,7 +2368,13 @@
                 }
             } else if (asset.type === 'image') {
                 const cached = window.assetNavigation.currentImageCache ? window.assetNavigation.currentImageCache.get(asset.filename) : null;
-                if (cached && cached.objectUrl) {
+                if (asset.isTransparent && (!cached || !cached.objectUrl)) {
+                    // Handle transparent placeholder asset
+                    openLightbox('transparent-placeholder', asset.filename, {
+                        configKey: asset.configKey,
+                        displayName: asset.displayName
+                    }, null, null, window.assetNavigation.currentImageCache, null, asset.resourceValue || asset.filename);
+                } else if (cached && cached.objectUrl) {
                     openLightbox(cached.objectUrl, asset.filename, null, null, null, window.assetNavigation.currentImageCache, null, asset.resourceValue || asset.filename);
                 } else {
                     const githubUrl = getGitHubRawUrl(asset.filename);
@@ -2378,33 +2384,48 @@
                 const fontUrl = getGitHubRawUrl(asset.filename);
                 const localFontUrl = getLocalUrl(asset.filename);
                 openLightbox('font-preview', asset.filename, null, fontUrl, localFontUrl, window.assetNavigation.currentImageCache, null, asset.resourceValue || asset.filename);
+            } else if (asset.type === 'transparent') {
+                // Handle transparent asset
+                openLightbox('transparent-placeholder', asset.filename, {
+                    configKey: asset.configKey,
+                    displayName: asset.displayName
+                }, null, null, window.assetNavigation.currentImageCache, null, asset.resourceValue || asset.filename);
             }
             
             // Sync navigation buttons and JSON highlighting after opening
+            // Use multiple attempts to ensure highlighting works when JSON context is ready
             setTimeout(() => {
                 syncNavigationButtons();
-                syncJsonHighlighting();
+                const attemptSync = (attempts = 0) => {
+                    if (attempts > 10) return;
+                    const highlighted = syncJsonHighlighting();
+                    if (!highlighted && attempts < 10) {
+                        setTimeout(() => attemptSync(attempts + 1), 100);
+                    }
+                };
+                attemptSync();
             }, 300);
         }
         
         // Helper function to sync JSON highlighting with current asset (acts as navigation breadcrumb)
+        // Returns true if highlighting was successful, false otherwise
         function syncJsonHighlighting() {
-            if (!window.assetNavigation.assets || window.assetNavigation.currentIndex < 0) return;
+            if (!window.assetNavigation.assets || window.assetNavigation.currentIndex < 0) return false;
             
             const asset = window.assetNavigation.assets[window.assetNavigation.currentIndex];
-            if (!asset) return;
+            if (!asset) return false;
             
             // Skip highlighting for special assets that don't have JSON context
             if (asset.type === 'special' && (asset.filename === 'index.html' || asset.filename === 'config.json')) {
-                return;
+                return false;
             }
             
             // Find JSON context in the wrapper
             const lightboxContentWrapper = document.getElementById('lightbox-content-wrapper');
-            if (!lightboxContentWrapper || lightboxContentWrapper.style.display === 'none') return;
+            if (!lightboxContentWrapper || lightboxContentWrapper.style.display === 'none') return false;
             
             const jsonPre = lightboxContentWrapper.querySelector('pre[id^="lightbox-json-"], pre[id^="font-json-"], pre[id^="image-json-"]');
-            if (!jsonPre) return;
+            if (!jsonPre) return false;
             
             // PRIMARY: Use config key to find the exact line (1:1 mapping)
             let lineNumber = null;
@@ -2430,7 +2451,12 @@
                 }
             }
             
-            if (!lineNumber) return;
+            // Also try using asset's stored line number if available
+            if (!lineNumber && asset.lineNumber && asset.lineNumber !== 9999) {
+                lineNumber = asset.lineNumber;
+            }
+            
+            if (!lineNumber) return false;
             
             const targetLine = jsonPre.querySelector(`.json-line[data-line="${lineNumber}"]`);
             if (targetLine) {
@@ -2452,135 +2478,99 @@
                 
                 // Scroll to show the highlighted line (breadcrumb indicator)
                 targetLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return true;
             }
+            return false;
         }
         
         function navigateJsonLine(direction) {
-            // Find JSON context in wrapper (not separate panel)
-            const lightboxContentWrapper = document.getElementById('lightbox-content-wrapper');
-            if (!lightboxContentWrapper || lightboxContentWrapper.style.display === 'none') return;
+            // Navigate by JSON line order - find the next/previous asset based on line number
+            if (!window.assetNavigation.assets || window.assetNavigation.assets.length === 0) return;
             
-            const jsonPre = lightboxContentWrapper.querySelector('pre[id^="lightbox-json-"], pre[id^="font-json-"], pre[id^="image-json-"]');
-            if (!jsonPre) return;
+            // Get all assets that have line numbers (exclude index.html and config.json from JSON line navigation)
+            const assetsWithLines = window.assetNavigation.assets.filter(a => 
+                a.lineNumber && a.lineNumber !== 9999 && 
+                a.type !== 'special' && 
+                !(a.filename === 'index.html' || a.filename === 'config.json')
+            );
             
-            const allLines = Array.from(jsonPre.querySelectorAll('.json-line')).filter(line => {
-                const resource = line.querySelector('.json-resource');
-                return resource !== null; // Only lines with resources
+            if (assetsWithLines.length === 0) return;
+            
+            // Sort assets by line number (JSON order)
+            const sortedAssets = [...assetsWithLines].sort((a, b) => {
+                if (a.lineNumber !== b.lineNumber) {
+                    return a.lineNumber - b.lineNumber;
+                }
+                // If same line number, sort by config key
+                const keyA = a.configKey || '';
+                const keyB = b.configKey || '';
+                return keyA.localeCompare(keyB);
             });
             
-            if (allLines.length === 0) return;
+            // Find current asset's position in sorted list
+            const currentAsset = window.assetNavigation.assets[window.assetNavigation.currentIndex];
+            if (!currentAsset) return;
             
-            // Find currently highlighted line or current asset
-            let currentLineIndex = -1;
-            if (window.assetNavigation.currentIndex >= 0 && window.assetNavigation.assets) {
-                const currentAsset = window.assetNavigation.assets[window.assetNavigation.currentIndex];
-                if (currentAsset && currentAsset.resourceValue) {
-                    const context = window.findJsonContextForResource ? window.findJsonContextForResource(currentAsset.resourceValue, 0) : null;
-                    if (context) {
-                        const targetLineNum = context.lineNumber;
-                        allLines.forEach((line, idx) => {
-                            const lineNum = parseInt(line.getAttribute('data-line'));
-                            if (lineNum === targetLineNum) {
-                                currentLineIndex = idx;
-                            }
-                        });
+            let currentSortedIndex = -1;
+            if (currentAsset.lineNumber && currentAsset.lineNumber !== 9999) {
+                // Find by line number and config key (for multiple instances of same file)
+                currentSortedIndex = sortedAssets.findIndex(a => {
+                    if (a.lineNumber === currentAsset.lineNumber) {
+                        // If config keys match, it's the same asset
+                        if (a.configKey && currentAsset.configKey) {
+                            return a.configKey === currentAsset.configKey;
+                        }
+                        // Otherwise match by filename/resourceValue
+                        return (a.filename === currentAsset.filename || a.resourceValue === currentAsset.resourceValue);
                     }
-                }
-            }
-            
-            // If no current line found, use first visible highlighted line
-            if (currentLineIndex === -1) {
-                allLines.forEach((line, idx) => {
-                    if (line.style.background && line.style.background.includes('rgba(102, 126, 234')) {
-                        currentLineIndex = idx;
-                    }
+                    return false;
                 });
             }
             
-            // Find next resource line
-            let nextIndex = currentLineIndex + direction;
-            if (nextIndex < 0) nextIndex = allLines.length - 1;
-            if (nextIndex >= allLines.length) nextIndex = 0;
+            // If not found by line number, try to find by config key or filename
+            if (currentSortedIndex === -1 && currentAsset.configKey) {
+                currentSortedIndex = sortedAssets.findIndex(a => a.configKey === currentAsset.configKey);
+            }
+            if (currentSortedIndex === -1) {
+                currentSortedIndex = sortedAssets.findIndex(a => 
+                    a.filename === currentAsset.filename || 
+                    a.resourceValue === currentAsset.resourceValue
+                );
+            }
             
-            const line = allLines[nextIndex];
-            const resource = line.querySelector('.json-resource');
-            if (resource) {
-                // Get resource info
-                const resourceType = resource.getAttribute('data-resource-type');
-                const resourceValue = resource.getAttribute('data-resource-value');
-                const resourceFilename = resource.getAttribute('data-resource-filename') || resourceValue.split('/').pop();
-                
-                // Find matching asset in navigation list and update index
-                // Try to find by config key first (for 1:1 mapping), then fallback to filename
-                if (window.assetNavigation.assets) {
-                    // Extract config key from the line if possible (look for the key before the resource)
-                    let configKey = null;
-                    const lineText = line.textContent || '';
-                    // Try to extract config key from the JSON structure
-                    const keyMatch = lineText.match(/"([^"]+)":\s*"[^"]*"/);
-                    if (keyMatch) {
-                        // Try to build full path by looking at parent lines
-                        const parentLines = [];
-                        let currentLine = line;
-                        for (let i = 0; i < 5 && currentLine; i++) {
-                            currentLine = currentLine.previousElementSibling;
-                            if (currentLine && currentLine.classList.contains('json-line')) {
-                                const match = currentLine.textContent.match(/"([^"]+)":/);
-                                if (match) {
-                                    parentLines.unshift(match[1]);
-                                }
-                            }
-                        }
-                        if (parentLines.length > 0) {
-                            configKey = parentLines.join('.') + '.' + keyMatch[1];
-                        } else {
-                            configKey = keyMatch[1];
-                        }
-                    }
-                    
-                    let assetIndex = -1;
-                    // Try to find by config key first
-                    if (configKey) {
-                        assetIndex = window.assetNavigation.assets.findIndex(a => 
-                            a.configKey === configKey
-                        );
-                    }
-                    // Fallback to filename/resourceValue matching
-                    if (assetIndex < 0) {
-                        assetIndex = window.assetNavigation.assets.findIndex(a => 
-                            (a.type === 'image' || a.type === 'font') && 
-                            (a.filename === resourceFilename || a.resourceValue === resourceValue)
-                        );
-                    }
-                    if (assetIndex >= 0) {
-                        window.assetNavigation.currentIndex = assetIndex;
-                        syncNavigationButtons();
-                    }
-                }
-                
-                // Use syncJsonHighlighting to update breadcrumb (it will handle highlighting)
-                syncJsonHighlighting();
-                
-                // Preview the asset
-                setTimeout(() => {
-                    if (resourceType === 'image') {
-                        const cached = window.assetNavigation.currentImageCache ? window.assetNavigation.currentImageCache.get(resourceFilename) : null;
-                        if (cached && cached.objectUrl) {
-                            openLightbox(cached.objectUrl, resourceFilename, null, null, null, window.assetNavigation.currentImageCache, null, resourceValue);
-                        } else {
-                            const githubUrl = getGitHubRawUrl(resourceFilename);
-                            openLightbox(githubUrl, resourceFilename, null, null, null, window.assetNavigation.currentImageCache, null, resourceValue);
-                        }
-                    } else if (resourceType === 'font') {
-                        const fontUrl = getGitHubRawUrl(resourceValue);
-                        const localFontUrl = getLocalUrl(resourceValue);
-                        openLightbox('font-preview', resourceValue, null, fontUrl, localFontUrl, window.assetNavigation.currentImageCache, null, resourceValue);
-                    }
-                    // Sync highlighting again after lightbox opens
-                    setTimeout(() => {
-                        syncJsonHighlighting();
-                    }, 300);
-                }, 100);
+            // If still not found, use the first asset
+            if (currentSortedIndex === -1) currentSortedIndex = 0;
+            
+            // Navigate to next/previous asset in line order
+            let nextSortedIndex = currentSortedIndex + direction;
+            if (nextSortedIndex < 0) nextSortedIndex = sortedAssets.length - 1;
+            if (nextSortedIndex >= sortedAssets.length) nextSortedIndex = 0;
+            
+            const nextAsset = sortedAssets[nextSortedIndex];
+            if (!nextAsset) return;
+            
+            // Find the index of this asset in the main navigation array
+            let targetAssetIndex = -1;
+            if (nextAsset.configKey) {
+                // Find by config key first (for 1:1 mapping with multiple file instances)
+                targetAssetIndex = window.assetNavigation.assets.findIndex(a => 
+                    a.configKey === nextAsset.configKey && 
+                    a.lineNumber === nextAsset.lineNumber
+                );
+            }
+            
+            // Fallback to filename/resourceValue matching
+            if (targetAssetIndex < 0) {
+                targetAssetIndex = window.assetNavigation.assets.findIndex(a => 
+                    (a.type === 'image' || a.type === 'font') && 
+                    (a.filename === nextAsset.filename || a.resourceValue === nextAsset.resourceValue) &&
+                    a.lineNumber === nextAsset.lineNumber
+                );
+            }
+            
+            if (targetAssetIndex >= 0) {
+                // Navigate to the asset
+                navigateAsset(targetAssetIndex - window.assetNavigation.currentIndex);
             }
         }
         
@@ -3944,10 +3934,18 @@
                             }
                         });
                         
-                        // After JSON context is fully rendered and click handlers are set, sync highlighting
-                        setTimeout(() => {
-                            syncJsonHighlighting();
-                        }, 50);
+                        // After JSON context is fully rendered and click handlers are set, sync highlighting immediately
+                        // Use multiple attempts to ensure highlighting works
+                        const attemptSyncHighlighting = (attempts = 0) => {
+                            if (attempts > 10) return; // Max 10 attempts
+                            const highlighted = syncJsonHighlighting();
+                            if (!highlighted && attempts < 10) {
+                                setTimeout(() => attemptSyncHighlighting(attempts + 1), 50);
+                            }
+                        };
+                        setTimeout(() => attemptSyncHighlighting(), 50);
+                        setTimeout(() => attemptSyncHighlighting(), 200);
+                        setTimeout(() => attemptSyncHighlighting(), 500);
                     }
                 }, 100);
                 }
@@ -3971,21 +3969,60 @@
             
             // Track current asset and set index - CRITICAL for navigation sync (do this BEFORE opening)
             if (actualFilename && imgSrc !== 'transparent-assets' && imgSrc !== 'index-html' && imgSrc !== 'config-json') {
-                // Use enhanced findAssetIndex function
-                const assetIndex = findAssetIndex(actualFilename, actualFilename, jsonResourceValue);
-                if (assetIndex >= 0) {
-                    window.assetNavigation.currentIndex = assetIndex;
+                // Find the asset from the current navigation index first (most accurate)
+                if (window.assetNavigation.currentIndex >= 0 && window.assetNavigation.assets) {
+                    const currentAsset = window.assetNavigation.assets[window.assetNavigation.currentIndex];
+                    // Verify this is the right asset by matching filename/resourceValue
+                    if (currentAsset && (
+                        currentAsset.filename === actualFilename ||
+                        currentAsset.resourceValue === jsonResourceValue ||
+                        currentAsset.resourceValue === actualFilename
+                    )) {
+                        // Already set correctly, keep current index
+                    } else {
+                        // Need to find correct asset - try by config key if available in current asset
+                        const assetToFind = currentAsset && currentAsset.configKey ? 
+                            window.assetNavigation.assets.findIndex(a => a.configKey === currentAsset.configKey) : -1;
+                        if (assetToFind >= 0) {
+                            window.assetNavigation.currentIndex = assetToFind;
+                        } else {
+                            // Fallback: use enhanced findAssetIndex function
+                            const assetIndex = findAssetIndex(actualFilename, actualFilename, jsonResourceValue);
+                            if (assetIndex >= 0) {
+                                window.assetNavigation.currentIndex = assetIndex;
+                            } else {
+                                // Final fallback: try to find by resource value
+                                if (jsonResourceValue && window.assetNavigation.assets) {
+                                    const fallbackIndex = window.assetNavigation.assets.findIndex(a => 
+                                        a.resourceValue === jsonResourceValue || 
+                                        a.filename === jsonResourceValue ||
+                                        (a.resourceValue && a.resourceValue.includes(jsonResourceValue)) ||
+                                        (a.filename && a.filename.includes(jsonResourceValue))
+                                    );
+                                    if (fallbackIndex >= 0) {
+                                        window.assetNavigation.currentIndex = fallbackIndex;
+                                    }
+                                }
+                            }
+                        }
+                    }
                 } else {
-                    // Fallback: try to find by resource value
-                    if (jsonResourceValue && window.assetNavigation.assets) {
-                        const fallbackIndex = window.assetNavigation.assets.findIndex(a => 
-                            a.resourceValue === jsonResourceValue || 
-                            a.filename === jsonResourceValue ||
-                            (a.resourceValue && a.resourceValue.includes(jsonResourceValue)) ||
-                            (a.filename && a.filename.includes(jsonResourceValue))
-                        );
-                        if (fallbackIndex >= 0) {
-                            window.assetNavigation.currentIndex = fallbackIndex;
+                    // No current index set, find the asset
+                    const assetIndex = findAssetIndex(actualFilename, actualFilename, jsonResourceValue);
+                    if (assetIndex >= 0) {
+                        window.assetNavigation.currentIndex = assetIndex;
+                    } else {
+                        // Fallback: try to find by resource value
+                        if (jsonResourceValue && window.assetNavigation.assets) {
+                            const fallbackIndex = window.assetNavigation.assets.findIndex(a => 
+                                a.resourceValue === jsonResourceValue || 
+                                a.filename === jsonResourceValue ||
+                                (a.resourceValue && a.resourceValue.includes(jsonResourceValue)) ||
+                                (a.filename && a.filename.includes(jsonResourceValue))
+                            );
+                            if (fallbackIndex >= 0) {
+                                window.assetNavigation.currentIndex = fallbackIndex;
+                            }
                         }
                     }
                 }
@@ -5118,17 +5155,33 @@
                         e.stopPropagation();
                         // Find and set asset index BEFORE opening lightbox (critical for navigation)
                         if (window.assetNavigation && window.assetNavigation.assets) {
-                            // Try to find by config key first (for 1:1 mapping)
+                            // Try to find by config key first (for 1:1 mapping with multiple file instances)
                             let assetIndex = -1;
                             if (asset.configKey) {
+                                // Match by config key AND line number to handle multiple instances
                                 assetIndex = window.assetNavigation.assets.findIndex(a => 
-                                    a.configKey === asset.configKey
+                                    a.configKey === asset.configKey && 
+                                    a.lineNumber === asset.lineNumber
+                                );
+                                // If not found with line number, try just config key
+                                if (assetIndex < 0) {
+                                    assetIndex = window.assetNavigation.assets.findIndex(a => 
+                                        a.configKey === asset.configKey
+                                    );
+                                }
+                            }
+                            // Fallback to filename/resourceValue matching with line number
+                            if (assetIndex < 0 && asset.lineNumber) {
+                                assetIndex = window.assetNavigation.assets.findIndex(a => 
+                                    (a.type === 'image' || a.type === 'font') && 
+                                    (a.filename === asset.filename || a.resourceValue === asset.resourceValue) &&
+                                    a.lineNumber === asset.lineNumber
                                 );
                             }
-                            // Fallback to filename/resourceValue matching
+                            // Final fallback to just filename/resourceValue matching
                             if (assetIndex < 0) {
                                 assetIndex = window.assetNavigation.assets.findIndex(a => 
-                                    a.type === 'image' && 
+                                    (a.type === 'image' || a.type === 'font') && 
                                     (a.filename === asset.filename || a.resourceValue === asset.resourceValue)
                                 );
                             }
