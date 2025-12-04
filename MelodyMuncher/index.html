@@ -2133,12 +2133,10 @@
                 
                 // Download each file (handles nested paths)
                 // Show progress: downloading files before zip packing
-                status.textContent = `Downloading files (0/${total})...`;
                 btn.textContent = `⏳ Downloading ${0}/${total}...`;
                 
                 for (const file of allFiles) {
                     const fileName = file.name.split('/').pop(); // Get just filename for display
-                    status.textContent = `Downloading ${fileName} (${processed + 1}/${total})...`;
                     btn.textContent = `⏳ Downloading ${processed + 1}/${total}...`;
                     
                     try {
@@ -2178,27 +2176,28 @@
                 }
                 
                 // Now pack into ZIP
-                status.textContent = 'Packing files into ZIP...';
                 btn.textContent = '⏳ Packing ZIP...';
                 
-                status.textContent = 'Generating ZIP file...';
                 // Generate and download ZIP
+                btn.textContent = '⏳ Generating ZIP file...';
                 const zipBlob = await zip.generateAsync({ type: 'blob' });
                 const url = URL.createObjectURL(zipBlob);
                 const a = document.createElement('a');
                 a.href = url;
                 a.download = `${folderName}.zip`;
+                a.style.display = 'none';
                 document.body.appendChild(a);
                 a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
+                // Small delay to ensure download starts before removing
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 100);
                 
                 btn.textContent = '✅ Download Complete';
-                status.textContent = 'Download started!';
                 setTimeout(() => {
                     btn.disabled = false;
                     btn.textContent = '📦 Download ZIP';
-                    status.style.display = 'none';
                 }, 3000);
                 
             } catch (error) {

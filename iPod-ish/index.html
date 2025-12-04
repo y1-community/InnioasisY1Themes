@@ -2178,27 +2178,28 @@
                 }
                 
                 // Now pack into ZIP
-                status.textContent = 'Packing files into ZIP...';
                 btn.textContent = '⏳ Packing ZIP...';
                 
-                status.textContent = 'Generating ZIP file...';
                 // Generate and download ZIP
+                btn.textContent = '⏳ Generating ZIP file...';
                 const zipBlob = await zip.generateAsync({ type: 'blob' });
                 const url = URL.createObjectURL(zipBlob);
                 const a = document.createElement('a');
                 a.href = url;
                 a.download = `${folderName}.zip`;
+                a.style.display = 'none';
                 document.body.appendChild(a);
                 a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
+                // Small delay to ensure download starts before removing
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 100);
                 
                 btn.textContent = '✅ Download Complete';
-                status.textContent = 'Download started!';
                 setTimeout(() => {
                     btn.disabled = false;
                     btn.textContent = '📦 Download ZIP';
-                    status.style.display = 'none';
                 }, 3000);
                 
             } catch (error) {
