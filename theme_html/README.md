@@ -48,9 +48,11 @@ The `index.html` file is designed to be **completely dynamic**:
 
 ## Download
 
-[**Click Here to Download index.html**](https://themes.innioasis.app/theme_html/index.html)
+[**Click Here to Download index.html**](https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/theme_html/index.html)
 
-Or use this direct link: `https://themes.innioasis.app/theme_html/index.html`
+Or use this direct download link: `https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/theme_html/index.html`
+
+You can also view the file at: `https://themes.innioasis.app/theme_html/index.html`
 
 ## Support
 
