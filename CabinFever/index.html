@@ -2385,24 +2385,35 @@
             if (!window.assetNavigation.assets || window.assetNavigation.currentIndex < 0) return;
             
             const asset = window.assetNavigation.assets[window.assetNavigation.currentIndex];
-            if (!asset || !asset.resourceValue) return;
+            if (!asset) return;
             
             // Find JSON context in the wrapper
             const lightboxContentWrapper = document.getElementById('lightbox-content-wrapper');
-            if (!lightboxContentWrapper) return;
+            if (!lightboxContentWrapper || lightboxContentWrapper.style.display === 'none') return;
             
             const jsonPre = lightboxContentWrapper.querySelector('pre[id^="lightbox-json-"], pre[id^="font-json-"], pre[id^="image-json-"]');
             if (!jsonPre) return;
             
-            // Find the line containing this resource
-            const context = window.findJsonContextForResource ? window.findJsonContextForResource(asset.resourceValue, 0) : null;
+            // Try multiple strategies to find the resource line
+            let context = null;
+            if (asset.resourceValue && window.findJsonContextForResource) {
+                context = window.findJsonContextForResource(asset.resourceValue, 0);
+            }
+            if (!context && asset.filename && window.findJsonContextForResource) {
+                context = window.findJsonContextForResource(asset.filename, 0);
+            }
             if (!context) return;
             
             const targetLine = jsonPre.querySelector(`.json-line[data-line="${context.lineNumber}"]`);
             if (targetLine) {
                 // Clear all highlights
-                jsonPre.querySelectorAll('.json-line').forEach(l => l.style.background = '');
-                // Highlight target line
+                jsonPre.querySelectorAll('.json-line').forEach(l => {
+                    // Don't clear theme info highlights, only resource highlights
+                    if (!l.querySelector('.json-theme-info')) {
+                        l.style.background = '';
+                    }
+                });
+                // Highlight target line persistently
                 targetLine.style.background = 'rgba(102, 126, 234, 0.3)';
                 targetLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
@@ -2503,9 +2514,46 @@
             const navLeft = document.getElementById('lightbox-nav-left');
             const navRight = document.getElementById('lightbox-nav-right');
             if (navLeft && navRight && window.assetNavigation.assets && window.assetNavigation.assets.length > 1) {
+                // Always show buttons when lightbox is active (no keypress needed)
                 navLeft.style.display = window.assetNavigation.currentIndex > 0 ? 'block' : 'none';
                 navRight.style.display = window.assetNavigation.currentIndex < window.assetNavigation.assets.length - 1 ? 'block' : 'none';
+            } else {
+                // Hide if no assets or only one asset
+                if (navLeft) navLeft.style.display = 'none';
+                if (navRight) navRight.style.display = 'none';
             }
+        }
+        
+        // Enhanced function to find asset index by any identifier
+        function findAssetIndex(filename, resourceValue, jsonResourceValue) {
+            if (!window.assetNavigation.assets || window.assetNavigation.assets.length === 0) return -1;
+            
+            // Try multiple matching strategies
+            let assetIndex = window.assetNavigation.assets.findIndex(a => {
+                if (a.filename === filename) return true;
+                if (a.resourceValue === filename) return true;
+                if (a.resourceValue === resourceValue) return true;
+                if (a.resourceValue === jsonResourceValue) return true;
+                if (jsonResourceValue && a.filename === jsonResourceValue) return true;
+                if (jsonResourceValue && a.resourceValue === jsonResourceValue) return true;
+                
+                // Try extracting just the filename from paths
+                const aFilename = a.filename ? a.filename.split('/').pop() : '';
+                const aResourceValue = a.resourceValue ? a.resourceValue.split('/').pop() : '';
+                const searchFilename = filename ? filename.split('/').pop() : '';
+                const searchResourceValue = resourceValue ? resourceValue.split('/').pop() : '';
+                const searchJsonResource = jsonResourceValue ? jsonResourceValue.split('/').pop() : '';
+                
+                if (aFilename === searchFilename) return true;
+                if (aResourceValue === searchFilename) return true;
+                if (aFilename === searchResourceValue) return true;
+                if (aResourceValue === searchResourceValue) return true;
+                if (searchJsonResource && (aFilename === searchJsonResource || aResourceValue === searchJsonResource)) return true;
+                
+                return false;
+            });
+            
+            return assetIndex;
         }
         
         // Keyboard navigation
@@ -3053,26 +3101,69 @@
                     }
                 };
                 
-                // Store context finder for use in full previews
-                window.findJsonContextForResource = function(resourceValue, contextLines = 3) {
-                    return findJsonContext(resourceValue, contextLines);
-                };
                 window.formattedJsonLinesForContext = formattedJsonLines;
                 window.configJsonData = extraData; // Store config for use in tooltips
                 window.configJsonImageCache = imageCache; // Store image cache
                 window.configJsonFontFile = fontFile; // Store font file
                 
-                // Store findJsonContextForResource function globally
+                // Enhanced findJsonContextForResource function - finds line by filename or full path
                 window.findJsonContextForResource = function(resourceValue, contextLines = 3) {
-                    if (!window.configJsonData) return null;
+                    if (!window.configJsonData || !resourceValue) return null;
                     const formattedJsonLines = JSON.stringify(window.configJsonData, null, 2).split('\n');
+                    
+                    // Extract filename from resourceValue (handle paths)
+                    const filename = resourceValue.split('/').pop();
+                    const filenameNoExt = filename.replace(/\.[^.]+$/, '');
+                    
                     let targetLineIndex = -1;
                     
-                    // Find the line containing this resource
+                    // Try multiple matching strategies
                     for (let i = 0; i < formattedJsonLines.length; i++) {
-                        if (formattedJsonLines[i].includes(resourceValue)) {
+                        const line = formattedJsonLines[i];
+                        
+                        // Strategy 1: Exact match with resourceValue
+                        if (line.includes(resourceValue)) {
                             targetLineIndex = i;
                             break;
+                        }
+                        
+                        // Strategy 2: Match filename (with quotes)
+                        if (filename && line.includes(`"${filename}"`)) {
+                            targetLineIndex = i;
+                            break;
+                        }
+                        
+                        // Strategy 3: Match filename without quotes (handle special characters like @1x)
+                        if (filename && line.includes(filename)) {
+                            // Make sure it's actually part of a JSON value (after colon)
+                            const colonIndex = line.indexOf(':');
+                            const filenameIndex = line.indexOf(filename);
+                            if (colonIndex >= 0 && filenameIndex > colonIndex) {
+                                // Check if this looks like a valid filename match (within quotes or as part of path)
+                                const beforeChar = line.charAt(filenameIndex - 1);
+                                const afterChar = line.charAt(filenameIndex + filename.length);
+                                // Allow various characters before/after (quotes, slashes, underscores, @, etc.)
+                                if ((beforeChar === '"' || beforeChar === '/' || beforeChar === '_' || beforeChar === '@' || beforeChar === '.' || beforeChar === ' ') && 
+                                    (afterChar === '"' || afterChar === '.' || afterChar === '@' || afterChar === ',' || afterChar === ' ' || afterChar === '')) {
+                                    targetLineIndex = i;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        // Strategy 4: Match by escaping special regex characters in filename
+                        if (filename) {
+                            // Escape special regex characters but allow @ and numbers
+                            const escapedFilename = filename.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                            const regex = new RegExp(escapedFilename);
+                            if (regex.test(line) && line.includes(':')) {
+                                const colonIndex = line.indexOf(':');
+                                const matchIndex = line.search(regex);
+                                if (matchIndex > colonIndex) {
+                                    targetLineIndex = i;
+                                    break;
+                                }
+                            }
                         }
                     }
                     
@@ -3464,11 +3555,29 @@
                 const totalLines = fullJsonHtml.split('\n').length;
                 const uniqueId = 'image-json-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
                 
+                // Find the correct line number for this resource
+                // Try multiple strategies to find the matching line
                 const resourceValue = jsonResourceValue || actualFilename;
-                const context = window.findJsonContextForResource && resourceValue ? window.findJsonContextForResource(resourceValue, 0) : null;
                 let scrollToLine = 1;
-                if (context) {
-                    scrollToLine = context.lineNumber;
+                
+                if (resourceValue && window.findJsonContextForResource) {
+                    // Try with resourceValue first (full path if available)
+                    let context = window.findJsonContextForResource(resourceValue, 0);
+                    
+                    // If not found, try with just the filename
+                    if (!context && actualFilename) {
+                        context = window.findJsonContextForResource(actualFilename, 0);
+                    }
+                    
+                    // If still not found, try extracting filename from resourceValue
+                    if (!context && resourceValue.includes('/')) {
+                        const extractedFilename = resourceValue.split('/').pop();
+                        context = window.findJsonContextForResource(extractedFilename, 0);
+                    }
+                    
+                    if (context && context.lineNumber) {
+                        scrollToLine = context.lineNumber;
+                    }
                 }
                 
                 imageJsonContextHtml = `
@@ -3496,11 +3605,11 @@
                         if (scrollToLine > 1) {
                             const targetLine = jsonPre.querySelector(`.json-line[data-line="${scrollToLine}"]`);
                             if (targetLine) {
+                                // Clear all existing highlights first
+                                jsonPre.querySelectorAll('.json-line').forEach(l => l.style.background = '');
                                 targetLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                // Keep highlight persistent (don't fade)
                                 targetLine.style.background = 'rgba(102, 126, 234, 0.3)';
-                                setTimeout(() => {
-                                    targetLine.style.background = '';
-                                }, 2000);
                             }
                         }
                         
@@ -3516,6 +3625,14 @@
                                         const resourceType = resource.getAttribute('data-resource-type');
                                         const resourceValue = resource.getAttribute('data-resource-value');
                                         const resourceFilename = resource.getAttribute('data-resource-filename') || resourceValue.split('/').pop();
+                                        
+                                        // Find and set asset index BEFORE opening lightbox to sync navigation
+                                        if (window.assetNavigation.assets) {
+                                            const assetIndex = findAssetIndex(resourceFilename, resourceValue, resourceValue);
+                                            if (assetIndex >= 0) {
+                                                window.assetNavigation.currentIndex = assetIndex;
+                                            }
+                                        }
                                         
                                         if (resourceType === 'image') {
                                             const cached = imgCache ? imgCache.get(resourceFilename) : null;
@@ -3555,24 +3672,25 @@
                 filenameDisplay.style.display = 'block';
             }
             
-            // Sync JSON highlighting after opening
-            setTimeout(() => {
-                syncJsonHighlighting();
-                syncNavigationButtons();
-            }, 300);
-            
-            // JSON context is now shown in the wrapper for images, not in a separate panel
-            
-            // Track current asset and build asset list if needed
+            // Track current asset and set index - CRITICAL for navigation sync (do this BEFORE opening)
             if (actualFilename && imgSrc !== 'transparent-assets' && imgSrc !== 'index-html' && imgSrc !== 'config-json') {
-                // Find current asset index in list (check both filename and resourceValue)
-                const assetIndex = window.assetNavigation.assets.findIndex(a => 
-                    a.filename === actualFilename || 
-                    a.resourceValue === actualFilename ||
-                    a.resourceValue === jsonResourceValue
-                );
+                // Use enhanced findAssetIndex function
+                const assetIndex = findAssetIndex(actualFilename, actualFilename, jsonResourceValue);
                 if (assetIndex >= 0) {
                     window.assetNavigation.currentIndex = assetIndex;
+                } else {
+                    // Fallback: try to find by resource value
+                    if (jsonResourceValue && window.assetNavigation.assets) {
+                        const fallbackIndex = window.assetNavigation.assets.findIndex(a => 
+                            a.resourceValue === jsonResourceValue || 
+                            a.filename === jsonResourceValue ||
+                            (a.resourceValue && a.resourceValue.includes(jsonResourceValue)) ||
+                            (a.filename && a.filename.includes(jsonResourceValue))
+                        );
+                        if (fallbackIndex >= 0) {
+                            window.assetNavigation.currentIndex = fallbackIndex;
+                        }
+                    }
                 }
             } else if (imgSrc === 'index-html') {
                 // Set index for index.html
@@ -3582,15 +3700,43 @@
                         window.assetNavigation.currentIndex = htmlIndex;
                     }
                 }
+            } else if (imgSrc === 'config-json') {
+                // Set index for config.json
+                if (window.assetNavigation.assets) {
+                    const configIndex = window.assetNavigation.assets.findIndex(a => a.filename === 'config.json');
+                    if (configIndex >= 0) {
+                        window.assetNavigation.currentIndex = configIndex;
+                    }
+                }
+            } else if (imgSrc === 'font-preview' && filename) {
+                // Set index for font
+                if (window.assetNavigation.assets) {
+                    const fontIndex = window.assetNavigation.assets.findIndex(a => 
+                        a.type === 'font' && (a.filename === filename || a.resourceValue === filename)
+                    );
+                    if (fontIndex >= 0) {
+                        window.assetNavigation.currentIndex = fontIndex;
+                    }
+                }
             }
             
-            // Sync navigation buttons (show for all navigable assets)
+            // Sync navigation buttons immediately (show for all navigable assets) - BEFORE opening lightbox
             syncNavigationButtons();
+            
+            // Sync JSON highlighting after opening
+            setTimeout(() => {
+                syncJsonHighlighting();
+                syncNavigationButtons(); // Sync again after highlighting
+            }, 300);
             
             // Construct GitHub URL using blob/main to view the actual file
             const githubUrl = `https://github.com/y1-community/InnioasisY1Themes/blob/main/${encodeURIComponent(folderName)}/${encodeURIComponent(actualFilename)}`;
             editBtn.href = githubUrl;
             editBtn.style.display = 'inline-flex';
+            
+            // Activate lightbox AFTER everything is set up
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
         }
 
         function closeLightbox() {
@@ -4293,6 +4439,13 @@
                 indexHtmlItem.className = 'image-carousel-item';
                 indexHtmlItem.onclick = function(e) {
                     e.stopPropagation();
+                    // Find and set asset index BEFORE opening lightbox
+                    if (window.assetNavigation.assets) {
+                        const htmlIndex = window.assetNavigation.assets.findIndex(a => a.filename === 'index.html');
+                        if (htmlIndex >= 0) {
+                            window.assetNavigation.currentIndex = htmlIndex;
+                        }
+                    }
                     openLightbox('index-html', null, null);
                 };
                 indexHtmlItem.style.cursor = 'pointer';
@@ -4321,6 +4474,13 @@
                     configItem.className = 'image-carousel-item';
                     configItem.onclick = function(e) {
                         e.stopPropagation();
+                        // Find and set asset index BEFORE opening lightbox
+                        if (window.assetNavigation.assets) {
+                            const configIndex = window.assetNavigation.assets.findIndex(a => a.filename === 'config.json');
+                            if (configIndex >= 0) {
+                                window.assetNavigation.currentIndex = configIndex;
+                            }
+                        }
                         openLightbox('config-json', null, config, null, null, imageCache, fontFile);
                     };
                     configItem.style.cursor = 'pointer';
@@ -4390,6 +4550,15 @@
                         loadFontPreview().then(() => {
                             fontItem.onclick = function(e) {
                                 e.stopPropagation();
+                                // Find and set asset index BEFORE opening lightbox
+                                if (window.assetNavigation.assets) {
+                                    const fontIndex = window.assetNavigation.assets.findIndex(a => 
+                                        a.type === 'font' && (a.filename === fontFile || a.resourceValue === fontFile)
+                                    );
+                                    if (fontIndex >= 0) {
+                                        window.assetNavigation.currentIndex = fontIndex;
+                                    }
+                                }
                                 openLightbox('font-preview', fontFile, null, fontUrl, localFontUrl, imageCache, null, fontFile);
                             };
                             fontItem.style.cursor = 'pointer';
@@ -4424,6 +4593,16 @@
                     
                     item.onclick = function(e) {
                         e.stopPropagation();
+                        // Find and set asset index BEFORE opening lightbox
+                        if (window.assetNavigation.assets) {
+                            const assetIndex = window.assetNavigation.assets.findIndex(a => 
+                                a.type === 'image' && 
+                                (a.filename === asset.filename || a.resourceValue === asset.resourceValue)
+                            );
+                            if (assetIndex >= 0) {
+                                window.assetNavigation.currentIndex = assetIndex;
+                            }
+                        }
                         openLightbox(asset.objectUrl || asset.url, asset.filename, null, null, null, imageCache, null, asset.resourceValue || asset.filename);
                     };
                     
