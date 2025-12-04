@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HughBliss Theme - Official Innioasis Y1 Community Themes</title>
-    <meta name="description" content="Download HughBliss theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. Sam and Max inspired Y1 theme Community Maintainers: Ryan Specter + Dmitri Medina">
-    <meta name="keywords" content="Innioasis Y1, Y1 themes, MP3 player themes, HughBliss, Y1 customization, official Y1 themes, Ryan Specter, Dmitri Medina">
+    <title>Loading Theme...</title>
+    <meta name="description" content="Download theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. Community Maintainers: Ryan Specter + Dmitri Medina">
+    <meta name="keywords" content="Innioasis Y1, Y1 themes, MP3 player themes, Y1 customization, official Y1 themes, Ryan Specter, Dmitri Medina">
     <script type="application/ld+json">
     {{
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
-        "name": "HughBliss Theme",
+        "name": "Theme",
         "applicationCategory": "Theme",
         "operatingSystem": "Innioasis Y1",
-        "description": "Download HughBliss theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. Sam and Max inspired Y1 theme Community Maintainers: Ryan Specter + Dmitri Medina",
-        "url": "https://themes.innioasis.app/HughBliss/",
+        "description": "Download theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. Community Maintainers: Ryan Specter + Dmitri Medina",
+        "url": "https://themes.innioasis.app/",
         "publisher": {{
             "@type": "Organization",
             "name": "Innioasis Y1 Community",
@@ -557,13 +557,13 @@
         <div class="header-section">
             <div class="header-text">
                 <!-- Title and subtitle removed; using About line instead -->
-                <h2 style="font-size: 1rem; margin-bottom: 15px; color: #667eea;">About the HughBliss Theme for Innioasis Y1</h2>
-                <p class="description" id="theme-description">Sam and Max inspired Y1 theme</p>
+                <h2 id="theme-title" style="font-size: 1rem; margin-bottom: 15px; color: #667eea; visibility: hidden;">Loading...</h2>
+                <p class="description" id="theme-description" style="visibility: hidden;">Loading...</p>
                 <p class="author-info" style="margin-top: 15px; color: #666; font-size: 0.9rem; font-style: italic;">
-                    Theme created by <strong id="author-display">u/maxime-le-mal</strong>
+                    Theme created by <strong id="author-display" style="visibility: hidden;">Loading...</strong>
                 </p>
             </div>
-            <img src="cover.png" alt="HughBliss cover" class="cover-image" onclick="openLightbox('cover.png')">
+            <img src="cover.png" alt="Theme cover" class="cover-image" onclick="openLightbox('cover.png')" id="cover-image">
         </div>
         
         
@@ -640,13 +640,13 @@
         
         <!-- SEO Content -->
         <div class="seo-content" style="margin-top: 40px; text-align: left; color: #666; font-size: 0.9rem; line-height: 1.6;">
-            <p><span id="description-display">Sam and Max inspired Y1 theme</span></p>
+            <p><span id="description-display" style="visibility: hidden;">Loading...</span></p>
         </div>
         
         <div style="margin-top: 30px; font-size: 0.9rem; color: #888;">
             <a href="../index.html" class="back-link">← Back to All Themes</a>
             <span style="margin: 0 10px;">|</span>
-            <a href="https://github.com/y1-community/InnioasisY1Themes/tree/main/HughBliss#readme" target="_blank" style="color: #888; text-decoration: none;">✏️ Edit or Update this Theme</a>
+            <a href="#" id="edit-theme-link" target="_blank" style="color: #888; text-decoration: none;">✏️ Edit or Update this Theme</a>
         </div>
     </div>
 
@@ -968,6 +968,16 @@
     </script>
 
     <script>
+        // Helper function to get folder name from URL
+        function getFolderName() {
+            const currentPath = window.location.pathname;
+            const pathParts = currentPath.split('/');
+            if (pathParts[pathParts.length - 1].toLowerCase() === 'index.html' || pathParts[pathParts.length - 1] === '') {
+                return decodeURIComponent(pathParts[pathParts.length - 2] || '');
+            }
+            return decodeURIComponent(pathParts[pathParts.length - 1] || '');
+        }
+        
         // Share Theme Function
         async function shareTheme() {
             const url = window.location.href;
@@ -1134,7 +1144,8 @@
                 if (!arrowIconFile || arrowIconFile.trim() === '') {
                     try {
                         // Try GitHub API to find *RightArrow*.* files
-                        const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/HughBliss`;
+                        const folderName = getFolderName();
+                        const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${encodeURIComponent(folderName)}`;
                         const response = await fetch(apiUrl);
                         if (response.ok) {
                             const files = await response.json();
@@ -1235,16 +1246,7 @@
         // 3. Hardcoded HTML values - LAST RESORT ONLY
         // This allows users to copy this index.html to another theme without editing it.
         document.addEventListener('DOMContentLoaded', async () => {
-            const currentPath = window.location.pathname;
-            let folderName = '';
-            const pathParts = currentPath.split('/');
-            if (pathParts[pathParts.length - 1].toLowerCase() === 'index.html' || pathParts[pathParts.length - 1] === '') {
-                folderName = pathParts[pathParts.length - 2];
-            } else {
-                folderName = pathParts[pathParts.length - 1];
-            }
-            
-            folderName = decodeURIComponent(folderName);
+            const folderName = getFolderName();
 
             // Check for File System Access API support (works on Chrome desktop and Android)
             if ('showDirectoryPicker' in window) {
@@ -1277,96 +1279,218 @@
             await loadAuthorInfo();
         });
         
-        // Load author information from config.json (priority) or themes.json (fallback)
+        // Load theme information from config.json (priority) or themes.json (fallback)
         async function loadAuthorInfo() {
             try {
-                let author = 'u/maxime-le-mal';
+                // Get folder name from URL
+                const folderName = getFolderName();
+                
+                // Initialize values - folder name as fallback for title
+                let title = folderName || 'Theme';
+                let author = null;
                 let authorUrl = null;
-                let description = 'Sam and Max inspired Y1 theme';
+                let description = null;
                 
                 // Try to load from config.json first (authoritative source)
                 try {
                     const configResponse = await fetch('./config.json');
                     if (configResponse.ok) {
                         const config = await configResponse.json();
-                        if (config.author) author = config.author;
-                        if (config.authorUrl) authorUrl = config.authorUrl;
-                        if (config.description) description = config.description;
+                        
+                        // Check theme_info structure first (new format)
+                        if (config.theme_info) {
+                            if (config.theme_info.title) title = config.theme_info.title;
+                            if (config.theme_info.author) author = config.theme_info.author;
+                            if (config.theme_info.authorUrl) authorUrl = config.theme_info.authorUrl;
+                            if (config.theme_info.description) description = config.theme_info.description;
+                        }
+                        
+                        // Fallback to direct properties (old format, backwards compatibility)
+                        if (!author && config.author) author = config.author;
+                        if (!authorUrl && config.authorUrl) authorUrl = config.authorUrl;
+                        if (!description && config.description) description = config.description;
+                        if (!title || title === folderName) {
+                            if (config.title) title = config.title;
+                            if (config.name) title = config.name;
+                        }
                     }
                 } catch (e) {
                     console.warn('Could not load config.json:', e);
                 }
                 
-                // Fallback to themes.json if authorUrl not found in config.json
-                if (!authorUrl) {
-                    try {
-                        const themesResponse = await fetch('../themes.json');
-                        if (themesResponse.ok) {
-                            const themesData = await themesResponse.json();
-                            const currentPath = window.location.pathname;
-                            let folderName = '';
-                            const pathParts = currentPath.split('/');
-                            if (pathParts[pathParts.length - 1].toLowerCase() === 'index.html' || pathParts[pathParts.length - 1] === '') {
-                                folderName = pathParts[pathParts.length - 2];
-                            } else {
-                                folderName = pathParts[pathParts.length - 1];
+                // Fallback to themes.json
+                try {
+                    const themesResponse = await fetch('../themes.json');
+                    if (themesResponse.ok) {
+                        const themesData = await themesResponse.json();
+                        const theme = themesData.themes.find(t => t.folder === folderName);
+                        
+                        if (theme) {
+                            // Only use values from themes.json if not already loaded from config.json
+                            if (!title || title === folderName) {
+                                if (theme.name) title = theme.name;
                             }
-                            folderName = decodeURIComponent(folderName);
-                            
-                            const theme = themesData.themes.find(t => t.folder === folderName);
-                            if (theme) {
-                                if (theme.author) author = theme.author;
-                                if (theme.authorUrl) authorUrl = theme.authorUrl;
-                                if (theme.description) description = theme.description;
-                            }
+                            if (!author && theme.author) author = theme.author;
+                            if (!authorUrl && theme.authorUrl) authorUrl = theme.authorUrl;
+                            if (!description && theme.description) description = theme.description;
                         }
-                    } catch (e) {
-                        console.warn('Could not load themes.json:', e);
                     }
+                } catch (e) {
+                    console.warn('Could not load themes.json:', e);
+                }
+                
+                // Final fallback: use folder name for title if still not set
+                if (!title || title === folderName) {
+                    title = folderName || 'Theme';
+                }
+                
+                // Update title
+                const titleElement = document.getElementById('theme-title');
+                if (titleElement) {
+                    titleElement.textContent = `About the ${title} Theme for Innioasis Y1`;
+                    titleElement.style.visibility = 'visible';
+                }
+                
+                // Update description (top section)
+                const themeDescriptionElement = document.getElementById('theme-description');
+                if (themeDescriptionElement) {
+                    themeDescriptionElement.textContent = description || '';
+                    themeDescriptionElement.style.visibility = description ? 'visible' : 'hidden';
+                }
+                
+                // Update description (bottom section - SEO)
+                const descriptionDisplay = document.getElementById('description-display');
+                if (descriptionDisplay) {
+                    descriptionDisplay.textContent = description || '';
+                    descriptionDisplay.style.visibility = description ? 'visible' : 'hidden';
                 }
                 
                 // Update author display with link if authorUrl is available
                 const authorDisplay = document.getElementById('author-display');
-                const descriptionDisplay = document.getElementById('description-display');
                 
                 if (authorDisplay) {
-                    // Detect Reddit username (u/username pattern)
-                    const redditUsernameMatch = author.match(/u\/([^\/\s]+)/i);
-                    let redditUsername = null;
-                    let redditFaviconHtml = '';
-                    
-                    if (redditUsernameMatch) {
-                        redditUsername = redditUsernameMatch[1];
-                        // Create Reddit favicon that links to reddit.com/user/username
-                        redditFaviconHtml = `<a href="https://reddit.com/user/${redditUsername}" target="_blank" rel="noopener noreferrer" class="reddit-favicon" onclick="event.stopPropagation();" style="display: inline-block; width: 16px; height: 16px; margin-left: 4px; vertical-align: middle; opacity: 0.8; transition: opacity 0.2s;"><img src="https://www.redditstatic.com/desktop2x/img/favicon/favicon-16x16.png" alt="Reddit" style="width: 100%; height: 100%; object-fit: contain;"></a>`;
-                    }
-                    
-                    if (authorUrl) {
-                        // Author name links to authorUrl, Reddit favicon links to Reddit profile
-                        authorDisplay.innerHTML = `<a href="${authorUrl}" target="_blank" rel="noopener noreferrer" style="color: #667eea; text-decoration: none; border-bottom: 1px solid #667eea; transition: all 0.2s;">$u/maxime-le-mal</a>${redditFaviconHtml}`;
-                        // Add hover effect
-                        const authorLink = authorDisplay.querySelector('a:not(.reddit-favicon)');
-                        if (authorLink) {
-                            authorLink.addEventListener('mouseenter', function() {
-                                this.style.color = '#764ba2';
-                                this.style.borderBottomColor = '#764ba2';
-                            });
-                            authorLink.addEventListener('mouseleave', function() {
-                                this.style.color = '#667eea';
-                                this.style.borderBottomColor = '#667eea';
-                            });
+                    // Use author if available, otherwise hide
+                    if (author) {
+                        // Detect Reddit username (u/username pattern)
+                        const redditUsernameMatch = author.match(/u\/([^\/\s]+)/i);
+                        let redditUsername = null;
+                        let redditFaviconHtml = '';
+                        
+                        if (redditUsernameMatch) {
+                            redditUsername = redditUsernameMatch[1];
+                            // Create Reddit favicon that links to reddit.com/user/username
+                            redditFaviconHtml = `<a href="https://reddit.com/user/${redditUsername}" target="_blank" rel="noopener noreferrer" class="reddit-favicon" onclick="event.stopPropagation();" style="display: inline-block; width: 16px; height: 16px; margin-left: 4px; vertical-align: middle; opacity: 0.8; transition: opacity 0.2s;"><img src="https://www.redditstatic.com/desktop2x/img/favicon/favicon-16x16.png" alt="Reddit" style="width: 100%; height: 100%; object-fit: contain;"></a>`;
                         }
+                        
+                        if (authorUrl) {
+                            // Author name links to authorUrl, Reddit favicon links to Reddit profile
+                            authorDisplay.innerHTML = `<a href="${authorUrl}" target="_blank" rel="noopener noreferrer" style="color: #667eea; text-decoration: none; border-bottom: 1px solid #667eea; transition: all 0.2s;">${author}</a>${redditFaviconHtml}`;
+                            // Add hover effect
+                            const authorLink = authorDisplay.querySelector('a:not(.reddit-favicon)');
+                            if (authorLink) {
+                                authorLink.addEventListener('mouseenter', function() {
+                                    this.style.color = '#764ba2';
+                                    this.style.borderBottomColor = '#764ba2';
+                                });
+                                authorLink.addEventListener('mouseleave', function() {
+                                    this.style.color = '#667eea';
+                                    this.style.borderBottomColor = '#667eea';
+                                });
+                            }
+                        } else {
+                            // No authorUrl - just display author name with Reddit favicon if detected
+                            authorDisplay.innerHTML = `${author}${redditFaviconHtml}`;
+                        }
+                        authorDisplay.style.visibility = 'visible';
                     } else {
-                        // No authorUrl - just display author name with Reddit favicon if detected
-                        authorDisplay.innerHTML = `$u/maxime-le-mal${redditFaviconHtml}`;
+                        authorDisplay.style.visibility = 'hidden';
                     }
                 }
                 
-                if (descriptionDisplay) {
-                    descriptionDisplay.textContent = description;
+                // Update meta tags and structured data
+                const pageTitle = `${title} Theme - Official Innioasis Y1 Community Themes`;
+                const metaDescription = description ? 
+                    `Download ${title} theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. ${description} Community Maintainers: Ryan Specter + Dmitri Medina` :
+                    `Download ${title} theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. Community Maintainers: Ryan Specter + Dmitri Medina`;
+                
+                // Update page title
+                document.title = pageTitle;
+                
+                // Update meta description
+                let metaDescTag = document.querySelector('meta[name="description"]');
+                if (!metaDescTag) {
+                    metaDescTag = document.createElement('meta');
+                    metaDescTag.name = 'description';
+                    document.head.appendChild(metaDescTag);
                 }
+                metaDescTag.content = metaDescription;
+                
+                // Update meta keywords
+                let metaKeywordsTag = document.querySelector('meta[name="keywords"]');
+                if (!metaKeywordsTag) {
+                    metaKeywordsTag = document.createElement('meta');
+                    metaKeywordsTag.name = 'keywords';
+                    document.head.appendChild(metaKeywordsTag);
+                }
+                metaKeywordsTag.content = `Innioasis Y1, Y1 themes, MP3 player themes, ${title}, Y1 customization, official Y1 themes, Ryan Specter, Dmitri Medina`;
+                
+                // Update structured data
+                let structuredDataScript = document.querySelector('script[type="application/ld+json"]');
+                if (structuredDataScript) {
+                    try {
+                        const structuredData = {
+                            "@context": "https://schema.org",
+                            "@type": "SoftwareApplication",
+                            "name": `${title} Theme`,
+                            "applicationCategory": "Theme",
+                            "operatingSystem": "Innioasis Y1",
+                            "description": metaDescription,
+                            "url": `https://themes.innioasis.app/${encodeURIComponent(folderName)}/`,
+                            "publisher": {
+                                "@type": "Organization",
+                                "name": "Innioasis Y1 Community",
+                                "url": "https://themes.innioasis.app"
+                            },
+                            "maintainer": [
+                                {
+                                    "@type": "Person",
+                                    "name": "Ryan Specter",
+                                    "url": "https://ryanspecter.uk"
+                                },
+                                {
+                                    "@type": "Person",
+                                    "name": "Dmitri Medina",
+                                    "url": "https://reddit.com/user/dmitrimedina"
+                                }
+                            ]
+                        };
+                        structuredDataScript.textContent = JSON.stringify(structuredData);
+                    } catch (e) {
+                        console.warn('Could not update structured data:', e);
+                    }
+                }
+                
+                // Update edit link
+                const editLink = document.getElementById('edit-theme-link');
+                if (editLink) {
+                    editLink.href = `https://github.com/y1-community/InnioasisY1Themes/tree/main/${encodeURIComponent(folderName)}#readme`;
+                }
+                
+                // Update cover image alt text
+                const coverImage = document.getElementById('cover-image');
+                if (coverImage) {
+                    coverImage.alt = `${title} cover`;
+                }
+                
             } catch (error) {
-                console.warn('Could not load author information:', error);
+                console.warn('Could not load theme information:', error);
+                // Show folder name as fallback
+                const titleElement = document.getElementById('theme-title');
+                if (titleElement) {
+                    const folderName = getFolderName();
+                    titleElement.textContent = `About the ${folderName || 'Theme'} Theme for Innioasis Y1`;
+                    titleElement.style.visibility = 'visible';
+                }
             }
         }
         
@@ -1462,7 +1586,7 @@
 
         // Install Theme directly to device
         async function installTheme() {
-            const folderName = 'HughBliss';
+            const folderName = getFolderName();
             const btn = document.getElementById('install-btn');
             const status = document.getElementById('download-status');
             
@@ -1671,8 +1795,8 @@
 
         // Download theme as ZIP
         async function downloadTheme() {
-            const folderName = 'HughBliss';
-            const themeName = 'HughBliss';
+            const folderName = getFolderName();
+            const themeName = folderName;
             const btn = document.getElementById('download-btn-full');
             const status = document.getElementById('download-status');
             
@@ -1817,7 +1941,7 @@
             // Extract filename from image source and construct GitHub URL
             // Image source format: ./filename.png or ./themeFolder/filename.png
             // We need: https://github.com/y1-community/InnioasisY1Themes/tree/main/{folderName}/{filename}
-            const folderName = 'HughBliss';
+            const folderName = getFolderName();
             let filename = '';
             
             // Remove leading ./ if present
@@ -1859,7 +1983,7 @@
         // Images are loaded using relative paths (works locally and on GitHub Pages)
         // This also helps speed up ZIP downloads as images are already cached in browser
         async function loadThemeImages() {
-            const folderName = 'HughBliss';
+            const folderName = getFolderName();
             const carouselWrapper = document.getElementById('image-carousel-wrapper');
             const carouselInfo = document.getElementById('carousel-info');
             
