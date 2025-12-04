@@ -57,6 +57,12 @@
             text-align: center;
             margin-bottom: 20px;
         }
+        /* Scale theme pages to 110% on desktop */
+        @media (min-width: 768px) {
+            html {
+                font-size: 110%;
+            }
+        }
         h1 {
             margin-bottom: 10px;
             color: #333;
@@ -427,6 +433,33 @@
             max-height: 90%;
             border-radius: 5px;
             box-shadow: 0 0 20px rgba(255,255,255,0.2);
+            font-size: 1.1rem; /* Better legibility */
+        }
+        .lightbox-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .lightbox-content p {
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        .lightbox-content pre, .lightbox-content code {
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        @media (max-width: 767px) {
+            .lightbox-content {
+                max-width: 95%;
+                max-height: 95%;
+                font-size: 1rem;
+                padding: 15px;
+            }
+            .lightbox-content h3 {
+                font-size: 1.3rem;
+            }
+            .lightbox-content pre, .lightbox-content code {
+                font-size: 0.85rem;
+            }
         }
         .lightbox-close {
             position: absolute;
@@ -771,9 +804,11 @@
     <!-- Lightbox Modal -->
     <div id="lightbox" class="lightbox" onclick="closeLightbox()">
         <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+        <button id="lightbox-nav-left" class="lightbox-nav-btn" style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); background: rgba(255, 255, 255, 0.9); border: none; border-radius: 50%; width: 50px; height: 50px; font-size: 24px; cursor: pointer; z-index: 1003; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: all 0.3s;" onclick="event.stopPropagation(); navigateAsset(-1)" onmouseover="this.style.background='rgba(255, 255, 255, 1)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.9)'">←</button>
+        <button id="lightbox-nav-right" class="lightbox-nav-btn" style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); background: rgba(255, 255, 255, 0.9); border: none; border-radius: 50%; width: 50px; height: 50px; font-size: 24px; cursor: pointer; z-index: 1003; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: all 0.3s;" onclick="event.stopPropagation(); navigateAsset(1)" onmouseover="this.style.background='rgba(255, 255, 255, 1)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.9)'">→</button>
         <img class="lightbox-content" id="lightbox-img" onclick="event.stopPropagation()">
         <div id="lightbox-content-wrapper" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); max-width: 90%; max-height: 80%; overflow-y: auto; background: white; border-radius: 8px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 1001;" onclick="event.stopPropagation()"></div>
-        <div id="lightbox-json-context" style="display: none; position: absolute; bottom: 140px; left: 50%; transform: translateX(-50%); max-width: 90%; background: rgba(255, 255, 255, 0.95); border-radius: 8px; padding: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 1002; max-height: 200px; overflow-y: auto;" onclick="event.stopPropagation()"></div>
+        <div id="lightbox-json-context" style="display: none; position: fixed; right: 20px; top: 50%; transform: translateY(-50%); width: 380px; max-width: calc(100vw - 40px); background: rgba(45, 45, 45, 0.98); border-radius: 8px; padding: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); z-index: 1002; max-height: 70vh; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1);" onclick="event.stopPropagation()"></div>
         <div id="lightbox-filename" style="position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.8); color: white; padding: 8px 16px; border-radius: 4px; font-size: 0.9rem; max-width: 90%; text-align: center; word-break: break-word; z-index: 1002;"></div>
         <a id="lightbox-edit-btn" class="lightbox-edit-btn" href="#" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">
             <span>✏️</span>
@@ -1681,13 +1716,13 @@
                 }
                 
                 // Fallback to themes.json
-                try {
-                    const themesResponse = await fetch('../themes.json');
-                    if (themesResponse.ok) {
-                        const themesData = await themesResponse.json();
-                        const theme = themesData.themes.find(t => t.folder === folderName);
+                    try {
+                        const themesResponse = await fetch('../themes.json');
+                        if (themesResponse.ok) {
+                            const themesData = await themesResponse.json();
+                            const theme = themesData.themes.find(t => t.folder === folderName);
                         
-                        if (theme) {
+                            if (theme) {
                             // Only use values from themes.json if not already loaded from config.json
                             if (!title || title === folderName) {
                                 if (theme.name) title = theme.name;
@@ -1695,10 +1730,10 @@
                             if (!author && theme.author) author = theme.author;
                             if (!authorUrl && theme.authorUrl) authorUrl = theme.authorUrl;
                             if (!description && theme.description) description = theme.description;
+                            }
                         }
-                    }
-                } catch (e) {
-                    console.warn('Could not load themes.json:', e);
+                    } catch (e) {
+                        console.warn('Could not load themes.json:', e);
                 }
                 
                 // Final fallback: use folder name for title if still not set
@@ -1743,34 +1778,34 @@
                 if (authorDisplay) {
                     // Use author if available, otherwise hide
                     if (author) {
-                        // Detect Reddit username (u/username pattern)
-                        const redditUsernameMatch = author.match(/u\/([^\/\s]+)/i);
-                        let redditUsername = null;
-                        let redditFaviconHtml = '';
-                        
-                        if (redditUsernameMatch) {
-                            redditUsername = redditUsernameMatch[1];
-                            // Create Reddit favicon that links to reddit.com/user/username
-                            redditFaviconHtml = `<a href="https://reddit.com/user/${redditUsername}" target="_blank" rel="noopener noreferrer" class="reddit-favicon" onclick="event.stopPropagation();" style="display: inline-block; width: 16px; height: 16px; margin-left: 4px; vertical-align: middle; opacity: 0.8; transition: opacity 0.2s;"><img src="https://www.redditstatic.com/desktop2x/img/favicon/favicon-16x16.png" alt="Reddit" style="width: 100%; height: 100%; object-fit: contain;"></a>`;
-                        }
-                        
-                        if (authorUrl) {
-                            // Author name links to authorUrl, Reddit favicon links to Reddit profile
+                    // Detect Reddit username (u/username pattern)
+                    const redditUsernameMatch = author.match(/u\/([^\/\s]+)/i);
+                    let redditUsername = null;
+                    let redditFaviconHtml = '';
+                    
+                    if (redditUsernameMatch) {
+                        redditUsername = redditUsernameMatch[1];
+                        // Create Reddit favicon that links to reddit.com/user/username
+                        redditFaviconHtml = `<a href="https://reddit.com/user/${redditUsername}" target="_blank" rel="noopener noreferrer" class="reddit-favicon" onclick="event.stopPropagation();" style="display: inline-block; width: 16px; height: 16px; margin-left: 4px; vertical-align: middle; opacity: 0.8; transition: opacity 0.2s;"><img src="https://www.redditstatic.com/desktop2x/img/favicon/favicon-16x16.png" alt="Reddit" style="width: 100%; height: 100%; object-fit: contain;"></a>`;
+                    }
+                    
+                    if (authorUrl) {
+                        // Author name links to authorUrl, Reddit favicon links to Reddit profile
                             authorDisplay.innerHTML = `<a href="${authorUrl}" target="_blank" rel="noopener noreferrer" style="color: #667eea; text-decoration: none; border-bottom: 1px solid #667eea; transition: all 0.2s;">${author}</a>${redditFaviconHtml}`;
-                            // Add hover effect
-                            const authorLink = authorDisplay.querySelector('a:not(.reddit-favicon)');
-                            if (authorLink) {
-                                authorLink.addEventListener('mouseenter', function() {
-                                    this.style.color = '#764ba2';
-                                    this.style.borderBottomColor = '#764ba2';
-                                });
-                                authorLink.addEventListener('mouseleave', function() {
-                                    this.style.color = '#667eea';
-                                    this.style.borderBottomColor = '#667eea';
-                                });
-                            }
-                        } else {
-                            // No authorUrl - just display author name with Reddit favicon if detected
+                        // Add hover effect
+                        const authorLink = authorDisplay.querySelector('a:not(.reddit-favicon)');
+                        if (authorLink) {
+                            authorLink.addEventListener('mouseenter', function() {
+                                this.style.color = '#764ba2';
+                                this.style.borderBottomColor = '#764ba2';
+                            });
+                            authorLink.addEventListener('mouseleave', function() {
+                                this.style.color = '#667eea';
+                                this.style.borderBottomColor = '#667eea';
+                            });
+                        }
+                    } else {
+                        // No authorUrl - just display author name with Reddit favicon if detected
                             authorDisplay.innerHTML = `${author}${redditFaviconHtml}`;
                         }
                         authorDisplay.style.visibility = 'visible';
@@ -2297,6 +2332,199 @@
             }
         }
 
+        // Global asset tracking for navigation
+        window.assetNavigation = {
+            assets: [],
+            currentIndex: -1,
+            currentImageCache: null
+        };
+        
+        // Navigation functions
+        function navigateAsset(direction) {
+            if (!window.assetNavigation.assets || window.assetNavigation.assets.length === 0) return;
+            
+            const newIndex = window.assetNavigation.currentIndex + direction;
+            if (newIndex < 0 || newIndex >= window.assetNavigation.assets.length) return;
+            
+            window.assetNavigation.currentIndex = newIndex;
+            const asset = window.assetNavigation.assets[newIndex];
+            
+            if (asset.type === 'special') {
+                if (asset.filename === 'index.html') {
+                    openLightbox('index-html', null, null);
+                } else if (asset.filename === 'config.json') {
+                    // Get config from stored data
+                    const configData = window.configJsonData;
+                    const imgCache = window.configJsonImageCache;
+                    const fontFileData = window.configJsonFontFile;
+                    openLightbox('config-json', null, configData, null, null, imgCache, fontFileData);
+                }
+            } else if (asset.type === 'image') {
+                const cached = window.assetNavigation.currentImageCache ? window.assetNavigation.currentImageCache.get(asset.filename) : null;
+                if (cached && cached.objectUrl) {
+                    openLightbox(cached.objectUrl, asset.filename, null, null, null, window.assetNavigation.currentImageCache, null, asset.resourceValue || asset.filename);
+                } else {
+                    const githubUrl = getGitHubRawUrl(asset.filename);
+                    openLightbox(githubUrl, asset.filename, null, null, null, window.assetNavigation.currentImageCache, null, asset.resourceValue || asset.filename);
+                }
+            } else if (asset.type === 'font') {
+                const fontUrl = getGitHubRawUrl(asset.filename);
+                const localFontUrl = getLocalUrl(asset.filename);
+                openLightbox('font-preview', asset.filename, null, fontUrl, localFontUrl, window.assetNavigation.currentImageCache, null, asset.resourceValue || asset.filename);
+            }
+            
+            // Sync navigation buttons and JSON highlighting after opening
+            setTimeout(() => {
+                syncNavigationButtons();
+                syncJsonHighlighting();
+            }, 300);
+        }
+        
+        // Helper function to sync JSON highlighting with current asset
+        function syncJsonHighlighting() {
+            if (!window.assetNavigation.assets || window.assetNavigation.currentIndex < 0) return;
+            
+            const asset = window.assetNavigation.assets[window.assetNavigation.currentIndex];
+            if (!asset || !asset.resourceValue) return;
+            
+            // Find JSON context in the wrapper
+            const lightboxContentWrapper = document.getElementById('lightbox-content-wrapper');
+            if (!lightboxContentWrapper) return;
+            
+            const jsonPre = lightboxContentWrapper.querySelector('pre[id^="lightbox-json-"], pre[id^="font-json-"], pre[id^="image-json-"]');
+            if (!jsonPre) return;
+            
+            // Find the line containing this resource
+            const context = window.findJsonContextForResource ? window.findJsonContextForResource(asset.resourceValue, 0) : null;
+            if (!context) return;
+            
+            const targetLine = jsonPre.querySelector(`.json-line[data-line="${context.lineNumber}"]`);
+            if (targetLine) {
+                // Clear all highlights
+                jsonPre.querySelectorAll('.json-line').forEach(l => l.style.background = '');
+                // Highlight target line
+                targetLine.style.background = 'rgba(102, 126, 234, 0.3)';
+                targetLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+        
+        function navigateJsonLine(direction) {
+            // Find JSON context in wrapper (not separate panel)
+            const lightboxContentWrapper = document.getElementById('lightbox-content-wrapper');
+            if (!lightboxContentWrapper || lightboxContentWrapper.style.display === 'none') return;
+            
+            const jsonPre = lightboxContentWrapper.querySelector('pre[id^="lightbox-json-"], pre[id^="font-json-"], pre[id^="image-json-"]');
+            if (!jsonPre) return;
+            
+            const allLines = Array.from(jsonPre.querySelectorAll('.json-line')).filter(line => {
+                const resource = line.querySelector('.json-resource');
+                return resource !== null; // Only lines with resources
+            });
+            
+            if (allLines.length === 0) return;
+            
+            // Find currently highlighted line or current asset
+            let currentLineIndex = -1;
+            if (window.assetNavigation.currentIndex >= 0 && window.assetNavigation.assets) {
+                const currentAsset = window.assetNavigation.assets[window.assetNavigation.currentIndex];
+                if (currentAsset && currentAsset.resourceValue) {
+                    const context = window.findJsonContextForResource ? window.findJsonContextForResource(currentAsset.resourceValue, 0) : null;
+                    if (context) {
+                        const targetLineNum = context.lineNumber;
+                        allLines.forEach((line, idx) => {
+                            const lineNum = parseInt(line.getAttribute('data-line'));
+                            if (lineNum === targetLineNum) {
+                                currentLineIndex = idx;
+                            }
+                        });
+                    }
+                }
+            }
+            
+            // If no current line found, use first visible highlighted line
+            if (currentLineIndex === -1) {
+                allLines.forEach((line, idx) => {
+                    if (line.style.background && line.style.background.includes('rgba(102, 126, 234')) {
+                        currentLineIndex = idx;
+                    }
+                });
+            }
+            
+            // Find next resource line
+            let nextIndex = currentLineIndex + direction;
+            if (nextIndex < 0) nextIndex = allLines.length - 1;
+            if (nextIndex >= allLines.length) nextIndex = 0;
+            
+            const line = allLines[nextIndex];
+            const resource = line.querySelector('.json-resource');
+            if (resource) {
+                // Get resource info
+                const resourceType = resource.getAttribute('data-resource-type');
+                const resourceValue = resource.getAttribute('data-resource-value');
+                const resourceFilename = resource.getAttribute('data-resource-filename') || resourceValue.split('/').pop();
+                
+                // Find matching asset in navigation list and update index
+                if (window.assetNavigation.assets) {
+                    const assetIndex = window.assetNavigation.assets.findIndex(a => 
+                        (a.type === 'image' || a.type === 'font') && 
+                        (a.filename === resourceFilename || a.resourceValue === resourceValue)
+                    );
+                    if (assetIndex >= 0) {
+                        window.assetNavigation.currentIndex = assetIndex;
+                        syncNavigationButtons();
+                    }
+                }
+                
+                // Highlight and scroll to this line
+                jsonPre.querySelectorAll('.json-line').forEach(l => l.style.background = '');
+                line.style.background = 'rgba(102, 126, 234, 0.3)';
+                line.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Preview the asset
+                setTimeout(() => {
+                    if (resourceType === 'image') {
+                        const cached = window.assetNavigation.currentImageCache ? window.assetNavigation.currentImageCache.get(resourceFilename) : null;
+                        if (cached && cached.objectUrl) {
+                            openLightbox(cached.objectUrl, resourceFilename, null, null, null, window.assetNavigation.currentImageCache, null, resourceValue);
+                        } else {
+                            const githubUrl = getGitHubRawUrl(resourceFilename);
+                            openLightbox(githubUrl, resourceFilename, null, null, null, window.assetNavigation.currentImageCache, null, resourceValue);
+                        }
+                    } else if (resourceType === 'font') {
+                        const fontUrl = getGitHubRawUrl(resourceValue);
+                        const localFontUrl = getLocalUrl(resourceValue);
+                        openLightbox('font-preview', resourceValue, null, fontUrl, localFontUrl, window.assetNavigation.currentImageCache, null, resourceValue);
+                    }
+                }, 100);
+            }
+        }
+        
+        function syncNavigationButtons() {
+            const navLeft = document.getElementById('lightbox-nav-left');
+            const navRight = document.getElementById('lightbox-nav-right');
+            if (navLeft && navRight && window.assetNavigation.assets && window.assetNavigation.assets.length > 1) {
+                navLeft.style.display = window.assetNavigation.currentIndex > 0 ? 'block' : 'none';
+                navRight.style.display = window.assetNavigation.currentIndex < window.assetNavigation.assets.length - 1 ? 'block' : 'none';
+            }
+        }
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            const lightbox = document.getElementById('lightbox');
+            if (!lightbox || !lightbox.classList.contains('active')) return;
+            
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                e.preventDefault();
+                navigateAsset(e.key === 'ArrowRight' ? 1 : -1);
+            } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                navigateJsonLine(e.key === 'ArrowDown' ? 1 : -1);
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                closeLightbox();
+            }
+        });
+        
         // Lightbox functions
         function openLightbox(imgSrc, filename = null, extraData = null, fontUrl = null, localFontUrl = null, imageCache = null, fontFileData = null, jsonResourceValue = null) {
             const lightbox = document.getElementById('lightbox');
@@ -2304,8 +2532,23 @@
             const lightboxContentWrapper = document.getElementById('lightbox-content-wrapper');
             const editBtn = document.getElementById('lightbox-edit-btn');
             const filenameDisplay = document.getElementById('lightbox-filename');
+            const lightboxJsonContext = document.getElementById('lightbox-json-context');
             
             const folderName = getFolderName();
+            
+            // Always clear and hide the separate JSON context panel first (to prevent duplicates)
+            if (lightboxJsonContext) {
+                lightboxJsonContext.style.display = 'none';
+                lightboxJsonContext.innerHTML = '';
+            }
+            
+            // Clear any existing JSON contexts in wrappers
+            const allJsonContexts = document.querySelectorAll('[id^="lightbox-json-"], [id^="font-json-"], [id^="mini-json-"], [id^="image-json-"]');
+            allJsonContexts.forEach(ctx => {
+                if (ctx && ctx.parentElement) {
+                    ctx.innerHTML = '';
+                }
+            });
             
             // Handle special content types
             if (imgSrc === 'transparent-assets' && extraData) {
@@ -2485,7 +2728,26 @@
                                 }
                                 // Regular string - highlight if theme info
                                 else {
-                                    html += `<span style="color: ${isThemeInfo ? '#667eea' : '#e6db74'}; font-weight: ${isThemeInfo ? '600' : 'normal'};">"${escapedValue}"</span>`;
+                                    let tooltipText = '';
+                                    if (isThemeInfo) {
+                                        if (key === 'title' || currentPath.includes('title')) {
+                                            tooltipText = 'Theme title displayed on the theme page';
+                                        } else if (key === 'author' || currentPath.includes('author')) {
+                                            tooltipText = 'Theme author name displayed on the theme page';
+                                        } else if (key === 'authorUrl' || currentPath.includes('authorUrl')) {
+                                            tooltipText = 'Link to the theme author profile or website';
+                                        } else if (key === 'description' || currentPath.includes('description')) {
+                                            tooltipText = 'Theme description displayed on the theme page';
+                                        } else if (key === 'name' || currentPath.includes('name')) {
+                                            tooltipText = 'Theme name used for identification';
+                                        } else {
+                                            tooltipText = 'Theme information used to populate the theme page';
+                                        }
+                                        const escapedTooltip = escapeJs(tooltipText);
+                                        html += `<span class="json-theme-info" data-tooltip="${escapeHtml(tooltipText)}" style="color: #667eea; font-weight: 600; cursor: help; position: relative; border-bottom: 1px dotted #667eea;" onmouseover="showThemeInfoTooltip(event, '${escapedTooltip}')" onmouseout="hideThemeInfoTooltip()">"${escapedValue}"</span>`;
+                                    } else {
+                                        html += `<span style="color: #e6db74;">"${escapedValue}"</span>`;
+                                    }
                                 }
                             } else if (typeof value === 'object' && value !== null) {
                                 const result = createInteractiveJson(value, imageCache, fontFileData, indent + 1, currentPath, currentLine);
@@ -2529,6 +2791,9 @@
                 const interactiveJsonResult = createInteractiveJson(extraData, imageCache, fontFileData, 0, '', 1);
                 const interactiveJson = interactiveJsonResult.html;
                 
+                // Store createInteractiveJson function globally for use in tooltips
+                window.createInteractiveJson = createInteractiveJson;
+                
                 // Helper to find JSON context lines for a resource
                 const findJsonContext = (resourceValue, contextLines = 3) => {
                     const escapedValue = JSON.stringify(resourceValue);
@@ -2561,7 +2826,7 @@
                 lightboxContentWrapper.innerHTML = `
                     <h3 style="margin-top: 0; color: #667eea; margin-bottom: 20px;">config.json</h3>
                     <p style="color: #666; margin-bottom: 15px; font-size: 0.9rem;">Hover or tap on image filenames and font names to preview them. Click on JSON context lines to jump to that location.</p>
-                    <div id="resource-preview-popup" style="display: none; position: fixed; z-index: 1003; background: white; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); padding: 15px; max-width: 350px; pointer-events: none;"></div>
+                    <div id="resource-preview-popup" style="display: none; position: fixed; z-index: 10003; background: white; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); padding: 15px; max-width: 400px; pointer-events: none; font-size: 1rem;"></div>
                     <div style="background: #2d2d2d; border-radius: 4px; overflow: hidden; position: relative;">
                         <pre id="json-preview-pre" style="color: #f8f8f2; padding: 20px; padding-left: 60px; overflow-x: auto; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.85rem; line-height: 1.5; margin: 0; max-height: 60vh; overflow-y: auto; white-space: pre; word-wrap: normal; position: relative;"><code>${interactiveJson}</code></pre>
                         <div id="json-line-numbers" style="position: absolute; left: 0; top: 0; bottom: 0; width: 50px; background: #1e1e1e; color: #858585; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.85rem; padding: 20px 5px; text-align: right; user-select: none; line-height: 1.5;"></div>
@@ -2600,43 +2865,80 @@
                     const popup = document.getElementById('resource-preview-popup');
                     if (!popup) return;
                     
-                    const rect = event.target.getBoundingClientRect();
-                    let popupLeft = rect.right + 10;
-                    let popupTop = rect.top - 10;
+                    // Use mouse position for better cursor following - update on mousemove
+                    const updatePosition = (e) => {
+                        const mouseX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+                        const mouseY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+                        
+                        let popupLeft = mouseX + 20;
+                        let popupTop = mouseY + 20;
+                        
+                        // Adjust if popup would go off screen
+                        if (popupLeft + 400 > window.innerWidth) {
+                            popupLeft = mouseX - 420; // Show to the left of cursor
+                        }
+                        if (popupTop + 300 > window.innerHeight) {
+                            popupTop = mouseY - 320; // Show above cursor
+                        }
+                        if (popupLeft < 10) popupLeft = 10;
+                        if (popupTop < 10) popupTop = 10;
+                        
+                        popup.style.left = popupLeft + 'px';
+                        popup.style.top = popupTop + 'px';
+                    };
                     
-                    // Adjust if popup would go off screen
-                    if (popupLeft + 350 > window.innerWidth) {
-                        popupLeft = rect.left - 360;
-                    }
-                    if (popupTop < 0) {
-                        popupTop = 10;
-                    }
+                    // Initial position
+                    updatePosition(event);
                     
-                    popup.style.left = popupLeft + 'px';
-                    popup.style.top = popupTop + 'px';
+                    // Update position on mouse move
+                    const moveHandler = (e) => updatePosition(e);
+                    document.addEventListener('mousemove', moveHandler);
+                    popup._moveHandler = moveHandler; // Store for cleanup
                     
-                    // Find JSON context
-                    const context = findJsonContext(value, 2);
+                    // Generate full interactive JSON for mini preview
                     let contextHtml = '';
-                    if (context) {
-                        const startLineNum = context.lineNumber - context.targetLineIndex;
-                        const contextLinesHtml = context.lines.map((line, idx) => {
-                            const isTargetLine = idx === context.targetLineIndex;
-                            const escapedLine = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                            const lineNum = startLineNum + idx;
-                            return `<div style="display: flex; font-family: 'SF Mono', 'Monaco', monospace; font-size: 0.7rem; line-height: 1.4; cursor: pointer; padding: 2px 0;" onclick="event.stopPropagation(); scrollToJsonLine(${lineNum})" onmouseover="this.style.background='#e8f4f8'" onmouseout="this.style.background='transparent'">
-                                <span style="color: #999; margin-right: 8px; min-width: 30px; text-align: right; user-select: none;">${lineNum}</span>
-                                <span style="color: ${isTargetLine ? '#333' : '#999'}; opacity: ${isTargetLine ? '1' : '0.6'}; flex: 1;">${escapedLine || ' '}</span>
-                            </div>`;
-                        }).join('');
+                    if (window.configJsonData && window.createInteractiveJson) {
+                        const configData = window.configJsonData;
+                        const imgCache = window.configJsonImageCache || imageCache;
+                        const fontFileData = window.configJsonFontFile || null;
+                        const fullJsonResult = createInteractiveJson(configData, imgCache, fontFileData, 0, '', 1);
+                        const fullJsonHtml = fullJsonResult.html;
+                        const totalLines = fullJsonHtml.split('\n').length;
+                        const uniqueId = 'mini-json-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                        
+                        // Find target line for scrolling
+                        const context = findJsonContext(value, 0);
+                        let scrollToLine = 1;
+                        if (context) {
+                            scrollToLine = context.lineNumber;
+                        }
+                        
                         contextHtml = `
                             <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #eee;">
-                                <div style="font-size: 0.7rem; color: #999; margin-bottom: 6px; font-weight: 600;">JSON Context (click line to jump):</div>
-                                <div style="background: #f8f9fa; padding: 8px; border-radius: 4px; max-height: 120px; overflow-y: auto;">
-                                    ${contextLinesHtml}
+                                <div style="font-size: 0.85rem; color: #999; margin-bottom: 8px; font-weight: 600;">Full config.json (scroll to find assets, click line to preview):</div>
+                                <div style="background: #2d2d2d; border-radius: 4px; overflow: hidden; position: relative; max-height: 250px; overflow-y: auto;">
+                                    <pre id="${uniqueId}" style="color: #f8f8f2; padding: 15px; padding-left: 50px; overflow-x: auto; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.75rem; line-height: 1.5; margin: 0; white-space: pre; word-wrap: normal; position: relative;"><code>${fullJsonHtml}</code></pre>
+                                    <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 40px; background: #1e1e1e; color: #858585; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.75rem; padding: 15px 5px; text-align: right; user-select: none; line-height: 1.5;">
+                                        ${Array.from({length: totalLines}, (_, i) => `<div style="line-height: 1.5;">${i + 1}</div>`).join('')}
+                                    </div>
                                 </div>
                             </div>
                         `;
+                        
+                        // Scroll to target line after rendering
+                        setTimeout(() => {
+                            const miniPre = document.getElementById(uniqueId);
+                            if (miniPre) {
+                                const targetLine = miniPre.querySelector(`.json-line[data-line="${scrollToLine}"]`);
+                                if (targetLine) {
+                                    targetLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    targetLine.style.background = 'rgba(102, 126, 234, 0.3)';
+                                    setTimeout(() => {
+                                        targetLine.style.background = '';
+                                    }, 2000);
+                                }
+                            }
+                        }, 100);
                     }
                     
                     if (type === 'image') {
@@ -2644,24 +2946,24 @@
                         const cached = imageCache ? imageCache.get(displayFilename) : null;
                         if (cached && cached.objectUrl) {
                             popup.innerHTML = `
-                                <div style="font-size: 0.75rem; color: #333; margin-bottom: 8px; font-family: monospace; text-align: center; font-weight: 600;">${displayFilename}</div>
-                                <img src="${cached.objectUrl}" style="max-width: 280px; max-height: 200px; border-radius: 4px; display: block; margin: 0 auto;" alt="${displayFilename}">
+                                <div style="font-size: 1rem; color: #333; margin-bottom: 10px; font-family: monospace; text-align: center; font-weight: 600;">${displayFilename}</div>
+                                <img src="${cached.objectUrl}" style="max-width: 320px; max-height: 240px; border-radius: 4px; display: block; margin: 0 auto;" alt="${displayFilename}">
                                 ${contextHtml}
                             `;
                         } else {
                             const githubUrl = getGitHubRawUrl(displayFilename);
                             popup.innerHTML = `
-                                <div style="font-size: 0.75rem; color: #333; margin-bottom: 8px; font-family: monospace; text-align: center; font-weight: 600;">${displayFilename}</div>
-                                <img src="${githubUrl}" style="max-width: 280px; max-height: 200px; border-radius: 4px; display: block; margin: 0 auto;" alt="${displayFilename}" onerror="this.parentElement.innerHTML='<div style=\\'padding: 20px; text-align: center; color: #999;\\'>Image not available</div><div style=\\'font-size: 0.75rem; color: #999; margin-top: 8px; font-family: monospace; text-align: center;\\'>${displayFilename}</div>${contextHtml}'">
+                                <div style="font-size: 1rem; color: #333; margin-bottom: 10px; font-family: monospace; text-align: center; font-weight: 600;">${displayFilename}</div>
+                                <img src="${githubUrl}" style="max-width: 320px; max-height: 240px; border-radius: 4px; display: block; margin: 0 auto;" alt="${displayFilename}" onerror="this.parentElement.innerHTML='<div style=\\'padding: 20px; text-align: center; color: #999; font-size: 1rem;\\'>Image not available</div><div style=\\'font-size: 1rem; color: #999; margin-top: 8px; font-family: monospace; text-align: center;\\'>${displayFilename}</div>${contextHtml}'">
                                 ${contextHtml}
                             `;
                         }
                     } else if (type === 'font') {
                         const fontFilename = value.split('/').pop();
                         popup.innerHTML = `
-                            <div style="font-size: 0.75rem; color: #333; margin-bottom: 12px; font-family: monospace; text-align: center; font-weight: 600;">${fontFilename}</div>
-                            <div style="padding: 10px; text-align: center; background: #f8f9fa; border-radius: 4px;">
-                                <div style="font-size: 24px; font-family: 'PreviewFontPopup', sans-serif; margin-bottom: 10px;">AaBbCc 123</div>
+                            <div style="font-size: 1rem; color: #333; margin-bottom: 12px; font-family: monospace; text-align: center; font-weight: 600;">${fontFilename}</div>
+                            <div style="padding: 15px; text-align: center; background: #f8f9fa; border-radius: 4px;">
+                                <div style="font-size: 32px; font-family: 'PreviewFontPopup', sans-serif; margin-bottom: 10px;">AaBbCc 123</div>
                             </div>
                             ${contextHtml}
                         `;
@@ -2683,7 +2985,56 @@
                 
                 window.hideResourcePreview = function() {
                     const popup = document.getElementById('resource-preview-popup');
-                    if (popup) popup.style.display = 'none';
+                    if (popup) {
+                        popup.style.display = 'none';
+                        // Remove mousemove handler
+                        if (popup._moveHandler) {
+                            document.removeEventListener('mousemove', popup._moveHandler);
+                            popup._moveHandler = null;
+                        }
+                    }
+                };
+                
+                // Theme info tooltip functions
+                window.showThemeInfoTooltip = function(event, tooltipText) {
+                    const popup = document.getElementById('resource-preview-popup');
+                    if (!popup) return;
+                    
+                    const updatePosition = (e) => {
+                        const mouseX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+                        const mouseY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+                        
+                        let popupLeft = mouseX + 20;
+                        let popupTop = mouseY + 20;
+                        
+                        if (popupLeft + 300 > window.innerWidth) {
+                            popupLeft = mouseX - 320;
+                        }
+                        if (popupTop + 100 > window.innerHeight) {
+                            popupTop = mouseY - 120;
+                        }
+                        if (popupLeft < 10) popupLeft = 10;
+                        if (popupTop < 10) popupTop = 10;
+                        
+                        popup.style.left = popupLeft + 'px';
+                        popup.style.top = popupTop + 'px';
+                    };
+                    
+                    updatePosition(event);
+                    
+                    popup.innerHTML = `
+                        <div style="font-size: 0.9rem; color: #333; font-weight: 600; margin-bottom: 6px;">Theme Info</div>
+                        <div style="font-size: 0.85rem; color: #666; line-height: 1.4;">${tooltipText}</div>
+                    `;
+                    popup.style.display = 'block';
+                    
+                    const moveHandler = (e) => updatePosition(e);
+                    document.addEventListener('mousemove', moveHandler);
+                    popup._moveHandler = moveHandler;
+                };
+                
+                window.hideThemeInfoTooltip = function() {
+                    window.hideResourcePreview();
                 };
                 
                 window.openResourcePreview = function(type, value, filename) {
@@ -2707,6 +3058,38 @@
                     return findJsonContext(resourceValue, contextLines);
                 };
                 window.formattedJsonLinesForContext = formattedJsonLines;
+                window.configJsonData = extraData; // Store config for use in tooltips
+                window.configJsonImageCache = imageCache; // Store image cache
+                window.configJsonFontFile = fontFile; // Store font file
+                
+                // Store findJsonContextForResource function globally
+                window.findJsonContextForResource = function(resourceValue, contextLines = 3) {
+                    if (!window.configJsonData) return null;
+                    const formattedJsonLines = JSON.stringify(window.configJsonData, null, 2).split('\n');
+                    let targetLineIndex = -1;
+                    
+                    // Find the line containing this resource
+                    for (let i = 0; i < formattedJsonLines.length; i++) {
+                        if (formattedJsonLines[i].includes(resourceValue)) {
+                            targetLineIndex = i;
+                            break;
+                        }
+                    }
+                    
+                    if (targetLineIndex === -1) return null;
+                    
+                    const start = Math.max(0, targetLineIndex - contextLines);
+                    const end = Math.min(formattedJsonLines.length, targetLineIndex + contextLines + 1);
+                    const context = formattedJsonLines.slice(start, end);
+                    const targetRelativeIndex = targetLineIndex - start;
+                    
+                    return {
+                        lines: context,
+                        targetLineIndex: targetRelativeIndex,
+                        lineNumber: targetLineIndex + 1,
+                        startLineNumber: start + 1
+                    };
+                };
                 
                 // Function to scroll to a specific line in JSON preview
                 window.scrollToJsonLine = function(lineNumber) {
@@ -2725,11 +3108,44 @@
                     }
                 };
                 
+                // Function to scroll to JSON line AND show asset preview
+                window.scrollToJsonLineAndPreview = function(lineNumber, type, value, filename) {
+                    // First scroll to the line
+                    window.scrollToJsonLine(lineNumber);
+                    
+                    // Then show the asset preview in lightbox
+                    setTimeout(() => {
+                        if (type === 'image') {
+                            const cached = imageCache ? imageCache.get(filename) : null;
+                            if (cached && cached.objectUrl) {
+                                openLightbox(cached.objectUrl, filename, null, null, null, imageCache, null, value);
+                            } else {
+                                const githubUrl = getGitHubRawUrl(filename);
+                                openLightbox(githubUrl, filename, null, null, null, imageCache, null, value);
+                            }
+                        } else if (type === 'font') {
+                            const fontUrl = getGitHubRawUrl(value);
+                            const localFontUrl = getLocalUrl(value);
+                            openLightbox('font-preview', value, null, fontUrl, localFontUrl, imageCache, null, value);
+                        }
+                    }, 300); // Small delay to let scroll complete
+                };
+                
                 filenameDisplay.textContent = 'config.json';
                 filenameDisplay.style.display = 'block';
                 const githubUrl = `https://github.com/y1-community/InnioasisY1Themes/blob/main/${encodeURIComponent(folderName)}/config.json`;
                 editBtn.href = githubUrl;
                 editBtn.style.display = 'inline-flex';
+                
+                // Set asset index for config.json
+                if (window.assetNavigation.assets) {
+                    const configIndex = window.assetNavigation.assets.findIndex(a => a.filename === 'config.json');
+                    if (configIndex >= 0) {
+                        window.assetNavigation.currentIndex = configIndex;
+                        syncNavigationButtons();
+                    }
+                }
+                
                 lightbox.classList.add('active');
                 document.body.style.overflow = 'hidden';
                 return;
@@ -2740,35 +3156,129 @@
                 lightboxImg.style.display = 'none';
                 lightboxContentWrapper.style.display = 'block';
                 
-                // Try to get JSON context if available
+                // Hide separate JSON context panel (JSON is in wrapper)
+                if (lightboxJsonContext) {
+                    lightboxJsonContext.style.display = 'none';
+                    lightboxJsonContext.innerHTML = '';
+                }
+                
+                // Generate full interactive JSON for mini preview
                 let jsonContextHtml = '';
-                if (window.findJsonContextForResource) {
-                    const context = window.findJsonContextForResource(filename, 3);
+                if (window.configJsonData && window.createInteractiveJson) {
+                    const configData = window.configJsonData;
+                    const imgCache = window.configJsonImageCache || imageCache;
+                    const fontFileData = window.configJsonFontFile || null;
+                    const fullJsonResult = window.createInteractiveJson(configData, imgCache, fontFileData, 0, '', 1);
+                    const fullJsonHtml = fullJsonResult.html;
+                    const totalLines = fullJsonHtml.split('\n').length;
+                    const uniqueId = 'font-json-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                    
+                    // Find target line for scrolling
+                    const context = window.findJsonContextForResource ? window.findJsonContextForResource(filename, 0) : null;
+                    let scrollToLine = 1;
                     if (context) {
-                        const startLineNum = context.lineNumber - context.targetLineIndex;
-                        const contextLinesHtml = context.lines.map((line, idx) => {
-                            const isTargetLine = idx === context.targetLineIndex;
-                            const escapedLine = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                            const lineNum = startLineNum + idx;
-                            return `<div onclick="if(window.scrollToJsonLine) window.scrollToJsonLine(${lineNum})" style="display: flex; font-family: 'SF Mono', 'Monaco', monospace; font-size: 0.7rem; line-height: 1.4; cursor: pointer; padding: 2px 0;" onmouseover="this.style.background='#e8f4f8'" onmouseout="this.style.background='transparent'">
-                                <span style="color: #999; margin-right: 8px; min-width: 30px; text-align: right; user-select: none;">${lineNum}</span>
-                                <span style="color: ${isTargetLine ? '#333' : '#999'}; opacity: ${isTargetLine ? '1' : '0.6'}; flex: 1; ${isTargetLine ? 'font-weight: 600;' : ''}">${escapedLine || ' '}</span>
-                            </div>`;
-                        }).join('');
-                        jsonContextHtml = `
-                            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
-                                <div style="font-size: 0.8rem; color: #999; margin-bottom: 8px; font-weight: 600;">Defined in config.json (click line to jump):</div>
-                                <div style="background: #f8f9fa; padding: 12px; border-radius: 4px; max-height: 150px; overflow-y: auto;">
-                                    ${contextLinesHtml}
+                        scrollToLine = context.lineNumber;
+                    }
+                    
+                    const escapedValue = filename.replace(/'/g, "\\'");
+                    
+                    jsonContextHtml = `
+                        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                                <div style="font-size: 0.8rem; color: #999; font-weight: 600;">config.json navigation (click lines or use ↑↓):</div>
+                                <div style="display: flex; gap: 8px;">
+                                    <button onclick="event.stopPropagation(); navigateJsonLine(-1)" style="background: #667eea; color: white; border: none; border-radius: 4px; width: 30px; height: 30px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='#5568d3'" onmouseout="this.style.background='#667eea'">↑</button>
+                                    <button onclick="event.stopPropagation(); navigateJsonLine(1)" style="background: #667eea; color: white; border: none; border-radius: 4px; width: 30px; height: 30px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='#5568d3'" onmouseout="this.style.background='#667eea'">↓</button>
                                 </div>
                             </div>
-                        `;
-                    }
+                            <div style="background: #2d2d2d; border-radius: 4px; overflow: hidden; position: relative; max-height: 200px; overflow-y: auto;">
+                                <pre id="${uniqueId}" style="color: #f8f8f2; padding: 10px; padding-left: 42px; overflow-x: auto; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.7rem; line-height: 1.3; margin: 0; white-space: pre; word-wrap: normal; position: relative;"><code>${fullJsonHtml}</code></pre>
+                                <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 32px; background: #1e1e1e; color: #858585; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.7rem; padding: 10px 4px; text-align: right; user-select: none; line-height: 1.3;">
+                                    ${Array.from({length: totalLines}, (_, i) => `<div style="line-height: 1.3;">${i + 1}</div>`).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Scroll to target line and make lines clickable
+                    setTimeout(() => {
+                        const jsonPre = document.getElementById(uniqueId);
+                        if (jsonPre) {
+                            const targetLine = jsonPre.querySelector(`.json-line[data-line="${scrollToLine}"]`);
+                            if (targetLine) {
+                                targetLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                targetLine.style.background = 'rgba(102, 126, 234, 0.3)';
+                                setTimeout(() => {
+                                    targetLine.style.background = '';
+                                }, 2000);
+                            }
+                            
+                        // Make all JSON lines clickable to navigate and preview
+                        jsonPre.querySelectorAll('.json-line').forEach(line => {
+                            const lineNum = parseInt(line.getAttribute('data-line'));
+                            if (lineNum) {
+                                line.style.cursor = 'pointer';
+                                line.onclick = function(e) {
+                                    e.stopPropagation();
+                                    // Check if this line contains a resource
+                                    const resource = line.querySelector('.json-resource');
+                                    if (resource) {
+                                        const resourceType = resource.getAttribute('data-resource-type');
+                                        const resourceValue = resource.getAttribute('data-resource-value');
+                                        const resourceFilename = resource.getAttribute('data-resource-filename') || resourceValue.split('/').pop();
+                                        
+                                        // Preview the asset
+                                        if (resourceType === 'image') {
+                                            const cached = imgCache ? imgCache.get(resourceFilename) : null;
+                                            if (cached && cached.objectUrl) {
+                                                openLightbox(cached.objectUrl, resourceFilename, null, null, null, imgCache, null, resourceValue);
+                                            } else {
+                                                const githubUrl = getGitHubRawUrl(resourceFilename);
+                                                openLightbox(githubUrl, resourceFilename, null, null, null, imgCache, null, resourceValue);
+                                            }
+                                        } else if (resourceType === 'font') {
+                                            const fontUrl = getGitHubRawUrl(resourceValue);
+                                            const localFontUrl = getLocalUrl(resourceValue);
+                                            openLightbox('font-preview', resourceValue, null, fontUrl, localFontUrl, imgCache, null, resourceValue);
+                                        }
+                                    } else {
+                                        // Just highlight the line if it doesn't contain a resource
+                                        const originalBg = line.style.background;
+                                        line.style.background = 'rgba(102, 126, 234, 0.3)';
+                                        setTimeout(() => {
+                                            line.style.background = originalBg;
+                                        }, 1000);
+                                    }
+                                };
+                                
+                                // Hover effect
+                                line.onmouseover = function() {
+                                    if (!line.querySelector('.json-resource')) {
+                                        this.style.background = 'rgba(102, 126, 234, 0.1)';
+                                    }
+                                };
+                                line.onmouseout = function() {
+                                    if (!line.querySelector('.json-resource')) {
+                                        this.style.background = '';
+                                    }
+                                };
+                            }
+                        });
+                        
+                        // Also make resource links clickable directly (prevent double-firing)
+                        jsonPre.querySelectorAll('.json-resource').forEach(resource => {
+                            resource.onclick = function(e) {
+                                e.stopPropagation();
+                                // Let the line's onclick handle it
+                            };
+                        });
+                        }
+                    }, 100);
                 }
                 
                 lightboxContentWrapper.innerHTML = `
-                    <h3 style="margin-top: 0; color: #667eea; margin-bottom: 20px;">Font Preview: ${filename}</h3>
-                    <div style="font-size: 0.75rem; color: #666; margin-bottom: 12px; font-family: monospace; text-align: center; font-weight: 600;">${filename}</div>
+                    <h3 style="margin-top: 0; color: #667eea; margin-bottom: 20px; font-size: 1.5rem;">Font Preview: ${filename}</h3>
+                    <div style="font-size: 1rem; color: #666; margin-bottom: 15px; font-family: monospace; text-align: center; font-weight: 600;">${filename}</div>
                     <div id="font-preview-container" style="background: white; padding: 30px; border-radius: 4px; border: 1px solid #ddd;">
                         <p style="font-size: 48px; margin: 20px 0; font-family: 'PreviewFontDisplay', sans-serif;">AaBbCc 123</p>
                         <p style="font-size: 36px; margin: 20px 0; font-family: 'PreviewFontDisplay', sans-serif;">The quick brown fox jumps over the lazy dog</p>
@@ -2801,21 +3311,19 @@
                 const githubUrl = `https://github.com/y1-community/InnioasisY1Themes/blob/main/${encodeURIComponent(folderName)}/${encodeURIComponent(filename)}`;
                 editBtn.href = githubUrl;
                 editBtn.style.display = 'inline-flex';
+                
+                // Sync JSON highlighting and navigation buttons after opening
+                setTimeout(() => {
+                    syncJsonHighlighting();
+                    syncNavigationButtons();
+                }, 300);
+                
                 lightbox.classList.add('active');
                 document.body.style.overflow = 'hidden';
                 return;
             }
             
-            // Default: Show image
-            lightboxImg.style.display = 'block';
-            lightboxContentWrapper.style.display = 'none';
-            lightboxImg.src = imgSrc;
-            lightbox.classList.add('active');
-            document.body.style.overflow = 'hidden';
-            
-            // Extract filename from image source and construct GitHub URL
-            // Image source format: ./filename.png, blob: URL, or full URL
-            // We need: https://github.com/y1-community/InnioasisY1Themes/blob/main/{folderName}/{filename}
+            // Extract filename first before generating JSON context
             let actualFilename = filename;
             
             // If filename not provided, extract from imgSrc
@@ -2823,12 +3331,11 @@
                 // Remove leading ./ if present
                 const cleanSrc = imgSrc.replace(/^\.\//, '');
                 
-                // Handle blob: URLs (from carousel) - try to get from data attribute
+                // Handle blob: URLs (from carousel)
                 if (imgSrc.startsWith('blob:')) {
-                    // Try to find the element that triggered this (if available)
                     actualFilename = cleanSrc.split('/').pop();
                 } else {
-                    // If the path contains a folder (shouldn't happen for theme page images, but handle it)
+                    // If the path contains a folder
                     if (cleanSrc.includes('/')) {
                         const parts = cleanSrc.split('/');
                         actualFilename = parts[parts.length - 1];
@@ -2841,40 +3348,244 @@
             // Remove URL parameters if present
             actualFilename = actualFilename.split('?')[0].split('#')[0];
             
+            // Hide separate JSON context panel (we'll show JSON in the wrapper instead)
+            if (lightboxJsonContext) {
+                lightboxJsonContext.style.display = 'none';
+                lightboxJsonContext.innerHTML = '';
+            }
+            
+            // Default: Show image in consistent format like font previews
+            lightboxImg.style.display = 'none';
+            lightboxContentWrapper.style.display = 'block';
+            
+            // Generate JSON context for images too - ALWAYS show if config data is available
+            let imageJsonContextHtml = '';
+            
+            // Ensure config data is available - try to load if not already loaded
+            if (!window.configJsonData) {
+                // Try to load config.json if not already available
+                (async () => {
+                    try {
+                        const configResponse = await fetch('./config.json');
+                        if (configResponse.ok) {
+                            const config = await configResponse.json();
+                            window.configJsonData = config;
+                            // Trigger re-render with JSON context
+                            setTimeout(() => {
+                                openLightbox(imgSrc, actualFilename, null, null, null, imageCache, null, jsonResourceValue);
+                            }, 100);
+                        }
+                    } catch (e) {
+                        console.warn('Could not load config.json:', e);
+                    }
+                })();
+            }
+            
+            if (window.configJsonData) {
+                // Create interactive JSON function if it doesn't exist
+                if (!window.createInteractiveJson) {
+                    // Define createInteractiveJson function inline
+                    window.createInteractiveJson = function(obj, imgCache, fontFileData, indent = 0, path = '', lineNumber = 1) {
+                        let html = '';
+                        const indentStr = '  '.repeat(indent);
+                        let currentLine = lineNumber;
+                        
+                        const escapeHtml = (str) => {
+                            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                        };
+                        
+                        if (Array.isArray(obj)) {
+                            html += `<span class="json-line" data-line="${currentLine++}">[</span>\n`;
+                            obj.forEach((item, index) => {
+                                html += `<span class="json-line" data-line="${currentLine}">${indentStr}  `;
+                                if (typeof item === 'object' && item !== null) {
+                                    const result = window.createInteractiveJson(item, imgCache, fontFileData, indent + 1, path, currentLine);
+                                    html += result.html;
+                                    currentLine = result.lineNumber;
+                                } else {
+                                    html += JSON.stringify(item);
+                                }
+                                if (index < obj.length - 1) html += ',';
+                                html += `</span>\n`;
+                                currentLine++;
+                            });
+                            html += `<span class="json-line" data-line="${currentLine++}">${indentStr}]</span>`;
+                        } else if (typeof obj === 'object' && obj !== null) {
+                            html += `<span class="json-line" data-line="${currentLine++}">{</span>\n`;
+                            const keys = Object.keys(obj);
+                            keys.forEach((key, index) => {
+                                const value = obj[key];
+                                const currentPath = path ? `${path}.${key}` : key;
+                                const lineNum = currentLine;
+                                html += `<span class="json-line" data-line="${lineNum}">${indentStr}  <span style="color: #f92672;">"${escapeHtml(key)}"</span>: `;
+                                
+                                if (typeof value === 'string') {
+                                    const escapedValue = escapeHtml(value);
+                                    
+                                    // Check if it's an image file
+                                    if (/\.(png|jpg|jpeg|gif|svg)$/i.test(value)) {
+                                        const filename = value.split('/').pop();
+                                        html += `<span class="json-resource" data-resource-type="image" data-resource-value="${escapedValue}" data-resource-filename="${escapeHtml(filename)}" style="color: #a6e22e; cursor: pointer; text-decoration: underline;">"${escapedValue}"</span>`;
+                                    }
+                                    // Check if it's a font file
+                                    else if (/\.(ttf|otf|woff|woff2)$/i.test(value) || (key === 'fontFamily' && value)) {
+                                        html += `<span class="json-resource" data-resource-type="font" data-resource-value="${escapedValue}" style="color: #a6e22e; cursor: pointer; text-decoration: underline;">"${escapedValue}"</span>`;
+                                    } else {
+                                        html += `<span style="color: #e6db74;">"${escapedValue}"</span>`;
+                                    }
+                                } else if (typeof value === 'object' && value !== null) {
+                                    const result = window.createInteractiveJson(value, imgCache, fontFileData, indent + 1, currentPath, currentLine);
+                                    html += result.html;
+                                    currentLine = result.lineNumber;
+                                } else {
+                                    html += `<span style="color: #ae81ff;">${JSON.stringify(value)}</span>`;
+                                }
+                                
+                                if (index < keys.length - 1) html += ',';
+                                html += `</span>\n`;
+                                currentLine++;
+                            });
+                            html += `<span class="json-line" data-line="${currentLine++}">${indentStr}}</span>`;
+                        } else {
+                            html += JSON.stringify(obj);
+                        }
+                        
+                        return { html, lineNumber: currentLine };
+                    };
+                }
+                
+                if (window.createInteractiveJson) {
+                const configData = window.configJsonData;
+                const imgCache = window.configJsonImageCache || imageCache;
+                window.assetNavigation.currentImageCache = imgCache;
+                const fontFileData = window.configJsonFontFile || null;
+                const fullJsonResult = window.createInteractiveJson(configData, imgCache, fontFileData, 0, '', 1);
+                const fullJsonHtml = fullJsonResult.html;
+                const totalLines = fullJsonHtml.split('\n').length;
+                const uniqueId = 'image-json-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                
+                const resourceValue = jsonResourceValue || actualFilename;
+                const context = window.findJsonContextForResource && resourceValue ? window.findJsonContextForResource(resourceValue, 0) : null;
+                let scrollToLine = 1;
+                if (context) {
+                    scrollToLine = context.lineNumber;
+                }
+                
+                imageJsonContextHtml = `
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                            <div style="font-size: 0.8rem; color: #999; font-weight: 600;">config.json navigation (click lines or use ↑↓):</div>
+                            <div style="display: flex; gap: 8px;">
+                                <button onclick="event.stopPropagation(); navigateJsonLine(-1)" style="background: #667eea; color: white; border: none; border-radius: 4px; width: 30px; height: 30px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='#5568d3'" onmouseout="this.style.background='#667eea'">↑</button>
+                                <button onclick="event.stopPropagation(); navigateJsonLine(1)" style="background: #667eea; color: white; border: none; border-radius: 4px; width: 30px; height: 30px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='#5568d3'" onmouseout="this.style.background='#667eea'">↓</button>
+                            </div>
+                        </div>
+                        <div style="background: #2d2d2d; border-radius: 4px; overflow: hidden; position: relative; max-height: 200px; overflow-y: auto;">
+                            <pre id="${uniqueId}" style="color: #f8f8f2; padding: 10px; padding-left: 42px; overflow-x: auto; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.7rem; line-height: 1.3; margin: 0; white-space: pre; word-wrap: normal; position: relative;"><code>${fullJsonHtml}</code></pre>
+                            <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 32px; background: #1e1e1e; color: #858585; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.7rem; padding: 10px 4px; text-align: right; user-select: none; line-height: 1.3;">
+                                ${Array.from({length: totalLines}, (_, i) => `<div style="line-height: 1.3;">${i + 1}</div>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Make lines clickable after a short delay
+                setTimeout(() => {
+                    const jsonPre = document.getElementById(uniqueId);
+                    if (jsonPre) {
+                        if (scrollToLine > 1) {
+                            const targetLine = jsonPre.querySelector(`.json-line[data-line="${scrollToLine}"]`);
+                            if (targetLine) {
+                                targetLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                targetLine.style.background = 'rgba(102, 126, 234, 0.3)';
+                                setTimeout(() => {
+                                    targetLine.style.background = '';
+                                }, 2000);
+                            }
+                        }
+                        
+                        // Make all JSON lines clickable
+                        jsonPre.querySelectorAll('.json-line').forEach(line => {
+                            const lineNum = parseInt(line.getAttribute('data-line'));
+                            if (lineNum) {
+                                line.style.cursor = 'pointer';
+                                line.onclick = function(e) {
+                                    e.stopPropagation();
+                                    const resource = line.querySelector('.json-resource');
+                                    if (resource) {
+                                        const resourceType = resource.getAttribute('data-resource-type');
+                                        const resourceValue = resource.getAttribute('data-resource-value');
+                                        const resourceFilename = resource.getAttribute('data-resource-filename') || resourceValue.split('/').pop();
+                                        
+                                        if (resourceType === 'image') {
+                                            const cached = imgCache ? imgCache.get(resourceFilename) : null;
+                                            if (cached && cached.objectUrl) {
+                                                openLightbox(cached.objectUrl, resourceFilename, null, null, null, imgCache, null, resourceValue);
+                                            } else {
+                                                const githubUrl = getGitHubRawUrl(resourceFilename);
+                                                openLightbox(githubUrl, resourceFilename, null, null, null, imgCache, null, resourceValue);
+                                            }
+                                        } else if (resourceType === 'font') {
+                                            const fontUrl = getGitHubRawUrl(resourceValue);
+                                            const localFontUrl = getLocalUrl(resourceValue);
+                                            openLightbox('font-preview', resourceValue, null, fontUrl, localFontUrl, imgCache, null, resourceValue);
+                                        }
+                                    }
+                                };
+                            }
+                        });
+                    }
+                }, 100);
+                }
+            }
+            
+            lightboxContentWrapper.innerHTML = `
+                <h3 style="margin-top: 0; color: #667eea; margin-bottom: 20px; font-size: 1.5rem;">Image Preview: ${actualFilename}</h3>
+                <div style="font-size: 1rem; color: #666; margin-bottom: 15px; font-family: monospace; text-align: center; font-weight: 600;">${actualFilename}</div>
+                <div id="image-preview-container" style="background: white; padding: 30px; border-radius: 4px; border: 1px solid #ddd;">
+                    <img src="${imgSrc}" style="max-width: 100%; max-height: 60vh; object-fit: contain; display: block; margin: 0 auto;" alt="${actualFilename || 'Preview'}" onclick="event.stopPropagation()">
+                </div>
+                ${imageJsonContextHtml}
+            `;
+            lightboxImg.src = '';
+            
             // Display filename in lightbox
-            const lightboxJsonContext = document.getElementById('lightbox-json-context');
             if (filenameDisplay) {
                 filenameDisplay.textContent = actualFilename;
                 filenameDisplay.style.display = 'block';
             }
             
-            // Show JSON context if available (when opened from config.json)
-            if (jsonResourceValue && window.findJsonContextForResource && lightboxJsonContext) {
-                const context = window.findJsonContextForResource(jsonResourceValue, 3);
-                if (context) {
-                    const startLineNum = context.lineNumber - context.targetLineIndex;
-                    const contextLinesHtml = context.lines.map((line, idx) => {
-                        const isTargetLine = idx === context.targetLineIndex;
-                        const escapedLine = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                        const lineNum = startLineNum + idx;
-                        return `<div onclick="if(window.scrollToJsonLine) window.scrollToJsonLine(${lineNum})" style="display: flex; font-family: 'SF Mono', 'Monaco', monospace; font-size: 0.7rem; line-height: 1.4; cursor: pointer; padding: 2px 0;" onmouseover="this.style.background='#e8f4f8'" onmouseout="this.style.background='transparent'">
-                            <span style="color: #999; margin-right: 8px; min-width: 30px; text-align: right; user-select: none;">${lineNum}</span>
-                            <span style="color: ${isTargetLine ? '#333' : '#999'}; opacity: ${isTargetLine ? '1' : '0.6'}; flex: 1; ${isTargetLine ? 'font-weight: 600;' : ''}">${escapedLine || ' '}</span>
-                        </div>`;
-                    }).join('');
-                    lightboxJsonContext.innerHTML = `
-                        <div style="font-size: 0.75rem; color: #999; margin-bottom: 6px; font-weight: 600;">Defined in config.json (click line to jump):</div>
-                        <div style="max-height: 150px; overflow-y: auto;">
-                            ${contextLinesHtml}
-                        </div>
-                    `;
-                    lightboxJsonContext.style.display = 'block';
-                } else {
-                    lightboxJsonContext.style.display = 'none';
+            // Sync JSON highlighting after opening
+            setTimeout(() => {
+                syncJsonHighlighting();
+                syncNavigationButtons();
+            }, 300);
+            
+            // JSON context is now shown in the wrapper for images, not in a separate panel
+            
+            // Track current asset and build asset list if needed
+            if (actualFilename && imgSrc !== 'transparent-assets' && imgSrc !== 'index-html' && imgSrc !== 'config-json') {
+                // Find current asset index in list (check both filename and resourceValue)
+                const assetIndex = window.assetNavigation.assets.findIndex(a => 
+                    a.filename === actualFilename || 
+                    a.resourceValue === actualFilename ||
+                    a.resourceValue === jsonResourceValue
+                );
+                if (assetIndex >= 0) {
+                    window.assetNavigation.currentIndex = assetIndex;
                 }
-            } else {
-                if (lightboxJsonContext) lightboxJsonContext.style.display = 'none';
+            } else if (imgSrc === 'index-html') {
+                // Set index for index.html
+                if (window.assetNavigation.assets) {
+                    const htmlIndex = window.assetNavigation.assets.findIndex(a => a.filename === 'index.html');
+                    if (htmlIndex >= 0) {
+                        window.assetNavigation.currentIndex = htmlIndex;
+                    }
+                }
             }
+            
+            // Sync navigation buttons (show for all navigable assets)
+            syncNavigationButtons();
             
             // Construct GitHub URL using blob/main to view the actual file
             const githubUrl = `https://github.com/y1-community/InnioasisY1Themes/blob/main/${encodeURIComponent(folderName)}/${encodeURIComponent(actualFilename)}`;
@@ -2898,7 +3609,6 @@
                 lightboxContentWrapper.style.display = 'none';
                 lightboxContentWrapper.innerHTML = '';
             }
-            const lightboxJsonContext = document.getElementById('lightbox-json-context');
             if (lightboxJsonContext) {
                 lightboxJsonContext.style.display = 'none';
                 lightboxJsonContext.innerHTML = '';
@@ -3153,33 +3863,33 @@
                                     }
                                     // Check for image files
                                     else if (/\.(png|jpg|jpeg|gif|svg)$/i.test(value)) {
-                                        // Extract filename and create multiple lookup keys
-                                        const fullPath = value.split('/').pop();
-                                        const filename = fullPath;
+                                    // Extract filename and create multiple lookup keys
+                                    const fullPath = value.split('/').pop();
+                                    const filename = fullPath;
                                         
                                         // Check if this is a transparent file
                                         const isTransparent = /^transparent\./i.test(filename);
-                                        
-                                        // Create lookup keys:
-                                        // 1. Full filename (e.g., "@Be_itemSelectedBackground.png")
-                                        // 2. Without @ prefix pattern (e.g., "itemSelectedBackground.png")
-                                        // 3. Base name without extension (e.g., "itemSelectedBackground")
-                                        
-                                        const keys = [filename];
-                                        
-                                        // Try removing @ prefix pattern (e.g., @Be_ or @Theme_)
-                                        const withoutPrefix = filename.replace(/^@[^_]+_/, '');
-                                        if (withoutPrefix !== filename) {
-                                            keys.push(withoutPrefix);
-                                        }
-                                        
-                                        // Base name without extension
-                                        const baseName = filename.replace(/\.[^.]+$/, '');
-                                        const baseNameWithoutPrefix = withoutPrefix.replace(/\.[^.]+$/, '');
-                                        keys.push(baseName, baseNameWithoutPrefix);
-                                        
-                                        // Store the config key for all variations
-                                        const fullKey = prefix ? `${prefix}.${key}` : key;
+                                    
+                                    // Create lookup keys:
+                                    // 1. Full filename (e.g., "@Be_itemSelectedBackground.png")
+                                    // 2. Without @ prefix pattern (e.g., "itemSelectedBackground.png")
+                                    // 3. Base name without extension (e.g., "itemSelectedBackground")
+                                    
+                                    const keys = [filename];
+                                    
+                                    // Try removing @ prefix pattern (e.g., @Be_ or @Theme_)
+                                    const withoutPrefix = filename.replace(/^@[^_]+_/, '');
+                                    if (withoutPrefix !== filename) {
+                                        keys.push(withoutPrefix);
+                                    }
+                                    
+                                    // Base name without extension
+                                    const baseName = filename.replace(/\.[^.]+$/, '');
+                                    const baseNameWithoutPrefix = withoutPrefix.replace(/\.[^.]+$/, '');
+                                    keys.push(baseName, baseNameWithoutPrefix);
+                                    
+                                    // Store the config key for all variations
+                                    const fullKey = prefix ? `${prefix}.${key}` : key;
                                         
                                         if (isTransparent) {
                                             // Track transparent files separately
@@ -3193,14 +3903,14 @@
                                             });
                                         } else {
                                             // Track regular image files
-                                            keys.forEach(lookupKey => {
-                                                if (!imageUsageMap.has(lookupKey)) {
-                                                    imageUsageMap.set(lookupKey, []);
-                                                }
-                                                if (!imageUsageMap.get(lookupKey).includes(fullKey)) {
-                                                    imageUsageMap.get(lookupKey).push(fullKey);
-                                                }
-                                            });
+                                    keys.forEach(lookupKey => {
+                                        if (!imageUsageMap.has(lookupKey)) {
+                                            imageUsageMap.set(lookupKey, []);
+                                        }
+                                        if (!imageUsageMap.get(lookupKey).includes(fullKey)) {
+                                            imageUsageMap.get(lookupKey).push(fullKey);
+                                        }
+                                    });
                                         }
                                     }
                                 } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
@@ -3212,6 +3922,16 @@
                         
                         // Search all config sections
                         findImageReferences(config);
+                        
+                        // Store config data globally for JSON context in asset previews
+                        window.configJsonData = config;
+                        window.configJsonImageCache = imageCache;
+                        if (fontFile) {
+                            window.configJsonFontFile = fontFile;
+                        }
+                        
+                        // Also store createInteractiveJson function if available (it's defined in config.json preview section)
+                        // We'll ensure it's available when needed
                     }
                 } catch (e) {
                     console.warn('Could not load config.json for image mapping:', e);
@@ -3431,6 +4151,12 @@
                 
                 await Promise.all(loadPromises);
                 
+                // Store image cache globally for JSON context in asset previews
+                window.configJsonImageCache = imageCache;
+                if (fontFile) {
+                    window.configJsonFontFile = fontFile;
+                }
+                
                 // Now create gallery items - one for each config key usage
                 // This means the same image can appear multiple times if used in multiple places
                 configImageEntries.forEach(entry => {
@@ -3448,6 +4174,52 @@
                 
                 // Sort by config key name for consistent display
                 loadedImageData.sort((a, b) => a.configKey.localeCompare(b.configKey));
+                
+                // Build comprehensive asset list for navigation (includes all assets in order)
+                window.assetNavigation.assets = [];
+                window.assetNavigation.currentImageCache = imageCache;
+                
+                // Add index.html
+                window.assetNavigation.assets.push({
+                    type: 'special',
+                    filename: 'index.html',
+                    displayName: 'index.html'
+                });
+                
+                // Add config.json
+                if (config) {
+                    window.assetNavigation.assets.push({
+                        type: 'special',
+                        filename: 'config.json',
+                        displayName: 'config.json'
+                    });
+                }
+                
+                // Add font
+                if (fontFile) {
+                    window.assetNavigation.assets.push({
+                        type: 'font',
+                        filename: fontFile,
+                        displayName: `fontFamily: ${fontFile}`,
+                        resourceValue: fontFile
+                    });
+                }
+                
+                // Add all images (one entry per unique filename, keeping the first config key)
+                const uniqueImageFiles = new Map();
+                loadedImageData.forEach(imageData => {
+                    if (!uniqueImageFiles.has(imageData.filename)) {
+                        uniqueImageFiles.set(imageData.filename, {
+                            type: 'image',
+                            filename: imageData.filename,
+                            displayName: imageData.configKey,
+                            resourceValue: imageData.filename,
+                            objectUrl: imageData.objectUrl,
+                            url: imageData.url
+                        });
+                    }
+                });
+                window.assetNavigation.assets.push(...Array.from(uniqueImageFiles.values()));
                 
                 // Collect unique transparent files and their config keys
                 const transparentAssetsList = [];
@@ -3477,10 +4249,15 @@
                 indexHtmlItem.onclick = () => openLightbox('index-html', null, null);
                 indexHtmlItem.style.cursor = 'pointer';
                 
-                // Create HTML icon/preview thumbnail
+                // Create HTML icon/preview thumbnail with HTML file symbol
                 const htmlThumbnailDiv = document.createElement('div');
-                htmlThumbnailDiv.style.cssText = 'width: 120px; height: 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-family: monospace; font-size: 0.7rem; text-align: center; padding: 10px; box-sizing: border-box;';
-                htmlThumbnailDiv.innerHTML = '&lt;html&gt;<br/>&nbsp;&nbsp;...<br/>&lt;/html&gt;';
+                htmlThumbnailDiv.style.cssText = 'width: 120px; height: 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-size: 2.5rem; text-align: center; padding: 10px; box-sizing: border-box; position: relative;';
+                htmlThumbnailDiv.innerHTML = '📄';
+                // Add HTML badge
+                const htmlBadge = document.createElement('div');
+                htmlBadge.style.cssText = 'position: absolute; bottom: 8px; right: 8px; background: rgba(255,255,255,0.9); color: #667eea; font-size: 0.65rem; font-weight: 700; padding: 2px 5px; border-radius: 3px; font-family: monospace;';
+                htmlBadge.textContent = 'HTML';
+                htmlThumbnailDiv.appendChild(htmlBadge);
                 
                 const htmlLabel = document.createElement('div');
                 htmlLabel.className = 'image-name';
@@ -3494,13 +4271,18 @@
                 if (config) {
                     const configItem = document.createElement('div');
                     configItem.className = 'image-carousel-item';
-                    configItem.onclick = () => openLightbox('config-json', null, config, imageCache, fontFile);
+                    configItem.onclick = () => openLightbox('config-json', null, config, null, null, imageCache, fontFile);
                     configItem.style.cursor = 'pointer';
                     
-                    // Create JSON icon/preview thumbnail
+                    // Create JSON icon/preview thumbnail with cog/settings symbol
                     const thumbnailDiv = document.createElement('div');
-                    thumbnailDiv.style.cssText = 'width: 120px; height: 80px; background: #2d2d2d; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #f8f8f2; font-family: monospace; font-size: 0.7rem; text-align: center; padding: 10px; box-sizing: border-box; border: 2px solid #555;';
-                    thumbnailDiv.innerHTML = '{<br/>&nbsp;&nbsp;...<br/>}';
+                    thumbnailDiv.style.cssText = 'width: 120px; height: 80px; background: #2d2d2d; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #f8f8f2; font-size: 2.2rem; text-align: center; padding: 10px; box-sizing: border-box; border: 2px solid #555; position: relative;';
+                    thumbnailDiv.innerHTML = '⚙';
+                    // Add JSON badge
+                    const jsonBadge = document.createElement('div');
+                    jsonBadge.style.cssText = 'position: absolute; bottom: 8px; right: 8px; background: rgba(255,255,255,0.9); color: #2d2d2d; font-size: 0.6rem; font-weight: 700; padding: 2px 5px; border-radius: 3px; font-family: monospace;';
+                    jsonBadge.textContent = 'JSON';
+                    thumbnailDiv.appendChild(jsonBadge);
                     
                     const label = document.createElement('div');
                     label.className = 'image-name';
@@ -3596,10 +4378,10 @@
                         transparentIndicator.appendChild(transparentLabel);
                         item.appendChild(transparentIndicator);
                     } else {
-                        const img = document.createElement('img');
-                        img.src = imageData.objectUrl || imageData.url;
-                        img.alt = imageData.filename;
-                        img.loading = 'lazy';
+                    const img = document.createElement('img');
+                    img.src = imageData.objectUrl || imageData.url;
+                    img.alt = imageData.filename;
+                    img.loading = 'lazy';
                         item.appendChild(img);
                     }
                     
