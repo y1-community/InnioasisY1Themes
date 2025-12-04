@@ -105,13 +105,13 @@
             color: white;
             text-decoration: none;
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
-            text-align: left;
+            text-align: center;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
             min-height: 44px;
             max-height: 44px;
             box-sizing: border-box;
@@ -150,7 +150,7 @@
         .btn > span {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
             width: 100%;
             gap: 8px;
             position: relative;
@@ -159,8 +159,8 @@
         .btn > span > span:first-child {
             position: relative;
             z-index: 3;
-            flex: 1;
-            text-align: left;
+            text-align: center;
+            flex: 0 1 auto;
         }
         .btn img {
             height: 100%;
@@ -174,6 +174,7 @@
         }
         /* Arrow icon - hidden on desktop by default, shown on hover/focus/active */
         /* Use opacity/visibility to prevent layout shifts */
+        /* Positioned absolutely so it doesn't affect text centering */
         .btn .arrow-icon {
             height: 100%;
             max-height: 100%;
@@ -182,10 +183,12 @@
             flex-shrink: 0;
             opacity: 0;
             visibility: hidden;
-            margin-left: 0;
-            position: relative;
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
             z-index: 3;
-            transition: opacity 0.2s, visibility 0.2s, width 0.2s, margin-left 0.2s;
+            transition: opacity 0.2s, visibility 0.2s, width 0.2s;
         }
         
         .btn .arrow-icon img {
@@ -224,7 +227,6 @@
                 opacity: 1;
                 visibility: visible;
                 width: auto;
-                margin-left: 8px;
             }
         }
         
@@ -234,7 +236,6 @@
                 opacity: 1;
                 visibility: visible;
                 width: auto;
-                margin-left: 8px;
             }
         }
         
@@ -584,13 +585,13 @@
         
         <div class="button-group" style="margin-top: 30px;">
             <button id="install-btn" onclick="showInstallInstructions()" class="btn install" style="display: none;">
-                <span style="display: flex; align-items: center; justify-content: space-between; width: 100%; position: relative; z-index: 2;">
-                    <span style="position: relative; z-index: 3; flex: 1; text-align: left;">Install</span>
+                <span style="display: flex; align-items: center; justify-content: center; width: 100%; position: relative; z-index: 2;">
+                    <span style="position: relative; z-index: 3; text-align: center; flex: 0 1 auto;">Install</span>
                 </span>
             </button>
             <button id="download-btn-full" onclick="downloadTheme()" class="btn download">
-                <span style="display: flex; align-items: center; justify-content: space-between; width: 100%; position: relative; z-index: 2;">
-                    <span style="position: relative; z-index: 3; flex: 1; text-align: left;">Download</span>
+                <span style="display: flex; align-items: center; justify-content: center; width: 100%; position: relative; z-index: 2;">
+                    <span style="position: relative; z-index: 3; text-align: center; flex: 0 1 auto;">Download</span>
                 </span>
             </button>
             <a href="#" id="download-link-small" onclick="downloadTheme(); return false;" class="download-link-small" style="display: none;">📦 Download ZIP instead</a>
@@ -1929,7 +1930,7 @@
         }
 
         // Lightbox functions
-        function openLightbox(imgSrc) {
+        function openLightbox(imgSrc, filename = null) {
             const lightbox = document.getElementById('lightbox');
             const lightboxImg = document.getElementById('lightbox-img');
             const editBtn = document.getElementById('lightbox-edit-btn');
@@ -1939,24 +1940,36 @@
             document.body.style.overflow = 'hidden';
             
             // Extract filename from image source and construct GitHub URL
-            // Image source format: ./filename.png or ./themeFolder/filename.png
-            // We need: https://github.com/y1-community/InnioasisY1Themes/tree/main/{folderName}/{filename}
+            // Image source format: ./filename.png, blob: URL, or full URL
+            // We need: https://github.com/y1-community/InnioasisY1Themes/blob/main/{folderName}/{filename}
             const folderName = getFolderName();
-            let filename = '';
+            let actualFilename = filename;
             
-            // Remove leading ./ if present
-            const cleanSrc = imgSrc.replace(/^\.\//, '');
-            
-            // If the path contains a folder (shouldn't happen for theme page images, but handle it)
-            if (cleanSrc.includes('/')) {
-                const parts = cleanSrc.split('/');
-                filename = parts[parts.length - 1];
-            } else {
-                filename = cleanSrc;
+            // If filename not provided, extract from imgSrc
+            if (!actualFilename) {
+                // Remove leading ./ if present
+                const cleanSrc = imgSrc.replace(/^\.\//, '');
+                
+                // Handle blob: URLs (from carousel) - try to get from data attribute
+                if (imgSrc.startsWith('blob:')) {
+                    // Try to find the element that triggered this (if available)
+                    actualFilename = cleanSrc.split('/').pop();
+                } else {
+                    // If the path contains a folder (shouldn't happen for theme page images, but handle it)
+                    if (cleanSrc.includes('/')) {
+                        const parts = cleanSrc.split('/');
+                        actualFilename = parts[parts.length - 1];
+                    } else {
+                        actualFilename = cleanSrc;
+                    }
+                }
             }
             
-            // Construct GitHub URL
-            const githubUrl = `https://github.com/y1-community/InnioasisY1Themes/tree/main/${encodeURIComponent(folderName)}/${encodeURIComponent(filename)}`;
+            // Remove URL parameters if present
+            actualFilename = actualFilename.split('?')[0].split('#')[0];
+            
+            // Construct GitHub URL using blob/main to view the actual file
+            const githubUrl = `https://github.com/y1-community/InnioasisY1Themes/blob/main/${encodeURIComponent(folderName)}/${encodeURIComponent(actualFilename)}`;
             editBtn.href = githubUrl;
         }
 
@@ -2207,7 +2220,7 @@
                 loadedImageData.forEach((imageData) => {
                     const item = document.createElement('div');
                     item.className = 'image-carousel-item';
-                    item.onclick = () => openLightbox(imageData.objectUrl || imageData.url);
+                    item.onclick = () => openLightbox(imageData.objectUrl || imageData.url, imageData.filename);
                     item.style.cursor = 'pointer';
                     
                     const img = document.createElement('img');

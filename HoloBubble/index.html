@@ -1,177 +1,20 @@
-import json
-import os
-import glob
-import urllib.parse
-
-def get_images(folder):
-    extensions = ['*.png', '*.jpg', '*.jpeg', '*.gif', '*.PNG', '*.JPG', '*.JPEG', '*.GIF']
-    images = []
-    for ext in extensions:
-        images.extend(glob.glob(os.path.join(folder, ext)))
-    
-    # Separate cover and screenshots
-    # Cover image: match *cover*.* pattern (e.g., cover.png, gregcover.jpg, cover_image.png)
-    cover_image = None
-    screenshots = []
-    
-    for img_path in sorted(images):
-        filename = os.path.basename(img_path)
-        lower_name = filename.lower()
-        name_without_ext = os.path.splitext(lower_name)[0]
-        
-        # Match any filename containing "cover" (wildcard pattern *cover*.*)
-        if 'cover' in name_without_ext and not cover_image:
-            cover_image = filename
-        elif 'screenshot' in lower_name:
-            screenshots.append(filename)
-            
-    return cover_image, screenshots
-
-def get_font(folder):
-    # Check for font file with various extensions
-    extensions = ['*.ttf', '*.otf', '*.woff', '*.woff2']
-    for ext in extensions:
-        fonts = glob.glob(os.path.join(folder, ext))
-        if fonts:
-            return os.path.basename(fonts[0])
-            
-    # Also check for "Font.*" specifically (case insensitive)
-    for file in os.listdir(folder):
-        if file.lower().startswith('font.') and file.lower().endswith(('.ttf', '.otf', '.woff', '.woff2')):
-            return file
-            
-    return None
-
-# New: Get background images for blurred cycling
-def get_backgrounds(folder):
-    extensions = ['*.png', '*.jpg', '*.jpeg', '*.gif', '*.PNG', '*.JPG', '*.JPEG', '*.GIF']
-    backgrounds = []
-    # Priority order: background images, wallpaper images, desktop images, cover images
-    priority_keywords = ['background', 'wallpaper', 'desktop', 'cover', 'desk', 'bg']
-    
-    for ext in extensions:
-        for path in glob.glob(os.path.join(folder, ext)):
-            filename = os.path.basename(path)
-            filename_lower = filename.lower()
-            name_without_ext = os.path.splitext(filename_lower)[0]
-            
-            # Check if it matches any priority keyword
-            for keyword in priority_keywords:
-                if keyword in name_without_ext:
-                    backgrounds.append(filename)  # Keep original case for display
-                    break
-    
-    # Remove duplicates while preserving order
-    seen = set()
-    unique_backgrounds = []
-    for bg in backgrounds:
-        if bg.lower() not in seen:
-            seen.add(bg.lower())
-            unique_backgrounds.append(bg)
-    
-    return unique_backgrounds
-
-# 1. Load existing themes.json
-try:
-    with open('themes.json', 'r') as f:
-        data = json.load(f)
-        themes = data.get('themes', [])
-except FileNotFoundError:
-    themes = []
-
-# 2. Scan directories for new themes
-# A theme is a folder with either:
-# - A config.json file, OR
-# - A cover/screenshot image (*cover*.* or *screenshot*.*)
-all_dirs = [d for d in os.listdir('.') if os.path.isdir(d) and not d.startswith('.')]
-known_folders = {t['folder'] for t in themes}
-
-for folder in all_dirs:
-    # Check if folder has config.json
-    config_path = os.path.join(folder, 'config.json')
-    has_config = os.path.exists(config_path)
-    
-    # Check for cover/screenshot image using get_images
-    cover_image, screenshots = get_images(folder)
-    has_cover_or_screenshot = cover_image is not None or len(screenshots) > 0
-    
-    # Theme must have either config.json OR cover/screenshot image
-    if has_config or has_cover_or_screenshot:
-        if folder not in known_folders:
-            print(f"Discovered new theme: {folder}")
-            
-            # Try to read config.json
-            theme_data = {
-                'folder': folder,
-                'name': folder, # Default
-                'author': 'Unknown',
-                'description': f'Theme for Innioasis Y1: {folder}'
-            }
-            
-            config_path = os.path.join(folder, 'config.json')
-            if os.path.exists(config_path):
-                try:
-                    with open(config_path, 'r') as cf:
-                        config = json.load(cf)
-                        # Update only if keys exist
-                        if 'name' in config: theme_data['name'] = config['name']
-                        if 'author' in config: theme_data['author'] = config['author']
-                        if 'authorUrl' in config: theme_data['authorUrl'] = config['authorUrl']
-                        if 'description' in config: theme_data['description'] = config['description']
-                except Exception as e:
-                    print(f"Error reading config.json for {folder}: {e}")
-            
-            # Add screenshot/cover image if found
-            if cover_image:
-                theme_data['screenshot'] = f'./{folder}/{cover_image}'
-            elif screenshots:
-                # Use first screenshot found
-                theme_data['screenshot'] = f'./{folder}/{screenshots[0]}'
-            
-            themes.append(theme_data)
-            known_folders.add(folder)
-
-# 3. Update existing themes in themes.json to add screenshots if missing
-for theme in themes:
-    if 'screenshot' not in theme or not theme['screenshot']:
-        folder = theme['folder']
-        if os.path.exists(folder):
-            cover_image, screenshots = get_images(folder)
-            if cover_image:
-                theme['screenshot'] = f'./{folder}/{cover_image}'
-            elif screenshots:
-                theme['screenshot'] = f'./{folder}/{screenshots[0]}'
-
-# 4. Write back to themes.json to ensure index.html sees them
-with open('themes.json', 'w') as f:
-    json.dump({'themes': themes}, f, indent=4)
-
-# HTML Template (Using single braces for CSS/JS, placeholders will be replaced via .replace())
-html_template = """<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- 
-    IMPORTANT: This page loads theme information dynamically from config.json and themes.json.
-    The hardcoded values below are GENERIC PLACEHOLDERS for search engines and initial display.
-    They will be REPLACED by JavaScript with actual theme data from config.json (priority) or themes.json (fallback).
-    
-    You can edit these placeholders to customize SEO metadata, but the displayed content
-    will always come from config.json or themes.json when the page loads.
-    -->
-    <title>Innioasis Y1 Themes - View Theme Info</title>
-    <meta name="description" content="Download theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. Theme description placeholder - will be replaced with actual theme description from config.json. Community Maintainers: Ryan Specter + Dmitri Medina">
-    <meta name="keywords" content="Innioasis Y1, Y1 themes, MP3 player themes, theme name placeholder, Y1 customization, official Y1 themes, Ryan Specter, Dmitri Medina">
+    <title>Loading Theme...</title>
+    <meta name="description" content="Download theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. Community Maintainers: Ryan Specter + Dmitri Medina">
+    <meta name="keywords" content="Innioasis Y1, Y1 themes, MP3 player themes, Y1 customization, official Y1 themes, Ryan Specter, Dmitri Medina">
     <script type="application/ld+json">
     {{
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
-        "name": "Theme Name Placeholder",
+        "name": "Theme",
         "applicationCategory": "Theme",
         "operatingSystem": "Innioasis Y1",
-        "description": "Download theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. Theme description placeholder - will be replaced with actual theme description from config.json. Community Maintainers: Ryan Specter + Dmitri Medina",
-        "url": "https://themes.innioasis.app/{folder}/",
+        "description": "Download theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. Community Maintainers: Ryan Specter + Dmitri Medina",
+        "url": "https://themes.innioasis.app/",
         "publisher": {{
             "@type": "Organization",
             "name": "Innioasis Y1 Community",
@@ -213,38 +56,6 @@ html_template = """<!DOCTYPE html>
             width: 100%;
             text-align: center;
             margin-bottom: 20px;
-        }
-        .header-section {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 40px;
-            text-align: left;
-            margin-bottom: 40px;
-        }
-        .header-text {
-            flex: 1;
-        }
-        .cover-image {
-            width: 200px;
-            height: 200px;
-            object-fit: contain;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            background: white;
-            padding: 10px;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-        .cover-image:hover {
-            transform: scale(1.05) rotate(2deg);
-        }
-        @media (max-width: 600px) {
-            .header-section {
-                flex-direction: column-reverse;
-                text-align: center;
-                gap: 20px;
-            }
         }
         h1 {
             margin-bottom: 10px;
@@ -294,13 +105,13 @@ html_template = """<!DOCTYPE html>
             color: white;
             text-decoration: none;
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
-            text-align: left;
+            text-align: center;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
             min-height: 44px;
             max-height: 44px;
             box-sizing: border-box;
@@ -335,298 +146,310 @@ html_template = """<!DOCTYPE html>
             color: #667eea;
             /* No transform - buttons should not grow on hover */
         }
-
-        .btn-secondary:hover {
-            background: #f8fbff;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
-        }
-
-        .install-btn {
-            background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%); /* Green gradient for install */
-            box-shadow: 0 4px 15px rgba(0, 176, 155, 0.4);
-        }
-
-        .install-btn:hover {
-            box-shadow: 0 6px 20px rgba(0, 176, 155, 0.6);
-        }
-
-        .download-link {
-            text-align: center;
-            margin-top: 10px;
-            font-size: 0.9rem;
-        }
-
-        .download-link a {
-            color: #667eea;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .download-link a:hover {
-            text-decoration: underline;
-        }
-
-        .meta-info {
-            text-align: center;
-            color: #666;
-            font-size: 0.9rem;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-            line-height: 1.6;
-        }
-
-        .meta-info a {
-            color: #667eea;
-            text-decoration: none;
-        }
-
-        .meta-info a:hover {
-            text-decoration: underline;
-        }
-
-        .back-link {
-            display: block;
-            text-align: center;
-            margin-top: 20px;
-            color: #888;
-            text-decoration: none;
-            font-size: 0.9rem;
-        }
-
-        .back-link:hover {
-            color: #667eea;
-        }
-
-        /* Gallery Styling */
-        .image-carousel-section {
-            margin: 40px 0;
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 20px;
-            border: 1px solid #e9ecef;
-        }
-
-        .image-carousel-section h3 {
-            color: #667eea;
-            margin-bottom: 20px;
-            font-size: 1.2rem;
-            text-align: center;
-            font-weight: 600;
-        }
-
-        .image-carousel-container {
-            position: relative;
-        }
-
-        .image-carousel-wrapper {
-            display: flex;
-            gap: 15px;
-            overflow-x: auto;
-            padding: 10px 5px;
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: thin;
-        }
-
-        .image-carousel-item {
-            flex: 0 0 160px;
-            background: white;
-            border-radius: 12px;
-            padding: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            border: 1px solid #f0f0f0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .image-carousel-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            border-color: #667eea;
-        }
-
-        .image-carousel-item img {
-            width: 100%;
-            height: 100px;
-            object-fit: contain;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            background: #f8f9fa;
-        }
-
-        .image-carousel-item .image-name {
-            font-size: 0.75rem;
-            color: #666;
-            text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            width: 100%;
-            font-weight: 500;
-            padding: 0 5px;
-        }
-
-        /* JSON Icon Styling */
-        .json-icon {
-            width: 100%;
-            height: 100px;
+        /* Ensure button content is always visible above background */
+        .btn > span {
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #f8f9fa;
-            border-radius: 6px;
-            margin-bottom: 8px;
+            width: 100%;
+            gap: 8px;
             position: relative;
+            z-index: 2;
+        }
+        .btn > span > span:first-child {
+            position: relative;
+            z-index: 3;
+            text-align: center;
+            flex: 0 1 auto;
+        }
+        .btn img {
+            height: 100%;
+            max-height: 100%;
+            width: auto;
+            flex-shrink: 0;
+            object-fit: contain;
+            display: block;
+            position: relative;
+            z-index: 3;
+        }
+        /* Arrow icon - hidden on desktop by default, shown on hover/focus/active */
+        /* Use opacity/visibility to prevent layout shifts */
+        /* Positioned absolutely so it doesn't affect text centering */
+        .btn .arrow-icon {
+            height: 100%;
+            max-height: 100%;
+            width: 0;
+            overflow: hidden;
+            flex-shrink: 0;
+            opacity: 0;
+            visibility: hidden;
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 3;
+            transition: opacity 0.2s, visibility 0.2s, width 0.2s;
         }
         
-        .json-icon svg {
-            width: 50px;
-            height: 50px;
+        .btn .arrow-icon img {
+            height: 100%;
+            max-height: 100%;
+            width: auto;
+            flex-shrink: 0;
+            object-fit: contain;
+            display: block;
         }
-
+        
+        .reddit-favicon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            margin-left: 4px;
+            vertical-align: middle;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        .reddit-favicon:hover {
+            opacity: 1;
+        }
+        .reddit-favicon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        /* Show arrow on hover for desktop (or mobile with mouse) */
+        /* @media (hover: hover) means device has hover capability (mouse, trackpad, etc.) */
+        @media (hover: hover) {
+            .btn:hover .arrow-icon,
+            .btn:focus .arrow-icon,
+            .btn:active .arrow-icon {
+                opacity: 1;
+                visibility: visible;
+                width: auto;
+            }
+        }
+        
+        /* Show arrow on mobile (always visible) */
+        @media (hover: none) {
+            .btn .arrow-icon {
+                opacity: 1;
+                visibility: visible;
+                width: auto;
+            }
+        }
+        
+        @font-face {
+            font-family: 'ThemeFont';
+            src: url('None');
+        }
+        
+        .header-section {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+        .header-text {
+            flex: 1;
+        }
+        .cover-image {
+            width: 200px;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .cover-image:hover {
+            transform: scale(1.05);
+        }
+        .screenshots-section {
+            margin: 30px 0;
+        }
+        .screenshots-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        /* Image Carousel */
+        .image-carousel-section {
+            margin: 30px 0;
+        }
+        .image-carousel-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+        .image-carousel-container {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .image-carousel-wrapper {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: #667eea #f5f5f5;
+            padding: 5px 0;
+        }
+        .image-carousel-wrapper::-webkit-scrollbar {
+            height: 6px;
+        }
+        .image-carousel-wrapper::-webkit-scrollbar-track {
+            background: #f5f5f5;
+            border-radius: 3px;
+        }
+        .image-carousel-wrapper::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 3px;
+        }
+        .image-carousel-item {
+            flex: 0 0 auto;
+            width: 120px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .image-carousel-item:hover {
+            transform: scale(1.05);
+        }
+        .image-carousel-item img {
+            width: 100%;
+            height: 80px;
+            object-fit: contain;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            padding: 4px;
+        }
+        .image-carousel-item .image-name {
+            margin-top: 5px;
+            font-size: 0.75rem;
+            color: #666;
+            word-break: break-word;
+            line-height: 1.2;
+        }
+        .image-carousel-nav {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .image-carousel-nav-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .image-carousel-nav-btn:hover {
+            background: #5568d3;
+        }
+        .image-carousel-nav-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .image-carousel-nav-info {
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #666;
+            padding: 0 10px;
+        }
         /* Lightbox */
         .lightbox {
             display: none;
             position: fixed;
-            z-index: 2000;
+            z-index: 1000;
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.95);
-            backdrop-filter: blur(5px);
+            background-color: rgba(0,0,0,0.9);
             justify-content: center;
             align-items: center;
         }
-
         .lightbox.active {
             display: flex;
         }
-
         .lightbox-content {
             max-width: 90%;
-            max-height: 85vh;
-            border-radius: 8px;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            max-height: 90%;
+            border-radius: 5px;
+            box-shadow: 0 0 20px rgba(255,255,255,0.2);
         }
-
         .lightbox-close {
             position: absolute;
             top: 20px;
             right: 30px;
-            color: white;
+            color: #f1f1f1;
             font-size: 40px;
-            font-weight: 300;
+            font-weight: bold;
             cursor: pointer;
             transition: 0.3s;
-            line-height: 1;
         }
-
         .lightbox-close:hover {
-            color: #667eea;
-            transform: rotate(90deg);
+            color: #bbb;
         }
-
         .lightbox-edit-btn {
             position: absolute;
             bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            background: white;
-            color: #333;
-            padding: 10px 20px;
-            border-radius: 30px;
-            text-decoration: none;
+            background: rgba(102, 126, 234, 0.9);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 0.95rem;
             font-weight: 600;
-            display: flex;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
         }
-
         .lightbox-edit-btn:hover {
+            background: rgba(102, 126, 234, 1);
             transform: translateX(-50%) translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-            color: #667eea;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
         }
-
-        /* Config Info in Lightbox */
-        .lightbox-config-info {
-            position: absolute;
-            bottom: 90px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            max-width: 90%;
-            width: 600px;
-            font-family: monospace;
+        .lightbox-edit-btn:active {
+            transform: translateX(-50%) translateY(0);
+        }
+        .back-link {
+            display: block;
+            margin-top: 20px;
+            color: #666;
+            text-decoration: none;
             font-size: 0.9rem;
-            border: 1px solid #444;
         }
-
-        .lightbox-config-key {
-            color: #667eea;
-            font-weight: bold;
-            margin-bottom: 5px;
-            display: block;
+        .back-link:hover {
+            text-decoration: underline;
         }
-
-        .lightbox-config-code {
-            background: #1e1e1e;
-            padding: 10px;
-            border-radius: 4px;
-            overflow-x: auto;
-            white-space: pre;
-            color: #d4d4d4;
-            margin-top: 5px;
-            font-size: 0.85rem;
-            line-height: 1.4;
-        }
-
-        .lightbox-config-code-line {
-            display: block;
-        }
-
-        .lightbox-config-code-line.highlight {
-            background-color: rgba(102, 126, 234, 0.2);
-            border-left: 2px solid #667eea;
-        }
-
-        .lightbox-config-code-line-number {
-            color: #858585;
-            margin-right: 10px;
-            display: inline-block;
-            width: 25px;
-            text-align: right;
-            user-select: none;
-        }
-
-        .key { color: #9cdcfe; }
-        .string { color: #ce9178; }
-        .number { color: #b5cea8; }
-        .boolean { color: #569cd6; }
-        .null { color: #569cd6; }
-
-        /* Background Cycle */
+        /* Existing CSS */
         .bg-cycle {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: -1;
             background-size: cover;
             background-position: center;
+            filter: blur(20px) brightness(0.5);
+            z-index: -1;
+            opacity: 0;
             transition: opacity 1s ease-in-out;
         }
         /* Download link when install is available */
@@ -712,41 +535,6 @@ html_template = """<!DOCTYPE html>
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
-        
-        /* Loading spinner */
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(102, 126, 234, 0.3);
-            border-radius: 50%;
-            border-top-color: #667eea;
-            animation: spin 1s ease-in-out infinite;
-            vertical-align: middle;
-            margin-right: 10px;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .loading-text {
-            color: #999;
-            font-style: italic;
-        }
-        
-        .content-loading {
-            opacity: 0.6;
-            pointer-events: none;
-        }
-        
-        .content-loaded {
-            opacity: 1;
-            transition: opacity 0.3s ease;
-        }
-        
-        /* Custom Font CSS */
-        {font_css}
     </style>
 </head>
 <body>
@@ -756,42 +544,33 @@ html_template = """<!DOCTYPE html>
     DATA LOADING PRIORITY (Source of Truth):
     1. config.json (in this theme's folder) = AUTHORITATIVE SOURCE
     2. themes.json (in parent directory) = FAST CACHE/FALLBACK
-    3. Hardcoded values in this HTML = LAST RESORT ONLY (GENERIC PLACEHOLDERS)
+    3. Hardcoded values in this HTML = LAST RESORT ONLY
     
     This design allows users to:
     - Copy this index.html to another theme folder without editing it
     - Update theme info by editing config.json or themes.json
     - The page will automatically use the most up-to-date information
-    - Edit the hardcoded placeholders for SEO customization (they're replaced by JavaScript anyway)
     
     All theme data (name, author, description, colors, images) should be loaded
     from config.json or themes.json when possible, not from hardcoded HTML.
-    The hardcoded values are GENERIC PLACEHOLDERS that will be replaced by JavaScript
-    with actual theme data when the page loads.
     -->
     <div class="container">
         <div class="header-section">
             <div class="header-text">
                 <!-- Title and subtitle removed; using About line instead -->
-                <h1 id="theme-title" style="font-family: 'ThemeFont', sans-serif; font-size: 2.5rem; font-weight: 700; margin-bottom: 20px; color: #333; line-height: 1.2;">
-                    <span class="loading-spinner"></span>
-                    <span class="loading-text">Loading theme...</span>
-                </h1>
-                <h2 id="theme-about-heading" style="font-family: 'ThemeFont', sans-serif; font-size: 1.1rem; margin-bottom: 15px; color: #667eea; font-weight: 500; display: none;"></h2>
-                <p class="description" id="theme-description" style="display: none;"></p>
-                <p class="author-info" style="margin-top: 15px; color: #666; font-size: 0.9rem; font-style: italic; display: none;" id="author-info">
-                    Theme created by <strong id="author-display">Loading...</strong>
+                <h2 id="theme-title" style="font-size: 1rem; margin-bottom: 15px; color: #667eea; visibility: hidden;">Loading...</h2>
+                <p class="description" id="theme-description" style="visibility: hidden;">Loading...</p>
+                <p class="author-info" style="margin-top: 15px; color: #666; font-size: 0.9rem; font-style: italic;">
+                    Theme created by <strong id="author-display" style="visibility: hidden;">Loading...</strong>
                 </p>
             </div>
-            {cover_html}
+            <img src="cover.png" alt="Theme cover" class="cover-image" onclick="openLightbox('cover.png')" id="cover-image">
         </div>
         
-        {screenshots_section_html}
         
-        <!-- Image carousel section - dynamically shown/hidden based on available images -->
-        <!-- This section is hidden by default and only shown when images are loaded -->
-        <div class="image-carousel-section" id="image-carousel-section" style="display: none;">
-            <h3 {title_style}>All Theme Assets</h3>
+        
+        <div class="image-carousel-section">
+            <h3 style="font-size: 1rem; margin-bottom: 15px; color: #667eea;">All Theme Images</h3>
             <div class="image-carousel-container">
                 <div class="image-carousel-wrapper" id="image-carousel-wrapper">
                     <div style="text-align: center; padding: 20px; color: #999;">Loading images...</div>
@@ -806,21 +585,23 @@ html_template = """<!DOCTYPE html>
         
         <div class="button-group" style="margin-top: 30px;">
             <button id="install-btn" onclick="showInstallInstructions()" class="btn install" style="display: none;">
-                <span style="display: flex; align-items: center; justify-content: space-between; width: 100%; position: relative; z-index: 2;">
-                    <span class="btn-text" style="position: relative; z-index: 3; flex: 1; text-align: left;">Install</span>
+                <span style="display: flex; align-items: center; justify-content: center; width: 100%; position: relative; z-index: 2;">
+                    <span style="position: relative; z-index: 3; text-align: center; flex: 0 1 auto;">Install</span>
                 </span>
             </button>
             <button id="download-btn-full" onclick="downloadTheme()" class="btn download">
-                <span style="display: flex; align-items: center; justify-content: space-between; width: 100%; position: relative; z-index: 2;">
-                    <span class="btn-text" style="position: relative; z-index: 3; flex: 1; text-align: left;">Download</span>
+                <span style="display: flex; align-items: center; justify-content: center; width: 100%; position: relative; z-index: 2;">
+                    <span style="position: relative; z-index: 3; text-align: center; flex: 0 1 auto;">Download</span>
                 </span>
             </button>
+            <a href="#" id="download-link-small" onclick="downloadTheme(); return false;" class="download-link-small" style="display: none;">📦 Download ZIP instead</a>
             <button onclick="shareTheme()" class="btn share" style="margin-top: 10px;">
                 <span style="display: flex; align-items: center; justify-content: center; width: 100%;">
                     <span>🔗 Share this Theme</span>
                 </span>
             </button>
         </div>
+        <div id="download-status" style="margin-top: 10px; color: #666; display: none;">Starting download...</div>
 
         <!-- Install Instructions Modal -->
         <div id="install-modal" class="install-modal" onclick="if(event.target === this) closeInstallModal()">
@@ -838,10 +619,7 @@ html_template = """<!DOCTYPE html>
                 <p style="color: #666; font-size: 0.9rem; margin-top: 15px;">The installation will automatically copy all theme files to your device.</p>
                 <button class="install-modal-btn" onclick="proceedWithInstall()">Continue to Folder Selection</button>
                 <p style="text-align: center; margin-top: 15px;">
-                    <a href="#" onclick="closeInstallModal(); downloadTheme(); return false;" style="color: #667eea; text-decoration: underline; font-size: 0.9rem;">💾 Save .zip for later</a>
-                </p>
-                <p style="color: #666; font-size: 0.85rem; margin-top: 10px; text-align: center; font-style: italic;">
-                    After downloading, extract the ZIP file and place the folder containing config.json into the "Themes" folder on your Y1 device.
+                    <a href="#" onclick="closeInstallModal(); downloadTheme(); return false;" style="color: #667eea; text-decoration: underline; font-size: 0.9rem;">📦 Download as .zip instead</a>
                 </p>
             </div>
         </div>
@@ -863,13 +641,13 @@ html_template = """<!DOCTYPE html>
         
         <!-- SEO Content -->
         <div class="seo-content" style="margin-top: 40px; text-align: left; color: #666; font-size: 0.9rem; line-height: 1.6;">
-            <p><span id="description-display" style="display: none;"></span></p>
+            <p><span id="description-display" style="visibility: hidden;">Loading...</span></p>
         </div>
         
         <div style="margin-top: 30px; font-size: 0.9rem; color: #888;">
             <a href="../index.html" class="back-link">← Back to All Themes</a>
             <span style="margin: 0 10px;">|</span>
-            <a href="https://github.com/y1-community/InnioasisY1Themes/tree/main/{folder}#readme" target="_blank" style="color: #888; text-decoration: none;">✏️ Edit or Update this Theme</a>
+            <a href="#" id="edit-theme-link" target="_blank" style="color: #888; text-decoration: none;">✏️ Edit or Update this Theme</a>
         </div>
     </div>
 
@@ -881,26 +659,6 @@ html_template = """<!DOCTYPE html>
             <span>✏️</span>
             <span>View/Edit on GitHub</span>
         </a>
-        <!-- Config.json info display (shown for gallery images) -->
-        <div id="lightbox-config-info" class="lightbox-config-info" onclick="event.stopPropagation()" style="display: none;">
-            <div class="lightbox-config-header">Theme Construction Info</div>
-            <div class="lightbox-config-explanation">This information helps you understand how a theme is constructed:</div>
-            <div class="lightbox-config-file-link">
-                <a id="lightbox-config-file-link" href="#" target="_blank" rel="noopener noreferrer">config.json</a>
-            </div>
-            <div class="lightbox-config-code-container">
-                <div class="lightbox-config-code-header">
-                    <span><strong id="lightbox-config-key-display"></strong></span>
-                    <span>Line <strong id="lightbox-config-line-number"></strong></span>
-                </div>
-                <pre class="lightbox-config-code" id="lightbox-config-code"></pre>
-            </div>
-            <div class="lightbox-config-details">
-                <div class="lightbox-config-item">
-                    <strong>Image File:</strong> <code id="lightbox-image-name"></code>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Toast Notification -->
@@ -1211,7 +969,16 @@ html_template = """<!DOCTYPE html>
     </script>
 
     <script>
-        console.log('✅ Main script tag loaded and executing');
+        // Helper function to get folder name from URL
+        function getFolderName() {
+            const currentPath = window.location.pathname;
+            const pathParts = currentPath.split('/');
+            if (pathParts[pathParts.length - 1].toLowerCase() === 'index.html' || pathParts[pathParts.length - 1] === '') {
+                return decodeURIComponent(pathParts[pathParts.length - 2] || '');
+            }
+            return decodeURIComponent(pathParts[pathParts.length - 1] || '');
+        }
+        
         // Share Theme Function
         async function shareTheme() {
             const url = window.location.href;
@@ -1378,7 +1145,8 @@ html_template = """<!DOCTYPE html>
                 if (!arrowIconFile || arrowIconFile.trim() === '') {
                     try {
                         // Try GitHub API to find *RightArrow*.* files
-                        const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/{folder}`;
+                        const folderName = getFolderName();
+                        const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${encodeURIComponent(folderName)}`;
                         const response = await fetch(apiUrl);
                         if (response.ok) {
                             const files = await response.json();
@@ -1479,22 +1247,14 @@ html_template = """<!DOCTYPE html>
         // 3. Hardcoded HTML values - LAST RESORT ONLY
         // This allows users to copy this index.html to another theme without editing it.
         document.addEventListener('DOMContentLoaded', async () => {
-            const currentPath = window.location.pathname;
-            let folderName = '';
-            const pathParts = currentPath.split('/');
-            if (pathParts[pathParts.length - 1].toLowerCase() === 'index.html' || pathParts[pathParts.length - 1] === '') {
-                folderName = pathParts[pathParts.length - 2];
-            } else {
-                folderName = pathParts[pathParts.length - 1];
-            }
-            
-            folderName = decodeURIComponent(folderName);
+            const folderName = getFolderName();
 
             // Check for File System Access API support (works on Chrome desktop and Android)
             if ('showDirectoryPicker' in window) {
                 document.getElementById('install-btn').style.display = 'inline-block';
-                // Hide full download button (no separate download link - only in modal)
+                // Hide full download button, show small link
                 document.getElementById('download-btn-full').style.display = 'none';
+                document.getElementById('download-link-small').style.display = 'inline';
                 
                 // Detect Android and update install instructions
                 const isAndroid = /Android/i.test(navigator.userAgent);
@@ -1520,200 +1280,218 @@ html_template = """<!DOCTYPE html>
             await loadAuthorInfo();
         });
         
-        // Load author information from config.json (priority) or themes.json (fallback)
+        // Load theme information from config.json (priority) or themes.json (fallback)
         async function loadAuthorInfo() {
             try {
-                let author = '{author}';
+                // Get folder name from URL
+                const folderName = getFolderName();
+                
+                // Initialize values - folder name as fallback for title
+                let title = folderName || 'Theme';
+                let author = null;
                 let authorUrl = null;
-                let description = '{description}';
+                let description = null;
                 
                 // Try to load from config.json first (authoritative source)
                 try {
                     const configResponse = await fetch('./config.json');
                     if (configResponse.ok) {
                         const config = await configResponse.json();
-                        if (config.author) author = config.author;
-                        if (config.authorUrl) authorUrl = config.authorUrl;
-                        if (config.description) description = config.description;
+                        
+                        // Check theme_info structure first (new format)
+                        if (config.theme_info) {
+                            if (config.theme_info.title) title = config.theme_info.title;
+                            if (config.theme_info.author) author = config.theme_info.author;
+                            if (config.theme_info.authorUrl) authorUrl = config.theme_info.authorUrl;
+                            if (config.theme_info.description) description = config.theme_info.description;
+                        }
+                        
+                        // Fallback to direct properties (old format, backwards compatibility)
+                        if (!author && config.author) author = config.author;
+                        if (!authorUrl && config.authorUrl) authorUrl = config.authorUrl;
+                        if (!description && config.description) description = config.description;
+                        if (!title || title === folderName) {
+                            if (config.title) title = config.title;
+                            if (config.name) title = config.name;
+                        }
                     }
                 } catch (e) {
                     console.warn('Could not load config.json:', e);
                 }
                 
-                // Fallback to themes.json if authorUrl not found in config.json
-                if (!authorUrl) {
-                    try {
-                        const themesResponse = await fetch('../themes.json');
-                        if (themesResponse.ok) {
-                            const themesData = await themesResponse.json();
-                            const currentPath = window.location.pathname;
-                            let folderName = '';
-                            const pathParts = currentPath.split('/');
-                            if (pathParts[pathParts.length - 1].toLowerCase() === 'index.html' || pathParts[pathParts.length - 1] === '') {
-                                folderName = pathParts[pathParts.length - 2];
-                            } else {
-                                folderName = pathParts[pathParts.length - 1];
+                // Fallback to themes.json
+                try {
+                    const themesResponse = await fetch('../themes.json');
+                    if (themesResponse.ok) {
+                        const themesData = await themesResponse.json();
+                        const theme = themesData.themes.find(t => t.folder === folderName);
+                        
+                        if (theme) {
+                            // Only use values from themes.json if not already loaded from config.json
+                            if (!title || title === folderName) {
+                                if (theme.name) title = theme.name;
                             }
-                            folderName = decodeURIComponent(folderName);
-                            
-                            const theme = themesData.themes.find(t => t.folder === folderName);
-                            if (theme) {
-                                if (theme.author) author = theme.author;
-                                if (theme.authorUrl) authorUrl = theme.authorUrl;
-                                if (theme.description) description = theme.description;
-                            }
+                            if (!author && theme.author) author = theme.author;
+                            if (!authorUrl && theme.authorUrl) authorUrl = theme.authorUrl;
+                            if (!description && theme.description) description = theme.description;
                         }
-                    } catch (e) {
-                        console.warn('Could not load themes.json:', e);
                     }
+                } catch (e) {
+                    console.warn('Could not load themes.json:', e);
                 }
                 
-                // Set authorUrl for Innioasis-made themes if not already set
-                if ((author === 'Innioasis' || author.toLowerCase() === 'innioasis') && !authorUrl) {
-                    authorUrl = 'https://www.innioasis.com';
+                // Final fallback: use folder name for title if still not set
+                if (!title || title === folderName) {
+                    title = folderName || 'Theme';
+                }
+                
+                // Update title
+                const titleElement = document.getElementById('theme-title');
+                if (titleElement) {
+                    titleElement.textContent = `About the ${title} Theme for Innioasis Y1`;
+                    titleElement.style.visibility = 'visible';
+                }
+                
+                // Update description (top section)
+                const themeDescriptionElement = document.getElementById('theme-description');
+                if (themeDescriptionElement) {
+                    themeDescriptionElement.textContent = description || '';
+                    themeDescriptionElement.style.visibility = description ? 'visible' : 'hidden';
+                }
+                
+                // Update description (bottom section - SEO)
+                const descriptionDisplay = document.getElementById('description-display');
+                if (descriptionDisplay) {
+                    descriptionDisplay.textContent = description || '';
+                    descriptionDisplay.style.visibility = description ? 'visible' : 'hidden';
                 }
                 
                 // Update author display with link if authorUrl is available
                 const authorDisplay = document.getElementById('author-display');
-                const descriptionDisplay = document.getElementById('description-display');
                 
                 if (authorDisplay) {
-                    // Remove any erroneous "$" prefix from author name
-                    author = author.replace(/^\$+/, '');
-                    
-                    // Helper function to detect social media platform from URL
-                    function getSocialIcon(url) {
-                        if (!url) return null;
+                    // Use author if available, otherwise hide
+                    if (author) {
+                        // Detect Reddit username (u/username pattern)
+                        const redditUsernameMatch = author.match(/u\/([^\/\s]+)/i);
+                        let redditUsername = null;
+                        let redditFaviconHtml = '';
                         
-                        const urlLower = url.toLowerCase();
-                        
-                        // Check if it's a Reddit profile URL (don't show icon, Reddit favicon handles this)
-                        if (/reddit\.com\/(user|u)\//i.test(url)) {
-                            return null; // Reddit is handled separately
-                        }
-                        
-                        // Pinterest
-                        if (/pinterest\.(com|co\.uk|ca|au|de|fr|it|es|nl|pl|ru|jp|kr|in|br|mx)/i.test(url)) {
-                            return {
-                                icon: 'https://www.pinterest.com/favicon.ico',
-                                alt: 'Pinterest',
-                                class: 'social-favicon'
-                            };
-                        }
-                        
-                        // Instagram
-                        if (/instagram\.com/i.test(url)) {
-                            return {
-                                icon: 'https://www.instagram.com/static/images/ico/favicon.ico',
-                                alt: 'Instagram',
-                                class: 'social-favicon'
-                            };
-                        }
-                        
-                        // DeviantArt
-                        if (/deviantart\.com/i.test(url)) {
-                            return {
-                                icon: 'https://www.deviantart.com/favicon.ico',
-                                alt: 'DeviantArt',
-                                class: 'social-favicon'
-                            };
-                        }
-                        
-                        // Behance
-                        if (/behance\.net/i.test(url)) {
-                            return {
-                                icon: 'https://www.behance.net/favicon.ico',
-                                alt: 'Behance',
-                                class: 'social-favicon'
-                            };
-                        }
-                        
-                        // GitHub
-                        if (/github\.com/i.test(url)) {
-                            return {
-                                icon: 'https://github.com/favicon.ico',
-                                alt: 'GitHub',
-                                class: 'social-favicon'
-                            };
-                        }
-                        
-                        // Twitter/X
-                        if (/(twitter\.com|x\.com)/i.test(url)) {
-                            return {
-                                icon: 'https://abs.twimg.com/favicons/twitter.ico',
-                                alt: 'Twitter/X',
-                                class: 'social-favicon'
-                            };
-                        }
-                        
-                        // YouTube
-                        if (/youtube\.com|youtu\.be/i.test(url)) {
-                            return {
-                                icon: 'https://www.youtube.com/favicon.ico',
-                                alt: 'YouTube',
-                                class: 'social-favicon'
-                            };
-                        }
-                        
-                        // Default: web/internet globe icon for regular websites
-                        return {
-                            icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iOCIgY3k9IjgiIHI9IjciIHN0cm9rZT0iIzY2N2VlYSIgc3Ryb2tlLXdpZHRoPSIxLjUiLz4KPHBhdGggZD0iTTggMUMyIDMgMiA1IDIgOEMyIDExIDIgMTMgOCAxNUMxNCAxMyAxNCAxMSAxNCA4QzE0IDUgMTQgMyA4IDFaIiBzdHJva2U9IiM2NjdlZWEiIHN0cm9rZS13aWR0aD0iMS41Ii8+CjxwYXRoIGQ9Ik0xIDhIMTVNOCAxVjE1IiBzdHJva2U9IiM2NjdlZWEiIHN0cm9rZS13aWR0aD0iMS41Ii8+Cjwvc3ZnPgo=',
-                            alt: 'Website',
-                            class: 'social-favicon'
-                        };
-                    }
-                    
-                    // Detect Reddit username (u/username pattern)
-                    const redditUsernameMatch = author.match(/u\/([^\/\s]+)/i);
-                    let redditUsername = null;
-                    let redditFaviconHtml = '';
-                    
-                    if (redditUsernameMatch) {
-                        redditUsername = redditUsernameMatch[1];
-                        // Only show Reddit favicon if authorUrl is NOT a Reddit profile URL
-                        // or if there's no authorUrl
-                        const isRedditUrl = authorUrl && /reddit\.com\/(user|u)\//i.test(authorUrl);
-                        if (!isRedditUrl || !authorUrl) {
+                        if (redditUsernameMatch) {
+                            redditUsername = redditUsernameMatch[1];
                             // Create Reddit favicon that links to reddit.com/user/username
                             redditFaviconHtml = `<a href="https://reddit.com/user/${redditUsername}" target="_blank" rel="noopener noreferrer" class="reddit-favicon" onclick="event.stopPropagation();" style="display: inline-block; width: 16px; height: 16px; margin-left: 4px; vertical-align: middle; opacity: 0.8; transition: opacity 0.2s;"><img src="https://www.redditstatic.com/desktop2x/img/favicon/favicon-16x16.png" alt="Reddit" style="width: 100%; height: 100%; object-fit: contain;"></a>`;
                         }
-                    }
-                    
-                    // Get social media icon for authorUrl (if not Reddit)
-                    let socialIconHtml = '';
-                    if (authorUrl) {
-                        const socialIcon = getSocialIcon(authorUrl);
-                        if (socialIcon) {
-                            socialIconHtml = `<a href="${authorUrl}" target="_blank" rel="noopener noreferrer" class="${socialIcon.class}" onclick="event.stopPropagation();" style="display: inline-block; width: 16px; height: 16px; margin-left: 4px; vertical-align: middle; opacity: 0.8; transition: opacity 0.2s;"><img src="${socialIcon.icon}" alt="${socialIcon.alt}" style="width: 100%; height: 100%; object-fit: contain;"></a>`;
+                        
+                        if (authorUrl) {
+                            // Author name links to authorUrl, Reddit favicon links to Reddit profile
+                            authorDisplay.innerHTML = `<a href="${authorUrl}" target="_blank" rel="noopener noreferrer" style="color: #667eea; text-decoration: none; border-bottom: 1px solid #667eea; transition: all 0.2s;">${author}</a>${redditFaviconHtml}`;
+                            // Add hover effect
+                            const authorLink = authorDisplay.querySelector('a:not(.reddit-favicon)');
+                            if (authorLink) {
+                                authorLink.addEventListener('mouseenter', function() {
+                                    this.style.color = '#764ba2';
+                                    this.style.borderBottomColor = '#764ba2';
+                                });
+                                authorLink.addEventListener('mouseleave', function() {
+                                    this.style.color = '#667eea';
+                                    this.style.borderBottomColor = '#667eea';
+                                });
+                            }
+                        } else {
+                            // No authorUrl - just display author name with Reddit favicon if detected
+                            authorDisplay.innerHTML = `${author}${redditFaviconHtml}`;
                         }
-                    }
-                    
-                    if (authorUrl) {
-                        // Author name links to authorUrl, Reddit favicon links to Reddit profile, social icon links to authorUrl
-                        authorDisplay.innerHTML = `<a href="${authorUrl}" target="_blank" rel="noopener noreferrer" style="color: #667eea; text-decoration: none; border-bottom: 1px solid #667eea; transition: all 0.2s;">${author}</a>${redditFaviconHtml}${socialIconHtml}`;
-                        // Add hover effect
-                        const authorLink = authorDisplay.querySelector('a:not(.reddit-favicon):not(.social-favicon)');
-                        if (authorLink) {
-                            authorLink.addEventListener('mouseenter', function() {
-                                this.style.color = '#764ba2';
-                                this.style.borderBottomColor = '#764ba2';
-                            });
-                            authorLink.addEventListener('mouseleave', function() {
-                                this.style.color = '#667eea';
-                                this.style.borderBottomColor = '#667eea';
-                            });
-                        }
+                        authorDisplay.style.visibility = 'visible';
                     } else {
-                        // No authorUrl - just display author name with Reddit favicon if detected
-                        authorDisplay.innerHTML = `${author}${redditFaviconHtml}`;
+                        authorDisplay.style.visibility = 'hidden';
                     }
                 }
                 
-                if (descriptionDisplay) {
-                    descriptionDisplay.textContent = description;
+                // Update meta tags and structured data
+                const pageTitle = `${title} Theme - Official Innioasis Y1 Community Themes`;
+                const metaDescription = description ? 
+                    `Download ${title} theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. ${description} Community Maintainers: Ryan Specter + Dmitri Medina` :
+                    `Download ${title} theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. Community Maintainers: Ryan Specter + Dmitri Medina`;
+                
+                // Update page title
+                document.title = pageTitle;
+                
+                // Update meta description
+                let metaDescTag = document.querySelector('meta[name="description"]');
+                if (!metaDescTag) {
+                    metaDescTag = document.createElement('meta');
+                    metaDescTag.name = 'description';
+                    document.head.appendChild(metaDescTag);
                 }
+                metaDescTag.content = metaDescription;
+                
+                // Update meta keywords
+                let metaKeywordsTag = document.querySelector('meta[name="keywords"]');
+                if (!metaKeywordsTag) {
+                    metaKeywordsTag = document.createElement('meta');
+                    metaKeywordsTag.name = 'keywords';
+                    document.head.appendChild(metaKeywordsTag);
+                }
+                metaKeywordsTag.content = `Innioasis Y1, Y1 themes, MP3 player themes, ${title}, Y1 customization, official Y1 themes, Ryan Specter, Dmitri Medina`;
+                
+                // Update structured data
+                let structuredDataScript = document.querySelector('script[type="application/ld+json"]');
+                if (structuredDataScript) {
+                    try {
+                        const structuredData = {
+                            "@context": "https://schema.org",
+                            "@type": "SoftwareApplication",
+                            "name": `${title} Theme`,
+                            "applicationCategory": "Theme",
+                            "operatingSystem": "Innioasis Y1",
+                            "description": metaDescription,
+                            "url": `https://themes.innioasis.app/${encodeURIComponent(folderName)}/`,
+                            "publisher": {
+                                "@type": "Organization",
+                                "name": "Innioasis Y1 Community",
+                                "url": "https://themes.innioasis.app"
+                            },
+                            "maintainer": [
+                                {
+                                    "@type": "Person",
+                                    "name": "Ryan Specter",
+                                    "url": "https://ryanspecter.uk"
+                                },
+                                {
+                                    "@type": "Person",
+                                    "name": "Dmitri Medina",
+                                    "url": "https://reddit.com/user/dmitrimedina"
+                                }
+                            ]
+                        };
+                        structuredDataScript.textContent = JSON.stringify(structuredData);
+                    } catch (e) {
+                        console.warn('Could not update structured data:', e);
+                    }
+                }
+                
+                // Update edit link
+                const editLink = document.getElementById('edit-theme-link');
+                if (editLink) {
+                    editLink.href = `https://github.com/y1-community/InnioasisY1Themes/tree/main/${encodeURIComponent(folderName)}#readme`;
+                }
+                
+                // Update cover image alt text
+                const coverImage = document.getElementById('cover-image');
+                if (coverImage) {
+                    coverImage.alt = `${title} cover`;
+                }
+                
             } catch (error) {
-                console.warn('Could not load author information:', error);
+                console.warn('Could not load theme information:', error);
+                // Show folder name as fallback
+                const titleElement = document.getElementById('theme-title');
+                if (titleElement) {
+                    const folderName = getFolderName();
+                    titleElement.textContent = `About the ${folderName || 'Theme'} Theme for Innioasis Y1`;
+                    titleElement.style.visibility = 'visible';
+                }
             }
         }
         
@@ -1800,51 +1578,6 @@ html_template = """<!DOCTYPE html>
             document.body.style.overflow = 'auto';
         }
         
-        // Helper function to update button text while preserving structure (text + arrow icon)
-        function updateButtonText(button, newText) {
-            if (!button) return;
-            // Find the text span with class "btn-text" or first span inside the flex container
-            const textSpan = button.querySelector('.btn-text') || button.querySelector('span > span:first-child');
-            if (textSpan) {
-                textSpan.textContent = newText;
-            } else {
-                // Fallback if structure is different
-                const flexContainer = button.querySelector('span');
-                if (flexContainer) {
-                    const firstChild = flexContainer.querySelector('span:first-child');
-                    if (firstChild) {
-                        firstChild.textContent = newText;
-                    } else {
-                        button.textContent = newText;
-                    }
-                } else {
-                    button.textContent = newText;
-                }
-            }
-        }
-        
-        // Helper function to reset button to original state
-        function resetButton(button, originalText, originalClass) {
-            if (!button) return;
-            button.disabled = false;
-            updateButtonText(button, originalText);
-            if (originalClass) {
-                button.className = originalClass;
-            }
-            // Ensure button is visible and in correct state
-            if (button.id === 'install-btn') {
-                // Install button should be visible if File System Access API is supported
-                if ('showDirectoryPicker' in window) {
-                    button.style.display = 'inline-block';
-                }
-            } else if (button.id === 'download-btn-full') {
-                // Download button should be visible if File System Access API is NOT supported
-                if (!('showDirectoryPicker' in window)) {
-                    button.style.display = 'inline-block';
-                }
-            }
-        }
-        
         // Proceed with installation after user confirms
         function proceedWithInstall() {
             closeInstallModal();
@@ -1854,12 +1587,9 @@ html_template = """<!DOCTYPE html>
 
         // Install Theme directly to device
         async function installTheme() {
-            const folderName = '{folder}';
+            const folderName = getFolderName();
             const btn = document.getElementById('install-btn');
-            
-            // Store original button state
-            const originalText = 'Install';
-            const originalClass = btn.className;
+            const status = document.getElementById('download-status');
             
             // Get theme font for progress display
             const themeFont = await loadThemeFont();
@@ -1872,7 +1602,8 @@ html_template = """<!DOCTYPE html>
                 
                 if (!savedFolderHandle) {
                     // 1. Ask user to select Themes folder (modal already shown by showInstallInstructions)
-                    updateButtonText(btn, 'Select Themes folder...');
+                    status.style.display = 'block';
+                    status.textContent = 'Please select the "Themes" folder on your Y1 device...';
                     
                     dirHandle = await window.showDirectoryPicker({
                         mode: 'readwrite',
@@ -1882,7 +1613,8 @@ html_template = """<!DOCTYPE html>
                     // Folder already selected on home page - skip dialog and use saved handle
                     // Note: We can't actually restore the handle from localStorage (security restriction)
                     // So we still need to ask, but we can skip the preparation dialog
-                    updateButtonText(btn, 'Select Themes folder...');
+                    status.style.display = 'block';
+                    status.textContent = 'Please select the "Themes" folder on your Y1 device...';
                     
                     dirHandle = await window.showDirectoryPicker({
                         mode: 'readwrite',
@@ -1893,16 +1625,17 @@ html_template = """<!DOCTYPE html>
                 // Verify it's likely the right folder (optional, but good UX)
                 if (dirHandle.name !== 'Themes' && dirHandle.name !== 'themes') {
                     if (!confirm(`You selected "${dirHandle.name}", but usually this should be the "Themes" folder. Continue?`)) {
-                        resetButton(btn, originalText, originalClass);
+                        status.textContent = 'Installation cancelled.';
                         return;
                     }
                 }
 
                 btn.disabled = true;
-                updateButtonText(btn, '⏳ Fetching files...');
+                btn.textContent = '⏳ Installing...';
                 if (fontStyle) {
                     btn.style.fontFamily = themeFont ? `'${themeFont}', sans-serif` : '';
                 }
+                status.textContent = 'Fetching file list...';
 
                 // 2. Get all files from GitHub (recursive - handles subdirectories)
                 async function getAllFilesRecursive(path = folderName, basePath = '') {
@@ -1947,15 +1680,17 @@ html_template = """<!DOCTYPE html>
                 const total = allFiles.length;
 
                 // 4. Download and write each file (handles nested paths)
-                // Show progress inside button
-                updateButtonText(btn, `⏳ Downloading 0/${total}...`);
+                // Show progress: downloading files before installation (in theme font)
+                status.textContent = `Downloading files (0/${total})...`;
+                btn.textContent = `⏳ Downloading files...`;
                 if (fontStyle) {
                     btn.style.fontFamily = themeFont ? `'${themeFont}', sans-serif` : '';
                 }
                 
                 for (const file of allFiles) {
-                    processed++;
-                    updateButtonText(btn, `⏳ Downloading ${processed}/${total}...`);
+                    const fileName = file.name.split('/').pop(); // Get just filename for display
+                    status.textContent = `Downloading ${fileName} (${processed + 1}/${total})...`;
+                    btn.textContent = `⏳ Downloading ${processed + 1}/${total}...`;
                     if (fontStyle) {
                         btn.style.fontFamily = themeFont ? `'${themeFont}', sans-serif` : '';
                     }
@@ -1985,18 +1720,21 @@ html_template = """<!DOCTYPE html>
                         });
                     }
                     
+                    processed++;
                 }
                 
                 // 5. Now install files to device
-                processed = 0;
-                updateButtonText(btn, `⏳ Installing 0/${total}...`);
+                status.textContent = `Installing files (0/${total})...`;
+                btn.textContent = `⏳ Installing files...`;
                 if (fontStyle) {
                     btn.style.fontFamily = themeFont ? `'${themeFont}', sans-serif` : '';
                 }
+                processed = 0;
                 
                 for (const file of allFiles) {
-                    processed++;
-                    updateButtonText(btn, `⏳ Installing ${processed}/${total}...`);
+                    const fileName = file.name.split('/').pop();
+                    status.textContent = `Installing ${fileName} (${processed + 1}/${total})...`;
+                    btn.textContent = `⏳ Installing ${processed + 1}/${total}...`;
                     if (fontStyle) {
                         btn.style.fontFamily = themeFont ? `'${themeFont}', sans-serif` : '';
                     }
@@ -2033,46 +1771,40 @@ html_template = """<!DOCTYPE html>
                     await writable.write(blob);
                     await writable.close();
                     
+                    processed++;
                 }
 
-                updateButtonText(btn, '✅ Installed!');
+                btn.textContent = '✅ Installed!';
+                status.textContent = 'Theme installed successfully! You can now disconnect your device.';
                 setTimeout(() => {
-                    resetButton(btn, originalText, originalClass);
-                }, 2000);
+                    btn.disabled = false;
+                    btn.textContent = '🚀 Install on Y1';
+                }, 3000);
 
             } catch (error) {
                 console.error('Installation error:', error);
                 if (error.name === 'AbortError') {
-                    updateButtonText(btn, '❌ Cancelled');
+                    status.textContent = 'Installation cancelled.';
                 } else {
-                    updateButtonText(btn, '❌ Failed');
+                    status.textContent = 'Installation failed: ' + error.message;
                     alert('Installation failed. Please try downloading the ZIP instead.');
                 }
-                setTimeout(() => {
-                    resetButton(btn, originalText, originalClass);
-                }, 2000);
+                btn.disabled = false;
+                btn.textContent = '🚀 Install on Y1';
             }
         }
 
         // Download theme as ZIP
         async function downloadTheme() {
-            const folderName = '{folder}';
-            const themeName = '{name}';
+            const folderName = getFolderName();
+            const themeName = folderName;
             const btn = document.getElementById('download-btn-full');
-            
-            // Store original button state
-            const originalText = 'Download';
-            const originalClass = btn.className;
-            
-            // Get theme font for progress display
-            const themeFont = await loadThemeFont();
-            const fontStyle = themeFont ? `font-family: '${themeFont}', sans-serif;` : '';
+            const status = document.getElementById('download-status');
             
             btn.disabled = true;
-            updateButtonText(btn, '⏳ Fetching files...');
-            if (fontStyle) {
-                btn.style.fontFamily = themeFont ? `'${themeFont}', sans-serif` : '';
-            }
+            btn.textContent = '⏳ Downloading...';
+            status.style.display = 'block';
+            status.textContent = 'Fetching file list...';
             
             try {
                 const zip = new JSZip();
@@ -2197,329 +1929,54 @@ html_template = """<!DOCTYPE html>
             }
         }
 
-        // Helper function to find line number in config.json text for a given key path
-        function findConfigKeyLine(configText, keyPath) {
-            const lines = configText.split('\n');
-            const keyParts = keyPath.split('.');
-            
-            // Try to find the key in the config
-            // For nested keys like "itemConfig.itemSelectedBackground", we need to find:
-            // 1. The section (e.g., "itemConfig": {)
-            // 2. The key within that section (e.g., "itemSelectedBackground": "...")
-            
-            let currentSection = null;
-            let inTargetSection = false;
-            let braceDepth = 0;
-            let sectionBraceDepth = 0;
-            
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i];
-                const trimmed = line.trim();
-                
-                // Track brace depth to know when we're inside objects
-                braceDepth += (line.match(/{/g) || []).length;
-                braceDepth -= (line.match(/}/g) || []).length;
-                
-                // Check if this line starts a section (e.g., "itemConfig": {)
-                if (keyParts.length > 1) {
-                    const sectionName = keyParts[0];
-                    if (trimmed.startsWith(`"${sectionName}"`) && trimmed.includes('{')) {
-                        currentSection = sectionName;
-                        inTargetSection = true;
-                        sectionBraceDepth = braceDepth;
-                    }
-                }
-                
-                // If we're in the target section, look for the key
-                if (inTargetSection || keyParts.length === 1) {
-                    const targetKey = keyParts[keyParts.length - 1];
-                    // Match key with quotes and colon (e.g., "itemSelectedBackground":)
-                    const keyPattern = new RegExp(`"${targetKey}"\\s*:`);
-                    if (keyPattern.test(trimmed)) {
-                        // Check if we're still in the right section (for nested keys)
-                        if (keyParts.length > 1) {
-                            // Make sure we're at the right brace depth (within the section)
-                            if (braceDepth > sectionBraceDepth) {
-                                return i + 1; // Line numbers are 1-indexed
-                            }
-                        } else {
-                            return i + 1;
-                        }
-                    }
-                }
-                
-                // Reset section tracking if we've left the section
-                if (inTargetSection && braceDepth <= sectionBraceDepth && trimmed.includes('}')) {
-                    inTargetSection = false;
-                }
-            }
-            
-            return null; // Key not found
-        }
-        
-        // Helper function to extract code snippet around a line
-        function extractCodeSnippet(configText, lineNumber, contextLines = 5) {
-            const lines = configText.split('\n');
-            const startLine = Math.max(0, lineNumber - contextLines - 1);
-            const endLine = Math.min(lines.length, lineNumber + contextLines);
-            const snippetLines = lines.slice(startLine, endLine);
-            
-            return {
-                lines: snippetLines,
-                startLine: startLine + 1, // 1-indexed
-                highlightLine: lineNumber
-            };
-        }
-        
-        // Helper function to syntax highlight JSON code
-        function highlightJSONCode(line) {
-            // Simple JSON syntax highlighting
-            // Process in order: keys, strings, numbers, booleans, null
-            // Note: line is already HTML-escaped
-            let highlighted = line;
-            
-            // Highlight keys (quoted strings followed by colon)
-            highlighted = highlighted.replace(/("([^"\\]|\\.)*")\s*:/g, '<span class="key">$1</span>:');
-            
-            // Highlight string values (quoted strings after colon, but not keys)
-            // Match ": "value"" pattern
-            highlighted = highlighted.replace(/:\s*("([^"\\]|\\.)*")/g, ': <span class="string">$1</span>');
-            
-            // Highlight numbers (after colon, not inside strings)
-            highlighted = highlighted.replace(/:\s*(\d+\.?\d*)(?![^<]*<\/span>)/g, ': <span class="number">$1</span>');
-            
-            // Highlight booleans
-            highlighted = highlighted.replace(/:\s*(true|false)(?![^<]*<\/span>)/g, ': <span class="boolean">$1</span>');
-            
-            // Highlight null
-            highlighted = highlighted.replace(/:\s*(null)(?![^<]*<\/span>)/g, ': <span class="null">$1</span>');
-            
-            return highlighted;
-        }
-        
-        // Function to open full config.json in lightbox
-        async function openConfigJSON() {
-            const lightbox = document.getElementById('lightbox');
-            const lightboxImg = document.getElementById('lightbox-img');
-            const editBtn = document.getElementById('lightbox-edit-btn');
-            const configInfo = document.getElementById('lightbox-config-info');
-            const configKeyDisplay = document.getElementById('lightbox-config-key-display');
-            const configLineNumber = document.getElementById('lightbox-config-line-number');
-            const configCode = document.getElementById('lightbox-config-code');
-            const configFileLink = document.getElementById('lightbox-config-file-link');
-            const imageNameEl = document.getElementById('lightbox-image-name');
-            
-            // Hide the image, show config info
-            lightboxImg.style.display = 'none';
-            lightbox.classList.add('active');
-            document.body.style.overflow = 'hidden';
-            
-            // Show config.json info
-            configInfo.style.display = 'block';
-            configKeyDisplay.textContent = 'config.json';
-            configLineNumber.textContent = 'Full file';
-            imageNameEl.textContent = 'config.json';
-            
-            try {
-                const configResponse = await fetch('./config.json');
-                if (configResponse.ok) {
-                    const configText = await configResponse.text();
-                    const lines = configText.split('\n');
-                    
-                    // Build GitHub link
-                    const currentPath = window.location.pathname;
-                    let folderName = '';
-                    const pathParts = currentPath.split('/');
-                    if (pathParts[pathParts.length - 1].toLowerCase() === 'index.html' || pathParts[pathParts.length - 1] === '') {
-                        folderName = pathParts[pathParts.length - 2];
-                    } else {
-                        folderName = pathParts[pathParts.length - 1];
-                    }
-                    folderName = decodeURIComponent(folderName);
-                    
-                    const githubUrl = `https://github.com/y1-community/InnioasisY1Themes/blob/main/${encodeURIComponent(folderName)}/config.json`;
-                    configFileLink.href = githubUrl;
-                    configFileLink.textContent = 'config.json';
-                    
-                    // Display full file with syntax highlighting
-                    let codeHTML = '';
-                    lines.forEach((line, index) => {
-                        const lineNumber = index + 1;
-                        // Escape HTML first, then apply syntax highlighting
-                        const escapedLine = line
-                            .replace(/&/g, '&amp;')
-                            .replace(/</g, '&lt;')
-                            .replace(/>/g, '&gt;')
-                            .replace(/"/g, '&quot;')
-                            .replace(/'/g, '&#039;');
-                        const highlightedLine = highlightJSONCode(escapedLine);
-                        codeHTML += `<span class="lightbox-config-code-line">`;
-                        codeHTML += `<span class="lightbox-config-code-line-number">${lineNumber}</span>`;
-                        codeHTML += `<span class="lightbox-config-code-line-content">${highlightedLine}</span>`;
-                        codeHTML += `</span>\n`;
-                    });
-                    configCode.innerHTML = codeHTML;
-                }
-            } catch (error) {
-                console.warn('Could not load config.json:', error);
-                configCode.textContent = '// Could not load config.json';
-            }
-            
-            // Set edit button to link to config.json
-            const currentPath = window.location.pathname;
-            let folderName = '';
-            const pathParts = currentPath.split('/');
-            if (pathParts[pathParts.length - 1].toLowerCase() === 'index.html' || pathParts[pathParts.length - 1] === '') {
-                folderName = pathParts[pathParts.length - 2];
-            } else {
-                folderName = pathParts[pathParts.length - 1];
-            }
-            folderName = decodeURIComponent(folderName);
-            editBtn.href = `https://github.com/y1-community/InnioasisY1Themes/blob/main/${encodeURIComponent(folderName)}/config.json`;
-            editBtn.style.display = 'inline-flex';
-        }
-        
         // Lightbox functions
-        async function openLightbox(imgSrc, configKey = null, imageName = null) {
+        function openLightbox(imgSrc, filename = null) {
             const lightbox = document.getElementById('lightbox');
             const lightboxImg = document.getElementById('lightbox-img');
             const editBtn = document.getElementById('lightbox-edit-btn');
-            const configInfo = document.getElementById('lightbox-config-info');
-            const configKeyDisplay = document.getElementById('lightbox-config-key-display');
-            const configLineNumber = document.getElementById('lightbox-config-line-number');
-            const configCode = document.getElementById('lightbox-config-code');
-            const configFileLink = document.getElementById('lightbox-config-file-link');
-            const imageNameEl = document.getElementById('lightbox-image-name');
             
-            // Show the image
-            lightboxImg.style.display = 'block';
             lightboxImg.src = imgSrc;
             lightbox.classList.add('active');
             document.body.style.overflow = 'hidden';
             
-            // Show config.json info if this is from the gallery (has configKey)
-            if (configKey && imageName) {
-                configInfo.style.display = 'block';
-                configKeyDisplay.textContent = configKey;
-                imageNameEl.textContent = imageName;
-                
-                // Fetch config.json as text to find line numbers
-                try {
-                    const configResponse = await fetch('./config.json');
-                    if (configResponse.ok) {
-                        const configText = await configResponse.text();
-                        
-                        // Find the line number for this config key
-                        const lineNumber = findConfigKeyLine(configText, configKey);
-                        
-                        if (lineNumber) {
-                            // Extract code snippet
-                            const snippet = extractCodeSnippet(configText, lineNumber, 5);
-                            
-                            // Build GitHub link to the specific line
-                            const currentPath = window.location.pathname;
-                            let folderName = '';
-                            const pathParts = currentPath.split('/');
-                            if (pathParts[pathParts.length - 1].toLowerCase() === 'index.html' || pathParts[pathParts.length - 1] === '') {
-                                folderName = pathParts[pathParts.length - 2];
-                            } else {
-                                folderName = pathParts[pathParts.length - 1];
-                            }
-                            folderName = decodeURIComponent(folderName);
-                            
-                            const githubUrl = `https://github.com/y1-community/InnioasisY1Themes/blob/main/${encodeURIComponent(folderName)}/config.json#L${lineNumber}`;
-                            configFileLink.href = githubUrl;
-                            configFileLink.textContent = 'config.json';
-                            
-                            // Display line number
-                            configLineNumber.textContent = lineNumber;
-                            
-                            // Display code snippet with syntax highlighting
-                            let codeHTML = '';
-                            snippet.lines.forEach((line, index) => {
-                                const actualLineNumber = snippet.startLine + index;
-                                const isHighlight = actualLineNumber === snippet.highlightLine;
-                                // Escape HTML first, then apply syntax highlighting
-                                const escapedLine = line
-                                    .replace(/&/g, '&amp;')
-                                    .replace(/</g, '&lt;')
-                                    .replace(/>/g, '&gt;')
-                                    .replace(/"/g, '&quot;')
-                                    .replace(/'/g, '&#039;');
-                                const highlightedLine = highlightJSONCode(escapedLine);
-                                codeHTML += `<span class="lightbox-config-code-line ${isHighlight ? 'highlight' : ''}">`;
-                                codeHTML += `<span class="lightbox-config-code-line-number">${actualLineNumber}</span>`;
-                                codeHTML += `<span class="lightbox-config-code-line-content">${highlightedLine}</span>`;
-                                codeHTML += `</span>\n`;
-                            });
-                            configCode.innerHTML = codeHTML;
-                        } else {
-                            // Key not found - show basic info
-                            configLineNumber.textContent = '?';
-                            configCode.textContent = '// Config key not found in config.json';
-                            const currentPath = window.location.pathname;
-                            let folderName = '';
-                            const pathParts = currentPath.split('/');
-                            if (pathParts[pathParts.length - 1].toLowerCase() === 'index.html' || pathParts[pathParts.length - 1] === '') {
-                                folderName = pathParts[pathParts.length - 2];
-                            } else {
-                                folderName = pathParts[pathParts.length - 1];
-                            }
-                            folderName = decodeURIComponent(folderName);
-                            configFileLink.href = `https://github.com/y1-community/InnioasisY1Themes/blob/main/${encodeURIComponent(folderName)}/config.json`;
-                            configFileLink.textContent = 'config.json';
-                        }
-                    }
-                } catch (error) {
-                    console.warn('Could not load config.json for code display:', error);
-                    configLineNumber.textContent = '?';
-                    configCode.textContent = '// Could not load config.json';
-                }
-            } else {
-                configInfo.style.display = 'none';
-            }
+            // Extract filename from image source and construct GitHub URL
+            // Image source format: ./filename.png, blob: URL, or full URL
+            // We need: https://github.com/y1-community/InnioasisY1Themes/blob/main/{folderName}/{filename}
+            const folderName = getFolderName();
+            let actualFilename = filename;
             
-            // Extract filename from image source and construct GitHub URL for edit button
-            // Image source format: ./filename.png or ./themeFolder/filename.png
-            // We need: https://github.com/y1-community/InnioasisY1Themes/tree/main/{folderName}/{filename}
-            let editFolderName = '{folder}';
-            let filename = imageName || '';
-            
-            if (!filename) {
+            // If filename not provided, extract from imgSrc
+            if (!actualFilename) {
                 // Remove leading ./ if present
                 const cleanSrc = imgSrc.replace(/^\.\//, '');
                 
-                // If the path contains a folder (shouldn't happen for theme page images, but handle it)
-                if (cleanSrc.includes('/')) {
-                    const parts = cleanSrc.split('/');
-                    filename = parts[parts.length - 1];
+                // Handle blob: URLs (from carousel) - try to get from data attribute
+                if (imgSrc.startsWith('blob:')) {
+                    // Try to find the element that triggered this (if available)
+                    actualFilename = cleanSrc.split('/').pop();
                 } else {
-                    filename = cleanSrc;
+                    // If the path contains a folder (shouldn't happen for theme page images, but handle it)
+                    if (cleanSrc.includes('/')) {
+                        const parts = cleanSrc.split('/');
+                        actualFilename = parts[parts.length - 1];
+                    } else {
+                        actualFilename = cleanSrc;
+                    }
                 }
-                // Remove query params if any
-                filename = filename.split('?')[0];
             }
             
-            // Construct GitHub URL for image edit button
-            const githubUrl = `https://github.com/y1-community/InnioasisY1Themes/tree/main/${encodeURIComponent(editFolderName)}/${encodeURIComponent(filename)}`;
+            // Remove URL parameters if present
+            actualFilename = actualFilename.split('?')[0].split('#')[0];
+            
+            // Construct GitHub URL using blob/main to view the actual file
+            const githubUrl = `https://github.com/y1-community/InnioasisY1Themes/blob/main/${encodeURIComponent(folderName)}/${encodeURIComponent(actualFilename)}`;
             editBtn.href = githubUrl;
-            editBtn.style.display = 'inline-flex';
         }
 
         function closeLightbox() {
             const lightbox = document.getElementById('lightbox');
-            const lightboxImg = document.getElementById('lightbox-img');
-            const configInfo = document.getElementById('lightbox-config-info');
             lightbox.classList.remove('active');
             document.body.style.overflow = 'auto';
-            // Hide config info when closing
-            if (configInfo) {
-                configInfo.style.display = 'none';
-            }
-            // Reset image display
-            if (lightboxImg) {
-                lightboxImg.style.display = 'block';
-            }
         }
 
         // Close lightbox on ESC key
@@ -2529,68 +1986,20 @@ html_template = """<!DOCTYPE html>
                 closeInstallModal();
             }
         });
+        
         // File cache for downloaded files (used by download/install functions)
         // This cache is populated when images are loaded in the gallery
         const fileCache = new Map(); // Key: filename, Value: { blob, arrayBuffer }
         
-        // Load theme background dynamically
-        async function loadThemeBackground() {
-            try {
-                // Try to load config.json to find background
-                const configResponse = await fetch('./config.json');
-                if (!configResponse.ok) return;
-                
-                const config = await configResponse.json();
-                
-                // Priority list for background images
-                const bgCandidates = [
-                    config.desktopWallpaper,
-                    config.globalWallpaper,
-                    config.themeCover,
-                    'Background1.png',
-                    'background.png',
-                    'wallpaper.png',
-                    '1.png'
-                ].filter(Boolean); // Remove null/undefined
-                
-                // Try to load candidates one by one
-                for (const filename of bgCandidates) {
-                    // Clean filename (remove path if present, though config usually has just filename)
-                    const cleanName = filename.split('/').pop();
-                    const url = `./${encodeURIComponent(cleanName)}`;
-                    
-                    try {
-                        const response = await fetch(url, { method: 'HEAD' });
-                        if (response.ok) {
-                            // Found a valid background!
-                            const bgElement = document.querySelector('.bg-cycle');
-                            if (bgElement) {
-                                bgElement.style.backgroundImage = `url('${url}')`;
-                                bgElement.style.opacity = '1';
-                                console.log(`Loaded background: ${cleanName}`);
-                                return;
-                            }
-                        }
-                    } catch (e) {
-                        // Continue to next candidate
-                    }
-                }
-            } catch (e) {
-                console.warn('Error loading theme background:', e);
-            }
-        }
-
         // Load all theme images for carousel
         // This function discovers all .jpg and .png files in the theme folder
         // Images are loaded using relative paths (works locally and on GitHub Pages)
         // This also helps speed up ZIP downloads as images are already cached in browser
         async function loadThemeImages() {
-            console.log('🖼️ loadThemeImages() called');
-            const folderName = '{folder}';
+            const folderName = getFolderName();
             const carouselWrapper = document.getElementById('image-carousel-wrapper');
             const carouselInfo = document.getElementById('carousel-info');
             
-            console.log('📦 carouselWrapper:', carouselWrapper);
             if (!carouselWrapper) return;
             
             try {
@@ -2673,31 +2082,8 @@ html_template = """<!DOCTYPE html>
                     console.log('GitHub API not available, using pattern discovery');
                 }
                 
-                // Strategy 2: Use files found in config.json!
-                // This is critical if GitHub API fails and files aren't in the common list
-                if (imageUsageMap.size > 0) {
-                    const configFiles = new Set();
-                    // Extract original filenames from the map keys (we need to be careful as keys include variations)
-                    // But we can just try to load all unique keys that look like filenames
-                    imageUsageMap.forEach((_, key) => {
-                        if (/\.(png|jpg|jpeg|gif|svg)$/i.test(key)) {
-                            configFiles.add(key);
-                        }
-                    });
-                    
-                    configFiles.forEach(filename => {
-                        // Check if already in imageFiles
-                        if (!imageFiles.some(f => f.name === filename)) {
-                            imageFiles.push({
-                                name: filename,
-                                url: `./${encodeURIComponent(filename)}`,
-                                download_url: `./${encodeURIComponent(filename)}`
-                            });
-                        }
-                    });
-                }
-                
-                // Strategy 3: Common patterns fallback
+                // Strategy 2: If API didn't work or returned no files, try common patterns
+                // This works for local development and GitHub Pages
                 if (imageFiles.length === 0) {
                     const imageExtensions = ['png', 'jpg', 'jpeg', 'gif'];
                     const commonBaseNames = [
@@ -2719,14 +2105,7 @@ html_template = """<!DOCTYPE html>
                     }
                 }
                 
-                // Always show the carousel section if we have config.json or images
-                // Don't hide it just because imageFiles might be empty (though it shouldn't be now)
-                const carouselSection = document.getElementById('image-carousel-section');
-                if (carouselSection) {
-                    carouselSection.style.display = 'block';
-                }
-                
-                if (imageFiles.length === 0 && !config) {
+                if (imageFiles.length === 0) {
                     carouselWrapper.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">No images found</div>';
                     if (carouselInfo) carouselInfo.textContent = '0 / 0';
                     return;
@@ -2751,8 +2130,11 @@ html_template = """<!DOCTYPE html>
                     });
                 });
                 
-                // Always show config.json, even if no images
-                // Don't return early - we'll add config.json and show the section
+                if (configImageEntries.length === 0) {
+                    carouselWrapper.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">No images found in config.json</div>';
+                    if (carouselInfo) carouselInfo.textContent = '0 / 0';
+                    return;
+                }
                 
                 // Load all unique images and create gallery items for each config usage
                 const loadedImageData = []; // Array of {filename, url, objectUrl, configKey}
@@ -2827,62 +2209,18 @@ html_template = """<!DOCTYPE html>
                 // Sort by config key name for consistent display
                 loadedImageData.sort((a, b) => a.configKey.localeCompare(b.configKey));
                 
-                // Show the carousel section (always show config.json at minimum)
-                const carouselSection = document.getElementById('image-carousel-section');
-                if (carouselSection) {
-                    carouselSection.style.display = 'block';
+                if (loadedImageData.length === 0) {
+                    carouselWrapper.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">No images found</div>';
+                    if (carouselInfo) carouselInfo.textContent = '0 / 0';
+                    return;
                 }
-                
-                // Add config.json as the first item (always shown)
-                const configItem = document.createElement('div');
-                configItem.className = 'image-carousel-item';
-                configItem.onclick = () => openConfigJSON();
-                configItem.style.cursor = 'pointer';
-                
-                // Create JSON file icon (document with settings cog)
-                const jsonIcon = document.createElement('div');
-                jsonIcon.className = 'json-icon';
-                jsonIcon.innerHTML = `
-                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Document background -->
-                        <rect x="20" y="15" width="60" height="70" rx="2" fill="#f0f0f0" stroke="#ccc" stroke-width="2"/>
-                        <!-- Document fold corner -->
-                        <path d="M 20 15 L 35 15 L 35 30 L 20 30 Z" fill="#ddd" stroke="#ccc" stroke-width="1"/>
-                        <!-- Settings cog icon -->
-                        <g transform="translate(50, 50)">
-                            <circle cx="0" cy="0" r="12" fill="none" stroke="#667eea" stroke-width="2.5"/>
-                            <circle cx="0" cy="0" r="6" fill="#667eea"/>
-                            <path d="M -8 -8 L -12 -12 M 8 -8 L 12 -12 M -8 8 L -12 12 M 8 8 L 12 12" 
-                                  stroke="#667eea" stroke-width="2" stroke-linecap="round"/>
-                            <circle cx="0" cy="-12" r="2" fill="#667eea"/>
-                            <circle cx="0" cy="12" r="2" fill="#667eea"/>
-                            <circle cx="12" cy="0" r="2" fill="#667eea"/>
-                            <circle cx="-12" cy="0" r="2" fill="#667eea"/>
-                        </g>
-                    </svg>
-                    <span class="file-label">.json</span>
-                `;
-                
-                const configLabel = document.createElement('div');
-                configLabel.className = 'image-name';
-                configLabel.textContent = 'config.json';
-                configLabel.title = 'config.json';
-                
-                configItem.appendChild(jsonIcon);
-                configItem.appendChild(configLabel);
-                carouselWrapper.appendChild(configItem);
                 
                 // Create carousel items - one for each config key usage
                 // Same image can appear multiple times if used in multiple config keys
                 loadedImageData.forEach((imageData) => {
                     const item = document.createElement('div');
                     item.className = 'image-carousel-item';
-                    // Pass config key and filename to openLightbox for gallery images
-                    item.onclick = () => openLightbox(
-                        imageData.objectUrl || imageData.url,
-                        imageData.configKey,
-                        imageData.filename
-                    );
+                    item.onclick = () => openLightbox(imageData.objectUrl || imageData.url, imageData.filename);
                     item.style.cursor = 'pointer';
                     
                     const img = document.createElement('img');
@@ -2892,10 +2230,8 @@ html_template = """<!DOCTYPE html>
                     
                     const label = document.createElement('div');
                     label.className = 'image-name';
-                    // Clean up the label: remove section prefix if present (e.g., "itemConfig.itemSelectedBackground" -> "itemSelectedBackground")
-                    const cleanLabel = imageData.configKey.split('.').pop();
-                    label.textContent = cleanLabel;
-                    label.title = `${imageData.configKey} (${imageData.filename})`; // Show full info on hover
+                    label.textContent = imageData.configKey;
+                    label.title = imageData.filename; // Show filename on hover
                     
                     item.appendChild(img);
                     item.appendChild(label);
@@ -2908,11 +2244,7 @@ html_template = """<!DOCTYPE html>
                 
             } catch (error) {
                 console.error('Error loading theme images:', error);
-                // Hide the entire carousel section on error
-                const carouselSection = document.getElementById('image-carousel-section');
-                if (carouselSection) {
-                    carouselSection.style.display = 'none';
-                }
+                carouselWrapper.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">Error loading images</div>';
             }
         }
         
@@ -2939,149 +2271,9 @@ html_template = """<!DOCTYPE html>
         
         // Load images when page loads
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('🎯 DOMContentLoaded fired, calling loadThemeImages...');
             loadThemeImages();
-            loadThemeBackground();
         });
     </script>
-    {background_cycle_html}
+    
 </body>
 </html>
-"""
-
-for theme in themes:
-    folder = theme['folder']
-    name = theme['name']
-    description = theme.get('description', f'Y1 Theme: {name}')
-    author = theme.get('author', 'Unknown')
-    
-    # Get cover and screenshots
-    if os.path.exists(folder):
-        cover_image, screenshots = get_images(folder)
-        font_file = get_font(folder)
-    else:
-        cover_image, screenshots = None, []
-        font_file = None
-    
-    # Font CSS (must be defined before building HTML that uses title_style)
-        font_css = ''
-    title_style = ''
-    if font_file:
-        font_css = f'''
-        @font-face {{
-            font-family: 'ThemeFont';
-            src: url('{font_file}');
-        }}
-        '''
-        title_style = 'style="font-family: \'ThemeFont\', sans-serif; font-size: 1rem; margin-bottom: 15px; color: #667eea;"'
-    else:
-        title_style = 'style="font-size: 1rem; margin-bottom: 15px; color: #667eea;"'
-    
-    # Build gallery HTML with cover next to title and screenshots below
-    gallery_html = ''
-    
-    # Cover image (will be positioned next to title via CSS)
-    cover_html = ''
-    if cover_image:
-        # Use simple quote for onclick to avoid f-string backslash issues
-        cover_html = f'''<img src="{cover_image}" alt="{name} cover" class="cover-image" onclick="openLightbox('{cover_image}')">'''
-    
-    # Screenshots section - only show if there are screenshots
-    # If no screenshots exist, don't show the section at all (redundant to tell user there are none)
-    screenshots_section_html = ''
-    if screenshots:
-        gallery_html = '<div class="gallery">'
-        for img in screenshots:
-            gallery_html += f'''
-            <div class="gallery-item">
-                <img src="{img}" alt="{name} screenshot" class="screenshot" onclick="openLightbox('{img}')">
-            </div>
-            '''
-        gallery_html += '</div>'
-        screenshots_section_html = f'''
-        <div class="screenshots-section">
-            <h3 {title_style}>Screenshots</h3>
-            {gallery_html}
-        </div>
-        '''
-    # If no screenshots, don't show the section at all
-        font_css = f'''
-        @font-face {{
-            font-family: 'ThemeFont';
-            src: url('{font_file}');
-        }}
-        '''
-        title_style = 'style="font-family: \'ThemeFont\', sans-serif;"'
-
-    # Get background images for cycling
-    backgrounds = get_backgrounds(folder) if os.path.exists(folder) else []
-    # Use relative paths (./filename) for proper server compatibility
-    # URL encode filenames to handle spaces and special characters
-    background_images_str = ', '.join([f"'./{urllib.parse.quote(bg)}'" for bg in backgrounds]) if backgrounds else ''
-    
-    # Generate background cycle HTML
-    background_cycle_html = ''
-    if backgrounds:
-        background_cycle_html = f'''<div class="bg-cycle"></div>
-<script>
-    // Background cycling logic
-    const bgImages = [{background_images_str}];
-    if (bgImages.length) {{
-        const bgDiv = document.querySelector('.bg-cycle');
-        let idx = 0;
-        const setBg = () => {{
-            bgDiv.style.backgroundImage = `url(${{bgImages[idx]}})`;
-            bgDiv.style.opacity = '1';
-            setTimeout(() => {{
-                bgDiv.style.opacity = '0';
-            }}, 5000);
-            idx = (idx + 1) % bgImages.length;
-        }};
-        setBg();
-        setInterval(setBg, 6000);
-    }}
-</script>'''
-    
-    # Generate HTML using replace instead of format to avoid brace issues
-    content = html_template
-    content = content.replace('{name}', name)
-    content = content.replace('{description}', description)
-    content = content.replace('{author}', author)
-    content = content.replace('{folder}', folder)
-    content = content.replace('{cover_html}', cover_html)
-    content = content.replace('{screenshots_section_html}', screenshots_section_html)
-    content = content.replace('{font_css}', font_css)
-    content = content.replace('{title_style}', title_style)
-    content = content.replace('{background_cycle_html}', background_cycle_html)
-    content = content.replace('{background_images}', background_images_str)
-    
-    # Write to index.html in theme folder
-    if not os.path.exists(folder):
-        os.makedirs(folder)
-        
-    with open(os.path.join(folder, 'index.html'), 'w') as f:
-        f.write(content)
-        
-    print(f'Generated page for {name}')
-
-# Generate Sitemap
-base_url = "https://themes.innioasis.app"
-sitemap_content = '<?xml version="1.0" encoding="UTF-8"?>\n'
-sitemap_content += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-
-# Add main page
-sitemap_content += f'  <url>\n    <loc>{base_url}/</loc>\n    <changefreq>daily</changefreq>\n    <priority>1.0</priority>\n  </url>\n'
-
-# Add theme pages
-for theme in themes:
-    folder = theme['folder']
-    encoded_folder = urllib.parse.quote(folder)
-    sitemap_content += f'  <url>\n    <loc>{base_url}/{encoded_folder}/</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>\n'
-
-sitemap_content += '</urlset>'
-
-with open('sitemap.xml', 'w') as f:
-    f.write(sitemap_content)
-
-print('Generated sitemap.xml')
-print('All theme pages generated successfully!')
