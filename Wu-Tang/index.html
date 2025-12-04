@@ -1358,9 +1358,11 @@
                 let description = null;
                 
                 // Try to load from config.json first (authoritative source)
+                let configExists = false;
                 try {
                     const configResponse = await fetch('./config.json');
                     if (configResponse.ok) {
+                        configExists = true;
                         const config = await configResponse.json();
                         
                         // Check theme_info structure first (new format)
@@ -1379,9 +1381,36 @@
                             if (config.title) title = config.title;
                             if (config.name) title = config.name;
                         }
+                    } else if (configResponse.status === 404) {
+                        configExists = false;
                     }
                 } catch (e) {
                     console.warn('Could not load config.json:', e);
+                    configExists = false;
+                }
+                
+                // Show error message if config.json doesn't exist
+                if (!configExists) {
+                    const container = document.querySelector('.container');
+                    if (container) {
+                        const errorDiv = document.createElement('div');
+                        errorDiv.id = 'config-missing-warning';
+                        errorDiv.style.cssText = 'background: #fff3cd; border: 2px solid #ff9800; border-radius: 8px; padding: 20px; margin-bottom: 30px; color: #856404;';
+                        errorDiv.innerHTML = `
+                            <h3 style="color: #ff9800; margin-top: 0; margin-bottom: 15px;">⚠️ config.json File Missing</h3>
+                            <p style="margin-bottom: 15px; line-height: 1.6;">
+                                This theme page requires a <code style="background: rgba(255, 152, 0, 0.1); padding: 2px 6px; border-radius: 3px; font-family: monospace;">config.json</code> file in the theme folder to display theme information, assets, and screenshots.
+                            </p>
+                            <p style="margin-bottom: 15px; line-height: 1.6;">
+                                <strong>Theme creators:</strong> Please download the latest <code style="background: rgba(255, 152, 0, 0.1); padding: 2px 6px; border-radius: 3px; font-family: monospace;">index.html</code> file from the <a href="https://themes.innioasis.app/theme_html/index.html" target="_blank" style="color: #667eea; text-decoration: underline; font-weight: 600;">theme_html directory</a> and place it in your theme folder before uploading to the repository.
+                            </p>
+                            <p style="margin-top: 20px; margin-bottom: 0;">
+                                <a href="https://themes.innioasis.app/theme_html/" target="_blank" style="display: inline-block; background: #667eea; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600; margin-right: 10px;">📥 Download index.html Template</a>
+                                <a href="https://github.com/y1-community/InnioasisY1Themes" target="_blank" style="color: #667eea; text-decoration: underline;">Learn more on GitHub →</a>
+                            </p>
+                        `;
+                        container.insertBefore(errorDiv, container.firstChild);
+                    }
                 }
                 
                 // Fallback to themes.json
@@ -2310,13 +2339,15 @@
                     if (response.ok) {
                         const files = await response.json();
                         imageFiles = files
-                            .filter(file => file.type === 'file' && /\.(jpg|jpeg|png|gif)$/i.test(file.name))
+                            .filter(file => file.type === 'file' && 
+                                    /\.(jpg|jpeg|png|gif)$/i.test(file.name) &&
+                                    // Exclude screenshots and cover images from asset gallery (they're in screenshots gallery)
+                                    !/screenshot/i.test(file.name) && !/cover/i.test(file.name))
                             .map(file => ({
                                 name: file.name,
                                 url: `./${encodeURIComponent(file.name)}`, // Use relative path for caching
                                 download_url: file.download_url || `./${encodeURIComponent(file.name)}`
                             }));
-                        // When GitHub API works, we already have all files including cover and screenshot patterns
                     }
                 } catch (apiError) {
                     console.log('GitHub API not available, using pattern discovery');
@@ -2328,7 +2359,6 @@
                     const imageExtensions = ['png', 'jpg', 'jpeg', 'gif'];
                     const commonBaseNames = [
                         '1', '1_YS', '2', '2_YS', '3', '4', '4_YS',
-                        'cover', 'screenshot', 'screenshot1', 'screenshot2', 'screenshot3',
                         'background', 'bg', 'desktopWallpaper', 'globalWallpaper'
                     ];
                     
@@ -2344,35 +2374,8 @@
                         }
                     }
                     
-                    // Also try wildcard patterns for cover and screenshot images
-                    // Try numbered screenshots (screenshot1.jpg through screenshot20.jpg)
-                    for (let i = 1; i <= 20; i++) {
-                        for (const ext of imageExtensions) {
-                            imageFiles.push({
-                                name: `screenshot${i}.${ext}`,
-                                url: `./${encodeURIComponent(`screenshot${i}.${ext}`)}`,
-                                download_url: `./${encodeURIComponent(`screenshot${i}.${ext}`)}`
-                            });
-                        }
-                    }
-                    
-                    // Try common cover variations (wildcard-like patterns)
-                    const coverVariations = [
-                        'cover.png', 'cover.jpg', 'cover.jpeg', 'cover.gif',
-                        'Cover.png', 'Cover.jpg', 'Cover.jpeg', 'Cover.gif',
-                        'COVER.png', 'COVER.jpg', 'COVER.jpeg', 'COVER.gif',
-                        'cover_noscale.png', 'cover_WS.png', 'cover_YS.png',
-                        'gregcover.png', '@Be_cover.png', '@Cup_cover.png', '@Pris_cover.png'
-                    ];
-                    for (const coverFile of coverVariations) {
-                        imageFiles.push({
-                            name: coverFile,
-                            url: `./${encodeURIComponent(coverFile)}`,
-                            download_url: `./${encodeURIComponent(coverFile)}`
-                        });
-                    }
-                // When GitHub API works, we already have all image files
-                // The config.json matching will determine which images to display in the gallery
+                    // Note: Screenshots and cover images are NOT included here - they're loaded separately in loadScreenshots()
+                }
                 
                 if (imageFiles.length === 0) {
                     carouselWrapper.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">No images found</div>';
@@ -2398,6 +2401,27 @@
                         });
                     });
                 });
+                
+                // Check if config.json was loaded successfully
+                if (!config) {
+                    // config.json is missing - show error message for theme creators
+                    carouselWrapper.innerHTML = `
+                        <div style="text-align: center; padding: 30px; color: #666; max-width: 600px; margin: 0 auto;">
+                            <h4 style="color: #ff9800; margin-bottom: 15px;">⚠️ config.json Not Found</h4>
+                            <p style="margin-bottom: 15px; line-height: 1.6;">
+                                This theme page requires a <code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">config.json</code> file in the theme folder to display theme assets and information.
+                            </p>
+                            <p style="margin-bottom: 15px; line-height: 1.6;">
+                                <strong>Theme creators:</strong> Please download the latest <code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">index.html</code> file from the <a href="https://themes.innioasis.app/theme_html/" target="_blank" style="color: #667eea; text-decoration: underline;">theme_html directory</a> and place it in your theme folder before uploading to the repository.
+                            </p>
+                            <p style="margin-top: 20px;">
+                                <a href="https://themes.innioasis.app/theme_html/" target="_blank" style="display: inline-block; background: #667eea; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;">📥 Download index.html Template</a>
+                            </p>
+                        </div>
+                    `;
+                    if (carouselInfo) carouselInfo.textContent = '0 / 0';
+                    return;
+                }
                 
                 if (configImageEntries.length === 0) {
                     carouselWrapper.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">No images found in config.json</div>';
