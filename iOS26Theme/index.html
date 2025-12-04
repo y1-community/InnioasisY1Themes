@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loading Theme...</title>
+    <title>Innioasis Y1 Themes - Theme Info</title>
     <meta name="description" content="Download theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. Community Maintainers: Ryan Specter + Dmitri Medina">
     <meta name="keywords" content="Innioasis Y1, Y1 themes, MP3 player themes, Y1 customization, official Y1 themes, Ryan Specter, Dmitri Medina">
     <script type="application/ld+json">
@@ -108,10 +108,10 @@
             font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
-            text-align: left;
+            text-align: center;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
             min-height: 44px;
             max-height: 44px;
             box-sizing: border-box;
@@ -150,7 +150,7 @@
         .btn > span {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
             width: 100%;
             gap: 8px;
             position: relative;
@@ -159,8 +159,8 @@
         .btn > span > span:first-child {
             position: relative;
             z-index: 3;
-            flex: 1;
-            text-align: left;
+            text-align: center;
+            flex: 0 1 auto;
         }
         .btn img {
             height: 100%;
@@ -172,9 +172,8 @@
             position: relative;
             z-index: 3;
         }
-        /* Arrow icon - hidden on desktop by default, shown on hover/focus/active */
-        /* Use opacity/visibility to prevent layout shifts */
-        /* Arrow icon matches button height for aesthetic consistency */
+        /* Arrow icon - hidden by default, shown on hover/tap/hold */
+        /* Arrow icon matches button height (44px) and is centered vertically on the right */
         .btn .arrow-icon {
             height: 44px;
             max-height: 44px;
@@ -183,14 +182,18 @@
             flex-shrink: 0;
             opacity: 0;
             visibility: hidden;
-            margin-left: 0;
-            position: relative;
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
             z-index: 3;
-            transition: opacity 0.2s, visibility 0.2s, width 0.2s, margin-left 0.2s;
+            transition: opacity 0.2s, visibility 0.2s, width 0.2s;
+            display: flex;
+            align-items: center;
         }
         
         .btn .arrow-icon img {
-            height: 100%;
+            height: 44px;
             max-height: 44px;
             width: auto;
             flex-shrink: 0;
@@ -216,7 +219,7 @@
             object-fit: contain;
         }
         
-        /* Show arrow on hover for desktop (or mobile with mouse) */
+        /* Show arrow on hover/focus/active for desktop (or mobile with mouse) */
         /* @media (hover: hover) means device has hover capability (mouse, trackpad, etc.) */
         @media (hover: hover) {
             .btn:hover .arrow-icon,
@@ -225,17 +228,17 @@
                 opacity: 1;
                 visibility: visible;
                 width: auto;
-                margin-left: 8px;
             }
         }
         
-        /* Show arrow on mobile (always visible) */
+        /* Show arrow on mobile when button is active/touched */
+        /* Arrow only shows when finger is held down (touchstart) */
         @media (hover: none) {
-            .btn .arrow-icon {
+            .btn:active .arrow-icon,
+            .btn.touching .arrow-icon {
                 opacity: 1;
                 visibility: visible;
                 width: auto;
-                margin-left: 8px;
             }
         }
         
@@ -333,6 +336,38 @@
             color: #666;
             word-break: break-word;
             line-height: 1.2;
+        }
+        /* Screenshots Gallery - Larger carousel */
+        .screenshots-carousel-item {
+            flex: 0 0 auto;
+            width: 250px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .screenshots-carousel-item:hover {
+            transform: scale(1.02);
+        }
+        .screenshots-carousel-item img {
+            width: 100%;
+            height: 180px;
+            object-fit: contain;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            padding: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .screenshots-carousel-wrapper::-webkit-scrollbar {
+            height: 8px;
+        }
+        .screenshots-carousel-wrapper::-webkit-scrollbar-track {
+            background: #f5f5f5;
+            border-radius: 4px;
+        }
+        .screenshots-carousel-wrapper::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
         }
         .image-carousel-nav {
             display: flex;
@@ -569,8 +604,23 @@
         
         
         
+        <!-- Screenshots Gallery (larger carousel) -->
+        <div class="screenshots-gallery-section" style="margin: 30px 0;">
+            <h3 style="font-size: 1.1rem; margin-bottom: 15px; color: #667eea; font-weight: 600;">Screenshots</h3>
+            <div class="screenshots-carousel-container" style="position: relative; width: 100%; overflow: hidden; background: #f5f5f5; border-radius: 8px; padding: 15px;">
+                <div class="screenshots-carousel-wrapper" id="screenshots-carousel-wrapper" style="display: flex; gap: 15px; overflow-x: auto; scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: #667eea #f5f5f5; padding: 5px 0;">
+                    <div style="text-align: center; padding: 40px; color: #999; width: 100%;">Loading screenshots...</div>
+                </div>
+                <div class="screenshots-carousel-nav" style="display: flex; justify-content: center; gap: 8px; margin-top: 15px;">
+                    <button class="image-carousel-nav-btn" id="screenshots-prev" onclick="scrollScreenshotsCarousel(-1)">← Prev</button>
+                    <div class="image-carousel-nav-info" id="screenshots-info">- / -</div>
+                    <button class="image-carousel-nav-btn" id="screenshots-next" onclick="scrollScreenshotsCarousel(1)">Next →</button>
+                </div>
+            </div>
+        </div>
+        
         <div class="image-carousel-section">
-            <h3 style="font-size: 1rem; margin-bottom: 15px; color: #667eea;">All Theme Images</h3>
+            <h3 style="font-size: 1rem; margin-bottom: 15px; color: #667eea;">Theme Assets</h3>
             <div class="image-carousel-container">
                 <div class="image-carousel-wrapper" id="image-carousel-wrapper">
                     <div style="text-align: center; padding: 20px; color: #999;">Loading images...</div>
@@ -585,13 +635,13 @@
         
         <div class="button-group" style="margin-top: 30px;">
             <button id="install-btn" onclick="showInstallInstructions()" class="btn install" style="display: none;">
-                <span style="display: flex; align-items: center; justify-content: space-between; width: 100%; position: relative; z-index: 2;">
-                    <span style="position: relative; z-index: 3; flex: 1; text-align: left;">Install</span>
+                <span style="display: flex; align-items: center; justify-content: center; width: 100%; position: relative; z-index: 2;">
+                    <span style="position: relative; z-index: 3; text-align: center; flex: 0 1 auto;">Install</span>
                 </span>
             </button>
             <button id="download-btn-full" onclick="downloadTheme()" class="btn download">
-                <span style="display: flex; align-items: center; justify-content: space-between; width: 100%; position: relative; z-index: 2;">
-                    <span style="position: relative; z-index: 3; flex: 1; text-align: left;">Download</span>
+                <span style="display: flex; align-items: center; justify-content: center; width: 100%; position: relative; z-index: 2;">
+                    <span style="position: relative; z-index: 3; text-align: center; flex: 0 1 auto;">Download</span>
                 </span>
             </button>
             <a href="#" id="download-link-small" onclick="downloadTheme(); return false;" class="download-link-small" style="display: none;">📦 Download ZIP instead</a>
@@ -655,6 +705,7 @@
     <div id="lightbox" class="lightbox" onclick="closeLightbox()">
         <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
         <img class="lightbox-content" id="lightbox-img" onclick="event.stopPropagation()">
+        <div id="lightbox-filename" style="position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.8); color: white; padding: 8px 16px; border-radius: 4px; font-size: 0.9rem; max-width: 90%; text-align: center; word-break: break-word; z-index: 1002;"></div>
         <a id="lightbox-edit-btn" class="lightbox-edit-btn" href="#" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">
             <span>✏️</span>
             <span>View/Edit on GitHub</span>
@@ -1272,6 +1323,20 @@
             
             // Apply theme button styling
             await applyThemeButtonStyling();
+            
+            // Add touch event handlers for mobile to show arrow when button is held
+            const buttons = document.querySelectorAll('.btn.install, .btn.download');
+            buttons.forEach(btn => {
+                btn.addEventListener('touchstart', function() {
+                    this.classList.add('touching');
+                });
+                btn.addEventListener('touchend', function() {
+                    this.classList.remove('touching');
+                });
+                btn.addEventListener('touchcancel', function() {
+                    this.classList.remove('touching');
+                });
+            });
             
             // Check for unsupported features
             await checkFeatureSupport();
@@ -1934,6 +1999,7 @@
             const lightbox = document.getElementById('lightbox');
             const lightboxImg = document.getElementById('lightbox-img');
             const editBtn = document.getElementById('lightbox-edit-btn');
+            const filenameDisplay = document.getElementById('lightbox-filename');
             
             lightboxImg.src = imgSrc;
             lightbox.classList.add('active');
@@ -1968,6 +2034,12 @@
             // Remove URL parameters if present
             actualFilename = actualFilename.split('?')[0].split('#')[0];
             
+            // Display filename in lightbox
+            if (filenameDisplay) {
+                filenameDisplay.textContent = actualFilename;
+                filenameDisplay.style.display = 'block';
+            }
+            
             // Construct GitHub URL using blob/main to view the actual file
             const githubUrl = `https://github.com/y1-community/InnioasisY1Themes/blob/main/${encodeURIComponent(folderName)}/${encodeURIComponent(actualFilename)}`;
             editBtn.href = githubUrl;
@@ -1975,8 +2047,12 @@
 
         function closeLightbox() {
             const lightbox = document.getElementById('lightbox');
+            const filenameDisplay = document.getElementById('lightbox-filename');
             lightbox.classList.remove('active');
             document.body.style.overflow = 'auto';
+            if (filenameDisplay) {
+                filenameDisplay.style.display = 'none';
+            }
         }
 
         // Close lightbox on ESC key
@@ -1990,6 +2066,169 @@
         // File cache for downloaded files (used by download/install functions)
         // This cache is populated when images are loaded in the gallery
         const fileCache = new Map(); // Key: filename, Value: { blob, arrayBuffer }
+        
+        // Load screenshots gallery (larger carousel above Theme Assets)
+        async function loadScreenshots() {
+            const folderName = getFolderName();
+            const screenshotsWrapper = document.getElementById('screenshots-carousel-wrapper');
+            const screenshotsInfo = document.getElementById('screenshots-info');
+            
+            if (!screenshotsWrapper) return;
+            
+            try {
+                let screenshotFiles = [];
+                
+                // Strategy 1: Try GitHub API to get file list (if available)
+                try {
+                    const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${encodeURIComponent(folderName)}`;
+                    const response = await fetch(apiUrl);
+                    if (response.ok) {
+                        const files = await response.json();
+                        // Filter for *screenshot*.* and *cover*.* patterns (case-insensitive)
+                        screenshotFiles = files
+                            .filter(file => file.type === 'file' && 
+                                    /\.(jpg|jpeg|png|gif)$/i.test(file.name) &&
+                                    (/screenshot/i.test(file.name) || /cover/i.test(file.name)))
+                            .map(file => ({
+                                name: file.name,
+                                url: `./${encodeURIComponent(file.name)}`,
+                                download_url: file.download_url || `./${encodeURIComponent(file.name)}`
+                            }));
+                    }
+                } catch (apiError) {
+                    console.log('GitHub API not available for screenshots, using pattern discovery');
+                }
+                
+                // Strategy 2: If API didn't work, try common patterns
+                if (screenshotFiles.length === 0) {
+                    const imageExtensions = ['png', 'jpg', 'jpeg', 'gif'];
+                    const screenshotPatterns = [];
+                    
+                    // Try numbered screenshots (screenshot1.jpg through screenshot20.jpg)
+                    for (let i = 1; i <= 20; i++) {
+                        for (const ext of imageExtensions) {
+                            screenshotPatterns.push(`screenshot${i}.${ext}`);
+                        }
+                    }
+                    
+                    // Try base screenshot patterns
+                    for (const ext of imageExtensions) {
+                        screenshotPatterns.push(`screenshot.${ext}`, `Screenshot.${ext}`, `SCREENSHOT.${ext}`);
+                    }
+                    
+                    // Try cover patterns
+                    const coverPatterns = [
+                        'cover', 'Cover', 'COVER',
+                        'cover_noscale', 'cover_WS', 'cover_YS',
+                        'gregcover', '@Be_cover', '@Cup_cover', '@Pris_cover'
+                    ];
+                    for (const coverBase of coverPatterns) {
+                        for (const ext of imageExtensions) {
+                            screenshotPatterns.push(`${coverBase}.${ext}`);
+                        }
+                    }
+                    
+                    // Build list of potential screenshot files
+                    for (const filename of screenshotPatterns) {
+                        screenshotFiles.push({
+                            name: filename,
+                            url: `./${encodeURIComponent(filename)}`,
+                            download_url: `./${encodeURIComponent(filename)}`
+                        });
+                    }
+                }
+                
+                if (screenshotFiles.length === 0) {
+                    screenshotsWrapper.innerHTML = '<div style="text-align: center; padding: 40px; color: #999; width: 100%;">No screenshots found</div>';
+                    if (screenshotsInfo) screenshotsInfo.textContent = '0 / 0';
+                    return;
+                }
+                
+                // Clear loading message
+                screenshotsWrapper.innerHTML = '';
+                
+                // Load and display screenshots
+                const loadedScreenshots = [];
+                
+                for (const file of screenshotFiles) {
+                    try {
+                        const response = await fetch(file.url, { method: 'HEAD' });
+                        if (response.ok) {
+                            // File exists, load it
+                            const fullResponse = await fetch(file.url);
+                            if (fullResponse.ok) {
+                                const blob = await fullResponse.blob();
+                                const objectUrl = URL.createObjectURL(blob);
+                                
+                                // Cache for download/install
+                                const arrayBuffer = await blob.arrayBuffer();
+                                fileCache.set(file.name, {
+                                    blob: blob,
+                                    arrayBuffer: arrayBuffer,
+                                    url: file.url
+                                });
+                                
+                                loadedScreenshots.push({
+                                    name: file.name,
+                                    url: file.url,
+                                    objectUrl: objectUrl
+                                });
+                            }
+                        }
+                    } catch (err) {
+                        // File doesn't exist, skip it
+                        continue;
+                    }
+                }
+                
+                if (loadedScreenshots.length === 0) {
+                    screenshotsWrapper.innerHTML = '<div style="text-align: center; padding: 40px; color: #999; width: 100%;">No screenshots found</div>';
+                    if (screenshotsInfo) screenshotsInfo.textContent = '0 / 0';
+                    return;
+                }
+                
+                // Sort by filename for consistent display
+                loadedScreenshots.sort((a, b) => a.name.localeCompare(b.name));
+                
+                // Create carousel items
+                loadedScreenshots.forEach((screenshot) => {
+                    const item = document.createElement('div');
+                    item.className = 'screenshots-carousel-item';
+                    item.onclick = () => openLightbox(screenshot.objectUrl || screenshot.url, screenshot.name);
+                    item.style.cursor = 'pointer';
+                    item.title = screenshot.name; // Show filename on hover
+                    
+                    const img = document.createElement('img');
+                    img.src = screenshot.objectUrl || screenshot.url;
+                    img.alt = screenshot.name;
+                    img.loading = 'lazy';
+                    
+                    item.appendChild(img);
+                    screenshotsWrapper.appendChild(item);
+                });
+                
+                // Update info
+                if (screenshotsInfo) {
+                    screenshotsInfo.textContent = `${loadedScreenshots.length} / ${loadedScreenshots.length}`;
+                }
+                
+            } catch (error) {
+                console.error('Error loading screenshots:', error);
+                screenshotsWrapper.innerHTML = '<div style="text-align: center; padding: 40px; color: #999; width: 100%;">Error loading screenshots</div>';
+            }
+        }
+        
+        // Screenshots carousel navigation
+        function scrollScreenshotsCarousel(direction) {
+            const wrapper = document.getElementById('screenshots-carousel-wrapper');
+            if (!wrapper) return;
+            
+            const scrollAmount = 265; // Width of item (250px) + gap (15px)
+            wrapper.scrollBy({
+                left: direction * scrollAmount,
+                behavior: 'smooth'
+            });
+        }
         
         // Load all theme images for carousel
         // This function discovers all .jpg and .png files in the theme folder
@@ -2077,12 +2316,13 @@
                                 url: `./${encodeURIComponent(file.name)}`, // Use relative path for caching
                                 download_url: file.download_url || `./${encodeURIComponent(file.name)}`
                             }));
+                        // When GitHub API works, we already have all files including cover and screenshot patterns
                     }
                 } catch (apiError) {
                     console.log('GitHub API not available, using pattern discovery');
                 }
                 
-                // Strategy 2: If API didn't work or returned no files, try common patterns
+                // Strategy 2: If API didn't work or returned no files, try common patterns including wildcards
                 // This works for local development and GitHub Pages
                 if (imageFiles.length === 0) {
                     const imageExtensions = ['png', 'jpg', 'jpeg', 'gif'];
@@ -2103,7 +2343,36 @@
                             });
                         }
                     }
-                }
+                    
+                    // Also try wildcard patterns for cover and screenshot images
+                    // Try numbered screenshots (screenshot1.jpg through screenshot20.jpg)
+                    for (let i = 1; i <= 20; i++) {
+                        for (const ext of imageExtensions) {
+                            imageFiles.push({
+                                name: `screenshot${i}.${ext}`,
+                                url: `./${encodeURIComponent(`screenshot${i}.${ext}`)}`,
+                                download_url: `./${encodeURIComponent(`screenshot${i}.${ext}`)}`
+                            });
+                        }
+                    }
+                    
+                    // Try common cover variations (wildcard-like patterns)
+                    const coverVariations = [
+                        'cover.png', 'cover.jpg', 'cover.jpeg', 'cover.gif',
+                        'Cover.png', 'Cover.jpg', 'Cover.jpeg', 'Cover.gif',
+                        'COVER.png', 'COVER.jpg', 'COVER.jpeg', 'COVER.gif',
+                        'cover_noscale.png', 'cover_WS.png', 'cover_YS.png',
+                        'gregcover.png', '@Be_cover.png', '@Cup_cover.png', '@Pris_cover.png'
+                    ];
+                    for (const coverFile of coverVariations) {
+                        imageFiles.push({
+                            name: coverFile,
+                            url: `./${encodeURIComponent(coverFile)}`,
+                            download_url: `./${encodeURIComponent(coverFile)}`
+                        });
+                    }
+                // When GitHub API works, we already have all image files
+                // The config.json matching will determine which images to display in the gallery
                 
                 if (imageFiles.length === 0) {
                     carouselWrapper.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">No images found</div>';
@@ -2304,7 +2573,8 @@
         
         // Load images when page loads
         document.addEventListener('DOMContentLoaded', () => {
-            loadThemeImages();
+            loadScreenshots(); // Load screenshots gallery first
+            loadThemeImages(); // Then load theme assets
         });
     </script>
     
