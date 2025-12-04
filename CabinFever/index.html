@@ -3106,12 +3106,30 @@
                 window.configJsonImageCache = imageCache; // Store image cache
                 window.configJsonFontFile = fontFile; // Store font file
                 
-                // Enhanced findJsonContextForResource function - finds line by filename or full path
-                window.findJsonContextForResource = function(resourceValue, contextLines = 3) {
+                // Enhanced findJsonContextForResource function - finds line by config key (primary) or filename
+                window.findJsonContextForResource = function(resourceValue, contextLines = 3, configKey = null) {
                     if (!window.configJsonData || !resourceValue) return null;
                     const formattedJsonLines = JSON.stringify(window.configJsonData, null, 2).split('\n');
                     
-                    // Extract filename from resourceValue (handle paths)
+                    // FIRST: Try to find by config key (primary identifier for 1:1 mapping)
+                    if (configKey && window.configKeyLineNumbers) {
+                        const lineNum = window.configKeyLineNumbers.get(configKey);
+                        if (lineNum) {
+                            const targetLineIndex = lineNum - 1; // Convert to 0-based index
+                            const start = Math.max(0, targetLineIndex - contextLines);
+                            const end = Math.min(formattedJsonLines.length, targetLineIndex + contextLines + 1);
+                            const context = formattedJsonLines.slice(start, end);
+                            const targetRelativeIndex = targetLineIndex - start;
+                            return {
+                                lines: context,
+                                targetLineIndex: targetRelativeIndex,
+                                lineNumber: lineNum,
+                                startLineNumber: start + 1
+                            };
+                        }
+                    }
+                    
+                    // Fallback: Extract filename from resourceValue (handle paths)
                     const filename = resourceValue.split('/').pop();
                     const filenameNoExt = filename.replace(/\.[^.]+$/, '');
                     
@@ -3545,7 +3563,8 @@
                     };
                 }
                 
-                if (window.createInteractiveJson) {
+                // Only show JSON context for image/font previews, NOT for config.json or index.html
+                if (imgSrc !== 'config-json' && imgSrc !== 'index-html' && window.createInteractiveJson) {
                 const configData = window.configJsonData;
                 const imgCache = window.configJsonImageCache || imageCache;
                 window.assetNavigation.currentImageCache = imgCache;
@@ -3555,24 +3574,31 @@
                 const totalLines = fullJsonHtml.split('\n').length;
                 const uniqueId = 'image-json-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
                 
-                // Find the correct line number for this resource
-                // Try multiple strategies to find the matching line
+                // Find the correct line number for this resource using config key (primary) or filename
                 const resourceValue = jsonResourceValue || actualFilename;
                 let scrollToLine = 1;
                 
-                if (resourceValue && window.findJsonContextForResource) {
-                    // Try with resourceValue first (full path if available)
-                    let context = window.findJsonContextForResource(resourceValue, 0);
-                    
-                    // If not found, try with just the filename
-                    if (!context && actualFilename) {
-                        context = window.findJsonContextForResource(actualFilename, 0);
+                // Get config key from current asset if available
+                let configKey = null;
+                if (window.assetNavigation.assets && window.assetNavigation.currentIndex >= 0) {
+                    const currentAsset = window.assetNavigation.assets[window.assetNavigation.currentIndex];
+                    configKey = currentAsset ? currentAsset.configKey : null;
+                }
+                
+                if ((resourceValue || configKey) && window.findJsonContextForResource) {
+                    // PRIMARY: Try with config key first (for 1:1 mapping)
+                    let context = null;
+                    if (configKey) {
+                        context = window.findJsonContextForResource(resourceValue || actualFilename, 0, configKey);
                     }
                     
-                    // If still not found, try extracting filename from resourceValue
-                    if (!context && resourceValue.includes('/')) {
-                        const extractedFilename = resourceValue.split('/').pop();
-                        context = window.findJsonContextForResource(extractedFilename, 0);
+                    // Fallback: Try with resourceValue/filename
+                    if (!context && resourceValue) {
+                        context = window.findJsonContextForResource(resourceValue, 0);
+                    }
+                    
+                    if (!context && actualFilename) {
+                        context = window.findJsonContextForResource(actualFilename, 0);
                     }
                     
                     if (context && context.lineNumber) {
@@ -4076,13 +4102,53 @@
                             window.configJsonFontFile = fontFile;
                         }
                         
-                        // Build a map of resource values to line numbers in the formatted JSON
-                        // This will be used to sort assets by their appearance order in config.json
+                        // Build maps for tracking line numbers
+                        // Map config keys to line numbers (primary mapping for 1:1 correlation)
+                        window.configKeyLineNumbers = new Map();
+                        // Map filenames to line numbers (for fallback/backward compatibility)
                         window.resourceLineNumbers = new Map();
                         const formattedJson = JSON.stringify(config, null, 2);
                         const jsonLines = formattedJson.split('\n');
                         
-                        // Find line numbers for each resource (images and fonts)
+                        // Build config key -> line number mapping by parsing the JSON structure
+                        const buildConfigKeyLineMap = () => {
+                            const keyLineMap = new Map();
+                            const traverse = (obj, path = '', lineNumber = 1) => {
+                                if (typeof obj === 'object' && obj !== null && !Array.isArray(obj)) {
+                                    Object.keys(obj).forEach(key => {
+                                        const fullKey = path ? `${path}.${key}` : key;
+                                        const value = obj[key];
+                                        
+                                        // Search for this key-value pair in the formatted JSON
+                                        for (let i = 0; i < jsonLines.length; i++) {
+                                            const line = jsonLines[i];
+                                            // Match key and value together on the same line
+                                            if (line.includes(`"${key}"`) && typeof value === 'string' && line.includes(`"${value}"`)) {
+                                                // Also check if value is an image or font file
+                                                if (/\.(png|jpg|jpeg|gif|svg|ttf|otf)$/i.test(value)) {
+                                                    keyLineMap.set(fullKey, i + 1);
+                                                }
+                                                break;
+                                            }
+                                        }
+                                        
+                                        if (typeof value === 'object' && value !== null) {
+                                            traverse(value, fullKey, lineNumber);
+                                        }
+                                    });
+                                }
+                            };
+                            traverse(config);
+                            return keyLineMap;
+                        };
+                        
+                        // Build config key to line number mapping
+                        const keyLineMap = buildConfigKeyLineMap();
+                        keyLineMap.forEach((lineNum, configKey) => {
+                            window.configKeyLineNumbers.set(configKey, lineNum);
+                        });
+                        
+                        // Also build filename -> line number map (for fallback)
                         jsonLines.forEach((line, index) => {
                             const lineNum = index + 1;
                             // Check for image files
@@ -4333,15 +4399,22 @@
                 configImageEntries.forEach(entry => {
                     const cached = imageCache.get(entry.filename);
                     if (cached) {
-                        // Get line number for this asset (from resourceLineNumbers map)
-                        const lineNumber = window.resourceLineNumbers ? window.resourceLineNumbers.get(entry.filename) : 9999;
+                        // Get line number for this asset - use config key as primary identifier
+                        let lineNumber = 9999;
+                        if (window.configKeyLineNumbers && entry.configKey) {
+                            lineNumber = window.configKeyLineNumbers.get(entry.configKey) || 9999;
+                        }
+                        // Fallback to filename-based lookup if config key not found
+                        if (lineNumber === 9999 && window.resourceLineNumbers) {
+                            lineNumber = window.resourceLineNumbers.get(entry.filename) || 9999;
+                        }
                         loadedImageData.push({
                             filename: entry.filename,
                             url: cached.url,
                             objectUrl: cached.objectUrl,
                             configKey: entry.configKey,
                             isTransparent: cached.isTransparent || false,
-                            lineNumber: lineNumber || 9999 // Default to end if line number not found
+                            lineNumber: lineNumber // Store line number for this config key
                         });
                     }
                 });
@@ -4386,29 +4459,22 @@
                     });
                 }
                 
-                // Add all images sorted by line number (JSON appearance order)
-                // One entry per unique filename, keeping the first occurrence's config key and line number
-                const uniqueImageFiles = new Map();
-                loadedImageData.forEach(imageData => {
-                    if (!uniqueImageFiles.has(imageData.filename)) {
-                        uniqueImageFiles.set(imageData.filename, {
-                            type: 'image',
-                            filename: imageData.filename,
-                            displayName: imageData.configKey,
-                            resourceValue: imageData.filename,
-                            objectUrl: imageData.objectUrl,
-                            url: imageData.url,
-                            lineNumber: imageData.lineNumber
-                        });
-                    }
-                });
-                
-                // Convert to array and sort by line number
-                const sortedImages = Array.from(uniqueImageFiles.values()).sort((a, b) => {
+                // Add all images - one entry per config key (allows same file to appear multiple times)
+                // Sort by line number (JSON appearance order)
+                const sortedImages = loadedImageData.map(imageData => ({
+                    type: 'image',
+                    filename: imageData.filename,
+                    displayName: imageData.configKey, // Use config key as display name
+                    resourceValue: imageData.filename,
+                    configKey: imageData.configKey, // Store config key for line finding
+                    objectUrl: imageData.objectUrl,
+                    url: imageData.url,
+                    lineNumber: imageData.lineNumber
+                })).sort((a, b) => {
                     if (a.lineNumber !== b.lineNumber) {
                         return a.lineNumber - b.lineNumber;
                     }
-                    return a.filename.localeCompare(b.filename);
+                    return a.configKey.localeCompare(b.configKey);
                 });
                 window.assetNavigation.assets.push(...sortedImages);
                 
