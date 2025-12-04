@@ -123,6 +123,7 @@
         }
         .btn:hover, .btn:focus {
             /* No transform - buttons should not grow on hover */
+            transform: none;
         }
         .btn.install {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -325,7 +326,13 @@
             width: 100%;
             height: 80px;
             object-fit: contain;
-            background: white;
+            background-image: 
+                linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
+                linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #f0f0f0 75%),
+                linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+            background-size: 12px 12px;
+            background-position: 0 0, 0 6px, 6px -6px, -6px 0px;
             border-radius: 4px;
             border: 1px solid #ddd;
             padding: 4px;
@@ -765,6 +772,7 @@
     <div id="lightbox" class="lightbox" onclick="closeLightbox()">
         <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
         <img class="lightbox-content" id="lightbox-img" onclick="event.stopPropagation()">
+        <div id="lightbox-content-wrapper" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); max-width: 90%; max-height: 80%; overflow-y: auto; background: white; border-radius: 8px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 1001;" onclick="event.stopPropagation()"></div>
         <div id="lightbox-filename" style="position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.8); color: white; padding: 8px 16px; border-radius: 4px; font-size: 0.9rem; max-width: 90%; text-align: center; word-break: break-word; z-index: 1002;"></div>
         <a id="lightbox-edit-btn" class="lightbox-edit-btn" href="#" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">
             <span>✏️</span>
@@ -1405,6 +1413,88 @@
             await loadAuthorInfo();
         });
         
+        // Helper function to get GitHub raw URL for faster CDN loading
+        function getGitHubRawUrl(filename) {
+            const folderName = getFolderName();
+            return `https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/${encodeURIComponent(folderName)}/${encodeURIComponent(filename)}`;
+        }
+        
+        // Helper function to get local URL (fallback)
+        function getLocalUrl(filename) {
+            return `./${encodeURIComponent(filename)}`;
+        }
+        
+        // Helper function to check if a PNG image is fully transparent
+        async function isFullyTransparent(imageUrl) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                
+                img.onload = function() {
+                    try {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
+                        
+                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        const data = imageData.data;
+                        
+                        // Check if all pixels are fully transparent (alpha = 0)
+                        for (let i = 3; i < data.length; i += 4) {
+                            if (data[i] !== 0) {
+                                // Found at least one non-transparent pixel
+                                resolve(false);
+                                return;
+                            }
+                        }
+                        
+                        // All pixels are fully transparent
+                        resolve(true);
+                    } catch (e) {
+                        // If we can't analyze, assume not fully transparent
+                        resolve(false);
+                    }
+                };
+                
+                img.onerror = function() {
+                    resolve(false);
+                };
+                
+                img.src = imageUrl;
+            });
+        }
+        
+        // Helper function to load image with GitHub raw URL as primary source, local as fallback
+        async function loadImageWithFallback(filename, preferGitHub = true) {
+            if (preferGitHub) {
+                // Try GitHub raw URL first (faster CDN)
+                const githubUrl = getGitHubRawUrl(filename);
+                try {
+                    const response = await fetch(githubUrl, { method: 'HEAD' });
+                    if (response.ok) {
+                        return githubUrl;
+                    }
+                } catch (e) {
+                    // Fallback to local
+                }
+            }
+            
+            // Fallback to local URL
+            const localUrl = getLocalUrl(filename);
+            try {
+                const response = await fetch(localUrl, { method: 'HEAD' });
+                if (response.ok) {
+                    return localUrl;
+                }
+            } catch (e) {
+                // Not found
+            }
+            
+            return null;
+        }
+        
         // Load cover image using wildcard *cover*.* pattern with format prioritization (GIF > JPG > PNG)
         async function loadCoverImage(themeTitle) {
             const coverImage = document.getElementById('cover-image');
@@ -1460,8 +1550,15 @@
                 for (const base of coverBases) {
                     for (const ext of extensions) {
                         const pattern = `${base}.${ext}`;
+                        // Try GitHub raw URL first (faster), then fallback to local
+                        const githubUrl = getGitHubRawUrl(pattern);
+                        const localPattern = `./${encodeURIComponent(pattern)}`;
+                        
                         try {
-                            const response = await fetch(`./${encodeURIComponent(pattern)}`, { method: 'HEAD' });
+                            let response = await fetch(githubUrl, { method: 'HEAD' });
+                            if (!response.ok) {
+                                response = await fetch(localPattern, { method: 'HEAD' });
+                            }
                             if (response.ok) {
                                 coverFiles.push(pattern);
                                 break; // Found best format for this base, move to next base
@@ -1485,14 +1582,28 @@
                 });
                 
                 const coverFile = coverFiles[0];
-                coverImage.src = `./${encodeURIComponent(coverFile)}`;
-                coverImage.alt = `${themeTitle || 'Theme'} cover`;
-                coverImage.onclick = () => openLightbox(`./${encodeURIComponent(coverFile)}`, coverFile);
-                coverImage.style.display = 'block';
+                // Try GitHub raw URL first (faster CDN), then fallback to local
+                const githubUrl = getGitHubRawUrl(coverFile);
+                const localUrl = getLocalUrl(coverFile);
                 
-                // Handle image load error
+                // Try GitHub first, then fallback to local if it fails
+                coverImage.src = githubUrl;
+                coverImage.alt = `${themeTitle || 'Theme'} cover`;
+                coverImage.onclick = () => openLightbox(githubUrl, coverFile);
+                
+                // Handle image load error - fallback to local URL
                 coverImage.onerror = function() {
-                    this.style.display = 'none';
+                    this.src = localUrl;
+                    this.onclick = () => openLightbox(localUrl, coverFile);
+                    // If local also fails, hide the image
+                    this.onerror = function() {
+                        this.style.display = 'none';
+                    };
+                };
+                
+                // Show image once loaded successfully
+                coverImage.onload = function() {
+                    this.style.display = 'block';
                 };
             } else {
                 // No cover image found - hide it
@@ -2186,12 +2297,98 @@
         }
 
         // Lightbox functions
-        function openLightbox(imgSrc, filename = null) {
+        function openLightbox(imgSrc, filename = null, extraData = null, fontUrl = null, localFontUrl = null) {
             const lightbox = document.getElementById('lightbox');
             const lightboxImg = document.getElementById('lightbox-img');
+            const lightboxContentWrapper = document.getElementById('lightbox-content-wrapper');
             const editBtn = document.getElementById('lightbox-edit-btn');
             const filenameDisplay = document.getElementById('lightbox-filename');
             
+            const folderName = getFolderName();
+            
+            // Handle special content types
+            if (imgSrc === 'transparent-assets' && extraData) {
+                // Show transparent assets list
+                lightboxImg.style.display = 'none';
+                lightboxContentWrapper.style.display = 'block';
+                lightboxContentWrapper.innerHTML = `
+                    <h3 style="margin-top: 0; color: #667eea; margin-bottom: 20px;">Transparent Assets Usage</h3>
+                    <p style="color: #666; margin-bottom: 20px;">These config keys use transparent image files:</p>
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        ${extraData.map(key => `<li style="padding: 10px; margin: 5px 0; background: #f5f5f5; border-radius: 4px; font-family: monospace; font-size: 0.9rem;">${key}</li>`).join('')}
+                    </ul>
+                `;
+                filenameDisplay.style.display = 'none';
+                editBtn.style.display = 'none';
+                lightbox.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                return;
+            }
+            
+            if (imgSrc === 'config-json' && extraData) {
+                // Show formatted config.json
+                lightboxImg.style.display = 'none';
+                lightboxContentWrapper.style.display = 'block';
+                const formattedJson = JSON.stringify(extraData, null, 2);
+                lightboxContentWrapper.innerHTML = `
+                    <h3 style="margin-top: 0; color: #667eea; margin-bottom: 20px;">config.json</h3>
+                    <pre style="background: #2d2d2d; color: #f8f8f2; padding: 20px; border-radius: 4px; overflow-x: auto; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.85rem; line-height: 1.5; margin: 0; max-height: 60vh; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word;"><code>${formattedJson.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
+                `;
+                filenameDisplay.textContent = 'config.json';
+                filenameDisplay.style.display = 'block';
+                const githubUrl = `https://github.com/y1-community/InnioasisY1Themes/blob/main/${encodeURIComponent(folderName)}/config.json`;
+                editBtn.href = githubUrl;
+                editBtn.style.display = 'inline-flex';
+                lightbox.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                return;
+            }
+            
+            if (imgSrc === 'font-preview' && filename && fontUrl) {
+                // Show font preview
+                lightboxImg.style.display = 'none';
+                lightboxContentWrapper.style.display = 'block';
+                lightboxContentWrapper.innerHTML = `
+                    <h3 style="margin-top: 0; color: #667eea; margin-bottom: 20px;">Font Preview: ${filename}</h3>
+                    <div id="font-preview-container" style="background: white; padding: 30px; border-radius: 4px; border: 1px solid #ddd;">
+                        <p style="font-size: 48px; margin: 20px 0; font-family: 'PreviewFontDisplay', sans-serif;">AaBbCc 123</p>
+                        <p style="font-size: 36px; margin: 20px 0; font-family: 'PreviewFontDisplay', sans-serif;">The quick brown fox jumps over the lazy dog</p>
+                        <p style="font-size: 24px; margin: 20px 0; font-family: 'PreviewFontDisplay', sans-serif;">Sample text at different sizes</p>
+                        <p style="font-size: 18px; margin: 20px 0; font-family: 'PreviewFontDisplay', sans-serif;">Lowercase and UPPERCASE letters</p>
+                        <p style="font-size: 14px; margin: 20px 0; font-family: 'PreviewFontDisplay', sans-serif;">Numbers: 0123456789</p>
+                    </div>
+                `;
+                
+                // Load font for preview
+                (async () => {
+                    try {
+                        const fontFace = new FontFace('PreviewFontDisplay', `url(${fontUrl})`);
+                        await fontFace.load();
+                        document.fonts.add(fontFace);
+                    } catch (e) {
+                        try {
+                            const localFontFace = new FontFace('PreviewFontDisplay', `url(${localFontUrl})`);
+                            await localFontFace.load();
+                            document.fonts.add(localFontFace);
+                        } catch (e2) {
+                            console.warn('Could not load font for preview:', e2);
+                        }
+                    }
+                })();
+                
+                filenameDisplay.textContent = filename;
+                filenameDisplay.style.display = 'block';
+                const githubUrl = `https://github.com/y1-community/InnioasisY1Themes/blob/main/${encodeURIComponent(folderName)}/${encodeURIComponent(filename)}`;
+                editBtn.href = githubUrl;
+                editBtn.style.display = 'inline-flex';
+                lightbox.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                return;
+            }
+            
+            // Default: Show image
+            lightboxImg.style.display = 'block';
+            lightboxContentWrapper.style.display = 'none';
             lightboxImg.src = imgSrc;
             lightbox.classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -2199,7 +2396,6 @@
             // Extract filename from image source and construct GitHub URL
             // Image source format: ./filename.png, blob: URL, or full URL
             // We need: https://github.com/y1-community/InnioasisY1Themes/blob/main/{folderName}/{filename}
-            const folderName = getFolderName();
             let actualFilename = filename;
             
             // If filename not provided, extract from imgSrc
@@ -2234,15 +2430,30 @@
             // Construct GitHub URL using blob/main to view the actual file
             const githubUrl = `https://github.com/y1-community/InnioasisY1Themes/blob/main/${encodeURIComponent(folderName)}/${encodeURIComponent(actualFilename)}`;
             editBtn.href = githubUrl;
+            editBtn.style.display = 'inline-flex';
         }
 
         function closeLightbox() {
             const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            const lightboxContentWrapper = document.getElementById('lightbox-content-wrapper');
             const filenameDisplay = document.getElementById('lightbox-filename');
+            const editBtn = document.getElementById('lightbox-edit-btn');
             lightbox.classList.remove('active');
             document.body.style.overflow = 'auto';
+            if (lightboxImg) {
+                lightboxImg.style.display = 'block';
+                lightboxImg.src = '';
+            }
+            if (lightboxContentWrapper) {
+                lightboxContentWrapper.style.display = 'none';
+                lightboxContentWrapper.innerHTML = '';
+            }
             if (filenameDisplay) {
                 filenameDisplay.style.display = 'none';
+            }
+            if (editBtn) {
+                editBtn.style.display = 'inline-flex';
             }
         }
 
@@ -2275,15 +2486,16 @@
                     const response = await fetch(apiUrl);
                     if (response.ok) {
                         const files = await response.json();
-                        // Filter for *screenshot*.* and *cover*.* patterns (case-insensitive)
+                        // Filter for *screenshot*.* patterns only (exclude covers - case-insensitive)
                         const allScreenshotFiles = files
                             .filter(file => file.type === 'file' && 
                                     /\.(gif|jpg|jpeg|png)$/i.test(file.name) &&
-                                    (/screenshot/i.test(file.name) || /cover/i.test(file.name)))
+                                    /screenshot/i.test(file.name))
                             .map(file => ({
                                 name: file.name,
-                                url: `./${encodeURIComponent(file.name)}`,
-                                download_url: file.download_url || `./${encodeURIComponent(file.name)}`
+                                url: getGitHubRawUrl(file.name), // Use GitHub raw URL for faster loading
+                                localUrl: `./${encodeURIComponent(file.name)}`, // Fallback local URL
+                                download_url: file.download_url || getGitHubRawUrl(file.name)
                             }));
                         
                         // Deduplicate: If multiple formats exist for same base name, keep only the best one
@@ -2325,26 +2537,32 @@
                         screenshotPatterns.push(`screenshot.${ext}`, `Screenshot.${ext}`, `SCREENSHOT.${ext}`);
                     }
                     
-                    // Try cover patterns
-                    const coverPatterns = [
-                        'cover', 'Cover', 'COVER',
-                        'cover_noscale', 'cover_WS', 'cover_YS',
-                        'gregcover', '@Be_cover', '@Cup_cover', '@Pris_cover'
-                    ];
-                    for (const coverBase of coverPatterns) {
-                        for (const ext of imageExtensions) {
-                            screenshotPatterns.push(`${coverBase}.${ext}`);
+                    // Note: Cover patterns are excluded - covers are only shown in the cover image at top right
+                    
+                    // Build list of potential screenshot files and deduplicate by base name
+                    const discoveredScreenshotMap = new Map(); // base name -> best format
+                    const extensionPriority = { 'gif': 1, 'jpg': 2, 'jpeg': 2, 'png': 3 };
+                    
+                    for (const filename of screenshotPatterns) {
+                        const ext = filename.split('.').pop().toLowerCase();
+                        const baseName = filename.substring(0, filename.lastIndexOf('.'));
+                        const priority = extensionPriority[ext] || 99;
+                        
+                        if (!discoveredScreenshotMap.has(baseName) || priority < discoveredScreenshotMap.get(baseName).priority) {
+                            discoveredScreenshotMap.set(baseName, {
+                                name: filename,
+                                priority: priority
+                            });
                         }
                     }
                     
-                    // Build list of potential screenshot files
-                    for (const filename of screenshotPatterns) {
-                        screenshotFiles.push({
-                            name: filename,
-                            url: `./${encodeURIComponent(filename)}`,
-                            download_url: `./${encodeURIComponent(filename)}`
-                        });
-                    }
+                    // Convert map to array
+                    screenshotFiles = Array.from(discoveredScreenshotMap.values()).map(item => ({
+                        name: item.name,
+                        url: getGitHubRawUrl(item.name),
+                        localUrl: `./${encodeURIComponent(item.name)}`,
+                        download_url: getGitHubRawUrl(item.name)
+                    }));
                 }
                 
                 if (screenshotFiles.length === 0) {
@@ -2361,10 +2579,19 @@
                 
                 for (const file of screenshotFiles) {
                     try {
-                        const response = await fetch(file.url, { method: 'HEAD' });
+                        // Try GitHub raw URL first (faster), then fallback to local
+                        let imageUrl = file.url; // GitHub raw URL
+                        let response = await fetch(imageUrl, { method: 'HEAD' });
+                        
+                        // If GitHub URL fails, try local URL
+                        if (!response.ok && file.localUrl) {
+                            imageUrl = file.localUrl;
+                            response = await fetch(imageUrl, { method: 'HEAD' });
+                        }
+                        
                         if (response.ok) {
                             // File exists, load it
-                            const fullResponse = await fetch(file.url);
+                            const fullResponse = await fetch(imageUrl);
                             if (fullResponse.ok) {
                                 const blob = await fullResponse.blob();
                                 const objectUrl = URL.createObjectURL(blob);
@@ -2374,12 +2601,12 @@
                                 fileCache.set(file.name, {
                                     blob: blob,
                                     arrayBuffer: arrayBuffer,
-                                    url: file.url
+                                    url: imageUrl
                                 });
                                 
                                 loadedScreenshots.push({
                                     name: file.name,
-                                    url: file.url,
+                                    url: imageUrl,
                                     objectUrl: objectUrl
                                 });
                             }
@@ -2454,6 +2681,8 @@
                 // Load config.json to map images to their usage
                 let config = null;
                 let imageUsageMap = new Map(); // Maps filename -> array of config keys
+                let transparentFilesMap = new Map(); // Maps transparent filename -> array of config keys
+                let fontFile = null; // Track font file (fontFamily property)
                 
                 try {
                     const configResponse = await fetch('./config.json');
@@ -2463,39 +2692,63 @@
                         // Helper function to recursively search for image references
                         function findImageReferences(obj, prefix = '') {
                             for (const [key, value] of Object.entries(obj)) {
-                                if (typeof value === 'string' && /\.(png|jpg|jpeg|gif|svg)$/i.test(value)) {
-                                    // Extract filename and create multiple lookup keys
-                                    const fullPath = value.split('/').pop();
-                                    const filename = fullPath;
-                                    
-                                    // Create lookup keys:
-                                    // 1. Full filename (e.g., "@Be_itemSelectedBackground.png")
-                                    // 2. Without @ prefix pattern (e.g., "itemSelectedBackground.png")
-                                    // 3. Base name without extension (e.g., "itemSelectedBackground")
-                                    
-                                    const keys = [filename];
-                                    
-                                    // Try removing @ prefix pattern (e.g., @Be_ or @Theme_)
-                                    const withoutPrefix = filename.replace(/^@[^_]+_/, '');
-                                    if (withoutPrefix !== filename) {
-                                        keys.push(withoutPrefix);
+                                if (typeof value === 'string') {
+                                    // Check for font files
+                                    if (key === 'fontFamily' && /\.(ttf|otf|woff|woff2)$/i.test(value)) {
+                                        fontFile = value.split('/').pop();
                                     }
-                                    
-                                    // Base name without extension
-                                    const baseName = filename.replace(/\.[^.]+$/, '');
-                                    const baseNameWithoutPrefix = withoutPrefix.replace(/\.[^.]+$/, '');
-                                    keys.push(baseName, baseNameWithoutPrefix);
-                                    
-                                    // Store the config key for all variations
-                                    const fullKey = prefix ? `${prefix}.${key}` : key;
-                                    keys.forEach(lookupKey => {
-                                        if (!imageUsageMap.has(lookupKey)) {
-                                            imageUsageMap.set(lookupKey, []);
+                                    // Check for image files
+                                    else if (/\.(png|jpg|jpeg|gif|svg)$/i.test(value)) {
+                                        // Extract filename and create multiple lookup keys
+                                        const fullPath = value.split('/').pop();
+                                        const filename = fullPath;
+                                        
+                                        // Check if this is a transparent file
+                                        const isTransparent = /^transparent\./i.test(filename);
+                                        
+                                        // Create lookup keys:
+                                        // 1. Full filename (e.g., "@Be_itemSelectedBackground.png")
+                                        // 2. Without @ prefix pattern (e.g., "itemSelectedBackground.png")
+                                        // 3. Base name without extension (e.g., "itemSelectedBackground")
+                                        
+                                        const keys = [filename];
+                                        
+                                        // Try removing @ prefix pattern (e.g., @Be_ or @Theme_)
+                                        const withoutPrefix = filename.replace(/^@[^_]+_/, '');
+                                        if (withoutPrefix !== filename) {
+                                            keys.push(withoutPrefix);
                                         }
-                                        if (!imageUsageMap.get(lookupKey).includes(fullKey)) {
-                                            imageUsageMap.get(lookupKey).push(fullKey);
+                                        
+                                        // Base name without extension
+                                        const baseName = filename.replace(/\.[^.]+$/, '');
+                                        const baseNameWithoutPrefix = withoutPrefix.replace(/\.[^.]+$/, '');
+                                        keys.push(baseName, baseNameWithoutPrefix);
+                                        
+                                        // Store the config key for all variations
+                                        const fullKey = prefix ? `${prefix}.${key}` : key;
+                                        
+                                        if (isTransparent) {
+                                            // Track transparent files separately
+                                            keys.forEach(lookupKey => {
+                                                if (!transparentFilesMap.has(lookupKey)) {
+                                                    transparentFilesMap.set(lookupKey, []);
+                                                }
+                                                if (!transparentFilesMap.get(lookupKey).includes(fullKey)) {
+                                                    transparentFilesMap.get(lookupKey).push(fullKey);
+                                                }
+                                            });
+                                        } else {
+                                            // Track regular image files
+                                            keys.forEach(lookupKey => {
+                                                if (!imageUsageMap.has(lookupKey)) {
+                                                    imageUsageMap.set(lookupKey, []);
+                                                }
+                                                if (!imageUsageMap.get(lookupKey).includes(fullKey)) {
+                                                    imageUsageMap.get(lookupKey).push(fullKey);
+                                                }
+                                            });
                                         }
-                                    });
+                                    }
                                 } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
                                     const newPrefix = prefix ? `${prefix}.${key}` : key;
                                     findImageReferences(value, newPrefix);
@@ -2520,13 +2773,14 @@
                         const files = await response.json();
                         imageFiles = files
                             .filter(file => file.type === 'file' && 
-                                    /\.(jpg|jpeg|png|gif)$/i.test(file.name) &&
-                                    // Exclude screenshots and cover images from asset gallery (they're in screenshots gallery)
-                                    !/screenshot/i.test(file.name) && !/cover/i.test(file.name))
+                                    /\.png$/i.test(file.name) && // Only PNG files for asset gallery
+                                    // Exclude screenshots, cover images, and transparent files
+                                    !/screenshot/i.test(file.name) && !/cover/i.test(file.name) && !/^transparent\./i.test(file.name))
                             .map(file => ({
                                 name: file.name,
-                                url: `./${encodeURIComponent(file.name)}`, // Use relative path for caching
-                                download_url: file.download_url || `./${encodeURIComponent(file.name)}`
+                                url: getGitHubRawUrl(file.name), // Use GitHub raw URL for faster loading
+                                localUrl: `./${encodeURIComponent(file.name)}`, // Fallback local URL
+                                download_url: file.download_url || getGitHubRawUrl(file.name)
                             }));
                     }
                 } catch (apiError) {
@@ -2572,7 +2826,13 @@
                 const imageCache = new Map(); // Cache loaded images to avoid re-fetching
                 
                 // Iterate through all config keys that reference images
+                // Only include PNG files (exclude transparent files - they're handled separately)
                 imageUsageMap.forEach((configKeys, filename) => {
+                    // Skip transparent files and non-PNG files
+                    if (/^transparent\./i.test(filename) || !/\.png$/i.test(filename)) {
+                        return;
+                    }
+                    
                     // For each config key that uses this filename, create an entry
                     configKeys.forEach(configKey => {
                         configImageEntries.push({
@@ -2630,11 +2890,15 @@
                                fName.toLowerCase() === filename.toLowerCase();
                     });
                     
+                    let localUrl = null;
+                    
                     if (foundInFiles) {
-                        imageUrl = foundInFiles.url;
+                        imageUrl = foundInFiles.url; // GitHub raw URL
+                        localUrl = foundInFiles.localUrl || `./${encodeURIComponent(filename)}`;
                     } else {
-                        // Strategy 2: Try direct path
-                        imageUrl = `./${encodeURIComponent(filename)}`;
+                        // Strategy 2: Try GitHub raw URL first, then local
+                        imageUrl = getGitHubRawUrl(filename);
+                        localUrl = `./${encodeURIComponent(filename)}`;
                         
                         // Strategy 3: Try to find similar filenames (case-insensitive, without @ prefix)
                         const filenameLower = filename.toLowerCase();
@@ -2650,21 +2914,29 @@
                         });
                         
                         if (foundInFiles) {
-                            imageUrl = foundInFiles.url;
+                            imageUrl = foundInFiles.url; // GitHub raw URL
+                            localUrl = foundInFiles.localUrl || `./${encodeURIComponent(filename)}`;
                         }
                     }
                     
                     if (!imageUrl) {
-                        // Fallback: try direct filename
-                        imageUrl = `./${encodeURIComponent(filename)}`;
+                        // Fallback: try GitHub raw URL, then local
+                        imageUrl = getGitHubRawUrl(filename);
+                        localUrl = `./${encodeURIComponent(filename)}`;
                     }
                     
                     try {
-                        // Fetch the image and cache it
-                        const response = await fetch(imageUrl, { method: 'HEAD' });
+                        // Fetch the image and cache it - try GitHub raw URL first, then fallback to local
+                        let response = await fetch(imageUrl, { method: 'HEAD' });
+                        if (!response.ok && localUrl) {
+                            // Fallback to local URL
+                            imageUrl = localUrl;
+                            response = await fetch(imageUrl, { method: 'HEAD' });
+                        }
+                        
                         if (!response.ok) {
-                            // Try direct filename if HEAD failed
-                            imageUrl = `./${encodeURIComponent(filename)}`;
+                            // Skip this image if both URLs fail
+                            return null;
                         }
                         
                         const fullResponse = await fetch(imageUrl);
@@ -2682,10 +2954,17 @@
                             // Create object URL for display
                             const objectUrl = URL.createObjectURL(blob);
                             
+                            // Check if PNG is fully transparent
+                            let isTransparent = false;
+                            if (/\.png$/i.test(filename)) {
+                                isTransparent = await isFullyTransparent(objectUrl);
+                            }
+                            
                             imageCache.set(filename, {
                                 url: imageUrl,
                                 objectUrl: objectUrl,
-                                blob: blob
+                                blob: blob,
+                                isTransparent: isTransparent
                             });
                         } else {
                             console.warn(`Could not load image: ${filename} (HTTP ${fullResponse.status})`);
@@ -2707,7 +2986,8 @@
                             filename: entry.filename,
                             url: cached.url,
                             objectUrl: cached.objectUrl,
-                            configKey: entry.configKey
+                            configKey: entry.configKey,
+                            isTransparent: cached.isTransparent || false
                         });
                     }
                 });
@@ -2715,10 +2995,111 @@
                 // Sort by config key name for consistent display
                 loadedImageData.sort((a, b) => a.configKey.localeCompare(b.configKey));
                 
-                if (loadedImageData.length === 0) {
+                // Collect unique transparent files and their config keys
+                const transparentAssetsList = [];
+                const transparentFilesSet = new Set();
+                transparentFilesMap.forEach((configKeys, filename) => {
+                    if (/^transparent\./i.test(filename)) {
+                        const baseName = filename.replace(/\.[^.]+$/, '');
+                        if (!transparentFilesSet.has(baseName)) {
+                            transparentFilesSet.add(baseName);
+                            transparentAssetsList.push(...configKeys);
+                        }
+                    }
+                });
+                const uniqueTransparentFiles = transparentFilesSet.size;
+                const uniqueTransparentConfigKeys = [...new Set(transparentAssetsList)];
+                
+                if (loadedImageData.length === 0 && uniqueTransparentFiles === 0 && !fontFile) {
                     carouselWrapper.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">No images found</div>';
                     if (carouselInfo) carouselInfo.textContent = '0 / 0';
                     return;
+                }
+                
+                // Create carousel items - starting with transparent assets summary if present
+                if (uniqueTransparentFiles > 0) {
+                    const transparentItem = document.createElement('div');
+                    transparentItem.className = 'image-carousel-item';
+                    transparentItem.onclick = () => openLightbox('transparent-assets', null, uniqueTransparentConfigKeys);
+                    transparentItem.style.cursor = 'pointer';
+                    
+                    // Create a simple thumbnail showing the count
+                    const thumbnailDiv = document.createElement('div');
+                    thumbnailDiv.style.cssText = 'width: 120px; height: 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.9rem; text-align: center; padding: 10px; box-sizing: border-box;';
+                    thumbnailDiv.textContent = `${uniqueTransparentFiles} transparent asset${uniqueTransparentFiles > 1 ? 's' : ''}`;
+                    
+                    const label = document.createElement('div');
+                    label.className = 'image-name';
+                    label.textContent = `Uses ${uniqueTransparentFiles} transparent asset${uniqueTransparentFiles > 1 ? 's' : ''}`;
+                    
+                    transparentItem.appendChild(thumbnailDiv);
+                    transparentItem.appendChild(label);
+                    carouselWrapper.appendChild(transparentItem);
+                }
+                
+                // Add font asset if present
+                if (fontFile) {
+                    // Load font and create preview thumbnail
+                    try {
+                        const fontUrl = getGitHubRawUrl(fontFile);
+                        const localFontUrl = getLocalUrl(fontFile);
+                        
+                        // Create font preview thumbnail
+                        const fontItem = document.createElement('div');
+                        fontItem.className = 'image-carousel-item';
+                        
+                        // Create canvas for font preview thumbnail
+                        const canvas = document.createElement('canvas');
+                        canvas.width = 120;
+                        canvas.height = 80;
+                        const ctx = canvas.getContext('2d');
+                        
+                        // Try to load font and draw preview
+                        const loadFontPreview = async () => {
+                            try {
+                                const fontFace = new FontFace('PreviewFont', `url(${fontUrl})`);
+                                await fontFace.load();
+                                document.fonts.add(fontFace);
+                                
+                                ctx.fillStyle = '#fff';
+                                ctx.fillRect(0, 0, 120, 80);
+                                ctx.fillStyle = '#333';
+                                ctx.font = 'bold 16px PreviewFont';
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
+                                ctx.fillText('AaBbCc', 60, 40);
+                            } catch (e) {
+                                // Fallback: show font icon
+                                ctx.fillStyle = '#f0f0f0';
+                                ctx.fillRect(0, 0, 120, 80);
+                                ctx.fillStyle = '#666';
+                                ctx.font = 'bold 20px sans-serif';
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
+                                ctx.fillText('Aa', 60, 40);
+                            }
+                        };
+                        
+                        loadFontPreview().then(() => {
+                            fontItem.onclick = () => openLightbox('font-preview', fontFile, fontUrl, localFontUrl);
+                            fontItem.style.cursor = 'pointer';
+                            
+                            const thumbnailImg = document.createElement('img');
+                            thumbnailImg.src = canvas.toDataURL();
+                            thumbnailImg.style.cssText = 'width: 120px; height: 80px; object-fit: contain; border-radius: 4px; background: white;';
+                            thumbnailImg.alt = fontFile;
+                            
+                            const label = document.createElement('div');
+                            label.className = 'image-name';
+                            label.textContent = `fontFamily: ${fontFile}`;
+                            
+                            fontItem.appendChild(thumbnailImg);
+                            fontItem.appendChild(label);
+                            carouselWrapper.appendChild(fontItem);
+                        });
+                    } catch (e) {
+                        console.warn('Could not create font preview:', e);
+                    }
                 }
                 
                 // Create carousel items - one for each config key usage
@@ -2729,20 +3110,53 @@
                     item.onclick = () => openLightbox(imageData.objectUrl || imageData.url, imageData.filename);
                     item.style.cursor = 'pointer';
                     
-                    const img = document.createElement('img');
-                    img.src = imageData.objectUrl || imageData.url;
-                    img.alt = imageData.filename;
-                    img.loading = 'lazy';
+                    // Check if image is fully transparent
+                    if (imageData.isTransparent) {
+                        // Show transparent indicator instead of image
+                        const transparentIndicator = document.createElement('div');
+                        transparentIndicator.style.cssText = 'width: 100%; height: 80px; display: flex; align-items: center; justify-content: center; background-image: linear-gradient(45deg, #f0f0f0 25%, transparent 25%), linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f0f0f0 75%), linear-gradient(-45deg, transparent 75%, #f0f0f0 75%); background-size: 12px 12px; background-position: 0 0, 0 6px, 6px -6px, -6px 0px; border-radius: 4px; border: 1px solid #ddd; padding: 4px; box-sizing: border-box;';
+                        const transparentLabel = document.createElement('div');
+                        transparentLabel.style.cssText = 'text-align: center; color: #999; font-size: 0.7rem; font-weight: 600; padding: 5px; background: rgba(255, 255, 255, 0.9); border-radius: 3px;';
+                        transparentLabel.textContent = 'Transparent (No Image)';
+                        transparentIndicator.appendChild(transparentLabel);
+                        item.appendChild(transparentIndicator);
+                    } else {
+                        const img = document.createElement('img');
+                        img.src = imageData.objectUrl || imageData.url;
+                        img.alt = imageData.filename;
+                        img.loading = 'lazy';
+                        item.appendChild(img);
+                    }
                     
                     const label = document.createElement('div');
                     label.className = 'image-name';
                     label.textContent = imageData.configKey;
                     label.title = imageData.filename; // Show filename on hover
                     
-                    item.appendChild(img);
                     item.appendChild(label);
                     carouselWrapper.appendChild(item);
                 });
+                
+                // Add config.json as last asset item
+                if (config) {
+                    const configItem = document.createElement('div');
+                    configItem.className = 'image-carousel-item';
+                    configItem.onclick = () => openLightbox('config-json', null, config);
+                    configItem.style.cursor = 'pointer';
+                    
+                    // Create JSON icon/preview thumbnail
+                    const thumbnailDiv = document.createElement('div');
+                    thumbnailDiv.style.cssText = 'width: 120px; height: 80px; background: #2d2d2d; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #f8f8f2; font-family: monospace; font-size: 0.7rem; text-align: center; padding: 10px; box-sizing: border-box; border: 2px solid #555;';
+                    thumbnailDiv.innerHTML = '{<br/>&nbsp;&nbsp;...<br/>}';
+                    
+                    const label = document.createElement('div');
+                    label.className = 'image-name';
+                    label.textContent = 'config.json';
+                    
+                    configItem.appendChild(thumbnailDiv);
+                    configItem.appendChild(label);
+                    carouselWrapper.appendChild(configItem);
+                }
                 
                 updateCarouselInfo();
                 
