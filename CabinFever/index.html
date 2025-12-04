@@ -3096,7 +3096,7 @@
                 lightboxContentWrapper.innerHTML = `
                     <h3 style="margin-top: 0; color: #667eea; margin-bottom: 20px;">config.json</h3>
                     <p style="color: #666; margin-bottom: 15px; font-size: 0.9rem;">Hover or tap on image filenames and font names to preview them. Click on JSON context lines to jump to that location.</p>
-                    <div id="resource-preview-popup" style="display: none; position: fixed; z-index: 10003; background: white; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); padding: 15px; max-width: 400px; pointer-events: none; font-size: 1rem;"></div>
+                    <div id="resource-preview-popup" style="display: none; position: fixed; z-index: 10003; background: white; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); padding: 12px; max-width: 300px; pointer-events: none; font-size: 0.9rem;"></div>
                     <div style="background: #2d2d2d; border-radius: 4px; overflow: hidden; position: relative;">
                         <pre id="json-preview-pre" style="color: #f8f8f2; padding: 20px; padding-left: 60px; overflow-x: auto; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.85rem; line-height: 1.5; margin: 0; max-height: 60vh; overflow-y: auto; white-space: pre; word-wrap: normal; position: relative;"><code>${interactiveJson}</code></pre>
                         <div id="json-line-numbers" style="position: absolute; left: 0; top: 0; bottom: 0; width: 50px; background: #1e1e1e; color: #858585; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.85rem; padding: 20px 5px; text-align: right; user-select: none; line-height: 1.5;"></div>
@@ -3140,18 +3140,32 @@
                         const mouseX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
                         const mouseY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
                         
-                        let popupLeft = mouseX + 20;
-                        let popupTop = mouseY + 20;
+                        // Position popup near cursor with proper viewport bounds checking
+                        const popupWidth = 300;
+                        const popupHeight = 250;
+                        const offset = 15;
                         
-                        // Adjust if popup would go off screen
-                        if (popupLeft + 400 > window.innerWidth) {
-                            popupLeft = mouseX - 420; // Show to the left of cursor
+                        let popupLeft = mouseX + offset;
+                        let popupTop = mouseY + offset;
+                        
+                        // Adjust if popup would go off screen right
+                        if (popupLeft + popupWidth > window.innerWidth - 10) {
+                            popupLeft = mouseX - popupWidth - offset; // Show to the left of cursor
                         }
-                        if (popupTop + 300 > window.innerHeight) {
-                            popupTop = mouseY - 320; // Show above cursor
+                        // Adjust if popup would go off screen bottom
+                        if (popupTop + popupHeight > window.innerHeight - 10) {
+                            popupTop = mouseY - popupHeight - offset; // Show above cursor
                         }
+                        // Ensure popup stays within viewport bounds
                         if (popupLeft < 10) popupLeft = 10;
                         if (popupTop < 10) popupTop = 10;
+                        // Adjust if still off screen after initial correction
+                        if (popupLeft + popupWidth > window.innerWidth) {
+                            popupLeft = window.innerWidth - popupWidth - 10;
+                        }
+                        if (popupTop + popupHeight > window.innerHeight) {
+                            popupTop = window.innerHeight - popupHeight - 10;
+                        }
                         
                         popup.style.left = popupLeft + 'px';
                         popup.style.top = popupTop + 'px';
@@ -3160,82 +3174,34 @@
                     // Initial position
                     updatePosition(event);
                     
-                    // Update position on mouse move
+                    // Update position on mouse move for smooth cursor following
                     const moveHandler = (e) => updatePosition(e);
                     document.addEventListener('mousemove', moveHandler);
                     popup._moveHandler = moveHandler; // Store for cleanup
                     
-                    // Generate full interactive JSON for mini preview
-                    let contextHtml = '';
-                    if (window.configJsonData && window.createInteractiveJson) {
-                        const configData = window.configJsonData;
-                        const imgCache = window.configJsonImageCache || imageCache;
-                        const fontFileData = window.configJsonFontFile || null;
-                        const fullJsonResult = createInteractiveJson(configData, imgCache, fontFileData, 0, '', 1);
-                        const fullJsonHtml = fullJsonResult.html;
-                        const totalLines = fullJsonHtml.split('\n').length;
-                        const uniqueId = 'mini-json-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-                        
-                        // Find target line for scrolling
-                        const context = findJsonContext(value, 0);
-                        let scrollToLine = 1;
-                        if (context) {
-                            scrollToLine = context.lineNumber;
-                        }
-                        
-                        contextHtml = `
-                            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #eee;">
-                                <div style="font-size: 0.85rem; color: #999; margin-bottom: 8px; font-weight: 600;">Full config.json (scroll to find assets, click line to preview):</div>
-                                <div style="background: #2d2d2d; border-radius: 4px; overflow: hidden; position: relative; max-height: 250px; overflow-y: auto;">
-                                    <pre id="${uniqueId}" style="color: #f8f8f2; padding: 15px; padding-left: 50px; overflow-x: auto; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.75rem; line-height: 1.5; margin: 0; white-space: pre; word-wrap: normal; position: relative;"><code>${fullJsonHtml}</code></pre>
-                                    <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 40px; background: #1e1e1e; color: #858585; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-size: 0.75rem; padding: 15px 5px; text-align: right; user-select: none; line-height: 1.5;">
-                                        ${Array.from({length: totalLines}, (_, i) => `<div style="line-height: 1.5;">${i + 1}</div>`).join('')}
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                        
-                        // Scroll to target line after rendering
-                        setTimeout(() => {
-                            const miniPre = document.getElementById(uniqueId);
-                            if (miniPre) {
-                                const targetLine = miniPre.querySelector(`.json-line[data-line="${scrollToLine}"]`);
-                                if (targetLine) {
-                                    targetLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                    targetLine.style.background = 'rgba(102, 126, 234, 0.3)';
-                                    setTimeout(() => {
-                                        targetLine.style.background = '';
-                                    }, 2000);
-                                }
-                            }
-                        }, 100);
-                    }
-                    
+                    // Simple preview - no nested JSON context, just image/font preview
                     if (type === 'image') {
                         const displayFilename = filename || value.split('/').pop();
                         const cached = imageCache ? imageCache.get(displayFilename) : null;
                         if (cached && cached.objectUrl) {
                             popup.innerHTML = `
-                                <div style="font-size: 1rem; color: #333; margin-bottom: 10px; font-family: monospace; text-align: center; font-weight: 600;">${displayFilename}</div>
-                                <img src="${cached.objectUrl}" style="max-width: 320px; max-height: 240px; border-radius: 4px; display: block; margin: 0 auto;" alt="${displayFilename}">
-                                ${contextHtml}
+                                <div style="font-size: 0.9rem; color: #333; margin-bottom: 8px; font-family: monospace; text-align: center; font-weight: 600;">${displayFilename}</div>
+                                <img src="${cached.objectUrl}" style="max-width: 280px; max-height: 200px; border-radius: 4px; display: block; margin: 0 auto;" alt="${displayFilename}">
                             `;
                         } else {
                             const githubUrl = getGitHubRawUrl(displayFilename);
                             popup.innerHTML = `
-                                <div style="font-size: 1rem; color: #333; margin-bottom: 10px; font-family: monospace; text-align: center; font-weight: 600;">${displayFilename}</div>
-                                <img src="${githubUrl}" style="max-width: 320px; max-height: 240px; border-radius: 4px; display: block; margin: 0 auto;" alt="${displayFilename}" onerror="this.parentElement.innerHTML='<div style=\\'padding: 20px; text-align: center; color: #999; font-size: 1rem;\\'>Image not available</div><div style=\\'font-size: 1rem; color: #999; margin-top: 8px; font-family: monospace; text-align: center;\\'>${displayFilename}</div>${contextHtml}'">
-                                ${contextHtml}
+                                <div style="font-size: 0.9rem; color: #333; margin-bottom: 8px; font-family: monospace; text-align: center; font-weight: 600;">${displayFilename}</div>
+                                <img src="${githubUrl}" style="max-width: 280px; max-height: 200px; border-radius: 4px; display: block; margin: 0 auto;" alt="${displayFilename}" onerror="this.parentElement.innerHTML='<div style=\\'padding: 15px; text-align: center; color: #999; font-size: 0.9rem;\\'>Image not available</div><div style=\\'font-size: 0.85rem; color: #999; margin-top: 4px; font-family: monospace; text-align: center;\\'>${displayFilename}</div>'">
                             `;
                         }
                     } else if (type === 'font') {
                         const fontFilename = value.split('/').pop();
                         popup.innerHTML = `
-                            <div style="font-size: 1rem; color: #333; margin-bottom: 12px; font-family: monospace; text-align: center; font-weight: 600;">${fontFilename}</div>
-                            <div style="padding: 15px; text-align: center; background: #f8f9fa; border-radius: 4px;">
-                                <div style="font-size: 32px; font-family: 'PreviewFontPopup', sans-serif; margin-bottom: 10px;">AaBbCc 123</div>
+                            <div style="font-size: 0.9rem; color: #333; margin-bottom: 10px; font-family: monospace; text-align: center; font-weight: 600;">${fontFilename}</div>
+                            <div style="padding: 15px; text-align: center; background: #f8f9fa; border-radius: 4px; min-width: 200px;">
+                                <div style="font-size: 28px; font-family: 'PreviewFontPopup', sans-serif;">AaBbCc 123</div>
                             </div>
-                            ${contextHtml}
                         `;
                         // Try to load font
                         (async () => {
@@ -3274,17 +3240,29 @@
                         const mouseX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
                         const mouseY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
                         
-                        let popupLeft = mouseX + 20;
-                        let popupTop = mouseY + 20;
+                        const popupWidth = 250;
+                        const popupHeight = 80;
+                        const offset = 15;
                         
-                        if (popupLeft + 300 > window.innerWidth) {
-                            popupLeft = mouseX - 320;
+                        let popupLeft = mouseX + offset;
+                        let popupTop = mouseY + offset;
+                        
+                        // Adjust if popup would go off screen
+                        if (popupLeft + popupWidth > window.innerWidth - 10) {
+                            popupLeft = mouseX - popupWidth - offset;
                         }
-                        if (popupTop + 100 > window.innerHeight) {
-                            popupTop = mouseY - 120;
+                        if (popupTop + popupHeight > window.innerHeight - 10) {
+                            popupTop = mouseY - popupHeight - offset;
                         }
+                        // Ensure popup stays within viewport
                         if (popupLeft < 10) popupLeft = 10;
                         if (popupTop < 10) popupTop = 10;
+                        if (popupLeft + popupWidth > window.innerWidth) {
+                            popupLeft = window.innerWidth - popupWidth - 10;
+                        }
+                        if (popupTop + popupHeight > window.innerHeight) {
+                            popupTop = window.innerHeight - popupHeight - 10;
+                        }
                         
                         popup.style.left = popupLeft + 'px';
                         popup.style.top = popupTop + 'px';
