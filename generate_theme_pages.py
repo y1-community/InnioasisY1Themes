@@ -152,17 +152,25 @@ html_template = """<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{name} Theme - Official Innioasis Y1 Community Themes</title>
-    <meta name="description" content="Download {name} theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. {description} Community Maintainers: Ryan Specter + Dmitri Medina">
-    <meta name="keywords" content="Innioasis Y1, Y1 themes, MP3 player themes, {name}, Y1 customization, official Y1 themes, Ryan Specter, Dmitri Medina">
+    <!-- 
+    IMPORTANT: This page loads theme information dynamically from config.json and themes.json.
+    The hardcoded values below are GENERIC PLACEHOLDERS for search engines and initial display.
+    They will be REPLACED by JavaScript with actual theme data from config.json (priority) or themes.json (fallback).
+    
+    You can edit these placeholders to customize SEO metadata, but the displayed content
+    will always come from config.json or themes.json when the page loads.
+    -->
+    <title>Innioasis Y1 Themes - View Theme Info</title>
+    <meta name="description" content="Download theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. Theme description placeholder - will be replaced with actual theme description from config.json. Community Maintainers: Ryan Specter + Dmitri Medina">
+    <meta name="keywords" content="Innioasis Y1, Y1 themes, MP3 player themes, theme name placeholder, Y1 customization, official Y1 themes, Ryan Specter, Dmitri Medina">
     <script type="application/ld+json">
     {{
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
-        "name": "{name} Theme",
+        "name": "Theme Name Placeholder",
         "applicationCategory": "Theme",
         "operatingSystem": "Innioasis Y1",
-        "description": "Download {name} theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. {description} Community Maintainers: Ryan Specter + Dmitri Medina",
+        "description": "Download theme for Innioasis Y1 MP3 player. Official community theme repository endorsed by Innioasis. Theme description placeholder - will be replaced with actual theme description from config.json. Community Maintainers: Ryan Specter + Dmitri Medina",
         "url": "https://themes.innioasis.app/{folder}/",
         "publisher": {{
             "@type": "Organization",
@@ -716,24 +724,27 @@ html_template = """<!DOCTYPE html>
     DATA LOADING PRIORITY (Source of Truth):
     1. config.json (in this theme's folder) = AUTHORITATIVE SOURCE
     2. themes.json (in parent directory) = FAST CACHE/FALLBACK
-    3. Hardcoded values in this HTML = LAST RESORT ONLY
+    3. Hardcoded values in this HTML = LAST RESORT ONLY (GENERIC PLACEHOLDERS)
     
     This design allows users to:
     - Copy this index.html to another theme folder without editing it
     - Update theme info by editing config.json or themes.json
     - The page will automatically use the most up-to-date information
+    - Edit the hardcoded placeholders for SEO customization (they're replaced by JavaScript anyway)
     
     All theme data (name, author, description, colors, images) should be loaded
     from config.json or themes.json when possible, not from hardcoded HTML.
+    The hardcoded values are GENERIC PLACEHOLDERS that will be replaced by JavaScript
+    with actual theme data when the page loads.
     -->
     <div class="container">
         <div class="header-section">
             <div class="header-text">
                 <!-- Title and subtitle removed; using About line instead -->
-                <h2 {title_style}>About the {name} Theme for Innioasis Y1</h2>
-                <p class="description" id="theme-description">{description}</p>
+                <h2 {title_style}>About the Theme for Innioasis Y1</h2>
+                <p class="description" id="theme-description">Theme description placeholder - will be replaced with actual theme description from config.json or themes.json.</p>
                 <p class="author-info" style="margin-top: 15px; color: #666; font-size: 0.9rem; font-style: italic;">
-                    Theme created by <strong id="author-display">{author}</strong>
+                    Theme created by <strong id="author-display">Author placeholder</strong>
                 </p>
             </div>
             {cover_html}
@@ -816,7 +827,7 @@ html_template = """<!DOCTYPE html>
         
         <!-- SEO Content -->
         <div class="seo-content" style="margin-top: 40px; text-align: left; color: #666; font-size: 0.9rem; line-height: 1.6;">
-            <p><span id="description-display">{description}</span></p>
+            <p><span id="description-display">Theme description placeholder - will be replaced with actual theme description from config.json or themes.json.</span></p>
         </div>
         
         <div style="margin-top: 30px; font-size: 0.9rem; color: #888;">
