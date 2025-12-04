@@ -4159,58 +4159,80 @@
                 let screenshotFiles = [];
                 
                 // Strategy 1: Try GitHub API to get file list (if available)
+                // Check for rate limiting first - if rate limited, skip API and go straight to pattern discovery
+                let skipApi = false;
                 try {
-                    const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${encodeURIComponent(folderName)}`;
-                    const response = await fetch(apiUrl);
-                    if (response.ok) {
-                        const files = await response.json();
-                        console.log(`GitHub API returned ${files.length} files for ${folderName}`);
-                        
-                        // Filter for *screenshot*.* patterns only (exclude covers - case-insensitive)
-                        // Match any file that contains "screenshot" anywhere in the name
-                        const allScreenshotFiles = files
-                            .filter(file => {
-                                if (file.type !== 'file') return false;
-                                // Must be an image file
-                                if (!/\.(gif|jpg|jpeg|png)$/i.test(file.name)) return false;
-                                // Must contain "screenshot" (case-insensitive)
-                                if (!/screenshot/i.test(file.name)) return false;
-                                // Exclude cover files (they have their own section)
-                                if (/cover/i.test(file.name)) return false;
-                                return true;
-                            })
-                            .map(file => ({
-                                name: file.name,
-                                url: getGitHubRawUrl(file.name), // Use GitHub raw URL for faster loading
-                                localUrl: `./${encodeURIComponent(file.name)}`, // Fallback local URL
-                                download_url: file.download_url || getGitHubRawUrl(file.name)
-                            }));
-                        
-                        // Deduplicate: If multiple formats exist for same base name, keep only the best one
-                        // Priority: GIF > JPG/JPEG > PNG
-                        const screenshotMap = new Map(); // base name -> best format
-                        const extensionPriority = { 'gif': 1, 'jpg': 2, 'jpeg': 2, 'png': 3 };
-                        
-                        allScreenshotFiles.forEach(file => {
-                            const filename = file.name;
-                            const ext = filename.split('.').pop().toLowerCase();
-                            // Extract base name (everything before the last dot)
-                            const baseName = filename.substring(0, filename.lastIndexOf('.'));
-                            const priority = extensionPriority[ext] || 99;
-                            
-                            if (!screenshotMap.has(baseName) || priority < screenshotMap.get(baseName).priority) {
-                                screenshotMap.set(baseName, { file, priority });
-                            }
-                        });
-                        
-                        screenshotFiles = Array.from(screenshotMap.values()).map(item => item.file);
-                        
-                        console.log(`Found ${screenshotFiles.length} screenshot files via GitHub API for ${folderName}`);
-                    } else {
-                        console.warn(`GitHub API returned ${response.status} for screenshots, will try fallback`);
+                    const testApiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${encodeURIComponent(folderName)}`;
+                    const testResponse = await fetch(testApiUrl, { method: 'HEAD' });
+                    if (testResponse.status === 403) {
+                        console.warn('GitHub API rate limit detected for screenshots, skipping API calls and using pattern discovery only');
+                        skipApi = true;
                     }
-                } catch (apiError) {
-                    console.log('GitHub API not available for screenshots, using pattern discovery:', apiError.message);
+                } catch (e) {
+                    // Continue with API attempt
+                }
+                
+                if (!skipApi) {
+                    try {
+                        const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${encodeURIComponent(folderName)}`;
+                        // Add timeout to prevent hanging on rate limits
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+                        const response = await fetch(apiUrl, { signal: controller.signal });
+                        clearTimeout(timeoutId);
+                        if (response.ok) {
+                            const files = await response.json();
+                            console.log(`GitHub API returned ${files.length} files for ${folderName}`);
+                            
+                            // Filter for *screenshot*.* patterns only (exclude covers - case-insensitive)
+                            // Match any file that contains "screenshot" anywhere in the name
+                            const allScreenshotFiles = files
+                                .filter(file => {
+                                    if (file.type !== 'file') return false;
+                                    // Must be an image file
+                                    if (!/\.(gif|jpg|jpeg|png)$/i.test(file.name)) return false;
+                                    // Must contain "screenshot" (case-insensitive)
+                                    if (!/screenshot/i.test(file.name)) return false;
+                                    // Exclude cover files (they have their own section)
+                                    if (/cover/i.test(file.name)) return false;
+                                    return true;
+                                })
+                                .map(file => ({
+                                    name: file.name,
+                                    url: getGitHubRawUrl(file.name), // Use GitHub raw URL for faster loading
+                                    localUrl: `./${encodeURIComponent(file.name)}`, // Fallback local URL
+                                    download_url: file.download_url || getGitHubRawUrl(file.name)
+                                }));
+                            
+                            // Deduplicate: If multiple formats exist for same base name, keep only the best one
+                            // Priority: GIF > JPG/JPEG > PNG
+                            const screenshotMap = new Map(); // base name -> best format
+                            const extensionPriority = { 'gif': 1, 'jpg': 2, 'jpeg': 2, 'png': 3 };
+                            
+                            allScreenshotFiles.forEach(file => {
+                                const filename = file.name;
+                                const ext = filename.split('.').pop().toLowerCase();
+                                // Extract base name (everything before the last dot)
+                                const baseName = filename.substring(0, filename.lastIndexOf('.'));
+                                const priority = extensionPriority[ext] || 99;
+                                
+                                if (!screenshotMap.has(baseName) || priority < screenshotMap.get(baseName).priority) {
+                                    screenshotMap.set(baseName, { file, priority });
+                                }
+                            });
+                            
+                            screenshotFiles = Array.from(screenshotMap.values()).map(item => item.file);
+                            
+                            console.log(`Found ${screenshotFiles.length} screenshot files via GitHub API for ${folderName}`);
+                        } else if (response.status === 403) {
+                            console.warn('GitHub API rate limit detected for screenshots, using pattern discovery');
+                            skipApi = true;
+                        } else {
+                            console.warn(`GitHub API returned ${response.status} for screenshots, will try fallback`);
+                        }
+                    } catch (apiError) {
+                        console.log('GitHub API not available for screenshots, using pattern discovery:', apiError.message);
+                    }
                 }
                 
                 // Strategy 2: If API didn't work, try common patterns and check if files exist
@@ -4639,25 +4661,47 @@
                 let imageFiles = [];
                 
                 // Strategy 1: Try GitHub API to get file list (if available)
+                // Check for rate limiting first - if rate limited, skip API and go straight to pattern discovery
+                let skipApi = false;
                 try {
-                    const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${encodeURIComponent(folderName)}`;
-                    const response = await fetch(apiUrl);
-                    if (response.ok) {
-                        const files = await response.json();
-                        imageFiles = files
-                            .filter(file => file.type === 'file' && 
-                                    /\.png$/i.test(file.name) && // Only PNG files for asset gallery
-                                    // Exclude screenshots, cover images, and transparent files
-                                    !/screenshot/i.test(file.name) && !/cover/i.test(file.name) && !/^transparent\./i.test(file.name))
-                            .map(file => ({
-                                name: file.name,
-                                url: getGitHubRawUrl(file.name), // Use GitHub raw URL for faster loading
-                                localUrl: `./${encodeURIComponent(file.name)}`, // Fallback local URL
-                                download_url: file.download_url || getGitHubRawUrl(file.name)
-                            }));
+                    const testApiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${encodeURIComponent(folderName)}`;
+                    const testResponse = await fetch(testApiUrl, { method: 'HEAD' });
+                    if (testResponse.status === 403) {
+                        console.warn('GitHub API rate limit detected, skipping API calls and using pattern discovery only');
+                        skipApi = true;
                     }
-                } catch (apiError) {
-                    console.log('GitHub API not available, using pattern discovery');
+                } catch (e) {
+                    // Continue with API attempt
+                }
+                
+                if (!skipApi) {
+                    try {
+                        const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${encodeURIComponent(folderName)}`;
+                        // Add timeout to prevent hanging on rate limits
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+                        const response = await fetch(apiUrl, { signal: controller.signal });
+                        clearTimeout(timeoutId);
+                        if (response.ok) {
+                            const files = await response.json();
+                            imageFiles = files
+                                .filter(file => file.type === 'file' && 
+                                        /\.png$/i.test(file.name) && // Only PNG files for asset gallery
+                                        // Exclude screenshots, cover images, and transparent files
+                                        !/screenshot/i.test(file.name) && !/cover/i.test(file.name) && !/^transparent\./i.test(file.name))
+                                .map(file => ({
+                                    name: file.name,
+                                    url: getGitHubRawUrl(file.name), // Use GitHub raw URL for faster loading
+                                    localUrl: `./${encodeURIComponent(file.name)}`, // Fallback local URL
+                                    download_url: file.download_url || getGitHubRawUrl(file.name)
+                                }));
+                        } else if (response.status === 403) {
+                            console.warn('GitHub API rate limit detected, using pattern discovery');
+                            skipApi = true;
+                        }
+                    } catch (apiError) {
+                        console.log('GitHub API not available, using pattern discovery');
+                    }
                 }
                 
                 // Strategy 2: If API didn't work or returned no files, try common patterns including wildcards

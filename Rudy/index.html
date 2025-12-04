@@ -1302,7 +1302,11 @@
                         // Try GitHub API to find *RightArrow*.* files
                         const folderName = getFolderName();
                         const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${encodeURIComponent(folderName)}`;
-                        const response = await fetch(apiUrl);
+                        // Add timeout to prevent hanging on rate limits
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+                        const response = await fetch(apiUrl, { signal: controller.signal });
+                        clearTimeout(timeoutId);
                         if (response.ok) {
                             const files = await response.json();
                             const rightArrowFiles = files
@@ -1542,7 +1546,11 @@
             // Strategy 1: Try GitHub API to get file list
             try {
                 const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${encodeURIComponent(folderName)}`;
-                const response = await fetch(apiUrl);
+                        // Add timeout to prevent hanging on rate limits
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+                        const response = await fetch(apiUrl, { signal: controller.signal });
+                        clearTimeout(timeoutId);
                 if (response.ok) {
                     const files = await response.json();
                     // Filter for *cover*.* pattern (case-insensitive)
@@ -4580,9 +4588,28 @@
                 let screenshotFiles = [];
                 
                 // Strategy 1: Try GitHub API to get file list (if available)
+                // Check for rate limiting first - if rate limited, skip API and go straight to pattern discovery
+                let skipApi = false;
+                try {
+                    const testApiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${encodeURIComponent(folderName)}`;
+                    const testResponse = await fetch(testApiUrl, { method: 'HEAD' });
+                    if (testResponse.status === 403) {
+                        console.warn('GitHub API rate limit detected, skipping API calls and using pattern discovery only');
+                        skipApi = true;
+                    }
+                } catch (e) {
+                    // Continue with API attempt
+                }
+                
+                if (!skipApi) {
+                    try
                 try {
                     const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${encodeURIComponent(folderName)}`;
-                    const response = await fetch(apiUrl);
+                        // Add timeout to prevent hanging on rate limits
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+                        const response = await fetch(apiUrl, { signal: controller.signal });
+                        clearTimeout(timeoutId);
                     if (response.ok) {
                         const files = await response.json();
                         console.log(`GitHub API returned ${files.length} files for ${folderName}`);
@@ -5062,7 +5089,11 @@
                 // Strategy 1: Try GitHub API to get file list (if available)
                 try {
                     const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${encodeURIComponent(folderName)}`;
-                    const response = await fetch(apiUrl);
+                        // Add timeout to prevent hanging on rate limits
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+                        const response = await fetch(apiUrl, { signal: controller.signal });
+                        clearTimeout(timeoutId);
                     if (response.ok) {
                         const files = await response.json();
                         imageFiles = files
@@ -5077,8 +5108,13 @@
                                 download_url: file.download_url || getGitHubRawUrl(file.name)
                             }));
                     }
-                } catch (apiError) {
-                    console.log('GitHub API not available, using pattern discovery');
+                } else if (response.status === 403) {
+                            console.warn(\'GitHub API rate limit detected, using pattern discovery\');
+                            skipApi = true;
+                        }
+                    } catch (apiError) {
+                        console.log(\'GitHub API not available, using pattern discovery\');
+                    }
                 }
                 
                 // Strategy 2: If API didn't work or returned no files, try common patterns including wildcards
