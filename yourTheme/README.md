@@ -16,7 +16,7 @@ The `index.html` file is a **fully dynamic template** that automatically display
 
 ### For Theme Creators
 
-1. **Download the Template**: [Click Here](https://themes.innioasis.app/theme_html/index.html) to download the latest `index.html` file (or use the direct link: https://themes.innioasis.app/theme_html/index.html)
+1. **Download the Template**: [Click Here](https://themes.innioasis.app/yourTheme/index.html) to download the latest `index.html` file (or use the direct link: https://themes.innioasis.app/yourTheme/index.html)
 
 2. **Place in Your Theme Folder**: Copy the downloaded `index.html` file into your theme's folder (alongside your `config.json` and theme images)
 
@@ -48,11 +48,11 @@ The `index.html` file is designed to be **completely dynamic**:
 
 ## Download
 
-[**Click Here to Download index.html**](https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/theme_html/index.html)
+[**Click Here to Download index.html**](https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/yourTheme/index.html)
 
-Or use this direct download link: `https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/theme_html/index.html`
+Or use this direct download link: `https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/yourTheme/index.html`
 
-You can also view the file at: `https://themes.innioasis.app/theme_html/index.html`
+You can also view the file at: `https://themes.innioasis.app/yourTheme/index.html`
 
 ## Support
 
