@@ -17,14 +17,6 @@
             "authorUrl": "https://www.reddit.com/r/innioasis/comments/1o0f1w4/aquarium_10_theme_y1_stock_firmware/"
         },
         {
-            "name": "Minecraft",
-            "folder": "Minecraft Theme",
-            "screenshot": "./Minecraft Theme/screenshot.jpg",
-            "description": "Simple minecraft style theme for Innioasis Y1",
-            "author": "u/_Adusik_gaV_",
-            "authorUrl": "https://www.reddit.com/r/innioasis/comments/1pgs9oq/i_made_minecraft_style_theme_first_experience/"
-        },
-        {
             "name": "Be",
             "folder": "Be",
             "screenshot": "./Be/screenshot.jpg",
@@ -145,6 +137,14 @@
             "authorUrl": null
         },
         {
+            "name": "Minecraft",
+            "folder": "Minecraft Theme",
+            "screenshot": "./Minecraft Theme/screenshot.jpg",
+            "description": "Simple minecraft style theme for Innioasis Y1",
+            "author": "u/_Adusik_gaV_",
+            "authorUrl": "https://www.reddit.com/r/innioasis/comments/1pgs9oq/i_made_minecraft_style_theme_first_experience/"
+        },
+        {
             "name": "Mini Medieval",
             "folder": "MiniMedieval",
             "screenshot": "./MiniMedieval/cover.png",
@@ -207,6 +207,14 @@
             "description": "A theme inspired by Red Dead Redemption.",
             "author": "u/Terrible-Young-3477",
             "authorUrl": "https://www.reddit.com/r/innioasis/comments/1mdn475/red_dead_redemption_theme/"
+        },
+        {
+            "name": "The Matrix",
+            "folder": "TheMatrix",
+            "screenshot": "./Minecraft/screenshot.jpg",
+            "description": "Simple minecraft style theme for Innioasis Y1",
+            "author": "u/_Adusik_gaV_",
+            "authorUrl": "https://www.reddit.com/r/innioasis/comments/1pgs9oq/i_made_minecraft_style_theme_first_experience/"
         },
         {
             "name": "TwinPeaks",
