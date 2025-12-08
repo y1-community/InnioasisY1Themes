@@ -73,6 +73,14 @@
             "authorUrl": null
         },
         {
+            "folder": "HoloBubble",
+            "name": "HoloBubble",
+            "author": "Innioasis",
+            "authorUrl": "https://www.innioasis.com",
+            "description": "A holographic bubble-inspired theme created by Innioasis for the Y1 device.",
+            "screenshot": "./HoloBubble/cover.png"
+        },
+        {
             "name": "HughBliss",
             "folder": "HughBliss",
             "screenshot": "./HughBliss/cover.png",
@@ -129,12 +137,28 @@
             "authorUrl": "https://github.com/ope-nz/InnoasisY1Themes"
         },
         {
+            "name": "The Matrix",
+            "folder": "TheMatrix",
+            "screenshot": "./TheMatrix/screenshot.jpeg",
+            "description": "Time to enter The Matrix",
+            "author": "u/Neither-Classic2058",
+            "authorUrl": "https://www.reddit.com/r/innioasis/comments/1pgxfhb/thematrix_theme_v10_y1_stock_firmware/"
+        },
+        {
             "name": "MelodyMuncher",
             "folder": "MelodyMuncher",
             "screenshot": "./MelodyMuncher/cover.png",
             "description": "Y1 Theme: MelodyMuncher",
             "author": "Unknown",
             "authorUrl": null
+        },
+        {
+            "folder": "MelodyMuncher",
+            "name": "MelodyMuncher",
+            "author": "Innioasis",
+            "authorUrl": "https://www.innioasis.com",
+            "description": "The official reference theme by Innioasis, featuring comprehensive theme specification support and serving as a template for theme creators.",
+            "screenshot": "./MelodyMuncher/cover.png"
         },
         {
             "name": "Minecraft",
@@ -185,6 +209,14 @@
             "authorUrl": "https://www.reddit.com/r/innioasis/comments/1nom6mr/the_prisoner_theme_10_y1_stock_firmware/"
         },
         {
+            "name": "Red Dead Redemption",
+            "folder": "RDR",
+            "screenshot": "./RDR/Cover.png",
+            "description": "A theme inspired by Red Dead Redemption.",
+            "author": "u/Terrible-Young-3477",
+            "authorUrl": "https://www.reddit.com/r/innioasis/comments/1mdn475/red_dead_redemption_theme/"
+        },
+        {
             "name": "Rudy",
             "folder": "Rudy",
             "screenshot": "./Rudy/screenshot.jpg",
@@ -201,28 +233,20 @@
             "authorUrl": "https://www.reddit.com/r/innioasis/comments/1mldl88/spongebob_theme/"
         },
         {
-            "name": "Red Dead Redemption",
-            "folder": "RDR",
-            "screenshot": "./RDR/Cover.png",
-            "description": "A theme inspired by Red Dead Redemption.",
-            "author": "u/Terrible-Young-3477",
-            "authorUrl": "https://www.reddit.com/r/innioasis/comments/1mdn475/red_dead_redemption_theme/"
-        },
-        {
-            "name": "The Matrix",
-            "folder": "TheMatrix",
-            "screenshot": "./TheMatrix/screenshot.jpg",
-            "description": "Time to enter The Matrix",
-            "author": "u/Neither-Classic2058",
-            "authorUrl": "https://www.reddit.com/r/innioasis/comments/1pgxfhb/thematrix_theme_v10_y1_stock_firmware/"
-        },
-        {
             "name": "TwinPeaks",
             "folder": "TwinPeaks",
             "screenshot": "./TwinPeaks/screenshot.jpg",
             "description": "This theme depicts some of the memorable and quirky characters from the original series.",
             "author": "u/Neither-Classic2058",
             "authorUrl": "https://www.reddit.com/r/innioasis/comments/1n8bvzs/twinpeaks_theme_y1_stock_firmware/"
+        },
+        {
+            "folder": "Unseen",
+            "name": "Unseen",
+            "author": "Innioasis",
+            "authorUrl": "https://www.innioasis.com",
+            "description": "A minimalist theme with subtle visual elements, created by Innioasis for the Y1 device.",
+            "screenshot": "./Unseen/cover.png"
         },
         {
             "name": "Win95",
@@ -279,30 +303,6 @@
             "description": "A dark iPod inspired theme.",
             "author": "u/AkikoKumagara",
             "authorUrl": "https://www.github.com/AkikoKumagara/"
-        },
-        {
-            "folder": "HoloBubble",
-            "name": "HoloBubble",
-            "author": "Innioasis",
-            "authorUrl": "https://www.innioasis.com",
-            "description": "A holographic bubble-inspired theme created by Innioasis for the Y1 device.",
-            "screenshot": "./HoloBubble/cover.png"
-        },
-        {
-            "folder": "Unseen",
-            "name": "Unseen",
-            "author": "Innioasis",
-            "authorUrl": "https://www.innioasis.com",
-            "description": "A minimalist theme with subtle visual elements, created by Innioasis for the Y1 device.",
-            "screenshot": "./Unseen/cover.png"
-        },
-        {
-            "folder": "MelodyMuncher",
-            "name": "MelodyMuncher",
-            "author": "Innioasis",
-            "authorUrl": "https://www.innioasis.com",
-            "description": "The official reference theme by Innioasis, featuring comprehensive theme specification support and serving as a template for theme creators.",
-            "screenshot": "./MelodyMuncher/cover.png"
         }
     ]
 }
