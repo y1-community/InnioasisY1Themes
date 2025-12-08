@@ -4072,46 +4072,20 @@
 
                 // Strategy 2: If API didn't work, try common patterns
                 if (screenshotFiles.length === 0) {
-                    const imageExtensions = ['png', 'jpg', 'jpeg', 'gif'];
-                    const screenshotPatterns = [];
+                    // Only check the most common screenshot patterns to avoid overwhelming the server
+                    const screenshotPatterns = [
+                        'screenshot.png', 'screenshot.jpg', 'screenshot.jpeg', 'screenshot.gif',
+                        'screenshot2.png', 'screenshot2.jpg', 'screenshot2.jpeg', 'screenshot2.gif',
+                        'screenshot3.png', 'screenshot3.jpg', 'screenshot3.jpeg', 'screenshot3.gif',
+                        'screenshot4.png', 'screenshot4.jpg', 'screenshot4.jpeg', 'screenshot4.gif',
+                        'Screenshot.png', 'Screenshot.jpg', 'Screenshot.jpeg', 'Screenshot.gif'
+                    ];
 
-                    // Try numbered screenshots (screenshot1.jpg through screenshot20.jpg)
-                    for (let i = 1; i <= 20; i++) {
-                        for (const ext of imageExtensions) {
-                            screenshotPatterns.push(`screenshot${i}.${ext}`);
-                        }
-                    }
-
-                    // Try base screenshot patterns
-                    for (const ext of imageExtensions) {
-                        screenshotPatterns.push(`screenshot.${ext}`, `Screenshot.${ext}`, `SCREENSHOT.${ext}`);
-                    }
-
-                    // Note: Cover patterns are excluded - covers are only shown in the cover image at top right
-
-                    // Build list of potential screenshot files and deduplicate by base name
-                    const discoveredScreenshotMap = new Map(); // base name -> best format
-                    const extensionPriority = { 'gif': 1, 'jpg': 2, 'jpeg': 2, 'png': 3 };
-
-                    for (const filename of screenshotPatterns) {
-                        const ext = filename.split('.').pop().toLowerCase();
-                        const baseName = filename.substring(0, filename.lastIndexOf('.'));
-                        const priority = extensionPriority[ext] || 99;
-
-                        if (!discoveredScreenshotMap.has(baseName) || priority < discoveredScreenshotMap.get(baseName).priority) {
-                            discoveredScreenshotMap.set(baseName, {
-                                name: filename,
-                                priority: priority
-                            });
-                        }
-                    }
-
-                    // Convert map to array
-                    screenshotFiles = Array.from(discoveredScreenshotMap.values()).map(item => ({
-                        name: item.name,
-                        url: getGitHubRawUrl(item.name),
-                        localUrl: `./${encodeURIComponent(item.name)}`,
-                        download_url: getGitHubRawUrl(item.name)
+                    screenshotFiles = screenshotPatterns.map(filename => ({
+                        name: filename,
+                        url: getGitHubRawUrl(filename),
+                        localUrl: `./${encodeURIComponent(filename)}`,
+                        download_url: getGitHubRawUrl(filename)
                     }));
                 }
 
