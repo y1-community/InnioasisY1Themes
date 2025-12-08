@@ -1704,10 +1704,10 @@
                                 This theme page requires a <code style="background: rgba(255, 152, 0, 0.1); padding: 2px 6px; border-radius: 3px; font-family: monospace;">config.json</code> file in the theme folder to display theme information, assets, and screenshots.
                             </p>
                             <p style="margin-bottom: 15px; line-height: 1.6;">
-                                <strong>Theme creators:</strong> Please download the latest <code style="background: rgba(255, 152, 0, 0.1); padding: 2px 6px; border-radius: 3px; font-family: monospace;">index.html</code> file from the <a href="https://themes.innioasis.app/theme_html/" target="_blank" style="color: #667eea; text-decoration: underline; font-weight: 600;">theme_html directory</a> and place it in your theme folder before uploading to the repository.
+                                <strong>Theme creators:</strong> Please download the latest <code style="background: rgba(255, 152, 0, 0.1); padding: 2px 6px; border-radius: 3px; font-family: monospace;">index.html</code> file from the <a href="https://themes.innioasis.app/yourTheme/" target="_blank" style="color: #667eea; text-decoration: underline; font-weight: 600;">yourTheme directory</a> and place it in your theme folder before uploading to the repository.
                             </p>
                             <p style="margin-top: 20px; margin-bottom: 0;">
-                                <a href="https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/theme_html/index.html" download="index.html" target="_blank" style="display: inline-block; background: #667eea; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600; margin-right: 10px;">📥 Download index.html Template</a>
+                                <a href="https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/yourTheme/index.html" download="index.html" target="_blank" style="display: inline-block; background: #667eea; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600; margin-right: 10px;">📥 Download index.html Template</a>
                                 <a href="https://github.com/y1-community/InnioasisY1Themes" target="_blank" style="color: #667eea; text-decoration: underline;">Learn more on GitHub →</a>
                             </p>
                         `;
@@ -2214,30 +2214,129 @@
                 // Create a folder inside the zip with the theme name
                 const themeFolder = zip.folder(folderName);
                 
-                // Get all files from GitHub (recursive - handles subdirectories)
-                async function getAllFilesRecursive(path = folderName, basePath = '') {
-                    const apiUrl = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${path}`;
-                    const response = await fetch(apiUrl);
-                    if (!response.ok) {
-                        console.warn(`Failed to fetch ${path}, trying alternative method`);
-                        return [];
-                    }
-                    const items = await response.json();
+                // Get all files from the current directory (hosted site)
+                async function getAllFilesRecursive(path = '', basePath = '') {
+                    const fullPath = path ? `../${folderName}/${path}` : `../${folderName}`;
+                    
+                    // Try to fetch the directory listing from the server
+                    // Since we're on GitHub Pages, we need to manually list known files
+                    // We'll use a different approach: fetch config.json to get file patterns
                     const allFiles = [];
                     
-                    for (const item of items) {
-                        if (item.type === 'file') {
-                            allFiles.push({
-                                name: basePath ? `${basePath}/${item.name}` : item.name,
-                                download_url: item.download_url,
-                                path: item.path
-                            });
-                        } else if (item.type === 'dir') {
-                            // Recursively get files from subdirectories
-                            const subPath = item.path;
-                            const subBasePath = basePath ? `${basePath}/${item.name}` : item.name;
-                            const subFiles = await getAllFilesRecursive(subPath, subBasePath);
-                            allFiles.push(...subFiles);
+                    // Common theme files that should be included
+                    const commonFiles = [
+                        'config.json',
+                        'index.html',
+                        'README.md',
+                        'init.txt'
+                    ];
+                    
+                    // Common image patterns
+                    const imagePatterns = [
+                        'screenshot.jpg', 'screenshot.jpeg', 'screenshot.png', 'screenshot.gif',
+                        'screenshot2.jpg', 'screenshot2.jpeg', 'screenshot2.png', 'screenshot2.gif',
+                        'screenshot3.jpg', 'screenshot3.jpeg', 'screenshot3.png', 'screenshot3.gif',
+                        'screenshot4.jpg', 'screenshot4.jpeg', 'screenshot4.png', 'screenshot4.gif',
+                        'cover.jpg', 'cover.jpeg', 'cover.png', 'cover.gif',
+                        'Cover.jpg', 'Cover.jpeg', 'Cover.PNG', 'Cover.gif',
+                        'gregcover.png', 'cover_WS.png', 'cover_YS.png',
+                        'desk.png', 'desk.jpg', 'desk.gif',
+                        'desk_bg001.png', 'global_bg001.png',
+                        'download.gif', 'download.jpg',
+                        '1.png', '2.png', '3.png', '4.png',
+                        'transparent.png', 'mask.png', 'setting_mask.png',
+                        'pause.png', 'play.png', 'stop.png', 'playing.png'
+                    ];
+                    
+                    // Menu icons
+                    const menuIcons = [
+                        'Music.png', 'Videos.png', 'Photos.png', 'Audiobooks.png',
+                        'FM Radio.png', 'Bluetooth.png', 'Settings.png', 'Now Playing.png',
+                        'Launcher.png', 'Shuffle Quick.png'
+                    ];
+                    
+                    // Battery icons
+                    const batteryIcons = [
+                        'battery.001.png', 'battery.002.png', 'battery.003.png', 'battery.004.png',
+                        'battery_001.png', 'battery_002.png', 'battery_003.png', 'battery_004.png',
+                        'Battery1.png', 'Battery2.png', 'Battery3.png', 'Battery4.png',
+                        'batterycharge.001.png', 'batterycharge.002.png', 'batterycharge.003.png', 'batterycharge.004.png',
+                        'batterycharge_001.png', 'batterycharge_002.png', 'batterycharge_003.png', 'batterycharge_004.png',
+                        'BatteryCharge1.png', 'BatteryCharge2.png', 'BatteryCharge3.png', 'BatteryCharge4.png'
+                    ];
+                    
+                    // Settings icons
+                    const settingsIcons = [
+                        'Backlight_001@1x.png', 'Backlight_002@1x.png', 'Backlight_003@1x.png', 'Backlight_004@1x.png',
+                        'Backlight_005@1x.png', 'Backlight_006@1x.png', 'Backlight_007@1x.png', 'Backlight_008@1x.png',
+                        'Brightness@1x.png', 'Change Theme@1x.png', 'Clear cache@1x.png', 'Date & Time@1x.png',
+                        'Display battery_off@1x.png', 'Display battery_on@1x.png',
+                        'Equalizer_classical@1x.png', 'Equalizer_dance@1x.png', 'Equalizer_flat@1x.png',
+                        'Equalizer_folk@1x.png', 'Equalizer_heavy metal@1x.png', 'Equalizer_hiphop@1x.png',
+                        'Equalizer_jazz@1x.png', 'Equalizer_normal@1x.png', 'Equalizer_pop@1x.png', 'Equalizer_rock@1x.png',
+                        'Factory@1x.png', 'Key lock_off@1x.png', 'Key lock_on@1x.png',
+                        'Key tone_off@1x.png', 'Key tone_on@1x.png',
+                        'Key vibration_off@1x.png', 'Key vibration_on@1x.png',
+                        'Language@1x.png', 'Repeat_all@1x.png', 'Repeat_off@1x.png', 'Repeat_one@1x.png',
+                        'Shuffle_off@1x.png', 'Shuffle_on@1x.png', 'Shutdown@1x.png',
+                        'Timed shutdown_001@1x.png', 'Timed shutdown_002@1x.png', 'Timed shutdown_003@1x.png',
+                        'Timed shutdown_004@1x.png', 'Timed shutdown_005@1x.png', 'Timed shutdown_006@1x.png',
+                        'Timed shutdown_007@1x.png', 'Wallpaper@1x.png', 'Wallpapper@1x.png',
+                        'file_ext_off.png', 'file_ext_on.png'
+                    ];
+                    
+                    // Theme-specific files
+                    const themeSpecificFiles = [
+                        'RightArrow.png', 'ItemSelect.png', 'OptionSelect.png',
+                        'Background1.png', 'Background2.png',
+                        // Font files
+                        'opensans-condbold.ttf', 'opensans-condlight.ttf', 'minecraft.ttf',
+                        'Courier New Bold.ttf', 'Font.ttf',
+                        // Additional theme files
+                        'calculator.png', 'calendar.png', 'ebook.png', 'folder.png',
+                        'music_file.png', 'audiobookPlaying.png', 'fmPlaying.png',
+                        'blConnected.png', 'blConnecting.png', 'blDisconnected.png',
+                        'headsetWithoutMic.png'
+                    ];
+                    
+                    // Theme-specific prefixed files
+                    const prefixedPatterns = [
+                        '@ThM_cover.png', '@ThM_icon.png', '@ThM_desktop_wallpaper.png', '@ThM_global_wallpaper.png',
+                        '@ThM_Music.png', '@ThM_Videos.png', '@ThM_Photos.png', '@ThM_Audiobooks.png',
+                        '@ThM_FM Radio.png', '@ThM_Bluetooth.png', '@ThM_Settings.png', '@ThM_Now Playing.png',
+                        '@ThM_pause.png', '@ThM_play.png', '@ThM_stop.png',
+                        '@ThM_itemBackground.png', '@ThM_itemBackgroundClear.png', '@ThM_itemRightArrow.png',
+                        '@ThM_itemSelectedBackground.png', '@ThM_dialogOptionSelectedBackground.png',
+                        '@ThM_setting_mask.png',
+                        '@Be_cover.png', '@Cup_cover.png', '@Pris_cover.png'
+                    ];
+                    
+                    const allPatterns = [
+                        ...commonFiles,
+                        ...imagePatterns,
+                        ...menuIcons,
+                        ...batteryIcons,
+                        ...settingsIcons,
+                        ...themeSpecificFiles,
+                        ...prefixedPatterns
+                    ];
+                    
+                    // Try to fetch each file
+                    for (const fileName of allPatterns) {
+                        const filePath = basePath ? `${basePath}/${fileName}` : fileName;
+                        const fileUrl = `../${folderName}/${filePath}`;
+                        
+                        try {
+                            const response = await fetch(fileUrl, { method: 'HEAD' });
+                            if (response.ok) {
+                                allFiles.push({
+                                    name: filePath,
+                                    download_url: fileUrl,
+                                    path: filePath
+                                });
+                            }
+                        } catch (e) {
+                            // File doesn't exist, continue
                         }
                     }
                     
@@ -2247,7 +2346,7 @@
                 const allFiles = await getAllFilesRecursive();
                 
                 if (allFiles.length === 0) {
-                    throw new Error('No files found. The theme may be empty or the repository structure has changed.');
+                    throw new Error('No files found. The theme may be empty or inaccessible.');
                 }
                 
                 let processed = 0;
@@ -2636,7 +2735,7 @@
                     </div>
                     <div style="text-align: center; margin-top: 20px;">
                         <button id="download-index-html-btn" style="display: inline-block; background: #667eea; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; margin-right: 10px; border: none; cursor: pointer; font-size: 1rem;">📥 Download index.html</button>
-                        <a href="https://themes.innioasis.app/theme_html/" target="_blank" style="display: inline-block; color: #667eea; text-decoration: underline; padding: 12px 0;">Learn more →</a>
+                        <a href="https://themes.innioasis.app/yourTheme/" target="_blank" style="display: inline-block; color: #667eea; text-decoration: underline; padding: 12px 0;">Learn more →</a>
                     </div>
                 `;
                 
@@ -4197,10 +4296,10 @@
                                 This theme page requires a <code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">config.json</code> file in the theme folder to display theme assets and information.
                             </p>
                             <p style="margin-bottom: 15px; line-height: 1.6;">
-                                <strong>Theme creators:</strong> Please download the latest <code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">index.html</code> file from the <a href="https://themes.innioasis.app/theme_html/" target="_blank" style="color: #667eea; text-decoration: underline;">theme_html directory</a> and place it in your theme folder before uploading to the repository.
+                                <strong>Theme creators:</strong> Please download the latest <code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">index.html</code> file from the <a href="https://themes.innioasis.app/yourTheme/" target="_blank" style="color: #667eea; text-decoration: underline;">yourTheme directory</a> and place it in your theme folder before uploading to the repository.
                             </p>
                             <p style="margin-top: 20px;">
-                                <a href="https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/theme_html/index.html" download="index.html" target="_blank" style="display: inline-block; background: #667eea; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;">📥 Download index.html Template</a>
+                                <a href="https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/yourTheme/index.html" download="index.html" target="_blank" style="display: inline-block; background: #667eea; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;">📥 Download index.html Template</a>
                             </p>
                         </div>
                     `;
