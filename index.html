@@ -3336,11 +3336,20 @@
             return installed;
         }
 
-        // Sort themes alphabetically by name
+        // Sort themes alphabetically by name (ignoring "The " prefix)
         function sortThemes() {
             themes.sort((a, b) => {
-                const nameA = (a.name || a.folder || '').toLowerCase();
-                const nameB = (b.name || b.folder || '').toLowerCase();
+                let nameA = (a.name || a.folder || '').toLowerCase();
+                let nameB = (b.name || b.folder || '').toLowerCase();
+                
+                // Remove "The " prefix for sorting purposes
+                if (nameA.startsWith('the ')) {
+                    nameA = nameA.substring(4);
+                }
+                if (nameB.startsWith('the ')) {
+                    nameB = nameB.substring(4);
+                }
+                
                 return nameA.localeCompare(nameB);
             });
         }
