@@ -241,6 +241,15 @@
             "authorUrl": null
         },
         {
+            "name": "Themeless",
+            "folder": "Themeless",
+            "screenshot": "./Themeless/screenshot.jpg",
+            "description": "A blank canvas to start. Drop in your own desktop_wallpaper.png and global_wallpaper.png images in the theme folder, or use the Photos feature on the Y1 to set your own wallpaper images.",
+            "author": "u/Neither-Classic2058",
+            "authorUrl": ""
+        },
+        
+        {
             "name": "TwinPeaks",
             "folder": "TwinPeaks",
             "screenshot": "./TwinPeaks/screenshot.jpg",
