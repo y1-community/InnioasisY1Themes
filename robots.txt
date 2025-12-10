@@ -1,0 +1,11 @@
+# robots.txt for https://themes.innioasis.app
+# Allow all search engines to crawl all content
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://themes.innioasis.app/sitemap.xml
+
+# Crawl delay (optional, helps prevent overload)
+Crawl-delay: 1
