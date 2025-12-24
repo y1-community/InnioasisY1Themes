@@ -11,7 +11,7 @@
         {
             "name": "Apple Music",
             "folder": "AppleMusic",
-            "screenshot": "./AppleMusic/cover_YS.jpg",
+            "screenshot": "./AppleMusic/cover_YS.png",
             "description": "Simple Apple Music-like theme. Built upon u/Neither-Classic2058's YellowSub theme.",
             "author": "sipped",
             "authorUrl": "https://sipped.org"
@@ -27,7 +27,7 @@
         {
             "name": "Black&White",
             "folder": "BlackWhite",
-            "screenshot": "./BlackWhite/cover_YS.jpg",
+            "screenshot": "./BlackWhite/cover_YS.png",
             "description": "Simple Black&White theme. Built upon u/Neither-Classic2058's YellowSub theme.",
             "author": "sipped",
             "authorUrl": "https://sipped.org"
@@ -386,4 +386,5 @@
             "authorUrl": ""
         }
     ]
+
 }
