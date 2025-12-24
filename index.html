@@ -127,6 +127,28 @@
             margin: 18px 0 8px;
         }
 
+        .search-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-top: 18px;
+        }
+
+        #theme-search {
+            flex: 1 1 420px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-family: Inter, sans-serif;
+            outline: none;
+        }
+
+        #theme-search::placeholder {
+            color: var(--text-secondary);
+        }
+
         #rockbox-btn {
             background: var(--bg-card);
             color: var(--text-primary);
@@ -172,6 +194,10 @@
             <p>Download themes for your Y1. Visit the <a href='https://innioasis.app/guide.html'>themes guide</a> to learn how to upload them to your
                 device.</p>
         </header>
+
+        <div class="search-row">
+            <input id="theme-search" type="search" placeholder="Search themes by name, author, description..." aria-label="Search themes" />
+        </div>
 
         <div class="cast-div" style="margin-top: 3rem;">
             <a href="https://innioasis.app/guide.html#c_themes" class="btn" style="font-family: Inter; padding: .875rem 2rem; font-weight: normal;"><i class="fas fa-plus" style="margin-right: 4px"></i>Create and submit themes</a>
@@ -251,6 +277,36 @@
             }
         }
 
+        function debounce(fn, wait) {
+            let t;
+            return function(...args) {
+                clearTimeout(t);
+                t = setTimeout(() => fn.apply(this, args), wait);
+            };
+        }
+
+        const searchInput = document.getElementById('theme-search');
+
+        function applyFilters() {
+            const query = (searchInput && searchInput.value || '').trim().toLowerCase();
+            const onlyOn = onlyOnDeviceCheckbox && onlyOnDeviceCheckbox.checked;
+            const cards = document.querySelectorAll('.theme-card');
+            for (const card of cards) {
+                const name = (card.querySelector('.theme-name')?.textContent || '').toLowerCase();
+                const desc = (card.querySelector('.theme-desc')?.textContent || '').toLowerCase();
+                const author = (card.querySelector('.theme-author')?.textContent || '').toLowerCase();
+                const matches = !query || name.includes(query) || desc.includes(query) || author.includes(query);
+                const onDevice = !onlyOn || card.classList.contains('on-device');
+                card.style.display = (matches && onDevice) ? '' : 'none';
+            }
+        }
+
+        function updateOnDeviceFilter() {
+            applyFilters();
+        }
+
+        if (searchInput) searchInput.addEventListener('input', debounce(() => applyFilters(), 200));
+
         if (supportDirectInstall) {
             bannerEl.style.display = 'block';
             chooseFolderBtn.onclick = async () => {
@@ -302,9 +358,9 @@
                     if (filterDiv) filterDiv.style.display = 'block';
                     if (onlyOnDeviceCheckbox) {
                         onlyOnDeviceCheckbox.checked = false;
-                        onlyOnDeviceCheckbox.onchange = updateOnDeviceFilter;
+                        onlyOnDeviceCheckbox.onchange = applyFilters;
                     }
-                    updateOnDeviceFilter();
+                    applyFilters();
                 } catch (err) {
                     if (err.name !== 'AbortError') {
                         alert('Failed to access folder: ' + err.message);
@@ -653,7 +709,7 @@
                         } catch (e) {}
                     }, 2600);
                     try {
-                        if (onlyOnDeviceCheckbox && onlyOnDeviceCheckbox.checked) updateOnDeviceFilter();
+                        if (onlyOnDeviceCheckbox && onlyOnDeviceCheckbox.checked) applyFilters();
                     } catch (e) {}
                 } catch (e) {}
 
@@ -763,9 +819,6 @@
             const img = document.createElement('img');
             img.src = resolveScreenshotPath(theme.screenshot);
             img.alt = safeText(theme.name);
-            img.onerror = function() {
-                this.src = 'placeholder.png'
-            };
 
             const n = document.createElement('a');
             n.className = 'theme-name';
@@ -784,6 +837,8 @@
                 a.innerHTML = `by <a href="https://innioasis.com" target="_blank" rel="noopener">Innioasis</a>`;
             } else if (theme.author === 'u/ope-nz | Normal-Curve-1642') {
                 a.innerHTML = `by <a href="https://reddit.com/u/Normal-Curve-1642" target="_blank" rel="noopener">Normal-Curve-1642</a>`;
+            } else if (theme.author === 'sipped') {
+                a.innerHTML = `by <a href="https://sipped.org" target="_blank" rel="noopener">sipped</a>`;
             } else {
                 a.innerHTML = `by <a href="https://reddit.com/${theme.author}" target="_blank" rel="noopener">${theme.author}</a>`;
             }
@@ -795,7 +850,260 @@
             const dl = document.createElement('button');
             dl.className = 'btn';
             const backgroundimg = '3.png' || 'Background1.png' || '@Pris_itemSelectedBackground.png';
-            dl.style.backgroundImage = `url("https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/${theme.folder.replace(/^\.\/+/, '')}/${backgroundimg}")`;
+            const themeButtonStyles = {
+                'Aero': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Aero/4.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '6px'
+                },
+                'Apple Music': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/AppleMusic/4_YS.png)',
+                    fontFamily: 'Open Sans, Inter',
+                    borderRadius: '12px'
+                },
+                'Aquarium': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Aquarium/4.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '6px'
+                },
+                'Black&White': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/BlackWhite/4_YS.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '4px'
+                },
+                'Be': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Be/%40Be_dialogOptionSelectedBackground.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '10px'
+                },
+                'CabinFever': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/CabinFever/4.png.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '10px'
+                },
+                'Circular': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Circular/4_YS.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '8px'
+                },
+                'Cupertino': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Cupertino/%40Cup_dialogOptionSelectedBackground.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '12px'
+                },
+                'DELTARUNE': {
+                    backgroundImage: 'url(https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRu0p-imGTLKgZ6-sjHUxzWjLCdwye-QMwVcA&s)',
+                    fontFamily: 'Comic Sans MS',
+                    borderRadius: '0px'
+                },
+                'Elsie D': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/ElsieD/3.png)',
+                    fontFamily: 'monospace',
+                    borderRadius: '6px'
+                },
+                'Fallout': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Fallout/4.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '8px'
+                },
+                'Girlypop': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Girlypop/4.png)',
+                    fontFamily: 'Comic Sans MS',
+                    borderRadius: '20px'
+                },
+                'GTA3': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/GTA3/1.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '8px'
+                },
+                'GZA': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/GZA/3.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '8px'
+                },
+                'HoloBubble': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/HoloBubble/4.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '12px'
+                },
+                'HughBliss': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/HughBliss/4.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '8px'
+                },
+                'iOS 26 Theme': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/iOS26Theme/4.png)',
+                    fontFamily: 'Open Sans, Inter',
+                    borderRadius: '16px'
+                },
+                'iOS Theme': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/iOSTheme/4.png)',
+                    fontFamily: 'Open Sans, Inter',
+                    borderRadius: '16px'
+                },
+                'iPod-ish': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/iPod-ish/4.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '12px'
+                },
+                'JulesVerne': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/JulesVerne/4.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '6px'
+                },
+                'Lain-ish': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Lain-ish/4.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '8px'
+                },
+                'LCD': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/LCD/4.png)',
+                    fontFamily: 'monospace',
+                    borderRadius: '6px'
+                },
+                'Rudy': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Rudy/4.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '12px'
+                },
+                'The Matrix': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/TheMatrix/%40ThM_global_wallpaper.png)',
+                    fontFamily: 'monospace',
+                    borderRadius: '6px'
+                },
+                'UNDERTALE': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/UNDERTALE/BACKUP.png)',
+                    fontFamily: 'Comic Sans MS',
+                    borderRadius: '0px'
+                },
+                'MelodyMuncher': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/MelodyMuncher/dialog_selected.png)',
+                    fontFamily: 'Comic Sans MS',
+                    borderRadius: '20px'
+                },
+                'Minecraft': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Minecraft/4.png)',
+                    fontFamily: 'monospace',
+                    borderRadius: '8px'
+                },
+                'Mini Medieval': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/MiniMedieval/Background2.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '12px'
+                },
+                'MonsterVision': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/MonsterVision/4.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '8px'
+                },
+                'Naruto': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Naruto/Background2.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '12px'
+                },
+                'NeonNights': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/NeonNights/4.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '8px'
+                },
+                'Prisoner': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Prisoner/%40Pris_dialogOptionSelectedBackground.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '12px'
+                },
+                'Red Dead Redemption': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/RedDeadRedemption/Background1.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '8px'
+                },
+                'Rudy': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Rudy/4.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '12px'
+                },
+                'SpongeBob Purple Pineapple': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/SpongeBobPurplePineapple/Background1.png)',
+                    fontFamily: 'Comic Sans MS',
+                    borderRadius: '20px'
+                },
+                'Stranger Things': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/StrangerThings/4.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '8px'
+                },
+                'Themeless': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Themeless/3.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '4px'
+                },
+                'TwinPeaks': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/TwinPeaks/3.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '8px'
+                },
+                'Unseen': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Unseen/desk.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '12px'
+                },
+                'Viva Pinata': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/VivaPinata/%40VP_dialogOptionSelectedBackground.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '20px'
+                },
+                'Win95': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Win95Theme/4.png)',
+                    fontFamily: 'MS Sans Serif, Arial, sans-serif',
+                    borderRadius: '0px'
+                },
+                'Woodstock': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Woodstock/1.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '12px'
+                },
+                'Wu-Tang': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Wu-Tang/1.png)',
+                    fontFamily: 'Comic Sans MS',
+                    borderRadius: '8px',
+                    color: '#000000'
+                },
+                'XFiles': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/XFiles/4.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '12px'
+                },
+                'YellowSub': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/YellowSub/1_YS.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '10px',
+                    color: '#000000'
+                },
+                'yPod': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/yPod/1sel.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '6px'
+                },
+                'yPodDark': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/yPodDark/1sel.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '6px'
+                },
+                'ZuneY': {
+                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/ZuneY/%40Z_dialogOptionSelectedBackground.png)',
+                    fontFamily: 'Inter',
+                    borderRadius: '12px'
+                }
+            };
+
+            const buttonStyle = themeButtonStyles[theme.name] || {
+                backgroundImage: 'none',
+                fontFamily: 'Inter, sans-serif',
+                borderRadius: '8px'
+            };
+
+            dl.style.backgroundImage = buttonStyle.backgroundImage;
+            dl.style.borderRadius = buttonStyle.borderRadius;
+
             dl.style.backgroundSize = 'cover';
             dl.style.backgroundPosition = 'center';
             dl.style.fontWeight = 'normal';
@@ -803,8 +1111,11 @@
             dl.innerHTML = '<i class="fa-solid fa-download"></i> Download';
             dl.type = 'button';
             dl.onclick = () => downloadTheme(theme, dl);
+            dl.style.color = buttonStyle.color || 'white';
 
             dl.style.fontFamily = 'Inter, sans-serif';
+
+            dl.style.fontFamily = buttonStyle.fontFamily;
 
             const di = document.createElement('button');
             di.className = 'btn';
