@@ -9,12 +9,28 @@
             "authorUrl": "https://www.reddit.com/r/innioasis/comments/1n6nhw9/repost_aero_theme_y1_stock_firmware/"
         },
         {
+            "name": "Apple Music",
+            "folder": "AppleMusic",
+            "screenshot": "./AppleMusic/cover_YS.jpg",
+            "description": "Simple Apple Music-like theme. Built upon u/Neither-Classic2058's YellowSub theme.",
+            "author": "sipped",
+            "authorUrl": "https://sipped.org"
+        },
+        {
             "name": "Aquarium",
             "folder": "Aquarium",
             "screenshot": "./Aquarium/screenshot.gif",
             "description": "This theme is a little bit of an experiment. The angelfish moves as you spin the wheel to select a menu item.",
             "author": "u/Neither-Classic2058",
             "authorUrl": "https://www.reddit.com/r/innioasis/comments/1o0f1w4/aquarium_10_theme_y1_stock_firmware/"
+        },
+        {
+            "name": "Black&White",
+            "folder": "BlackWhite",
+            "screenshot": "./BlackWhite/cover_YS.jpg",
+            "description": "Simple Black&White theme. Built upon u/Neither-Classic2058's YellowSub theme.",
+            "author": "sipped",
+            "authorUrl": "https://sipped.org"
         },
         {
             "name": "Be",
@@ -33,12 +49,28 @@
             "authorUrl": "https://www.reddit.com/r/innioasis/comments/1oziaew/cabinfever_theme_v10_y1_stock_firmware/"
         },
         {
+            "name": "Circular",
+            "folder": "Circular",
+            "screenshot": "./Circular/cover_YS.png",
+            "description": "Circular, a Spotify inspired theme. Built upon u/Neither-Classic2058's YellowSub theme.",
+            "author": "sipped",
+            "authorUrl": "https://sipped.org"
+        },
+        {
             "name": "Cupertino",
             "folder": "Cupertino",
             "screenshot": "./Cupertino/screenshot.png",
             "description": "This theme is inspired by the Apple iPod Classic.",
             "author": "u/Neither-Classic2058",
             "authorUrl": ""
+        },
+        {
+            "name": "DELTARUNE",
+            "folder": "DELTARUNE",
+            "screenshot": "./DELTARUNE/cover1.png",
+            "description": "Inspired by PartOfTheDream42's UNDERTALE theme. Sprites: Toby Fox. Font: Haley Wakamatsu.",
+            "author": "u/HiddenLurker6969",
+            "authorUrl": "https://www.reddit.com/r/innioasis/comments/1mt2iw9/new_y1_stock_os_theme_deltarune/"
         },
         {
             "name": "Elsie D",
@@ -145,12 +177,28 @@
             "authorUrl": "https://github.com/ope-nz/InnoasisY1Themes"
         },
         {
+            "name": "Rudy",
+            "folder": "Rudy",
+            "screenshot": "./Rudy/screenshot.jpg",
+            "description": "Rankin-Bass Rudolph the Rednosed Reindeer and friends. It is a whimsical theme more as a conversation piece than as a seriously usable theme.",
+            "author": "u/Neither-Classic2058",
+            "authorUrl": "https://www.reddit.com/r/innioasis/comments/1p39trv/rudy_theme_v10_y1_stock_firmware/"
+        },
+        {
             "name": "The Matrix",
             "folder": "TheMatrix",
             "screenshot": "./TheMatrix/screenshot.jpg",
             "description": "Time to enter The Matrix",
             "author": "u/Neither-Classic2058",
             "authorUrl": "https://www.reddit.com/r/innioasis/comments/1pgxfhb/thematrix_theme_v10_y1_stock_firmware/"
+        },
+        {
+            "name": "UNDERTALE",
+            "folder": "UNDERTALE",
+            "screenshot": "./UNDERTALE/cover.png",
+            "description": "A Toby Fox UNDERTALE inspired theme. Icons used in the settings menu are taken from the \"iPod-ish\" theme.",
+            "author": "u/PartOfTheDream42",
+            "authorUrl": "https://www.reddit.com/r/innioasis/comments/1lnu5tv/undertale_theme_for_innioasis_y1/"
         },
         {
             "folder": "MelodyMuncher",
