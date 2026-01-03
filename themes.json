@@ -257,6 +257,14 @@
             "authorUrl": "https://www.reddit.com/r/innioasis/comments/1nom6mr/the_prisoner_theme_10_y1_stock_firmware/"
         },
         {
+            "name": "Pusheen",
+            "folder": "Pusheen",
+            "screenshot": "./Pusheen/screenshot.jpg",
+            "description": "A grey Pusheen cat theme with pink accents",
+            "author": "rottenEgghead",
+            "authorUrl": "https://github.com/rottenEgghead"
+        },
+        {
             "name": "Red Dead Redemption",
             "folder": "RDR",
             "screenshot": "./RDR/Cover.png",
@@ -388,3 +396,4 @@
     ]
 
 }
+
