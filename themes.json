@@ -177,6 +177,14 @@
             "authorUrl": "https://github.com/ope-nz/InnoasisY1Themes"
         },
         {
+            "name": "PinkMartini",
+            "folder": "PinkMartini",
+            "screenshot": "./PinkMartini/screenshot.png",
+            "description": "This theme is a pink variation of Cupertino with custom icons.",
+            "author": "u/Neither-Classic2058",
+            "authorUrl": ""
+        },        
+        {
             "name": "Rudy",
             "folder": "Rudy",
             "screenshot": "./Rudy/screenshot.jpg",
@@ -388,3 +396,4 @@
     ]
 
 }
+
