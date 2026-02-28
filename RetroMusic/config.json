@@ -3,19 +3,19 @@
         "title": "RetroMusic",
         "author": "u/fabiomela",
         "authorUrl": "https://github.com/fabiomela",
-        "description": "A retro music player theme inspired by ..."
+        "description": "A retro colourful music player theme."
     },
     "themeCover": "cover.png",
-    "desktopWallpaper": "desk_bg001.png",
-    "globalWallpaper": "global_bg001.png",
+    "desktopWallpaper": "Property 1=desktopWallpaper.png",
+    "globalWallpaper": "Property 1=desktopWallpaper.png",
     "desktopMask": "",
-    "fontFamily": "Doto.ttf",
+    "fontFamily": "BarlowCondensed-Medium.ttf",
     "itemConfig": {
-        "itemTextColor": "#2F4554",
-        "itemSelectedTextColor": "#90C0CC",
-        "itemSelectedBackground": "1sel.png",
-        "itemBackground": "1unsel.png",
-        "itemRightArrow": "2.png"
+        "itemTextColor": "#F3B562",
+        "itemSelectedTextColor": "#5C4B51",
+        "itemSelectedBackground": "Property 1=selectedBG.png",
+        "itemBackground": "Property 1=unselectBG.png",
+        "itemRightArrow": "open_arrow.png"
     },
     "dialogConfig": {
         "dialogOptionBackground": "3.png",
@@ -25,20 +25,20 @@
         "dialogBackgroundColor": "#B6AC89"
     },
     "menuConfig": {
-        "menuBackgroundColor": "#000000",
+        "menuBackgroundColor": "",
         "menuItemBackground": "",
-        "menuItemTextColor": "#434136",
-        "menuItemSelectedBackground": "1.png",
-        "menuItemSelectedTextColor": "#9BA185"
+        "menuItemTextColor": "#F3B562",
+        "menuItemSelectedBackground": "Property 1=menuSelected.png",
+        "menuItemSelectedTextColor": "#5C4B51"
     },
     "homePageConfig": {
-        "nowPlaying": "Now Playing.png",
+        "nowPlaying": "NowPlaying.png",
         "music": "Music.png",
         "video": "Videos.png",
         "audiobooks": "Audiobooks.png",
         "photos": "Photos.png",
-        "fm": "FM Radio.png",
-        "bluetooth": "Bluetooth.png",
+        "fm": "fmRadio.png",
+        "bluetooth": "bt.png",
         "settings": "Settings.png",
         "shuffleQuick": "Shuffle Quick.png"
     },
@@ -125,8 +125,8 @@
         ]
     },
     "playerConfig": {
-        "progressTextColor": "#FF0000",
-        "progressColor": "#9BA185",
-        "progressBackgroundColor": "#33FFFF"
+        "progressTextColor": "#F2EBBF",
+        "progressColor": "#F06060",
+        "progressBackgroundColor": "#F2EBBF"
     }    
 }
