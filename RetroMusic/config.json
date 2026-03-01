@@ -112,16 +112,16 @@
         "headsetWithoutMic": "headset1.png",
         "statusBarColor": "#403438",
         "battery": [
-           "battery.001.png",
-           "battery.002.png",
-           "battery.003.png",
-           "battery.004.png"
+           "battery_android_frame_1.png",
+           "battery_android_frame_3.png",
+           "battery_android_frame_5.png",
+           "battery_android_frame_full.png"
         ],
         "batteryCharging": [
-           "batterycharge.001.png",
-           "batterycharge.002.png",
-           "batterycharge.003.png",
-           "batterycharge.004.png"
+           "batt_charg_1.png",
+           "batt_charg_2.png",
+           "batt_charg_3.png",
+           "batt_charg_4.png"
         ]
     },
     "playerConfig": {
