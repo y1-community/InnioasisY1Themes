@@ -99,7 +99,7 @@
         "fileExtensionOff": "file_ext_off.png"
     },
     "statusConfig": {
-        "statusTextColor": "#FF0000",
+        "statusTextColor": "#5C4B51",
         "playing": "play.png",
         "audiobookPlaying": "",
         "pause": "pause.png",
@@ -110,7 +110,7 @@
         "blDisconnected": "bl1.png",
         "headsetWithMic": "headset2.png",
         "headsetWithoutMic": "headset1.png",
-        "statusBarColor": "#747a60",
+        "statusBarColor": "#403438",
         "battery": [
            "battery.001.png",
            "battery.002.png",
