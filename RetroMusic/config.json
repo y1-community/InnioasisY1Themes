@@ -6,23 +6,23 @@
         "description": "A retro colourful music player theme."
     },
     "themeCover": "cover.png",
-    "desktopWallpaper": "Property 1=desktopWallpaper.png",
-    "globalWallpaper": "Property 1=desktopWallpaper.png",
+    "desktopWallpaper": "globalWallpaper.png",
+    "globalWallpaper": "globalWallpaper.png",
     "desktopMask": "",
     "fontFamily": "BarlowCondensed-Medium.ttf",
     "itemConfig": {
         "itemTextColor": "#F3B562",
         "itemSelectedTextColor": "#5C4B51",
         "itemSelectedBackground": "Property 1=selectedBG.png",
-        "itemBackground": "Property 1=unselectBG.png",
+        "itemBackground": "",
         "itemRightArrow": "open_arrow.png"
     },
     "dialogConfig": {
-        "dialogOptionBackground": "3.png",
-        "dialogOptionTextColor": "#434136",
-        "dialogOptionSelectedBackground": "4.png",
-        "dialogOptionSelectedTextColor": "#B6AC89",
-        "dialogBackgroundColor": "#B6AC89"
+        "dialogOptionBackground": "Option.png",
+        "dialogOptionTextColor": "#403438",
+        "dialogOptionSelectedBackground": "OptionSelected.png",
+        "dialogOptionSelectedTextColor": "#F2EBBF",
+        "dialogBackgroundColor": "#F2EBBF"
     },
     "menuConfig": {
         "menuBackgroundColor": "",
@@ -78,7 +78,7 @@
         "keyToneOff": "Key tone_off@1x.png",
         "keyVibrationOn": "Key vibration_on@1x.png",
         "keyVibrationOff": "Key vibration_off@1x.png",
-        "wallpaper": "Wallpaper@1x.png",
+        "wallpaper": "globalWallpaper.png",
         "backlight_10": "Backlight_001@1x.png",
         "backlight_15": "Backlight_003@1x.png",
         "backlight_30": "Backlight_004@1x.png",
