@@ -1,0 +1,36 @@
+{
+  "workbench.colorCustomizations": {
+    "activityBar.background": "#9B4207",
+    "titleBar.activeBackground": "#F89E63",
+    "titleBar.activeForeground": "#2C1302",
+    "titleBar.inactiveBackground": "#9B4207",
+    "titleBar.inactiveForeground": "#2C1302",
+    "statusBar.background": "#AE4B08",
+    "statusBar.foreground": "#FFFAF8",
+    "statusBar.debuggingBackground": "#AE4B08",
+    "statusBar.debuggingForeground": "#FFFAF8",
+    "statusBar.noFolderBackground": "#AE4B08",
+    "statusBar.noFolderForeground": "#FFFAF8"
+  },
+  "todo.symbols.box": "❍",
+  "todo.statistics.project.enabled": true,
+  "todo.statistics.statusbar.enabled": true,
+  "todo.embedded.providers.ag.regex": "(?:#|// @|//|/\\*+|<!--|--|\\* @|\\{!|\\{\\{!--|\\{\\{!) *(TODO|FIXME|FIX|BUG|UGLY|HACK|NOTE|IDEA|REVIEW|DEBUG|OPTIMIZE|TOTEST)",
+  "todo.embedded.providers.rg.regex": "(?:#|// @|//|/\\*+|<!--|--|\\* @|\\{!|\\{\\{!--|\\{\\{!) *(TODO|FIXME|FIX|BUG|UGLY|HACK|NOTE|IDEA|REVIEW|DEBUG|OPTIMIZE|TOTEST)",
+  "todo.embedded.regex": "(?:<!-- *)?(?:#|// @|//|/\\*+|<!--|--|\\* @|\\{!|\\{\\{!--|\\{\\{!) *(TODO|FIXME|FIX|BUG|UGLY|HACK|NOTE|IDEA|REVIEW|DEBUG|OPTIMIZE|TOTEST)(?:\\s*\\([^)]+\\))?:?(?!\\w)(?: *-->| *\\*/| *!}| *--}}| *}}|(?= *(?:[^:]//|/\\*+|<!--|@|--|\\{!|\\{\\{!--|\\{\\{!))|((?: +[^\\n@]*?)(?= *(?:[^:]//|/\\*+|<!--|@|--(?!>)|\\{!|\\{\\{!--|\\{\\{!))|(?: +[^@\\n]+)?))",
+  "todo.archive.sortByDate": true,
+  "todo.colors.done": "#b9deb1", // Done todo color 017d3d b9deb1
+  "todo.colors.cancelled": "#ffc9dd", // f92672
+  "todo.colors.tag": "#d98600",
+  "todo.colors.comment": "#bab7af", // bab7af 807e79
+  "todo.colors.project": "#004ce3", // Project color #1299b3
+  "todo.colors.projectStatistics": "#2d719c", // Project statistics color,
+  "todo.tags.names": ["critical", "high", "low", "today", "info", "fabio", "bug", "armando", "done", "started"], // Special tags' names
+  // "todo.colors.tags.background": ["#e54545", "#e59f45", "#e5d145", "#ae81ff", "#6b6b6b", "#2d719c" , "#bf000a"],
+  // "todo.colors.tags.foreground": ["#FFFFFF", "#000000", "#000000", "#000000", "#FFFFFF", "#FFFFFF" , "#FFFFFF"],
+  "todo.colors.tags.foreground": ["#FFFFFF", "#FFFFFF", "#ff9500", "#8e52ff", "#FFFFFF", "#2d719c", "#FFFFFF", "#00a87e", "#009152", "#d230ff"],
+  "todo.colors.tags.background": ["#e54545", "#ff7817", "#fff4bd", "", "#6b6b6b", "", "#bf000a", "", "", ""],
+  "todo.statistics.statusbar.text": "$(check) [finished]/[all] ([percentage]%) -[pending]", // Template used for rendering the text
+  "todo.statistics.project.text": "(❍[pending] [est]) [✔[done] [est-finished]]",
+  "todo.statistics.statusbar.tooltip": "[pending] Pending - [done] Done - [cancelled] Cancelled"
+}
