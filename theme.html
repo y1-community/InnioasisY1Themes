@@ -59,31 +59,34 @@
         top: 0;
         z-index: 1200;
         display: grid;
-        grid-template-columns: auto minmax(260px, 420px);
+        grid-template-columns: 1fr auto minmax(250px, 360px);
         align-items: center;
-        gap: 12px;
-        padding: 10px 18px;
+        gap: 10px;
+        padding: 8px 14px;
         background: #17191f;
         border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .gallery-tabs {
         display: inline-flex;
-        gap: 4px;
-        padding: 4px;
-        border-radius: 10px;
+        gap: 3px;
+        padding: 3px;
+        border-radius: 9px;
         background: #101217;
         border: 1px solid rgba(255, 255, 255, 0.08);
+        justify-self: center;
+        grid-column: 2;
     }
 
     .gallery-tab {
-        padding: 6px 14px;
-        border-radius: 8px;
+        padding: 5px 12px;
+        border-radius: 7px;
         color: #aeb6c5;
         text-decoration: none;
-        font-size: 0.9rem;
+        font-size: 0.82rem;
         font-weight: 600;
         border: 1px solid transparent;
+        line-height: 1.1;
     }
 
     .gallery-tab:hover {
@@ -99,13 +102,14 @@
 
     .topbar-search {
         width: 100%;
-        padding: 10px 14px 10px 36px;
-        border-radius: 10px;
+        padding: 8px 12px 8px 32px;
+        border-radius: 9px;
         border: 1px solid rgba(255, 255, 255, 0.12);
         background: #222733;
         color: #eaf0ff;
         font-family: Inter, sans-serif;
         outline: none;
+        font-size: 0.82rem;
     }
 
     .topbar-search::placeholder {
@@ -116,20 +120,17 @@
         position: relative;
         width: 100%;
         justify-self: end;
+        grid-column: 3;
     }
 
     .topbar-search-icon {
         position: absolute;
-        left: 12px;
+        left: 10px;
         top: 50%;
         transform: translateY(-50%);
         color: #8ea0bf;
-        font-size: 0.85rem;
+        font-size: 0.78rem;
         pointer-events: none;
-    }
-
-    .gallery-tabs {
-        justify-self: center;
     }
 
     @media (max-width: 900px) {
@@ -141,12 +142,14 @@
         .gallery-tabs {
             order: 1;
             justify-self: center;
+            grid-column: auto;
         }
 
         .topbar-search-wrap {
             order: 2;
-            max-width: 420px;
+            max-width: 360px;
             justify-self: center;
+            grid-column: auto;
         }
     }
 
@@ -168,14 +171,15 @@
 
     <div id="nav-root"></div>
     <div class="gallery-topbar">
+        <div aria-hidden="true"></div>
         <div class="gallery-tabs" aria-label="Site sections">
             <a class="gallery-tab" href="https://y1-themes.vercel.app">Editor</a>
-            <a class="gallery-tab active" href="index.html">Gallery</a>
+            <a class="gallery-tab active" href="https://themes.innioasis.app/index.html">Gallery</a>
         </div>
-        <div class="topbar-search-wrap">
+        <form class="topbar-search-wrap" action="https://themes.innioasis.app/index.html" method="get">
             <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
-            <input id="global-theme-search" class="topbar-search" type="search" placeholder="Search themes, images, color" aria-label="Search themes">
-        </div>
+            <input id="global-theme-search" name="q" class="topbar-search" type="search" placeholder="Search themes, images, color" aria-label="Search themes">
+        </form>
     </div>
 
     <div style="display: flex; justify-content: center;">
@@ -264,8 +268,9 @@
         if (globalThemeSearch) {
             globalThemeSearch.addEventListener('keydown', (e) => {
                 if (e.key !== 'Enter') return;
+                e.preventDefault();
                 const q = String(globalThemeSearch.value || '').trim();
-                const url = q ? `index.html?q=${encodeURIComponent(q)}` : 'index.html';
+                const url = q ? `https://themes.innioasis.app/index.html?q=${encodeURIComponent(q)}` : 'https://themes.innioasis.app/index.html';
                 location.href = url;
             });
         }
