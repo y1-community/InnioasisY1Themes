@@ -1,70 +1,428 @@
 {
-  "themes": [
-    { "name": "ACmp3", "folder": "ACmp3" },
-    { "name": "Aero", "folder": "Aero" },
-    { "name": "AppleMusic", "folder": "AppleMusic" },
-    { "name": "Aquarium", "folder": "Aquarium" },
-    { "name": "Be", "folder": "Be" },
-    { "name": "BlackWhite", "folder": "BlackWhite" },
-    { "name": "CabinFever", "folder": "CabinFever" },
-    { "name": "Circular", "folder": "Circular" },
-    { "name": "Cupertino", "folder": "Cupertino" },
-    { "name": "DELTARUNE", "folder": "DELTARUNE" },
-    { "name": "ElectricHues", "folder": "ElectricHues" },
-    { "name": "ElsieD", "folder": "ElsieD" },
-    { "name": "Fallout", "folder": "Fallout" },
-    { "name": "Final Theme", "folder": "Final Theme" },
-    { "name": "Girlypop", "folder": "Girlypop" },
-    { "name": "GTA3", "folder": "GTA3" },
-    { "name": "GZA", "folder": "GZA" },
-    { "name": "HoloBubble", "folder": "HoloBubble" },
-    { "name": "HughBliss", "folder": "HughBliss" },
-    { "name": "inniPod", "folder": "inniPod" },
-    { "name": "iOS26Theme", "folder": "iOS26Theme" },
-    { "name": "IOS Theme", "folder": "IOS Theme" },
-    { "name": "iPod-ish", "folder": "iPod-ish" },
-    { "name": "JulesVerne", "folder": "JulesVerne" },
-    { "name": "Junji Ito Theme", "folder": "Junji Ito Theme" },
-    { "name": "Lain-ish", "folder": "Lain-ish" },
-    { "name": "LCD", "folder": "LCD" },
-    { "name": "MelodyMuncher", "folder": "MelodyMuncher" },
-    { "name": "Minecraft", "folder": "Minecraft" },
-    { "name": "MiniMedieval", "folder": "MiniMedieval" },
-    { "name": "MonsterVision", "folder": "MonsterVision" },
-    { "name": "mp3li", "folder": "mp3li", "author": "MP3li", "authorUrl": "https://www.patreon.com/collection/1908526?view=expanded", "authorCTA": "Check out MP3li's free themes", "sourceType": "external" },
-    { "name": "Naruto", "folder": "Naruto" },
-    { "name": "NeonNights", "folder": "NeonNights" },
-    { "name": "PinkMartini", "folder": "PinkMartini" },
-    { "name": "Prisoner", "folder": "Prisoner" },
-    { "name": "Pusheen", "folder": "Pusheen" },
-    { "name": "RAINBOW", "folder": "RAINBOW" },
-    { "name": "RDR", "folder": "RDR" },
-    { "name": "RetroMusic", "folder": "RetroMusic" },
-    { "name": "Rudy", "folder": "Rudy" },
-    { "name": "Sabrina´s World", "folder": "Sabrina´s World" },
-    { "name": "SackBoy", "folder": "SackBoy" },
-    { "name": "SB_PurplePineapple", "folder": "SB_PurplePineapple" },
-    { "name": "SilentHill2", "folder": "SilentHill2" },
-    { "name": "Stranger Things", "folder": "Stranger Things" },
-    { "name": "Summer Blue", "folder": "Summer Blue" },
-    { "name": "The Magnus Archives", "folder": "The Magnus Archives" },
-    { "name": "TheMatrix", "folder": "TheMatrix" },
-    { "name": "Themeless", "folder": "Themeless" },
-    { "name": "Tokidoki", "folder": "Tokidoki" },
-    { "name": "TwinPeaks", "folder": "TwinPeaks" },
-    { "name": "UNDERTALE", "folder": "UNDERTALE" },
-    { "name": "Unseen", "folder": "Unseen" },
-    { "name": "VivaPinata", "folder": "VivaPinata" },
-    { "name": "Win95Theme", "folder": "Win95Theme" },
-    { "name": "Woodstock", "folder": "Woodstock" },
-    { "name": "Wu-Tang", "folder": "Wu-Tang" },
-    { "name": "XFiles", "folder": "XFiles" },
-    { "name": "y1 custom theme clear", "folder": "y1 custom theme clear" },
-    { "name": "YandereSim", "folder": "YandereSim" },
-    { "name": "YellowSub", "folder": "YellowSub" },
-    { "name": "Yume Nikki", "folder": "Yume Nikki" },
-    { "name": "yPod", "folder": "yPod" },
-    { "name": "yPodDark", "folder": "yPodDark" },
-    { "name": "ZuneY", "folder": "ZuneY" }
-  ]
+    "themes":  [
+                   {
+                       "name":  "ACmp3",
+                       "folder":  "ACmp3"
+                   },
+                   {
+                       "name":  "Aero",
+                       "folder":  "Aero"
+                   },
+                   {
+                       "name":  "AppleMusic",
+                       "folder":  "AppleMusic"
+                   },
+                   {
+                       "name":  "Aquarium",
+                       "folder":  "Aquarium"
+                   },
+                   {
+                       "name":  "BabyVOX2000",
+                       "folder":  "BabyVOX2000",
+                       "author":  "Angel_50000",
+                       "authorUrl":  "https://reddit.com/user/Angel_50000"
+                   },
+                   {
+                       "name":  "BarbiePrincess",
+                       "folder":  "BarbiePrincess",
+                       "author":  "Angel_50000",
+                       "authorUrl":  "https://reddit.com/user/Angel_50000"
+                   },
+                   {
+                       "name":  "Be",
+                       "folder":  "Be"
+                   },
+                   {
+                       "name":  "BlackWhite",
+                       "folder":  "BlackWhite"
+                   },
+                   {
+                       "name":  "BlueCollage",
+                       "folder":  "BlueCollage",
+                       "author":  "Angel_50000",
+                       "authorUrl":  "https://reddit.com/user/Angel_50000"
+                   },
+                   {
+                       "name":  "CabinFever",
+                       "folder":  "CabinFever"
+                   },
+                   {
+                       "name":  "Cinnamoroll",
+                       "folder":  "Cinnamoroll",
+                       "author":  "Angel_50000",
+                       "authorUrl":  "https://reddit.com/user/Angel_50000"
+                   },
+                   {
+                       "name":  "Circular",
+                       "folder":  "Circular"
+                   },
+                   {
+                       "name":  "Clovers\u0026Apples",
+                       "folder":  "Clovers\u0026Apples",
+                       "author":  "Angel_50000",
+                       "authorUrl":  "https://reddit.com/user/Angel_50000"
+                   },
+                   {
+                       "name":  "Cupertino",
+                       "folder":  "Cupertino"
+                   },
+                   {
+                       "name":  "DELTARUNE",
+                       "folder":  "DELTARUNE"
+                   },
+                   {
+                       "name":  "ElectricHues",
+                       "folder":  "ElectricHues"
+                   },
+                   {
+                       "name":  "ElsieD",
+                       "folder":  "ElsieD"
+                   },
+                   {
+                       "name":  "Fallout",
+                       "folder":  "Fallout"
+                   },
+                   {
+                       "name":  "FatalFrame2DCB",
+                       "folder":  "FatalFrame2DCB",
+                       "author":  "Angel_50000",
+                       "authorUrl":  "https://reddit.com/user/Angel_50000"
+                   },
+                   {
+                       "name":  "FatalFrame3",
+                       "folder":  "FatalFrame3",
+                       "author":  "Angel_50000",
+                       "authorUrl":  "https://reddit.com/user/Angel_50000"
+                   },
+                   {
+                       "name":  "FBI",
+                       "folder":  "FBI",
+                       "author":  "Angel_50000",
+                       "authorUrl":  "https://reddit.com/user/Angel_50000"
+                   },
+                   {
+                       "name":  "Final Theme",
+                       "folder":  "Final Theme"
+                   },
+                   {
+                       "name":  "FinKL",
+                       "folder":  "FinKL",
+                       "author":  "Angel_50000",
+                       "authorUrl":  "https://reddit.com/user/Angel_50000"
+                   },
+                   {
+                       "name":  "Ghostbusters",
+                       "folder":  "Ghostbusters",
+                       "author":  "Angel_50000",
+                       "authorUrl":  "https://reddit.com/user/Angel_50000"
+                   },
+                   {
+                       "name":  "Girlypop",
+                       "folder":  "Girlypop"
+                   },
+                   {
+                       "name":  "GTA3",
+                       "folder":  "GTA3"
+                   },
+                   {
+                       "name":  "GZA",
+                       "folder":  "GZA"
+                   },
+                   {
+                       "name":  "Hatsune Miku",
+                       "folder":  "Hatsune Miku",
+                       "author":  "Angel_50000",
+                       "authorUrl":  "https://reddit.com/user/Angel_50000"
+                   },
+                   {
+                       "name":  "HelloKitty",
+                       "folder":  "HelloKitty",
+                       "author":  "Angel_50000",
+                       "authorUrl":  "https://reddit.com/user/Angel_50000"
+                   },
+                   {
+                       "name":  "HoloBubble",
+                       "folder":  "HoloBubble"
+                   },
+                   {
+                       "name":  "HotWheels",
+                       "folder":  "HotWheels",
+                       "author":  "Angel_50000",
+                       "authorUrl":  "https://reddit.com/user/Angel_50000"
+                   },
+                   {
+                       "name":  "HughBliss",
+                       "folder":  "HughBliss"
+                   },
+                   {
+                       "name":  "inniPod",
+                       "folder":  "inniPod"
+                   },
+                   {
+                       "name":  "IOS Theme",
+                       "folder":  "IOS Theme"
+                   },
+                   {
+                       "name":  "iOS26Theme",
+                       "folder":  "iOS26Theme"
+                   },
+                   {
+                       "name":  "iPod-ish",
+                       "folder":  "iPod-ish"
+                   },
+                   {
+                       "name":  "JulesVerne",
+                       "folder":  "JulesVerne"
+                   },
+                   {
+                       "name":  "Junji Ito Theme",
+                       "folder":  "Junji Ito Theme"
+                   },
+                   {
+                       "name":  "Lain-ish",
+                       "folder":  "Lain-ish"
+                   },
+                   {
+                       "name":  "Law\u0026OrderSVU",
+                       "folder":  "Law\u0026OrderSVU",
+                       "author":  "Angel_50000",
+                       "authorUrl":  "https://reddit.com/user/Angel_50000"
+                   },
+                   {
+                       "name":  "LCD",
+                       "folder":  "LCD"
+                   },
+                   {
+                       "name":  "MarvinTheMartian",
+                       "folder":  "MarvinTheMartian",
+                       "author":  "Angel_50000",
+                       "authorUrl":  "https://reddit.com/user/Angel_50000"
+                   },
+                   {
+                       "name":  "MelodyMuncher",
+                       "folder":  "MelodyMuncher"
+                   },
+                   {
+                       "name":  "Minecraft",
+                       "folder":  "Minecraft"
+                   },
+                   {
+                       "name":  "MiniMedieval",
+                       "folder":  "MiniMedieval"
+                   },
+                   {
+                       "name":  "MonstaX",
+                       "folder":  "MonstaX",
+                       "author":  "Angel_50000",
+                       "authorUrl":  "https://reddit.com/user/Angel_50000"
+                   },
+                   {
+                       "name":  "MonsterVision",
+                       "folder":  "MonsterVision"
+                   },
+                   {
+                       "name":  "mp3li",
+                       "folder":  "mp3li",
+                       "author":  "MP3li",
+                       "authorUrl":  "https://www.patreon.com/collection/1908526?view=expanded",
+                       "authorCTA":  "Check out MP3li\u0027s free themes",
+                       "sourceType":  "external"
+                   },
+                   {
+                       "name":  "MySweetPiano\u0026MyMelody",
+                       "folder":  "MySweetPiano\u0026MyMelody",
+                       "author":  "Angel_50000",
+                       "authorUrl":  "https://reddit.com/user/Angel_50000"
+                   },
+                   {
+                       "name":  "Naruto",
+                       "folder":  "Naruto"
+                   },
+                   {
+                       "name":  "NeonNights",
+                       "folder":  "NeonNights"
+                   },
+                   {
+                       "name":  "PinkMartini",
+                       "folder":  "PinkMartini"
+                   },
+                   {
+                       "name":  "Prisoner",
+                       "folder":  "Prisoner"
+                   },
+                   {
+                       "name":  "Pusheen",
+                       "folder":  "Pusheen"
+                   },
+                   {
+                       "name":  "RAINBOW",
+                       "folder":  "RAINBOW"
+                   },
+                   {
+                       "name":  "RDR",
+                       "folder":  "RDR"
+                   },
+                   {
+                       "name":  "ResidentEvilUmbrellaCorp",
+                       "folder":  "ResidentEvilUmbrellaCorp",
+                       "author":  "Angel_50000",
+                       "authorUrl":  "https://reddit.com/user/Angel_50000"
+                   },
+                   {
+                       "name":  "RetroMusic",
+                       "folder":  "RetroMusic"
+                   },
+                   {
+                       "name":  "Rudy",
+                       "folder":  "Rudy"
+                   },
+                   {
+                       "name":  "Sabrina´s World",
+                       "folder":  "Sabrina´s World"
+                   },
+                   {
+                       "name":  "SackBoy",
+                       "folder":  "SackBoy"
+                   },
+                   {
+                       "name":  "SB_PurplePineapple",
+                       "folder":  "SB_PurplePineapple"
+                   },
+                   {
+                       "name":  "SilentHill2",
+                       "folder":  "SilentHill2"
+                   },
+                   {
+                       "name":  "SilentHill2Remake",
+                       "folder":  "SilentHill2Remake",
+                       "author":  "Angel_50000",
+                       "authorUrl":  "https://reddit.com/user/Angel_50000"
+                   },
+                   {
+                       "name":  "StarWars",
+                       "folder":  "StarWars",
+                       "author":  "Angel_50000",
+                       "authorUrl":  "https://reddit.com/user/Angel_50000"
+                   },
+                   {
+                       "name":  "Stranger Things",
+                       "folder":  "Stranger Things"
+                   },
+                   {
+                       "name":  "StrawberryShortcake2006",
+                       "folder":  "StrawberryShortcake2006",
+                       "author":  "Angel_50000",
+                       "authorUrl":  "https://reddit.com/user/Angel_50000"
+                   },
+                   {
+                       "name":  "StyleSavvy",
+                       "folder":  "StyleSavvy",
+                       "author":  "Angel_50000",
+                       "authorUrl":  "https://reddit.com/user/Angel_50000"
+                   },
+                   {
+                       "name":  "Sugar",
+                       "folder":  "Sugar",
+                       "author":  "Angel_50000",
+                       "authorUrl":  "https://reddit.com/user/Angel_50000"
+                   },
+                   {
+                       "name":  "Summer Blue",
+                       "folder":  "Summer Blue"
+                   },
+                   {
+                       "name":  "Superman",
+                       "folder":  "Superman",
+                       "author":  "Angel_50000",
+                       "authorUrl":  "https://reddit.com/user/Angel_50000"
+                   },
+                   {
+                       "name":  "The Magnus Archives",
+                       "folder":  "The Magnus Archives"
+                   },
+                   {
+                       "name":  "TheMatrix",
+                       "folder":  "TheMatrix"
+                   },
+                   {
+                       "name":  "Themeless",
+                       "folder":  "Themeless"
+                   },
+                   {
+                       "name":  "Tokidoki",
+                       "folder":  "Tokidoki"
+                   },
+                   {
+                       "name":  "Tomie",
+                       "folder":  "Tomie",
+                       "author":  "Angel_50000",
+                       "authorUrl":  "https://reddit.com/user/Angel_50000"
+                   },
+                   {
+                       "name":  "TwinPeaks",
+                       "folder":  "TwinPeaks"
+                   },
+                   {
+                       "name":  "UNDERTALE",
+                       "folder":  "UNDERTALE"
+                   },
+                   {
+                       "name":  "Unseen",
+                       "folder":  "Unseen"
+                   },
+                   {
+                       "name":  "VivaPinata",
+                       "folder":  "VivaPinata"
+                   },
+                   {
+                       "name":  "Win95Theme",
+                       "folder":  "Win95Theme"
+                   },
+                   {
+                       "name":  "Wolverine",
+                       "folder":  "Wolverine",
+                       "author":  "Angel_50000",
+                       "authorUrl":  "https://reddit.com/user/Angel_50000"
+                   },
+                   {
+                       "name":  "Woodstock",
+                       "folder":  "Woodstock"
+                   },
+                   {
+                       "name":  "Wu-Tang",
+                       "folder":  "Wu-Tang"
+                   },
+                   {
+                       "name":  "XFiles",
+                       "folder":  "XFiles"
+                   },
+                   {
+                       "name":  "y1 custom theme clear",
+                       "folder":  "y1 custom theme clear"
+                   },
+                   {
+                       "name":  "YandereSim",
+                       "folder":  "YandereSim"
+                   },
+                   {
+                       "name":  "YellowSub",
+                       "folder":  "YellowSub"
+                   },
+                   {
+                       "name":  "yPod",
+                       "folder":  "yPod"
+                   },
+                   {
+                       "name":  "yPodDark",
+                       "folder":  "yPodDark"
+                   },
+                   {
+                       "name":  "Yume Nikki",
+                       "folder":  "Yume Nikki"
+                   },
+                   {
+                       "name":  "ZuneY",
+                       "folder":  "ZuneY"
+                   }
+               ]
 }
