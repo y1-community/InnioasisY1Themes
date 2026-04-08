@@ -1165,6 +1165,8 @@
             c.appendChild(statusBadge);
 
             const img = document.createElement('img');
+            const metaScreenshot = String(theme.screenshot || '');
+            const metaLooksLikeCover = /(^|\/)cover[^/]*\.(png|jpe?g|gif|webp)$/i.test(metaScreenshot);
             const folderImageCandidates = folderPath ? [
                 `${folderPath}/cover.jpg`,
                 `${folderPath}/cover.jpeg`,
@@ -1172,6 +1174,12 @@
                 `${folderPath}/cover.JPEG`,
                 `${folderPath}/cover.png`,
                 `${folderPath}/cover.PNG`,
+                `${folderPath}/cover_YS.jpg`,
+                `${folderPath}/cover_YS.jpeg`,
+                `${folderPath}/cover_YS.png`,
+                `${folderPath}/cover_ys.jpg`,
+                `${folderPath}/cover_ys.jpeg`,
+                `${folderPath}/cover_ys.png`,
                 `${folderPath}/screenshot.png`,
                 `${folderPath}/screenshot.PNG`,
                 `${folderPath}/screenshot.jpg`,
@@ -1182,8 +1190,9 @@
                 `${folderPath}/1.png`
             ] : [];
             const screenshotCandidates = [
+                metaLooksLikeCover ? theme.screenshot : '',
                 ...folderImageCandidates.map(p => `./${p}`),
-                theme.screenshot,
+                metaLooksLikeCover ? '' : theme.screenshot,
                 'placeholder.png'
             ].filter(Boolean);
             let screenshotIdx = 0;
