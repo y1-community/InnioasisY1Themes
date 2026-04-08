@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<!-- saved from url=(0029)https://themes.innioasis.app/ -->
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Browse themes — Innioasis Y1</title>
 
     <meta name="description" content="Browse and download Rockbox themes for the Innioasis Y1. Customize your player with community-made themes for 240p and 360p models.">
@@ -22,9 +23,9 @@
     <meta name="twitter:description" content="Download and customize Rockbox themes for the Innioasis Y1.">
     <meta name="twitter:image" content="https://innioasis.app/y1_illustration.png">
 
-    <link rel="icon" href="https://themes.innioasis.app/y1_illustration.png">
+    <link rel="icon" href="y1_illustration.png">
 
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com/">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -89,14 +90,7 @@
         .theme-desc {
             font-size: 0.95rem;
             color: var(--text-secondary);
-            text-align: center;
-            display: -webkit-box;
-            -webkit-line-clamp: 4;
-            line-clamp: 4;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            line-height: 1.35;
-            max-height: calc(1.35em * 4);
+            text-align: center
         }
 
         .theme-author {
@@ -189,20 +183,6 @@
         .btn:hover {
             background: var(--primary-dark);
         }
-
-        .new-pill {
-            display: inline-flex;
-            align-items: center;
-            margin-left: 8px;
-            padding: 2px 6px;
-            border-radius: 999px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            line-height: 1;
-            letter-spacing: 0.03em;
-            background: #22c55e;
-            color: #04130a;
-        }
     </style>
 </head>
 
@@ -211,21 +191,20 @@
     <div class="wrap">
         <header>
             <h1>Themes</h1>
-            <p>Download themes for your Y1. Visit the <a href="https://innioasis.app/guide.html">themes guide</a> to learn how to upload them to your
+            <p>Download themes for your Y1. Visit the <a href='https://innioasis.app/guide.html'>themes guide</a> to learn how to upload them to your
                 device.</p>
         </header>
 
         <div class="search-row">
-            <input id="theme-search" type="search" placeholder="Search themes by name, author, description..." aria-label="Search themes">
+            <input id="theme-search" type="search" placeholder="Search themes by name, author, description..." aria-label="Search themes" />
         </div>
 
         <div class="cast-div" style="margin-top: 3rem;">
-            <a href="https://y1-themes.vercel.app" class="btn" style="font-family: Inter; padding: .875rem 2rem; font-weight: normal;"><i class="fas fa-palette" style="margin-right: 4px"></i>Create Themes <span class="new-pill">NEW</span></a>
-            <a href="https://innioasis.app/guide.html#c_themes" class="btn" style="font-family: Inter; padding: .875rem 2rem; font-weight: normal;"><i class="fas fa-upload" style="margin-right: 4px"></i>Submit Themes</a>
+            <a href="https://innioasis.app/guide.html#c_themes" class="btn" style="font-family: Inter; padding: .875rem 2rem; font-weight: normal;"><i class="fas fa-plus" style="margin-right: 4px"></i>Create and submit themes</a>
             <a id="rockbox-btn"><i class="fas fa-external-link" style="margin-right: 8px;"></i>Rockbox themes</a>
         </div>
 
-        <div id="direct-install-banner" style="margin-top: 2rem; padding: 16px; background: rgba(100, 200, 255, 0.1); border: 1px solid rgba(100, 200, 255, 0.3); border-radius: 8px; display: block;">
+        <div id="direct-install-banner" style="margin-top: 2rem; padding: 16px; background: rgba(100, 200, 255, 0.1); border: 1px solid rgba(100, 200, 255, 0.3); border-radius: 8px; display: none;">
             <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
                 <div style="flex: 1; min-width: 300px;">
                     <div style="margin-bottom: 4px;">Direct Install</div>
@@ -239,7 +218,7 @@
             </div>
             <div id="filter-on-device" style="margin-top:8px; display:none;">
                 <label style="font-size:0.95rem;color:var(--text-secondary);">
-                    <input type="checkbox" id="only-on-device-checkbox" style="margin-right:8px;"> Only show themes already on Y1
+                    <input type="checkbox" id="only-on-device-checkbox" style="margin-right:8px;" /> Only show themes already on Y1
                 </label>
             </div>
         </div>
@@ -480,8 +459,7 @@
         }
 
         function safeText(v) {
-            if (v == null) return '';
-            return String(v);
+            return v ?? 'Unknown'
         }
 
         function githubApiUrlForFolder(folder) {
@@ -502,7 +480,7 @@
             const info = sourceInfo || themeInfo;
 
             const cachedByFolder = cached.find(t => t && t.folder === folder);
-            const cachedByName = cached.find(t => t && t.name === (info && info.title));
+            const cachedByName = cached.find(t => t && t.name === ((info && info.title) || cfg.title));
             const cachedTheme = cachedByFolder || cachedByName || null;
             const coverFromConfig = cfg.themeCover ? `./${folder}/${cfg.themeCover}` : '';
 
@@ -532,15 +510,14 @@
             const folders = rootEntries
                 .filter(entry => entry && entry.type === 'dir' && entry.name)
                 .map(entry => entry.name);
-            const uniqueFolders = [...new Set(folders.map(f => String(f || '').replace(/^\.\/+/, '').toLowerCase()))];
 
-            const discovered = await Promise.all(uniqueFolders.map(async(folderLower) => {
+            const discovered = await Promise.all(folders.map(async(folder) => {
                 try {
-                    const folder = folders.find(f => String(f || '').replace(/^\.\/+/, '').toLowerCase() === folderLower) || folderLower;
                     const configRes = await fetch(`${encodeURI(folder)}/config.json`);
                     if (!configRes.ok) return null;
                     const cfg = await configRes.json();
                     const normalized = normalizeThemeFromConfig(folder, cfg, cachedThemes);
+                    if (!normalized) return null;
 
                     if (!normalized.screenshot) {
                         try {
@@ -566,6 +543,35 @@
             return discovered
                 .filter(Boolean)
                 .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+        }
+
+        function mergeDiscoveredWithCached(discovered, cached) {
+            const map = new Map();
+            for (const t of cached || []) {
+                if (!t) continue;
+                const folderKey = String(t.folder || '').replace(/^\.\/+/, '').toLowerCase();
+                const nameKey = String(t.name || '').trim().toLowerCase();
+                const key = folderKey ? `folder:${folderKey}` : `name:${nameKey}`;
+                if (!key) continue;
+                map.set(key, {
+                    ...t
+                });
+            }
+            for (const t of discovered || []) {
+                if (!t) continue;
+                const folderKey = String(t.folder || '').replace(/^\.\/+/, '').toLowerCase();
+                const nameKey = String(t.name || '').trim().toLowerCase();
+                const key = folderKey ? `folder:${folderKey}` : `name:${nameKey}`;
+                if (!key) continue;
+                const existing = map.get(key) || {};
+                map.set(key, {
+                    ...existing,
+                    ...t,
+                    name: t.name || existing.name,
+                    folder: t.folder || existing.folder
+                });
+            }
+            return Array.from(map.values());
         }
 
         function dedupeThemes(themes) {
@@ -596,17 +602,11 @@
                     const res = await fetch(apiUrl, {
                         cache: 'no-cache'
                     });
-                    if (!res.ok) {
-                        // Network/API failures should not force fallback links.
-                        // Keep undefined so createCard still prefers subfolder URL.
-                        return;
-                    }
+                    if (!res.ok) return;
                     const entries = await res.json();
                     if (!Array.isArray(entries)) return;
                     theme.hasIndexPage = entries.some(e => e && e.type === 'file' && String(e.name || '').toLowerCase() === 'index.html');
-                } catch (e) {
-                    // Keep undefined on fetch errors; fallback only when confirmed absent.
-                }
+                } catch (e) {}
             }));
             return themes;
         }
@@ -1040,7 +1040,7 @@
                 if (theme.hasIndexPage === false) {
                     n.href = `theme.html?theme=${encodeURIComponent(theme.name || '')}`;
                 } else {
-                    n.href = encodedFolderPath ? `./${encodedFolderPath}/` : '#';
+                    n.href = encodedFolderPath ? `./${encodedFolderPath}/` : `theme.html?theme=${encodeURIComponent(theme.name || '')}`;
                 }
             }
 
@@ -1051,7 +1051,7 @@
             const a = document.createElement('div');
             a.className = 'theme-author';
             if (!theme.author) {
-                a.style.display = 'none';
+                a.textContent = 'Unknown author';
             } else if (theme.author === 'Innioasis') {
                 a.innerHTML = `by <a href="https://innioasis.com" target="_blank" rel="noopener">Innioasis</a>`;
             } else if (theme.author === 'u/ope-nz | Normal-Curve-1642') {
@@ -1382,16 +1382,15 @@
             const grid = document.getElementById('theme-grid')
             const cachedThemes = await tryFetchThemeCache()
             const discoveredThemes = await discoverThemesFromSubfolders(cachedThemes)
-            const themesSource = discoveredThemes.length ? discoveredThemes : cachedThemes
+            const themesSource = mergeDiscoveredWithCached(discoveredThemes, cachedThemes)
             const themes = dedupeThemes(themesSource)
-            if (!themes.length) {
+            await annotateThemeConfigAvailability(themes)
+            await annotateThemeIndexAvailability(themes)
+            const filteredThemes = themes.filter(t => t && (t.sourceType === 'external' ? true : t.hasConfigFile !== false))
+            if (!filteredThemes.length) {
                 grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#94a3b8">Unable to load themes</p>'
                 return
             }
-            await annotateThemeConfigAvailability(themes)
-            await annotateThemeIndexAvailability(themes)
-            const filteredThemes = themes.filter(t => t && t.sourceType === 'external' ? true : t.hasConfigFile !== false)
-            grid.innerHTML = ''
             filteredThemes.forEach(t => grid.appendChild(createCard(t)))
 
             handleHashAutoDownload()
@@ -1400,8 +1399,6 @@
 
         load()
     </script>
+</body>
 
-
-
-<div id="1p-menu-live-region" role="status" aria-live="polite" aria-atomic="true" aria-relevant="all" style="clip: rect(0px, 0px, 0px, 0px); clip-path: inset(50%); height: 1px; overflow: hidden; position: fixed; top: 0px; left: 0px; white-space: nowrap; width: 1px; overflow-wrap: normal;">1Password menu is available. Press down arrow to select.</div></body></html>
-
+</html>
