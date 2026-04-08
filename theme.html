@@ -59,7 +59,7 @@
         top: 0;
         z-index: 1200;
         display: grid;
-        grid-template-columns: minmax(260px, 420px) auto minmax(260px, 420px);
+        grid-template-columns: auto minmax(260px, 420px);
         align-items: center;
         gap: 12px;
         padding: 10px 18px;
@@ -115,7 +115,7 @@
     .topbar-search-wrap {
         position: relative;
         width: 100%;
-        justify-self: start;
+        justify-self: end;
     }
 
     .topbar-search-icon {
@@ -130,12 +130,6 @@
 
     .gallery-tabs {
         justify-self: center;
-    }
-
-    .topbar-spacer {
-        justify-self: end;
-        width: 100%;
-        max-width: 420px;
     }
 
     @media (max-width: 900px) {
@@ -153,10 +147,6 @@
             order: 2;
             max-width: 420px;
             justify-self: center;
-        }
-
-        .topbar-spacer {
-            display: none;
         }
     }
 
@@ -178,15 +168,14 @@
 
     <div id="nav-root"></div>
     <div class="gallery-topbar">
-        <div class="topbar-search-wrap">
-            <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
-            <input id="global-theme-search" class="topbar-search" type="search" placeholder="Search themes, images, color" aria-label="Search themes">
-        </div>
         <div class="gallery-tabs" aria-label="Site sections">
             <a class="gallery-tab" href="https://y1-themes.vercel.app">Editor</a>
             <a class="gallery-tab active" href="index.html">Gallery</a>
         </div>
-        <div class="topbar-spacer" aria-hidden="true"></div>
+        <div class="topbar-search-wrap">
+            <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
+            <input id="global-theme-search" class="topbar-search" type="search" placeholder="Search themes, images, color" aria-label="Search themes">
+        </div>
     </div>
 
     <div style="display: flex; justify-content: center;">

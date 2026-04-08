@@ -45,7 +45,7 @@
             top: 0;
             z-index: 1200;
             display: grid;
-            grid-template-columns: minmax(260px, 420px) auto minmax(260px, 420px);
+            grid-template-columns: auto minmax(260px, 420px);
             align-items: center;
             gap: 12px;
             padding: 10px 18px;
@@ -101,7 +101,7 @@
         .topbar-search-wrap {
             position: relative;
             width: 100%;
-            justify-self: start;
+            justify-self: end;
         }
 
         .topbar-search-icon {
@@ -116,12 +116,6 @@
 
         .gallery-tabs {
             justify-self: center;
-        }
-
-        .topbar-spacer {
-            justify-self: end;
-            width: 100%;
-            max-width: 420px;
         }
 
         @media (max-width: 900px) {
@@ -139,10 +133,6 @@
                 order: 2;
                 max-width: 420px;
                 justify-self: center;
-            }
-
-            .topbar-spacer {
-                display: none;
             }
         }
 
@@ -299,15 +289,14 @@
 <body>
     <div id="nav-root"></div>
     <div class="gallery-topbar">
-        <div class="topbar-search-wrap">
-            <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
-            <input id="theme-search" class="topbar-search" type="search" placeholder="Search themes, images, color" aria-label="Search themes">
-        </div>
         <div class="gallery-tabs" aria-label="Site sections">
             <a class="gallery-tab" href="https://y1-themes.vercel.app">Editor</a>
             <a class="gallery-tab active" href="index.html">Gallery</a>
         </div>
-        <div class="topbar-spacer" aria-hidden="true"></div>
+        <div class="topbar-search-wrap">
+            <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
+            <input id="theme-search" class="topbar-search" type="search" placeholder="Search themes, images, color" aria-label="Search themes">
+        </div>
     </div>
     <div class="wrap">
         <header>
@@ -666,7 +655,7 @@
                                 const files = await filesRes.json();
                                 if (Array.isArray(files)) {
                                     const names = files.filter(f => f.type === 'file').map(f => f.name);
-                                    const match = names.find(n => /^cover\.(png|jpg|jpeg|gif|webp)$/i.test(n)) ||
+                                    const match = names.find(n => /^cover[^/]*\.(png|jpg|jpeg|gif|webp)$/i.test(n)) ||
                                         names.find(n => /^screenshot\.(png|jpg|jpeg|gif|webp)$/i.test(n)) ||
                                         names.find(n => /^screenshot/i.test(n));
                                     if (match) normalized.screenshot = `./${folder}/${match}`;
@@ -1192,6 +1181,10 @@
             const screenshotCandidates = [
                 metaLooksLikeCover ? theme.screenshot : '',
                 ...folderImageCandidates.map(p => `./${p}`),
+                folderPath ? `./${folderPath}/cover.webp` : '',
+                folderPath ? `./${folderPath}/cover.gif` : '',
+                folderPath ? `./${folderPath}/Cover.png` : '',
+                folderPath ? `./${folderPath}/COVER.png` : '',
                 metaLooksLikeCover ? '' : theme.screenshot,
                 'placeholder.png'
             ].filter(Boolean);
@@ -1567,6 +1560,11 @@
             const discoveredThemes = await discoverThemesFromSubfolders(cachedThemes)
             const themesSource = mergeDiscoveredWithCached(discoveredThemes, cachedThemes)
             const themes = dedupeThemes(themesSource)
+            themes.sort((a, b) => String(a?.name || '')
+                .localeCompare(String(b?.name || ''), undefined, {
+                    sensitivity: 'base',
+                    ignorePunctuation: true
+                }))
             await annotateThemeConfigAvailability(themes)
             await annotateThemeIndexAvailability(themes)
             const filteredThemes = themes.filter(t => t && (t.sourceType === 'external' ? true : t.hasConfigFile !== false))

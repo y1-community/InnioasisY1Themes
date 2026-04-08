@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title id="page-title">Themes for your Innioasis Y1</title>
+    <title id="page-title">Minecraft theme for Innioasis Y1 - Y1 Themes</title>
     <script>
         // Keep the hardcoded title as fallback, but prefer local theme config title when available.
         (function autoTitleFromLocalConfig() {
@@ -26,21 +26,21 @@
         })();
     </script>
 
-    <meta name="description" content="Download and customize your Innioasis Y1 with curated assets and easy personalization options.">
-    <meta name="keywords" content="Themes for Innioasis Y1, Innioasis Y1 themes, customization, Innioasis Y1 themes">
+    <meta name="description" content="Simple minecraft style theme for Innioasis Y1">
+    <meta name="keywords" content="Minecraft theme, Innioasis Y1 theme, Minecraft, Y1 customization, MP3 player theme">
     <meta name="author" content="Innioasis Community">
 
-    <link rel="canonical" href="https://themes.innioasis.app/theme.html">
+    <link rel="canonical" href="https://themes.innioasis.app/Minecraft/">
 
     <meta property="og:type" content="website">
-    <meta property="og:title" content="theme for Innioasis Y1 - Y1 Themes">
-    <meta property="og:description" content="Download and customize the Sabrina´s World theme for Innioasis Y1 with curated themes and easy personalization options.">
-    <meta property="og:url" content="https://themes.innioasis.app/theme.html">
+    <meta property="og:title" content="Minecraft theme for Innioasis Y1 - Y1 Themes">
+    <meta property="og:description" content="Simple minecraft style theme for Innioasis Y1">
+    <meta property="og:url" content="https://themes.innioasis.app/Minecraft/">
     <meta property="og:image" content="https://innioasis.app/y1_illustration.png">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="theme for Innioasis Y1 - Y1 Themes">
-    <meta name="twitter:description" content="Download and customize the theme for Innioasis Y1 with curated themes and easy personalization options.">
+    <meta name="twitter:title" content="Minecraft theme for Innioasis Y1 - Y1 Themes">
+    <meta name="twitter:description" content="Simple minecraft style theme for Innioasis Y1">
     <meta name="twitter:image" content="https://innioasis.app/y1_illustration.png">
 
     <link rel="icon" href="y1_illustration.png">
@@ -59,7 +59,7 @@
         top: 0;
         z-index: 1200;
         display: grid;
-        grid-template-columns: minmax(260px, 420px) auto minmax(260px, 420px);
+        grid-template-columns: auto minmax(260px, 420px);
         align-items: center;
         gap: 12px;
         padding: 10px 18px;
@@ -115,7 +115,7 @@
     .topbar-search-wrap {
         position: relative;
         width: 100%;
-        justify-self: start;
+        justify-self: end;
     }
 
     .topbar-search-icon {
@@ -130,12 +130,6 @@
 
     .gallery-tabs {
         justify-self: center;
-    }
-
-    .topbar-spacer {
-        justify-self: end;
-        width: 100%;
-        max-width: 420px;
     }
 
     @media (max-width: 900px) {
@@ -153,10 +147,6 @@
             order: 2;
             max-width: 420px;
             justify-self: center;
-        }
-
-        .topbar-spacer {
-            display: none;
         }
     }
 
@@ -178,15 +168,14 @@
 
     <div id="nav-root"></div>
     <div class="gallery-topbar">
-        <div class="topbar-search-wrap">
-            <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
-            <input id="global-theme-search" class="topbar-search" type="search" placeholder="Search themes, images, color" aria-label="Search themes">
-        </div>
         <div class="gallery-tabs" aria-label="Site sections">
             <a class="gallery-tab" href="https://y1-themes.vercel.app">Editor</a>
             <a class="gallery-tab active" href="index.html">Gallery</a>
         </div>
-        <div class="topbar-spacer" aria-hidden="true"></div>
+        <div class="topbar-search-wrap">
+            <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
+            <input id="global-theme-search" class="topbar-search" type="search" placeholder="Search themes, images, color" aria-label="Search themes">
+        </div>
     </div>
 
     <div style="display: flex; justify-content: center;">
@@ -281,7 +270,7 @@
             });
         }
 
-        const THEME_NAME_PLACEHOLDER = "Sabrina´s World";
+        const THEME_NAME_PLACEHOLDER = "Minecraft";
         const THEME_REDIRECT_URL = "https://themes.innioasis.app";
         function resolveScreenshotPath(path) {
             if (!path) return ''
@@ -814,3 +803,5 @@
 </body>
 
 </html>
+
+
