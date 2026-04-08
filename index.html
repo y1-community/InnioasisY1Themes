@@ -588,6 +588,14 @@
             return !s || s === 'unknown' || s === 'unknown author' || s === 'n/a' || s === 'na' || s === 'none';
         }
 
+        function pickPreferred(...values) {
+            for (const v of values) {
+                if (isUnknownish(v)) continue;
+                return v;
+            }
+            return '';
+        }
+
         function githubApiUrlForFolder(folder) {
             const cleaned = (folder || '').replace(/^\.\/+/, '');
             const encodedPath = cleaned.split('/').map(seg => encodeURIComponent(seg)).join('/');
@@ -605,19 +613,20 @@
             const themeInfo = cfg && cfg.theme_info ? cfg.theme_info : null;
             const info = sourceInfo || themeInfo;
 
-            const cachedByFolder = cached.find(t => t && t.folder === folder);
-            const cachedByName = cached.find(t => t && t.name === ((info && info.title) || cfg.title));
+            const folderKey = String(folder || '').toLowerCase();
+            const cachedByFolder = cached.find(t => t && String(t.folder || '').toLowerCase() === folderKey);
+            const cachedByName = cached.find(t => t && String(t.name || '').toLowerCase() === String((info && info.title) || cfg.title || '').toLowerCase());
             const cachedTheme = cachedByFolder || cachedByName || null;
             const coverFromConfig = cfg.themeCover ? `./${folder}/${cfg.themeCover}` : '';
 
             return {
-                name: (info && info.title) || cfg.title || (cachedTheme && cachedTheme.name) || folder,
+                name: pickPreferred((info && info.title), cfg.title, (cachedTheme && cachedTheme.name), folder),
                 folder,
-                screenshot: coverFromConfig || (cachedTheme && cachedTheme.screenshot) || '',
-                description: (info && info.description) || cfg.description || (cachedTheme && cachedTheme.description) || '',
-                author: (info && info.author) || cfg.author || (cachedTheme && cachedTheme.author) || null,
-                authorUrl: (info && info.authorUrl) || cfg.authorUrl || (cachedTheme && cachedTheme.authorUrl) || '',
-                authorCTA: (info && info.authorCTA) || (cachedTheme && cachedTheme.authorCTA) || '',
+                screenshot: pickPreferred(coverFromConfig, (cachedTheme && cachedTheme.screenshot)),
+                description: pickPreferred((info && info.description), cfg.description, (cachedTheme && cachedTheme.description)),
+                author: pickPreferred((info && info.author), cfg.author, (cachedTheme && cachedTheme.author)) || null,
+                authorUrl: pickPreferred((info && info.authorUrl), cfg.authorUrl, (cachedTheme && cachedTheme.authorUrl)),
+                authorCTA: pickPreferred((info && info.authorCTA), (cachedTheme && cachedTheme.authorCTA)),
                 sourceType: sourceInfo ? 'external' : 'internal'
             };
         }
@@ -643,7 +652,8 @@
 
             const discovered = await Promise.all(folders.map(async(folder) => {
                 try {
-                    const configRes = await fetch(`${encodeURI(folder)}/config.json`);
+                    const encodedFolder = String(folder || '').split('/').map(seg => encodeURIComponent(seg)).join('/');
+                    const configRes = await fetch(`${encodedFolder}/config.json`);
                     if (!configRes.ok) return null;
                     const cfg = await configRes.json();
                     const normalized = normalizeThemeFromConfig(folder, cfg, cachedThemes);
