@@ -583,6 +583,11 @@
             return v == null ? '' : String(v)
         }
 
+        function isUnknownish(v) {
+            const s = String(v == null ? '' : v).trim().toLowerCase();
+            return !s || s === 'unknown' || s === 'unknown author' || s === 'n/a' || s === 'na' || s === 'none';
+        }
+
         function githubApiUrlForFolder(folder) {
             const cleaned = (folder || '').replace(/^\.\/+/, '');
             const encodedPath = cleaned.split('/').map(seg => encodeURIComponent(seg)).join('/');
@@ -621,16 +626,20 @@
             let rootEntries = [];
             try {
                 const res = await fetch(githubApiUrlForPath());
-                if (!res.ok) return [];
-                rootEntries = await res.json();
+                if (res.ok) {
+                    rootEntries = await res.json();
+                }
             } catch (e) {
-                return [];
+                rootEntries = [];
             }
-            if (!Array.isArray(rootEntries)) return [];
-
-            const folders = rootEntries
+            const rootFolders = Array.isArray(rootEntries) ? rootEntries
                 .filter(entry => entry && entry.type === 'dir' && entry.name)
-                .map(entry => entry.name);
+                .map(entry => entry.name) : [];
+            const cachedFolders = (cachedThemes || [])
+                .map(t => String((t && t.folder) || '').replace(/^\.\/+/, '').trim())
+                .filter(Boolean);
+            const folders = Array.from(new Set([...rootFolders, ...cachedFolders]));
+            if (!folders.length) return [];
 
             const discovered = await Promise.all(folders.map(async(folder) => {
                 try {
@@ -1147,10 +1156,12 @@
 
             const img = document.createElement('img');
             const folderImageCandidates = folderPath ? [
-                `${folderPath}/cover.png`,
-                `${folderPath}/cover.PNG`,
                 `${folderPath}/cover.jpg`,
                 `${folderPath}/cover.jpeg`,
+                `${folderPath}/cover.JPG`,
+                `${folderPath}/cover.JPEG`,
+                `${folderPath}/cover.png`,
+                `${folderPath}/cover.PNG`,
                 `${folderPath}/screenshot.png`,
                 `${folderPath}/screenshot.PNG`,
                 `${folderPath}/screenshot.jpg`,
@@ -1161,8 +1172,8 @@
                 `${folderPath}/1.png`
             ] : [];
             const screenshotCandidates = [
-                theme.screenshot,
                 ...folderImageCandidates.map(p => `./${p}`),
+                theme.screenshot,
                 'placeholder.png'
             ].filter(Boolean);
             let screenshotIdx = 0;
@@ -1195,7 +1206,7 @@
             const d = document.createElement('div');
             d.className = 'theme-desc';
             const descText = safeText(theme.description).trim();
-            if (!descText) {
+            if (isUnknownish(descText)) {
                 d.style.display = 'none';
             } else {
                 d.textContent = descText;
@@ -1203,7 +1214,7 @@
 
             const a = document.createElement('div');
             a.className = 'theme-author';
-            if (!theme.author) {
+            if (isUnknownish(theme.author)) {
                 a.style.display = 'none';
             } else if (theme.author === 'Innioasis') {
                 a.innerHTML = `by <a href="https://innioasis.com" target="_blank" rel="noopener">Innioasis</a>`;
