@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title id="page-title">Aero theme for Innioasis Y1 - Y1 Themes</title>
+    <title id="page-title">Get Aero — Innioasis Y1 Theme</title>
     <script>
         // Keep the hardcoded title as fallback, but prefer local theme config title when available.
         (function autoTitleFromLocalConfig() {
@@ -17,7 +17,7 @@
                     const info = cfg.theme_info || cfg.source_info;
                     const title = info && info.title ? String(info.title).trim() : '';
                     if (title) {
-                        document.title = `${title} â€” Innioasis Y1`;
+                        document.title = `${title} — Innioasis Y1 Theme` — Innioasis Y1 Theme`;
                     }
                 })
                 .catch(() => {
@@ -26,21 +26,21 @@
         })();
     </script>
 
-    <meta name="description" content="Download and customize the Aero theme for Innioasis Y1 with curated assets and easy personalization options.">
-    <meta name="keywords" content="Aero theme, Aero Innioasis Y1, Innioasis Y1 Aero, Aero customization, Innioasis Y1 themes">
+    <meta name="description" content="Download and customize this theme for the Innioasis Y1 device easily and for free.">
+    <meta name="keywords" content="Innioasis Y1 themes, Innioasis theme Y1, Y1 theme, Y1 UI themes, innioasis customization">
     <meta name="author" content="Innioasis Community">
 
-    <link rel="canonical" href="https://themes.innioasis.app/Aero">
+    <link rel="canonical" href="https://themes.innioasis.app/theme.html">
 
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Aero theme for Innioasis Y1 - Y1 Themes">
-    <meta property="og:description" content="Download and customize the Aero theme for Innioasis Y1 with curated assets and easy personalization options.">
-    <meta property="og:url" content="https://themes.innioasis.app/Aero">
+    <meta property="og:title" content="Innioasis Y1 Theme">
+    <meta property="og:description" content="Download and customize this theme for the Innioasis Y1.">
+    <meta property="og:url" content="https://themes.innioasis.app/theme.html">
     <meta property="og:image" content="https://innioasis.app/y1_illustration.png">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Aero theme for Innioasis Y1 - Y1 Themes">
-    <meta name="twitter:description" content="Download and customize the Aero theme for Innioasis Y1 with curated assets and easy personalization options.">
+    <meta name="twitter:title" content="Innioasis Y1 Theme">
+    <meta name="twitter:description" content="Download and customize this theme for the Innioasis Y1.">
     <meta name="twitter:image" content="https://innioasis.app/y1_illustration.png">
 
     <link rel="icon" href="y1_illustration.png">
@@ -113,19 +113,6 @@
 
     <script src="https://innioasis.app/nav.js"></script>
     <script>
-        function executeInlineScripts(container) {
-            if (!container) return;
-            const scripts = container.querySelectorAll('script');
-            for (const oldScript of scripts) {
-                const newScript = document.createElement('script');
-                for (const attr of oldScript.attributes) {
-                    newScript.setAttribute(attr.name, attr.value);
-                }
-                newScript.textContent = oldScript.textContent;
-                oldScript.parentNode.replaceChild(newScript, oldScript);
-            }
-        }
-
         async function loadSupportToolbar() {
             const slot = document.getElementById('support-toolbar-slot');
             if (!slot) return;
@@ -141,7 +128,6 @@
                     });
                     if (!res.ok) continue;
                     slot.innerHTML = await res.text();
-                    executeInlineScripts(slot);
                     return;
                 } catch (e) {}
             }
@@ -151,8 +137,6 @@
 
         const GITHUB_TOKEN = '';
 
-        const THEME_NAME_PLACEHOLDER = "Aero";
-        const THEME_REDIRECT_URL = "https://themes.innioasis.app";
         function resolveScreenshotPath(path) {
             if (!path) return ''
             if (path.startsWith('http')) return path
@@ -232,16 +216,16 @@
             }
             let remaining = 6;
             if (note) {
-                note.innerHTML = `No specific theme is selected here, so you will be redirected to the full themes library in ${remaining} seconds: <a href="${THEME_REDIRECT_URL}" style="color:lightblue;">${THEME_REDIRECT_URL}</a>`;
+                note.innerHTML = `No specific theme is selected here, so you will be redirected to the full themes library in ${remaining} seconds: <a href="https://themes.innioasis.app/index.html" style="color:lightblue;">themes.innioasis.app/index.html</a>`;
             }
             const timer = setInterval(() => {
                 remaining -= 1;
                 if (note && remaining > 0) {
-                    note.innerHTML = `No specific theme is selected here, so you will be redirected to the full themes library in ${remaining} seconds: <a href="${THEME_REDIRECT_URL}" style="color:lightblue;">${THEME_REDIRECT_URL}</a>`;
+                    note.innerHTML = `No specific theme is selected here, so you will be redirected to the full themes library in ${remaining} seconds: <a href="https://themes.innioasis.app/index.html" style="color:lightblue;">themes.innioasis.app/index.html</a>`;
                 }
                 if (remaining <= 0) {
                     clearInterval(timer);
-                    location.href = THEME_REDIRECT_URL;
+                    location.href = 'https://themes.innioasis.app/index.html';
                 }
             }, 1000);
         }
@@ -440,7 +424,7 @@
                         if (!originalButton.parentElement) parent.appendChild(originalButton);
                         parent.replaceChild(originalButton, progressWrap);
                         const origText = originalButton.innerHTML;
-                        originalButton.innerHTML = 'Downloaded âœ“';
+                        originalButton.innerHTML = 'Downloaded ✓';
                         originalButton.disabled = false;
                         setTimeout(() => {
                             originalButton.innerHTML = origText;
@@ -516,7 +500,7 @@
 
             if (themeQuery) {
                 const themeName = themeQuery;
-                document.title = `${themeName} â€” Innioasis Y1`;
+                document.title = `${themeName} — Innioasis Y1 Theme`;
                 try {
                     const themes = await tryFetchThemes()
                     themeMeta = themes.find(t => (t.name || '').toLowerCase() === themeName.toLowerCase())
@@ -528,7 +512,7 @@
                 themeMeta = await tryFetchLocalConfigTheme();
                 if (themeMeta) {
                     folder = themeMeta.folder || '';
-                    document.title = `${themeMeta.name} â€” Innioasis Y1`;
+                    document.title = `${themeMeta.name} — Innioasis Y1 Theme`;
                 } else {
                     showFallbackAndRedirect();
                     return;
