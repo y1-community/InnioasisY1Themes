@@ -45,7 +45,7 @@
             top: 0;
             z-index: 1200;
             display: grid;
-            grid-template-columns: 1fr auto minmax(250px, 360px);
+            grid-template-columns: 1fr auto 1fr;
             align-items: center;
             gap: 10px;
             padding: 8px 14px;
@@ -103,6 +103,7 @@
         .topbar-search-wrap {
             position: relative;
             width: 100%;
+            max-width: 360px;
             justify-self: end;
             grid-column: 3;
         }
@@ -302,7 +303,7 @@
         </div>
         <div class="topbar-search-wrap">
             <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
-            <input id="theme-search" class="topbar-search" type="search" placeholder="Search themes, images, color" aria-label="Search themes">
+            <input id="theme-search" class="topbar-search" type="search" placeholder="&#128269;" aria-label="Search themes">
         </div>
     </div>
     <div class="wrap">
@@ -1216,10 +1217,29 @@
             } else {
                 const encodedFolderPath = folderPath.split('/').map(seg => encodeURIComponent(seg)).join('/');
                 const themeQueryKey = folderPath || String(theme.name || '');
-                if (theme.hasIndexPage === false) {
-                    n.href = `theme.html?theme=${encodeURIComponent(themeQueryKey)}`;
+                const fallbackHref = `theme.html?theme=${encodeURIComponent(themeQueryKey)}`;
+                if (theme.hasIndexPage !== true) {
+                    n.href = fallbackHref;
                 } else {
-                    n.href = encodedFolderPath ? `./${encodedFolderPath}/` : `theme.html?theme=${encodeURIComponent(themeQueryKey)}`;
+                    n.href = encodedFolderPath ? `./${encodedFolderPath}/` : fallbackHref;
+                    if (encodedFolderPath) {
+                        n.addEventListener('click', async(ev) => {
+                            const probeUrl = `./${encodedFolderPath}/index.html`;
+                            try {
+                                const res = await fetch(probeUrl, {
+                                    method: 'HEAD',
+                                    cache: 'no-cache'
+                                });
+                                if (!res.ok) {
+                                    ev.preventDefault();
+                                    location.href = fallbackHref;
+                                }
+                            } catch (e) {
+                                ev.preventDefault();
+                                location.href = fallbackHref;
+                            }
+                        });
+                    }
                 }
             }
 

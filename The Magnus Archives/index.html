@@ -59,7 +59,7 @@
         top: 0;
         z-index: 1200;
         display: grid;
-        grid-template-columns: 1fr auto minmax(250px, 360px);
+        grid-template-columns: 1fr auto 1fr;
         align-items: center;
         gap: 10px;
         padding: 8px 14px;
@@ -177,7 +177,7 @@
         </div>
         <form class="topbar-search-wrap" action="https://themes.innioasis.app/index.html" method="get">
             <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
-            <input id="global-theme-search" name="q" class="topbar-search" type="search" placeholder="Search themes, images, color" aria-label="Search themes">
+            <input id="global-theme-search" name="q" class="topbar-search" type="search" placeholder="&#128269;" aria-label="Search themes">
         </form>
     </div>
 
@@ -412,20 +412,48 @@
             return fileEntries
         }
 
-        function chooseScreenshotFromFiles(metadataScreenshot, files) {
-            if (metadataScreenshot) return resolveScreenshotPath(metadataScreenshot)
-            const prefer = ['3.png', '1.png', 'screenshot.png', 'preview.png', 'thumb.png', 'cover.png']
-            const names = files.map(f => f.name.toLowerCase())
-            for (const p of prefer) {
-                const idx = names.indexOf(p)
-                if (idx !== -1) return files[idx].download_url
+        function buildScreenshotCandidates(metadataScreenshot, files) {
+            const hasImageExt = (name) => /\.(png|jpe?g|gif|webp)$/i.test(String(name || ''));
+            const list = Array.isArray(files) ? files : [];
+            const out = [];
+            const seen = new Set();
+            const pushCandidate = (value) => {
+                const v = String(value || '').trim();
+                if (!v || seen.has(v)) return;
+                seen.add(v);
+                out.push(v);
+            };
+
+            if (metadataScreenshot && hasImageExt(metadataScreenshot)) {
+                pushCandidate(resolveScreenshotPath(metadataScreenshot));
             }
-            const imageExt = ['.png', '.jpg', '.jpeg', '.gif', '.webp']
-            for (const f of files) {
-                const n = f.name.toLowerCase()
-                if (imageExt.some(ext => n.endsWith(ext))) return f.download_url
+            if (!list.length) {
+                pushCandidate('placeholder.png');
+                return out;
             }
-            return ''
+
+            const byPattern = (regex) => list.find(f => regex.test(String(f.name || '')));
+
+            const strongCover = byPattern(/^cover[^/]*\.(png|jpe?g|gif|webp)$/i);
+            if (strongCover) pushCandidate(strongCover.download_url);
+
+            const anyCover = byPattern(/cover[^/]*\.(png|jpe?g|gif|webp)$/i);
+            if (anyCover) pushCandidate(anyCover.download_url);
+
+            // Handle broader screenshot-like names, e.g. screenshot2.png, homescreenshot.jpg, my_creenshot.webp
+            const anyReenShot = byPattern(/creenshot[^/]*\.(png|jpe?g|gif|webp)$/i);
+            if (anyReenShot) pushCandidate(anyReenShot.download_url);
+
+            const previewLike = byPattern(/(preview|thumb)[^/]*\.(png|jpe?g|gif|webp)$/i);
+            if (previewLike) pushCandidate(previewLike.download_url);
+
+            const numbered = byPattern(/^(3|1)\.(png|jpe?g|gif|webp)$/i);
+            if (numbered) pushCandidate(numbered.download_url);
+
+            const anyImage = list.find(f => hasImageExt(f.name));
+            if (anyImage) pushCandidate(anyImage.download_url);
+            pushCandidate('placeholder.png');
+            return out;
         }
 
 
@@ -714,11 +742,12 @@
                 }
             }
 
-            const screenshotUrl = chooseScreenshotFromFiles(themeMeta?.screenshot, files)
-            if (screenshotUrl) {
-                screenshotEl.src = screenshotUrl
-            } else {
-                screenshotEl.src = 'placeholder.png'
+            const screenshotCandidates = buildScreenshotCandidates(themeMeta?.screenshot, files)
+            let screenshotIdx = 0
+            screenshotEl.src = screenshotCandidates[screenshotIdx] || 'placeholder.png'
+            screenshotEl.onerror = () => {
+                screenshotIdx += 1
+                screenshotEl.src = screenshotCandidates[screenshotIdx] || 'placeholder.png'
             }
 
             const folderClean = (folder || '').replace(/^\.\/+/, '')
