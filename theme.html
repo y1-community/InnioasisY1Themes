@@ -79,6 +79,11 @@
                     </div>
                 </div>
             </div>
+            <section id="fallback-root" style="display:none;background:var(--bg-card);padding:20px;border-radius:12px;max-width:900px;margin:0 auto;">
+                <h1 style="margin:0 0 10px 0;">Innioasis Y1 Themes</h1>
+                <p id="fallback-copy" style="color:var(--text-secondary);margin:0 0 10px 0;"></p>
+                <p id="fallback-redirect-note" style="color:var(--text-secondary);margin:0;"></p>
+            </section>
         </div>
 
     </div>
@@ -102,7 +107,8 @@
 
         function githubApiUrlForFolder(folder) {
             const cleaned = (folder || '').replace(/^\.\/+/, '')
-            return `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${encodeURIComponent(cleaned)}`
+            const encodedPath = cleaned.split('/').map(seg => encodeURIComponent(seg)).join('/');
+            return `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${encodedPath}`
         }
 
         async function tryFetchThemes() {
@@ -118,6 +124,67 @@
                 } catch (e) {}
             }
             return []
+        }
+
+        function getFolderFromCurrentPath() {
+            const parts = location.pathname.split('/').filter(Boolean);
+            if (!parts.length) return '';
+            const last = parts[parts.length - 1].toLowerCase();
+            if (last === 'theme.html' || last === 'index.html') {
+                const folder = parts.slice(0, -1).join('/');
+                return folder || '';
+            }
+            return parts.join('/');
+        }
+
+        async function tryFetchLocalConfigTheme() {
+            try {
+                const res = await fetch('config.json', {
+                    cache: 'no-cache'
+                });
+                if (!res.ok) return null;
+                const cfg = await res.json();
+                const info = cfg.source_info || cfg.theme_info;
+                if (!info) return null;
+                const folder = getFolderFromCurrentPath();
+                return {
+                    name: info.title || folder || 'Theme',
+                    description: info.description || '',
+                    author: info.author || null,
+                    authorUrl: info.authorUrl || '',
+                    screenshot: cfg.themeCover ? `./${cfg.themeCover}` : '',
+                    folder
+                };
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function showFallbackAndRedirect() {
+            const themeRoot = document.getElementById('theme-root');
+            const fallbackRoot = document.getElementById('fallback-root');
+            if (themeRoot) themeRoot.style.display = 'none';
+            if (fallbackRoot) fallbackRoot.style.display = 'block';
+
+            const copy = document.getElementById('fallback-copy');
+            const note = document.getElementById('fallback-redirect-note');
+            if (copy) {
+                copy.textContent = 'Browse and download custom themes to personalize your Innioasis Y1 MP3 player, with community-made styles and easy install options.';
+            }
+            let remaining = 6;
+            if (note) {
+                note.innerHTML = `No specific theme is selected here, so you will be redirected to the full themes library in ${remaining} seconds: <a href="https://themes.innioasis.app/index.html" style="color:lightblue;">themes.innioasis.app/index.html</a>`;
+            }
+            const timer = setInterval(() => {
+                remaining -= 1;
+                if (note && remaining > 0) {
+                    note.innerHTML = `No specific theme is selected here, so you will be redirected to the full themes library in ${remaining} seconds: <a href="https://themes.innioasis.app/index.html" style="color:lightblue;">themes.innioasis.app/index.html</a>`;
+                }
+                if (remaining <= 0) {
+                    clearInterval(timer);
+                    location.href = 'https://themes.innioasis.app/index.html';
+                }
+            }, 1000);
         }
 
         async function ghFetch(url) {
@@ -385,23 +452,29 @@
 
             const params = new URLSearchParams(location.search);
             const themeQuery = params.get('theme') || params.get('t') || '';
-            if (!themeQuery) {
-                document.getElementById('theme-name').textContent = 'No theme specified';
-                document.getElementById('theme-desc').textContent = 'Provide ?theme={name}';
-                return;
-            }
-
-            const themeName = themeQuery;
-            document.title = `${themeName} — Innioasis Y1`;
             let themeMeta = null;
-            try {
-                const themes = await tryFetchThemes()
-                themeMeta = themes.find(t => (t.name || '').toLowerCase() === themeName.toLowerCase())
-            } catch (e) {
-                console.warn('themes.json fetch failed', e)
-            }
+            let folder = '';
 
-            const folder = (themeMeta && themeMeta.folder) ? themeMeta.folder : `./${themeName}`;
+            if (themeQuery) {
+                const themeName = themeQuery;
+                document.title = `${themeName} — Innioasis Y1`;
+                try {
+                    const themes = await tryFetchThemes()
+                    themeMeta = themes.find(t => (t.name || '').toLowerCase() === themeName.toLowerCase())
+                } catch (e) {
+                    console.warn('themes.json fetch failed', e)
+                }
+                folder = (themeMeta && themeMeta.folder) ? themeMeta.folder : `./${themeName}`;
+            } else {
+                themeMeta = await tryFetchLocalConfigTheme();
+                if (themeMeta) {
+                    folder = themeMeta.folder || '';
+                    document.title = `${themeMeta.name} — Innioasis Y1`;
+                } else {
+                    showFallbackAndRedirect();
+                    return;
+                }
+            }
 
             let files = []
             try {
@@ -419,7 +492,7 @@
             const downloadBtn = document.getElementById('download-btn')
             const rawFolderLink = document.getElementById('raw-folder-link')
 
-            const displayName = (themeMeta && themeMeta.name) ? themeMeta.name : themeName
+            const displayName = (themeMeta && themeMeta.name) ? themeMeta.name : folder || 'Theme'
             nameEl.textContent = displayName
             descEl.textContent = (themeMeta && themeMeta.description) ? themeMeta.description : 'No description available.'
 
@@ -457,7 +530,8 @@
             }
 
             const folderClean = (folder || '').replace(/^\.\/+/, '')
-            rawFolderLink.href = `https://github.com/y1-community/InnioasisY1Themes/tree/main/${encodeURIComponent(folderClean)}`
+            const encodedFolderPath = folderClean.split('/').map(seg => encodeURIComponent(seg)).join('/');
+            rawFolderLink.href = `https://github.com/y1-community/InnioasisY1Themes/tree/main/${encodedFolderPath}`
 
             const themeObj = {
                 name: displayName,
