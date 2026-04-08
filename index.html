@@ -397,19 +397,58 @@
             window.open('https://github.com/rockbox-y1/themes/releases/tag/for_the_gays_and_the_theys')
         }
 
-        async function tryFetchThemes() {
-            const urls = [
-                'themes.json',
-            ]
-            for (const u of urls) {
-                try {
-                    const r = await fetch(u)
-                    const j = await r.json()
-                    console.log(j);
-                    if (r.ok && j.themes) return j.themes
-                } catch (e) {}
+        function extractThemesArrayFromText(text) {
+            const keyIdx = text.indexOf('"themes"');
+            if (keyIdx === -1) return [];
+            const arrayStart = text.indexOf('[', keyIdx);
+            if (arrayStart === -1) return [];
+            let depth = 0;
+            let inString = false;
+            let escaping = false;
+            for (let i = arrayStart; i < text.length; i++) {
+                const ch = text[i];
+                if (inString) {
+                    if (escaping) {
+                        escaping = false;
+                    } else if (ch === '\\') {
+                        escaping = true;
+                    } else if (ch === '"') {
+                        inString = false;
+                    }
+                    continue;
+                }
+                if (ch === '"') {
+                    inString = true;
+                    continue;
+                }
+                if (ch === '[') depth++;
+                if (ch === ']') depth--;
+                if (depth === 0) {
+                    try {
+                        return JSON.parse(text.slice(arrayStart, i + 1));
+                    } catch (e) {
+                        return [];
+                    }
+                }
             }
-            return []
+            return [];
+        }
+
+        async function tryFetchThemeCache() {
+            try {
+                const r = await fetch('themes.json');
+                if (!r.ok) return [];
+                const text = await r.text();
+                try {
+                    const j = JSON.parse(text);
+                    return Array.isArray(j.themes) ? j.themes : [];
+                } catch (e) {
+                    // Keep loading even if themes.json is malformed.
+                    return extractThemesArrayFromText(text);
+                }
+            } catch (e) {
+                return [];
+            }
         }
 
         function resolveScreenshotPath(path) {
@@ -424,8 +463,87 @@
         }
 
         function githubApiUrlForFolder(folder) {
-            const cleaned = (folder || '').replace(/^\.\/+/, '')
-            return `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${encodeURIComponent(cleaned)}`
+            const cleaned = (folder || '').replace(/^\.\/+/, '');
+            const encodedPath = cleaned.split('/').map(seg => encodeURIComponent(seg)).join('/');
+            return `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${encodedPath}`
+        }
+
+        function githubApiUrlForPath(path = '') {
+            const cleaned = (path || '').replace(/^\.\/+/, '');
+            const encodedPath = cleaned ? cleaned.split('/').map(seg => encodeURIComponent(seg)).join('/') : '';
+            return `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${encodedPath}`;
+        }
+
+        function normalizeThemeFromConfig(folder, cfg, cached) {
+            const sourceInfo = cfg && cfg.source_info ? cfg.source_info : null;
+            const themeInfo = cfg && cfg.theme_info ? cfg.theme_info : null;
+            const info = sourceInfo || themeInfo;
+            if (!info) return null;
+
+            const cachedByFolder = cached.find(t => t && t.folder === folder);
+            const cachedByName = cached.find(t => t && t.name === info.title);
+            const cachedTheme = cachedByFolder || cachedByName || null;
+            const coverFromConfig = cfg.themeCover ? `./${folder}/${cfg.themeCover}` : '';
+
+            return {
+                name: info.title || folder,
+                folder,
+                screenshot: coverFromConfig || (cachedTheme && cachedTheme.screenshot) || '',
+                description: info.description || (cachedTheme && cachedTheme.description) || '',
+                author: info.author || (cachedTheme && cachedTheme.author) || null,
+                authorUrl: info.authorUrl || (cachedTheme && cachedTheme.authorUrl) || '',
+                authorCTA: info.authorCTA || (cachedTheme && cachedTheme.authorCTA) || '',
+                sourceType: sourceInfo ? 'external' : 'internal'
+            };
+        }
+
+        async function discoverThemesFromSubfolders(cachedThemes) {
+            let rootEntries = [];
+            try {
+                const res = await fetch(githubApiUrlForPath());
+                if (!res.ok) return [];
+                rootEntries = await res.json();
+            } catch (e) {
+                return [];
+            }
+            if (!Array.isArray(rootEntries)) return [];
+
+            const folders = rootEntries
+                .filter(entry => entry && entry.type === 'dir' && entry.name)
+                .map(entry => entry.name);
+
+            const discovered = await Promise.all(folders.map(async(folder) => {
+                try {
+                    const configRes = await fetch(`${encodeURI(folder)}/config.json`);
+                    if (!configRes.ok) return null;
+                    const cfg = await configRes.json();
+                    const normalized = normalizeThemeFromConfig(folder, cfg, cachedThemes);
+                    if (!normalized) return null;
+
+                    if (!normalized.screenshot) {
+                        try {
+                            const filesRes = await fetch(githubApiUrlForFolder(folder));
+                            if (filesRes.ok) {
+                                const files = await filesRes.json();
+                                if (Array.isArray(files)) {
+                                    const names = files.filter(f => f.type === 'file').map(f => f.name);
+                                    const match = names.find(n => /^cover\.(png|jpg|jpeg|gif|webp)$/i.test(n)) ||
+                                        names.find(n => /^screenshot\.(png|jpg|jpeg|gif|webp)$/i.test(n)) ||
+                                        names.find(n => /^screenshot/i.test(n));
+                                    if (match) normalized.screenshot = `./${folder}/${match}`;
+                                }
+                            }
+                        } catch (e) {}
+                    }
+                    return normalized;
+                } catch (e) {
+                    return null;
+                }
+            }));
+
+            return discovered
+                .filter(Boolean)
+                .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
         }
 
         async function downloadGitHubFolderAsZip(folderName, themeName, progressCallbacks) {
@@ -822,8 +940,14 @@
 
             const n = document.createElement('a');
             n.className = 'theme-name';
-            n.href = `theme.html?theme=${encodeURIComponent(theme.name || '')}`;
             n.textContent = safeText(theme.name);
+            if (theme.sourceType === 'external' && theme.authorUrl) {
+                n.href = theme.authorUrl;
+                n.target = '_blank';
+                n.rel = 'noopener';
+            } else {
+                n.href = `theme.html?theme=${encodeURIComponent(theme.name || '')}`;
+            }
 
             const d = document.createElement('div');
             d.className = 'theme-desc';
@@ -1117,34 +1241,43 @@
 
             dl.style.fontFamily = buttonStyle.fontFamily;
 
-            const di = document.createElement('button');
-            di.className = 'btn';
-            di.style.fontWeight = 'normal';
-            di.style.marginTop = 'auto';
-            di.style.opacity = '0.5';
-            di.style.cursor = 'not-allowed';
-            di.disabled = true;
-            di.innerHTML = '<i class="fa-solid fa-bolt"></i> Direct Install';
-            di.type = 'button';
-            di.onclick = () => directInstallTheme(theme, di);
-            di.setAttribute('data-direct-install-btn', 'true');
-            if (selectedThemesFolder) {
-                di.disabled = false;
-                di.style.opacity = '1';
-                di.style.cursor = 'pointer';
-            }
-
-            try {
-                if (!supportDirectInstall) {
-                    di.style.display = 'none';
-                    di.disabled = true;
-                    di.style.opacity = '0';
-                    di.style.cursor = 'default';
-                    di.setAttribute('aria-hidden', 'true');
+            if (theme.sourceType === 'external') {
+                dl.innerHTML = `<i class="fa-solid fa-arrow-up-right-from-square"></i> ${safeText(theme.authorCTA || 'Visit author')}`;
+                dl.onclick = () => {
+                    if (theme.authorUrl) {
+                        window.open(theme.authorUrl, '_blank', 'noopener');
+                    }
+                };
+                bd.append(dl);
+            } else {
+                const di = document.createElement('button');
+                di.className = 'btn';
+                di.style.fontWeight = 'normal';
+                di.style.marginTop = 'auto';
+                di.style.opacity = '0.5';
+                di.style.cursor = 'not-allowed';
+                di.disabled = true;
+                di.innerHTML = '<i class="fa-solid fa-bolt"></i> Direct Install';
+                di.type = 'button';
+                di.onclick = () => directInstallTheme(theme, di);
+                di.setAttribute('data-direct-install-btn', 'true');
+                if (selectedThemesFolder) {
+                    di.disabled = false;
+                    di.style.opacity = '1';
+                    di.style.cursor = 'pointer';
                 }
-            } catch (e) {}
 
-            bd.append(dl, di);
+                try {
+                    if (!supportDirectInstall) {
+                        di.style.display = 'none';
+                        di.disabled = true;
+                        di.style.opacity = '0';
+                        di.style.cursor = 'default';
+                        di.setAttribute('aria-hidden', 'true');
+                    }
+                } catch (e) {}
+                bd.append(dl, di);
+            }
             c.append(img, n, d, a, bd);
             return c;
         }
@@ -1152,7 +1285,9 @@
 
         async function load() {
             const grid = document.getElementById('theme-grid')
-            const themes = await tryFetchThemes()
+            const cachedThemes = await tryFetchThemeCache()
+            const discoveredThemes = await discoverThemesFromSubfolders(cachedThemes)
+            const themes = discoveredThemes.length ? discoveredThemes : cachedThemes
             if (!themes.length) {
                 grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#94a3b8">Unable to load themes</p>'
                 return
