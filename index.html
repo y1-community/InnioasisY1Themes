@@ -658,10 +658,35 @@
             const rootFolders = Array.isArray(rootEntries) ? rootEntries
                 .filter(entry => entry && entry.type === 'dir' && entry.name)
                 .map(entry => entry.name) : [];
+            let sitemapFolders = [];
+            if (!rootFolders.length) {
+                try {
+                    const sitemapRes = await fetch('sitemap.xml', {
+                        cache: 'no-cache'
+                    });
+                    if (sitemapRes.ok) {
+                        const xmlText = await sitemapRes.text();
+                        const locMatches = Array.from(xmlText.matchAll(/<loc>\s*https?:\/\/themes\.innioasis\.app\/([^<]+)\s*<\/loc>/gi));
+                        sitemapFolders = locMatches
+                            .map(m => String(m[1] || '').trim())
+                            .map(p => p.replace(/^\/+|\/+$/g, ''))
+                            .filter(p => p && p.toLowerCase() !== 'theme.html' && p.toLowerCase() !== 'index.html' && !p.includes('.'))
+                            .map(p => {
+                                try {
+                                    return decodeURIComponent(p);
+                                } catch (e) {
+                                    return p;
+                                }
+                            });
+                    }
+                } catch (e) {
+                    sitemapFolders = [];
+                }
+            }
             const cachedFolders = (cachedThemes || [])
                 .map(t => String((t && t.folder) || '').replace(/^\.\/+/, '').trim())
                 .filter(Boolean);
-            const folders = Array.from(new Set([...rootFolders, ...cachedFolders]));
+            const folders = Array.from(new Set([...rootFolders, ...sitemapFolders, ...cachedFolders]));
             if (!folders.length) return [];
 
             const discovered = await Promise.all(folders.map(async(folder) => {
