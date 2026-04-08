@@ -44,10 +44,10 @@
             position: sticky;
             top: 0;
             z-index: 1200;
-            display: flex;
+            display: grid;
+            grid-template-columns: minmax(260px, 420px) auto minmax(260px, 420px);
             align-items: center;
-            justify-content: space-between;
-            gap: 16px;
+            gap: 12px;
             padding: 10px 18px;
             background: #17191f;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -84,8 +84,8 @@
         }
 
         .topbar-search {
-            width: min(420px, 48vw);
-            padding: 10px 14px;
+            width: 100%;
+            padding: 10px 14px 10px 36px;
             border-radius: 10px;
             border: 1px solid rgba(255, 255, 255, 0.12);
             background: #222733;
@@ -96,6 +96,54 @@
 
         .topbar-search::placeholder {
             color: #94a0b8;
+        }
+
+        .topbar-search-wrap {
+            position: relative;
+            width: 100%;
+            justify-self: start;
+        }
+
+        .topbar-search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8ea0bf;
+            font-size: 0.85rem;
+            pointer-events: none;
+        }
+
+        .gallery-tabs {
+            justify-self: center;
+        }
+
+        .topbar-spacer {
+            justify-self: end;
+            width: 100%;
+            max-width: 420px;
+        }
+
+        @media (max-width: 900px) {
+            .gallery-topbar {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .gallery-tabs {
+                order: 1;
+                justify-self: center;
+            }
+
+            .topbar-search-wrap {
+                order: 2;
+                max-width: 420px;
+                justify-self: center;
+            }
+
+            .topbar-spacer {
+                display: none;
+            }
         }
 
         .wrap {
@@ -251,11 +299,15 @@
 <body>
     <div id="nav-root"></div>
     <div class="gallery-topbar">
+        <div class="topbar-search-wrap">
+            <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
+            <input id="theme-search" class="topbar-search" type="search" placeholder="Search themes, images, color" aria-label="Search themes">
+        </div>
         <div class="gallery-tabs" aria-label="Site sections">
             <a class="gallery-tab" href="https://y1-themes.vercel.app">Editor</a>
             <a class="gallery-tab active" href="index.html">Gallery</a>
         </div>
-        <input id="theme-search" class="topbar-search" type="search" placeholder="Search themes, images, color" aria-label="Search themes">
+        <div class="topbar-spacer" aria-hidden="true"></div>
     </div>
     <div class="wrap">
         <header>
@@ -1076,6 +1128,7 @@
             if (theme.name === "MelodyMuncher") c.id = 'melodymuncher';
             const safeThemeName = (theme.name || 'theme').replace(/[^\w\d-_ ]/g, '_') || 'theme';
             c.setAttribute('data-theme-name', safeThemeName);
+            const folderPath = String(theme.folder || '').replace(/^\.\/+/, '');
 
             const statusBadge = document.createElement('div');
             statusBadge.className = 'theme-status';
@@ -1093,7 +1146,33 @@
             c.appendChild(statusBadge);
 
             const img = document.createElement('img');
-            img.src = resolveScreenshotPath(theme.screenshot);
+            const folderImageCandidates = folderPath ? [
+                `${folderPath}/cover.png`,
+                `${folderPath}/cover.PNG`,
+                `${folderPath}/cover.jpg`,
+                `${folderPath}/cover.jpeg`,
+                `${folderPath}/screenshot.png`,
+                `${folderPath}/screenshot.PNG`,
+                `${folderPath}/screenshot.jpg`,
+                `${folderPath}/screenshot.jpeg`,
+                `${folderPath}/screenshot1.png`,
+                `${folderPath}/screenshot2.png`,
+                `${folderPath}/3.png`,
+                `${folderPath}/1.png`
+            ] : [];
+            const screenshotCandidates = [
+                theme.screenshot,
+                ...folderImageCandidates.map(p => `./${p}`),
+                'placeholder.png'
+            ].filter(Boolean);
+            let screenshotIdx = 0;
+            img.src = resolveScreenshotPath(screenshotCandidates[screenshotIdx] || '');
+            img.onerror = () => {
+                screenshotIdx += 1;
+                if (screenshotIdx < screenshotCandidates.length) {
+                    img.src = resolveScreenshotPath(screenshotCandidates[screenshotIdx]);
+                }
+            };
             img.alt = safeText(theme.name);
 
             const n = document.createElement('a');
@@ -1104,12 +1183,12 @@
                 n.target = '_blank';
                 n.rel = 'noopener';
             } else {
-                const folderPath = String(theme.folder || '').replace(/^\.\/+/, '');
                 const encodedFolderPath = folderPath.split('/').map(seg => encodeURIComponent(seg)).join('/');
+                const themeQueryKey = folderPath || String(theme.name || '');
                 if (theme.hasIndexPage === false) {
-                    n.href = `theme.html?theme=${encodeURIComponent(theme.name || '')}`;
+                    n.href = `theme.html?theme=${encodeURIComponent(themeQueryKey)}`;
                 } else {
-                    n.href = encodedFolderPath ? `./${encodedFolderPath}/` : `theme.html?theme=${encodeURIComponent(theme.name || '')}`;
+                    n.href = encodedFolderPath ? `./${encodedFolderPath}/` : `theme.html?theme=${encodeURIComponent(themeQueryKey)}`;
                 }
             }
 
