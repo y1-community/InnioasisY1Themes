@@ -330,6 +330,15 @@
             setMetaContent('meta[name=\"twitter:description\"]', seoDescription);
         }
 
+        function normalizeThemeKey(value) {
+            return String(value || '')
+                .trim()
+                .toLowerCase()
+                .replace(/\+/g, ' ')
+                .replace(/\s+/g, ' ')
+                .replace(/[^\w\s-]/g, '');
+        }
+
         function githubApiUrlForFolder(folder) {
             const cleaned = (folder || '').replace(/^\.\/+/, '')
             const encodedPath = cleaned.split('/').map(seg => encodeURIComponent(seg)).join('/');
@@ -542,10 +551,10 @@
                 out.push(v);
             };
 
-            if (metadataScreenshot && hasImageExt(metadataScreenshot)) {
-                pushCandidate(resolveScreenshotPath(metadataScreenshot));
-            }
             if (!list.length) {
+                if (metadataScreenshot && hasImageExt(metadataScreenshot)) {
+                    pushCandidate(resolveScreenshotPath(metadataScreenshot));
+                }
                 pushCandidate('placeholder.png');
                 return out;
             }
@@ -559,11 +568,21 @@
             const anyReenShot = byPattern(/creenshot[^/]*\.(png|jpe?g|gif|webp)$/i);
             if (anyReenShot) pushCandidate(anyReenShot.download_url);
 
+            const metaLooksLikeScreenshot = /creenshot[^/]*\.(png|jpe?g|gif|webp)$/i.test(String(metadataScreenshot || ''));
+            if (metaLooksLikeScreenshot && metadataScreenshot && hasImageExt(metadataScreenshot)) {
+                pushCandidate(resolveScreenshotPath(metadataScreenshot));
+            }
+
             const strongCover = byPattern(/^cover[^/]*\.(png|jpe?g|gif|webp)$/i);
             if (strongCover) pushCandidate(strongCover.download_url);
 
             const anyCover = byPattern(/cover[^/]*\.(png|jpe?g|gif|webp)$/i);
             if (anyCover) pushCandidate(anyCover.download_url);
+
+            // Only use metadata image after screenshots/covers from folder are considered.
+            if (metadataScreenshot && hasImageExt(metadataScreenshot)) {
+                pushCandidate(resolveScreenshotPath(metadataScreenshot));
+            }
 
             const previewLike = byPattern(/(preview|thumb)[^/]*\.(png|jpe?g|gif|webp)$/i);
             if (previewLike) pushCandidate(previewLike.download_url);
@@ -791,16 +810,21 @@
             let folder = '';
 
             if (themeQuery) {
-                const themeName = themeQuery;
+                const themeName = String(themeQuery || '').replace(/\+/g, ' ').trim();
                 document.title = `${themeName} Innioasis Y1 theme`;
                 let themes = [];
                 try {
                     themes = await tryFetchThemes();
-                    themeMeta = themes.find(t => (t.name || '').toLowerCase() === themeName.toLowerCase())
+                    const queryKey = normalizeThemeKey(themeName);
+                    themeMeta = themes.find(t => {
+                        const nameKey = normalizeThemeKey(t && t.name);
+                        const folderKey = normalizeThemeKey(t && t.folder);
+                        return nameKey === queryKey || folderKey === queryKey;
+                    }) || null;
                 } catch (e) {
                     console.warn('themes.json fetch failed', e)
                 }
-                folder = (themeMeta && themeMeta.folder) ? themeMeta.folder : `./${themeName}`;
+                folder = (themeMeta && themeMeta.folder) ? themeMeta.folder : themeName;
                 const cfgMeta = await tryFetchFolderConfigTheme(folder, themes);
                 if (cfgMeta) {
                     themeMeta = {
