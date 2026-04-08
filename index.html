@@ -89,7 +89,14 @@
         .theme-desc {
             font-size: 0.95rem;
             color: var(--text-secondary);
-            text-align: center
+            text-align: center;
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.35;
+            max-height: calc(1.35em * 4);
         }
 
         .theme-author {
@@ -638,6 +645,60 @@
             return out;
         }
 
+        async function annotateThemeIndexAvailability(themes) {
+            await Promise.all((themes || []).map(async(theme) => {
+                if (!theme || theme.sourceType === 'external') return;
+                const folderPath = String(theme.folder || '').replace(/^\.\/+/, '');
+                if (!folderPath) {
+                    theme.hasIndexPage = false;
+                    return;
+                }
+                try {
+                    const apiUrl = githubApiUrlForFolder(folderPath);
+                    const res = await fetch(apiUrl, {
+                        cache: 'no-cache'
+                    });
+                    if (!res.ok) {
+                        theme.hasIndexPage = false;
+                        return;
+                    }
+                    const entries = await res.json();
+                    if (!Array.isArray(entries)) {
+                        theme.hasIndexPage = false;
+                        return;
+                    }
+                    theme.hasIndexPage = entries.some(e => e && e.type === 'file' && String(e.name || '').toLowerCase() === 'index.html');
+                } catch (e) {
+                    theme.hasIndexPage = false;
+                }
+            }));
+            return themes;
+        }
+
+        async function annotateThemeConfigAvailability(themes) {
+            await Promise.all((themes || []).map(async(theme) => {
+                if (!theme || theme.sourceType === 'external') {
+                    if (theme) theme.hasConfigFile = true;
+                    return;
+                }
+                const folderPath = String(theme.folder || '').replace(/^\.\/+/, '');
+                if (!folderPath) {
+                    theme.hasConfigFile = false;
+                    return;
+                }
+                const encodedFolderPath = folderPath.split('/').map(seg => encodeURIComponent(seg)).join('/');
+                try {
+                    const res = await fetch(`${encodedFolderPath}/config.json`, {
+                        cache: 'no-cache'
+                    });
+                    theme.hasConfigFile = res.ok;
+                } catch (e) {
+                    theme.hasConfigFile = false;
+                }
+            }));
+            return themes;
+        }
+
         async function downloadGitHubFolderAsZip(folderName, themeName, progressCallbacks) {
             const zip = new JSZip();
             const apiUrl = githubApiUrlForFolder(folderName);
@@ -1040,7 +1101,11 @@
             } else {
                 const folderPath = String(theme.folder || '').replace(/^\.\/+/, '');
                 const encodedFolderPath = folderPath.split('/').map(seg => encodeURIComponent(seg)).join('/');
-                n.href = encodedFolderPath ? `./${encodedFolderPath}/` : '#';
+                if (theme.hasIndexPage === false) {
+                    n.href = `theme.html?theme=${encodeURIComponent(theme.name || '')}`;
+                } else {
+                    n.href = encodedFolderPath ? `./${encodedFolderPath}/` : '#';
+                }
             }
 
             const d = document.createElement('div');
@@ -1050,7 +1115,7 @@
             const a = document.createElement('div');
             a.className = 'theme-author';
             if (!theme.author) {
-                a.textContent = 'Unknown author';
+                a.style.display = 'none';
             } else if (theme.author === 'Innioasis') {
                 a.innerHTML = `by <a href="https://innioasis.com" target="_blank" rel="noopener">Innioasis</a>`;
             } else if (theme.author === 'u/ope-nz | Normal-Curve-1642') {
@@ -1387,8 +1452,11 @@
                 grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#94a3b8">Unable to load themes</p>'
                 return
             }
+            await annotateThemeConfigAvailability(themes)
+            await annotateThemeIndexAvailability(themes)
+            const filteredThemes = themes.filter(t => t && t.sourceType === 'external' ? true : t.hasConfigFile !== false)
             grid.innerHTML = ''
-            themes.forEach(t => grid.appendChild(createCard(t)))
+            filteredThemes.forEach(t => grid.appendChild(createCard(t)))
 
             handleHashAutoDownload()
         }
