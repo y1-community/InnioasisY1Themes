@@ -4,24 +4,44 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Get theme — Innioasis Y1</title>
+    <title id="page-title">Themes for your Innioasis Y1</title>
+    <script>
+        // Keep the hardcoded title as fallback, but prefer local theme config title when available.
+        (function autoTitleFromLocalConfig() {
+            fetch('config.json', {
+                    cache: 'no-cache'
+                })
+                .then(r => r.ok ? r.json() : null)
+                .then(cfg => {
+                    if (!cfg) return;
+                    const info = cfg.theme_info || cfg.source_info;
+                    const title = info && info.title ? String(info.title).trim() : '';
+                    if (title) {
+                        document.title = `${title} â€” Innioasis Y1`;
+                    }
+                })
+                .catch(() => {
+                    // Fallback is the hardcoded <title> above.
+                });
+        })();
+    </script>
 
-    <meta name="description" content="Download and customize this theme for the Innioasis Y1 device easily and for free.">
-    <meta name="keywords" content="Innioasis Y1 themes, Innioasis theme Y1, Y1 theme, Y1 UI themes, innioasis customization">
-    <meta name="author" content="Innioasis Community">
+    <meta name="description" content="Download and customize the ACmp3 theme for Innioasis Y1 with curated assets and easy personalization options.">
+    <meta name="keywords" content="Y1 MP3 player themes, Innioasis Y1 skins, personalization, Y1 mods, stock">
+    <meta name="author" content="Innioasis">
 
-    <link rel="canonical" href="https://themes.innioasis.app/theme.html">
+    <link rel="canonical" href="https://themes.innioasis.app">
 
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Innioasis Y1 Theme">
-    <meta property="og:description" content="Download and customize this theme for the Innioasis Y1.">
-    <meta property="og:url" content="https://themes.innioasis.app/theme.html">
-    <meta property="og:image" content="https://innioasis.app/y1_illustration.png">
+    <meta property="og:title" content="Personalize your media player - Innioasis Y1 Themes">
+    <meta property="og:description" content="Download and customize your Innioasis Y1 with community themes and easy personalization options.">
+    <meta property="og:url" content="https://themes.innioasis.app">
+    <meta property="og:image" content="https://innioasis.app">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Innioasis Y1 Theme">
-    <meta name="twitter:description" content="Download and customize this theme for the Innioasis Y1.">
-    <meta name="twitter:image" content="https://innioasis.app/y1_illustration.png">
+    <meta name="twitter:title" content="Personalize your media player - Innioasis Y1 Themes">
+    <meta name="twitter:description" content="Download and customize your Innioasis Y1 with community themes and easy personalization options.">
+    <meta name="twitter:image" content="https://innioasis.app">
 
     <link rel="icon" href="y1_illustration.png">
 
@@ -111,7 +131,7 @@
             if (!slot) return;
             const candidates = [
                 'support_toolbar.html',
-                './support_toolbar.html',
+                '../support_toolbar.html',
                 'https://themes.innioasis.app/support_toolbar.html'
             ];
             for (const url of candidates) {
@@ -131,6 +151,8 @@
 
         const GITHUB_TOKEN = '';
 
+        const THEME_NAME_PLACEHOLDER = "ACmp3";
+        const THEME_REDIRECT_URL = "https://themes.innioasis.app";
         function resolveScreenshotPath(path) {
             if (!path) return ''
             if (path.startsWith('http')) return path
@@ -210,16 +232,16 @@
             }
             let remaining = 6;
             if (note) {
-                note.innerHTML = `No specific theme is selected here, so you will be redirected to the full themes library in ${remaining} seconds: <a href="https://themes.innioasis.app/index.html" style="color:lightblue;">themes.innioasis.app/index.html</a>`;
+                note.innerHTML = `No specific theme is selected here, so you will be redirected to the full themes library in ${remaining} seconds: <a href="${THEME_REDIRECT_URL}" style="color:lightblue;">${THEME_REDIRECT_URL}</a>`;
             }
             const timer = setInterval(() => {
                 remaining -= 1;
                 if (note && remaining > 0) {
-                    note.innerHTML = `No specific theme is selected here, so you will be redirected to the full themes library in ${remaining} seconds: <a href="https://themes.innioasis.app/index.html" style="color:lightblue;">themes.innioasis.app/index.html</a>`;
+                    note.innerHTML = `No specific theme is selected here, so you will be redirected to the full themes library in ${remaining} seconds: <a href="${THEME_REDIRECT_URL}" style="color:lightblue;">${THEME_REDIRECT_URL}</a>`;
                 }
                 if (remaining <= 0) {
                     clearInterval(timer);
-                    location.href = 'https://themes.innioasis.app/index.html';
+                    location.href = THEME_REDIRECT_URL;
                 }
             }, 1000);
         }
@@ -418,7 +440,7 @@
                         if (!originalButton.parentElement) parent.appendChild(originalButton);
                         parent.replaceChild(originalButton, progressWrap);
                         const origText = originalButton.innerHTML;
-                        originalButton.innerHTML = 'Downloaded ✓';
+                        originalButton.innerHTML = 'Downloaded âœ“';
                         originalButton.disabled = false;
                         setTimeout(() => {
                             originalButton.innerHTML = origText;
@@ -494,7 +516,7 @@
 
             if (themeQuery) {
                 const themeName = themeQuery;
-                document.title = `${themeName} — Innioasis Y1`;
+                document.title = `${themeName} â€” Innioasis Y1`;
                 try {
                     const themes = await tryFetchThemes()
                     themeMeta = themes.find(t => (t.name || '').toLowerCase() === themeName.toLowerCase())
@@ -506,7 +528,7 @@
                 themeMeta = await tryFetchLocalConfigTheme();
                 if (themeMeta) {
                     folder = themeMeta.folder || '';
-                    document.title = `${themeMeta.name} — Innioasis Y1`;
+                    document.title = `${themeMeta.name} â€” Innioasis Y1`;
                 } else {
                     showFallbackAndRedirect();
                     return;
