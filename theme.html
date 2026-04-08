@@ -300,6 +300,12 @@
             return `https://reddit.com/user/${cleaned}`;
         }
 
+        function getPreferredAuthorUrl(author, authorUrl) {
+            const explicit = String(authorUrl || '').trim();
+            if (/^https?:\/\//i.test(explicit)) return explicit;
+            return getRedditProfileUrl(author);
+        }
+
         function githubApiUrlForFolder(folder) {
             const cleaned = (folder || '').replace(/^\.\/+/, '')
             const encodedPath = cleaned.split('/').map(seg => encodeURIComponent(seg)).join('/');
@@ -740,8 +746,10 @@
                 } else if (themeMeta.author === 'sipped') {
                     a.innerHTML = `by <a href="https://sipped.org" target="_blank" rel="noopener">sipped</a>`
                 } else {
-                    const redditUrl = getRedditProfileUrl(themeMeta.author)
-                    a.innerHTML = `by <a href="${redditUrl}" target="_blank" rel="noopener">${themeMeta.author}</a>`
+                    const preferredUrl = getPreferredAuthorUrl(themeMeta.author, themeMeta.authorUrl)
+                    a.innerHTML = preferredUrl ?
+                        `by <a href="${preferredUrl}" target="_blank" rel="noopener">${themeMeta.author}</a>` :
+                        `by ${themeMeta.author}`
                 }
                 authorEl.innerHTML = ''
                 authorEl.appendChild(a)

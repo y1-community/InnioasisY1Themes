@@ -591,6 +591,12 @@
             return `https://reddit.com/user/${cleaned}`;
         }
 
+        function getPreferredAuthorUrl(author, authorUrl) {
+            const explicit = String(authorUrl || '').trim();
+            if (/^https?:\/\//i.test(explicit)) return explicit;
+            return getRedditProfileUrl(author);
+        }
+
         function isUnknownish(v) {
             const s = String(v == null ? '' : v).trim().toLowerCase();
             return !s || s === 'unknown' || s === 'unknown author' || s === 'n/a' || s === 'na' || s === 'none';
@@ -1229,7 +1235,7 @@
                 const encodedFolderPath = folderPath.split('/').map(seg => encodeURIComponent(seg)).join('/');
                 const themeQueryKey = folderPath || String(theme.name || '');
                 const fallbackHref = `theme.html?theme=${encodeURIComponent(themeQueryKey)}`;
-                if (theme.hasIndexPage !== true) {
+                if (theme.hasIndexPage === false) {
                     n.href = fallbackHref;
                 } else {
                     n.href = encodedFolderPath ? `./${encodedFolderPath}/` : fallbackHref;
@@ -1274,8 +1280,10 @@
             } else if (theme.author === 'sipped') {
                 a.innerHTML = `by <a href="https://sipped.org" target="_blank" rel="noopener">sipped</a>`;
             } else {
-                const redditUrl = getRedditProfileUrl(theme.author);
-                a.innerHTML = `by <a href="${redditUrl}" target="_blank" rel="noopener">${theme.author}</a>`;
+                const preferredUrl = getPreferredAuthorUrl(theme.author, theme.authorUrl);
+                a.innerHTML = preferredUrl ?
+                    `by <a href="${preferredUrl}" target="_blank" rel="noopener">${theme.author}</a>` :
+                    `by ${theme.author}`;
             }
 
             const bd = document.createElement('div');
