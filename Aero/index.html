@@ -287,6 +287,17 @@
             return v == null ? '' : String(v)
         }
 
+        function getRedditProfileUrl(authorValue) {
+            const raw = String(authorValue || '').trim();
+            if (!raw) return '';
+            if (/^https?:\/\/(www\.)?reddit\.com\//i.test(raw)) return raw;
+            const cleaned = raw.replace(/^\/+|\/+$/g, '');
+            if (/^u\//i.test(cleaned) || /^user\//i.test(cleaned)) {
+                return `https://reddit.com/${cleaned}`;
+            }
+            return `https://reddit.com/user/${cleaned}`;
+        }
+
         function githubApiUrlForFolder(folder) {
             const cleaned = (folder || '').replace(/^\.\/+/, '')
             const encodedPath = cleaned.split('/').map(seg => encodeURIComponent(seg)).join('/');
@@ -727,7 +738,8 @@
                 } else if (themeMeta.author === 'sipped') {
                     a.innerHTML = `by <a href="https://sipped.org" target="_blank" rel="noopener">sipped</a>`
                 } else {
-                    a.innerHTML = `by <a href="https://reddit.com/${themeMeta.author}" target="_blank" rel="noopener">${themeMeta.author}</a>`
+                    const redditUrl = getRedditProfileUrl(themeMeta.author)
+                    a.innerHTML = `by <a href="${redditUrl}" target="_blank" rel="noopener">${themeMeta.author}</a>`
                 }
                 authorEl.innerHTML = ''
                 authorEl.appendChild(a)

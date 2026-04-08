@@ -580,6 +580,17 @@
             return v == null ? '' : String(v)
         }
 
+        function getRedditProfileUrl(authorValue) {
+            const raw = String(authorValue || '').trim();
+            if (!raw) return '';
+            if (/^https?:\/\/(www\.)?reddit\.com\//i.test(raw)) return raw;
+            const cleaned = raw.replace(/^\/+|\/+$/g, '');
+            if (/^u\//i.test(cleaned) || /^user\//i.test(cleaned)) {
+                return `https://reddit.com/${cleaned}`;
+            }
+            return `https://reddit.com/user/${cleaned}`;
+        }
+
         function isUnknownish(v) {
             const s = String(v == null ? '' : v).trim().toLowerCase();
             return !s || s === 'unknown' || s === 'unknown author' || s === 'n/a' || s === 'na' || s === 'none';
@@ -1263,7 +1274,8 @@
             } else if (theme.author === 'sipped') {
                 a.innerHTML = `by <a href="https://sipped.org" target="_blank" rel="noopener">sipped</a>`;
             } else {
-                a.innerHTML = `by <a href="https://reddit.com/${theme.author}" target="_blank" rel="noopener">${theme.author}</a>`;
+                const redditUrl = getRedditProfileUrl(theme.author);
+                a.innerHTML = `by <a href="${redditUrl}" target="_blank" rel="noopener">${theme.author}</a>`;
             }
 
             const bd = document.createElement('div');
