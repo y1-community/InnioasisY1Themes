@@ -752,15 +752,26 @@
                     theme.hasIndexPage = false;
                     return;
                 }
+                const encodedFolderPath = folderPath.split('/').map(seg => encodeURIComponent(seg)).join('/');
                 try {
                     const apiUrl = githubApiUrlForFolder(folderPath);
                     const res = await fetch(apiUrl, {
                         cache: 'no-cache'
                     });
-                    if (!res.ok) return;
-                    const entries = await res.json();
-                    if (!Array.isArray(entries)) return;
-                    theme.hasIndexPage = entries.some(e => e && e.type === 'file' && String(e.name || '').toLowerCase() === 'index.html');
+                    if (res.ok) {
+                        const entries = await res.json();
+                        if (Array.isArray(entries)) {
+                            theme.hasIndexPage = entries.some(e => e && e.type === 'file' && String(e.name || '').toLowerCase() === 'index.html');
+                            return;
+                        }
+                    }
+                } catch (e) {}
+                try {
+                    const probe = await fetch(`${encodedFolderPath}/index.html`, {
+                        method: 'HEAD',
+                        cache: 'no-cache'
+                    });
+                    theme.hasIndexPage = probe.ok;
                 } catch (e) {}
             }));
             return themes;
@@ -1235,29 +1246,9 @@
                 const encodedFolderPath = folderPath.split('/').map(seg => encodeURIComponent(seg)).join('/');
                 const themeQueryKey = folderPath || String(theme.name || '');
                 const fallbackHref = `theme.html?theme=${encodeURIComponent(themeQueryKey)}`;
-                if (theme.hasIndexPage === false) {
-                    n.href = fallbackHref;
-                } else {
-                    n.href = encodedFolderPath ? `./${encodedFolderPath}/` : fallbackHref;
-                    if (encodedFolderPath) {
-                        n.addEventListener('click', async(ev) => {
-                            const probeUrl = `./${encodedFolderPath}/index.html`;
-                            try {
-                                const res = await fetch(probeUrl, {
-                                    method: 'HEAD',
-                                    cache: 'no-cache'
-                                });
-                                if (!res.ok) {
-                                    ev.preventDefault();
-                                    location.href = fallbackHref;
-                                }
-                            } catch (e) {
-                                ev.preventDefault();
-                                location.href = fallbackHref;
-                            }
-                        });
-                    }
-                }
+                n.href = (theme.hasIndexPage === true && encodedFolderPath) ?
+                    `./${encodedFolderPath}/` :
+                    fallbackHref;
             }
 
             const d = document.createElement('div');

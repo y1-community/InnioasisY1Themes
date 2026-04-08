@@ -275,7 +275,7 @@
             });
         }
 
-        const THEME_NAME_PLACEHOLDER = "Hatsune Miku";
+        const THEME_NAME_PLACEHOLDER = "Sabrina´s World";
         const THEME_REDIRECT_URL = "https://themes.innioasis.app";
         function resolveScreenshotPath(path) {
             if (!path) return ''
@@ -300,6 +300,36 @@
             return `https://reddit.com/user/${cleaned}`;
         }
 
+        function getPreferredAuthorUrl(author, authorUrl) {
+            const explicit = String(authorUrl || '').trim();
+            if (/^https?:\/\//i.test(explicit)) return explicit;
+            return getRedditProfileUrl(author);
+        }
+
+        function setMetaContent(selector, value) {
+            if (!value) return;
+            const el = document.querySelector(selector);
+            if (el) el.setAttribute('content', value);
+        }
+
+        function buildSeoTitle(name, author) {
+            const cleanName = String(name || '').trim() || 'Theme';
+            const cleanAuthor = String(author || '').trim();
+            return cleanAuthor ? `${cleanName} Innioasis Y1 theme by ${cleanAuthor}` : `${cleanName} Innioasis Y1 theme`;
+        }
+
+        function applySeoMetadata(name, author, description) {
+            const seoTitle = buildSeoTitle(name, author);
+            const seoDescription = String(description || '').trim() ||
+                `${String(name || 'Theme').trim()} theme for Innioasis Y1.`;
+            document.title = seoTitle;
+            setMetaContent('meta[property=\"og:title\"]', seoTitle);
+            setMetaContent('meta[name=\"twitter:title\"]', seoTitle);
+            setMetaContent('meta[name=\"description\"]', seoDescription);
+            setMetaContent('meta[property=\"og:description\"]', seoDescription);
+            setMetaContent('meta[name=\"twitter:description\"]', seoDescription);
+        }
+
         function githubApiUrlForFolder(folder) {
             const cleaned = (folder || '').replace(/^\.\/+/, '')
             const encodedPath = cleaned.split('/').map(seg => encodeURIComponent(seg)).join('/');
@@ -322,7 +352,16 @@
         }
 
         function getFolderFromCurrentPath() {
-            const parts = location.pathname.split('/').filter(Boolean);
+            const parts = location.pathname
+                .split('/')
+                .filter(Boolean)
+                .map(p => {
+                    try {
+                        return decodeURIComponent(p);
+                    } catch (e) {
+                        return p;
+                    }
+                });
             if (!parts.length) return '';
             const last = parts[parts.length - 1].toLowerCase();
             if (last === 'theme.html' || last === 'index.html') {
@@ -359,6 +398,25 @@
                 const folder = getFolderFromCurrentPath();
                 const cachedTheme = (cachedThemes || []).find(t => t && String(t.folder || '').toLowerCase() === String(folder || '').toLowerCase()) || null;
                 return normalizeThemeMeta(folder, cfg, cachedTheme);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        async function tryFetchFolderConfigTheme(folder, cachedThemes) {
+            const cleanFolder = String(folder || '').replace(/^\.\/+/, '');
+            if (!cleanFolder) return null;
+            const encodedFolder = cleanFolder.split('/').map(seg => encodeURIComponent(seg)).join('/');
+            try {
+                const res = await fetch(`${encodedFolder}/config.json`, {
+                    cache: 'no-cache'
+                });
+                if (!res.ok) return null;
+                const cfg = await res.json();
+                const cachedTheme = (cachedThemes || []).find(t =>
+                    t && String(t.folder || '').toLowerCase() === cleanFolder.toLowerCase()
+                ) || null;
+                return normalizeThemeMeta(cleanFolder, cfg, cachedTheme);
             } catch (e) {
                 return null;
             }
@@ -494,15 +552,18 @@
 
             const byPattern = (regex) => list.find(f => regex.test(String(f.name || '')));
 
+            // Handle broader screenshot-like names, e.g. screenshot2.png, homescreenshot.jpg, my_creenshot.webp
+            const strongScreenshot = byPattern(/^screenshot[^/]*\.(png|jpe?g|gif|webp)$/i);
+            if (strongScreenshot) pushCandidate(strongScreenshot.download_url);
+
+            const anyReenShot = byPattern(/creenshot[^/]*\.(png|jpe?g|gif|webp)$/i);
+            if (anyReenShot) pushCandidate(anyReenShot.download_url);
+
             const strongCover = byPattern(/^cover[^/]*\.(png|jpe?g|gif|webp)$/i);
             if (strongCover) pushCandidate(strongCover.download_url);
 
             const anyCover = byPattern(/cover[^/]*\.(png|jpe?g|gif|webp)$/i);
             if (anyCover) pushCandidate(anyCover.download_url);
-
-            // Handle broader screenshot-like names, e.g. screenshot2.png, homescreenshot.jpg, my_creenshot.webp
-            const anyReenShot = byPattern(/creenshot[^/]*\.(png|jpe?g|gif|webp)$/i);
-            if (anyReenShot) pushCandidate(anyReenShot.download_url);
 
             const previewLike = byPattern(/(preview|thumb)[^/]*\.(png|jpe?g|gif|webp)$/i);
             if (previewLike) pushCandidate(previewLike.download_url);
@@ -731,14 +792,24 @@
 
             if (themeQuery) {
                 const themeName = themeQuery;
-                document.title = `${themeName} - Innioasis Y1`;
+                document.title = `${themeName} Innioasis Y1 theme`;
+                let themes = [];
                 try {
-                const themes = await tryFetchThemes();
+                    themes = await tryFetchThemes();
                     themeMeta = themes.find(t => (t.name || '').toLowerCase() === themeName.toLowerCase())
                 } catch (e) {
                     console.warn('themes.json fetch failed', e)
                 }
                 folder = (themeMeta && themeMeta.folder) ? themeMeta.folder : `./${themeName}`;
+                const cfgMeta = await tryFetchFolderConfigTheme(folder, themes);
+                if (cfgMeta) {
+                    themeMeta = {
+                        ...(themeMeta || {}),
+                        ...cfgMeta,
+                        folder: cfgMeta.folder || folder
+                    };
+                    folder = themeMeta.folder || folder;
+                }
             } else {
                 const themes = await tryFetchThemes();
                 themeMeta = await tryFetchLocalConfigTheme(themes);
@@ -749,7 +820,7 @@
                 }
                 if (themeMeta) {
                     folder = themeMeta.folder || '';
-                    document.title = `${themeMeta.name} - Innioasis Y1`;
+                    document.title = `${themeMeta.name} Innioasis Y1 theme`;
                 } else {
                     showFallbackAndRedirect();
                     return;
@@ -777,6 +848,8 @@
             const displayName = (themeMeta && themeMeta.name) ? themeMeta.name : folder || 'Theme'
             nameEl.textContent = displayName
             descEl.textContent = (themeMeta && themeMeta.description) ? themeMeta.description : 'No description available.'
+            const seoAuthor = themeMeta && themeMeta.author ? String(themeMeta.author).trim() : '';
+            applySeoMetadata(displayName, seoAuthor, themeMeta && themeMeta.description);
 
             if (!themeMeta || !themeMeta.author) {
                 authorEl.style.display = 'none'
@@ -789,8 +862,10 @@
                 } else if (themeMeta.author === 'sipped') {
                     a.innerHTML = `by <a href="https://sipped.org" target="_blank" rel="noopener">sipped</a>`
                 } else {
-                    const redditUrl = getRedditProfileUrl(themeMeta.author)
-                    a.innerHTML = `by <a href="${redditUrl}" target="_blank" rel="noopener">${themeMeta.author}</a>`
+                    const preferredUrl = getPreferredAuthorUrl(themeMeta.author, themeMeta.authorUrl)
+                    a.innerHTML = preferredUrl ?
+                        `by <a href="${preferredUrl}" target="_blank" rel="noopener">${themeMeta.author}</a>` :
+                        `by ${themeMeta.author}`
                 }
                 authorEl.innerHTML = ''
                 authorEl.appendChild(a)
