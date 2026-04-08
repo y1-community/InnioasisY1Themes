@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title id="page-title">NeonNights theme for Innioasis Y1 - Y1 Themes</title>
+    <title id="page-title">Themes for your Innioasis Y1</title>
     <script>
         // Keep the hardcoded title as fallback, but prefer local theme config title when available.
         (function autoTitleFromLocalConfig() {
@@ -26,21 +26,21 @@
         })();
     </script>
 
-    <meta name="description" content="Download and customize the NeonNights theme for Innioasis Y1 with curated assets and easy personalization options.">
-    <meta name="keywords" content="NeonNights theme, NeonNights Innioasis Y1, Innioasis Y1 NeonNights, NeonNights customization, Innioasis Y1 themes">
+    <meta name="description" content="Download and customize your Innioasis Y1 with curated assets and easy personalization options.">
+    <meta name="keywords" content="Themes for Innioasis Y1, Innioasis Y1 themes, customization, Innioasis Y1 themes">
     <meta name="author" content="Innioasis Community">
 
-    <link rel="canonical" href="https://themes.innioasis.app/NeonNights">
+    <link rel="canonical" href="https://themes.innioasis.app/theme.html">
 
     <meta property="og:type" content="website">
-    <meta property="og:title" content="NeonNights theme for Innioasis Y1 - Y1 Themes">
-    <meta property="og:description" content="Download and customize the NeonNights theme for Innioasis Y1 with curated assets and easy personalization options.">
-    <meta property="og:url" content="https://themes.innioasis.app/NeonNights">
+    <meta property="og:title" content="theme for Innioasis Y1 - Y1 Themes">
+    <meta property="og:description" content="Download and customize the Sabrina´s World theme for Innioasis Y1 with curated themes and easy personalization options.">
+    <meta property="og:url" content="https://themes.innioasis.app/theme.html">
     <meta property="og:image" content="https://innioasis.app/y1_illustration.png">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="NeonNights theme for Innioasis Y1 - Y1 Themes">
-    <meta name="twitter:description" content="Download and customize the NeonNights theme for Innioasis Y1 with curated assets and easy personalization options.">
+    <meta name="twitter:title" content="theme for Innioasis Y1 - Y1 Themes">
+    <meta name="twitter:description" content="Download and customize the theme for Innioasis Y1 with curated themes and easy personalization options.">
     <meta name="twitter:image" content="https://innioasis.app/y1_illustration.png">
 
     <link rel="icon" href="y1_illustration.png">
@@ -50,6 +50,116 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <style>
+    #nav-root {
+        display: none;
+    }
+
+    .gallery-topbar {
+        position: sticky;
+        top: 0;
+        z-index: 1200;
+        display: grid;
+        grid-template-columns: minmax(260px, 420px) auto minmax(260px, 420px);
+        align-items: center;
+        gap: 12px;
+        padding: 10px 18px;
+        background: #17191f;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .gallery-tabs {
+        display: inline-flex;
+        gap: 4px;
+        padding: 4px;
+        border-radius: 10px;
+        background: #101217;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .gallery-tab {
+        padding: 6px 14px;
+        border-radius: 8px;
+        color: #aeb6c5;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 600;
+        border: 1px solid transparent;
+    }
+
+    .gallery-tab:hover {
+        color: #d9e0ef;
+    }
+
+    .gallery-tab.active {
+        color: #ffffff;
+        background: #2a2f3a;
+        border-color: rgba(255, 255, 255, 0.18);
+        box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.12);
+    }
+
+    .topbar-search {
+        width: 100%;
+        padding: 10px 14px 10px 36px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: #222733;
+        color: #eaf0ff;
+        font-family: Inter, sans-serif;
+        outline: none;
+    }
+
+    .topbar-search::placeholder {
+        color: #94a0b8;
+    }
+
+    .topbar-search-wrap {
+        position: relative;
+        width: 100%;
+        justify-self: start;
+    }
+
+    .topbar-search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #8ea0bf;
+        font-size: 0.85rem;
+        pointer-events: none;
+    }
+
+    .gallery-tabs {
+        justify-self: center;
+    }
+
+    .topbar-spacer {
+        justify-self: end;
+        width: 100%;
+        max-width: 420px;
+    }
+
+    @media (max-width: 900px) {
+        .gallery-topbar {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .gallery-tabs {
+            order: 1;
+            justify-self: center;
+        }
+
+        .topbar-search-wrap {
+            order: 2;
+            max-width: 420px;
+            justify-self: center;
+        }
+
+        .topbar-spacer {
+            display: none;
+        }
+    }
+
     .btn-primary {
         font-family: Inter;
         font-weight: normal;
@@ -67,6 +177,17 @@
 <body>
 
     <div id="nav-root"></div>
+    <div class="gallery-topbar">
+        <div class="topbar-search-wrap">
+            <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
+            <input id="global-theme-search" class="topbar-search" type="search" placeholder="Search themes, images, color" aria-label="Search themes">
+        </div>
+        <div class="gallery-tabs" aria-label="Site sections">
+            <a class="gallery-tab" href="https://y1-themes.vercel.app">Editor</a>
+            <a class="gallery-tab active" href="index.html">Gallery</a>
+        </div>
+        <div class="topbar-spacer" aria-hidden="true"></div>
+    </div>
 
     <div style="display: flex; justify-content: center;">
         <div class="wrap" style="max-width:1200px;margin-top:6rem;">
@@ -150,8 +271,17 @@
         loadSupportToolbar();
 
         const GITHUB_TOKEN = '';
+        const globalThemeSearch = document.getElementById('global-theme-search');
+        if (globalThemeSearch) {
+            globalThemeSearch.addEventListener('keydown', (e) => {
+                if (e.key !== 'Enter') return;
+                const q = String(globalThemeSearch.value || '').trim();
+                const url = q ? `index.html?q=${encodeURIComponent(q)}` : 'index.html';
+                location.href = url;
+            });
+        }
 
-        const THEME_NAME_PLACEHOLDER = "NeonNights";
+        const THEME_NAME_PLACEHOLDER = "Sabrina´s World";
         const THEME_REDIRECT_URL = "https://themes.innioasis.app";
         function resolveScreenshotPath(path) {
             if (!path) return ''
@@ -194,7 +324,9 @@
                 return folder || '';
             }
             return parts.join('/');
-        }        function normalizeThemeMeta(folder, cfg, cachedTheme) {
+        }
+
+        function normalizeThemeMeta(folder, cfg, cachedTheme) {
             const info = (cfg && (cfg.source_info || cfg.theme_info)) || null;
             return {
                 name: (info && info.title) || cfg.title || (cachedTheme && cachedTheme.name) || folder || 'Theme',
@@ -442,7 +574,7 @@
                         if (!originalButton.parentElement) parent.appendChild(originalButton);
                         parent.replaceChild(originalButton, progressWrap);
                         const origText = originalButton.innerHTML;
-                        originalButton.innerHTML = 'Downloaded ✓';
+                        originalButton.innerHTML = 'Downloaded âœ“';
                         originalButton.disabled = false;
                         setTimeout(() => {
                             originalButton.innerHTML = origText;
@@ -520,7 +652,7 @@
                 const themeName = themeQuery;
                 document.title = `${themeName} - Innioasis Y1`;
                 try {
-                    const themes = await tryFetchThemes();
+                const themes = await tryFetchThemes();
                     themeMeta = themes.find(t => (t.name || '').toLowerCase() === themeName.toLowerCase())
                 } catch (e) {
                     console.warn('themes.json fetch failed', e)
@@ -682,6 +814,3 @@
 </body>
 
 </html>
-
-
-

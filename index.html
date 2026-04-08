@@ -580,7 +580,7 @@
         }
 
         function safeText(v) {
-            return v ?? 'Unknown'
+            return v == null ? '' : String(v)
         }
 
         function githubApiUrlForFolder(folder) {
@@ -1194,12 +1194,17 @@
 
             const d = document.createElement('div');
             d.className = 'theme-desc';
-            d.textContent = safeText(theme.description);
+            const descText = safeText(theme.description).trim();
+            if (!descText) {
+                d.style.display = 'none';
+            } else {
+                d.textContent = descText;
+            }
 
             const a = document.createElement('div');
             a.className = 'theme-author';
             if (!theme.author) {
-                a.textContent = 'Unknown author';
+                a.style.display = 'none';
             } else if (theme.author === 'Innioasis') {
                 a.innerHTML = `by <a href="https://innioasis.com" target="_blank" rel="noopener">Innioasis</a>`;
             } else if (theme.author === 'u/ope-nz | Normal-Curve-1642') {
