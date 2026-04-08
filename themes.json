@@ -129,6 +129,14 @@
             "authorUrl": "https://www.reddit.com/r/innioasis/comments/1jwetyl/comment/mopi6qw/"
         },
         {
+            "name": "inniPod",
+            "folder": "inniPod",
+            "screenshot": "./inniPod/screenshot.png",
+            "description": "A high-contrast theme celebrating offline listening and distraction-free audio in today's streaming era.",
+            "author": "u/principezelda",
+            "authorUrl": "https://www.reddit.com/r/innioasis/comments/1qrgy23/theme_for_stock_fw_innipod_a_midnight_blue/"
+        },
+        {
             "name": "iOS 26 Theme",
             "folder": "iOS26Theme",
             "screenshot": "./iOS26Theme/gregcover.png",
@@ -405,6 +413,7 @@
     ]
 
 }
+
 
 
 
