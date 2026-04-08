@@ -89,9 +89,46 @@
     </div>
 
     <div id="footer-root"></div>
+    <div id="support-toolbar-slot"></div>
 
     <script src="https://innioasis.app/nav.js"></script>
     <script>
+        function executeInlineScripts(container) {
+            if (!container) return;
+            const scripts = container.querySelectorAll('script');
+            for (const oldScript of scripts) {
+                const newScript = document.createElement('script');
+                for (const attr of oldScript.attributes) {
+                    newScript.setAttribute(attr.name, attr.value);
+                }
+                newScript.textContent = oldScript.textContent;
+                oldScript.parentNode.replaceChild(newScript, oldScript);
+            }
+        }
+
+        async function loadSupportToolbar() {
+            const slot = document.getElementById('support-toolbar-slot');
+            if (!slot) return;
+            const candidates = [
+                'support_toolbar.html',
+                './support_toolbar.html',
+                'https://themes.innioasis.app/support_toolbar.html'
+            ];
+            for (const url of candidates) {
+                try {
+                    const res = await fetch(url, {
+                        cache: 'no-cache'
+                    });
+                    if (!res.ok) continue;
+                    slot.innerHTML = await res.text();
+                    executeInlineScripts(slot);
+                    return;
+                } catch (e) {}
+            }
+        }
+
+        loadSupportToolbar();
+
         const GITHUB_TOKEN = '';
 
         function resolveScreenshotPath(path) {
