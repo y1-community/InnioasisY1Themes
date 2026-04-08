@@ -587,9 +587,11 @@
             const folders = rootEntries
                 .filter(entry => entry && entry.type === 'dir' && entry.name)
                 .map(entry => entry.name);
+            const uniqueFolders = [...new Set(folders.map(f => String(f || '').replace(/^\.\/+/, '').toLowerCase()))];
 
-            const discovered = await Promise.all(folders.map(async(folder) => {
+            const discovered = await Promise.all(uniqueFolders.map(async(folderLower) => {
                 try {
+                    const folder = folders.find(f => String(f || '').replace(/^\.\/+/, '').toLowerCase() === folderLower) || folderLower;
                     const configRes = await fetch(`${encodeURI(folder)}/config.json`);
                     if (!configRes.ok) return null;
                     const cfg = await configRes.json();
@@ -619,6 +621,21 @@
             return discovered
                 .filter(Boolean)
                 .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+        }
+
+        function dedupeThemes(themes) {
+            const out = [];
+            const seen = new Set();
+            for (const t of themes || []) {
+                if (!t) continue;
+                const folderKey = String(t.folder || '').replace(/^\.\/+/, '').toLowerCase();
+                const nameKey = String(t.name || '').trim().toLowerCase();
+                const key = folderKey ? `folder:${folderKey}` : `name:${nameKey}`;
+                if (!key || seen.has(key)) continue;
+                seen.add(key);
+                out.push(t);
+            }
+            return out;
         }
 
         async function downloadGitHubFolderAsZip(folderName, themeName, progressCallbacks) {
@@ -1364,11 +1381,13 @@
             const grid = document.getElementById('theme-grid')
             const cachedThemes = await tryFetchThemeCache()
             const discoveredThemes = await discoverThemesFromSubfolders(cachedThemes)
-            const themes = discoveredThemes.length ? discoveredThemes : cachedThemes
+            const themesSource = discoveredThemes.length ? discoveredThemes : cachedThemes
+            const themes = dedupeThemes(themesSource)
             if (!themes.length) {
                 grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#94a3b8">Unable to load themes</p>'
                 return
             }
+            grid.innerHTML = ''
             themes.forEach(t => grid.appendChild(createCard(t)))
 
             handleHashAutoDownload()
