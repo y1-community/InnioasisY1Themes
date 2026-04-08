@@ -1271,7 +1271,7 @@
 
             const a = document.createElement('div');
             a.className = 'theme-author';
-            if (isUnknownish(theme.author)) {
+            if (theme.sourceType === 'external' || isUnknownish(theme.author)) {
                 a.style.display = 'none';
             } else if (theme.author === 'Innioasis') {
                 a.innerHTML = `by <a href="https://innioasis.com" target="_blank" rel="noopener">Innioasis</a>`;

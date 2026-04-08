@@ -265,6 +265,7 @@
         loadSupportToolbar();
 
         const GITHUB_TOKEN = '';
+        const FALLBACK_PLACEHOLDER_URL = 'https://themes.innioasis.app/placeholder.png';
         const globalThemeSearch = document.getElementById('global-theme-search');
         if (globalThemeSearch) {
             globalThemeSearch.addEventListener('keydown', (e) => {
@@ -280,6 +281,7 @@
         const THEME_REDIRECT_URL = "https://themes.innioasis.app";
         function resolveScreenshotPath(path) {
             if (!path) return ''
+            if (path === 'placeholder.png') return FALLBACK_PLACEHOLDER_URL
             if (path.startsWith('http')) return path
             if (path.startsWith('./')) return 'https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/' + path.slice(2)
             return path
@@ -339,14 +341,19 @@
         }
 
         function normalizeThemeMeta(folder, cfg, cachedTheme) {
+            const cleanFolder = String(folder || '').replace(/^\.\/+/, '');
+            const prefixedCover = cfg && cfg.themeCover ?
+                (cleanFolder ? `./${cleanFolder}/${cfg.themeCover}` : `./${cfg.themeCover}`) :
+                '';
             const info = (cfg && (cfg.source_info || cfg.theme_info)) || null;
             return {
                 name: (info && info.title) || cfg.title || (cachedTheme && cachedTheme.name) || folder || 'Theme',
                 description: (info && info.description) || cfg.description || (cachedTheme && cachedTheme.description) || '',
                 author: (info && info.author) || cfg.author || (cachedTheme && cachedTheme.author) || null,
                 authorUrl: (info && info.authorUrl) || cfg.authorUrl || (cachedTheme && cachedTheme.authorUrl) || '',
-                screenshot: cfg.themeCover ? `./${cfg.themeCover}` : ((cachedTheme && cachedTheme.screenshot) || ''),
-                folder
+                screenshot: prefixedCover || ((cachedTheme && cachedTheme.screenshot) || ''),
+                folder,
+                rawConfig: cfg || null
             };
         }
 
@@ -429,6 +436,48 @@
 
             await walk(entries)
             return fileEntries
+        }
+
+        function rawUrlForAsset(folderPath, assetPath) {
+            const folderClean = String(folderPath || '').replace(/^\.\/+/, '').replace(/\/+$/, '');
+            const assetClean = String(assetPath || '').replace(/^\.\/+/, '');
+            if (!folderClean || !assetClean) return '';
+            const encoded = `${folderClean}/${assetClean}`.split('/').map(seg => encodeURIComponent(seg)).join('/');
+            return `https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/${encoded}`;
+        }
+
+        function extractAssetsFromConfig(cfg, folderPath) {
+            if (!cfg || typeof cfg !== 'object') return [];
+            const out = [];
+            const seen = new Set();
+            const hasAssetExt = (v) => /\.(png|jpe?g|gif|webp|svg|ttf|otf)$/i.test(String(v || ''));
+            const pushAsset = (value) => {
+                const v = String(value || '').trim();
+                if (!v || !hasAssetExt(v)) return;
+                if (v.includes('://')) return;
+                const key = v.toLowerCase();
+                if (seen.has(key)) return;
+                seen.add(key);
+                out.push({
+                    name: v.split('/').pop(),
+                    path: v,
+                    size: 0,
+                    download_url: rawUrlForAsset(folderPath, v)
+                });
+            };
+            const walk = (node) => {
+                if (Array.isArray(node)) {
+                    node.forEach(walk);
+                    return;
+                }
+                if (!node || typeof node !== 'object') {
+                    if (typeof node === 'string') pushAsset(node);
+                    return;
+                }
+                for (const val of Object.values(node)) walk(val);
+            };
+            walk(cfg);
+            return out.filter(f => f.download_url);
         }
 
         function buildScreenshotCandidates(metadataScreenshot, files) {
@@ -722,6 +771,8 @@
                 console.warn('listFolderFiles failed', e)
                 files = []
             }
+            const fallbackConfigFiles = extractAssetsFromConfig(themeMeta && themeMeta.rawConfig, folder);
+            const effectiveFiles = files.length ? files : fallbackConfigFiles;
 
             const nameEl = document.getElementById('theme-name')
             const descEl = document.getElementById('theme-desc')
@@ -764,12 +815,17 @@
                 }
             }
 
-            const screenshotCandidates = buildScreenshotCandidates(themeMeta?.screenshot, files)
+            const screenshotCandidates = buildScreenshotCandidates(themeMeta?.screenshot, effectiveFiles)
             let screenshotIdx = 0
             screenshotEl.src = screenshotCandidates[screenshotIdx] || 'placeholder.png'
             screenshotEl.onerror = () => {
                 screenshotIdx += 1
-                screenshotEl.src = screenshotCandidates[screenshotIdx] || 'placeholder.png'
+                if (screenshotIdx < screenshotCandidates.length) {
+                    screenshotEl.src = screenshotCandidates[screenshotIdx];
+                    return;
+                }
+                screenshotEl.onerror = null;
+                screenshotEl.src = FALLBACK_PLACEHOLDER_URL;
             }
 
             const folderClean = (folder || '').replace(/^\.\/+/, '')
@@ -783,11 +839,11 @@
 
             downloadBtn.onclick = () => downloadTheme(themeObj, downloadBtn)
 
-            if (!files.length) {
+            if (!effectiveFiles.length) {
                 assetsList.innerHTML = `<div style="color:var(--text-secondary)">No files found in that folder or failed to fetch folder contents.</div>`
             } else {
-                files.sort((a, b) => a.path.localeCompare(b.path))
-                for (const f of files) {
+                effectiveFiles.sort((a, b) => String(a.path || '').localeCompare(String(b.path || '')))
+                for (const f of effectiveFiles) {
                     const row = document.createElement('div')
                     row.style.display = 'flex'
                     row.style.alignItems = 'center'
@@ -806,7 +862,8 @@
                         img.style.objectFit = 'contain'
                         img.style.borderRadius = '6px'
                         img.onerror = () => {
-                            img.src = 'placeholder.png'
+                            img.onerror = null
+                            img.src = FALLBACK_PLACEHOLDER_URL
                         }
                         row.appendChild(img)
                     } else {
