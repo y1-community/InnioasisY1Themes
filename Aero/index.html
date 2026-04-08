@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title id="page-title">Get Aero — Innioasis Y1 Theme</title>
+    <title id="page-title">Get Aero - Innioasis Y1 Theme</title>
     <script>
         // Keep the hardcoded title as fallback, but prefer local theme config title when available.
         (function autoTitleFromLocalConfig() {
@@ -17,7 +17,7 @@
                     const info = cfg.theme_info || cfg.source_info;
                     const title = info && info.title ? String(info.title).trim() : '';
                     if (title) {
-                        document.title = `${title} — Innioasis Y1 Theme` — Innioasis Y1 Theme`;
+                        document.title = `${title} - Innioasis Y1`;
                     }
                 })
                 .catch(() => {
@@ -145,7 +145,7 @@
         }
 
         function safeText(v) {
-            return v ?? 'Unknown'
+            return v == null ? '' : String(v)
         }
 
         function githubApiUrlForFolder(folder) {
@@ -178,26 +178,28 @@
                 return folder || '';
             }
             return parts.join('/');
+        }        function normalizeThemeMeta(folder, cfg, cachedTheme) {
+            const info = (cfg && (cfg.source_info || cfg.theme_info)) || null;
+            return {
+                name: (info && info.title) || cfg.title || (cachedTheme && cachedTheme.name) || folder || 'Theme',
+                description: (info && info.description) || cfg.description || (cachedTheme && cachedTheme.description) || '',
+                author: (info && info.author) || cfg.author || (cachedTheme && cachedTheme.author) || null,
+                authorUrl: (info && info.authorUrl) || cfg.authorUrl || (cachedTheme && cachedTheme.authorUrl) || '',
+                screenshot: cfg.themeCover ? `./${cfg.themeCover}` : ((cachedTheme && cachedTheme.screenshot) || ''),
+                folder
+            };
         }
 
-        async function tryFetchLocalConfigTheme() {
+        async function tryFetchLocalConfigTheme(cachedThemes) {
             try {
                 const res = await fetch('config.json', {
                     cache: 'no-cache'
                 });
                 if (!res.ok) return null;
                 const cfg = await res.json();
-                const info = cfg.source_info || cfg.theme_info;
-                if (!info) return null;
                 const folder = getFolderFromCurrentPath();
-                return {
-                    name: info.title || folder || 'Theme',
-                    description: info.description || '',
-                    author: info.author || null,
-                    authorUrl: info.authorUrl || '',
-                    screenshot: cfg.themeCover ? `./${cfg.themeCover}` : '',
-                    folder
-                };
+                const cachedTheme = (cachedThemes || []).find(t => t && String(t.folder || '').toLowerCase() === String(folder || '').toLowerCase()) || null;
+                return normalizeThemeMeta(folder, cfg, cachedTheme);
             } catch (e) {
                 return null;
             }
@@ -500,19 +502,25 @@
 
             if (themeQuery) {
                 const themeName = themeQuery;
-                document.title = `${themeName} — Innioasis Y1 Theme`;
+                document.title = `${themeName} - Innioasis Y1`;
                 try {
-                    const themes = await tryFetchThemes()
+                    const themes = await tryFetchThemes();
                     themeMeta = themes.find(t => (t.name || '').toLowerCase() === themeName.toLowerCase())
                 } catch (e) {
                     console.warn('themes.json fetch failed', e)
                 }
                 folder = (themeMeta && themeMeta.folder) ? themeMeta.folder : `./${themeName}`;
             } else {
-                themeMeta = await tryFetchLocalConfigTheme();
+                const themes = await tryFetchThemes();
+                themeMeta = await tryFetchLocalConfigTheme(themes);
+                if (!themeMeta && themes.length) {
+                    const folderKey = (getFolderFromCurrentPath() || '').toLowerCase();
+                    const cachedTheme = themes.find(t => t && String(t.folder || '').toLowerCase() === folderKey);
+                    if (cachedTheme) themeMeta = { ...cachedTheme, folder: cachedTheme.folder || getFolderFromCurrentPath() };
+                }
                 if (themeMeta) {
                     folder = themeMeta.folder || '';
-                    document.title = `${themeMeta.name} — Innioasis Y1 Theme`;
+                    document.title = `${themeMeta.name} - Innioasis Y1`;
                 } else {
                     showFallbackAndRedirect();
                     return;
@@ -540,7 +548,7 @@
             descEl.textContent = (themeMeta && themeMeta.description) ? themeMeta.description : 'No description available.'
 
             if (!themeMeta || !themeMeta.author) {
-                authorEl.textContent = 'Unknown author'
+                authorEl.style.display = 'none'
             } else {
                 const a = document.createElement('span')
                 if (themeMeta.author === 'Innioasis') {
@@ -658,3 +666,5 @@
 </body>
 
 </html>
+
+

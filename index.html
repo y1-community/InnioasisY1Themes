@@ -543,7 +543,8 @@
         }
 
         function safeText(v) {
-            return v ?? 'Unknown'
+            if (v == null) return '';
+            return String(v);
         }
 
         function githubApiUrlForFolder(folder) {
@@ -569,12 +570,12 @@
             const coverFromConfig = cfg.themeCover ? `./${folder}/${cfg.themeCover}` : '';
 
             return {
-                name: (info && info.title) || (cachedTheme && cachedTheme.name) || folder,
+                name: (info && info.title) || cfg.title || (cachedTheme && cachedTheme.name) || folder,
                 folder,
                 screenshot: coverFromConfig || (cachedTheme && cachedTheme.screenshot) || '',
-                description: (info && info.description) || (cachedTheme && cachedTheme.description) || '',
-                author: (info && info.author) || (cachedTheme && cachedTheme.author) || null,
-                authorUrl: (info && info.authorUrl) || (cachedTheme && cachedTheme.authorUrl) || '',
+                description: (info && info.description) || cfg.description || (cachedTheme && cachedTheme.description) || '',
+                author: (info && info.author) || cfg.author || (cachedTheme && cachedTheme.author) || null,
+                authorUrl: (info && info.authorUrl) || cfg.authorUrl || (cachedTheme && cachedTheme.authorUrl) || '',
                 authorCTA: (info && info.authorCTA) || (cachedTheme && cachedTheme.authorCTA) || '',
                 sourceType: sourceInfo ? 'external' : 'internal'
             };
@@ -659,17 +660,15 @@
                         cache: 'no-cache'
                     });
                     if (!res.ok) {
-                        theme.hasIndexPage = false;
+                        // Network/API failures should not force fallback links.
+                        // Keep undefined so createCard still prefers subfolder URL.
                         return;
                     }
                     const entries = await res.json();
-                    if (!Array.isArray(entries)) {
-                        theme.hasIndexPage = false;
-                        return;
-                    }
+                    if (!Array.isArray(entries)) return;
                     theme.hasIndexPage = entries.some(e => e && e.type === 'file' && String(e.name || '').toLowerCase() === 'index.html');
                 } catch (e) {
-                    theme.hasIndexPage = false;
+                    // Keep undefined on fetch errors; fallback only when confirmed absent.
                 }
             }));
             return themes;
