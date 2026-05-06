@@ -135,6 +135,27 @@ def _load_json_file(path: Path) -> dict[str, Any] | None:
         return None
 
 
+def _extract_folder_key(item: dict[str, Any]) -> str:
+    return str(item.get("folder") or item.get("Folder") or "").strip()
+
+
+def _extract_theme_info_from_config(config: dict[str, Any]) -> dict[str, str]:
+    theme_info = config.get("theme_info")
+    if not isinstance(theme_info, dict):
+        return {}
+    extracted: dict[str, str] = {}
+    for key in ("title", "author", "authorUrl", "description"):
+        value = str(theme_info.get(key) or "").strip()
+        if value:
+            extracted[key] = value
+    return extracted
+
+
+def _has_valid_theme_info(config: dict[str, Any]) -> bool:
+    info = _extract_theme_info_from_config(config)
+    return bool(info.get("title") and info.get("author") and info.get("description"))
+
+
 def _default_description(name: str) -> str:
     return f"{name} theme for Innioasis Y1."
 
@@ -147,11 +168,12 @@ def _sync_theme_info(config: dict[str, Any], theme_entry: dict[str, Any]) -> boo
         config["theme_info"] = theme_info
         changed = True
 
+    fallback_name = str(theme_entry.get("name") or theme_entry.get("folder") or "Theme").strip()
     desired = {
-        "title": str(theme_entry.get("name") or theme_entry.get("folder") or "").strip(),
-        "author": str(theme_entry.get("author") or config.get("author") or "Unknown").strip(),
+        "title": fallback_name,
+        "author": str(theme_entry.get("author") or config.get("author") or fallback_name).strip(),
         "authorUrl": str(theme_entry.get("authorUrl") or config.get("authorUrl") or "").strip(),
-        "description": str(theme_entry.get("description") or config.get("description") or _default_description(str(theme_entry.get("name") or theme_entry.get("folder") or "Theme"))).strip(),
+        "description": str(theme_entry.get("description") or config.get("description") or _default_description(fallback_name)).strip(),
     }
 
     for key, value in desired.items():
@@ -173,24 +195,39 @@ def main() -> int:
     themes = _load_themes_json(THEMES_JSON_PATH)
     by_folder: dict[str, dict[str, Any]] = {}
     for item in themes:
-        folder = str(item.get("folder") or "").strip()
+        folder = _extract_folder_key(item)
         if not folder:
             continue
-        by_folder[folder] = dict(item)
+        normalized = dict(item)
+        normalized["folder"] = folder
+        if "Folder" in normalized:
+            normalized.pop("Folder", None)
+        by_folder[folder] = normalized
 
     theme_folders = _discover_theme_folders(REPO_ROOT)
     for folder in theme_folders:
-        if folder not in by_folder:
-            by_folder[folder] = {
-                "name": folder,
-                "folder": folder,
-            }
+        if folder in by_folder:
+            continue
+        cfg_path = REPO_ROOT / folder / "config.json"
+        config = _load_json_file(cfg_path)
+        theme_info = _extract_theme_info_from_config(config) if isinstance(config, dict) else {}
+        entry: dict[str, Any] = {
+            "name": theme_info.get("title") or folder,
+            "folder": folder,
+        }
+        if theme_info.get("author"):
+            entry["author"] = theme_info["author"]
+        if theme_info.get("authorUrl"):
+            entry["authorUrl"] = theme_info["authorUrl"]
+        if theme_info.get("description"):
+            entry["description"] = theme_info["description"]
+        by_folder[folder] = entry
 
     ordered_themes = [by_folder[folder] for folder in sorted(by_folder.keys(), key=lambda s: s.lower())]
     _write_json(THEMES_JSON_PATH, {"themes": ordered_themes})
 
     for item in ordered_themes:
-        folder = str(item.get("folder") or "").strip()
+        folder = _extract_folder_key(item)
         if not folder:
             continue
         cfg_path = REPO_ROOT / folder / "config.json"

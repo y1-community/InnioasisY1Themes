@@ -26,13 +26,19 @@ jobs:
       - name: Sync themes.json and config theme_info
         run: python scripts/sync_theme_metadata.py
 
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
       - name: Commit and push metadata updates
         run: |
+          set -e
           if [[ -z "$(git status --porcelain)" ]]; then
             echo "No metadata changes to commit."
             exit 0
           fi
-          git add themes.json */config.json
+          git add -A
           git commit -m "Auto-sync theme metadata from folders"
-          git push
+          git push origin HEAD:${GITHUB_REF_NAME}
 
