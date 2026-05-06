@@ -452,11 +452,25 @@
         (function() {
             const donateToggle = document.getElementById('donate-toggle');
             const donateOptions = document.getElementById('donate-options');
+            function removeLegacyFooterCredits() {
+                const footerRoot = document.getElementById('footer-root');
+                if (!footerRoot) return;
+                const footerCols = footerRoot.querySelectorAll('.footer-col');
+                footerCols.forEach(col => {
+                    const title = (col.querySelector('h4')?.textContent || '').trim().toLowerCase();
+                    if (title === 'credits') {
+                        col.remove();
+                    }
+                });
+            }
             function openDonateOptions() {
                 if (!donateOptions.classList.contains('expanded')) {
                     donateOptions.classList.add('expanded');
                 }
             }
+            removeLegacyFooterCredits();
+            setTimeout(removeLegacyFooterCredits, 500);
+            setTimeout(removeLegacyFooterCredits, 1500);
             
             donateToggle.addEventListener('click', function(e) {
                 e.preventDefault();

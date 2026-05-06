@@ -36,7 +36,11 @@
         <div class="y1-notice-dialog__inner">
             <h2 id="y1-notice-title" class="y1-notice-dialog__title">NOTICE</h2>
             <p class="y1-notice-dialog__text">
-                Due to recent hardware changes to the Y1, Rockbox-Y1 is not compatible with Y1s that came with OS 3.0.7 out of the box and will break your device. If this has happened to you please try installing 3.0.7 in Updater, and if this does not work, please contact <a href="https://innioasis.com/pages/download" rel="noopener noreferrer">Innioasis</a> for assistance. Existing Users of devices running Rockbox-Y1 are not affected.
+                Y1 devices purchased from March 14 onwards that came with OS 3.0.7 out of the box are not compatible with Rockbox builds released before the April 28, 2026 Nightly. Installing older Rockbox builds may cause these Y1s to fail to power on.
+                <br><br>
+                If this happened, you can recover by installing the April 28th (or newer) Rockbox-Y1 Nightly, or by reinstalling OS 3.0.7 using Innioasis Updater. Updater includes guided SP Flash Tool and MTKClient install options to help with recovery.
+                <br><br>
+                See compatibility details: <a href="https://github.com/rockbox-y1/rockbox/issues/46" rel="noopener noreferrer" target="_blank">rockbox-y1 issue #46</a>.
             </p>
             <form method="dialog" class="y1-notice-dialog__actions">
                 <button type="submit" class="y1-notice-dialog__btn" autofocus>I understand</button>
@@ -96,16 +100,25 @@
                     <p>Support the app creator</p>
                     <div style="margin-top:.5rem; display: flex; justify-content: space-between; align-items: center;">
                         <select id="ryanMethods" style="font-family: Inter; padding:.5rem;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:var(--bg-dark);color:var(--text-primary);">
-                            <option>Baby Wishlist</option>
+                            <option>PayPal</option>
                             <option>Revolut</option>
                             <option>Ko-fi</option>
                             <option>Patreon</option>
-                            <option>PayPal</option>
                             <option>Bitcoin</option>
                             <option>SHIBA INU (ERC-20)</option>
                             <option>Ethereum / Arbitrum / Optimism</option>
                         </select>
                         <div id="ryanMethodContent"></div>
+                    </div>
+                </div>
+
+                <div id="baby-wishlist-card" class="donate-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <h3>Baby Wishlist</h3>
+                        <p>Ryan and his partner are expecting a baby in December. If you'd like to help with the new addition to the family, gifts from the wishlist are deeply appreciated.</p>
+                    </div>
+                    <div style="display: flex; justify-content: right;">
+                        <a href="https://www.amazon.co.uk/baby-reg/kayla-mallett-ryan-specter-november-2026-norwich/26D94K25Z5HWD" class="btn btn-primary" style="color: white; padding: 2px 15px; display:flex; align-items: center; gap:.5rem;"><span style="font-size: 16px;">👶</span>Open Baby Wishlist</a>
                     </div>
                 </div>
 
@@ -118,21 +131,6 @@
                         <a href="https://ko-fi.com/sipped" class="btn btn-primary" style="color: white; padding: 2px 15px; display:flex; align-items: center; gap:.5rem;"><img src="https://boost.space/wp-content/uploads/2025/02/ko-fi.png" alt="Ko-fi" style="height:20px;" />Donate via Ko-fi</a>
                     </div>
                 </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="credits" style="margin-top: 5%;">
-        <div class="section-div">
-            <h2>Credits</h2>
-            <div class="credits-list">
-                <ul style="list-style-type: none;">
-                    <li><a href="https://github.com/ryan-specter/">Ryan Specter</a> - For creating the Updater app, old website, and helping with this guide</li>
-                    <li>Rockbox-Y1 creators - For developing and maintaining Rockbox for the Y1 device</li>
-                    <li>The Rockbox Community - 23 years of open source audio player development</li>
-                    <li>Bjoern Kerler (<a href="https://github.com/bkerler/mtkclient">bkerler</a>) - For creating mtkclient, tool for the updater</li>
-                    <li><a href="https://github.com/sippedaway">sipped</a> - For creating this website and guide</li>
-                </ul>
             </div>
         </div>
     </section>
@@ -255,16 +253,14 @@
             if (!sel || !container) return;
             const val = sel.value;
             const inputStyle = 'font-family: monospace; flex:1;padding:.5rem;border-radius:6px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text-primary);';
-            if (val === 'Baby Wishlist') {
-                container.innerHTML = '<a href="https://www.amazon.co.uk/baby-reg/kayla-mallett-ryan-specter-november-2026-norwich/26D94K25Z5HWD" class="btn btn-primary" style="color: white; padding: 2px 15px; display:inline-flex;align-items:center;gap:.5rem;"><span style="font-size: 18px;">👶</span><span>Open Baby Wishlist</span></a>';
-            } else if (val === 'Revolut') {
+            if (val === 'Revolut') {
                 container.innerHTML = '<a href="https://revolut.me/rspecter" class="btn btn-primary" style="color: white; padding: 2px 15px; display:inline-flex;align-items:center;gap:.5rem;"><img src="https://img.icons8.com/ios_filled/512/FFFFFF/revolut--v2.png" alt="Revolut" style="height:20px;"/><span>Donate via Revolut</span></a>';
             } else if (val === 'Ko-fi') {
                 container.innerHTML = '<a href="https://ko-fi.com/teamslide" class="btn btn-primary" style="color: white; padding: 2px 15px; display:inline-flex;align-items:center;gap:.5rem;"><img src="https://boost.space/wp-content/uploads/2025/02/ko-fi.png" alt="Ko-fi" style="height:20px;"/>Donate via Ko-fi</a>';
             } else if (val === 'Patreon') {
                 container.innerHTML = '<a href="https://www.patreon.com/teamslide" class="btn btn-primary" style="color: white; padding: 2px 15px; display:inline-flex;align-items:center;gap:.5rem;"><span style="font-size: 16px;">🧡</span>Donate via Patreon</a>';
             } else if (val === 'PayPal') {
-                container.innerHTML = '<a href="https://paypal.me/RyanSpecter282" class="btn btn-primary" style="color: white; padding: 2px 15px; display:inline-flex;align-items:center;gap:.5rem;"><i class="fab fa-paypal"></i>Donate via PayPal</a>';
+                container.innerHTML = '<a href="https://www.paypal.com/paypalme/RyanSpecter282" class="btn btn-primary" style="color: white; padding: 2px 15px; display:inline-flex;align-items:center;gap:.5rem;"><i class="fab fa-paypal"></i>Donate via PayPal</a>';
             } else if (val === 'Bitcoin') {
                 container.innerHTML = '<div style="display:flex;gap:.5rem;align-items:center;"><input id="btcAddr" readonly value="bc1qv4gjkqczqy4wdl297k7ak5swtkusgaz5au6c6g" style="' + inputStyle + '" /><button onclick="copyAddress(\'btcAddr\', this)" style="padding:.5rem;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:var(--bg-dark);color:var(--text-primary);cursor:pointer;">Copy</button></div>';
             } else if (val === 'SHIBA INU (ERC-20)') {
@@ -278,9 +274,14 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             const sel = document.getElementById('ryanMethods');
+            const babyCard = document.getElementById('baby-wishlist-card');
             if (sel) {
                 sel.addEventListener('change', updateRyanMethod);
                 updateRyanMethod();
+            }
+            if (babyCard) {
+                const showBabyCard = Math.random() < 0.5;
+                babyCard.style.display = showBabyCard ? 'flex' : 'none';
             }
         });
 
@@ -316,7 +317,10 @@
             const data = await res.json()
 
             return data
-                .filter(r => r.assets?.some(a => a.name?.toLowerCase() === 'rom.zip'))
+                .filter(r => r.assets?.some(a => {
+                    const n = (a.name || '').toLowerCase();
+                    return n === 'rom.zip' || n === 'rom_type_b.zip';
+                }))
                 .map(r => {
                     const tag = r.tag_name.toLowerCase()
                     const hasStable = tag.includes('stable')
@@ -324,7 +328,11 @@
                     if (hasStable) prerelease = false
 
                     const rom = r.assets.find(a => a.name.toLowerCase() === 'rom.zip')
+                    const romTypeB = r.assets.find(a => a.name.toLowerCase() === 'rom_type_b.zip')
                     const update = r.assets.find(a => a.name.toLowerCase() === 'update.zip')
+                    const compatibility = [];
+                    if (rom) compatibility.push('A');
+                    if (romTypeB) compatibility.push('B');
 
                     return {
                         tag_name: r.tag_name,
@@ -337,8 +345,10 @@
                         download_count: rom?.download_count || 0,
                         total_downloads: r.assets.reduce((s, a) => s + (a.download_count || 0), 0),
                         rom_url: rom?.browser_download_url || null,
+                        rom_type_b_url: romTypeB?.browser_download_url || null,
                         has_update_zip: !!update,
-                        update_zip_url: update?.browser_download_url || null
+                        update_zip_url: update?.browser_download_url || null,
+                        compatibility
                     }
                 })
         }
@@ -359,13 +369,11 @@
                 const releases = await getReleases(repo)
                 releases.forEach(r => {
                     repoGroups[repo].forEach(pkg => {
-                        const tag = r.tag_name.toLowerCase()
-                        const typeB = tag.includes('type-b') || tag.includes('-b-')
                         all.push({
                             ...r,
                             software_name: pkg.name,
                             device_model: pkg.device,
-                            device_type: typeB ? 'B' : 'A'
+                            device_type: (r.compatibility || []).join('/')
                         })
                     })
                 })
@@ -404,11 +412,6 @@
             }));
 
             const recommendations = [{
-                    device_type: 'A',
-                    software_type: 'Rockbox',
-                    resolution: '240p'
-                },
-                {
                     device_type: 'A',
                     software_type: 'Rockbox',
                     resolution: '360p'
@@ -450,6 +453,7 @@
                 recCard.className = 'version-card vcentered';
                 recCard.style.background = 'rgba(16, 185, 129, 0.1)';
                 const title = rec.resolution ? `Type ${rec.device_type} ${rec.software_type} ${rec.resolution}` : `Type ${rec.device_type} ${rec.software_type}`;
+                const downloadUrl = rec.device_type === 'B' ? (latest.rom_type_b_url || latest.rom_url) : (latest.rom_url || latest.rom_type_b_url);
                 recCard.innerHTML = `
                 <div>
             <span class="version-badge badge-stable">Stable</span>
@@ -457,10 +461,23 @@
             <p style="font-weight:600;margin-bottom:.25rem;">${latest.tag_name}</p>
             <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:.75rem;">${formatDate(latest.published_at)}  •  ${latest.total_downloads} downloads</p>
             </div>
-            ${latest.rom_url ? `<a href="${latest.rom_url}" class="btn btn-primary" download><i class="fa-solid fa-download" style="margin-right: 8px"></i>Download</a>` : ''}
+            ${downloadUrl ? `<a href="${downloadUrl}" class="btn btn-primary" download><i class="fa-solid fa-download" style="margin-right: 8px"></i>Download</a>` : ''}
         `;
                 recGrid.appendChild(recCard);
             });
+
+            const rockboxThemesCard = document.createElement('div');
+            rockboxThemesCard.className = 'version-card vcentered';
+            rockboxThemesCard.style.background = 'rgba(59, 130, 246, 0.12)';
+            rockboxThemesCard.innerHTML = `
+                <div>
+                    <span class="version-badge badge-latest">Recommended</span>
+                    <h4 style="color:var(--accent);margin:.5rem 0;">Rockbox 360p Themes</h4>
+                    <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:.75rem;">240p is being deprecated. Use latest 360p themes for the best compatibility.</p>
+                </div>
+                <a href="https://github.com/rockbox-y1/themes/releases/latest" class="btn btn-primary" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square" style="margin-right:8px;"></i>Latest Themes</a>
+            `;
+            recGrid.appendChild(rockboxThemesCard);
 
             recWrapper.appendChild(recGrid);
             recommendedContainer.appendChild(recWrapper);
@@ -527,7 +544,7 @@
                 };
 
                 let filtered = enriched.filter(r =>
-                    r.device_type === filters.type &&
+                    Array.isArray(r.compatibility) && r.compatibility.includes(filters.type) &&
                     r.software_type.toLowerCase() === filters.firmware.toLowerCase() &&
                     (filters.firmware === 'Original' ? true : r.resolution === filters.resolution) &&
                     (filters.version === 'Stable' ? r.variant === 'Stable' : r.variant === 'Beta')
@@ -545,6 +562,7 @@
                 card.className = 'version-card'
                 card.style.margin = '0 auto'
                 const resolutionLine = (filters.firmware === 'Original') ? `<p class="meta">Resolution: 360p</p>` : `<p class="meta">Resolution: ${latest.resolution}</p>`;
+                const selectedDownloadUrl = filters.type === 'B' ? (latest.rom_type_b_url || latest.rom_url) : (latest.rom_url || latest.rom_type_b_url);
                 card.innerHTML = `
     <span class="version-badge badge-latest">Latest</span>
 
@@ -554,13 +572,13 @@
             <p class="meta">${formatDate(latest.published_at)}</p>
             <p class="meta">${latest.total_downloads} downloads</p>
             <p class="meta">Firmware: ${latest.software_type}</p>
-            <p class="meta">Type ${latest.device_type}</p>
+            <p class="meta">Compatible with Type ${Array.isArray(latest.compatibility) ? latest.compatibility.join(', ') : latest.device_type}</p>
             ${resolutionLine}
         </div>
 
         <div class="version-right">
-            ${latest.rom_url
-                ? `<a href="${latest.rom_url}" class="btn btn-primary" download>Download</a>`
+            ${selectedDownloadUrl
+                ? `<a href="${selectedDownloadUrl}" class="btn btn-primary" download>Download</a>`
                 : `<button class="btn btn-secondary" disabled>No download</button>`
             }
         </div>
