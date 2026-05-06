@@ -1,0 +1,38 @@
+name: Sync Theme Metadata
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Sync themes.json and config theme_info
+        run: python scripts/sync_theme_metadata.py
+
+      - name: Commit and push metadata updates
+        run: |
+          if [[ -z "$(git status --porcelain)" ]]; then
+            echo "No metadata changes to commit."
+            exit 0
+          fi
+          git add themes.json */config.json
+          git commit -m "Auto-sync theme metadata from folders"
+          git push
+

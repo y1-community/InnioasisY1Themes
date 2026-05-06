@@ -71,28 +71,7 @@
                 <a href="https://innioasis.app/guide.html">Guide</a>
                 <a href="https://themes.innioasis.app/">Themes</a>
                 <a href="https://innioasis.app/index.html#versions">Versions</a>
-                <a href="https://innioasis.app/index.html#donate">Donate</a>
-            </div>
-
-            <div class="footer-col">
-                <h4>Credits</h4>
-
-                <div class="footer-person">
-                    <strong>Ryan Specter</strong>
-                    <div style="display:flex;gap:15px;justify-content:center;">
-                        <a href="https://github.com/ryan-specter/" target="_blank"><i class="fab fa-github"></i></a>
-                        <a href="#" class="open-donate-toolbar" title="Open donation options"><i class="fas fa-donate"></i></a>
-                    </div>
-                </div>
-
-                <div class="footer-person">
-                    <strong>sipped</strong>
-                    <div style="display:flex;gap:15px;justify-content:center;">
-                        <a href="https://github.com/sippedaway" target="_blank"><i class="fab fa-github"></i></a>
-                        <a href="https://sipped.org" target="_blank"><i class="fas fa-globe"></i></a>
-                        <a href="#donate"><i class="fas fa-donate"></i></a>
-                    </div>
-                </div>
+                <a href="https://ko-fi.com/teamslide" target="_blank" rel="noopener">Donate</a>
             </div>
 
             <div class="footer-col" style="display:flex;flex-direction:column;justify-content:space-between;">   
