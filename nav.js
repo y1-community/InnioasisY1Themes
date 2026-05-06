@@ -32,6 +32,14 @@
         const t = e.target.closest('a')
         if (!t) return
         const href = t.getAttribute('href') || ''
+        if (t.classList.contains('open-donate-toolbar')) {
+            e.preventDefault()
+            const donateToggle = document.getElementById('donate-toggle')
+            if (donateToggle) {
+                donateToggle.click()
+                return
+            }
+        }
         if (href.startsWith('#')) {
             e.preventDefault()
             const target = document.querySelector(href)
@@ -73,8 +81,7 @@
                     <strong>Ryan Specter</strong>
                     <div style="display:flex;gap:15px;justify-content:center;">
                         <a href="https://github.com/ryan-specter/" target="_blank"><i class="fab fa-github"></i></a>
-                        <a href="https://reddit.com/u/RespectYarn" target="_blank"><i class="fab fa-reddit"></i></a>
-                        <a href="#donate"><i class="fas fa-donate"></i></a>
+                        <a href="#" class="open-donate-toolbar" title="Open donation options"><i class="fas fa-donate"></i></a>
                     </div>
                 </div>
 
