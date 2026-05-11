@@ -1,8 +1,13 @@
-# Cloudflare Pages — static site + Functions live under themes/ (repo path).
+# =============================================================================
+# CLOUDFLARE PAGES ONLY — not a Worker. Never run: npx wrangler deploy
+# That command expects main = "..." or [assets] in this file and fails with:
+#   "Missing entry-point to Worker script or to assets directory"
+# Fix in the Pages dashboard: leave the Deploy command field EMPTY.
+# =============================================================================
+# Static site + Pages Functions live under themes/ (see pages_build_output_dir).
 # Dashboard (recommended): Root directory = themes, Build output = ., Build = exit 0
 # Alternative: Root = (empty), Build output = themes — same published site.
-# Deploy command MUST be empty (no wrangler).
-# Do not use `wrangler deploy` or `wrangler pages deploy` there for Git Pages.
+# Deploy command MUST be empty (do not use wrangler deploy / wrangler pages deploy).
 # Must match your Pages project name in the dashboard (rename here if different).
 name = "y1themes"
 compatibility_date = "2026-05-11"

@@ -110,6 +110,18 @@ The Deploy command is set to `wrangler pages deploy` (or `wrangler ...`) without
 Fix: **delete the entire Deploy command** (empty field). Do not "fix" it by
 adding `npx` — you do not need a deploy step at all for Git-connected Pages.
 
+Troubleshooting: "Missing entry-point to Worker script or to assets directory"
+-------------------------------------------------------------------------------
+Wrangler is running **Worker** deploy (`npx wrangler deploy`), not Git Pages
+publish. This repo's wrangler.toml is **Pages-only** (pages_build_output_dir);
+it does not define `main` or `[assets]`, so Worker deploy always errors.
+
+  Fix: In Pages → Settings → Builds & deployments → Build configuration, delete
+  the entire **Deploy command** (and **Version command** if set). Save, redeploy.
+
+  Do NOT try to "fix" this by adding `main` or `[assets]` here — that would turn
+  the project into a Worker and break normal Pages + Pages Functions.
+
 Troubleshooting: "Authentication error [code: 10000]" on pages deploy
 ----------------------------------------------------------------------
 Your log shows BOTH:
