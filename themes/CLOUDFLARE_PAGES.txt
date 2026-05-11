@@ -15,7 +15,7 @@ you after your build step says "OK" (exit 0).
        - Root directory:       themes   ← website root = repo themes/ (not "/")
        - Build output directory:  .    ← publish everything under that root
        - Build command:        exit 0
-       - Deploy command:       leave EMPTY (delete npx wrangler pages deploy)
+       - Deploy command:       leave EMPTY — or `true` if the UI refuses blank (never wrangler)
        - Version command:      leave EMPTY if you see it
      Click **Save**.
 
@@ -52,6 +52,14 @@ In the Pages project: Settings → Builds & deployments → Build configuration
 Deploy command:           (leave COMPLETELY EMPTY)
   Git-connected Pages publishes the build output automatically after the build
   command exits 0.
+
+  If the UI will not save with an empty field, use a no-op that is NOT Wrangler:
+       true
+  (the shell command `true`, exits 0). Do not use npx wrangler deploy.
+
+  Keep only ONE wrangler file: **wrangler.toml at the repository root**. Delete
+  any extra wrangler.toml under themes/ — it confuses tooling and can imply a
+  wrong pages_build_output_dir when the build root is already themes/.
 
   Do NOT put any of these in the Deploy command field:
     wrangler pages deploy
@@ -112,9 +120,10 @@ adding `npx` — you do not need a deploy step at all for Git-connected Pages.
 
 Troubleshooting: "Missing entry-point to Worker script or to assets directory"
 -------------------------------------------------------------------------------
-Wrangler is running **Worker** deploy (`npx wrangler deploy`), not Git Pages
-publish. This repo's wrangler.toml is **Pages-only** (pages_build_output_dir);
-it does not define `main` or `[assets]`, so Worker deploy always errors.
+Wrangler is running **Worker** deploy (your log shows `npx wrangler deploy`),
+not Git Pages publish. This repo's **root** `wrangler.toml` is **Pages-only**
+(`pages_build_output_dir`); it has no `main` or `[assets]`, so Worker deploy
+always errors.
 
   Fix: In Pages → Settings → Builds & deployments → Build configuration, delete
   the entire **Deploy command** (and **Version command** if set). Save, redeploy.
