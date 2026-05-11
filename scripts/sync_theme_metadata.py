@@ -6,6 +6,7 @@ Behavior:
 - Ensure every detected folder has an entry in themes.json.
 - Ensure each theme config.json contains theme_info (backfilled from themes.json/folder).
 - Ensure each theme index.html exists and has theme-specific SEO metadata.
+- Skip source-only folders that do not define theme image assets.
 """
 
 from __future__ import annotations
@@ -24,6 +25,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 THEMES_JSON_PATH = REPO_ROOT / "themes.json"
 THEME_TEMPLATE_PATH = REPO_ROOT / "theme.html"
 SITE_BASE_URL = "https://themes.innioasis.app"
+IMAGE_EXTENSIONS = {".gif", ".jpeg", ".jpg", ".png", ".svg", ".webp"}
 PROTECTED_UPLOADERS = {
     "ryan-specter",
     "ryan specter",
@@ -129,12 +131,53 @@ def _load_themes_json(path: Path) -> list[dict[str, Any]]:
     return _extract_theme_objects_lenient(raw)
 
 
+def _iter_config_values(value: Any) -> list[Any]:
+    if isinstance(value, dict):
+        out: list[Any] = []
+        for nested in value.values():
+            out.extend(_iter_config_values(nested))
+        return out
+    if isinstance(value, list):
+        out = []
+        for nested in value:
+            out.extend(_iter_config_values(nested))
+        return out
+    return [value]
+
+
+def _looks_like_image_asset(value: Any) -> bool:
+    if not isinstance(value, str):
+        return False
+    clean = value.strip()
+    if not clean:
+        return False
+    suffix = Path(clean.split("?", 1)[0].split("#", 1)[0]).suffix.lower()
+    return suffix in IMAGE_EXTENSIONS
+
+
+def _has_theme_image_assets(config: dict[str, Any] | None) -> bool:
+    if not isinstance(config, dict):
+        return False
+    source_info = config.get("source_info")
+    for key, value in config.items():
+        if key in {"theme_info", "source_info"}:
+            continue
+        if any(_looks_like_image_asset(item) for item in _iter_config_values(value)):
+            return True
+    return not isinstance(source_info, dict) and any(_looks_like_image_asset(item) for item in _iter_config_values(config))
+
+
+def _is_theme_config(path: Path) -> bool:
+    return _has_theme_image_assets(_load_json_file(path))
+
+
 def _is_theme_dir(path: Path) -> bool:
     if not path.is_dir():
         return False
     if path.name in EXCLUDED_DIRS or path.name.startswith("."):
         return False
-    return (path / "config.json").is_file()
+    config_path = path / "config.json"
+    return config_path.is_file() and _is_theme_config(config_path)
 
 
 def _discover_theme_folders(root: Path) -> list[str]:
@@ -441,6 +484,15 @@ def _theme_index_entry(theme_entry: dict[str, Any], config: dict[str, Any]) -> d
     return index_entry
 
 
+def _sync_source_only_config(config: dict[str, Any]) -> bool:
+    if not isinstance(config.get("source_info"), dict):
+        return False
+    if "theme_info" not in config:
+        return False
+    config.pop("theme_info", None)
+    return True
+
+
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, indent=4, ensure_ascii=False) + "\n", encoding="utf-8")
 
@@ -480,6 +532,10 @@ def main() -> int:
         cfg_path = REPO_ROOT / folder / "config.json"
         config = _load_json_file(cfg_path)
         if not isinstance(config, dict):
+            continue
+        if not _has_theme_image_assets(config):
+            if _sync_source_only_config(config):
+                _write_json(cfg_path, config)
             continue
         if _sync_theme_info(config, item):
             _write_json(cfg_path, config)
