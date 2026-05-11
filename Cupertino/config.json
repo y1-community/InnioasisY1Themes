@@ -17,7 +17,6 @@
         "itemBackground": "@Cup_itemBackground.png",
         "itemRightArrow": "@Cup_itemRightArrow.png"
     },
-    
     "dialogConfig": {
         "dialogOptionBackground": "@Cup_dialogOptionBackground.png",
         "dialogOptionTextColor": "#000000",
@@ -33,7 +32,7 @@
         "menuItemSelectedTextColor": "#ffffff"
     },
     "homePageConfig": {
-        "ebook":"@Cup_icon.png",
+        "ebook": "@Cup_icon.png",
         "nowPlaying": "@Cup_icon.png",
         "music": "@Cup_icon.png",
         "video": "@Cup_icon.png",
@@ -112,16 +111,16 @@
         "headsetWithoutMic": "",
         "statusBarColor": "",
         "battery": [
-           "battery.001.png",
-           "battery.002.png",
-           "battery.003.png",
-           "battery.004.png"
+            "battery.001.png",
+            "battery.002.png",
+            "battery.003.png",
+            "battery.004.png"
         ],
         "batteryCharging": [
-           "batterycharge.001.png",
-           "batterycharge.002.png",
-           "batterycharge.003.png",
-           "batterycharge.004.png"
-        ]        
+            "batterycharge.001.png",
+            "batterycharge.002.png",
+            "batterycharge.003.png",
+            "batterycharge.004.png"
+        ]
     }
 }
