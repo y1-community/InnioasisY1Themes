@@ -234,7 +234,9 @@ def main() -> int:
     base_sha = sys.argv[1]
     pr_ref = sys.argv[2]
 
-    diff = _run("git", "diff", "--name-status", "--no-renames", f"{base_sha}...{pr_ref}")
+    # Compare PR head against the current base tree directly (2-dot),
+    # which avoids stale-branch false positives for changes already on base.
+    diff = _run("git", "diff", "--name-status", "--no-renames", f"{base_sha}", f"{pr_ref}")
     rows = [line for line in diff.stdout.splitlines() if line.strip()]
     if not rows:
         return _fail(["PR has no file changes."])
@@ -243,6 +245,7 @@ def main() -> int:
     zip_paths: list[str] = []
     errors: list[str] = []
 
+    existing_folder_blocked: set[str] = set()
     for row in rows:
         parts = row.split("\t", 1)
         if len(parts) != 2:
@@ -269,7 +272,9 @@ def main() -> int:
             errors.append(f"Changes in {folder}/ are not allowed for auto-merge.")
             continue
         if _folder_exists_in_base(base_sha, folder):
-            errors.append(f"Folder {folder}/ already exists in base; only new folders are auto-mergeable.")
+            if folder not in existing_folder_blocked:
+                errors.append(f"Folder {folder}/ already exists in base; only new folders are auto-mergeable.")
+                existing_folder_blocked.add(folder)
             continue
 
         state = folder_state.setdefault(folder, {"has_config": False, "image_files": [], "paths": []})
