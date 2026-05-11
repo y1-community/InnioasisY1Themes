@@ -1,4 +1,10 @@
 {
+    "theme_info": {
+        "title": "IOS Theme",
+        "author": "Unknown",
+        "authorUrl": "",
+        "description": "Customize your Innioasis Y1 with the IOS Theme theme."
+    },
     "themeCover": "gregcover.png",
     "desktopWallpaper": "gregios4.png",
     "globalWallpaper": "greglobalwallpaper.png",
@@ -112,11 +118,5 @@
             "gregbatterycharge.003.png",
             "gregbatterycharge.004.png"
         ]
-    },
-    "theme_info": {
-        "title": "IOS Theme",
-        "description": "Customize your Innioasis Y1 with the IOS Theme theme.",
-        "author": "Unknown",
-        "authorUrl": ""
     }
 }

@@ -1,4 +1,10 @@
 {
+    "theme_info": {
+        "title": "Junji Ito Theme",
+        "author": "Unknown",
+        "authorUrl": "",
+        "description": "Customize your Innioasis Y1 with the Junji Ito Theme theme."
+    },
     "themeCover": "cover.png",
     "desktopWallpaper": "desk.png",
     "globalWallpaper": "desk.png",
@@ -123,11 +129,5 @@
     "playerConfig": {
         "progressColor": "#8B0000",
         "progressBackgroundColor": "#808080"
-    },
-    "theme_info": {
-        "title": "Junji Ito Theme",
-        "description": "Customize your Innioasis Y1 with the Junji Ito Theme theme.",
-        "author": "Unknown",
-        "authorUrl": ""
     }
 }

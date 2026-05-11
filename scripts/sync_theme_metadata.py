@@ -161,14 +161,9 @@ def _default_description(name: str) -> str:
 
 
 def _sync_theme_info(config: dict[str, Any], theme_entry: dict[str, Any]) -> bool:
-    changed = False
-    theme_info = config.get("theme_info")
-    if not isinstance(theme_info, dict):
-        theme_info = {}
-        config["theme_info"] = theme_info
-        changed = True
-
     fallback_name = str(theme_entry.get("name") or theme_entry.get("folder") or "Theme").strip()
+    existing_theme_info = config.get("theme_info")
+    theme_info = dict(existing_theme_info) if isinstance(existing_theme_info, dict) else {}
     desired = {
         "title": fallback_name,
         "author": str(theme_entry.get("author") or config.get("author") or fallback_name).strip(),
@@ -176,10 +171,26 @@ def _sync_theme_info(config: dict[str, Any], theme_entry: dict[str, Any]) -> boo
         "description": str(theme_entry.get("description") or config.get("description") or _default_description(fallback_name)).strip(),
     }
 
+    changed = not isinstance(existing_theme_info, dict)
     for key, value in desired.items():
         if not theme_info.get(key):
             theme_info[key] = value
             changed = True
+
+    ordered_theme_info = {key: theme_info.get(key, "") for key in ("title", "author", "authorUrl", "description")}
+    for key, value in theme_info.items():
+        if key not in ordered_theme_info:
+            ordered_theme_info[key] = value
+
+    reordered_config = {"theme_info": ordered_theme_info}
+    for key, value in config.items():
+        if key != "theme_info":
+            reordered_config[key] = value
+
+    if list(config.items()) != list(reordered_config.items()):
+        config.clear()
+        config.update(reordered_config)
+        changed = True
 
     return changed
 
