@@ -10,6 +10,8 @@
     <link rel="canonical" href="https://themes.innioasis.app/upload.html">
     <link rel="icon" href="y1_illustration.png">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
+    <!-- If this HTML is served from a non-Pages host, set content to your Pages origin (no trailing slash) so POST targets /api/upload-theme on Pages. -->
+    <meta name="cf-pages-upload-api-origin" content="" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         body {
@@ -115,6 +117,10 @@
         Submit a <code>.zip</code> or a <strong>folder</strong> (your browser packs the folder into a ZIP before upload).
         The server creates a GitHub PR, then existing validation + auto-merge workflows decide whether it can merge.
     </p>
+    <p class="hint">
+        Uploads call <code>/api/upload-theme</code>, which exists only on <strong>Cloudflare Pages</strong> (the <code>functions/</code> worker).
+        If you see <strong>404</strong>, you are probably on a <code>*.workers.dev</code> static Worker — use your Pages <code>*.pages.dev</code> URL (or a domain attached to the <em>Pages</em> project), or set the <code>cf-pages-upload-api-origin</code> meta in this file to that Pages origin.
+    </p>
 
     <div class="card">
         <form id="upload-form">
@@ -166,6 +172,18 @@
     </div>
 
     <script>
+        function uploadThemeEndpoint() {
+            const meta = document.querySelector('meta[name="cf-pages-upload-api-origin"]');
+            const raw = meta && meta.getAttribute("content") ? String(meta.getAttribute("content")).trim() : "";
+            if (!raw) return "/api/upload-theme";
+            try {
+                const base = raw.replace(/\/+$/, "");
+                return new URL("/api/upload-theme", `${base}/`).toString();
+            } catch (_) {
+                return "/api/upload-theme";
+            }
+        }
+
         const form = document.getElementById("upload-form");
         const statusEl = document.getElementById("status");
         const submitBtn = document.getElementById("submit-btn");
@@ -470,7 +488,7 @@
                 const data = new FormData(form);
                 const rebuiltZip = await buildZipForUpload();
                 data.set("zip", rebuiltZip, rebuiltZip.name);
-                const res = await fetch("/api/upload-theme", {
+                const res = await fetch(uploadThemeEndpoint(), {
                     method: "POST",
                     body: data
                 });

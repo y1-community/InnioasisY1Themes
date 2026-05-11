@@ -24,3 +24,19 @@ If your Pages project name is not "y1themes", edit the `name` field in wrangler.
 to match the dashboard (or rename the project to match the file).
 
 Build image: use V2 or later if prompted (needed for wrangler.toml Pages config).
+
+Troubleshooting: "Upload failed (404)"
+--------------------------------------
+The upload form POSTs to /api/upload-theme. That route is provided by **Pages
+Functions** (./functions/), which run only on a **Cloudflare Pages** deployment.
+
+If you open the site on ***.workers.dev**, you likely deployed a **Worker** with
+static assets only — there is no Pages Function there, so /api/upload-theme
+returns 404.
+
+Fix: open upload.html on your **Pages** hostname (e.g. https://<project>.pages.dev/upload.html)
+or attach your custom domain to the **Pages** project (not only to a Worker).
+
+Advanced: host static HTML elsewhere but point uploads at Pages by setting the
+meta tag in upload.html:
+  <meta name="cf-pages-upload-api-origin" content="https://YOUR.pages.dev" />
