@@ -10,6 +10,7 @@
     <link rel="canonical" href="https://themes.innioasis.app/upload.html">
     <link rel="icon" href="y1_illustration.png">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         body {
             font-family: Inter, sans-serif;
@@ -77,6 +78,34 @@
             padding: 0.1rem 0.3rem;
             border-radius: 4px;
         }
+
+        .hint {
+            opacity: 0.8;
+            font-size: 0.92rem;
+            margin-top: 0.35rem;
+        }
+
+        .meta-editor {
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .meta-editor.show {
+            display: block;
+        }
+
+        .meta-card {
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 10px;
+            padding: 0.9rem;
+            margin-bottom: 0.9rem;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .meta-card h4 {
+            margin: 0 0 0.6rem 0;
+            font-size: 0.95rem;
+        }
     </style>
 </head>
 
@@ -92,6 +121,12 @@
             <div class="row">
                 <label for="zip-file">Theme ZIP</label>
                 <input id="zip-file" name="zip" type="file" accept=".zip,application/zip" required />
+                <div class="hint">After selecting a ZIP, detected <code>theme_info</code> fields can be edited below.</div>
+            </div>
+
+            <div id="meta-editor" class="meta-editor">
+                <h3>Detected theme_info metadata</h3>
+                <div id="meta-editor-list"></div>
             </div>
 
             <div class="row">
@@ -128,11 +163,181 @@
         const form = document.getElementById("upload-form");
         const statusEl = document.getElementById("status");
         const submitBtn = document.getElementById("submit-btn");
+        const zipInput = document.getElementById("zip-file");
+        const metaEditor = document.getElementById("meta-editor");
+        const metaEditorList = document.getElementById("meta-editor-list");
+
+        let loadedZip = null;
+        let loadedZipFileName = "";
+        let themeInfoEntries = [];
 
         function setStatus(message, ok) {
             statusEl.textContent = message;
             statusEl.className = "status " + (ok ? "ok" : "err");
         }
+
+        function escapeHtml(value) {
+            return String(value || "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll("\"", "&quot;");
+        }
+
+        function isConfigPath(path) {
+            return /(^|\/)config\.json$/i.test(String(path || ""));
+        }
+
+        function detectThemeLabel(path) {
+            const parts = String(path || "").split("/");
+            if (parts.length <= 1) return "(zip root)";
+            return parts.slice(0, -1).join("/");
+        }
+
+        function renderThemeInfoEditors() {
+            if (!themeInfoEntries.length) {
+                metaEditor.classList.remove("show");
+                metaEditorList.innerHTML = "";
+                return;
+            }
+
+            const html = themeInfoEntries.map((entry, idx) => `
+                <div class="meta-card" data-entry-idx="${idx}">
+                    <h4>${escapeHtml(entry.label)} <span class="hint">(${escapeHtml(entry.path)})</span></h4>
+                    <div class="row">
+                        <label>Title</label>
+                        <input type="text" data-field="title" value="${escapeHtml(entry.themeInfo.title)}" />
+                    </div>
+                    <div class="row">
+                        <label>Author</label>
+                        <input type="text" data-field="author" value="${escapeHtml(entry.themeInfo.author)}" />
+                    </div>
+                    <div class="row">
+                        <label>Author URL</label>
+                        <input type="text" data-field="authorUrl" value="${escapeHtml(entry.themeInfo.authorUrl)}" />
+                    </div>
+                    <div class="row">
+                        <label>Description</label>
+                        <textarea rows="3" data-field="description">${escapeHtml(entry.themeInfo.description)}</textarea>
+                    </div>
+                </div>
+            `).join("");
+
+            metaEditorList.innerHTML = html;
+            metaEditor.classList.add("show");
+        }
+
+        function readEditorValues() {
+            const cards = metaEditorList.querySelectorAll(".meta-card");
+            cards.forEach((card) => {
+                const idx = Number(card.getAttribute("data-entry-idx"));
+                const entry = themeInfoEntries[idx];
+                if (!entry) return;
+
+                const getValue = (field) => {
+                    const node = card.querySelector(`[data-field="${field}"]`);
+                    return node ? String(node.value || "").trim() : "";
+                };
+
+                entry.themeInfo.title = getValue("title");
+                entry.themeInfo.author = getValue("author");
+                entry.themeInfo.authorUrl = getValue("authorUrl");
+                entry.themeInfo.description = getValue("description");
+            });
+        }
+
+        async function inspectZipForThemeInfo(file) {
+            loadedZip = null;
+            loadedZipFileName = "";
+            themeInfoEntries = [];
+
+            if (!(file instanceof File)) {
+                renderThemeInfoEditors();
+                return;
+            }
+
+            try {
+                if (!window.JSZip) throw new Error("ZIP parser is unavailable.");
+                const zip = await window.JSZip.loadAsync(await file.arrayBuffer());
+                const entries = [];
+
+                Object.values(zip.files).forEach((zipEntry) => {
+                    if (!zipEntry || zipEntry.dir || !isConfigPath(zipEntry.name)) return;
+                    entries.push(zipEntry);
+                });
+
+                for (const zipEntry of entries) {
+                    try {
+                        const text = await zipEntry.async("text");
+                        const parsed = JSON.parse(text);
+                        if (!parsed || typeof parsed !== "object") continue;
+                        const existing = (parsed.theme_info && typeof parsed.theme_info === "object") ? parsed.theme_info : {};
+                        themeInfoEntries.push({
+                            path: zipEntry.name,
+                            label: detectThemeLabel(zipEntry.name),
+                            themeInfo: {
+                                title: String(existing.title || ""),
+                                author: String(existing.author || ""),
+                                authorUrl: String(existing.authorUrl || ""),
+                                description: String(existing.description || "")
+                            },
+                            parsed
+                        });
+                    } catch (_) {
+                        // Ignore malformed config files in preview; server/validator handles hard failures.
+                    }
+                }
+
+                loadedZip = zip;
+                loadedZipFileName = file.name || "theme.zip";
+                renderThemeInfoEditors();
+            } catch (err) {
+                renderThemeInfoEditors();
+                setStatus(`Could not inspect ZIP metadata: ${err.message || err}`, false);
+            }
+        }
+
+        async function buildZipForUpload() {
+            const file = zipInput.files && zipInput.files[0];
+            if (!(file instanceof File)) {
+                throw new Error("Missing ZIP file.");
+            }
+            if (!loadedZip || !themeInfoEntries.length) {
+                return file;
+            }
+
+            readEditorValues();
+
+            const outputZip = new window.JSZip();
+            const editsByPath = new Map(
+                themeInfoEntries.map((entry) => {
+                    const nextParsed = { ...entry.parsed, theme_info: { ...entry.themeInfo } };
+                    return [entry.path, JSON.stringify(nextParsed, null, 2) + "\n"];
+                })
+            );
+
+            const zipEntries = Object.values(loadedZip.files);
+            for (const zipEntry of zipEntries) {
+                if (!zipEntry || zipEntry.dir) continue;
+                const path = zipEntry.name;
+                if (editsByPath.has(path)) {
+                    outputZip.file(path, editsByPath.get(path));
+                } else {
+                    const bytes = await zipEntry.async("uint8array");
+                    outputZip.file(path, bytes);
+                }
+            }
+
+            const blob = await outputZip.generateAsync({ type: "blob" });
+            return new File([blob], loadedZipFileName || file.name || "theme.zip", {
+                type: "application/zip"
+            });
+        }
+
+        zipInput.addEventListener("change", async () => {
+            const file = zipInput.files && zipInput.files[0];
+            await inspectZipForThemeInfo(file);
+        });
 
         form.addEventListener("submit", async (event) => {
             event.preventDefault();
@@ -141,6 +346,8 @@
 
             try {
                 const data = new FormData(form);
+                const rebuiltZip = await buildZipForUpload();
+                data.set("zip", rebuiltZip, rebuiltZip.name);
                 const res = await fetch("/api/upload-theme", {
                     method: "POST",
                     body: data
