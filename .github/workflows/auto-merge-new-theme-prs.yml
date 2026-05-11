@@ -1,0 +1,44 @@
+name: Auto Merge New Theme PRs
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  validate-and-merge:
+    if: ${{ github.event.pull_request.draft == false }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout base repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Fetch PR head ref
+        run: |
+          git fetch origin "pull/${{ github.event.pull_request.number }}/head:pr-head"
+
+      - name: Validate PR policy for auto-merge
+        run: |
+          python scripts/validate_theme_pr.py "${{ github.event.pull_request.base.sha }}" "pr-head"
+
+      - name: Auto-merge validated PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pull_number = context.payload.pull_request.number;
+            await github.rest.pulls.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number,
+              merge_method: "squash"
+            });
