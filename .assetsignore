@@ -1,0 +1,4 @@
+# Used if anyone runs `wrangler deploy` with static assets from repo root.
+# Cloudflare Pages (Git) does not use this file the same way; use an empty
+# build command in the Pages dashboard — do not use `wrangler deploy` for this site.
+.git
