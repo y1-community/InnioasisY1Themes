@@ -1,10 +1,21 @@
+/** Theme uploads: no CAPTCHA / bot gate by design (retro moderation in repo). */
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
+function jsonResponse(body, status = 200) {
+  return Response.json(body, {
+    status,
+    headers: corsHeaders,
+  });
+}
+
 export async function onRequestOptions() {
   return new Response(null, {
     status: 204,
-    headers: {
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-    },
+    headers: corsHeaders,
   });
 }
 
@@ -55,7 +66,7 @@ export async function onRequestPost(context) {
     const zipDir = env.GITHUB_ZIP_UPLOAD_DIR || "";
 
     if (!token) {
-      return Response.json({ error: "Server upload token is not configured." }, { status: 500 });
+      return jsonResponse({ error: "Server upload token is not configured." }, 500);
     }
 
     const form = await context.request.formData();
@@ -65,17 +76,17 @@ export async function onRequestPost(context) {
     const notes = String(form.get("notes") || "").trim();
 
     if (!(zipFile instanceof File)) {
-      return Response.json({ error: "Missing ZIP file." }, { status: 400 });
+      return jsonResponse({ error: "Missing ZIP file." }, 400);
     }
 
     const originalName = slugify(zipFile.name || "theme.zip");
     if (!originalName.toLowerCase().endsWith(".zip")) {
-      return Response.json({ error: "Only .zip uploads are accepted." }, { status: 400 });
+      return jsonResponse({ error: "Only .zip uploads are accepted." }, 400);
     }
 
     const maxBytes = Number(env.MAX_UPLOAD_BYTES || 25 * 1024 * 1024);
     if (zipFile.size > maxBytes) {
-      return Response.json({ error: `ZIP exceeds max size (${maxBytes} bytes).` }, { status: 400 });
+      return jsonResponse({ error: `ZIP exceeds max size (${maxBytes} bytes).` }, 400);
     }
 
     const arrayBuffer = await zipFile.arrayBuffer();
@@ -134,18 +145,18 @@ export async function onRequestPost(context) {
       }),
     });
 
-    return Response.json(
+    return jsonResponse(
       {
         ok: true,
         prUrl: pr.html_url || null,
         branch: branchName,
       },
-      { status: 200 }
+      200
     );
   } catch (error) {
-    return Response.json(
+    return jsonResponse(
       { error: error instanceof Error ? error.message : "Upload failed." },
-      { status: 500 }
+      500
     );
   }
 }
