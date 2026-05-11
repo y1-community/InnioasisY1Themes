@@ -4,8 +4,8 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Upload Theme ZIP — Innioasis Y1</title>
-    <meta name="description" content="Upload Innioasis Y1 theme ZIP submissions for automated PR validation and merge." />
+    <title>Upload Theme ZIP or Folder — Innioasis Y1</title>
+    <meta name="description" content="Upload Innioasis Y1 theme as a ZIP or folder; packed client-side for automated PR validation and merge." />
     <meta name="author" content="Innioasis Community" />
     <link rel="canonical" href="https://themes.innioasis.app/upload.html">
     <link rel="icon" href="y1_illustration.png">
@@ -110,9 +110,9 @@
 </head>
 
 <body>
-    <h1>Upload Theme ZIP</h1>
+    <h1>Upload Theme ZIP or Folder</h1>
     <p>
-        Use this page to submit a <code>.zip</code> that contains one or more themes.
+        Submit a <code>.zip</code> or a <strong>folder</strong> (your browser packs the folder into a ZIP before upload).
         The server creates a GitHub PR, then existing validation + auto-merge workflows decide whether it can merge.
     </p>
 
@@ -120,8 +120,14 @@
         <form id="upload-form">
             <div class="row">
                 <label for="zip-file">Theme ZIP</label>
-                <input id="zip-file" name="zip" type="file" accept=".zip,application/zip" required />
-                <div class="hint">After selecting a ZIP, detected <code>theme_info</code> fields can be edited below.</div>
+                <input id="zip-file" name="zip" type="file" accept=".zip,application/zip" />
+                <div class="hint">Pick a ZIP <em>or</em> a folder below (not both). After loading, detected <code>theme_info</code> fields can be edited.</div>
+            </div>
+
+            <div class="row">
+                <label for="folder-file">Theme folder</label>
+                <input id="folder-file" type="file" webkitdirectory multiple />
+                <div class="hint">Uses directory upload (Chrome, Edge, Firefox, Safari). Files are zipped in your browser before sending.</div>
             </div>
 
             <div id="meta-editor" class="meta-editor">
@@ -144,7 +150,7 @@
                 <textarea id="notes" name="notes" rows="3" maxlength="1000" placeholder="Context for maintainers"></textarea>
             </div>
 
-            <button id="submit-btn" type="submit">Submit ZIP</button>
+            <button id="submit-btn" type="submit">Submit theme</button>
         </form>
         <div id="status" class="status"></div>
     </div>
@@ -152,7 +158,7 @@
     <div class="card">
         <h3>What happens next</h3>
         <ul>
-            <li>Your ZIP is uploaded through a Cloudflare Pages Function (<code>/api/upload-theme</code>).</li>
+            <li>Your ZIP (or a ZIP built from your folder in the browser) is sent to the Cloudflare Pages Function (<code>/api/upload-theme</code>).</li>
             <li>The function creates an upload branch and opens a PR in <code>y1-community/InnioasisY1Themes</code>.</li>
             <li>PR validation checks for dangerous files and theme structure.</li>
             <li>If valid, auto-merge can complete and zip processing on <code>main</code> extracts theme folders.</li>
@@ -164,12 +170,39 @@
         const statusEl = document.getElementById("status");
         const submitBtn = document.getElementById("submit-btn");
         const zipInput = document.getElementById("zip-file");
+        const folderInput = document.getElementById("folder-file");
         const metaEditor = document.getElementById("meta-editor");
         const metaEditorList = document.getElementById("meta-editor-list");
 
+        let uploadMode = "none"; // "zip" | "folder" | "none"
         let loadedZip = null;
         let loadedZipFileName = "";
+        let folderFiles = null;
         let themeInfoEntries = [];
+
+        function normRelPath(p) {
+            return String(p || "").replace(/\\/g, "/").replace(/^\/+/, "");
+        }
+
+        function inferFolderZipName(files) {
+            const paths = (files || []).map((f) => normRelPath(f.webkitRelativePath)).filter(Boolean);
+            if (!paths.length) return "theme-folder.zip";
+            const roots = new Set(paths.map((p) => p.split("/")[0]).filter(Boolean));
+            if (roots.size === 1) {
+                const base = [...roots][0];
+                if (base && /^[a-zA-Z0-9._-]+$/.test(base)) return `${base}.zip`;
+            }
+            return "theme-folder.zip";
+        }
+
+        function resetThemeState() {
+            uploadMode = "none";
+            loadedZip = null;
+            loadedZipFileName = "";
+            folderFiles = null;
+            themeInfoEntries = [];
+            renderThemeInfoEditors();
+        }
 
         function setStatus(message, ok) {
             statusEl.textContent = message;
@@ -252,9 +285,18 @@
             themeInfoEntries = [];
 
             if (!(file instanceof File)) {
+                uploadMode = folderInput.files && folderInput.files.length ? "folder" : "none";
+                if (uploadMode === "folder") {
+                    await inspectFolderForThemeInfo(folderInput.files);
+                    return;
+                }
                 renderThemeInfoEditors();
                 return;
             }
+
+            folderInput.value = "";
+            folderFiles = null;
+            uploadMode = "zip";
 
             try {
                 if (!window.JSZip) throw new Error("ZIP parser is unavailable.");
@@ -297,11 +339,87 @@
             }
         }
 
+        async function inspectFolderForThemeInfo(fileList) {
+            if (!fileList || fileList.length === 0) {
+                folderFiles = null;
+                uploadMode = zipInput.files && zipInput.files[0] ? "zip" : "none";
+                if (uploadMode === "zip") {
+                    await inspectZipForThemeInfo(zipInput.files[0]);
+                    return;
+                }
+                themeInfoEntries = [];
+                loadedZipFileName = "";
+                renderThemeInfoEditors();
+                return;
+            }
+
+            zipInput.value = "";
+            loadedZip = null;
+            folderFiles = Array.from(fileList);
+            uploadMode = "folder";
+            themeInfoEntries = [];
+            loadedZipFileName = inferFolderZipName(folderFiles);
+
+            for (const file of folderFiles) {
+                if (!isConfigPath(file.webkitRelativePath)) continue;
+                try {
+                    const path = normRelPath(file.webkitRelativePath);
+                    const text = await file.text();
+                    const parsed = JSON.parse(text);
+                    if (!parsed || typeof parsed !== "object") continue;
+                    const existing = (parsed.theme_info && typeof parsed.theme_info === "object") ? parsed.theme_info : {};
+                    themeInfoEntries.push({
+                        path,
+                        label: detectThemeLabel(path),
+                        themeInfo: {
+                            title: String(existing.title || ""),
+                            author: String(existing.author || ""),
+                            authorUrl: String(existing.authorUrl || ""),
+                            description: String(existing.description || "")
+                        },
+                        parsed
+                    });
+                } catch (_) {
+                    // Ignore malformed config files in preview.
+                }
+            }
+
+            renderThemeInfoEditors();
+        }
+
         async function buildZipForUpload() {
+            if (uploadMode === "folder" && folderFiles && folderFiles.length) {
+                if (!window.JSZip) throw new Error("ZIP library is unavailable.");
+                readEditorValues();
+                const outputZip = new window.JSZip();
+                const editsByPath = new Map(
+                    themeInfoEntries.map((entry) => {
+                        const nextParsed = { ...entry.parsed, theme_info: { ...entry.themeInfo } };
+                        return [entry.path, JSON.stringify(nextParsed, null, 2) + "\n"];
+                    })
+                );
+
+                for (const file of folderFiles) {
+                    const path = normRelPath(file.webkitRelativePath);
+                    if (!path || path.endsWith("/")) continue;
+                    if (editsByPath.has(path)) {
+                        outputZip.file(path, editsByPath.get(path));
+                    } else {
+                        const buf = await file.arrayBuffer();
+                        outputZip.file(path, buf);
+                    }
+                }
+
+                const blob = await outputZip.generateAsync({ type: "blob" });
+                const name = loadedZipFileName || inferFolderZipName(folderFiles);
+                return new File([blob], name, { type: "application/zip" });
+            }
+
             const file = zipInput.files && zipInput.files[0];
             if (!(file instanceof File)) {
-                throw new Error("Missing ZIP file.");
+                throw new Error("Choose a ZIP file or select a theme folder.");
             }
+
             if (!loadedZip || !themeInfoEntries.length) {
                 return file;
             }
@@ -339,10 +457,14 @@
             await inspectZipForThemeInfo(file);
         });
 
+        folderInput.addEventListener("change", async () => {
+            await inspectFolderForThemeInfo(folderInput.files);
+        });
+
         form.addEventListener("submit", async (event) => {
             event.preventDefault();
             submitBtn.disabled = true;
-            setStatus("Uploading...", true);
+            setStatus(uploadMode === "folder" ? "Packing folder and uploading..." : "Uploading...", true);
 
             try {
                 const data = new FormData(form);
@@ -361,6 +483,7 @@
                 const prUrl = payload.prUrl ? `\nPR: ${payload.prUrl}` : "";
                 setStatus(`Upload accepted.${prUrl}`, true);
                 form.reset();
+                resetThemeState();
             } catch (err) {
                 setStatus(String(err && err.message ? err.message : err), false);
             } finally {
