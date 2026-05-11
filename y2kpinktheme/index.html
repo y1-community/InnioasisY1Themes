@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title id="page-title">Electric Hues theme for Innioasis Y1 - Y1 Themes</title>
+    <title id="page-title">Y2KPink theme for Innioasis Y1 - Y1 Themes</title>
     <script>
         // Keep the hardcoded title as fallback, but prefer local theme config title when available.
         (function autoTitleFromLocalConfig() {
@@ -26,21 +26,21 @@
         })();
     </script>
 
-    <meta name="description" content="A neon vaporwave theme designed as a birthday present! Inspo + learning from looking at mp3li's themes as well as MelodyMuncher. Also huge shoutout to y1-themes.vercel.app for a place to test changes in real time.">
-    <meta name="keywords" content="Electric Hues theme, Innioasis Y1 theme, Electric Hues, Y1 customization, MP3 player theme">
+    <meta name="description" content="A vibrant hot-pink theme for the Innioasis Y1.">
+    <meta name="keywords" content="Y2KPink theme, Innioasis Y1 theme, Y2KPink, Y1 customization, MP3 player theme">
     <meta name="author" content="Innioasis Community">
 
-    <link rel="canonical" href="https://themes.innioasis.app/ElectricHues/">
+    <link rel="canonical" href="https://themes.innioasis.app/y2kpinktheme/">
 
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Electric Hues theme for Innioasis Y1 - Y1 Themes">
-    <meta property="og:description" content="A neon vaporwave theme designed as a birthday present! Inspo + learning from looking at mp3li's themes as well as MelodyMuncher. Also huge shoutout to y1-themes.vercel.app for a place to test changes in real time.">
-    <meta property="og:url" content="https://themes.innioasis.app/ElectricHues/">
+    <meta property="og:title" content="Y2KPink theme for Innioasis Y1 - Y1 Themes">
+    <meta property="og:description" content="A vibrant hot-pink theme for the Innioasis Y1.">
+    <meta property="og:url" content="https://themes.innioasis.app/y2kpinktheme/">
     <meta property="og:image" content="https://innioasis.app/y1_illustration.png">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Electric Hues theme for Innioasis Y1 - Y1 Themes">
-    <meta name="twitter:description" content="A neon vaporwave theme designed as a birthday present! Inspo + learning from looking at mp3li's themes as well as MelodyMuncher. Also huge shoutout to y1-themes.vercel.app for a place to test changes in real time.">
+    <meta name="twitter:title" content="Y2KPink theme for Innioasis Y1 - Y1 Themes">
+    <meta name="twitter:description" content="A vibrant hot-pink theme for the Innioasis Y1.">
     <meta name="twitter:image" content="https://innioasis.app/y1_illustration.png">
 
     <link rel="icon" href="y1_illustration.png">
@@ -74,6 +74,8 @@
         border-radius: 9px;
         background: #101217;
         border: 1px solid rgba(255, 255, 255, 0.08);
+        justify-self: center;
+        grid-column: 2;
     }
 
     .gallery-tab {
@@ -84,6 +86,7 @@
         font-size: 0.82rem;
         font-weight: 600;
         border: 1px solid transparent;
+        line-height: 1.1;
     }
 
     .gallery-tab:hover {
@@ -106,6 +109,7 @@
         color: #eaf0ff;
         font-family: Inter, sans-serif;
         outline: none;
+        font-size: 0.82rem;
     }
 
     .topbar-search::placeholder {
@@ -115,7 +119,9 @@
     .topbar-search-wrap {
         position: relative;
         width: 100%;
+        max-width: 360px;
         justify-self: end;
+        grid-column: 3;
     }
 
     .topbar-search-icon {
@@ -126,10 +132,6 @@
         color: #8ea0bf;
         font-size: 0.78rem;
         pointer-events: none;
-    }
-
-    .gallery-tabs {
-        justify-self: center;
     }
 
     @media (max-width: 900px) {
@@ -1004,5 +1006,3 @@
 </body>
 
 </html>
-
-

@@ -1,22 +1,36 @@
 #!/usr/bin/env python3
-"""Synchronize theme folders, themes.json, and theme_info metadata.
+"""Synchronize theme folders, themes.json, config theme_info, and theme pages.
 
 Behavior:
 - Detect theme folders (root directories containing config.json).
 - Ensure every detected folder has an entry in themes.json.
 - Ensure each theme config.json contains theme_info (backfilled from themes.json/folder).
+- Ensure each theme index.html exists and has theme-specific SEO metadata.
 """
 
 from __future__ import annotations
 
+import html
 import json
+import os
 import re
+import subprocess
+import urllib.request
 from pathlib import Path
 from typing import Any
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 THEMES_JSON_PATH = REPO_ROOT / "themes.json"
+THEME_TEMPLATE_PATH = REPO_ROOT / "theme.html"
+SITE_BASE_URL = "https://themes.innioasis.app"
+PROTECTED_UPLOADERS = {
+    "ryan-specter",
+    "ryan specter",
+    "itsryanspecter@gmail.com",
+    "y1-community",
+    "github-actions[bot]",
+}
 EXCLUDED_DIRS = {
     ".git",
     ".github",
@@ -151,29 +165,182 @@ def _extract_theme_info_from_config(config: dict[str, Any]) -> dict[str, str]:
     return extracted
 
 
-def _has_valid_theme_info(config: dict[str, Any]) -> bool:
-    info = _extract_theme_info_from_config(config)
-    return bool(info.get("title") and info.get("author") and info.get("description"))
-
-
 def _default_description(name: str) -> str:
     return f"{name} theme for Innioasis Y1."
+
+
+def _download_description(name: str, author: str = "") -> str:
+    if author:
+        return f"Download the {name} theme for Innioasis Y1 by {author} and personalize your player's look with curated UI assets."
+    return f"Download the {name} theme for Innioasis Y1 and personalize your player's look with curated UI assets."
+
+
+def _is_default_description(value: str, name: str) -> bool:
+    clean_value = str(value or "").strip()
+    return clean_value in {
+        _default_description(name),
+        f"Customize your Innioasis Y1 with the {name} theme.",
+    }
+
+
+def _clean_github_user(value: str, *, allow_name_fallback: bool = False) -> str:
+    clean = str(value or "").strip()
+    if not clean:
+        return ""
+    clean = clean.split("<", 1)[0].strip()
+    match = re.match(r"^\d+\+([^@]+)@users\.noreply\.github\.com$", clean, re.I)
+    if match:
+        clean = match.group(1)
+    elif "@" in clean:
+        return ""
+    if clean.endswith("[bot]"):
+        return clean
+    if allow_name_fallback:
+        clean = re.sub(r"\s+", "-", clean)
+    return clean.strip("@")
+
+
+def _github_login_from_commit(commit_sha: str) -> str:
+    if not commit_sha:
+        return ""
+
+    request = urllib.request.Request(
+        f"https://api.github.com/repos/y1-community/InnioasisY1Themes/commits/{commit_sha}",
+        headers={
+            "Accept": "application/vnd.github+json",
+            "User-Agent": "InnioasisY1Themes metadata sync",
+        },
+    )
+    token = os.environ.get("GITHUB_TOKEN")
+    if token:
+        request.add_header("Authorization", f"Bearer {token}")
+
+    try:
+        with urllib.request.urlopen(request, timeout=10) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except Exception:
+        return ""
+
+    for key in ("author", "committer"):
+        user = payload.get(key)
+        if isinstance(user, dict):
+            login = str(user.get("login") or "").strip()
+            if login:
+                return login
+    return ""
+
+
+def _infer_folder_uploader(folder: str) -> dict[str, str]:
+    """Infer the GitHub user that first added files in a theme folder."""
+    try:
+        result = subprocess.run(
+            [
+                "git",
+                "log",
+                "--diff-filter=A",
+                "--follow",
+                "--format=%H%x00%an%x00%ae",
+                "--",
+                folder,
+            ],
+            cwd=REPO_ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+    except Exception:
+        return {}
+
+    if result.returncode != 0:
+        return {}
+
+    candidates: list[tuple[str, str, str]] = []
+    for line in result.stdout.splitlines():
+        if "\x00" not in line:
+            continue
+        parts = line.split("\x00", 2)
+        if len(parts) != 3:
+            continue
+        commit_sha, author_name, author_email = parts
+        candidates.append((commit_sha.strip(), author_name.strip(), author_email.strip()))
+
+    if not candidates:
+        return {}
+
+    # git log is newest-first; the oldest add commit is the one that introduced the folder.
+    commit_sha, author_name, author_email = candidates[-1]
+    login = _github_login_from_commit(commit_sha)
+    protected_checks = {
+        login.lower(),
+        author_name.lower(),
+        author_email.lower(),
+        _clean_github_user(author_email).lower(),
+        _clean_github_user(author_name, allow_name_fallback=True).lower(),
+    }
+    if protected_checks & PROTECTED_UPLOADERS:
+        return {"protected": "true", "login": login}
+
+    login = login or _clean_github_user(author_email) or _clean_github_user(author_name, allow_name_fallback=True)
+    if not login:
+        return {}
+
+    return {
+        "login": login,
+        "url": f"https://github.com/{login}",
+        "email": author_email,
+    }
+
+
+def _theme_entry_from_folder(folder: str, config: dict[str, Any] | None) -> dict[str, Any]:
+    theme_info = _extract_theme_info_from_config(config) if isinstance(config, dict) else {}
+    name = theme_info.get("title") or folder
+    uploader = _infer_folder_uploader(folder)
+    protected_uploader = uploader.get("protected") == "true"
+
+    entry: dict[str, Any] = {
+        "name": name,
+        "folder": folder,
+    }
+
+    author = theme_info.get("author") or ("" if protected_uploader else uploader.get("login", ""))
+    author_url = theme_info.get("authorUrl") or ("" if protected_uploader else uploader.get("url", ""))
+    description = theme_info.get("description") or _download_description(name, author)
+
+    if author:
+        entry["author"] = author
+    if author_url:
+        entry["authorUrl"] = author_url
+    if description:
+        entry["description"] = description
+
+    return entry
 
 
 def _sync_theme_info(config: dict[str, Any], theme_entry: dict[str, Any]) -> bool:
     fallback_name = str(theme_entry.get("name") or theme_entry.get("folder") or "Theme").strip()
     existing_theme_info = config.get("theme_info")
     theme_info = dict(existing_theme_info) if isinstance(existing_theme_info, dict) else {}
+    existing_description = str(theme_info.get("description") or "").strip()
+    entry_description = str(theme_entry.get("description") or "").strip()
+    fallback_description = str(config.get("description") or _download_description(fallback_name, str(theme_entry.get("author") or "").strip())).strip()
+    description = existing_description or entry_description or fallback_description
+
     desired = {
         "title": fallback_name,
-        "author": str(theme_entry.get("author") or config.get("author") or fallback_name).strip(),
+        "author": str(theme_entry.get("author") or config.get("author") or "").strip(),
         "authorUrl": str(theme_entry.get("authorUrl") or config.get("authorUrl") or "").strip(),
-        "description": str(theme_entry.get("description") or config.get("description") or _default_description(fallback_name)).strip(),
+        "description": description,
     }
 
     changed = not isinstance(existing_theme_info, dict)
     for key, value in desired.items():
-        if not theme_info.get(key):
+        if key == "description":
+            if not theme_info.get(key) and value:
+                theme_info[key] = value
+                changed = True
+        elif not theme_info.get(key) and value:
             theme_info[key] = value
             changed = True
 
@@ -193,6 +360,85 @@ def _sync_theme_info(config: dict[str, Any], theme_entry: dict[str, Any]) -> boo
         changed = True
 
     return changed
+
+
+def _html_attr(value: str) -> str:
+    return html.escape(str(value), quote=False).replace('"', "&quot;")
+
+
+def _theme_title(theme_entry: dict[str, Any]) -> str:
+    name = str(theme_entry.get("name") or theme_entry.get("folder") or "Theme").strip()
+    return f"{name} theme for Innioasis Y1 - Y1 Themes"
+
+
+def _theme_description(theme_entry: dict[str, Any]) -> str:
+    name = str(theme_entry.get("name") or theme_entry.get("folder") or "Theme").strip()
+    author = str(theme_entry.get("author") or "").strip()
+    description = str(theme_entry.get("description") or "").strip()
+    if description and not _is_default_description(description, name):
+        return description
+    return _download_description(name, author)
+
+
+def _theme_keywords(theme_entry: dict[str, Any]) -> str:
+    name = str(theme_entry.get("name") or theme_entry.get("folder") or "Theme").strip()
+    return f"{name} theme, Innioasis Y1 theme, {name}, Y1 customization, MP3 player theme"
+
+
+def _theme_url(folder: str) -> str:
+    encoded = "/".join(part.replace(" ", "%20") for part in folder.strip("/").split("/"))
+    return f"{SITE_BASE_URL}/{encoded}/"
+
+
+def _replace_once(pattern: str, replacement: str, text: str) -> str:
+    return re.sub(pattern, replacement, text, count=1, flags=re.I)
+
+
+def _build_theme_index_html(template: str, theme_entry: dict[str, Any]) -> str:
+    folder = str(theme_entry.get("folder") or "").strip()
+    title = _html_attr(_theme_title(theme_entry))
+    description = _html_attr(_theme_description(theme_entry))
+    keywords = _html_attr(_theme_keywords(theme_entry))
+    url = _html_attr(_theme_url(folder))
+
+    html_text = template
+    html_text = _replace_once(r"<title id=\"page-title\">.*?</title>", f'<title id="page-title">{title}</title>', html_text)
+    html_text = _replace_once(r'<meta name=\"description\" content=\"[^\"]*\">', f'<meta name="description" content="{description}">', html_text)
+    html_text = _replace_once(r'<meta name=\"keywords\" content=\"[^\"]*\">', f'<meta name="keywords" content="{keywords}">', html_text)
+    html_text = _replace_once(r'<link rel=\"canonical\" href=\"[^\"]*\">', f'<link rel="canonical" href="{url}">', html_text)
+    html_text = _replace_once(r'<meta property=\"og:title\" content=\"[^\"]*\">', f'<meta property="og:title" content="{title}">', html_text)
+    html_text = _replace_once(r'<meta property=\"og:description\" content=\"[^\"]*\">', f'<meta property="og:description" content="{description}">', html_text)
+    html_text = _replace_once(r'<meta property=\"og:url\" content=\"[^\"]*\">', f'<meta property="og:url" content="{url}">', html_text)
+    html_text = _replace_once(r'<meta name=\"twitter:title\" content=\"[^\"]*\">', f'<meta name="twitter:title" content="{title}">', html_text)
+    html_text = _replace_once(r'<meta name=\"twitter:description\" content=\"[^\"]*\">', f'<meta name="twitter:description" content="{description}">', html_text)
+    return html_text
+
+
+def _sync_theme_index(theme_entry: dict[str, Any], template: str) -> bool:
+    folder = _extract_folder_key(theme_entry)
+    if not folder:
+        return False
+    path = REPO_ROOT / folder / "index.html"
+    existing = path.read_text(encoding="utf-8") if path.exists() else template
+    updated = _build_theme_index_html(existing, theme_entry)
+    if updated == existing and path.exists():
+        return False
+    path.write_text(updated, encoding="utf-8")
+    return True
+
+
+def _theme_index_entry(theme_entry: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
+    index_entry = dict(theme_entry)
+    info = _extract_theme_info_from_config(config)
+    if info.get("title"):
+        index_entry["name"] = info["title"]
+    if info.get("description") and not index_entry.get("description"):
+        index_entry["description"] = info["description"]
+    if info.get("author") and not index_entry.get("author"):
+        index_entry["author"] = info["author"]
+    if info.get("authorUrl") and not index_entry.get("authorUrl"):
+        index_entry["authorUrl"] = info["authorUrl"]
+    return index_entry
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
@@ -221,21 +467,11 @@ def main() -> int:
             continue
         cfg_path = REPO_ROOT / folder / "config.json"
         config = _load_json_file(cfg_path)
-        theme_info = _extract_theme_info_from_config(config) if isinstance(config, dict) else {}
-        entry: dict[str, Any] = {
-            "name": theme_info.get("title") or folder,
-            "folder": folder,
-        }
-        if theme_info.get("author"):
-            entry["author"] = theme_info["author"]
-        if theme_info.get("authorUrl"):
-            entry["authorUrl"] = theme_info["authorUrl"]
-        if theme_info.get("description"):
-            entry["description"] = theme_info["description"]
-        by_folder[folder] = entry
+        by_folder[folder] = _theme_entry_from_folder(folder, config if isinstance(config, dict) else None)
 
     ordered_themes = [by_folder[folder] for folder in sorted(by_folder.keys(), key=lambda s: s.lower())]
     _write_json(THEMES_JSON_PATH, {"themes": ordered_themes})
+    template_html = THEME_TEMPLATE_PATH.read_text(encoding="utf-8") if THEME_TEMPLATE_PATH.exists() else ""
 
     for item in ordered_themes:
         folder = _extract_folder_key(item)
@@ -247,6 +483,8 @@ def main() -> int:
             continue
         if _sync_theme_info(config, item):
             _write_json(cfg_path, config)
+        if template_html:
+            _sync_theme_index(_theme_index_entry(item, config), template_html)
 
     return 0
 

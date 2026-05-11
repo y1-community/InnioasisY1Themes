@@ -25,6 +25,8 @@ jobs:
 
       - name: Sync themes.json and config theme_info
         run: python scripts/sync_theme_metadata.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure git identity
         run: |
