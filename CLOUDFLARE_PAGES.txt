@@ -10,21 +10,17 @@ In the Pages project: Settings → Builds & deployments → Build configuration
 
 Deploy command:           (leave COMPLETELY EMPTY)
   Git-connected Pages publishes the build output automatically after build.sh
-  exits 0. You do not replace that with Wrangler.
+  exits 0.
 
-  In the Deploy command field, do NOT use any of these:
+  Do NOT put any of these in the Deploy command field:
     npx wrangler deploy
     npx wrangler pages deploy ...
-  - wrangler deploy targets a Worker (needs main / assets); Wrangler will warn
-    it is wrong on a Pages project and fail with "Missing entry-point".
-  - wrangler pages deploy is only for Direct Upload pipelines, needs a valid
-    CLOUDFLARE_API_TOKEN with Pages permissions, and is redundant with Git Pages.
+  See troubleshooting sections below.
 
 Production env vars (Settings → Environment variables):
 
-  Do NOT add CLOUDFLARE_API_TOKEN for normal Git Pages builds — it is not used
-  unless you intentionally run wrangler from the build, and wrong tokens cause
-  auth error 10000 on pages deploy.
+  Do NOT add CLOUDFLARE_API_TOKEN for normal Git Pages builds unless you
+  intentionally run wrangler pages deploy from that field.
 
   GITHUB_UPLOAD_TOKEN   (required) — GitHub PAT for commits + PRs
   GITHUB_OWNER          (optional) default y1-community
@@ -38,31 +34,28 @@ to match the dashboard (or rename the project to match the file).
 
 Build image: use V2 or later if prompted (needed for wrangler.toml Pages config).
 
-Troubleshooting: "Upload failed (404)"
---------------------------------------
-The upload form POSTs to /api/upload-theme. That route is provided by **Pages
-Functions** (./functions/), which run only on a **Cloudflare Pages** deployment.
+Troubleshooting: log still says "Executing user deploy command: npx wrangler deploy"
+--------------------------------------------------------------------------------------
+That line is ONLY configured in the Cloudflare dashboard — not in this repo.
 
-If you open the site on ***.workers.dev**, you likely deployed a **Worker** with
-static assets only — there is no Pages Function there, so /api/upload-theme
-returns 404.
+  1) Workers & Pages → open the **Pages** project (not a Worker named y1themes).
+  2) Settings → Builds & deployments → Build configuration.
+  3) Find **Deploy command** (may be under "Advanced" or a second column / tab).
+  4) **Delete the entire command** so the field is empty. Click **Save**.
+  5) If you see separate **Production** and **Preview** build settings, clear
+     Deploy command in **both**.
+  6) Retry the deployment (Deployments → Retry, or push a commit).
 
-Fix: open upload.html on your **Pages** hostname (e.g. https://<project>.pages.dev/upload.html)
-or attach your custom domain to the **Pages** project (not only to a Worker).
-
-Advanced: host static HTML elsewhere but point uploads at Pages by setting the
-meta tag in upload.html:
-  <meta name="cf-pages-upload-api-origin" content="https://YOUR.pages.dev" />
-
-Troubleshooting: wrangler pages deploy + "Authentication error [code: 10000]"
------------------------------------------------------------------------------
-You set a custom **Deploy command** like `npx wrangler pages deploy ...`. Remove
-it entirely. For Git-connected Pages, deployment is automatic after `build.sh`.
-
-If you removed the deploy command but still have CLOUDFLARE_API_TOKEN in env,
-you can delete that variable unless another build step needs it.
+If you cannot find an empty deploy field, search the project settings for
+"wrangler" or "deploy" and remove any custom Worker deploy step.
 
 Troubleshooting: "Missing entry-point to Worker script or to assets directory"
 ------------------------------------------------------------------------------
-The **Deploy command** is set to `npx wrangler deploy`. Remove it (empty field).
-This repo is a Pages site + Pages Functions, not a Worker with `main = "..."`.
+The Deploy command is `npx wrangler deploy`, which targets a **Worker**, not
+Pages. This repo has no Worker `main` entry — remove the deploy command (above).
+
+Troubleshooting: "Upload failed (404)" on upload.html
+------------------------------------------------------
+Use a **Pages** hostname (e.g. custom domain on the Pages project or *.pages.dev),
+not a ***.workers.dev** Worker-only URL, unless you set cf-pages-upload-api-origin
+in upload.html — see upload.html comments.
