@@ -1,6 +1,43 @@
 Cloudflare Pages — settings to use with this repo
 ==================================================
 
+ELI5 — make it work (do these in order)
+---------------------------------------
+Think of Cloudflare like a photocopier: it copies your GitHub repo to the web.
+You only need to tell it WHERE the website files are. You do NOT need a
+second "deploy with wrangler" step for that — Cloudflare does the copying for
+you after your build step says "OK" (exit 0).
+
+  1) In Cloudflare, open **Workers & Pages** → your **Pages** project (the one
+     linked to GitHub `InnioasisY1Themes`). Not a random Worker with the same name.
+
+  2) **Settings → Builds & deployments → Build configuration** (or Edit build):
+       - Build command:        exit 0
+       - Build output folder:  .
+       - Root folder:          leave EMPTY (not "/")
+       - Deploy command:       leave EMPTY (delete npx wrangler pages deploy)
+       - Version command:      leave EMPTY if you see it
+     Click **Save**.
+
+  3) **Settings → Environment variables**:
+       - Add **GITHUB_UPLOAD_TOKEN** (secret) = a GitHub token that can create
+         branches and pull requests on the themes repo. This is for the upload
+         form on the live site, not for the build copying files.
+       - Remove **CLOUDFLARE_API_TOKEN** if it is there (you do not need it for
+         this simple setup).
+
+  4) Push any small change to **main** (or click Retry deployment). The build
+     log should show **exit 0** and should NOT say "Executing user deploy command".
+
+  5) Open your site on the **Pages** URL or **themes.innioasis.app** (must be
+     attached to this **Pages** project). Go to **/upload.html** to test uploads.
+
+If step 4 still shows a deploy command in the log, step 2 did not save — try
+again or create a new Pages project from the same repo with only the settings
+above.
+
+---
+
 In the Pages project: Settings → Builds & deployments → Build configuration
 
   Framework preset:        None
