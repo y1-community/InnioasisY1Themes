@@ -2,26 +2,34 @@
 """Validate PR contents for automatic theme-folder merging.
 
 Rules:
-- Only added files are allowed.
-- No root-level file changes are allowed.
-- Changes must be inside newly added top-level folders only.
-- Dangerous/disallowed files are blocked (html/executables/scripts).
-- Each new folder must include config.json and at least one image file.
-- config.json must contain at least one image asset reference outside
-  theme_info/source_info sections.
+- Only added files are allowed (no modifications, deletions, renames).
+- Root-level non-zip file changes are not allowed.
+- Non-zip file changes must be inside newly added top-level folders only.
+- Dangerous/disallowed files are blocked.
+- New direct theme folders must include config.json + at least one image file.
+- Added zip files are allowed and validated:
+  - path-safe entries only (no path traversal/absolute paths)
+  - dangerous file types blocked inside zips
+  - zip must contain one or more theme folders, each with a unique folder name
+  - each theme folder in zip must include config.json and image assets
+  - config.json must reference at least one image asset
 """
 
 from __future__ import annotations
 
 import json
+import io
 import subprocess
 import sys
 from pathlib import Path
+from pathlib import PurePosixPath
 from typing import Any
+import zipfile
 
 
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"}
 DISALLOWED_TOP_LEVEL = {".github", "scripts", "assets"}
+ZIP_EXTENSION = ".zip"
 BLOCKED_EXTENSIONS = {
     ".html",
     ".htm",
@@ -73,6 +81,10 @@ def _is_blocked_file(path_value: str) -> bool:
     return suffix in BLOCKED_EXTENSIONS
 
 
+def _is_zip_file(path_value: str) -> bool:
+    return Path(path_value).suffix.lower() == ZIP_EXTENSION
+
+
 def _iter_values(value: Any) -> list[Any]:
     if isinstance(value, dict):
         out: list[Any] = []
@@ -102,6 +114,15 @@ def _git_blob_text(rev_path: str) -> str:
     return result.stdout
 
 
+def _git_blob_bytes(rev_path: str) -> bytes:
+    result = subprocess.run(
+        ["git", "show", rev_path],
+        check=True,
+        capture_output=True,
+    )
+    return result.stdout
+
+
 def _folder_exists_in_base(base_sha: str, folder: str) -> bool:
     result = _run("git", "cat-file", "-e", f"{base_sha}:{folder}", check=False)
     return result.returncode == 0
@@ -111,6 +132,98 @@ def _fail(errors: list[str]) -> int:
     for msg in errors:
         print(f"ERROR: {msg}")
     return 1
+
+
+def _is_safe_zip_member(member_name: str) -> bool:
+    path = PurePosixPath(member_name)
+    if path.is_absolute():
+        return False
+    for part in path.parts:
+        if part in {"", ".", ".."}:
+            return False
+    return True
+
+
+def _zip_theme_keys(entry_names: list[str]) -> list[str]:
+    keys: list[str] = []
+    for name in entry_names:
+        path = PurePosixPath(name)
+        if path.name != "config.json":
+            continue
+        parent = str(path.parent).strip(".")
+        if parent:
+            keys.append(parent)
+    return keys
+
+
+def _zip_has_image_file(entry_names: list[str], theme_key: str) -> bool:
+    prefix = f"{theme_key}/"
+    for name in entry_names:
+        if not name.startswith(prefix):
+            continue
+        rel = name[len(prefix) :]
+        if not rel:
+            continue
+        if _looks_like_image(rel):
+            return True
+    return False
+
+
+def _validate_zip_blob(path: str, blob: bytes) -> list[str]:
+    errors: list[str] = []
+    try:
+        archive = zipfile.ZipFile(io.BytesIO(blob))
+    except zipfile.BadZipFile:
+        return [f"{path} is not a valid zip archive."]
+
+    with archive:
+        names = [n for n in archive.namelist() if n and not n.endswith("/")]
+        if not names:
+            return [f"{path} contains no files."]
+
+        for name in names:
+            if not _is_safe_zip_member(name):
+                errors.append(f"{path} contains unsafe entry path: {name}")
+                continue
+            if _is_blocked_file(name):
+                errors.append(f"{path} contains blocked file type: {name}")
+
+        if errors:
+            return errors
+
+        theme_keys = _zip_theme_keys(names)
+        if not theme_keys:
+            return [f"{path} must contain at least one theme folder with config.json."]
+
+        base_names = [PurePosixPath(k).name for k in theme_keys]
+        if len(set(base_names)) != len(base_names):
+            return [f"{path} contains duplicate theme folder names; each theme folder must be unique."]
+
+        for key in theme_keys:
+            config_entry = f"{key}/config.json"
+            try:
+                config_raw = archive.read(config_entry).decode("utf-8")
+                config = json.loads(config_raw)
+            except KeyError:
+                errors.append(f"{path} missing {config_entry}.")
+                continue
+            except json.JSONDecodeError as exc:
+                errors.append(f"{path} has invalid JSON in {config_entry}: {exc}")
+                continue
+            except UnicodeDecodeError:
+                errors.append(f"{path} has non-utf8 config in {config_entry}.")
+                continue
+
+            if not isinstance(config, dict):
+                errors.append(f"{path} {config_entry} must be a JSON object.")
+                continue
+
+            if not _zip_has_image_file(names, key):
+                errors.append(f"{path} {key}/ must include at least one image file.")
+            if not _config_has_image_refs(config):
+                errors.append(f"{path} {config_entry} must reference at least one image asset.")
+
+    return errors
 
 
 def main() -> int:
@@ -127,6 +240,7 @@ def main() -> int:
         return _fail(["PR has no file changes."])
 
     folder_state: dict[str, dict[str, Any]] = {}
+    zip_paths: list[str] = []
     errors: list[str] = []
 
     for row in rows:
@@ -142,15 +256,18 @@ def main() -> int:
             errors.append(f"Only added files are allowed. Found {status} on {path}.")
             continue
 
+        if _is_zip_file(path):
+            zip_paths.append(path)
+            continue
+
         if "/" not in path:
-            errors.append(f"Root-level file changes are not allowed: {path}.")
+            errors.append(f"Root-level non-zip changes are not allowed: {path}.")
             continue
 
         folder, rel_path = path.split("/", 1)
         if folder.startswith(".") or folder in DISALLOWED_TOP_LEVEL:
             errors.append(f"Changes in {folder}/ are not allowed for auto-merge.")
             continue
-
         if _folder_exists_in_base(base_sha, folder):
             errors.append(f"Folder {folder}/ already exists in base; only new folders are auto-mergeable.")
             continue
@@ -167,6 +284,9 @@ def main() -> int:
 
     if errors:
         return _fail(errors)
+
+    if not folder_state and not zip_paths:
+        return _fail(["PR must include new theme folders and/or zip submissions."])
 
     for folder, state in folder_state.items():
         if not state["has_config"]:
@@ -193,10 +313,21 @@ def main() -> int:
         if not _config_has_image_refs(config):
             errors.append(f"{folder}/config.json must reference at least one image asset.")
 
+    for path in zip_paths:
+        try:
+            blob = _git_blob_bytes(f"{pr_ref}:{path}")
+        except subprocess.CalledProcessError:
+            errors.append(f"Unable to read zip {path} from PR ref.")
+            continue
+        errors.extend(_validate_zip_blob(path, blob))
+
     if errors:
         return _fail(errors)
 
-    print(f"Validation passed for {len(folder_state)} new theme folder(s).")
+    print(
+        f"Validation passed for {len(folder_state)} new theme folder(s)"
+        f" and {len(zip_paths)} zip submission(s)."
+    )
     return 0
 
 
