@@ -1,0 +1,5 @@
+# Cloudflare Pages — source of truth for output dir + Functions (./functions/).
+# Must match your Pages project name in the dashboard (rename here if different).
+name = "y1themes"
+compatibility_date = "2026-05-11"
+pages_build_output_dir = "."
