@@ -5,9 +5,7 @@ Rules:
 - Only added files are allowed.
 - No root-level file changes are allowed.
 - Changes must be inside newly added top-level folders only.
-- Allowed files in those folders are:
-  - config.json
-  - image files (.png, .jpg, .jpeg, .gif, .webp, .svg)
+- Dangerous/disallowed files are blocked (html/executables/scripts).
 - Each new folder must include config.json and at least one image file.
 - config.json must contain at least one image asset reference outside
   theme_info/source_info sections.
@@ -24,6 +22,34 @@ from typing import Any
 
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"}
 DISALLOWED_TOP_LEVEL = {".github", "scripts", "assets"}
+BLOCKED_EXTENSIONS = {
+    ".html",
+    ".htm",
+    ".exe",
+    ".msi",
+    ".dll",
+    ".com",
+    ".scr",
+    ".bat",
+    ".cmd",
+    ".ps1",
+    ".sh",
+    ".bash",
+    ".zsh",
+    ".ksh",
+    ".jar",
+    ".js",
+    ".ts",
+    ".mjs",
+    ".cjs",
+    ".vbs",
+    ".wsf",
+    ".reg",
+    ".py",
+    ".php",
+    ".pl",
+    ".rb",
+}
 
 
 def _run(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -40,6 +66,11 @@ def _run(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
 def _looks_like_image(path_or_value: str) -> bool:
     suffix = Path(path_or_value.split("?", 1)[0].split("#", 1)[0]).suffix.lower()
     return suffix in IMAGE_EXTENSIONS
+
+
+def _is_blocked_file(path_value: str) -> bool:
+    suffix = Path(path_value).suffix.lower()
+    return suffix in BLOCKED_EXTENSIONS
 
 
 def _iter_values(value: Any) -> list[Any]:
@@ -129,10 +160,10 @@ def main() -> int:
         name = Path(rel_path).name
         if name == "config.json":
             state["has_config"] = True
+        elif _is_blocked_file(name):
+            errors.append(f"Blocked file type in {folder}/: {rel_path}")
         elif _looks_like_image(name):
             state["image_files"].append(rel_path)
-        else:
-            errors.append(f"Disallowed file type in {folder}/: {rel_path}")
 
     if errors:
         return _fail(errors)
