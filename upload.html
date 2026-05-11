@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Upload Theme ZIP — Innioasis Y1</title>
+    <meta name="description" content="Upload Innioasis Y1 theme ZIP submissions for automated PR validation and merge." />
+    <meta name="author" content="Innioasis Community" />
+    <link rel="canonical" href="https://themes.innioasis.app/upload.html">
+    <link rel="icon" href="y1_illustration.png">
+    <link rel="stylesheet" href="https://innioasis.app/styles.css">
+    <style>
+        body {
+            font-family: Inter, sans-serif;
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        .card {
+            background: var(--bg-card, #1f2430);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-top: 1rem;
+        }
+
+        .row {
+            display: grid;
+            gap: 0.75rem;
+            margin-bottom: 0.9rem;
+        }
+
+        label {
+            font-weight: 600;
+        }
+
+        input,
+        textarea,
+        button {
+            font: inherit;
+            padding: 0.65rem 0.7rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            background: rgba(0, 0, 0, 0.2);
+            color: inherit;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            background: #2f6feb;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .status {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+            display: none;
+            white-space: pre-wrap;
+        }
+
+        .ok {
+            display: block;
+            background: rgba(46, 160, 67, 0.2);
+        }
+
+        .err {
+            display: block;
+            background: rgba(248, 81, 73, 0.2);
+        }
+
+        code {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.1rem 0.3rem;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Upload Theme ZIP</h1>
+    <p>
+        Use this page to submit a <code>.zip</code> that contains one or more themes.
+        The server creates a GitHub PR, then existing validation + auto-merge workflows decide whether it can merge.
+    </p>
+
+    <div class="card">
+        <form id="upload-form">
+            <div class="row">
+                <label for="zip-file">Theme ZIP</label>
+                <input id="zip-file" name="zip" type="file" accept=".zip,application/zip" required />
+            </div>
+
+            <div class="row">
+                <label for="theme-name">Theme Name (optional)</label>
+                <input id="theme-name" name="themeName" type="text" maxlength="120" placeholder="WarCraft 3" />
+            </div>
+
+            <div class="row">
+                <label for="uploader-name">Your Name / Handle (optional)</label>
+                <input id="uploader-name" name="uploaderName" type="text" maxlength="120" placeholder="u/yourname" />
+            </div>
+
+            <div class="row">
+                <label for="notes">Notes (optional)</label>
+                <textarea id="notes" name="notes" rows="3" maxlength="1000" placeholder="Context for maintainers"></textarea>
+            </div>
+
+            <button id="submit-btn" type="submit">Submit ZIP</button>
+        </form>
+        <div id="status" class="status"></div>
+    </div>
+
+    <div class="card">
+        <h3>What happens next</h3>
+        <ul>
+            <li>Your ZIP is uploaded through a Cloudflare Pages Function (<code>/api/upload-theme</code>).</li>
+            <li>The function creates a bot branch + PR in <code>y1-community/InnioasisY1Themes</code>.</li>
+            <li>PR validation checks for dangerous files and theme structure.</li>
+            <li>If valid, auto-merge can complete and zip processing on <code>main</code> extracts theme folders.</li>
+        </ul>
+    </div>
+
+    <script>
+        const form = document.getElementById("upload-form");
+        const statusEl = document.getElementById("status");
+        const submitBtn = document.getElementById("submit-btn");
+
+        function setStatus(message, ok) {
+            statusEl.textContent = message;
+            statusEl.className = "status " + (ok ? "ok" : "err");
+        }
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            submitBtn.disabled = true;
+            setStatus("Uploading...", true);
+
+            try {
+                const data = new FormData(form);
+                const res = await fetch("/api/upload-theme", {
+                    method: "POST",
+                    body: data
+                });
+                const payload = await res.json().catch(() => ({}));
+
+                if (!res.ok) {
+                    throw new Error(payload.error || `Upload failed (${res.status})`);
+                }
+
+                const prUrl = payload.prUrl ? `\nPR: ${payload.prUrl}` : "";
+                setStatus(`Upload accepted.${prUrl}`, true);
+                form.reset();
+            } catch (err) {
+                setStatus(String(err && err.message ? err.message : err), false);
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+
+</html>
