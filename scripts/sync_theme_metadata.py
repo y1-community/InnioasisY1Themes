@@ -406,6 +406,35 @@ def _theme_entry_from_folder(folder: str, config: dict[str, Any] | None) -> dict
     return entry
 
 
+def _is_external_source_entry(item: dict[str, Any]) -> bool:
+    return str(item.get("sourceType") or "").strip().lower() == "external"
+
+
+def _normalize_name_for_compare(value: str) -> str:
+    return re.sub(r"[^a-z0-9]", "", str(value or "").lower())
+
+
+def _refresh_existing_theme_entry(entry: dict[str, Any], folder: str, config: dict[str, Any] | None) -> dict[str, Any]:
+    refreshed = dict(entry)
+    refreshed["folder"] = folder
+
+    if not isinstance(config, dict):
+        return refreshed
+
+    info = _extract_theme_info_from_config(config)
+    title = str(info.get("title") or "").strip()
+    current_name = str(refreshed.get("name") or "").strip()
+    if not current_name:
+        refreshed["name"] = title or folder
+        return refreshed
+
+    # Housekeeping: only correct stale names that still mirror the folder key.
+    if title and _normalize_name_for_compare(current_name) == _normalize_name_for_compare(folder):
+        refreshed["name"] = title
+
+    return refreshed
+
+
 def _sync_theme_info(config: dict[str, Any], theme_entry: dict[str, Any]) -> bool:
     fallback_name = str(theme_entry.get("name") or theme_entry.get("folder") or "Theme").strip()
     existing_theme_info = config.get("theme_info")
@@ -548,17 +577,30 @@ def main() -> int:
 
     themes = _load_themes_json(THEMES_JSON_PATH)
     by_folder: dict[str, dict[str, Any]] = {}
+    theme_folders = _discover_theme_folders(REPO_ROOT)
+    theme_folder_set = set(theme_folders)
+
     for item in themes:
         folder = _extract_folder_key(item)
         if not folder:
             continue
+        if folder not in theme_folder_set and not _is_external_source_entry(item):
+            # Housekeeping: prune deleted theme folders from themes.json.
+            continue
+
         normalized = dict(item)
         normalized["folder"] = folder
         if "Folder" in normalized:
             normalized.pop("Folder", None)
+        if folder in theme_folder_set:
+            cfg_path = REPO_ROOT / folder / "config.json"
+            normalized = _refresh_existing_theme_entry(
+                normalized,
+                folder,
+                _load_json_file(cfg_path),
+            )
         by_folder[folder] = normalized
 
-    theme_folders = _discover_theme_folders(REPO_ROOT)
     for folder in theme_folders:
         if folder in by_folder:
             continue
