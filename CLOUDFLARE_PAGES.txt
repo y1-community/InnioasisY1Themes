@@ -22,8 +22,10 @@ Deploy command:           (leave COMPLETELY EMPTY)
 
 Production env vars (Settings → Environment variables):
 
-  Do NOT add CLOUDFLARE_API_TOKEN for normal Git Pages builds unless you
-  intentionally run wrangler pages deploy from that field.
+  Remove CLOUDFLARE_API_TOKEN for normal Git Pages builds.
+  It is only used when Wrangler runs (e.g. a custom Deploy command). If a deploy
+  command is set by mistake, Wrangler reads this token and you can get
+  Authentication error [code: 10000] even though Git deploy does not need it.
 
   GITHUB_UPLOAD_TOKEN   (required) — GitHub PAT for commits + PRs
   GITHUB_OWNER          (optional) default y1-community
@@ -65,6 +67,27 @@ The Deploy command is set to `wrangler pages deploy` (or `wrangler ...`) without
 
 Fix: **delete the entire Deploy command** (empty field). Do not "fix" it by
 adding `npx` — you do not need a deploy step at all for Git-connected Pages.
+
+Troubleshooting: "Authentication error [code: 10000]" on pages deploy
+----------------------------------------------------------------------
+Your log shows BOTH:
+  Executing user deploy command: npx wrangler pages deploy
+  CLOUDFLARE_API_TOKEN ... failed ... /pages/projects/y1themes
+
+That deploy step is **optional and wrong** for Git-connected Pages. Fix:
+
+  1) Clear **Deploy command** completely (same steps as the "wrangler" section
+     above). Save.
+  2) Remove the **CLOUDFLARE_API_TOKEN** environment variable from this Pages
+     project (or it may keep getting picked up if anything runs Wrangler).
+  3) Retry deployment.
+
+You do **not** need to "repair" the token for this flow. You need to stop running
+`wrangler pages deploy` in the build pipeline.
+
+Last resort: create a **new** Pages project connected to the same repo, set only
+build `exit 0`, output `.`, leave deploy empty, and attach `themes.innioasis.app`
+after deleting it from the old project.
 
 Troubleshooting: "Upload failed (404)" on upload.html
 ------------------------------------------------------
