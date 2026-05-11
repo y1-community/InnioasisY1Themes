@@ -19,7 +19,8 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+_GIT_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = _GIT_ROOT / "themes"
 EXCLUDED_DIRS = {".git", ".github", ".vscode", "__pycache__", "assets", "scripts", "functions"}
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"}
 BLOCKED_EXTENSIONS = {

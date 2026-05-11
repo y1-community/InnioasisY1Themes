@@ -29,7 +29,7 @@ jobs:
 
       - name: Validate PR policy for auto-merge
         run: |
-          python themes/scripts/validate_theme_pr.py "${{ github.event.pull_request.base.sha }}" "pr-head"
+          python scripts/validate_theme_pr.py "${{ github.event.pull_request.base.sha }}" "pr-head"
 
       - name: Auto-merge validated PR
         uses: actions/github-script@v7

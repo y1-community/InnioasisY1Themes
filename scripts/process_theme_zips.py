@@ -17,7 +17,8 @@ from typing import Any
 import zipfile
 
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+_GIT_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = _GIT_ROOT / "themes"
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"}
 ZIP_EXTENSION = ".zip"
 EXCLUDED_SCAN_DIRS = {".git", ".github", "scripts", "assets", "functions"}

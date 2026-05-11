@@ -24,7 +24,7 @@ jobs:
           python-version: "3.11"
 
       - name: Process zip submissions into theme folders
-        run: python themes/scripts/process_theme_zips.py
+        run: python scripts/process_theme_zips.py
 
       - name: Configure git identity
         run: |

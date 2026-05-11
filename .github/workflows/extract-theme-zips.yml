@@ -24,7 +24,7 @@ jobs:
           python-version: "3.11"
 
       - name: Extract uploaded ZIP archives
-        run: python themes/scripts/extract_theme_zips.py
+        run: python scripts/extract_theme_zips.py
 
       - name: Configure git identity
         run: |
