@@ -8,10 +8,19 @@ In the Pages project: Settings → Builds & deployments → Build configuration
   Build output directory:  .
   Root directory:          (leave empty = repo root)
 
+Deploy command:           (leave EMPTY — required for Git-connected Pages)
+  Do NOT set: npx wrangler pages deploy ...
+  After the build step, Cloudflare publishes the output automatically.
+  A custom deploy command is for Direct Upload only, not normal Git → Pages.
+
 Do NOT use: npx wrangler deploy
   (That is for Workers + static assets and bundles .git into uploads.)
 
 Production env vars (Settings → Environment variables):
+
+  Do NOT add CLOUDFLARE_API_TOKEN for normal Git Pages builds — it is not used
+  unless you intentionally run wrangler from the build, and wrong tokens cause
+  auth error 10000 on pages deploy.
 
   GITHUB_UPLOAD_TOKEN   (required) — GitHub PAT for commits + PRs
   GITHUB_OWNER          (optional) default y1-community
@@ -40,3 +49,11 @@ or attach your custom domain to the **Pages** project (not only to a Worker).
 Advanced: host static HTML elsewhere but point uploads at Pages by setting the
 meta tag in upload.html:
   <meta name="cf-pages-upload-api-origin" content="https://YOUR.pages.dev" />
+
+Troubleshooting: wrangler pages deploy + "Authentication error [code: 10000]"
+-----------------------------------------------------------------------------
+You set a custom **Deploy command** like `npx wrangler pages deploy ...`. Remove
+it entirely. For Git-connected Pages, deployment is automatic after `build.sh`.
+
+If you removed the deploy command but still have CLOUDFLARE_API_TOKEN in env,
+you can delete that variable unless another build step needs it.
