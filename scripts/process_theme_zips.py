@@ -99,13 +99,20 @@ def _discover_theme_keys(member_names: list[str]) -> list[str]:
         path = PurePosixPath(name)
         if path.name != "config.json":
             continue
-        parent = str(path.parent).strip(".")
-        if parent:
-            keys.append(parent)
+        parent = str(path.parent)
+        keys.append("." if parent in {"", "."} else parent)
     return keys
 
 
 def _theme_has_image_file(member_names: list[str], theme_key: str) -> bool:
+    if theme_key == ".":
+        for name in member_names:
+            if "/" in name:
+                continue
+            if _looks_like_image(name):
+                return True
+        return False
+
     prefix = f"{theme_key}/"
     for name in member_names:
         if name.startswith(prefix) and _looks_like_image(name[len(prefix) :]):
@@ -133,22 +140,28 @@ def _read_config(archive: zipfile.ZipFile, entry: str) -> dict[str, Any]:
     return parsed
 
 
-def _extract_theme(archive: zipfile.ZipFile, member_names: list[str], theme_key: str) -> tuple[bool, str]:
-    dest_name = PurePosixPath(theme_key).name
+def _extract_theme(archive: zipfile.ZipFile, member_names: list[str], theme_key: str, zip_stem: str) -> tuple[bool, str]:
+    dest_name = zip_stem if theme_key == "." else PurePosixPath(theme_key).name
     dest = REPO_ROOT / dest_name
     if dest_name in EXCLUDED_SCAN_DIRS or dest_name.startswith("."):
         return False, f"Skip {theme_key}: destination folder name {dest_name!r} is not allowed."
     if dest.exists():
         return False, f"Skip {theme_key}: destination folder {dest_name}/ already exists."
 
-    prefix = f"{theme_key}/"
-    selected = [name for name in member_names if name.startswith(prefix)]
+    if theme_key == ".":
+        selected = [name for name in member_names if "/" not in name]
+    else:
+        prefix = f"{theme_key}/"
+        selected = [name for name in member_names if name.startswith(prefix)]
     if not selected:
         return False, f"Skip {theme_key}: no files found under theme folder."
 
     dest.mkdir(parents=True, exist_ok=False)
     for name in selected:
-        rel = PurePosixPath(name[len(prefix) :])
+        if theme_key == ".":
+            rel = PurePosixPath(name)
+        else:
+            rel = PurePosixPath(name[len(prefix) :])
         if not rel.parts:
             continue
         out_path = dest.joinpath(*rel.parts)
@@ -185,24 +198,25 @@ def _process_zip(path: Path) -> tuple[bool, list[str]]:
         if not keys:
             return False, logs + ["ERROR: Zip must contain at least one theme folder with config.json."]
 
-        base_names = [PurePosixPath(k).name for k in keys]
+        base_names = [(path.stem if k == "." else PurePosixPath(k).name) for k in keys]
         if len(set(base_names)) != len(base_names):
             return False, logs + ["ERROR: Zip contains duplicate theme folder names."]
 
         extracted_any = False
         for key in keys:
-            config_entry = f"{key}/config.json"
+            config_entry = "config.json" if key == "." else f"{key}/config.json"
             try:
                 cfg = _read_config(archive, config_entry)
             except Exception as exc:
                 return False, logs + [f"ERROR: {config_entry} invalid: {exc}"]
 
             if not _theme_has_image_file(names, key):
-                return False, logs + [f"ERROR: {key}/ must include at least one image file."]
+                scope = "zip root" if key == "." else f"{key}/"
+                return False, logs + [f"ERROR: {scope} must include at least one image file."]
             if not _config_has_image_refs(cfg):
                 return False, logs + [f"ERROR: {config_entry} must reference at least one image asset."]
 
-            ok, msg = _extract_theme(archive, names, key)
+            ok, msg = _extract_theme(archive, names, key, path.stem)
             logs.append(msg)
             if ok:
                 extracted_any = True

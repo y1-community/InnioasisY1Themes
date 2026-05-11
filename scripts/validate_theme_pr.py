@@ -150,13 +150,20 @@ def _zip_theme_keys(entry_names: list[str]) -> list[str]:
         path = PurePosixPath(name)
         if path.name != "config.json":
             continue
-        parent = str(path.parent).strip(".")
-        if parent:
-            keys.append(parent)
+        parent = str(path.parent)
+        keys.append("." if parent in {"", "."} else parent)
     return keys
 
 
 def _zip_has_image_file(entry_names: list[str], theme_key: str) -> bool:
+    if theme_key == ".":
+        for name in entry_names:
+            if "/" in name:
+                continue
+            if _looks_like_image(name):
+                return True
+        return False
+
     prefix = f"{theme_key}/"
     for name in entry_names:
         if not name.startswith(prefix):
@@ -195,12 +202,12 @@ def _validate_zip_blob(path: str, blob: bytes) -> list[str]:
         if not theme_keys:
             return [f"{path} must contain at least one theme folder with config.json."]
 
-        base_names = [PurePosixPath(k).name for k in theme_keys]
+        base_names = [("__ZIP_ROOT__" if k == "." else PurePosixPath(k).name) for k in theme_keys]
         if len(set(base_names)) != len(base_names):
             return [f"{path} contains duplicate theme folder names; each theme folder must be unique."]
 
         for key in theme_keys:
-            config_entry = f"{key}/config.json"
+            config_entry = "config.json" if key == "." else f"{key}/config.json"
             try:
                 config_raw = archive.read(config_entry).decode("utf-8")
                 config = json.loads(config_raw)
@@ -219,7 +226,8 @@ def _validate_zip_blob(path: str, blob: bytes) -> list[str]:
                 continue
 
             if not _zip_has_image_file(names, key):
-                errors.append(f"{path} {key}/ must include at least one image file.")
+                scope = "zip root" if key == "." else f"{key}/"
+                errors.append(f"{path} {scope} must include at least one image file.")
             if not _config_has_image_refs(config):
                 errors.append(f"{path} {config_entry} must reference at least one image asset.")
 
