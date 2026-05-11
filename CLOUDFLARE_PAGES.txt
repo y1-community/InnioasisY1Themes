@@ -8,13 +8,17 @@ In the Pages project: Settings → Builds & deployments → Build configuration
   Build output directory:  .
   Root directory:          (leave empty = repo root)
 
-Deploy command:           (leave EMPTY — required for Git-connected Pages)
-  Do NOT set: npx wrangler pages deploy ...
-  After the build step, Cloudflare publishes the output automatically.
-  A custom deploy command is for Direct Upload only, not normal Git → Pages.
+Deploy command:           (leave COMPLETELY EMPTY)
+  Git-connected Pages publishes the build output automatically after build.sh
+  exits 0. You do not replace that with Wrangler.
 
-Do NOT use: npx wrangler deploy
-  (That is for Workers + static assets and bundles .git into uploads.)
+  In the Deploy command field, do NOT use any of these:
+    npx wrangler deploy
+    npx wrangler pages deploy ...
+  - wrangler deploy targets a Worker (needs main / assets); Wrangler will warn
+    it is wrong on a Pages project and fail with "Missing entry-point".
+  - wrangler pages deploy is only for Direct Upload pipelines, needs a valid
+    CLOUDFLARE_API_TOKEN with Pages permissions, and is redundant with Git Pages.
 
 Production env vars (Settings → Environment variables):
 
@@ -57,3 +61,8 @@ it entirely. For Git-connected Pages, deployment is automatic after `build.sh`.
 
 If you removed the deploy command but still have CLOUDFLARE_API_TOKEN in env,
 you can delete that variable unless another build step needs it.
+
+Troubleshooting: "Missing entry-point to Worker script or to assets directory"
+------------------------------------------------------------------------------
+The **Deploy command** is set to `npx wrangler deploy`. Remove it (empty field).
+This repo is a Pages site + Pages Functions, not a Worker with `main = "..."`.
