@@ -1,4 +1,6 @@
-# Cloudflare Pages — source of truth for output dir + Functions (./functions/).
+# Cloudflare Pages — output dir + Pages Functions (./functions/).
+# Dashboard build command can be `exit 0` (no compile step). Do not use
+# `wrangler deploy` in the deploy command — that targets Workers, not Pages.
 # Must match your Pages project name in the dashboard (rename here if different).
 name = "y1themes"
 compatibility_date = "2026-05-11"

@@ -4,13 +4,13 @@ Cloudflare Pages — settings to use with this repo
 In the Pages project: Settings → Builds & deployments → Build configuration
 
   Framework preset:        None
-  Build command:           bash build.sh
+  Build command:           exit 0
   Build output directory:  .
   Root directory:          (leave empty = repo root)
 
 Deploy command:           (leave COMPLETELY EMPTY)
-  Git-connected Pages publishes the build output automatically after build.sh
-  exits 0.
+  Git-connected Pages publishes the build output automatically after the build
+  command exits 0.
 
   Do NOT put any of these in the Deploy command field:
     npx wrangler deploy
