@@ -13,8 +13,11 @@ Deploy command:           (leave COMPLETELY EMPTY)
   command exits 0.
 
   Do NOT put any of these in the Deploy command field:
+    wrangler pages deploy
+    wrangler deploy
     npx wrangler deploy
     npx wrangler pages deploy ...
+  Bare `wrangler` is not on PATH in the Pages build image → "wrangler: not found".
   See troubleshooting sections below.
 
 Production env vars (Settings → Environment variables):
@@ -34,9 +37,10 @@ to match the dashboard (or rename the project to match the file).
 
 Build image: use V2 or later if prompted (needed for wrangler.toml Pages config).
 
-Troubleshooting: log still says "Executing user deploy command: npx wrangler deploy"
+Troubleshooting: log still says "Executing user deploy command: ... wrangler ..."
 --------------------------------------------------------------------------------------
 That line is ONLY configured in the Cloudflare dashboard — not in this repo.
+Examples: `npx wrangler deploy`, `wrangler pages deploy`, `npx wrangler pages deploy`.
 
   1) Workers & Pages → open the **Pages** project (not a Worker named y1themes).
   2) Settings → Builds & deployments → Build configuration.
@@ -53,6 +57,14 @@ Troubleshooting: "Missing entry-point to Worker script or to assets directory"
 ------------------------------------------------------------------------------
 The Deploy command is `npx wrangler deploy`, which targets a **Worker**, not
 Pages. This repo has no Worker `main` entry — remove the deploy command (above).
+
+Troubleshooting: "/bin/sh: 1: wrangler: not found"
+--------------------------------------------------
+The Deploy command is set to `wrangler pages deploy` (or `wrangler ...`) without
+`npx`. That still fails or is the wrong approach for Git Pages.
+
+Fix: **delete the entire Deploy command** (empty field). Do not "fix" it by
+adding `npx` — you do not need a deploy step at all for Git-connected Pages.
 
 Troubleshooting: "Upload failed (404)" on upload.html
 ------------------------------------------------------
