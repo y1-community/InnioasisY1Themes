@@ -12,12 +12,14 @@ you after your build step says "OK" (exit 0).
      linked to GitHub `InnioasisY1Themes`). Not a random Worker with the same name.
 
   2) **Settings → Builds & deployments → Build configuration** (or Edit build):
+       - Root directory:       themes   ← website root = repo themes/ (not "/")
+       - Build output directory:  .    ← publish everything under that root
        - Build command:        exit 0
-       - Build output folder:  themes
-       - Root folder:          leave EMPTY (not "/")
        - Deploy command:       leave EMPTY (delete npx wrangler pages deploy)
        - Version command:      leave EMPTY if you see it
      Click **Save**.
+
+     Alternative (same result): Root = (empty), Build output = themes, Build = exit 0.
 
   3) **Settings → Environment variables**:
        - Add **GITHUB_UPLOAD_TOKEN** (secret) = a GitHub token that can create
@@ -41,9 +43,11 @@ above.
 In the Pages project: Settings → Builds & deployments → Build configuration
 
   Framework preset:        None
+  Root directory:          themes
+  Build output directory:  .
   Build command:           exit 0
-  Build output directory:  themes
-  Root directory:          (leave empty = repo root)
+
+  Alternative: Root (empty), Build output themes, Build exit 0.
 
 Deploy command:           (leave COMPLETELY EMPTY)
   Git-connected Pages publishes the build output automatically after the build
@@ -124,7 +128,7 @@ You do **not** need to "repair" the token for this flow. You need to stop runnin
 `wrangler pages deploy` in the build pipeline.
 
 Last resort: create a **new** Pages project connected to the same repo, set only
-build `exit 0`, output `themes`, leave deploy empty, and attach `themes.innioasis.app`
+build `exit 0`, Root `themes` + output `.` (or output `themes` from repo root), leave deploy empty, and attach `themes.innioasis.app`
 after deleting it from the old project.
 
 Troubleshooting: "Upload failed (404)" on upload.html
