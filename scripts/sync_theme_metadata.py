@@ -273,6 +273,50 @@ def _github_login_from_commit(commit_sha: str) -> str:
     return ""
 
 
+def _github_pr_author_from_commit(commit_sha: str) -> str:
+    if not commit_sha:
+        return ""
+
+    request = urllib.request.Request(
+        f"https://api.github.com/repos/y1-community/InnioasisY1Themes/commits/{commit_sha}/pulls",
+        headers={
+            "Accept": "application/vnd.github+json",
+            "User-Agent": "InnioasisY1Themes metadata sync",
+        },
+    )
+    token = os.environ.get("GITHUB_TOKEN")
+    if token:
+        request.add_header("Authorization", f"Bearer {token}")
+
+    try:
+        with urllib.request.urlopen(request, timeout=10) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except Exception:
+        return ""
+
+    if not isinstance(payload, list):
+        return ""
+
+    # Prefer the earliest PR that references this commit.
+    best_login = ""
+    best_number: int | None = None
+    for item in payload:
+        if not isinstance(item, dict):
+            continue
+        user = item.get("user")
+        login = str(user.get("login") or "").strip() if isinstance(user, dict) else ""
+        if not login:
+            continue
+        number = item.get("number")
+        if isinstance(number, int):
+            if best_number is None or number < best_number:
+                best_number = number
+                best_login = login
+        elif not best_login:
+            best_login = login
+    return best_login
+
+
 def _infer_folder_uploader(folder: str) -> dict[str, str]:
     """Infer the GitHub user that first added files in a theme folder."""
     try:
@@ -314,7 +358,8 @@ def _infer_folder_uploader(folder: str) -> dict[str, str]:
 
     # git log is newest-first; the oldest add commit is the one that introduced the folder.
     commit_sha, author_name, author_email = candidates[-1]
-    login = _github_login_from_commit(commit_sha)
+    pr_author_login = _github_pr_author_from_commit(commit_sha)
+    login = pr_author_login or _github_login_from_commit(commit_sha)
     protected_checks = {
         login.lower(),
         author_name.lower(),
