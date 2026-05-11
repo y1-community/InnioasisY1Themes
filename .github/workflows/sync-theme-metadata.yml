@@ -26,7 +26,7 @@ jobs:
           python-version: "3.11"
 
       - name: Sync themes.json and config theme_info
-        run: python scripts/sync_theme_metadata.py
+        run: python themes/scripts/sync_theme_metadata.py
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

@@ -1,7 +1,7 @@
-# Cloudflare Pages — output dir + Pages Functions (./functions/).
+# Cloudflare Pages — publish the themes/ directory (site + themes/functions/).
 # Dashboard: build command `exit 0`; deploy command MUST be empty (no wrangler).
 # Do not use `wrangler deploy` or `wrangler pages deploy` there for Git Pages.
 # Must match your Pages project name in the dashboard (rename here if different).
 name = "y1themes"
 compatibility_date = "2026-05-11"
-pages_build_output_dir = "."
+pages_build_output_dir = "themes"

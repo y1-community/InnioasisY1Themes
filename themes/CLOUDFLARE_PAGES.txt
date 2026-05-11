@@ -1,0 +1,134 @@
+Cloudflare Pages — settings to use with this repo
+==================================================
+
+ELI5 — make it work (do these in order)
+---------------------------------------
+Think of Cloudflare like a photocopier: it copies your GitHub repo to the web.
+You only need to tell it WHERE the website files are. You do NOT need a
+second "deploy with wrangler" step for that — Cloudflare does the copying for
+you after your build step says "OK" (exit 0).
+
+  1) In Cloudflare, open **Workers & Pages** → your **Pages** project (the one
+     linked to GitHub `InnioasisY1Themes`). Not a random Worker with the same name.
+
+  2) **Settings → Builds & deployments → Build configuration** (or Edit build):
+       - Build command:        exit 0
+       - Build output folder:  themes
+       - Root folder:          leave EMPTY (not "/")
+       - Deploy command:       leave EMPTY (delete npx wrangler pages deploy)
+       - Version command:      leave EMPTY if you see it
+     Click **Save**.
+
+  3) **Settings → Environment variables**:
+       - Add **GITHUB_UPLOAD_TOKEN** (secret) = a GitHub token that can create
+         branches and pull requests on the themes repo. This is for the upload
+         form on the live site, not for the build copying files.
+       - Remove **CLOUDFLARE_API_TOKEN** if it is there (you do not need it for
+         this simple setup).
+
+  4) Push any small change to **main** (or click Retry deployment). The build
+     log should show **exit 0** and should NOT say "Executing user deploy command".
+
+  5) Open your site on the **Pages** URL or **themes.innioasis.app** (must be
+     attached to this **Pages** project). Go to **/upload.html** to test uploads.
+
+If step 4 still shows a deploy command in the log, step 2 did not save — try
+again or create a new Pages project from the same repo with only the settings
+above.
+
+---
+
+In the Pages project: Settings → Builds & deployments → Build configuration
+
+  Framework preset:        None
+  Build command:           exit 0
+  Build output directory:  themes
+  Root directory:          (leave empty = repo root)
+
+Deploy command:           (leave COMPLETELY EMPTY)
+  Git-connected Pages publishes the build output automatically after the build
+  command exits 0.
+
+  Do NOT put any of these in the Deploy command field:
+    wrangler pages deploy
+    wrangler deploy
+    npx wrangler deploy
+    npx wrangler pages deploy ...
+  Bare `wrangler` is not on PATH in the Pages build image → "wrangler: not found".
+  See troubleshooting sections below.
+
+Production env vars (Settings → Environment variables):
+
+  Remove CLOUDFLARE_API_TOKEN for normal Git Pages builds.
+  It is only used when Wrangler runs (e.g. a custom Deploy command). If a deploy
+  command is set by mistake, Wrangler reads this token and you can get
+  Authentication error [code: 10000] even though Git deploy does not need it.
+
+  GITHUB_UPLOAD_TOKEN   (required) — GitHub PAT for commits + PRs
+  GITHUB_OWNER          (optional) default y1-community
+  GITHUB_REPO           (optional) default InnioasisY1Themes
+  GITHUB_BASE_BRANCH    (optional) default main
+  GITHUB_ZIP_UPLOAD_DIR (optional) override zip path prefix; default is themes/
+      (upload-theme commits zips as themes/<timestamp>-<name>.zip)
+  MAX_UPLOAD_BYTES      (optional) default 26214400 (25 MiB)
+
+If your Pages project name is not "y1themes", edit the `name` field in wrangler.toml
+to match the dashboard (or rename the project to match the file).
+
+Build image: use V2 or later if prompted (needed for wrangler.toml Pages config).
+
+Troubleshooting: log still says "Executing user deploy command: ... wrangler ..."
+--------------------------------------------------------------------------------------
+That line is ONLY configured in the Cloudflare dashboard — not in this repo.
+Examples: `npx wrangler deploy`, `wrangler pages deploy`, `npx wrangler pages deploy`.
+
+  1) Workers & Pages → open the **Pages** project (not a Worker named y1themes).
+  2) Settings → Builds & deployments → Build configuration.
+  3) Find **Deploy command** (may be under "Advanced" or a second column / tab).
+  4) **Delete the entire command** so the field is empty. Click **Save**.
+  5) If you see separate **Production** and **Preview** build settings, clear
+     Deploy command in **both**.
+  6) Retry the deployment (Deployments → Retry, or push a commit).
+
+If you cannot find an empty deploy field, search the project settings for
+"wrangler" or "deploy" and remove any custom Worker deploy step.
+
+Troubleshooting: "Missing entry-point to Worker script or to assets directory"
+------------------------------------------------------------------------------
+The Deploy command is `npx wrangler deploy`, which targets a **Worker**, not
+Pages. This repo has no Worker `main` entry — remove the deploy command (above).
+
+Troubleshooting: "/bin/sh: 1: wrangler: not found"
+--------------------------------------------------
+The Deploy command is set to `wrangler pages deploy` (or `wrangler ...`) without
+`npx`. That still fails or is the wrong approach for Git Pages.
+
+Fix: **delete the entire Deploy command** (empty field). Do not "fix" it by
+adding `npx` — you do not need a deploy step at all for Git-connected Pages.
+
+Troubleshooting: "Authentication error [code: 10000]" on pages deploy
+----------------------------------------------------------------------
+Your log shows BOTH:
+  Executing user deploy command: npx wrangler pages deploy
+  CLOUDFLARE_API_TOKEN ... failed ... /pages/projects/y1themes
+
+That deploy step is **optional and wrong** for Git-connected Pages. Fix:
+
+  1) Clear **Deploy command** completely (same steps as the "wrangler" section
+     above). Save.
+  2) Remove the **CLOUDFLARE_API_TOKEN** environment variable from this Pages
+     project (or it may keep getting picked up if anything runs Wrangler).
+  3) Retry deployment.
+
+You do **not** need to "repair" the token for this flow. You need to stop running
+`wrangler pages deploy` in the build pipeline.
+
+Last resort: create a **new** Pages project connected to the same repo, set only
+build `exit 0`, output `themes`, leave deploy empty, and attach `themes.innioasis.app`
+after deleting it from the old project.
+
+Troubleshooting: "Upload failed (404)" on upload.html
+------------------------------------------------------
+Use a **Pages** hostname (e.g. custom domain on the Pages project or *.pages.dev),
+not a ***.workers.dev** Worker-only URL, unless you set cf-pages-upload-api-origin
+in upload.html — see upload.html comments.

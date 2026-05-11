@@ -1,0 +1,131 @@
+{
+    "theme_info": {
+        "title": "DELTARUNE",
+        "author": "HiddenLurker6969",
+        "authorUrl": "https://www.reddit.com/r/innioasis/comments/1mt2iw9/new_y1_stock_os_theme_deltarune/",
+        "description": "Inspired by PartOfTheDream42's UNDERTALE theme. Sprites: Toby Fox. Font: Haley Wakamatsu."
+    },
+    "themeCover": "cover1.png",
+    "desktopWallpaper": "desktop_mask.png",
+    "desktopMask": "",
+    "globalWallpaper": "wallpaper.png",
+    "fontFamily": "DTM-Sans.otf",
+
+    "itemConfig": {
+        "itemTextColor": "#ffffff",
+        "itemSelectedTextColor": "#f9ff10",
+        "itemSelectedBackground": "1.png",
+        "itemBackground": "",
+	"itemRightArrow": "2.png"
+    },
+    "dialogConfig": {
+        "dialogOptionBackground": "4.png",
+        "dialogOptionTextColor": "#FFFFFF",
+        "dialogOptionSelectedBackground": "3.png",
+        "dialogOptionSelectedTextColor": "#ff8802",
+       	"dialogBackgroundColor": "#000000",
+        "dialogTextColor": "#FFFFFF"
+    },
+    "menuConfig": {
+        "menuBackgroundColor": "#000000",
+        "menuItemBackground": "",
+        "menuItemTextColor": "#ffffff",
+        "menuItemSelectedBackground": "1.png",
+        "menuItemSelectedTextColor": "#f9ff10"
+    },
+    "homePageConfig": {
+        "nowPlaying": "nowplaying.png",
+        "music": "music.png",
+        "video": "video.png",
+        "audiobooks": "audiobook.png",
+        "photos": "photos.png",
+        "fm": "radio.png",
+        "bluetooth": "bluetooth.png",
+        "settings": "settings.png",
+        "shuffleQuick": "shuffle.png"
+    },
+    "fileConfig": {
+        "folderIcon": "folder.png",
+        "musicIcon": "musicnote.png"
+    },
+    "settingConfig": {
+        "settingMask": "setting_mask.png",
+        "shutdown": "Settings/Shutdown@1x.png",
+        "timedShutdown_off": "Settings/Timed shutdown_001@1x.png",
+        "timedShutdown_10": "Settings/Timed shutdown_002@1x.png",
+        "timedShutdown_20": "Settings/Timed shutdown_003@1x.png",
+        "timedShutdown_30": "Settings/Timed shutdown_004@1x.png",
+        "timedShutdown_60": "Settings/Timed shutdown_005@1x.png",
+        "timedShutdown_90": "Settings/Timed shutdown_006@1x.png",
+        "timedShutdown_120": "Settings/Timed shutdown_007@1x.png",
+        "shuffleOn": "Settings/Shuffle_on@1x.png",
+        "shuffleOff": "Settings/Shuffle_off@1x.png",
+        "repeatOff": "Settings/Repeat_off@1x.png",
+        "repeatAll": "Settings/Repeat_all@1x.png",
+        "repeatOne": "Settings/Repeat_one@1x.png",
+        "equalizer_normal": "Settings/Equalizer_normal@1x.png",
+        "equalizer_classical": "Settings/Equalizer_classical@1x.png",
+        "equalizer_dance": "Settings/Equalizer_dance@1x.png",
+        "equalizer_flat": "Settings/Equalizer_flat@1x.png",
+        "equalizer_folk": "Settings/Equalizer_folk@1x.png",
+        "equalizer_heavymetal": "Settings/Equalizer_heavy metal@1x.png",
+        "equalizer_hiphop": "Settings/Equalizer_hiphop@1x.png",
+        "equalizer_jazz": "Settings/Equalizer_jazz@1x.png",
+        "equalizer_pop": "Settings/Equalizer_pop@1x.png",
+        "equalizer_rock": "Settings/Equalizer_rock@1x.png",
+        "keyLockOn": "Settings/Key lock_on@1x.png",
+        "keyLockOff": "Settings/Key lock_off@1x.png",
+        "keyToneOn": "Settings/Key tone_on@1x.png",
+        "keyToneOff": "Settings/Key tone_off@1x.png",
+        "keyVibrationOn": "Settings/Key vibration_on@1x.png",
+        "keyVibrationOff": "Settings/Key vibration_off@1x.png",
+        "wallpaper": "Settings/Wallpaper@1x.png",
+        "backlight_10": "Settings/Backlight_001@1x.png",
+        "backlight_15": "Settings/Backlight_003@1x.png",
+        "backlight_30": "Settings/Backlight_004@1x.png",
+        "backlight_45": "Settings/Backlight_005@1x.png",
+        "backlight_60": "Settings/Backlight_006@1x.png",
+        "backlight_120": "Settings/Backlight_007@1x.png",
+        "backlight_300": "Settings/Backlight_008@1x.png",
+        "backlight_always": "Settings/Backlight_002@1x.png",
+        "brightness": "Settings/Brightness@1x.png",
+        "displayBatteryOn": "Settings/Display battery_on@1x.png",
+        "displayBatteryOff": "Settings/Display battery_off@1x.png",
+        "dateTime": "Settings/Date & Time@1x.png",
+        "language": "Settings/Language@1x.png",
+        "factoryReset": "Settings/Factory@1x.png",
+        "clearCache": "Settings/Clear cache@1x.png",
+        "theme": "Settings/Change Theme@1x.png",
+        "fileExtensionOn": "Settings/file_ext_on.png",
+        "fileExtensionOff": "Settings/file_ext_off.png"
+    },
+    "statusConfig": {
+        "playing": "TopBar/pause.png",
+        "audiobookPlaying": "TopBar/audiobook_playing.png",
+        "pause": "TopBar/playing.png",
+        "fmPlaying": "TopBar/fm_playing.png",
+        "stop": "TopBar/stop.png",
+        "blConnected": "TopBar/bl1.png",
+        "blConnecting": "TopBar/bl3.png",
+        "blDisconnected": "TopBar/bl2.png",
+        "headsetWithMic": "TopBar/headset2.png",
+        "headsetWithoutMic": "TopBar/headset1.png",
+		"statusBarColor": "",
+        "battery": [
+            "TopBar/battery.001.png",
+            "TopBar/battery.002.png",
+            "TopBar/battery.003.png",
+            "TopBar/battery.004.png"
+        ],
+        "batteryCharging": [
+            "TopBar/batterycharge.001.png",
+            "TopBar/batterycharge.002.png",
+            "TopBar/batterycharge.003.png",
+            "TopBar/batterycharge.004.png"
+        ]
+    },
+	"playerConfig": {
+		"progressColor": "#b5e61d",
+        	"progressBackgroundColor": ""
+    }
+}
