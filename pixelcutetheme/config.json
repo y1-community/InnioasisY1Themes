@@ -1,4 +1,10 @@
 {
+    "theme_info": {
+        "title": "pixelcutetheme",
+        "author": "pixelcutetheme",
+        "authorUrl": "",
+        "description": "pixelcutetheme theme for Innioasis Y1."
+    },
     "themeCover": "cover.png",
     "desktopWallpaper": "desk_bg001.png",
     "globalWallpaper": "desk_bg001.png",
@@ -120,11 +126,5 @@
     "playerConfig": {
         "progressColor": "#d06b93",
         "progressBackgroundColor": "#d06b93"
-    },
-    "theme_info": {
-        "title": "pixelcutetheme",
-        "author": "pixelcutetheme",
-        "authorUrl": "",
-        "description": "pixelcutetheme theme for Innioasis Y1."
     }
 }
