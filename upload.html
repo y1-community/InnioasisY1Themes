@@ -21,7 +21,7 @@
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
     <!-- Same origin as upload; POST {origin}/api/upload-theme and /api/removal-request -->
     <meta name="cf-pages-upload-api-origin" content="https://y1-theme-upload.itsryanspecter.workers.dev" />
-    <meta name="fabform-removal-form-url" content="" />
+    <meta name="fabform-removal-form-url" content="n7me_GY" />
     <script>
         (function () {
             function apiUrl(path) {
@@ -47,7 +47,9 @@
             window.removalFabformUrl = function () {
                 var meta = document.querySelector('meta[name="fabform-removal-form-url"]');
                 var raw = meta && meta.getAttribute("content") ? String(meta.getAttribute("content")).trim() : "";
-                return raw || "";
+                if (!raw) return "";
+                if (/^https?:\/\//i.test(raw)) return raw;
+                return "https://fabform.io/f/" + encodeURIComponent(raw);
             };
         })();
     </script>
