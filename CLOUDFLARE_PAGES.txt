@@ -46,8 +46,15 @@ If the **static site** is on **GitHub Pages**, there is no server-side
 `/api/upload-theme` on that host. Deploy the Worker in **workers/theme-upload/**
 (see [workers/theme-upload/README.md](workers/theme-upload/README.md)):
 
-  cd workers/theme-upload
-  npx wrangler deploy
+  Local:
+    cd workers/theme-upload
+    npx wrangler deploy
+
+  Cloudflare **Workers** build (clone is at repo root — do not use plain
+  `npx wrangler deploy` or Wrangler reads the Pages-only root wrangler.toml):
+    npx wrangler deploy --config workers/theme-upload/wrangler.toml
+  Or set the Worker's **root directory** to `workers/theme-upload` and then
+  `npx wrangler deploy`.
 
 Set **GITHUB_UPLOAD_TOKEN** on the Worker only (`wrangler secret put` or the
 dashboard). Do not put tokens in HTML or in the public repo.

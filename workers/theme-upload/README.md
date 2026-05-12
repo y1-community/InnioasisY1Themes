@@ -6,12 +6,32 @@ Shared logic lives in [`functions/_lib/theme-upload-handler.js`](../../functions
 
 ## Deploy
 
-From this directory:
+### Local (from this folder)
 
 ```bash
 cd workers/theme-upload
 npx wrangler deploy
 ```
+
+### Cloudflare dashboard: Git-connected Worker
+
+The clone runs from the **repository root**. The root [`wrangler.toml`](../../wrangler.toml) is **Pages-only** (no `main`). If **Deploy command** is plain `npx wrangler deploy`, Wrangler reads that file and fails with **Missing entry-point to Worker script**.
+
+Use **one** of these:
+
+1. **Deploy command** (recommended):
+
+   ```bash
+   npx wrangler deploy --config workers/theme-upload/wrangler.toml
+   ```
+
+2. **Advanced settings** → set **Root directory** (or equivalent) to `workers/theme-upload`, then Deploy command:
+
+   ```bash
+   npx wrangler deploy
+   ```
+
+**Build command:** leave empty or `exit 0` (Wrangler bundles during deploy).
 
 ## Secrets and variables
 

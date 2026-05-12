@@ -1,6 +1,7 @@
 # Standalone Worker: theme ZIP upload API for GitHub Pages (or any static host).
-# Deploy from this directory: npx wrangler deploy
-# Do not merge this with the repo root wrangler.toml (that file is Pages-only).
+# Local: cd workers/theme-upload && npx wrangler deploy
+# Git-connected build (repo root): npx wrangler deploy --config workers/theme-upload/wrangler.toml
+# Do not use the repository ROOT wrangler.toml here — that file is Pages-only (no Worker main).
 
 name = "y1-theme-upload"
 main = "src/index.js"
