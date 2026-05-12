@@ -177,6 +177,57 @@
             position: relative;
         }
 
+        .theme-card-corner-actions {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            display: flex;
+            gap: 6px;
+            z-index: 6;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s ease;
+        }
+
+        .theme-card:hover .theme-card-corner-actions,
+        .theme-card:focus-within .theme-card-corner-actions {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .theme-card-corner-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(15, 18, 28, 0.72);
+            color: #e8eeff;
+            text-decoration: none;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            font-size: 0.88rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+        }
+
+        .theme-card-corner-btn:hover {
+            background: rgba(88, 166, 255, 0.35);
+            border-color: rgba(88, 166, 255, 0.55);
+            color: #fff;
+        }
+
+        .theme-card-corner-btn--danger:hover {
+            background: rgba(248, 81, 73, 0.35);
+            border-color: rgba(248, 81, 73, 0.55);
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+            .theme-card-corner-actions {
+                opacity: 1;
+                pointer-events: auto;
+            }
+        }
+
         .theme-card img {
             height: 140px;
             border-radius: 8px;
@@ -1546,31 +1597,31 @@
                     }
                 } catch (e) {}
                 bd.append(dl, di);
-                if (folderPath) {
-                    const editA = document.createElement("a");
-                    editA.className = "btn";
-                    editA.style.fontWeight = "normal";
-                    editA.style.marginTop = "auto";
-                    editA.style.textDecoration = "none";
-                    editA.style.textAlign = "center";
-                    editA.style.fontSize = "0.82rem";
-                    editA.href = `upload.html?mode=edit&folder=${encodeURIComponent(folderPath)}`;
-                    editA.textContent = "Edit";
-                    bd.append(editA);
-                    const remA = document.createElement("a");
-                    remA.className = "btn";
-                    remA.style.fontWeight = "normal";
-                    remA.style.marginTop = "auto";
-                    remA.style.textDecoration = "none";
-                    remA.style.textAlign = "center";
-                    remA.style.fontSize = "0.82rem";
-                    remA.style.opacity = "0.92";
-                    remA.href = `upload.html?mode=remove&folder=${encodeURIComponent(folderPath)}`;
-                    remA.textContent = "Remove";
-                    bd.append(remA);
-                }
             }
             c.append(img, n, d, a, bd);
+            if (theme.sourceType !== 'external' && folderPath) {
+                const corner = document.createElement('div');
+                corner.className = 'theme-card-corner-actions';
+                corner.setAttribute('role', 'toolbar');
+                corner.setAttribute('aria-label', 'Theme actions');
+
+                const editA = document.createElement('a');
+                editA.className = 'theme-card-corner-btn';
+                editA.href = `upload.html?mode=edit&folder=${encodeURIComponent(folderPath)}`;
+                editA.title = 'Edit on site';
+                editA.setAttribute('aria-label', 'Edit theme');
+                editA.innerHTML = '<i class="fa-solid fa-pencil" aria-hidden="true"></i>';
+
+                const remA = document.createElement('a');
+                remA.className = 'theme-card-corner-btn theme-card-corner-btn--danger';
+                remA.href = `upload.html?mode=remove&folder=${encodeURIComponent(folderPath)}`;
+                remA.title = 'Request removal';
+                remA.setAttribute('aria-label', 'Request removal');
+                remA.innerHTML = '<i class="fa-solid fa-xmark" aria-hidden="true"></i>';
+
+                corner.append(editA, remA);
+                c.appendChild(corner);
+            }
             return c;
         }
 
