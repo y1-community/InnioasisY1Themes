@@ -50,11 +50,10 @@ If the **static site** is on **GitHub Pages**, there is no server-side
     cd workers/theme-upload
     npx wrangler deploy
 
-  Cloudflare **Workers** build (clone is at repo root — do not use plain
-  `npx wrangler deploy` or Wrangler reads the Pages-only root wrangler.toml):
-    npx wrangler deploy --config workers/theme-upload/wrangler.toml
-  Or set the Worker's **root directory** to `workers/theme-upload` and then
-  `npx wrangler deploy`.
+  Cloudflare **Workers** Git build — use **one** of these (not both):
+    Root directory empty:  npx wrangler deploy --config workers/theme-upload/wrangler.toml
+    Root directory = workers/theme-upload:  npx wrangler deploy  only
+  Mixing root directory + --config workers/theme-upload/... doubles the path and fails (ENOENT).
 
 Set **GITHUB_UPLOAD_TOKEN** on the Worker only (`wrangler secret put` or the
 dashboard). Do not put tokens in HTML or in the public repo.

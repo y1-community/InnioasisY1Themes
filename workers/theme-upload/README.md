@@ -15,23 +15,31 @@ npx wrangler deploy
 
 ### Cloudflare dashboard: Git-connected Worker
 
-The clone runs from the **repository root**. The root [`wrangler.toml`](../../wrangler.toml) is **Pages-only** (no `main`). If **Deploy command** is plain `npx wrangler deploy`, Wrangler reads that file and fails with **Missing entry-point to Worker script**.
+The root [`wrangler.toml`](../../wrangler.toml) is **Pages-only** (no `main`). You must deploy using **this** folder’s config — but **do not combine** the two options below (that doubles the path and causes `ENOENT .../workers/theme-upload/workers/theme-upload/wrangler.toml`).
 
-Use **one** of these:
+**Option A — Root directory empty (repo root)**
 
-1. **Deploy command** (recommended):
+- **Root directory:** leave empty or `/`
+- **Deploy command:**
 
-   ```bash
-   npx wrangler deploy --config workers/theme-upload/wrangler.toml
-   ```
+  ```bash
+  npx wrangler deploy --config workers/theme-upload/wrangler.toml
+  ```
 
-2. **Advanced settings** → set **Root directory** (or equivalent) to `workers/theme-upload`, then Deploy command:
+**Option B — Root directory = Worker folder (your current setup)**
 
-   ```bash
-   npx wrangler deploy
-   ```
+- **Root directory:** `workers/theme-upload` (no leading slash required; Cloudflare may show `/workers/theme-upload`)
+- **Deploy command:** only:
+
+  ```bash
+  npx wrangler deploy
+  ```
+
+  Do **not** add `--config workers/theme-upload/wrangler.toml` here — paths are relative to the root directory, so Wrangler would look for `workers/theme-upload/workers/theme-upload/wrangler.toml`.
 
 **Build command:** leave empty or `exit 0` (Wrangler bundles during deploy).
+
+**Version command:** leave **empty** unless Cloudflare’s template requires otherwise; `npx wrangler versions upload` is not the normal deploy step for this Worker.
 
 ## Secrets and variables
 
