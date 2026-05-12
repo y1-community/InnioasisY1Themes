@@ -3,7 +3,8 @@
         "title": "Y3K",
         "author": "fahrenheiit451",
         "authorUrl": "https://github.com/fahrenheitt451",
-        "description": "Y3K Theme for Y1"
+        "description": "Y3K Theme for Y1",
+        "externalDownloadUrl": ""
     },
     "themeCover": "cover.png",
     "desktopWallpaper": "desk_bg001.png",
@@ -110,16 +111,16 @@
         "headsetWithoutMic": "",
         "statusBarColor": "",
         "battery": [
-           "battery.001.png",
-           "battery.002.png",
-           "battery.003.png",
-           "battery.004.png"
+            "battery.001.png",
+            "battery.002.png",
+            "battery.003.png",
+            "battery.004.png"
         ],
         "batteryCharging": [
-           "batterycharge.001.png",
-           "batterycharge.002.png",
-           "batterycharge.003.png",
-           "batterycharge.004.png"
+            "batterycharge.001.png",
+            "batterycharge.002.png",
+            "batterycharge.003.png",
+            "batterycharge.004.png"
         ]
     }
 }

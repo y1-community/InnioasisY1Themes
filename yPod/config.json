@@ -3,19 +3,20 @@
         "title": "yPod",
         "author": "u/AkikoKumagara",
         "authorUrl": "https://www.github.com/AkikoKumagara",
-        "description": "A light iPod inspired theme"
+        "description": "A light iPod inspired theme",
+        "externalDownloadUrl": ""
     },
     "themeCover": "cover.png",
     "desktopWallpaper": "desktop.png",
     "globalWallpaper": "global.png",
-	"desktopMask": "mask.png",
-	"fontFamily": "ypod.ttf",
+    "desktopMask": "mask.png",
+    "fontFamily": "ypod.ttf",
     "itemConfig": {
         "itemTextColor": "#000000",
         "itemSelectedTextColor": "#ffffff",
         "itemSelectedBackground": "1sel.png",
         "itemBackground": "1unsel.png",
-		"itemRightArrow": "2.png"
+        "itemRightArrow": "2.png"
     },
     "dialogConfig": {
         "dialogOptionBackground": "3.png",
@@ -41,11 +42,10 @@
         "bluetooth": "bluetooth.png",
         "settings": "settings.png",
         "shuffleQuick": "shuffle.png"
-        
     },
-	"nowPlayingConfig": {
-		"nowPlayingTextColor": "#030303"
-	},
+    "nowPlayingConfig": {
+        "nowPlayingTextColor": "#030303"
+    },
     "fileConfig": {
         "folderIcon": "",
         "musicIcon": ""
@@ -125,5 +125,3 @@
         ]
     }
 }
-
-

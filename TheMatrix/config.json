@@ -3,7 +3,8 @@
         "title": "TheMatrix",
         "author": "u/Neither-Classic2058",
         "authorUrl": "https://www.reddit.com/r/innioasis/comments/1pgxfhb/thematrix_theme_v10_y1_stock_firmware/",
-        "description": "You have entered the Matrix..."
+        "description": "You have entered the Matrix...",
+        "externalDownloadUrl": ""
     },
     "themeCover": "@ThM_cover.png",
     "desktopWallpaper": "@ThM_desktop_wallpaper.png",
@@ -18,7 +19,6 @@
         "itemBackground": "@ThM_itemBackgroundClear.png",
         "itemRightArrow": "@ThM_itemRightArrow.png"
     },
-    
     "dialogConfig": {
         "dialogOptionBackground": "@ThM_dialogOptionBackground.png",
         "dialogOptionTextColor": "#000000",
@@ -112,17 +112,16 @@
         "headsetWithoutMic": "",
         "statusBarColor": "",
         "battery": [
-           "battery.001.png",
-           "battery.002.png",
-           "battery.003.png",
-           "battery.004.png"
+            "battery.001.png",
+            "battery.002.png",
+            "battery.003.png",
+            "battery.004.png"
         ],
         "batteryCharging": [
-           "batterycharge.001.png",
-           "batterycharge.002.png",
-           "batterycharge.003.png",
-           "batterycharge.004.png"
-        ]        
+            "batterycharge.001.png",
+            "batterycharge.002.png",
+            "batterycharge.003.png",
+            "batterycharge.004.png"
+        ]
     }
-
 }

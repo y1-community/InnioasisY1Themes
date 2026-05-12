@@ -3,7 +3,8 @@
         "title": "Be",
         "author": "u/Neither-Classic2058",
         "authorUrl": "https://www.reddit.com/r/innioasis/comments/1nxad3j/be_theme_10_y1_stock_firmware/",
-        "description": "This theme is inspired by the BeOS operating system."
+        "description": "This theme is inspired by the BeOS operating system.",
+        "externalDownloadUrl": ""
     },
     "themeCover": "@Be_cover.png",
     "desktopWallpaper": "desk_bg001.png",
@@ -16,7 +17,6 @@
         "itemBackground": "@Be_itemBackground.png",
         "itemRightArrow": "@Be_itemRightArrow.png"
     },
-    
     "dialogConfig": {
         "dialogOptionBackground": "@Be_dialogOptionBackground.png",
         "dialogOptionTextColor": "#000000",
@@ -111,16 +111,16 @@
         "headsetWithoutMic": "",
         "statusBarColor": "",
         "battery": [
-           "battery.001.png",
-           "battery.002.png",
-           "battery.003.png",
-           "battery.004.png"
+            "battery.001.png",
+            "battery.002.png",
+            "battery.003.png",
+            "battery.004.png"
         ],
         "batteryCharging": [
-           "batterycharge.001.png",
-           "batterycharge.002.png",
-           "batterycharge.003.png",
-           "batterycharge.004.png"
-        ]        
+            "batterycharge.001.png",
+            "batterycharge.002.png",
+            "batterycharge.003.png",
+            "batterycharge.004.png"
+        ]
     }
 }

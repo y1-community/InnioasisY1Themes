@@ -3,7 +3,8 @@
         "title": "Rudy",
         "author": "Neither-Classic2058",
         "authorUrl": "https://www.reddit.com/r/innioasis/comments/1p39trv/rudy_theme_v10_y1_stock_firmware/",
-        "description": "Rankin-Bass Rudolph the Rednosed Reindeer and friends. It is a whimsical theme more as a conversation piece than as a seriously usable theme."
+        "description": "Rankin-Bass Rudolph the Rednosed Reindeer and friends. It is a whimsical theme more as a conversation piece than as a seriously usable theme.",
+        "externalDownloadUrl": ""
     },
     "themeCover": "cover.png",
     "desktopWallpaper": "desk_bg001.png",
@@ -110,16 +111,16 @@
         "headsetWithoutMic": "",
         "statusBarColor": "",
         "battery": [
-           "battery.001.png",
-           "battery.002.png",
-           "battery.003.png",
-           "battery.004.png"
+            "battery.001.png",
+            "battery.002.png",
+            "battery.003.png",
+            "battery.004.png"
         ],
         "batteryCharging": [
-           "batterycharge.001.png",
-           "batterycharge.002.png",
-           "batterycharge.003.png",
-           "batterycharge.004.png"
+            "batterycharge.001.png",
+            "batterycharge.002.png",
+            "batterycharge.003.png",
+            "batterycharge.004.png"
         ]
     }
 }

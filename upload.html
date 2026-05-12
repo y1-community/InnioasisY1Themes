@@ -521,6 +521,7 @@
                 <div id="meta-editor" class="meta-editor">
                     <h3>Theme details</h3>
                     <p class="hint">We read these from <code>config.json</code>. You can fix spelling or credits before sending. A single ZIP can contain several themes (each with its own <code>config.json</code>).</p>
+                    <p class="hint" style="margin-top:0.45rem;">If you add an <strong>External download URL</strong>, the gallery download button will open that page (great for Ko-Fi/Patreon). You still must include a full ZIP/folder theme package so we can import previews, metadata, and assets into the gallery.</p>
                     <div id="batch-theme-panel" class="batch-theme-panel" hidden>
                         <p class="batch-theme-panel-title">Multiple themes in this package</p>
                         <p id="batch-theme-panel-lead" class="hint" style="margin:0;"></p>
@@ -688,7 +689,7 @@
         } else if (!["new", "edit", "edit-metadata", "remove"].includes(pageMode)) pageMode = "new";
         let themeFolderParam = String(urlParams.get("folder") || "").trim();
         const metadataOnlyMode = pageMode === "edit-metadata";
-        /** @type {{ name: string, author: string, authorUrl: string } | null} */
+        /** @type {{ name: string, author: string, authorUrl: string, externalDownloadUrl?: string } | null} */
         let catalogListingRow = null;
 
         const form = document.getElementById("upload-form");
@@ -877,7 +878,7 @@
 
         applyPageMode();
         const themesFolderByLower = new Map();
-        /** @type {Map<string, { folder: string, name: string, author: string, authorUrl: string, description: string }>} */
+        /** @type {Map<string, { folder: string, name: string, author: string, authorUrl: string, description: string, externalDownloadUrl?: string }>} */
         const themesByFolder = new Map();
         /** @type {Map<string, { folder: string, author: string, name: string }>} logical slug -> catalog row */
         const themesByLogical = new Map();
@@ -974,6 +975,7 @@
                         author: String(t.author || "").trim(),
                         authorUrl: String(t.authorUrl || "").trim(),
                         description: String(t.description || "").trim(),
+                        externalDownloadUrl: String(t.externalDownloadUrl || "").trim(),
                     });
                     const logical = logicalThemeSlug(f);
                     if (!themesByLogical.has(logical)) {
@@ -1504,6 +1506,11 @@
                         <label>Description</label>
                         <textarea rows="3" data-field="description">${escapeHtml(entry.themeInfo.description)}</textarea>
                     </div>
+                    <div class="row">
+                        <label>External download URL (optional)</label>
+                        <input type="text" data-field="externalDownloadUrl" value="${escapeHtml(entry.themeInfo.externalDownloadUrl)}" placeholder="https://ko-fi.com/... or https://patreon.com/..." />
+                        <p class="hint">When set, gallery download buttons open this URL instead of downloading a ZIP directly. Use this to send users to your own release/support page.</p>
+                    </div>
                 </div>`;
                     return `${wrapOpen}${summary}${inner}${wrapClose}`;
                 })
@@ -1531,7 +1538,31 @@
                 entry.themeInfo.author = getValue("author");
                 entry.themeInfo.authorUrl = getValue("authorUrl");
                 entry.themeInfo.description = getValue("description");
+                entry.themeInfo.externalDownloadUrl = getValue("externalDownloadUrl");
             });
+        }
+
+        function validateThemeInfoEntriesForSubmit() {
+            readEditorValues();
+            if (!themeInfoEntries.length) {
+                throw new Error("No theme metadata was found. Include a valid config.json in your ZIP/folder so title/author fields can be reviewed.");
+            }
+            for (const entry of themeInfoEntries) {
+                const label = String(entry.label || entry.path || "theme").trim();
+                const title = String(entry.themeInfo.title || "").trim();
+                const author = String(entry.themeInfo.author || "").trim();
+                const authorUrl = String(entry.themeInfo.authorUrl || "").trim();
+                const extUrl = String(entry.themeInfo.externalDownloadUrl || "").trim();
+                if (!title) throw new Error(`Title is required for ${label}.`);
+                if (!author) throw new Error(`Author is required for ${label}.`);
+                if (!authorUrl) throw new Error(`Author URL is required for ${label}.`);
+                if (authorUrl && !/^https?:\/\//i.test(authorUrl)) {
+                    throw new Error(`Author URL must start with http:// or https:// for ${label}.`);
+                }
+                if (extUrl && !/^https?:\/\//i.test(extUrl)) {
+                    throw new Error(`External download URL must start with http:// or https:// for ${label}.`);
+                }
+            }
         }
 
         function primaryThemeTitleAndAuthor() {
@@ -1592,7 +1623,8 @@
                                 title: String(existing.title || ""),
                                 author: String(existing.author || ""),
                                 authorUrl: String(existing.authorUrl || ""),
-                                description: String(existing.description || "")
+                                description: String(existing.description || ""),
+                                externalDownloadUrl: String(existing.externalDownloadUrl || "")
                             },
                             parsed
                         });
@@ -1647,7 +1679,8 @@
                             title: String(existing.title || ""),
                             author: String(existing.author || ""),
                             authorUrl: String(existing.authorUrl || ""),
-                            description: String(existing.description || "")
+                            description: String(existing.description || ""),
+                            externalDownloadUrl: String(existing.externalDownloadUrl || "")
                         },
                         parsed
                     });
@@ -1678,7 +1711,8 @@
                             title: String(existing.title || ""),
                             author: String(existing.author || ""),
                             authorUrl: String(existing.authorUrl || ""),
-                            description: String(existing.description || "")
+                            description: String(existing.description || ""),
+                            externalDownloadUrl: String(existing.externalDownloadUrl || "")
                         },
                         parsed
                     }
@@ -1705,7 +1739,7 @@
         }
 
         async function submitMetadataOnlyUpdate() {
-            readEditorValues();
+            validateThemeInfoEntriesForSubmit();
             if (!themeFolderParam) {
                 throw new Error("Missing theme folder. Open this flow with ?mode=edit-metadata&folder=ThemeFolder.");
             }
@@ -1717,7 +1751,7 @@
             const author = String(entry.themeInfo.author || "").trim();
             const authorUrl = String(entry.themeInfo.authorUrl || "").trim();
             const description = String(entry.themeInfo.description || "").trim();
-            if (!title) throw new Error("Title is required.");
+            const externalDownloadUrl = String(entry.themeInfo.externalDownloadUrl || "").trim();
 
             const listingRow = themesByFolder.get(String(themeFolderParam).toLowerCase());
             if (!listingRow) {
@@ -1728,8 +1762,8 @@
                 items: [
                     {
                         folder: themeFolderParam,
-                        themeInfo: { title, author, authorUrl, description },
-                        listing: { name: title, author, authorUrl },
+                        themeInfo: { title, author, authorUrl, description, externalDownloadUrl },
+                        listing: { name: title, author, authorUrl, externalDownloadUrl },
                     },
                 ],
             };
@@ -1756,7 +1790,7 @@
         async function buildZipForUpload() {
             if (uploadMode === "folder" && folderFiles && folderFiles.length) {
                 if (!window.JSZip) throw new Error("ZIP library is unavailable.");
-                readEditorValues();
+                validateThemeInfoEntriesForSubmit();
                 const renames = variationRootRenames();
                 const outputZip = new window.JSZip();
                 const editsByOriginalPath = new Map(
@@ -1793,7 +1827,7 @@
                 return file;
             }
 
-            readEditorValues();
+            validateThemeInfoEntriesForSubmit();
             const renames = variationRootRenames();
 
             const outputZip = new window.JSZip();
@@ -1875,6 +1909,7 @@
                     await submitMetadataOnlyUpdate();
                     return;
                 }
+                validateThemeInfoEntriesForSubmit();
                 const ta = primaryThemeTitleAndAuthor();
                 fieldThemeTitle.value = ta.title;
                 fieldThemeAuthor.value = ta.author;

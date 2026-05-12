@@ -3,7 +3,8 @@
         "title": "Naruto",
         "author": "u/Terrible-Young-3477",
         "authorUrl": "https://www.reddit.com/r/innioasis/comments/1m9ofl5/naruto_theme_v20_update_naruto_font_added/",
-        "description": "A theme inspired by Naruto."
+        "description": "A theme inspired by Naruto.",
+        "externalDownloadUrl": ""
     },
     "themeCover": "Cover.png",
     "desktopWallpaper": "Background1.png",
@@ -108,7 +109,7 @@
         "headsetWithMic": "",
         "headsetWithoutMic": "",
         "statusBarColor": "#00000000",
-      "battery": [
+        "battery": [
             "Battery1.png",
             "Battery2.png",
             "Battery3.png",
@@ -125,4 +126,3 @@
         "progressColor": "#ffffff"
     }
 }
-  

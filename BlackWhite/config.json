@@ -3,7 +3,8 @@
         "title": "Black&White",
         "author": "sipped",
         "authorUrl": "https://sipped.org",
-        "description": "Simple Black&White theme. Built upon u/Neither-Classic2058's YellowSub theme."
+        "description": "Simple Black&White theme. Built upon u/Neither-Classic2058's YellowSub theme.",
+        "externalDownloadUrl": ""
     },
     "themeCover": "cover_YS.png",
     "desktopWallpaper": "desk_bg001_YS.png",
@@ -107,17 +108,17 @@
         "headsetWithMic": "",
         "headsetWithoutMic": "",
         "statusBarColor": "",
-                "battery": [
-           "battery.001.png",
-           "battery.002.png",
-           "battery.003.png",
-           "battery.004.png"
+        "battery": [
+            "battery.001.png",
+            "battery.002.png",
+            "battery.003.png",
+            "battery.004.png"
         ],
         "batteryCharging": [
-           "batterycharge.001.png",
-           "batterycharge.002.png",
-           "batterycharge.003.png",
-           "batterycharge.004.png"
+            "batterycharge.001.png",
+            "batterycharge.002.png",
+            "batterycharge.003.png",
+            "batterycharge.004.png"
         ]
     }
 }

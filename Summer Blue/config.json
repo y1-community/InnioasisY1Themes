@@ -3,11 +3,13 @@
         "title": "Summer Blue",
         "author": "meltinez",
         "authorUrl": "https://discord.com/users/1290959742164013131",
-        "description": "Let's Dive In A Summer Blue Aesthetic!!"
+        "description": "Let's Dive In A Summer Blue Aesthetic!!",
+        "externalDownloadUrl": ""
     },
     "themeCover": "gregcover.png",
     "desktopWallpaper": "gregios4.png",
-    "globalWallpaper": "greglobalwallpaper.png", "fontFamily": "Marine.otf",
+    "globalWallpaper": "greglobalwallpaper.png",
+    "fontFamily": "Marine.otf",
     "desktopMask": "gregmask.png",
     "itemConfig": {
         "itemTextColor": "#4ea6cc",
@@ -40,7 +42,6 @@
         "bluetooth": "gregBluetooth.png",
         "settings": "gregSettings.png",
         "shuffleQuick": "Shuffle Quick.png"
-        
     },
     "fileConfig": {
         "folderIcon": "",
@@ -121,4 +122,3 @@
         ]
     }
 }
-

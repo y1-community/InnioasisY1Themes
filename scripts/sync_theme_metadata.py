@@ -208,7 +208,7 @@ def _extract_theme_info_from_config(config: dict[str, Any]) -> dict[str, str]:
     if not isinstance(theme_info, dict):
         return {}
     extracted: dict[str, str] = {}
-    for key in ("title", "author", "authorUrl", "description"):
+    for key in ("title", "author", "authorUrl", "description", "externalDownloadUrl"):
         value = str(theme_info.get(key) or "").strip()
         if value:
             extracted[key] = value
@@ -402,6 +402,7 @@ def _theme_entry_from_folder(folder: str, config: dict[str, Any] | None) -> dict
     author = theme_info.get("author") or ("" if protected_uploader else uploader.get("login", ""))
     author_url = theme_info.get("authorUrl") or ("" if protected_uploader else uploader.get("url", ""))
     description = theme_info.get("description") or _download_description(name, author)
+    external_download_url = theme_info.get("externalDownloadUrl") or ""
 
     if author:
         entry["author"] = author
@@ -409,6 +410,8 @@ def _theme_entry_from_folder(folder: str, config: dict[str, Any] | None) -> dict
         entry["authorUrl"] = author_url
     if description:
         entry["description"] = description
+    if external_download_url:
+        entry["externalDownloadUrl"] = external_download_url
 
     return entry
 
@@ -468,13 +471,14 @@ def _with_gallery_fields(entry: dict[str, Any]) -> dict[str, Any]:
     name = str(out.get("name") or folder or "Theme").strip()
     author = str(out.get("author") or "").strip()
     description = str(out.get("description") or "").strip()
+    external_download_url = str(out.get("externalDownloadUrl") or "").strip()
     source_type = str(out.get("sourceType") or "").strip().lower()
     if source_type:
         out["sourceType"] = source_type
     else:
         out["sourceType"] = "internal"
     out["sortName"] = name.casefold()
-    out["searchText"] = " ".join([name, description, author, folder]).casefold().strip()
+    out["searchText"] = " ".join([name, description, author, folder, external_download_url]).casefold().strip()
     return out
 
 
@@ -492,6 +496,12 @@ def _sync_theme_info(config: dict[str, Any], theme_entry: dict[str, Any]) -> boo
         "author": str(theme_entry.get("author") or config.get("author") or "").strip(),
         "authorUrl": str(theme_entry.get("authorUrl") or config.get("authorUrl") or "").strip(),
         "description": description,
+        "externalDownloadUrl": str(
+            theme_entry.get("externalDownloadUrl")
+            or config.get("externalDownloadUrl")
+            or theme_info.get("externalDownloadUrl")
+            or ""
+        ).strip(),
     }
 
     changed = not isinstance(existing_theme_info, dict)
@@ -504,7 +514,10 @@ def _sync_theme_info(config: dict[str, Any], theme_entry: dict[str, Any]) -> boo
             theme_info[key] = value
             changed = True
 
-    ordered_theme_info = {key: theme_info.get(key, "") for key in ("title", "author", "authorUrl", "description")}
+    ordered_theme_info = {
+        key: theme_info.get(key, "")
+        for key in ("title", "author", "authorUrl", "description", "externalDownloadUrl")
+    }
     for key, value in theme_info.items():
         if key not in ordered_theme_info:
             ordered_theme_info[key] = value
@@ -604,6 +617,8 @@ def _theme_index_entry(theme_entry: dict[str, Any], config: dict[str, Any]) -> d
         index_entry["author"] = info["author"]
     if info.get("authorUrl") and not index_entry.get("authorUrl"):
         index_entry["authorUrl"] = info["authorUrl"]
+    if info.get("externalDownloadUrl") and not index_entry.get("externalDownloadUrl"):
+        index_entry["externalDownloadUrl"] = info["externalDownloadUrl"]
     return index_entry
 
 

@@ -392,6 +392,8 @@
                 description: (info && info.description) || cfg.description || (cachedTheme && cachedTheme.description) || '',
                 author: (info && info.author) || cfg.author || (cachedTheme && cachedTheme.author) || null,
                 authorUrl: (info && info.authorUrl) || cfg.authorUrl || (cachedTheme && cachedTheme.authorUrl) || '',
+                externalDownloadUrl: (info && info.externalDownloadUrl) || cfg.externalDownloadUrl || (cachedTheme && cachedTheme.externalDownloadUrl) || '',
+                authorCTA: (info && info.authorCTA) || (cachedTheme && cachedTheme.authorCTA) || '',
                 screenshot: prefixedCover || ((cachedTheme && cachedTheme.screenshot) || ''),
                 folder,
                 rawConfig: cfg || null
@@ -725,9 +727,7 @@
         (async function main() {
             const supportDirectInstall = typeof window.showDirectoryPicker === 'function';
             const directInstallPromo = document.getElementById('direct-install-promo');
-            if (supportDirectInstall && directInstallPromo) {
-                directInstallPromo.style.display = 'block';
-            }
+            const downloadBtn = document.getElementById('download-btn');
 
             const params = new URLSearchParams(location.search);
             const themeQuery = params.get('theme') || params.get('t') || '';
@@ -783,7 +783,6 @@
             const authorEl = document.getElementById('theme-author')
             const screenshotEl = document.getElementById('main-screenshot')
             const assetsList = document.getElementById('assets-list')
-            const downloadBtn = document.getElementById('download-btn')
             const rawFolderLink = document.getElementById('raw-folder-link')
 
             const displayName = (themeMeta && themeMeta.name) ? themeMeta.name : folder || 'Theme'
@@ -859,10 +858,24 @@
 
             const themeObj = {
                 name: displayName,
-                folder: folder
+                folder: folder,
+                externalDownloadUrl: String(themeMeta && themeMeta.externalDownloadUrl || '').trim(),
+                authorCTA: String(themeMeta && themeMeta.authorCTA || '').trim()
             }
 
-            downloadBtn.onclick = () => downloadTheme(themeObj, downloadBtn, effectiveFiles)
+            const externalDownloadUrl = String(themeObj.externalDownloadUrl || '').trim();
+            const hasExternalDownload = /^https?:\/\//i.test(externalDownloadUrl);
+            if (hasExternalDownload) {
+                downloadBtn.innerHTML = `<i class="fa-solid fa-arrow-up-right-from-square" style="margin-right: 4px;"></i> ${safeText(themeObj.authorCTA || 'Open download page')}`;
+                downloadBtn.onclick = () => window.open(externalDownloadUrl, '_blank', 'noopener');
+                if (directInstallPromo) directInstallPromo.style.display = 'none';
+            } else {
+                downloadBtn.innerHTML = '<i class="fa-solid fa-download" style="margin-right: 4px;"></i> Download';
+                downloadBtn.onclick = () => downloadTheme(themeObj, downloadBtn, effectiveFiles);
+                if (supportDirectInstall && directInstallPromo) {
+                    directInstallPromo.style.display = 'block';
+                }
+            }
 
             if (!effectiveFiles.length) {
                 assetsList.innerHTML = `<div style="color:var(--text-secondary)">No downloadable files were resolved from this theme's config.json.</div>`

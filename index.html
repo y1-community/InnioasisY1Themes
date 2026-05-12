@@ -1376,6 +1376,8 @@
             const safeThemeName = (theme.name || 'theme').replace(/[^\w\d-_ ]/g, '_') || 'theme';
             c.setAttribute('data-theme-name', safeThemeName);
             const folderPath = String(theme.folder || '').replace(/^\.\/+/, '');
+            const externalDownloadUrl = String(theme.externalDownloadUrl || '').trim();
+            const hasExternalDownload = /^https?:\/\//i.test(externalDownloadUrl);
             c.setAttribute('data-name', safeText(theme.name || folderPath));
             c.setAttribute('data-author', safeText(theme.author || ''));
             c.setAttribute('data-source', String(theme.sourceType || 'internal').toLowerCase());
@@ -1760,11 +1762,13 @@
 
             dl.style.fontFamily = buttonStyle.fontFamily;
 
-            if (theme.sourceType === 'external') {
-                dl.innerHTML = `<i class="fa-solid fa-arrow-up-right-from-square"></i> ${safeText(theme.authorCTA || 'Visit author')}`;
+            const outboundUrl = hasExternalDownload ? externalDownloadUrl :
+                (theme.sourceType === 'external' ? String(theme.authorUrl || '').trim() : '');
+            if (outboundUrl) {
+                dl.innerHTML = `<i class="fa-solid fa-arrow-up-right-from-square"></i> ${safeText(theme.authorCTA || (hasExternalDownload ? 'Open download page' : 'Visit author'))}`;
                 dl.onclick = () => {
-                    if (theme.authorUrl) {
-                        window.open(theme.authorUrl, '_blank', 'noopener');
+                    if (outboundUrl) {
+                        window.open(outboundUrl, '_blank', 'noopener');
                     }
                 };
                 bd.append(dl);

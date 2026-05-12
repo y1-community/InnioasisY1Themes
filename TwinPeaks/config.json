@@ -3,7 +3,8 @@
         "title": "TwinPeaks",
         "author": "u/Neither-Classic2058",
         "authorUrl": "https://www.reddit.com/r/innioasis/comments/1n8bvzs/twinpeaks_theme_y1_stock_firmware/",
-        "description": "This theme depicts some of the memorable and quirky characters from the original series."
+        "description": "This theme depicts some of the memorable and quirky characters from the original series.",
+        "externalDownloadUrl": ""
     },
     "themeCover": "cover.png",
     "desktopWallpaper": "desk_bg001.png",
@@ -110,16 +111,16 @@
         "headsetWithoutMic": "",
         "statusBarColor": "",
         "battery": [
-           "battery.001.png",
-           "battery.002.png",
-           "battery.003.png",
-           "battery.004.png"
+            "battery.001.png",
+            "battery.002.png",
+            "battery.003.png",
+            "battery.004.png"
         ],
         "batteryCharging": [
-           "batterycharge.001.png",
-           "batterycharge.002.png",
-           "batterycharge.003.png",
-           "batterycharge.004.png"
+            "batterycharge.001.png",
+            "batterycharge.002.png",
+            "batterycharge.003.png",
+            "batterycharge.004.png"
         ]
     }
 }

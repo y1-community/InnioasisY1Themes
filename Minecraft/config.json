@@ -3,7 +3,8 @@
         "title": "Minecraft",
         "author": "u/_Adusik_gaV_",
         "authorUrl": "https://www.reddit.com/user/_Adusik_gaV_/",
-        "description": "Simple minecraft style theme for Innioasis Y1"
+        "description": "Simple minecraft style theme for Innioasis Y1",
+        "externalDownloadUrl": ""
     },
     "themeCover": "cover.png",
     "desktopWallpaper": "desk_bg001.png",
@@ -112,21 +113,17 @@
         "headsetWithMic": "headsetWithoutMic.png",
         "headsetWithoutMic": "headsetWithoutMic.png",
         "statusBarColor": "",
-
         "battery": [
-        "battery_001.png",
-        "battery_002.png",
-        "battery_003.png",
-        "battery_004.png"
+            "battery_001.png",
+            "battery_002.png",
+            "battery_003.png",
+            "battery_004.png"
         ],
-
         "batteryCharging": [
-        "batterycharge_001.png",
-        "batterycharge_002.png",
-        "batterycharge_003.png",
-        "batterycharge_004.png"
-    ]
+            "batterycharge_001.png",
+            "batterycharge_002.png",
+            "batterycharge_003.png",
+            "batterycharge_004.png"
+        ]
     }
-    
-
 }

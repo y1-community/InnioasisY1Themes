@@ -3,27 +3,27 @@
         "title": "DELTARUNE",
         "author": "HiddenLurker6969",
         "authorUrl": "https://www.reddit.com/r/innioasis/comments/1mt2iw9/new_y1_stock_os_theme_deltarune/",
-        "description": "Inspired by PartOfTheDream42's UNDERTALE theme. Sprites: Toby Fox. Font: Haley Wakamatsu."
+        "description": "Inspired by PartOfTheDream42's UNDERTALE theme. Sprites: Toby Fox. Font: Haley Wakamatsu.",
+        "externalDownloadUrl": ""
     },
     "themeCover": "cover1.png",
     "desktopWallpaper": "desktop_mask.png",
     "desktopMask": "",
     "globalWallpaper": "wallpaper.png",
     "fontFamily": "DTM-Sans.otf",
-
     "itemConfig": {
         "itemTextColor": "#ffffff",
         "itemSelectedTextColor": "#f9ff10",
         "itemSelectedBackground": "1.png",
         "itemBackground": "",
-	"itemRightArrow": "2.png"
+        "itemRightArrow": "2.png"
     },
     "dialogConfig": {
         "dialogOptionBackground": "4.png",
         "dialogOptionTextColor": "#FFFFFF",
         "dialogOptionSelectedBackground": "3.png",
         "dialogOptionSelectedTextColor": "#ff8802",
-       	"dialogBackgroundColor": "#000000",
+        "dialogBackgroundColor": "#000000",
         "dialogTextColor": "#FFFFFF"
     },
     "menuConfig": {
@@ -110,7 +110,7 @@
         "blDisconnected": "TopBar/bl2.png",
         "headsetWithMic": "TopBar/headset2.png",
         "headsetWithoutMic": "TopBar/headset1.png",
-		"statusBarColor": "",
+        "statusBarColor": "",
         "battery": [
             "TopBar/battery.001.png",
             "TopBar/battery.002.png",
@@ -124,8 +124,8 @@
             "TopBar/batterycharge.004.png"
         ]
     },
-	"playerConfig": {
-		"progressColor": "#b5e61d",
-        	"progressBackgroundColor": ""
+    "playerConfig": {
+        "progressColor": "#b5e61d",
+        "progressBackgroundColor": ""
     }
 }

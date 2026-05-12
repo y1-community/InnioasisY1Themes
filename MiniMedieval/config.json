@@ -1,10 +1,11 @@
 {
-  "theme_info": {
-    "title": "Mini Medieval",
-    "author": "u/medieval_stinkpot",
-    "authorUrl": "https://www.reddit.com/r/innioasis/comments/1pg9kog/made_a_medieval_theme/",
-    "description": "Your old theme, it's history...."
-  },
+    "theme_info": {
+        "title": "Mini Medieval",
+        "author": "u/medieval_stinkpot",
+        "authorUrl": "https://www.reddit.com/r/innioasis/comments/1pg9kog/made_a_medieval_theme/",
+        "description": "Your old theme, it's history....",
+        "externalDownloadUrl": ""
+    },
     "themeCover": "Cover.png",
     "desktopWallpaper": "Background1.png",
     "globalWallpaper": "Background2.png",
@@ -108,7 +109,7 @@
         "headsetWithMic": "",
         "headsetWithoutMic": "",
         "statusBarColor": "#00000000",
-      "battery": [
+        "battery": [
             "Battery1.png",
             "Battery2.png",
             "Battery3.png",
@@ -125,4 +126,3 @@
         "progressColor": "#F7E660"
     }
 }
-  
