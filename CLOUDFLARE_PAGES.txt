@@ -62,8 +62,10 @@ In **upload.html**, set the meta (no trailing slash on the URL):
 
   <meta name="cf-pages-upload-api-origin" content="https://YOUR-WORKER.workers.dev" />
 
-The page POSTs to `https://<that-origin>/api/upload-theme`. You can attach a
-**Custom Domain** to the Worker (e.g. upload subdomain) and use that origin instead.
+The page POSTs to `https://<that-origin>/api/upload-theme` and
+`https://<that-origin>/api/removal-request` (theme removal form on upload.html).
+You can attach a **Custom Domain** to the Worker (e.g. upload subdomain) and use
+that origin instead.
 
 ---
 
@@ -107,6 +109,11 @@ Production env vars (Settings → Environment variables):
   GITHUB_ZIP_UPLOAD_DIR (optional) override zip path prefix; default is repo root
       (upload-theme commits zips as <timestamp>-<name>.zip at repository root)
   MAX_UPLOAD_BYTES      (optional) default 26214400 (25 MiB)
+
+ZIP processing on default branch: after merges to **main**, the workflow
+**theme-ingest-and-sync** (see .github/workflows/theme-ingest-and-sync.yml) runs
+extract → sync_theme_metadata → deletes processed root zips and *.zip.meta.json,
+then verifies per-theme index.html where applicable.
 
 Custom domain — CNAME at repository root
 -----------------------------------------

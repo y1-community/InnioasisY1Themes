@@ -407,7 +407,91 @@ def _identity_policy_errors(
     return errors
 
 
-def _zip_title_catalog_collisions(base_names: set[str], blob: bytes) -> list[str]:
+def _load_catalog_title_rows(base_sha: str) -> list[dict[str, Any]]:
+    """Catalog rows for title-vs-author impersonation checks."""
+    rows: list[dict[str, Any]] = []
+    try:
+        raw = _git_blob_text(f"{base_sha}:themes.json")
+        data = json.loads(raw)
+    except (subprocess.CalledProcessError, json.JSONDecodeError):
+        return rows
+    for entry in data.get("themes") or []:
+        if not isinstance(entry, dict):
+            continue
+        folder = entry.get("folder")
+        if not isinstance(folder, str) or not folder.strip():
+            continue
+        folder = folder.strip()
+        name = entry.get("name")
+        name_s = name.strip() if isinstance(name, str) else ""
+        name_norm = _norm_catalog_name(name_s) if name_s else ""
+        ath = entry.get("author")
+        author_s = ath.strip() if isinstance(ath, str) else ""
+        if not author_s:
+            author_s = _read_config_author_base(base_sha, folder)
+        rows.append(
+            {
+                "folder": folder,
+                "logical": logical_theme_slug(folder),
+                "name_norm": name_norm,
+                "author_norm": _norm_author(author_s),
+            }
+        )
+    return rows
+
+
+def _title_impersonation_errors(
+    *,
+    inner_folder: str,
+    config: dict[str, Any] | None,
+    meta: dict[str, Any],
+    catalog_title_rows: list[dict[str, Any]],
+    context: str,
+) -> list[str]:
+    """Block auto-merge when a config title matches another theme's catalog name but author/suffix suggest impersonation."""
+    if not config:
+        return []
+    tnorm = _config_title_norm(config)
+    if not tnorm:
+        return []
+    incoming_auth = ""
+    for key in ("theme_info", "source_info"):
+        block = config.get(key)
+        if isinstance(block, dict):
+            auth = block.get("author")
+            if isinstance(auth, str) and auth.strip():
+                incoming_auth = auth.strip()
+                break
+    if not incoming_auth.strip():
+        un = meta.get("uploaderName")
+        if isinstance(un, str) and un.strip():
+            incoming_auth = un.strip()
+    slug_cands = _collect_slug_candidates(meta, config)
+    inner_log = logical_theme_slug(inner_folder)
+
+    for row in catalog_title_rows:
+        if not row.get("name_norm") or row["name_norm"] != tnorm:
+            continue
+        if row["logical"] == inner_log:
+            continue
+        if _authors_equivalent(row["author_norm"], incoming_auth):
+            continue
+        if _folder_has_disambiguator(inner_folder, slug_cands):
+            continue
+        return [
+            f"{context}: Theme title matches catalog name '{tnorm}' for folder {row['folder']!r}, "
+            "but author does not match that listing and the folder name is not suffixed to show a remix/variation. "
+            "Auto-merge disabled for manual review (possible impersonation or mistaken reuse)."
+        ]
+    return []
+
+
+def _zip_title_impersonation_scan(
+    blob: bytes,
+    meta: dict[str, Any],
+    catalog_title_rows: list[dict[str, Any]],
+    zip_repo_path: str,
+) -> list[str]:
     errors: list[str] = []
     try:
         archive = zipfile.ZipFile(io.BytesIO(blob))
@@ -419,7 +503,7 @@ def _zip_title_catalog_collisions(base_names: set[str], blob: bytes) -> list[str
         seen: set[str] = set()
         for key in theme_keys:
             if key == ".":
-                folder = "__ZIP_ROOT__"
+                folder = PurePosixPath(zip_repo_path).stem
             else:
                 folder = key
             fn = folder.strip()
@@ -435,15 +519,15 @@ def _zip_title_catalog_collisions(base_names: set[str], blob: bytes) -> list[str
                     config = parsed
             except (KeyError, json.JSONDecodeError, UnicodeDecodeError):
                 pass
-            if config is None:
-                continue
-            tnorm = _config_title_norm(config)
-            if tnorm and tnorm in base_names:
-                errors.append(
-                    f"Theme title matches an existing gallery entry in themes.json "
-                    f"('{tnorm}' after normalizing spaces/case). "
-                    "Auto-merge is disabled so maintainers can confirm updates vs duplicates."
+            errors.extend(
+                _title_impersonation_errors(
+                    inner_folder=fn,
+                    config=config,
+                    meta=meta,
+                    catalog_title_rows=catalog_title_rows,
+                    context=f"ZIP {zip_repo_path}",
                 )
+            )
     return errors
 
 
@@ -488,12 +572,11 @@ def _config_title_norm(config: dict[str, Any]) -> str | None:
 
 def _catalog_collisions(
     base_folders: set[str],
-    base_names: set[str],
     *,
     folder: str,
     config: dict[str, Any] | None,
 ) -> list[str]:
-    """Return human-readable errors if this theme is already represented in themes.json."""
+    """Return errors if folder string is already listed in themes.json (exact path collision)."""
     errors: list[str] = []
     fn = folder.strip()
     if fn and fn.lower() in base_folders:
@@ -501,14 +584,6 @@ def _catalog_collisions(
             f"Folder name '{fn}' is already listed in themes.json on the default branch. "
             "Auto-merge is disabled — use a new folder name or close as duplicate."
         )
-    if config is not None:
-        tnorm = _config_title_norm(config)
-        if tnorm and tnorm in base_names:
-            errors.append(
-                f"Theme title matches an existing gallery entry in themes.json "
-                f"('{tnorm}' after normalizing spaces/case). "
-                "Auto-merge is disabled so maintainers can confirm updates vs duplicates."
-            )
     return errors
 
 
@@ -626,8 +701,9 @@ def main() -> int:
     base_sha = sys.argv[1]
     pr_ref = sys.argv[2]
 
-    base_catalog_folders, base_catalog_names = _load_themes_catalog(base_sha)
+    base_catalog_folders, _base_catalog_names = _load_themes_catalog(base_sha)
     catalog_identity_rows = _load_catalog_identity_rows(base_sha)
+    catalog_title_rows = _load_catalog_title_rows(base_sha)
     pending_logical_slugs = _pending_logical_slugs_from_root_zips(base_sha)
 
     # Compare PR head against the current base tree directly (2-dot),
@@ -734,9 +810,17 @@ def main() -> int:
         errors.extend(
             _catalog_collisions(
                 base_catalog_folders,
-                base_catalog_names,
                 folder=composite,
                 config=config,
+            )
+        )
+        errors.extend(
+            _title_impersonation_errors(
+                inner_folder=composite,
+                config=config,
+                meta={},
+                catalog_title_rows=catalog_title_rows,
+                context=f"Added folder {composite}",
             )
         )
         errors.extend(
@@ -774,7 +858,14 @@ def main() -> int:
                         context=f"ZIP {path}",
                     )
                 )
-            errors.extend(_zip_title_catalog_collisions(base_catalog_names, blob))
+            errors.extend(
+                _zip_title_impersonation_scan(
+                    blob,
+                    meta,
+                    catalog_title_rows,
+                    path,
+                )
+            )
 
     if errors:
         return _fail(errors)

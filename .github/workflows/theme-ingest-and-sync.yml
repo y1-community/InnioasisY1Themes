@@ -1,0 +1,57 @@
+name: Theme ingest and sync
+
+# Chains: extract root upload zips → sync themes.json + per-theme index.html → orphan meta cleanup.
+# Replaces separate extract/process zip workflows to avoid races and long delays before metadata sync.
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  ingest-and-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Extract root theme zip submissions
+        run: python scripts/process_theme_zips.py
+
+      - name: Sync themes.json and theme index pages
+        run: python scripts/sync_theme_metadata.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Remove orphan upload metadata sidecars
+        run: python scripts/cleanup_upload_artifacts.py
+
+      - name: Verify theme index pages exist
+        run: python scripts/sync_theme_metadata.py --check-theme-indexes
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit and push
+        run: |
+          set -e
+          if [[ -z "$(git status --porcelain)" ]]; then
+            echo "No theme ingest or metadata changes."
+            exit 0
+          fi
+          git add -A
+          git commit -m "Theme ingest: extract zips, sync metadata, cleanup upload artifacts"
+          git push origin HEAD:${GITHUB_REF_NAME}

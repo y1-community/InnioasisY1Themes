@@ -1,8 +1,15 @@
 # y1-theme-upload (Cloudflare Worker)
 
-Standalone Worker that exposes **POST/OPTIONS** `https://<worker>/api/upload-theme` for theme ZIP uploads (same behavior as [`functions/api/upload-theme.js`](../../functions/api/upload-theme.js) on Cloudflare Pages). Use this when the static site is on **GitHub Pages** or any host that cannot run Pages Functions.
+Standalone Worker that exposes **POST/OPTIONS** for:
 
-Shared logic lives in [`functions/_lib/theme-upload-handler.js`](../../functions/_lib/theme-upload-handler.js).
+- `https://<worker>/api/upload-theme` — theme ZIP uploads (same behavior as [`functions/api/upload-theme.js`](../../functions/api/upload-theme.js) on Cloudflare Pages).
+- `https://<worker>/api/removal-request` — catalog removal requests (same behavior as [`functions/api/removal-request.js`](../../functions/api/removal-request.js)).
+
+Use this when the static site is on **GitHub Pages** or any host that cannot run Pages Functions.
+
+Shared logic lives in [`functions/_lib/theme-upload-handler.js`](../../functions/_lib/theme-upload-handler.js) and [`functions/_lib/theme-removal-handler.js`](../../functions/_lib/theme-removal-handler.js).
+
+On **main**, root ZIP ingestion, `themes.json` sync, per-theme `index.html` updates, and cleanup of processed zips/meta are handled by [`.github/workflows/theme-ingest-and-sync.yml`](../../.github/workflows/theme-ingest-and-sync.yml) (replacing separate extract/process workflows). A scheduled [`sync-theme-metadata.yml`](../../.github/workflows/sync-theme-metadata.yml) run remains a safety net.
 
 ## Deploy
 
@@ -49,7 +56,7 @@ Required (secret):
 npx wrangler secret put GITHUB_UPLOAD_TOKEN
 ```
 
-Use a GitHub PAT with permission to create branches, commit files on those branches, and open pull requests on the target repo.
+Use a GitHub PAT with permission to create branches, commit files on those branches, and open pull requests on the target repo. The same token is used for uploads and removal requests (deletes under a theme folder + `themes.json` edit).
 
 Optional — set in the Cloudflare dashboard (Worker → Settings → Variables) or uncomment/add `[vars]` in `wrangler.toml`:
 
@@ -88,4 +95,6 @@ Use the exact URL Wrangler prints after deploy, or attach a **Custom Domain** to
 
 ## CORS
 
-The handler sends `Access-Control-Allow-Origin: *` so browsers on `themes.innioasis.app` (or any origin) can POST without credentials.
+The handlers send `Access-Control-Allow-Origin: *` so browsers on `themes.innioasis.app` (or any origin) can POST without credentials.
+
+Removal PRs use the title prefix `[Removal]` and are **not** auto-merged by the repository workflow.

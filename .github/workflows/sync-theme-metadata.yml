@@ -1,9 +1,6 @@
 name: Sync Theme Metadata
 
 on:
-  push:
-    branches:
-      - main
   schedule:
     - cron: "17 */6 * * *"
   workflow_dispatch:

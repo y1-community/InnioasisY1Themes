@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Upload your theme — Innioasis Y1 Themes</title>
+    <title id="upload-doc-title">Upload your theme — Innioasis Y1 Themes</title>
     <meta name="description" content="Share a new look for the Innioasis Y1 themes gallery. Upload a ZIP or folder; we’ll open a review for the team." />
     <meta name="author" content="Innioasis Community" />
     <link rel="canonical" href="https://themes.innioasis.app/upload.html">
@@ -19,7 +19,7 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
-    <!-- If this HTML is on GitHub Pages or another static host, set content to your upload API origin (Cloudflare Pages or standalone Worker; no trailing slash). POST goes to {origin}/api/upload-theme. -->
+    <!-- Same origin as upload; POST {origin}/api/upload-theme and /api/removal-request -->
     <meta name="cf-pages-upload-api-origin" content="https://y1-theme-upload.itsryanspecter.workers.dev" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
@@ -367,14 +367,14 @@
 
     <div class="wrap upload-prose">
         <header>
-            <h1>Upload your theme</h1>
-            <p class="lead">
+            <h1 id="upload-page-title">Upload your theme</h1>
+            <p class="lead" id="upload-lead">
                 Share a new look for the Innioasis Y1 player. Choose a ZIP file or a whole theme folder — we’ll package it safely in your browser and send it to the team for review.
             </p>
-            <p class="hint">You’ll get a link to track your submission. New themes are usually quick to review; if your folder name matches one we already have, a maintainer will confirm everything before it goes live.</p>
+            <p class="hint" id="upload-hint">You’ll get a link to track your submission. Only <strong>brand-new</strong> theme identities may auto-merge; edits, variations that reuse another theme’s display title without a clear remix suffix, and removals are always reviewed by a human before landing on the site.</p>
         </header>
 
-        <div class="card">
+        <div class="card" id="panel-upload">
             <form id="upload-form">
                 <div class="row">
                     <label for="zip-file">Option A — ZIP file</label>
@@ -403,6 +403,7 @@
                 <div id="duplicate-notice" class="callout-warn" hidden>
                     <p><strong>This theme identity is already on the site under another author.</strong> Listed folder(s): <strong data-collision-list></strong>.</p>
                     <p>Rename your theme’s root folder so it doesn’t match the existing one (for example add <code>-yourhandle</code> at the end), or change the <strong>author</strong> in <code>config.json</code> if this is genuinely your own separate version. If you’re intentionally submitting a variation, confirm below.</p>
+                    <p class="hint" style="margin-top:0.5rem;">If your <strong>title</strong> matches another theme’s display name but the <strong>author</strong> does not, we treat that as suspicious impersonation and will not auto-merge — use a clearly distinct folder or remix-style suffix.</p>
                     <label class="variation-row">
                         <input type="checkbox" id="variation-ack" />
                         <span>I’m submitting a variation or remix; I understand a maintainer will review it before it’s published.</span>
@@ -417,9 +418,34 @@
             <div id="status" class="status"></div>
         </div>
 
-        <div class="card">
-            <h3>What happens after you send</h3>
-            <ul>
+        <div class="card" id="panel-remove" hidden>
+            <form id="removal-form">
+                <p class="lead" style="margin-bottom:1rem;">Request removal of a theme from the public gallery. This opens a GitHub pull request that deletes the theme folder and removes its <code>themes.json</code> entry. <strong>Maintainers must merge the PR manually</strong> — it is never auto-merged.</p>
+                <div class="row">
+                    <label>Theme folder</label>
+                    <input type="text" id="removal-folder-display" readonly style="opacity:0.9;" />
+                    <input type="hidden" name="folder" id="removal-folder-value" value="" />
+                </div>
+                <div class="row">
+                    <label for="removal-confirm">Type the folder name to confirm</label>
+                    <input id="removal-confirm" name="confirmFolder" type="text" autocomplete="off" placeholder="Exact folder name" />
+                </div>
+                <div class="row">
+                    <label for="removal-reason">Reason (optional)</label>
+                    <textarea id="removal-reason" name="reason" rows="3" maxlength="2000" placeholder="Why should this theme be removed?"></textarea>
+                </div>
+                <div class="row">
+                    <label for="removal-requester">Your name or handle (optional)</label>
+                    <input id="removal-requester" name="requester" type="text" maxlength="120" />
+                </div>
+                <button id="removal-submit-btn" type="submit" class="btn btn-primary"><i class="fa-solid fa-trash-can" style="margin-right: 6px;"></i>Open removal pull request</button>
+            </form>
+            <div id="removal-status" class="status"></div>
+        </div>
+
+        <div class="card" id="after-send-card">
+            <h3 id="after-send-title">What happens after you send</h3>
+            <ul id="after-send-list">
                 <li>Your theme is uploaded securely and a <strong>review request</strong> is opened for the maintainers.</li>
                 <li>They check that files are safe and the theme structure looks good.</li>
                 <li><strong>Brand-new folder names</strong> can often be merged automatically after checks pass.</li>
@@ -429,7 +455,6 @@
         </div>
     </div>
 
-    <div id="footer-root"></div>
     <div id="support-toolbar-slot"></div>
 
     <script src="https://innioasis.app/nav.js"></script>
@@ -480,17 +505,24 @@
         }
     </script>
     <script>
-        function uploadThemeEndpoint() {
+        function removalThemeEndpoint() {
             const meta = document.querySelector('meta[name="cf-pages-upload-api-origin"]');
             const raw = meta && meta.getAttribute("content") ? String(meta.getAttribute("content")).trim() : "";
-            if (!raw) return "/api/upload-theme";
+            if (!raw) return "/api/removal-request";
             try {
                 const base = raw.replace(/\/+$/, "");
-                return new URL("/api/upload-theme", `${base}/`).toString();
+                return new URL("/api/removal-request", `${base}/`).toString();
             } catch (_) {
-                return "/api/upload-theme";
+                return "/api/removal-request";
             }
         }
+
+        const urlParams = new URLSearchParams(location.search);
+        let pageMode = String(urlParams.get("mode") || "new")
+            .trim()
+            .toLowerCase();
+        if (!["new", "edit", "remove"].includes(pageMode)) pageMode = "new";
+        let themeFolderParam = String(urlParams.get("folder") || "").trim();
 
         const form = document.getElementById("upload-form");
         const statusEl = document.getElementById("status");
@@ -509,8 +541,89 @@
         const editCatalogTitleEl = editNotice.querySelector("[data-edit-catalog-title]");
         const fieldThemeTitle = document.getElementById("field-theme-title");
         const fieldThemeAuthor = document.getElementById("field-theme-author");
+        const removalForm = document.getElementById("removal-form");
+        const removalStatus = document.getElementById("removal-status");
+        const removalSubmitBtn = document.getElementById("removal-submit-btn");
 
-        /** @type {Map<string, string>} lowercase folder -> canonical folder from themes.json */
+        function applyPageMode() {
+            const docTitle = document.getElementById("upload-doc-title");
+            const h1 = document.getElementById("upload-page-title");
+            const lead = document.getElementById("upload-lead");
+            const hint = document.getElementById("upload-hint");
+            const panelUpload = document.getElementById("panel-upload");
+            const panelRemove = document.getElementById("panel-remove");
+            const afterTitle = document.getElementById("after-send-title");
+            const afterList = document.getElementById("after-send-list");
+            if (!h1 || !lead || !panelUpload || !panelRemove || !afterTitle || !afterList) return;
+
+            const commonHint =
+                "Only brand-new theme identities may auto-merge; edits, suspicious title/author combinations, variations without a clear remix-style folder name, and removals are always reviewed by a human before landing on the site.";
+
+            if (pageMode === "remove") {
+                panelUpload.hidden = true;
+                panelRemove.hidden = false;
+                if (docTitle) docTitle.textContent = "Request theme removal — Innioasis Y1 Themes";
+                h1.textContent = "Request theme removal";
+                lead.textContent =
+                    "This opens a GitHub pull request that deletes the theme folder and removes its catalog entry. Removal PRs are never auto-merged.";
+                if (hint) {
+                    hint.textContent =
+                        "Use this if you control the listing, are the author, or are reporting abuse or a policy violation. False or frivolous requests may be closed without action. " +
+                        commonHint;
+                }
+                const disp = document.getElementById("removal-folder-display");
+                const hiddenFolder = document.getElementById("removal-folder-value");
+                if (disp && hiddenFolder) {
+                    hiddenFolder.value = themeFolderParam;
+                    disp.value = themeFolderParam || "(no folder selected — add <code>?folder=YourFolder</code> to the URL)";
+                }
+                afterTitle.textContent = "What happens next";
+                afterList.innerHTML = [
+                    "<li>A pull request titled <code>[Removal] …</code> is opened against the theme repository.</li>",
+                    "<li>Maintainers review and merge it manually when appropriate.</li>",
+                    "<li>After merge, the site’s ingest job updates the gallery; the theme disappears from the public catalog.</li>"
+                ].join("");
+                return;
+            }
+
+            panelUpload.hidden = false;
+            panelRemove.hidden = true;
+
+            if (pageMode === "edit") {
+                if (docTitle) docTitle.textContent = "Submit a theme update — Innioasis Y1 Themes";
+                h1.textContent = "Submit a theme update";
+                lead.textContent =
+                    "Upload a ZIP or theme folder. Use the same root folder name as the listing you are updating. The pull request stays open for manual review — updates are not auto-merged.";
+                if (hint) {
+                    const pre = themeFolderParam ? `Editing folder: ${themeFolderParam}. ` : "";
+                    hint.textContent = pre + "We pre-fill config.json fields below when available. " + commonHint;
+                }
+                afterTitle.textContent = "What happens after you send";
+                afterList.innerHTML = [
+                    "<li>Your ZIP is uploaded and a <strong>review request</strong> is opened.</li>",
+                    "<li>Same-folder updates are <strong>never</strong> auto-merged; a maintainer checks the diff before merge.</li>",
+                    "<li>Brand-new folder names may still auto-merge when checks pass and the submission is clearly a new identity.</li>",
+                    "<li>Once accepted, the gallery updates after the next ingest run on <code>main</code>.</li>"
+                ].join("");
+                return;
+            }
+
+            if (docTitle) docTitle.textContent = "Upload your theme — Innioasis Y1 Themes";
+            h1.textContent = "Upload your theme";
+            lead.textContent =
+                "Share a new look for the Innioasis Y1 player. Choose a ZIP file or a whole theme folder — we’ll package it safely in your browser and send it to the team for review.";
+            if (hint) hint.textContent = "You’ll get a link to track your submission. " + commonHint;
+            afterTitle.textContent = "What happens after you send";
+            afterList.innerHTML = [
+                "<li>Your theme is uploaded securely and a <strong>review request</strong> is opened for the maintainers.</li>",
+                "<li>They check that files are safe and the theme structure looks good.</li>",
+                "<li><strong>Brand-new folder names</strong> can often be merged automatically after checks pass.</li>",
+                "<li>If the <strong>same folder name</strong> already exists, we <strong>do not</strong> auto-merge — a person will look at your PR first so nothing is overwritten by surprise.</li>",
+                "<li>Once accepted, your theme appears on this site for everyone to download.</li>"
+            ].join("");
+        }
+
+        applyPageMode();
         const themesFolderByLower = new Map();
         /** @type {Map<string, { folder: string, author: string, name: string }>} logical slug -> catalog row */
         const themesByLogical = new Map();
@@ -675,6 +788,54 @@
         function setStatus(message, ok) {
             statusEl.textContent = message;
             statusEl.className = "status " + (ok ? "ok" : "err");
+        }
+
+        function setRemovalStatus(message, ok) {
+            if (!removalStatus) return;
+            removalStatus.textContent = message;
+            removalStatus.className = "status " + (ok ? "ok" : "err");
+        }
+
+        if (removalForm && removalSubmitBtn) {
+            removalForm.addEventListener("submit", async (event) => {
+                event.preventDefault();
+                const folderEl = document.getElementById("removal-folder-value");
+                const folder = folderEl ? String(folderEl.value || "").trim() : "";
+                const confirmFolder = String(document.getElementById("removal-confirm")?.value || "").trim();
+                const reason = String(document.getElementById("removal-reason")?.value || "").trim();
+                const requester = String(document.getElementById("removal-requester")?.value || "").trim();
+                if (!folder) {
+                    setRemovalStatus('Missing theme folder. Use a link with ?folder=YourFolder in the URL.', false);
+                    return;
+                }
+                removalSubmitBtn.disabled = true;
+                setRemovalStatus("Opening removal pull request…", true);
+                try {
+                    const fd = new FormData();
+                    fd.set("folder", folder);
+                    fd.set("confirmFolder", confirmFolder);
+                    fd.set("reason", reason);
+                    fd.set("requester", requester);
+                    const res = await fetch(removalThemeEndpoint(), {
+                        method: "POST",
+                        body: fd
+                    });
+                    const payload = await res.json().catch(() => ({}));
+                    if (!res.ok) {
+                        throw new Error(payload.error || `Request failed (${res.status})`);
+                    }
+                    const link = payload.prUrl ? String(payload.prUrl) : "";
+                    setRemovalStatus(link ? `Removal PR opened:\n${link}` : "Removal PR opened.", true);
+                    removalForm.reset();
+                    if (folderEl) folderEl.value = folder;
+                    const disp = document.getElementById("removal-folder-display");
+                    if (disp) disp.value = folder;
+                } catch (err) {
+                    setRemovalStatus(String(err && err.message ? err.message : err), false);
+                } finally {
+                    removalSubmitBtn.disabled = false;
+                }
+            });
         }
 
         function escapeHtml(value) {
@@ -873,6 +1034,35 @@
             renderThemeInfoEditors();
         }
 
+        async function prefetchConfigForEdit() {
+            const f = themeFolderParam.replace(/^\/+|\/+$/g, "").replace(/\\/g, "/");
+            if (!f || f.includes("..")) return;
+            const url = `${f.split("/").map((s) => encodeURIComponent(s)).join("/")}/config.json`;
+            try {
+                const res = await fetch(url, { cache: "no-store" });
+                if (!res.ok) return;
+                const parsed = await res.json();
+                if (!parsed || typeof parsed !== "object") return;
+                const existing = themeInfoBlockFromParsed(parsed);
+                themeInfoEntries = [
+                    {
+                        path: `${f}/config.json`,
+                        label: f,
+                        themeInfo: {
+                            title: String(existing.title || ""),
+                            author: String(existing.author || ""),
+                            authorUrl: String(existing.authorUrl || ""),
+                            description: String(existing.description || "")
+                        },
+                        parsed
+                    }
+                ];
+                renderThemeInfoEditors();
+            } catch (_) {
+                /* preview only */
+            }
+        }
+
         async function buildZipForUpload() {
             if (uploadMode === "folder" && folderFiles && folderFiles.length) {
                 if (!window.JSZip) throw new Error("ZIP library is unavailable.");
@@ -955,7 +1145,9 @@
         });
 
         window.addEventListener("DOMContentLoaded", () => {
-            loadThemesIndex();
+            loadThemesIndex().then(() => {
+                if (pageMode === "edit" && themeFolderParam) prefetchConfigForEdit();
+            });
         });
 
         form.addEventListener("submit", async (event) => {

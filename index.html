@@ -1546,6 +1546,29 @@
                     }
                 } catch (e) {}
                 bd.append(dl, di);
+                if (folderPath) {
+                    const editA = document.createElement("a");
+                    editA.className = "btn";
+                    editA.style.fontWeight = "normal";
+                    editA.style.marginTop = "auto";
+                    editA.style.textDecoration = "none";
+                    editA.style.textAlign = "center";
+                    editA.style.fontSize = "0.82rem";
+                    editA.href = `upload.html?mode=edit&folder=${encodeURIComponent(folderPath)}`;
+                    editA.textContent = "Edit";
+                    bd.append(editA);
+                    const remA = document.createElement("a");
+                    remA.className = "btn";
+                    remA.style.fontWeight = "normal";
+                    remA.style.marginTop = "auto";
+                    remA.style.textDecoration = "none";
+                    remA.style.textAlign = "center";
+                    remA.style.fontSize = "0.82rem";
+                    remA.style.opacity = "0.92";
+                    remA.href = `upload.html?mode=remove&folder=${encodeURIComponent(folderPath)}`;
+                    remA.textContent = "Remove";
+                    bd.append(remA);
+                }
             }
             c.append(img, n, d, a, bd);
             return c;

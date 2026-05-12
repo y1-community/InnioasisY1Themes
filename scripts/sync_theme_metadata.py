@@ -16,6 +16,8 @@ import json
 import os
 import re
 import subprocess
+import sys
+import urllib.parse
 import urllib.request
 from pathlib import Path
 from typing import Any
@@ -522,6 +524,7 @@ def _build_theme_index_html(template: str, theme_entry: dict[str, Any]) -> str:
     description = _html_attr(_theme_description(theme_entry))
     keywords = _html_attr(_theme_keywords(theme_entry))
     url = _html_attr(_theme_url(folder))
+    folder_enc = urllib.parse.quote(folder, safe="")
 
     html_text = template
     html_text = _replace_once(r"<title id=\"page-title\">.*?</title>", f'<title id="page-title">{title}</title>', html_text)
@@ -533,6 +536,10 @@ def _build_theme_index_html(template: str, theme_entry: dict[str, Any]) -> str:
     html_text = _replace_once(r'<meta property=\"og:url\" content=\"[^\"]*\">', f'<meta property="og:url" content="{url}">', html_text)
     html_text = _replace_once(r'<meta name=\"twitter:title\" content=\"[^\"]*\">', f'<meta name="twitter:title" content="{title}">', html_text)
     html_text = _replace_once(r'<meta name=\"twitter:description\" content=\"[^\"]*\">', f'<meta name="twitter:description" content="{description}">', html_text)
+    edit_href = f"{SITE_BASE_URL}/upload.html?mode=edit&folder={folder_enc}"
+    remove_href = f"{SITE_BASE_URL}/upload.html?mode=remove&folder={folder_enc}"
+    html_text = html_text.replace("__THEME_UPLOAD_EDIT_HREF__", edit_href)
+    html_text = html_text.replace("__THEME_UPLOAD_REMOVE_HREF__", remove_href)
     return html_text
 
 
@@ -576,7 +583,41 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, indent=4, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
+def check_theme_indexes() -> int:
+    """Exit 1 if any image-backed catalog theme is missing index.html (CI guard)."""
+    if not THEMES_JSON_PATH.exists():
+        print("ERROR: themes.json not found.")
+        return 1
+    themes = _load_themes_json(THEMES_JSON_PATH)
+    missing: list[str] = []
+    for item in themes:
+        if _is_external_source_entry(item):
+            continue
+        folder = _extract_folder_key(item)
+        if not folder:
+            continue
+        cfg_path = REPO_ROOT / folder / "config.json"
+        idx_path = REPO_ROOT / folder / "index.html"
+        if not cfg_path.is_file():
+            continue
+        config = _load_json_file(cfg_path)
+        if not isinstance(config, dict) or not _has_theme_image_assets(config):
+            continue
+        if not idx_path.is_file():
+            missing.append(folder)
+    if missing:
+        print("ERROR: Missing index.html for theme folder(s):")
+        for name in sorted(missing, key=str.lower):
+            print(f"  - {name}")
+        return 1
+    print("OK: All image-backed catalog themes have index.html.")
+    return 0
+
+
 def main() -> int:
+    if "--check-theme-indexes" in sys.argv:
+        return check_theme_indexes()
+
     if not THEMES_JSON_PATH.exists():
         raise SystemExit("themes.json not found.")
 

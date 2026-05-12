@@ -123,15 +123,15 @@ def _theme_has_image_file(member_names: list[str], theme_key: str) -> bool:
 
 
 def _find_zip_paths() -> list[Path]:
+    """Only repository-root zips (e.g. gallery upload `123-name.zip`), not nested archives."""
     out: list[Path] = []
-    for path in REPO_ROOT.rglob(f"*{ZIP_EXTENSION}"):
-        rel_parts = path.relative_to(REPO_ROOT).parts
-        if not rel_parts:
+    for path in sorted(REPO_ROOT.glob(f"*{ZIP_EXTENSION}"), key=lambda p: str(p).lower()):
+        if not path.is_file():
             continue
-        if any(part in EXCLUDED_SCAN_DIRS for part in rel_parts):
+        if path.parent != REPO_ROOT:
             continue
         out.append(path)
-    return sorted(out, key=lambda p: str(p).lower())
+    return out
 
 
 def _read_config(archive: zipfile.ZipFile, entry: str) -> dict[str, Any]:
@@ -226,6 +226,10 @@ def _process_zip(path: Path) -> tuple[bool, list[str]]:
         if extracted_any:
             path.unlink()
             logs.append("Removed processed zip.")
+            meta = Path(str(path) + ".meta.json")
+            if meta.is_file():
+                meta.unlink()
+                logs.append("Removed upload metadata sidecar.")
         else:
             logs.append("No new themes extracted; zip retained.")
         return True, logs
