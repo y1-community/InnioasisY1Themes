@@ -429,15 +429,34 @@ def _refresh_existing_theme_entry(entry: dict[str, Any], folder: str, config: di
         return refreshed
 
     info = _extract_theme_info_from_config(config)
+    baseline = _theme_entry_from_folder(folder, config)
     title = str(info.get("title") or "").strip()
     current_name = str(refreshed.get("name") or "").strip()
     if not current_name:
-        refreshed["name"] = title or folder
-        return refreshed
+        refreshed["name"] = title or str(baseline.get("name") or folder)
 
     # Housekeeping: only correct stale names that still mirror the folder key.
     if title and _normalize_name_for_compare(current_name) == _normalize_name_for_compare(folder):
         refreshed["name"] = title
+
+    if not str(refreshed.get("author") or "").strip():
+        author = str(baseline.get("author") or "").strip()
+        if author:
+            refreshed["author"] = author
+    if not str(refreshed.get("authorUrl") or "").strip():
+        author_url = str(baseline.get("authorUrl") or "").strip()
+        if author_url:
+            refreshed["authorUrl"] = author_url
+
+    description = str(refreshed.get("description") or "").strip()
+    fallback_desc = str(baseline.get("description") or "").strip()
+    if not description:
+        if fallback_desc:
+            refreshed["description"] = fallback_desc
+    else:
+        name_for_default = str(refreshed.get("name") or folder).strip()
+        if _is_default_description(description, name_for_default) and fallback_desc:
+            refreshed["description"] = fallback_desc
 
     return refreshed
 

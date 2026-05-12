@@ -7,6 +7,7 @@
     <title>Report a theme issue — Innioasis Y1</title>
     <meta name="description" content="Report inappropriate content, copyright concerns, or other issues with a theme listed on the Innioasis Y1 gallery.">
     <link rel="canonical" href="https://themes.innioasis.app/report-theme.html">
+    <meta name="fabform-report-form-url" content="-OtVqbq">
     <link rel="icon" href="y1_illustration.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
@@ -331,6 +332,10 @@
             const optoutReportLink = document.getElementById("optout-report-link");
             const resolvedFolder = themeFolder || folder;
             const resolvedTitle = themeTitle || title;
+            const reportFabMeta = document.querySelector('meta[name="fabform-report-form-url"]');
+            const reportFabRaw = reportFabMeta && reportFabMeta.getAttribute("content")
+                ? String(reportFabMeta.getAttribute("content")).trim()
+                : "";
             if (elFolder && resolvedFolder) elFolder.value = resolvedFolder;
             if (elTitle && resolvedTitle) elTitle.value = resolvedTitle;
             if (elAuthor && author) elAuthor.value = author;
@@ -339,6 +344,14 @@
             if (elPage) {
                 const page = ref && /^https?:\/\//i.test(ref) ? ref : (window.location.origin + window.location.pathname + (window.location.search || ""));
                 elPage.value = page.split("#")[0];
+            }
+
+            function resolveFabformEndpoint(raw) {
+                const value = String(raw || "").trim();
+                if (!value) return "";
+                if (/^https?:\/\//i.test(value)) return value;
+                if (value.startsWith("/f/")) return "https://fabform.io" + value;
+                return "https://fabform.io/f/" + value;
             }
 
             function syncRedirectUrl() {
@@ -509,11 +522,41 @@
             }
 
             if (form) {
-                form.addEventListener("submit", function (e) {
+                form.addEventListener("submit", async function (e) {
                     const cat = String(issueSelect && issueSelect.value || "").trim();
                     if (cat === "author_opt_out") {
                         e.preventDefault();
                         routeOptOutIfNeeded(cat);
+                        return;
+                    }
+                    e.preventDefault();
+                    const target = resolveFabformEndpoint(reportFabRaw || form.getAttribute("action"));
+                    if (!target) {
+                        alert("Report form endpoint is not configured.");
+                        return;
+                    }
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    if (submitBtn) submitBtn.disabled = true;
+                    try {
+                        syncRedirectUrl();
+                        const body = new FormData(form);
+                        const res = await fetch(target, {
+                            method: "POST",
+                            body
+                        });
+                        if (!res.ok) throw new Error(`FabForm request failed (${res.status})`);
+                        const redirectTo = String(redirectEl && redirectEl.value || "").trim();
+                        if (redirectTo) {
+                            window.location.assign(redirectTo);
+                        } else {
+                            const p = new URLSearchParams(window.location.search || "");
+                            p.set("sent", "1");
+                            window.location.assign(`https://themes.innioasis.app/report-theme.html?${p.toString()}`);
+                        }
+                    } catch (err) {
+                        alert(`Could not send report: ${String(err && err.message ? err.message : err)}`);
+                    } finally {
+                        if (submitBtn) submitBtn.disabled = false;
                     }
                 });
             }

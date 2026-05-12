@@ -1335,7 +1335,7 @@
         async function postRemovalFabformFromBrowser(fields) {
             const fabUrl = String(window.removalFabformUrl ? window.removalFabformUrl() : "").trim();
             if (!fabUrl) return { skipped: true };
-            const body = new URLSearchParams();
+            const body = new FormData();
             body.set("contact_email", String(fields.contactEmail || ""));
             body.set("pr_url", String(fields.prUrl || ""));
             body.set("theme_folder", String(fields.themeFolder || ""));
@@ -1346,7 +1346,6 @@
             body.set("blacklist_opt_out", fields.blacklistOptOut ? "yes" : "no");
             const res = await fetch(fabUrl, {
                 method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body
             });
             if (!res.ok) throw new Error(`FabForm request failed (${res.status})`);

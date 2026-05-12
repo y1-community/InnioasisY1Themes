@@ -52,6 +52,9 @@ jobs:
       - name: Verify theme index pages exist
         run: python scripts/sync_theme_metadata.py --check-theme-indexes
 
+      - name: Generate sitemap.xml
+        run: python scripts/generate_sitemap.py
+
       - name: Commit and push
         run: |
           set -e

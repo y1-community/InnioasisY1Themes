@@ -1,0 +1,46 @@
+name: Generate Sitemap
+
+on:
+  schedule:
+    - cron: "23 */6 * * *"
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "themes.json"
+      - "scripts/generate_sitemap.py"
+
+permissions:
+  contents: write
+
+jobs:
+  sitemap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Generate sitemap.xml
+        run: python scripts/generate_sitemap.py
+
+      - name: Commit and push sitemap updates
+        run: |
+          set -e
+          if [[ -z "$(git status --porcelain)" ]]; then
+            echo "No sitemap changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add sitemap.xml
+          git commit -m "Update sitemap.xml"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin HEAD:${GITHUB_REF_NAME}
