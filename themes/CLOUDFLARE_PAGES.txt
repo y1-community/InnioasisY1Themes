@@ -84,6 +84,20 @@ Production env vars (Settings → Environment variables):
       (upload-theme commits zips as themes/<timestamp>-<name>.zip)
   MAX_UPLOAD_BYTES      (optional) default 26214400 (25 MiB)
 
+Custom domain — keep both CNAME files
+--------------------------------------
+The repo keeps **two** `CNAME` files with the **same single hostname** (currently
+`themes.innioasis.app`):
+
+  - **`CNAME`** at the repository root — usual GitHub convention.
+  - **`themes/CNAME`** — copied into the **published** tree when **Root directory**
+    is `themes` (recommended). **Do not delete** this copy; some tooling and
+    conventions expect the hostname inside the site output.
+
+If you change the public hostname, update **both** files to match, and attach the
+domain to the **Pages** project in Cloudflare (**Custom domains**). The dashboard
+still controls routing; the files keep the repo and build output aligned.
+
 If your Pages project name is not "y1themes", edit the `name` field in wrangler.toml
 to match the dashboard (or rename the project to match the file).
 
