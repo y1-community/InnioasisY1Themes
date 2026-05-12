@@ -1728,6 +1728,23 @@
             return !!themeFolderParam && (pageMode === "edit" || pageMode === "edit-metadata") && uploadMode === "none";
         }
 
+        function buildMetadataListingPayload(folder, themeInfo, fallbackRow) {
+            const safeFolder = String(folder || "").trim();
+            const source = themeInfo && typeof themeInfo === "object" ? themeInfo : {};
+            const fallback = fallbackRow && typeof fallbackRow === "object" ? fallbackRow : {};
+            const name = String(source.title || fallback.name || "").trim();
+            const author = String(source.author || fallback.author || "").trim();
+            const authorUrl = String(source.authorUrl || fallback.authorUrl || "").trim();
+            const description = String(source.description || fallback.description || "").trim();
+            const externalDownloadUrl = String(source.externalDownloadUrl || fallback.externalDownloadUrl || "").trim();
+            const sortName = name.toLowerCase();
+            const searchText = [name, description, author, safeFolder, externalDownloadUrl]
+                .join(" ")
+                .toLowerCase()
+                .trim();
+            return { name, author, authorUrl, description, externalDownloadUrl, sortName, searchText };
+        }
+
         function syncSubmitButtonLabel() {
             if (!submitBtn) return;
             if (metadataSubmitScenario()) {
@@ -1763,7 +1780,11 @@
                     {
                         folder: themeFolderParam,
                         themeInfo: { title, author, authorUrl, description, externalDownloadUrl },
-                        listing: { name: title, author, authorUrl, description, externalDownloadUrl },
+                        listing: buildMetadataListingPayload(
+                            themeFolderParam,
+                            { title, author, authorUrl, description, externalDownloadUrl },
+                            listingRow
+                        ),
                     },
                 ],
             };

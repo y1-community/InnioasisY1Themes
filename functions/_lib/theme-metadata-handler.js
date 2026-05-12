@@ -9,7 +9,15 @@ export const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "Content-Type",
 };
 
-const LISTING_KEYS = new Set(["name", "author", "authorUrl", "description", "externalDownloadUrl"]);
+const LISTING_KEYS = new Set([
+  "name",
+  "author",
+  "authorUrl",
+  "description",
+  "externalDownloadUrl",
+  "sortName",
+  "searchText",
+]);
 const THEME_INFO_KEYS = new Set(["title", "author", "authorUrl", "description", "externalDownloadUrl"]);
 
 const RESERVED_TOP = new Set([

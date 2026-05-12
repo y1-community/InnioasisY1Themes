@@ -433,6 +433,17 @@ def _refresh_existing_theme_entry(entry: dict[str, Any], folder: str, config: di
 
     info = _extract_theme_info_from_config(config)
     baseline = _theme_entry_from_folder(folder, config)
+    if info.get("title"):
+        refreshed["name"] = str(info["title"]).strip()
+    if info.get("author"):
+        refreshed["author"] = str(info["author"]).strip()
+    if info.get("authorUrl"):
+        refreshed["authorUrl"] = str(info["authorUrl"]).strip()
+    if info.get("description"):
+        refreshed["description"] = str(info["description"]).strip()
+    if info.get("externalDownloadUrl"):
+        refreshed["externalDownloadUrl"] = str(info["externalDownloadUrl"]).strip()
+
     title = str(info.get("title") or "").strip()
     current_name = str(refreshed.get("name") or "").strip()
     if not current_name:

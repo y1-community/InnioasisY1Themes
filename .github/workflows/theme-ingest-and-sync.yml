@@ -8,6 +8,11 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
   workflow_run:
     workflows:
       - Auto Merge New Theme PRs
@@ -26,7 +31,7 @@ permissions:
 
 jobs:
   ingest-and-sync:
-    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') && (github.event_name != 'pull_request' || github.event.pull_request.merged == true) }}
     runs-on: ubuntu-latest
     steps:
       - name: Configure git identity
@@ -68,7 +73,11 @@ jobs:
             echo "No theme ingest or metadata changes."
             exit 0
           fi
+          TARGET_BRANCH="${GITHUB_BASE_REF:-${GITHUB_REF_NAME}}"
+          if [[ -z "${TARGET_BRANCH}" ]]; then
+            TARGET_BRANCH="main"
+          fi
           git add -A
           git commit -m "Theme ingest: extract zips, sync metadata, cleanup upload artifacts"
-          git pull --rebase origin "${GITHUB_REF_NAME}"
-          git push origin HEAD:${GITHUB_REF_NAME}
+          git pull --rebase origin "${TARGET_BRANCH}"
+          git push origin HEAD:${TARGET_BRANCH}
