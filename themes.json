@@ -9,25 +9,40 @@
         },
         {
             "name": "ACmp3",
-            "folder": "ACmp3"
+            "folder": "ACmp3",
+            "sourceType": "internal",
+            "sortName": "acmp3",
+            "searchText": "acmp3   acmp3"
         },
         {
             "name": "Aero",
-            "folder": "Aero"
+            "folder": "Aero",
+            "sourceType": "internal",
+            "sortName": "aero",
+            "searchText": "aero   aero"
         },
         {
             "name": "Apple Music",
-            "folder": "AppleMusic"
+            "folder": "AppleMusic",
+            "sourceType": "internal",
+            "sortName": "apple music",
+            "searchText": "apple music   applemusic"
         },
         {
             "name": "Aquarium",
-            "folder": "Aquarium"
+            "folder": "Aquarium",
+            "sourceType": "internal",
+            "sortName": "aquarium",
+            "searchText": "aquarium   aquarium"
         },
         {
             "name": "BabyVOX2000",
             "folder": "BabyVOX2000",
             "author": "Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000"
+            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "sourceType": "internal",
+            "sortName": "babyvox2000",
+            "searchText": "babyvox2000  angel_50000 babyvox2000"
         },
         {
             "name": "BabyVOX2000",
@@ -40,49 +55,79 @@
             "name": "BarbiePrincess",
             "folder": "BarbiePrincess",
             "author": "Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000"
+            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "sourceType": "internal",
+            "sortName": "barbieprincess",
+            "searchText": "barbieprincess  angel_50000 barbieprincess"
         },
         {
             "name": "Be",
-            "folder": "Be"
+            "folder": "Be",
+            "sourceType": "internal",
+            "sortName": "be",
+            "searchText": "be   be"
         },
         {
             "name": "Black&White",
-            "folder": "BlackWhite"
+            "folder": "BlackWhite",
+            "sourceType": "internal",
+            "sortName": "black&white",
+            "searchText": "black&white   blackwhite"
         },
         {
             "name": "BlueCollage",
             "folder": "BlueCollage",
             "author": "Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000"
+            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "sourceType": "internal",
+            "sortName": "bluecollage",
+            "searchText": "bluecollage  angel_50000 bluecollage"
         },
         {
             "name": "CabinFever",
-            "folder": "CabinFever"
+            "folder": "CabinFever",
+            "sourceType": "internal",
+            "sortName": "cabinfever",
+            "searchText": "cabinfever   cabinfever"
         },
         {
             "name": "Cinnamoroll",
             "folder": "Cinnamoroll",
             "author": "Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000"
+            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "sourceType": "internal",
+            "sortName": "cinnamoroll",
+            "searchText": "cinnamoroll  angel_50000 cinnamoroll"
         },
         {
             "name": "Circular",
-            "folder": "Circular"
+            "folder": "Circular",
+            "sourceType": "internal",
+            "sortName": "circular",
+            "searchText": "circular   circular"
         },
         {
             "name": "Clovers&Apples",
             "folder": "Clovers&Apples",
             "author": "Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000"
+            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "sourceType": "internal",
+            "sortName": "clovers&apples",
+            "searchText": "clovers&apples  angel_50000 clovers&apples"
         },
         {
             "name": "Cupertino",
-            "folder": "Cupertino"
+            "folder": "Cupertino",
+            "sourceType": "internal",
+            "sortName": "cupertino",
+            "searchText": "cupertino   cupertino"
         },
         {
             "name": "DELTARUNE",
-            "folder": "DELTARUNE"
+            "folder": "DELTARUNE",
+            "sourceType": "internal",
+            "sortName": "deltarune",
+            "searchText": "deltarune   deltarune"
         },
         {
             "name": "Designer-Front2870",
@@ -91,295 +136,477 @@
             "authorUrl": "https://ko-fi.com/s/433553dead",
             "authorCTA": "Get their themes",
             "description": "Creative and cutesy themes from Designer-Front2870",
-            "sourceType": "external"
+            "sourceType": "external",
+            "sortName": "designer-front2870",
+            "searchText": "designer-front2870 creative and cutesy themes from designer-front2870 designer-front2870 designer-front2870"
         },
         {
             "name": "DORFic (iPod Very)",
             "folder": "DORFic (iPod Ver.) (1)",
             "author": "u/Angel_50000",
             "authorUrl": "https://reddit.com/user/angel_50000",
-            "description": "DORFic theme for Y1"
+            "description": "DORFic theme for Y1",
+            "sourceType": "internal",
+            "sortName": "dorfic (ipod very)",
+            "searchText": "dorfic (ipod very) dorfic theme for y1 u/angel_50000 dorfic (ipod ver.) (1)"
         },
         {
             "name": "Electric Hues",
-            "folder": "ElectricHues"
+            "folder": "ElectricHues",
+            "sourceType": "internal",
+            "sortName": "electric hues",
+            "searchText": "electric hues   electrichues"
         },
         {
             "name": "ElsieD",
-            "folder": "ElsieD"
+            "folder": "ElsieD",
+            "sourceType": "internal",
+            "sortName": "elsied",
+            "searchText": "elsied   elsied"
         },
         {
             "name": "emoscenetheme",
             "folder": "emoscenetheme",
-            "description": "Download the emoscenetheme theme for Innioasis Y1 and personalize your player's look with curated UI assets."
+            "description": "Download the emoscenetheme theme for Innioasis Y1 and personalize your player's look with curated UI assets.",
+            "sourceType": "internal",
+            "sortName": "emoscenetheme",
+            "searchText": "emoscenetheme download the emoscenetheme theme for innioasis y1 and personalize your player's look with curated ui assets.  emoscenetheme"
         },
         {
             "name": "Fallout",
-            "folder": "Fallout"
+            "folder": "Fallout",
+            "sourceType": "internal",
+            "sortName": "fallout",
+            "searchText": "fallout   fallout"
         },
         {
             "name": "FatalFrame2DCB",
             "folder": "FatalFrame2DCB",
             "author": "Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000"
+            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "sourceType": "internal",
+            "sortName": "fatalframe2dcb",
+            "searchText": "fatalframe2dcb  angel_50000 fatalframe2dcb"
         },
         {
             "name": "FatalFrame3",
             "folder": "FatalFrame3",
             "author": "Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000"
+            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "sourceType": "internal",
+            "sortName": "fatalframe3",
+            "searchText": "fatalframe3  angel_50000 fatalframe3"
         },
         {
             "name": "FBI",
             "folder": "FBI",
             "author": "Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000"
+            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "sourceType": "internal",
+            "sortName": "fbi",
+            "searchText": "fbi  angel_50000 fbi"
         },
         {
             "name": "Alucard",
-            "folder": "Final Theme"
+            "folder": "Final Theme",
+            "sourceType": "internal",
+            "sortName": "alucard",
+            "searchText": "alucard   final theme"
         },
         {
             "name": "FinKL",
             "folder": "FinKL",
             "author": "Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000"
+            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "sourceType": "internal",
+            "sortName": "finkl",
+            "searchText": "finkl  angel_50000 finkl"
         },
         {
             "name": "Ghostbusters",
             "folder": "Ghostbusters",
             "author": "Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000"
+            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "sourceType": "internal",
+            "sortName": "ghostbusters",
+            "searchText": "ghostbusters  angel_50000 ghostbusters"
         },
         {
             "name": "Girlypop",
-            "folder": "Girlypop"
+            "folder": "Girlypop",
+            "sourceType": "internal",
+            "sortName": "girlypop",
+            "searchText": "girlypop   girlypop"
         },
         {
             "name": "GTA3",
-            "folder": "GTA3"
+            "folder": "GTA3",
+            "sourceType": "internal",
+            "sortName": "gta3",
+            "searchText": "gta3   gta3"
         },
         {
             "name": "GZA",
-            "folder": "GZA"
+            "folder": "GZA",
+            "sourceType": "internal",
+            "sortName": "gza",
+            "searchText": "gza   gza"
         },
         {
             "name": "Hatsune Miku",
             "folder": "Hatsune Miku",
             "author": "Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000"
+            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "sourceType": "internal",
+            "sortName": "hatsune miku",
+            "searchText": "hatsune miku  angel_50000 hatsune miku"
         },
         {
             "name": "HelloKitty",
             "folder": "HelloKitty",
             "author": "Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000"
+            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "sourceType": "internal",
+            "sortName": "hellokitty",
+            "searchText": "hellokitty  angel_50000 hellokitty"
         },
         {
             "name": "HoloBubble",
-            "folder": "HoloBubble"
+            "folder": "HoloBubble",
+            "sourceType": "internal",
+            "sortName": "holobubble",
+            "searchText": "holobubble   holobubble"
         },
         {
             "name": "HotWheels",
             "folder": "HotWheels",
             "author": "Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000"
+            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "sourceType": "internal",
+            "sortName": "hotwheels",
+            "searchText": "hotwheels  angel_50000 hotwheels"
         },
         {
             "name": "HughBliss",
-            "folder": "HughBliss"
+            "folder": "HughBliss",
+            "sourceType": "internal",
+            "sortName": "hughbliss",
+            "searchText": "hughbliss   hughbliss"
         },
         {
             "name": "inniPod",
-            "folder": "inniPod"
+            "folder": "inniPod",
+            "sourceType": "internal",
+            "sortName": "innipod",
+            "searchText": "innipod   innipod"
         },
         {
             "name": "IOS Theme",
-            "folder": "IOS Theme"
+            "folder": "IOS Theme",
+            "sourceType": "internal",
+            "sortName": "ios theme",
+            "searchText": "ios theme   ios theme"
         },
         {
             "name": "iOS26Theme",
-            "folder": "iOS26Theme"
+            "folder": "iOS26Theme",
+            "sourceType": "internal",
+            "sortName": "ios26theme",
+            "searchText": "ios26theme   ios26theme"
         },
         {
             "name": "iPod-ish",
-            "folder": "iPod-ish"
+            "folder": "iPod-ish",
+            "sourceType": "internal",
+            "sortName": "ipod-ish",
+            "searchText": "ipod-ish   ipod-ish"
         },
         {
             "name": "ISAT",
             "folder": "ISAT",
             "author": "GreyV9",
             "authorUrl": "https://github.com/GreyV9",
-            "description": "Download the ISAT theme for Innioasis Y1 by GreyV9 and personalize your player's look with curated UI assets."
+            "description": "Download the ISAT theme for Innioasis Y1 by GreyV9 and personalize your player's look with curated UI assets.",
+            "sourceType": "internal",
+            "sortName": "isat",
+            "searchText": "isat download the isat theme for innioasis y1 by greyv9 and personalize your player's look with curated ui assets. greyv9 isat"
         },
         {
             "name": "Jessie the Yodeling Cowgirl",
             "folder": "Jessie_the_Yodeling_Cowgirl",
             "author": "u/karliky",
             "authorUrl": "https://x.com/k4rliky",
-            "description": "Jessie is the best cowgirl. She is woody's helper and teacher with the animals."
+            "description": "Jessie is the best cowgirl. She is woody's helper and teacher with the animals.",
+            "sourceType": "internal",
+            "sortName": "jessie the yodeling cowgirl",
+            "searchText": "jessie the yodeling cowgirl jessie is the best cowgirl. she is woody's helper and teacher with the animals. u/karliky jessie_the_yodeling_cowgirl"
         },
         {
             "name": "JulesVerne",
-            "folder": "JulesVerne"
+            "folder": "JulesVerne",
+            "sourceType": "internal",
+            "sortName": "julesverne",
+            "searchText": "julesverne   julesverne"
         },
         {
             "name": "Junji Ito Theme",
-            "folder": "Junji Ito Theme"
+            "folder": "Junji Ito Theme",
+            "sourceType": "internal",
+            "sortName": "junji ito theme",
+            "searchText": "junji ito theme   junji ito theme"
         },
         {
             "name": "Lain-ish",
-            "folder": "Lain-ish"
+            "folder": "Lain-ish",
+            "sourceType": "internal",
+            "sortName": "lain-ish",
+            "searchText": "lain-ish   lain-ish"
         },
         {
             "name": "Law&OrderSVU",
             "folder": "Law&OrderSVU",
             "author": "Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000"
+            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "sourceType": "internal",
+            "sortName": "law&ordersvu",
+            "searchText": "law&ordersvu  angel_50000 law&ordersvu"
         },
         {
             "name": "LCD",
-            "folder": "LCD"
+            "folder": "LCD",
+            "sourceType": "internal",
+            "sortName": "lcd",
+            "searchText": "lcd   lcd"
         },
         {
             "name": "MarvinTheMartian",
             "folder": "MarvinTheMartian",
             "author": "Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000"
+            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "sourceType": "internal",
+            "sortName": "marvinthemartian",
+            "searchText": "marvinthemartian  angel_50000 marvinthemartian"
         },
         {
             "name": "MelodyMuncher",
-            "folder": "MelodyMuncher"
+            "folder": "MelodyMuncher",
+            "sourceType": "internal",
+            "sortName": "melodymuncher",
+            "searchText": "melodymuncher   melodymuncher"
         },
         {
             "name": "Minecraft",
-            "folder": "Minecraft"
+            "folder": "Minecraft",
+            "sourceType": "internal",
+            "sortName": "minecraft",
+            "searchText": "minecraft   minecraft"
         },
         {
             "name": "Mini Medieval",
-            "folder": "MiniMedieval"
+            "folder": "MiniMedieval",
+            "sourceType": "internal",
+            "sortName": "mini medieval",
+            "searchText": "mini medieval   minimedieval"
         },
         {
             "name": "MonstaX",
             "folder": "MonstaX",
             "author": "Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000"
+            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "sourceType": "internal",
+            "sortName": "monstax",
+            "searchText": "monstax  angel_50000 monstax"
         },
         {
             "name": "MonsterVision",
-            "folder": "MonsterVision"
+            "folder": "MonsterVision",
+            "sourceType": "internal",
+            "sortName": "monstervision",
+            "searchText": "monstervision   monstervision"
         },
         {
             "name": "MySweetPiano&MyMelody",
             "folder": "MySweetPiano&MyMelody",
             "author": "Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000"
+            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "sourceType": "internal",
+            "sortName": "mysweetpiano&mymelody",
+            "searchText": "mysweetpiano&mymelody  angel_50000 mysweetpiano&mymelody"
         },
         {
             "name": "Naruto",
-            "folder": "Naruto"
+            "folder": "Naruto",
+            "sourceType": "internal",
+            "sortName": "naruto",
+            "searchText": "naruto   naruto"
         },
         {
             "name": "NeonNights",
-            "folder": "NeonNights"
+            "folder": "NeonNights",
+            "sourceType": "internal",
+            "sortName": "neonnights",
+            "searchText": "neonnights   neonnights"
         },
         {
             "name": "PinkMartini",
-            "folder": "PinkMartini"
+            "folder": "PinkMartini",
+            "sourceType": "internal",
+            "sortName": "pinkmartini",
+            "searchText": "pinkmartini   pinkmartini"
         },
         {
             "name": "pixelcutetheme",
-            "folder": "pixelcutetheme"
+            "folder": "pixelcutetheme",
+            "sourceType": "internal",
+            "sortName": "pixelcutetheme",
+            "searchText": "pixelcutetheme   pixelcutetheme"
         },
         {
             "name": "Prisoner",
-            "folder": "Prisoner"
+            "folder": "Prisoner",
+            "sourceType": "internal",
+            "sortName": "prisoner",
+            "searchText": "prisoner   prisoner"
         },
         {
             "name": "Pusheen",
-            "folder": "Pusheen"
+            "folder": "Pusheen",
+            "sourceType": "internal",
+            "sortName": "pusheen",
+            "searchText": "pusheen   pusheen"
         },
         {
             "name": "RAINBOW",
-            "folder": "RainBow"
+            "folder": "RainBow",
+            "sourceType": "internal",
+            "sortName": "rainbow",
+            "searchText": "rainbow   rainbow"
         },
         {
             "name": "Ransom Note",
             "folder": "Ransom Note",
             "author": "Crafty_Decision7704",
-            "authorUrl": "https://www.reddit.com/r/innioasis/comments/1org7p9/i_made_a_theme_i_am_so_proud_of_myself/"
+            "authorUrl": "https://www.reddit.com/r/innioasis/comments/1org7p9/i_made_a_theme_i_am_so_proud_of_myself/",
+            "sourceType": "internal",
+            "sortName": "ransom note",
+            "searchText": "ransom note  crafty_decision7704 ransom note"
         },
         {
             "name": "Red Dead Redemption",
-            "folder": "RDR"
+            "folder": "RDR",
+            "sourceType": "internal",
+            "sortName": "red dead redemption",
+            "searchText": "red dead redemption   rdr"
         },
         {
             "name": "ResidentEvilUmbrellaCorp",
             "folder": "ResidentEvilUmbrellaCorp",
             "author": "Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000"
+            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "sourceType": "internal",
+            "sortName": "residentevilumbrellacorp",
+            "searchText": "residentevilumbrellacorp  angel_50000 residentevilumbrellacorp"
         },
         {
             "name": "RetroMusic",
-            "folder": "RetroMusic"
+            "folder": "RetroMusic",
+            "sourceType": "internal",
+            "sortName": "retromusic",
+            "searchText": "retromusic   retromusic"
         },
         {
             "name": "Rudy",
-            "folder": "Rudy"
+            "folder": "Rudy",
+            "sourceType": "internal",
+            "sortName": "rudy",
+            "searchText": "rudy   rudy"
         },
         {
             "name": "Sabrina's World",
-            "folder": "SabrinasWorld"
+            "folder": "SabrinasWorld",
+            "sourceType": "internal",
+            "sortName": "sabrina's world",
+            "searchText": "sabrina's world   sabrinasworld"
         },
         {
             "name": "Sackboy",
-            "folder": "SackBoy"
+            "folder": "SackBoy",
+            "sourceType": "internal",
+            "sortName": "sackboy",
+            "searchText": "sackboy   sackboy"
         },
         {
             "name": "SpongeBob Purple Pineapple",
-            "folder": "SB_PurplePineapple"
+            "folder": "SB_PurplePineapple",
+            "sourceType": "internal",
+            "sortName": "spongebob purple pineapple",
+            "searchText": "spongebob purple pineapple   sb_purplepineapple"
         },
         {
             "name": "SilentHill2",
-            "folder": "SilentHill2"
+            "folder": "SilentHill2",
+            "sourceType": "internal",
+            "sortName": "silenthill2",
+            "searchText": "silenthill2   silenthill2"
         },
         {
             "name": "SilentHill2Remake",
             "folder": "SilentHill2Remake",
             "author": "Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000"
+            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "sourceType": "internal",
+            "sortName": "silenthill2remake",
+            "searchText": "silenthill2remake  angel_50000 silenthill2remake"
         },
         {
             "name": "StarWars",
             "folder": "StarWars",
             "author": "Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000"
+            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "sourceType": "internal",
+            "sortName": "starwars",
+            "searchText": "starwars  angel_50000 starwars"
         },
         {
             "name": "Stranger Things",
-            "folder": "Stranger Things"
+            "folder": "Stranger Things",
+            "sourceType": "internal",
+            "sortName": "stranger things",
+            "searchText": "stranger things   stranger things"
         },
         {
             "name": "StrawberryShortcake2006",
             "folder": "StrawberryShortcake2006",
             "author": "Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000"
+            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "sourceType": "internal",
+            "sortName": "strawberryshortcake2006",
+            "searchText": "strawberryshortcake2006  angel_50000 strawberryshortcake2006"
         },
         {
             "name": "StyleSavvy",
             "folder": "StyleSavvy",
             "author": "Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000"
+            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "sourceType": "internal",
+            "sortName": "stylesavvy",
+            "searchText": "stylesavvy  angel_50000 stylesavvy"
         },
         {
             "name": "Sugar",
             "folder": "Sugar",
             "author": "Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000"
+            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "sourceType": "internal",
+            "sortName": "sugar",
+            "searchText": "sugar  angel_50000 sugar"
         },
         {
             "name": "Summer Blue",
-            "folder": "Summer Blue"
+            "folder": "Summer Blue",
+            "sourceType": "internal",
+            "sortName": "summer blue",
+            "searchText": "summer blue   summer blue"
         },
         {
             "name": "Super Mario Sunshine",
@@ -392,109 +619,181 @@
             "name": "Superman",
             "folder": "Superman",
             "author": "Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000"
+            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "sourceType": "internal",
+            "sortName": "superman",
+            "searchText": "superman  angel_50000 superman"
         },
         {
             "name": "The Magnus Archives",
-            "folder": "The Magnus Archives"
+            "folder": "The Magnus Archives",
+            "sourceType": "internal",
+            "sortName": "the magnus archives",
+            "searchText": "the magnus archives   the magnus archives"
         },
         {
             "name": "TheMatrix",
-            "folder": "TheMatrix"
+            "folder": "TheMatrix",
+            "sourceType": "internal",
+            "sortName": "thematrix",
+            "searchText": "thematrix   thematrix"
         },
         {
             "name": "Themeless",
-            "folder": "Themeless"
+            "folder": "Themeless",
+            "sourceType": "internal",
+            "sortName": "themeless",
+            "searchText": "themeless   themeless"
         },
         {
             "name": "Tokidoki",
-            "folder": "Tokidoki"
+            "folder": "Tokidoki",
+            "sourceType": "internal",
+            "sortName": "tokidoki",
+            "searchText": "tokidoki   tokidoki"
         },
         {
             "name": "Tomie",
             "folder": "Tomie",
             "author": "Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000"
+            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "sourceType": "internal",
+            "sortName": "tomie",
+            "searchText": "tomie  angel_50000 tomie"
         },
         {
             "name": "TwinPeaks",
-            "folder": "TwinPeaks"
+            "folder": "TwinPeaks",
+            "sourceType": "internal",
+            "sortName": "twinpeaks",
+            "searchText": "twinpeaks   twinpeaks"
         },
         {
             "name": "UNDERTALE",
-            "folder": "UNDERTALE"
+            "folder": "UNDERTALE",
+            "sourceType": "internal",
+            "sortName": "undertale",
+            "searchText": "undertale   undertale"
         },
         {
             "name": "Unseen",
-            "folder": "Unseen"
+            "folder": "Unseen",
+            "sourceType": "internal",
+            "sortName": "unseen",
+            "searchText": "unseen   unseen"
         },
         {
             "name": "VivaPinata",
-            "folder": "VivaPinata"
+            "folder": "VivaPinata",
+            "sourceType": "internal",
+            "sortName": "vivapinata",
+            "searchText": "vivapinata   vivapinata"
         },
         {
             "name": "Whimsical",
             "folder": "Whimsical",
             "author": "u/Angel_5000",
             "authorUrl": "https://reddit.com/user/Angel_5000",
-            "description": "Whimsical Theme or your Y1"
+            "description": "Whimsical Theme or your Y1",
+            "sourceType": "internal",
+            "sortName": "whimsical",
+            "searchText": "whimsical whimsical theme or your y1 u/angel_5000 whimsical"
         },
         {
             "name": "Win95",
-            "folder": "Win95Theme"
+            "folder": "Win95Theme",
+            "sourceType": "internal",
+            "sortName": "win95",
+            "searchText": "win95   win95theme"
         },
         {
             "name": "Wolverine",
             "folder": "Wolverine",
             "author": "Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000"
+            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "sourceType": "internal",
+            "sortName": "wolverine",
+            "searchText": "wolverine  angel_50000 wolverine"
         },
         {
             "name": "Woodstock",
-            "folder": "Woodstock"
+            "folder": "Woodstock",
+            "sourceType": "internal",
+            "sortName": "woodstock",
+            "searchText": "woodstock   woodstock"
         },
         {
             "name": "Wu-Tang",
-            "folder": "Wu-Tang"
+            "folder": "Wu-Tang",
+            "sourceType": "internal",
+            "sortName": "wu-tang",
+            "searchText": "wu-tang   wu-tang"
         },
         {
             "name": "XFiles",
-            "folder": "XFiles"
+            "folder": "XFiles",
+            "sourceType": "internal",
+            "sortName": "xfiles",
+            "searchText": "xfiles   xfiles"
         },
         {
             "name": "Y2KPink",
-            "folder": "y2kpinktheme"
+            "folder": "y2kpinktheme",
+            "sourceType": "internal",
+            "sortName": "y2kpink",
+            "searchText": "y2kpink   y2kpinktheme"
         },
         {
             "name": "Y3K",
             "folder": "Y3K",
             "author": "fahrenheiit451",
             "authorUrl": "https://github.com/fahrenheitt451",
-            "description": "Y3K Theme for Y1"
+            "description": "Y3K Theme for Y1",
+            "sourceType": "internal",
+            "sortName": "y3k",
+            "searchText": "y3k y3k theme for y1 fahrenheiit451 y3k"
         },
         {
             "name": "YandereSim",
-            "folder": "YandereSim"
+            "folder": "YandereSim",
+            "sourceType": "internal",
+            "sortName": "yanderesim",
+            "searchText": "yanderesim   yanderesim"
         },
         {
             "name": "YellowSub",
-            "folder": "YellowSub"
+            "folder": "YellowSub",
+            "sourceType": "internal",
+            "sortName": "yellowsub",
+            "searchText": "yellowsub   yellowsub"
         },
         {
             "name": "yPod",
-            "folder": "yPod"
+            "folder": "yPod",
+            "sourceType": "internal",
+            "sortName": "ypod",
+            "searchText": "ypod   ypod"
         },
         {
             "name": "yPodDark",
-            "folder": "yPodDark"
+            "folder": "yPodDark",
+            "sourceType": "internal",
+            "sortName": "ypoddark",
+            "searchText": "ypoddark   ypoddark"
         },
         {
             "name": "Yume Nikki",
-            "folder": "Yume Nikki"
+            "folder": "Yume Nikki",
+            "sourceType": "internal",
+            "sortName": "yume nikki",
+            "searchText": "yume nikki   yume nikki"
         },
         {
             "name": "ZuneY",
-            "folder": "ZuneY"
+            "folder": "ZuneY",
+            "sourceType": "internal",
+            "sortName": "zuney",
+            "searchText": "zuney   zuney"
         }
     ]
 }

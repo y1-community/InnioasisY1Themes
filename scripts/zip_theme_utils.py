@@ -1,0 +1,128 @@
+#!/usr/bin/env python3
+"""Shared ZIP theme discovery and noise filtering for validate_theme_pr and process_theme_zips.
+
+Ignored entries are skipped for theme detection, image presence, and inner-folder collision
+checks. They are still subject to path-safety checks in the caller before filtering.
+"""
+
+from __future__ import annotations
+
+from pathlib import Path, PurePosixPath
+
+IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"}
+
+# Leading path segments treated as non-theme archive noise (case-sensitive paths in zips).
+_NOISE_PREFIXES = (
+    "__MACOSX/",
+    ".git/",
+)
+
+_NOISE_BASENAMES_LOWER = frozenset(
+    {
+        ".ds_store",
+        "thumbs.db",
+        "desktop.ini",
+        "._.ds_store",
+    }
+)
+
+
+def looks_like_image(path_or_value: str) -> bool:
+    suffix = Path(path_or_value.split("?", 1)[0].split("#", 1)[0]).suffix.lower()
+    return suffix in IMAGE_EXTENSIONS
+
+
+def is_noise_zip_entry(name: str) -> bool:
+    """True if this member is OS / tooling noise and should be ignored for theme logic."""
+    if not name or name.endswith("/"):
+        return True
+    low = name.lower()
+    for pfx in _NOISE_PREFIXES:
+        if low.startswith(pfx.lower()):
+            return True
+    base = PurePosixPath(name).name.lower()
+    if base in _NOISE_BASENAMES_LOWER:
+        return True
+    return False
+
+
+def filter_zip_names_for_theme_logic(names: list[str]) -> list[str]:
+    return [n for n in names if not is_noise_zip_entry(n)]
+
+
+def zip_theme_keys(entry_names: list[str]) -> list[str]:
+    """Return theme key for each config.json: '.' = zip root, else parent path as stored."""
+    keys: list[str] = []
+    for name in entry_names:
+        path = PurePosixPath(name)
+        if path.name != "config.json":
+            continue
+        parent = str(path.parent)
+        keys.append("." if parent in {"", "."} else parent)
+    return keys
+
+
+def zip_other_theme_prefixes(theme_keys: list[str], theme_key: str) -> list[str]:
+    return [f"{k}/" for k in theme_keys if k != theme_key]
+
+
+def zip_has_image_file(
+    entry_names: list[str], theme_key: str, *, theme_keys: list[str]
+) -> bool:
+    if theme_key == ".":
+        block = zip_other_theme_prefixes(theme_keys, ".")
+        for name in entry_names:
+            if any(name.startswith(p) for p in block):
+                continue
+            if looks_like_image(name):
+                return True
+        return False
+
+    prefix = f"{theme_key}/"
+    for name in entry_names:
+        if not name.startswith(prefix):
+            continue
+        rel = name[len(prefix) :]
+        if not rel:
+            continue
+        if looks_like_image(rel):
+            return True
+    return False
+
+
+def inner_folder_names_for_zip(theme_keys: list[str], zip_stem: str) -> list[str]:
+    """Repo folder names after extraction (zip root theme uses zip_stem)."""
+    out: list[str] = []
+    for k in theme_keys:
+        if k == ".":
+            out.append(zip_stem)
+        else:
+            out.append(PurePosixPath(k).name)
+    return out
+
+
+def zip_inner_folder_collision_errors(
+    theme_keys: list[str], zip_stem: str, *, zip_label: str
+) -> list[str]:
+    """Errors when root theme destination collides with a subfolder theme name."""
+    errors: list[str] = []
+    stem = zip_stem.strip()
+    if not stem:
+        return errors
+    stem_l = stem.lower()
+    for k in theme_keys:
+        if k == ".":
+            continue
+        base = PurePosixPath(k).name
+        if base.lower() == stem_l:
+            errors.append(
+                f"{zip_label}: zip root theme would extract to folder {stem!r}, which "
+                f"collides with subfolder theme {k!r}. Rename the archive or the inner folder."
+            )
+    targets = inner_folder_names_for_zip(theme_keys, zip_stem)
+    if len(targets) != len(set(t.lower() for t in targets)):
+        errors.append(
+            f"{zip_label}: multiple themes map to the same destination folder name "
+            f"(after normalizing case). Each theme must extract to a unique folder."
+        )
+    return errors

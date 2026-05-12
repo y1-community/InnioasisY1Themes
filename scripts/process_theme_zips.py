@@ -18,10 +18,11 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 import zipfile
 
+import zip_theme_utils as ztu
+
 
 _GIT_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = _GIT_ROOT
-IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"}
 ZIP_EXTENSION = ".zip"
 EXCLUDED_SCAN_DIRS = {".git", ".github", "scripts", "assets", "functions", ".vscode", "themes"}
 BLOCKED_EXTENSIONS = {
@@ -69,8 +70,7 @@ def _iter_values(value: Any) -> list[Any]:
 
 
 def _looks_like_image(path_or_value: str) -> bool:
-    suffix = Path(path_or_value.split("?", 1)[0].split("#", 1)[0]).suffix.lower()
-    return suffix in IMAGE_EXTENSIONS
+    return ztu.looks_like_image(path_or_value)
 
 
 def _is_blocked_file(path_value: str) -> bool:
@@ -95,38 +95,6 @@ def _is_safe_member(name: str) -> bool:
         if part in {"", ".", ".."}:
             return False
     return True
-
-
-def _discover_theme_keys(member_names: list[str]) -> list[str]:
-    keys: list[str] = []
-    for name in member_names:
-        path = PurePosixPath(name)
-        if path.name != "config.json":
-            continue
-        parent = str(path.parent)
-        keys.append("." if parent in {"", "."} else parent)
-    return keys
-
-
-def _other_theme_path_prefixes(keys: list[str], theme_key: str) -> list[str]:
-    return [f"{k}/" for k in keys if k != theme_key]
-
-
-def _theme_has_image_file(member_names: list[str], theme_key: str, *, keys: list[str]) -> bool:
-    if theme_key == ".":
-        block = _other_theme_path_prefixes(keys, ".")
-        for name in member_names:
-            if any(name.startswith(p) for p in block):
-                continue
-            if _looks_like_image(name):
-                return True
-        return False
-
-    prefix = f"{theme_key}/"
-    for name in member_names:
-        if name.startswith(prefix) and _looks_like_image(name[len(prefix) :]):
-            return True
-    return False
 
 
 def _find_zip_paths() -> list[Path]:
@@ -165,11 +133,11 @@ def _extract_theme(
         return False, f"Skip {theme_key}: destination folder {dest_name}/ already exists."
 
     if theme_key == ".":
-        block = _other_theme_path_prefixes(keys, ".")
+        block = ztu.zip_other_theme_prefixes(keys, ".")
         selected = [
             name
             for name in member_names
-            if not any(name.startswith(p) for p in block)
+            if not any(name.startswith(p) for p in block) and not ztu.is_noise_zip_entry(name)
         ]
     else:
         prefix = f"{theme_key}/"
@@ -215,13 +183,13 @@ def _process_zip(path: Path) -> tuple[bool, list[str]]:
             if _is_blocked_file(name):
                 return False, logs + [f"ERROR: Blocked file type in zip: {name}"]
 
-        keys = _discover_theme_keys(names)
+        names_t = ztu.filter_zip_names_for_theme_logic(names)
+        keys = ztu.zip_theme_keys(names_t)
         if not keys:
             return False, logs + ["ERROR: Zip must contain at least one theme folder with config.json."]
 
-        base_names = [(path.stem if k == "." else PurePosixPath(k).name) for k in keys]
-        if len(set(base_names)) != len(base_names):
-            return False, logs + ["ERROR: Zip contains duplicate theme folder names."]
+        for err in ztu.zip_inner_folder_collision_errors(keys, path.stem, zip_label=path.name):
+            return False, logs + [f"ERROR: {err}"]
 
         extracted_any = False
         for key in keys:
@@ -231,7 +199,7 @@ def _process_zip(path: Path) -> tuple[bool, list[str]]:
             except Exception as exc:
                 return False, logs + [f"ERROR: {config_entry} invalid: {exc}"]
 
-            if not _theme_has_image_file(names, key, keys=keys):
+            if not ztu.zip_has_image_file(names_t, key, theme_keys=keys):
                 scope = "zip root" if key == "." else f"{key}/"
                 return False, logs + [f"ERROR: {scope} must include at least one image file."]
             if not _config_has_image_refs(cfg):

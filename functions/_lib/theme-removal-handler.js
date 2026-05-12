@@ -88,6 +88,53 @@ function normConfirmText(s) {
     .toLowerCase();
 }
 
+function isValidEmail(s) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s || "").trim());
+}
+
+async function readThemeConfigAuthorFromBase(apiBase, token, folder, branch) {
+  const enc = encodeRepoPath(`${folder}/config.json`);
+  try {
+    const data = await ghJson(
+      `${apiBase}/contents/${enc}?ref=${encodeURIComponent(branch)}`,
+      token,
+      {},
+      `read ${folder}/config.json for author`
+    );
+    if (!data || !data.content) return "";
+    const parsed = JSON.parse(decodeBase64Utf8(data.content));
+    if (!parsed || typeof parsed !== "object") return "";
+    for (const key of ["theme_info", "source_info"]) {
+      const block = parsed[key];
+      if (block && typeof block === "object") {
+        const auth = block.author;
+        if (typeof auth === "string" && auth.trim()) return auth.trim();
+      }
+    }
+  } catch {
+    return "";
+  }
+  return "";
+}
+
+async function postFabformRemoval(fabUrl, fields) {
+  const body = new URLSearchParams();
+  body.set("contact_email", fields.contactEmail);
+  body.set("pr_url", fields.prUrl);
+  body.set("theme_folder", fields.themeFolder);
+  body.set("catalog_title", fields.catalogTitle);
+  body.set("catalog_author", fields.catalogAuthor || "");
+  body.set("requester_name", fields.requesterName || "");
+  body.set("reason", fields.reason || "");
+  body.set("blacklist_opt_out", fields.blacklistOptOut ? "yes" : "no");
+  const res = await fetch(fabUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body,
+  });
+  return res.ok;
+}
+
 const RESERVED_TOP = new Set([
   "scripts",
   "functions",
@@ -152,6 +199,9 @@ export async function handleRemovalPost(request, env) {
     const requester = String(form.get("requester") || "").trim();
     const confirmNameRaw = String(form.get("confirmName") || "").trim();
     const confirmAuthorRaw = String(form.get("confirmAuthor") || "").trim();
+    const contactEmail = String(form.get("contactEmail") || "").trim();
+    const confirmContactEmail = String(form.get("confirmContactEmail") || "").trim();
+    const blacklistOptOut = /^(1|true|yes|on)$/i.test(String(form.get("blacklistOptOut") || "").trim());
 
     if (!folderRaw) {
       return jsonResponse({ error: "Missing folder name." }, 400);
@@ -162,6 +212,13 @@ export async function handleRemovalPost(request, env) {
     const top = folderRaw.split("/")[0];
     if (RESERVED_TOP.has(top)) {
       return jsonResponse({ error: "That path cannot be removed via this form." }, 400);
+    }
+
+    if (!contactEmail || !isValidEmail(contactEmail)) {
+      return jsonResponse({ error: "Enter a valid contact email so we can verify this request." }, 400);
+    }
+    if (confirmContactEmail && String(confirmContactEmail).trim() !== String(contactEmail).trim()) {
+      return jsonResponse({ error: "Contact email fields do not match." }, 400);
     }
 
     const apiBase = `https://api.github.com/repos/${owner}/${repo}`;
@@ -199,7 +256,10 @@ export async function handleRemovalPost(request, env) {
 
     const catalogRow = list[idx];
     const catalogName = String(catalogRow.name || "").trim() || folderRaw;
-    const catalogAuthor = String(catalogRow.author || "").trim();
+    let catalogAuthor = String(catalogRow.author || "").trim();
+    if (!catalogAuthor) {
+      catalogAuthor = await readThemeConfigAuthorFromBase(apiBase, token, folderRaw, baseBranch);
+    }
 
     if (!confirmNameRaw) {
       return jsonResponse({ error: "Type the catalog title exactly as shown for this theme." }, 400);
@@ -309,8 +369,10 @@ export async function handleRemovalPost(request, env) {
       `- **Folder:** \`${folderRaw}\``,
       `- **Catalog title:** ${catalogName}`,
       catalogAuthor ? `- **Catalog author:** ${catalogAuthor}` : `- **Catalog author:** _(none listed)_`,
+      `- **Submitter contact email:** ${contactEmail}`,
       requester ? `- **Requester:** ${requester}` : null,
       reason ? `- **Reason:** ${reason}` : null,
+      `- **Blacklist preference:** ${blacklistOptOut ? "Requested (block re-uploads)" : "Not requested"}`,
       "",
       "The submitter confirmed the **listed title** (and **author**, if listed) before this request was created.",
       "",
@@ -336,11 +398,33 @@ export async function handleRemovalPost(request, env) {
       "open pull request"
     );
 
+    const prUrl = pr.html_url || "";
+    let fabformOk = true;
+    const fabUrl = String(env.FABFORM_REMOVAL_FORM_URL || "").trim();
+    if (fabUrl) {
+      try {
+        fabformOk = await postFabformRemoval(fabUrl, {
+          contactEmail,
+          prUrl,
+          themeFolder: folderRaw,
+          catalogTitle: catalogName,
+          catalogAuthor,
+          requesterName: requester,
+          reason,
+          blacklistOptOut,
+        });
+      } catch (e) {
+        fabformOk = false;
+        console.error("[theme-removal] fabform", e);
+      }
+    }
+
     return jsonResponse(
       {
         ok: true,
-        prUrl: pr.html_url || null,
+        prUrl: prUrl || null,
         branch: branchName,
+        fabformOk,
       },
       200
     );

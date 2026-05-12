@@ -26,9 +26,9 @@ from typing import Any
 _GIT_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = _GIT_ROOT
 THEMES_JSON_PATH = REPO_ROOT / "themes.json"
-# Per-theme index.html is updated from this file for SEO blocks only; the floating
-# toolbar comes from support_toolbar.html (fetched at runtime). Keep theme.html’s
-# support-toolbar-slot + loadSupportToolbar() in sync when changing toolbar wiring.
+# Per-theme index.html is regenerated from theme.html on each sync (SEO + shared UI).
+# The floating toolbar comes from support_toolbar.html (fetched at runtime). Keep
+# theme.html’s support-toolbar-slot + loadSupportToolbar() in sync when changing toolbar wiring.
 THEME_TEMPLATE_PATH = REPO_ROOT / "theme.html"
 SITE_BASE_URL = "https://themes.innioasis.app"
 IMAGE_EXTENSIONS = {".gif", ".jpeg", ".jpg", ".png", ".svg", ".webp"}
@@ -442,6 +442,23 @@ def _refresh_existing_theme_entry(entry: dict[str, Any], folder: str, config: di
     return refreshed
 
 
+def _with_gallery_fields(entry: dict[str, Any]) -> dict[str, Any]:
+    """Attach lightweight precomputed search/sort fields for index.html."""
+    out = dict(entry)
+    folder = str(out.get("folder") or "").strip()
+    name = str(out.get("name") or folder or "Theme").strip()
+    author = str(out.get("author") or "").strip()
+    description = str(out.get("description") or "").strip()
+    source_type = str(out.get("sourceType") or "").strip().lower()
+    if source_type:
+        out["sourceType"] = source_type
+    else:
+        out["sourceType"] = "internal"
+    out["sortName"] = name.casefold()
+    out["searchText"] = " ".join([name, description, author, folder]).casefold().strip()
+    return out
+
+
 def _sync_theme_info(config: dict[str, Any], theme_entry: dict[str, Any]) -> bool:
     fallback_name = str(theme_entry.get("name") or theme_entry.get("folder") or "Theme").strip()
     existing_theme_info = config.get("theme_info")
@@ -543,13 +560,14 @@ def _build_theme_index_html(template: str, theme_entry: dict[str, Any]) -> str:
     return html_text
 
 
-def _sync_theme_index(theme_entry: dict[str, Any], template: str) -> bool:
+def _sync_theme_index(theme_entry: dict[str, Any], master_template: str) -> bool:
     folder = _extract_folder_key(theme_entry)
     if not folder:
         return False
     path = REPO_ROOT / folder / "index.html"
-    existing = path.read_text(encoding="utf-8") if path.exists() else template
-    updated = _build_theme_index_html(existing, theme_entry)
+    existing = path.read_text(encoding="utf-8") if path.exists() else ""
+    # Always render from theme.html so new UI (e.g. report link) propagates to every theme index.
+    updated = _build_theme_index_html(master_template, theme_entry)
     if updated == existing and path.exists():
         return False
     path.write_text(updated, encoding="utf-8")
@@ -654,7 +672,7 @@ def main() -> int:
         config = _load_json_file(cfg_path)
         by_folder[folder] = _theme_entry_from_folder(folder, config if isinstance(config, dict) else None)
 
-    ordered_themes = [by_folder[folder] for folder in sorted(by_folder.keys(), key=lambda s: s.lower())]
+    ordered_themes = [_with_gallery_fields(by_folder[folder]) for folder in sorted(by_folder.keys(), key=lambda s: s.lower())]
     _write_json(THEMES_JSON_PATH, {"themes": ordered_themes})
     template_html = THEME_TEMPLATE_PATH.read_text(encoding="utf-8") if THEME_TEMPLATE_PATH.exists() else ""
 

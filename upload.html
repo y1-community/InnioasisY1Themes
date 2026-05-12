@@ -40,6 +40,9 @@
             window.removalThemeEndpoint = function () {
                 return apiUrl("/api/removal-request");
             };
+            window.metadataThemeEndpoint = function () {
+                return apiUrl("/api/theme-metadata");
+            };
         })();
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -221,6 +224,7 @@
         }
 
         input[type="text"],
+        input[type="email"],
         textarea {
             font: inherit;
             padding: 0.65rem 0.75rem;
@@ -489,18 +493,18 @@
             <p class="lead" id="upload-lead">
                 Share a new look for the Innioasis Y1 player. Choose a ZIP file or a whole theme folder — we’ll package it safely in your browser and send it to the team.
             </p>
-            <p class="hint" id="upload-hint">You’ll get a link to track your submission. Only <strong>brand-new</strong> theme identities may qualify for <strong>automatic submission</strong> after our checks; edits, variations that reuse another theme’s display title without a clear remix suffix, and removals always go through someone on the team before they appear on the site.</p>
+            <p class="hint" id="upload-hint">You’ll get a link to track your submission. Only <strong>brand-new</strong> theme identities may qualify for <strong>automatic submission</strong> after our checks; edits, anything that still needs a maintainer after automatic checks, and removals always go through someone on the team before they appear on the site.</p>
         </header>
 
         <div class="card" id="panel-upload">
             <form id="upload-form">
-                <div class="row">
+                <div class="row file-input-row">
                     <label for="zip-file">Option A — ZIP file</label>
                     <input id="zip-file" name="zip" type="file" accept=".zip,application/zip" />
                     <div class="hint">You can include several theme folders (each with <code>config.json</code>) in one ZIP. Don’t pick both a ZIP and a folder.</div>
                 </div>
 
-                <div class="row">
+                <div class="row file-input-row">
                     <label for="folder-file">Option B — Theme folder</label>
                     <input id="folder-file" type="file" webkitdirectory multiple />
                     <div class="hint">Select the folder that contains your theme’s <code>config.json</code> and images. Works in Chrome, Edge, Firefox, and Safari.</div>
@@ -520,18 +524,12 @@
                 <div id="edit-notice" class="callout-info" hidden>
                     <p><strong>Update to an existing listing</strong></p>
                     <p>Your <strong>Author</strong> matches the catalog entry for <strong data-edit-folder></strong> (same person or team as the live listing). This is sent as an <strong>update</strong> — it does <strong>not</strong> use automatic submission; a maintainer will review.</p>
-                    <p class="hint" style="margin-top: 0.65rem;">If this is actually a <em>different</em> theme or a remix, change the <strong>Author</strong> field above so it clearly identifies you — then this is treated as a new package (see the yellow notice).</p>
+                    <p class="hint" style="margin-top: 0.65rem;">If this is actually a <em>different</em> theme or a remix, change the <strong>Author</strong> field above so it clearly identifies you — then it is treated as a new package. Folder paths inside your ZIP are adjusted in the browser when needed (using the catalog) so titles can stay the same while authors stay distinct.</p>
                     <p class="hint" style="margin-top: 0.35rem;">Catalog title: <span data-edit-catalog-title>—</span></p>
                     <label class="variation-row" style="margin-top:0.75rem;">
                         <input type="checkbox" id="edit-ack" />
                         <span>I confirm I’m submitting an update to this existing listing, not a different theme.</span>
                     </label>
-                </div>
-
-                <div id="variation-notice" class="callout-warn" hidden>
-                    <p><strong>Different author than the existing listing</strong> — overlaps: <strong data-collision-list></strong></p>
-                    <p id="variation-body">Rename the root folder inside your ZIP to include <code id="variation-suggested-folder"></code> (from your Author field above). That marks it as your own package and may qualify for automatic submission after checks.</p>
-                    <p id="variation-suffix-ok" class="callout-info" hidden style="margin-top:0.65rem;">Folder name suffix looks good — you can send. The server still runs final checks.</p>
                 </div>
 
                 <input type="hidden" name="themeTitle" id="field-theme-title" value="" />
@@ -544,7 +542,7 @@
 
         <div class="card" id="panel-remove" hidden>
             <form id="removal-form">
-                <p class="lead" style="margin-bottom:1rem;">Request removal of a theme from the public gallery. We show how it is <strong>listed in the gallery</strong> (title and author from the catalog). You must type those values before a removal request is sent. When approved, the theme folder and its <code>themes.json</code> entry are removed. <strong>Removals are never automatic</strong> — a maintainer completes the change by hand, and removal requests are <strong>never</strong> auto-merged.</p>
+                <p class="lead" style="margin-bottom:1rem;">We’re sorry to hear you want a theme removed from the gallery. This form is for authors who want to opt out. We verify the listed title/author and your contact email before maintainers remove the theme from the catalog.</p>
                 <div class="row">
                     <label>Theme folder</label>
                     <input type="text" id="removal-folder-display" readonly style="opacity:0.9;" />
@@ -555,6 +553,7 @@
                     <p style="margin:0.25rem 0;"><strong>Title:</strong> <span id="removal-catalog-name">—</span></p>
                     <p style="margin:0.25rem 0;"><strong>Author:</strong> <span id="removal-catalog-author">—</span></p>
                     <p class="hint" style="margin:0.65rem 0 0 0;">Type the title and author below to match these lines (extra spaces are ignored; letter case can differ).</p>
+                    <p class="hint" style="margin:0.65rem 0 0 0;">If content appears illegal/harmful instead, <a id="removal-report-link" href="report-theme.html" style="color:lightblue;">report the theme for review</a>.</p>
                 </div>
                 <div class="row">
                     <label for="removal-confirm-name">Type the catalog title</label>
@@ -565,6 +564,15 @@
                     <input id="removal-confirm-author" name="confirmAuthor" type="text" autocomplete="off" placeholder="Same as “Author” above" />
                 </div>
                 <div class="row">
+                    <label for="removal-contact-email">Contact email (required for verification)</label>
+                    <input id="removal-contact-email" name="contactEmail" type="email" autocomplete="email" required placeholder="you@example.com" />
+                    <p class="hint">We use this to verify you represent the original author and to contact you if details do not match.</p>
+                </div>
+                <div class="row">
+                    <label for="removal-confirm-contact-email">Confirm contact email</label>
+                    <input id="removal-confirm-contact-email" name="confirmContactEmail" type="email" autocomplete="email" required placeholder="Type the same email again" />
+                </div>
+                <div class="row">
                     <label for="removal-reason">Reason (optional)</label>
                     <textarea id="removal-reason" name="reason" rows="3" maxlength="2000" placeholder="Why should this theme be removed?"></textarea>
                 </div>
@@ -572,9 +580,31 @@
                     <label for="removal-requester">Your name or handle (optional)</label>
                     <input id="removal-requester" name="requester" type="text" maxlength="120" />
                 </div>
+                <div class="row">
+                    <label class="variation-row" style="margin-top:0;">
+                        <input id="removal-blacklist-optout" name="blacklistOptOut" type="checkbox" />
+                        <span>Also block future re-uploads of this theme package by folder/title (blacklist preference).</span>
+                    </label>
+                </div>
                 <button id="removal-submit-btn" type="submit" class="btn btn-primary"><i class="fa-solid fa-trash-can" style="margin-right: 6px;"></i>Submit removal request</button>
             </form>
             <div id="removal-status" class="status"></div>
+        </div>
+
+        <div class="card" id="panel-submitted" hidden>
+            <h3>Submission received</h3>
+            <p id="submitted-lead" class="lead" style="margin-top:0.5rem;"></p>
+            <p class="hint" id="submitted-hint"></p>
+            <div class="row" style="margin-top:1rem;">
+                <label>Pull request (tracking)</label>
+                <input id="submitted-pr-input" type="text" readonly style="opacity:0.95;" />
+            </div>
+            <div class="row" style="margin-top:0.75rem; display:flex; flex-wrap:wrap; gap:0.5rem;">
+                <button type="button" class="btn btn-primary" id="submitted-open-btn">Track submission</button>
+                <button type="button" class="btn" id="submitted-copy-btn">Copy link</button>
+                <a class="btn" href="upload.html">Back to upload</a>
+            </div>
+            <div id="submitted-copy-status" class="hint" style="margin-top:0.5rem;"></div>
         </div>
 
         <div class="card" id="after-send-card">
@@ -643,8 +673,15 @@
         let pageMode = String(urlParams.get("mode") || "new")
             .trim()
             .toLowerCase();
-        if (!["new", "edit", "remove"].includes(pageMode)) pageMode = "new";
+        const submittedFlow = String(urlParams.get("flow") || "").trim().toLowerCase();
+        const submittedPrUrl = String(urlParams.get("prUrl") || "").trim();
+        if (pageMode === "submitted") {
+            /* keep */
+        } else if (!["new", "edit", "edit-metadata", "remove"].includes(pageMode)) pageMode = "new";
         let themeFolderParam = String(urlParams.get("folder") || "").trim();
+        const metadataOnlyMode = pageMode === "edit-metadata";
+        /** @type {{ name: string, author: string, authorUrl: string } | null} */
+        let catalogListingRow = null;
 
         const form = document.getElementById("upload-form");
         const statusEl = document.getElementById("status");
@@ -655,15 +692,10 @@
         const metaEditorList = document.getElementById("meta-editor-list");
         metaEditorList.addEventListener("input", () => syncCollisionUi());
         metaEditorList.addEventListener("change", () => syncCollisionUi());
-        const variationNotice = document.getElementById("variation-notice");
-        const variationSuggestedFolder = document.getElementById("variation-suggested-folder");
-        const variationSuffixOk = document.getElementById("variation-suffix-ok");
-        const variationBody = document.getElementById("variation-body");
-        const editNotice = document.getElementById("edit-notice");
         const editAck = document.getElementById("edit-ack");
-        const collisionListEl = variationNotice ? variationNotice.querySelector("[data-collision-list]") : null;
-        const editFolderEl = editNotice.querySelector("[data-edit-folder]");
-        const editCatalogTitleEl = editNotice.querySelector("[data-edit-catalog-title]");
+        const editNotice = document.getElementById("edit-notice");
+        const editFolderEl = editNotice && editNotice.querySelector("[data-edit-folder]");
+        const editCatalogTitleEl = editNotice && editNotice.querySelector("[data-edit-catalog-title]");
         const fieldThemeTitle = document.getElementById("field-theme-title");
         const fieldThemeAuthor = document.getElementById("field-theme-author");
         const removalForm = document.getElementById("removal-form");
@@ -677,12 +709,70 @@
             const hint = document.getElementById("upload-hint");
             const panelUpload = document.getElementById("panel-upload");
             const panelRemove = document.getElementById("panel-remove");
+            const panelSubmitted = document.getElementById("panel-submitted");
+            const afterCard = document.getElementById("after-send-card");
             const afterTitle = document.getElementById("after-send-title");
             const afterList = document.getElementById("after-send-list");
             if (!h1 || !lead || !panelUpload || !panelRemove || !afterTitle || !afterList) return;
 
+            if (pageMode === "submitted" && panelSubmitted) {
+                panelUpload.hidden = true;
+                panelRemove.hidden = true;
+                if (afterCard) afterCard.hidden = true;
+                panelSubmitted.hidden = false;
+                if (docTitle) docTitle.textContent = "Submission received — Innioasis Y1 Themes";
+                h1.textContent = "Submission received";
+                const leadEl = document.getElementById("submitted-lead");
+                const hintEl = document.getElementById("submitted-hint");
+                const prInput = document.getElementById("submitted-pr-input");
+                const dec = submittedPrUrl ? decodeURIComponent(submittedPrUrl) : "";
+                if (leadEl) {
+                    if (submittedFlow === "removal") {
+                        leadEl.textContent =
+                            "Your removal request was created. A maintainer will review it and may contact you at the email you provided to verify you represent the original author.";
+                    } else if (submittedFlow === "metadata") {
+                        leadEl.textContent =
+                            "Your theme details update was submitted as a pull request. When checks pass it may merge automatically if policy allows.";
+                    } else {
+                        leadEl.textContent =
+                            "Your theme upload was queued. Use the link below to track the pull request on GitHub.";
+                    }
+                }
+                if (hintEl) {
+                    hintEl.textContent = dec
+                        ? "Keep this link somewhere safe until the change is merged."
+                        : "No pull request URL was returned; check your email or site status.";
+                }
+                if (prInput) prInput.value = dec || "";
+                const openBtn = document.getElementById("submitted-open-btn");
+                const copyBtn = document.getElementById("submitted-copy-btn");
+                const copyStatus = document.getElementById("submitted-copy-status");
+                if (openBtn) {
+                    openBtn.disabled = !dec;
+                    openBtn.onclick = () => {
+                        if (dec) window.open(dec, "_blank", "noopener,noreferrer");
+                    };
+                }
+                if (copyBtn) {
+                    copyBtn.disabled = !dec;
+                    copyBtn.onclick = async () => {
+                        if (!dec) return;
+                        try {
+                            await navigator.clipboard.writeText(dec);
+                            if (copyStatus) copyStatus.textContent = "Copied to clipboard.";
+                        } catch {
+                            if (copyStatus) copyStatus.textContent = "Copy failed — select the field and copy manually.";
+                        }
+                    };
+                }
+                return;
+            }
+
+            if (panelSubmitted) panelSubmitted.hidden = true;
+            if (afterCard) afterCard.hidden = false;
+
             const commonHint =
-                "Only brand-new theme identities may qualify for automatic submission after our checks; edits, suspicious title/author combinations, variations without a clear remix-style folder name, and removals always go through someone on the team before they appear on the site.";
+                "Only brand-new theme identities may qualify for automatic submission after our checks; edits, anything that still needs a maintainer after automatic checks, and removals always go through someone on the team before they appear on the site.";
 
             if (pageMode === "remove") {
                 panelUpload.hidden = true;
@@ -690,10 +780,10 @@
                 if (docTitle) docTitle.textContent = "Request theme removal — Innioasis Y1 Themes";
                 h1.textContent = "Request theme removal";
                 lead.textContent =
-                    "You must type the catalog title and author shown below so we know you are removing the correct listing. When the team approves, the theme folder and catalog entry are removed. Removals never use automatic submission.";
+                    "You can opt your theme out of the Innioasis Y1 gallery. We verify listed metadata and contact details before maintainers remove it.";
                 if (hint) {
                     hint.textContent =
-                        "Removal requests open a tracked change for maintainers only — they are never auto-merged or automatically published. " +
+                        "This flow is for author opt-out. We may contact you to confirm ownership before removal. Requests open a tracked maintainer-only change and are never auto-merged. " +
                         commonHint;
                 }
                 const disp = document.getElementById("removal-folder-display");
@@ -704,9 +794,9 @@
                 }
                 afterTitle.textContent = "What happens next";
                 afterList.innerHTML = [
-                    "<li>After you type the <strong>listed title</strong> and <strong>author</strong> (if any) and submit, a <strong>removal request</strong> is created for the maintainers.</li>",
-                    "<li>It is <strong>not</strong> eligible for automatic submission and is <strong>not</strong> auto-merged — someone on the team reviews and publishes or declines it.</li>",
-                    "<li>When published, the site refresh removes the theme from the public catalog.</li>"
+                    "<li>After you confirm listed metadata and your contact email, a <strong>removal request</strong> pull request is created for maintainers.</li>",
+                    "<li>We verify you represent the listed author. If needed, we contact you at the email you provided.</li>",
+                    "<li>The request is <strong>not</strong> auto-merged. When approved, the theme folder and catalog listing are removed.</li>"
                 ].join("");
                 void refreshRemovalCatalogDisplay();
                 return;
@@ -714,6 +804,34 @@
 
             panelUpload.hidden = false;
             panelRemove.hidden = true;
+
+            if (pageMode === "edit-metadata") {
+                if (docTitle) docTitle.textContent = "Update theme details — Innioasis Y1 Themes";
+                h1.textContent = "Update theme details";
+                lead.textContent =
+                    "Edit title, author, description, and gallery listing fields. No ZIP is required — we open a pull request that only updates config and catalog metadata.";
+                if (hint) {
+                    const pre = themeFolderParam ? `Folder: ${themeFolderParam}. ` : "";
+                    hint.textContent =
+                        pre +
+                        "Change the description or listing fields (or use the full upload flow to ship new assets). " +
+                        commonHint;
+                }
+                document.querySelectorAll(".file-input-row").forEach((el) => {
+                    el.hidden = true;
+                });
+                afterTitle.textContent = "What happens after you send";
+                afterList.innerHTML = [
+                    "<li>We open a <strong>metadata-only</strong> pull request on GitHub (no new image binaries).</li>",
+                    "<li>If <code>scripts/validate_theme_pr.py</code> passes, it may <strong>auto-merge</strong> when policy allows.</li>",
+                    "<li>To ship artwork changes, use the normal ZIP or folder upload instead.</li>"
+                ].join("");
+                return;
+            }
+
+            document.querySelectorAll(".file-input-row").forEach((el) => {
+                el.hidden = false;
+            });
 
             if (pageMode === "edit") {
                 if (docTitle) docTitle.textContent = "Submit a theme update — Innioasis Y1 Themes";
@@ -861,6 +979,7 @@
             const readout = document.getElementById("removal-catalog-readout");
             const nameEl = document.getElementById("removal-catalog-name");
             const authorEl = document.getElementById("removal-catalog-author");
+            const reportLink = document.getElementById("removal-report-link");
             const authorRow = document.getElementById("removal-confirm-author-row");
             const authorInput = document.getElementById("removal-confirm-author");
             const nameInput = document.getElementById("removal-confirm-name");
@@ -903,6 +1022,15 @@
                 let a = String(row.author || "").trim();
                 if (!a) {
                     a = await fetchConfigAuthorForCatalogFolder(String(row.folder || "").trim());
+                }
+                if (reportLink) {
+                    const ref = `${location.origin}/theme.html?theme=${encodeURIComponent(themeFolderParam)}`;
+                    reportLink.href =
+                        `report-theme.html?folder=${encodeURIComponent(themeFolderParam)}` +
+                        `&title=${encodeURIComponent(n)}` +
+                        `&author=${encodeURIComponent(a)}` +
+                        `&issue_category=illegal_or_harmful` +
+                        `&ref=${encodeURIComponent(ref)}`;
                 }
                 nameEl.textContent = n;
                 authorEl.textContent = a || "— (none listed; title only)";
@@ -1013,6 +1141,46 @@
             return { kind: "variation", uploadRoot, catalogFolder: row.folder, suggested: `${uploadRoot}-${tok}` };
         }
 
+        /** Map upload root folder name -> suffixed folder name when author differs from catalog (applied when building the ZIP). */
+        function variationRootRenames() {
+            readEditorValues();
+            const m = new Map();
+            for (const root of collectThemeRootFolders()) {
+                const s = collisionSummaryForUploadRoot(root);
+                if (s.kind === "variation" && s.suggested) m.set(root, s.suggested);
+            }
+            return m;
+        }
+
+        function rewriteThemePathForRenames(path, renames) {
+            if (!renames || !renames.size) return normRelPath(path);
+            const p = normRelPath(path);
+            if (!p) return p;
+            const i = p.indexOf("/");
+            if (i === -1) {
+                const stem = String(loadedZipFileName || "")
+                    .replace(/\.zip$/i, "")
+                    .replace(/^\d+-/, "")
+                    .trim();
+                if (stem && renames.has(stem)) return `${renames.get(stem)}/${p}`;
+                return p;
+            }
+            const first = p.slice(0, i);
+            if (renames.has(first)) return renames.get(first) + p.slice(first.length);
+            return p;
+        }
+
+        /** When a catalog collision is resolved by renaming roots, match the outgoing ZIP name to the new folder stem (server uses zip filename stem for root themes). */
+        function packagedZipFileName(renames, fallbackZipName) {
+            const full = String(fallbackZipName || loadedZipFileName || "theme.zip").trim();
+            const withExt = /\.zip$/i.test(full) ? full : `${full}.zip`;
+            const m = withExt.match(/^(\d+-)?(.+)\.zip$/i);
+            const ts = m && m[1] ? m[1] : "";
+            const stem = m && m[2] ? m[2].trim() : withExt.replace(/\.zip$/i, "").trim();
+            if (renames && renames.size && stem && renames.has(stem)) return `${ts}${renames.get(stem)}.zip`;
+            return withExt;
+        }
+
         function refreshBatchThemePanel() {
             const panel = document.getElementById("batch-theme-panel");
             const list = document.getElementById("batch-theme-status-list");
@@ -1039,13 +1207,10 @@
                         chipClass = "batch-chip batch-chip-ok";
                         chipText = "Variation · suffix OK";
                     } else if (s.kind === "variation") {
-                        chipClass = "batch-chip batch-chip-variation";
-                        chipText = "Needs suffix";
+                        chipClass = "batch-chip batch-chip-ok";
+                        chipText = "New author · path adjusted on send";
                     }
-                    const sug =
-                        s.kind === "variation" && s.suggested
-                            ? `<span class="hint" style="margin-left:0.35rem;">e.g. <code>${escapeHtml(s.suggested)}</code></span>`
-                            : "";
+                    const sug = "";
                     return `<li><span><strong>${escapeHtml(root)}</strong></span><span><span class="${chipClass}">${chipText}</span>${sug}</span></li>`;
                 })
                 .join("");
@@ -1060,36 +1225,22 @@
         }
 
         function syncCollisionUi() {
-            if (!variationNotice || !collisionListEl || !editNotice) return;
+            if (!editNotice) return;
             const { hasCollision, isEdit, hits } = analyzeCollision();
             if (!hasCollision) {
-                variationNotice.hidden = true;
                 editNotice.hidden = true;
                 if (editAck) editAck.checked = false;
-                if (variationSuffixOk) variationSuffixOk.hidden = true;
-                if (variationBody) variationBody.hidden = false;
+                refreshBatchThemePanel();
                 return;
             }
-            collisionListEl.textContent = hits.map((x) => x.folder).join(", ");
             if (isEdit) {
-                variationNotice.hidden = true;
-                if (variationSuffixOk) variationSuffixOk.hidden = true;
-                if (variationBody) variationBody.hidden = false;
                 editNotice.hidden = false;
                 const h = hits[0];
-                editFolderEl.textContent = h.folder;
-                editCatalogTitleEl.textContent = h.name || h.folder;
+                if (editFolderEl) editFolderEl.textContent = h.folder;
+                if (editCatalogTitleEl) editCatalogTitleEl.textContent = h.name || h.folder;
             } else {
                 editNotice.hidden = true;
                 if (editAck) editAck.checked = false;
-                variationNotice.hidden = false;
-                const h = hits[0];
-                const candidates = collectSlugCandidatesForUploadRoot(h.uploadRoot);
-                const tok = candidates[0] || slugToken(authorForUploadRoot(h.uploadRoot)) || "your-handle";
-                const suffixOk = folderHasDisambiguator(h.uploadRoot, candidates);
-                if (variationSuggestedFolder) variationSuggestedFolder.textContent = `${h.uploadRoot}-${tok}`;
-                if (variationSuffixOk) variationSuffixOk.hidden = !suffixOk;
-                if (variationBody) variationBody.hidden = suffixOk;
             }
             refreshBatchThemePanel();
         }
@@ -1148,8 +1299,7 @@
             folderFiles = null;
             themeInfoEntries = [];
             if (editAck) editAck.checked = false;
-            if (variationNotice) variationNotice.hidden = true;
-            editNotice.hidden = true;
+            if (editNotice) editNotice.hidden = true;
             renderThemeInfoEditors();
         }
 
@@ -1171,8 +1321,11 @@
                 const folder = folderEl ? String(folderEl.value || "").trim() : "";
                 const confirmName = String(document.getElementById("removal-confirm-name")?.value || "").trim();
                 const confirmAuthor = String(document.getElementById("removal-confirm-author")?.value || "").trim();
+                const contactEmail = String(document.getElementById("removal-contact-email")?.value || "").trim();
+                const confirmContactEmail = String(document.getElementById("removal-confirm-contact-email")?.value || "").trim();
                 const reason = String(document.getElementById("removal-reason")?.value || "").trim();
                 const requester = String(document.getElementById("removal-requester")?.value || "").trim();
+                const blacklistOptOut = !!document.getElementById("removal-blacklist-optout")?.checked;
                 if (!folder) {
                     setRemovalStatus('Missing theme folder. Use a link with ?folder=YourFolder in the URL.', false);
                     return;
@@ -1186,6 +1339,18 @@
                     setRemovalStatus("Type the catalog author exactly as shown in the gray box.", false);
                     return;
                 }
+                if (!contactEmail) {
+                    setRemovalStatus("Enter a contact email so we can verify ownership.", false);
+                    return;
+                }
+                if (!confirmContactEmail) {
+                    setRemovalStatus("Confirm your contact email.", false);
+                    return;
+                }
+                if (contactEmail !== confirmContactEmail) {
+                    setRemovalStatus("Contact email fields do not match.", false);
+                    return;
+                }
                 removalSubmitBtn.disabled = true;
                 setRemovalStatus("Submitting your removal request…", true);
                 try {
@@ -1193,8 +1358,11 @@
                     fd.set("folder", folder);
                     fd.set("confirmName", confirmName);
                     fd.set("confirmAuthor", confirmAuthor);
+                    fd.set("contactEmail", contactEmail);
+                    fd.set("confirmContactEmail", confirmContactEmail);
                     fd.set("reason", reason);
                     fd.set("requester", requester);
+                    fd.set("blacklistOptOut", blacklistOptOut ? "1" : "");
                     const res = await fetch(window.removalThemeEndpoint(), {
                         method: "POST",
                         body: fd
@@ -1204,7 +1372,12 @@
                         throw new Error(payload.error || `Request failed (${res.status})`);
                     }
                     const link = payload.prUrl ? String(payload.prUrl) : "";
-                    setRemovalStatus(link ? `Removal request created. Track it here:\n${link}` : "Removal request created.", true);
+                    setRemovalStatus(
+                        link
+                            ? `Removal request created. We may email you to verify you represent the listed author.\nTrack it here:\n${link}`
+                            : "Removal request created. We may email you to verify you represent the listed author.",
+                        true
+                    );
                     removalForm.reset();
                     if (folderEl) folderEl.value = folder;
                     const disp = document.getElementById("removal-folder-display");
@@ -1465,28 +1638,31 @@
             if (uploadMode === "folder" && folderFiles && folderFiles.length) {
                 if (!window.JSZip) throw new Error("ZIP library is unavailable.");
                 readEditorValues();
+                const renames = variationRootRenames();
                 const outputZip = new window.JSZip();
-                const editsByPath = new Map(
+                const editsByOriginalPath = new Map(
                     themeInfoEntries.map((entry) => {
                         const nextParsed = { ...entry.parsed, theme_info: { ...entry.themeInfo } };
-                        return [entry.path, JSON.stringify(nextParsed, null, 2) + "\n"];
+                        return [normRelPath(entry.path), JSON.stringify(nextParsed, null, 2) + "\n"];
                     })
                 );
 
                 for (const file of folderFiles) {
                     const path = normRelPath(file.webkitRelativePath);
                     if (!path || path.endsWith("/")) continue;
-                    if (editsByPath.has(path)) {
-                        outputZip.file(path, editsByPath.get(path));
+                    const outPath = rewriteThemePathForRenames(path, renames);
+                    if (editsByOriginalPath.has(path)) {
+                        outputZip.file(outPath, editsByOriginalPath.get(path));
                     } else {
                         const buf = await file.arrayBuffer();
-                        outputZip.file(path, buf);
+                        outputZip.file(outPath, buf);
                     }
                 }
 
                 const blob = await outputZip.generateAsync({ type: "blob" });
                 const name = loadedZipFileName || inferFolderZipName(folderFiles);
-                return new File([blob], name, { type: "application/zip" });
+                const outName = packagedZipFileName(renames, name);
+                return new File([blob], outName, { type: "application/zip" });
             }
 
             const file = zipInput.files && zipInput.files[0];
@@ -1499,12 +1675,13 @@
             }
 
             readEditorValues();
+            const renames = variationRootRenames();
 
             const outputZip = new window.JSZip();
-            const editsByPath = new Map(
+            const editsByOriginalPath = new Map(
                 themeInfoEntries.map((entry) => {
                     const nextParsed = { ...entry.parsed, theme_info: { ...entry.themeInfo } };
-                    return [entry.path, JSON.stringify(nextParsed, null, 2) + "\n"];
+                    return [normRelPath(entry.path), JSON.stringify(nextParsed, null, 2) + "\n"];
                 })
             );
 
@@ -1512,16 +1689,18 @@
             for (const zipEntry of zipEntries) {
                 if (!zipEntry || zipEntry.dir) continue;
                 const path = zipEntry.name;
-                if (editsByPath.has(path)) {
-                    outputZip.file(path, editsByPath.get(path));
+                const outPath = rewriteThemePathForRenames(path, renames);
+                if (editsByOriginalPath.has(path)) {
+                    outputZip.file(outPath, editsByOriginalPath.get(path));
                 } else {
                     const bytes = await zipEntry.async("uint8array");
-                    outputZip.file(path, bytes);
+                    outputZip.file(outPath, bytes);
                 }
             }
 
             const blob = await outputZip.generateAsync({ type: "blob" });
-            return new File([blob], loadedZipFileName || file.name || "theme.zip", {
+            const outName = packagedZipFileName(renames, loadedZipFileName || file.name || "theme.zip");
+            return new File([blob], outName, {
                 type: "application/zip"
             });
         }
@@ -1551,28 +1730,10 @@
                         "Confirm the checkbox under “Update to an existing listing” — you’re submitting an update to that catalog entry.",
                         false
                     );
-                    editNotice.hidden = false;
+                    if (editNotice) editNotice.hidden = false;
                     return;
                 }
             }
-            if (hasCollision && !isEdit) {
-                const roots = collectThemeRootFolders();
-                const blocked = roots.filter((r) => collisionSummaryForUploadRoot(r).kind === "variation");
-                if (blocked.length) {
-                    const h0 = blocked[0];
-                    const tok =
-                        collectSlugCandidatesForUploadRoot(h0)[0] ||
-                        slugToken(authorForUploadRoot(h0)) ||
-                        "your-handle";
-                    setStatus(
-                        `One or more folder names match an existing theme by a different author. Rename those roots inside your ZIP to end with your suffix, e.g. ${h0}-${tok}, then try again.`,
-                        false
-                    );
-                    if (variationNotice) variationNotice.hidden = false;
-                    return;
-                }
-            }
-
             submitBtn.disabled = true;
             setStatus(uploadMode === "folder" ? "Packaging your theme…" : "Sending your theme…", true);
 

@@ -101,6 +101,6 @@ The handlers send `Access-Control-Allow-Origin: *` so browsers on `themes.innioa
 
 ### Removal request body (`POST /api/removal-request`)
 
-`multipart/form-data` fields: **`folder`** (catalog folder path), **`confirmName`** (must match `themes.json` **name** for that folder), **`confirmAuthor`** (must match **author** when the listing has an author; omit or leave blank when none is listed), optional **`reason`**, **`requester`**.
+`multipart/form-data` fields: **`folder`** (catalog folder path), **`confirmName`** (must match `themes.json` **name** for that folder), **`confirmAuthor`** (must match **author** when the listing has an author; omit or leave blank when none is listed), **`contactEmail`** (required, used for verification), optional **`confirmContactEmail`** (must match `contactEmail` if provided), optional **`reason`**, **`requester`**, optional **`blacklistOptOut`** (`1/true/yes/on` to request blocklist preference).
 
 Removal requests use the title prefix `[Removal]` and are **not** published automatically by the repository workflow.

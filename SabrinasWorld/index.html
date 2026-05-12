@@ -74,6 +74,8 @@
         border-radius: 9px;
         background: #101217;
         border: 1px solid rgba(255, 255, 255, 0.08);
+        justify-self: center;
+        grid-column: 2;
     }
 
     .gallery-tab {
@@ -84,6 +86,7 @@
         font-size: 0.82rem;
         font-weight: 600;
         border: 1px solid transparent;
+        line-height: 1.1;
     }
 
     .gallery-tab:hover {
@@ -106,6 +109,7 @@
         color: #eaf0ff;
         font-family: Inter, sans-serif;
         outline: none;
+        font-size: 0.82rem;
     }
 
     .topbar-search::placeholder {
@@ -115,7 +119,9 @@
     .topbar-search-wrap {
         position: relative;
         width: 100%;
+        max-width: 360px;
         justify-self: end;
+        grid-column: 3;
     }
 
     .topbar-search-icon {
@@ -126,10 +132,6 @@
         color: #8ea0bf;
         font-size: 0.78rem;
         pointer-events: none;
-    }
-
-    .gallery-tabs {
-        justify-self: center;
     }
 
     @media (max-width: 900px) {
@@ -174,6 +176,7 @@
         <div class="gallery-tabs" aria-label="Site sections">
             <a class="gallery-tab" href="https://y1-themes.vercel.app">Editor</a>
             <a class="gallery-tab active" href="https://themes.innioasis.app/index.html">Gallery</a>
+            <a class="gallery-tab" href="https://themes.innioasis.app/upload.html">Upload</a>
         </div>
         <form class="topbar-search-wrap" action="https://themes.innioasis.app/index.html" method="get">
             <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
@@ -194,9 +197,14 @@
                         <div id="theme-author" style="margin-bottom:8px;color:var(--text-secondary)"></div>
                         <div id="theme-desc" style="color:var(--text-secondary);margin-bottom:12px"></div>
 
-                        <div id="download-area" style="display:flex;gap:8px;align-items:center">
+                        <div id="theme-maintainer-row" style="display:none;flex-wrap:wrap;gap:8px;margin:0 0 12px 0;align-items:center;">
+                            <a id="theme-action-edit" class="btn btn-secondary" style="text-decoration:none;padding:.45rem .75rem;font-size:0.82rem;font-weight:normal;" href="https://themes.innioasis.app/upload.html?mode=edit&folder=SabrinasWorld">Edit on site</a>
+                            <a id="theme-action-remove" class="btn btn-secondary" style="text-decoration:none;padding:.45rem .75rem;font-size:0.82rem;font-weight:normal;" href="https://themes.innioasis.app/upload.html?mode=remove&folder=SabrinasWorld">Request removal</a>
+                        </div>
+                        <div id="download-area" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
                             <button id="download-btn" class="btn btn-primary" style="font-weight: normal"><i class="fa-solid fa-download" style="margin-right: 4px;"></i> Download</button>
                             <a id="raw-folder-link" class="btn btn-secondary" style="text-decoration:none;padding:.6rem .9rem" target="_blank" rel="noopener"><i class="fa-solid fa-folder-open"></i> Open folder</a>
+                            <a id="theme-action-report" class="btn btn-secondary" style="text-decoration:none;padding:.45rem .75rem;font-size:0.82rem;font-weight:normal;" href="https://themes.innioasis.app/report-theme.html" rel="noopener"><i class="fa-solid fa-flag" style="margin-right:4px;"></i> Report issue</a>
                         </div>
                     </div>
 
@@ -921,6 +929,25 @@
             const encodedFolderPath = folderClean.split('/').map(seg => encodeURIComponent(seg)).join('/');
             rawFolderLink.href = `https://github.com/y1-community/InnioasisY1Themes/tree/main/${encodedFolderPath}`
 
+            const siteBase = 'https://themes.innioasis.app';
+            const maintRow = document.getElementById('theme-maintainer-row');
+            const editA = document.getElementById('theme-action-edit');
+            const remA = document.getElementById('theme-action-remove');
+            const reportA = document.getElementById('theme-action-report');
+            if (maintRow && editA && remA && folderClean) {
+                const enc = encodeURIComponent(folderClean);
+                editA.href = `${siteBase}/upload.html?mode=edit&folder=${enc}`;
+                remA.href = `${siteBase}/upload.html?mode=remove&folder=${enc}`;
+                maintRow.style.display = 'flex';
+            }
+            if (reportA && folderClean) {
+                const enc = encodeURIComponent(folderClean);
+                const tq = encodeURIComponent(displayName || '');
+                const aq = encodeURIComponent(seoAuthor || '');
+                const ref = encodeURIComponent(location.href.split('#')[0]);
+                reportA.href = `${siteBase}/report-theme.html?folder=${enc}&title=${tq}&author=${aq}&ref=${ref}`;
+            }
+
             const themeObj = {
                 name: displayName,
                 folder: folder
@@ -1004,5 +1031,3 @@
 </body>
 
 </html>
-
-

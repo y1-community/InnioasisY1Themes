@@ -341,6 +341,54 @@
         .btn:hover {
             background: var(--primary-dark);
         }
+
+        .gallery-controls {
+            margin-top: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.7rem;
+            align-items: center;
+        }
+
+        .gallery-control {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            color: var(--text-secondary);
+            font-size: 0.88rem;
+        }
+
+        .gallery-control select {
+            background: #222733;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #eaf0ff;
+            border-radius: 8px;
+            padding: 0.4rem 0.5rem;
+            font-family: inherit;
+        }
+
+        .pager {
+            margin-top: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .pager button {
+            background: #222733;
+            color: #eaf0ff;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 8px;
+            padding: 0.35rem 0.65rem;
+            cursor: pointer;
+            font: inherit;
+        }
+
+        .pager button[disabled] {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 
@@ -389,7 +437,36 @@
             </div>
         </div>
 
+        <div class="gallery-controls" aria-label="Gallery controls">
+            <label class="gallery-control" for="source-filter">
+                Source
+                <select id="source-filter">
+                    <option value="all">All themes</option>
+                    <option value="internal">Gallery packages</option>
+                    <option value="external">External links</option>
+                </select>
+            </label>
+            <label class="gallery-control" for="sort-filter">
+                Sort
+                <select id="sort-filter">
+                    <option value="name_asc">Name (A-Z)</option>
+                    <option value="name_desc">Name (Z-A)</option>
+                    <option value="author_asc">Author (A-Z)</option>
+                </select>
+            </label>
+            <label class="gallery-control" for="page-size">
+                Per page
+                <select id="page-size">
+                    <option value="12">12</option>
+                    <option value="24" selected>24</option>
+                    <option value="48">48</option>
+                </select>
+            </label>
+        </div>
+
         <div id="theme-grid" class="theme-grid"></div>
+        <div id="theme-empty" style="display:none; margin-top:1rem; text-align:center; color:#94a3b8;">No themes match your current filters.</div>
+        <div id="theme-pager" class="pager" hidden></div>
 
     </div>
 
@@ -487,26 +564,141 @@
         }
 
         const searchInput = document.getElementById('theme-search');
+        const sourceFilter = document.getElementById('source-filter');
+        const sortFilter = document.getElementById('sort-filter');
+        const pageSizeSelect = document.getElementById('page-size');
+        const pagerEl = document.getElementById('theme-pager');
+        let currentPage = 1;
         try {
-            const initialQuery = new URLSearchParams(location.search).get('q');
+            const qp = new URLSearchParams(location.search);
+            const initialQuery = qp.get('q');
             if (searchInput && initialQuery) searchInput.value = initialQuery;
+            const sourceQ = qp.get('source');
+            if (sourceFilter && sourceQ) sourceFilter.value = sourceQ;
+            const sortQ = qp.get('sort');
+            if (sortFilter && sortQ) sortFilter.value = sortQ;
+            const sizeQ = qp.get('size');
+            if (pageSizeSelect && sizeQ && ['12', '24', '48'].includes(sizeQ)) pageSizeSelect.value = sizeQ;
+            const pageQ = Number(qp.get('page') || '1');
+            currentPage = Number.isFinite(pageQ) && pageQ > 0 ? Math.floor(pageQ) : 1;
         } catch (e) {}
+
+        function syncQueryState(totalPages) {
+            try {
+                const q = (searchInput && searchInput.value || '').trim();
+                const params = new URLSearchParams(location.search);
+                if (q) params.set('q', q);
+                else params.delete('q');
+                const sourceV = sourceFilter ? String(sourceFilter.value || 'all') : 'all';
+                if (sourceV !== 'all') params.set('source', sourceV);
+                else params.delete('source');
+                const sortV = sortFilter ? String(sortFilter.value || 'name_asc') : 'name_asc';
+                if (sortV !== 'name_asc') params.set('sort', sortV);
+                else params.delete('sort');
+                const sizeV = pageSizeSelect ? String(pageSizeSelect.value || '24') : '24';
+                if (sizeV !== '24') params.set('size', sizeV);
+                else params.delete('size');
+                const maxPage = Math.max(1, totalPages || 1);
+                const safePage = Math.min(Math.max(1, currentPage), maxPage);
+                if (safePage > 1) params.set('page', String(safePage));
+                else params.delete('page');
+                const next = `${location.pathname}${params.toString() ? '?' + params.toString() : ''}${location.hash || ''}`;
+                history.replaceState(null, '', next);
+            } catch (e) {}
+        }
+
+        function renderPager(totalItems, pageSize) {
+            if (!pagerEl) return;
+            const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+            if (currentPage > totalPages) currentPage = totalPages;
+            pagerEl.hidden = totalItems <= pageSize;
+            if (pagerEl.hidden) {
+                pagerEl.innerHTML = '';
+                syncQueryState(totalPages);
+                return;
+            }
+            const start = (currentPage - 1) * pageSize + 1;
+            const end = Math.min(totalItems, currentPage * pageSize);
+            pagerEl.innerHTML = `
+                <button type="button" id="pager-prev" ${currentPage <= 1 ? 'disabled' : ''}>Prev</button>
+                <span style="color:var(--text-secondary);font-size:0.88rem;">Showing ${start}-${end} of ${totalItems} (page ${currentPage}/${totalPages})</span>
+                <button type="button" id="pager-next" ${currentPage >= totalPages ? 'disabled' : ''}>Next</button>
+            `;
+            const prev = document.getElementById('pager-prev');
+            const next = document.getElementById('pager-next');
+            if (prev) prev.onclick = () => {
+                if (currentPage <= 1) return;
+                currentPage -= 1;
+                applyFilters();
+            };
+            if (next) next.onclick = () => {
+                if (currentPage >= totalPages) return;
+                currentPage += 1;
+                applyFilters();
+            };
+            syncQueryState(totalPages);
+        }
 
         function applyFilters() {
             const query = (searchInput && searchInput.value || '').trim().toLowerCase();
             const onlyOn = onlyOnDeviceCheckbox && onlyOnDeviceCheckbox.checked;
+            const sourceV = sourceFilter ? String(sourceFilter.value || 'all') : 'all';
+            const sortV = sortFilter ? String(sortFilter.value || 'name_asc') : 'name_asc';
+            const pageSize = Number(pageSizeSelect && pageSizeSelect.value || '24') || 24;
             const cards = document.querySelectorAll('.theme-card');
+            const matched = [];
             for (const card of cards) {
-                const name = (card.querySelector('.theme-name')?.textContent || '').toLowerCase();
-                const desc = (card.querySelector('.theme-desc')?.textContent || '').toLowerCase();
-                const author = (card.querySelector('.theme-author')?.textContent || '').toLowerCase();
-                const matches = !query || name.includes(query) || desc.includes(query) || author.includes(query);
+                const hay = String(card.getAttribute('data-search') || '').toLowerCase();
+                const matches = !query || hay.includes(query);
                 const onDevice = !onlyOn || card.classList.contains('on-device');
-                card.style.display = (matches && onDevice) ? '' : 'none';
+                const sourceType = String(card.getAttribute('data-source') || 'internal');
+                const sourcePass = sourceV === 'all' || sourceType === sourceV;
+                const visible = matches && onDevice && sourcePass;
+                card.style.display = visible ? '' : 'none';
+                if (visible) matched.push(card);
             }
+
+            matched.sort((a, b) => {
+                const nameA = String(a.getAttribute('data-name') || '').toLowerCase();
+                const nameB = String(b.getAttribute('data-name') || '').toLowerCase();
+                const authorA = String(a.getAttribute('data-author') || '').toLowerCase();
+                const authorB = String(b.getAttribute('data-author') || '').toLowerCase();
+                if (sortV === 'name_desc') return nameB.localeCompare(nameA);
+                if (sortV === 'author_asc') return authorA.localeCompare(authorB) || nameA.localeCompare(nameB);
+                return nameA.localeCompare(nameB);
+            });
+            const grid = document.getElementById('theme-grid');
+            if (grid) {
+                matched.forEach((card) => grid.appendChild(card));
+            }
+            const totalPages = Math.max(1, Math.ceil(matched.length / pageSize));
+            if (currentPage > totalPages) currentPage = totalPages;
+            const startIdx = (currentPage - 1) * pageSize;
+            const endIdx = startIdx + pageSize;
+            matched.forEach((card, idx) => {
+                card.style.display = idx >= startIdx && idx < endIdx ? '' : 'none';
+            });
+            renderPager(matched.length, pageSize);
+            const emptyEl = document.getElementById('theme-empty');
+            if (emptyEl) emptyEl.style.display = matched.length === 0 ? 'block' : 'none';
         }
 
-        if (searchInput) searchInput.addEventListener('input', debounce(() => applyFilters(), 200));
+        if (searchInput) searchInput.addEventListener('input', debounce(() => {
+            currentPage = 1;
+            applyFilters();
+        }, 200));
+        if (sourceFilter) sourceFilter.addEventListener('change', () => {
+            currentPage = 1;
+            applyFilters();
+        });
+        if (sortFilter) sortFilter.addEventListener('change', () => {
+            currentPage = 1;
+            applyFilters();
+        });
+        if (pageSizeSelect) pageSizeSelect.addEventListener('change', () => {
+            currentPage = 1;
+            applyFilters();
+        });
 
         if (supportDirectInstall) {
             bannerEl.style.display = 'block';
@@ -1184,6 +1376,13 @@
             const safeThemeName = (theme.name || 'theme').replace(/[^\w\d-_ ]/g, '_') || 'theme';
             c.setAttribute('data-theme-name', safeThemeName);
             const folderPath = String(theme.folder || '').replace(/^\.\/+/, '');
+            c.setAttribute('data-name', safeText(theme.name || folderPath));
+            c.setAttribute('data-author', safeText(theme.author || ''));
+            c.setAttribute('data-source', String(theme.sourceType || 'internal').toLowerCase());
+            c.setAttribute(
+                'data-search',
+                `${safeText(theme.name)} ${safeText(theme.description)} ${safeText(theme.author)} ${safeText(folderPath)} ${safeText(theme.searchText || '')}`.toLowerCase()
+            );
 
             const statusBadge = document.createElement('div');
             statusBadge.className = 'theme-status';
@@ -1612,6 +1811,17 @@
                 editA.setAttribute('aria-label', 'Edit theme');
                 editA.innerHTML = '<i class="fa-solid fa-pencil" aria-hidden="true"></i>';
 
+                const repA = document.createElement('a');
+                repA.className = 'theme-card-corner-btn';
+                const repTitle = encodeURIComponent(safeText(theme.name) || '');
+                const repAuthor = encodeURIComponent(safeText(theme.author) || '');
+                const repRefRaw = `${location.origin}/theme.html?theme=${encodeURIComponent(folderPath || safeText(theme.name) || '')}`;
+                const repRef = encodeURIComponent(repRefRaw);
+                repA.href = `https://themes.innioasis.app/report-theme.html?folder=${encodeURIComponent(folderPath)}&title=${repTitle}&author=${repAuthor}&ref=${repRef}`;
+                repA.title = 'Report issue with this theme';
+                repA.setAttribute('aria-label', 'Report issue');
+                repA.innerHTML = '<i class="fa-solid fa-flag" aria-hidden="true"></i>';
+
                 const remA = document.createElement('a');
                 remA.className = 'theme-card-corner-btn theme-card-corner-btn--danger';
                 remA.href = `upload.html?mode=remove&folder=${encodeURIComponent(folderPath)}`;
@@ -1619,7 +1829,7 @@
                 remA.setAttribute('aria-label', 'Request removal');
                 remA.innerHTML = '<i class="fa-solid fa-xmark" aria-hidden="true"></i>';
 
-                corner.append(editA, remA);
+                corner.append(editA, repA, remA);
                 c.appendChild(corner);
             }
             return c;
@@ -1629,22 +1839,32 @@
         async function load() {
             const grid = document.getElementById('theme-grid')
             const cachedThemes = await tryFetchThemeCache()
-            const discoveredThemes = await discoverThemesFromSubfolders(cachedThemes)
-            const themesSource = mergeDiscoveredWithCached(discoveredThemes, cachedThemes)
-            const themes = dedupeThemes(themesSource)
+            let themes = dedupeThemes(cachedThemes || [])
+            if (!themes.length) {
+                const discoveredThemes = await discoverThemesFromSubfolders(cachedThemes)
+                const themesSource = mergeDiscoveredWithCached(discoveredThemes, cachedThemes)
+                themes = dedupeThemes(themesSource)
+            }
             themes.sort((a, b) => String(a?.name || '')
                 .localeCompare(String(b?.name || ''), undefined, {
                     sensitivity: 'base',
                     ignorePunctuation: true
                 }))
-            await annotateThemeConfigAvailability(themes)
-            await annotateThemeIndexAvailability(themes)
-            const filteredThemes = themes.filter(t => t && (t.sourceType === 'external' ? true : t.hasConfigFile !== false))
+            const filteredThemes = themes.filter(t => !!t)
+            if (!grid) return;
             if (!filteredThemes.length) {
                 grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#94a3b8">Unable to load themes</p>'
                 return
             }
-            filteredThemes.forEach(t => grid.appendChild(createCard(t)))
+            filteredThemes.forEach(t => {
+                const merged = {
+                    ...t,
+                    hasConfigFile: t.sourceType === 'external' ? true : t.hasConfigFile !== false,
+                    hasIndexPage: t.sourceType === 'external' ? false : t.hasIndexPage !== false
+                };
+                if (merged.sourceType !== 'external' && merged.hasConfigFile === false) return;
+                grid.appendChild(createCard(merged))
+            })
             applyFilters()
 
             handleHashAutoDownload()

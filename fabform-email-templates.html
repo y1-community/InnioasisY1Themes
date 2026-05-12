@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>FabForm Templates — Innioasis Y1 Themes</title>
+</head>
+
+<body>
+    <!--
+      Merge placeholders below use {{field_name}} style.
+      Replace with the exact variable syntax FabForm shows in its UI if different.
+    -->
+
+    <h1>FabForm Email Templates</h1>
+
+    <h2>Removal Notification (to maintainers)</h2>
+    <p><strong>Subject:</strong> [Y1 Themes · removal] {{theme_folder}} — verification required</p>
+    <pre>
+&lt;table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="font-family:Arial,sans-serif;background:#0f1117;padding:18px;"&gt;
+  &lt;tr&gt;&lt;td align="center"&gt;
+    &lt;table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#171b26;border:1px solid #2a3246;border-radius:12px;color:#eaf0ff;"&gt;
+      &lt;tr&gt;&lt;td style="padding:18px 20px;border-bottom:1px solid #283148;"&gt;
+        &lt;h2 style="margin:0;font-size:20px;"&gt;Theme removal request&lt;/h2&gt;
+        &lt;p style="margin:8px 0 0 0;color:#b7c2dc;"&gt;Author opt-out request needs verification.&lt;/p&gt;
+      &lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td style="padding:18px 20px;"&gt;
+        &lt;p style="margin:0 0 8px 0;"&gt;&lt;strong&gt;Folder:&lt;/strong&gt; {{theme_folder}}&lt;/p&gt;
+        &lt;p style="margin:0 0 8px 0;"&gt;&lt;strong&gt;Catalog title:&lt;/strong&gt; {{catalog_title}}&lt;/p&gt;
+        &lt;p style="margin:0 0 8px 0;"&gt;&lt;strong&gt;Catalog author:&lt;/strong&gt; {{catalog_author}}&lt;/p&gt;
+        &lt;p style="margin:0 0 8px 0;"&gt;&lt;strong&gt;Contact email:&lt;/strong&gt; &lt;a href="mailto:{{contact_email}}" style="color:#8dc2ff;"&gt;{{contact_email}}&lt;/a&gt;&lt;/p&gt;
+        &lt;p style="margin:0 0 8px 0;"&gt;&lt;strong&gt;Blacklist preference:&lt;/strong&gt; {{blacklist_opt_out}}&lt;/p&gt;
+        &lt;p style="margin:0 0 8px 0;"&gt;&lt;strong&gt;Requester:&lt;/strong&gt; {{requester_name}}&lt;/p&gt;
+        &lt;p style="margin:0 0 12px 0;"&gt;&lt;strong&gt;Reason:&lt;/strong&gt; {{reason}}&lt;/p&gt;
+        &lt;p style="margin:0 0 14px 0;"&gt;&lt;a href="{{pr_url}}" style="display:inline-block;background:#3673ff;color:#fff;text-decoration:none;padding:10px 14px;border-radius:8px;"&gt;Open PR&lt;/a&gt;&lt;/p&gt;
+      &lt;/td&gt;&lt;/tr&gt;
+    &lt;/table&gt;
+  &lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;
+    </pre>
+
+    <h2>Removal Auto-response (to author)</h2>
+    <p><strong>Subject:</strong> We received your removal request for {{catalog_title}}</p>
+    <pre>
+&lt;table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="font-family:Arial,sans-serif;background:#0f1117;padding:18px;"&gt;
+  &lt;tr&gt;&lt;td align="center"&gt;
+    &lt;table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#171b26;border:1px solid #2a3246;border-radius:12px;color:#eaf0ff;"&gt;
+      &lt;tr&gt;&lt;td style="padding:18px 20px;border-bottom:1px solid #283148;"&gt;
+        &lt;h2 style="margin:0;font-size:20px;"&gt;Removal request received&lt;/h2&gt;
+      &lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td style="padding:18px 20px;"&gt;
+        &lt;p style="margin:0 0 10px 0;"&gt;We're sorry to hear that you would like &lt;strong&gt;{{catalog_title}}&lt;/strong&gt; to be removed from the Y1 themes gallery.&lt;/p&gt;
+        &lt;p style="margin:0 0 10px 0;"&gt;We'll be in touch soon to verify that you are the theme's author and, once confirmed, we will remove your theme.&lt;/p&gt;
+        &lt;p style="margin:0 0 10px 0;"&gt;If you requested it, we can also blacklist future re-uploads of this package.&lt;/p&gt;
+        &lt;p style="margin:0 0 10px 0;"&gt;&lt;strong&gt;Track request:&lt;/strong&gt; &lt;a href="{{pr_url}}" style="color:#8dc2ff;"&gt;{{pr_url}}&lt;/a&gt;&lt;/p&gt;
+        &lt;p style="margin:0 0 12px 0;"&gt;If you believe the content in the theme is illegal, harmful, or otherwise abusive, please report it so it can be reviewed.&lt;/p&gt;
+        &lt;p style="margin:0 0 12px 0;"&gt;
+          &lt;a href="https://themes.innioasis.app/report-theme.html?folder={{theme_folder}}&amp;title={{catalog_title}}&amp;author={{catalog_author}}&amp;issue_category=illegal_or_harmful&amp;ref=https%3A%2F%2Fthemes.innioasis.app%2Ftheme.html%3Ftheme%3D{{theme_folder}}" style="display:inline-block;background:#f39b2f;color:#0f1117;text-decoration:none;padding:10px 14px;border-radius:8px;font-weight:bold;"&gt;Report Theme&lt;/a&gt;
+        &lt;/p&gt;
+      &lt;/td&gt;&lt;/tr&gt;
+    &lt;/table&gt;
+  &lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;
+    </pre>
+
+    <h2>Report Notification (to maintainers)</h2>
+    <p><strong>Subject:</strong> [Y1 Themes · report] {{issue_category}} — {{theme_folder}}</p>
+    <pre>
+&lt;table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="font-family:Arial,sans-serif;background:#0f1117;padding:18px;"&gt;
+  &lt;tr&gt;&lt;td align="center"&gt;
+    &lt;table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#171b26;border:1px solid #2a3246;border-radius:12px;color:#eaf0ff;"&gt;
+      &lt;tr&gt;&lt;td style="padding:18px 20px;border-bottom:1px solid #283148;"&gt;
+        &lt;h2 style="margin:0;font-size:20px;"&gt;Theme report received&lt;/h2&gt;
+      &lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td style="padding:18px 20px;"&gt;
+        &lt;p style="margin:0 0 8px 0;"&gt;&lt;strong&gt;Type:&lt;/strong&gt; {{issue_category}}&lt;/p&gt;
+        &lt;p style="margin:0 0 8px 0;"&gt;&lt;strong&gt;Folder:&lt;/strong&gt; {{theme_folder}}&lt;/p&gt;
+        &lt;p style="margin:0 0 8px 0;"&gt;&lt;strong&gt;Title:&lt;/strong&gt; {{theme_title}}&lt;/p&gt;
+        &lt;p style="margin:0 0 8px 0;"&gt;&lt;strong&gt;Author:&lt;/strong&gt; {{theme_author}}&lt;/p&gt;
+        &lt;p style="margin:0 0 8px 0;"&gt;&lt;strong&gt;Reporter:&lt;/strong&gt; &lt;a href="mailto:{{contact_email}}" style="color:#8dc2ff;"&gt;{{contact_email}}&lt;/a&gt;&lt;/p&gt;
+        &lt;p style="margin:0 0 8px 0;"&gt;&lt;strong&gt;Page:&lt;/strong&gt; &lt;a href="{{page_url}}" style="color:#8dc2ff;"&gt;{{page_url}}&lt;/a&gt;&lt;/p&gt;
+        &lt;p style="margin:0 0 0 0;"&gt;&lt;strong&gt;Details:&lt;/strong&gt; {{details}}&lt;/p&gt;
+      &lt;/td&gt;&lt;/tr&gt;
+    &lt;/table&gt;
+  &lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;
+    </pre>
+
+    <h2>Report Auto-response (to reporter)</h2>
+    <p><strong>Subject:</strong> We received your report about {{theme_title}}</p>
+    <pre>
+&lt;table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="font-family:Arial,sans-serif;background:#0f1117;padding:18px;"&gt;
+  &lt;tr&gt;&lt;td align="center"&gt;
+    &lt;table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#171b26;border:1px solid #2a3246;border-radius:12px;color:#eaf0ff;"&gt;
+      &lt;tr&gt;&lt;td style="padding:18px 20px;border-bottom:1px solid #283148;"&gt;
+        &lt;h2 style="margin:0;font-size:20px;"&gt;Thanks — we received your report&lt;/h2&gt;
+      &lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td style="padding:18px 20px;"&gt;
+        &lt;p style="margin:0 0 8px 0;"&gt;We logged your report for review by maintainers.&lt;/p&gt;
+        &lt;p style="margin:0 0 8px 0;"&gt;&lt;strong&gt;Theme:&lt;/strong&gt; {{theme_title}} ({{theme_folder}})&lt;/p&gt;
+        &lt;p style="margin:0 0 8px 0;"&gt;&lt;strong&gt;Category:&lt;/strong&gt; {{issue_category}}&lt;/p&gt;
+        &lt;p style="margin:0;"&gt;We may contact you at {{contact_email}} if we need more detail.&lt;/p&gt;
+      &lt;/td&gt;&lt;/tr&gt;
+    &lt;/table&gt;
+  &lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;
+    </pre>
+</body>
+
+</html>

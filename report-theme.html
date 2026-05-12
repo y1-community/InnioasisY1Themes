@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Report a theme issue — Innioasis Y1</title>
+    <meta name="description" content="Report inappropriate content, copyright concerns, or other issues with a theme listed on the Innioasis Y1 gallery.">
+    <link rel="canonical" href="https://themes.innioasis.app/report-theme.html">
+    <link rel="icon" href="y1_illustration.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://innioasis.app/styles.css">
+    <style>
+        #nav-root {
+            display: none;
+        }
+
+        .gallery-topbar {
+            position: sticky;
+            top: 0;
+            z-index: 1200;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 14px;
+            background: #17191f;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .gallery-tabs {
+            display: inline-flex;
+            gap: 3px;
+            padding: 3px;
+            border-radius: 9px;
+            background: #101217;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            justify-self: center;
+            grid-column: 2;
+        }
+
+        .gallery-tab {
+            padding: 5px 12px;
+            border-radius: 7px;
+            color: #aeb6c5;
+            text-decoration: none;
+            font-size: 0.82rem;
+            font-weight: 600;
+            border: 1px solid transparent;
+            line-height: 1.1;
+        }
+
+        .gallery-tab:hover {
+            color: #d9e0ef;
+        }
+
+        .gallery-tab.active {
+            color: #ffffff;
+            background: #2a2f3a;
+            border-color: rgba(255, 255, 255, 0.18);
+            box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.12);
+        }
+
+        .topbar-search {
+            width: 100%;
+            padding: 8px 12px 8px 32px;
+            border-radius: 9px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: #222733;
+            color: #eaf0ff;
+            font-family: Inter, sans-serif;
+            outline: none;
+            font-size: 0.82rem;
+        }
+
+        .topbar-search-wrap {
+            position: relative;
+            width: 100%;
+            max-width: 360px;
+            justify-self: end;
+            grid-column: 3;
+        }
+
+        .topbar-search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8ea0bf;
+            font-size: 0.78rem;
+            pointer-events: none;
+        }
+
+        @media (max-width: 900px) {
+            .gallery-topbar {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .gallery-tabs {
+                justify-self: center;
+                grid-column: auto;
+            }
+
+            .topbar-search-wrap {
+                max-width: 360px;
+                justify-self: center;
+                grid-column: auto;
+            }
+        }
+
+        .wrap {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 2rem 1rem 3rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.25rem 1.35rem;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .row {
+            margin-bottom: 1rem;
+        }
+
+        .row label {
+            display: block;
+            margin-bottom: 0.35rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .row input[type="text"],
+        .row input[type="email"],
+        .row select,
+        .row textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 0.55rem 0.65rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: #1a1d26;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.95rem;
+        }
+
+        .row textarea {
+            min-height: 140px;
+            resize: vertical;
+        }
+
+        .hint {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            margin: 0.35rem 0 0 0;
+            line-height: 1.45;
+        }
+
+        .callout-ok {
+            border: 1px solid rgba(80, 200, 120, 0.45);
+            background: rgba(80, 200, 120, 0.1);
+            border-radius: 10px;
+            padding: 1rem 1.1rem;
+            margin-bottom: 1.25rem;
+            color: #d4f5df;
+        }
+
+        .callout-warn {
+            border: 1px solid rgba(255, 180, 80, 0.35);
+            background: rgba(255, 180, 80, 0.08);
+            border-radius: 10px;
+            padding: 0.85rem 1rem;
+            margin-bottom: 1rem;
+            color: #fdecc8;
+            font-size: 0.9rem;
+        }
+
+        .callout-info {
+            border: 1px solid rgba(100, 180, 255, 0.35);
+            background: rgba(70, 120, 220, 0.12);
+            border-radius: 10px;
+            padding: 0.85rem 1rem;
+            margin-bottom: 1rem;
+            color: #dce8ff;
+            font-size: 0.9rem;
+        }
+
+        .cta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-top: 0.8rem;
+        }
+
+        /*
+          FabForm field names (configure the same keys in your FabForm dashboard so emails are readable):
+          contact_email, theme_folder, theme_title, theme_author, issue_category, details, page_url
+        */
+    </style>
+</head>
+
+<body>
+    <div id="nav-root"></div>
+    <div class="gallery-topbar">
+        <div aria-hidden="true"></div>
+        <div class="gallery-tabs" aria-label="Site sections">
+            <a class="gallery-tab" href="https://y1-themes.vercel.app">Editor</a>
+            <a class="gallery-tab" href="https://themes.innioasis.app/index.html">Gallery</a>
+            <a class="gallery-tab" href="https://themes.innioasis.app/upload.html">Upload</a>
+        </div>
+        <form class="topbar-search-wrap" action="https://themes.innioasis.app/index.html" method="get">
+            <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
+            <input id="global-theme-search" name="q" class="topbar-search" type="search" placeholder="&#128269;" aria-label="Search themes">
+        </form>
+    </div>
+
+    <div class="wrap">
+        <header style="margin-bottom:1.25rem;">
+            <h1 style="margin:0 0 0.5rem 0;">Report a theme issue</h1>
+            <p class="hint" style="margin:0;">Use this form for concerns about a specific gallery theme (for example inappropriate imagery, copyright, harmful files, or misleading credits). If you are the author and want your own theme removed, choose the opt-out reason and we will route you to the removal request flow.</p>
+        </header>
+
+        <div id="report-sent-banner" class="callout-ok" style="display:none;" role="status">
+            <strong>Thanks — your report was sent.</strong> If you left an email address, you should receive a short confirmation from our form provider. We cannot always reply individually.
+        </div>
+
+        <div class="callout-warn">
+            <strong>Author opt-out is supported.</strong> If you do not want your theme listed here, select <strong>“I don’t want my theme on here”</strong> in report type. We will send you directly to the removal request for verification.
+        </div>
+
+        <div id="report-guidance" class="callout-info" hidden></div>
+
+        <div id="report-optout-panel" class="card" hidden>
+            <h3 style="margin-top:0;">Author removal route</h3>
+            <p class="hint" style="margin:0.4rem 0 0.7rem 0;">This report type is for author opt-out, so we moved you to the verified removal flow.</p>
+            <p id="optout-status" class="hint" style="margin:0;"></p>
+            <div class="cta-row">
+                <a id="optout-remove-link" class="btn btn-primary" style="font-weight:normal;" href="https://themes.innioasis.app/upload.html?mode=remove"><i class="fa-solid fa-trash-can" style="margin-right:6px;"></i>Open Removal Request</a>
+                <a id="optout-report-link" class="btn" style="text-decoration:none;" href="https://themes.innioasis.app/report-theme.html">Stay on report form</a>
+            </div>
+        </div>
+
+        <div class="card" id="report-form-card">
+            <form id="report-form" action="https://fabform.io/f/-OtVqbq" method="post">
+                <input type="hidden" name="_redirect" value="https://themes.innioasis.app/report-theme.html?sent=1" />
+                <input type="hidden" name="page_url" id="field-page-url" value="" />
+
+                <div class="row">
+                    <label for="field-contact-email">Your email <span style="font-weight:500;color:var(--text-secondary)">(required)</span></label>
+                    <input id="field-contact-email" name="contact_email" type="email" required maxlength="320" autocomplete="email" placeholder="you@example.com" />
+                    <p class="hint">So we can follow up if we need more detail. We do not publish your address.</p>
+                </div>
+
+                <div class="row">
+                    <label for="field-theme-folder">Theme folder (repository path)</label>
+                    <input id="field-theme-folder" name="theme_folder" type="text" required maxlength="200" placeholder="e.g. AppleMusic" />
+                </div>
+
+                <div class="row">
+                    <label for="field-theme-title">Theme title (as shown in the gallery)</label>
+                    <input id="field-theme-title" name="theme_title" type="text" maxlength="300" placeholder="Title from the theme page" />
+                </div>
+
+                <div class="row">
+                    <label for="field-theme-author">Author / credit line</label>
+                    <input id="field-theme-author" name="theme_author" type="text" maxlength="300" placeholder="Author shown on the theme page" />
+                </div>
+
+                <div class="row">
+                    <label for="field-issue-category">What kind of issue is this?</label>
+                    <select id="field-issue-category" name="issue_category" required>
+                        <option value="">Choose one…</option>
+                        <option value="author_opt_out">I don’t want my theme on here (author opt-out)</option>
+                        <option value="illegal_or_harmful">Illegal/harmful content concern</option>
+                        <option value="inappropriate_content">Inappropriate or offensive content</option>
+                        <option value="copyright_ip">Copyright or trademark / IP concern</option>
+                        <option value="malware_suspicious">Malware, phishing, or suspicious files</option>
+                        <option value="impersonation">Impersonation, harassment, or hate</option>
+                        <option value="misleading">Spam, scam, or misleading listing</option>
+                        <option value="other">Other (explain below)</option>
+                    </select>
+                </div>
+
+                <div class="row">
+                    <label for="field-details">Please explain</label>
+                    <textarea id="field-details" name="details" required maxlength="8000" minlength="20" placeholder="Describe what is wrong and, if relevant, which files or screenshots on the theme page are involved."></textarea>
+                    <p class="hint">Minimum 20 characters. Be specific — it helps maintainers act faster.</p>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="font-weight:normal;">
+                    <i class="fa-solid fa-paper-plane" style="margin-right:6px;"></i>Send report
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://innioasis.app/nav.js"></script>
+    <script>
+        (function () {
+            const params = new URLSearchParams(window.location.search || "");
+            if (params.get("sent") === "1") {
+                const b = document.getElementById("report-sent-banner");
+                if (b) b.style.display = "block";
+            }
+            const folder = (params.get("folder") || "").trim();
+            const title = (params.get("title") || "").trim();
+            const author = (params.get("author") || "").trim();
+            const ref = (params.get("ref") || "").trim();
+            const issueCategory = (params.get("issue_category") || "").trim();
+            const details = (params.get("details") || "").trim();
+
+            const form = document.getElementById("report-form");
+            const formCard = document.getElementById("report-form-card");
+            const issueSelect = document.getElementById("field-issue-category");
+            const detailsEl = document.getElementById("field-details");
+            const elFolder = document.getElementById("field-theme-folder");
+            const elTitle = document.getElementById("field-theme-title");
+            const elAuthor = document.getElementById("field-theme-author");
+            const elPage = document.getElementById("field-page-url");
+            const guidance = document.getElementById("report-guidance");
+            const optoutPanel = document.getElementById("report-optout-panel");
+            const optoutStatus = document.getElementById("optout-status");
+            const optoutRemoveLink = document.getElementById("optout-remove-link");
+            const optoutReportLink = document.getElementById("optout-report-link");
+            if (elFolder && folder) elFolder.value = folder;
+            if (elTitle && title) elTitle.value = title;
+            if (elAuthor && author) elAuthor.value = author;
+            if (issueSelect && issueCategory) issueSelect.value = issueCategory;
+            if (detailsEl && details) detailsEl.value = details.slice(0, 8000);
+            if (elPage) {
+                const page = ref && /^https?:\/\//i.test(ref) ? ref : (window.location.origin + window.location.pathname + (window.location.search || ""));
+                elPage.value = page.split("#")[0];
+            }
+
+            const hasTheme = !!folder;
+            const removeUrl = hasTheme ?
+                `https://themes.innioasis.app/upload.html?mode=remove&folder=${encodeURIComponent(folder)}` :
+                "https://themes.innioasis.app/upload.html?mode=remove";
+            if (optoutRemoveLink) optoutRemoveLink.href = removeUrl;
+            if (optoutReportLink) {
+                optoutReportLink.href = hasTheme ?
+                    `https://themes.innioasis.app/report-theme.html?folder=${encodeURIComponent(folder)}&title=${encodeURIComponent(title)}&author=${encodeURIComponent(author)}&ref=${encodeURIComponent(ref)}` :
+                    "https://themes.innioasis.app/report-theme.html";
+            }
+
+            function updateGuidance(category) {
+                if (!guidance) return;
+                if (!category) {
+                    guidance.hidden = true;
+                    guidance.textContent = "";
+                    return;
+                }
+                const map = {
+                    illegal_or_harmful: "If you believe content is illegal or harmful, include specific file names/screenshots and why it is harmful so maintainers can escalate quickly.",
+                    malware_suspicious: "For suspicious files, explain exactly what looked unsafe and where you saw it.",
+                    copyright_ip: "For copyright/trademark claims, include the original source and rights context.",
+                    author_opt_out: "Author opt-out requests must go through verified removal. We will route you now."
+                };
+                const text = map[category] || "Please provide clear details so maintainers can review quickly.";
+                guidance.hidden = false;
+                guidance.textContent = text;
+            }
+
+            function routeOptOutIfNeeded(category) {
+                const isOptOut = category === "author_opt_out";
+                if (!isOptOut) {
+                    if (formCard) formCard.hidden = false;
+                    if (optoutPanel) optoutPanel.hidden = true;
+                    return;
+                }
+                if (formCard) formCard.hidden = true;
+                if (optoutPanel) optoutPanel.hidden = false;
+                if (optoutStatus) {
+                    optoutStatus.textContent = hasTheme ?
+                        "Opening the removal request for this theme now..." :
+                        "Theme folder was not prefilled. Open a theme card and use its removal link for a prefilled request.";
+                }
+                if (hasTheme) {
+                    setTimeout(function () {
+                        window.location.assign(removeUrl);
+                    }, 750);
+                }
+            }
+
+            if (issueSelect) {
+                issueSelect.addEventListener("change", function () {
+                    const cat = String(issueSelect.value || "").trim();
+                    updateGuidance(cat);
+                    routeOptOutIfNeeded(cat);
+                });
+                const initialCat = String(issueSelect.value || "").trim();
+                updateGuidance(initialCat);
+                routeOptOutIfNeeded(initialCat);
+            }
+
+            if (form) {
+                form.addEventListener("submit", function (e) {
+                    const cat = String(issueSelect && issueSelect.value || "").trim();
+                    if (cat === "author_opt_out") {
+                        e.preventDefault();
+                        routeOptOutIfNeeded(cat);
+                    }
+                });
+            }
+
+            const search = document.getElementById("global-theme-search");
+            if (search) {
+                search.addEventListener("keydown", function (e) {
+                    if (e.key !== "Enter") return;
+                    e.preventDefault();
+                    var q = String(search.value || "").trim();
+                    var url = q ? "https://themes.innioasis.app/index.html?q=" + encodeURIComponent(q) : "https://themes.innioasis.app/index.html";
+                    window.location.href = url;
+                });
+            }
+        })();
+    </script>
+</body>
+
+</html>

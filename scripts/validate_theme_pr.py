@@ -2,13 +2,17 @@
 """Validate PR contents for automatic theme-folder merging.
 
 Rules:
-- Only added files are allowed (no modifications, deletions, renames).
+- **Additive PRs (gallery ZIP uploader):** only added files (no modifications, deletions, renames).
+- **Metadata-only PRs:** only modified files; may change ``themes.json`` listing fields
+  (``name``, ``author``, ``authorUrl``) and/or one or more existing ``ThemeName/config.json``
+  files (see ``THEMES_METADATA_AUTO_MERGE_MAX_FOLDERS``). Mixed add+modify PRs are rejected.
 - All changes must be at the repository root (static site + zips live there).
 - Zip uploads must be <name>.zip at repo root (no path segments), except optional
   gallery upload sidecar ``<same-path>.meta.json`` (i.e. ``*.zip.meta.json``) added
   alongside the same PR's ``*.zip`` (see theme-upload-handler).
-- Non-zip file changes must be under <newThemeFolder>/... only (root sidecars only
-  as above).
+- Other **new** single-segment root files (e.g. OS junk next to a zip) are ignored for
+  auto-merge validation unless they use a blocked extension or are a stray ``config.json``.
+- Non-zip **theme** additions must be under ``<newThemeFolder>/...`` only.
 - Dangerous/disallowed files are blocked.
 - New direct theme folders must include config.json + at least one image file.
 - Added zip files are allowed and validated:
@@ -35,6 +39,7 @@ Rules:
 from __future__ import annotations
 
 import json
+import os
 import re
 import io
 import subprocess
@@ -44,8 +49,9 @@ from pathlib import PurePosixPath
 from typing import Any
 import zipfile
 
+import zip_theme_utils as ztu
 
-IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"}
+
 # Site root = repository root. Diff paths are repo-relative.
 THEMES_PREFIX = ""
 # First path segment for folder additions — block infra / tooling dirs.
@@ -93,8 +99,7 @@ def _run(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
 
 
 def _looks_like_image(path_or_value: str) -> bool:
-    suffix = Path(path_or_value.split("?", 1)[0].split("#", 1)[0]).suffix.lower()
-    return suffix in IMAGE_EXTENSIONS
+    return ztu.looks_like_image(path_or_value)
 
 
 def _is_blocked_file(path_value: str) -> bool:
@@ -307,7 +312,8 @@ def _inner_themes_from_zip_blob(blob: bytes, *, zip_stem: str) -> list[dict[str,
         return out
     with archive:
         names = [n for n in archive.namelist() if n and not n.endswith("/")]
-        theme_keys = _zip_theme_keys(names)
+        names_t = ztu.filter_zip_names_for_theme_logic(names)
+        theme_keys = ztu.zip_theme_keys(names_t)
         seen_folder: set[str] = set()
         for key in theme_keys:
             inner = zip_stem if key == "." else key
@@ -504,7 +510,8 @@ def _zip_title_impersonation_scan(
         return errors
     with archive:
         names = [n for n in archive.namelist() if n and not n.endswith("/")]
-        theme_keys = _zip_theme_keys(names)
+        names_t = ztu.filter_zip_names_for_theme_logic(names)
+        theme_keys = ztu.zip_theme_keys(names_t)
         seen: set[str] = set()
         for key in theme_keys:
             if key == ".":
@@ -608,44 +615,6 @@ def _is_safe_zip_member(member_name: str) -> bool:
     return True
 
 
-def _zip_theme_keys(entry_names: list[str]) -> list[str]:
-    keys: list[str] = []
-    for name in entry_names:
-        path = PurePosixPath(name)
-        if path.name != "config.json":
-            continue
-        parent = str(path.parent)
-        keys.append("." if parent in {"", "."} else parent)
-    return keys
-
-
-def _zip_other_theme_prefixes(theme_keys: list[str], theme_key: str) -> list[str]:
-    """Path prefixes (``other/``) belonging to sibling themes inside the same archive."""
-    return [f"{k}/" for k in theme_keys if k != theme_key]
-
-
-def _zip_has_image_file(entry_names: list[str], theme_key: str, *, theme_keys: list[str]) -> bool:
-    if theme_key == ".":
-        block = _zip_other_theme_prefixes(theme_keys, ".")
-        for name in entry_names:
-            if any(name.startswith(p) for p in block):
-                continue
-            if _looks_like_image(name):
-                return True
-        return False
-
-    prefix = f"{theme_key}/"
-    for name in entry_names:
-        if not name.startswith(prefix):
-            continue
-        rel = name[len(prefix) :]
-        if not rel:
-            continue
-        if _looks_like_image(rel):
-            return True
-    return False
-
-
 def _validate_zip_blob(path: str, blob: bytes) -> list[str]:
     errors: list[str] = []
     try:
@@ -668,13 +637,17 @@ def _validate_zip_blob(path: str, blob: bytes) -> list[str]:
         if errors:
             return errors
 
-        theme_keys = _zip_theme_keys(names)
+        names_t = ztu.filter_zip_names_for_theme_logic(names)
+        theme_keys = ztu.zip_theme_keys(names_t)
         if not theme_keys:
-            return [f"{path} must contain at least one theme folder with config.json."]
+            return [
+                f"{path} must contain at least one config.json (at zip root or under a theme subfolder)."
+            ]
 
-        base_names = [("__ZIP_ROOT__" if k == "." else PurePosixPath(k).name) for k in theme_keys]
-        if len(set(base_names)) != len(base_names):
-            return [f"{path} contains duplicate theme folder names; each theme folder must be unique."]
+        zip_stem = PurePosixPath(path).stem
+        errors.extend(ztu.zip_inner_folder_collision_errors(theme_keys, zip_stem, zip_label=path))
+        if errors:
+            return errors
 
         for key in theme_keys:
             config_entry = "config.json" if key == "." else f"{key}/config.json"
@@ -695,11 +668,133 @@ def _validate_zip_blob(path: str, blob: bytes) -> list[str]:
                 errors.append(f"{path} {config_entry} must be a JSON object.")
                 continue
 
-            if not _zip_has_image_file(names, key, theme_keys=theme_keys):
+            if not ztu.zip_has_image_file(names_t, key, theme_keys=theme_keys):
                 scope = "zip root" if key == "." else f"{key}/"
                 errors.append(f"{path} {scope} must include at least one image file.")
             if not _config_has_image_refs(config):
                 errors.append(f"{path} {config_entry} must reference at least one image asset.")
+
+    return errors
+
+
+METADATA_LISTING_KEYS = frozenset({"name", "author", "authorUrl"})
+
+
+def _load_themes_json_themes(rev: str) -> list[Any]:
+    try:
+        raw = _git_blob_text(f"{rev}:themes.json")
+        data = json.loads(raw)
+    except (subprocess.CalledProcessError, json.JSONDecodeError):
+        return []
+    themes = data.get("themes") if isinstance(data, dict) else None
+    return themes if isinstance(themes, list) else []
+
+
+def _theme_rows_by_folder(themes: list[Any]) -> dict[str, dict[str, Any]]:
+    out: dict[str, dict[str, Any]] = {}
+    for e in themes:
+        if not isinstance(e, dict):
+            continue
+        f = e.get("folder")
+        if isinstance(f, str) and f.strip():
+            out[f.strip()] = dict(e)
+    return out
+
+
+def _themes_json_metadata_allowed(
+    base_map: dict[str, dict[str, Any]],
+    pr_map: dict[str, dict[str, Any]],
+) -> tuple[bool, str]:
+    if set(base_map) != set(pr_map):
+        return False, "themes.json folder keys must not change for metadata-only PRs."
+    for folder, be in base_map.items():
+        pe = pr_map[folder]
+        for k, pv in pe.items():
+            if k not in be or be[k] != pv:
+                if k not in METADATA_LISTING_KEYS:
+                    return False, (
+                        f"themes.json entry {folder!r} may only change keys "
+                        f"{sorted(METADATA_LISTING_KEYS)} on metadata-only PRs."
+                    )
+    return True, ""
+
+
+def _validate_metadata_only_pr(
+    base_sha: str,
+    pr_ref: str,
+    parsed: list[tuple[str, str]],
+    *,
+    catalog_title_rows: list[dict[str, Any]],
+) -> list[str]:
+    errors: list[str] = []
+    paths = [p for _, p in parsed]
+    theme_config_paths: list[str] = []
+    for p in paths:
+        if p == "themes.json":
+            continue
+        parts = p.split("/")
+        if len(parts) != 2 or parts[1].lower() != "config.json":
+            errors.append(
+                "Metadata-only auto-merge only supports themes.json and paths of the form "
+                f"ThemeName/config.json (got {p!r})."
+            )
+            return errors
+        folder = parts[0]
+        composite = f"{THEMES_PREFIX}{folder}" if THEMES_PREFIX else folder
+        if folder.startswith(".") or folder in RESERVED_ROOT_SEGMENTS:
+            errors.append(f"Metadata path not allowed: {p!r}")
+            return errors
+        if not _folder_exists_in_base(base_sha, composite):
+            errors.append(f"`{p}` is not an existing theme folder on the base branch.")
+            return errors
+        theme_config_paths.append(p)
+
+    if not theme_config_paths and "themes.json" not in paths:
+        errors.append("Metadata-only PR must include themes.json and/or one ThemeName/config.json.")
+        return errors
+
+    folders = {p.split("/")[0] for p in theme_config_paths}
+    max_folders = int(os.environ.get("THEMES_METADATA_AUTO_MERGE_MAX_FOLDERS", "20"))
+    if max_folders > 0 and len(folders) > max_folders:
+        errors.append(
+            f"Metadata-only auto-merge allows at most {max_folders} theme folder(s) per PR "
+            f"(got {len(folders)}). Split the change or raise THEMES_METADATA_AUTO_MERGE_MAX_FOLDERS."
+        )
+        return errors
+
+    if "themes.json" in paths:
+        base_map = _theme_rows_by_folder(_load_themes_json_themes(base_sha))
+        pr_map = _theme_rows_by_folder(_load_themes_json_themes(pr_ref))
+        ok, msg = _themes_json_metadata_allowed(base_map, pr_map)
+        if not ok:
+            errors.append(msg)
+
+    for p in theme_config_paths:
+        folder = p.split("/")[0]
+        try:
+            raw = _git_blob_text(f"{pr_ref}:{p}")
+            config = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            errors.append(f"{p} is invalid JSON: {exc}")
+            continue
+        except subprocess.CalledProcessError:
+            errors.append(f"Unable to read {p} from PR head.")
+            continue
+        if not isinstance(config, dict):
+            errors.append(f"{p} must be a JSON object.")
+            continue
+        if not _config_has_image_refs(config):
+            errors.append(f"{p} must reference at least one image asset after edits.")
+            continue
+        errors.extend(
+            _title_impersonation_errors(
+                inner_folder=folder,
+                config=config,
+                meta={},
+                catalog_title_rows=catalog_title_rows,
+                context=f"Metadata PR {p}",
+            )
+        )
 
     return errors
 
@@ -733,6 +828,31 @@ def main() -> int:
             continue
         parsed.append((parts[0].strip(), parts[1].strip()))
 
+    if errors:
+        return _fail(errors)
+
+    if parsed and all(s == "M" for s, _ in parsed):
+        meta_errs = _validate_metadata_only_pr(
+            base_sha, pr_ref, parsed, catalog_title_rows=catalog_title_rows
+        )
+        if meta_errs:
+            return _fail(meta_errs)
+        print(
+            "Metadata-only validation passed for "
+            f"{sum(1 for _, p in parsed if p.endswith('/config.json'))} config.json update(s) "
+            f"and themes.json={'yes' if any(p == 'themes.json' for _, p in parsed) else 'no'}."
+        )
+        return 0
+
+    if any(s != "A" for s, _ in parsed):
+        return _fail(
+            [
+                "Auto-merge supports only (a) all-new files from the gallery ZIP uploader, "
+                "or (b) metadata-only PRs where every change is `M` (modified) on themes.json "
+                "and/or exactly one ThemeName/config.json — no mixed add/edit/delete."
+            ]
+        )
+
     root_added_zips: set[str] = set()
     for status, path in parsed:
         if status != "A":
@@ -745,6 +865,7 @@ def main() -> int:
 
     folder_state: dict[str, dict[str, Any]] = {}
     zip_paths: list[str] = []
+    existing_folder_blocked: set[str] = set()
     for row in parsed:
         status, path = row
 
@@ -779,7 +900,16 @@ def main() -> int:
                     f"(expected paired zip {zip_peer!r})."
                 )
                 continue
-            errors.append("Non-zip files must live inside a theme folder (path must contain '/').")
+            if lower == "config.json":
+                errors.append(
+                    "Root-level config.json is not a valid theme submission. "
+                    "Use ThemeName/config.json inside a new folder, or submit a .zip from the gallery uploader."
+                )
+                continue
+            if _is_blocked_file(rest):
+                errors.append(f"Blocked file type at repository root: {path!r}")
+                continue
+            # Ignore other stray single-segment additions (e.g. OS metadata next to a root zip).
             continue
 
         theme_name, rel_path = rest.split("/", 1)
