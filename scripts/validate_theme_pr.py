@@ -3,9 +3,9 @@
 
 Rules:
 - Only added files are allowed (no modifications, deletions, renames).
-- All changes must be under themes/ (site + zips live in that directory).
-- Zip uploads must be themes/<name>.zip (not nested paths).
-- Non-zip file changes must be under themes/<newThemeFolder>/... only.
+- All changes must be at the repository root (static site + zips live there).
+- Zip uploads must be <name>.zip at repo root (no path segments).
+- Non-zip file changes must be under <newThemeFolder>/... only.
 - Dangerous/disallowed files are blocked.
 - New direct theme folders must include config.json + at least one image file.
 - Added zip files are allowed and validated:
@@ -29,9 +29,10 @@ import zipfile
 
 
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"}
-THEMES_PREFIX = "themes/"
-# First path segment after themes/ — block infra / tooling dirs, not theme folders.
-RESERVED_UNDER_THEMES = {"scripts", "functions", "assets", ".github"}
+# Site root = repository root. Diff paths are repo-relative.
+THEMES_PREFIX = ""
+# First path segment for folder additions — block infra / tooling dirs.
+RESERVED_ROOT_SEGMENTS = {"scripts", "functions", "assets"}
 ZIP_EXTENSION = ".zip"
 BLOCKED_EXTENSIONS = {
     ".html",
@@ -270,29 +271,32 @@ def main() -> int:
             errors.append(f"Only added files are allowed. Found {status} on {path}.")
             continue
 
-        if not path.startswith(THEMES_PREFIX):
-            errors.append(f"Changes must be under {THEMES_PREFIX}: {path}")
-            continue
+        if THEMES_PREFIX:
+            if not path.startswith(THEMES_PREFIX):
+                errors.append(f"Changes must be under {THEMES_PREFIX}: {path}")
+                continue
 
         if _is_zip_file(path):
-            rel_zip = path[len(THEMES_PREFIX) :]
+            rel_zip = path[len(THEMES_PREFIX) :] if THEMES_PREFIX else path
             if "/" in rel_zip:
-                errors.append(f"Zip submissions must be directly under {THEMES_PREFIX}: {path}")
+                errors.append(
+                    f"Zip submissions must be at repository root (single path segment): {path}"
+                )
                 continue
             zip_paths.append(path)
             continue
 
-        rest = path[len(THEMES_PREFIX) :]
+        rest = path[len(THEMES_PREFIX) :] if THEMES_PREFIX else path
         if "/" not in rest:
-            errors.append(f"Non-zip files cannot sit directly under {THEMES_PREFIX}: {path}")
+            errors.append("Non-zip files must live inside a theme folder (path must contain '/').")
             continue
 
         theme_name, rel_path = rest.split("/", 1)
-        if theme_name.startswith(".") or theme_name in RESERVED_UNDER_THEMES:
-            errors.append(f"Changes under {THEMES_PREFIX}{theme_name}/ are not allowed for auto-merge.")
+        if theme_name.startswith(".") or theme_name in RESERVED_ROOT_SEGMENTS:
+            errors.append(f"Changes under {theme_name}/ are not allowed for auto-merge.")
             continue
 
-        composite = f"{THEMES_PREFIX}{theme_name}"
+        composite = f"{THEMES_PREFIX}{theme_name}" if THEMES_PREFIX else theme_name
         if _folder_exists_in_base(base_sha, composite):
             if composite not in existing_folder_blocked:
                 errors.append(

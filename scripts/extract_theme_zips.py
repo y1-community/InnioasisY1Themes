@@ -20,8 +20,8 @@ from typing import Any
 
 
 _GIT_ROOT = Path(__file__).resolve().parents[1]
-REPO_ROOT = _GIT_ROOT / "themes"
-EXCLUDED_DIRS = {".git", ".github", ".vscode", "__pycache__", "assets", "scripts", "functions"}
+REPO_ROOT = _GIT_ROOT
+EXCLUDED_DIRS = {".git", ".github", ".vscode", "__pycache__", "assets", "scripts", "functions", "themes"}
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"}
 BLOCKED_EXTENSIONS = {
     ".html",
@@ -158,7 +158,12 @@ def _extract_zip(zip_path: Path) -> tuple[int, int]:
                 continue
 
             folder_name = _destination_folder(zip_path, theme_root)
-            if not folder_name or folder_name.startswith("."):
+            reserved_dest = {"scripts", "functions", "assets", ".github", "themes"}
+            if (
+                not folder_name
+                or folder_name.startswith(".")
+                or folder_name in reserved_dest
+            ):
                 print(f"Skipping theme set {theme_root} in {zip_path}: invalid destination folder.")
                 skipped_count += 1
                 continue

@@ -12,14 +12,14 @@ you after your build step says "OK" (exit 0).
      linked to GitHub `InnioasisY1Themes`). Not a random Worker with the same name.
 
   2) **Settings → Builds & deployments → Build configuration** (or Edit build):
-       - Root directory:       themes   ← website root = repo themes/ (not "/")
+       - Root directory:       (empty)   ← website = repository root (index.html at repo root)
        - Build output directory:  .    ← publish everything under that root
        - Build command:        exit 0
        - Deploy command:       leave EMPTY — or `true` if the UI refuses blank (never wrangler)
        - Version command:      leave EMPTY if you see it
      Click **Save**.
 
-     Alternative (same result): Root = (empty), Build output = themes, Build = exit 0.
+     `wrangler.toml` uses `pages_build_output_dir = "."` so the published site matches the repo layout.
 
   3) **Settings → Environment variables**:
        - Add **GITHUB_UPLOAD_TOKEN** (secret) = a GitHub token that can create
@@ -43,11 +43,9 @@ above.
 In the Pages project: Settings → Builds & deployments → Build configuration
 
   Framework preset:        None
-  Root directory:          themes
+  Root directory:          (empty)
   Build output directory:  .
   Build command:           exit 0
-
-  Alternative: Root (empty), Build output themes, Build exit 0.
 
 Deploy command:           (leave COMPLETELY EMPTY)
   Git-connected Pages publishes the build output automatically after the build
@@ -57,9 +55,8 @@ Deploy command:           (leave COMPLETELY EMPTY)
        true
   (the shell command `true`, exits 0). Do not use npx wrangler deploy.
 
-  Keep only ONE wrangler file: **wrangler.toml at the repository root**. Delete
-  any extra wrangler.toml under themes/ — it confuses tooling and can imply a
-  wrong pages_build_output_dir when the build root is already themes/.
+  Keep only ONE wrangler file: **wrangler.toml at the repository root**. Do not add
+  a second wrangler.toml in a subfolder — it confuses tooling and Pages detection.
 
   Do NOT put any of these in the Deploy command field:
     wrangler pages deploy
@@ -80,23 +77,19 @@ Production env vars (Settings → Environment variables):
   GITHUB_OWNER          (optional) default y1-community
   GITHUB_REPO           (optional) default InnioasisY1Themes
   GITHUB_BASE_BRANCH    (optional) default main
-  GITHUB_ZIP_UPLOAD_DIR (optional) override zip path prefix; default is themes/
-      (upload-theme commits zips as themes/<timestamp>-<name>.zip)
+  GITHUB_ZIP_UPLOAD_DIR (optional) override zip path prefix; default is repo root
+      (upload-theme commits zips as <timestamp>-<name>.zip at repository root)
   MAX_UPLOAD_BYTES      (optional) default 26214400 (25 MiB)
 
-Custom domain — keep both CNAME files
---------------------------------------
-The repo keeps **two** `CNAME` files with the **same single hostname** (currently
-`themes.innioasis.app`):
+Custom domain — CNAME at repository root
+-----------------------------------------
+**`CNAME`** at the repository root should contain the bare hostname (currently
+`themes.innioasis.app`). It is included in the published site when **Root directory**
+is empty and **Build output** is `.`.
 
-  - **`CNAME`** at the repository root — usual GitHub convention.
-  - **`themes/CNAME`** — copied into the **published** tree when **Root directory**
-    is `themes` (recommended). **Do not delete** this copy; some tooling and
-    conventions expect the hostname inside the site output.
-
-If you change the public hostname, update **both** files to match, and attach the
-domain to the **Pages** project in Cloudflare (**Custom domains**). The dashboard
-still controls routing; the files keep the repo and build output aligned.
+If you change the public hostname, update **`CNAME`**, then attach the domain to
+the **Pages** project in Cloudflare (**Custom domains**). The dashboard still
+controls DNS/routing; the file keeps GitHub and the static output aligned.
 
 If your Pages project name is not "y1themes", edit the `name` field in wrangler.toml
 to match the dashboard (or rename the project to match the file).
@@ -163,8 +156,8 @@ You do **not** need to "repair" the token for this flow. You need to stop runnin
 `wrangler pages deploy` in the build pipeline.
 
 Last resort: create a **new** Pages project connected to the same repo, set only
-build `exit 0`, Root `themes` + output `.` (or output `themes` from repo root), leave deploy empty, and attach `themes.innioasis.app`
-after deleting it from the old project.
+build `exit 0`, Root (empty) + output `.`, leave deploy empty, and attach
+`themes.innioasis.app` after deleting it from the old project.
 
 Troubleshooting: "Upload failed (404)" on upload.html
 ------------------------------------------------------

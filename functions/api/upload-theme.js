@@ -66,7 +66,7 @@ export async function onRequestPost(context) {
     const zipDir =
       env.GITHUB_ZIP_UPLOAD_DIR !== undefined && env.GITHUB_ZIP_UPLOAD_DIR !== null && String(env.GITHUB_ZIP_UPLOAD_DIR).trim() !== ""
         ? String(env.GITHUB_ZIP_UPLOAD_DIR).trim()
-        : "themes";
+        : "";
 
     if (!token) {
       return jsonResponse({ error: "Server upload token is not configured." }, 500);

@@ -22,7 +22,7 @@ from typing import Any
 
 
 _GIT_ROOT = Path(__file__).resolve().parents[1]
-REPO_ROOT = _GIT_ROOT / "themes"
+REPO_ROOT = _GIT_ROOT
 THEMES_JSON_PATH = REPO_ROOT / "themes.json"
 THEME_TEMPLATE_PATH = REPO_ROOT / "theme.html"
 SITE_BASE_URL = "https://themes.innioasis.app"
