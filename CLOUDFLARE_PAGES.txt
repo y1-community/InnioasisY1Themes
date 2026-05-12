@@ -40,6 +40,27 @@ above.
 
 ---
 
+GitHub Pages + standalone Worker for uploads
+---------------------------------------------
+If the **static site** is on **GitHub Pages**, there is no server-side
+`/api/upload-theme` on that host. Deploy the Worker in **workers/theme-upload/**
+(see [workers/theme-upload/README.md](workers/theme-upload/README.md)):
+
+  cd workers/theme-upload
+  npx wrangler deploy
+
+Set **GITHUB_UPLOAD_TOKEN** on the Worker only (`wrangler secret put` or the
+dashboard). Do not put tokens in HTML or in the public repo.
+
+In **upload.html**, set the meta (no trailing slash on the URL):
+
+  <meta name="cf-pages-upload-api-origin" content="https://YOUR-WORKER.workers.dev" />
+
+The page POSTs to `https://<that-origin>/api/upload-theme`. You can attach a
+**Custom Domain** to the Worker (e.g. upload subdomain) and use that origin instead.
+
+---
+
 In the Pages project: Settings → Builds & deployments → Build configuration
 
   Framework preset:        None

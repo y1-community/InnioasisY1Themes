@@ -10,7 +10,7 @@
     <link rel="canonical" href="https://themes.innioasis.app/upload.html">
     <link rel="icon" href="y1_illustration.png">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
-    <!-- If this HTML is served from a non-Pages host, set content to your Pages origin (no trailing slash) so POST targets /api/upload-theme on Pages. -->
+    <!-- If this HTML is on GitHub Pages or another static host, set content to your upload API origin (Cloudflare Pages or standalone Worker; no trailing slash). POST goes to {origin}/api/upload-theme. -->
     <meta name="cf-pages-upload-api-origin" content="" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
@@ -118,8 +118,8 @@
         The server creates a GitHub PR, then existing validation + auto-merge workflows decide whether it can merge.
     </p>
     <p class="hint">
-        Uploads call <code>/api/upload-theme</code>, which exists only on <strong>Cloudflare Pages</strong> (the <code>functions/</code> worker).
-        If you see <strong>404</strong>, you are probably on a <code>*.workers.dev</code> static Worker — use your Pages <code>*.pages.dev</code> URL (or a domain attached to the <em>Pages</em> project), or set the <code>cf-pages-upload-api-origin</code> meta in this file to that Pages origin.
+        Uploads call <code>/api/upload-theme</code> on a server that has the upload API: <strong>Cloudflare Pages</strong> (<code>functions/</code>) or the standalone Worker in <code>workers/theme-upload/</code>.
+        On <strong>GitHub Pages</strong> (static only), set <code>cf-pages-upload-api-origin</code> in this file to your Worker or Pages origin (no trailing slash). If you see <strong>404</strong>, that meta is missing or wrong.
     </p>
 
     <div class="card">
@@ -164,7 +164,7 @@
     <div class="card">
         <h3>What happens next</h3>
         <ul>
-            <li>Your ZIP (or a ZIP built from your folder in the browser) is sent to the Cloudflare Pages Function (<code>/api/upload-theme</code>).</li>
+            <li>Your ZIP (or a ZIP built from your folder in the browser) is sent to the upload API (<code>/api/upload-theme</code> on Cloudflare Pages or the standalone Worker).</li>
             <li>The function creates an upload branch and opens a PR in <code>y1-community/InnioasisY1Themes</code>.</li>
             <li>PR validation checks for dangerous files and theme structure.</li>
             <li>If valid, auto-merge can complete and zip processing on <code>main</code> extracts theme folders.</li>

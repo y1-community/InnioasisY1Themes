@@ -1,0 +1,18 @@
+# Standalone Worker: theme ZIP upload API for GitHub Pages (or any static host).
+# Deploy from this directory: npx wrangler deploy
+# Do not merge this with the repo root wrangler.toml (that file is Pages-only).
+
+name = "y1-theme-upload"
+main = "src/index.js"
+compatibility_date = "2026-05-11"
+
+# Optional defaults (override in dashboard or via wrangler secret/var):
+# [vars]
+# GITHUB_OWNER = "y1-community"
+# GITHUB_REPO = "InnioasisY1Themes"
+# GITHUB_BASE_BRANCH = "main"
+# GITHUB_ZIP_UPLOAD_DIR = ""
+# MAX_UPLOAD_BYTES = "26214400"
+
+# Required secret (set after first deploy or before):
+#   npx wrangler secret put GITHUB_UPLOAD_TOKEN
