@@ -471,12 +471,27 @@
 
         function themeFileUrl(folderPath, relativePath) {
             const folderClean = String(folderPath || '').replace(/^\.\/+/, '').replace(/\/+$/, '');
-            const pathClean = String(relativePath || '').replace(/^\.\/+/, '').replace(/\\/g, '/');
+            const pathClean = normalizeConfigAssetPath(relativePath, folderClean);
             if (!pathClean) return '';
             const encodedPath = encodePathSegments(pathClean);
-            if (!folderClean) return encodedPath;
+            if (!folderClean) return `/${encodedPath}`;
             const encodedFolder = encodePathSegments(folderClean);
-            return `${encodedFolder}/${encodedPath}`;
+            return `/${encodedFolder}/${encodedPath}`;
+        }
+
+        function normalizeConfigAssetPath(rawPath, folderPath) {
+            let p = String(rawPath || '').trim().replace(/\\/g, '/');
+            p = p.replace(/^\.\/+/, '').replace(/^\/+/, '');
+            if (!p) return '';
+            const folder = String(folderPath || '').trim().replace(/\\/g, '/').replace(/^\.\/+/, '').replace(/\/+$/, '');
+            if (!folder) return p;
+            const lowP = p.toLowerCase();
+            const lowFolder = folder.toLowerCase();
+            if (lowP === lowFolder) return '';
+            if (lowP.startsWith(lowFolder + '/')) {
+                return p.slice(folder.length + 1);
+            }
+            return p;
         }
 
         function extractFilesFromConfig(cfg, folderPath) {
@@ -485,7 +500,7 @@
             const seen = new Set();
             const hasFileExt = (v) => /\.(png|jpe?g|gif|webp|bmp|svg|ttf|otf|woff2?|json|txt|md|ini)$/i.test(String(v || ''));
             const pushFile = (value) => {
-                const v = String(value || '').trim().replace(/\\/g, '/');
+                const v = normalizeConfigAssetPath(value, folderPath);
                 if (!v || v.includes('://') || !hasFileExt(v)) return;
                 const key = v.toLowerCase().replace(/^\.\/+/, '');
                 if (seen.has(key)) return;
@@ -581,6 +596,7 @@
             if (totalFiles === 0) throw new Error('No files found in the theme folder.');
 
             let downloadedFiles = 0;
+            let successfulFiles = 0;
 
             for (const file of fileEntries) {
                 try {
@@ -597,6 +613,7 @@
                     }
                     const blob = await fr.blob();
                     zip.file(file.path, blob);
+                    successfulFiles++;
                     downloadedFiles++;
                     progressCallbacks?.onProgress?.(`Downloading ${file.path} (${downloadedFiles}/${totalFiles})`, Math.round((downloadedFiles / totalFiles) * 80));
                 } catch (e) {
@@ -604,6 +621,10 @@
                     downloadedFiles++;
                     progressCallbacks?.onProgress?.(`Error ${file.path}`, Math.round((downloadedFiles / totalFiles) * 80));
                 }
+            }
+
+            if (successfulFiles === 0) {
+                throw new Error('No theme files could be downloaded. Please verify file paths in config.json.');
             }
 
             progressCallbacks?.onProgress?.('Generating ZIP...', 80);

@@ -228,12 +228,24 @@
             }
         }
 
+        .theme-preview-frame {
+            width: min(250px, 100%);
+            aspect-ratio: 1 / 1;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.04);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
         .theme-card img {
-            height: 140px;
+            width: 100%;
+            height: 100%;
             border-radius: 8px;
             transition: all 0.2s ease;
-            width: auto;
-            max-width: 250px;
+            object-fit: contain;
         }
 
         .theme-card img:hover {
@@ -1090,7 +1102,22 @@
         // =========================================================
         // CONFIG PARSER HELPER (No GitHub API)
         // =========================================================
-        function extractFilesFromConfig(configObj) {
+        function normalizeConfigAssetPath(rawPath, folderPath) {
+            let p = String(rawPath || '').trim().replace(/\\/g, '/');
+            p = p.replace(/^\.\/+/, '').replace(/^\/+/, '');
+            if (!p) return '';
+            const folder = String(folderPath || '').trim().replace(/\\/g, '/').replace(/^\.\/+/, '').replace(/\/+$/, '');
+            if (!folder) return p;
+            const lowP = p.toLowerCase();
+            const lowFolder = folder.toLowerCase();
+            if (lowP === lowFolder) return '';
+            if (lowP.startsWith(lowFolder + '/')) {
+                return p.slice(folder.length + 1);
+            }
+            return p;
+        }
+
+        function extractFilesFromConfig(configObj, folderPath) {
             const files = new Set();
             files.add('config.json'); // Always include the root config
 
@@ -1099,7 +1126,7 @@
                     if (obj[key] !== null && typeof obj[key] === 'object') {
                         traverse(obj[key]);
                     } else if (typeof obj[key] === 'string') {
-                        const val = obj[key].trim();
+                        const val = normalizeConfigAssetPath(obj[key], folderPath);
                         // Find any strings ending in common theme file extensions
                         if (/\.(png|jpe?g|gif|webp|bmp|ttf|otf|woff|json|txt|md)$/i.test(val)) {
                             files.add(val);
@@ -1109,6 +1136,16 @@
             }
             traverse(configObj);
             return Array.from(files);
+        }
+
+        function buildThemeFileUrl(folderPath, relativePath) {
+            const folder = String(folderPath || '').trim().replace(/\\/g, '/').replace(/^\.\/+/, '').replace(/\/+$/, '');
+            const normalized = normalizeConfigAssetPath(relativePath, folder);
+            if (!normalized) return '';
+            const encodedFolder = folder.split('/').filter(Boolean).map(seg => encodeURIComponent(seg)).join('/');
+            const encodedFile = normalized.split('/').filter(Boolean).map(seg => encodeURIComponent(seg)).join('/');
+            if (!encodedFile) return '';
+            return `./${encodedFolder ? `${encodedFolder}/` : ''}${encodedFile}`;
         }
 
         function createProgressUI(parent, oldButton, themeName) {
@@ -1210,9 +1247,10 @@
                 const config = await configRes.json();
 
                 // Generate list of files
-                const filesToInstall = extractFilesFromConfig(config);
+                const filesToInstall = extractFilesFromConfig(config, theme.folder);
                 let installedCount = 0;
                 const totalFiles = filesToInstall.length;
+                let installedSuccess = 0;
 
                 // Download and write each file
                 for (const file of filesToInstall) {
@@ -1220,7 +1258,12 @@
                         const percent = 5 + Math.round((installedCount / totalFiles) * 90);
                         progressUI.setProgress(percent, `Installing ${file}...`);
 
-                        const fileRes = await fetch(`./${theme.folder}/${file}`);
+                        const fileUrl = buildThemeFileUrl(theme.folder, file);
+                        if (!fileUrl) {
+                            installedCount++;
+                            continue;
+                        }
+                        const fileRes = await fetch(fileUrl);
                         if (!fileRes.ok) {
                             console.warn(`Missing file on server: ${file}`);
                             installedCount++;
@@ -1244,11 +1287,16 @@
                         const writable = await fileHandle.createWritable();
                         await writable.write(blob);
                         await writable.close();
+                        installedSuccess++;
 
                     } catch (e) {
                         console.warn(`Error installing ${file}:`, e);
                     }
                     installedCount++;
+                }
+
+                if (installedSuccess === 0) {
+                    throw new Error('No theme files could be installed. Please verify file paths in config.json.');
                 }
 
                 progressUI.setProgress(95, 'Finalizing...');
@@ -1298,21 +1346,28 @@
                 const config = await configRes.json();
 
                 // Determine files to download
-                const filesToDownload = extractFilesFromConfig(config);
+                const filesToDownload = extractFilesFromConfig(config, theme.folder);
                 const zip = new JSZip();
 
                 let downloadedCount = 0;
                 const totalFiles = filesToDownload.length;
+                let downloadedSuccess = 0;
 
                 for (const file of filesToDownload) {
                     try {
                         const percent = 5 + Math.round((downloadedCount / totalFiles) * 80);
                         progressUI.setProgress(percent, `Downloading ${file}...`);
 
-                        const fileRes = await fetch(`./${theme.folder}/${file}`);
+                        const fileUrl = buildThemeFileUrl(theme.folder, file);
+                        if (!fileUrl) {
+                            downloadedCount++;
+                            continue;
+                        }
+                        const fileRes = await fetch(fileUrl);
                         if (fileRes.ok) {
                             const blob = await fileRes.blob();
                             zip.file(file, blob); // JSZip automatically handles relative paths internally
+                            downloadedSuccess++;
                         } else {
                             console.warn(`Missing file on server: ${file}`);
                         }
@@ -1320,6 +1375,10 @@
                         console.warn(`Error downloading ${file}:`, e);
                     }
                     downloadedCount++;
+                }
+
+                if (downloadedSuccess === 0) {
+                    throw new Error('No theme files could be downloaded. Please verify file paths in config.json.');
                 }
 
                 progressUI.setProgress(85, 'Generating ZIP...');
@@ -1401,9 +1460,12 @@
             statusBadge.textContent = 'Already on your Y1';
             c.appendChild(statusBadge);
 
+            const previewFrame = document.createElement('div');
+            previewFrame.className = 'theme-preview-frame';
+
             const img = document.createElement('img');
             const metaScreenshot = String(theme.screenshot || '');
-            const metaLooksLikeCover = /cover[^/]*\.(png|jpe?g|gif|webp)$/i.test(metaScreenshot);
+            const metaLooksLikeCover = /over[^/]*\.(png|jpe?g|gif|webp)$/i.test(metaScreenshot);
             const folderImageCandidates = folderPath ? [
                 `${folderPath}/cover.jpg`,
                 `${folderPath}/cover.jpeg`,
@@ -1416,15 +1478,7 @@
                 `${folderPath}/cover_YS.png`,
                 `${folderPath}/cover_ys.jpg`,
                 `${folderPath}/cover_ys.jpeg`,
-                `${folderPath}/cover_ys.png`,
-                `${folderPath}/screenshot.png`,
-                `${folderPath}/screenshot.PNG`,
-                `${folderPath}/screenshot.jpg`,
-                `${folderPath}/screenshot.jpeg`,
-                `${folderPath}/screenshot1.png`,
-                `${folderPath}/screenshot2.png`,
-                `${folderPath}/3.png`,
-                `${folderPath}/1.png`
+                `${folderPath}/cover_ys.png`
             ] : [];
             const screenshotCandidates = [
                 metaLooksLikeCover ? theme.screenshot : '',
@@ -1433,7 +1487,6 @@
                 folderPath ? `./${folderPath}/cover.gif` : '',
                 folderPath ? `./${folderPath}/Cover.png` : '',
                 folderPath ? `./${folderPath}/COVER.png` : '',
-                metaLooksLikeCover ? '' : theme.screenshot,
                 'placeholder.png'
             ].filter(Boolean);
             let screenshotIdx = 0;
@@ -1445,6 +1498,7 @@
                 }
             };
             img.alt = safeText(theme.name);
+            previewFrame.appendChild(img);
 
             const n = document.createElement('a');
             n.className = 'theme-name';
@@ -1801,7 +1855,7 @@
                 } catch (e) {}
                 bd.append(dl, di);
             }
-            c.append(img, n, d, a, bd);
+            c.append(previewFrame, n, d, a, bd);
             if (theme.sourceType !== 'external' && folderPath) {
                 const corner = document.createElement('div');
                 corner.className = 'theme-card-corner-actions';
