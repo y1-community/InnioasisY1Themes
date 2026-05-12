@@ -167,6 +167,37 @@ export async function handleUploadPost(request, env) {
       `upload file ${zipPath}`
     );
 
+    /** Lowercase hyphenated token for disambiguating same theme folder name (see validate_theme_pr.py). */
+    const uploaderSlug = slugify(String(uploaderName || "").replace(/^u\//i, ""))
+      .replace(/_/g, "-")
+      .toLowerCase()
+      .replace(/[^a-z0-9-]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 40);
+    const metaPath = `${zipPath}.meta.json`;
+    const metaPayload = JSON.stringify(
+      {
+        uploaderName: uploaderName || "",
+        uploaderSlug: uploaderSlug || "",
+      },
+      null,
+      2
+    ) + "\n";
+    const metaB64 = toBase64(new TextEncoder().encode(metaPayload));
+    await ghJson(
+      `${apiBase}/contents/${metaPath.split("/").map(encodeURIComponent).join("/")}`,
+      token,
+      {
+        method: "PUT",
+        body: JSON.stringify({
+          message: `Upload metadata for ${originalName}`,
+          content: metaB64,
+          branch: branchName,
+        }),
+      },
+      `upload file ${metaPath}`
+    );
+
     const titlePieces = ["Theme submission"];
     if (themeName) titlePieces.push(`— ${themeName}`);
     const prTitle = titlePieces.join(" ");
@@ -177,7 +208,11 @@ export async function handleUploadPost(request, env) {
       uploaderName ? `- Submitted by: ${uploaderName}` : null,
       notes ? `- Note from submitter: ${notes}` : null,
       "",
-      "Maintainers will review this change. If the theme folder name already exists on `main`, auto-merge is skipped so nothing is overwritten without a human check.",
+      "**Auto-merge policy (GitHub Actions):**",
+      "- Merges only when `scripts/validate_theme_pr.py` passes.",
+      "- If your theme’s **folder name** matches an existing gallery theme (ignoring a leading `12345-` timestamp prefix) and the **author is the same** (or both unknown), this is treated as an **edit** — the PR stays open for manual review.",
+      "- If the **author differs**, rename the root folder inside the ZIP to end with your suffix, e.g. `MyTheme-yourhandle` (use the same slug style as your uploader / `theme_info.author`), then upload again — otherwise auto-merge is blocked.",
+      "- If another **ZIP on `main`** is still waiting to be extracted and claims the same folder identity, auto-merge is blocked until that archive is processed.",
     ]
       .filter(Boolean)
       .join("\n");

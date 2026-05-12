@@ -1,3 +1,12 @@
+# Merges only when scripts/validate_theme_pr.py exits 0. That script blocks auto-merge when:
+# - The PR is not strictly additive, or zips/files fail safety checks.
+# - A theme folder path already exists on the default branch, or another root ZIP still
+#   claims the same logical folder name (avoids races before extraction).
+# - themes.json identity matches (logical folder slug after stripping a leading timestamp;
+#   same author or both unknown => treated as edit). Different authors must use a
+#   suffixed folder name (e.g. ThemeName-handle) inside the ZIP.
+# - Catalog title (theme_info.title) matches an existing entry (normalized).
+
 name: Auto Merge New Theme PRs
 
 on:

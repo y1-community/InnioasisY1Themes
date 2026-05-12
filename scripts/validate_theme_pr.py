@@ -14,13 +14,23 @@ Rules:
   - zip must contain one or more theme folders, each with a unique folder name
   - each theme folder in zip must include config.json and image assets
   - config.json must reference at least one image asset
-- If a zip would extract into a folder name that already exists on the base branch,
-  auto-merge is blocked (PR stays open for manual review — no overwrite).
+- Identity / duplicate policy (auto-merge only when safe):
+  - Theme folders are compared by a logical slug: leading ``12345-`` timestamp prefix
+    is stripped, then case-folded (so ``WarCraft_3`` matches ``999-WarCraft_3``).
+  - If a zip on the default branch is still waiting to be extracted and claims the
+    same logical name, auto-merge is blocked (avoids parallel duplicate merges).
+  - If the logical name matches an existing themes.json entry and authors match
+    (or both missing), the change is treated as an edit — auto-merge disabled.
+  - If authors differ, the incoming folder must end with ``-<slug>`` where slug
+    comes from upload metadata or theme author (e.g. ``WarCraft_3-reapsv``);
+    otherwise auto-merge is disabled.
+- Catalog display title (theme_info.title) collisions still block auto-merge.
 """
 
 from __future__ import annotations
 
 import json
+import re
 import io
 import subprocess
 import sys
@@ -134,6 +144,374 @@ def _folder_exists_in_base(base_sha: str, folder: str) -> bool:
     return result.returncode == 0
 
 
+def _theme_folder_has_config_on_base(base_sha: str, folder: str) -> bool:
+    f = folder.strip()
+    if not f or f.startswith(".") or f in RESERVED_ROOT_SEGMENTS:
+        return False
+    return (
+        _run("git", "cat-file", "-e", f"{base_sha}:{f}/config.json", check=False).returncode == 0
+    )
+
+
+_TIMESTAMP_PREFIX_RE = re.compile(r"^\d+-")
+_SLUGIFY_NOISE_RE = re.compile(r"[^a-zA-Z0-9._-]+")
+
+
+def logical_theme_slug(folder: str) -> str:
+    """Normalize folder name for identity: strip one leading timestamp prefix, lowercase."""
+    name = folder.strip()
+    name = _TIMESTAMP_PREFIX_RE.sub("", name, count=1)
+    return name.lower()
+
+
+def _norm_author(value: str | None) -> str:
+    if not value or not str(value).strip():
+        return ""
+    s = " ".join(str(value).strip().lower().split())
+    if s.startswith("u/"):
+        s = s[2:].strip()
+    return s
+
+
+def _authors_equivalent(existing_norm: str, incoming_raw: str) -> bool:
+    inc = _norm_author(incoming_raw)
+    if not existing_norm and not inc:
+        return True
+    if not existing_norm or not inc:
+        return False
+    return existing_norm == inc
+
+
+def _slug_token(value: str) -> str:
+    """Match theme-upload-handler.js uploaderSlug normalization (hyphenated, <=40)."""
+    s = (value or "").strip()
+    s = re.sub(r"^u/", "", s, flags=re.I)
+    s = _SLUGIFY_NOISE_RE.sub("_", s).strip("_")[:120]
+    s = s.replace("_", "-").lower()
+    s = re.sub(r"[^a-z0-9-]+", "-", s)
+    s = re.sub(r"-+", "-", s).strip("-")
+    return s[:40]
+
+
+def _collect_slug_candidates(meta: dict[str, Any], config: dict[str, Any] | None) -> list[str]:
+    candidates: list[str] = []
+    uslug = meta.get("uploaderSlug")
+    if isinstance(uslug, str) and uslug.strip():
+        candidates.append(uslug.strip().lower())
+    uname = meta.get("uploaderName")
+    if isinstance(uname, str) and uname.strip():
+        t = _slug_token(uname.strip())
+        if t:
+            candidates.append(t)
+    if config:
+        for key in ("theme_info", "source_info"):
+            block = config.get(key)
+            if isinstance(block, dict):
+                auth = block.get("author")
+                if isinstance(auth, str) and auth.strip():
+                    t = _slug_token(auth.strip())
+                    if t:
+                        candidates.append(t)
+                break
+    out: list[str] = []
+    seen: set[str] = set()
+    for c in candidates:
+        if c and c not in seen:
+            seen.add(c)
+            out.append(c)
+    return out
+
+
+def _folder_has_disambiguator(inner_folder: str, slug_candidates: list[str]) -> bool:
+    low = inner_folder.lower()
+    for s in slug_candidates:
+        s2 = (s or "").strip().lower()
+        if s2 and low.endswith("-" + s2):
+            return True
+    return False
+
+
+def _read_upload_meta_pr(pr_ref: str, zip_path: str) -> dict[str, Any]:
+    meta_path = f"{zip_path}.meta.json"
+    try:
+        raw = _git_blob_text(f"{pr_ref}:{meta_path}")
+        data = json.loads(raw)
+        return data if isinstance(data, dict) else {}
+    except (subprocess.CalledProcessError, json.JSONDecodeError):
+        return {}
+
+
+def _read_config_author_base(base_sha: str, folder: str) -> str:
+    fp = f"{folder.strip()}/config.json"
+    try:
+        raw = _git_blob_text(f"{base_sha}:{fp}")
+        cfg = json.loads(raw)
+        if not isinstance(cfg, dict):
+            return ""
+        for key in ("theme_info", "source_info"):
+            block = cfg.get(key)
+            if isinstance(block, dict):
+                auth = block.get("author")
+                if isinstance(auth, str) and auth.strip():
+                    return auth.strip()
+    except (subprocess.CalledProcessError, json.JSONDecodeError):
+        return ""
+    return ""
+
+
+def _load_catalog_identity_rows(base_sha: str) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    try:
+        raw = _git_blob_text(f"{base_sha}:themes.json")
+        data = json.loads(raw)
+    except (subprocess.CalledProcessError, json.JSONDecodeError):
+        return rows
+    for entry in data.get("themes") or []:
+        if not isinstance(entry, dict):
+            continue
+        folder = entry.get("folder")
+        if not isinstance(folder, str) or not folder.strip():
+            continue
+        folder = folder.strip()
+        ath = entry.get("author")
+        author_s = ath.strip() if isinstance(ath, str) else ""
+        if not author_s:
+            author_s = _read_config_author_base(base_sha, folder)
+        rows.append(
+            {
+                "folder": folder,
+                "logical": logical_theme_slug(folder),
+                "author_norm": _norm_author(author_s),
+            }
+        )
+    return rows
+
+
+def _git_ls_root_filenames(base_sha: str) -> list[str]:
+    result = _run("git", "ls-tree", "--name-only", base_sha, check=False)
+    if result.returncode != 0:
+        return []
+    return [ln.strip() for ln in result.stdout.splitlines() if ln.strip()]
+
+
+def _inner_themes_from_zip_blob(blob: bytes, *, zip_stem: str) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
+    try:
+        archive = zipfile.ZipFile(io.BytesIO(blob))
+    except zipfile.BadZipFile:
+        return out
+    with archive:
+        names = [n for n in archive.namelist() if n and not n.endswith("/")]
+        theme_keys = _zip_theme_keys(names)
+        seen_folder: set[str] = set()
+        for key in theme_keys:
+            inner = zip_stem if key == "." else key
+            if inner in seen_folder:
+                continue
+            seen_folder.add(inner)
+            config_entry = "config.json" if key == "." else f"{key}/config.json"
+            config: dict[str, Any] | None = None
+            try:
+                raw_c = archive.read(config_entry).decode("utf-8")
+                parsed = json.loads(raw_c)
+                if isinstance(parsed, dict):
+                    config = parsed
+            except (KeyError, json.JSONDecodeError, UnicodeDecodeError):
+                pass
+            out.append({"folder": inner, "logical": logical_theme_slug(inner), "config": config})
+    return out
+
+
+def _pending_logical_slugs_from_root_zips(base_sha: str) -> set[str]:
+    slugs: set[str] = set()
+    for name in _git_ls_root_filenames(base_sha):
+        if "/" in name:
+            continue
+        if not name.lower().endswith(ZIP_EXTENSION):
+            continue
+        try:
+            blob = _git_blob_bytes(f"{base_sha}:{name}")
+        except subprocess.CalledProcessError:
+            continue
+        stem = PurePosixPath(name).stem
+        for item in _inner_themes_from_zip_blob(blob, zip_stem=stem):
+            slugs.add(item["logical"])
+    return slugs
+
+
+def _identity_policy_errors(
+    *,
+    base_sha: str,
+    inner_folder: str,
+    config: dict[str, Any] | None,
+    meta: dict[str, Any],
+    catalog_rows: list[dict[str, Any]],
+    pending_logical_slugs: set[str],
+    context: str,
+) -> list[str]:
+    errors: list[str] = []
+    logical = logical_theme_slug(inner_folder)
+    incoming_auth = ""
+    if config:
+        for key in ("theme_info", "source_info"):
+            block = config.get(key)
+            if isinstance(block, dict):
+                auth = block.get("author")
+                if isinstance(auth, str) and auth.strip():
+                    incoming_auth = auth.strip()
+                    break
+    if not incoming_auth.strip():
+        un = meta.get("uploaderName")
+        if isinstance(un, str) and un.strip():
+            incoming_auth = un.strip()
+
+    if _theme_folder_has_config_on_base(base_sha, inner_folder):
+        errors.append(
+            f"{context}: A theme folder named {inner_folder!r} already exists on the default branch. "
+            "Auto-merge disabled (assumed edit or duplicate path)."
+        )
+        return errors
+
+    if logical in pending_logical_slugs:
+        errors.append(
+            f"{context}: Another ZIP on the default branch already claims theme folder identity matching {inner_folder!r} "
+            "(after normalizing a leading timestamp). Wait for extraction or remove/rename that archive — "
+            "auto-merge disabled to avoid duplicate listings."
+        )
+        return errors
+
+    matches = [r for r in catalog_rows if r["logical"] == logical]
+    if not matches:
+        return errors
+
+    exist_author_norm = matches[0].get("author_norm") or ""
+
+    if _authors_equivalent(exist_author_norm, incoming_auth):
+        errors.append(
+            f"{context}: Theme folder {inner_folder!r} matches an existing gallery entry (same identity after "
+            "normalizing timestamps). Authors match or both are unknown — treated as an edit/update. "
+            "Auto-merge disabled; maintainers must review."
+        )
+        return errors
+
+    slug_cands = _collect_slug_candidates(meta, config)
+    if _folder_has_disambiguator(inner_folder, slug_cands):
+        return errors
+
+    hint = slug_cands[0] if slug_cands else "your-handle"
+    errors.append(
+        f"{context}: Folder {inner_folder!r} matches an existing theme credited to a different author. "
+        f"Rename the theme root folder to end with your suffix, e.g. {inner_folder}-{hint}, "
+        "then re-upload — auto-merge disabled."
+    )
+    return errors
+
+
+def _zip_title_catalog_collisions(base_names: set[str], blob: bytes) -> list[str]:
+    errors: list[str] = []
+    try:
+        archive = zipfile.ZipFile(io.BytesIO(blob))
+    except zipfile.BadZipFile:
+        return errors
+    with archive:
+        names = [n for n in archive.namelist() if n and not n.endswith("/")]
+        theme_keys = _zip_theme_keys(names)
+        seen: set[str] = set()
+        for key in theme_keys:
+            if key == ".":
+                folder = "__ZIP_ROOT__"
+            else:
+                folder = key
+            fn = folder.strip()
+            if not fn or fn in seen:
+                continue
+            seen.add(fn)
+            config_entry = "config.json" if key == "." else f"{key}/config.json"
+            config: dict[str, Any] | None = None
+            try:
+                raw = archive.read(config_entry).decode("utf-8")
+                parsed = json.loads(raw)
+                if isinstance(parsed, dict):
+                    config = parsed
+            except (KeyError, json.JSONDecodeError, UnicodeDecodeError):
+                pass
+            if config is None:
+                continue
+            tnorm = _config_title_norm(config)
+            if tnorm and tnorm in base_names:
+                errors.append(
+                    f"Theme title matches an existing gallery entry in themes.json "
+                    f"('{tnorm}' after normalizing spaces/case). "
+                    "Auto-merge is disabled so maintainers can confirm updates vs duplicates."
+                )
+    return errors
+
+
+def _norm_catalog_name(value: str) -> str:
+    """Lowercase and collapse whitespace for stable theme title comparison."""
+    return " ".join(value.strip().lower().split())
+
+
+def _load_themes_catalog(base_sha: str) -> tuple[set[str], set[str]]:
+    """Load themes.json at base_sha: (folder names lowercased, normalized display names)."""
+    folders: set[str] = set()
+    names: set[str] = set()
+    try:
+        raw = _git_blob_text(f"{base_sha}:themes.json")
+        data = json.loads(raw)
+    except subprocess.CalledProcessError:
+        return folders, names
+    except json.JSONDecodeError:
+        return folders, names
+
+    for entry in data.get("themes") or []:
+        if not isinstance(entry, dict):
+            continue
+        folder = entry.get("folder")
+        if isinstance(folder, str) and folder.strip():
+            folders.add(folder.strip().lower())
+        disp = entry.get("name")
+        if isinstance(disp, str) and disp.strip():
+            names.add(_norm_catalog_name(disp))
+    return folders, names
+
+
+def _config_title_norm(config: dict[str, Any]) -> str | None:
+    for key in ("theme_info", "source_info"):
+        block = config.get(key)
+        if isinstance(block, dict):
+            title = block.get("title")
+            if isinstance(title, str) and title.strip():
+                return _norm_catalog_name(title)
+    return None
+
+
+def _catalog_collisions(
+    base_folders: set[str],
+    base_names: set[str],
+    *,
+    folder: str,
+    config: dict[str, Any] | None,
+) -> list[str]:
+    """Return human-readable errors if this theme is already represented in themes.json."""
+    errors: list[str] = []
+    fn = folder.strip()
+    if fn and fn.lower() in base_folders:
+        errors.append(
+            f"Folder name '{fn}' is already listed in themes.json on the default branch. "
+            "Auto-merge is disabled — use a new folder name or close as duplicate."
+        )
+    if config is not None:
+        tnorm = _config_title_norm(config)
+        if tnorm and tnorm in base_names:
+            errors.append(
+                f"Theme title matches an existing gallery entry in themes.json "
+                f"('{tnorm}' after normalizing spaces/case). "
+                "Auto-merge is disabled so maintainers can confirm updates vs duplicates."
+            )
+    return errors
+
+
 def _fail(errors: list[str]) -> int:
     for msg in errors:
         print(f"ERROR: {msg}")
@@ -240,36 +618,6 @@ def _validate_zip_blob(path: str, blob: bytes) -> list[str]:
     return errors
 
 
-def _zip_collides_with_existing_theme_folders(base_sha: str, zip_repo_path: str, blob: bytes) -> list[str]:
-    """Block auto-merge when zip content targets a theme folder that already exists on base."""
-    errors: list[str] = []
-    try:
-        archive = zipfile.ZipFile(io.BytesIO(blob))
-    except zipfile.BadZipFile:
-        return errors
-
-    with archive:
-        names = [n for n in archive.namelist() if n and not n.endswith("/")]
-        theme_keys = _zip_theme_keys(names)
-        seen: set[str] = set()
-        for key in theme_keys:
-            if key == ".":
-                folder = PurePosixPath(zip_repo_path).stem
-            else:
-                folder = key
-            fn = folder.strip()
-            if not fn or fn in seen:
-                continue
-            seen.add(fn)
-            if _folder_exists_in_base(base_sha, fn):
-                errors.append(
-                    f"Theme folder '{fn}/' already exists on the default branch "
-                    f"(would overwrite or conflict). Auto-merge is disabled for this PR — "
-                    f"maintainers will review '{zip_repo_path}' manually."
-                )
-    return errors
-
-
 def main() -> int:
     if len(sys.argv) != 3:
         print("Usage: validate_theme_pr.py <base_sha> <pr_ref>")
@@ -277,6 +625,10 @@ def main() -> int:
 
     base_sha = sys.argv[1]
     pr_ref = sys.argv[2]
+
+    base_catalog_folders, base_catalog_names = _load_themes_catalog(base_sha)
+    catalog_identity_rows = _load_catalog_identity_rows(base_sha)
+    pending_logical_slugs = _pending_logical_slugs_from_root_zips(base_sha)
 
     # Compare PR head against the current base tree directly (2-dot),
     # which avoids stale-branch false positives for changes already on base.
@@ -377,6 +729,27 @@ def main() -> int:
 
         if not _config_has_image_refs(config):
             errors.append(f"{composite}/config.json must reference at least one image asset.")
+            continue
+
+        errors.extend(
+            _catalog_collisions(
+                base_catalog_folders,
+                base_catalog_names,
+                folder=composite,
+                config=config,
+            )
+        )
+        errors.extend(
+            _identity_policy_errors(
+                base_sha=base_sha,
+                inner_folder=composite,
+                config=config,
+                meta={},
+                catalog_rows=catalog_identity_rows,
+                pending_logical_slugs=pending_logical_slugs,
+                context=f"Added folder {composite}",
+            )
+        )
 
     for path in zip_paths:
         try:
@@ -387,7 +760,21 @@ def main() -> int:
         zip_errs = _validate_zip_blob(path, blob)
         errors.extend(zip_errs)
         if not zip_errs:
-            errors.extend(_zip_collides_with_existing_theme_folders(base_sha, path, blob))
+            meta = _read_upload_meta_pr(pr_ref, path)
+            stem = PurePosixPath(path).stem
+            for inner in _inner_themes_from_zip_blob(blob, zip_stem=stem):
+                errors.extend(
+                    _identity_policy_errors(
+                        base_sha=base_sha,
+                        inner_folder=inner["folder"],
+                        config=inner["config"],
+                        meta=meta,
+                        catalog_rows=catalog_identity_rows,
+                        pending_logical_slugs=pending_logical_slugs,
+                        context=f"ZIP {path}",
+                    )
+                )
+            errors.extend(_zip_title_catalog_collisions(base_catalog_names, blob))
 
     if errors:
         return _fail(errors)
