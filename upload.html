@@ -738,7 +738,7 @@
                             "Your removal request was created. A maintainer will review it and may contact you at the email you provided to verify you represent the original author.";
                     } else if (submittedFlow === "metadata") {
                         leadEl.textContent =
-                            "Your theme details update was submitted as a pull request. When checks pass it may merge automatically if policy allows.";
+                            "Your theme details update was submitted as a pull request for maintainer review. It does not auto-merge.";
                     } else {
                         leadEl.textContent =
                             "Your theme upload was queued. Use the link below to track the pull request on GitHub.";
@@ -829,7 +829,7 @@
                 afterTitle.textContent = "What happens after you send";
                 afterList.innerHTML = [
                     "<li>We open a <strong>metadata-only</strong> pull request on GitHub (no new image binaries).</li>",
-                    "<li>If <code>scripts/validate_theme_pr.py</code> passes, it may <strong>auto-merge</strong> when policy allows.</li>",
+                    "<li>The pull request is reviewed by maintainers and <strong>does not auto-merge</strong>.</li>",
                     "<li>To ship artwork changes, use the normal ZIP or folder upload instead.</li>"
                 ].join("");
                 return;
@@ -843,10 +843,10 @@
                 if (docTitle) docTitle.textContent = "Submit a theme update — Innioasis Y1 Themes";
                 h1.textContent = "Submit a theme update";
                 lead.textContent =
-                    "Upload a ZIP or theme folder. Use the same root folder name as the listing you are updating. Updates stay with the team for manual review and do not use automatic submission.";
+                    "Upload a ZIP/theme folder for artwork changes, or submit metadata changes directly with no ZIP. Use the same root folder name as the listing you are updating.";
                 if (hint) {
                     const pre = themeFolderParam ? `Editing folder: ${themeFolderParam}. ` : "";
-                    hint.textContent = pre + "We pre-fill config.json fields below when available. " + commonHint;
+                    hint.textContent = pre + "If no ZIP/folder is selected, this submits only themes.json + config.json metadata updates. " + commonHint;
                 }
                 afterTitle.textContent = "What happens after you send";
                 afterList.innerHTML = [
@@ -875,6 +875,8 @@
 
         applyPageMode();
         const themesFolderByLower = new Map();
+        /** @type {Map<string, { folder: string, name: string, author: string, authorUrl: string, description: string }>} */
+        const themesByFolder = new Map();
         /** @type {Map<string, { folder: string, author: string, name: string }>} logical slug -> catalog row */
         const themesByLogical = new Map();
 
@@ -953,6 +955,7 @@
 
         async function loadThemesIndex() {
             themesFolderByLower.clear();
+            themesByFolder.clear();
             themesByLogical.clear();
             try {
                 const res = await fetch("themes.json", { cache: "no-store" });
@@ -963,6 +966,13 @@
                     const f = String(t.folder || "").trim();
                     if (!f) continue;
                     themesFolderByLower.set(f.toLowerCase(), f);
+                    themesByFolder.set(f.toLowerCase(), {
+                        folder: f,
+                        name: String(t.name || "").trim(),
+                        author: String(t.author || "").trim(),
+                        authorUrl: String(t.authorUrl || "").trim(),
+                        description: String(t.description || "").trim(),
+                    });
                     const logical = logicalThemeSlug(f);
                     if (!themesByLogical.has(logical)) {
                         themesByLogical.set(logical, {
@@ -1679,6 +1689,69 @@
             }
         }
 
+        function metadataSubmitScenario() {
+            return !!themeFolderParam && (pageMode === "edit" || pageMode === "edit-metadata") && uploadMode === "none";
+        }
+
+        function syncSubmitButtonLabel() {
+            if (!submitBtn) return;
+            if (metadataSubmitScenario()) {
+                submitBtn.innerHTML =
+                    '<i class="fa-solid fa-pen-to-square" style="margin-right: 6px;"></i>Update theme information';
+                return;
+            }
+            submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane" style="margin-right: 6px;"></i>Send my theme';
+        }
+
+        async function submitMetadataOnlyUpdate() {
+            readEditorValues();
+            if (!themeFolderParam) {
+                throw new Error("Missing theme folder. Open this flow with ?mode=edit-metadata&folder=ThemeFolder.");
+            }
+            if (!themeInfoEntries.length) {
+                throw new Error("Could not load theme metadata editor values for this folder.");
+            }
+            const entry = themeInfoEntries[0];
+            const title = String(entry.themeInfo.title || "").trim();
+            const author = String(entry.themeInfo.author || "").trim();
+            const authorUrl = String(entry.themeInfo.authorUrl || "").trim();
+            const description = String(entry.themeInfo.description || "").trim();
+            if (!title) throw new Error("Title is required.");
+
+            const listingRow = themesByFolder.get(String(themeFolderParam).toLowerCase());
+            if (!listingRow) {
+                throw new Error("Could not find this folder in themes.json. Use the normal upload flow if this is a new theme.");
+            }
+
+            const payload = {
+                items: [
+                    {
+                        folder: themeFolderParam,
+                        themeInfo: { title, author, authorUrl, description },
+                        listing: { name: title, author, authorUrl },
+                    },
+                ],
+            };
+
+            const res = await fetch(window.metadataThemeEndpoint(), {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+            const body = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(body.error || `Metadata update failed (${res.status})`);
+            const prUrl = body && body.prUrl ? String(body.prUrl) : "";
+            if (prUrl) {
+                const next = new URL("upload.html", location.origin);
+                next.searchParams.set("mode", "submitted");
+                next.searchParams.set("flow", "metadata");
+                next.searchParams.set("prUrl", prUrl);
+                location.href = next.toString();
+                return;
+            }
+            setStatus("Theme information update was submitted, but no PR URL was returned.", true);
+        }
+
         async function buildZipForUpload() {
             if (uploadMode === "folder" && folderFiles && folderFiles.length) {
                 if (!window.JSZip) throw new Error("ZIP library is unavailable.");
@@ -1753,15 +1826,18 @@
         zipInput.addEventListener("change", async () => {
             const file = zipInput.files && zipInput.files[0];
             await inspectZipForThemeInfo(file);
+            syncSubmitButtonLabel();
         });
 
         folderInput.addEventListener("change", async () => {
             await inspectFolderForThemeInfo(folderInput.files);
+            syncSubmitButtonLabel();
         });
 
         window.addEventListener("DOMContentLoaded", () => {
             loadThemesIndex().then(() => {
-                if (pageMode === "edit" && themeFolderParam) prefetchConfigForEdit();
+                if ((pageMode === "edit" || pageMode === "edit-metadata") && themeFolderParam) prefetchConfigForEdit();
+                syncSubmitButtonLabel();
             });
         });
 
@@ -1769,6 +1845,17 @@
             event.preventDefault();
             syncCollisionUi();
             const { hasCollision, isEdit, hits } = analyzeCollision();
+            if (pageMode === "new" && hasCollision && isEdit) {
+                const first = hits[0];
+                const ok = window.confirm(
+                    `This package looks like an update to the existing theme "${first && (first.name || first.folder)}" because the author matches.\n\nDo you want to submit it as an update to the existing listing?`
+                );
+                if (!ok) {
+                    setStatus("Upload canceled. If this is a different remix/theme, change the Author field so it is treated as a new identity.", false);
+                    return;
+                }
+                if (editAck) editAck.checked = true;
+            }
             if (hasCollision && isEdit) {
                 if (!editAck || !editAck.checked) {
                     setStatus(
@@ -1780,9 +1867,13 @@
                 }
             }
             submitBtn.disabled = true;
-            setStatus(uploadMode === "folder" ? "Packaging your theme…" : "Sending your theme…", true);
+            setStatus(metadataSubmitScenario() ? "Submitting theme information update…" : uploadMode === "folder" ? "Packaging your theme…" : "Sending your theme…", true);
 
             try {
+                if (metadataSubmitScenario()) {
+                    await submitMetadataOnlyUpdate();
+                    return;
+                }
                 const ta = primaryThemeTitleAndAuthor();
                 fieldThemeTitle.value = ta.title;
                 fieldThemeAuthor.value = ta.author;
@@ -1811,6 +1902,7 @@
                 setStatus(String(err && err.message ? err.message : err), false);
             } finally {
                 submitBtn.disabled = false;
+                syncSubmitButtonLabel();
             }
         });
     </script>

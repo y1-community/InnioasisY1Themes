@@ -553,7 +553,7 @@ def _build_theme_index_html(template: str, theme_entry: dict[str, Any]) -> str:
     html_text = _replace_once(r'<meta property=\"og:url\" content=\"[^\"]*\">', f'<meta property="og:url" content="{url}">', html_text)
     html_text = _replace_once(r'<meta name=\"twitter:title\" content=\"[^\"]*\">', f'<meta name="twitter:title" content="{title}">', html_text)
     html_text = _replace_once(r'<meta name=\"twitter:description\" content=\"[^\"]*\">', f'<meta name="twitter:description" content="{description}">', html_text)
-    edit_href = f"{SITE_BASE_URL}/upload.html?mode=edit&folder={folder_enc}"
+    edit_href = f"{SITE_BASE_URL}/upload.html?mode=edit-metadata&folder={folder_enc}"
     remove_href = f"{SITE_BASE_URL}/upload.html?mode=remove&folder={folder_enc}"
     html_text = html_text.replace("__THEME_UPLOAD_EDIT_HREF__", edit_href)
     html_text = html_text.replace("__THEME_UPLOAD_REMOVE_HREF__", remove_href)

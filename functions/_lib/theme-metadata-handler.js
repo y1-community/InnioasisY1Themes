@@ -323,7 +323,7 @@ export async function handleMetadataPost(request, env) {
       fileCommits = [...fileCommits, { path: "themes.json" }];
     }
 
-    const prTitle = `Gallery: metadata update (${items.length} theme(s))`;
+    const prTitle = `[Metadata] Gallery details update (${items.length} theme(s))`;
     const prBody = [
       "## Metadata-only update (gallery)",
       "",
@@ -332,7 +332,7 @@ export async function handleMetadataPost(request, env) {
       "**Changed paths:**",
       ...fileCommits.map((p) => `- \`${p.path}\``),
       "",
-      "Automatic merge applies only when `scripts/validate_theme_pr.py` passes on this PR.",
+      "This PR is intended for maintainer review and is not auto-merged.",
     ].join("\n");
 
     const pr = await ghJson(

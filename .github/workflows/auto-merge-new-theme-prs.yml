@@ -28,7 +28,7 @@ concurrency:
 
 jobs:
   validate-and-merge:
-    if: ${{ github.event.pull_request.draft == false && !startsWith(github.event.pull_request.title, '[Removal]') }}
+    if: ${{ github.event.pull_request.draft == false && !startsWith(github.event.pull_request.title, '[Removal]') && !startsWith(github.event.pull_request.title, '[Metadata]') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout base repository
