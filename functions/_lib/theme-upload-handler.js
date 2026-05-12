@@ -49,6 +49,8 @@ async function ghJson(url, token, init = {}, context = "") {
       Accept: "application/vnd.github+json",
       "X-GitHub-Api-Version": "2022-11-28",
       "Content-Type": "application/json",
+      // GitHub REST API returns 403 if User-Agent is missing (server-side fetch has no browser UA).
+      "User-Agent": "y1-theme-upload/1.0 (+https://github.com/y1-community/InnioasisY1Themes)",
       ...(init.headers || {}),
     },
   });

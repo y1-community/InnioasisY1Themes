@@ -63,6 +63,10 @@ Optional — set in the Cloudflare dashboard (Worker → Settings → Variables)
 
 Never commit the token. Never put it in `upload.html`.
 
+### `User-Agent` required (403 from GitHub)
+
+Server-side `fetch` to `api.github.com` does not send a browser `User-Agent`. GitHub rejects those requests with 403 unless a **`User-Agent`** header is set. The shared handler sets `User-Agent: y1-theme-upload/1.0 (+https://github.com/y1-community/InnioasisY1Themes)`.
+
 ### Still seeing `GitHub API 403` after rotating the token?
 
 The upload form will show a longer message after redeploy (which step failed + GitHub’s text). Common causes:
