@@ -4,87 +4,263 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Add your theme — Innioasis Y1 Themes</title>
+    <title>Upload your theme — Innioasis Y1 Themes</title>
     <meta name="description" content="Share a new look for the Innioasis Y1 themes gallery. Upload a ZIP or folder; we’ll open a review for the team." />
     <meta name="author" content="Innioasis Community" />
     <link rel="canonical" href="https://themes.innioasis.app/upload.html">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Upload your theme — Innioasis Y1 Themes">
+    <meta property="og:description" content="Send a ZIP or theme folder for review and listing on the gallery.">
+    <meta property="og:url" content="https://themes.innioasis.app/upload.html">
+    <meta property="og:image" content="https://innioasis.app/y1_illustration.png">
+
     <link rel="icon" href="y1_illustration.png">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
     <!-- If this HTML is on GitHub Pages or another static host, set content to your upload API origin (Cloudflare Pages or standalone Worker; no trailing slash). POST goes to {origin}/api/upload-theme. -->
     <meta name="cf-pages-upload-api-origin" content="https://y1-theme-upload.itsryanspecter.workers.dev" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
+        html,
         body {
+            height: 100%;
+        }
+
+        #nav-root {
+            display: none;
+        }
+
+        .gallery-topbar {
+            position: sticky;
+            top: 0;
+            z-index: 1200;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 14px;
+            background: #17191f;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .gallery-tabs {
+            display: inline-flex;
+            gap: 3px;
+            padding: 3px;
+            border-radius: 9px;
+            background: #101217;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            justify-self: center;
+            grid-column: 2;
+        }
+
+        .gallery-tab {
+            padding: 5px 12px;
+            border-radius: 7px;
+            color: #aeb6c5;
+            text-decoration: none;
+            font-size: 0.82rem;
+            font-weight: 600;
+            border: 1px solid transparent;
+            line-height: 1.1;
+        }
+
+        .gallery-tab:hover {
+            color: #d9e0ef;
+        }
+
+        .gallery-tab.active {
+            color: #ffffff;
+            background: #2a2f3a;
+            border-color: rgba(255, 255, 255, 0.18);
+            box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.12);
+        }
+
+        .topbar-search {
+            width: 100%;
+            padding: 8px 12px 8px 32px;
+            border-radius: 9px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: #222733;
+            color: #eaf0ff;
             font-family: Inter, sans-serif;
-            max-width: 860px;
+            outline: none;
+            font-size: 0.82rem;
+        }
+
+        .topbar-search::placeholder {
+            color: #94a0b8;
+        }
+
+        .topbar-search-wrap {
+            position: relative;
+            width: 100%;
+            max-width: 360px;
+            justify-self: end;
+            grid-column: 3;
+        }
+
+        .topbar-search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8ea0bf;
+            font-size: 0.78rem;
+            pointer-events: none;
+        }
+
+        @media (max-width: 900px) {
+            .gallery-topbar {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .gallery-tabs {
+                order: 1;
+                justify-self: center;
+                grid-column: auto;
+            }
+
+            .topbar-search-wrap {
+                order: 2;
+                max-width: 360px;
+                justify-self: center;
+                grid-column: auto;
+            }
+        }
+
+        .wrap {
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 1.5rem;
+            margin-top: 2.5rem;
+            padding: 0 1rem 3rem;
+        }
+
+        .upload-prose {
+            max-width: 52rem;
+        }
+
+        .upload-prose header h1 {
+            margin: 0 0 8px 0;
+        }
+
+        .upload-prose .lead {
+            font-size: 1.05rem;
+            line-height: 1.55;
+            margin: 0 0 10px 0;
+            color: var(--text-primary, #eaf0ff);
+        }
+
+        .upload-prose .hint {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin: 0;
         }
 
         .card {
-            background: var(--bg-card, #1f2430);
+            background: var(--bg-card);
             border-radius: 12px;
-            padding: 1.25rem;
-            margin-top: 1rem;
+            padding: 1.35rem 1.4rem;
+            margin-top: 1.25rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .card h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.1rem;
+            color: var(--accent, #58a6ff);
+        }
+
+        .card ul {
+            margin: 0;
+            padding-left: 1.2rem;
+            color: var(--text-secondary);
+            line-height: 1.55;
+        }
+
+        .card li + li {
+            margin-top: 8px;
         }
 
         .row {
             display: grid;
-            gap: 0.75rem;
-            margin-bottom: 0.9rem;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
         }
 
         label {
             font-weight: 600;
+            color: var(--text-primary, #eaf0ff);
+            font-size: 0.92rem;
         }
 
-        input,
-        textarea,
-        button {
+        input[type="text"],
+        textarea {
             font: inherit;
-            padding: 0.65rem 0.7rem;
+            padding: 0.65rem 0.75rem;
             border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            background: rgba(0, 0, 0, 0.2);
-            color: inherit;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: #222733;
+            color: #eaf0ff;
         }
 
-        button {
-            cursor: pointer;
-            border: none;
-            background: #2f6feb;
-            color: #fff;
-            font-weight: 600;
+        input[type="file"] {
+            font: inherit;
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 4rem;
+        }
+
+        .row .hint {
+            opacity: 0.9;
+            font-size: 0.88rem;
+            margin-top: 0;
+            color: var(--text-secondary);
+        }
+
+        #submit-btn {
+            margin-top: 0.5rem;
+            font-weight: normal;
         }
 
         .status {
             margin-top: 1rem;
-            padding: 0.75rem;
+            padding: 0.85rem 1rem;
             border-radius: 8px;
             display: none;
             white-space: pre-wrap;
+            font-size: 0.92rem;
+            line-height: 1.45;
         }
 
         .ok {
             display: block;
-            background: rgba(46, 160, 67, 0.2);
+            background: rgba(46, 160, 67, 0.18);
+            border: 1px solid rgba(46, 160, 67, 0.35);
+            color: #aff5c3;
         }
 
         .err {
             display: block;
-            background: rgba(248, 81, 73, 0.2);
+            background: rgba(248, 81, 73, 0.15);
+            border: 1px solid rgba(248, 81, 73, 0.35);
+            color: #ffb4af;
         }
 
         code {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 0.1rem 0.3rem;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 0.12rem 0.35rem;
             border-radius: 4px;
-        }
-
-        .hint {
-            opacity: 0.8;
-            font-size: 0.92rem;
-            margin-top: 0.35rem;
+            font-size: 0.9em;
         }
 
         .meta-editor {
@@ -96,26 +272,40 @@
             display: block;
         }
 
+        .meta-editor > h3 {
+            margin: 0 0 6px 0;
+            font-size: 1rem;
+            color: var(--accent, #58a6ff);
+        }
+
         .meta-card {
-            border: 1px solid rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 10px;
-            padding: 0.9rem;
+            padding: 0.95rem;
             margin-bottom: 0.9rem;
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(0, 0, 0, 0.15);
         }
 
         .meta-card h4 {
             margin: 0 0 0.6rem 0;
             font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+
+        .meta-card .hint {
+            font-weight: 400;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
         }
 
         .callout-warn {
-            border: 1px solid rgba(255, 180, 80, 0.45);
+            border: 1px solid rgba(255, 180, 80, 0.4);
             background: rgba(255, 180, 80, 0.08);
             border-radius: 10px;
             padding: 1rem 1.1rem;
             margin: 1rem 0;
             line-height: 1.45;
+            color: #fdecc8;
         }
 
         .callout-warn p {
@@ -132,90 +322,153 @@
             gap: 0.6rem;
             margin-top: 0.75rem;
             font-weight: 500;
+            color: var(--text-secondary);
         }
 
         .variation-row input {
             margin-top: 0.2rem;
             flex-shrink: 0;
         }
-
-        .lead {
-            font-size: 1.05rem;
-            line-height: 1.5;
-            margin-bottom: 0.5rem;
-        }
     </style>
 </head>
 
 <body>
-    <h1>Add your theme to the gallery</h1>
-    <p class="lead">
-        Share a new look for the Innioasis Y1 player. Choose a ZIP file or a whole theme folder — we’ll package it safely in your browser and send it to the team for review.
-    </p>
-    <p class="hint">You’ll get a link to track your submission. New themes are usually quick to review; if your folder name matches one we already have, a maintainer will confirm everything before it goes live.</p>
-
-    <div class="card">
-        <form id="upload-form">
-            <div class="row">
-                <label for="zip-file">Option A — ZIP file</label>
-                <input id="zip-file" name="zip" type="file" accept=".zip,application/zip" />
-                <div class="hint">One theme per ZIP is easiest. Don’t pick both a ZIP and a folder.</div>
-            </div>
-
-            <div class="row">
-                <label for="folder-file">Option B — Theme folder</label>
-                <input id="folder-file" type="file" webkitdirectory multiple />
-                <div class="hint">Select the folder that contains your theme’s <code>config.json</code> and images. Works in Chrome, Edge, Firefox, and Safari.</div>
-            </div>
-
-            <div id="meta-editor" class="meta-editor">
-                <h3>Theme details</h3>
-                <p class="hint">We read these from <code>config.json</code>. You can fix spelling or credits before sending.</p>
-                <div id="meta-editor-list"></div>
-            </div>
-
-            <div id="duplicate-notice" class="callout-warn" hidden>
-                <p><strong>This theme folder name is already on the site.</strong> Matching names: <strong data-collision-list></strong>.</p>
-                <p>If you’re uploading a <strong>new</strong> theme, rename your folder so it doesn’t match an existing one. If this is your own <strong>variation</strong> or remix of an existing look, that’s OK — check the box below. If you’re riffing on someone else’s theme, use the author fields so <strong>your</strong> name shows up for your version.</p>
-                <label class="variation-row">
-                    <input type="checkbox" id="variation-ack" />
-                    <span>I’m submitting a variation or update; I understand a maintainer will review it before it’s published (nothing is auto-replaced without confirmation).</span>
-                </label>
-            </div>
-
-            <div class="row">
-                <label for="theme-name">Friendly title (optional)</label>
-                <input id="theme-name" name="themeName" type="text" maxlength="120" placeholder="e.g. WarCraft 3" />
-                <div class="hint">Shown in the pull request title — helps the team spot your theme.</div>
-            </div>
-
-            <div class="row">
-                <label for="uploader-name">Your name or handle (optional)</label>
-                <input id="uploader-name" name="uploaderName" type="text" maxlength="120" placeholder="e.g. u/yourname" />
-                <div class="hint">For variations, use a name that makes it clear <em>you</em> submitted this version.</div>
-            </div>
-
-            <div class="row">
-                <label for="notes">Message to the team (optional)</label>
-                <textarea id="notes" name="notes" rows="3" maxlength="1000" placeholder="Anything you want reviewers to know"></textarea>
-            </div>
-
-            <button id="submit-btn" type="submit">Send my theme</button>
+    <div id="nav-root"></div>
+    <div class="gallery-topbar">
+        <div aria-hidden="true"></div>
+        <div class="gallery-tabs" aria-label="Site sections">
+            <a class="gallery-tab" href="https://y1-themes.vercel.app">Editor</a>
+            <a class="gallery-tab" href="https://themes.innioasis.app/index.html">Gallery</a>
+            <a class="gallery-tab active" href="upload.html">Upload</a>
+        </div>
+        <form class="topbar-search-wrap" action="https://themes.innioasis.app/index.html" method="get">
+            <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
+            <input id="global-theme-search" name="q" class="topbar-search" type="search" placeholder="&#128269;" aria-label="Search themes">
         </form>
-        <div id="status" class="status"></div>
     </div>
 
-    <div class="card">
-        <h3>What happens after you send</h3>
-        <ul>
-            <li>Your theme is uploaded securely and a <strong>review request</strong> is opened for the maintainers.</li>
-            <li>They check that files are safe and the theme structure looks good.</li>
-            <li><strong>Brand-new folder names</strong> can often be merged automatically after checks pass.</li>
-            <li>If the <strong>same folder name</strong> already exists, we <strong>do not</strong> auto-merge — a person will look at your PR first so nothing is overwritten by surprise.</li>
-            <li>Once accepted, your theme appears on this site for everyone to download.</li>
-        </ul>
+    <div class="wrap upload-prose">
+        <header>
+            <h1>Upload your theme</h1>
+            <p class="lead">
+                Share a new look for the Innioasis Y1 player. Choose a ZIP file or a whole theme folder — we’ll package it safely in your browser and send it to the team for review.
+            </p>
+            <p class="hint">You’ll get a link to track your submission. New themes are usually quick to review; if your folder name matches one we already have, a maintainer will confirm everything before it goes live.</p>
+        </header>
+
+        <div class="card">
+            <form id="upload-form">
+                <div class="row">
+                    <label for="zip-file">Option A — ZIP file</label>
+                    <input id="zip-file" name="zip" type="file" accept=".zip,application/zip" />
+                    <div class="hint">One theme per ZIP is easiest. Don’t pick both a ZIP and a folder.</div>
+                </div>
+
+                <div class="row">
+                    <label for="folder-file">Option B — Theme folder</label>
+                    <input id="folder-file" type="file" webkitdirectory multiple />
+                    <div class="hint">Select the folder that contains your theme’s <code>config.json</code> and images. Works in Chrome, Edge, Firefox, and Safari.</div>
+                </div>
+
+                <div id="meta-editor" class="meta-editor">
+                    <h3>Theme details</h3>
+                    <p class="hint">We read these from <code>config.json</code>. You can fix spelling or credits before sending.</p>
+                    <div id="meta-editor-list"></div>
+                </div>
+
+                <div id="duplicate-notice" class="callout-warn" hidden>
+                    <p><strong>This theme folder name is already on the site.</strong> Matching names: <strong data-collision-list></strong>.</p>
+                    <p>If you’re uploading a <strong>new</strong> theme, rename your folder so it doesn’t match an existing one. If this is your own <strong>variation</strong> or remix of an existing look, that’s OK — check the box below. If you’re riffing on someone else’s theme, use the author fields so <strong>your</strong> name shows up for your version.</p>
+                    <label class="variation-row">
+                        <input type="checkbox" id="variation-ack" />
+                        <span>I’m submitting a variation or update; I understand a maintainer will review it before it’s published (nothing is auto-replaced without confirmation).</span>
+                    </label>
+                </div>
+
+                <div class="row">
+                    <label for="theme-name">Friendly title (optional)</label>
+                    <input id="theme-name" name="themeName" type="text" maxlength="120" placeholder="e.g. WarCraft 3" />
+                    <div class="hint">Shown in the pull request title — helps the team spot your theme.</div>
+                </div>
+
+                <div class="row">
+                    <label for="uploader-name">Your name or handle (optional)</label>
+                    <input id="uploader-name" name="uploaderName" type="text" maxlength="120" placeholder="e.g. u/yourname" />
+                    <div class="hint">For variations, use a name that makes it clear <em>you</em> submitted this version.</div>
+                </div>
+
+                <div class="row">
+                    <label for="notes">Message to the team (optional)</label>
+                    <textarea id="notes" name="notes" rows="3" maxlength="1000" placeholder="Anything you want reviewers to know"></textarea>
+                </div>
+
+                <button id="submit-btn" type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane" style="margin-right: 6px;"></i>Send my theme</button>
+            </form>
+            <div id="status" class="status"></div>
+        </div>
+
+        <div class="card">
+            <h3>What happens after you send</h3>
+            <ul>
+                <li>Your theme is uploaded securely and a <strong>review request</strong> is opened for the maintainers.</li>
+                <li>They check that files are safe and the theme structure looks good.</li>
+                <li><strong>Brand-new folder names</strong> can often be merged automatically after checks pass.</li>
+                <li>If the <strong>same folder name</strong> already exists, we <strong>do not</strong> auto-merge — a person will look at your PR first so nothing is overwritten by surprise.</li>
+                <li>Once accepted, your theme appears on this site for everyone to download.</li>
+            </ul>
+        </div>
     </div>
 
+    <div id="footer-root"></div>
+    <div id="support-toolbar-slot"></div>
+
+    <script src="https://innioasis.app/nav.js"></script>
+    <script>
+        function executeInlineScripts(container) {
+            if (!container) return;
+            const scripts = container.querySelectorAll('script');
+            for (const oldScript of scripts) {
+                const newScript = document.createElement('script');
+                for (const attr of oldScript.attributes) {
+                    newScript.setAttribute(attr.name, attr.value);
+                }
+                newScript.textContent = oldScript.textContent;
+                oldScript.parentNode.replaceChild(newScript, oldScript);
+            }
+        }
+
+        async function loadSupportToolbar() {
+            const slot = document.getElementById('support-toolbar-slot');
+            if (!slot) return;
+            const candidates = [
+                'support_toolbar.html',
+                '../support_toolbar.html',
+                'https://themes.innioasis.app/support_toolbar.html'
+            ];
+            for (const url of candidates) {
+                try {
+                    const res = await fetch(url, { cache: 'no-cache' });
+                    if (!res.ok) continue;
+                    slot.innerHTML = await res.text();
+                    executeInlineScripts(slot);
+                    return;
+                } catch (e) {}
+            }
+        }
+
+        loadSupportToolbar();
+
+        const globalThemeSearch = document.getElementById('global-theme-search');
+        if (globalThemeSearch) {
+            globalThemeSearch.addEventListener('keydown', (e) => {
+                if (e.key !== 'Enter') return;
+                e.preventDefault();
+                const q = String(globalThemeSearch.value || '').trim();
+                const url = q ? `https://themes.innioasis.app/index.html?q=${encodeURIComponent(q)}` : 'https://themes.innioasis.app/index.html';
+                location.href = url;
+            });
+        }
+    </script>
     <script>
         function uploadThemeEndpoint() {
             const meta = document.querySelector('meta[name="cf-pages-upload-api-origin"]');

@@ -247,17 +247,6 @@
             gap: 10px;
         }
 
-        .theme-spotlight {
-            margin-top: 10px;
-            padding: 12px 14px;
-            border-radius: 12px;
-            border: 1px solid rgba(59, 130, 246, 0.45);
-            background: rgba(59, 130, 246, 0.14);
-            color: #dbeafe;
-            font-size: 0.95rem;
-            line-height: 1.5;
-        }
-
         .step-label {
             font-weight: 700;
             letter-spacing: 0.3px;
@@ -383,12 +372,9 @@
                 <article class="step-card">
                     <span class="step-label">Themes</span>
                     <h3>Maintain the Themes Directory</h3>
-                    <p>The <a href="https://themes.innioasis.app">Themes directory</a> at themes.innioasis.app is entirely community-maintained. Found a cool theme? Made your own? Fork the repo, add your theme, update themes.json, and submit a PR. Simple as that.</p>
-                    <div class="theme-spotlight">
-                        <strong>Want to add a theme quickly?</strong> Jump to the full step-by-step guide below and follow each checklist item.
-                    </div>
-                    <a class="cta" href="#how-to-add-themes" style="margin-top: 12px; font-size: 0.95rem; padding: 12px 22px;">
-                        Go to Step-by-Step Theme Guide ↓
+                    <p>The <a href="https://themes.innioasis.app">Themes directory</a> at themes.innioasis.app is entirely community-maintained. Found a cool theme or made your own? Use the upload flow to send it to the team for review—no need to fork or edit <code>themes.json</code> by hand unless you prefer the GitHub route.</p>
+                    <a class="cta" href="https://themes.innioasis.app/upload.html" style="margin-top: 12px; font-size: 0.95rem; padding: 12px 22px;">
+                        Open theme upload →
                     </a>
                 </article>
                 <article class="step-card">
@@ -418,21 +404,16 @@
                     <p>Documenting the projects and tools with tutorials and videos is another useful way to contribute to Y1 development projects. Whether you're writing step-by-step guides, creating video walkthroughs, or improving existing documentation, your efforts help make these tools more accessible to everyone.</p>
                 </div>
                 <div>
-                    <h3 id="how-to-add-themes">How to Add Themes</h3>
-                    <p>The <a href="https://themes.innioasis.app">Themes directory</a> is open for community contributions. You can add your own themes or ones you've found on the internet for archival purposes.</p>
-                    <ol style="margin-top: 12px;">
-                        <li><strong>Fork the GitHub Repository:</strong> Visit <a href="https://github.com/y1-community/InnioasisY1Themes">github.com/y1-community/InnioasisY1Themes</a> and fork it. This creates a copy you can work on.</li>
-                        <li><strong>Ensure <code>theme_info</code> is in <code>config.json</code>:</strong> Include your theme details in <code>theme_info</code>. More info and examples: <a href="https://themes.innioasis.app/creators">themes.innioasis.app/creators</a>.</li>
-                        <li><strong>Upload the theme folder:</strong> Upload the new theme's folder to the main directory of your forked repository.</li>
-                        <li><strong>Update themes.json:</strong> Open <code>themes.json</code> in your forked repository and copy and paste a theme block (starting with <code>{"</code> and ending with <code>},</code>) where your theme needs to go alphabetically. If it's the last item in the list, don't include the trailing comma.</li>
-                        <li><strong>Commit changes:</strong> Commit your changes to the file, then go back to your repository.</li>
-                        <li><strong>Make a pull request:</strong> This sends your changes back to the original repository for review by the <a href="https://github.com/y1-community">Y1-Community</a> GitHub organization. Once approved, themes appear on <a href="https://themes.innioasis.app">themes.innioasis.app</a>.</li>
-                    </ol>
-                    <p class="note" style="margin-top: 16px;">
-                        <strong>Trusted contributors:</strong> Trusted individuals with direct access to the Y1-Community GitHub organization can skip the forking process and directly list new themes or update existing ones. This allows themes to appear on the website super fast, especially with reviewers from different time zones.
+                    <h3>Submit a theme</h3>
+                    <p>The <a href="https://themes.innioasis.app">Themes directory</a> is open for community contributions. The quickest path is the <a href="https://themes.innioasis.app/upload.html">theme upload page</a>: package your folder or ZIP in the browser, add optional notes, and maintainers will review and merge when everything looks good.</p>
+                    <a class="cta" href="https://themes.innioasis.app/upload.html" style="margin-top: 12px; font-size: 0.95rem; padding: 12px 22px;">
+                        Go to theme upload →
+                    </a>
+                    <p style="margin-top: 16px; color: var(--text-secondary); font-size: 0.95rem;">
+                        If you prefer GitHub, you can still fork <a href="https://github.com/y1-community/InnioasisY1Themes">InnioasisY1Themes</a> and open a pull request manually. Put your metadata in <code>config.json</code> under <code>theme_info</code>; see the <a href="https://themes.innioasis.app/creators">creators</a> page for examples.
                     </p>
-                    <p class="note" style="margin-top: 12px;">
-                        <strong>Cataloging themes:</strong> When adding themes found on Reddit or elsewhere, it's good practice to leave a comment where you found the theme to let the creator know it's been listed. This helps folks discover themes they're looking for and ensures creators get appropriate credit. If a user asks for their theme to be removed, we must oblige.
+                    <p class="note" style="margin-top: 16px;">
+                        <strong>Cataloging & credit:</strong> When listing themes you found elsewhere, mention the source so creators get credit. If someone asks for removal, we honor that.
                     </p>
                 </div>
             </div>
