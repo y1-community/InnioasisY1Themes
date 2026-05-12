@@ -98,6 +98,39 @@ function stableStringify(obj) {
   return JSON.stringify(obj, null, 2) + "\n";
 }
 
+function asTrimmedString(value) {
+  return String(value ?? "").trim();
+}
+
+function buildSearchText(row) {
+  const name = asTrimmedString(row.name);
+  const description = asTrimmedString(row.description);
+  const author = asTrimmedString(row.author);
+  const folder = asTrimmedString(row.folder);
+  const externalDownloadUrl = asTrimmedString(row.externalDownloadUrl);
+  return [name, description, author, folder, externalDownloadUrl]
+    .join(" ")
+    .toLowerCase()
+    .trim();
+}
+
+function normalizeListingFromThemeInfo(themeInfo, listing) {
+  const safeListing = listing && typeof listing === "object" ? listing : {};
+  const safeThemeInfo = themeInfo && typeof themeInfo === "object" ? themeInfo : {};
+  const out = {};
+  for (const key of LISTING_KEYS) {
+    const themeInfoKey = key === "name" ? "title" : key;
+    const raw =
+      safeListing[key] !== undefined
+        ? safeListing[key]
+        : safeThemeInfo[themeInfoKey] !== undefined
+        ? safeThemeInfo[themeInfoKey]
+        : "";
+    out[key] = asTrimmedString(raw);
+  }
+  return out;
+}
+
 /**
  * @param {Request} request
  * @param {Record<string, string | undefined>} env
@@ -214,7 +247,10 @@ export async function handleMetadataPost(request, env) {
             return jsonResponse({ error: `Listing key not allowed: ${k}` }, 400);
           }
         }
-        puts.push({ _listingUpdate: true, folder, listing });
+      }
+      const normalizedListing = normalizeListingFromThemeInfo(themeInfo, listing);
+      if (Object.values(normalizedListing).some((v) => v !== "")) {
+        puts.push({ _listingUpdate: true, folder, listing: normalizedListing });
       }
     }
 
@@ -245,8 +281,13 @@ export async function handleMetadataPost(request, env) {
       const row = { ...list[idx] };
       for (const k of Object.keys(put.listing)) {
         if (!LISTING_KEYS.has(k)) continue;
-        const v = put.listing[k];
-        row[k] = typeof v === "string" ? v : String(v ?? "");
+        row[k] = asTrimmedString(put.listing[k]);
+      }
+      if (row.name) {
+        row.sortName = asTrimmedString(row.name).toLowerCase();
+      }
+      if (row.folder) {
+        row.searchText = buildSearchText(row);
       }
       if (JSON.stringify(row) !== JSON.stringify(list[idx])) {
         themesChanged = true;

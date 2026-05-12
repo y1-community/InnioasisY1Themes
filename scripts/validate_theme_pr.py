@@ -4,7 +4,8 @@
 Rules:
 - **Additive PRs (gallery ZIP uploader):** only added files (no modifications, deletions, renames).
 - **Metadata-only PRs:** only modified files; may change ``themes.json`` listing fields
-  (``name``, ``author``, ``authorUrl``) and/or one or more existing ``ThemeName/config.json``
+  (``name``, ``author``, ``authorUrl``, ``description``, ``externalDownloadUrl``,
+  ``sortName``, ``searchText``) and/or one or more existing ``ThemeName/config.json``
   files (see ``THEMES_METADATA_AUTO_MERGE_MAX_FOLDERS``). Mixed add+modify PRs are rejected.
 - All changes must be at the repository root (static site + zips live there).
 - Zip uploads must be <name>.zip at repo root (no path segments), except optional
@@ -676,7 +677,9 @@ def _validate_zip_blob(path: str, blob: bytes) -> list[str]:
     return errors
 
 
-METADATA_LISTING_KEYS = frozenset({"name", "author", "authorUrl"})
+METADATA_LISTING_KEYS = frozenset(
+    {"name", "author", "authorUrl", "description", "externalDownloadUrl", "sortName", "searchText"}
+)
 
 
 def _load_themes_json_themes(rev: str) -> list[Any]:
