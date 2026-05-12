@@ -858,7 +858,14 @@
         function resolveScreenshotPath(path) {
             if (!path) return ''
             if (path.startsWith('http')) return path
-            if (path.startsWith('./')) return 'https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/' + path.slice(2)
+            if (path.startsWith('./')) {
+                const encoded = path.slice(2).split('/').filter(Boolean).map(seg => encodeURIComponent(seg)).join('/');
+                return `./${encoded}`;
+            }
+            if (path.startsWith('/')) {
+                const encoded = path.slice(1).split('/').filter(Boolean).map(seg => encodeURIComponent(seg)).join('/');
+                return `/${encoded}`;
+            }
             return path
         }
 
@@ -1146,6 +1153,66 @@
             const encodedFile = normalized.split('/').filter(Boolean).map(seg => encodeURIComponent(seg)).join('/');
             if (!encodedFile) return '';
             return `./${encodedFolder ? `${encodedFolder}/` : ''}${encodedFile}`;
+        }
+
+        const coverCandidatesByFolder = new Map();
+
+        async function loadCoverCandidatesFromConfig(folderPath) {
+            const folder = String(folderPath || '').trim().replace(/\\/g, '/').replace(/^\.\/+/, '').replace(/\/+$/, '');
+            if (!folder) return [];
+            if (coverCandidatesByFolder.has(folder)) return coverCandidatesByFolder.get(folder) || [];
+
+            const encodedFolder = folder.split('/').filter(Boolean).map(seg => encodeURIComponent(seg)).join('/');
+            const result = [];
+            const seen = new Set();
+            const push = (candidatePath) => {
+                const url = buildThemeFileUrl(folder, candidatePath);
+                if (!url) return;
+                const key = url.toLowerCase();
+                if (seen.has(key)) return;
+                seen.add(key);
+                result.push(url);
+            };
+
+            try {
+                const configRes = await fetch(`./${encodedFolder}/config.json`, { cache: 'no-cache' });
+                if (!configRes.ok) {
+                    coverCandidatesByFolder.set(folder, []);
+                    return [];
+                }
+                const config = await configRes.json();
+                const overPaths = [];
+                const fallbackCoverPaths = [];
+                const walk = (node) => {
+                    if (Array.isArray(node)) {
+                        node.forEach(walk);
+                        return;
+                    }
+                    if (!node || typeof node !== 'object') {
+                        if (typeof node !== 'string') return;
+                        const normalized = normalizeConfigAssetPath(node, folder);
+                        if (!normalized || normalized.includes('://')) return;
+                        const filename = normalized.split('/').pop() || normalized;
+                        if (!/\.(png|jpe?g|gif|webp)$/i.test(filename)) return;
+                        if (/over/i.test(filename)) {
+                            overPaths.push(normalized);
+                        } else if (/cover/i.test(filename)) {
+                            fallbackCoverPaths.push(normalized);
+                        }
+                        return;
+                    }
+                    for (const val of Object.values(node)) walk(val);
+                };
+                walk(config);
+                overPaths.forEach(push);
+                if (!result.length) fallbackCoverPaths.forEach(push);
+            } catch (e) {
+                coverCandidatesByFolder.set(folder, []);
+                return [];
+            }
+
+            coverCandidatesByFolder.set(folder, result);
+            return result;
         }
 
         function createProgressUI(parent, oldButton, themeName) {
@@ -1490,13 +1557,31 @@
                 'placeholder.png'
             ].filter(Boolean);
             let screenshotIdx = 0;
-            img.src = resolveScreenshotPath(screenshotCandidates[screenshotIdx] || '');
+            let triedConfigCoverFallback = false;
+            const applyNextScreenshot = async() => {
+                if (screenshotIdx < screenshotCandidates.length) {
+                    img.src = resolveScreenshotPath(screenshotCandidates[screenshotIdx] || '');
+                    return;
+                }
+                if (!triedConfigCoverFallback && folderPath) {
+                    triedConfigCoverFallback = true;
+                    const configCoverCandidates = await loadCoverCandidatesFromConfig(folderPath);
+                    for (const candidate of configCoverCandidates) {
+                        if (!screenshotCandidates.includes(candidate)) screenshotCandidates.push(candidate);
+                    }
+                    if (screenshotIdx < screenshotCandidates.length) {
+                        img.src = resolveScreenshotPath(screenshotCandidates[screenshotIdx] || '');
+                        return;
+                    }
+                }
+                img.onerror = null;
+                img.src = 'placeholder.png';
+            };
             img.onerror = () => {
                 screenshotIdx += 1;
-                if (screenshotIdx < screenshotCandidates.length) {
-                    img.src = resolveScreenshotPath(screenshotCandidates[screenshotIdx]);
-                }
+                void applyNextScreenshot();
             };
+            void applyNextScreenshot();
             img.alt = safeText(theme.name);
             previewFrame.appendChild(img);
 
