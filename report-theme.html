@@ -259,6 +259,7 @@
                 <div class="row">
                     <label for="field-theme-folder">Theme folder (repository path)</label>
                     <input id="field-theme-folder" name="theme_folder" type="text" required maxlength="200" placeholder="e.g. AppleMusic" />
+                    <p id="theme-identity-hint" class="hint" hidden></p>
                 </div>
 
                 <div class="row">
@@ -320,6 +321,7 @@
             const elFolder = document.getElementById("field-theme-folder");
             const elTitle = document.getElementById("field-theme-title");
             const elAuthor = document.getElementById("field-theme-author");
+            const identityHint = document.getElementById("theme-identity-hint");
             const elPage = document.getElementById("field-page-url");
             const redirectEl = document.getElementById("field-redirect");
             const guidance = document.getElementById("report-guidance");
@@ -362,6 +364,71 @@
             if (elTitle) elTitle.addEventListener("input", syncRedirectUrl);
             if (elAuthor) elAuthor.addEventListener("input", syncRedirectUrl);
 
+            function setThemeIdentityReadonly(lock) {
+                if (elFolder) elFolder.readOnly = !!lock;
+                if (elTitle) elTitle.readOnly = !!lock;
+                if (elAuthor) elAuthor.readOnly = !!lock;
+                if (!identityHint) return;
+                if (lock) {
+                    identityHint.hidden = false;
+                    identityHint.textContent =
+                        "Theme folder/title/author were auto-filled from the gallery for this report link.";
+                } else {
+                    identityHint.hidden = true;
+                    identityHint.textContent = "";
+                }
+            }
+
+            async function readConfigAuthorForFolder(folderName) {
+                const f = String(folderName || "").trim();
+                if (!f || f.includes("..")) return "";
+                try {
+                    const path = f.split("/").map((seg) => encodeURIComponent(seg)).join("/") + "/config.json";
+                    const r = await fetch(path, { cache: "no-store" });
+                    if (!r.ok) return "";
+                    const cfg = await r.json();
+                    if (!cfg || typeof cfg !== "object") return "";
+                    const ti = cfg.theme_info && typeof cfg.theme_info === "object" ? cfg.theme_info : {};
+                    const si = cfg.source_info && typeof cfg.source_info === "object" ? cfg.source_info : {};
+                    return String(ti.author || si.author || "").trim();
+                } catch (_) {
+                    return "";
+                }
+            }
+
+            async function hydrateThemeIdentityFromFolder() {
+                const f = String(elFolder && elFolder.value || "").trim();
+                if (!f) {
+                    setThemeIdentityReadonly(false);
+                    return;
+                }
+                try {
+                    const res = await fetch("themes.json", { cache: "no-store" });
+                    if (!res.ok) {
+                        setThemeIdentityReadonly(false);
+                        return;
+                    }
+                    const data = await res.json();
+                    const list = data && Array.isArray(data.themes) ? data.themes : [];
+                    const row = list.find((t) => t && String(t.folder || "").trim() === f);
+                    if (!row) {
+                        setThemeIdentityReadonly(false);
+                        return;
+                    }
+                    if (elTitle && !String(elTitle.value || "").trim()) {
+                        elTitle.value = String(row.name || "").trim();
+                    }
+                    if (elAuthor && !String(elAuthor.value || "").trim()) {
+                        const listingAuthor = String(row.author || "").trim();
+                        elAuthor.value = listingAuthor || (await readConfigAuthorForFolder(f));
+                    }
+                    setThemeIdentityReadonly(true);
+                    syncRedirectUrl();
+                } catch (_) {
+                    setThemeIdentityReadonly(false);
+                }
+            }
+
             const hasTheme = !!resolvedFolder;
             const removeUrl = hasTheme ?
                 `https://themes.innioasis.app/upload.html?mode=remove&folder=${encodeURIComponent(resolvedFolder)}` :
@@ -372,6 +439,8 @@
                     `https://themes.innioasis.app/report-theme.html?folder=${encodeURIComponent(resolvedFolder)}&title=${encodeURIComponent(resolvedTitle)}&author=${encodeURIComponent(author)}&ref=${encodeURIComponent(ref)}` :
                     "https://themes.innioasis.app/report-theme.html";
             }
+
+            hydrateThemeIdentityFromFolder();
 
             if (sent) {
                 const b = document.getElementById("report-sent-banner");
