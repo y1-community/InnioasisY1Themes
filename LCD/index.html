@@ -270,7 +270,6 @@
 
         loadSupportToolbar();
 
-        const GITHUB_TOKEN = '';
         const FALLBACK_PLACEHOLDER_URL = 'https://themes.innioasis.app/placeholder.png';
         const globalThemeSearch = document.getElementById('global-theme-search');
         if (globalThemeSearch) {
@@ -345,12 +344,6 @@
                 .replace(/\+/g, ' ')
                 .replace(/\s+/g, ' ')
                 .replace(/[^\w\s-]/g, '');
-        }
-
-        function githubApiUrlForFolder(folder) {
-            const cleaned = (folder || '').replace(/^\.\/+/, '')
-            const encodedPath = cleaned.split('/').map(seg => encodeURIComponent(seg)).join('/');
-            return `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${encodedPath}`
         }
 
         async function tryFetchThemes() {
@@ -466,70 +459,41 @@
             }, 1000);
         }
 
-        async function ghFetch(url) {
-            const headers = {
-                'Accept': 'application/vnd.github.v3+json'
-            }
-            if (GITHUB_TOKEN && GITHUB_TOKEN.trim()) headers['Authorization'] = 'Bearer ' + GITHUB_TOKEN.trim()
-            return fetch(url, {
-                headers
-            })
+        function encodePathSegments(pathValue) {
+            return String(pathValue || '')
+                .split('/')
+                .filter(Boolean)
+                .map(seg => encodeURIComponent(seg))
+                .join('/');
         }
 
-        async function listFolderFiles(folderPath) {
-            const apiUrl = githubApiUrlForFolder(folderPath)
-            const res = await ghFetch(apiUrl)
-            if (!res.ok) throw new Error('Failed to fetch folder listing: ' + res.status)
-            const entries = await res.json()
-            if (!Array.isArray(entries)) throw new Error('No folder contents')
-
-            const fileEntries = []
-            async function walk(entries) {
-                for (const entry of entries) {
-                    if (entry.type === 'file') {
-                        fileEntries.push(entry)
-                    } else if (entry.type === 'dir') {
-                        try {
-                            const r = await ghFetch(entry.url)
-                            if (!r.ok) continue
-                            const nested = await r.json()
-                            await walk(nested)
-                        } catch (e) {
-                            console.warn('nested fetch failed', e)
-                        }
-                    }
-                }
-            }
-
-            await walk(entries)
-            return fileEntries
-        }
-
-        function rawUrlForAsset(folderPath, assetPath) {
+        function themeFileUrl(folderPath, relativePath) {
             const folderClean = String(folderPath || '').replace(/^\.\/+/, '').replace(/\/+$/, '');
-            const assetClean = String(assetPath || '').replace(/^\.\/+/, '');
-            if (!folderClean || !assetClean) return '';
-            const encoded = `${folderClean}/${assetClean}`.split('/').map(seg => encodeURIComponent(seg)).join('/');
-            return `https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/${encoded}`;
+            const pathClean = String(relativePath || '').replace(/^\.\/+/, '').replace(/\\/g, '/');
+            if (!pathClean) return '';
+            const encodedPath = encodePathSegments(pathClean);
+            if (!folderClean) return encodedPath;
+            const encodedFolder = encodePathSegments(folderClean);
+            return `${encodedFolder}/${encodedPath}`;
         }
 
-        function extractAssetsFromConfig(cfg, folderPath) {
+        function extractFilesFromConfig(cfg, folderPath) {
             if (!cfg || typeof cfg !== 'object') return [];
             const out = [];
             const seen = new Set();
-            const hasAssetExt = (v) => /\.(png|jpe?g|gif|webp|svg|ttf|otf)$/i.test(String(v || ''));
-            const pushAsset = (value) => {
-                const v = String(value || '').trim();
-                if (!v || !hasAssetExt(v)) return;
-                if (v.includes('://')) return;
-                const key = v.toLowerCase();
+            const hasFileExt = (v) => /\.(png|jpe?g|gif|webp|bmp|svg|ttf|otf|woff2?|json|txt|md|ini)$/i.test(String(v || ''));
+            const pushFile = (value) => {
+                const v = String(value || '').trim().replace(/\\/g, '/');
+                if (!v || v.includes('://') || !hasFileExt(v)) return;
+                const key = v.toLowerCase().replace(/^\.\/+/, '');
                 if (seen.has(key)) return;
                 seen.add(key);
+                const cleanPath = v.replace(/^\.\/+/, '');
                 out.push({
-                    name: v.split('/').pop(),
-                    path: v,
+                    name: cleanPath.split('/').pop(),
+                    path: cleanPath,
                     size: 0,
-                    download_url: rawUrlForAsset(folderPath, v)
+                    download_url: themeFileUrl(folderPath, cleanPath)
                 });
             };
             const walk = (node) => {
@@ -538,11 +502,13 @@
                     return;
                 }
                 if (!node || typeof node !== 'object') {
-                    if (typeof node === 'string') pushAsset(node);
+                    if (typeof node === 'string') pushFile(node);
                     return;
                 }
                 for (const val of Object.values(node)) walk(val);
             };
+            // Always include the config itself for complete portable exports.
+            pushFile('config.json');
             walk(cfg);
             return out.filter(f => f.download_url);
         }
@@ -605,45 +571,10 @@
         }
 
 
-        async function downloadGitHubFolderAsZip(folderName, themeName, progressCallbacks) {
+        async function downloadThemeFilesAsZip(themeName, files, progressCallbacks) {
             const zip = new JSZip();
-            const apiUrl = githubApiUrlForFolder(folderName);
-
+            const fileEntries = Array.isArray(files) ? files : [];
             progressCallbacks?.onStart?.(`Fetching file list for ${themeName}...`);
-
-            let files;
-            try {
-                const res = await ghFetch(apiUrl);
-                if (!res.ok) {
-                    throw new Error(`Failed to fetch GitHub API folder contents (${res.status})`);
-                }
-                files = await res.json();
-            } catch (e) {
-                throw new Error(`Cannot fetch folder contents: ${e.message}`);
-            }
-
-            if (!Array.isArray(files)) throw new Error('GitHub API did not return a file list.');
-
-            const fileEntries = [];
-
-            async function walk(entries) {
-                for (const entry of entries) {
-                    if (entry.type === 'file') {
-                        fileEntries.push(entry);
-                    } else if (entry.type === 'dir') {
-                        const res = await ghFetch(entry.url);
-                        if (!res.ok) {
-                            console.warn('Failed to fetch subfolder', entry.path);
-                            continue;
-                        }
-                        const nested = await res.json();
-                        await walk(nested);
-                    }
-                }
-            }
-
-            await walk(files);
-
             const totalFiles = fileEntries.length;
             if (totalFiles === 0) throw new Error('No files found in the theme folder.');
 
@@ -653,30 +584,16 @@
                 try {
                     const beforePercent = Math.round((downloadedFiles / totalFiles) * 80);
                     progressCallbacks?.onProgress?.(`${file.path} (${downloadedFiles + 1}/${totalFiles})`, beforePercent);
-                    const fileResp = await ghFetch(file.download_url);
-                    let blob;
-                    try {
-                        const fr = await fetch(file.download_url);
-                        if (!fr.ok) throw new Error('raw download failed')
-                        blob = await fr.blob();
-                    } catch (e) {
-                        const apiR = await ghFetch(file.url);
-                        if (!apiR.ok) {
-                            console.warn(`Failed to fetch file ${file.path}: ${apiR.status}`);
-                            downloadedFiles++;
-                            progressCallbacks?.onProgress?.(`Skipped ${file.path}`, Math.round((downloadedFiles / totalFiles) * 80));
-                            continue;
-                        }
-                        const json = await apiR.json();
-                        if (json.encoding === 'base64' && json.content) {
-                            const bytes = atob(json.content.replace(/\n/g, ''));
-                            const arr = new Uint8Array(bytes.length);
-                            for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
-                            blob = new Blob([arr]);
-                        } else {
-                            blob = new Blob([json.content || '']);
-                        }
+                    const fr = await fetch(file.download_url, {
+                        cache: 'no-cache'
+                    });
+                    if (!fr.ok) {
+                        console.warn(`Failed to fetch file ${file.path}: ${fr.status}`);
+                        downloadedFiles++;
+                        progressCallbacks?.onProgress?.(`Skipped ${file.path}`, Math.round((downloadedFiles / totalFiles) * 80));
+                        continue;
                     }
+                    const blob = await fr.blob();
                     zip.file(file.path, blob);
                     downloadedFiles++;
                     progressCallbacks?.onProgress?.(`Downloading ${file.path} (${downloadedFiles}/${totalFiles})`, Math.round((downloadedFiles / totalFiles) * 80));
@@ -764,7 +681,7 @@
             };
         }
 
-        async function downloadTheme(theme, buttonNode) {
+        async function downloadTheme(theme, buttonNode, downloadableFiles) {
             const parent = buttonNode.parentElement || buttonNode.parentNode;
             if (!parent) return;
             buttonNode.disabled = true;
@@ -787,7 +704,7 @@
                     }
                 };
 
-                const zipBlob = await downloadGitHubFolderAsZip(theme.folder, theme.name, callbacks);
+                const zipBlob = await downloadThemeFilesAsZip(theme.name, downloadableFiles, callbacks);
 
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(zipBlob);
@@ -859,15 +776,7 @@
                 }
             }
 
-            let files = []
-            try {
-                files = await listFolderFiles(folder)
-            } catch (e) {
-                console.warn('listFolderFiles failed', e)
-                files = []
-            }
-            const fallbackConfigFiles = extractAssetsFromConfig(themeMeta && themeMeta.rawConfig, folder);
-            const effectiveFiles = files.length ? files : fallbackConfigFiles;
+            const effectiveFiles = extractFilesFromConfig(themeMeta && themeMeta.rawConfig, folder);
 
             const nameEl = document.getElementById('theme-name')
             const descEl = document.getElementById('theme-desc')
@@ -953,10 +862,10 @@
                 folder: folder
             }
 
-            downloadBtn.onclick = () => downloadTheme(themeObj, downloadBtn)
+            downloadBtn.onclick = () => downloadTheme(themeObj, downloadBtn, effectiveFiles)
 
             if (!effectiveFiles.length) {
-                assetsList.innerHTML = `<div style="color:var(--text-secondary)">No files found in that folder or failed to fetch folder contents.</div>`
+                assetsList.innerHTML = `<div style="color:var(--text-secondary)">No downloadable files were resolved from this theme's config.json.</div>`
             } else {
                 effectiveFiles.sort((a, b) => String(a.path || '').localeCompare(String(b.path || '')))
                 for (const f of effectiveFiles) {
