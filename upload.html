@@ -5,13 +5,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title id="upload-doc-title">Upload your theme — Innioasis Y1 Themes</title>
-    <meta name="description" content="Share a new look for the Innioasis Y1 themes gallery. Upload a ZIP or folder; we’ll open a review for the team." />
+    <meta name="description" content="Share a new look for the Innioasis Y1 themes gallery. Upload a ZIP or folder; we’ll send it to the team for listing." />
     <meta name="author" content="Innioasis Community" />
     <link rel="canonical" href="https://themes.innioasis.app/upload.html">
 
     <meta property="og:type" content="website">
     <meta property="og:title" content="Upload your theme — Innioasis Y1 Themes">
-    <meta property="og:description" content="Send a ZIP or theme folder for review and listing on the gallery.">
+    <meta property="og:description" content="Send a ZIP or theme folder to the team for listing on the gallery.">
     <meta property="og:url" content="https://themes.innioasis.app/upload.html">
     <meta property="og:image" content="https://innioasis.app/y1_illustration.png">
 
@@ -21,6 +21,27 @@
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
     <!-- Same origin as upload; POST {origin}/api/upload-theme and /api/removal-request -->
     <meta name="cf-pages-upload-api-origin" content="https://y1-theme-upload.itsryanspecter.workers.dev" />
+    <script>
+        (function () {
+            function apiUrl(path) {
+                var meta = document.querySelector('meta[name="cf-pages-upload-api-origin"]');
+                var raw = meta && meta.getAttribute("content") ? String(meta.getAttribute("content")).trim() : "";
+                if (!raw) return path;
+                try {
+                    var base = raw.replace(/\/+$/, "");
+                    return new URL(path, base + "/").toString();
+                } catch (e) {
+                    return path;
+                }
+            }
+            window.uploadThemeEndpoint = function () {
+                return apiUrl("/api/upload-theme");
+            };
+            window.removalThemeEndpoint = function () {
+                return apiUrl("/api/removal-request");
+            };
+        })();
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         html,
@@ -369,9 +390,9 @@
         <header>
             <h1 id="upload-page-title">Upload your theme</h1>
             <p class="lead" id="upload-lead">
-                Share a new look for the Innioasis Y1 player. Choose a ZIP file or a whole theme folder — we’ll package it safely in your browser and send it to the team for review.
+                Share a new look for the Innioasis Y1 player. Choose a ZIP file or a whole theme folder — we’ll package it safely in your browser and send it to the team.
             </p>
-            <p class="hint" id="upload-hint">You’ll get a link to track your submission. Only <strong>brand-new</strong> theme identities may auto-merge; edits, variations that reuse another theme’s display title without a clear remix suffix, and removals are always reviewed by a human before landing on the site.</p>
+            <p class="hint" id="upload-hint">You’ll get a link to track your submission. Only <strong>brand-new</strong> theme identities may qualify for <strong>automatic submission</strong> after our checks; edits, variations that reuse another theme’s display title without a clear remix suffix, and removals always go through someone on the team before they appear on the site.</p>
         </header>
 
         <div class="card" id="panel-upload">
@@ -396,14 +417,14 @@
 
                 <div id="edit-notice" class="callout-info" hidden>
                     <p><strong>Updating an existing gallery theme</strong></p>
-                    <p>Your folder name matches <strong data-edit-folder></strong> (same identity as a theme already listed), and the <strong>author</strong> in <code>config.json</code> matches that listing. We’ll open a pull request titled from your <strong>title</strong> and <strong>author</strong> fields — it will stay open for <strong>manual review</strong> (edits are not auto-merged).</p>
+                    <p>Your folder name matches <strong data-edit-folder></strong> (same identity as a theme already listed), and the <strong>author</strong> in <code>config.json</code> matches that listing. We’ll prepare an update from your <strong>title</strong> and <strong>author</strong> fields — it stays with the team for <strong>manual review</strong> and does <strong>not</strong> use automatic submission.</p>
                     <p class="hint" style="margin-top: 0.5rem;">Catalog name: <span data-edit-catalog-title>—</span></p>
                 </div>
 
                 <div id="duplicate-notice" class="callout-warn" hidden>
                     <p><strong>This theme identity is already on the site under another author.</strong> Listed folder(s): <strong data-collision-list></strong>.</p>
                     <p>Rename your theme’s root folder so it doesn’t match the existing one (for example add <code>-yourhandle</code> at the end), or change the <strong>author</strong> in <code>config.json</code> if this is genuinely your own separate version. If you’re intentionally submitting a variation, confirm below.</p>
-                    <p class="hint" style="margin-top:0.5rem;">If your <strong>title</strong> matches another theme’s display name but the <strong>author</strong> does not, we treat that as suspicious impersonation and will not auto-merge — use a clearly distinct folder or remix-style suffix.</p>
+                    <p class="hint" style="margin-top:0.5rem;">If your <strong>title</strong> matches another theme’s display name but the <strong>author</strong> does not, we treat that as suspicious impersonation and automatic submission is not available — use a clearly distinct folder or remix-style suffix.</p>
                     <label class="variation-row">
                         <input type="checkbox" id="variation-ack" />
                         <span>I’m submitting a variation or remix; I understand a maintainer will review it before it’s published.</span>
@@ -420,15 +441,25 @@
 
         <div class="card" id="panel-remove" hidden>
             <form id="removal-form">
-                <p class="lead" style="margin-bottom:1rem;">Request removal of a theme from the public gallery. This opens a GitHub pull request that deletes the theme folder and removes its <code>themes.json</code> entry. <strong>Maintainers must merge the PR manually</strong> — it is never auto-merged.</p>
+                <p class="lead" style="margin-bottom:1rem;">Request removal of a theme from the public gallery. We show how it is <strong>listed in the gallery</strong> (title and author from the catalog). You must type those values before a removal request is sent. When approved, the theme folder and its <code>themes.json</code> entry are removed. <strong>Removals are never automatic</strong> — a maintainer completes the change by hand, and removal requests are <strong>never</strong> auto-merged.</p>
                 <div class="row">
                     <label>Theme folder</label>
                     <input type="text" id="removal-folder-display" readonly style="opacity:0.9;" />
                     <input type="hidden" name="folder" id="removal-folder-value" value="" />
                 </div>
+                <div id="removal-catalog-readout" class="callout-info" style="margin-bottom:1rem;" hidden>
+                    <p style="margin:0 0 0.5rem 0;"><strong>Listed in the gallery as</strong> (from the link you used)</p>
+                    <p style="margin:0.25rem 0;"><strong>Title:</strong> <span id="removal-catalog-name">—</span></p>
+                    <p style="margin:0.25rem 0;"><strong>Author:</strong> <span id="removal-catalog-author">—</span></p>
+                    <p class="hint" style="margin:0.65rem 0 0 0;">Type the title and author below to match these lines (extra spaces are ignored; letter case can differ).</p>
+                </div>
                 <div class="row">
-                    <label for="removal-confirm">Type the folder name to confirm</label>
-                    <input id="removal-confirm" name="confirmFolder" type="text" autocomplete="off" placeholder="Exact folder name" />
+                    <label for="removal-confirm-name">Type the catalog title</label>
+                    <input id="removal-confirm-name" name="confirmName" type="text" autocomplete="off" placeholder="Same as “Title” above" />
+                </div>
+                <div class="row" id="removal-confirm-author-row">
+                    <label for="removal-confirm-author">Type the catalog author</label>
+                    <input id="removal-confirm-author" name="confirmAuthor" type="text" autocomplete="off" placeholder="Same as “Author” above" />
                 </div>
                 <div class="row">
                     <label for="removal-reason">Reason (optional)</label>
@@ -438,7 +469,7 @@
                     <label for="removal-requester">Your name or handle (optional)</label>
                     <input id="removal-requester" name="requester" type="text" maxlength="120" />
                 </div>
-                <button id="removal-submit-btn" type="submit" class="btn btn-primary"><i class="fa-solid fa-trash-can" style="margin-right: 6px;"></i>Open removal pull request</button>
+                <button id="removal-submit-btn" type="submit" class="btn btn-primary"><i class="fa-solid fa-trash-can" style="margin-right: 6px;"></i>Submit removal request</button>
             </form>
             <div id="removal-status" class="status"></div>
         </div>
@@ -446,10 +477,10 @@
         <div class="card" id="after-send-card">
             <h3 id="after-send-title">What happens after you send</h3>
             <ul id="after-send-list">
-                <li>Your theme is uploaded securely and a <strong>review request</strong> is opened for the maintainers.</li>
+                <li>Your theme is uploaded securely and <strong>a submission is queued</strong> for the maintainers.</li>
                 <li>They check that files are safe and the theme structure looks good.</li>
-                <li><strong>Brand-new folder names</strong> can often be merged automatically after checks pass.</li>
-                <li>If the <strong>same folder name</strong> already exists, we <strong>do not</strong> auto-merge — a person will look at your PR first so nothing is overwritten by surprise.</li>
+                <li><strong>Brand-new folder names</strong> can often go through <strong>automatic submission</strong> once our checks pass.</li>
+                <li>If the <strong>same folder name</strong> already exists, we <strong>do not</strong> use automatic submission — someone on the team will review your submission first so nothing is overwritten by surprise.</li>
                 <li>Once accepted, your theme appears on this site for everyone to download.</li>
             </ul>
         </div>
@@ -505,18 +536,6 @@
         }
     </script>
     <script>
-        function removalThemeEndpoint() {
-            const meta = document.querySelector('meta[name="cf-pages-upload-api-origin"]');
-            const raw = meta && meta.getAttribute("content") ? String(meta.getAttribute("content")).trim() : "";
-            if (!raw) return "/api/removal-request";
-            try {
-                const base = raw.replace(/\/+$/, "");
-                return new URL("/api/removal-request", `${base}/`).toString();
-            } catch (_) {
-                return "/api/removal-request";
-            }
-        }
-
         const urlParams = new URLSearchParams(location.search);
         let pageMode = String(urlParams.get("mode") || "new")
             .trim()
@@ -557,7 +576,7 @@
             if (!h1 || !lead || !panelUpload || !panelRemove || !afterTitle || !afterList) return;
 
             const commonHint =
-                "Only brand-new theme identities may auto-merge; edits, suspicious title/author combinations, variations without a clear remix-style folder name, and removals are always reviewed by a human before landing on the site.";
+                "Only brand-new theme identities may qualify for automatic submission after our checks; edits, suspicious title/author combinations, variations without a clear remix-style folder name, and removals always go through someone on the team before they appear on the site.";
 
             if (pageMode === "remove") {
                 panelUpload.hidden = true;
@@ -565,10 +584,10 @@
                 if (docTitle) docTitle.textContent = "Request theme removal — Innioasis Y1 Themes";
                 h1.textContent = "Request theme removal";
                 lead.textContent =
-                    "This opens a GitHub pull request that deletes the theme folder and removes its catalog entry. Removal PRs are never auto-merged.";
+                    "You must type the catalog title and author shown below so we know you are removing the correct listing. When the team approves, the theme folder and catalog entry are removed. Removals never use automatic submission.";
                 if (hint) {
                     hint.textContent =
-                        "Use this if you control the listing, are the author, or are reporting abuse or a policy violation. False or frivolous requests may be closed without action. " +
+                        "Removal requests open a tracked change for maintainers only — they are never auto-merged or automatically published. " +
                         commonHint;
                 }
                 const disp = document.getElementById("removal-folder-display");
@@ -579,10 +598,11 @@
                 }
                 afterTitle.textContent = "What happens next";
                 afterList.innerHTML = [
-                    "<li>A pull request titled <code>[Removal] …</code> is opened against the theme repository.</li>",
-                    "<li>Maintainers review and merge it manually when appropriate.</li>",
-                    "<li>After merge, the site’s ingest job updates the gallery; the theme disappears from the public catalog.</li>"
+                    "<li>After you type the <strong>listed title</strong> and <strong>author</strong> (if any) and submit, a <strong>removal request</strong> is created for the maintainers.</li>",
+                    "<li>It is <strong>not</strong> eligible for automatic submission and is <strong>not</strong> auto-merged — someone on the team reviews and publishes or declines it.</li>",
+                    "<li>When published, the site refresh removes the theme from the public catalog.</li>"
                 ].join("");
+                void refreshRemovalCatalogDisplay();
                 return;
             }
 
@@ -593,17 +613,17 @@
                 if (docTitle) docTitle.textContent = "Submit a theme update — Innioasis Y1 Themes";
                 h1.textContent = "Submit a theme update";
                 lead.textContent =
-                    "Upload a ZIP or theme folder. Use the same root folder name as the listing you are updating. The pull request stays open for manual review — updates are not auto-merged.";
+                    "Upload a ZIP or theme folder. Use the same root folder name as the listing you are updating. Updates stay with the team for manual review and do not use automatic submission.";
                 if (hint) {
                     const pre = themeFolderParam ? `Editing folder: ${themeFolderParam}. ` : "";
                     hint.textContent = pre + "We pre-fill config.json fields below when available. " + commonHint;
                 }
                 afterTitle.textContent = "What happens after you send";
                 afterList.innerHTML = [
-                    "<li>Your ZIP is uploaded and a <strong>review request</strong> is opened.</li>",
-                    "<li>Same-folder updates are <strong>never</strong> auto-merged; a maintainer checks the diff before merge.</li>",
-                    "<li>Brand-new folder names may still auto-merge when checks pass and the submission is clearly a new identity.</li>",
-                    "<li>Once accepted, the gallery updates after the next ingest run on <code>main</code>.</li>"
+                    "<li>Your ZIP is uploaded and <strong>a submission is queued</strong> for the maintainers.</li>",
+                    "<li>Same-folder updates are <strong>never</strong> sent through automatic submission; a maintainer checks everything before publishing.</li>",
+                    "<li>Brand-new folder names may still qualify for automatic submission when checks pass and the submission is clearly a new identity.</li>",
+                    "<li>Once accepted, the gallery updates after the next site refresh from the main catalog.</li>"
                 ].join("");
                 return;
             }
@@ -611,14 +631,14 @@
             if (docTitle) docTitle.textContent = "Upload your theme — Innioasis Y1 Themes";
             h1.textContent = "Upload your theme";
             lead.textContent =
-                "Share a new look for the Innioasis Y1 player. Choose a ZIP file or a whole theme folder — we’ll package it safely in your browser and send it to the team for review.";
+                "Share a new look for the Innioasis Y1 player. Choose a ZIP file or a whole theme folder — we’ll package it safely in your browser and send it to the team.";
             if (hint) hint.textContent = "You’ll get a link to track your submission. " + commonHint;
             afterTitle.textContent = "What happens after you send";
             afterList.innerHTML = [
-                "<li>Your theme is uploaded securely and a <strong>review request</strong> is opened for the maintainers.</li>",
+                "<li>Your theme is uploaded securely and <strong>a submission is queued</strong> for the maintainers.</li>",
                 "<li>They check that files are safe and the theme structure looks good.</li>",
-                "<li><strong>Brand-new folder names</strong> can often be merged automatically after checks pass.</li>",
-                "<li>If the <strong>same folder name</strong> already exists, we <strong>do not</strong> auto-merge — a person will look at your PR first so nothing is overwritten by surprise.</li>",
+                "<li><strong>Brand-new folder names</strong> can often go through <strong>automatic submission</strong> once our checks pass.</li>",
+                "<li>If the <strong>same folder name</strong> already exists, we <strong>do not</strong> use automatic submission — someone on the team will review your submission first so nothing is overwritten by surprise.</li>",
                 "<li>Once accepted, your theme appears on this site for everyone to download.</li>"
             ].join("");
         }
@@ -677,6 +697,74 @@
                 /* offline / CORS: skip duplicate hints */
             }
             syncCollisionUi();
+            void refreshRemovalCatalogDisplay();
+        }
+
+        async function refreshRemovalCatalogDisplay() {
+            if (pageMode !== "remove") return;
+            const readout = document.getElementById("removal-catalog-readout");
+            const nameEl = document.getElementById("removal-catalog-name");
+            const authorEl = document.getElementById("removal-catalog-author");
+            const authorRow = document.getElementById("removal-confirm-author-row");
+            const authorInput = document.getElementById("removal-confirm-author");
+            const nameInput = document.getElementById("removal-confirm-name");
+            if (!nameEl || !authorEl) return;
+            if (!themeFolderParam) {
+                nameEl.textContent = "—";
+                authorEl.textContent = "—";
+                if (readout) readout.hidden = true;
+                if (authorRow) authorRow.hidden = true;
+                if (authorInput) {
+                    authorInput.required = false;
+                    authorInput.value = "";
+                }
+                if (nameInput) nameInput.value = "";
+                return;
+            }
+            try {
+                const res = await fetch("themes.json", { cache: "no-store" });
+                if (!res.ok) {
+                    nameEl.textContent = "(could not load catalog)";
+                    authorEl.textContent = "—";
+                    if (readout) readout.hidden = false;
+                    return;
+                }
+                const data = await res.json();
+                const list = data && Array.isArray(data.themes) ? data.themes : [];
+                const row = list.find((t) => t && String(t.folder || "").trim() === themeFolderParam);
+                if (!row) {
+                    nameEl.textContent = "(folder not in catalog)";
+                    authorEl.textContent = "—";
+                    if (readout) readout.hidden = false;
+                    if (authorRow) authorRow.hidden = true;
+                    if (authorInput) {
+                        authorInput.required = false;
+                        authorInput.value = "";
+                    }
+                    return;
+                }
+                const n = String(row.name || "").trim() || themeFolderParam;
+                const a = String(row.author || "").trim();
+                nameEl.textContent = n;
+                authorEl.textContent = a || "— (none listed; title only)";
+                if (readout) readout.hidden = false;
+                if (authorRow) {
+                    authorRow.hidden = !a;
+                    if (authorInput) {
+                        authorInput.required = !!a;
+                        authorInput.value = "";
+                        authorInput.placeholder = a ? `Same as “Author” above (${a})` : "Same as “Author” above";
+                    }
+                }
+                if (nameInput) {
+                    nameInput.value = "";
+                    nameInput.placeholder = `Same as “Title” above (${n})`;
+                }
+            } catch (_) {
+                nameEl.textContent = "(could not load catalog)";
+                authorEl.textContent = "—";
+                if (readout) readout.hidden = false;
+            }
         }
 
         function collectThemeRootFolders() {
@@ -801,22 +889,33 @@
                 event.preventDefault();
                 const folderEl = document.getElementById("removal-folder-value");
                 const folder = folderEl ? String(folderEl.value || "").trim() : "";
-                const confirmFolder = String(document.getElementById("removal-confirm")?.value || "").trim();
+                const confirmName = String(document.getElementById("removal-confirm-name")?.value || "").trim();
+                const confirmAuthor = String(document.getElementById("removal-confirm-author")?.value || "").trim();
                 const reason = String(document.getElementById("removal-reason")?.value || "").trim();
                 const requester = String(document.getElementById("removal-requester")?.value || "").trim();
                 if (!folder) {
                     setRemovalStatus('Missing theme folder. Use a link with ?folder=YourFolder in the URL.', false);
                     return;
                 }
+                if (!confirmName) {
+                    setRemovalStatus("Type the catalog title exactly as shown in the gray box.", false);
+                    return;
+                }
+                const authorRow = document.getElementById("removal-confirm-author-row");
+                if (authorRow && !authorRow.hidden && !confirmAuthor) {
+                    setRemovalStatus("Type the catalog author exactly as shown in the gray box.", false);
+                    return;
+                }
                 removalSubmitBtn.disabled = true;
-                setRemovalStatus("Opening removal pull request…", true);
+                setRemovalStatus("Submitting your removal request…", true);
                 try {
                     const fd = new FormData();
                     fd.set("folder", folder);
-                    fd.set("confirmFolder", confirmFolder);
+                    fd.set("confirmName", confirmName);
+                    fd.set("confirmAuthor", confirmAuthor);
                     fd.set("reason", reason);
                     fd.set("requester", requester);
-                    const res = await fetch(removalThemeEndpoint(), {
+                    const res = await fetch(window.removalThemeEndpoint(), {
                         method: "POST",
                         body: fd
                     });
@@ -825,11 +924,12 @@
                         throw new Error(payload.error || `Request failed (${res.status})`);
                     }
                     const link = payload.prUrl ? String(payload.prUrl) : "";
-                    setRemovalStatus(link ? `Removal PR opened:\n${link}` : "Removal PR opened.", true);
+                    setRemovalStatus(link ? `Removal request created. Track it here:\n${link}` : "Removal request created.", true);
                     removalForm.reset();
                     if (folderEl) folderEl.value = folder;
                     const disp = document.getElementById("removal-folder-display");
                     if (disp) disp.value = folder;
+                    void refreshRemovalCatalogDisplay();
                 } catch (err) {
                     setRemovalStatus(String(err && err.message ? err.message : err), false);
                 } finally {
@@ -1174,7 +1274,7 @@
                 const data = new FormData(form);
                 const rebuiltZip = await buildZipForUpload();
                 data.set("zip", rebuiltZip, rebuiltZip.name);
-                const res = await fetch(uploadThemeEndpoint(), {
+                const res = await fetch(window.uploadThemeEndpoint(), {
                     method: "POST",
                     body: data
                 });
@@ -1186,7 +1286,7 @@
 
                 const link = payload.prUrl ? String(payload.prUrl) : "";
                 const msg = link
-                    ? `Thanks! Your theme is in the review queue.\n\nFollow your request here:\n${link}\n\nIf your theme uses an existing folder name, a maintainer will confirm before anything goes live.`
+                    ? `Thanks! Your theme is queued with the team.\n\nTrack your submission here:\n${link}\n\nIf your theme uses an existing folder name, a maintainer will confirm before anything goes live.`
                     : `Thanks! Your theme was received. If your theme uses an existing folder name, a maintainer will confirm before anything goes live.`;
                 setStatus(msg, true);
                 form.reset();

@@ -6,6 +6,9 @@
 #   same author or both unknown => treated as edit). Different authors must use a
 #   suffixed folder name (e.g. ThemeName-handle) inside the ZIP.
 # - Catalog title (theme_info.title) matches an existing entry (normalized).
+#
+# Removal PRs (title starts with [Removal]) never run this job: the workflow is skipped so
+# removal requests are always reviewed and merged manually — no automatic submission.
 
 name: Auto Merge New Theme PRs
 

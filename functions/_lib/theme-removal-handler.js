@@ -1,6 +1,6 @@
 /**
- * Theme removal: opens a PR that deletes the theme folder and removes themes.json entry.
- * Never auto-merged (PR title prefix [Removal]; workflow skips merge).
+ * Theme removal: opens a tracked change that deletes the theme folder and removes themes.json entry.
+ * Never published automatically (title prefix [Removal]; workflow skips automatic handling).
  */
 
 export const CORS_HEADERS = {
@@ -80,6 +80,14 @@ function toBase64Utf8(text) {
   return btoa(binary);
 }
 
+/** Normalize user/catalog strings for confirmation compare (trim, collapse spaces, case-insensitive). */
+function normConfirmText(s) {
+  return String(s || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+}
+
 const RESERVED_TOP = new Set([
   "scripts",
   "functions",
@@ -142,7 +150,8 @@ export async function handleRemovalPost(request, env) {
     const folderRaw = String(form.get("folder") || "").trim();
     const reason = String(form.get("reason") || "").trim();
     const requester = String(form.get("requester") || "").trim();
-    const confirm = String(form.get("confirmFolder") || "").trim();
+    const confirmNameRaw = String(form.get("confirmName") || "").trim();
+    const confirmAuthorRaw = String(form.get("confirmAuthor") || "").trim();
 
     if (!folderRaw) {
       return jsonResponse({ error: "Missing folder name." }, 400);
@@ -153,9 +162,6 @@ export async function handleRemovalPost(request, env) {
     const top = folderRaw.split("/")[0];
     if (RESERVED_TOP.has(top)) {
       return jsonResponse({ error: "That path cannot be removed via this form." }, 400);
-    }
-    if (confirm !== folderRaw) {
-      return jsonResponse({ error: "Confirmation must match the folder name exactly." }, 400);
     }
 
     const apiBase = `https://api.github.com/repos/${owner}/${repo}`;
@@ -189,6 +195,37 @@ export async function handleRemovalPost(request, env) {
     }
     if (String(list[idx].sourceType || "").toLowerCase() === "external") {
       return jsonResponse({ error: "External catalog entries cannot be removed this way." }, 400);
+    }
+
+    const catalogRow = list[idx];
+    const catalogName = String(catalogRow.name || "").trim() || folderRaw;
+    const catalogAuthor = String(catalogRow.author || "").trim();
+
+    if (!confirmNameRaw) {
+      return jsonResponse({ error: "Type the catalog title exactly as shown for this theme." }, 400);
+    }
+    if (normConfirmText(confirmNameRaw) !== normConfirmText(catalogName)) {
+      return jsonResponse(
+        {
+          error:
+            "The title you typed does not match this theme’s catalog listing. Use the same spelling as the gallery (see the removal page).",
+        },
+        400
+      );
+    }
+    if (catalogAuthor) {
+      if (!confirmAuthorRaw) {
+        return jsonResponse({ error: "Type the catalog author exactly as shown for this theme." }, 400);
+      }
+      if (normConfirmText(confirmAuthorRaw) !== normConfirmText(catalogAuthor)) {
+        return jsonResponse(
+          {
+            error:
+              "The author you typed does not match this theme’s catalog listing. Copy it from the removal form.",
+          },
+          400
+        );
+      }
     }
 
     const blobPaths = await collectBlobPathsUnderFolder(apiBase, token, folderRaw, baseBranch);
@@ -270,12 +307,16 @@ export async function handleRemovalPost(request, env) {
       "## Theme removal request",
       "",
       `- **Folder:** \`${folderRaw}\``,
+      `- **Catalog title:** ${catalogName}`,
+      catalogAuthor ? `- **Catalog author:** ${catalogAuthor}` : `- **Catalog author:** _(none listed)_`,
       requester ? `- **Requester:** ${requester}` : null,
       reason ? `- **Reason:** ${reason}` : null,
       "",
-      "This pull request **deletes the theme folder** and **removes the catalog entry** from `themes.json`.",
+      "The submitter confirmed the **listed title** (and **author**, if listed) before this request was created.",
       "",
-      "**This PR is not auto-merged.** A maintainer must review and merge (or close) manually.",
+      "This change **removes the theme folder** and **the catalog entry** in `themes.json`.",
+      "",
+      "**This request is not handled automatically.** A maintainer must review and complete (or decline) it manually. It is **not** eligible for automatic submission.",
     ]
       .filter(Boolean)
       .join("\n");

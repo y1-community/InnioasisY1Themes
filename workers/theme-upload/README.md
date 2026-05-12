@@ -97,4 +97,8 @@ Use the exact URL Wrangler prints after deploy, or attach a **Custom Domain** to
 
 The handlers send `Access-Control-Allow-Origin: *` so browsers on `themes.innioasis.app` (or any origin) can POST without credentials.
 
-Removal PRs use the title prefix `[Removal]` and are **not** auto-merged by the repository workflow.
+### Removal request body (`POST /api/removal-request`)
+
+`multipart/form-data` fields: **`folder`** (catalog folder path), **`confirmName`** (must match `themes.json` **name** for that folder), **`confirmAuthor`** (must match **author** when the listing has an author; omit or leave blank when none is listed), optional **`reason`**, **`requester`**.
+
+Removal requests use the title prefix `[Removal]` and are **not** published automatically by the repository workflow.
