@@ -110,7 +110,7 @@ export async function handleMetadataPost(request, env) {
     const baseBranch = env.GITHUB_BASE_BRANCH || "main";
     const maxItems = Math.max(
       1,
-      Math.min(100, Number(env.METADATA_API_MAX_ITEMS || 25) || 25)
+      Math.min(100, Number(env.METADATA_API_MAX_ITEMS || 20) || 20)
     );
 
     if (!token) {

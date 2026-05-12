@@ -222,7 +222,7 @@ def _collect_slug_candidates(meta: dict[str, Any], config: dict[str, Any] | None
                     t = _slug_token(auth.strip())
                     if t:
                         candidates.append(t)
-                break
+                        break
     out: list[str] = []
     seen: set[str] = set()
     for c in candidates:
@@ -314,9 +314,10 @@ def _inner_themes_from_zip_blob(blob: bytes, *, zip_stem: str) -> list[dict[str,
         names = [n for n in archive.namelist() if n and not n.endswith("/")]
         names_t = ztu.filter_zip_names_for_theme_logic(names)
         theme_keys = ztu.zip_theme_keys(names_t)
+        dest_names = ztu.inner_folder_names_for_zip(theme_keys, zip_stem)
         seen_folder: set[str] = set()
-        for key in theme_keys:
-            inner = zip_stem if key == "." else key
+        for idx, key in enumerate(theme_keys):
+            inner = dest_names[idx]
             if inner in seen_folder:
                 continue
             seen_folder.add(inner)
@@ -512,12 +513,10 @@ def _zip_title_impersonation_scan(
         names = [n for n in archive.namelist() if n and not n.endswith("/")]
         names_t = ztu.filter_zip_names_for_theme_logic(names)
         theme_keys = ztu.zip_theme_keys(names_t)
+        dest_names = ztu.inner_folder_names_for_zip(theme_keys, PurePosixPath(zip_repo_path).stem)
         seen: set[str] = set()
-        for key in theme_keys:
-            if key == ".":
-                folder = PurePosixPath(zip_repo_path).stem
-            else:
-                folder = key
+        for idx, key in enumerate(theme_keys):
+            folder = dest_names[idx]
             fn = folder.strip()
             if not fn or fn in seen:
                 continue
@@ -942,6 +941,7 @@ def main() -> int:
     if not folder_state and not zip_paths:
         return _fail(["PR must include new theme folders and/or zip submissions."])
 
+    seen_pr_logical: set[str] = set()
     for composite, state in folder_state.items():
         if not state["has_config"]:
             errors.append(f"{composite}/ is missing config.json.")
@@ -995,7 +995,17 @@ def main() -> int:
                 context=f"Added folder {composite}",
             )
         )
+        logical = logical_theme_slug(composite)
+        if logical in seen_pr_logical:
+            errors.append(
+                f"PR defines multiple added theme folders with the same logical identity: {composite!r}. "
+                "Use a unique folder name (or author suffix) per theme."
+            )
+        else:
+            seen_pr_logical.add(logical)
 
+    seen_pr_zip_logical: set[str] = set()
+    seen_pr_zip_dest: set[str] = set()
     for path in zip_paths:
         try:
             blob = _git_blob_bytes(f"{pr_ref}:{path}")
@@ -1008,6 +1018,29 @@ def main() -> int:
             meta = _read_upload_meta_pr(pr_ref, path)
             stem = PurePosixPath(path).stem
             for inner in _inner_themes_from_zip_blob(blob, zip_stem=stem):
+                logical = inner["logical"]
+                folder_low = str(inner["folder"]).strip().lower()
+                if logical in seen_pr_zip_logical:
+                    errors.append(
+                        f"ZIP {path}: duplicate logical theme identity in this PR ({inner['folder']!r}). "
+                        "Only one ZIP theme per logical name can auto-merge at a time."
+                    )
+                else:
+                    seen_pr_zip_logical.add(logical)
+                if folder_low in seen_pr_zip_dest:
+                    errors.append(
+                        f"ZIP {path}: duplicate extracted folder destination in this PR ({inner['folder']!r}). "
+                        "Ensure each ZIP theme extracts to a unique folder."
+                    )
+                else:
+                    seen_pr_zip_dest.add(folder_low)
+                if logical in seen_pr_logical:
+                    errors.append(
+                        f"ZIP {path}: theme {inner['folder']!r} conflicts with another added theme in this PR "
+                        "(same logical identity after normalization)."
+                    )
+                else:
+                    seen_pr_logical.add(logical)
                 errors.extend(
                     _identity_policy_errors(
                         base_sha=base_sha,

@@ -5,6 +5,10 @@ on:
     - cron: "17 */6 * * *"
   workflow_dispatch:
 
+concurrency:
+  group: theme-publish-main
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
@@ -39,6 +43,7 @@ jobs:
             echo "No metadata changes to commit."
             exit 0
           fi
+          git pull --rebase origin "${GITHUB_REF_NAME}"
           git add -A
           git commit -m "Auto-sync theme metadata from folders"
           git push origin HEAD:${GITHUB_REF_NAME}

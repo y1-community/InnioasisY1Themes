@@ -10,6 +10,10 @@ on:
       - main
   workflow_dispatch:
 
+concurrency:
+  group: theme-publish-main
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
@@ -17,6 +21,11 @@ jobs:
   ingest-and-sync:
     runs-on: ubuntu-latest
     steps:
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -41,11 +50,6 @@ jobs:
       - name: Verify theme index pages exist
         run: python scripts/sync_theme_metadata.py --check-theme-indexes
 
-      - name: Configure git identity
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
       - name: Commit and push
         run: |
           set -e
@@ -53,6 +57,7 @@ jobs:
             echo "No theme ingest or metadata changes."
             exit 0
           fi
+          git pull --rebase origin "${GITHUB_REF_NAME}"
           git add -A
           git commit -m "Theme ingest: extract zips, sync metadata, cleanup upload artifacts"
           git push origin HEAD:${GITHUB_REF_NAME}

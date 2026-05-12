@@ -191,6 +191,20 @@ def _process_zip(path: Path) -> tuple[bool, list[str]]:
         for err in ztu.zip_inner_folder_collision_errors(keys, path.stem, zip_label=path.name):
             return False, logs + [f"ERROR: {err}"]
 
+        # Preflight destination paths so extraction is all-or-nothing for this archive.
+        for dest_name in ztu.inner_folder_names_for_zip(keys, path.stem):
+            if not dest_name or dest_name in EXCLUDED_SCAN_DIRS or dest_name.startswith("."):
+                return False, logs + [f"ERROR: Destination folder name {dest_name!r} is not allowed."]
+            if (REPO_ROOT / dest_name).exists():
+                return (
+                    False,
+                    logs
+                    + [
+                        f"ERROR: Destination folder {dest_name}/ already exists. "
+                        "Archive retained to avoid partial extraction."
+                    ],
+                )
+
         extracted_any = False
         for key in keys:
             config_entry = "config.json" if key == "." else f"{key}/config.json"

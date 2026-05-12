@@ -22,6 +22,10 @@ permissions:
   contents: write
   pull-requests: write
 
+concurrency:
+  group: auto-merge-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   validate-and-merge:
     if: ${{ github.event.pull_request.draft == false && !startsWith(github.event.pull_request.title, '[Removal]') }}
