@@ -369,6 +369,11 @@ export async function handleRemovalPost(request, env) {
       "This change **removes the theme folder** and **the catalog entry** in `themes.json`.",
       "",
       "**This request is not handled automatically.** A maintainer must review and complete (or decline) it manually. It is **not** eligible for automatic submission.",
+      "",
+      "### Verification note for original GitHub uploaders",
+      "- If the original author/uploader added this theme using their GitHub account, they can verify consent by commenting on this PR.",
+      "- A repository maintainer should manually compare that commenter’s displayed name/handle with the original uploader identity in repository history before approving removal.",
+      "- Maintainer confirmation is required before merge.",
     ]
       .filter(Boolean)
       .join("\n");
