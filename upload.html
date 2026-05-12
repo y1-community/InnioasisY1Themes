@@ -416,32 +416,20 @@
                 </div>
 
                 <div id="edit-notice" class="callout-info" hidden>
-                    <p><strong>Updating an existing gallery theme</strong></p>
-                    <p>Your folder name matches <strong data-edit-folder></strong> (same identity as a theme already listed), and the <strong>author</strong> in <code>config.json</code> matches that listing. We’ll prepare an update from your <strong>title</strong> and <strong>author</strong> fields — it stays with the team for <strong>manual review</strong> and does <strong>not</strong> use automatic submission.</p>
-                    <p class="hint" style="margin-top: 0.5rem;">Catalog name: <span data-edit-catalog-title>—</span></p>
+                    <p><strong>Update to an existing listing</strong></p>
+                    <p>Your <strong>Author</strong> matches the catalog entry for <strong data-edit-folder></strong> (same person or team as the live listing). This is sent as an <strong>update</strong> — it does <strong>not</strong> use automatic submission; a maintainer will review.</p>
+                    <p class="hint" style="margin-top: 0.65rem;">If this is actually a <em>different</em> theme or a remix, change the <strong>Author</strong> field above so it clearly identifies you — then this is treated as a new package (see the yellow notice).</p>
+                    <p class="hint" style="margin-top: 0.35rem;">Catalog title: <span data-edit-catalog-title>—</span></p>
+                    <label class="variation-row" style="margin-top:0.75rem;">
+                        <input type="checkbox" id="edit-ack" />
+                        <span>I confirm I’m submitting an update to this existing listing, not a different theme.</span>
+                    </label>
                 </div>
 
-                <div id="duplicate-notice" class="callout-warn" hidden>
-                    <p><strong>This theme identity is already on the site under another author.</strong> Listed folder(s): <strong data-collision-list></strong>.</p>
-                    <p><strong>Best option:</strong> rename your theme’s root folder inside the ZIP (for example add <code>-yourhandle</code> at the end) so it is clearly a separate package. If you keep the same folder name as an existing listing, treat it as a <strong>variation</strong>: use the <strong>Author</strong> field above so it clearly identifies <em>you</em> (or your project), not the original artist — otherwise we may treat it as impersonation until a maintainer can verify consent.</p>
-                    <p class="hint" style="margin-top:0.5rem;">If your <strong>title</strong> matches another theme’s display name but the <strong>author</strong> does not match that listing, automatic submission is not available — use a clearly distinct folder or remix-style suffix unless you are intentionally submitting a variation and complete the confirmation below.</p>
-                    <div id="variation-catalog-readout" class="callout-info" style="margin-top:1rem;">
-                        <p style="margin:0 0 0.5rem 0;"><strong>Existing gallery listing</strong> — type these in the boxes below (same checks as removal requests; spacing normalized, case may differ).</p>
-                        <p style="margin:0.25rem 0;"><strong>Title:</strong> <span id="variation-catalog-name">—</span></p>
-                        <p style="margin:0.25rem 0;"><strong>Author:</strong> <span id="variation-catalog-author">—</span></p>
-                    </div>
-                    <div class="row">
-                        <label for="variation-confirm-name">Type the existing listing title</label>
-                        <input id="variation-confirm-name" name="variationConfirmName" type="text" autocomplete="off" placeholder="Match “Title” above" />
-                    </div>
-                    <div class="row" id="variation-confirm-author-row">
-                        <label for="variation-confirm-author">Type the existing listing author</label>
-                        <input id="variation-confirm-author" name="variationConfirmAuthor" type="text" autocomplete="off" placeholder="Match “Author” above" />
-                    </div>
-                    <label class="variation-row">
-                        <input type="checkbox" id="variation-ack" name="variationConsentAck" value="yes" />
-                        <span>I confirm I have the consent of the author / am the author. I understand a maintainer will review this before it’s published</span>
-                    </label>
+                <div id="variation-notice" class="callout-warn" hidden>
+                    <p><strong>Different author than the existing listing</strong> — overlaps: <strong data-collision-list></strong></p>
+                    <p id="variation-body">Rename the root folder inside your ZIP to include <code id="variation-suggested-folder"></code> (from your Author field above). That marks it as your own package and may qualify for automatic submission after checks.</p>
+                    <p id="variation-suffix-ok" class="callout-info" hidden style="margin-top:0.65rem;">Folder name suffix looks good — you can send. The server still runs final checks.</p>
                 </div>
 
                 <input type="hidden" name="themeTitle" id="field-theme-title" value="" />
@@ -565,10 +553,13 @@
         const metaEditorList = document.getElementById("meta-editor-list");
         metaEditorList.addEventListener("input", () => syncCollisionUi());
         metaEditorList.addEventListener("change", () => syncCollisionUi());
-        const duplicateNotice = document.getElementById("duplicate-notice");
+        const variationNotice = document.getElementById("variation-notice");
+        const variationSuggestedFolder = document.getElementById("variation-suggested-folder");
+        const variationSuffixOk = document.getElementById("variation-suffix-ok");
+        const variationBody = document.getElementById("variation-body");
         const editNotice = document.getElementById("edit-notice");
-        const variationAck = document.getElementById("variation-ack");
-        const collisionListEl = duplicateNotice.querySelector("[data-collision-list]");
+        const editAck = document.getElementById("edit-ack");
+        const collisionListEl = variationNotice ? variationNotice.querySelector("[data-collision-list]") : null;
         const editFolderEl = editNotice.querySelector("[data-edit-folder]");
         const editCatalogTitleEl = editNotice.querySelector("[data-edit-catalog-title]");
         const fieldThemeTitle = document.getElementById("field-theme-title");
@@ -673,7 +664,7 @@
                 .trim()
                 .toLowerCase()
                 .replace(/\s+/g, " ");
-            if (t.startsWith("u/")) t = t.slice(2).trim();
+            if (t.startsWith("u/")) t = t.slice(2).trim().replace(/\s+/g, " ");
             return t;
         }
 
@@ -685,12 +676,53 @@
                 .toLowerCase();
         }
 
-        function authorsMatch(catalogAuthor, configAuthor) {
-            const a = normAuthor(catalogAuthor);
-            const b = normAuthor(configAuthor);
-            if (!a && !b) return true;
-            if (!a || !b) return false;
-            return a === b;
+        function readConfigAuthorFromParsed(parsed) {
+            if (!parsed || typeof parsed !== "object") return "";
+            for (const key of ["theme_info", "source_info"]) {
+                const block = parsed[key];
+                if (block && typeof block === "object") {
+                    const auth = block.author;
+                    if (typeof auth === "string" && auth.trim()) return auth.trim();
+                }
+            }
+            return "";
+        }
+
+        /** Mirrors scripts/validate_theme_pr.py _authors_equivalent (first arg already _norm_author-style). */
+        function authorsEquivalent(existingNorm, incomingRaw) {
+            const inc = normAuthor(incomingRaw);
+            const ex = String(existingNorm || "").trim();
+            if (!ex && !inc) return true;
+            if (!ex || !inc) return false;
+            return ex === inc;
+        }
+
+        async function fetchConfigAuthorForCatalogFolder(folder) {
+            const f = String(folder || "").trim();
+            if (!f || f.includes("..")) return "";
+            try {
+                const url = `${f.split("/").map((seg) => encodeURIComponent(seg)).join("/")}/config.json`;
+                const res = await fetch(url, { cache: "no-store" });
+                if (!res.ok) return "";
+                const parsed = await res.json();
+                return readConfigAuthorFromParsed(parsed);
+            } catch (_) {
+                return "";
+            }
+        }
+
+        async function enrichCatalogAuthorsFromConfig() {
+            const tasks = [];
+            for (const row of themesByLogical.values()) {
+                if (!String(row.author || "").trim() && row.folder) {
+                    tasks.push(
+                        fetchConfigAuthorForCatalogFolder(row.folder).then((auth) => {
+                            if (auth) row.author = auth;
+                        })
+                    );
+                }
+            }
+            await Promise.all(tasks);
         }
 
         async function loadThemesIndex() {
@@ -714,6 +746,7 @@
                         });
                     }
                 }
+                await enrichCatalogAuthorsFromConfig();
             } catch (_) {
                 /* offline / CORS: skip duplicate hints */
             }
@@ -765,7 +798,10 @@
                     return;
                 }
                 const n = String(row.name || "").trim() || themeFolderParam;
-                const a = String(row.author || "").trim();
+                let a = String(row.author || "").trim();
+                if (!a) {
+                    a = await fetchConfigAuthorForCatalogFolder(String(row.folder || "").trim());
+                }
                 nameEl.textContent = n;
                 authorEl.textContent = a || "— (none listed; title only)";
                 if (readout) readout.hidden = false;
@@ -831,60 +867,72 @@
             return entry ? String(entry.themeInfo.author || "").trim() : "";
         }
 
+        /** Mirrors validate_theme_pr.py _slug_token. */
+        function slugToken(value) {
+            let s = String(value || "").trim();
+            s = s.replace(/^u\//i, "");
+            s = s.replace(/[^a-zA-Z0-9._-]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 120);
+            s = s.replace(/_/g, "-").toLowerCase();
+            s = s.replace(/[^a-z0-9-]+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "");
+            return s.slice(0, 40);
+        }
+
+        function collectSlugCandidatesForUploadRoot(uploadRoot) {
+            const out = [];
+            const t = slugToken(authorForUploadRoot(uploadRoot));
+            if (t) out.push(t);
+            return [...new Set(out)];
+        }
+
+        /** Mirrors validate_theme_pr.py _folder_has_disambiguator. */
+        function folderHasDisambiguator(innerFolder, candidates) {
+            const low = String(innerFolder || "").toLowerCase();
+            for (const s of candidates || []) {
+                const s2 = String(s || "").trim().toLowerCase();
+                if (s2 && low.endsWith("-" + s2)) return true;
+            }
+            return false;
+        }
+
         /** @returns {{ hasCollision: boolean, isEdit: boolean, hits: ReturnType<typeof findLogicalCollisions> }} */
         function analyzeCollision() {
             const hits = findLogicalCollisions();
             if (!hits.length) return { hasCollision: false, isEdit: false, hits: [] };
-            const isEdit = hits.every((h) => authorsMatch(h.author, authorForUploadRoot(h.uploadRoot)));
+            const isEdit = hits.every((h) => authorsEquivalent(normAuthor(h.author), authorForUploadRoot(h.uploadRoot)));
             return { hasCollision: true, isEdit, hits };
         }
 
-        function clearVariationConfirmFields() {
-            const vn = document.getElementById("variation-confirm-name");
-            const va = document.getElementById("variation-confirm-author");
-            const row = document.getElementById("variation-confirm-author-row");
-            if (vn) vn.value = "";
-            if (va) {
-                va.value = "";
-                va.required = false;
-            }
-            if (row) row.hidden = false;
-        }
-
         function syncCollisionUi() {
+            if (!variationNotice || !collisionListEl || !editNotice) return;
             const { hasCollision, isEdit, hits } = analyzeCollision();
             if (!hasCollision) {
-                duplicateNotice.hidden = true;
+                variationNotice.hidden = true;
                 editNotice.hidden = true;
-                variationAck.checked = false;
-                clearVariationConfirmFields();
+                if (editAck) editAck.checked = false;
+                if (variationSuffixOk) variationSuffixOk.hidden = true;
+                if (variationBody) variationBody.hidden = false;
                 return;
             }
             collisionListEl.textContent = hits.map((x) => x.folder).join(", ");
             if (isEdit) {
-                duplicateNotice.hidden = true;
-                variationAck.checked = false;
-                clearVariationConfirmFields();
+                variationNotice.hidden = true;
+                if (variationSuffixOk) variationSuffixOk.hidden = true;
+                if (variationBody) variationBody.hidden = false;
                 editNotice.hidden = false;
                 const h = hits[0];
                 editFolderEl.textContent = h.folder;
                 editCatalogTitleEl.textContent = h.name || h.folder;
             } else {
                 editNotice.hidden = true;
-                duplicateNotice.hidden = false;
+                if (editAck) editAck.checked = false;
+                variationNotice.hidden = false;
                 const h = hits[0];
-                const catName = String(h.name || "").trim() || h.folder;
-                const catAuthor = String(h.author || "").trim();
-                const nameSpan = document.getElementById("variation-catalog-name");
-                const authSpan = document.getElementById("variation-catalog-author");
-                const authRow = document.getElementById("variation-confirm-author-row");
-                const authInput = document.getElementById("variation-confirm-author");
-                if (nameSpan) nameSpan.textContent = catName;
-                if (authSpan) authSpan.textContent = catAuthor || "— (none listed; title only)";
-                if (authRow) {
-                    authRow.hidden = !catAuthor;
-                    if (authInput) authInput.required = !!catAuthor;
-                }
+                const candidates = collectSlugCandidatesForUploadRoot(h.uploadRoot);
+                const tok = candidates[0] || slugToken(authorForUploadRoot(h.uploadRoot)) || "your-handle";
+                const suffixOk = folderHasDisambiguator(h.uploadRoot, candidates);
+                if (variationSuggestedFolder) variationSuggestedFolder.textContent = `${h.uploadRoot}-${tok}`;
+                if (variationSuffixOk) variationSuffixOk.hidden = !suffixOk;
+                if (variationBody) variationBody.hidden = suffixOk;
             }
         }
 
@@ -909,15 +957,40 @@
             return "theme-folder.zip";
         }
 
+        function applyDefaultTitlesIfMissing() {
+            for (const entry of themeInfoEntries) {
+                if (String(entry.themeInfo.title || "").trim()) continue;
+                const p = normRelPath(entry.path);
+                let root = "";
+                if (p === "config.json" || !p.includes("/")) {
+                    root = String(loadedZipFileName || "")
+                        .replace(/\.zip$/i, "")
+                        .replace(/^\d+-/, "")
+                        .trim();
+                } else {
+                    root = (p.split("/")[0] || "").trim();
+                }
+                if (!root && folderFiles && folderFiles.length) {
+                    root = inferFolderZipName(folderFiles).replace(/\.zip$/i, "").replace(/^\d+-/, "").trim();
+                }
+                if (!root && loadedZipFileName) {
+                    root = String(loadedZipFileName)
+                        .replace(/\.zip$/i, "")
+                        .replace(/^\d+-/, "")
+                        .trim();
+                }
+                entry.themeInfo.title = root || "Theme";
+            }
+        }
+
         function resetThemeState() {
             uploadMode = "none";
             loadedZip = null;
             loadedZipFileName = "";
             folderFiles = null;
             themeInfoEntries = [];
-            variationAck.checked = false;
-            clearVariationConfirmFields();
-            duplicateNotice.hidden = true;
+            if (editAck) editAck.checked = false;
+            if (variationNotice) variationNotice.hidden = true;
             editNotice.hidden = true;
             renderThemeInfoEditors();
         }
@@ -1128,6 +1201,7 @@
 
                 loadedZip = zip;
                 loadedZipFileName = file.name || "theme.zip";
+                applyDefaultTitlesIfMissing();
                 renderThemeInfoEditors();
             } catch (err) {
                 renderThemeInfoEditors();
@@ -1180,6 +1254,7 @@
                 }
             }
 
+            applyDefaultTitlesIfMissing();
             renderThemeInfoEditors();
         }
 
@@ -1206,6 +1281,7 @@
                         parsed
                     }
                 ];
+                applyDefaultTitlesIfMissing();
                 renderThemeInfoEditors();
             } catch (_) {
                 /* preview only */
@@ -1286,13 +1362,6 @@
             await inspectFolderForThemeInfo(folderInput.files);
         });
 
-        variationAck.addEventListener("change", () => {
-            if (variationAck.checked) {
-                statusEl.textContent = "";
-                statusEl.className = "status";
-            }
-        });
-
         window.addEventListener("DOMContentLoaded", () => {
             loadThemesIndex().then(() => {
                 if (pageMode === "edit" && themeFolderParam) prefetchConfigForEdit();
@@ -1303,41 +1372,32 @@
             event.preventDefault();
             syncCollisionUi();
             const { hasCollision, isEdit, hits } = analyzeCollision();
-            if (hasCollision && !isEdit) {
-                if (!variationAck.checked) {
+            if (hasCollision && isEdit) {
+                if (!editAck || !editAck.checked) {
                     setStatus(
-                        "This theme identity is already listed under another author. Rename your theme folder, adjust the Author field above, tick consent, and type the existing listing’s title and author to confirm.",
+                        "Confirm the checkbox under “Update to an existing listing” — you’re submitting an update to that catalog entry.",
                         false
                     );
-                    duplicateNotice.hidden = false;
+                    editNotice.hidden = false;
                     return;
                 }
-                const h = hits[0];
-                const catName = String(h.name || "").trim() || h.folder;
-                const catAuthor = String(h.author || "").trim();
-                const typedName = String(document.getElementById("variation-confirm-name")?.value || "").trim();
-                const typedAuthor = String(document.getElementById("variation-confirm-author")?.value || "").trim();
-                if (!typedName) {
-                    setStatus("Type the existing gallery title exactly as shown in the yellow box (same as removal confirmation).", false);
-                    duplicateNotice.hidden = false;
+            }
+            if (hasCollision && !isEdit) {
+                const blocked = hits.filter(
+                    (h) => !folderHasDisambiguator(h.uploadRoot, collectSlugCandidatesForUploadRoot(h.uploadRoot))
+                );
+                if (blocked.length) {
+                    const h0 = blocked[0];
+                    const tok =
+                        collectSlugCandidatesForUploadRoot(h0.uploadRoot)[0] ||
+                        slugToken(authorForUploadRoot(h0.uploadRoot)) ||
+                        "your-handle";
+                    setStatus(
+                        `This folder name matches an existing theme by a different author. Rename the root folder inside your ZIP to end with your suffix, e.g. ${h0.uploadRoot}-${tok}, then try again.`,
+                        false
+                    );
+                    if (variationNotice) variationNotice.hidden = false;
                     return;
-                }
-                if (normConfirmText(typedName) !== normConfirmText(catName)) {
-                    setStatus("The title you typed does not match the existing gallery listing. Copy it from the box above.", false);
-                    duplicateNotice.hidden = false;
-                    return;
-                }
-                if (catAuthor) {
-                    if (!typedAuthor) {
-                        setStatus("Type the existing gallery author exactly as shown in the yellow box.", false);
-                        duplicateNotice.hidden = false;
-                        return;
-                    }
-                    if (normConfirmText(typedAuthor) !== normConfirmText(catAuthor)) {
-                        setStatus("The author you typed does not match the existing gallery listing.", false);
-                        duplicateNotice.hidden = false;
-                        return;
-                    }
                 }
             }
 
@@ -1352,9 +1412,6 @@
                 const data = new FormData(form);
                 const rebuiltZip = await buildZipForUpload();
                 data.set("zip", rebuiltZip, rebuiltZip.name);
-                if (hasCollision && !isEdit && hits[0]) {
-                    data.set("variationCollisionFolder", String(hits[0].folder || "").trim());
-                }
                 const res = await fetch(window.uploadThemeEndpoint(), {
                     method: "POST",
                     body: data
