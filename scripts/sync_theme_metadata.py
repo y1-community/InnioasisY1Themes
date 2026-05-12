@@ -24,6 +24,9 @@ from typing import Any
 _GIT_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = _GIT_ROOT
 THEMES_JSON_PATH = REPO_ROOT / "themes.json"
+# Per-theme index.html is updated from this file for SEO blocks only; the floating
+# toolbar comes from support_toolbar.html (fetched at runtime). Keep theme.html’s
+# support-toolbar-slot + loadSupportToolbar() in sync when changing toolbar wiring.
 THEME_TEMPLATE_PATH = REPO_ROOT / "theme.html"
 SITE_BASE_URL = "https://themes.innioasis.app"
 IMAGE_EXTENSIONS = {".gif", ".jpeg", ".jpg", ".png", ".svg", ".webp"}
