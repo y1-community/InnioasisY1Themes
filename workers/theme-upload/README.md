@@ -9,6 +9,8 @@ Use this when the static site is on **GitHub Pages** or any host that cannot run
 
 Shared logic lives in [`functions/_lib/theme-upload-handler.js`](../../functions/_lib/theme-upload-handler.js) and [`functions/_lib/theme-removal-handler.js`](../../functions/_lib/theme-removal-handler.js).
 
+Each upload opens a PR that adds a **timestamped** root `*.zip` plus a sibling **`*.zip.meta.json`** (uploader slug/name for identity checks). [`scripts/validate_theme_pr.py`](../../scripts/validate_theme_pr.py) allows that sidecar only when the matching zip is in the same PR. ZIPs may contain **multiple** themes (one `config.json` per folder, optional root `config.json`); rules mirror the validator and [`scripts/process_theme_zips.py`](../../scripts/process_theme_zips.py). For **auto-merge**, leave [`GITHUB_ZIP_UPLOAD_DIR`](../../functions/_lib/theme-upload-handler.js) empty so both files sit at repo root (nested zip paths are rejected by the validator today).
+
 On **main**, root ZIP ingestion, `themes.json` sync, per-theme `index.html` updates, and cleanup of processed zips/meta are handled by [`.github/workflows/theme-ingest-and-sync.yml`](../../.github/workflows/theme-ingest-and-sync.yml) (replacing separate extract/process workflows). A scheduled [`sync-theme-metadata.yml`](../../.github/workflows/sync-theme-metadata.yml) run remains a safety net.
 
 ## Deploy

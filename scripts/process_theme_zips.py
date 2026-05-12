@@ -3,7 +3,9 @@
 
 Scans the repository for .zip files, validates archive safety, then extracts
 each theme folder (identified by folder-local config.json) into the repository
-root (this script's REPO_ROOT).
+root (this script's REPO_ROOT). Root-level ``config.json`` themes may keep
+images in subfolders that are not another theme's directory (same rule as
+``validate_theme_pr.py``).
 Dangerous file types are blocked and existing destination folders are not
 overwritten. Successfully processed zip files are removed.
 """
@@ -106,10 +108,15 @@ def _discover_theme_keys(member_names: list[str]) -> list[str]:
     return keys
 
 
-def _theme_has_image_file(member_names: list[str], theme_key: str) -> bool:
+def _other_theme_path_prefixes(keys: list[str], theme_key: str) -> list[str]:
+    return [f"{k}/" for k in keys if k != theme_key]
+
+
+def _theme_has_image_file(member_names: list[str], theme_key: str, *, keys: list[str]) -> bool:
     if theme_key == ".":
+        block = _other_theme_path_prefixes(keys, ".")
         for name in member_names:
-            if "/" in name:
+            if any(name.startswith(p) for p in block):
                 continue
             if _looks_like_image(name):
                 return True
@@ -142,7 +149,14 @@ def _read_config(archive: zipfile.ZipFile, entry: str) -> dict[str, Any]:
     return parsed
 
 
-def _extract_theme(archive: zipfile.ZipFile, member_names: list[str], theme_key: str, zip_stem: str) -> tuple[bool, str]:
+def _extract_theme(
+    archive: zipfile.ZipFile,
+    member_names: list[str],
+    theme_key: str,
+    zip_stem: str,
+    *,
+    keys: list[str],
+) -> tuple[bool, str]:
     dest_name = zip_stem if theme_key == "." else PurePosixPath(theme_key).name
     dest = REPO_ROOT / dest_name
     if dest_name in EXCLUDED_SCAN_DIRS or dest_name.startswith("."):
@@ -151,7 +165,12 @@ def _extract_theme(archive: zipfile.ZipFile, member_names: list[str], theme_key:
         return False, f"Skip {theme_key}: destination folder {dest_name}/ already exists."
 
     if theme_key == ".":
-        selected = [name for name in member_names if "/" not in name]
+        block = _other_theme_path_prefixes(keys, ".")
+        selected = [
+            name
+            for name in member_names
+            if not any(name.startswith(p) for p in block)
+        ]
     else:
         prefix = f"{theme_key}/"
         selected = [name for name in member_names if name.startswith(prefix)]
@@ -212,13 +231,13 @@ def _process_zip(path: Path) -> tuple[bool, list[str]]:
             except Exception as exc:
                 return False, logs + [f"ERROR: {config_entry} invalid: {exc}"]
 
-            if not _theme_has_image_file(names, key):
+            if not _theme_has_image_file(names, key, keys=keys):
                 scope = "zip root" if key == "." else f"{key}/"
                 return False, logs + [f"ERROR: {scope} must include at least one image file."]
             if not _config_has_image_refs(cfg):
                 return False, logs + [f"ERROR: {config_entry} must reference at least one image asset."]
 
-            ok, msg = _extract_theme(archive, names, key, path.stem)
+            ok, msg = _extract_theme(archive, names, key, path.stem, keys=keys)
             logs.append(msg)
             if ok:
                 extracted_any = True

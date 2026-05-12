@@ -319,6 +319,103 @@
             color: var(--text-secondary);
         }
 
+        .batch-theme-panel {
+            margin: 0.75rem 0 1rem 0;
+            padding: 0.85rem 1rem;
+            border-radius: 10px;
+            border: 1px solid rgba(100, 180, 255, 0.35);
+            background: rgba(40, 80, 140, 0.2);
+        }
+
+        .batch-theme-panel-title {
+            margin: 0 0 0.35rem 0;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+
+        .batch-theme-status-list {
+            list-style: none;
+            margin: 0.5rem 0 0 0;
+            padding: 0;
+        }
+
+        .batch-theme-status-list li {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 0.5rem 1rem;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 0.9rem;
+        }
+
+        .batch-theme-status-list li:last-child {
+            border-bottom: none;
+        }
+
+        .batch-chip {
+            display: inline-block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            padding: 0.2rem 0.45rem;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .batch-chip-new {
+            color: #b8c5dc;
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .batch-chip-edit {
+            color: #dbe8ff;
+            border-color: rgba(100, 180, 255, 0.55);
+            background: rgba(80, 140, 255, 0.15);
+        }
+
+        .batch-chip-variation {
+            color: #fdecc8;
+            border-color: rgba(255, 180, 80, 0.5);
+            background: rgba(255, 180, 80, 0.12);
+        }
+
+        .batch-chip-ok {
+            color: #c8f5dc;
+            border-color: rgba(80, 200, 140, 0.45);
+            background: rgba(60, 160, 100, 0.15);
+        }
+
+        .meta-card-details {
+            margin-bottom: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.12);
+        }
+
+        .meta-card-details-summary {
+            cursor: pointer;
+            padding: 0.55rem 0.85rem;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            list-style: none;
+        }
+
+        .meta-card-details-summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .meta-card-details .meta-card {
+            margin: 0 0.65rem 0.65rem 0.65rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .meta-card-details .meta-card h4 {
+            display: none;
+        }
+
         .callout-warn {
             border: 1px solid rgba(255, 180, 80, 0.4);
             background: rgba(255, 180, 80, 0.08);
@@ -400,7 +497,7 @@
                 <div class="row">
                     <label for="zip-file">Option A — ZIP file</label>
                     <input id="zip-file" name="zip" type="file" accept=".zip,application/zip" />
-                    <div class="hint">One theme per ZIP is easiest. Don’t pick both a ZIP and a folder.</div>
+                    <div class="hint">You can include several theme folders (each with <code>config.json</code>) in one ZIP. Don’t pick both a ZIP and a folder.</div>
                 </div>
 
                 <div class="row">
@@ -411,7 +508,12 @@
 
                 <div id="meta-editor" class="meta-editor">
                     <h3>Theme details</h3>
-                    <p class="hint">We read these from <code>config.json</code>. You can fix spelling or credits before sending.</p>
+                    <p class="hint">We read these from <code>config.json</code>. You can fix spelling or credits before sending. A single ZIP can contain several themes (each with its own <code>config.json</code>).</p>
+                    <div id="batch-theme-panel" class="batch-theme-panel" hidden>
+                        <p class="batch-theme-panel-title">Multiple themes in this package</p>
+                        <p id="batch-theme-panel-lead" class="hint" style="margin:0;"></p>
+                        <ul id="batch-theme-status-list" class="batch-theme-status-list"></ul>
+                    </div>
                     <div id="meta-editor-list"></div>
                 </div>
 
@@ -894,6 +996,61 @@
             return false;
         }
 
+        /** @returns {{ kind: "new"|"edit"|"variation"|"suffixOk", uploadRoot: string, suggested?: string, catalogFolder?: string }} */
+        function collisionSummaryForUploadRoot(uploadRoot) {
+            const logical = logicalThemeSlug(uploadRoot);
+            const row = themesByLogical.get(logical);
+            if (!row) return { kind: "new", uploadRoot };
+            const uploadAuth = authorForUploadRoot(uploadRoot);
+            if (authorsEquivalent(normAuthor(row.author), uploadAuth)) {
+                return { kind: "edit", uploadRoot, catalogFolder: row.folder };
+            }
+            const cands = collectSlugCandidatesForUploadRoot(uploadRoot);
+            if (folderHasDisambiguator(uploadRoot, cands)) {
+                return { kind: "suffixOk", uploadRoot, catalogFolder: row.folder };
+            }
+            const tok = cands[0] || slugToken(uploadAuth) || "your-handle";
+            return { kind: "variation", uploadRoot, catalogFolder: row.folder, suggested: `${uploadRoot}-${tok}` };
+        }
+
+        function refreshBatchThemePanel() {
+            const panel = document.getElementById("batch-theme-panel");
+            const list = document.getElementById("batch-theme-status-list");
+            const lead = document.getElementById("batch-theme-panel-lead");
+            if (!panel || !list || !lead) return;
+            if (themeInfoEntries.length < 2) {
+                panel.hidden = true;
+                list.innerHTML = "";
+                lead.textContent = "";
+                return;
+            }
+            panel.hidden = false;
+            lead.textContent = `Found ${themeInfoEntries.length} theme configs. Status is per folder name inside the ZIP (catalog rules match the server validator). You still send one ZIP for the whole package.`;
+            const roots = collectThemeRootFolders();
+            list.innerHTML = roots
+                .map((root) => {
+                    const s = collisionSummaryForUploadRoot(root);
+                    let chipClass = "batch-chip batch-chip-new";
+                    let chipText = "New";
+                    if (s.kind === "edit") {
+                        chipClass = "batch-chip batch-chip-edit";
+                        chipText = "Catalog update";
+                    } else if (s.kind === "suffixOk") {
+                        chipClass = "batch-chip batch-chip-ok";
+                        chipText = "Variation · suffix OK";
+                    } else if (s.kind === "variation") {
+                        chipClass = "batch-chip batch-chip-variation";
+                        chipText = "Needs suffix";
+                    }
+                    const sug =
+                        s.kind === "variation" && s.suggested
+                            ? `<span class="hint" style="margin-left:0.35rem;">e.g. <code>${escapeHtml(s.suggested)}</code></span>`
+                            : "";
+                    return `<li><span><strong>${escapeHtml(root)}</strong></span><span><span class="${chipClass}">${chipText}</span>${sug}</span></li>`;
+                })
+                .join("");
+        }
+
         /** @returns {{ hasCollision: boolean, isEdit: boolean, hits: ReturnType<typeof findLogicalCollisions> }} */
         function analyzeCollision() {
             const hits = findLogicalCollisions();
@@ -934,6 +1091,7 @@
                 if (variationSuffixOk) variationSuffixOk.hidden = !suffixOk;
                 if (variationBody) variationBody.hidden = suffixOk;
             }
+            refreshBatchThemePanel();
         }
 
         let uploadMode = "none"; // "zip" | "folder" | "none"
@@ -1082,13 +1240,25 @@
             if (!themeInfoEntries.length) {
                 metaEditor.classList.remove("show");
                 metaEditorList.innerHTML = "";
+                refreshBatchThemePanel();
                 syncCollisionUi();
                 return;
             }
 
-            const html = themeInfoEntries.map((entry, idx) => `
+            const batchLayout = themeInfoEntries.length > 1;
+            const html = themeInfoEntries
+                .map((entry, idx) => {
+                    const head = batchLayout
+                        ? ""
+                        : `<h4>${escapeHtml(entry.label)} <span class="hint">(${escapeHtml(entry.path)})</span></h4>`;
+                    const summary = batchLayout
+                        ? `<summary class="meta-card-details-summary"><strong>${escapeHtml(entry.label)}</strong> <span class="hint">(${escapeHtml(entry.path)})</span></summary>`
+                        : "";
+                    const wrapOpen = batchLayout ? `<details class="meta-card-details" ${idx === 0 ? "open" : ""}>` : "";
+                    const wrapClose = batchLayout ? "</details>" : "";
+                    const inner = `
                 <div class="meta-card" data-entry-idx="${idx}">
-                    <h4>${escapeHtml(entry.label)} <span class="hint">(${escapeHtml(entry.path)})</span></h4>
+                    ${head}
                     <div class="row">
                         <label>Title</label>
                         <input type="text" data-field="title" value="${escapeHtml(entry.themeInfo.title)}" />
@@ -1105,11 +1275,14 @@
                         <label>Description</label>
                         <textarea rows="3" data-field="description">${escapeHtml(entry.themeInfo.description)}</textarea>
                     </div>
-                </div>
-            `).join("");
+                </div>`;
+                    return `${wrapOpen}${summary}${inner}${wrapClose}`;
+                })
+                .join("");
 
             metaEditorList.innerHTML = html;
             metaEditor.classList.add("show");
+            refreshBatchThemePanel();
             syncCollisionUi();
         }
 
@@ -1383,17 +1556,16 @@
                 }
             }
             if (hasCollision && !isEdit) {
-                const blocked = hits.filter(
-                    (h) => !folderHasDisambiguator(h.uploadRoot, collectSlugCandidatesForUploadRoot(h.uploadRoot))
-                );
+                const roots = collectThemeRootFolders();
+                const blocked = roots.filter((r) => collisionSummaryForUploadRoot(r).kind === "variation");
                 if (blocked.length) {
                     const h0 = blocked[0];
                     const tok =
-                        collectSlugCandidatesForUploadRoot(h0.uploadRoot)[0] ||
-                        slugToken(authorForUploadRoot(h0.uploadRoot)) ||
+                        collectSlugCandidatesForUploadRoot(h0)[0] ||
+                        slugToken(authorForUploadRoot(h0)) ||
                         "your-handle";
                     setStatus(
-                        `This folder name matches an existing theme by a different author. Rename the root folder inside your ZIP to end with your suffix, e.g. ${h0.uploadRoot}-${tok}, then try again.`,
+                        `One or more folder names match an existing theme by a different author. Rename those roots inside your ZIP to end with your suffix, e.g. ${h0}-${tok}, then try again.`,
                         false
                     );
                     if (variationNotice) variationNotice.hidden = false;

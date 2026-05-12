@@ -1,6 +1,7 @@
 name: Theme ingest and sync
 
 # Chains: extract root upload zips → sync themes.json + per-theme index.html → orphan meta cleanup.
+# Zips are validated on merge by scripts/validate_theme_pr.py (multi-theme archives, paired *.zip.meta.json).
 # Replaces separate extract/process zip workflows to avoid races and long delays before metadata sync.
 
 on:

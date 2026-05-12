@@ -4,8 +4,11 @@
 Rules:
 - Only added files are allowed (no modifications, deletions, renames).
 - All changes must be at the repository root (static site + zips live there).
-- Zip uploads must be <name>.zip at repo root (no path segments).
-- Non-zip file changes must be under <newThemeFolder>/... only.
+- Zip uploads must be <name>.zip at repo root (no path segments), except optional
+  gallery upload sidecar ``<same-path>.meta.json`` (i.e. ``*.zip.meta.json``) added
+  alongside the same PR's ``*.zip`` (see theme-upload-handler).
+- Non-zip file changes must be under <newThemeFolder>/... only (root sidecars only
+  as above).
 - Dangerous/disallowed files are blocked.
 - New direct theme folders must include config.json + at least one image file.
 - Added zip files are allowed and validated:
@@ -13,6 +16,8 @@ Rules:
   - dangerous file types blocked inside zips
   - zip must contain one or more theme folders, each with a unique folder name
   - each theme folder in zip must include config.json and image assets
+  - root ``config.json`` theme may use images in subfolders that are not another
+    theme's tree (non-theme zip noise is otherwise ignored)
   - config.json must reference at least one image asset
 - Identity / duplicate policy (auto-merge only when safe):
   - Theme folders are compared by a logical slug: leading ``12345-`` timestamp prefix
@@ -614,10 +619,16 @@ def _zip_theme_keys(entry_names: list[str]) -> list[str]:
     return keys
 
 
-def _zip_has_image_file(entry_names: list[str], theme_key: str) -> bool:
+def _zip_other_theme_prefixes(theme_keys: list[str], theme_key: str) -> list[str]:
+    """Path prefixes (``other/``) belonging to sibling themes inside the same archive."""
+    return [f"{k}/" for k in theme_keys if k != theme_key]
+
+
+def _zip_has_image_file(entry_names: list[str], theme_key: str, *, theme_keys: list[str]) -> bool:
     if theme_key == ".":
+        block = _zip_other_theme_prefixes(theme_keys, ".")
         for name in entry_names:
-            if "/" in name:
+            if any(name.startswith(p) for p in block):
                 continue
             if _looks_like_image(name):
                 return True
@@ -684,7 +695,7 @@ def _validate_zip_blob(path: str, blob: bytes) -> list[str]:
                 errors.append(f"{path} {config_entry} must be a JSON object.")
                 continue
 
-            if not _zip_has_image_file(names, key):
+            if not _zip_has_image_file(names, key, theme_keys=theme_keys):
                 scope = "zip root" if key == "." else f"{key}/"
                 errors.append(f"{path} {scope} must include at least one image file.")
             if not _config_has_image_refs(config):
@@ -713,19 +724,29 @@ def main() -> int:
     if not rows:
         return _fail(["PR has no file changes."])
 
-    folder_state: dict[str, dict[str, Any]] = {}
-    zip_paths: list[str] = []
     errors: list[str] = []
-
-    existing_folder_blocked: set[str] = set()
+    parsed: list[tuple[str, str]] = []
     for row in rows:
         parts = row.split("\t", 1)
         if len(parts) != 2:
             errors.append(f"Malformed diff row: {row}")
             continue
+        parsed.append((parts[0].strip(), parts[1].strip()))
 
-        status, path = parts
-        path = path.strip()
+    root_added_zips: set[str] = set()
+    for status, path in parsed:
+        if status != "A":
+            continue
+        if THEMES_PREFIX and not path.startswith(THEMES_PREFIX):
+            continue
+        rel = path[len(THEMES_PREFIX) :] if THEMES_PREFIX else path
+        if _is_zip_file(path) and "/" not in rel:
+            root_added_zips.add(path)
+
+    folder_state: dict[str, dict[str, Any]] = {}
+    zip_paths: list[str] = []
+    for row in parsed:
+        status, path = row
 
         if status != "A":
             errors.append(f"Only added files are allowed. Found {status} on {path}.")
@@ -748,6 +769,16 @@ def main() -> int:
 
         rest = path[len(THEMES_PREFIX) :] if THEMES_PREFIX else path
         if "/" not in rest:
+            lower = rest.lower()
+            if lower.endswith(".zip.meta.json"):
+                zip_peer = path[: -len(".meta.json")]
+                if zip_peer in root_added_zips:
+                    continue
+                errors.append(
+                    f"Upload metadata sidecar {path!r} must accompany the same PR's zip "
+                    f"(expected paired zip {zip_peer!r})."
+                )
+                continue
             errors.append("Non-zip files must live inside a theme folder (path must contain '/').")
             continue
 
