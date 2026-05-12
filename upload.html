@@ -423,11 +423,24 @@
 
                 <div id="duplicate-notice" class="callout-warn" hidden>
                     <p><strong>This theme identity is already on the site under another author.</strong> Listed folder(s): <strong data-collision-list></strong>.</p>
-                    <p>Rename your theme’s root folder so it doesn’t match the existing one (for example add <code>-yourhandle</code> at the end), or change the <strong>author</strong> in <code>config.json</code> if this is genuinely your own separate version. If you’re intentionally submitting a variation, confirm below.</p>
-                    <p class="hint" style="margin-top:0.5rem;">If your <strong>title</strong> matches another theme’s display name but the <strong>author</strong> does not, we treat that as suspicious impersonation and automatic submission is not available — use a clearly distinct folder or remix-style suffix.</p>
+                    <p><strong>Best option:</strong> rename your theme’s root folder inside the ZIP (for example add <code>-yourhandle</code> at the end) so it is clearly a separate package. If you keep the same folder name as an existing listing, treat it as a <strong>variation</strong>: use the <strong>Author</strong> field above so it clearly identifies <em>you</em> (or your project), not the original artist — otherwise we may treat it as impersonation until a maintainer can verify consent.</p>
+                    <p class="hint" style="margin-top:0.5rem;">If your <strong>title</strong> matches another theme’s display name but the <strong>author</strong> does not match that listing, automatic submission is not available — use a clearly distinct folder or remix-style suffix unless you are intentionally submitting a variation and complete the confirmation below.</p>
+                    <div id="variation-catalog-readout" class="callout-info" style="margin-top:1rem;">
+                        <p style="margin:0 0 0.5rem 0;"><strong>Existing gallery listing</strong> — type these in the boxes below (same checks as removal requests; spacing normalized, case may differ).</p>
+                        <p style="margin:0.25rem 0;"><strong>Title:</strong> <span id="variation-catalog-name">—</span></p>
+                        <p style="margin:0.25rem 0;"><strong>Author:</strong> <span id="variation-catalog-author">—</span></p>
+                    </div>
+                    <div class="row">
+                        <label for="variation-confirm-name">Type the existing listing title</label>
+                        <input id="variation-confirm-name" name="variationConfirmName" type="text" autocomplete="off" placeholder="Match “Title” above" />
+                    </div>
+                    <div class="row" id="variation-confirm-author-row">
+                        <label for="variation-confirm-author">Type the existing listing author</label>
+                        <input id="variation-confirm-author" name="variationConfirmAuthor" type="text" autocomplete="off" placeholder="Match “Author” above" />
+                    </div>
                     <label class="variation-row">
-                        <input type="checkbox" id="variation-ack" />
-                        <span>I’m submitting a variation or remix; I understand a maintainer will review it before it’s published.</span>
+                        <input type="checkbox" id="variation-ack" name="variationConsentAck" value="yes" />
+                        <span>I confirm I have the consent of the author / am the author. I understand a maintainer will review this before it’s published</span>
                     </label>
                 </div>
 
@@ -664,6 +677,14 @@
             return t;
         }
 
+        /** Match removal-request normalization: trim, collapse spaces, lowercase. */
+        function normConfirmText(s) {
+            return String(s || "")
+                .trim()
+                .replace(/\s+/g, " ")
+                .toLowerCase();
+        }
+
         function authorsMatch(catalogAuthor, configAuthor) {
             const a = normAuthor(catalogAuthor);
             const b = normAuthor(configAuthor);
@@ -818,18 +839,32 @@
             return { hasCollision: true, isEdit, hits };
         }
 
+        function clearVariationConfirmFields() {
+            const vn = document.getElementById("variation-confirm-name");
+            const va = document.getElementById("variation-confirm-author");
+            const row = document.getElementById("variation-confirm-author-row");
+            if (vn) vn.value = "";
+            if (va) {
+                va.value = "";
+                va.required = false;
+            }
+            if (row) row.hidden = false;
+        }
+
         function syncCollisionUi() {
             const { hasCollision, isEdit, hits } = analyzeCollision();
             if (!hasCollision) {
                 duplicateNotice.hidden = true;
                 editNotice.hidden = true;
                 variationAck.checked = false;
+                clearVariationConfirmFields();
                 return;
             }
             collisionListEl.textContent = hits.map((x) => x.folder).join(", ");
             if (isEdit) {
                 duplicateNotice.hidden = true;
                 variationAck.checked = false;
+                clearVariationConfirmFields();
                 editNotice.hidden = false;
                 const h = hits[0];
                 editFolderEl.textContent = h.folder;
@@ -837,6 +872,19 @@
             } else {
                 editNotice.hidden = true;
                 duplicateNotice.hidden = false;
+                const h = hits[0];
+                const catName = String(h.name || "").trim() || h.folder;
+                const catAuthor = String(h.author || "").trim();
+                const nameSpan = document.getElementById("variation-catalog-name");
+                const authSpan = document.getElementById("variation-catalog-author");
+                const authRow = document.getElementById("variation-confirm-author-row");
+                const authInput = document.getElementById("variation-confirm-author");
+                if (nameSpan) nameSpan.textContent = catName;
+                if (authSpan) authSpan.textContent = catAuthor || "— (none listed; title only)";
+                if (authRow) {
+                    authRow.hidden = !catAuthor;
+                    if (authInput) authInput.required = !!catAuthor;
+                }
             }
         }
 
@@ -868,6 +916,7 @@
             folderFiles = null;
             themeInfoEntries = [];
             variationAck.checked = false;
+            clearVariationConfirmFields();
             duplicateNotice.hidden = true;
             editNotice.hidden = true;
             renderThemeInfoEditors();
@@ -1253,14 +1302,43 @@
         form.addEventListener("submit", async (event) => {
             event.preventDefault();
             syncCollisionUi();
-            const { hasCollision, isEdit } = analyzeCollision();
-            if (hasCollision && !isEdit && !variationAck.checked) {
-                setStatus(
-                    "This theme identity is already listed under another author. Rename your theme folder, adjust author in config.json, or tick the confirmation above if this is an intentional variation.",
-                    false
-                );
-                duplicateNotice.hidden = false;
-                return;
+            const { hasCollision, isEdit, hits } = analyzeCollision();
+            if (hasCollision && !isEdit) {
+                if (!variationAck.checked) {
+                    setStatus(
+                        "This theme identity is already listed under another author. Rename your theme folder, adjust the Author field above, tick consent, and type the existing listing’s title and author to confirm.",
+                        false
+                    );
+                    duplicateNotice.hidden = false;
+                    return;
+                }
+                const h = hits[0];
+                const catName = String(h.name || "").trim() || h.folder;
+                const catAuthor = String(h.author || "").trim();
+                const typedName = String(document.getElementById("variation-confirm-name")?.value || "").trim();
+                const typedAuthor = String(document.getElementById("variation-confirm-author")?.value || "").trim();
+                if (!typedName) {
+                    setStatus("Type the existing gallery title exactly as shown in the yellow box (same as removal confirmation).", false);
+                    duplicateNotice.hidden = false;
+                    return;
+                }
+                if (normConfirmText(typedName) !== normConfirmText(catName)) {
+                    setStatus("The title you typed does not match the existing gallery listing. Copy it from the box above.", false);
+                    duplicateNotice.hidden = false;
+                    return;
+                }
+                if (catAuthor) {
+                    if (!typedAuthor) {
+                        setStatus("Type the existing gallery author exactly as shown in the yellow box.", false);
+                        duplicateNotice.hidden = false;
+                        return;
+                    }
+                    if (normConfirmText(typedAuthor) !== normConfirmText(catAuthor)) {
+                        setStatus("The author you typed does not match the existing gallery listing.", false);
+                        duplicateNotice.hidden = false;
+                        return;
+                    }
+                }
             }
 
             submitBtn.disabled = true;
@@ -1274,6 +1352,9 @@
                 const data = new FormData(form);
                 const rebuiltZip = await buildZipForUpload();
                 data.set("zip", rebuiltZip, rebuiltZip.name);
+                if (hasCollision && !isEdit && hits[0]) {
+                    data.set("variationCollisionFolder", String(hits[0].folder || "").trim());
+                }
                 const res = await fetch(window.uploadThemeEndpoint(), {
                     method: "POST",
                     body: data

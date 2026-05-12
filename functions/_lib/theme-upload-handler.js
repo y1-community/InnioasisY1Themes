@@ -109,6 +109,11 @@ export async function handleUploadPost(request, env) {
     if (!themeAuthor) themeAuthor = String(form.get("uploaderName") || "").trim();
     const uploaderName = themeAuthor;
 
+    const variationConfirmName = String(form.get("variationConfirmName") || "").trim();
+    const variationConfirmAuthor = String(form.get("variationConfirmAuthor") || "").trim();
+    const variationCollisionFolder = String(form.get("variationCollisionFolder") || "").trim();
+    const variationConsentAck = String(form.get("variationConsentAck") || "").trim();
+
     if (!(zipFile instanceof File)) {
       return jsonResponse({ error: "Missing ZIP file." }, 400);
     }
@@ -205,12 +210,27 @@ export async function handleUploadPost(request, env) {
     else if (themeTitle) prTitle = themeTitle;
     else if (themeAuthor) prTitle = `Theme submission — ${themeAuthor}`;
 
+    const variationNoteParts =
+      variationConfirmName || variationConfirmAuthor || variationConsentAck
+        ? [
+            "",
+            "**Variation / same-folder identity (submitter fields):**",
+            variationCollisionFolder
+              ? `- Colliding catalog folder (client-reported): \`${variationCollisionFolder}\``
+              : null,
+            variationConfirmName ? `- Typed existing listing title (confirmation): ${variationConfirmName}` : null,
+            variationConfirmAuthor ? `- Typed existing listing author (confirmation): ${variationConfirmAuthor}` : null,
+            variationConsentAck ? "- Consent checkbox: submitted as checked." : null,
+          ].filter(Boolean)
+        : [];
+
     const prBody = [
       "## New theme from the gallery uploader",
       "",
       `- Package: \`${originalName}\``,
       themeTitle ? `- Title (from config): ${themeTitle}` : null,
       themeAuthor ? `- Author (from config): ${themeAuthor}` : null,
+      ...variationNoteParts,
       "",
       "**Automatic submission policy:**",
       "- Automatic submission only when `scripts/validate_theme_pr.py` passes.",
