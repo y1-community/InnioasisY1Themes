@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
     <!-- Same origin as upload; POST {origin}/api/upload-theme and /api/removal-request -->
     <meta name="cf-pages-upload-api-origin" content="https://y1-theme-upload.itsryanspecter.workers.dev" />
+    <meta name="fabform-removal-form-url" content="" />
     <script>
         (function () {
             function apiUrl(path) {
@@ -42,6 +43,11 @@
             };
             window.metadataThemeEndpoint = function () {
                 return apiUrl("/api/theme-metadata");
+            };
+            window.removalFabformUrl = function () {
+                var meta = document.querySelector('meta[name="fabform-removal-form-url"]');
+                var raw = meta && meta.getAttribute("content") ? String(meta.getAttribute("content")).trim() : "";
+                return raw || "";
             };
         })();
     </script>
@@ -1314,6 +1320,27 @@
             removalStatus.className = "status " + (ok ? "ok" : "err");
         }
 
+        async function postRemovalFabformFromBrowser(fields) {
+            const fabUrl = String(window.removalFabformUrl ? window.removalFabformUrl() : "").trim();
+            if (!fabUrl) return { skipped: true };
+            const body = new URLSearchParams();
+            body.set("contact_email", String(fields.contactEmail || ""));
+            body.set("pr_url", String(fields.prUrl || ""));
+            body.set("theme_folder", String(fields.themeFolder || ""));
+            body.set("catalog_title", String(fields.catalogTitle || ""));
+            body.set("catalog_author", String(fields.catalogAuthor || ""));
+            body.set("requester_name", String(fields.requesterName || ""));
+            body.set("reason", String(fields.reason || ""));
+            body.set("blacklist_opt_out", fields.blacklistOptOut ? "yes" : "no");
+            const res = await fetch(fabUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body
+            });
+            if (!res.ok) throw new Error(`FabForm request failed (${res.status})`);
+            return { skipped: false };
+        }
+
         if (removalForm && removalSubmitBtn) {
             removalForm.addEventListener("submit", async (event) => {
                 event.preventDefault();
@@ -1372,10 +1399,28 @@
                         throw new Error(payload.error || `Request failed (${res.status})`);
                     }
                     const link = payload.prUrl ? String(payload.prUrl) : "";
+                    let fabNote = "";
+                    try {
+                        const fab = await postRemovalFabformFromBrowser({
+                            contactEmail,
+                            prUrl: link,
+                            themeFolder: String(payload.themeFolder || folder),
+                            catalogTitle: String(payload.catalogTitle || document.getElementById("removal-catalog-name")?.textContent || ""),
+                            catalogAuthor: String(payload.catalogAuthor || document.getElementById("removal-catalog-author")?.textContent || ""),
+                            requesterName: requester,
+                            reason,
+                            blacklistOptOut,
+                        });
+                        if (fab.skipped) {
+                            fabNote = "\n\n(Email notification skipped: FabForm removal URL is not configured in page meta.)";
+                        }
+                    } catch (fabErr) {
+                        fabNote = `\n\n(PR created, but FabForm notification failed: ${String(fabErr && fabErr.message ? fabErr.message : fabErr)})`;
+                    }
                     setRemovalStatus(
                         link
-                            ? `Removal request created. We may email you to verify you represent the listed author.\nTrack it here:\n${link}`
-                            : "Removal request created. We may email you to verify you represent the listed author.",
+                            ? `Removal request created. We may email you to verify you represent the listed author.\nTrack it here:\n${link}${fabNote}`
+                            : `Removal request created. We may email you to verify you represent the listed author.${fabNote}`,
                         true
                     );
                     removalForm.reset();

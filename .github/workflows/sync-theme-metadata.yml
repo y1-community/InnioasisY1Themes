@@ -31,6 +31,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Cleanup stale upload zip/meta artifacts
+        run: python scripts/cleanup_upload_artifacts.py
+
       - name: Configure git identity
         run: |
           git config --global user.name "github-actions[bot]"

@@ -225,7 +225,8 @@
         </header>
 
         <div id="report-sent-banner" class="callout-ok" style="display:none;" role="status">
-            <strong>Thanks — your report was sent.</strong> If you left an email address, you should receive a short confirmation from our form provider. We cannot always reply individually.
+            <strong id="report-sent-title">Thanks — your report was sent.</strong>
+            <span id="report-sent-copy">If you left an email address, you should receive a short confirmation from our form provider. We cannot always reply individually.</span>
         </div>
 
         <div class="callout-warn">
@@ -246,7 +247,7 @@
 
         <div class="card" id="report-form-card">
             <form id="report-form" action="https://fabform.io/f/-OtVqbq" method="post">
-                <input type="hidden" name="_redirect" value="https://themes.innioasis.app/report-theme.html?sent=1" />
+                <input id="field-redirect" type="hidden" name="_redirect" value="https://themes.innioasis.app/report-theme.html?sent=1" />
                 <input type="hidden" name="page_url" id="field-page-url" value="" />
 
                 <div class="row">
@@ -302,12 +303,11 @@
     <script>
         (function () {
             const params = new URLSearchParams(window.location.search || "");
-            if (params.get("sent") === "1") {
-                const b = document.getElementById("report-sent-banner");
-                if (b) b.style.display = "block";
-            }
+            const sent = params.get("sent") === "1";
             const folder = (params.get("folder") || "").trim();
             const title = (params.get("title") || "").trim();
+            const themeTitle = (params.get("theme_title") || "").trim();
+            const themeFolder = (params.get("theme_folder") || "").trim();
             const author = (params.get("author") || "").trim();
             const ref = (params.get("ref") || "").trim();
             const issueCategory = (params.get("issue_category") || "").trim();
@@ -321,13 +321,16 @@
             const elTitle = document.getElementById("field-theme-title");
             const elAuthor = document.getElementById("field-theme-author");
             const elPage = document.getElementById("field-page-url");
+            const redirectEl = document.getElementById("field-redirect");
             const guidance = document.getElementById("report-guidance");
             const optoutPanel = document.getElementById("report-optout-panel");
             const optoutStatus = document.getElementById("optout-status");
             const optoutRemoveLink = document.getElementById("optout-remove-link");
             const optoutReportLink = document.getElementById("optout-report-link");
-            if (elFolder && folder) elFolder.value = folder;
-            if (elTitle && title) elTitle.value = title;
+            const resolvedFolder = themeFolder || folder;
+            const resolvedTitle = themeTitle || title;
+            if (elFolder && resolvedFolder) elFolder.value = resolvedFolder;
+            if (elTitle && resolvedTitle) elTitle.value = resolvedTitle;
             if (elAuthor && author) elAuthor.value = author;
             if (issueSelect && issueCategory) issueSelect.value = issueCategory;
             if (detailsEl && details) detailsEl.value = details.slice(0, 8000);
@@ -336,15 +339,54 @@
                 elPage.value = page.split("#")[0];
             }
 
-            const hasTheme = !!folder;
+            function syncRedirectUrl() {
+                if (!redirectEl) return;
+                const f = String(elFolder && elFolder.value || "").trim();
+                const t = String(elTitle && elTitle.value || "").trim();
+                const a = String(elAuthor && elAuthor.value || "").trim();
+                const p = new URLSearchParams();
+                p.set("sent", "1");
+                if (f) {
+                    p.set("folder", f);
+                    p.set("theme_folder", f);
+                }
+                if (t) {
+                    p.set("title", t);
+                    p.set("theme_title", t);
+                }
+                if (a) p.set("author", a);
+                redirectEl.value = `https://themes.innioasis.app/report-theme.html?${p.toString()}`;
+            }
+            syncRedirectUrl();
+            if (elFolder) elFolder.addEventListener("input", syncRedirectUrl);
+            if (elTitle) elTitle.addEventListener("input", syncRedirectUrl);
+            if (elAuthor) elAuthor.addEventListener("input", syncRedirectUrl);
+
+            const hasTheme = !!resolvedFolder;
             const removeUrl = hasTheme ?
-                `https://themes.innioasis.app/upload.html?mode=remove&folder=${encodeURIComponent(folder)}` :
+                `https://themes.innioasis.app/upload.html?mode=remove&folder=${encodeURIComponent(resolvedFolder)}` :
                 "https://themes.innioasis.app/upload.html?mode=remove";
             if (optoutRemoveLink) optoutRemoveLink.href = removeUrl;
             if (optoutReportLink) {
                 optoutReportLink.href = hasTheme ?
-                    `https://themes.innioasis.app/report-theme.html?folder=${encodeURIComponent(folder)}&title=${encodeURIComponent(title)}&author=${encodeURIComponent(author)}&ref=${encodeURIComponent(ref)}` :
+                    `https://themes.innioasis.app/report-theme.html?folder=${encodeURIComponent(resolvedFolder)}&title=${encodeURIComponent(resolvedTitle)}&author=${encodeURIComponent(author)}&ref=${encodeURIComponent(ref)}` :
                     "https://themes.innioasis.app/report-theme.html";
+            }
+
+            if (sent) {
+                const b = document.getElementById("report-sent-banner");
+                const sentTitle = document.getElementById("report-sent-title");
+                const sentCopy = document.getElementById("report-sent-copy");
+                const displayTheme = resolvedTitle || resolvedFolder;
+                if (b) b.style.display = "block";
+                if (formCard) formCard.hidden = true;
+                if (displayTheme && sentTitle) {
+                    sentTitle.textContent = `We have received your report about ${displayTheme}.`;
+                }
+                if (sentCopy) {
+                    sentCopy.textContent =
+                        "A maintainer will review this complaint. If needed, we may contact you using the email you submitted.";
+                }
             }
 
             function updateGuidance(category) {

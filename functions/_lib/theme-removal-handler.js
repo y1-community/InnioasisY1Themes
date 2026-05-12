@@ -70,16 +70,6 @@ function decodeBase64Utf8(b64) {
   return new TextDecoder().decode(bytes);
 }
 
-function toBase64Utf8(text) {
-  const bytes = new TextEncoder().encode(text);
-  let binary = "";
-  const chunk = 0x8000;
-  for (let i = 0; i < bytes.length; i += chunk) {
-    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
-  }
-  return btoa(binary);
-}
-
 /** Normalize user/catalog strings for confirmation compare (trim, collapse spaces, case-insensitive). */
 function normConfirmText(s) {
   return String(s || "")
@@ -117,24 +107,6 @@ async function readThemeConfigAuthorFromBase(apiBase, token, folder, branch) {
   return "";
 }
 
-async function postFabformRemoval(fabUrl, fields) {
-  const body = new URLSearchParams();
-  body.set("contact_email", fields.contactEmail);
-  body.set("pr_url", fields.prUrl);
-  body.set("theme_folder", fields.themeFolder);
-  body.set("catalog_title", fields.catalogTitle);
-  body.set("catalog_author", fields.catalogAuthor || "");
-  body.set("requester_name", fields.requesterName || "");
-  body.set("reason", fields.reason || "");
-  body.set("blacklist_opt_out", fields.blacklistOptOut ? "yes" : "no");
-  const res = await fetch(fabUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body,
-  });
-  return res.ok;
-}
-
 const RESERVED_TOP = new Set([
   "scripts",
   "functions",
@@ -145,38 +117,6 @@ const RESERVED_TOP = new Set([
   "node_modules",
   "creators",
 ]);
-
-/**
- * @param {string} apiBase
- * @param {string} token
- * @param {string} folder
- * @param {string} branch
- * @returns {Promise<string[]>} blob paths under folder
- */
-async function collectBlobPathsUnderFolder(apiBase, token, folder, branch) {
-  const enc = encodeRepoPath(folder);
-  const url = `${apiBase}/contents/${enc}?ref=${encodeURIComponent(branch)}`;
-  const data = await ghJson(url, token, {}, `list ${folder}`);
-
-  if (!Array.isArray(data)) {
-    if (data && data.type === "file" && data.path) {
-      return [data.path];
-    }
-    return [];
-  }
-
-  const out = [];
-  for (const item of data) {
-    if (!item || !item.path) continue;
-    if (item.type === "file") {
-      out.push(item.path);
-    } else if (item.type === "dir") {
-      const sub = await collectBlobPathsUnderFolder(apiBase, token, item.path, branch);
-      out.push(...sub);
-    }
-  }
-  return out;
-}
 
 /**
  * @param {Request} request
@@ -234,6 +174,17 @@ export async function handleRemovalPost(request, env) {
       throw new Error(`Could not resolve base branch SHA for ${baseBranch}.`);
     }
 
+    const baseCommit = await ghJson(
+      `${apiBase}/git/commits/${encodeURIComponent(baseSha)}`,
+      token,
+      {},
+      "read base commit"
+    );
+    const baseTreeSha = baseCommit?.tree?.sha;
+    if (!baseTreeSha) {
+      throw new Error("Could not resolve base tree SHA.");
+    }
+
     const themesFile = await ghJson(
       `${apiBase}/contents/themes.json?ref=${encodeURIComponent(baseBranch)}`,
       token,
@@ -288,7 +239,18 @@ export async function handleRemovalPost(request, env) {
       }
     }
 
-    const blobPaths = await collectBlobPathsUnderFolder(apiBase, token, folderRaw, baseBranch);
+    const tree = await ghJson(
+      `${apiBase}/git/trees/${encodeURIComponent(baseTreeSha)}?recursive=1`,
+      token,
+      {},
+      "read repository tree"
+    );
+    const blobPaths = Array.isArray(tree?.tree)
+      ? tree.tree
+          .filter((node) => node && node.type === "blob" && typeof node.path === "string")
+          .map((node) => String(node.path))
+          .filter((p) => p === folderRaw || p.startsWith(`${folderRaw}/`))
+      : [];
     if (!blobPaths.length) {
       return jsonResponse({ error: "No files found for that folder on the default branch." }, 404);
     }
@@ -309,57 +271,85 @@ export async function handleRemovalPost(request, env) {
       `create branch ${branchName}`
     );
 
-    const sortedPaths = [...new Set(blobPaths)].sort((a, b) => b.length - a.length);
-    for (const path of sortedPaths) {
-      const enc = encodeRepoPath(path);
-      const meta = await ghJson(
-        `${apiBase}/contents/${enc}?ref=${encodeURIComponent(branchName)}`,
-        token,
-        {},
-        `read blob ${path}`
-      );
-      if (!meta || !meta.sha) continue;
-      await ghJson(
-        `${apiBase}/contents/${enc}`,
-        token,
-        {
-          method: "DELETE",
-          body: JSON.stringify({
-            message: `Removal request: delete ${path}`,
-            sha: meta.sha,
-            branch: branchName,
-          }),
-        },
-        `delete ${path}`
-      );
-      await new Promise((r) => setTimeout(r, 40));
-    }
-
-    const themesOnBranch = await ghJson(
-      `${apiBase}/contents/themes.json?ref=${encodeURIComponent(branchName)}`,
-      token,
-      {},
-      "read themes.json on branch"
-    );
-    const onBranchText = decodeBase64Utf8(themesOnBranch.content);
-    const onBranchData = JSON.parse(onBranchText);
-    const filtered = (Array.isArray(onBranchData.themes) ? onBranchData.themes : []).filter(
+    const filtered = (Array.isArray(themesData.themes) ? themesData.themes : []).filter(
       (t) => !t || String(t.folder || "").trim() !== folderRaw
     );
     const nextJson = JSON.stringify({ themes: filtered }, null, 4) + "\n";
-    await ghJson(
-      `${apiBase}/contents/themes.json`,
+    const themesBlob = await ghJson(
+      `${apiBase}/git/blobs`,
       token,
       {
-        method: "PUT",
+        method: "POST",
         body: JSON.stringify({
-          message: `Removal request: remove ${folderRaw} from themes.json`,
-          content: toBase64Utf8(nextJson),
-          sha: themesOnBranch.sha,
-          branch: branchName,
+          content: nextJson,
+          encoding: "utf-8",
         }),
       },
-      "update themes.json"
+      "create themes.json blob"
+    );
+    if (!themesBlob?.sha) {
+      throw new Error("Could not create themes.json blob.");
+    }
+
+    const treeEntries = [
+      ...[...new Set(blobPaths)].map((path) => ({
+        path,
+        mode: "100644",
+        type: "blob",
+        sha: null,
+      })),
+      {
+        path: "themes.json",
+        mode: "100644",
+        type: "blob",
+        sha: themesBlob.sha,
+      },
+    ];
+    const nextTree = await ghJson(
+      `${apiBase}/git/trees`,
+      token,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          base_tree: baseTreeSha,
+          tree: treeEntries,
+        }),
+      },
+      "create removal tree"
+    );
+    if (!nextTree?.sha) {
+      throw new Error("Could not create removal tree.");
+    }
+
+    const commit = await ghJson(
+      `${apiBase}/git/commits`,
+      token,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          message: `Removal request: delete ${folderRaw} and update themes.json`,
+          tree: nextTree.sha,
+          parents: [baseSha],
+        }),
+      },
+      "create removal commit"
+    );
+    const commitSha = commit?.sha;
+    if (!commitSha) {
+      throw new Error("Could not create removal commit.");
+    }
+
+    await ghJson(
+      `${apiBase}/git/refs/heads/${encodeURIComponent(branchName)}`,
+      token,
+      {
+        method: "PATCH",
+        body: JSON.stringify({
+          sha: commitSha,
+          force: false,
+        }),
+      },
+      "advance removal branch"
     );
 
     const prTitle = `[Removal] ${folderRaw}`;
@@ -398,33 +388,14 @@ export async function handleRemovalPost(request, env) {
       "open pull request"
     );
 
-    const prUrl = pr.html_url || "";
-    let fabformOk = true;
-    const fabUrl = String(env.FABFORM_REMOVAL_FORM_URL || "").trim();
-    if (fabUrl) {
-      try {
-        fabformOk = await postFabformRemoval(fabUrl, {
-          contactEmail,
-          prUrl,
-          themeFolder: folderRaw,
-          catalogTitle: catalogName,
-          catalogAuthor,
-          requesterName: requester,
-          reason,
-          blacklistOptOut,
-        });
-      } catch (e) {
-        fabformOk = false;
-        console.error("[theme-removal] fabform", e);
-      }
-    }
-
     return jsonResponse(
       {
         ok: true,
-        prUrl: prUrl || null,
+        prUrl: pr.html_url || null,
         branch: branchName,
-        fabformOk,
+        themeFolder: folderRaw,
+        catalogTitle: catalogName,
+        catalogAuthor: catalogAuthor || "",
       },
       200
     );

@@ -44,7 +44,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Remove orphan upload metadata sidecars
+      - name: Cleanup stale upload zip/meta artifacts
         run: python scripts/cleanup_upload_artifacts.py
 
       - name: Verify theme index pages exist

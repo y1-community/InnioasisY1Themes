@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import io
 import json
+import os
 from pathlib import Path, PurePosixPath
 from typing import Any
 import zipfile
@@ -242,15 +243,29 @@ def main() -> int:
         print("No zip files found.")
         return 0
 
-    all_ok = True
+    strict = str(os.environ.get("PROCESS_THEME_ZIPS_STRICT", "")).strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+    failed = 0
     for path in zip_paths:
         ok, logs = _process_zip(path)
         for line in logs:
             print(line)
         if not ok:
-            all_ok = False
+            failed += 1
 
-    return 0 if all_ok else 1
+    if failed:
+        print(
+            f"WARNING: {failed} zip archive(s) failed ingest validation/extraction. "
+            "Valid archives (if any) were still processed."
+        )
+    if strict and failed:
+        print("PROCESS_THEME_ZIPS_STRICT is enabled: failing due to ingest errors.")
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
