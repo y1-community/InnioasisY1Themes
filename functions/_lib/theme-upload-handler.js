@@ -169,9 +169,8 @@ export async function handleUploadPost(request, env) {
       200
     );
   } catch (error) {
-    return jsonResponse(
-      { error: error instanceof Error ? error.message : "Upload failed." },
-      500
-    );
+    const message = error instanceof Error ? error.message : "Upload failed.";
+    console.error("[theme-upload]", message);
+    return jsonResponse({ error: message }, 500);
   }
 }
