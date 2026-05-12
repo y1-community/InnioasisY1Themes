@@ -237,6 +237,24 @@ def _process_zip(path: Path) -> tuple[bool, list[str]]:
         return True, logs
 
 
+def _discard_zip(path: Path, logs: list[str], *, reason: str) -> list[str]:
+    logs.append(f"Discarding rejected archive: {reason}")
+    try:
+        if path.is_file():
+            path.unlink()
+            logs.append("Removed rejected zip.")
+    except Exception as exc:
+        logs.append(f"WARNING: Failed to remove rejected zip: {exc}")
+    meta = Path(str(path) + ".meta.json")
+    try:
+        if meta.is_file():
+            meta.unlink()
+            logs.append("Removed rejected upload metadata sidecar.")
+    except Exception as exc:
+        logs.append(f"WARNING: Failed to remove rejected sidecar: {exc}")
+    return logs
+
+
 def main() -> int:
     zip_paths = _find_zip_paths()
     if not zip_paths:
@@ -252,6 +270,8 @@ def main() -> int:
     failed = 0
     for path in zip_paths:
         ok, logs = _process_zip(path)
+        if not ok:
+            logs = _discard_zip(path, logs, reason="failed ingest validation/extraction")
         for line in logs:
             print(line)
         if not ok:
