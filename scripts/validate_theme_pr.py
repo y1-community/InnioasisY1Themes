@@ -14,6 +14,8 @@ Rules:
   - zip must contain one or more theme folders, each with a unique folder name
   - each theme folder in zip must include config.json and image assets
   - config.json must reference at least one image asset
+- If a zip would extract into a folder name that already exists on the base branch,
+  auto-merge is blocked (PR stays open for manual review — no overwrite).
 """
 
 from __future__ import annotations
@@ -238,6 +240,36 @@ def _validate_zip_blob(path: str, blob: bytes) -> list[str]:
     return errors
 
 
+def _zip_collides_with_existing_theme_folders(base_sha: str, zip_repo_path: str, blob: bytes) -> list[str]:
+    """Block auto-merge when zip content targets a theme folder that already exists on base."""
+    errors: list[str] = []
+    try:
+        archive = zipfile.ZipFile(io.BytesIO(blob))
+    except zipfile.BadZipFile:
+        return errors
+
+    with archive:
+        names = [n for n in archive.namelist() if n and not n.endswith("/")]
+        theme_keys = _zip_theme_keys(names)
+        seen: set[str] = set()
+        for key in theme_keys:
+            if key == ".":
+                folder = PurePosixPath(zip_repo_path).stem
+            else:
+                folder = key
+            fn = folder.strip()
+            if not fn or fn in seen:
+                continue
+            seen.add(fn)
+            if _folder_exists_in_base(base_sha, fn):
+                errors.append(
+                    f"Theme folder '{fn}/' already exists on the default branch "
+                    f"(would overwrite or conflict). Auto-merge is disabled for this PR — "
+                    f"maintainers will review '{zip_repo_path}' manually."
+                )
+    return errors
+
+
 def main() -> int:
     if len(sys.argv) != 3:
         print("Usage: validate_theme_pr.py <base_sha> <pr_ref>")
@@ -352,7 +384,10 @@ def main() -> int:
         except subprocess.CalledProcessError:
             errors.append(f"Unable to read zip {path} from PR ref.")
             continue
-        errors.extend(_validate_zip_blob(path, blob))
+        zip_errs = _validate_zip_blob(path, blob)
+        errors.extend(zip_errs)
+        if not zip_errs:
+            errors.extend(_zip_collides_with_existing_theme_folders(base_sha, path, blob))
 
     if errors:
         return _fail(errors)

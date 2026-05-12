@@ -167,17 +167,17 @@ export async function handleUploadPost(request, env) {
       `upload file ${zipPath}`
     );
 
-    const titlePieces = ["Theme zip upload"];
-    if (themeName) titlePieces.push(`- ${themeName}`);
+    const titlePieces = ["Theme submission"];
+    if (themeName) titlePieces.push(`— ${themeName}`);
     const prTitle = titlePieces.join(" ");
     const prBody = [
-      "## Uploaded via upload.html",
+      "## New theme from the gallery uploader",
       "",
-      `- File: \`${originalName}\``,
-      uploaderName ? `- Uploader: ${uploaderName}` : null,
-      notes ? `- Notes: ${notes}` : null,
+      `- Package: \`${originalName}\``,
+      uploaderName ? `- Submitted by: ${uploaderName}` : null,
+      notes ? `- Note from submitter: ${notes}` : null,
       "",
-      "This PR was created by the theme upload API.",
+      "Maintainers will review this change. If the theme folder name already exists on `main`, auto-merge is skipped so nothing is overwritten without a human check.",
     ]
       .filter(Boolean)
       .join("\n");

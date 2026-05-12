@@ -4,8 +4,8 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Upload Theme ZIP or Folder — Innioasis Y1</title>
-    <meta name="description" content="Upload Innioasis Y1 theme as a ZIP or folder; packed client-side for automated PR validation and merge." />
+    <title>Add your theme — Innioasis Y1 Themes</title>
+    <meta name="description" content="Share a new look for the Innioasis Y1 themes gallery. Upload a ZIP or folder; we’ll open a review for the team." />
     <meta name="author" content="Innioasis Community" />
     <link rel="canonical" href="https://themes.innioasis.app/upload.html">
     <link rel="icon" href="y1_illustration.png">
@@ -108,66 +108,111 @@
             margin: 0 0 0.6rem 0;
             font-size: 0.95rem;
         }
+
+        .callout-warn {
+            border: 1px solid rgba(255, 180, 80, 0.45);
+            background: rgba(255, 180, 80, 0.08);
+            border-radius: 10px;
+            padding: 1rem 1.1rem;
+            margin: 1rem 0;
+            line-height: 1.45;
+        }
+
+        .callout-warn p {
+            margin: 0 0 0.65rem 0;
+        }
+
+        .callout-warn p:last-child {
+            margin-bottom: 0;
+        }
+
+        .variation-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+            margin-top: 0.75rem;
+            font-weight: 500;
+        }
+
+        .variation-row input {
+            margin-top: 0.2rem;
+            flex-shrink: 0;
+        }
+
+        .lead {
+            font-size: 1.05rem;
+            line-height: 1.5;
+            margin-bottom: 0.5rem;
+        }
     </style>
 </head>
 
 <body>
-    <h1>Upload Theme ZIP or Folder</h1>
-    <p>
-        Submit a <code>.zip</code> or a <strong>folder</strong> (your browser packs the folder into a ZIP before upload).
-        The server creates a GitHub PR, then existing validation + auto-merge workflows decide whether it can merge.
+    <h1>Add your theme to the gallery</h1>
+    <p class="lead">
+        Share a new look for the Innioasis Y1 player. Choose a ZIP file or a whole theme folder — we’ll package it safely in your browser and send it to the team for review.
     </p>
-    <p class="hint">
-        Uploads call <code>/api/upload-theme</code> on a server that has the upload API: <strong>Cloudflare Pages</strong> (<code>functions/</code>) or the standalone Worker in <code>workers/theme-upload/</code>.
-        On <strong>GitHub Pages</strong> (static only), set <code>cf-pages-upload-api-origin</code> in this file to your Worker or Pages origin (no trailing slash). If you see <strong>404</strong>, that meta is missing or wrong.
-    </p>
+    <p class="hint">You’ll get a link to track your submission. New themes are usually quick to review; if your folder name matches one we already have, a maintainer will confirm everything before it goes live.</p>
 
     <div class="card">
         <form id="upload-form">
             <div class="row">
-                <label for="zip-file">Theme ZIP</label>
+                <label for="zip-file">Option A — ZIP file</label>
                 <input id="zip-file" name="zip" type="file" accept=".zip,application/zip" />
-                <div class="hint">Pick a ZIP <em>or</em> a folder below (not both). After loading, detected <code>theme_info</code> fields can be edited.</div>
+                <div class="hint">One theme per ZIP is easiest. Don’t pick both a ZIP and a folder.</div>
             </div>
 
             <div class="row">
-                <label for="folder-file">Theme folder</label>
+                <label for="folder-file">Option B — Theme folder</label>
                 <input id="folder-file" type="file" webkitdirectory multiple />
-                <div class="hint">Uses directory upload (Chrome, Edge, Firefox, Safari). Files are zipped in your browser before sending.</div>
+                <div class="hint">Select the folder that contains your theme’s <code>config.json</code> and images. Works in Chrome, Edge, Firefox, and Safari.</div>
             </div>
 
             <div id="meta-editor" class="meta-editor">
-                <h3>Detected theme_info metadata</h3>
+                <h3>Theme details</h3>
+                <p class="hint">We read these from <code>config.json</code>. You can fix spelling or credits before sending.</p>
                 <div id="meta-editor-list"></div>
             </div>
 
-            <div class="row">
-                <label for="theme-name">Theme Name (optional)</label>
-                <input id="theme-name" name="themeName" type="text" maxlength="120" placeholder="WarCraft 3" />
+            <div id="duplicate-notice" class="callout-warn" hidden>
+                <p><strong>This theme folder name is already on the site.</strong> Matching names: <strong data-collision-list></strong>.</p>
+                <p>If you’re uploading a <strong>new</strong> theme, rename your folder so it doesn’t match an existing one. If this is your own <strong>variation</strong> or remix of an existing look, that’s OK — check the box below. If you’re riffing on someone else’s theme, use the author fields so <strong>your</strong> name shows up for your version.</p>
+                <label class="variation-row">
+                    <input type="checkbox" id="variation-ack" />
+                    <span>I’m submitting a variation or update; I understand a maintainer will review it before it’s published (nothing is auto-replaced without confirmation).</span>
+                </label>
             </div>
 
             <div class="row">
-                <label for="uploader-name">Your Name / Handle (optional)</label>
-                <input id="uploader-name" name="uploaderName" type="text" maxlength="120" placeholder="u/yourname" />
+                <label for="theme-name">Friendly title (optional)</label>
+                <input id="theme-name" name="themeName" type="text" maxlength="120" placeholder="e.g. WarCraft 3" />
+                <div class="hint">Shown in the pull request title — helps the team spot your theme.</div>
             </div>
 
             <div class="row">
-                <label for="notes">Notes (optional)</label>
-                <textarea id="notes" name="notes" rows="3" maxlength="1000" placeholder="Context for maintainers"></textarea>
+                <label for="uploader-name">Your name or handle (optional)</label>
+                <input id="uploader-name" name="uploaderName" type="text" maxlength="120" placeholder="e.g. u/yourname" />
+                <div class="hint">For variations, use a name that makes it clear <em>you</em> submitted this version.</div>
             </div>
 
-            <button id="submit-btn" type="submit">Submit theme</button>
+            <div class="row">
+                <label for="notes">Message to the team (optional)</label>
+                <textarea id="notes" name="notes" rows="3" maxlength="1000" placeholder="Anything you want reviewers to know"></textarea>
+            </div>
+
+            <button id="submit-btn" type="submit">Send my theme</button>
         </form>
         <div id="status" class="status"></div>
     </div>
 
     <div class="card">
-        <h3>What happens next</h3>
+        <h3>What happens after you send</h3>
         <ul>
-            <li>Your ZIP (or a ZIP built from your folder in the browser) is sent to the upload API (<code>/api/upload-theme</code> on Cloudflare Pages or the standalone Worker).</li>
-            <li>The function creates an upload branch and opens a PR in <code>y1-community/InnioasisY1Themes</code>.</li>
-            <li>PR validation checks for dangerous files and theme structure.</li>
-            <li>If valid, auto-merge can complete and zip processing on <code>main</code> extracts theme folders.</li>
+            <li>Your theme is uploaded securely and a <strong>review request</strong> is opened for the maintainers.</li>
+            <li>They check that files are safe and the theme structure looks good.</li>
+            <li><strong>Brand-new folder names</strong> can often be merged automatically after checks pass.</li>
+            <li>If the <strong>same folder name</strong> already exists, we <strong>do not</strong> auto-merge — a person will look at your PR first so nothing is overwritten by surprise.</li>
+            <li>Once accepted, your theme appears on this site for everyone to download.</li>
         </ul>
     </div>
 
@@ -191,6 +236,65 @@
         const folderInput = document.getElementById("folder-file");
         const metaEditor = document.getElementById("meta-editor");
         const metaEditorList = document.getElementById("meta-editor-list");
+        const duplicateNotice = document.getElementById("duplicate-notice");
+        const variationAck = document.getElementById("variation-ack");
+        const collisionListEl = duplicateNotice.querySelector("[data-collision-list]");
+
+        /** @type {Map<string, string>} lowercase folder -> canonical folder from themes.json */
+        const themesFolderByLower = new Map();
+
+        async function loadThemesIndex() {
+            themesFolderByLower.clear();
+            try {
+                const res = await fetch("themes.json", { cache: "no-store" });
+                if (!res.ok) return;
+                const data = await res.json();
+                const list = data && Array.isArray(data.themes) ? data.themes : [];
+                for (const t of list) {
+                    const f = String(t.folder || "").trim();
+                    if (f) themesFolderByLower.set(f.toLowerCase(), f);
+                }
+            } catch (_) {
+                /* offline / CORS: skip duplicate hints */
+            }
+            syncDuplicateWarnings();
+        }
+
+        function collectThemeRootFolders() {
+            const roots = new Set();
+            for (const e of themeInfoEntries) {
+                const p = normRelPath(e.path);
+                const i = p.indexOf("/");
+                if (i <= 0) continue;
+                roots.add(p.slice(0, i));
+            }
+            return [...roots];
+        }
+
+        /** Canonical folder names (from themes.json) that collide with upload paths. */
+        function findCollidingFolders() {
+            const hits = [];
+            const seen = new Set();
+            for (const r of collectThemeRootFolders()) {
+                const canon = themesFolderByLower.get(r.toLowerCase());
+                if (canon && !seen.has(canon.toLowerCase())) {
+                    seen.add(canon.toLowerCase());
+                    hits.push(canon);
+                }
+            }
+            return hits;
+        }
+
+        function syncDuplicateWarnings() {
+            const colliding = findCollidingFolders();
+            if (!colliding.length) {
+                duplicateNotice.hidden = true;
+                variationAck.checked = false;
+                return;
+            }
+            collisionListEl.textContent = colliding.join(", ");
+            duplicateNotice.hidden = false;
+        }
 
         let uploadMode = "none"; // "zip" | "folder" | "none"
         let loadedZip = null;
@@ -219,6 +323,8 @@
             loadedZipFileName = "";
             folderFiles = null;
             themeInfoEntries = [];
+            variationAck.checked = false;
+            duplicateNotice.hidden = true;
             renderThemeInfoEditors();
         }
 
@@ -249,6 +355,7 @@
             if (!themeInfoEntries.length) {
                 metaEditor.classList.remove("show");
                 metaEditorList.innerHTML = "";
+                syncDuplicateWarnings();
                 return;
             }
 
@@ -276,6 +383,7 @@
 
             metaEditorList.innerHTML = html;
             metaEditor.classList.add("show");
+            syncDuplicateWarnings();
         }
 
         function readEditorValues() {
@@ -479,10 +587,31 @@
             await inspectFolderForThemeInfo(folderInput.files);
         });
 
+        variationAck.addEventListener("change", () => {
+            if (variationAck.checked) {
+                statusEl.textContent = "";
+                statusEl.className = "status";
+            }
+        });
+
+        window.addEventListener("DOMContentLoaded", () => {
+            loadThemesIndex();
+        });
+
         form.addEventListener("submit", async (event) => {
             event.preventDefault();
+            syncDuplicateWarnings();
+            if (findCollidingFolders().length > 0 && !variationAck.checked) {
+                setStatus(
+                    "This folder name already exists on the site. If you’re submitting a variation, tick the box above to confirm you’re OK with a maintainer reviewing it first.",
+                    false
+                );
+                duplicateNotice.hidden = false;
+                return;
+            }
+
             submitBtn.disabled = true;
-            setStatus(uploadMode === "folder" ? "Packing folder and uploading..." : "Uploading...", true);
+            setStatus(uploadMode === "folder" ? "Packaging your theme…" : "Sending your theme…", true);
 
             try {
                 const data = new FormData(form);
@@ -498,8 +627,11 @@
                     throw new Error(payload.error || `Upload failed (${res.status})`);
                 }
 
-                const prUrl = payload.prUrl ? `\nPR: ${payload.prUrl}` : "";
-                setStatus(`Upload accepted.${prUrl}`, true);
+                const link = payload.prUrl ? String(payload.prUrl) : "";
+                const msg = link
+                    ? `Thanks! Your theme is in the review queue.\n\nFollow your request here:\n${link}\n\nIf your theme uses an existing folder name, a maintainer will confirm before anything goes live.`
+                    : `Thanks! Your theme was received. If your theme uses an existing folder name, a maintainer will confirm before anything goes live.`;
+                setStatus(msg, true);
                 form.reset();
                 resetThemeState();
             } catch (err) {
