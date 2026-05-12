@@ -103,9 +103,11 @@ export async function handleUploadPost(request, env) {
 
     const form = await request.formData();
     const zipFile = form.get("zip");
-    const themeName = String(form.get("themeName") || "").trim();
-    const uploaderName = String(form.get("uploaderName") || "").trim();
-    const notes = String(form.get("notes") || "").trim();
+    let themeTitle = String(form.get("themeTitle") || "").trim();
+    let themeAuthor = String(form.get("themeAuthor") || "").trim();
+    if (!themeTitle) themeTitle = String(form.get("themeName") || "").trim();
+    if (!themeAuthor) themeAuthor = String(form.get("uploaderName") || "").trim();
+    const uploaderName = themeAuthor;
 
     if (!(zipFile instanceof File)) {
       return jsonResponse({ error: "Missing ZIP file." }, 400);
@@ -159,7 +161,7 @@ export async function handleUploadPost(request, env) {
       {
         method: "PUT",
         body: JSON.stringify({
-          message: `Upload theme zip: ${originalName}`,
+          message: `Upload theme zip: ${themeTitle || originalName}`,
           content: contentB64,
           branch: branchName,
         }),
@@ -198,15 +200,17 @@ export async function handleUploadPost(request, env) {
       `upload file ${metaPath}`
     );
 
-    const titlePieces = ["Theme submission"];
-    if (themeName) titlePieces.push(`— ${themeName}`);
-    const prTitle = titlePieces.join(" ");
+    let prTitle = "Theme submission";
+    if (themeTitle && themeAuthor) prTitle = `${themeTitle} — ${themeAuthor}`;
+    else if (themeTitle) prTitle = themeTitle;
+    else if (themeAuthor) prTitle = `Theme submission — ${themeAuthor}`;
+
     const prBody = [
       "## New theme from the gallery uploader",
       "",
       `- Package: \`${originalName}\``,
-      uploaderName ? `- Submitted by: ${uploaderName}` : null,
-      notes ? `- Note from submitter: ${notes}` : null,
+      themeTitle ? `- Title (from config): ${themeTitle}` : null,
+      themeAuthor ? `- Author (from config): ${themeAuthor}` : null,
       "",
       "**Auto-merge policy (GitHub Actions):**",
       "- Merges only when `scripts/validate_theme_pr.py` passes.",

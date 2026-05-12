@@ -316,6 +316,24 @@
             margin-bottom: 0;
         }
 
+        .callout-info {
+            border: 1px solid rgba(100, 180, 255, 0.45);
+            background: rgba(80, 140, 255, 0.1);
+            border-radius: 10px;
+            padding: 1rem 1.1rem;
+            margin: 1rem 0;
+            line-height: 1.5;
+            color: #dbe8ff;
+        }
+
+        .callout-info p {
+            margin: 0 0 0.65rem 0;
+        }
+
+        .callout-info p:last-child {
+            margin-bottom: 0;
+        }
+
         .variation-row {
             display: flex;
             align-items: flex-start;
@@ -376,31 +394,23 @@
                     <div id="meta-editor-list"></div>
                 </div>
 
+                <div id="edit-notice" class="callout-info" hidden>
+                    <p><strong>Updating an existing gallery theme</strong></p>
+                    <p>Your folder name matches <strong data-edit-folder></strong> (same identity as a theme already listed), and the <strong>author</strong> in <code>config.json</code> matches that listing. We’ll open a pull request titled from your <strong>title</strong> and <strong>author</strong> fields — it will stay open for <strong>manual review</strong> (edits are not auto-merged).</p>
+                    <p class="hint" style="margin-top: 0.5rem;">Catalog name: <span data-edit-catalog-title>—</span></p>
+                </div>
+
                 <div id="duplicate-notice" class="callout-warn" hidden>
-                    <p><strong>This theme folder name is already on the site.</strong> Matching names: <strong data-collision-list></strong>.</p>
-                    <p>If you’re uploading a <strong>new</strong> theme, rename your folder so it doesn’t match an existing one. If this is your own <strong>variation</strong> or remix of an existing look, that’s OK — check the box below. If you’re riffing on someone else’s theme, use the author fields so <strong>your</strong> name shows up for your version.</p>
+                    <p><strong>This theme identity is already on the site under another author.</strong> Listed folder(s): <strong data-collision-list></strong>.</p>
+                    <p>Rename your theme’s root folder so it doesn’t match the existing one (for example add <code>-yourhandle</code> at the end), or change the <strong>author</strong> in <code>config.json</code> if this is genuinely your own separate version. If you’re intentionally submitting a variation, confirm below.</p>
                     <label class="variation-row">
                         <input type="checkbox" id="variation-ack" />
-                        <span>I’m submitting a variation or update; I understand a maintainer will review it before it’s published (nothing is auto-replaced without confirmation).</span>
+                        <span>I’m submitting a variation or remix; I understand a maintainer will review it before it’s published.</span>
                     </label>
                 </div>
 
-                <div class="row">
-                    <label for="theme-name">Friendly title (optional)</label>
-                    <input id="theme-name" name="themeName" type="text" maxlength="120" placeholder="e.g. WarCraft 3" />
-                    <div class="hint">Shown in the pull request title — helps the team spot your theme.</div>
-                </div>
-
-                <div class="row">
-                    <label for="uploader-name">Your name or handle (optional)</label>
-                    <input id="uploader-name" name="uploaderName" type="text" maxlength="120" placeholder="e.g. u/yourname" />
-                    <div class="hint">For variations, use a name that makes it clear <em>you</em> submitted this version.</div>
-                </div>
-
-                <div class="row">
-                    <label for="notes">Message to the team (optional)</label>
-                    <textarea id="notes" name="notes" rows="3" maxlength="1000" placeholder="Anything you want reviewers to know"></textarea>
-                </div>
+                <input type="hidden" name="themeTitle" id="field-theme-title" value="" />
+                <input type="hidden" name="themeAuthor" id="field-theme-author" value="" />
 
                 <button id="submit-btn" type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane" style="margin-right: 6px;"></i>Send my theme</button>
             </form>
@@ -489,15 +499,49 @@
         const folderInput = document.getElementById("folder-file");
         const metaEditor = document.getElementById("meta-editor");
         const metaEditorList = document.getElementById("meta-editor-list");
+        metaEditorList.addEventListener("input", () => syncCollisionUi());
+        metaEditorList.addEventListener("change", () => syncCollisionUi());
         const duplicateNotice = document.getElementById("duplicate-notice");
+        const editNotice = document.getElementById("edit-notice");
         const variationAck = document.getElementById("variation-ack");
         const collisionListEl = duplicateNotice.querySelector("[data-collision-list]");
+        const editFolderEl = editNotice.querySelector("[data-edit-folder]");
+        const editCatalogTitleEl = editNotice.querySelector("[data-edit-catalog-title]");
+        const fieldThemeTitle = document.getElementById("field-theme-title");
+        const fieldThemeAuthor = document.getElementById("field-theme-author");
 
         /** @type {Map<string, string>} lowercase folder -> canonical folder from themes.json */
         const themesFolderByLower = new Map();
+        /** @type {Map<string, { folder: string, author: string, name: string }>} logical slug -> catalog row */
+        const themesByLogical = new Map();
+
+        function logicalThemeSlug(folder) {
+            return String(folder || "")
+                .trim()
+                .replace(/^\d+-/, "")
+                .toLowerCase();
+        }
+
+        function normAuthor(s) {
+            let t = String(s || "")
+                .trim()
+                .toLowerCase()
+                .replace(/\s+/g, " ");
+            if (t.startsWith("u/")) t = t.slice(2).trim();
+            return t;
+        }
+
+        function authorsMatch(catalogAuthor, configAuthor) {
+            const a = normAuthor(catalogAuthor);
+            const b = normAuthor(configAuthor);
+            if (!a && !b) return true;
+            if (!a || !b) return false;
+            return a === b;
+        }
 
         async function loadThemesIndex() {
             themesFolderByLower.clear();
+            themesByLogical.clear();
             try {
                 const res = await fetch("themes.json", { cache: "no-store" });
                 if (!res.ok) return;
@@ -505,18 +549,34 @@
                 const list = data && Array.isArray(data.themes) ? data.themes : [];
                 for (const t of list) {
                     const f = String(t.folder || "").trim();
-                    if (f) themesFolderByLower.set(f.toLowerCase(), f);
+                    if (!f) continue;
+                    themesFolderByLower.set(f.toLowerCase(), f);
+                    const logical = logicalThemeSlug(f);
+                    if (!themesByLogical.has(logical)) {
+                        themesByLogical.set(logical, {
+                            folder: f,
+                            author: String(t.author || "").trim(),
+                            name: String(t.name || "").trim()
+                        });
+                    }
                 }
             } catch (_) {
                 /* offline / CORS: skip duplicate hints */
             }
-            syncDuplicateWarnings();
+            syncCollisionUi();
         }
 
         function collectThemeRootFolders() {
             const roots = new Set();
             for (const e of themeInfoEntries) {
                 const p = normRelPath(e.path);
+                if (p === "config.json" || !p.includes("/")) {
+                    const stem = String(loadedZipFileName || "theme")
+                        .replace(/\.zip$/i, "")
+                        .replace(/^\d+-/, "");
+                    if (stem) roots.add(stem);
+                    continue;
+                }
                 const i = p.indexOf("/");
                 if (i <= 0) continue;
                 roots.add(p.slice(0, i));
@@ -524,29 +584,59 @@
             return [...roots];
         }
 
-        /** Canonical folder names (from themes.json) that collide with upload paths. */
-        function findCollidingFolders() {
+        /** @returns {{ uploadRoot: string, folder: string, author: string, name: string }[]} */
+        function findLogicalCollisions() {
             const hits = [];
-            const seen = new Set();
+            const seenLogical = new Set();
             for (const r of collectThemeRootFolders()) {
-                const canon = themesFolderByLower.get(r.toLowerCase());
-                if (canon && !seen.has(canon.toLowerCase())) {
-                    seen.add(canon.toLowerCase());
-                    hits.push(canon);
+                const logical = logicalThemeSlug(r);
+                const row = themesByLogical.get(logical);
+                if (row && !seenLogical.has(logical)) {
+                    seenLogical.add(logical);
+                    hits.push({ uploadRoot: r, ...row });
                 }
             }
             return hits;
         }
 
-        function syncDuplicateWarnings() {
-            const colliding = findCollidingFolders();
-            if (!colliding.length) {
+        function authorForUploadRoot(root) {
+            readEditorValues();
+            const entry = themeInfoEntries.find((e) => {
+                const p = normRelPath(e.path);
+                if (p === "config.json") return true;
+                return p.split("/")[0] === root;
+            });
+            return entry ? String(entry.themeInfo.author || "").trim() : "";
+        }
+
+        /** @returns {{ hasCollision: boolean, isEdit: boolean, hits: ReturnType<typeof findLogicalCollisions> }} */
+        function analyzeCollision() {
+            const hits = findLogicalCollisions();
+            if (!hits.length) return { hasCollision: false, isEdit: false, hits: [] };
+            const isEdit = hits.every((h) => authorsMatch(h.author, authorForUploadRoot(h.uploadRoot)));
+            return { hasCollision: true, isEdit, hits };
+        }
+
+        function syncCollisionUi() {
+            const { hasCollision, isEdit, hits } = analyzeCollision();
+            if (!hasCollision) {
                 duplicateNotice.hidden = true;
+                editNotice.hidden = true;
                 variationAck.checked = false;
                 return;
             }
-            collisionListEl.textContent = colliding.join(", ");
-            duplicateNotice.hidden = false;
+            collisionListEl.textContent = hits.map((x) => x.folder).join(", ");
+            if (isEdit) {
+                duplicateNotice.hidden = true;
+                variationAck.checked = false;
+                editNotice.hidden = false;
+                const h = hits[0];
+                editFolderEl.textContent = h.folder;
+                editCatalogTitleEl.textContent = h.name || h.folder;
+            } else {
+                editNotice.hidden = true;
+                duplicateNotice.hidden = false;
+            }
         }
 
         let uploadMode = "none"; // "zip" | "folder" | "none"
@@ -578,6 +668,7 @@
             themeInfoEntries = [];
             variationAck.checked = false;
             duplicateNotice.hidden = true;
+            editNotice.hidden = true;
             renderThemeInfoEditors();
         }
 
@@ -608,7 +699,7 @@
             if (!themeInfoEntries.length) {
                 metaEditor.classList.remove("show");
                 metaEditorList.innerHTML = "";
-                syncDuplicateWarnings();
+                syncCollisionUi();
                 return;
             }
 
@@ -636,7 +727,7 @@
 
             metaEditorList.innerHTML = html;
             metaEditor.classList.add("show");
-            syncDuplicateWarnings();
+            syncCollisionUi();
         }
 
         function readEditorValues() {
@@ -656,6 +747,22 @@
                 entry.themeInfo.authorUrl = getValue("authorUrl");
                 entry.themeInfo.description = getValue("description");
             });
+        }
+
+        function primaryThemeTitleAndAuthor() {
+            readEditorValues();
+            if (!themeInfoEntries.length) return { title: "", author: "" };
+            const e = themeInfoEntries[0];
+            return {
+                title: String(e.themeInfo.title || "").trim(),
+                author: String(e.themeInfo.author || "").trim()
+            };
+        }
+
+        function themeInfoBlockFromParsed(parsed) {
+            if (parsed.theme_info && typeof parsed.theme_info === "object") return parsed.theme_info;
+            if (parsed.source_info && typeof parsed.source_info === "object") return parsed.source_info;
+            return {};
         }
 
         async function inspectZipForThemeInfo(file) {
@@ -692,7 +799,7 @@
                         const text = await zipEntry.async("text");
                         const parsed = JSON.parse(text);
                         if (!parsed || typeof parsed !== "object") continue;
-                        const existing = (parsed.theme_info && typeof parsed.theme_info === "object") ? parsed.theme_info : {};
+                        const existing = themeInfoBlockFromParsed(parsed);
                         themeInfoEntries.push({
                             path: zipEntry.name,
                             label: detectThemeLabel(zipEntry.name),
@@ -746,7 +853,7 @@
                     const text = await file.text();
                     const parsed = JSON.parse(text);
                     if (!parsed || typeof parsed !== "object") continue;
-                    const existing = (parsed.theme_info && typeof parsed.theme_info === "object") ? parsed.theme_info : {};
+                    const existing = themeInfoBlockFromParsed(parsed);
                     themeInfoEntries.push({
                         path,
                         label: detectThemeLabel(path),
@@ -853,10 +960,11 @@
 
         form.addEventListener("submit", async (event) => {
             event.preventDefault();
-            syncDuplicateWarnings();
-            if (findCollidingFolders().length > 0 && !variationAck.checked) {
+            syncCollisionUi();
+            const { hasCollision, isEdit } = analyzeCollision();
+            if (hasCollision && !isEdit && !variationAck.checked) {
                 setStatus(
-                    "This folder name already exists on the site. If you’re submitting a variation, tick the box above to confirm you’re OK with a maintainer reviewing it first.",
+                    "This theme identity is already listed under another author. Rename your theme folder, adjust author in config.json, or tick the confirmation above if this is an intentional variation.",
                     false
                 );
                 duplicateNotice.hidden = false;
@@ -867,6 +975,10 @@
             setStatus(uploadMode === "folder" ? "Packaging your theme…" : "Sending your theme…", true);
 
             try {
+                const ta = primaryThemeTitleAndAuthor();
+                fieldThemeTitle.value = ta.title;
+                fieldThemeAuthor.value = ta.author;
+
                 const data = new FormData(form);
                 const rebuiltZip = await buildZipForUpload();
                 data.set("zip", rebuiltZip, rebuiltZip.name);
