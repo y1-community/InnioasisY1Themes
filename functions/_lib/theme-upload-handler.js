@@ -41,24 +41,39 @@ function toBase64(buffer) {
   return btoa(binary);
 }
 
-async function ghJson(url, token, init = {}) {
+async function ghJson(url, token, init = {}, context = "") {
   const res = await fetch(url, {
     ...init,
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
       "Content-Type": "application/json",
       ...(init.headers || {}),
     },
   });
 
-  const json = await res.json().catch(() => ({}));
+  const raw = await res.text();
+  let json = {};
+  try {
+    json = raw ? JSON.parse(raw) : {};
+  } catch {
+    json = { message: raw ? raw.slice(0, 500) : "" };
+  }
+
   if (!res.ok) {
-    const msg =
-      json && (json.message || json.error)
-        ? `${json.message || json.error}`
-        : `GitHub API error (${res.status})`;
-    throw new Error(msg);
+    const parts = [];
+    if (json.message) parts.push(String(json.message));
+    if (json.error) parts.push(String(json.error));
+    if (Array.isArray(json.errors)) {
+      for (const e of json.errors) {
+        if (e && e.message) parts.push(e.message);
+      }
+    }
+    let detail = parts.filter(Boolean).join(" — ") || raw?.slice(0, 300) || `HTTP ${res.status}`;
+    if (json.documentation_url) detail += ` (${json.documentation_url})`;
+    const prefix = context ? `${context}: ` : "";
+    throw new Error(`${prefix}GitHub API ${res.status}: ${detail}`);
   }
   return json;
 }
@@ -112,28 +127,43 @@ export async function handleUploadPost(request, env) {
     const zipPath = `${zipDir ? `${zipDir.replace(/^\/+|\/+$/g, "")}/` : ""}${now}-${originalName}`;
     const apiBase = `https://api.github.com/repos/${owner}/${repo}`;
 
-    const baseRef = await ghJson(`${apiBase}/git/ref/heads/${encodeURIComponent(baseBranch)}`, token);
+    const baseRef = await ghJson(
+      `${apiBase}/git/ref/heads/${encodeURIComponent(baseBranch)}`,
+      token,
+      {},
+      `read base branch ${baseBranch} on ${owner}/${repo}`
+    );
     const baseSha = baseRef?.object?.sha;
     if (!baseSha) {
       throw new Error(`Could not resolve base branch SHA for ${baseBranch}.`);
     }
 
-    await ghJson(`${apiBase}/git/refs`, token, {
-      method: "POST",
-      body: JSON.stringify({
-        ref: `refs/heads/${branchName}`,
-        sha: baseSha,
-      }),
-    });
+    await ghJson(
+      `${apiBase}/git/refs`,
+      token,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          ref: `refs/heads/${branchName}`,
+          sha: baseSha,
+        }),
+      },
+      `create branch ${branchName}`
+    );
 
-    await ghJson(`${apiBase}/contents/${zipPath.split("/").map(encodeURIComponent).join("/")}`, token, {
-      method: "PUT",
-      body: JSON.stringify({
-        message: `Upload theme zip: ${originalName}`,
-        content: contentB64,
-        branch: branchName,
-      }),
-    });
+    await ghJson(
+      `${apiBase}/contents/${zipPath.split("/").map(encodeURIComponent).join("/")}`,
+      token,
+      {
+        method: "PUT",
+        body: JSON.stringify({
+          message: `Upload theme zip: ${originalName}`,
+          content: contentB64,
+          branch: branchName,
+        }),
+      },
+      `upload file ${zipPath}`
+    );
 
     const titlePieces = ["Theme zip upload"];
     if (themeName) titlePieces.push(`- ${themeName}`);
@@ -150,15 +180,20 @@ export async function handleUploadPost(request, env) {
       .filter(Boolean)
       .join("\n");
 
-    const pr = await ghJson(`${apiBase}/pulls`, token, {
-      method: "POST",
-      body: JSON.stringify({
-        title: prTitle,
-        head: branchName,
-        base: baseBranch,
-        body: prBody,
-      }),
-    });
+    const pr = await ghJson(
+      `${apiBase}/pulls`,
+      token,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          title: prTitle,
+          head: branchName,
+          base: baseBranch,
+          body: prBody,
+        }),
+      },
+      "open pull request"
+    );
 
     return jsonResponse(
       {

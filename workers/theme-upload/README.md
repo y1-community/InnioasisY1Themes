@@ -63,6 +63,15 @@ Optional — set in the Cloudflare dashboard (Worker → Settings → Variables)
 
 Never commit the token. Never put it in `upload.html`.
 
+### Still seeing `GitHub API 403` after rotating the token?
+
+The upload form will show a longer message after redeploy (which step failed + GitHub’s text). Common causes:
+
+1. **Fine-grained PAT** — Repository **`y1-community/InnioasisY1Themes`** must be explicitly selected; permissions **Contents** and **Pull requests** must be **Read and write** (not read-only).
+2. **Org SAML SSO** — Authorize the PAT for **`y1-community`** (GitHub → token → **Configure SSO**).
+3. **Wrong secret on the Worker** — Must be **`GITHUB_UPLOAD_TOKEN`** under the Worker’s **Variables and secrets** (Production), not only the Cloudflare Git “API token” used to clone the repo.
+4. **Wrong repo in env** — If you set **`GITHUB_REPO`** / **`GITHUB_OWNER`** on the Worker, they must match the real GitHub repo name exactly.
+
 ## GitHub Pages: point `upload.html` at this Worker
 
 In the published `upload.html`, set (no trailing slash on the URL):
