@@ -88,6 +88,11 @@
             "folder": "ElsieD"
         },
         {
+            "name": "emoscenetheme",
+            "folder": "emoscenetheme",
+            "description": "Download the emoscenetheme theme for Innioasis Y1 and personalize your player's look with curated UI assets."
+        },
+        {
             "name": "Fallout",
             "folder": "Fallout"
         },
@@ -398,6 +403,13 @@
         {
             "name": "VivaPinata",
             "folder": "VivaPinata"
+        },
+        {
+            "name": "WarCraft 3",
+            "folder": "WarCraft_3",
+            "author": "u/karliky",
+            "authorUrl": "https://x.com/k4rliky",
+            "description": "A Warcraft 3-inspired theme"
         },
         {
             "name": "Win95",

@@ -1,4 +1,10 @@
 {
+    "theme_info": {
+        "title": "emoscenetheme",
+        "author": "",
+        "authorUrl": "",
+        "description": "Download the emoscenetheme theme for Innioasis Y1 and personalize your player's look with curated UI assets."
+    },
     "themeCover": "cover.png",
     "desktopWallpaper": "desk_bg001.png",
     "globalWallpaper": "desk_bg001.png",
@@ -37,7 +43,6 @@
         "calendar": "calendar.png",
         "calculator": "calculator.png",
         "ebook": "ebook.png"
-
     },
     "fileConfig": {
         "folderIcon": "",
