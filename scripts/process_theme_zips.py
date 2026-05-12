@@ -2,7 +2,8 @@
 """Extract valid theme folders from submitted zip files.
 
 Scans the repository for .zip files, validates archive safety, then extracts
-each theme folder (identified by folder-local config.json) into the repo root.
+each theme folder (identified by folder-local config.json) into the themes/
+directory (this script's REPO_ROOT).
 Dangerous file types are blocked and existing destination folders are not
 overwritten. Successfully processed zip files are removed.
 """
@@ -16,10 +17,11 @@ from typing import Any
 import zipfile
 
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+_GIT_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = _GIT_ROOT / "themes"
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"}
 ZIP_EXTENSION = ".zip"
-EXCLUDED_SCAN_DIRS = {".git", ".github", "scripts", "assets"}
+EXCLUDED_SCAN_DIRS = {".git", ".github", "scripts", "assets", "functions"}
 BLOCKED_EXTENSIONS = {
     ".html",
     ".htm",

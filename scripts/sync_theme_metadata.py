@@ -21,7 +21,8 @@ from pathlib import Path
 from typing import Any
 
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+_GIT_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = _GIT_ROOT / "themes"
 THEMES_JSON_PATH = REPO_ROOT / "themes.json"
 THEME_TEMPLATE_PATH = REPO_ROOT / "theme.html"
 SITE_BASE_URL = "https://themes.innioasis.app"
@@ -40,6 +41,7 @@ EXCLUDED_DIRS = {
     "__pycache__",
     "assets",
     "scripts",
+    "functions",
 }
 
 

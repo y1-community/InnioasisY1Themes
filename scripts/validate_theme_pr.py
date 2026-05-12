@@ -3,8 +3,9 @@
 
 Rules:
 - Only added files are allowed (no modifications, deletions, renames).
-- Root-level non-zip file changes are not allowed.
-- Non-zip file changes must be inside newly added top-level folders only.
+- All changes must be under themes/ (site + zips live in that directory).
+- Zip uploads must be themes/<name>.zip (not nested paths).
+- Non-zip file changes must be under themes/<newThemeFolder>/... only.
 - Dangerous/disallowed files are blocked.
 - New direct theme folders must include config.json + at least one image file.
 - Added zip files are allowed and validated:
@@ -28,7 +29,9 @@ import zipfile
 
 
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"}
-DISALLOWED_TOP_LEVEL = {".github", "scripts", "assets"}
+THEMES_PREFIX = "themes/"
+# First path segment after themes/ — block infra / tooling dirs, not theme folders.
+RESERVED_UNDER_THEMES = {"scripts", "functions", "assets", ".github"}
 ZIP_EXTENSION = ".zip"
 BLOCKED_EXTENSIONS = {
     ".html",
@@ -267,31 +270,44 @@ def main() -> int:
             errors.append(f"Only added files are allowed. Found {status} on {path}.")
             continue
 
+        if not path.startswith(THEMES_PREFIX):
+            errors.append(f"Changes must be under {THEMES_PREFIX}: {path}")
+            continue
+
         if _is_zip_file(path):
+            rel_zip = path[len(THEMES_PREFIX) :]
+            if "/" in rel_zip:
+                errors.append(f"Zip submissions must be directly under {THEMES_PREFIX}: {path}")
+                continue
             zip_paths.append(path)
             continue
 
-        if "/" not in path:
-            errors.append(f"Root-level non-zip changes are not allowed: {path}.")
+        rest = path[len(THEMES_PREFIX) :]
+        if "/" not in rest:
+            errors.append(f"Non-zip files cannot sit directly under {THEMES_PREFIX}: {path}")
             continue
 
-        folder, rel_path = path.split("/", 1)
-        if folder.startswith(".") or folder in DISALLOWED_TOP_LEVEL:
-            errors.append(f"Changes in {folder}/ are not allowed for auto-merge.")
-            continue
-        if _folder_exists_in_base(base_sha, folder):
-            if folder not in existing_folder_blocked:
-                errors.append(f"Folder {folder}/ already exists in base; only new folders are auto-mergeable.")
-                existing_folder_blocked.add(folder)
+        theme_name, rel_path = rest.split("/", 1)
+        if theme_name.startswith(".") or theme_name in RESERVED_UNDER_THEMES:
+            errors.append(f"Changes under {THEMES_PREFIX}{theme_name}/ are not allowed for auto-merge.")
             continue
 
-        state = folder_state.setdefault(folder, {"has_config": False, "image_files": [], "paths": []})
+        composite = f"{THEMES_PREFIX}{theme_name}"
+        if _folder_exists_in_base(base_sha, composite):
+            if composite not in existing_folder_blocked:
+                errors.append(
+                    f"Folder {composite}/ already exists in base; only new folders are auto-mergeable."
+                )
+                existing_folder_blocked.add(composite)
+            continue
+
+        state = folder_state.setdefault(composite, {"has_config": False, "image_files": [], "paths": []})
         state["paths"].append(rel_path)
         name = Path(rel_path).name
         if name == "config.json":
             state["has_config"] = True
         elif _is_blocked_file(name):
-            errors.append(f"Blocked file type in {folder}/: {rel_path}")
+            errors.append(f"Blocked file type in {composite}/: {rel_path}")
         elif _looks_like_image(name):
             state["image_files"].append(rel_path)
 
@@ -301,30 +317,30 @@ def main() -> int:
     if not folder_state and not zip_paths:
         return _fail(["PR must include new theme folders and/or zip submissions."])
 
-    for folder, state in folder_state.items():
+    for composite, state in folder_state.items():
         if not state["has_config"]:
-            errors.append(f"{folder}/ is missing config.json.")
+            errors.append(f"{composite}/ is missing config.json.")
             continue
         if not state["image_files"]:
-            errors.append(f"{folder}/ must include at least one image file.")
+            errors.append(f"{composite}/ must include at least one image file.")
             continue
 
         try:
-            config_raw = _git_blob_text(f"{pr_ref}:{folder}/config.json")
+            config_raw = _git_blob_text(f"{pr_ref}:{composite}/config.json")
             config = json.loads(config_raw)
         except json.JSONDecodeError as exc:
-            errors.append(f"{folder}/config.json is invalid JSON: {exc}")
+            errors.append(f"{composite}/config.json is invalid JSON: {exc}")
             continue
         except subprocess.CalledProcessError:
-            errors.append(f"Unable to read {folder}/config.json from PR ref.")
+            errors.append(f"Unable to read {composite}/config.json from PR ref.")
             continue
 
         if not isinstance(config, dict):
-            errors.append(f"{folder}/config.json must be a JSON object.")
+            errors.append(f"{composite}/config.json must be a JSON object.")
             continue
 
         if not _config_has_image_refs(config):
-            errors.append(f"{folder}/config.json must reference at least one image asset.")
+            errors.append(f"{composite}/config.json must reference at least one image asset.")
 
     for path in zip_paths:
         try:
