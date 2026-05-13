@@ -777,6 +777,16 @@
             "screenshot": "./SackBoy/@SB_cover.png"
         },
         {
+            "name": "Santa Cruz",
+            "folder": "Santa_Cruz",
+            "author": "tai",
+            "description": "white, black, gray and green (just a test run)",
+            "screenshot": "./Santa_Cruz/cover.png",
+            "sourceType": "internal",
+            "sortName": "santa cruz",
+            "searchText": "santa cruz white, black, gray and green (just a test run) tai santa_cruz"
+        },
+        {
             "name": "SpongeBob Purple Pineapple",
             "folder": "SB_PurplePineapple",
             "sourceType": "internal",
