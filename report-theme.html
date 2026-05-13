@@ -250,6 +250,7 @@
             <form id="report-form" action="https://fabform.io/f/-OtVqbq" method="post">
                 <input id="field-redirect" type="hidden" name="_redirect" value="https://themes.innioasis.app/report-theme.html?sent=1" />
                 <input type="hidden" name="page_url" id="field-page-url" value="" />
+                <input type="hidden" name="email" id="field-email-alias" value="" />
 
                 <div class="row">
                     <label for="field-contact-email">Your email <span style="font-weight:500;color:var(--text-secondary)">(required)</span></label>
@@ -325,6 +326,8 @@
             const identityHint = document.getElementById("theme-identity-hint");
             const elPage = document.getElementById("field-page-url");
             const redirectEl = document.getElementById("field-redirect");
+            const elContactEmail = document.getElementById("field-contact-email");
+            const elEmailAlias = document.getElementById("field-email-alias");
             const guidance = document.getElementById("report-guidance");
             const optoutPanel = document.getElementById("report-optout-panel");
             const optoutStatus = document.getElementById("optout-status");
@@ -347,11 +350,21 @@
             }
 
             function resolveFabformEndpoint(raw) {
+                const expectedId = "-OtVqbq";
                 const value = String(raw || "").trim();
-                if (!value) return "";
-                if (/^https?:\/\//i.test(value)) return value;
-                if (value.startsWith("/f/")) return "https://fabform.io" + value;
-                return "https://fabform.io/f/" + value;
+                if (!value) return `https://fabform.io/f/${encodeURIComponent(expectedId)}`;
+                if (/^https?:\/\//i.test(value)) {
+                    const m = value.match(/\/f\/([^/?#]+)/i);
+                    if (m && m[1] && m[1] !== expectedId) {
+                        return `https://fabform.io/f/${encodeURIComponent(expectedId)}`;
+                    }
+                    return value;
+                }
+                const id = value.startsWith("/f/") ? String(value.slice(3)) : value;
+                if (id !== expectedId) {
+                    return `https://fabform.io/f/${encodeURIComponent(expectedId)}`;
+                }
+                return `https://fabform.io/f/${encodeURIComponent(id)}`;
             }
 
             function syncRedirectUrl() {
@@ -539,6 +552,9 @@
                     if (submitBtn) submitBtn.disabled = true;
                     try {
                         syncRedirectUrl();
+                        if (elEmailAlias) {
+                            elEmailAlias.value = String(elContactEmail && elContactEmail.value || "").trim();
+                        }
                         // FabForm docs use direct HTML form POST to /f/{id}; avoid CORS-sensitive AJAX fetch here.
                         form.setAttribute("action", target);
                         form.setAttribute("method", "post");

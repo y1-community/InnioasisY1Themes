@@ -45,10 +45,18 @@
                 return apiUrl("/api/theme-metadata");
             };
             window.removalFabformUrl = function () {
+                var expectedId = "n7me_GY";
                 var meta = document.querySelector('meta[name="fabform-removal-form-url"]');
                 var raw = meta && meta.getAttribute("content") ? String(meta.getAttribute("content")).trim() : "";
-                if (!raw) return "";
-                if (/^https?:\/\//i.test(raw)) return raw;
+                if (!raw) raw = expectedId;
+                if (/^https?:\/\//i.test(raw)) {
+                    var m = raw.match(/\/f\/([^/?#]+)/i);
+                    if (m && m[1] && m[1] !== expectedId) {
+                        return "https://fabform.io/f/" + encodeURIComponent(expectedId);
+                    }
+                    return raw;
+                }
+                if (raw !== expectedId) raw = expectedId;
                 return "https://fabform.io/f/" + encodeURIComponent(raw);
             };
         })();
@@ -1393,6 +1401,7 @@
             if (!fabUrl) return { skipped: true };
             return postToFabformViaIframe(fabUrl, {
                 contact_email: String(fields.contactEmail || ""),
+                email: String(fields.contactEmail || ""),
                 pr_url: String(fields.prUrl || ""),
                 theme_folder: String(fields.themeFolder || ""),
                 catalog_title: String(fields.catalogTitle || ""),
