@@ -1,37 +1,15 @@
 {
     "themes": [
         {
-            "name": "DORFic",
-            "folder": "1778622803510-DORFic",
-            "author": "u/Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000",
-            "description": "Download the DORFic theme for Innioasis Y1 by u/Angel_50000 and personalize your player's look with curated UI assets.",
-            "sourceType": "internal",
-            "sortName": "dorfic",
-            "searchText": "dorfic download the dorfic theme for innioasis y1 by u/angel_50000 and personalize your player's look with curated ui assets. u/angel_50000 1778622803510-dorfic",
-            "screenshot": "./1778622803510-DORFic/cover.png"
-        },
-        {
-            "name": "Simple Spider-man",
-            "folder": "1778646628264-Simple_Spider-man",
-            "author": "Innioasis community",
-            "authorUrl": "http://.I don't have one",
-            "description": "A new wallpaper just in time for the new Spider-Man movie, which is coming out soon. Simple but has the reds, the blues, and the colors that make Spider-Man.",
-            "sourceType": "internal",
-            "sortName": "simple spider-man",
-            "searchText": "simple spider-man a new wallpaper just in time for the new spider-man movie, which is coming out soon. simple but has the reds, the blues, and the colors that make spider-man. innioasis community 1778646628264-simple_spider-man",
-            "screenshot": "./1778646628264-Simple_Spider-man/cover.png"
-        },
-        {
             "name": "ACmp3",
             "folder": "ACmp3",
-            "sourceType": "internal",
-            "sortName": "acmp3",
-            "searchText": "acmp3 an animal crossing new horizons inspired theme for the y1 stock firmware scarylyn acmp3",
             "author": "Scarylyn",
             "authorUrl": "https://github.com/user/scarylyn",
             "description": "An Animal Crossing New Horizons inspired theme for the Y1 stock firmware",
-            "screenshot": "./ACmp3/cover.png"
+            "screenshot": "./ACmp3/cover.png",
+            "sourceType": "internal",
+            "sortName": "acmp3",
+            "searchText": "acmp3 an animal crossing new horizons inspired theme for the y1 stock firmware scarylyn acmp3"
         },
         {
             "name": "Aero",
@@ -207,6 +185,17 @@
             "authorUrl": "https://www.reddit.com/r/innioasis/comments/1mt2iw9/new_y1_stock_os_theme_deltarune/",
             "description": "Inspired by PartOfTheDream42's UNDERTALE theme. Sprites: Toby Fox. Font: Haley Wakamatsu.",
             "screenshot": "./DELTARUNE/cover1.png"
+        },
+        {
+            "name": "DORFic",
+            "folder": "DORFic",
+            "author": "u/Angel_50000",
+            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "description": "Download the DORFic theme for Innioasis Y1 by u/Angel_50000 and personalize your player's look with curated UI assets.",
+            "screenshot": "./DORFic/cover.png",
+            "sourceType": "internal",
+            "sortName": "dorfic",
+            "searchText": "dorfic download the dorfic theme for innioasis y1 by u/angel_50000 and personalize your player's look with curated ui assets. u/angel_50000 dorfic"
         },
         {
             "name": "DORFic (iPod Ver)",
@@ -808,6 +797,17 @@
             "searchText": "silenthill2remake silenthill2remake theme for innioasis y1. angel_50000 silenthill2remake",
             "description": "SilentHill2Remake theme for Innioasis Y1.",
             "screenshot": "./SilentHill2Remake/cover.png"
+        },
+        {
+            "name": "Simple Spider-man",
+            "folder": "Simple_Spider-man",
+            "author": "Innioasis community",
+            "authorUrl": "http://.I don't have one",
+            "description": "A new wallpaper just in time for the new Spider-Man movie, which is coming out soon. Simple but has the reds, the blues, and the colors that make Spider-Man.",
+            "screenshot": "./Simple_Spider-man/cover.png",
+            "sourceType": "internal",
+            "sortName": "simple spider-man",
+            "searchText": "simple spider-man a new wallpaper just in time for the new spider-man movie, which is coming out soon. simple but has the reds, the blues, and the colors that make spider-man. innioasis community simple_spider-man"
         },
         {
             "name": "StarWars",

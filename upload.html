@@ -1329,24 +1329,78 @@
             removalStatus.className = "status " + (ok ? "ok" : "err");
         }
 
+        function postToFabformViaIframe(targetUrl, fieldMap) {
+            return new Promise((resolve, reject) => {
+                try {
+                    const target = String(targetUrl || "").trim();
+                    if (!target) {
+                        resolve({ skipped: true });
+                        return;
+                    }
+                    const iframeName = `fabform_sink_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+                    const iframe = document.createElement("iframe");
+                    iframe.name = iframeName;
+                    iframe.style.display = "none";
+                    iframe.setAttribute("aria-hidden", "true");
+                    document.body.appendChild(iframe);
+
+                    const form = document.createElement("form");
+                    form.method = "post";
+                    form.action = target;
+                    form.target = iframeName;
+                    form.style.display = "none";
+
+                    Object.entries(fieldMap || {}).forEach(([key, value]) => {
+                        const input = document.createElement("input");
+                        input.type = "hidden";
+                        input.name = String(key);
+                        input.value = String(value == null ? "" : value);
+                        form.appendChild(input);
+                    });
+
+                    document.body.appendChild(form);
+                    const cleanup = () => {
+                        try { form.remove(); } catch (_) {}
+                        try { iframe.remove(); } catch (_) {}
+                    };
+                    const done = () => {
+                        cleanup();
+                        resolve({ skipped: false });
+                    };
+                    const fail = (err) => {
+                        cleanup();
+                        reject(err);
+                    };
+
+                    iframe.addEventListener("load", () => {
+                        window.setTimeout(done, 120);
+                    }, { once: true });
+                    window.setTimeout(done, 2500);
+
+                    try {
+                        form.submit();
+                    } catch (submitErr) {
+                        fail(submitErr instanceof Error ? submitErr : new Error(String(submitErr)));
+                    }
+                } catch (err) {
+                    reject(err instanceof Error ? err : new Error(String(err)));
+                }
+            });
+        }
+
         async function postRemovalFabformFromBrowser(fields) {
             const fabUrl = String(window.removalFabformUrl ? window.removalFabformUrl() : "").trim();
             if (!fabUrl) return { skipped: true };
-            const body = new FormData();
-            body.set("contact_email", String(fields.contactEmail || ""));
-            body.set("pr_url", String(fields.prUrl || ""));
-            body.set("theme_folder", String(fields.themeFolder || ""));
-            body.set("catalog_title", String(fields.catalogTitle || ""));
-            body.set("catalog_author", String(fields.catalogAuthor || ""));
-            body.set("requester_name", String(fields.requesterName || ""));
-            body.set("reason", String(fields.reason || ""));
-            body.set("blacklist_opt_out", fields.blacklistOptOut ? "yes" : "no");
-            const res = await fetch(fabUrl, {
-                method: "POST",
-                body
+            return postToFabformViaIframe(fabUrl, {
+                contact_email: String(fields.contactEmail || ""),
+                pr_url: String(fields.prUrl || ""),
+                theme_folder: String(fields.themeFolder || ""),
+                catalog_title: String(fields.catalogTitle || ""),
+                catalog_author: String(fields.catalogAuthor || ""),
+                requester_name: String(fields.requesterName || ""),
+                reason: String(fields.reason || ""),
+                blacklist_opt_out: fields.blacklistOptOut ? "yes" : "no"
             });
-            if (!res.ok) throw new Error(`FabForm request failed (${res.status})`);
-            return { skipped: false };
         }
 
         if (removalForm && removalSubmitBtn) {

@@ -539,24 +539,15 @@
                     if (submitBtn) submitBtn.disabled = true;
                     try {
                         syncRedirectUrl();
-                        const body = new FormData(form);
-                        const res = await fetch(target, {
-                            method: "POST",
-                            body
-                        });
-                        if (!res.ok) throw new Error(`FabForm request failed (${res.status})`);
-                        const redirectTo = String(redirectEl && redirectEl.value || "").trim();
-                        if (redirectTo) {
-                            window.location.assign(redirectTo);
-                        } else {
-                            const p = new URLSearchParams(window.location.search || "");
-                            p.set("sent", "1");
-                            window.location.assign(`https://themes.innioasis.app/report-theme.html?${p.toString()}`);
-                        }
+                        // FabForm docs use direct HTML form POST to /f/{id}; avoid CORS-sensitive AJAX fetch here.
+                        form.setAttribute("action", target);
+                        form.setAttribute("method", "post");
+                        HTMLFormElement.prototype.submit.call(form);
                     } catch (err) {
                         alert(`Could not send report: ${String(err && err.message ? err.message : err)}`);
-                    } finally {
                         if (submitBtn) submitBtn.disabled = false;
+                    } finally {
+                        // Intentionally empty: successful submit navigates away immediately.
                     }
                 });
             }

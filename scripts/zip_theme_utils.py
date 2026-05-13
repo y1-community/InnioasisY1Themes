@@ -7,6 +7,7 @@ checks. They are still subject to path-safety checks in the caller before filter
 
 from __future__ import annotations
 
+import re
 from pathlib import Path, PurePosixPath
 
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"}
@@ -25,6 +26,8 @@ _NOISE_BASENAMES_LOWER = frozenset(
         "._.ds_store",
     }
 )
+
+_TIMESTAMP_PREFIX_RE = re.compile(r"^\d{6,}[-_ ]+")
 
 
 def looks_like_image(path_or_value: str) -> bool:
@@ -91,11 +94,14 @@ def zip_has_image_file(
 
 
 def inner_folder_names_for_zip(theme_keys: list[str], zip_stem: str) -> list[str]:
-    """Repo folder names after extraction (zip root theme uses zip_stem)."""
+    """Repo folder names after extraction (zip root theme uses cleaned zip_stem)."""
+    stem = _TIMESTAMP_PREFIX_RE.sub("", str(zip_stem or "").strip(), count=1).strip()
+    if not stem:
+        stem = str(zip_stem or "").strip()
     out: list[str] = []
     for k in theme_keys:
         if k == ".":
-            out.append(zip_stem)
+            out.append(stem)
         else:
             out.append(PurePosixPath(k).name)
     return out
@@ -106,7 +112,9 @@ def zip_inner_folder_collision_errors(
 ) -> list[str]:
     """Errors when root theme destination collides with a subfolder theme name."""
     errors: list[str] = []
-    stem = zip_stem.strip()
+    stem = _TIMESTAMP_PREFIX_RE.sub("", str(zip_stem or "").strip(), count=1).strip()
+    if not stem:
+        stem = str(zip_stem or "").strip()
     if not stem:
         return errors
     stem_l = stem.lower()

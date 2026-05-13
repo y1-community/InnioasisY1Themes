@@ -99,7 +99,7 @@ def _is_safe_member(name: str) -> bool:
 
 
 def _find_zip_paths() -> list[Path]:
-    """Only repository-root zips (e.g. gallery upload `123-name.zip`), not nested archives."""
+    """Only repository-root zips (gallery upload artifacts), not nested archives."""
     out: list[Path] = []
     for path in sorted(REPO_ROOT.glob(f"*{ZIP_EXTENSION}"), key=lambda p: str(p).lower()):
         if not path.is_file():
@@ -126,7 +126,11 @@ def _extract_theme(
     *,
     keys: list[str],
 ) -> tuple[bool, str]:
-    dest_name = zip_stem if theme_key == "." else PurePosixPath(theme_key).name
+    dest_name = (
+        ztu.inner_folder_names_for_zip(["."], zip_stem)[0]
+        if theme_key == "."
+        else PurePosixPath(theme_key).name
+    )
     dest = REPO_ROOT / dest_name
     if dest_name in EXCLUDED_SCAN_DIRS or dest_name.startswith("."):
         return False, f"Skip {theme_key}: destination folder name {dest_name!r} is not allowed."
