@@ -25,8 +25,7 @@ Rules:
     theme's tree (non-theme zip noise is otherwise ignored)
   - config.json must reference at least one image asset
 - Identity / duplicate policy (auto-merge only when safe):
-  - Theme folders are compared by a logical slug: leading ``12345-`` timestamp prefix
-    is stripped, then case-folded (so ``WarCraft_3`` matches ``999-WarCraft_3``).
+  - Theme folders are compared by a logical slug: path name case-folded.
   - If a zip on the default branch is still waiting to be extracted and claims the
     same logical name, auto-merge is blocked (avoids parallel duplicate merges).
   - If the logical name matches an existing themes.json entry and authors match
@@ -164,15 +163,12 @@ def _theme_folder_has_config_on_base(base_sha: str, folder: str) -> bool:
     )
 
 
-_TIMESTAMP_PREFIX_RE = re.compile(r"^\d+-")
 _SLUGIFY_NOISE_RE = re.compile(r"[^a-zA-Z0-9._-]+")
 
 
 def logical_theme_slug(folder: str) -> str:
-    """Normalize folder name for identity: strip one leading timestamp prefix, lowercase."""
-    name = folder.strip()
-    name = _TIMESTAMP_PREFIX_RE.sub("", name, count=1)
-    return name.lower()
+    """Normalize folder name for identity (case-insensitive)."""
+    return folder.strip().lower()
 
 
 def _norm_author(value: str | None) -> str:
@@ -388,7 +384,7 @@ def _identity_policy_errors(
     if logical in pending_logical_slugs:
         errors.append(
             f"{context}: Another ZIP on the default branch already claims theme folder identity matching {inner_folder!r} "
-            "(after normalizing a leading timestamp). Wait for extraction or remove/rename that archive — "
+            "(after case-insensitive normalization). Wait for extraction or remove/rename that archive — "
             "auto-merge disabled to avoid duplicate listings."
         )
         return errors
@@ -402,7 +398,7 @@ def _identity_policy_errors(
     if _authors_equivalent(exist_author_norm, incoming_auth):
         errors.append(
             f"{context}: Theme folder {inner_folder!r} matches an existing gallery entry (same identity after "
-            "normalizing timestamps). Authors match or both are unknown — treated as an edit/update. "
+            "case-insensitive normalization). Authors match or both are unknown — treated as an edit/update. "
             "Auto-merge disabled; maintainers must review."
         )
         return errors

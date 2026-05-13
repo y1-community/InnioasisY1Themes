@@ -886,7 +886,6 @@
         function logicalThemeSlug(folder) {
             return String(folder || "")
                 .trim()
-                .replace(/^\d+-/, "")
                 .toLowerCase();
         }
 
@@ -1080,8 +1079,7 @@
                 const p = normRelPath(e.path);
                 if (p === "config.json" || !p.includes("/")) {
                     const stem = String(loadedZipFileName || "theme")
-                        .replace(/\.zip$/i, "")
-                        .replace(/^\d+-/, "");
+                        .replace(/\.zip$/i, "");
                     if (stem) roots.add(stem);
                     continue;
                 }
@@ -1180,7 +1178,6 @@
             if (i === -1) {
                 const stem = String(loadedZipFileName || "")
                     .replace(/\.zip$/i, "")
-                    .replace(/^\d+-/, "")
                     .trim();
                 if (stem && renames.has(stem)) return `${renames.get(stem)}/${p}`;
                 return p;
@@ -1294,18 +1291,16 @@
                 if (p === "config.json" || !p.includes("/")) {
                     root = String(loadedZipFileName || "")
                         .replace(/\.zip$/i, "")
-                        .replace(/^\d+-/, "")
                         .trim();
                 } else {
                     root = (p.split("/")[0] || "").trim();
                 }
                 if (!root && folderFiles && folderFiles.length) {
-                    root = inferFolderZipName(folderFiles).replace(/\.zip$/i, "").replace(/^\d+-/, "").trim();
+                    root = inferFolderZipName(folderFiles).replace(/\.zip$/i, "").trim();
                 }
                 if (!root && loadedZipFileName) {
                     root = String(loadedZipFileName)
                         .replace(/\.zip$/i, "")
-                        .replace(/^\d+-/, "")
                         .trim();
                 }
                 entry.themeInfo.title = root || "Theme";
@@ -1499,11 +1494,11 @@
                         <input type="text" data-field="author" value="${escapeHtml(entry.themeInfo.author)}" />
                     </div>
                     <div class="row">
-                        <label>Author URL</label>
+                        <label>Author URL (optional)</label>
                         <input type="text" data-field="authorUrl" value="${escapeHtml(entry.themeInfo.authorUrl)}" />
                     </div>
                     <div class="row">
-                        <label>Description</label>
+                        <label>Description (optional)</label>
                         <textarea rows="3" data-field="description">${escapeHtml(entry.themeInfo.description)}</textarea>
                     </div>
                     <div class="row">
@@ -1544,6 +1539,17 @@
 
         function validateThemeInfoEntriesForSubmit() {
             readEditorValues();
+            const blockedAuthorNames = new Set([
+                "innioasis",
+                "user",
+                "community",
+                "innioasiscommunity",
+            ]);
+            const normalizeAuthorKey = (value) =>
+                String(value || "")
+                .trim()
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, "");
             if (!themeInfoEntries.length) {
                 throw new Error("No theme metadata was found. Include a valid config.json in your ZIP/folder so title/author fields can be reviewed.");
             }
@@ -1555,7 +1561,11 @@
                 const extUrl = String(entry.themeInfo.externalDownloadUrl || "").trim();
                 if (!title) throw new Error(`Title is required for ${label}.`);
                 if (!author) throw new Error(`Author is required for ${label}.`);
-                if (!authorUrl) throw new Error(`Author URL is required for ${label}.`);
+                if (blockedAuthorNames.has(normalizeAuthorKey(author))) {
+                    throw new Error(
+                        `Author name "${author}" is too generic for ${label}. Use your own creator handle so attribution is accurate.`
+                    );
+                }
                 if (authorUrl && !/^https?:\/\//i.test(authorUrl)) {
                     throw new Error(`Author URL must start with http:// or https:// for ${label}.`);
                 }

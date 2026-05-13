@@ -421,12 +421,11 @@
     <div class="wrap">
         <header>
             <h1>Themes</h1>
-            <p>Download themes for your Y1. Visit the <a href='https://innioasis.app/guide.html'>themes guide</a> to learn how to upload them to your
-                device.</p>
+            <p>Download themes for your Y1, or upload your own for the gallery.</p>
         </header>
 
         <div class="cast-div" style="margin-top: 3rem;">
-            <a href="https://innioasis.app/guide.html#c_themes" class="btn" style="font-family: Inter; padding: .875rem 2rem; font-weight: normal;"><i class="fas fa-plus" style="margin-right: 4px"></i>Create and submit themes</a>
+            <a href="upload.html" class="btn" style="font-family: Inter; padding: .875rem 2rem; font-weight: normal;"><i class="fas fa-upload" style="margin-right: 4px"></i>Upload theme</a>
             <a id="rockbox-btn"><i class="fas fa-external-link" style="margin-right: 8px;"></i>Rockbox themes</a>
         </div>
 
@@ -1181,6 +1180,7 @@
                     return [];
                 }
                 const config = await configRes.json();
+                const themeCoverPaths = [];
                 const overPaths = [];
                 const fallbackCoverPaths = [];
                 const walk = (node) => {
@@ -1203,7 +1203,12 @@
                     }
                     for (const val of Object.values(node)) walk(val);
                 };
+                const cfgThemeCover = normalizeConfigAssetPath(config && config.themeCover, folder);
+                if (cfgThemeCover && /\.(png|jpe?g|gif|webp)$/i.test(String(cfgThemeCover))) {
+                    themeCoverPaths.push(cfgThemeCover);
+                }
                 walk(config);
+                themeCoverPaths.forEach(push);
                 overPaths.forEach(push);
                 if (!result.length) fallbackCoverPaths.forEach(push);
             } catch (e) {
@@ -1532,7 +1537,7 @@
 
             const img = document.createElement('img');
             const metaScreenshot = String(theme.screenshot || '');
-            const metaLooksLikeCover = /over[^/]*\.(png|jpe?g|gif|webp)$/i.test(metaScreenshot);
+            const metaLooksLikeCover = /\.(png|jpe?g|gif|webp)$/i.test(metaScreenshot);
             const folderImageCandidates = folderPath ? [
                 `${folderPath}/cover.jpg`,
                 `${folderPath}/cover.jpeg`,
@@ -1554,6 +1559,7 @@
                 folderPath ? `./${folderPath}/cover.gif` : '',
                 folderPath ? `./${folderPath}/Cover.png` : '',
                 folderPath ? `./${folderPath}/COVER.png` : '',
+                !metaLooksLikeCover ? theme.screenshot : '',
                 'placeholder.png'
             ].filter(Boolean);
             let screenshotIdx = 0;

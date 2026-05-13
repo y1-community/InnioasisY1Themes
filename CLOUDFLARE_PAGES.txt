@@ -108,7 +108,7 @@ Production env vars (Settings → Environment variables):
   GITHUB_REPO           (optional) default InnioasisY1Themes
   GITHUB_BASE_BRANCH    (optional) default main
   GITHUB_ZIP_UPLOAD_DIR (optional) override zip path prefix; default is repo root
-      (upload-theme commits zips as <timestamp>-<name>.zip at repository root)
+      (upload-theme commits zips at repository root and avoids collisions server-side)
   MAX_UPLOAD_BYTES      (optional) default 26214400 (25 MiB)
 
 ZIP processing on default branch: after merges to **main**, the workflow

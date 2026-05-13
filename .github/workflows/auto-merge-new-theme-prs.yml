@@ -2,7 +2,7 @@
 # - The PR is not strictly additive, or zips/files fail safety checks.
 # - A theme folder path already exists on the default branch, or another root ZIP still
 #   claims the same logical folder name (avoids races before extraction).
-# - themes.json identity matches (logical folder slug after stripping a leading timestamp;
+# - themes.json identity matches (logical folder slug by case-insensitive path;
 #   same author or both unknown => treated as edit). Different authors must use a
 #   suffixed folder name (e.g. ThemeName-handle) inside the ZIP.
 # - Catalog title (theme_info.title) matches an existing entry (normalized).
@@ -60,4 +60,55 @@ jobs:
               repo: context.repo.repo,
               pull_number,
               merge_method: "squash"
+            });
+      - name: Comment with share URL(s)
+        if: ${{ !startsWith(github.event.pull_request.title, '[Removal]') }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const pull_number = context.payload.pull_request.number;
+            const files = await github.paginate(
+              github.rest.pulls.listFiles,
+              { owner, repo, pull_number, per_page: 100 }
+            );
+
+            const folders = new Set();
+            for (const file of files) {
+              if (!file || file.status !== "added") continue;
+              const name = String(file.filename || "").trim();
+              if (!name) continue;
+              if (/^[^/]+\/config\.json$/i.test(name)) {
+                folders.add(name.replace(/\/config\.json$/i, ""));
+                continue;
+              }
+              if (/^[^/]+\.zip$/i.test(name)) {
+                const stem = name.replace(/\.zip$/i, "").trim();
+                if (stem) folders.add(stem);
+              }
+            }
+
+            const urls = [...folders].map((folder) => {
+              const encoded = folder.split("/").filter(Boolean).map(encodeURIComponent).join("/");
+              return `https://themes.innioasis.app/${encoded}`;
+            });
+
+            const shareLines = urls.length
+              ? urls.map((u) => `- ${u}`).join("\n")
+              : "- https://themes.innioasis.app/";
+            const body = [
+              "Theme auto-submission succeeded and this PR was auto-merged.",
+              "",
+              "You can now share the theme URL:",
+              shareLines,
+              "",
+              "If the page is not live yet, wait a minute for the ingest/sync workflow to finish."
+            ].join("\n");
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: pull_number,
+              body
             });

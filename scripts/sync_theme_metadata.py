@@ -412,6 +412,16 @@ def _theme_entry_from_folder(folder: str, config: dict[str, Any] | None) -> dict
         entry["description"] = description
     if external_download_url:
         entry["externalDownloadUrl"] = external_download_url
+    if isinstance(config, dict):
+        cover = str(config.get("themeCover") or "").strip()
+        if cover and not cover.lower().startswith(("http://", "https://")):
+            cover_clean = cover.replace("\\", "/").lstrip("./").lstrip("/")
+            if cover_clean:
+                folder_low = folder.lower()
+                if cover_clean.lower().startswith(folder_low + "/"):
+                    cover_clean = cover_clean[len(folder) + 1 :]
+                if cover_clean:
+                    entry["screenshot"] = f"./{folder}/{cover_clean}"
 
     return entry
 
@@ -443,6 +453,15 @@ def _refresh_existing_theme_entry(entry: dict[str, Any], folder: str, config: di
         refreshed["description"] = str(info["description"]).strip()
     if info.get("externalDownloadUrl"):
         refreshed["externalDownloadUrl"] = str(info["externalDownloadUrl"]).strip()
+    cover = str(config.get("themeCover") or "").strip()
+    if cover and not cover.lower().startswith(("http://", "https://")):
+        cover_clean = cover.replace("\\", "/").lstrip("./").lstrip("/")
+        if cover_clean:
+            folder_low = folder.lower()
+            if cover_clean.lower().startswith(folder_low + "/"):
+                cover_clean = cover_clean[len(folder) + 1 :]
+            if cover_clean:
+                refreshed["screenshot"] = f"./{folder}/{cover_clean}"
 
     title = str(info.get("title") or "").strip()
     current_name = str(refreshed.get("name") or "").strip()

@@ -80,6 +80,24 @@ async function ghJson(url, token, init = {}, context = "") {
   return json;
 }
 
+async function ghPathExists(apiBase, token, path, ref) {
+  const enc = String(path || "")
+    .split("/")
+    .filter(Boolean)
+    .map((part) => encodeURIComponent(part))
+    .join("/");
+  const res = await fetch(`${apiBase}/contents/${enc}?ref=${encodeURIComponent(ref)}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+      "User-Agent": "y1-theme-upload/1.0 (+https://github.com/y1-community/InnioasisY1Themes)",
+    },
+  });
+  if (res.status === 404) return false;
+  return res.ok;
+}
+
 /**
  * @param {Request} request
  * @param {Record<string, string | undefined>} env
@@ -128,8 +146,31 @@ export async function handleUploadPost(request, env) {
 
     const now = Date.now();
     const branchName = `upload/theme-${now}-${Math.random().toString(36).slice(2, 8)}`;
-    const zipPath = `${zipDir ? `${zipDir.replace(/^\/+|\/+$/g, "")}/` : ""}${now}-${originalName}`;
     const apiBase = `https://api.github.com/repos/${owner}/${repo}`;
+
+    /** Lowercase hyphenated token for disambiguating same theme folder name (see validate_theme_pr.py). */
+    const uploaderSlug = slugify(String(uploaderName || "").replace(/^u\//i, ""))
+      .replace(/_/g, "-")
+      .toLowerCase()
+      .replace(/[^a-z0-9-]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 40);
+    const zipStem = originalName.replace(/\.zip$/i, "") || "theme";
+    const candidateNames = [
+      originalName,
+      uploaderSlug ? `${zipStem}-${uploaderSlug}.zip` : "",
+      `${zipStem}-${Math.random().toString(36).slice(2, 8)}.zip`,
+    ].filter(Boolean);
+    const zipPrefix = zipDir ? `${zipDir.replace(/^\/+|\/+$/g, "")}/` : "";
+    let zipName = candidateNames[candidateNames.length - 1];
+    for (const cand of candidateNames) {
+      const exists = await ghPathExists(apiBase, token, `${zipPrefix}${cand}`, baseBranch);
+      if (!exists) {
+        zipName = cand;
+        break;
+      }
+    }
+    const zipPath = `${zipPrefix}${zipName}`;
 
     const baseRef = await ghJson(
       `${apiBase}/git/ref/heads/${encodeURIComponent(baseBranch)}`,
@@ -169,13 +210,6 @@ export async function handleUploadPost(request, env) {
       `upload file ${zipPath}`
     );
 
-    /** Lowercase hyphenated token for disambiguating same theme folder name (see validate_theme_pr.py). */
-    const uploaderSlug = slugify(String(uploaderName || "").replace(/^u\//i, ""))
-      .replace(/_/g, "-")
-      .toLowerCase()
-      .replace(/[^a-z0-9-]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, 40);
     const metaPath = `${zipPath}.meta.json`;
     const metaPayload = JSON.stringify(
       {
@@ -214,7 +248,7 @@ export async function handleUploadPost(request, env) {
       "",
       "**Automatic submission policy:**",
       "- Automatic submission only when `scripts/validate_theme_pr.py` passes.",
-      "- If your theme’s **folder name** matches an existing gallery theme (ignoring a leading `12345-` timestamp prefix) and the **author is the same** (or both unknown), this counts as an **update** — it stays with the team for manual review.",
+      "- If your theme’s **folder name** matches an existing gallery theme and the **author is the same** (or both unknown), this counts as an **update** — it stays with the team for manual review.",
       "- If the **author differs**, rename the root folder inside the ZIP to end with your suffix, e.g. `MyTheme-yourhandle` (use the same slug style as your uploader / `theme_info.author`), then upload again — otherwise automatic submission is not available.",
       "- If another **ZIP on `main`** is still waiting to be extracted and claims the same folder identity, automatic submission is paused until that archive is processed.",
     ]
