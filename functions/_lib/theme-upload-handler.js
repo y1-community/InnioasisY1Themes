@@ -323,7 +323,7 @@ export async function handleUploadPost(request, env) {
       "**Automatic submission policy:**",
       "- Automatic submission only when `scripts/validate_theme_pr.py` passes.",
       "- If your theme’s **folder name** matches an existing gallery theme and the **author is the same** (or both unknown), this counts as an **update** — it stays with the team for manual review.",
-      "- If the **author differs**, rename the root folder inside the ZIP to end with your suffix, e.g. `MyTheme-yourhandle` (use the same slug style as your uploader / `theme_info.author`), then upload again — otherwise automatic submission is not available.",
+      "- If the **author differs**, rename the root folder inside the ZIP to include your suffix, e.g. `MyTheme_your-handle` (and dark variants as `MyTheme_your-handle_dark-mode`), then upload again — otherwise automatic submission is not available.",
       "- If another **ZIP on `main`** is still waiting to be extracted and claims the same folder identity, automatic submission is paused until that archive is processed.",
     ]
       .filter(Boolean)

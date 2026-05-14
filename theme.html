@@ -617,6 +617,107 @@
             return out;
         }
 
+        async function promptMaskVariant(themeName, choices, folderPath, defaultSourcePath) {
+            const options = choices && Array.isArray(choices.options) ? choices.options : [];
+            if (options.length <= 1) return options[0] || null;
+            return new Promise((resolve) => {
+                const overlay = document.createElement('div');
+                overlay.style.position = 'fixed';
+                overlay.style.inset = '0';
+                overlay.style.background = 'rgba(0,0,0,0.6)';
+                overlay.style.display = 'grid';
+                overlay.style.placeItems = 'center';
+                overlay.style.zIndex = '10000';
+
+                const panel = document.createElement('div');
+                panel.style.width = 'min(460px, 92vw)';
+                panel.style.background = '#151922';
+                panel.style.border = '1px solid rgba(255,255,255,0.12)';
+                panel.style.borderRadius = '12px';
+                panel.style.padding = '14px';
+                panel.style.boxShadow = '0 16px 40px rgba(0,0,0,0.45)';
+
+                const title = document.createElement('div');
+                title.textContent = `Choose mask variation for ${themeName || 'theme'}`;
+                title.style.fontWeight = '700';
+                title.style.marginBottom = '8px';
+
+                const preview = document.createElement('img');
+                preview.alt = 'Mask preview';
+                preview.style.display = 'block';
+                preview.style.width = '100%';
+                preview.style.maxHeight = '180px';
+                preview.style.objectFit = 'contain';
+                preview.style.borderRadius = '8px';
+                preview.style.border = '1px solid rgba(255,255,255,0.12)';
+                preview.style.background = 'rgba(255,255,255,0.04)';
+                preview.style.marginBottom = '10px';
+
+                const select = document.createElement('select');
+                select.style.width = '100%';
+                select.style.background = '#222733';
+                select.style.border = '1px solid rgba(255,255,255,0.16)';
+                select.style.color = '#eaf0ff';
+                select.style.borderRadius = '8px';
+                select.style.padding = '0.45rem 0.5rem';
+                select.style.marginBottom = '12px';
+
+                for (const option of options) {
+                    const opt = document.createElement('option');
+                    opt.value = option.sourcePath;
+                    opt.textContent = option.label;
+                    select.appendChild(opt);
+                }
+
+                const initial = String(defaultSourcePath || '');
+                if (initial && options.some((o) => String(o.sourcePath || '') === initial)) {
+                    select.value = initial;
+                }
+                const updatePreview = () => {
+                    const selectedPath = String(select.value || options[0].sourcePath || '');
+                    preview.src = themeFileUrl(folderPath, selectedPath);
+                };
+                select.onchange = updatePreview;
+                updatePreview();
+
+                const row = document.createElement('div');
+                row.style.display = 'flex';
+                row.style.justifyContent = 'flex-end';
+                row.style.gap = '8px';
+
+                const cancelBtn = document.createElement('button');
+                cancelBtn.type = 'button';
+                cancelBtn.className = 'btn btn-secondary';
+                cancelBtn.textContent = 'Cancel';
+
+                const okBtn = document.createElement('button');
+                okBtn.type = 'button';
+                okBtn.className = 'btn btn-primary';
+                okBtn.textContent = 'Use variation';
+
+                const close = (choice) => {
+                    try {
+                        overlay.remove();
+                    } catch (_) {}
+                    resolve(choice);
+                };
+                cancelBtn.onclick = () => close(null);
+                okBtn.onclick = () => {
+                    const selected = options.find((o) => String(o.sourcePath || '') === String(select.value || '')) || options[0] || null;
+                    close(selected);
+                };
+                overlay.onclick = (event) => {
+                    if (event.target === overlay) close(null);
+                };
+
+                row.append(cancelBtn, okBtn);
+                panel.append(title, preview, select, row);
+                overlay.appendChild(panel);
+                document.body.appendChild(overlay);
+                select.focus();
+            });
+        }
+
         function isDarkModeFolderPath(folderPath) {
             return /_dark-mode$/i.test(String(folderPath || '').replace(/^\.\/+/, '').trim());
         }
@@ -968,13 +1069,31 @@
                     return;
                 }
 
-                const selectedSourcePath = maskVariantState && maskVariantState.selectEl ?
-                    String(maskVariantState.selectEl.value || '') :
-                    '';
+                const maskChoices = maskVariantChoicesFromFiles(
+                    theme.folder,
+                    downloadableFiles,
+                    maskVariantState && maskVariantState.baseMaskPath
+                );
+                const selectedMask = await promptMaskVariant(
+                    theme.name,
+                    maskChoices,
+                    theme.folder,
+                    maskVariantState && maskVariantState.selectEl ? maskVariantState.selectEl.value : ''
+                );
+                if (selectedMask === null) {
+                    progressUI.abortAndRestore(buttonNode);
+                    return;
+                }
+                if (maskVariantState && maskVariantState.selectEl && selectedMask && selectedMask.sourcePath) {
+                    maskVariantState.selectEl.value = selectedMask.sourcePath;
+                    if (typeof maskVariantState.selectEl.onchange === 'function') {
+                        maskVariantState.selectEl.onchange();
+                    }
+                }
                 const entriesForDownload = applyMaskVariantToEntries(
                     theme.folder,
                     downloadableFiles,
-                    selectedSourcePath,
+                    selectedMask && selectedMask.sourcePath,
                     maskVariantState && maskVariantState.baseMaskPath
                 );
 

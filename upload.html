@@ -894,6 +894,7 @@
         function logicalThemeSlug(folder) {
             return String(folder || "")
                 .trim()
+                .replace(/_dark[_-]?mode$/i, "")
                 .toLowerCase();
         }
 
@@ -1123,6 +1124,17 @@
             return entry ? String(entry.themeInfo.author || "").trim() : "";
         }
 
+        function entryForUploadRoot(root) {
+            const key = String(root || "").toLowerCase();
+            return (
+                themeInfoEntries.find((e) => {
+                    const p = normRelPath(e.path);
+                    if (p === "config.json") return true;
+                    return String(p.split("/")[0] || "").toLowerCase() === key;
+                }) || null
+            );
+        }
+
         /** Mirrors validate_theme_pr.py _slug_token. */
         function slugToken(value) {
             let s = String(value || "").trim();
@@ -1140,21 +1152,13 @@
             return [...new Set(out)];
         }
 
-        function darkModeRootRenames() {
-            readEditorValues();
-            const map = new Map();
-            for (const root of collectThemeRootFolders()) {
-                const rootLow = String(root || "").toLowerCase();
-                const entry = themeInfoEntries.find((e) => {
-                    const p = normRelPath(e.path);
-                    if (p === "config.json") return true;
-                    return p.split("/")[0].toLowerCase() === rootLow;
-                });
-                if (!entry || !entry.addDarkModeVariant) continue;
-                if (isDarkModeFolderName(root)) continue;
-                map.set(root, darkModeFolderName(root));
-            }
-            return map;
+        function applyAuthorSlugSuffix(folderName, slug) {
+            const base = stripDarkModeFolderSuffix(folderName);
+            const suffix = String(slug || "").trim().toLowerCase();
+            if (!base || !suffix) return String(folderName || "").trim();
+            if (new RegExp(`[_-]${suffix}$`, "i").test(base)) return String(folderName || "").trim();
+            const withSlug = `${base}_${suffix}`;
+            return isDarkModeFolderName(folderName) ? darkModeFolderName(withSlug) : withSlug;
         }
 
         /** Mirrors validate_theme_pr.py _folder_has_disambiguator. */
@@ -1162,7 +1166,8 @@
             const low = String(innerFolder || "").toLowerCase();
             for (const s of candidates || []) {
                 const s2 = String(s || "").trim().toLowerCase();
-                if (s2 && low.endsWith("-" + s2)) return true;
+                if (!s2) continue;
+                if (new RegExp(`[_-]${s2}(_dark-mode)?$`, "i").test(low)) return true;
             }
             return false;
         }
@@ -1181,18 +1186,28 @@
                 return { kind: "suffixOk", uploadRoot, catalogFolder: row.folder };
             }
             const tok = cands[0] || slugToken(uploadAuth) || "your-handle";
-            return { kind: "variation", uploadRoot, catalogFolder: row.folder, suggested: `${uploadRoot}-${tok}` };
+            return {
+                kind: "variation",
+                uploadRoot,
+                catalogFolder: row.folder,
+                suggested: applyAuthorSlugSuffix(uploadRoot, tok),
+            };
         }
 
         /** Map upload root folder name -> suffixed folder name when author differs from catalog (applied when building the ZIP). */
         function variationRootRenames() {
             readEditorValues();
-            const m = new Map();
+            const authorCollisionRenames = new Map();
             for (const root of collectThemeRootFolders()) {
                 const s = collisionSummaryForUploadRoot(root);
-                if (s.kind === "variation" && s.suggested) m.set(root, s.suggested);
+                const candidate = s.kind === "variation" && s.suggested ? s.suggested : root;
+                const entry = entryForUploadRoot(root);
+                const withDark = entry && entry.addDarkModeVariant && !isDarkModeFolderName(candidate)
+                    ? darkModeFolderName(candidate)
+                    : candidate;
+                if (withDark !== root) authorCollisionRenames.set(root, withDark);
             }
-            return m;
+            return authorCollisionRenames;
         }
 
         function rewriteThemePathForRenames(path, renames) {
@@ -1659,11 +1674,33 @@
             return base ? `${base}_dark-mode` : "_dark-mode";
         }
 
-        function ensureDarkModeTitle(titleValue) {
-            const title = String(titleValue || "").trim();
-            if (!title) return "(Dark)";
-            if (/\(dark\)\s*$/i.test(title)) return title;
-            return `${title} (Dark)`;
+        function entryRootFolder(entry) {
+            if (!entry || typeof entry !== "object") return "";
+            return inferEntryRootFolder(entry.path) || String(entry.label || "").trim();
+        }
+
+        function syncDarkVariantMetadataFromBase() {
+            const byRoot = new Map();
+            for (const entry of themeInfoEntries) {
+                const root = entryRootFolder(entry);
+                if (!root) continue;
+                byRoot.set(root.toLowerCase(), entry);
+            }
+            for (const entry of themeInfoEntries) {
+                const root = entryRootFolder(entry);
+                if (!root || !isDarkModeFolderName(root)) continue;
+                const baseRoot = stripDarkModeFolderSuffix(root);
+                const baseEntry = byRoot.get(String(baseRoot || "").toLowerCase());
+                if (!baseEntry || !baseEntry.themeInfo) continue;
+                entry.themeInfo = {
+                    ...entry.themeInfo,
+                    title: String(baseEntry.themeInfo.title || ""),
+                    author: String(baseEntry.themeInfo.author || ""),
+                    authorUrl: String(baseEntry.themeInfo.authorUrl || ""),
+                    description: String(baseEntry.themeInfo.description || ""),
+                    externalDownloadUrl: String(baseEntry.themeInfo.externalDownloadUrl || ""),
+                };
+            }
         }
 
         function sanitizeZipFileName(value) {
@@ -1914,15 +1951,14 @@
 
         function validateThemeInfoEntriesForSubmit() {
             readEditorValues();
+            syncDarkVariantMetadataFromBase();
             if (!themeInfoEntries.length) {
                 throw new Error("No theme metadata was found. Include a valid config.json in your ZIP/folder so title/author fields can be reviewed.");
             }
             for (const entry of themeInfoEntries) {
                 const label = String(entry.label || entry.path || "theme").trim();
                 const titleSanitized = sanitizeThemeTitleInput(entry.themeInfo.title);
-                const title = entry.addDarkModeVariant
-                    ? ensureDarkModeTitle(titleSanitized.value)
-                    : titleSanitized.value;
+                const title = titleSanitized.value;
                 const author = normalizeSpaces(entry.themeInfo.author);
                 const authorUrl = String(entry.themeInfo.authorUrl || "").trim();
                 const extUrl = String(entry.themeInfo.externalDownloadUrl || "").trim();
@@ -2020,6 +2056,7 @@
                 loadedZip = zip;
                 loadedZipFileName = file.name || "theme.zip";
                 applyDefaultTitlesIfMissing();
+                syncDarkVariantMetadataFromBase();
                 renderThemeInfoEditors();
             } catch (err) {
                 renderThemeInfoEditors();
@@ -2075,6 +2112,7 @@
             }
 
             applyDefaultTitlesIfMissing();
+            syncDarkVariantMetadataFromBase();
             renderThemeInfoEditors();
         }
 
@@ -2104,6 +2142,7 @@
                     }
                 ];
                 applyDefaultTitlesIfMissing();
+                syncDarkVariantMetadataFromBase();
                 renderThemeInfoEditors();
             } catch (_) {
                 /* preview only */
@@ -2161,7 +2200,7 @@
                     "Dark mode variation creates a new _dark-mode package and cannot be submitted as metadata-only. Upload a ZIP/folder package instead."
                 );
             }
-            const titleForListing = wantsDarkVariant ? ensureDarkModeTitle(title) : title;
+            const titleForListing = title;
 
             const listingRow = themesByFolder.get(String(themeFolderParam).toLowerCase());
             if (!listingRow) {
@@ -2205,19 +2244,11 @@
             if (uploadMode === "folder" && folderFiles && folderFiles.length) {
                 if (!window.JSZip) throw new Error("ZIP library is unavailable.");
                 validateThemeInfoEntriesForSubmit();
-                const darkRenames = darkModeRootRenames();
-                const variationRenames = variationRootRenames();
-                const renames = new Map([...variationRenames, ...darkRenames]);
+                const renames = variationRootRenames();
                 const outputZip = new window.JSZip();
                 const editsByOriginalPath = new Map(
                     themeInfoEntries.map((entry) => {
                         const nextParsed = { ...entry.parsed, theme_info: { ...entry.themeInfo } };
-                        if (entry.addDarkModeVariant && nextParsed.theme_info) {
-                            nextParsed.theme_info.title = ensureDarkModeTitle(nextParsed.theme_info.title);
-                            if (typeof nextParsed.title === "string" && nextParsed.title.trim()) {
-                                nextParsed.title = ensureDarkModeTitle(nextParsed.title);
-                            }
-                        }
                         return [normRelPath(entry.path), JSON.stringify(nextParsed, null, 2) + "\n"];
                     })
                 );
@@ -2251,20 +2282,12 @@
             }
 
             validateThemeInfoEntriesForSubmit();
-            const darkRenames = darkModeRootRenames();
-            const variationRenames = variationRootRenames();
-            const renames = new Map([...variationRenames, ...darkRenames]);
+            const renames = variationRootRenames();
 
             const outputZip = new window.JSZip();
             const editsByOriginalPath = new Map(
                 themeInfoEntries.map((entry) => {
                     const nextParsed = { ...entry.parsed, theme_info: { ...entry.themeInfo } };
-                    if (entry.addDarkModeVariant && nextParsed.theme_info) {
-                        nextParsed.theme_info.title = ensureDarkModeTitle(nextParsed.theme_info.title);
-                        if (typeof nextParsed.title === "string" && nextParsed.title.trim()) {
-                            nextParsed.title = ensureDarkModeTitle(nextParsed.title);
-                        }
-                    }
                     return [normRelPath(entry.path), JSON.stringify(nextParsed, null, 2) + "\n"];
                 })
             );

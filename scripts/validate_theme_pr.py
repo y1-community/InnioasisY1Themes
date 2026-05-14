@@ -168,7 +168,7 @@ _SLUGIFY_NOISE_RE = re.compile(r"[^a-zA-Z0-9._-]+")
 
 def logical_theme_slug(folder: str) -> str:
     """Normalize folder name for identity (case-insensitive)."""
-    return folder.strip().lower()
+    return re.sub(r"_dark[_-]?mode$", "", folder.strip(), flags=re.I).lower()
 
 
 def _norm_author(value: str | None) -> str:
@@ -233,7 +233,7 @@ def _folder_has_disambiguator(inner_folder: str, slug_candidates: list[str]) -> 
     low = inner_folder.lower()
     for s in slug_candidates:
         s2 = (s or "").strip().lower()
-        if s2 and low.endswith("-" + s2):
+        if s2 and re.search(rf"[_-]{re.escape(s2)}(_dark-mode)?$", low):
             return True
     return False
 
@@ -408,9 +408,13 @@ def _identity_policy_errors(
         return errors
 
     hint = slug_cands[0] if slug_cands else "your-handle"
+    sample_base = re.sub(r"_dark[_-]?mode$", "", inner_folder, flags=re.I)
+    sample = f"{sample_base}_{hint}"
+    if re.search(r"_dark[_-]?mode$", inner_folder, flags=re.I):
+        sample = f"{sample}_dark-mode"
     errors.append(
         f"{context}: Folder {inner_folder!r} matches an existing theme credited to a different author. "
-        f"Rename the theme root folder to end with your suffix, e.g. {inner_folder}-{hint}, "
+        f"Rename the theme root folder to include your suffix, e.g. {sample}, "
         "then re-upload — auto-merge disabled."
     )
     return errors

@@ -389,8 +389,8 @@ def _infer_folder_uploader(folder: str) -> dict[str, str]:
 
 
 def _theme_entry_from_folder(folder: str, config: dict[str, Any] | None) -> dict[str, Any]:
-    theme_info = _extract_theme_info_from_config(config) if isinstance(config, dict) else {}
-    name = _ensure_dark_mode_title(theme_info.get("title") or folder, folder)
+    theme_info = _theme_info_for_folder(folder, config)
+    name = str(theme_info.get("title") or folder).strip()
     uploader = _infer_folder_uploader(folder)
     protected_uploader = uploader.get("protected") == "true"
 
@@ -438,15 +438,23 @@ def _is_dark_mode_folder(folder: str) -> bool:
     return str(folder or "").strip().lower().endswith("_dark-mode")
 
 
-def _ensure_dark_mode_title(title: str, folder: str) -> str:
-    cleaned = str(title or "").strip()
+def _base_theme_folder(folder: str) -> str:
+    clean = str(folder or "").strip()
+    if not _is_dark_mode_folder(clean):
+        return clean
+    return re.sub(r"_dark-mode$", "", clean, flags=re.I)
+
+
+def _theme_info_for_folder(folder: str, config: dict[str, Any] | None) -> dict[str, str]:
+    info = _extract_theme_info_from_config(config) if isinstance(config, dict) else {}
     if not _is_dark_mode_folder(folder):
-        return cleaned
-    if not cleaned:
-        return "(Dark)"
-    if cleaned.lower().endswith("(dark)"):
-        return cleaned
-    return f"{cleaned} (Dark)"
+        return info
+    base = _base_theme_folder(folder)
+    if not base or base == folder:
+        return info
+    base_cfg = _load_json_file(REPO_ROOT / base / "config.json")
+    base_info = _extract_theme_info_from_config(base_cfg) if isinstance(base_cfg, dict) else {}
+    return base_info or info
 
 
 def _refresh_existing_theme_entry(entry: dict[str, Any], folder: str, config: dict[str, Any] | None) -> dict[str, Any]:
@@ -456,10 +464,10 @@ def _refresh_existing_theme_entry(entry: dict[str, Any], folder: str, config: di
     if not isinstance(config, dict):
         return refreshed
 
-    info = _extract_theme_info_from_config(config)
+    info = _theme_info_for_folder(folder, config)
     baseline = _theme_entry_from_folder(folder, config)
     if info.get("title"):
-        refreshed["name"] = _ensure_dark_mode_title(str(info["title"]).strip(), folder)
+        refreshed["name"] = str(info["title"]).strip()
     if info.get("author"):
         refreshed["author"] = str(info["author"]).strip()
     if info.get("authorUrl"):
@@ -478,7 +486,7 @@ def _refresh_existing_theme_entry(entry: dict[str, Any], folder: str, config: di
             if cover_clean:
                 refreshed["screenshot"] = f"./{folder}/{cover_clean}"
 
-    title = _ensure_dark_mode_title(str(info.get("title") or "").strip(), folder)
+    title = str(info.get("title") or "").strip()
     current_name = str(refreshed.get("name") or "").strip()
     if not current_name:
         refreshed["name"] = title or str(baseline.get("name") or folder)
@@ -486,8 +494,6 @@ def _refresh_existing_theme_entry(entry: dict[str, Any], folder: str, config: di
     # Housekeeping: only correct stale names that still mirror the folder key.
     if title and _normalize_name_for_compare(current_name) == _normalize_name_for_compare(folder):
         refreshed["name"] = title
-    if _is_dark_mode_folder(folder):
-        refreshed["name"] = _ensure_dark_mode_title(str(refreshed.get("name") or title or baseline.get("name") or folder), folder)
 
     if not str(refreshed.get("author") or "").strip():
         author = str(baseline.get("author") or "").strip()
@@ -529,12 +535,8 @@ def _with_gallery_fields(entry: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
-def _sync_theme_info(config: dict[str, Any], theme_entry: dict[str, Any]) -> bool:
-    folder = str(theme_entry.get("folder") or "").strip()
-    fallback_name = _ensure_dark_mode_title(
-        str(theme_entry.get("name") or theme_entry.get("folder") or "Theme").strip(),
-        folder,
-    )
+def _sync_theme_info(config: dict[str, Any], theme_entry: dict[str, Any], *, force_all: bool = False) -> bool:
+    fallback_name = str(theme_entry.get("name") or theme_entry.get("folder") or "Theme").strip()
     existing_theme_info = config.get("theme_info")
     theme_info = dict(existing_theme_info) if isinstance(existing_theme_info, dict) else {}
     existing_description = str(theme_info.get("description") or "").strip()
@@ -557,11 +559,9 @@ def _sync_theme_info(config: dict[str, Any], theme_entry: dict[str, Any]) -> boo
 
     changed = not isinstance(existing_theme_info, dict)
     for key, value in desired.items():
-        if key == "title" and _is_dark_mode_folder(folder):
-            current_title = str(theme_info.get("title") or "").strip()
-            dark_title = _ensure_dark_mode_title(current_title or value, folder)
-            if current_title != dark_title:
-                theme_info["title"] = dark_title
+        if force_all:
+            if str(theme_info.get(key) or "") != str(value or ""):
+                theme_info[key] = value
                 changed = True
         elif key == "description":
             if not theme_info.get(key) and value:
@@ -665,12 +665,9 @@ def _sync_theme_index(theme_entry: dict[str, Any], master_template: str) -> bool
 
 def _theme_index_entry(theme_entry: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
     index_entry = dict(theme_entry)
-    folder = str(index_entry.get("folder") or "").strip()
-    info = _extract_theme_info_from_config(config)
+    info = _theme_info_for_folder(str(index_entry.get("folder") or ""), config)
     if info.get("title"):
-        index_entry["name"] = _ensure_dark_mode_title(info["title"], folder)
-    elif _is_dark_mode_folder(folder):
-        index_entry["name"] = _ensure_dark_mode_title(str(index_entry.get("name") or folder), folder)
+        index_entry["name"] = info["title"]
     if info.get("description") and not index_entry.get("description"):
         index_entry["description"] = info["description"]
     if info.get("author") and not index_entry.get("author"):
@@ -766,14 +763,34 @@ def main() -> int:
         config = _load_json_file(cfg_path)
         by_folder[folder] = _theme_entry_from_folder(folder, config if isinstance(config, dict) else None)
 
-    ordered_themes = [_with_gallery_fields(by_folder[folder]) for folder in sorted(by_folder.keys(), key=lambda s: s.lower())]
+    catalog_by_folder: dict[str, dict[str, Any]] = {}
+    for folder, entry in by_folder.items():
+        if _is_dark_mode_folder(folder):
+            base_folder = _base_theme_folder(folder)
+            if base_folder and base_folder in by_folder:
+                continue
+        catalog_by_folder[folder] = entry
+
+    ordered_themes = [
+        _with_gallery_fields(catalog_by_folder[folder])
+        for folder in sorted(catalog_by_folder.keys(), key=lambda s: s.lower())
+    ]
     _write_json(THEMES_JSON_PATH, {"themes": ordered_themes})
     template_html = THEME_TEMPLATE_PATH.read_text(encoding="utf-8") if THEME_TEMPLATE_PATH.exists() else ""
 
-    for item in ordered_themes:
-        folder = _extract_folder_key(item)
-        if not folder:
-            continue
+    for folder in theme_folders:
+        page_entry = dict(by_folder.get(folder) or {})
+        if not page_entry:
+            cfg_seed = _load_json_file(REPO_ROOT / folder / "config.json")
+            page_entry = _theme_entry_from_folder(folder, cfg_seed if isinstance(cfg_seed, dict) else None)
+        if _is_dark_mode_folder(folder):
+            base_folder = _base_theme_folder(folder)
+            if base_folder and base_folder in by_folder:
+                base_entry = dict(by_folder[base_folder])
+                base_entry["folder"] = folder
+                page_entry = base_entry
+        page_entry["folder"] = folder
+
         cfg_path = REPO_ROOT / folder / "config.json"
         config = _load_json_file(cfg_path)
         if not isinstance(config, dict):
@@ -782,10 +799,11 @@ def main() -> int:
             if _sync_source_only_config(config):
                 _write_json(cfg_path, config)
             continue
-        if _sync_theme_info(config, item):
+        inherit_base_metadata = _is_dark_mode_folder(folder) and _base_theme_folder(folder) in by_folder
+        if _sync_theme_info(config, page_entry, force_all=inherit_base_metadata):
             _write_json(cfg_path, config)
         if template_html:
-            _sync_theme_index(_theme_index_entry(item, config), template_html)
+            _sync_theme_index(_theme_index_entry(page_entry, config), template_html)
 
     return 0
 

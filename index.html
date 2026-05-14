@@ -1061,6 +1061,21 @@
             return out;
         }
 
+        function filterDarkModeVariantListings(themes) {
+            const list = Array.isArray(themes) ? themes.filter(Boolean) : [];
+            const folderSet = new Set(
+                list
+                    .map((t) => String((t && t.folder) || '').replace(/^\.\/+/, '').trim().toLowerCase())
+                    .filter(Boolean)
+            );
+            return list.filter((theme) => {
+                const folder = String((theme && theme.folder) || '').replace(/^\.\/+/, '').trim();
+                if (!folder || !/_dark-mode$/i.test(folder)) return true;
+                const baseFolder = folder.replace(/_dark-mode$/i, '').toLowerCase();
+                return !baseFolder || !folderSet.has(baseFolder);
+            });
+        }
+
         async function annotateThemeIndexAvailability(themes) {
             await Promise.all((themes || []).map(async(theme) => {
                 if (!theme || theme.sourceType === 'external') return;
@@ -2230,6 +2245,7 @@
                 const themesSource = mergeDiscoveredWithCached(discoveredThemes, cachedThemes)
                 themes = dedupeThemes(themesSource)
             }
+            themes = filterDarkModeVariantListings(themes)
             themes.sort((a, b) => String(a?.name || '')
                 .localeCompare(String(b?.name || ''), undefined, {
                     sensitivity: 'base',

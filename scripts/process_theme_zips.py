@@ -85,6 +85,36 @@ def _title_identity_candidates(value: str) -> set[str]:
     return {item for item in out if item}
 
 
+def _slug_token(value: str) -> str:
+    text = str(value or "").strip()
+    text = re.sub(r"^u/", "", text, flags=re.I)
+    text = re.sub(r"[^a-zA-Z0-9._-]+", "_", text).strip("_")[:120]
+    text = text.replace("_", "-").lower()
+    text = re.sub(r"[^a-z0-9-]+", "-", text)
+    text = re.sub(r"-+", "-", text).strip("-")
+    return text[:40]
+
+
+def _is_dark_mode_folder_name(folder_name: str) -> bool:
+    return bool(re.search(r"_dark[_-]?mode$", str(folder_name or "").strip(), flags=re.I))
+
+
+def _base_folder_name(folder_name: str) -> str:
+    return re.sub(r"_dark[_-]?mode$", "", str(folder_name or "").strip(), flags=re.I)
+
+
+def _apply_author_slug_suffix(folder_name: str, slug: str) -> str:
+    folder = str(folder_name or "").strip()
+    token = _slug_token(slug)
+    if not folder or not token:
+        return folder
+    base = _base_folder_name(folder)
+    if re.search(rf"[_-]{re.escape(token)}$", base, flags=re.I):
+        return folder
+    with_slug = f"{base}_{token}"
+    return f"{with_slug}_dark-mode" if _is_dark_mode_folder_name(folder) else with_slug
+
+
 def _normalize_dark_mode_folder_suffix(value: str) -> str:
     text = str(value or "").strip()
     if not text:
@@ -118,6 +148,19 @@ def _extract_theme_identity_from_config(config: dict[str, Any] | None) -> tuple[
             if a:
                 author = a
     return _normalize_author(author), _title_identity_candidates(title)
+
+
+def _extract_theme_author_for_slug(config: dict[str, Any] | None) -> str:
+    if not isinstance(config, dict):
+        return ""
+    for key in ("theme_info", "source_info"):
+        block = config.get(key)
+        if not isinstance(block, dict):
+            continue
+        author = str(block.get("author") or "").strip()
+        if author:
+            return author
+    return ""
 
 
 def _read_folder_config_identity(folder_name: str) -> tuple[str, set[str]]:
@@ -337,6 +380,7 @@ def _process_zip(path: Path) -> tuple[bool, list[str]]:
         suggested_names = ztu.inner_folder_names_for_zip(keys, path.stem)
         extraction_plan: list[dict[str, Any]] = []
         resolved_names_seen: set[str] = set()
+        forced_slug_by_base: dict[str, str] = {}
 
         for idx, key in enumerate(keys):
             config_entry = "config.json" if key == "." else f"{key}/config.json"
@@ -352,11 +396,26 @@ def _process_zip(path: Path) -> tuple[bool, list[str]]:
                 return False, logs + [f"ERROR: {config_entry} must reference at least one image asset."]
 
             suggested = suggested_names[idx]
+            suggested_base = _base_folder_name(suggested).lower()
+            if suggested_base in forced_slug_by_base:
+                suggested = _apply_author_slug_suffix(suggested, forced_slug_by_base[suggested_base])
             resolved_dest, overwrite_existing, reason = _resolve_destination_folder(
                 suggested_folder=suggested,
                 incoming_config=cfg,
                 catalog_rows=catalog_rows,
             )
+            resolved_base = _base_folder_name(resolved_dest).lower()
+            if not overwrite_existing and (REPO_ROOT / resolved_dest).exists():
+                incoming_author_slug = _extract_theme_author_for_slug(cfg)
+                adjusted_dest = _apply_author_slug_suffix(resolved_dest, incoming_author_slug)
+                if adjusted_dest and adjusted_dest != resolved_dest:
+                    forced_slug_by_base[resolved_base] = _slug_token(incoming_author_slug)
+                    resolved_dest = adjusted_dest
+                    overwrite_existing = (REPO_ROOT / resolved_dest).is_dir()
+                    reason = (
+                        f"Adjusted destination to {resolved_dest}/ because the base theme name already exists "
+                        "for a different author."
+                    )
             if not resolved_dest or resolved_dest in EXCLUDED_SCAN_DIRS or resolved_dest.startswith("."):
                 return False, logs + [f"ERROR: Destination folder name {resolved_dest!r} is not allowed."]
             resolved_key = resolved_dest.lower()
