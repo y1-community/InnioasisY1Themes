@@ -2313,6 +2313,59 @@
             });
         }
 
+        function bytesToBase64(bytesLike) {
+            const bytes = bytesLike instanceof Uint8Array ? bytesLike : new Uint8Array(bytesLike || []);
+            let binary = "";
+            const chunk = 0x8000;
+            for (let i = 0; i < bytes.length; i += chunk) {
+                binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+            }
+            return btoa(binary);
+        }
+
+        async function buildDirectFilesForUpload() {
+            validateThemeInfoEntriesForSubmit();
+            const renames = variationRootRenames();
+            const editsByOriginalPath = new Map(
+                themeInfoEntries.map((entry) => {
+                    const nextParsed = { ...entry.parsed, theme_info: { ...entry.themeInfo } };
+                    return [normRelPath(entry.path), JSON.stringify(nextParsed, null, 2) + "\n"];
+                })
+            );
+            const files = [];
+            if (uploadMode === "folder" && folderFiles && folderFiles.length) {
+                for (const file of folderFiles) {
+                    const path = normRelPath(file.webkitRelativePath);
+                    if (!path || path.endsWith("/")) continue;
+                    const outPath = rewriteThemePathForRenames(path, renames);
+                    const rawBytes = editsByOriginalPath.has(path)
+                        ? new TextEncoder().encode(editsByOriginalPath.get(path))
+                        : new Uint8Array(await file.arrayBuffer());
+                    files.push({
+                        path: outPath,
+                        contentBase64: bytesToBase64(rawBytes),
+                    });
+                }
+                return files;
+            }
+            if (loadedZip && themeInfoEntries.length) {
+                const zipEntries = Object.values(loadedZip.files);
+                for (const zipEntry of zipEntries) {
+                    if (!zipEntry || zipEntry.dir) continue;
+                    const path = zipEntry.name;
+                    const outPath = rewriteThemePathForRenames(path, renames);
+                    const rawBytes = editsByOriginalPath.has(path)
+                        ? new TextEncoder().encode(editsByOriginalPath.get(path))
+                        : new Uint8Array(await zipEntry.async("uint8array"));
+                    files.push({
+                        path: outPath,
+                        contentBase64: bytesToBase64(rawBytes),
+                    });
+                }
+            }
+            return files;
+        }
+
         zipInput.addEventListener("change", async () => {
             const file = zipInput.files && zipInput.files[0];
             await inspectZipForThemeInfo(file);
@@ -2361,6 +2414,19 @@
 
             try {
                 validateThemeInfoEntriesForSubmit();
+                if (!metadataSubmitScenario() && (uploadMode === "zip" || uploadMode === "folder")) {
+                    const roots = collectThemeRootFolders();
+                    const hasDarkPackage = roots.some((root) => isDarkModeFolderName(root));
+                    if (!hasDarkPackage) {
+                        const continueWithoutDark = window.confirm(
+                            "Do you want to continue without uploading a dark mode variation package?\n\nSelect Cancel to add a second ZIP/folder for the _dark-mode variation."
+                        );
+                        if (!continueWithoutDark) {
+                            setStatus("Submission paused. Add your dark mode ZIP/folder package, then submit again.", false);
+                            return;
+                        }
+                    }
+                }
                 const artworkWarnings = await collectArtworkCompatibilityWarnings();
                 if (artworkWarnings.length) {
                     const preview = artworkWarnings.slice(0, 8).map((line) => `- ${line}`).join("\n");
@@ -2382,6 +2448,10 @@
                 fieldThemeAuthor.value = ta.author;
 
                 const data = new FormData(form);
+                const directFiles = await buildDirectFilesForUpload();
+                if (directFiles.length) {
+                    data.set("directFilesJson", JSON.stringify(directFiles));
+                }
                 const rebuiltZip = await buildZipForUpload();
                 data.set("zip", rebuiltZip, rebuiltZip.name);
                 const res = await fetch(window.uploadThemeEndpoint(), {

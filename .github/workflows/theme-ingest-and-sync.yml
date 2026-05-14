@@ -1,8 +1,9 @@
 name: Theme ingest and sync
 
-# Chains: extract root upload zips → sync themes.json + per-theme index.html → orphan meta cleanup.
-# Zips are validated on merge by scripts/validate_theme_pr.py (multi-theme archives, paired *.zip.meta.json).
-# Replaces separate extract/process zip workflows to avoid races and long delays before metadata sync.
+# Supports both uploader modes:
+# - direct file PRs (preferred): worker/client commits extracted theme files directly
+# - root zip artifacts (legacy fallback): extracted by scripts/process_theme_zips.py
+# Then sync themes.json + per-theme index.html and cleanup upload artifacts.
 
 on:
   push:
@@ -52,7 +53,7 @@ jobs:
       - name: Install ingest dependencies
         run: python -m pip install --upgrade pip pillow
 
-      - name: Extract root theme zip submissions (identity-aware overwrite)
+      - name: Extract root theme zip submissions (legacy fallback)
         run: python scripts/process_theme_zips.py
         env:
           PROCESS_THEME_ZIPS_STRICT: "true"

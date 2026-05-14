@@ -154,6 +154,25 @@ async function ghPathExists(apiBase, token, path, ref) {
   return res.ok;
 }
 
+async function ghGetFileMeta(apiBase, token, path, ref) {
+  const enc = String(path || "")
+    .split("/")
+    .filter(Boolean)
+    .map((part) => encodeURIComponent(part))
+    .join("/");
+  const res = await fetch(`${apiBase}/contents/${enc}?ref=${encodeURIComponent(ref)}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+      "User-Agent": "y1-theme-upload/1.0 (+https://github.com/y1-community/InnioasisY1Themes)",
+    },
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) return null;
+  return await res.json().catch(() => null);
+}
+
 /**
  * @param {Request} request
  * @param {Record<string, string | undefined>} env
@@ -177,6 +196,7 @@ export async function handleUploadPost(request, env) {
 
     const form = await request.formData();
     const zipFile = form.get("zip");
+    const directFilesRaw = form.get("directFilesJson");
     let themeTitle = String(form.get("themeTitle") || "").trim();
     let themeAuthor = String(form.get("themeAuthor") || "").trim();
     if (!themeTitle) themeTitle = String(form.get("themeName") || "").trim();
@@ -201,22 +221,38 @@ export async function handleUploadPost(request, env) {
     }
     const uploaderName = themeAuthor;
 
-    if (!(zipFile instanceof File)) {
-      return jsonResponse({ error: "Missing ZIP file." }, 400);
+    let directFiles = [];
+    if (typeof directFilesRaw === "string" && directFilesRaw.trim()) {
+      try {
+        const parsed = JSON.parse(directFilesRaw);
+        if (Array.isArray(parsed)) {
+          directFiles = parsed
+            .map((item) => ({
+              path: String(item && item.path ? item.path : "").replace(/^\/+/, "").trim(),
+              contentBase64: String(item && item.contentBase64 ? item.contentBase64 : "").trim(),
+            }))
+            .filter((item) => item.path && item.contentBase64);
+        }
+      } catch {
+        return jsonResponse({ error: "Invalid directFilesJson payload." }, 400);
+      }
+    }
+    const hasDirectFiles = directFiles.length > 0;
+    if (!hasDirectFiles && !(zipFile instanceof File)) {
+      return jsonResponse({ error: "Missing ZIP file or direct file payload." }, 400);
     }
 
-    const originalName = slugify(zipFile.name || "theme.zip");
-    if (!originalName.toLowerCase().endsWith(".zip")) {
-      return jsonResponse({ error: "Only .zip uploads are accepted." }, 400);
+    let originalName = "theme.zip";
+    if (!hasDirectFiles) {
+      originalName = slugify(zipFile.name || "theme.zip");
+      if (!originalName.toLowerCase().endsWith(".zip")) {
+        return jsonResponse({ error: "Only .zip uploads are accepted." }, 400);
+      }
+      const maxBytes = Number(env.MAX_UPLOAD_BYTES || 25 * 1024 * 1024);
+      if (zipFile.size > maxBytes) {
+        return jsonResponse({ error: `ZIP exceeds max size (${maxBytes} bytes).` }, 400);
+      }
     }
-
-    const maxBytes = Number(env.MAX_UPLOAD_BYTES || 25 * 1024 * 1024);
-    if (zipFile.size > maxBytes) {
-      return jsonResponse({ error: `ZIP exceeds max size (${maxBytes} bytes).` }, 400);
-    }
-
-    const arrayBuffer = await zipFile.arrayBuffer();
-    const contentB64 = toBase64(arrayBuffer);
 
     const now = Date.now();
     const branchName = `upload/theme-${now}-${Math.random().toString(36).slice(2, 8)}`;
@@ -229,22 +265,90 @@ export async function handleUploadPost(request, env) {
       .replace(/[^a-z0-9-]+/g, "-")
       .replace(/^-+|-+$/g, "")
       .slice(0, 40);
-    const zipStem = originalName.replace(/\.zip$/i, "") || "theme";
-    const candidateNames = [
-      originalName,
-      uploaderSlug ? `${zipStem}-${uploaderSlug}.zip` : "",
-      `${zipStem}-${Math.random().toString(36).slice(2, 8)}.zip`,
-    ].filter(Boolean);
-    const zipPrefix = zipDir ? `${zipDir.replace(/^\/+|\/+$/g, "")}/` : "";
-    let zipName = candidateNames[candidateNames.length - 1];
-    for (const cand of candidateNames) {
-      const exists = await ghPathExists(apiBase, token, `${zipPrefix}${cand}`, baseBranch);
-      if (!exists) {
-        zipName = cand;
-        break;
+    let zipPath = "";
+    if (!hasDirectFiles) {
+      const arrayBuffer = await zipFile.arrayBuffer();
+      const contentB64 = toBase64(arrayBuffer);
+      const zipStem = originalName.replace(/\.zip$/i, "") || "theme";
+      const candidateNames = [
+        originalName,
+        uploaderSlug ? `${zipStem}-${uploaderSlug}.zip` : "",
+        `${zipStem}-${Math.random().toString(36).slice(2, 8)}.zip`,
+      ].filter(Boolean);
+      const zipPrefix = zipDir ? `${zipDir.replace(/^\/+|\/+$/g, "")}/` : "";
+      let zipName = candidateNames[candidateNames.length - 1];
+      for (const cand of candidateNames) {
+        const exists = await ghPathExists(apiBase, token, `${zipPrefix}${cand}`, baseBranch);
+        if (!exists) {
+          zipName = cand;
+          break;
+        }
+      }
+      zipPath = `${zipPrefix}${zipName}`;
+      await ghJson(
+        `${apiBase}/contents/${zipPath.split("/").map(encodeURIComponent).join("/")}`,
+        token,
+        {
+          method: "PUT",
+          body: JSON.stringify({
+            message: `Upload theme zip: ${themeTitle || originalName}`,
+            content: contentB64,
+            branch: branchName,
+          }),
+        },
+        `upload file ${zipPath}`
+      );
+
+      const metaPath = `${zipPath}.meta.json`;
+      const metaPayload = JSON.stringify(
+        {
+          uploaderName: uploaderName || "",
+          uploaderSlug: uploaderSlug || "",
+        },
+        null,
+        2
+      ) + "\n";
+      const metaB64 = toBase64(new TextEncoder().encode(metaPayload));
+      await ghJson(
+        `${apiBase}/contents/${metaPath.split("/").map(encodeURIComponent).join("/")}`,
+        token,
+        {
+          method: "PUT",
+          body: JSON.stringify({
+            message: `Upload metadata for ${originalName}`,
+            content: metaB64,
+            branch: branchName,
+          }),
+        },
+        `upload file ${metaPath}`
+      );
+    } else {
+      for (const file of directFiles) {
+        const path = String(file.path || "")
+          .replace(/\\/g, "/")
+          .replace(/^\/+/, "")
+          .trim();
+        if (!path || path.includes("..") || path.startsWith(".")) {
+          return jsonResponse({ error: `Invalid file path in direct upload payload: ${path || "(empty)"}` }, 400);
+        }
+        const existing = await ghGetFileMeta(apiBase, token, path, branchName);
+        const body = {
+          message: `Upload theme file: ${path}`,
+          content: file.contentBase64,
+          branch: branchName,
+        };
+        if (existing && existing.sha) body.sha = existing.sha;
+        await ghJson(
+          `${apiBase}/contents/${path.split("/").map(encodeURIComponent).join("/")}`,
+          token,
+          {
+            method: "PUT",
+            body: JSON.stringify(body),
+          },
+          `upload file ${path}`
+        );
       }
     }
-    const zipPath = `${zipPrefix}${zipName}`;
 
     const baseRef = await ghJson(
       `${apiBase}/git/ref/heads/${encodeURIComponent(baseBranch)}`,
@@ -270,44 +374,6 @@ export async function handleUploadPost(request, env) {
       `create branch ${branchName}`
     );
 
-    await ghJson(
-      `${apiBase}/contents/${zipPath.split("/").map(encodeURIComponent).join("/")}`,
-      token,
-      {
-        method: "PUT",
-        body: JSON.stringify({
-          message: `Upload theme zip: ${themeTitle || originalName}`,
-          content: contentB64,
-          branch: branchName,
-        }),
-      },
-      `upload file ${zipPath}`
-    );
-
-    const metaPath = `${zipPath}.meta.json`;
-    const metaPayload = JSON.stringify(
-      {
-        uploaderName: uploaderName || "",
-        uploaderSlug: uploaderSlug || "",
-      },
-      null,
-      2
-    ) + "\n";
-    const metaB64 = toBase64(new TextEncoder().encode(metaPayload));
-    await ghJson(
-      `${apiBase}/contents/${metaPath.split("/").map(encodeURIComponent).join("/")}`,
-      token,
-      {
-        method: "PUT",
-        body: JSON.stringify({
-          message: `Upload metadata for ${originalName}`,
-          content: metaB64,
-          branch: branchName,
-        }),
-      },
-      `upload file ${metaPath}`
-    );
-
     let prTitle = "Theme submission";
     if (themeTitle && themeAuthor) prTitle = `${themeTitle} — ${themeAuthor}`;
     else if (themeTitle) prTitle = themeTitle;
@@ -316,7 +382,7 @@ export async function handleUploadPost(request, env) {
     const prBody = [
       "## New theme from the gallery uploader",
       "",
-      `- Package: \`${originalName}\``,
+      hasDirectFiles ? `- Upload mode: direct file commit (${directFiles.length} file(s))` : `- Package: \`${originalName}\``,
       themeTitle ? `- Title (from config): ${themeTitle}` : null,
       themeAuthor ? `- Author (from config): ${themeAuthor}` : null,
       "",

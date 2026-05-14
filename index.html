@@ -1205,6 +1205,18 @@
             };
         }
 
+        function resolveMaskTargetPath(folderPath, files, configuredMaskPath) {
+            const configured = normalizeConfigAssetPath(configuredMaskPath || '', folderPath);
+            const relFiles = new Set(
+                (Array.isArray(files) ? files : [])
+                    .map((f) => normalizeConfigAssetPath(f, folderPath).toLowerCase())
+                    .filter(Boolean)
+            );
+            if (configured && /(^|\/)mask([._-]|$)/i.test(configured)) return configured;
+            if (relFiles.has('mask.png')) return 'mask.png';
+            return configured || 'mask.png';
+        }
+
         async function fetchMaskVariantPathsFromGitHub(folderPath) {
             const folder = String(folderPath || '').trim().replace(/\\/g, '/').replace(/^\.\/+/, '').replace(/\/+$/, '');
             if (!folder) return [];
@@ -1364,7 +1376,7 @@
         }
 
         function isDarkModeFolderPath(folderPath) {
-            return /_dark-mode$/i.test(String(folderPath || '').replace(/^\.\/+/, '').trim());
+            return /_dark[-_]?mode$/i.test(String(folderPath || '').replace(/^\.\/+/, '').trim());
         }
 
         function ensureDarkModeDisplayName(themeName, folderPath) {
@@ -1381,11 +1393,13 @@
             return base.replace(/[^\w\d-_ ]/g, '_') || 'theme';
         }
 
-        function darkPairFolder(folderPath) {
+        function darkPairFolderCandidates(folderPath) {
             const folder = String(folderPath || '').replace(/^\.\/+/, '').trim();
-            if (!folder) return '';
-            if (/_dark-mode$/i.test(folder)) return folder.replace(/_dark-mode$/i, '');
-            return `${folder}_dark-mode`;
+            if (!folder) return [];
+            if (/_dark[-_]?mode$/i.test(folder)) {
+                return [folder.replace(/_dark[-_]?mode$/i, '')].filter(Boolean);
+            }
+            return [`${folder}_dark-mode`, `${folder}_dark_mode`];
         }
 
         async function folderHasConfig(folderPath) {
@@ -1403,12 +1417,18 @@
         async function promptThemeVariation(theme) {
             const folder = String((theme && theme.folder) || '').replace(/^\.\/+/, '').trim();
             if (!folder) return { folder, name: theme && theme.name ? String(theme.name) : 'theme' };
-            const pair = darkPairFolder(folder);
-            if (!pair || pair.toLowerCase() === folder.toLowerCase()) {
+            const candidates = darkPairFolderCandidates(folder).filter((p) => p.toLowerCase() !== folder.toLowerCase());
+            if (!candidates.length) {
                 return { folder, name: ensureDarkModeDisplayName(theme && theme.name, folder) || 'theme' };
             }
-            const pairExists = await folderHasConfig(pair);
-            if (!pairExists) {
+            let pair = '';
+            for (const candidate of candidates) {
+                if (await folderHasConfig(candidate)) {
+                    pair = candidate;
+                    break;
+                }
+            }
+            if (!pair) {
                 return { folder, name: ensureDarkModeDisplayName(theme && theme.name, folder) || 'theme' };
             }
             const isDarkCurrent = /_dark-mode$/i.test(folder);
@@ -1663,7 +1683,7 @@
                 const maskChoices = maskVariantChoicesFromFilePaths(
                     selectedFolder,
                     [...filesToInstallRaw, ...remoteMaskPaths],
-                    config && config.desktopMask
+                    resolveMaskTargetPath(selectedFolder, [...filesToInstallRaw, ...remoteMaskPaths], config && config.desktopMask)
                 );
                 const selectedMask = await promptMaskVariant(selectedName, maskChoices, selectedFolder);
                 if (selectedMask === null) {
@@ -1792,7 +1812,7 @@
                 const maskChoices = maskVariantChoicesFromFilePaths(
                     selectedFolder,
                     [...filesToDownloadRaw, ...remoteMaskPaths],
-                    config && config.desktopMask
+                    resolveMaskTargetPath(selectedFolder, [...filesToDownloadRaw, ...remoteMaskPaths], config && config.desktopMask)
                 );
                 const selectedMask = await promptMaskVariant(selectedName, maskChoices, selectedFolder);
                 if (selectedMask === null) {
