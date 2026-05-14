@@ -228,6 +228,26 @@
             }
         }
 
+        .theme-preview-frame .theme-artwork-gold-badge {
+            position: absolute;
+            left: 8px;
+            bottom: 8px;
+            z-index: 3;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: linear-gradient(135deg, #5c4014, #b8891e 42%, #f2d06a 55%, #b8891e 68%, #5c4014);
+            color: #1a1206;
+            padding: 4px 9px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            box-shadow: 0 2px 12px rgba(201, 162, 39, 0.4);
+            border: 1px solid rgba(255, 230, 160, 0.85);
+            pointer-events: none;
+        }
+
         .theme-preview-frame {
             width: min(250px, 100%);
             aspect-ratio: 1 / 1;
@@ -925,6 +945,10 @@
             const cachedTheme = cachedByFolder || cachedByName || null;
             const coverFromConfig = cfg.themeCover ? `./${folder}/${cfg.themeCover}` : '';
 
+            const gallery = cfg && cfg.gallery && typeof cfg.gallery === "object" ? cfg.gallery : {};
+            const medalRaw = String(gallery.compatibilityMedal || "").trim().toLowerCase();
+            const compatibilityMedal = medalRaw === "gold" ? "gold" : "";
+
             return {
                 name: pickPreferred((info && info.title), cfg.title, (cachedTheme && cachedTheme.name), folder),
                 folder,
@@ -933,7 +957,8 @@
                 author: pickPreferred((info && info.author), cfg.author, (cachedTheme && cachedTheme.author)) || null,
                 authorUrl: pickPreferred((info && info.authorUrl), cfg.authorUrl, (cachedTheme && cachedTheme.authorUrl)),
                 authorCTA: pickPreferred((info && info.authorCTA), (cachedTheme && cachedTheme.authorCTA)),
-                sourceType: sourceInfo ? 'external' : 'internal'
+                sourceType: sourceInfo ? "external" : "internal",
+                compatibilityMedal
             };
         }
 
@@ -2237,6 +2262,18 @@
             void applyNextScreenshot();
             img.alt = safeText(theme.name);
             previewFrame.appendChild(img);
+
+            if (String(theme.compatibilityMedal || "").toLowerCase() === "gold") {
+                previewFrame.style.position = "relative";
+                const medal = document.createElement("div");
+                medal.className = "theme-artwork-gold-badge";
+                medal.setAttribute("role", "img");
+                medal.setAttribute("aria-label", "Gold artwork compatibility");
+                medal.innerHTML = '<span aria-hidden="true">🏅</span><span>Full artwork</span>';
+                medal.title =
+                    "This package passed the gallery’s optional newer UI artwork checks (eBook, launcher switch, calendar, calculator).";
+                previewFrame.appendChild(medal);
+            }
 
             const n = document.createElement('a');
             n.className = 'theme-name';

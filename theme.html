@@ -166,6 +166,20 @@
         font-weight: normal;
         cursor: pointer;
     }
+
+    .theme-gold-medal-banner {
+        border-radius: 10px;
+        padding: 10px 12px;
+        border: 1px solid rgba(212, 175, 55, 0.55);
+        background: linear-gradient(135deg, rgba(90, 62, 20, 0.42), rgba(201, 162, 39, 0.26));
+        color: #fdecc8;
+        font-size: 0.88rem;
+        line-height: 1.35;
+    }
+
+    .theme-gold-medal-banner strong {
+        margin-left: 4px;
+    }
 </style>
 
 <body>
@@ -196,6 +210,10 @@
                         <h1 id="theme-name" style="margin:0 0 6px 0;font-size:1.5rem"></h1>
                         <div id="theme-author" style="margin-bottom:8px;color:var(--text-secondary)"></div>
                         <div id="theme-desc" style="color:var(--text-secondary);margin-bottom:12px"></div>
+                        <div id="theme-compatibility-medal" class="theme-gold-medal-banner" style="display:none;margin:0 0 12px 0;" role="status">
+                            <span aria-hidden="true">🏅</span><strong>Gold artwork compatibility</strong>
+                            <span style="display:block;margin-top:4px;font-weight:500;opacity:0.92;font-size:0.86rem;">This creator included every optional asset we check for newer and upcoming Y1 UI screens.</span>
+                        </div>
                         <div id="artwork-check-message" style="display:none;border:1px solid rgba(255,180,80,0.45);background:rgba(255,180,80,0.11);border-radius:10px;padding:10px 12px;margin:0 0 12px 0;color:#fdecc8;">
                             <div style="font-weight:700;margin-bottom:5px;">Artwork compatibility check</div>
                             <div id="artwork-check-summary" style="font-size:0.9rem;line-height:1.45;"></div>
@@ -402,6 +420,8 @@
                 (assetBase ? `./${assetBase}/${cfg.themeCover}` : `./${cfg.themeCover}`) :
                 '';
             const info = (cfg && (cfg.source_info || cfg.theme_info)) || null;
+            const gallery = cfg && cfg.gallery && typeof cfg.gallery === 'object' ? cfg.gallery : {};
+            const medal = String(gallery.compatibilityMedal || '').trim().toLowerCase();
             return {
                 name: (info && info.title) || cfg.title || (cachedTheme && cachedTheme.name) || catalog || 'Theme',
                 description: (info && info.description) || cfg.description || (cachedTheme && cachedTheme.description) || '',
@@ -411,7 +431,8 @@
                 authorCTA: (info && info.authorCTA) || (cachedTheme && cachedTheme.authorCTA) || '',
                 screenshot: prefixedCover || ((cachedTheme && cachedTheme.screenshot) || ''),
                 folder: catalog,
-                rawConfig: cfg || null
+                rawConfig: cfg || null,
+                compatibilityMedal: medal === 'gold' ? 'gold' : ''
             };
         }
 
@@ -1630,6 +1651,11 @@
             ) || 'Theme'
             nameEl.textContent = displayName
             descEl.textContent = (themeMeta && themeMeta.description) ? themeMeta.description : 'No description available.'
+            const medalEl = document.getElementById('theme-compatibility-medal');
+            if (medalEl) {
+                const show = themeMeta && String(themeMeta.compatibilityMedal || '').toLowerCase() === 'gold';
+                medalEl.style.display = show ? 'block' : 'none';
+            }
             const seoAuthor = themeMeta && themeMeta.author ? String(themeMeta.author).trim() : '';
             applySeoMetadata(displayName, seoAuthor, themeMeta && themeMeta.description);
             const artworkWarnings = await artworkCompatibilityWarnings(themeMeta && themeMeta.rawConfig, activeContentFolder);
