@@ -3094,65 +3094,6 @@
             });
         }
 
-        function bytesToBase64(bytesLike) {
-            const bytes = bytesLike instanceof Uint8Array ? bytesLike : new Uint8Array(bytesLike || []);
-            let binary = "";
-            const chunk = 0x8000;
-            for (let i = 0; i < bytes.length; i += chunk) {
-                binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
-            }
-            return btoa(binary);
-        }
-
-        async function buildDirectFilesForUpload(artworkWarnings) {
-            validateThemeInfoEntriesForSubmit();
-            const renames = variationRootRenames();
-            const editsByOriginalPath = await buildConfigEditsByPath(renames, artworkWarnings);
-            const byPath = new Map();
-            if (uploadMode === "folder" && folderFiles && folderFiles.length) {
-                for (const file of folderFiles) {
-                    const path = normRelPath(file.webkitRelativePath);
-                    if (!path || path.endsWith("/")) continue;
-                    const outPath = rewriteThemePathForRenames(path, renames);
-                    if (isBlockedSubmissionPath(outPath)) {
-                        rememberScrubbedSubmissionPath(outPath);
-                        continue;
-                    }
-                    const rawBytes = editsByOriginalPath.has(path)
-                        ? new TextEncoder().encode(editsByOriginalPath.get(path))
-                        : new Uint8Array(await file.arrayBuffer());
-                    byPath.set(outPath, rawBytes);
-                }
-            } else if (loadedZip && themeInfoEntries.length) {
-                const zipEntries = Object.values(loadedZip.files);
-                for (const zipEntry of zipEntries) {
-                    if (!zipEntry || zipEntry.dir) continue;
-                    const path = zipEntry.name;
-                    const outPath = rewriteThemePathForRenames(path, renames);
-                    if (isBlockedSubmissionPath(outPath)) {
-                        rememberScrubbedSubmissionPath(outPath);
-                        continue;
-                    }
-                    const rawBytes = editsByOriginalPath.has(path)
-                        ? new TextEncoder().encode(editsByOriginalPath.get(path))
-                        : new Uint8Array(await zipEntry.async("uint8array"));
-                    byPath.set(outPath, rawBytes);
-                }
-            }
-            const extra = pendingExtraVariationEntries || [];
-            for (const e of extra) {
-                if (isBlockedSubmissionPath(e.path)) {
-                    rememberScrubbedSubmissionPath(e.path);
-                    continue;
-                }
-                byPath.set(e.path, e.bytes);
-            }
-            return [...byPath.entries()].map(([path, rawBytes]) => ({
-                path,
-                contentBase64: bytesToBase64(rawBytes),
-            }));
-        }
-
         zipInput.addEventListener("change", async () => {
             const file = zipInput.files && zipInput.files[0];
             await inspectZipForThemeInfo(file);
@@ -3229,10 +3170,8 @@
                 fieldThemeAuthor.value = ta.author;
 
                 const data = new FormData(form);
-                const directFiles = await buildDirectFilesForUpload(artworkWarnings);
-                if (directFiles.length) {
-                    data.set("directFilesJson", JSON.stringify(directFiles));
-                }
+                // Always ship a single rebuilt ZIP so the Worker uses the low-subrequest ZIP path.
+                // (Direct per-file JSON commits one GitHub request per file and quickly hits Worker limits.)
                 const rebuiltZip = await buildZipForUpload(artworkWarnings);
                 data.set("zip", rebuiltZip, rebuiltZip.name);
                 const res = await fetch(window.uploadThemeEndpoint(), {

@@ -635,8 +635,22 @@ select {
 
 #theme-root {
     display: flex;
-    gap: 20px;
-    align-items: stretch;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    width: 100%;
+}
+
+#theme-root #left {
+    width: 100%;
+    max-width: min(960px, 100%);
+    box-sizing: border-box;
+}
+
+#theme-root #right {
+    width: 100%;
+    max-width: min(720px, 100%);
+    box-sizing: border-box;
 }
 
 #alv-btn {
@@ -648,15 +662,6 @@ select {
 }
 
 @media (max-width: 900px) {
-    #theme-root {
-        display: block;
-    }
-
-    #theme-root #right {
-        width: 100%;
-        max-width: 100%;
-        box-sizing: border-box;
-    }
 
     .guide-wrap {
         flex-direction: column;

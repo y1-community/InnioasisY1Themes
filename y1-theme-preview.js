@@ -876,7 +876,18 @@
         container.classList.add('y1-tp-mounted');
 
         var encoded = contentFolder.split('/').filter(Boolean).map(encodeURIComponent).join('/');
-        return fetch('./' + encoded + '/config.json', { cache: 'no-cache' })
+        var configUrl = '';
+        try {
+            if (typeof buildFileUrl === 'function') {
+                configUrl = String(buildFileUrl(contentFolder, 'config.json') || '').trim();
+            }
+        } catch (e) {
+            configUrl = '';
+        }
+        if (!configUrl) {
+            configUrl = './' + encoded + '/config.json';
+        }
+        return fetch(configUrl, { cache: 'no-cache' })
             .then(function (res) {
                 if (!res.ok) throw new Error('config.json not found');
                 return res.json();
