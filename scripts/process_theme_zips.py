@@ -85,6 +85,13 @@ def _title_identity_candidates(value: str) -> set[str]:
     return {item for item in out if item}
 
 
+def _normalize_dark_mode_folder_suffix(value: str) -> str:
+    text = str(value or "").strip()
+    if not text:
+        return text
+    return re.sub(r"_dark[_-]?mode$", "_dark-mode", text, flags=re.I)
+
+
 def _read_json(path: Path) -> dict[str, Any] | None:
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
@@ -154,7 +161,7 @@ def _resolve_destination_folder(
     catalog_rows: list[dict[str, Any]],
 ) -> tuple[str, bool, str]:
     incoming_author, incoming_titles = _extract_theme_identity_from_config(incoming_config)
-    suggested = str(suggested_folder or "").strip()
+    suggested = _normalize_dark_mode_folder_suffix(suggested_folder)
     if not suggested:
         return suggested, False, "No suggested destination folder."
 
@@ -180,11 +187,12 @@ def _resolve_destination_folder(
         if len(matches) == 1:
             target = str(matches[0]).strip()
             if target:
+                normalized_target = _normalize_dark_mode_folder_suffix(target)
                 return (
-                    target,
-                    (REPO_ROOT / target).is_dir(),
+                    normalized_target,
+                    (REPO_ROOT / normalized_target).is_dir(),
                     (
-                        f"Resolved incoming theme identity to catalog folder {target}/ "
+                        f"Resolved incoming theme identity to catalog folder {normalized_target}/ "
                         "(author + title match); applying as update."
                     ),
                 )

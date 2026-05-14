@@ -1140,6 +1140,23 @@
             return [...new Set(out)];
         }
 
+        function darkModeRootRenames() {
+            readEditorValues();
+            const map = new Map();
+            for (const root of collectThemeRootFolders()) {
+                const rootLow = String(root || "").toLowerCase();
+                const entry = themeInfoEntries.find((e) => {
+                    const p = normRelPath(e.path);
+                    if (p === "config.json") return true;
+                    return p.split("/")[0].toLowerCase() === rootLow;
+                });
+                if (!entry || !entry.addDarkModeVariant) continue;
+                if (isDarkModeFolderName(root)) continue;
+                map.set(root, darkModeFolderName(root));
+            }
+            return map;
+        }
+
         /** Mirrors validate_theme_pr.py _folder_has_disambiguator. */
         function folderHasDisambiguator(innerFolder, candidates) {
             const low = String(innerFolder || "").toLowerCase();
@@ -1196,7 +1213,9 @@
         }
 
         /** When a catalog collision is resolved by renaming roots, match the outgoing ZIP name to the new folder stem (server uses zip filename stem for root themes). */
-        function packagedZipFileName(renames, fallbackZipName) {
+        function packagedZipFileName(renames, fallbackZipName, preferredTitle) {
+            const preferred = sanitizeZipFileName(preferredTitle);
+            if (preferred) return /\.zip$/i.test(preferred) ? preferred : `${preferred}.zip`;
             const full = String(fallbackZipName || loadedZipFileName || "theme.zip").trim();
             const withExt = /\.zip$/i.test(full) ? full : `${full}.zip`;
             const m = withExt.match(/^(\d+-)?(.+)\.zip$/i);
@@ -1565,6 +1584,12 @@
                         <textarea rows="3" data-field="description">${escapeHtml(entry.themeInfo.description)}</textarea>
                     </div>
                     <div class="row">
+                        <label class="variation-row" style="margin-top:0;">
+                            <input type="checkbox" data-field="addDarkModeVariant" ${entry.addDarkModeVariant ? "checked" : ""} />
+                            <span>Add dark mode variation (creates a <code>_dark-mode</code> folder and appends <code>(Dark)</code> to the theme title).</span>
+                        </label>
+                    </div>
+                    <div class="row">
                         <label>External download URL (optional)</label>
                         <input type="text" data-field="externalDownloadUrl" value="${escapeHtml(entry.themeInfo.externalDownloadUrl)}" placeholder="https://ko-fi.com/... or https://patreon.com/..." />
                         <p class="hint">When set, gallery download buttons open this URL instead of downloading a ZIP directly. Use this only for your direct theme download or donation/support page; unrelated links may be removed.</p>
@@ -1597,6 +1622,8 @@
                 entry.themeInfo.authorUrl = getValue("authorUrl");
                 entry.themeInfo.description = getValue("description");
                 entry.themeInfo.externalDownloadUrl = getValue("externalDownloadUrl");
+                const darkToggle = card.querySelector('[data-field="addDarkModeVariant"]');
+                entry.addDarkModeVariant = !!(darkToggle && darkToggle.checked);
             });
         }
 
@@ -1617,6 +1644,33 @@
                 };
             }
             return { value: trimmed, changed: false };
+        }
+
+        function isDarkModeFolderName(folderName) {
+            return /_dark-mode$/i.test(String(folderName || "").trim());
+        }
+
+        function stripDarkModeFolderSuffix(folderName) {
+            return String(folderName || "").trim().replace(/_dark-mode$/i, "");
+        }
+
+        function darkModeFolderName(folderName) {
+            const base = stripDarkModeFolderSuffix(folderName);
+            return base ? `${base}_dark-mode` : "_dark-mode";
+        }
+
+        function ensureDarkModeTitle(titleValue) {
+            const title = String(titleValue || "").trim();
+            if (!title) return "(Dark)";
+            if (/\(dark\)\s*$/i.test(title)) return title;
+            return `${title} (Dark)`;
+        }
+
+        function sanitizeZipFileName(value) {
+            return String(value || "")
+                .replace(/[<>:"/\\|?*\u0000-\u001f]+/g, "_")
+                .replace(/\s+/g, " ")
+                .trim();
         }
 
         function normalizeAuthorKey(value) {
@@ -1656,6 +1710,208 @@
             return blocked.has(key);
         }
 
+        const REQUIRED_ARTWORK_RULES = [
+            { feature: "eBook reader (3.0.7+)", configPath: ["homePageConfig", "ebook"], expectedPattern: "*ebook*.*" },
+            { feature: "Rockbox launcher switch (upcoming)", configPath: ["settingConfig", "launcher"], expectedPattern: "*auncher*.*" },
+            { feature: "Calendar (upcoming)", configPath: ["homePageConfig", "calendar"], expectedPattern: "*alendar*.*" },
+            { feature: "Calculator (upcoming)", configPath: ["homePageConfig", "calculator"], expectedPattern: "*alculator*.*" },
+        ];
+
+        function readConfigPath(obj, pathParts) {
+            let cur = obj;
+            for (const key of pathParts) {
+                if (!cur || typeof cur !== "object") return "";
+                cur = cur[key];
+            }
+            return typeof cur === "string" ? String(cur).trim() : "";
+        }
+
+        function inferEntryRootFolder(entryPath) {
+            const p = normRelPath(entryPath);
+            if (!p) return "";
+            if (p.includes("/")) return String(p.split("/")[0] || "").trim();
+            if (p.toLowerCase() === "config.json") {
+                return String(loadedZipFileName || inferFolderZipName(folderFiles || []) || "")
+                    .replace(/\.zip$/i, "")
+                    .trim();
+            }
+            return "";
+        }
+
+        function scopedAssetPath(configAssetPath, rootFolder) {
+            const rel = normRelPath(configAssetPath);
+            if (!rel) return "";
+            const root = String(rootFolder || "").trim();
+            if (!root) return rel;
+            const relLow = rel.toLowerCase();
+            const rootLow = root.toLowerCase();
+            if (relLow === rootLow || relLow.startsWith(rootLow + "/")) return rel;
+            return `${root}/${rel}`;
+        }
+
+        function collectSubmissionFilesByRoot() {
+            const map = new Map();
+            if (uploadMode === "zip" && loadedZip && loadedZip.files) {
+                const zipEntries = Object.values(loadedZip.files);
+                for (const e of zipEntries) {
+                    if (!e || e.dir) continue;
+                    const p = normRelPath(e.name);
+                    const root = p.includes("/") ? p.split("/")[0] : String(loadedZipFileName || "").replace(/\.zip$/i, "").trim();
+                    if (!root) continue;
+                    const set = map.get(root) || new Set();
+                    set.add(p.toLowerCase());
+                    map.set(root, set);
+                }
+                return map;
+            }
+            if (uploadMode === "folder" && folderFiles && folderFiles.length) {
+                for (const file of folderFiles) {
+                    const p = normRelPath(file.webkitRelativePath);
+                    if (!p) continue;
+                    const root = p.includes("/") ? p.split("/")[0] : String(loadedZipFileName || "").replace(/\.zip$/i, "").trim();
+                    if (!root) continue;
+                    const set = map.get(root) || new Set();
+                    set.add(p.toLowerCase());
+                    map.set(root, set);
+                }
+            }
+            return map;
+        }
+
+        function isIntentionalTransparentPath(pathValue) {
+            const base = String(pathValue || "").split("/").pop() || "";
+            return /transparent/i.test(base);
+        }
+
+        async function isPngFullyTransparentBlob(blob) {
+            try {
+                if (!(blob instanceof Blob)) return false;
+                if (!/^image\/png$/i.test(String(blob.type || "")) && blob.type) return false;
+                const bitmap = await createImageBitmap(blob);
+                const canvas = document.createElement("canvas");
+                canvas.width = bitmap.width;
+                canvas.height = bitmap.height;
+                const ctx = canvas.getContext("2d", { willReadFrequently: true });
+                if (!ctx) {
+                    bitmap.close();
+                    return false;
+                }
+                ctx.drawImage(bitmap, 0, 0);
+                bitmap.close();
+                const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+                for (let i = 3; i < pixels.length; i += 4) {
+                    if (pixels[i] !== 0) return false;
+                }
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        async function readSubmissionBlob(scopedLowerPath) {
+            const target = String(scopedLowerPath || "").toLowerCase();
+            if (!target) return null;
+            if (uploadMode === "zip" && loadedZip && loadedZip.files) {
+                const zipEntries = Object.values(loadedZip.files);
+                for (const e of zipEntries) {
+                    if (!e || e.dir) continue;
+                    const p = normRelPath(e.name).toLowerCase();
+                    if (p !== target) continue;
+                    const bytes = await e.async("uint8array");
+                    return new Blob([bytes], { type: /\.png$/i.test(p) ? "image/png" : "" });
+                }
+                return null;
+            }
+            if (uploadMode === "folder" && folderFiles && folderFiles.length) {
+                for (const file of folderFiles) {
+                    const p = normRelPath(file.webkitRelativePath).toLowerCase();
+                    if (p === target) return file;
+                }
+                return null;
+            }
+            return null;
+        }
+
+        async function collectArtworkCompatibilityWarnings() {
+            const warnings = [];
+            if (!themeInfoEntries.length) return warnings;
+
+            if (metadataSubmitScenario()) {
+                const folderRoot = String(themeFolderParam || "").trim();
+                for (const entry of themeInfoEntries) {
+                    const cfg = entry && entry.parsed && typeof entry.parsed === "object" ? entry.parsed : null;
+                    if (!cfg) continue;
+                    for (const rule of REQUIRED_ARTWORK_RULES) {
+                        const configured = readConfigPath(cfg, rule.configPath);
+                        if (!configured) {
+                            warnings.push(`${entry.label}: missing \`${rule.configPath.join(".")}\` for ${rule.feature}.`);
+                            continue;
+                        }
+                        const rel = normRelPath(configured);
+                        if (!rel) {
+                            warnings.push(`${entry.label}: invalid path in \`${rule.configPath.join(".")}\` for ${rule.feature}.`);
+                            continue;
+                        }
+                        const scoped = scopedAssetPath(rel, folderRoot);
+                        const url = scoped.split("/").map((seg) => encodeURIComponent(seg)).join("/");
+                        try {
+                            const response = await fetch(url, { cache: "no-store" });
+                            if (!response.ok) {
+                                warnings.push(`${entry.label}: ${rule.feature} points to missing file \`${configured}\` (expected ${rule.expectedPattern}).`);
+                                continue;
+                            }
+                            const blob = await response.blob();
+                            const allowTransparent = isIntentionalTransparentPath(scoped);
+                            if (blob.size === 0 && !allowTransparent) {
+                                warnings.push(`${entry.label}: ${rule.feature} asset \`${configured}\` is a 0-byte file.`);
+                                continue;
+                            }
+                            if (/\.png$/i.test(scoped) && !allowTransparent && (await isPngFullyTransparentBlob(blob))) {
+                                warnings.push(`${entry.label}: ${rule.feature} asset \`${configured}\` is a fully transparent PNG.`);
+                            }
+                        } catch (_) {
+                            warnings.push(`${entry.label}: could not verify \`${configured}\` for ${rule.feature}.`);
+                        }
+                    }
+                }
+                return warnings;
+            }
+
+            const filesByRoot = collectSubmissionFilesByRoot();
+            for (const entry of themeInfoEntries) {
+                const cfg = entry && entry.parsed && typeof entry.parsed === "object" ? entry.parsed : null;
+                if (!cfg) continue;
+                const root = inferEntryRootFolder(entry.path);
+                const fileSet = filesByRoot.get(root) || new Set();
+                for (const rule of REQUIRED_ARTWORK_RULES) {
+                    const configured = readConfigPath(cfg, rule.configPath);
+                    if (!configured) {
+                        warnings.push(`${entry.label}: missing \`${rule.configPath.join(".")}\` for ${rule.feature}.`);
+                        continue;
+                    }
+                    const scoped = scopedAssetPath(configured, root).toLowerCase();
+                    if (!scoped || !fileSet.has(scoped)) {
+                        warnings.push(`${entry.label}: ${rule.feature} points to missing file \`${configured}\` (expected ${rule.expectedPattern}).`);
+                        continue;
+                    }
+                    const blob = await readSubmissionBlob(scoped);
+                    if (!blob) {
+                        warnings.push(`${entry.label}: ${rule.feature} could not be read from package (\`${configured}\`).`);
+                        continue;
+                    }
+                    const allowTransparent = isIntentionalTransparentPath(scoped);
+                    if (blob.size === 0 && !allowTransparent) {
+                        warnings.push(`${entry.label}: ${rule.feature} asset \`${configured}\` is a 0-byte file.`);
+                        continue;
+                    }
+                    if (/\.png$/i.test(scoped) && !allowTransparent && (await isPngFullyTransparentBlob(blob))) {
+                        warnings.push(`${entry.label}: ${rule.feature} asset \`${configured}\` is a fully transparent PNG.`);
+                    }
+                }
+            }
+            return warnings;
+        }
+
         function validateThemeInfoEntriesForSubmit() {
             readEditorValues();
             if (!themeInfoEntries.length) {
@@ -1664,7 +1920,9 @@
             for (const entry of themeInfoEntries) {
                 const label = String(entry.label || entry.path || "theme").trim();
                 const titleSanitized = sanitizeThemeTitleInput(entry.themeInfo.title);
-                const title = titleSanitized.value;
+                const title = entry.addDarkModeVariant
+                    ? ensureDarkModeTitle(titleSanitized.value)
+                    : titleSanitized.value;
                 const author = normalizeSpaces(entry.themeInfo.author);
                 const authorUrl = String(entry.themeInfo.authorUrl || "").trim();
                 const extUrl = String(entry.themeInfo.externalDownloadUrl || "").trim();
@@ -1744,6 +2002,7 @@
                         themeInfoEntries.push({
                             path: zipEntry.name,
                             label: detectThemeLabel(zipEntry.name),
+                        addDarkModeVariant: isDarkModeFolderName(inferEntryRootFolder(zipEntry.name) || detectThemeLabel(zipEntry.name)),
                             themeInfo: {
                                 title: String(existing.title || ""),
                                 author: String(existing.author || ""),
@@ -1800,6 +2059,7 @@
                     themeInfoEntries.push({
                         path,
                         label: detectThemeLabel(path),
+                        addDarkModeVariant: isDarkModeFolderName(inferEntryRootFolder(path) || detectThemeLabel(path)),
                         themeInfo: {
                             title: String(existing.title || ""),
                             author: String(existing.author || ""),
@@ -1832,6 +2092,7 @@
                     {
                         path: `${f}/config.json`,
                         label: f,
+                        addDarkModeVariant: isDarkModeFolderName(f),
                         themeInfo: {
                             title: String(existing.title || ""),
                             author: String(existing.author || ""),
@@ -1894,6 +2155,13 @@
             const authorUrl = String(entry.themeInfo.authorUrl || "").trim();
             const description = String(entry.themeInfo.description || "").trim();
             const externalDownloadUrl = String(entry.themeInfo.externalDownloadUrl || "").trim();
+            const wantsDarkVariant = !!entry.addDarkModeVariant;
+            if (wantsDarkVariant && !isDarkModeFolderName(themeFolderParam)) {
+                throw new Error(
+                    "Dark mode variation creates a new _dark-mode package and cannot be submitted as metadata-only. Upload a ZIP/folder package instead."
+                );
+            }
+            const titleForListing = wantsDarkVariant ? ensureDarkModeTitle(title) : title;
 
             const listingRow = themesByFolder.get(String(themeFolderParam).toLowerCase());
             if (!listingRow) {
@@ -1904,10 +2172,10 @@
                 items: [
                     {
                         folder: themeFolderParam,
-                        themeInfo: { title, author, authorUrl, description, externalDownloadUrl },
+                        themeInfo: { title: titleForListing, author, authorUrl, description, externalDownloadUrl },
                         listing: buildMetadataListingPayload(
                             themeFolderParam,
-                            { title, author, authorUrl, description, externalDownloadUrl },
+                            { title: titleForListing, author, authorUrl, description, externalDownloadUrl },
                             listingRow
                         ),
                     },
@@ -1937,11 +2205,19 @@
             if (uploadMode === "folder" && folderFiles && folderFiles.length) {
                 if (!window.JSZip) throw new Error("ZIP library is unavailable.");
                 validateThemeInfoEntriesForSubmit();
-                const renames = variationRootRenames();
+                const darkRenames = darkModeRootRenames();
+                const variationRenames = variationRootRenames();
+                const renames = new Map([...variationRenames, ...darkRenames]);
                 const outputZip = new window.JSZip();
                 const editsByOriginalPath = new Map(
                     themeInfoEntries.map((entry) => {
                         const nextParsed = { ...entry.parsed, theme_info: { ...entry.themeInfo } };
+                        if (entry.addDarkModeVariant && nextParsed.theme_info) {
+                            nextParsed.theme_info.title = ensureDarkModeTitle(nextParsed.theme_info.title);
+                            if (typeof nextParsed.title === "string" && nextParsed.title.trim()) {
+                                nextParsed.title = ensureDarkModeTitle(nextParsed.title);
+                            }
+                        }
                         return [normRelPath(entry.path), JSON.stringify(nextParsed, null, 2) + "\n"];
                     })
                 );
@@ -1960,7 +2236,8 @@
 
                 const blob = await outputZip.generateAsync({ type: "blob" });
                 const name = loadedZipFileName || inferFolderZipName(folderFiles);
-                const outName = packagedZipFileName(renames, name);
+                const preferredTitle = themeInfoEntries.length === 1 ? themeInfoEntries[0].themeInfo.title : "";
+                const outName = packagedZipFileName(renames, name, preferredTitle);
                 return new File([blob], outName, { type: "application/zip" });
             }
 
@@ -1974,12 +2251,20 @@
             }
 
             validateThemeInfoEntriesForSubmit();
-            const renames = variationRootRenames();
+            const darkRenames = darkModeRootRenames();
+            const variationRenames = variationRootRenames();
+            const renames = new Map([...variationRenames, ...darkRenames]);
 
             const outputZip = new window.JSZip();
             const editsByOriginalPath = new Map(
                 themeInfoEntries.map((entry) => {
                     const nextParsed = { ...entry.parsed, theme_info: { ...entry.themeInfo } };
+                    if (entry.addDarkModeVariant && nextParsed.theme_info) {
+                        nextParsed.theme_info.title = ensureDarkModeTitle(nextParsed.theme_info.title);
+                        if (typeof nextParsed.title === "string" && nextParsed.title.trim()) {
+                            nextParsed.title = ensureDarkModeTitle(nextParsed.title);
+                        }
+                    }
                     return [normRelPath(entry.path), JSON.stringify(nextParsed, null, 2) + "\n"];
                 })
             );
@@ -1998,7 +2283,8 @@
             }
 
             const blob = await outputZip.generateAsync({ type: "blob" });
-            const outName = packagedZipFileName(renames, loadedZipFileName || file.name || "theme.zip");
+            const preferredTitle = themeInfoEntries.length === 1 ? themeInfoEntries[0].themeInfo.title : "";
+            const outName = packagedZipFileName(renames, loadedZipFileName || file.name || "theme.zip", preferredTitle);
             return new File([blob], outName, {
                 type: "application/zip"
             });
@@ -2051,11 +2337,23 @@
             setStatus(metadataSubmitScenario() ? "Submitting theme information update…" : uploadMode === "folder" ? "Packaging your theme…" : "Sending your theme…", true);
 
             try {
+                validateThemeInfoEntriesForSubmit();
+                const artworkWarnings = await collectArtworkCompatibilityWarnings();
+                if (artworkWarnings.length) {
+                    const preview = artworkWarnings.slice(0, 8).map((line) => `- ${line}`).join("\n");
+                    const more = artworkWarnings.length > 8 ? `\n- ...and ${artworkWarnings.length - 8} more` : "";
+                    const proceed = window.confirm(
+                        `Artwork compatibility check:\n\nYour submission is missing some assets/config links used by newer or upcoming firmware features (eBook, launcher switch, calendar, calculator).\n\n${preview}${more}\n\nYou can continue, but missing artwork may break parts of the UI after future updates.\n\nSubmit anyway?`
+                    );
+                    if (!proceed) {
+                        setStatus("Submission canceled. Add missing artwork/config entries, then submit again.", false);
+                        return;
+                    }
+                }
                 if (metadataSubmitScenario()) {
                     await submitMetadataOnlyUpdate();
                     return;
                 }
-                validateThemeInfoEntriesForSubmit();
                 const ta = primaryThemeTitleAndAuthor();
                 fieldThemeTitle.value = ta.title;
                 fieldThemeAuthor.value = ta.author;

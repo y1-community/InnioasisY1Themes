@@ -390,7 +390,7 @@ def _infer_folder_uploader(folder: str) -> dict[str, str]:
 
 def _theme_entry_from_folder(folder: str, config: dict[str, Any] | None) -> dict[str, Any]:
     theme_info = _extract_theme_info_from_config(config) if isinstance(config, dict) else {}
-    name = theme_info.get("title") or folder
+    name = _ensure_dark_mode_title(theme_info.get("title") or folder, folder)
     uploader = _infer_folder_uploader(folder)
     protected_uploader = uploader.get("protected") == "true"
 
@@ -434,6 +434,21 @@ def _normalize_name_for_compare(value: str) -> str:
     return re.sub(r"[^a-z0-9]", "", str(value or "").lower())
 
 
+def _is_dark_mode_folder(folder: str) -> bool:
+    return str(folder or "").strip().lower().endswith("_dark-mode")
+
+
+def _ensure_dark_mode_title(title: str, folder: str) -> str:
+    cleaned = str(title or "").strip()
+    if not _is_dark_mode_folder(folder):
+        return cleaned
+    if not cleaned:
+        return "(Dark)"
+    if cleaned.lower().endswith("(dark)"):
+        return cleaned
+    return f"{cleaned} (Dark)"
+
+
 def _refresh_existing_theme_entry(entry: dict[str, Any], folder: str, config: dict[str, Any] | None) -> dict[str, Any]:
     refreshed = dict(entry)
     refreshed["folder"] = folder
@@ -444,7 +459,7 @@ def _refresh_existing_theme_entry(entry: dict[str, Any], folder: str, config: di
     info = _extract_theme_info_from_config(config)
     baseline = _theme_entry_from_folder(folder, config)
     if info.get("title"):
-        refreshed["name"] = str(info["title"]).strip()
+        refreshed["name"] = _ensure_dark_mode_title(str(info["title"]).strip(), folder)
     if info.get("author"):
         refreshed["author"] = str(info["author"]).strip()
     if info.get("authorUrl"):
@@ -463,7 +478,7 @@ def _refresh_existing_theme_entry(entry: dict[str, Any], folder: str, config: di
             if cover_clean:
                 refreshed["screenshot"] = f"./{folder}/{cover_clean}"
 
-    title = str(info.get("title") or "").strip()
+    title = _ensure_dark_mode_title(str(info.get("title") or "").strip(), folder)
     current_name = str(refreshed.get("name") or "").strip()
     if not current_name:
         refreshed["name"] = title or str(baseline.get("name") or folder)
@@ -471,6 +486,8 @@ def _refresh_existing_theme_entry(entry: dict[str, Any], folder: str, config: di
     # Housekeeping: only correct stale names that still mirror the folder key.
     if title and _normalize_name_for_compare(current_name) == _normalize_name_for_compare(folder):
         refreshed["name"] = title
+    if _is_dark_mode_folder(folder):
+        refreshed["name"] = _ensure_dark_mode_title(str(refreshed.get("name") or title or baseline.get("name") or folder), folder)
 
     if not str(refreshed.get("author") or "").strip():
         author = str(baseline.get("author") or "").strip()
@@ -513,7 +530,11 @@ def _with_gallery_fields(entry: dict[str, Any]) -> dict[str, Any]:
 
 
 def _sync_theme_info(config: dict[str, Any], theme_entry: dict[str, Any]) -> bool:
-    fallback_name = str(theme_entry.get("name") or theme_entry.get("folder") or "Theme").strip()
+    folder = str(theme_entry.get("folder") or "").strip()
+    fallback_name = _ensure_dark_mode_title(
+        str(theme_entry.get("name") or theme_entry.get("folder") or "Theme").strip(),
+        folder,
+    )
     existing_theme_info = config.get("theme_info")
     theme_info = dict(existing_theme_info) if isinstance(existing_theme_info, dict) else {}
     existing_description = str(theme_info.get("description") or "").strip()
@@ -536,7 +557,13 @@ def _sync_theme_info(config: dict[str, Any], theme_entry: dict[str, Any]) -> boo
 
     changed = not isinstance(existing_theme_info, dict)
     for key, value in desired.items():
-        if key == "description":
+        if key == "title" and _is_dark_mode_folder(folder):
+            current_title = str(theme_info.get("title") or "").strip()
+            dark_title = _ensure_dark_mode_title(current_title or value, folder)
+            if current_title != dark_title:
+                theme_info["title"] = dark_title
+                changed = True
+        elif key == "description":
             if not theme_info.get(key) and value:
                 theme_info[key] = value
                 changed = True
@@ -638,9 +665,12 @@ def _sync_theme_index(theme_entry: dict[str, Any], master_template: str) -> bool
 
 def _theme_index_entry(theme_entry: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
     index_entry = dict(theme_entry)
+    folder = str(index_entry.get("folder") or "").strip()
     info = _extract_theme_info_from_config(config)
     if info.get("title"):
-        index_entry["name"] = info["title"]
+        index_entry["name"] = _ensure_dark_mode_title(info["title"], folder)
+    elif _is_dark_mode_folder(folder):
+        index_entry["name"] = _ensure_dark_mode_title(str(index_entry.get("name") or folder), folder)
     if info.get("description") and not index_entry.get("description"):
         index_entry["description"] = info["description"]
     if info.get("author") and not index_entry.get("author"):

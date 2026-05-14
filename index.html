@@ -1207,7 +1207,7 @@
             }
         }
 
-        async function promptMaskVariant(themeName, choices) {
+        async function promptMaskVariant(themeName, choices, folderPath) {
             const options = choices && Array.isArray(choices.options) ? choices.options : [];
             if (options.length <= 1) return options[0] || null;
             return new Promise((resolve) => {
@@ -1233,6 +1233,17 @@
                 title.style.marginBottom = '8px';
                 title.textContent = `Choose mask variation for ${themeName || 'theme'}`;
 
+                const preview = document.createElement('img');
+                preview.alt = 'Mask preview';
+                preview.style.display = 'block';
+                preview.style.width = '100%';
+                preview.style.maxHeight = '160px';
+                preview.style.objectFit = 'contain';
+                preview.style.borderRadius = '8px';
+                preview.style.border = '1px solid rgba(255,255,255,0.12)';
+                preview.style.background = 'rgba(255,255,255,0.04)';
+                preview.style.marginBottom = '10px';
+
                 const select = document.createElement('select');
                 select.style.width = '100%';
                 select.style.background = '#222733';
@@ -1246,6 +1257,12 @@
                     opt.textContent = option.label;
                     select.appendChild(opt);
                 }
+                const updatePreview = () => {
+                    const selectedPath = String(select.value || options[0].sourcePath || '');
+                    preview.src = buildThemeFileUrl(folderPath, selectedPath);
+                };
+                select.onchange = updatePreview;
+                updatePreview();
 
                 const row = document.createElement('div');
                 row.style.display = 'flex';
@@ -1282,7 +1299,7 @@
                 };
 
                 row.append(cancelBtn, okBtn);
-                panel.append(title, select, row);
+                panel.append(title, preview, select, row);
                 overlay.appendChild(panel);
                 document.body.appendChild(overlay);
                 select.focus();
@@ -1308,6 +1325,24 @@
             }
             if (!hasBase) out.push(base);
             return out;
+        }
+
+        function isDarkModeFolderPath(folderPath) {
+            return /_dark-mode$/i.test(String(folderPath || '').replace(/^\.\/+/, '').trim());
+        }
+
+        function ensureDarkModeDisplayName(themeName, folderPath) {
+            const cleanName = String(themeName || '').trim();
+            if (!isDarkModeFolderPath(folderPath)) return cleanName;
+            if (/\(dark\)\s*$/i.test(cleanName)) return cleanName;
+            return cleanName ? `${cleanName} (Dark)` : 'Theme (Dark)';
+        }
+
+        function safeInstallFolderName(theme) {
+            const folder = String((theme && theme.folder) || '').replace(/^\.\/+/, '').trim();
+            const fallback = String((theme && theme.name) || 'theme').trim() || 'theme';
+            const base = folder || fallback;
+            return base.replace(/[^\w\d-_ ]/g, '_') || 'theme';
         }
 
         const coverCandidatesByFolder = new Map();
@@ -1464,10 +1499,10 @@
             try {
                 if (!theme.folder) throw new Error('No downloadable folder info for this theme.');
 
-                const themeNameSafe = (theme.name || 'theme').replace(/[^\w\d-_ ]/g, '_') || 'theme';
-                const themeFolder = await selectedThemesFolder.getDirectoryHandle(themeNameSafe, { create: true });
+                const installFolderSafe = safeInstallFolderName(theme);
+                const themeFolder = await selectedThemesFolder.getDirectoryHandle(installFolderSafe, { create: true });
 
-                progressUI.setProgress(5, `Reading config for ${theme.name}...`);
+                progressUI.setProgress(5, `Reading config for ${ensureDarkModeDisplayName(theme.name, theme.folder)}...`);
 
                 // Read config directly from our static host
                 const configRes = await fetch(`./${theme.folder}/config.json`);
@@ -1482,7 +1517,7 @@
                     [...filesToInstallRaw, ...remoteMaskPaths],
                     config && config.desktopMask
                 );
-                const selectedMask = await promptMaskVariant(theme.name, maskChoices);
+                const selectedMask = await promptMaskVariant(theme.name, maskChoices, theme.folder);
                 if (selectedMask === null) {
                     progressUI.abortAndRestore(buttonNode);
                     if (dlBtn) dlBtn.style.display = '';
@@ -1568,7 +1603,7 @@
 
             } catch (err) {
                 console.error('Direct install failed', err);
-                alert(`Failed to install theme "${theme.name}": ${err.message || err}`);
+                alert(`Failed to install theme "${ensureDarkModeDisplayName(theme.name, theme.folder)}": ${err.message || err}`);
                 progressUI.abortAndRestore(buttonNode);
                 if (dlBtn) dlBtn.style.display = '';
             }
@@ -1588,7 +1623,7 @@
             try {
                 if (!theme.folder) throw new Error('No downloadable folder info for this theme.');
 
-                progressUI.setProgress(5, `Fetching config for ${theme.name}...`);
+                progressUI.setProgress(5, `Fetching config for ${ensureDarkModeDisplayName(theme.name, theme.folder)}...`);
 
                 // Fetch Config
                 const configRes = await fetch(`./${theme.folder}/config.json`);
@@ -1603,7 +1638,7 @@
                     [...filesToDownloadRaw, ...remoteMaskPaths],
                     config && config.desktopMask
                 );
-                const selectedMask = await promptMaskVariant(theme.name, maskChoices);
+                const selectedMask = await promptMaskVariant(theme.name, maskChoices, theme.folder);
                 if (selectedMask === null) {
                     progressUI.abortAndRestore(buttonNode);
                     if (diBtn) diBtn.style.display = '';
@@ -1662,7 +1697,8 @@
 
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(zipBlob);
-                const safe = (theme.name || 'theme').replace(/[^\w\d-_ ]/g, '_') || 'theme';
+                const zipLabel = ensureDarkModeDisplayName(theme.name, theme.folder) || 'theme';
+                const safe = zipLabel.replace(/[^\w\d-_ ]/g, '_') || 'theme';
                 a.download = `${safe}.zip`;
                 document.body.appendChild(a);
                 a.click();
@@ -1673,7 +1709,7 @@
 
             } catch (err) {
                 console.error('Download failed', err);
-                alert(`Failed to download theme "${theme.name}": ${err.message || err}`);
+                alert(`Failed to download theme "${ensureDarkModeDisplayName(theme.name, theme.folder)}": ${err.message || err}`);
                 progressUI.abortAndRestore(buttonNode);
                 if (diBtn) diBtn.style.display = '';
             }

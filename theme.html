@@ -196,6 +196,11 @@
                         <h1 id="theme-name" style="margin:0 0 6px 0;font-size:1.5rem"></h1>
                         <div id="theme-author" style="margin-bottom:8px;color:var(--text-secondary)"></div>
                         <div id="theme-desc" style="color:var(--text-secondary);margin-bottom:12px"></div>
+                        <div id="artwork-check-message" style="display:none;border:1px solid rgba(255,180,80,0.45);background:rgba(255,180,80,0.11);border-radius:10px;padding:10px 12px;margin:0 0 12px 0;color:#fdecc8;">
+                            <div style="font-weight:700;margin-bottom:5px;">Artwork compatibility check</div>
+                            <div id="artwork-check-summary" style="font-size:0.9rem;line-height:1.45;"></div>
+                            <ul id="artwork-check-list" style="margin:7px 0 0 1.15rem;padding:0;"></ul>
+                        </div>
 
                         <div id="theme-maintainer-row" style="display:none;flex-wrap:wrap;gap:8px;margin:0 0 12px 0;align-items:center;">
                             <a id="theme-action-edit" class="btn btn-secondary" style="text-decoration:none;padding:.45rem .75rem;font-size:0.82rem;font-weight:normal;" href="__THEME_UPLOAD_EDIT_HREF__">Edit on site</a>
@@ -204,6 +209,7 @@
                         <div id="download-area" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
                             <button id="download-btn" class="btn btn-primary" style="font-weight: normal"><i class="fa-solid fa-download" style="margin-right: 4px;"></i> Download</button>
                             <label id="mask-variant-wrap" style="display:none;align-items:center;gap:6px;color:var(--text-secondary);font-size:0.86rem;">
+                                <img id="mask-variant-preview" alt="Mask preview" style="display:none;width:46px;height:46px;object-fit:contain;border-radius:6px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.04);" />
                                 Mask variation
                                 <select id="mask-variant-select" style="background:#222733;border:1px solid rgba(255,255,255,0.12);color:#eaf0ff;border-radius:8px;padding:0.35rem 0.45rem;"></select>
                             </label>
@@ -554,6 +560,28 @@
             }
         }
 
+        async function fetchVariantAssetPathsFromGitHub(folderPath) {
+            const folderClean = String(folderPath || '').replace(/^\.\/+/, '').replace(/\/+$/, '');
+            if (!folderClean) return [];
+            const encoded = folderClean.split('/').filter(Boolean).map(seg => encodeURIComponent(seg)).join('/');
+            const url = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${encoded}`;
+            try {
+                const res = await fetch(url, { cache: 'no-cache' });
+                if (!res.ok) return [];
+                const entries = await res.json();
+                if (!Array.isArray(entries)) return [];
+                return entries
+                    .filter(item => item && item.type === 'file')
+                    .map(item => String(item.name || '').trim())
+                    .filter(name =>
+                        /^mask_[a-z0-9][a-z0-9_-]*\.(png|webp)$/i.test(name) ||
+                        /^(background|wallpaper|desk_bg)[a-z0-9_.-]*\.(png|jpe?g|webp)$/i.test(name)
+                    );
+            } catch (_) {
+                return [];
+            }
+        }
+
         function applyMaskVariantToEntries(folderPath, fileEntries, variantSourcePath, baseMaskPath) {
             const src = normalizeConfigAssetPath(variantSourcePath, folderPath);
             const base = normalizeConfigAssetPath(baseMaskPath || 'mask.png', folderPath) || 'mask.png';
@@ -587,6 +615,129 @@
                 });
             }
             return out;
+        }
+
+        function isDarkModeFolderPath(folderPath) {
+            return /_dark-mode$/i.test(String(folderPath || '').replace(/^\.\/+/, '').trim());
+        }
+
+        function ensureDarkModeDisplayName(themeName, folderPath) {
+            const cleanName = String(themeName || '').trim();
+            if (!isDarkModeFolderPath(folderPath)) return cleanName;
+            if (/\(dark\)\s*$/i.test(cleanName)) return cleanName;
+            return cleanName ? `${cleanName} (Dark)` : 'Theme (Dark)';
+        }
+
+        const REQUIRED_ARTWORK_FEATURES = [
+            {
+                feature: 'eBook reader (3.0.7+)',
+                configPath: ['homePageConfig', 'ebook'],
+                expectedFileHint: '*ebook*.*'
+            },
+            {
+                feature: 'Rockbox launcher switch',
+                configPath: ['settingConfig', 'launcher'],
+                expectedFileHint: '*auncher*.*'
+            },
+            {
+                feature: 'Calendar',
+                configPath: ['homePageConfig', 'calendar'],
+                expectedFileHint: '*alendar*.*'
+            },
+            {
+                feature: 'Calculator',
+                configPath: ['homePageConfig', 'calculator'],
+                expectedFileHint: '*alculator*.*'
+            }
+        ];
+
+        function getConfigValueByPath(rootObj, pathParts) {
+            let cursor = rootObj;
+            for (const key of pathParts) {
+                if (!cursor || typeof cursor !== 'object') return '';
+                cursor = cursor[key];
+            }
+            return typeof cursor === 'string' ? String(cursor).trim() : '';
+        }
+
+        function isIntentionalTransparentPath(pathValue) {
+            const name = String(pathValue || '').split('/').pop() || '';
+            return /transparent/i.test(name);
+        }
+
+        async function isPngFullyTransparentBlob(blob) {
+            try {
+                if (!(blob instanceof Blob)) return false;
+                if (!/^image\/png$/i.test(String(blob.type || ''))) return false;
+                const bitmap = await createImageBitmap(blob);
+                const canvas = document.createElement('canvas');
+                canvas.width = bitmap.width;
+                canvas.height = bitmap.height;
+                const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                if (!ctx) {
+                    bitmap.close();
+                    return false;
+                }
+                ctx.drawImage(bitmap, 0, 0);
+                bitmap.close();
+                const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+                for (let i = 3; i < data.length; i += 4) {
+                    if (data[i] !== 0) return false;
+                }
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        async function checkArtworkAssetHealth(folderPath, configuredPath) {
+            const normalized = normalizeConfigAssetPath(configuredPath, folderPath);
+            if (!normalized) return { ok: false, issue: 'invalid path' };
+            const url = themeFileUrl(folderPath, normalized);
+            if (!url) return { ok: false, issue: 'invalid path' };
+            const allowTransparent = isIntentionalTransparentPath(normalized);
+            let response;
+            try {
+                response = await fetch(url, { cache: 'no-cache' });
+            } catch (_) {
+                return { ok: false, issue: 'could not fetch asset' };
+            }
+            if (!response.ok) return { ok: false, issue: 'file not found' };
+            let blob;
+            try {
+                blob = await response.blob();
+            } catch (_) {
+                return { ok: false, issue: 'failed to read asset' };
+            }
+            if (blob.size === 0 && !allowTransparent) {
+                return { ok: false, issue: '0-byte file' };
+            }
+            if (/\.png$/i.test(normalized) && !allowTransparent) {
+                const fullyTransparent = await isPngFullyTransparentBlob(blob);
+                if (fullyTransparent) {
+                    return { ok: false, issue: 'fully transparent PNG' };
+                }
+            }
+            return { ok: true, issue: '' };
+        }
+
+        async function artworkCompatibilityWarnings(configObj, folderPath) {
+            if (!configObj || typeof configObj !== 'object') return [];
+            const warnings = [];
+            for (const requirement of REQUIRED_ARTWORK_FEATURES) {
+                const configured = getConfigValueByPath(configObj, requirement.configPath);
+                if (!configured) {
+                    warnings.push(`${requirement.feature}: missing \`${requirement.configPath.join('.')}\` in config.json.`);
+                    continue;
+                }
+                const health = await checkArtworkAssetHealth(folderPath, configured);
+                if (!health.ok) {
+                    warnings.push(
+                        `${requirement.feature}: \`${configured}\` is not ready (${health.issue}; expected ${requirement.expectedFileHint}).`
+                    );
+                }
+            }
+            return warnings;
         }
 
         function extractFilesFromConfig(cfg, folderPath) {
@@ -804,7 +955,11 @@
             if (!parent) return;
             buttonNode.disabled = true;
 
-            const progressUI = createProgressUI(parent, buttonNode, theme.name || 'theme');
+            const progressUI = createProgressUI(
+                parent,
+                buttonNode,
+                ensureDarkModeDisplayName(theme.name, theme.folder) || 'theme'
+            );
 
             try {
                 if (!theme.folder) {
@@ -832,11 +987,16 @@
                     }
                 };
 
-                const zipBlob = await downloadThemeFilesAsZip(theme.name, entriesForDownload, callbacks);
+                const zipBlob = await downloadThemeFilesAsZip(
+                    ensureDarkModeDisplayName(theme.name, theme.folder) || theme.name,
+                    entriesForDownload,
+                    callbacks
+                );
 
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(zipBlob);
-                const safe = (theme.name || 'theme').replace(/[^\w\d-_ ]/g, '_') || 'theme';
+                const zipLabel = ensureDarkModeDisplayName(theme.name, theme.folder) || 'theme';
+                const safe = zipLabel.replace(/[^\w\d-_ ]/g, '_') || 'theme';
                 a.download = `${safe}.zip`;
                 document.body.appendChild(a);
                 a.click();
@@ -845,7 +1005,7 @@
                 progressUI.removeAndRestoreButton(buttonNode);
             } catch (err) {
                 console.error('Download failed', err);
-                alert(`Failed to download theme "${theme.name}": ${err.message || err}`);
+                alert(`Failed to download theme "${ensureDarkModeDisplayName(theme.name, theme.folder)}": ${err.message || err}`);
                 progressUI.abortAndRestore(buttonNode);
             }
         }
@@ -856,6 +1016,7 @@
             const downloadBtn = document.getElementById('download-btn');
             const maskVariantWrap = document.getElementById('mask-variant-wrap');
             const maskVariantSelect = document.getElementById('mask-variant-select');
+            const maskVariantPreview = document.getElementById('mask-variant-preview');
 
             const params = new URLSearchParams(location.search);
             const themeQuery = params.get('theme') || params.get('t') || '';
@@ -905,13 +1066,35 @@
             }
 
             const effectiveFiles = extractFilesFromConfig(themeMeta && themeMeta.rawConfig, folder);
+            const remoteVariantPaths = await fetchVariantAssetPathsFromGitHub(folder);
+            const variantDisplayFiles = remoteVariantPaths.map(path => ({
+                path,
+                download_url: themeFileUrl(folder, path),
+                size: 0
+            }));
+            const displayFiles = (() => {
+                const map = new Map();
+                for (const entry of [...effectiveFiles, ...variantDisplayFiles]) {
+                    const rel = normalizeConfigAssetPath(entry && entry.path, folder);
+                    if (!rel) continue;
+                    const key = rel.toLowerCase();
+                    if (map.has(key)) continue;
+                    map.set(key, {
+                        name: rel.split('/').pop() || rel,
+                        path: rel,
+                        download_url: (entry && entry.download_url) ? entry.download_url : themeFileUrl(folder, rel),
+                        size: Number(entry && entry.size) || 0
+                    });
+                }
+                return Array.from(map.values());
+            })();
             const maskVariantState = {
                 baseMaskPath: normalizeConfigAssetPath(themeMeta && themeMeta.rawConfig && themeMeta.rawConfig.desktopMask, folder) || 'mask.png',
                 selectEl: maskVariantSelect
             };
             const remoteMaskVariantPaths = await fetchMaskVariantPathsFromGitHub(folder);
             const maskChoiceSeedFiles = [
-                ...effectiveFiles,
+                ...displayFiles,
                 ...remoteMaskVariantPaths.map(path => ({
                     path,
                     download_url: themeFileUrl(folder, path),
@@ -928,6 +1111,19 @@
                     opt.textContent = option.label;
                     maskVariantSelect.appendChild(opt);
                 }
+                const updateMaskPreview = () => {
+                    if (!maskVariantPreview) return;
+                    const selectedPath = String(maskVariantSelect.value || maskChoices.baseMaskPath || '');
+                    const previewUrl = themeFileUrl(folder, selectedPath);
+                    if (!previewUrl) {
+                        maskVariantPreview.style.display = 'none';
+                        return;
+                    }
+                    maskVariantPreview.src = previewUrl;
+                    maskVariantPreview.style.display = 'inline-block';
+                };
+                maskVariantSelect.onchange = updateMaskPreview;
+                updateMaskPreview();
                 maskVariantWrap.style.display = 'inline-flex';
             } else if (maskVariantWrap) {
                 maskVariantWrap.style.display = 'none';
@@ -939,12 +1135,35 @@
             const screenshotEl = document.getElementById('main-screenshot')
             const assetsList = document.getElementById('assets-list')
             const rawFolderLink = document.getElementById('raw-folder-link')
+            const artworkMessageWrap = document.getElementById('artwork-check-message');
+            const artworkSummaryEl = document.getElementById('artwork-check-summary');
+            const artworkListEl = document.getElementById('artwork-check-list');
 
-            const displayName = (themeMeta && themeMeta.name) ? themeMeta.name : folder || 'Theme'
+            const displayName = ensureDarkModeDisplayName(
+                (themeMeta && themeMeta.name) ? themeMeta.name : folder || 'Theme',
+                folder
+            ) || 'Theme'
             nameEl.textContent = displayName
             descEl.textContent = (themeMeta && themeMeta.description) ? themeMeta.description : 'No description available.'
             const seoAuthor = themeMeta && themeMeta.author ? String(themeMeta.author).trim() : '';
             applySeoMetadata(displayName, seoAuthor, themeMeta && themeMeta.description);
+            const artworkWarnings = await artworkCompatibilityWarnings(themeMeta && themeMeta.rawConfig, folder);
+            if (artworkMessageWrap && artworkSummaryEl && artworkListEl) {
+                if (artworkWarnings.length) {
+                    artworkSummaryEl.textContent =
+                        'This theme may not be fully ready for newer/upcoming firmware features (eBook, launcher switch, calendar, calculator). Missing or placeholder artwork can cause broken UI in future updates.';
+                    artworkListEl.innerHTML = '';
+                    for (const warning of artworkWarnings) {
+                        const li = document.createElement('li');
+                        li.textContent = String(warning || '');
+                        artworkListEl.appendChild(li);
+                    }
+                    artworkMessageWrap.style.display = 'block';
+                } else {
+                    artworkListEl.innerHTML = '';
+                    artworkMessageWrap.style.display = 'none';
+                }
+            }
 
             if (!themeMeta || !themeMeta.author) {
                 authorEl.style.display = 'none'
@@ -975,7 +1194,7 @@
                 }
             }
 
-            const screenshotCandidates = buildScreenshotCandidates(themeMeta?.screenshot, effectiveFiles)
+            const screenshotCandidates = buildScreenshotCandidates(themeMeta?.screenshot, displayFiles)
             let screenshotIdx = 0
             screenshotEl.src = screenshotCandidates[screenshotIdx] || 'placeholder.png'
             screenshotEl.onerror = () => {
@@ -1033,11 +1252,11 @@
                 }
             }
 
-            if (!effectiveFiles.length) {
+            if (!displayFiles.length) {
                 assetsList.innerHTML = `<div style="color:var(--text-secondary)">No downloadable files were resolved from this theme's config.json.</div>`
             } else {
-                effectiveFiles.sort((a, b) => String(a.path || '').localeCompare(String(b.path || '')))
-                for (const f of effectiveFiles) {
+                displayFiles.sort((a, b) => String(a.path || '').localeCompare(String(b.path || '')))
+                for (const f of displayFiles) {
                     const row = document.createElement('div')
                     row.style.display = 'flex'
                     row.style.alignItems = 'center'
@@ -1103,6 +1322,9 @@
                     row.appendChild(nameWrap)
                     assetsList.appendChild(row)
                 }
+            }
+            if (maskVariantPreview && (!maskVariantWrap || maskVariantWrap.style.display === 'none')) {
+                maskVariantPreview.style.display = 'none';
             }
         })()
     </script>

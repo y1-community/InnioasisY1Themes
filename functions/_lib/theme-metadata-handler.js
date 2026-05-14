@@ -159,6 +159,18 @@ function sanitizeThemeTitle(value) {
   return trimmed;
 }
 
+function isDarkModeFolder(folder) {
+  return /_dark-mode$/i.test(String(folder || "").trim());
+}
+
+function ensureDarkModeTitle(title, folder) {
+  const cleaned = sanitizeThemeTitle(title);
+  if (!isDarkModeFolder(folder)) return cleaned;
+  if (!cleaned) return "(Dark)";
+  if (/\(dark\)\s*$/i.test(cleaned)) return cleaned;
+  return `${cleaned} (Dark)`;
+}
+
 function buildSearchText(row) {
   const name = asTrimmedString(row.name);
   const description = asTrimmedString(row.description);
@@ -171,7 +183,7 @@ function buildSearchText(row) {
     .trim();
 }
 
-function normalizeListingFromThemeInfo(themeInfo, listing) {
+function normalizeListingFromThemeInfo(themeInfo, listing, folder) {
   const safeListing = listing && typeof listing === "object" ? listing : {};
   const safeThemeInfo = themeInfo && typeof themeInfo === "object" ? themeInfo : {};
   const out = {};
@@ -184,7 +196,7 @@ function normalizeListingFromThemeInfo(themeInfo, listing) {
         ? safeThemeInfo[themeInfoKey]
         : "";
     if (key === "name") {
-      out[key] = sanitizeThemeTitle(raw);
+      out[key] = ensureDarkModeTitle(raw, folder);
       continue;
     }
     if (key === "author") {
@@ -298,7 +310,7 @@ export async function handleMetadataPost(request, env) {
         const v = themeInfo[k];
         if (v === undefined) continue;
         if (k === "title") {
-          nextTi[k] = sanitizeThemeTitle(v);
+          nextTi[k] = ensureDarkModeTitle(v, folder);
           continue;
         }
         if (k === "author") {
@@ -316,6 +328,9 @@ export async function handleMetadataPost(request, env) {
         }
         nextTi[k] = typeof v === "string" ? v.trim() : String(v ?? "");
       }
+      if (isDarkModeFolder(folder)) {
+        nextTi.title = ensureDarkModeTitle(nextTi.title, folder);
+      }
       const nextConfig = { ...config, theme_info: nextTi };
       const nextText = stableStringify(nextConfig);
       const prevText = stableStringify(config);
@@ -330,7 +345,7 @@ export async function handleMetadataPost(request, env) {
           }
         }
       }
-      const normalizedListing = normalizeListingFromThemeInfo(themeInfo, listing);
+      const normalizedListing = normalizeListingFromThemeInfo(themeInfo, listing, folder);
       if (hasReservedAuthorName(normalizedListing.author)) {
         return jsonResponse(
           {
