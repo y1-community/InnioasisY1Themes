@@ -28,10 +28,10 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
-    <link rel="stylesheet" href="y1-theme-preview.css">
+    <link rel="stylesheet" href="y1-theme-preview.css?v=20260214">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="theme-packaging.js"></script>
-    <script src="y1-theme-preview.js"></script>
+    <script src="y1-theme-preview.js?v=20260214"></script>
     <script src="gallery-loaded-theme.js"></script>
 
     <style>
@@ -1283,6 +1283,140 @@
             return `./${encodePathSegments(full)}`;
         }
 
+        const THEME_VARIANTS_FOLDER = 'Variants';
+
+        function effectiveThemeContentFolder(catalogFolder, variantSegment) {
+            const root = String(catalogFolder || '').replace(/^\.\/+/, '').replace(/\/+$/, '').trim();
+            const v = String(variantSegment || '').trim();
+            if (!root) return '';
+            if (!v) return root;
+            return `${root}/${THEME_VARIANTS_FOLDER}/${v}`;
+        }
+
+        function isHexColorCss(val) {
+            return /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(String(val || '').trim());
+        }
+
+        function stripFontFileBase(name) {
+            return String(name || '').replace(/\.[^/.]+$/, '');
+        }
+
+        function walkConfigStringsForFontPaths(obj, out, seen) {
+            if (!obj) return;
+            if (typeof obj === 'string') {
+                const s = obj.trim();
+                if (!s || seen[s.toLowerCase()]) return;
+                if (/\.(ttf|otf|woff2?)(\?|#|$)/i.test(s) && !/^https?:\/\//i.test(s)) {
+                    seen[s.toLowerCase()] = true;
+                    out.push(s);
+                }
+                return;
+            }
+            if (Array.isArray(obj)) {
+                for (const x of obj) walkConfigStringsForFontPaths(x, out, seen);
+                return;
+            }
+            if (typeof obj === 'object') {
+                for (const k of Object.keys(obj)) walkConfigStringsForFontPaths(obj[k], out, seen);
+            }
+        }
+
+        function themeButtonFontStackFromConfig(cfg) {
+            if (!cfg || typeof cfg !== 'object') return 'Inter, system-ui, sans-serif';
+            const modern = (cfg.theme && cfg.theme.fonts) || [];
+            const fontFamily = cfg.fontFamily;
+            const discovered = [];
+            walkConfigStringsForFontPaths(cfg, discovered, {});
+            let themeFonts = modern.length ? [...modern] : [];
+            const looksFile = (s) => /\.(ttf|otf|woff2?)(\?|#|$)/i.test(String(s || '').trim());
+            if (!themeFonts.length && looksFile(fontFamily)) {
+                themeFonts.push({ file: String(fontFamily).trim(), default: true });
+            }
+            for (const fp of discovered) {
+                if (themeFonts.some((f) => String(f.file || '').toLowerCase() === fp.toLowerCase())) continue;
+                themeFonts.push({
+                    file: fp,
+                    default: themeFonts.length === 0 && !looksFile(fontFamily),
+                });
+            }
+            if (!themeFonts.length) return 'Inter, system-ui, sans-serif';
+            const def = themeFonts.find((f) => f && f.default) || themeFonts[0];
+            const fam = (def && def.id) || stripFontFileBase(def && def.file);
+            const alt = stripFontFileBase(def && def.file);
+            const parts = [`"${fam}"`];
+            if (alt && alt !== fam) parts.push(`"${alt}"`);
+            parts.push('Inter', 'system-ui', 'sans-serif');
+            return parts.join(', ');
+        }
+
+        function resolveThemeBackgroundCss(val, contentFolder) {
+            if (!val) return null;
+            const t = String(val).trim();
+            if (isHexColorCss(t)) return { backgroundColor: t };
+            const url = buildThemeFileUrl(contentFolder, t);
+            if (!url) return null;
+            return {
+                backgroundImage: `url("${url.replace(/"/g, '%22')}")`,
+                backgroundSize: '100% 100%',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'center',
+            };
+        }
+
+        /** Match Y1 list “selected row” look: selected item background + selected text color. */
+        function applyThemeCardDownloadButtonStyles(dl, cfg, contentFolder) {
+            if (!dl) return;
+            if (!cfg || typeof cfg !== 'object' || !contentFolder) {
+                dl.style.border = 'none';
+                dl.style.fontWeight = 'normal';
+                dl.style.marginTop = 'auto';
+                dl.style.borderRadius = '8px';
+                dl.style.backgroundImage = 'none';
+                dl.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                dl.style.color = '#fff';
+                dl.style.fontFamily = 'Inter, system-ui, sans-serif';
+                return;
+            }
+            const itemCfg = cfg.itemConfig || {};
+            const menuCfg = cfg.menuConfig || {};
+            const sel =
+                resolveThemeBackgroundCss(itemCfg.itemSelectedBackground, contentFolder) ||
+                resolveThemeBackgroundCss(menuCfg.menuItemSelectedBackground, contentFolder);
+            const unsel =
+                resolveThemeBackgroundCss(itemCfg.itemBackground, contentFolder) ||
+                resolveThemeBackgroundCss(menuCfg.menuItemBackground, contentFolder);
+            const bg = sel || unsel || { backgroundColor: 'rgba(255,255,255,0.12)' };
+            const textColor = String(
+                itemCfg.itemSelectedTextColor ||
+                    menuCfg.menuItemSelectedTextColor ||
+                    itemCfg.itemTextColor ||
+                    menuCfg.menuItemTextColor ||
+                    '#ffffff'
+            ).trim();
+            dl.style.border = 'none';
+            dl.style.fontWeight = 'normal';
+            dl.style.marginTop = 'auto';
+            dl.style.backgroundImage = 'none';
+            dl.style.backgroundColor = '';
+            Object.assign(dl.style, bg);
+            dl.style.color = textColor;
+            dl.style.borderRadius = '8px';
+            dl.style.fontFamily = themeButtonFontStackFromConfig(cfg);
+        }
+
+        async function fetchThemeConfigForCard(folder, variantSegment) {
+            const cf = effectiveThemeContentFolder(folder, variantSegment);
+            if (!cf) return null;
+            try {
+                const enc = cf.split('/').filter(Boolean).map(encodeURIComponent).join('/');
+                const rc = await fetch(`./${enc}/config.json`, { cache: 'no-cache' });
+                if (!rc.ok) return null;
+                return await rc.json();
+            } catch {
+                return null;
+            }
+        }
+
         function titleCaseWords(value) {
             return String(value || '')
                 .split(/[\s_-]+/)
@@ -1973,7 +2107,7 @@
                         await window.Y1ThemePreview.mount(simHostModal, {
                             catalogFolder,
                             variantSegment: seg,
-                            mode: 'menu',
+                            mode: 'gallery',
                             buildFileUrl: (cf, rel) => buildThemeFileUrl(cf, rel),
                             previewMeta: modalPreviewMeta
                         });
@@ -2644,12 +2778,17 @@
                 window.Y1ThemePreview.mountGalleryCardLazy(simHost, {
                     catalogFolder: folderPath,
                     variantSegment: '',
-                    mode: 'menu',
+                    mode: 'gallery',
                     buildFileUrl: (cf, rel) => buildThemeFileUrl(cf, rel),
                     previewMeta: cardPreviewMeta,
-                    onReady: () => {
+                    onReady: (cfg) => {
                         img.style.visibility = 'hidden';
                         img.style.pointerEvents = 'none';
+                        if (cfg && folderPath) {
+                            const cf = effectiveThemeContentFolder(folderPath, String(variantSelect.value || '').trim());
+                            applyThemeCardDownloadButtonStyles(dl, cfg, cf);
+                            if (di) applyThemeCardDownloadButtonStyles(di, cfg, cf);
+                        }
                     },
                     onError: () => {
                         simHost.style.display = 'none';
@@ -2732,18 +2871,24 @@
                     window.Y1ThemePreview.mountGalleryCardLazy(simHost, {
                         catalogFolder: folderPath,
                         variantSegment: seg,
-                        mode: 'menu',
+                        mode: 'gallery',
                         buildFileUrl: (cf, rel) => buildThemeFileUrl(cf, rel),
                         previewMeta: cardPreviewMeta,
-                        onReady: () => {
+                        onReady: (cfg) => {
                             img.style.visibility = 'hidden';
                             img.style.pointerEvents = 'none';
+                            if (cfg && folderPath) {
+                                const cf = effectiveThemeContentFolder(folderPath, seg);
+                                applyThemeCardDownloadButtonStyles(dl, cfg, cf);
+                                if (di) applyThemeCardDownloadButtonStyles(di, cfg, cf);
+                            }
                         },
                         onError: () => {
                             simHost.style.display = 'none';
                         }
                     });
                 }
+                void syncDownloadButtonToThemeConfig(seg);
             });
 
             const n = document.createElement('a');
@@ -2788,275 +2933,24 @@
             bd.style.display = 'flex';
             bd.style.gap = '8px';
 
+            let di = null;
             const dl = document.createElement('button');
             dl.className = 'btn';
-            const backgroundimg = '3.png' || 'Background1.png' || '@Pris_itemSelectedBackground.png';
-            const themeButtonStyles = {
-                'Aero': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Aero/4.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '6px'
-                },
-                'Apple Music': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/AppleMusic/4_YS.png)',
-                    fontFamily: 'Open Sans, Inter',
-                    borderRadius: '12px'
-                },
-                'Aquarium': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Aquarium/4.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '6px'
-                },
-                'Black&White': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/BlackWhite/4_YS.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '4px'
-                },
-                'Be': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Be/%40Be_dialogOptionSelectedBackground.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '10px'
-                },
-                'CabinFever': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/CabinFever/4.png.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '10px'
-                },
-                'Circular': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Circular/4_YS.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '8px'
-                },
-                'Cupertino': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Cupertino/%40Cup_dialogOptionSelectedBackground.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '12px'
-                },
-                'DELTARUNE': {
-                    backgroundImage: 'url(https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRu0p-imGTLKgZ6-sjHUxzWjLCdwye-QMwVcA&s)',
-                    fontFamily: 'Comic Sans MS',
-                    borderRadius: '0px'
-                },
-                'Elsie D': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/ElsieD/3.png)',
-                    fontFamily: 'monospace',
-                    borderRadius: '6px'
-                },
-                'Fallout': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Fallout/4.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '8px'
-                },
-                'Girlypop': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Girlypop/4.png)',
-                    fontFamily: 'Comic Sans MS',
-                    borderRadius: '20px'
-                },
-                'GTA3': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/GTA3/1.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '8px'
-                },
-                'GZA': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/GZA/3.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '8px'
-                },
-                'HoloBubble': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/HoloBubble/4.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '12px'
-                },
-                'HughBliss': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/HughBliss/4.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '8px'
-                },
-                'iOS 26 Theme': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/iOS26Theme/4.png)',
-                    fontFamily: 'Open Sans, Inter',
-                    borderRadius: '16px'
-                },
-                'iOS Theme': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/iOSTheme/4.png)',
-                    fontFamily: 'Open Sans, Inter',
-                    borderRadius: '16px'
-                },
-                'iPod-ish': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/iPod-ish/4.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '12px'
-                },
-                'JulesVerne': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/JulesVerne/4.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '6px'
-                },
-                'Lain-ish': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Lain-ish/4.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '8px'
-                },
-                'LCD': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/LCD/4.png)',
-                    fontFamily: 'monospace',
-                    borderRadius: '6px'
-                },
-                'Rudy': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Rudy/4.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '12px'
-                },
-                'The Matrix': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/TheMatrix/%40ThM_global_wallpaper.png)',
-                    fontFamily: 'monospace',
-                    borderRadius: '6px'
-                },
-                'UNDERTALE': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/UNDERTALE/BACKUP.png)',
-                    fontFamily: 'Comic Sans MS',
-                    borderRadius: '0px'
-                },
-                'MelodyMuncher': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/MelodyMuncher/dialog_selected.png)',
-                    fontFamily: 'Comic Sans MS',
-                    borderRadius: '20px'
-                },
-                'Minecraft': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Minecraft/4.png)',
-                    fontFamily: 'monospace',
-                    borderRadius: '8px'
-                },
-                'Mini Medieval': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/MiniMedieval/Background2.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '12px'
-                },
-                'MonsterVision': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/MonsterVision/4.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '8px'
-                },
-                'Naruto': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Naruto/Background2.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '12px'
-                },
-                'NeonNights': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/NeonNights/4.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '8px'
-                },
-                'Prisoner': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Prisoner/%40Pris_dialogOptionSelectedBackground.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '12px'
-                },
-                'Red Dead Redemption': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/RedDeadRedemption/Background1.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '8px'
-                },
-                'Rudy': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Rudy/4.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '12px'
-                },
-                'SpongeBob Purple Pineapple': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/SpongeBobPurplePineapple/Background1.png)',
-                    fontFamily: 'Comic Sans MS',
-                    borderRadius: '20px'
-                },
-                'Stranger Things': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/StrangerThings/4.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '8px'
-                },
-                'Themeless': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Themeless/3.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '4px'
-                },
-                'TwinPeaks': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/TwinPeaks/3.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '8px'
-                },
-                'Unseen': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Unseen/desk.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '12px'
-                },
-                'Viva Pinata': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/VivaPinata/%40VP_dialogOptionSelectedBackground.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '20px'
-                },
-                'Win95': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Win95Theme/4.png)',
-                    fontFamily: 'MS Sans Serif, Arial, sans-serif',
-                    borderRadius: '0px'
-                },
-                'Woodstock': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Woodstock/1.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '12px'
-                },
-                'Wu-Tang': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/Wu-Tang/1.png)',
-                    fontFamily: 'Comic Sans MS',
-                    borderRadius: '8px',
-                    color: '#000000'
-                },
-                'XFiles': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/XFiles/4.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '12px'
-                },
-                'YellowSub': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/YellowSub/1_YS.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '10px',
-                    color: '#000000'
-                },
-                'yPod': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/yPod/1sel.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '6px'
-                },
-                'yPodDark': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/yPodDark/1sel.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '6px'
-                },
-                'ZuneY': {
-                    backgroundImage: 'url(https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/ZuneY/%40Z_dialogOptionSelectedBackground.png)',
-                    fontFamily: 'Inter',
-                    borderRadius: '12px'
-                }
-            };
-
-            const buttonStyle = themeButtonStyles[theme.name] || {
-                backgroundImage: 'none',
-                fontFamily: 'Inter, sans-serif',
-                borderRadius: '8px'
-            };
-
-            dl.style.backgroundImage = buttonStyle.backgroundImage;
-            dl.style.borderRadius = buttonStyle.borderRadius;
-
-            dl.style.backgroundSize = 'cover';
-            dl.style.backgroundPosition = 'center';
             dl.style.fontWeight = 'normal';
             dl.style.marginTop = 'auto';
+            applyThemeCardDownloadButtonStyles(dl, null, '');
+
+            async function syncDownloadButtonToThemeConfig(variantSeg) {
+                if (!folderPath) return;
+                const cfg = await fetchThemeConfigForCard(folderPath, variantSeg);
+                const cf = effectiveThemeContentFolder(folderPath, variantSeg);
+                applyThemeCardDownloadButtonStyles(dl, cfg, cf);
+                if (di) applyThemeCardDownloadButtonStyles(di, cfg, cf);
+            }
+
             dl.innerHTML = '<i class="fa-solid fa-download"></i> Download';
             dl.type = 'button';
             dl.onclick = () => downloadTheme(theme, dl, readCardVariantInstallHints(c));
-            dl.style.color = buttonStyle.color || 'white';
-
-            dl.style.fontFamily = 'Inter, sans-serif';
-
-            dl.style.fontFamily = buttonStyle.fontFamily;
 
             const outboundUrl = hasExternalDownload ? externalDownloadUrl :
                 (theme.sourceType === 'external' ? String(theme.authorUrl || '').trim() : '');
@@ -3069,10 +2963,11 @@
                 };
                 bd.append(dl);
             } else {
-                const di = document.createElement('button');
+                di = document.createElement('button');
                 di.className = 'btn';
                 di.style.fontWeight = 'normal';
                 di.style.marginTop = 'auto';
+                applyThemeCardDownloadButtonStyles(di, null, '');
                 di.style.opacity = '0.5';
                 di.style.cursor = 'not-allowed';
                 di.disabled = true;

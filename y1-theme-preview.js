@@ -151,6 +151,28 @@
         return 40;
     }
 
+    /** Resolve homePageConfig icon keys (supports ``Calendar`` / ``calendar``). */
+    function homePageIconFromCfg(homeCfg, key) {
+        homeCfg = homeCfg || {};
+        if (homeCfg[key] !== undefined && homeCfg[key] !== null) {
+            return typeof homeCfg[key] === 'string' ? homeCfg[key] : undefined;
+        }
+        if (key === 'calendar') {
+            if (homeCfg.Calendar !== undefined && homeCfg.Calendar !== null) {
+                return typeof homeCfg.Calendar === 'string' ? homeCfg.Calendar : undefined;
+            }
+        }
+        if (key === 'ebook') {
+            if (homeCfg.ebook !== undefined && homeCfg.ebook !== null) {
+                return typeof homeCfg.ebook === 'string' ? homeCfg.ebook : undefined;
+            }
+            if (homeCfg.eBook !== undefined && homeCfg.eBook !== null) {
+                return typeof homeCfg.eBook === 'string' ? homeCfg.eBook : undefined;
+            }
+        }
+        return undefined;
+    }
+
     function buildHomeItems(homeCfg) {
         homeCfg = homeCfg || {};
         var labelMap = {
@@ -161,18 +183,39 @@
             photos: 'Photos',
             fm: 'FM Radio',
             bluetooth: 'Bluetooth',
+            calculator: 'Calculator',
+            calendar: 'Calendar',
+            ebook: 'eBook',
             settings: 'Settings'
         };
-        var standardItems = ['nowPlaying', 'music', 'video', 'audiobooks', 'photos', 'fm', 'bluetooth', 'settings'];
-        return standardItems
+        var ordered = [
+            'nowPlaying',
+            'music',
+            'video',
+            'audiobooks',
+            'photos',
+            'fm',
+            'bluetooth',
+            'calculator',
+            'calendar',
+            'ebook',
+            'settings'
+        ];
+        var optionalExtras = { calculator: 1, calendar: 1, ebook: 1 };
+        return ordered
             .filter(function (key) {
+                if (optionalExtras[key]) {
+                    var f = homePageIconFromCfg(homeCfg, key);
+                    return typeof f === 'string' && String(f).trim().length > 0;
+                }
                 return homeCfg[key] !== undefined;
             })
             .map(function (key) {
+                var file = homePageIconFromCfg(homeCfg, key);
                 return {
                     id: key,
-                    label: labelMap[key],
-                    iconFile: typeof homeCfg[key] === 'string' ? homeCfg[key] : undefined
+                    label: labelMap[key] || key,
+                    iconFile: typeof file === 'string' ? file : undefined
                 };
             });
     }
@@ -246,6 +289,39 @@
         }
     }
 
+    /** Hide broken / empty preview bitmaps so layout keeps a blank slot (no broken-image icon). */
+    function bindPreviewImgFallback(img) {
+        if (!img || typeof img.addEventListener !== 'function') return;
+        img.decoding = 'async';
+        try {
+            img.loading = 'lazy';
+        } catch (e) {}
+        img.addEventListener(
+            'error',
+            function () {
+                try {
+                    img.removeAttribute('src');
+                } catch (e2) {}
+                img.alt = '';
+                img.style.opacity = '0';
+                img.style.visibility = 'hidden';
+            },
+            { once: true }
+        );
+        img.addEventListener(
+            'load',
+            function () {
+                try {
+                    if (img.naturalWidth <= 1 && img.naturalHeight <= 1) {
+                        img.style.opacity = '0';
+                        img.style.visibility = 'hidden';
+                    }
+                } catch (e3) {}
+            },
+            { once: true }
+        );
+    }
+
     function menuScrollOffset(selectedIndex, itemsLength, itemHeight, visibleHeight) {
         var totalHeight = itemsLength * itemHeight;
         var maxScroll = Math.max(0, totalHeight - visibleHeight);
@@ -310,6 +386,7 @@
                     var fi = document.createElement('img');
                     fi.src = folderIconUrl;
                     fi.alt = '';
+                    bindPreviewImgFallback(fi);
                     fi.style.cssText =
                         'width:24px;height:24px;margin-left:10px;margin-right:8px;object-fit:contain;flex-shrink:0;';
                     row.appendChild(fi);
@@ -357,6 +434,7 @@
                     var im = document.createElement('img');
                     im.src = arrowUrl;
                     im.alt = '';
+                    bindPreviewImgFallback(im);
                     im.style.cssText =
                         'height:100%;width:auto;object-fit:contain;max-width:64px;max-height:64px;opacity:0.9;';
                     ar.appendChild(im);
@@ -437,6 +515,7 @@
                     var im = document.createElement('img');
                     im.src = arrowUrl;
                     im.alt = '';
+                    bindPreviewImgFallback(im);
                     im.style.cssText =
                         'height:100%;width:auto;object-fit:contain;max-width:64px;max-height:64px;opacity:0.9;';
                     ar.appendChild(im);
@@ -800,9 +879,17 @@
             { id: 'theme', label: 'Theme', iconFile: settingConfig.theme },
             { id: 'language', label: 'Language', iconFile: settingConfig.language },
             { id: 'factory_reset', label: 'Factory reset', iconFile: settingConfig.factoryReset },
-            { id: 'clear_cache', label: 'Clear cache', iconFile: settingConfig.clearCache },
-            { id: 'about', label: 'About', iconFile: undefined, valueText: gt('about') }
+            { id: 'clear_cache', label: 'Clear cache', iconFile: settingConfig.clearCache }
         ];
+        if (settingConfig.launcher && String(settingConfig.launcher).trim()) {
+            base.push({
+                id: 'rockbox',
+                label: 'Rockbox',
+                iconFile: settingConfig.launcher,
+                valueText: undefined
+            });
+        }
+        base.push({ id: 'about', label: 'About', iconFile: undefined, valueText: gt('about') });
         return base.map(function (item) {
             return {
                 id: item.id,
@@ -933,7 +1020,10 @@
         if (!container) return Promise.reject(new Error('Missing container'));
         var opts = options || {};
         var mode = String(opts.mode || 'menu').toLowerCase();
-        var interactive = mode === 'full';
+        var galleryChrome = mode === 'gallery';
+        var useFullDevice = mode === 'full' || galleryChrome;
+        var suppressDeviceInput = opts.suppressDeviceInput === true || galleryChrome;
+        var interactive = mode === 'full' && !suppressDeviceInput;
         var catalogFolder = String(opts.catalogFolder || '')
             .replace(/^\.\/+/, '')
             .trim();
@@ -980,6 +1070,7 @@
                           playState: null,
                           brightnessLevel: 50
                       };
+                /* Gallery-style full chrome uses the same static home sim as menu mode (no deep nav). */
 
                 var previewMeta = opts.previewMeta || {};
 
@@ -1020,7 +1111,7 @@
                 root.className = 'y1-tp-root';
 
                 var dev = document.createElement('div');
-                dev.className = 'y1-tp-device' + (interactive ? ' y1-tp-device--full' : '');
+                dev.className = 'y1-tp-device' + (useFullDevice ? ' y1-tp-device--full' : '');
 
                 var viewport = document.createElement('div');
                 viewport.className = 'y1-tp-viewport';
@@ -1038,7 +1129,7 @@
 
                 var wheel = null;
                 var wheelScrollOpts = { passive: false };
-                if (interactive) {
+                if (useFullDevice) {
                     wheel = document.createElement('div');
                     wheel.className = 'y1-tp-wheel y1-tp-clickwheel';
                     wheel.innerHTML =
@@ -1048,6 +1139,12 @@
                         '<button type="button" class="y1-tp-cw y1-tp-cw--play" data-y1act="play" title="Play / Pause" aria-label="Play Pause">\u23EF</button>' +
                         '<button type="button" class="y1-tp-cw y1-tp-cw--center" data-y1act="center" title="Select" aria-label="Select"></button>';
                     dev.appendChild(wheel);
+                    if (typeof styleClickwheelFromTheme === 'function') {
+                        styleClickwheelFromTheme(wheel, colors, itemSelectedBackgroundStyle);
+                    }
+                    if (suppressDeviceInput && wheel) {
+                        wheel.style.pointerEvents = 'none';
+                    }
                 }
 
                 root.appendChild(dev);
@@ -1125,6 +1222,7 @@
                             var pi = document.createElement('img');
                             pi.src = buildFileUrl(contentFolder, pf);
                             pi.alt = '';
+                            bindPreviewImgFallback(pi);
                             pi.style.cssText = 'height:25px;width:25px;object-fit:contain;display:block;';
                             right.appendChild(pi);
                         }
@@ -1175,6 +1273,15 @@
                         mk.className = 'y1-tp-desktop-mask';
                         mk.src = maskUrl;
                         mk.alt = '';
+                        mk.addEventListener(
+                            'error',
+                            function () {
+                                try {
+                                    if (mk.parentNode) mk.parentNode.removeChild(mk);
+                                } catch (eRm) {}
+                            },
+                            { once: true }
+                        );
                         mk.style.cssText =
                             'position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;pointer-events:none;z-index:5;';
                         canvas.appendChild(mk);
@@ -1232,6 +1339,7 @@
                                 var im = document.createElement('img');
                                 im.src = iu;
                                 im.alt = sel.label || '';
+                                bindPreviewImgFallback(im);
                                 im.style.cssText =
                                     'max-width:100%;width:auto;height:auto;max-height:' +
                                     maxPrevH +
@@ -1346,6 +1454,7 @@
                             var simg = document.createElement('img');
                             simg.src = selS.iconUrl;
                             simg.alt = selS.label || '';
+                            bindPreviewImgFallback(simg);
                             simg.style.cssText =
                                 'max-width:146px;max-height:146px;width:auto;height:auto;object-fit:contain;display:block;';
                             imgBox.appendChild(simg);
@@ -1408,6 +1517,7 @@
                             var eim = document.createElement('img');
                             eim.src = eqSel.iconUrl;
                             eim.alt = eqSel.label || '';
+                            bindPreviewImgFallback(eim);
                             eim.style.cssText =
                                 'max-width:146px;max-height:146px;width:auto;height:auto;object-fit:contain;display:block;';
                             eib.appendChild(eim);
@@ -1443,6 +1553,7 @@
                             var tim = document.createElement('img');
                             tim.src = themeUrl;
                             tim.alt = 'Theme';
+                            bindPreviewImgFallback(tim);
                             tim.style.cssText =
                                 'width:100%;height:100%;object-fit:contain;background:rgba(255,255,255,0.04);';
                             box.appendChild(tim);
@@ -1539,6 +1650,7 @@
                             var pm = document.createElement('img');
                             pm.src = wf;
                             pm.alt = '';
+                            bindPreviewImgFallback(pm);
                             pm.style.cssText = 'width:100%;height:100%;object-fit:cover;';
                             prv.appendChild(pm);
                             layer.appendChild(prv);
@@ -1664,6 +1776,7 @@
                             var ai = document.createElement('img');
                             ai.src = coverU;
                             ai.alt = '';
+                            bindPreviewImgFallback(ai);
                             ai.style.cssText =
                                 'width:100%;height:100%;object-fit:contain;border-radius:2px;display:block;transform:skewY(-2deg);transform-origin:center;background:rgba(0,0,0,0.2);';
                             art.appendChild(ai);
@@ -1905,21 +2018,8 @@
                     }
                     var vid = sim.themeViewId;
                     if (vid === 'home') {
-                        var keys = [
-                            'nowPlaying',
-                            'music',
-                            'video',
-                            'audiobooks',
-                            'photos',
-                            'fm',
-                            'bluetooth',
-                            'settings'
-                        ];
-                        var homeCfg = cfg.homePageConfig || {};
-                        var available = keys.filter(function (k) {
-                            return homeCfg[k] !== undefined;
-                        });
-                        var selId = available[sim.themeSelectedIndex];
+                        var selItem = homeItems[sim.themeSelectedIndex];
+                        var selId = selItem && selItem.id;
                         sim.themeHistory.push('home');
                         if (selId === 'music') {
                             sim.themeViewId = 'music';
@@ -1977,28 +2077,9 @@
                         return;
                     }
                     if (vid === 'settings') {
-                        var labels = [
-                            'Shutdown',
-                            'Timed shutdown',
-                            'Shuffle',
-                            'Repeat',
-                            'Equalizer',
-                            'File extensions',
-                            'Key lock',
-                            'Key tone',
-                            'Key vibration',
-                            'Wallpaper',
-                            'Backlight',
-                            'Brightness',
-                            'Display battery',
-                            'Date & Time',
-                            'Theme',
-                            'Language',
-                            'Factory reset',
-                            'Clear cache',
-                            'About'
-                        ];
-                        var ch = labels[sim.themeSelectedIndex];
+                        var sItemsNow = buildSettingsItems(cfg, buildFileUrl, contentFolder, sim);
+                        var selEntry = sItemsNow[sim.themeSelectedIndex] || {};
+                        var ch = String(selEntry.label || '');
                         if (ch === 'Theme') {
                             sim.themeHistory.push('settings');
                             sim.themeViewId = 'settingsTheme';
@@ -2027,6 +2108,8 @@
                             sim.themeHistory.push('settings');
                             sim.themeViewId = 'settingsAbout';
                             sim.themeSelectedIndex = 0;
+                        } else if (ch === 'Rockbox') {
+                            showToast('Rockbox');
                         } else if (ch === 'Shutdown') {
                             sim.dialogVisible = true;
                             sim.dialogTitle = 'Shutdown';
@@ -2241,7 +2324,7 @@
 
                 if (typeof opts.onReady === 'function') {
                     try {
-                        opts.onReady();
+                        opts.onReady(cfg);
                     } catch (e) {}
                 }
             })
