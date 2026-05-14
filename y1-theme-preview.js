@@ -571,6 +571,8 @@
 
     /** Theme Maker–style fallback when no battery bitmap is available. */
     function appendBatteryFallback(rightEl, pct, textColor) {
+        var p = Number(pct);
+        if (!isFinite(p)) p = 100;
         var wrap = document.createElement('div');
         wrap.style.cssText =
             'display:flex;align-items:center;gap:4px;font-size:16px;color:#ffffff;';
@@ -583,12 +585,12 @@
         var fill = document.createElement('div');
         fill.style.cssText =
             'width:' +
-            Math.max(8, Math.round((pct / 100) * 16)) +
+            Math.max(8, Math.round((p / 100) * 16)) +
             'px;height:100%;background:linear-gradient(180deg,#7ef29a,#2db84d);border-radius:1px;';
         box.appendChild(fill);
         wrap.appendChild(box);
         var sp = document.createElement('span');
-        sp.textContent = pct + '%';
+        sp.textContent = p + '%';
         wrap.appendChild(sp);
         rightEl.appendChild(wrap);
     }
