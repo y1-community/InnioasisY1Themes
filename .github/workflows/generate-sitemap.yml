@@ -11,6 +11,11 @@ on:
       - "themes.json"
       - "scripts/generate_sitemap.py"
 
+# Same queue as theme ingest / manual metadata sync so two bots never push to main at once (rebase races).
+concurrency:
+  group: theme-publish-main
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
@@ -42,5 +47,17 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add sitemap.xml
           git commit -m "Update sitemap.xml"
-          git pull --rebase origin "${GITHUB_REF_NAME}"
-          git push origin HEAD:${GITHUB_REF_NAME}
+          BRANCH="${GITHUB_REF_NAME:-main}"
+          ok=0
+          for attempt in 1 2 3 4 5 6; do
+            if git pull --rebase origin "${BRANCH}" && git push origin "HEAD:${BRANCH}"; then
+              ok=1
+              break
+            fi
+            echo "Rebase/push attempt ${attempt} failed; backing off before retry..."
+            sleep $(( attempt * 10 ))
+          done
+          if [[ "$ok" != "1" ]]; then
+            echo "ERROR: could not push sitemap after retries."
+            exit 1
+          fi

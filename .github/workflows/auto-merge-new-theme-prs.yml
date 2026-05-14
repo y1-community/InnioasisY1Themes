@@ -11,6 +11,9 @@
 #
 # Removal PRs (title starts with [Removal]) never run this job: the workflow is skipped so
 # removal requests are always reviewed and merged manually — no automatic submission.
+#
+# Concurrency is per PR (cancel in-flight) so rapid pushes do not stack duplicate merge attempts.
+# Git pushes to main are serialized by theme-ingest-and-sync / generate-sitemap (theme-publish-main).
 
 name: Auto Merge New Theme PRs
 

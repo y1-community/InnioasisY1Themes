@@ -24,6 +24,7 @@ on:
   workflow_dispatch:
 
 concurrency:
+  # Single queue with sync-theme-metadata.yml + generate-sitemap.yml — only one job pushes to main at a time.
   group: theme-publish-main
   cancel-in-progress: false
 
@@ -90,5 +91,16 @@ jobs:
           fi
           git add -A
           git commit -m "Theme ingest: extract zips, sync metadata, cleanup upload artifacts"
-          git pull --rebase origin "${TARGET_BRANCH}"
-          git push origin HEAD:${TARGET_BRANCH}
+          ok=0
+          for attempt in 1 2 3 4 5 6; do
+            if git pull --rebase origin "${TARGET_BRANCH}" && git push origin "HEAD:${TARGET_BRANCH}"; then
+              ok=1
+              break
+            fi
+            echo "Rebase/push attempt ${attempt} failed; backing off before retry..."
+            sleep $(( attempt * 10 ))
+          done
+          if [[ "$ok" != "1" ]]; then
+            echo "ERROR: could not push theme ingest commit after retries."
+            exit 1
+          fi

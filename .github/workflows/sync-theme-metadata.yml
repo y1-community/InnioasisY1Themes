@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
 
 concurrency:
+  # Single queue with theme-ingest-and-sync.yml + generate-sitemap.yml — avoids concurrent pushes to main.
   group: theme-publish-main
   cancel-in-progress: false
 
@@ -46,6 +47,18 @@ jobs:
           fi
           git add -A
           git commit -m "Auto-sync theme metadata from folders"
-          git pull --rebase origin "${GITHUB_REF_NAME}"
-          git push origin HEAD:${GITHUB_REF_NAME}
+          BRANCH="${GITHUB_REF_NAME:-main}"
+          ok=0
+          for attempt in 1 2 3 4 5 6; do
+            if git pull --rebase origin "${BRANCH}" && git push origin "HEAD:${BRANCH}"; then
+              ok=1
+              break
+            fi
+            echo "Rebase/push attempt ${attempt} failed; backing off before retry..."
+            sleep $(( attempt * 10 ))
+          done
+          if [[ "$ok" != "1" ]]; then
+            echo "ERROR: could not push metadata sync after retries."
+            exit 1
+          fi
 

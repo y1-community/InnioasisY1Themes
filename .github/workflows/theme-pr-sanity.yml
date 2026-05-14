@@ -6,6 +6,11 @@ on:
       - main
     types: [opened, synchronize, reopened, ready_for_review]
 
+# One sanity run per PR at a time; rapid pushes cancel the in-flight run (saves CI, avoids overlapping checks).
+concurrency:
+  group: theme-pr-sanity-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
