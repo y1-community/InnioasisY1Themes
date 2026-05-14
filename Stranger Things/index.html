@@ -166,6 +166,20 @@
         font-weight: normal;
         cursor: pointer;
     }
+
+    .theme-gold-medal-banner {
+        border-radius: 10px;
+        padding: 10px 12px;
+        border: 1px solid rgba(212, 175, 55, 0.55);
+        background: linear-gradient(135deg, rgba(90, 62, 20, 0.42), rgba(201, 162, 39, 0.26));
+        color: #fdecc8;
+        font-size: 0.88rem;
+        line-height: 1.35;
+    }
+
+    .theme-gold-medal-banner strong {
+        margin-left: 4px;
+    }
 </style>
 
 <body>
@@ -196,6 +210,10 @@
                         <h1 id="theme-name" style="margin:0 0 6px 0;font-size:1.5rem"></h1>
                         <div id="theme-author" style="margin-bottom:8px;color:var(--text-secondary)"></div>
                         <div id="theme-desc" style="color:var(--text-secondary);margin-bottom:12px"></div>
+                        <div id="theme-compatibility-medal" class="theme-gold-medal-banner" style="display:none;margin:0 0 12px 0;" role="status">
+                            <span aria-hidden="true">🏅</span><strong>Gold artwork compatibility</strong>
+                            <span style="display:block;margin-top:4px;font-weight:500;opacity:0.92;font-size:0.86rem;">This creator included every optional asset we check for newer and upcoming Y1 UI screens.</span>
+                        </div>
                         <div id="artwork-check-message" style="display:none;border:1px solid rgba(255,180,80,0.45);background:rgba(255,180,80,0.11);border-radius:10px;padding:10px 12px;margin:0 0 12px 0;color:#fdecc8;">
                             <div style="font-weight:700;margin-bottom:5px;">Artwork compatibility check</div>
                             <div id="artwork-check-summary" style="font-size:0.9rem;line-height:1.45;"></div>
@@ -395,22 +413,26 @@
             return parts.join('/');
         }
 
-        function normalizeThemeMeta(folder, cfg, cachedTheme) {
-            const cleanFolder = String(folder || '').replace(/^\.\/+/, '');
+        function normalizeThemeMeta(catalogFolder, cfg, cachedTheme, assetBaseFolderOpt) {
+            const catalog = String(catalogFolder || '').replace(/^\.\/+/, '');
+            const assetBase = String(assetBaseFolderOpt || catalog || '').replace(/^\.\/+/, '');
             const prefixedCover = cfg && cfg.themeCover ?
-                (cleanFolder ? `./${cleanFolder}/${cfg.themeCover}` : `./${cfg.themeCover}`) :
+                (assetBase ? `./${assetBase}/${cfg.themeCover}` : `./${cfg.themeCover}`) :
                 '';
             const info = (cfg && (cfg.source_info || cfg.theme_info)) || null;
+            const gallery = cfg && cfg.gallery && typeof cfg.gallery === 'object' ? cfg.gallery : {};
+            const medal = String(gallery.compatibilityMedal || '').trim().toLowerCase();
             return {
-                name: (info && info.title) || cfg.title || (cachedTheme && cachedTheme.name) || folder || 'Theme',
+                name: (info && info.title) || cfg.title || (cachedTheme && cachedTheme.name) || catalog || 'Theme',
                 description: (info && info.description) || cfg.description || (cachedTheme && cachedTheme.description) || '',
                 author: (info && info.author) || cfg.author || (cachedTheme && cachedTheme.author) || null,
                 authorUrl: (info && info.authorUrl) || cfg.authorUrl || (cachedTheme && cachedTheme.authorUrl) || '',
                 externalDownloadUrl: (info && info.externalDownloadUrl) || cfg.externalDownloadUrl || (cachedTheme && cachedTheme.externalDownloadUrl) || '',
                 authorCTA: (info && info.authorCTA) || (cachedTheme && cachedTheme.authorCTA) || '',
                 screenshot: prefixedCover || ((cachedTheme && cachedTheme.screenshot) || ''),
-                folder,
-                rawConfig: cfg || null
+                folder: catalog,
+                rawConfig: cfg || null,
+                compatibilityMedal: medal === 'gold' ? 'gold' : ''
             };
         }
 
@@ -429,20 +451,22 @@
             }
         }
 
-        async function tryFetchFolderConfigTheme(folder, cachedThemes) {
-            const cleanFolder = String(folder || '').replace(/^\.\/+/, '');
-            if (!cleanFolder) return null;
-            const encodedFolder = cleanFolder.split('/').map(seg => encodeURIComponent(seg)).join('/');
+        async function tryFetchFolderConfigTheme(contentFolder, cachedThemes, catalogRootOpt) {
+            const cleanContent = String(contentFolder || '').replace(/^\.\/+/, '').trim();
+            if (!cleanContent) return null;
+            const encodedFolder = cleanContent.split('/').map((seg) => encodeURIComponent(seg)).join('/');
+            const catalogRoot = String(catalogRootOpt || cleanContent.split('/')[0] || '').replace(/^\.\/+/, '').trim();
+            const catalogKey = catalogRoot.toLowerCase();
             try {
                 const res = await fetch(`${encodedFolder}/config.json`, {
                     cache: 'no-cache'
                 });
                 if (!res.ok) return null;
                 const cfg = await res.json();
-                const cachedTheme = (cachedThemes || []).find(t =>
-                    t && String(t.folder || '').toLowerCase() === cleanFolder.toLowerCase()
+                const cachedTheme = (cachedThemes || []).find((t) =>
+                    t && String(t.folder || '').trim().toLowerCase() === catalogKey
                 ) || null;
-                return normalizeThemeMeta(cleanFolder, cfg, cachedTheme);
+                return normalizeThemeMeta(catalogRoot, cfg, cachedTheme, cleanContent);
             } catch (e) {
                 return null;
             }
@@ -514,6 +538,53 @@
                 .filter(Boolean)
                 .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
                 .join(' ');
+        }
+
+        const THEME_VARIANTS_SEGMENT = 'Variants';
+
+        function effectiveThemeContentPrefix(catalogFolder, variantSubfolder) {
+            const root = String(catalogFolder || '').replace(/^\.\/+/, '').replace(/\/+$/, '').trim();
+            const v = String(variantSubfolder || '').trim();
+            if (!root) return '';
+            if (!v) return root;
+            return `${root}/${THEME_VARIANTS_SEGMENT}/${v}`;
+        }
+
+        function formatVariantDisplayLabel(segmentName) {
+            const raw = String(segmentName || '').trim().replace(/[-_]+/g, ' ');
+            return titleCaseWords(raw);
+        }
+
+        async function fetchGithubRepoContents(repoRelativeDir) {
+            const dir = String(repoRelativeDir || '').replace(/^\.\/+/, '').replace(/\/+$/, '').trim();
+            if (!dir) return null;
+            const encoded = dir.split('/').filter(Boolean).map((seg) => encodeURIComponent(seg)).join('/');
+            const url = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${encoded}`;
+            try {
+                const res = await fetch(url, { cache: 'no-cache' });
+                if (!res.ok) return null;
+                const entries = await res.json();
+                return Array.isArray(entries) ? entries : null;
+            } catch (_) {
+                return null;
+            }
+        }
+
+        async function listThemeVariantFolderNames(catalogFolder) {
+            const root = String(catalogFolder || '').replace(/^\.\/+/, '').replace(/\/+$/, '').trim();
+            if (!root) return [];
+            const entries = await fetchGithubRepoContents(`${root}/${THEME_VARIANTS_SEGMENT}`);
+            if (!entries) return [];
+            return entries
+                .filter((item) => item && item.type === 'dir')
+                .map((item) => String(item.name || '').trim())
+                .filter(Boolean)
+                .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+        }
+
+        function isUnderVariantsPath(relPath) {
+            const p = String(relPath || '').trim().replace(/\\/g, '/').replace(/^\/+/, '');
+            return /^variants\//i.test(p);
         }
 
         function themeFileEntryPath(entry) {
@@ -648,7 +719,7 @@
             const out = [];
             let hasBase = false;
             for (const entry of Array.isArray(fileEntries) ? fileEntries : []) {
-                const relPath = normalizeConfigAssetPath(entry && entry.path, folderPath);
+                const relPath = normalizeConfigAssetPath(themeFileEntryPath(entry), folderPath);
                 if (!relPath) continue;
                 const relLow = relPath.toLowerCase();
                 if (relLow === src.toLowerCase()) continue;
@@ -719,20 +790,26 @@
                 select.style.padding = '0.45rem 0.5rem';
                 select.style.marginBottom = '12px';
 
-                for (const option of options) {
+                for (let i = 0; i < options.length; i++) {
+                    const option = options[i];
                     const opt = document.createElement('option');
-                    opt.value = option.sourcePath;
+                    opt.value = String(i);
                     opt.textContent = option.label;
                     select.appendChild(opt);
                 }
 
                 const initial = String(defaultSourcePath || '');
-                if (initial && options.some((o) => String(o.sourcePath || '') === initial)) {
-                    select.value = initial;
+                if (initial) {
+                    const byPath = options.findIndex((o) => String(o.sourcePath || '') === initial);
+                    if (byPath >= 0) select.value = String(byPath);
+                    else if (/^\d+$/.test(initial)) select.value = initial;
                 }
                 const updatePreview = () => {
-                    const selectedPath = String(select.value || options[0].sourcePath || '');
-                    preview.src = themeFileUrl(folderPath, selectedPath);
+                    const idx = parseInt(String(select.value || '0'), 10);
+                    const picked = options[Number.isFinite(idx) ? idx : 0] || options[0];
+                    const selectedPath = String(picked && picked.sourcePath || '');
+                    const baseUrl = themeFileUrl(folderPath, selectedPath);
+                    preview.src = baseUrl ? `${baseUrl}${baseUrl.includes('?') ? '&' : '?'}mvc=${Date.now()}` : '';
                 };
                 select.onchange = updatePreview;
                 updatePreview();
@@ -760,7 +837,8 @@
                 };
                 cancelBtn.onclick = () => close(null);
                 okBtn.onclick = () => {
-                    const selected = options.find((o) => String(o.sourcePath || '') === String(select.value || '')) || options[0] || null;
+                    const idx = parseInt(String(select.value || '0'), 10);
+                    const selected = options[Number.isFinite(idx) ? idx : 0] || options[0] || null;
                     close(selected);
                 };
                 overlay.onclick = (event) => {
@@ -881,6 +959,17 @@
                 overlay.appendChild(panel);
                 document.body.appendChild(overlay);
             });
+        }
+
+        function zipThemeDisplayName(themeName, catalogFolder, variantSegment) {
+            const v = String(variantSegment || '').trim();
+            if (v) return `${String(themeName || '').trim()} (${formatVariantDisplayLabel(v)})`.trim();
+            if (isDarkModeFolderPath(String(catalogFolder || ''))) {
+                const cleanName = String(themeName || '').trim();
+                if (/\(dark\)\s*$/i.test(cleanName)) return cleanName;
+                return cleanName ? `${cleanName} (Dark)` : 'Theme (Dark)';
+            }
+            return String(themeName || '').trim();
         }
 
         function ensureDarkModeDisplayName(themeName, folderPath) {
@@ -1214,44 +1303,43 @@
             };
         }
 
-        async function downloadTheme(theme, buttonNode, downloadableFiles, maskVariantState) {
+        async function downloadTheme(theme, buttonNode, downloadableFiles, maskVariantState, activeContentFolder, activeVariantSegment) {
             const parent = buttonNode.parentElement || buttonNode.parentNode;
             if (!parent) return;
             buttonNode.disabled = true;
 
+            const catalogFolder = String(theme.folder || '').replace(/^\.\/+/, '').trim();
+            const contentFolder = String(activeContentFolder || catalogFolder || '').replace(/^\.\/+/, '').trim();
+            const variantSeg = String(activeVariantSegment || '').trim();
+
             const progressUI = createProgressUI(
                 parent,
                 buttonNode,
-                ensureDarkModeDisplayName(theme.name, theme.folder) || 'theme'
+                zipThemeDisplayName(theme.name, catalogFolder, variantSeg) || 'theme'
             );
 
             try {
-                if (!theme.folder) {
+                if (!catalogFolder) {
                     alert('No downloadable folder info for this theme.');
                     progressUI.abortAndRestore(buttonNode);
                     return;
                 }
 
-                const selectedFolder = await promptThemeVariation(theme.name, theme.folder);
-                if (selectedFolder === null) {
-                    progressUI.abortAndRestore(buttonNode);
-                    return;
-                }
-                const selectedConfigUrl = themeFileUrl(selectedFolder, 'config.json');
+                const selectedConfigUrl = themeFileUrl(contentFolder, 'config.json');
                 const configRes = await fetch(selectedConfigUrl, { cache: 'no-cache' });
-                if (!configRes.ok) throw new Error(`Could not load config for ${selectedFolder}`);
+                if (!configRes.ok) throw new Error(`Could not load config for ${contentFolder}`);
                 const selectedConfig = await configRes.json();
-                const selectedFiles = extractFilesFromConfig(selectedConfig, selectedFolder);
-                const selectedRemoteMaskPaths = await fetchMaskVariantPaths(selectedFolder);
+                const selectedFiles = extractFilesFromConfig(selectedConfig, contentFolder);
+                const selectedRemoteMaskPaths = await fetchMaskVariantPaths(contentFolder);
                 const selectedFilePaths = selectedFiles.map(themeFileEntryPath).filter(Boolean);
                 const selectedMaskChoices = maskVariantChoicesFromFiles(
-                    selectedFolder,
+                    contentFolder,
                     [
-                        ...selectedFilePaths.map((p) => ({ path: p, download_url: themeFileUrl(selectedFolder, p), size: 0 })),
-                        ...selectedRemoteMaskPaths.map((p) => ({ path: p, download_url: themeFileUrl(selectedFolder, p), size: 0 })),
+                        ...selectedFilePaths.map((p) => ({ path: p, download_url: themeFileUrl(contentFolder, p), size: 0 })),
+                        ...selectedRemoteMaskPaths.map((p) => ({ path: p, download_url: themeFileUrl(contentFolder, p), size: 0 })),
                     ],
                     resolveMaskTargetPath(
-                        selectedFolder,
+                        contentFolder,
                         [
                             ...selectedFilePaths.map((p) => ({ path: p })),
                             ...selectedRemoteMaskPaths.map((p) => ({ path: p })),
@@ -1269,13 +1357,13 @@
                               options: maskVariantState.options,
                           }
                         : maskVariantChoicesFromFiles(
-                              selectedFolder,
+                              contentFolder,
                               [
-                                  ...selectedFilePaths.map((p) => ({ path: p, download_url: themeFileUrl(selectedFolder, p), size: 0 })),
-                                  ...selectedRemoteMaskPaths.map((p) => ({ path: p, download_url: themeFileUrl(selectedFolder, p), size: 0 })),
+                                  ...selectedFilePaths.map((p) => ({ path: p, download_url: themeFileUrl(contentFolder, p), size: 0 })),
+                                  ...selectedRemoteMaskPaths.map((p) => ({ path: p, download_url: themeFileUrl(contentFolder, p), size: 0 })),
                               ],
                               resolveMaskTargetPath(
-                                  selectedFolder,
+                                  contentFolder,
                                   [
                                       ...selectedFilePaths.map((p) => ({ path: p })),
                                       ...selectedRemoteMaskPaths.map((p) => ({ path: p })),
@@ -1283,31 +1371,42 @@
                                   selectedConfig && selectedConfig.desktopMask
                               )
                           );
-                const selectedMask = await promptMaskVariant(
-                    theme.name,
-                    selectedMaskChoices.options.length ? selectedMaskChoices : maskChoices,
-                    selectedFolder,
-                    maskVariantState && maskVariantState.selectEl ? maskVariantState.selectEl.value : ''
-                );
+
+                let selectedMask = null;
+                if (maskVariantState && Array.isArray(maskVariantState.options) && maskVariantState.options.length > 1) {
+                    const rawIdx = String(maskVariantState.selectEl && maskVariantState.selectEl.value || '0');
+                    const idx = parseInt(rawIdx, 10);
+                    selectedMask = maskVariantState.options[Number.isFinite(idx) ? idx : 0] || maskVariantState.options[0];
+                } else {
+                    selectedMask = await promptMaskVariant(
+                        theme.name,
+                        selectedMaskChoices.options.length ? selectedMaskChoices : maskChoices,
+                        contentFolder,
+                        ''
+                    );
+                }
                 if (selectedMask === null) {
                     progressUI.abortAndRestore(buttonNode);
                     return;
                 }
-                if (maskVariantState && maskVariantState.selectEl && selectedMask && selectedMask.sourcePath) {
-                    maskVariantState.selectEl.value = selectedMask.sourcePath;
-                    if (typeof maskVariantState.selectEl.onchange === 'function') {
-                        maskVariantState.selectEl.onchange();
+                if (maskVariantState && maskVariantState.selectEl && selectedMask && maskVariantState.options) {
+                    const syncIdx = maskVariantState.options.findIndex((o) => String(o.sourcePath || '') === String(selectedMask.sourcePath || ''));
+                    if (syncIdx >= 0) {
+                        maskVariantState.selectEl.value = String(syncIdx);
+                        if (typeof maskVariantState.selectEl.onchange === 'function') {
+                            maskVariantState.selectEl.onchange();
+                        }
                     }
                 }
                 const entriesForDownload = applyMaskVariantToEntries(
-                    selectedFolder,
+                    contentFolder,
                     selectedFiles.map((entry) => {
                         const p = themeFileEntryPath(entry);
                         return {
                             name: p.split('/').pop() || p,
                             path: p,
                             size: 0,
-                            download_url: themeFileUrl(selectedFolder, p),
+                            download_url: themeFileUrl(contentFolder, p),
                         };
                     }),
                     selectedMask && selectedMask.sourcePath,
@@ -1325,14 +1424,14 @@
                 };
 
                 const zipBlob = await downloadThemeFilesAsZip(
-                    ensureDarkModeDisplayName(theme.name, selectedFolder) || theme.name,
+                    zipThemeDisplayName(theme.name, catalogFolder, variantSeg) || theme.name,
                     entriesForDownload,
                     callbacks
                 );
 
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(zipBlob);
-                const zipLabel = ensureDarkModeDisplayName(theme.name, selectedFolder) || 'theme';
+                const zipLabel = zipThemeDisplayName(theme.name, catalogFolder, variantSeg) || 'theme';
                 const safe = zipLabel.replace(/[^\w\d-_ ]/g, '_') || 'theme';
                 a.download = `${safe}.zip`;
                 document.body.appendChild(a);
@@ -1342,7 +1441,7 @@
                 progressUI.removeAndRestoreButton(buttonNode);
             } catch (err) {
                 console.error('Download failed', err);
-                alert(`Failed to download theme "${ensureDarkModeDisplayName(theme.name, theme.folder)}": ${err.message || err}`);
+                alert(`Failed to download theme "${zipThemeDisplayName(theme.name, catalogFolder, variantSeg)}": ${err.message || err}`);
                 progressUI.abortAndRestore(buttonNode);
             }
         }
@@ -1359,11 +1458,21 @@
 
             const params = new URLSearchParams(location.search);
             const themeQuery = params.get('theme') || params.get('t') || '';
+            let activeVariant = String(params.get('variant') || '').trim();
             let themeMeta = null;
             let folder = '';
+            let activeContentFolder = '';
 
             if (themeQuery) {
                 const themeName = String(themeQuery || '').replace(/\+/g, ' ').trim();
+                if (/_dark[-_]?mode$/i.test(themeName)) {
+                    const base = themeName.replace(/_dark[-_]?mode$/i, '');
+                    const u = new URL(location.href);
+                    u.searchParams.set('theme', base);
+                    u.searchParams.set('variant', 'Dark');
+                    location.replace(u.toString());
+                    return;
+                }
                 document.title = `${themeName} Innioasis Y1 theme`;
                 let themes = [];
                 try {
@@ -1377,16 +1486,24 @@
                 } catch (e) {
                     console.warn('themes.json fetch failed', e)
                 }
-                folder = (themeMeta && themeMeta.folder) ? themeMeta.folder : themeName;
-                const cfgMeta = await tryFetchFolderConfigTheme(folder, themes);
+                const catalogFolder = (themeMeta && themeMeta.folder) ? themeMeta.folder : themeName;
+                activeContentFolder = effectiveThemeContentPrefix(catalogFolder, activeVariant);
+                let cfgMeta = await tryFetchFolderConfigTheme(activeContentFolder, themes, catalogFolder);
+                if (!cfgMeta && activeVariant) {
+                    activeVariant = '';
+                    activeContentFolder = catalogFolder;
+                    cfgMeta = await tryFetchFolderConfigTheme(activeContentFolder, themes, catalogFolder);
+                }
                 if (cfgMeta) {
                     themeMeta = {
                         ...(themeMeta || {}),
                         ...cfgMeta,
-                        folder: cfgMeta.folder || folder
+                        folder: catalogFolder
                     };
-                    folder = themeMeta.folder || folder;
+                } else {
+                    themeMeta = { ...(themeMeta || {}), folder: catalogFolder };
                 }
+                folder = catalogFolder;
             } else {
                 const themes = await tryFetchThemes();
                 themeMeta = await tryFetchLocalConfigTheme(themes);
@@ -1398,66 +1515,70 @@
                 if (themeMeta) {
                     folder = themeMeta.folder || '';
                     document.title = `${themeMeta.name} Innioasis Y1 theme`;
+                    activeContentFolder = effectiveThemeContentPrefix(folder, activeVariant);
+                    if (activeVariant) {
+                        const altCfg = await tryFetchFolderConfigTheme(activeContentFolder, themes, folder);
+                        if (altCfg) themeMeta = { ...(themeMeta || {}), ...altCfg, folder };
+                    } else {
+                        activeContentFolder = folder;
+                    }
                 } else {
                     showFallbackAndRedirect();
                     return;
                 }
             }
 
-            const pairCandidates = darkPairFolderCandidates(folder).filter((p) => p.toLowerCase() !== String(folder || '').toLowerCase());
-            let pairFolder = '';
-            for (const candidate of pairCandidates) {
-                if (await folderHasConfig(candidate)) {
-                    pairFolder = candidate;
-                    break;
-                }
+            if (!activeContentFolder) {
+                activeContentFolder = effectiveThemeContentPrefix(folder, activeVariant) || folder;
             }
-            const pairAvailable = !!pairFolder;
-            if (previewVariationWrap && previewVariationSelect && pairAvailable) {
-                const isDark = isDarkModeFolderPath(folder);
-                const lightFolder = isDark ? pairFolder : folder;
-                const darkFolder = isDark ? folder : pairFolder;
+
+            const variantNames = await listThemeVariantFolderNames(folder);
+            const variantUi = variantNames.length > 0;
+            if (previewVariationWrap && previewVariationSelect && variantUi) {
                 previewVariationSelect.innerHTML = '';
-                [
-                    { value: lightFolder, label: 'Light' },
-                    { value: darkFolder, label: 'Dark' },
-                ].forEach((optMeta) => {
+                const defOpt = document.createElement('option');
+                defOpt.value = '';
+                defOpt.textContent = 'Default';
+                previewVariationSelect.appendChild(defOpt);
+                for (const vn of variantNames) {
                     const opt = document.createElement('option');
-                    opt.value = optMeta.value;
-                    opt.textContent = optMeta.label;
+                    opt.value = vn;
+                    opt.textContent = formatVariantDisplayLabel(vn);
                     previewVariationSelect.appendChild(opt);
-                });
-                previewVariationSelect.value = isDark ? darkFolder : lightFolder;
+                }
+                previewVariationSelect.value = variantNames.includes(activeVariant) ? activeVariant : '';
                 previewVariationSelect.onchange = () => {
-                    const nextFolder = String(previewVariationSelect.value || '').trim();
-                    if (!nextFolder || nextFolder.toLowerCase() === String(folder || '').toLowerCase()) return;
-                    const nextUrl = new URL(location.href);
-                    nextUrl.searchParams.set('theme', nextFolder);
-                    location.href = nextUrl.toString();
+                    const v = String(previewVariationSelect.value || '').trim();
+                    const u = new URL(location.href);
+                    u.searchParams.set('theme', folder);
+                    if (v) u.searchParams.set('variant', v);
+                    else u.searchParams.delete('variant');
+                    location.href = u.toString();
                 };
                 previewVariationWrap.style.display = 'inline-flex';
             } else if (previewVariationWrap) {
                 previewVariationWrap.style.display = 'none';
             }
 
-            const effectiveFiles = extractFilesFromConfig(themeMeta && themeMeta.rawConfig, folder);
-            const remoteVariantPaths = await fetchVariantAssetPathsFromGitHub(folder);
+            const effectiveFiles = extractFilesFromConfig(themeMeta && themeMeta.rawConfig, activeContentFolder);
+            const remoteVariantPaths = await fetchVariantAssetPathsFromGitHub(activeContentFolder);
             const variantDisplayFiles = remoteVariantPaths.map(path => ({
                 path,
-                download_url: themeFileUrl(folder, path),
+                download_url: themeFileUrl(activeContentFolder, path),
                 size: 0
             }));
             const displayFiles = (() => {
                 const map = new Map();
                 for (const entry of [...effectiveFiles, ...variantDisplayFiles]) {
-                    const rel = normalizeConfigAssetPath(entry && entry.path, folder);
+                    const rel = normalizeConfigAssetPath(themeFileEntryPath(entry), activeContentFolder);
+                    if (!activeVariant && isUnderVariantsPath(rel)) continue;
                     if (!rel) continue;
                     const key = rel.toLowerCase();
                     if (map.has(key)) continue;
                     map.set(key, {
                         name: rel.split('/').pop() || rel,
                         path: rel,
-                        download_url: (entry && entry.download_url) ? entry.download_url : themeFileUrl(folder, rel),
+                        download_url: (entry && entry.download_url) ? entry.download_url : themeFileUrl(activeContentFolder, rel),
                         size: Number(entry && entry.size) || 0
                     });
                 }
@@ -1465,42 +1586,45 @@
             })();
             const maskVariantState = {
                 baseMaskPath: resolveMaskTargetPath(
-                    folder,
+                    activeContentFolder,
                     displayFiles,
                     themeMeta && themeMeta.rawConfig && themeMeta.rawConfig.desktopMask
                 ),
                 selectEl: maskVariantSelect,
                 options: []
             };
-            const remoteMaskVariantPaths = await fetchMaskVariantPaths(folder);
+            const remoteMaskVariantPaths = await fetchMaskVariantPaths(activeContentFolder);
             const maskChoiceSeedFiles = [
                 ...displayFiles,
                 ...remoteMaskVariantPaths.map(path => ({
                     path,
-                    download_url: themeFileUrl(folder, path),
+                    download_url: themeFileUrl(activeContentFolder, path),
                     size: 0
                 }))
             ];
-            const maskChoices = maskVariantChoicesFromFiles(folder, maskChoiceSeedFiles, maskVariantState.baseMaskPath);
+            const maskChoices = maskVariantChoicesFromFiles(activeContentFolder, maskChoiceSeedFiles, maskVariantState.baseMaskPath);
             maskVariantState.options = maskChoices.options || [];
             if (maskVariantWrap && maskVariantSelect && maskChoices.options.length > 1) {
                 maskVariantState.baseMaskPath = maskChoices.baseMaskPath;
                 maskVariantSelect.innerHTML = '';
-                for (const option of maskChoices.options) {
+                maskChoices.options.forEach((option, optIdx) => {
                     const opt = document.createElement('option');
-                    opt.value = option.sourcePath;
+                    opt.value = String(optIdx);
                     opt.textContent = option.label;
                     maskVariantSelect.appendChild(opt);
-                }
+                });
                 const updateMaskPreview = () => {
                     if (!maskVariantPreview) return;
-                    const selectedPath = String(maskVariantSelect.value || maskChoices.baseMaskPath || '');
-                    const previewUrl = themeFileUrl(folder, selectedPath);
+                    const rawIdx = parseInt(String(maskVariantSelect.value || '0'), 10);
+                    const idx = Number.isFinite(rawIdx) ? rawIdx : 0;
+                    const picked = maskChoices.options[idx] || maskChoices.options[0];
+                    const selectedPath = String(picked && picked.sourcePath || maskChoices.baseMaskPath || '');
+                    const previewUrl = themeFileUrl(activeContentFolder, selectedPath);
                     if (!previewUrl) {
                         maskVariantPreview.style.display = 'none';
                         return;
                     }
-                    maskVariantPreview.src = previewUrl;
+                    maskVariantPreview.src = `${previewUrl}${previewUrl.includes('?') ? '&' : '?'}mvcb=${Date.now()}`;
                     maskVariantPreview.style.display = 'inline-block';
                 };
                 maskVariantSelect.onchange = updateMaskPreview;
@@ -1520,15 +1644,21 @@
             const artworkSummaryEl = document.getElementById('artwork-check-summary');
             const artworkListEl = document.getElementById('artwork-check-list');
 
-            const displayName = ensureDarkModeDisplayName(
+            const displayName = zipThemeDisplayName(
                 (themeMeta && themeMeta.name) ? themeMeta.name : folder || 'Theme',
-                folder
+                folder,
+                activeVariant
             ) || 'Theme'
             nameEl.textContent = displayName
             descEl.textContent = (themeMeta && themeMeta.description) ? themeMeta.description : 'No description available.'
+            const medalEl = document.getElementById('theme-compatibility-medal');
+            if (medalEl) {
+                const show = themeMeta && String(themeMeta.compatibilityMedal || '').toLowerCase() === 'gold';
+                medalEl.style.display = show ? 'block' : 'none';
+            }
             const seoAuthor = themeMeta && themeMeta.author ? String(themeMeta.author).trim() : '';
             applySeoMetadata(displayName, seoAuthor, themeMeta && themeMeta.description);
-            const artworkWarnings = await artworkCompatibilityWarnings(themeMeta && themeMeta.rawConfig, folder);
+            const artworkWarnings = await artworkCompatibilityWarnings(themeMeta && themeMeta.rawConfig, activeContentFolder);
             if (artworkMessageWrap && artworkSummaryEl && artworkListEl) {
                 if (artworkWarnings.length) {
                     artworkSummaryEl.textContent =
@@ -1627,7 +1757,7 @@
                 if (directInstallPromo) directInstallPromo.style.display = 'none';
             } else {
                 downloadBtn.innerHTML = '<i class="fa-solid fa-download" style="margin-right: 4px;"></i> Download';
-                downloadBtn.onclick = () => downloadTheme(themeObj, downloadBtn, effectiveFiles, maskVariantState);
+                downloadBtn.onclick = () => downloadTheme(themeObj, downloadBtn, effectiveFiles, maskVariantState, activeContentFolder, activeVariant);
                 if (supportDirectInstall && directInstallPromo) {
                     directInstallPromo.style.display = 'block';
                 }
