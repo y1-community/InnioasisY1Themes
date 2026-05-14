@@ -28,10 +28,10 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
-    <link rel="stylesheet" href="y1-theme-preview.css?v=20260214">
+    <link rel="stylesheet" href="y1-theme-preview.css?v=20260215">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="theme-packaging.js"></script>
-    <script src="y1-theme-preview.js?v=20260214"></script>
+    <script src="y1-theme-preview.js?v=20260215"></script>
     <script src="gallery-loaded-theme.js"></script>
 
     <style>
@@ -1339,13 +1339,13 @@
                     default: themeFonts.length === 0 && !looksFile(fontFamily),
                 });
             }
-            if (!themeFonts.length) return 'Inter, system-ui, sans-serif';
+            if (!themeFonts.length) return 'Arial, "Helvetica Neue", Helvetica, sans-serif';
             const def = themeFonts.find((f) => f && f.default) || themeFonts[0];
             const fam = (def && def.id) || stripFontFileBase(def && def.file);
             const alt = stripFontFileBase(def && def.file);
             const parts = [`"${fam}"`];
             if (alt && alt !== fam) parts.push(`"${alt}"`);
-            parts.push('Inter', 'system-ui', 'sans-serif');
+            parts.push('Arial', '"Helvetica Neue"', 'Helvetica', 'sans-serif');
             return parts.join(', ');
         }
 
@@ -1364,7 +1364,7 @@
         }
 
         /** Match Y1 list “selected row” look: selected item background + selected text color. */
-        function applyThemeCardDownloadButtonStyles(dl, cfg, contentFolder) {
+        function applyThemeCardDownloadButtonStyles(dl, cfg, contentFolder, previewFontFamily) {
             if (!dl) return;
             if (!cfg || typeof cfg !== 'object' || !contentFolder) {
                 dl.style.border = 'none';
@@ -1401,7 +1401,11 @@
             Object.assign(dl.style, bg);
             dl.style.color = textColor;
             dl.style.borderRadius = '8px';
-            dl.style.fontFamily = themeButtonFontStackFromConfig(cfg);
+            const pf =
+                previewFontFamily != null && String(previewFontFamily).trim() !== ''
+                    ? String(previewFontFamily).trim()
+                    : themeButtonFontStackFromConfig(cfg);
+            dl.style.fontFamily = pf;
         }
 
         async function fetchThemeConfigForCard(folder, variantSegment) {
@@ -2107,7 +2111,8 @@
                         await window.Y1ThemePreview.mount(simHostModal, {
                             catalogFolder,
                             variantSegment: seg,
-                            mode: 'gallery',
+                            mode: 'full',
+                            suppressDeviceInput: true,
                             buildFileUrl: (cf, rel) => buildThemeFileUrl(cf, rel),
                             previewMeta: modalPreviewMeta
                         });
@@ -2781,13 +2786,14 @@
                     mode: 'gallery',
                     buildFileUrl: (cf, rel) => buildThemeFileUrl(cf, rel),
                     previewMeta: cardPreviewMeta,
-                    onReady: (cfg) => {
+                    onReady: (cfg, meta) => {
                         img.style.visibility = 'hidden';
                         img.style.pointerEvents = 'none';
                         if (cfg && folderPath) {
                             const cf = effectiveThemeContentFolder(folderPath, String(variantSelect.value || '').trim());
-                            applyThemeCardDownloadButtonStyles(dl, cfg, cf);
-                            if (di) applyThemeCardDownloadButtonStyles(di, cfg, cf);
+                            const stack = meta && meta.previewFontFamily ? meta.previewFontFamily : '';
+                            applyThemeCardDownloadButtonStyles(dl, cfg, cf, stack);
+                            if (di) applyThemeCardDownloadButtonStyles(di, cfg, cf, stack);
                         }
                     },
                     onError: () => {
@@ -2874,13 +2880,14 @@
                         mode: 'gallery',
                         buildFileUrl: (cf, rel) => buildThemeFileUrl(cf, rel),
                         previewMeta: cardPreviewMeta,
-                        onReady: (cfg) => {
+                        onReady: (cfg, meta) => {
                             img.style.visibility = 'hidden';
                             img.style.pointerEvents = 'none';
                             if (cfg && folderPath) {
                                 const cf = effectiveThemeContentFolder(folderPath, seg);
-                                applyThemeCardDownloadButtonStyles(dl, cfg, cf);
-                                if (di) applyThemeCardDownloadButtonStyles(di, cfg, cf);
+                                const stack = meta && meta.previewFontFamily ? meta.previewFontFamily : '';
+                                applyThemeCardDownloadButtonStyles(dl, cfg, cf, stack);
+                                if (di) applyThemeCardDownloadButtonStyles(di, cfg, cf, stack);
                             }
                         },
                         onError: () => {
@@ -2944,8 +2951,20 @@
                 if (!folderPath) return;
                 const cfg = await fetchThemeConfigForCard(folderPath, variantSeg);
                 const cf = effectiveThemeContentFolder(folderPath, variantSeg);
-                applyThemeCardDownloadButtonStyles(dl, cfg, cf);
-                if (di) applyThemeCardDownloadButtonStyles(di, cfg, cf);
+                let previewFont = '';
+                if (
+                    cfg &&
+                    window.Y1ThemePreview &&
+                    typeof window.Y1ThemePreview.ensureCardPreviewFonts === 'function'
+                ) {
+                    previewFont = window.Y1ThemePreview.ensureCardPreviewFonts(cfg, {
+                        catalogFolder: folderPath,
+                        variantSegment: variantSeg,
+                        buildFileUrl: (f, rel) => buildThemeFileUrl(f, rel),
+                    });
+                }
+                applyThemeCardDownloadButtonStyles(dl, cfg, cf, previewFont);
+                if (di) applyThemeCardDownloadButtonStyles(di, cfg, cf, previewFont);
             }
 
             dl.innerHTML = '<i class="fa-solid fa-download"></i> Download';

@@ -554,6 +554,25 @@
         return /\.(ttf|otf|woff2?)(\?|#|$)/i.test(s);
     }
 
+    /** Stable id for `<style id="…">` + scoped @font-face family names (one gallery card / preview root). */
+    function themePreviewFontStyleId(catalogFolder, variantSegment) {
+        return (
+            'y1-tp-fonts-' +
+            String(String(catalogFolder || '') + '-' + String(variantSegment || '')).replace(/[^a-zA-Z0-9_-]/g, '-')
+        );
+    }
+
+    /** Per-mount @font-face names so multiple cards on one page never share the same family string. */
+    function scopedThemeFontFamily(styleId, logicalName) {
+        var base = String(logicalName != null ? logicalName : 'font')
+            .replace(/"/g, '')
+            .trim()
+            .replace(/[^a-zA-Z0-9_-]/g, '_');
+        if (!base) base = 'font';
+        var sid = String(styleId || 'id').replace(/[^a-zA-Z0-9_]/g, '_');
+        return 'y1tp_' + sid + '__' + base;
+    }
+
     /** Collect font asset paths referenced anywhere in config.json (fallback when theme.fonts is incomplete). */
     function walkConfigForFontFilePaths(obj, out, seen) {
         if (!obj) return;
@@ -579,8 +598,12 @@
         }
     }
 
-    function injectThemeFonts(spec, buildFileUrl, contentFolder, styleId) {
+    function injectThemeFonts(spec, buildFileUrl, contentFolder, styleId, fontDisplay) {
         if (typeof document === 'undefined') return;
+        var display =
+            fontDisplay === 'swap' || fontDisplay === 'optional' || fontDisplay === 'fallback' || fontDisplay === 'auto'
+                ? fontDisplay
+                : 'block';
         var modern = (spec.theme && spec.theme.fonts) || [];
         var fontFamily = spec.fontFamily;
         var discovered = [];
@@ -609,8 +632,13 @@
 
         var head = document.head || document.getElementsByTagName('head')[0];
         if (!head) return;
-        var existing = head.querySelector('#' + styleId);
-        if (existing) existing.remove();
+        var existing = null;
+        try {
+            existing = document.getElementById(styleId);
+        } catch (eRm) {
+            existing = null;
+        }
+        if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
 
         if (!themeFonts.length) {
             injectRobotoFallback();
@@ -623,7 +651,8 @@
             if (!f || !f.file) continue;
             var url = buildFileUrl(contentFolder, f.file);
             if (!url) continue;
-            var family = f.id || stripExt(f.file);
+            var logical = f.id || stripExt(f.file);
+            var family = scopedThemeFontFamily(styleId, logical);
             var ext = String(f.file)
                 .split('.')
                 .pop()
@@ -637,7 +666,9 @@
                 url.replace(/"/g, '%22') +
                 '") format("' +
                 format +
-                '");font-weight:400;font-style:normal;font-display:block;}';
+                '");font-weight:400;font-style:normal;font-display:' +
+                display +
+                ';}';
         }
         if (!css) {
             injectRobotoFallback();
@@ -649,7 +680,7 @@
         head.appendChild(st);
     }
 
-    function defaultFontStack(spec) {
+    function defaultFontStack(spec, styleId) {
         var modern = (spec.theme && spec.theme.fonts) || [];
         var fontFamily = spec.fontFamily;
         var discovered = [];
@@ -676,7 +707,7 @@
             }
         }
         if (!themeFonts.length) {
-            return '"Roboto", "Helvetica Neue", Arial, sans-serif';
+            return 'Arial, "Helvetica Neue", Helvetica, sans-serif';
         }
         var def = null;
         for (var fi = 0; fi < themeFonts.length; fi++) {
@@ -686,11 +717,10 @@
             }
         }
         if (!def) def = themeFonts[0];
-        var fam = def.id || stripExt(def.file);
-        var alt = stripExt(def.file);
+        var logical = def.id || stripExt(def.file);
+        var fam = scopedThemeFontFamily(styleId, logical);
         var stack = ['"' + fam + '"'];
-        if (alt && alt !== fam) stack.push('"' + alt + '"');
-        stack.push('"Courier New Bold"', '"Courier New"', 'Courier', 'monospace');
+        stack.push('Arial', '"Helvetica Neue"', 'Helvetica', 'sans-serif');
         return stack.join(', ');
     }
 
@@ -1020,9 +1050,8 @@
         if (!container) return Promise.reject(new Error('Missing container'));
         var opts = options || {};
         var mode = String(opts.mode || 'menu').toLowerCase();
-        var galleryChrome = mode === 'gallery';
-        var useFullDevice = mode === 'full' || galleryChrome;
-        var suppressDeviceInput = opts.suppressDeviceInput === true || galleryChrome;
+        var useFullDevice = mode === 'full';
+        var suppressDeviceInput = opts.suppressDeviceInput === true;
         var interactive = mode === 'full' && !suppressDeviceInput;
         var catalogFolder = String(opts.catalogFolder || '')
             .replace(/^\.\/+/, '')
@@ -1070,15 +1099,12 @@
                           playState: null,
                           brightnessLevel: 50
                       };
-                /* Gallery-style full chrome uses the same static home sim as menu mode (no deep nav). */
-
                 var previewMeta = opts.previewMeta || {};
 
-                var fontStyleId =
-                    'y1-tp-fonts-' +
-                    String(catalogFolder + '-' + variantSegment).replace(/[^a-zA-Z0-9_-]/g, '-');
-                injectThemeFonts(cfg, buildFileUrl, contentFolder, fontStyleId);
-                var fontStack = defaultFontStack(cfg);
+                var fontStyleId = themePreviewFontStyleId(catalogFolder, variantSegment);
+                var fontDisplay = mode === 'full' ? 'block' : 'swap';
+                injectThemeFonts(cfg, buildFileUrl, contentFolder, fontStyleId, fontDisplay);
+                var fontStack = defaultFontStack(cfg, fontStyleId);
 
                 var itemCfg = (cfg && cfg.itemConfig) || {};
                 var menuCfg = (cfg && cfg.menuConfig) || {};
@@ -1881,9 +1907,7 @@
                 }
 
                 function primeLoadedThemeFontsThenInitialPaint() {
-                    function initialPaint() {
-                        paint();
-                    }
+                    paint();
                     if (typeof document !== 'undefined' && document.fonts && document.fonts.load) {
                         var firstFam = String(fontStack || '')
                             .split(',')[0]
@@ -1891,10 +1915,21 @@
                         document.fonts
                             .load('22px ' + firstFam)
                             .catch(function () {})
-                            .then(initialPaint);
-                        return;
+                            .then(function () {
+                                paint();
+                            });
+                    } else {
+                        global.setTimeout(function () {
+                            paint();
+                        }, 60);
                     }
-                    global.setTimeout(initialPaint, 60);
+                    if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
+                        document.fonts.ready
+                            .then(function () {
+                                paint();
+                            })
+                            .catch(function () {});
+                    }
                 }
                 primeLoadedThemeFontsThenInitialPaint();
 
@@ -2324,7 +2359,11 @@
 
                 if (typeof opts.onReady === 'function') {
                     try {
-                        opts.onReady(cfg);
+                        opts.onReady(cfg, {
+                            previewFontFamily: fontStack,
+                            contentFolder: contentFolder,
+                            fontStyleId: fontStyleId
+                        });
                     } catch (e) {}
                 }
             })
@@ -2347,6 +2386,27 @@
         }
         container.innerHTML = '';
         container.classList.remove('y1-tp-mounted');
+    }
+
+    /**
+     * Inject @font-face rules for a card theme (same style id as mount) and return the scoped
+     * `font-family` stack for matching Download / Direct Install buttons.
+     */
+    function ensureCardPreviewFonts(cfg, opts) {
+        opts = opts || {};
+        if (!cfg || typeof cfg !== 'object') {
+            return 'Arial, "Helvetica Neue", Helvetica, sans-serif';
+        }
+        var catalogFolder = String(opts.catalogFolder || '')
+            .replace(/^\.\/+/, '')
+            .trim();
+        var variantSegment = String(opts.variantSegment || '').trim();
+        var buildFileUrl =
+            typeof opts.buildFileUrl === 'function' ? opts.buildFileUrl : defaultBuildFileUrl;
+        var contentFolder = effectiveContentPrefix(catalogFolder, variantSegment);
+        var fontStyleId = themePreviewFontStyleId(catalogFolder, variantSegment);
+        injectThemeFonts(cfg, buildFileUrl, contentFolder, fontStyleId, 'swap');
+        return defaultFontStack(cfg, fontStyleId);
     }
 
     var _galleryMountActive = 0;
@@ -2399,6 +2459,7 @@
         mount: mount,
         unmount: unmount,
         effectiveContentPrefix: effectiveContentPrefix,
-        mountGalleryCardLazy: mountGalleryCardLazy
+        mountGalleryCardLazy: mountGalleryCardLazy,
+        ensureCardPreviewFonts: ensureCardPreviewFonts
     };
 })(typeof window !== 'undefined' ? window : this);
