@@ -922,6 +922,10 @@
 
         function renderExtraVariationList() {
             if (!extraVariationsList) return;
+            // Persist Look 1 + extra rows from the DOM before replacing innerHTML (adding a variation re-renders this list).
+            if (extraVariationsList.querySelector(".extra-variation-card")) {
+                readExtraVariationRowsFromDom();
+            }
             if (extraVariationsAddBtn && extraVariationsAddTopAnchor) {
                 extraVariationsAddTopAnchor.appendChild(extraVariationsAddBtn);
             }
@@ -944,14 +948,14 @@
 <div class="extra-variation-card extra-variation-card--primary" data-variation-id="${escapeHtml(row.id)}" data-variation-primary="1">
   <h4>Look 1 — main package</h4>
   <div class="extra-variation-meta">This is the ZIP or folder from <strong>Option A</strong> or <strong>Option B</strong>. Add more rows only if you are attaching <em>separate</em> packages for extra looks.</div>
+  <div class="row">
+    <label>Title</label>
+    <input type="text" data-primary-field="title" value="${escapeHtml(ti.title || "")}" />
+  </div>
   <div class="row" data-primary-gallery-wrap style="display:${showLookLabel ? "block" : "none"};">
     <label>Variation name (gallery)</label>
     <input type="text" data-var-field="galleryLookLabel" value="${galleryLab}" placeholder="e.g. Blue Swirl" />
     <p class="hint" style="margin:0;">Only when this submission has more than one look — so the gallery can label your main look next to the others.</p>
-  </div>
-  <div class="row">
-    <label>Title</label>
-    <input type="text" data-primary-field="title" value="${escapeHtml(ti.title || "")}" />
   </div>
   <div class="row">
     <label>Author</label>
@@ -2290,6 +2294,14 @@
                 refreshBatchThemePanel();
                 syncCollisionUi();
                 return;
+            }
+
+            if (
+                usePrimaryLookSlotUi() &&
+                extraVariationsList &&
+                extraVariationsList.querySelector(".extra-variation-card")
+            ) {
+                readExtraVariationRowsFromDom();
             }
 
             const batchLayout = themeInfoEntries.length > 1;
