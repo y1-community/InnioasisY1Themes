@@ -54,6 +54,10 @@
     <script src="gallery-loaded-theme.js"></script>
 </head>
 <style>
+    html {
+        font-size: clamp(15px, 2.8vw, 17px);
+    }
+
     #nav-root {
         display: none;
     }
@@ -83,11 +87,11 @@
     }
 
     .gallery-tab {
-        padding: 5px 12px;
+        padding: 8px 14px;
         border-radius: 7px;
         color: #aeb6c5;
         text-decoration: none;
-        font-size: 0.82rem;
+        font-size: clamp(0.82rem, 2.6vw, 0.95rem);
         font-weight: 600;
         border: 1px solid transparent;
         line-height: 1.1;
@@ -138,6 +142,42 @@
         pointer-events: none;
     }
 
+    #theme-root {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+        width: 100%;
+    }
+
+    #theme-root #left {
+        width: 100%;
+        max-width: min(960px, 100%);
+        box-sizing: border-box;
+    }
+
+    #theme-root #right {
+        width: 100% !important;
+        max-width: min(720px, 100%) !important;
+        box-sizing: border-box;
+    }
+
+    @media (min-width: 901px) {
+
+        #theme-y1-sim-wrap,
+        #theme-page-variant-bar {
+            max-width: min(1320px, 98vw) !important;
+        }
+
+        #theme-root #left {
+            max-width: min(1320px, 100%);
+        }
+
+        #theme-root #right {
+            max-width: min(920px, 100%) !important;
+        }
+    }
+
     @media (max-width: 900px) {
         .gallery-topbar {
             grid-template-columns: 1fr;
@@ -155,6 +195,27 @@
             max-width: 360px;
             justify-self: center;
             grid-column: auto;
+        }
+
+        #theme-root #right {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box;
+        }
+
+        #theme-y1-sim-wrap,
+        #theme-page-variant-bar {
+            max-width: min(560px, 100%) !important;
+        }
+    }
+
+    #theme-y1-sim-wrap .y1-tp-device--full {
+        max-width: min(560px, 98vw) !important;
+    }
+
+    @media (min-width: 901px) {
+        #theme-y1-sim-wrap .y1-tp-device--full {
+            max-width: min(1180px, 98vw) !important;
         }
     }
 
@@ -205,18 +266,18 @@
     <div style="display: flex; justify-content: center;">
         <div class="wrap" style="max-width:1200px;margin-top:6rem;">
             <div id="theme-root">
-                <div id="left" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:12px;min-height:360px;padding:8px 0;">
-                    <div id="theme-page-variant-bar" style="display:none;width:100%;max-width:min(440px,100%);justify-content:center;padding:0 8px 2px;box-sizing:border-box;">
+                <div id="left" style="display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:12px;min-height:0;padding:8px 0;width:100%;">
+                    <div id="theme-page-variant-bar" style="display:none;width:100%;justify-content:center;padding:0 8px 2px;box-sizing:border-box;">
                         <label id="preview-variation-wrap" style="display:none;align-items:center;gap:8px;color:var(--text-secondary);font-size:0.9rem;">
                             Theme variant
                             <select id="preview-variation-select" style="background:#222733;border:1px solid rgba(255,255,255,0.12);color:#eaf0ff;border-radius:8px;padding:0.4rem 0.5rem;"></select>
                         </label>
                     </div>
-                    <div id="theme-y1-sim-wrap" style="width:100%;max-width:min(440px,100%);min-height:280px;display:flex;align-items:center;justify-content:center;" title="Click the device, then use arrow keys, Enter, and Escape like the Y1 Theme Maker simulator"></div>
+                    <div id="theme-y1-sim-wrap" style="width:100%;min-height:300px;display:flex;align-items:center;justify-content:center;" title="Click the device, then use arrow keys, Enter, and Escape like the Y1 Theme Maker simulator"></div>
                     <img id="main-screenshot" src="placeholder.png" alt="Screenshot" style="width:min(400px,100%);height:auto;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,.5)">
                 </div>
 
-                <div id="right" style="width:420px;display:flex;flex-direction:column;gap:12px;">
+                <div id="right" style="width:100%;display:flex;flex-direction:column;gap:12px;">
                     <div style="background:var(--bg-card);padding:16px;border-radius:10px;">
                         <h1 id="theme-name" style="margin:0 0 6px 0;font-size:1.5rem"></h1>
                         <div id="theme-variant-subtitle" style="display:none;margin:-2px 0 8px 0;font-size:0.92rem;font-weight:600;color:var(--text-secondary);" aria-live="polite"></div>
@@ -1563,7 +1624,7 @@
             const maskVariantPreview = document.getElementById('mask-variant-preview');
 
             const params = new URLSearchParams(location.search);
-            const themeQuery = params.get('theme') || params.get('t') || '';
+            const themeQuery = params.get('theme') || params.get('t') || params.get('folder') || '';
             let activeVariant = String(params.get('variant') || '').trim();
             let themeMeta = null;
             let folder = '';
@@ -1634,6 +1695,18 @@
 
             if (!activeContentFolder) {
                 activeContentFolder = effectiveThemeContentPrefix(folder, activeVariant) || folder;
+            }
+
+            if ((!themeMeta || !themeMeta.rawConfig) && folder) {
+                try {
+                    const tlist = await tryFetchThemes();
+                    const recovered = await tryFetchFolderConfigTheme(folder, tlist, folder);
+                    if (recovered && recovered.rawConfig) {
+                        themeMeta = { ...(themeMeta || {}), ...recovered, folder };
+                    }
+                } catch (e) {
+                    console.warn('theme config recovery fetch failed', e);
+                }
             }
 
             const variantNames = await listThemeVariantFolderNames(folder, themeMeta);
@@ -1935,7 +2008,9 @@
                     onError: () => {
                         simWrap.style.display = 'none';
                     }
-                }).catch(() => {});
+                }).catch((err) => {
+                    console.warn('Y1 theme preview mount failed', err);
+                });
             } else if (simWrap) {
                 simWrap.style.display = 'none';
             }
@@ -1996,9 +2071,11 @@
                     const meta = document.createElement('div')
 
                     function formatSize(size) {
-                        if (size >= 1_000_000) return (size / 1_000_000).toFixed(2) + ' MB';
-                        if (size >= 1_000) return (size / 1_000).toFixed(2) + ' KB';
-                        return size + ' bytes';
+                        const n = Number(size);
+                        if (!Number.isFinite(n) || n <= 0) return '—';
+                        if (n >= 1_000_000) return (n / 1_000_000).toFixed(2) + ' MB';
+                        if (n >= 1_000) return (n / 1_000).toFixed(2) + ' KB';
+                        return n + ' bytes';
                     }
                     meta.textContent = formatSize(f.size ?? 0);
                     meta.style.color = 'var(--text-secondary)'
