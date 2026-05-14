@@ -82,6 +82,10 @@ function isValidEmail(s) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s || "").trim());
 }
 
+function redactEmailLikeText(value) {
+  return String(value || "").replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[redacted-email]");
+}
+
 async function readThemeConfigAuthorFromBase(apiBase, token, folder, branch) {
   const enc = encodeRepoPath(`${folder}/config.json`);
   try {
@@ -137,6 +141,9 @@ export async function handleRemovalPost(request, env) {
     const folderRaw = String(form.get("folder") || "").trim();
     const reason = String(form.get("reason") || "").trim();
     const requester = String(form.get("requester") || "").trim();
+    const safeRequester = redactEmailLikeText(requester);
+    const safeReason = redactEmailLikeText(reason);
+
     const confirmNameRaw = String(form.get("confirmName") || "").trim();
     const confirmAuthorRaw = String(form.get("confirmAuthor") || "").trim();
     const contactEmail = String(form.get("contactEmail") || "").trim();
@@ -359,9 +366,9 @@ export async function handleRemovalPost(request, env) {
       `- **Folder:** \`${folderRaw}\``,
       `- **Catalog title:** ${catalogName}`,
       catalogAuthor ? `- **Catalog author:** ${catalogAuthor}` : `- **Catalog author:** _(none listed)_`,
-      `- **Submitter contact email:** ${contactEmail}`,
-      requester ? `- **Requester:** ${requester}` : null,
-      reason ? `- **Reason:** ${reason}` : null,
+      "- **Submitter contact email:** _(redacted; delivered privately via FabForm)_",
+      safeRequester ? `- **Requester:** ${safeRequester}` : null,
+      safeReason ? `- **Reason:** ${safeReason}` : null,
       `- **Blacklist preference:** ${blacklistOptOut ? "Requested (block re-uploads)" : "Not requested"}`,
       "",
       "The submitter confirmed the **listed title** (and **author**, if listed) before this request was created.",

@@ -1402,6 +1402,11 @@
             return [`${folder}_dark-mode`, `${folder}_dark_mode`];
         }
 
+        function darkPairFolder(folderPath) {
+            const candidates = darkPairFolderCandidates(folderPath);
+            return candidates.length ? candidates[0] : '';
+        }
+
         async function folderHasConfig(folderPath) {
             const folder = String(folderPath || '').replace(/^\.\/+/, '').trim();
             if (!folder) return false;
@@ -1529,8 +1534,15 @@
         async function promptVariantCombination(theme) {
             const initialFolder = String((theme && theme.folder) || '').replace(/^\.\/+/, '').trim();
             if (!initialFolder) throw new Error('No downloadable folder info for this theme.');
-            const pair = darkPairFolder(initialFolder);
-            const pairExists = pair && pair.toLowerCase() !== initialFolder.toLowerCase() && await folderHasConfig(pair);
+            const candidatePairs = darkPairFolderCandidates(initialFolder).filter((p) => p.toLowerCase() !== initialFolder.toLowerCase());
+            let pair = '';
+            for (const candidate of candidatePairs) {
+                if (await folderHasConfig(candidate)) {
+                    pair = candidate;
+                    break;
+                }
+            }
+            const pairExists = !!pair;
             const options = pairExists
                 ? [
                     { label: 'Light variation', folder: /_dark-mode$/i.test(initialFolder) ? pair : initialFolder },

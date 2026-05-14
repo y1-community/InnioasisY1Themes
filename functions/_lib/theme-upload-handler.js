@@ -87,6 +87,85 @@ function sanitizeThemeTitle(value) {
   return { value: trimmed, changed: false };
 }
 
+const BLOCKED_DIRECT_FILE_EXTENSIONS = new Set([
+  ".htm", ".html", ".xhtml", ".shtml",
+  ".js", ".mjs", ".cjs", ".jsx", ".ts", ".tsx",
+  ".php", ".phtml", ".php3", ".php4", ".php5", ".phar",
+  ".asp", ".aspx", ".jsp", ".cgi", ".pl", ".py", ".rb",
+  ".sh", ".bash", ".zsh", ".ps1", ".bat", ".cmd", ".com",
+  ".exe", ".dll", ".so", ".dylib", ".jar",
+]);
+
+/** First path segments that must never ship via direct theme uploads. */
+const RESERVED_DIRECT_UPLOAD_SEGMENTS = new Set([
+  "scripts",
+  "functions",
+  "assets",
+  ".github",
+  "workers",
+  "themes",
+  "node_modules",
+  "creators",
+  ".git",
+]);
+
+/** CI / workflow manifest filenames (repo root or subtree). */
+const CI_MANIFEST_BASENAMES = new Set(
+  [
+    "azure-pipelines.yml",
+    "azure-pipelines.yaml",
+    ".travis.yml",
+    "travis.yml",
+    "appveyor.yml",
+    ".gitlab-ci.yml",
+    ".circleci.yml",
+    "Makefile",
+    "Jenkinsfile",
+  ].map((s) => s.toLowerCase())
+);
+
+function normalizedUploadRepoPath(pathValue) {
+  return String(pathValue || "")
+    .replace(/\\/g, "/")
+    .replace(/^\/+/, "")
+    .trim();
+}
+
+function fileSuffixLower(pathValue) {
+  const norm = normalizedUploadRepoPath(pathValue).toLowerCase();
+  const file = norm.split("/").pop() || "";
+  const dot = file.lastIndexOf(".");
+  if (dot < 0) return "";
+  return file.slice(dot);
+}
+
+/**
+ * Drops web-executable, script, CI, or repo infra paths before opening the GitHub PR.
+ * The upload request still succeeds HTTP-wise; withheld paths are omitted from commits only.
+ */
+function shouldOmitFromDirectThemeCommit(pathValue) {
+  const normRaw = normalizedUploadRepoPath(pathValue);
+  const normLow = normRaw.toLowerCase();
+  if (!normLow || normLow.includes("..")) return true;
+
+  const segments = normLow.split("/").filter(Boolean);
+  const firstSeg = segments[0] || "";
+  if (RESERVED_DIRECT_UPLOAD_SEGMENTS.has(firstSeg)) return true;
+
+  const leaf = (segments.length ? segments[segments.length - 1] : normLow).toLowerCase();
+  if (leaf && CI_MANIFEST_BASENAMES.has(leaf)) return true;
+
+  const ext = fileSuffixLower(pathValue);
+  if (ext && BLOCKED_DIRECT_FILE_EXTENSIONS.has(ext)) return true;
+
+  if (ext === ".yml" || ext === ".yaml") {
+    if (/\/workflows\//i.test(normRaw)) return true;
+    if (segments.includes(".github")) return true;
+  }
+
+  return false;
+}
+
 function toBase64(buffer) {
   const bytes = new Uint8Array(buffer);
   let binary = "";
@@ -258,6 +337,57 @@ export async function handleUploadPost(request, env) {
     const branchName = `upload/theme-${now}-${Math.random().toString(36).slice(2, 8)}`;
     const apiBase = `https://api.github.com/repos/${owner}/${repo}`;
 
+    let directCommitted = directFiles;
+    let directOmittedForSecurity = 0;
+    if (hasDirectFiles) {
+      const kept = [];
+      for (const file of directFiles) {
+        const path = normalizedUploadRepoPath(file.path || "");
+        if (!path || path.includes("..")) {
+          return jsonResponse({ error: `Invalid file path in direct upload payload: ${path || "(empty)"}` }, 400);
+        }
+        if (shouldOmitFromDirectThemeCommit(path)) {
+          directOmittedForSecurity += 1;
+          continue;
+        }
+        kept.push(file);
+      }
+      directCommitted = kept;
+      if (!directCommitted.length) {
+        return jsonResponse(
+          {
+            error:
+              "Nothing left to attach to this pull request: every uploaded path was withheld for repository security (.html/.js/.php/scripts/CI/workflows are not merged). Resubmit theme images, fonts, and config.json.",
+          },
+          400
+        );
+      }
+    }
+
+    const baseRef = await ghJson(
+      `${apiBase}/git/ref/heads/${encodeURIComponent(baseBranch)}`,
+      token,
+      {},
+      `read base branch ${baseBranch} on ${owner}/${repo}`
+    );
+    const baseSha = baseRef?.object?.sha;
+    if (!baseSha) {
+      throw new Error(`Could not resolve base branch SHA for ${baseBranch}.`);
+    }
+
+    await ghJson(
+      `${apiBase}/git/refs`,
+      token,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          ref: `refs/heads/${branchName}`,
+          sha: baseSha,
+        }),
+      },
+      `create branch ${branchName}`
+    );
+
     /** Lowercase hyphenated token for disambiguating same theme folder name (see validate_theme_pr.py). */
     const uploaderSlug = slugify(String(uploaderName || "").replace(/^u\//i, ""))
       .replace(/_/g, "-")
@@ -265,6 +395,7 @@ export async function handleUploadPost(request, env) {
       .replace(/[^a-z0-9-]+/g, "-")
       .replace(/^-+|-+$/g, "")
       .slice(0, 40);
+
     let zipPath = "";
     if (!hasDirectFiles) {
       const arrayBuffer = await zipFile.arrayBuffer();
@@ -323,12 +454,12 @@ export async function handleUploadPost(request, env) {
         `upload file ${metaPath}`
       );
     } else {
-      for (const file of directFiles) {
+      for (const file of directCommitted) {
         const path = String(file.path || "")
           .replace(/\\/g, "/")
           .replace(/^\/+/, "")
           .trim();
-        if (!path || path.includes("..") || path.startsWith(".")) {
+        if (!path || path.includes("..")) {
           return jsonResponse({ error: `Invalid file path in direct upload payload: ${path || "(empty)"}` }, 400);
         }
         const existing = await ghGetFileMeta(apiBase, token, path, branchName);
@@ -350,30 +481,6 @@ export async function handleUploadPost(request, env) {
       }
     }
 
-    const baseRef = await ghJson(
-      `${apiBase}/git/ref/heads/${encodeURIComponent(baseBranch)}`,
-      token,
-      {},
-      `read base branch ${baseBranch} on ${owner}/${repo}`
-    );
-    const baseSha = baseRef?.object?.sha;
-    if (!baseSha) {
-      throw new Error(`Could not resolve base branch SHA for ${baseBranch}.`);
-    }
-
-    await ghJson(
-      `${apiBase}/git/refs`,
-      token,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          ref: `refs/heads/${branchName}`,
-          sha: baseSha,
-        }),
-      },
-      `create branch ${branchName}`
-    );
-
     let prTitle = "Theme submission";
     if (themeTitle && themeAuthor) prTitle = `${themeTitle} — ${themeAuthor}`;
     else if (themeTitle) prTitle = themeTitle;
@@ -382,7 +489,12 @@ export async function handleUploadPost(request, env) {
     const prBody = [
       "## New theme from the gallery uploader",
       "",
-      hasDirectFiles ? `- Upload mode: direct file commit (${directFiles.length} file(s))` : `- Package: \`${originalName}\``,
+      hasDirectFiles
+        ? `- Upload mode: direct file commit (${directCommitted.length} file(s) attached; ${directOmittedForSecurity > 0 ? `${directOmittedForSecurity} path(s) withheld for security` : "no paths withheld"})`
+        : `- Package: \`${originalName}\``,
+      directOmittedForSecurity > 0
+        ? `- **Security:** withheld ${directOmittedForSecurity} repo path(s) (e.g. HTML/JS/PHP, CI/workflow manifests, or \`scripts\`/\`functions\`/\`.github\`). They may still have been sent to the uploader but were not written to this branch.`
+        : null,
       themeTitle ? `- Title (from config): ${themeTitle}` : null,
       themeAuthor ? `- Author (from config): ${themeAuthor}` : null,
       "",

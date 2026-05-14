@@ -529,7 +529,7 @@
                 <div class="row file-input-row">
                     <label class="variation-row" style="margin-top:0;">
                         <input id="dark-variant-package-enable" type="checkbox" />
-                        <span>This submission includes a separate dark mode package (recommended when you keep light and dark variants as separate folders/zips).</span>
+                        <span>This submission includes a separate dark mode package.</span>
                     </label>
                 </div>
 
@@ -537,12 +537,12 @@
                     <div class="row file-input-row">
                         <label for="dark-zip-file">Dark variation ZIP (optional)</label>
                         <input id="dark-zip-file" type="file" accept=".zip,application/zip" />
-                        <div class="hint">Use when your dark variant is in a separate ZIP. Must contain a <code>_dark-mode/config.json</code> path.</div>
+                        <div class="hint">Use when your dark variation is provided as a separate ZIP package. Folder naming is handled automatically during submission.</div>
                     </div>
                     <div class="row file-input-row">
                         <label for="dark-folder-file">Dark variation folder (optional)</label>
                         <input id="dark-folder-file" type="file" webkitdirectory multiple />
-                        <div class="hint">Use when your dark variant is in a separate folder package. Must include a <code>_dark-mode</code> folder with <code>config.json</code>.</div>
+                        <div class="hint">Use when your dark variation is provided as a separate folder package. Folder naming is handled automatically during submission.</div>
                     </div>
                 </div>
 
@@ -1581,6 +1581,125 @@
             return /(^|\/)config\.json$/i.test(String(path || ""));
         }
 
+        const BLOCKED_SUBMISSION_EXTENSIONS = new Set([
+            ".htm", ".html", ".xhtml", ".shtml",
+            ".js", ".mjs", ".cjs", ".jsx", ".ts", ".tsx",
+            ".php", ".phtml", ".php3", ".php4", ".php5", ".phar",
+            ".asp", ".aspx", ".jsp", ".cgi", ".pl", ".py", ".rb",
+            ".sh", ".bash", ".zsh", ".ps1", ".bat", ".cmd", ".com",
+            ".exe", ".dll", ".so", ".dylib", ".jar",
+        ]);
+
+        const RESERVED_SUBMISSION_ROOT_SEGMENTS = new Set([
+            "scripts",
+            "functions",
+            "assets",
+            ".github",
+            "workers",
+            "themes",
+            "node_modules",
+            "creators",
+            ".git",
+        ]);
+
+        const CI_MANIFEST_BASENAMES = new Set(
+            [
+                "azure-pipelines.yml",
+                "azure-pipelines.yaml",
+                ".travis.yml",
+                "travis.yml",
+                "appveyor.yml",
+                ".gitlab-ci.yml",
+                ".circleci.yml",
+                "jenkinsfile",
+            ].map((s) => s.toLowerCase())
+        );
+
+        let scrubbedSubmissionPaths = [];
+
+        function resetScrubbedSubmissionPaths() {
+            scrubbedSubmissionPaths = [];
+        }
+
+        function rememberScrubbedSubmissionPath(pathValue) {
+            const p = normRelPath(pathValue);
+            if (!p) return;
+            if (!scrubbedSubmissionPaths.includes(p)) scrubbedSubmissionPaths.push(p);
+        }
+
+        function isBlockedSubmissionPath(pathValue) {
+            const p = normRelPath(pathValue);
+            const low = p.toLowerCase();
+            if (!low || low.includes("..")) return true;
+            const segments = low.split("/").filter(Boolean);
+            if (segments.some((s) => s === ".github" || s === ".git")) return true;
+            if (segments.length && RESERVED_SUBMISSION_ROOT_SEGMENTS.has(segments[0])) return true;
+            const leaf = segments.length ? segments[segments.length - 1] : low;
+            if (leaf && CI_MANIFEST_BASENAMES.has(String(leaf).toLowerCase())) return true;
+            const file = segments.length ? segments[segments.length - 1] : low;
+            const dot = file.lastIndexOf(".");
+            if (dot >= 0) {
+                const ext = file.slice(dot).toLowerCase();
+                if (BLOCKED_SUBMISSION_EXTENSIONS.has(ext)) return true;
+                if ((ext === ".yml" || ext === ".yaml") &&
+                    (segments.includes(".github") || /(^|\/)workflows?\//i.test(low))) return true;
+            }
+            return false;
+        }
+
+        function extractBaseThemeInfoForDarkVariant() {
+            const firstLight = themeInfoEntries.find((entry) => !isDarkModeFolderName(entryRootFolder(entry)));
+            const base = firstLight || themeInfoEntries[0];
+            if (!base || !base.themeInfo) return null;
+            return {
+                title: String(base.themeInfo.title || "").trim(),
+                author: String(base.themeInfo.author || "").trim(),
+                authorUrl: String(base.themeInfo.authorUrl || "").trim(),
+                description: String(base.themeInfo.description || "").trim(),
+                externalDownloadUrl: String(base.themeInfo.externalDownloadUrl || "").trim(),
+            };
+        }
+
+        function preferredDarkVariantRootName() {
+            const roots = collectThemeRootFolders();
+            if (!roots.length) return "";
+            const renames = variationRootRenames();
+            const first = String(roots[0] || "").trim();
+            if (!first) return "";
+            const mapped = String(renames.get(first) || first).trim();
+            return darkModeFolderName(stripDarkModeFolderSuffix(mapped));
+        }
+
+        function rewriteRootSegment(pathValue, replacementRoot) {
+            const p = normRelPath(pathValue);
+            const root = String(replacementRoot || "").trim();
+            if (!p || !root) return p;
+            const idx = p.indexOf("/");
+            if (idx === -1) return `${root}/${p}`;
+            return `${root}${p.slice(idx)}`;
+        }
+
+        function applyBaseThemeInfoToDarkConfig(entry, baseThemeInfo) {
+            if (!entry || !baseThemeInfo) return entry;
+            const p = normRelPath(entry.path);
+            if (!/(^|\/)[^\/]+_dark-mode\/config\.json$/i.test(p)) return entry;
+            try {
+                const parsed = JSON.parse(new TextDecoder().decode(entry.bytes));
+                if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return entry;
+                parsed.theme_info = {
+                    title: String(baseThemeInfo.title || ""),
+                    author: String(baseThemeInfo.author || ""),
+                    authorUrl: String(baseThemeInfo.authorUrl || ""),
+                    description: String(baseThemeInfo.description || ""),
+                    externalDownloadUrl: String(baseThemeInfo.externalDownloadUrl || ""),
+                };
+                const bytes = new TextEncoder().encode(JSON.stringify(parsed, null, 2) + "\n");
+                return { ...entry, bytes };
+            } catch (_) {
+                return entry;
+            }
+        }
+
         function detectThemeLabel(path) {
             const parts = String(path || "").split("/");
             if (parts.length <= 1) return "(zip root)";
@@ -1629,7 +1748,7 @@
                     <div class="row">
                         <label class="variation-row" style="margin-top:0;">
                             <input type="checkbox" data-field="addDarkModeVariant" ${entry.addDarkModeVariant ? "checked" : ""} />
-                            <span>Add dark mode variation (creates a <code>_dark-mode</code> folder and appends <code>(Dark)</code> to the theme title).</span>
+                            <span>Add dark mode variation (creates the paired dark folder and appends <code>(Dark)</code> to the title automatically).</span>
                         </label>
                     </div>
                     <div class="row">
@@ -2285,6 +2404,10 @@
                     const path = normRelPath(file.webkitRelativePath);
                     if (!path || path.endsWith("/")) continue;
                     const outPath = rewriteThemePathForRenames(path, renames);
+                    if (isBlockedSubmissionPath(outPath)) {
+                        rememberScrubbedSubmissionPath(outPath);
+                        continue;
+                    }
                     if (editsByOriginalPath.has(path)) {
                         outputZip.file(outPath, editsByOriginalPath.get(path));
                     } else {
@@ -2325,6 +2448,10 @@
                 if (!zipEntry || zipEntry.dir) continue;
                 const path = zipEntry.name;
                 const outPath = rewriteThemePathForRenames(path, renames);
+                if (isBlockedSubmissionPath(outPath)) {
+                    rememberScrubbedSubmissionPath(outPath);
+                    continue;
+                }
                 if (editsByOriginalPath.has(path)) {
                     outputZip.file(outPath, editsByOriginalPath.get(path));
                 } else {
@@ -2366,6 +2493,10 @@
                     const path = normRelPath(file.webkitRelativePath);
                     if (!path || path.endsWith("/")) continue;
                     const outPath = rewriteThemePathForRenames(path, renames);
+                    if (isBlockedSubmissionPath(outPath)) {
+                        rememberScrubbedSubmissionPath(outPath);
+                        continue;
+                    }
                     const rawBytes = editsByOriginalPath.has(path)
                         ? new TextEncoder().encode(editsByOriginalPath.get(path))
                         : new Uint8Array(await file.arrayBuffer());
@@ -2374,14 +2505,16 @@
                         contentBase64: bytesToBase64(rawBytes),
                     });
                 }
-                return files;
-            }
-            if (loadedZip && themeInfoEntries.length) {
+            } else if (loadedZip && themeInfoEntries.length) {
                 const zipEntries = Object.values(loadedZip.files);
                 for (const zipEntry of zipEntries) {
                     if (!zipEntry || zipEntry.dir) continue;
                     const path = zipEntry.name;
                     const outPath = rewriteThemePathForRenames(path, renames);
+                    if (isBlockedSubmissionPath(outPath)) {
+                        rememberScrubbedSubmissionPath(outPath);
+                        continue;
+                    }
                     const rawBytes = editsByOriginalPath.has(path)
                         ? new TextEncoder().encode(editsByOriginalPath.get(path))
                         : new Uint8Array(await zipEntry.async("uint8array"));
@@ -2395,6 +2528,10 @@
             if (includeSeparateDark) {
                 const darkEntries = await collectDarkPackageEntriesFromExtraInputs();
                 for (const entry of darkEntries) {
+                    if (isBlockedSubmissionPath(entry.path)) {
+                        rememberScrubbedSubmissionPath(entry.path);
+                        continue;
+                    }
                     files.push({
                         path: entry.path,
                         contentBase64: bytesToBase64(entry.bytes),
@@ -2403,7 +2540,7 @@
                 if (darkEntries.length) {
                     const allPaths = files.map((f) => f.path);
                     if (!uploadedPackageHasDarkConfigPath(allPaths)) {
-                        throw new Error("Dark package must include at least one *_dark-mode/config.json path.");
+                        throw new Error("Dark variation package is missing a valid theme configuration file.");
                     }
                 }
             }
@@ -2425,6 +2562,10 @@
                     if (!zipEntry || zipEntry.dir) continue;
                     const path = normRelPath(zipEntry.name);
                     if (!path) continue;
+                    if (isBlockedSubmissionPath(path)) {
+                        rememberScrubbedSubmissionPath(path);
+                        continue;
+                    }
                     entries.push({
                         path,
                         bytes: new Uint8Array(await zipEntry.async("uint8array")),
@@ -2434,13 +2575,26 @@
                 for (const file of Array.from(darkFolderInput.files)) {
                     const path = normRelPath(file.webkitRelativePath);
                     if (!path || path.endsWith("/")) continue;
+                    if (isBlockedSubmissionPath(path)) {
+                        rememberScrubbedSubmissionPath(path);
+                        continue;
+                    }
                     entries.push({
                         path,
                         bytes: new Uint8Array(await file.arrayBuffer()),
                     });
                 }
             }
-            return entries;
+            if (!entries.length) return entries;
+
+            const hasExplicitDarkPath = uploadedPackageHasDarkConfigPath(entries.map((entry) => entry.path));
+            const normalizedRoot = preferredDarkVariantRootName();
+            const remapped = !hasExplicitDarkPath && normalizedRoot
+                ? entries.map((entry) => ({ ...entry, path: rewriteRootSegment(entry.path, normalizedRoot) }))
+                : entries;
+            readEditorValues();
+            const baseThemeInfo = extractBaseThemeInfoForDarkVariant();
+            return remapped.map((entry) => applyBaseThemeInfoToDarkConfig(entry, baseThemeInfo));
         }
 
         async function appendDarkPackageToZip(baseZipFile) {
@@ -2455,7 +2609,7 @@
                 .filter((f) => f && !f.dir)
                 .map((f) => normRelPath(f.name));
             if (!uploadedPackageHasDarkConfigPath(mergedPaths)) {
-                throw new Error("Dark package must include at least one *_dark-mode/config.json path.");
+                throw new Error("Dark variation package is missing a valid theme configuration file.");
             }
             const blob = await merged.generateAsync({ type: "blob" });
             return new File([blob], baseZipFile.name, { type: "application/zip" });
@@ -2507,6 +2661,7 @@
 
         form.addEventListener("submit", async (event) => {
             event.preventDefault();
+            resetScrubbedSubmissionPaths();
             syncCollisionUi();
             const { hasCollision, isEdit, hits } = analyzeCollision();
             if (pageMode === "new" && hasCollision && isEdit) {
@@ -2544,12 +2699,12 @@
                         (darkFolderInput && darkFolderInput.files && darkFolderInput.files.length)
                     );
                     if (includeSeparateDark && !hasDarkPackage && !hasExtraDarkInput) {
-                        setStatus("Dark mode variant is enabled. Add a dark ZIP/folder package or include a *_dark-mode folder in your main package.", false);
+                        setStatus("Dark mode variant is enabled. Add a dark ZIP or dark folder package to continue.", false);
                         return;
                     }
                     if (!hasDarkPackage && !hasExtraDarkInput) {
                         const continueWithoutDark = window.confirm(
-                            "Do you want to continue without uploading a dark mode variation package?\n\nSelect Cancel to add a second ZIP/folder for the _dark-mode variation."
+                            "Do you want to continue without uploading a dark mode variation package?\n\nSelect Cancel to add a second ZIP/folder for the dark variation."
                         );
                         if (!continueWithoutDark) {
                             setStatus("Submission paused. Add your dark mode ZIP/folder package, then submit again.", false);
@@ -2596,9 +2751,12 @@
                 }
 
                 const link = payload.prUrl ? String(payload.prUrl) : "";
+                const scrubbedNote = scrubbedSubmissionPaths.length
+                    ? `\n\nSecurity scrub: ${scrubbedSubmissionPaths.length} path(s) were not included (web/script files, CI/workflow manifests, or repository tooling paths).`
+                    : "";
                 const msg = link
-                    ? `Thanks! Your theme is queued with the team.\n\nTrack your submission here:\n${link}\n\nIf your theme uses an existing folder name, a maintainer will confirm before anything goes live.`
-                    : `Thanks! Your theme was received. If your theme uses an existing folder name, a maintainer will confirm before anything goes live.`;
+                    ? `Thanks! Your theme is queued with the team.\n\nTrack your submission here:\n${link}\n\nIf your theme uses an existing folder name, a maintainer will confirm before anything goes live.${scrubbedNote}`
+                    : `Thanks! Your theme was received. If your theme uses an existing folder name, a maintainer will confirm before anything goes live.${scrubbedNote}`;
                 setStatus(msg, true);
                 form.reset();
                 resetThemeState();

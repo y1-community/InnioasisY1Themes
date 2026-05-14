@@ -765,6 +765,11 @@
             return [`${clean}_dark-mode`, `${clean}_dark_mode`];
         }
 
+        function darkPairFolder(folderPath) {
+            const candidates = darkPairFolderCandidates(folderPath);
+            return candidates.length ? candidates[0] : '';
+        }
+
         async function folderHasConfig(folderPath) {
             const clean = String(folderPath || '').replace(/^\.\/+/, '').trim();
             if (!clean) return false;
