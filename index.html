@@ -301,7 +301,7 @@
 
         .theme-card-variant-row {
             width: min(360px, 100%);
-            margin: 6px auto 0;
+            margin: 0 auto 8px;
             padding: 0 2px;
             display: none;
             align-items: center;
@@ -1575,14 +1575,22 @@
         }
 
         function zipThemeDisplayName(themeName, catalogFolder, variantSegment) {
+            const base = String(themeName || '').trim();
             const v = String(variantSegment || '').trim();
-            if (v) return `${String(themeName || '').trim()} (${formatVariantDisplayLabel(v)})`.trim();
+            if (v) {
+                const label = formatVariantDisplayLabel(v);
+                const suf = `(${label})`;
+                if (base.length >= suf.length && base.slice(-suf.length).toLowerCase() === suf.toLowerCase()) {
+                    return base;
+                }
+                return `${base} (${label})`.trim();
+            }
             if (isDarkModeFolderPath(String(catalogFolder || ''))) {
-                const cleanName = String(themeName || '').trim();
+                const cleanName = base;
                 if (/\(dark\)\s*$/i.test(cleanName)) return cleanName;
                 return cleanName ? `${cleanName} (Dark)` : 'Theme (Dark)';
             }
-            return String(themeName || '').trim();
+            return base;
         }
 
         function ensureDarkModeDisplayName(themeName, folderPath) {
@@ -2177,10 +2185,16 @@
         function readCardVariantInstallHints(card) {
             if (!card) return {};
             const sel = card.querySelector('.theme-card-variant-select');
+            if (!sel || sel.options.length <= 1) return {};
             const row = card.querySelector('.theme-card-variant-row');
-            if (!sel || !row || row.style.display === 'none') return {};
+            if (row && row.style.display === 'none') return {};
+            const catalog = String(card.getAttribute('data-catalog-folder') || '')
+                .replace(/^\.\/+/, '')
+                .trim();
+            if (!catalog) return {};
             const v = String(sel.value || '').trim();
-            return v ? { preferredVariant: v } : {};
+            if (v) return { preferredVariant: v };
+            return { preferredContentFolder: catalog };
         }
 
         async function directInstallTheme(theme, buttonNode, hints) {
@@ -2522,6 +2536,7 @@
                 'data-search',
                 `${safeText(theme.name)} ${safeText(theme.description)} ${safeText(theme.author)} ${safeText(folderPath)} ${safeText(theme.searchText || '')}`.toLowerCase()
             );
+            if (folderPath) c.setAttribute('data-catalog-folder', folderPath);
 
             const statusBadge = document.createElement('div');
             statusBadge.className = 'theme-status';
@@ -2653,6 +2668,21 @@
             variantLbl.append(variantSpan, variantSelect);
             variantRow.appendChild(variantLbl);
 
+            const variantNameSeen = new Set();
+            const initialVariants = Array.isArray(theme.variantFolders) ? theme.variantFolders : [];
+            for (const vn of initialVariants) {
+                const s = String(vn || '').trim();
+                if (!s) continue;
+                variantNameSeen.add(s.toLowerCase());
+                const o = document.createElement('option');
+                o.value = s;
+                o.textContent = formatVariantDisplayLabel(s);
+                variantSelect.appendChild(o);
+            }
+            if (initialVariants.filter(Boolean).length) {
+                variantRow.style.display = 'flex';
+            }
+
             if (folderPath) {
                 void (async () => {
                     try {
@@ -2668,13 +2698,17 @@
                         } catch (_) {}
                         defOptV.textContent = defaultLabel;
                         const names = await listThemeVariantFolderNames(folderPath, theme);
-                        if (!names.length) return;
-                        variantRow.style.display = 'flex';
                         for (const vn of names) {
+                            const s = String(vn || '').trim();
+                            if (!s || variantNameSeen.has(s.toLowerCase())) continue;
+                            variantNameSeen.add(s.toLowerCase());
                             const o = document.createElement('option');
-                            o.value = vn;
-                            o.textContent = formatVariantDisplayLabel(vn);
+                            o.value = s;
+                            o.textContent = formatVariantDisplayLabel(s);
                             variantSelect.appendChild(o);
+                        }
+                        if (variantSelect.options.length > 1) {
+                            variantRow.style.display = 'flex';
                         }
                     } catch (e) {
                         console.warn('variant list failed', e);
@@ -3058,6 +3092,7 @@
                 bd.append(dl, di);
             }
             c.append(previewFrame, variantRow, n, d, a, bd);
+            c.insertBefore(variantRow, previewFrame);
             if (theme.sourceType !== 'external' && folderPath) {
                 const corner = document.createElement('div');
                 corner.className = 'theme-card-corner-actions';
