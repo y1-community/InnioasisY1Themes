@@ -202,17 +202,16 @@
         </form>
     </div>
 
-    <div id="theme-page-variant-bar" style="display:none;justify-content:center;padding:10px 14px 0;">
-        <label id="preview-variation-wrap" style="display:none;align-items:center;gap:8px;color:var(--text-secondary);font-size:0.9rem;">
-            Theme variant
-            <select id="preview-variation-select" style="background:#222733;border:1px solid rgba(255,255,255,0.12);color:#eaf0ff;border-radius:8px;padding:0.4rem 0.5rem;"></select>
-        </label>
-    </div>
-
     <div style="display: flex; justify-content: center;">
         <div class="wrap" style="max-width:1200px;margin-top:6rem;">
             <div id="theme-root">
                 <div id="left" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:12px;min-height:360px;padding:8px 0;">
+                    <div id="theme-page-variant-bar" style="display:none;width:100%;max-width:min(440px,100%);justify-content:center;padding:0 8px 2px;box-sizing:border-box;">
+                        <label id="preview-variation-wrap" style="display:none;align-items:center;gap:8px;color:var(--text-secondary);font-size:0.9rem;">
+                            Theme variant
+                            <select id="preview-variation-select" style="background:#222733;border:1px solid rgba(255,255,255,0.12);color:#eaf0ff;border-radius:8px;padding:0.4rem 0.5rem;"></select>
+                        </label>
+                    </div>
                     <div id="theme-y1-sim-wrap" style="width:100%;max-width:min(440px,100%);min-height:280px;display:flex;align-items:center;justify-content:center;" title="Click the device, then use arrow keys, Enter, and Escape like the Y1 Theme Maker simulator"></div>
                     <img id="main-screenshot" src="placeholder.png" alt="Screenshot" style="width:min(400px,100%);height:auto;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,.5)">
                 </div>
@@ -1014,8 +1013,16 @@
         }
 
         function zipThemeDisplayName(themeName, catalogFolder, variantSegment) {
+            const base = String(themeName || '').trim();
             const v = String(variantSegment || '').trim();
-            if (v) return `${String(themeName || '').trim()} (${formatVariantDisplayLabel(v)})`.trim();
+            if (v) {
+                const label = formatVariantDisplayLabel(v);
+                const suf = `(${label})`;
+                if (base.length >= suf.length && base.slice(-suf.length).toLowerCase() === suf.toLowerCase()) {
+                    return base;
+                }
+                return `${base} (${label})`.trim();
+            }
             if (isDarkModeFolderPath(String(catalogFolder || ''))) {
                 const cleanName = String(themeName || '').trim();
                 if (/\(dark\)\s*$/i.test(cleanName)) return cleanName;
@@ -1865,7 +1872,7 @@
             }
 
             const themeObj = {
-                name: displayName,
+                name: catalogTitle,
                 folder: folder,
                 externalDownloadUrl: String(themeMeta && themeMeta.externalDownloadUrl || '').trim(),
                 authorCTA: String(themeMeta && themeMeta.authorCTA || '').trim()
