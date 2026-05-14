@@ -422,6 +422,18 @@ def _theme_entry_from_folder(folder: str, config: dict[str, Any] | None) -> dict
                     cover_clean = cover_clean[len(folder) + 1 :]
                 if cover_clean:
                     entry["screenshot"] = f"./{folder}/{cover_clean}"
+    folder_path = REPO_ROOT / folder
+    if folder_path.is_dir():
+        variants = sorted(
+            {
+                p.name
+                for p in folder_path.glob("mask_*.png")
+                if p.is_file() and re.match(r"^mask_[a-z0-9][a-z0-9_-]*\.png$", p.name, re.I)
+            },
+            key=str.lower,
+        )
+        if variants:
+            entry["maskVariants"] = variants
 
     return entry
 

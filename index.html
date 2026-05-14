@@ -1222,6 +1222,27 @@
             }
         }
 
+        async function fetchMaskVariantPaths(folderPath) {
+            const fromGitHub = await fetchMaskVariantPathsFromGitHub(folderPath);
+            if (fromGitHub.length) return fromGitHub;
+            const folder = String(folderPath || '').trim().replace(/\\/g, '/').replace(/^\.\/+/, '').replace(/\/+$/, '');
+            if (!folder) return [];
+            const enc = encodeURIComponent(folder);
+            const url = `https://data.jsdelivr.com/v1/package/gh/y1-community/InnioasisY1Themes@main/flat?path=${enc}`;
+            try {
+                const res = await fetch(url, { cache: 'no-cache' });
+                if (!res.ok) return [];
+                const payload = await res.json();
+                const files = Array.isArray(payload && payload.files) ? payload.files : [];
+                return files
+                    .map((f) => String((f && f.name) || '').trim().replace(/^\/+/, ''))
+                    .map((name) => name.split('/').pop() || '')
+                    .filter((name) => /^mask_[a-z0-9][a-z0-9_-]*\.png$/i.test(name));
+            } catch (_) {
+                return [];
+            }
+        }
+
         async function promptMaskVariant(themeName, choices, folderPath) {
             const options = choices && Array.isArray(choices.options) ? choices.options : [];
             if (options.length <= 1) return options[0] || null;
@@ -1358,6 +1379,110 @@
             const fallback = String((theme && theme.name) || 'theme').trim() || 'theme';
             const base = folder || fallback;
             return base.replace(/[^\w\d-_ ]/g, '_') || 'theme';
+        }
+
+        function darkPairFolder(folderPath) {
+            const folder = String(folderPath || '').replace(/^\.\/+/, '').trim();
+            if (!folder) return '';
+            if (/_dark-mode$/i.test(folder)) return folder.replace(/_dark-mode$/i, '');
+            return `${folder}_dark-mode`;
+        }
+
+        async function folderHasConfig(folderPath) {
+            const folder = String(folderPath || '').replace(/^\.\/+/, '').trim();
+            if (!folder) return false;
+            const encoded = folder.split('/').map(seg => encodeURIComponent(seg)).join('/');
+            try {
+                const res = await fetch(`./${encoded}/config.json`, { cache: 'no-cache' });
+                return !!res.ok;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        async function promptThemeVariation(theme) {
+            const folder = String((theme && theme.folder) || '').replace(/^\.\/+/, '').trim();
+            if (!folder) return { folder, name: theme && theme.name ? String(theme.name) : 'theme' };
+            const pair = darkPairFolder(folder);
+            if (!pair || pair.toLowerCase() === folder.toLowerCase()) {
+                return { folder, name: ensureDarkModeDisplayName(theme && theme.name, folder) || 'theme' };
+            }
+            const pairExists = await folderHasConfig(pair);
+            if (!pairExists) {
+                return { folder, name: ensureDarkModeDisplayName(theme && theme.name, folder) || 'theme' };
+            }
+            const isDarkCurrent = /_dark-mode$/i.test(folder);
+            const lightFolder = isDarkCurrent ? pair : folder;
+            const darkFolder = isDarkCurrent ? folder : pair;
+            const options = [
+                { id: lightFolder, label: 'Light variation', folder: lightFolder },
+                { id: darkFolder, label: 'Dark variation', folder: darkFolder },
+            ];
+            return new Promise((resolve) => {
+                const overlay = document.createElement('div');
+                overlay.style.position = 'fixed';
+                overlay.style.inset = '0';
+                overlay.style.background = 'rgba(0,0,0,0.55)';
+                overlay.style.display = 'flex';
+                overlay.style.alignItems = 'center';
+                overlay.style.justifyContent = 'center';
+                overlay.style.zIndex = '2600';
+                const panel = document.createElement('div');
+                panel.style.background = '#17191f';
+                panel.style.border = '1px solid rgba(255,255,255,0.12)';
+                panel.style.borderRadius = '10px';
+                panel.style.padding = '14px';
+                panel.style.width = 'min(92vw, 420px)';
+                panel.style.color = '#eaf0ff';
+                const title = document.createElement('div');
+                title.style.fontWeight = '700';
+                title.style.marginBottom = '8px';
+                title.textContent = `Choose variation for ${theme && theme.name ? theme.name : 'theme'}`;
+                const select = document.createElement('select');
+                select.style.width = '100%';
+                select.style.background = '#222733';
+                select.style.border = '1px solid rgba(255,255,255,0.12)';
+                select.style.color = '#eaf0ff';
+                select.style.borderRadius = '8px';
+                select.style.padding = '0.45rem 0.5rem';
+                for (const option of options) {
+                    const opt = document.createElement('option');
+                    opt.value = option.folder;
+                    opt.textContent = option.label;
+                    select.appendChild(opt);
+                }
+                select.value = /_dark-mode$/i.test(folder) ? darkFolder : lightFolder;
+                const row = document.createElement('div');
+                row.style.display = 'flex';
+                row.style.justifyContent = 'flex-end';
+                row.style.gap = '8px';
+                row.style.marginTop = '12px';
+                const cancelBtn = document.createElement('button');
+                cancelBtn.className = 'btn';
+                cancelBtn.type = 'button';
+                cancelBtn.textContent = 'Cancel';
+                cancelBtn.style.background = '#2a2f3a';
+                cancelBtn.style.color = '#eaf0ff';
+                const okBtn = document.createElement('button');
+                okBtn.className = 'btn';
+                okBtn.type = 'button';
+                okBtn.innerHTML = '<i class="fa-solid fa-check" style="margin-right:6px;"></i>Continue';
+                const close = (choice) => {
+                    try { overlay.remove(); } catch (_) {}
+                    resolve(choice);
+                };
+                cancelBtn.onclick = () => close(null);
+                okBtn.onclick = () => {
+                    const selected = String(select.value || lightFolder);
+                    const selectedName = ensureDarkModeDisplayName(theme && theme.name, selected) || 'theme';
+                    close({ folder: selected, name: selectedName });
+                };
+                overlay.onclick = (event) => { if (event.target === overlay) close(null); };
+                row.append(cancelBtn, okBtn);
+                panel.append(title, select, row);
+                overlay.appendChild(panel);
+                document.body.appendChild(overlay);
+            });
         }
 
         const coverCandidatesByFolder = new Map();
@@ -1513,26 +1638,34 @@
 
             try {
                 if (!theme.folder) throw new Error('No downloadable folder info for this theme.');
+                const selectedVariation = await promptThemeVariation(theme);
+                if (selectedVariation === null) {
+                    progressUI.abortAndRestore(buttonNode);
+                    if (dlBtn) dlBtn.style.display = '';
+                    return;
+                }
+                const selectedFolder = String(selectedVariation.folder || theme.folder || '').replace(/^\.\/+/, '');
+                const selectedName = String(selectedVariation.name || theme.name || 'theme');
 
-                const installFolderSafe = safeInstallFolderName(theme);
+                const installFolderSafe = safeInstallFolderName({ ...theme, folder: selectedFolder, name: selectedName });
                 const themeFolder = await selectedThemesFolder.getDirectoryHandle(installFolderSafe, { create: true });
 
-                progressUI.setProgress(5, `Reading config for ${ensureDarkModeDisplayName(theme.name, theme.folder)}...`);
+                progressUI.setProgress(5, `Reading config for ${selectedName}...`);
 
                 // Read config directly from our static host
-                const configRes = await fetch(`./${theme.folder}/config.json`);
-                if (!configRes.ok) throw new Error(`Could not read config.json in /${theme.folder}`);
+                const configRes = await fetch(`./${selectedFolder}/config.json`);
+                if (!configRes.ok) throw new Error(`Could not read config.json in /${selectedFolder}`);
                 const config = await configRes.json();
 
                 // Generate list of files
-                const filesToInstallRaw = extractFilesFromConfig(config, theme.folder);
-                const remoteMaskPaths = await fetchMaskVariantPathsFromGitHub(theme.folder);
+                const filesToInstallRaw = extractFilesFromConfig(config, selectedFolder);
+                const remoteMaskPaths = await fetchMaskVariantPaths(selectedFolder);
                 const maskChoices = maskVariantChoicesFromFilePaths(
-                    theme.folder,
+                    selectedFolder,
                     [...filesToInstallRaw, ...remoteMaskPaths],
                     config && config.desktopMask
                 );
-                const selectedMask = await promptMaskVariant(theme.name, maskChoices, theme.folder);
+                const selectedMask = await promptMaskVariant(selectedName, maskChoices, selectedFolder);
                 if (selectedMask === null) {
                     progressUI.abortAndRestore(buttonNode);
                     if (dlBtn) dlBtn.style.display = '';
@@ -1542,7 +1675,7 @@
                     filesToInstallRaw,
                     selectedMask && selectedMask.sourcePath,
                     maskChoices.baseMaskPath,
-                    theme.folder
+                    selectedFolder
                 );
                 let installedCount = 0;
                 const totalFiles = filesToInstall.length;
@@ -1555,10 +1688,10 @@
                         progressUI.setProgress(percent, `Installing ${file}...`);
 
                         const sourcePath = selectedMask && selectedMask.sourcePath &&
-                            normalizeConfigAssetPath(file, theme.folder).toLowerCase() === String(maskChoices.baseMaskPath || '').toLowerCase()
+                            normalizeConfigAssetPath(file, selectedFolder).toLowerCase() === String(maskChoices.baseMaskPath || '').toLowerCase()
                             ? selectedMask.sourcePath
                             : file;
-                        const fileUrl = buildThemeFileUrl(theme.folder, sourcePath);
+                        const fileUrl = buildThemeFileUrl(selectedFolder, sourcePath);
                         if (!fileUrl) {
                             installedCount++;
                             continue;
@@ -1618,7 +1751,7 @@
 
             } catch (err) {
                 console.error('Direct install failed', err);
-                alert(`Failed to install theme "${ensureDarkModeDisplayName(theme.name, theme.folder)}": ${err.message || err}`);
+                alert(`Failed to install theme "${theme && theme.name ? theme.name : 'theme'}": ${err.message || err}`);
                 progressUI.abortAndRestore(buttonNode);
                 if (dlBtn) dlBtn.style.display = '';
             }
@@ -1637,23 +1770,31 @@
             const progressUI = createProgressUI(card, buttonNode, theme.name || 'theme');
             try {
                 if (!theme.folder) throw new Error('No downloadable folder info for this theme.');
+                const selectedVariation = await promptThemeVariation(theme);
+                if (selectedVariation === null) {
+                    progressUI.abortAndRestore(buttonNode);
+                    if (diBtn) diBtn.style.display = '';
+                    return;
+                }
+                const selectedFolder = String(selectedVariation.folder || theme.folder || '').replace(/^\.\/+/, '');
+                const selectedName = String(selectedVariation.name || theme.name || 'theme');
 
-                progressUI.setProgress(5, `Fetching config for ${ensureDarkModeDisplayName(theme.name, theme.folder)}...`);
+                progressUI.setProgress(5, `Fetching config for ${selectedName}...`);
 
                 // Fetch Config
-                const configRes = await fetch(`./${theme.folder}/config.json`);
-                if (!configRes.ok) throw new Error(`Could not locate config.json in /${theme.folder}`);
+                const configRes = await fetch(`./${selectedFolder}/config.json`);
+                if (!configRes.ok) throw new Error(`Could not locate config.json in /${selectedFolder}`);
                 const config = await configRes.json();
 
                 // Determine files to download
-                const filesToDownloadRaw = extractFilesFromConfig(config, theme.folder);
-                const remoteMaskPaths = await fetchMaskVariantPathsFromGitHub(theme.folder);
+                const filesToDownloadRaw = extractFilesFromConfig(config, selectedFolder);
+                const remoteMaskPaths = await fetchMaskVariantPaths(selectedFolder);
                 const maskChoices = maskVariantChoicesFromFilePaths(
-                    theme.folder,
+                    selectedFolder,
                     [...filesToDownloadRaw, ...remoteMaskPaths],
                     config && config.desktopMask
                 );
-                const selectedMask = await promptMaskVariant(theme.name, maskChoices, theme.folder);
+                const selectedMask = await promptMaskVariant(selectedName, maskChoices, selectedFolder);
                 if (selectedMask === null) {
                     progressUI.abortAndRestore(buttonNode);
                     if (diBtn) diBtn.style.display = '';
@@ -1663,7 +1804,7 @@
                     filesToDownloadRaw,
                     selectedMask && selectedMask.sourcePath,
                     maskChoices.baseMaskPath,
-                    theme.folder
+                    selectedFolder
                 );
                 const zip = new JSZip();
 
@@ -1677,10 +1818,10 @@
                         progressUI.setProgress(percent, `Downloading ${file}...`);
 
                         const sourcePath = selectedMask && selectedMask.sourcePath &&
-                            normalizeConfigAssetPath(file, theme.folder).toLowerCase() === String(maskChoices.baseMaskPath || '').toLowerCase()
+                            normalizeConfigAssetPath(file, selectedFolder).toLowerCase() === String(maskChoices.baseMaskPath || '').toLowerCase()
                             ? selectedMask.sourcePath
                             : file;
-                        const fileUrl = buildThemeFileUrl(theme.folder, sourcePath);
+                        const fileUrl = buildThemeFileUrl(selectedFolder, sourcePath);
                         if (!fileUrl) {
                             downloadedCount++;
                             continue;
@@ -1712,7 +1853,7 @@
 
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(zipBlob);
-                const zipLabel = ensureDarkModeDisplayName(theme.name, theme.folder) || 'theme';
+                const zipLabel = selectedName || 'theme';
                 const safe = zipLabel.replace(/[^\w\d-_ ]/g, '_') || 'theme';
                 a.download = `${safe}.zip`;
                 document.body.appendChild(a);
@@ -1724,7 +1865,7 @@
 
             } catch (err) {
                 console.error('Download failed', err);
-                alert(`Failed to download theme "${ensureDarkModeDisplayName(theme.name, theme.folder)}": ${err.message || err}`);
+                alert(`Failed to download theme "${theme && theme.name ? theme.name : 'theme'}": ${err.message || err}`);
                 progressUI.abortAndRestore(buttonNode);
                 if (diBtn) diBtn.style.display = '';
             }
