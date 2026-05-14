@@ -208,6 +208,10 @@
                         </div>
                         <div id="download-area" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
                             <button id="download-btn" class="btn btn-primary" style="font-weight: normal"><i class="fa-solid fa-download" style="margin-right: 4px;"></i> Download</button>
+                            <label id="preview-variation-wrap" style="display:none;align-items:center;gap:6px;color:var(--text-secondary);font-size:0.86rem;">
+                                Preview variation
+                                <select id="preview-variation-select" style="background:#222733;border:1px solid rgba(255,255,255,0.12);color:#eaf0ff;border-radius:8px;padding:0.35rem 0.45rem;"></select>
+                            </label>
                             <label id="mask-variant-wrap" style="display:none;align-items:center;gap:6px;color:var(--text-secondary);font-size:0.86rem;">
                                 <img id="mask-variant-preview" alt="Mask preview" style="display:none;width:46px;height:46px;object-fit:contain;border-radius:6px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.04);" />
                                 Mask variation
@@ -560,6 +564,26 @@
             }
         }
 
+        async function fetchMaskVariantPaths(folderPath) {
+            const fromGitHub = await fetchMaskVariantPathsFromGitHub(folderPath);
+            if (fromGitHub.length) return fromGitHub;
+            const folderClean = String(folderPath || '').replace(/^\.\/+/, '').replace(/\/+$/, '');
+            if (!folderClean) return [];
+            const url = `https://data.jsdelivr.com/v1/package/gh/y1-community/InnioasisY1Themes@main/flat?path=${encodeURIComponent(folderClean)}`;
+            try {
+                const res = await fetch(url, { cache: 'no-cache' });
+                if (!res.ok) return [];
+                const payload = await res.json();
+                const files = Array.isArray(payload && payload.files) ? payload.files : [];
+                return files
+                    .map((f) => String((f && f.name) || '').trim().replace(/^\/+/, ''))
+                    .map((name) => name.split('/').pop() || '')
+                    .filter((name) => /^mask_[a-z0-9][a-z0-9_-]*\.png$/i.test(name));
+            } catch (_) {
+                return [];
+            }
+        }
+
         async function fetchVariantAssetPathsFromGitHub(folderPath) {
             const folderClean = String(folderPath || '').replace(/^\.\/+/, '').replace(/\/+$/, '');
             if (!folderClean) return [];
@@ -720,6 +744,99 @@
 
         function isDarkModeFolderPath(folderPath) {
             return /_dark-mode$/i.test(String(folderPath || '').replace(/^\.\/+/, '').trim());
+        }
+
+        function darkPairFolder(folderPath) {
+            const clean = String(folderPath || '').replace(/^\.\/+/, '').trim();
+            if (!clean) return '';
+            if (/_dark-mode$/i.test(clean)) return clean.replace(/_dark-mode$/i, '');
+            return `${clean}_dark-mode`;
+        }
+
+        async function folderHasConfig(folderPath) {
+            const clean = String(folderPath || '').replace(/^\.\/+/, '').trim();
+            if (!clean) return false;
+            const encoded = clean.split('/').map(seg => encodeURIComponent(seg)).join('/');
+            try {
+                const res = await fetch(`./${encoded}/config.json`, { cache: 'no-cache' });
+                return !!res.ok;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        async function promptThemeVariation(themeName, currentFolder) {
+            const folder = String(currentFolder || '').replace(/^\.\/+/, '').trim();
+            if (!folder) return folder;
+            const pair = darkPairFolder(folder);
+            if (!pair || pair.toLowerCase() === folder.toLowerCase()) return folder;
+            const pairExists = await folderHasConfig(pair);
+            if (!pairExists) return folder;
+            const isDark = /_dark-mode$/i.test(folder);
+            const lightFolder = isDark ? pair : folder;
+            const darkFolder = isDark ? folder : pair;
+            return new Promise((resolve) => {
+                const overlay = document.createElement('div');
+                overlay.style.position = 'fixed';
+                overlay.style.inset = '0';
+                overlay.style.background = 'rgba(0,0,0,0.6)';
+                overlay.style.display = 'grid';
+                overlay.style.placeItems = 'center';
+                overlay.style.zIndex = '10000';
+                const panel = document.createElement('div');
+                panel.style.width = 'min(420px, 92vw)';
+                panel.style.background = '#151922';
+                panel.style.border = '1px solid rgba(255,255,255,0.12)';
+                panel.style.borderRadius = '12px';
+                panel.style.padding = '14px';
+                const title = document.createElement('div');
+                title.textContent = `Choose variation for ${themeName || 'theme'}`;
+                title.style.fontWeight = '700';
+                title.style.marginBottom = '8px';
+                const select = document.createElement('select');
+                select.style.width = '100%';
+                select.style.background = '#222733';
+                select.style.border = '1px solid rgba(255,255,255,0.16)';
+                select.style.color = '#eaf0ff';
+                select.style.borderRadius = '8px';
+                select.style.padding = '0.45rem 0.5rem';
+                select.style.marginBottom = '12px';
+                [
+                    { folder: lightFolder, label: 'Light variation' },
+                    { folder: darkFolder, label: 'Dark variation' },
+                ].forEach((optMeta) => {
+                    const opt = document.createElement('option');
+                    opt.value = optMeta.folder;
+                    opt.textContent = optMeta.label;
+                    select.appendChild(opt);
+                });
+                select.value = isDark ? darkFolder : lightFolder;
+                const row = document.createElement('div');
+                row.style.display = 'flex';
+                row.style.justifyContent = 'flex-end';
+                row.style.gap = '8px';
+                const cancelBtn = document.createElement('button');
+                cancelBtn.type = 'button';
+                cancelBtn.className = 'btn btn-secondary';
+                cancelBtn.textContent = 'Cancel';
+                const okBtn = document.createElement('button');
+                okBtn.type = 'button';
+                okBtn.className = 'btn btn-primary';
+                okBtn.textContent = 'Continue';
+                const close = (choice) => {
+                    try { overlay.remove(); } catch (_) {}
+                    resolve(choice);
+                };
+                cancelBtn.onclick = () => close(null);
+                okBtn.onclick = () => close(String(select.value || folder));
+                overlay.onclick = (event) => {
+                    if (event.target === overlay) close(null);
+                };
+                row.append(cancelBtn, okBtn);
+                panel.append(title, select, row);
+                overlay.appendChild(panel);
+                document.body.appendChild(overlay);
+            });
         }
 
         function ensureDarkModeDisplayName(themeName, folderPath) {
@@ -1071,6 +1188,25 @@
                     return;
                 }
 
+                const selectedFolder = await promptThemeVariation(theme.name, theme.folder);
+                if (selectedFolder === null) {
+                    progressUI.abortAndRestore(buttonNode);
+                    return;
+                }
+                const configRes = await fetch(`${encodePathSegments(selectedFolder)}/config.json`, { cache: 'no-cache' });
+                if (!configRes.ok) throw new Error(`Could not load config for ${selectedFolder}`);
+                const selectedConfig = await configRes.json();
+                const selectedFiles = extractFilesFromConfig(selectedConfig, selectedFolder);
+                const selectedRemoteMaskPaths = await fetchMaskVariantPaths(selectedFolder);
+                const selectedMaskChoices = maskVariantChoicesFromFiles(
+                    selectedFolder,
+                    [
+                        ...selectedFiles.map((p) => ({ path: p, download_url: themeFileUrl(selectedFolder, p), size: 0 })),
+                        ...selectedRemoteMaskPaths.map((p) => ({ path: p, download_url: themeFileUrl(selectedFolder, p), size: 0 })),
+                    ],
+                    selectedConfig && selectedConfig.desktopMask
+                );
+
                 const maskChoices =
                     maskVariantState &&
                     Array.isArray(maskVariantState.options) &&
@@ -1086,8 +1222,8 @@
                           );
                 const selectedMask = await promptMaskVariant(
                     theme.name,
-                    maskChoices,
-                    theme.folder,
+                    selectedMaskChoices.options.length ? selectedMaskChoices : maskChoices,
+                    selectedFolder,
                     maskVariantState && maskVariantState.selectEl ? maskVariantState.selectEl.value : ''
                 );
                 if (selectedMask === null) {
@@ -1101,10 +1237,16 @@
                     }
                 }
                 const entriesForDownload = applyMaskVariantToEntries(
-                    theme.folder,
-                    downloadableFiles,
+                    selectedFolder,
+                    selectedFiles.map((p) => ({
+                        name: p.split('/').pop() || p,
+                        path: p,
+                        size: 0,
+                        download_url: themeFileUrl(selectedFolder, p),
+                    })),
                     selectedMask && selectedMask.sourcePath,
-                    maskVariantState && maskVariantState.baseMaskPath
+                    (selectedMaskChoices && selectedMaskChoices.baseMaskPath)
+                        || (maskVariantState && maskVariantState.baseMaskPath)
                 );
 
                 const callbacks = {
@@ -1117,14 +1259,14 @@
                 };
 
                 const zipBlob = await downloadThemeFilesAsZip(
-                    ensureDarkModeDisplayName(theme.name, theme.folder) || theme.name,
+                    ensureDarkModeDisplayName(theme.name, selectedFolder) || theme.name,
                     entriesForDownload,
                     callbacks
                 );
 
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(zipBlob);
-                const zipLabel = ensureDarkModeDisplayName(theme.name, theme.folder) || 'theme';
+                const zipLabel = ensureDarkModeDisplayName(theme.name, selectedFolder) || 'theme';
                 const safe = zipLabel.replace(/[^\w\d-_ ]/g, '_') || 'theme';
                 a.download = `${safe}.zip`;
                 document.body.appendChild(a);
@@ -1143,6 +1285,8 @@
             const supportDirectInstall = typeof window.showDirectoryPicker === 'function';
             const directInstallPromo = document.getElementById('direct-install-promo');
             const downloadBtn = document.getElementById('download-btn');
+            const previewVariationWrap = document.getElementById('preview-variation-wrap');
+            const previewVariationSelect = document.getElementById('preview-variation-select');
             const maskVariantWrap = document.getElementById('mask-variant-wrap');
             const maskVariantSelect = document.getElementById('mask-variant-select');
             const maskVariantPreview = document.getElementById('mask-variant-preview');
@@ -1194,6 +1338,38 @@
                 }
             }
 
+            const pairFolder = darkPairFolder(folder);
+            const pairAvailable =
+                pairFolder &&
+                pairFolder.toLowerCase() !== String(folder || '').toLowerCase() &&
+                (await folderHasConfig(pairFolder));
+            if (previewVariationWrap && previewVariationSelect && pairAvailable) {
+                const isDark = isDarkModeFolderPath(folder);
+                const lightFolder = isDark ? pairFolder : folder;
+                const darkFolder = isDark ? folder : pairFolder;
+                previewVariationSelect.innerHTML = '';
+                [
+                    { value: lightFolder, label: 'Light' },
+                    { value: darkFolder, label: 'Dark' },
+                ].forEach((optMeta) => {
+                    const opt = document.createElement('option');
+                    opt.value = optMeta.value;
+                    opt.textContent = optMeta.label;
+                    previewVariationSelect.appendChild(opt);
+                });
+                previewVariationSelect.value = isDark ? darkFolder : lightFolder;
+                previewVariationSelect.onchange = () => {
+                    const nextFolder = String(previewVariationSelect.value || '').trim();
+                    if (!nextFolder || nextFolder.toLowerCase() === String(folder || '').toLowerCase()) return;
+                    const nextUrl = new URL(location.href);
+                    nextUrl.searchParams.set('theme', nextFolder);
+                    location.href = nextUrl.toString();
+                };
+                previewVariationWrap.style.display = 'inline-flex';
+            } else if (previewVariationWrap) {
+                previewVariationWrap.style.display = 'none';
+            }
+
             const effectiveFiles = extractFilesFromConfig(themeMeta && themeMeta.rawConfig, folder);
             const remoteVariantPaths = await fetchVariantAssetPathsFromGitHub(folder);
             const variantDisplayFiles = remoteVariantPaths.map(path => ({
@@ -1222,7 +1398,7 @@
                 selectEl: maskVariantSelect,
                 options: []
             };
-            const remoteMaskVariantPaths = await fetchMaskVariantPathsFromGitHub(folder);
+            const remoteMaskVariantPaths = await fetchMaskVariantPaths(folder);
             const maskChoiceSeedFiles = [
                 ...displayFiles,
                 ...remoteMaskVariantPaths.map(path => ({
