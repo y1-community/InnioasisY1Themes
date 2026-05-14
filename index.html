@@ -945,9 +945,9 @@
             const cachedTheme = cachedByFolder || cachedByName || null;
             const coverFromConfig = cfg.themeCover ? `./${folder}/${cfg.themeCover}` : '';
 
-            const gallery = cfg && cfg.gallery && typeof cfg.gallery === "object" ? cfg.gallery : {};
-            const medalRaw = String(gallery.compatibilityMedal || "").trim().toLowerCase();
-            const compatibilityMedal = medalRaw === "gold" ? "gold" : "";
+            const gallery = cfg && cfg.gallery && typeof cfg.gallery === 'object' ? cfg.gallery : {};
+            const medalRaw = String(gallery.compatibilityMedal || '').trim().toLowerCase();
+            const compatibilityMedal = medalRaw === 'gold' ? 'gold' : '';
 
             return {
                 name: pickPreferred((info && info.title), cfg.title, (cachedTheme && cachedTheme.name), folder),
@@ -957,7 +957,7 @@
                 author: pickPreferred((info && info.author), cfg.author, (cachedTheme && cachedTheme.author)) || null,
                 authorUrl: pickPreferred((info && info.authorUrl), cfg.authorUrl, (cachedTheme && cachedTheme.authorUrl)),
                 authorCTA: pickPreferred((info && info.authorCTA), (cachedTheme && cachedTheme.authorCTA)),
-                sourceType: sourceInfo ? "external" : "internal",
+                sourceType: sourceInfo ? 'external' : 'internal',
                 compatibilityMedal
             };
         }
@@ -2263,15 +2263,15 @@
             img.alt = safeText(theme.name);
             previewFrame.appendChild(img);
 
-            if (String(theme.compatibilityMedal || "").toLowerCase() === "gold") {
-                previewFrame.style.position = "relative";
-                const medal = document.createElement("div");
-                medal.className = "theme-artwork-gold-badge";
-                medal.setAttribute("role", "img");
-                medal.setAttribute("aria-label", "Gold artwork compatibility");
+            if (String(theme.compatibilityMedal || '').toLowerCase() === 'gold') {
+                previewFrame.style.position = 'relative';
+                const medal = document.createElement('div');
+                medal.className = 'theme-artwork-gold-badge';
+                medal.setAttribute('role', 'img');
+                medal.setAttribute('aria-label', 'Gold artwork compatibility');
                 medal.innerHTML = '<span aria-hidden="true">🏅</span><span>Full artwork</span>';
                 medal.title =
-                    "This package passed the gallery’s optional newer UI artwork checks (eBook, launcher switch, calendar, calculator).";
+                    'This package passed the gallery’s optional newer UI artwork checks (eBook, launcher switch, calendar, calculator).';
                 previewFrame.appendChild(medal);
             }
 
