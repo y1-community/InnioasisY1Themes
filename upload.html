@@ -1244,6 +1244,7 @@
                     for (const ze of Object.values(zip.files || {})) {
                         if (!ze || ze.dir) continue;
                         let rel = normRelPath(ze.name);
+                        rel = collapseStutterPathSegments(rel);
                         if (innerRoot && rel.toLowerCase().startsWith(innerRoot.toLowerCase() + "/")) {
                             rel = rel.slice(innerRoot.length + 1);
                         }
@@ -1265,6 +1266,7 @@
                     const innerRoot = first && first.includes("/") ? first.split("/")[0] : "";
                     for (const file of files) {
                         let rel = normRelPath(file.webkitRelativePath);
+                        rel = collapseStutterPathSegments(rel);
                         if (innerRoot && rel.toLowerCase().startsWith(innerRoot.toLowerCase() + "/")) {
                             rel = rel.slice(innerRoot.length + 1);
                         }
@@ -1955,6 +1957,17 @@
 
         function normRelPath(p) {
             return String(p || "").replace(/\\/g, "/").replace(/^\/+/, "");
+        }
+
+        /** Collapse duplicated leading folder segments (e.g. Theme/Theme/config.json → Theme/config.json). */
+        function collapseStutterPathSegments(rel) {
+            let s = normRelPath(rel);
+            for (let i = 0; i < 8; i++) {
+                const m = s.match(/^([^/]+)\/\1\//);
+                if (!m) break;
+                s = s.slice(m[1].length + 1);
+            }
+            return s;
         }
 
         function inferFolderZipName(files) {
@@ -3038,7 +3051,7 @@
                 const outputZip = new window.JSZip();
 
                 for (const file of folderFiles) {
-                    const path = normRelPath(file.webkitRelativePath);
+                    const path = collapseStutterPathSegments(file.webkitRelativePath);
                     if (!path || path.endsWith("/")) continue;
                     const outPath = rewriteThemePathForRenames(path, renames);
                     if (isBlockedSubmissionPath(outPath)) {
@@ -3086,7 +3099,7 @@
             const zipEntries = Object.values(loadedZip.files);
             for (const zipEntry of zipEntries) {
                 if (!zipEntry || zipEntry.dir) continue;
-                const path = zipEntry.name;
+                const path = collapseStutterPathSegments(zipEntry.name);
                 const outPath = rewriteThemePathForRenames(path, renames);
                 if (isBlockedSubmissionPath(outPath)) {
                     rememberScrubbedSubmissionPath(outPath);
@@ -3118,6 +3131,8 @@
 
         /**
          * Wrap the packaged theme ZIP in a root-level "batch" archive (only *.zip members).
+         * Inner member is always a single basename (no folders) so Actions sees a flat bundle.
+         * Outer layer uses STORE so we do not re-compress an already-deflated theme zip.
          * GitHub Actions / process_theme_zips.py unpacks each inner archive — one PR needs at most
          * one outer zip + meta (minimal Worker → GitHub subrequests).
          */
@@ -3132,7 +3147,7 @@
             if (!/\.zip$/i.test(innerName)) innerName = `${innerName}.zip`;
             const buf = await innerFile.arrayBuffer();
             outer.file(innerName, buf);
-            const blob = await outer.generateAsync({ type: "blob", compression: "DEFLATE" });
+            const blob = await outer.generateAsync({ type: "blob", compression: "STORE" });
             const stamp = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
             return new File([blob], `gallery-upload-batch-${stamp}.zip`, { type: "application/zip" });
         }

@@ -360,6 +360,8 @@ def _process_root_zip_bundle(
     logs = logs + [
         f"Detected uploader batch archive ({len(inner_names)} inner theme zip(s)); extracting each."
     ]
+    if any("/" in n for n in inner_names):
+        logs.append("Bundle paths include subfolders; each .zip member is still processed by full path.")
     for inner in inner_names:
         try:
             buf = outer.read(inner)

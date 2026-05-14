@@ -137,17 +137,21 @@ def zip_inner_folder_collision_errors(
 
 
 def root_theme_bundle_zip_entries(entry_names: list[str]) -> list[str] | None:
-    """Return sorted inner zip names if the archive contains only root-level ``*.zip`` members.
+    """Return sorted member paths if the archive is a *zip-only bundle* (ingest / uploader batch).
 
-    Browser / uploader may send ``gallery-upload-batch-*.zip`` whose members are only inner
-    theme packages. ``entry_names`` must already be noise-filtered.
+    Every noise-filtered entry must be a normal file whose path ends in ``.zip``. Members may
+    sit at the archive root (``a.zip``) or under folders (``export/MyTheme.zip``); this matches
+    nested batch layouts from OS “compress folder” flows and tolerates extra directory depth
+    without breaking identification (still not a theme tree until inner zips are opened).
+
+    ``entry_names`` must already be noise-filtered.
     """
     if not entry_names:
         return None
     inner: list[str] = []
     for name in entry_names:
         path = PurePosixPath(name)
-        if len(path.parts) != 1:
+        if name.endswith("/"):
             return None
         if path.suffix.lower() != ".zip":
             return None
