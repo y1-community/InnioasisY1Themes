@@ -540,21 +540,23 @@
             }
 
             if (form) {
-                form.addEventListener("submit", async function (e) {
+                // Use a normal browser form POST (do not cancel the submit event for real reports).
+                // Programmatic `HTMLFormElement.prototype.submit()` skips the submit event and can be
+                // classified as non-interactive by backends, which sometimes store the row but skip
+                // notification email. Sync mirrors here, then let the default POST proceed.
+                form.addEventListener("submit", function (e) {
                     const cat = String(issueSelect && issueSelect.value || "").trim();
                     if (cat === "author_opt_out") {
                         e.preventDefault();
                         routeOptOutIfNeeded(cat);
                         return;
                     }
-                    e.preventDefault();
                     const target = resolveFabformEndpoint(reportFabRaw || form.getAttribute("action"));
                     if (!target) {
+                        e.preventDefault();
                         alert("Report form endpoint is not configured.");
                         return;
                     }
-                    const submitBtn = form.querySelector('button[type="submit"]');
-                    if (submitBtn) submitBtn.disabled = true;
                     try {
                         syncRedirectUrl();
                         const emailVal = String(elContactEmail && elContactEmail.value || "").trim();
@@ -576,15 +578,11 @@
                                 .filter(Boolean)
                                 .join("\n");
                         }
-                        // FabForm docs use direct HTML form POST to /f/{id}; avoid CORS-sensitive AJAX fetch here.
                         form.setAttribute("action", target);
                         form.setAttribute("method", "post");
-                        HTMLFormElement.prototype.submit.call(form);
                     } catch (err) {
+                        e.preventDefault();
                         alert(`Could not send report: ${String(err && err.message ? err.message : err)}`);
-                        if (submitBtn) submitBtn.disabled = false;
-                    } finally {
-                        // Intentionally empty: successful submit navigates away immediately.
                     }
                 });
             }
