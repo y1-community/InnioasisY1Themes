@@ -253,6 +253,53 @@ async function ghGetFileMeta(apiBase, token, path, ref) {
 }
 
 /**
+ * Create or update a file on a branch. Tries PUT without sha first (new paths on a fresh branch
+ * skip an extra GET); if GitHub requires sha for an existing path, fetches meta and retries.
+ */
+async function ghPutContentsCreateOrUpdate(apiBase, token, path, branchName, message, contentBase64) {
+  const enc = String(path || "")
+    .split("/")
+    .filter(Boolean)
+    .map((part) => encodeURIComponent(part))
+    .join("/");
+  const url = `${apiBase}/contents/${enc}`;
+  const baseBody = {
+    message,
+    content: contentBase64,
+    branch: branchName,
+  };
+  try {
+    await ghJson(
+      url,
+      token,
+      {
+        method: "PUT",
+        body: JSON.stringify(baseBody),
+      },
+      `upload file ${path}`
+    );
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    const needsSha = /422|409/.test(msg) && /sha|exists/i.test(msg);
+    if (!needsSha) throw err;
+    const existing = await ghGetFileMeta(apiBase, token, path, branchName);
+    if (!existing || !existing.sha) throw err;
+    await ghJson(
+      url,
+      token,
+      {
+        method: "PUT",
+        body: JSON.stringify({
+          ...baseBody,
+          sha: existing.sha,
+        }),
+      },
+      `upload file ${path} (with sha)`
+    );
+  }
+}
+
+/**
  * @param {Request} request
  * @param {Record<string, string | undefined>} env
  */
@@ -462,21 +509,13 @@ export async function handleUploadPost(request, env) {
         if (!path || path.includes("..")) {
           return jsonResponse({ error: `Invalid file path in direct upload payload: ${path || "(empty)"}` }, 400);
         }
-        const existing = await ghGetFileMeta(apiBase, token, path, branchName);
-        const body = {
-          message: `Upload theme file: ${path}`,
-          content: file.contentBase64,
-          branch: branchName,
-        };
-        if (existing && existing.sha) body.sha = existing.sha;
-        await ghJson(
-          `${apiBase}/contents/${path.split("/").map(encodeURIComponent).join("/")}`,
+        await ghPutContentsCreateOrUpdate(
+          apiBase,
           token,
-          {
-            method: "PUT",
-            body: JSON.stringify(body),
-          },
-          `upload file ${path}`
+          path,
+          branchName,
+          `Upload theme file: ${path}`,
+          file.contentBase64
         );
       }
     }

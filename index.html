@@ -35,6 +35,10 @@
     <script src="gallery-loaded-theme.js"></script>
 
     <style>
+        html {
+            font-size: clamp(15px, 2.9vw, 17px);
+        }
+
         html,
         body {
             height: 100%
@@ -67,11 +71,11 @@
         }
 
         .gallery-tab {
-            padding: 5px 12px;
+            padding: 8px 14px;
             border-radius: 7px;
             color: #aeb6c5;
             text-decoration: none;
-            font-size: 0.82rem;
+            font-size: clamp(0.82rem, 2.6vw, 0.95rem);
             font-weight: 600;
             border: 1px solid transparent;
             line-height: 1.1;
@@ -151,6 +155,8 @@
             max-width: 1200px;
             margin: 0 auto;
             margin-top: 2.5rem;
+            padding: 0 0.75rem 2.5rem;
+            box-sizing: border-box;
         }
 
         header h1 {
@@ -164,7 +170,7 @@
 
         .theme-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
             gap: 16px;
             margin-top: 18px
         }

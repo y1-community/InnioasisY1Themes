@@ -652,6 +652,12 @@ select {
         display: block;
     }
 
+    #theme-root #right {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
     .guide-wrap {
         flex-direction: column;
         margin-top: 5rem;

@@ -54,6 +54,10 @@
     <script src="gallery-loaded-theme.js"></script>
 </head>
 <style>
+    html {
+        font-size: clamp(15px, 2.8vw, 17px);
+    }
+
     #nav-root {
         display: none;
     }
@@ -83,11 +87,11 @@
     }
 
     .gallery-tab {
-        padding: 5px 12px;
+        padding: 8px 14px;
         border-radius: 7px;
         color: #aeb6c5;
         text-decoration: none;
-        font-size: 0.82rem;
+        font-size: clamp(0.82rem, 2.6vw, 0.95rem);
         font-weight: 600;
         border: 1px solid transparent;
         line-height: 1.1;
@@ -156,6 +160,17 @@
             justify-self: center;
             grid-column: auto;
         }
+
+        #right {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box;
+        }
+    }
+
+    #theme-y1-sim-wrap,
+    #theme-page-variant-bar {
+        max-width: min(560px, 100%) !important;
     }
 
     .btn-primary {
@@ -206,13 +221,13 @@
         <div class="wrap" style="max-width:1200px;margin-top:6rem;">
             <div id="theme-root">
                 <div id="left" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:12px;min-height:360px;padding:8px 0;">
-                    <div id="theme-page-variant-bar" style="display:none;width:100%;max-width:min(440px,100%);justify-content:center;padding:0 8px 2px;box-sizing:border-box;">
+                    <div id="theme-page-variant-bar" style="display:none;width:100%;max-width:min(560px,100%);justify-content:center;padding:0 8px 2px;box-sizing:border-box;">
                         <label id="preview-variation-wrap" style="display:none;align-items:center;gap:8px;color:var(--text-secondary);font-size:0.9rem;">
                             Theme variant
                             <select id="preview-variation-select" style="background:#222733;border:1px solid rgba(255,255,255,0.12);color:#eaf0ff;border-radius:8px;padding:0.4rem 0.5rem;"></select>
                         </label>
                     </div>
-                    <div id="theme-y1-sim-wrap" style="width:100%;max-width:min(440px,100%);min-height:280px;display:flex;align-items:center;justify-content:center;" title="Click the device, then use arrow keys, Enter, and Escape like the Y1 Theme Maker simulator"></div>
+                    <div id="theme-y1-sim-wrap" style="width:100%;max-width:min(560px,100%);min-height:300px;display:flex;align-items:center;justify-content:center;" title="Click the device, then use arrow keys, Enter, and Escape like the Y1 Theme Maker simulator"></div>
                     <img id="main-screenshot" src="placeholder.png" alt="Screenshot" style="width:min(400px,100%);height:auto;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,.5)">
                 </div>
 

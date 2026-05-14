@@ -63,6 +63,10 @@
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
+        html {
+            font-size: clamp(15px, 2.9vw, 17px);
+        }
+
         html,
         body {
             height: 100%;
@@ -97,11 +101,11 @@
         }
 
         .gallery-tab {
-            padding: 5px 12px;
+            padding: 8px 14px;
             border-radius: 7px;
             color: #aeb6c5;
             text-decoration: none;
-            font-size: 0.82rem;
+            font-size: clamp(0.82rem, 2.6vw, 0.95rem);
             font-weight: 600;
             border: 1px solid transparent;
             line-height: 1.1;
@@ -243,22 +247,17 @@
         input[type="email"],
         textarea {
             font: inherit;
-            padding: 0.65rem 0.75rem;
+            padding: 0.7rem 0.8rem;
+            min-height: 2.75rem;
             border-radius: 8px;
             border: 1px solid rgba(255, 255, 255, 0.12);
             background: #222733;
             color: #eaf0ff;
         }
 
-        input[type="file"] {
-            font: inherit;
-            font-size: 0.88rem;
-            color: var(--text-secondary);
-        }
-
         textarea {
             resize: vertical;
-            min-height: 4rem;
+            min-height: 5rem;
         }
 
         .row .hint {
@@ -507,6 +506,11 @@
             margin-bottom: 0;
         }
 
+        .extra-variation-card--primary {
+            border: 1px solid rgba(200, 210, 230, 0.35);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
         .extra-variation-meta {
             font-size: 0.78rem;
             color: var(--text-secondary);
@@ -553,14 +557,11 @@
                     <div class="hint">Select the folder that contains your theme’s <code>config.json</code> and images. Works in Chrome, Edge, Firefox, and Safari.</div>
                 </div>
 
-                <div class="row file-input-row">
-                    <label class="variation-row" style="margin-top:0;">
-                        <input id="extra-variations-enable" type="checkbox" />
-                        <span><strong>Extra looks:</strong> add separate ZIPs or folders for alternate versions (for example a dark look or an alternate layout). Each becomes <code>YourTheme/Variants/&lt;Name&gt;/</code> in the submission.</span>
-                    </label>
+                <div class="row file-input-row" style="margin-top:0.75rem;">
+                    <p class="hint" style="margin:0;"><strong>Looks in this submission:</strong> your main ZIP or folder is <strong>look 1</strong>. Add more rows only if you are shipping extra looks from separate ZIPs or folders (each becomes <code>YourTheme/Variants/&lt;Name&gt;/</code>).</p>
                 </div>
 
-                <div id="extra-variations-panel" style="display:none;margin-top:0.75rem;padding:0.85rem 1rem;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(0,0,0,0.14);">
+                <div id="extra-variations-panel" style="display:block;margin-top:0.75rem;padding:0.85rem 1rem;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(0,0,0,0.14);">
                     <p class="hint" style="margin:0 0 0.65rem 0;">If your main ZIP or folder already contains <code>Variants/&lt;Name&gt;/</code> (capital <strong>V</strong> or lowercase), those names appear below automatically. You can still attach a replacement ZIP or folder for the same name — we keep one copy per name.</p>
                     <div id="extra-variations-add-toolbar" style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;margin-bottom:0.65rem;">
                         <span id="extra-variations-add-top-anchor">
@@ -754,7 +755,6 @@
         const submitBtn = document.getElementById("submit-btn");
         const zipInput = document.getElementById("zip-file");
         const folderInput = document.getElementById("folder-file");
-        const extraVariationsEnable = document.getElementById("extra-variations-enable");
         const extraVariationsPanel = document.getElementById("extra-variations-panel");
         const extraVariationsList = document.getElementById("extra-variations-list");
         const extraVariationsAddBtn = document.getElementById("extra-variations-add-btn");
@@ -807,12 +807,73 @@
             return out.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
         }
 
-        function promptAndAddExtraVariation() {
-            if (!extraVariationsEnable || !extraVariationsPanel) return;
-            if (!extraVariationsEnable.checked) {
-                extraVariationsEnable.checked = true;
-                extraVariationsPanel.style.display = "block";
+        function readExistingDefaultVariantLabelFromParsed() {
+            for (const e of themeInfoEntries) {
+                if (!isRootThemeConfigPath(e.path)) continue;
+                const g =
+                    e.parsed &&
+                    e.parsed.gallery &&
+                    typeof e.parsed.gallery === "object" &&
+                    e.parsed.gallery.defaultVariantLabel;
+                return String(g || "").trim();
             }
+            return "";
+        }
+
+        function ensurePrimaryVariationRow() {
+            if (!usePrimaryLookSlotUi()) {
+                extraVariationRows = extraVariationRows.filter((r) => !r.isPrimaryMain);
+                return;
+            }
+            if (extraVariationRows.some((r) => r.isPrimaryMain)) return;
+            extraVariationRows.unshift({
+                id: "var-primary-main",
+                isPrimaryMain: true,
+                galleryLookLabel: readExistingDefaultVariantLabelFromParsed(),
+                displayName: "",
+                description: "",
+                externalEnabled: false,
+                externalUrl: "",
+                zipFile: null,
+                folderFiles: null,
+            });
+        }
+
+        function refreshPrimaryGalleryLabelWrapFromDom() {
+            const card = extraVariationsList && extraVariationsList.querySelector('[data-variation-primary="1"]');
+            if (!card) return;
+            const wrap = card.querySelector("[data-primary-gallery-wrap]");
+            if (!wrap) return;
+            readExtraVariationRowsFromDom();
+            wrap.style.display = subsequentLooksExistForPrimaryLabel() ? "block" : "none";
+        }
+
+        function usePrimaryLookSlotUi() {
+            if (uploadMode !== "zip" && uploadMode !== "folder") return false;
+            let roots = 0;
+            for (const e of themeInfoEntries) {
+                if (isRootThemeConfigPath(e.path)) roots++;
+            }
+            return roots === 1;
+        }
+
+        function firstRootThemeEntryIndex() {
+            for (let i = 0; i < themeInfoEntries.length; i++) {
+                if (isRootThemeConfigPath(themeInfoEntries[i].path)) return i;
+            }
+            return 0;
+        }
+
+        function subsequentLooksExistForPrimaryLabel() {
+            if (uploadMode !== "zip" && uploadMode !== "folder") return false;
+            const paths = collectMainPackagePathsForDiscovery();
+            const discovered = discoverVariantFolderNamesFromPaths(paths);
+            if (discovered.length) return true;
+            return extraVariationRows.some((r) => !r.isPrimaryMain && sanitizeVariantSegment(r.displayName));
+        }
+
+        function promptAndAddExtraVariation() {
+            if (!extraVariationsPanel) return;
             const suggested = window.prompt("Variation folder name (for example: Dark or iPod Version)", "");
             if (!suggested) return;
             ensureExtraVariationRow(suggested);
@@ -820,11 +881,14 @@
 
         function firstVariationRowHasZipOrFolderInDom() {
             if (!extraVariationsList) return false;
-            const firstCard = extraVariationsList.querySelector(".extra-variation-card");
-            if (!firstCard) return false;
-            const z = firstCard.querySelector('[data-var-field="zip"]');
-            const f = firstCard.querySelector('[data-var-field="folder"]');
-            return !!(z && z.files && z.files[0]) || !!(f && f.files && f.files.length);
+            const cards = extraVariationsList.querySelectorAll(".extra-variation-card");
+            for (const card of cards) {
+                if (card.getAttribute("data-variation-primary") === "1") continue;
+                const z = card.querySelector('[data-var-field="zip"]');
+                const f = card.querySelector('[data-var-field="folder"]');
+                if ((z && z.files && z.files[0]) || (f && f.files && f.files.length)) return true;
+            }
+            return false;
         }
 
         function placeExtraVariationsAddButton() {
@@ -866,16 +930,63 @@
                 placeExtraVariationsAddButton();
                 return;
             }
+            const lastIdx = extraVariationRows.length - 1;
             extraVariationsList.innerHTML = extraVariationRows
                 .map((row, idx) => {
+                    if (row.isPrimaryMain) {
+                        const showLookLabel = subsequentLooksExistForPrimaryLabel();
+                        const priIdx = firstRootThemeEntryIndex();
+                        const entry = themeInfoEntries[priIdx];
+                        const ti = entry && entry.themeInfo ? entry.themeInfo : {};
+                        const galleryLab = escapeHtml(row.galleryLookLabel || "");
+                        const addAnchor = idx === lastIdx ? `<span data-extra-var-add-anchor></span>` : "";
+                        return `
+<div class="extra-variation-card extra-variation-card--primary" data-variation-id="${escapeHtml(row.id)}" data-variation-primary="1">
+  <h4>Look 1 — main package</h4>
+  <div class="extra-variation-meta">This is the ZIP or folder from <strong>Option A</strong> or <strong>Option B</strong>. Add more rows only if you are attaching <em>separate</em> packages for extra looks.</div>
+  <div class="row" data-primary-gallery-wrap style="display:${showLookLabel ? "block" : "none"};">
+    <label>Variation name (gallery)</label>
+    <input type="text" data-var-field="galleryLookLabel" value="${galleryLab}" placeholder="e.g. Blue Swirl" />
+    <p class="hint" style="margin:0;">Only when this submission has more than one look — so the gallery can label your main look next to the others.</p>
+  </div>
+  <div class="row">
+    <label>Title</label>
+    <input type="text" data-primary-field="title" value="${escapeHtml(ti.title || "")}" />
+  </div>
+  <div class="row">
+    <label>Author</label>
+    <input type="text" data-primary-field="author" value="${escapeHtml(ti.author || "")}" />
+  </div>
+  <div class="row">
+    <label>Author URL (optional)</label>
+    <input type="text" data-primary-field="authorUrl" value="${escapeHtml(ti.authorUrl || "")}" />
+  </div>
+  <div class="row">
+    <label>Description (optional)</label>
+    <textarea rows="3" data-primary-field="description">${escapeHtml(ti.description || "")}</textarea>
+  </div>
+  <label class="variation-row" style="margin-top:0;">
+    <input type="checkbox" data-primary-field="externalHost" ${String(ti.externalDownloadUrl || "").trim() ? "checked" : ""} />
+    <span><strong>Host downloads on my own page</strong> for the main look (shop, Ko-fi, Patreon, portfolio, etc.)</span>
+  </label>
+  <div class="row" data-primary-external-wrap style="display:${String(ti.externalDownloadUrl || "").trim() ? "block" : "none"};">
+    <label>External download URL (optional)</label>
+    <input type="text" data-primary-field="externalDownloadUrl" value="${escapeHtml(ti.externalDownloadUrl || "")}" placeholder="https://" />
+    <p class="hint">When set (and the box above is checked), the gallery can open this page instead of a direct ZIP.</p>
+  </div>
+  <div style="display:flex;justify-content:flex-end;align-items:center;gap:0.5rem;margin-top:0.35rem;flex-wrap:wrap;">
+    ${addAnchor}
+  </div>
+</div>`;
+                    }
                     const safe = escapeHtml(row.displayName);
                     const desc = escapeHtml(row.description);
                     const ext = escapeHtml(row.externalUrl);
-                    const addAnchor = idx === 0 ? `<span data-extra-var-add-anchor></span>` : "";
+                    const addAnchor = idx === lastIdx ? `<span data-extra-var-add-anchor></span>` : "";
                     return `
 <div class="extra-variation-card" data-variation-id="${escapeHtml(row.id)}">
   <h4>Variation: ${safe}</h4>
-  <div class="extra-variation-meta">This row is optional — use it if you want to replace or add files for <code>${THEME_VARIANTS_SEGMENT}/${safe}/</code> from a separate ZIP or folder.</div>
+  <div class="extra-variation-meta">Optional — add or replace files under <code>${THEME_VARIANTS_SEGMENT}/${safe}/</code> from a separate ZIP or folder.</div>
   <div class="row">
     <label>Variation name</label>
     <input type="text" data-var-field="displayName" value="${safe}" />
@@ -908,11 +1019,30 @@
 </div>`;
                 })
                 .join("");
-            const firstCard = extraVariationsList.querySelector(".extra-variation-card");
             extraVariationsList.querySelectorAll(".extra-variation-card").forEach((card) => {
                 const id = card.getAttribute("data-variation-id");
                 const row = extraVariationRows.find((r) => r.id === id);
                 if (!row) return;
+                if (row.isPrimaryMain) {
+                    const extWrap = card.querySelector("[data-primary-external-wrap]");
+                    const extToggle = card.querySelector('[data-primary-field="externalHost"]');
+                    if (extToggle && extWrap) {
+                        extToggle.addEventListener("change", () => {
+                            extWrap.style.display = extToggle.checked ? "block" : "none";
+                        });
+                    }
+                    card.querySelectorAll("[data-primary-field]").forEach((el) => {
+                        if (el === extToggle) return;
+                        el.addEventListener("input", () => syncCollisionUi());
+                        el.addEventListener("change", () => syncCollisionUi());
+                    });
+                    const gl = card.querySelector('[data-var-field="galleryLookLabel"]');
+                    if (gl) {
+                        gl.addEventListener("input", () => syncCollisionUi());
+                        gl.addEventListener("change", () => syncCollisionUi());
+                    }
+                    return;
+                }
                 const extWrap = card.querySelector("[data-var-external-wrap]");
                 const extToggle = card.querySelector('[data-var-field="externalEnabled"]');
                 if (extToggle && extWrap) {
@@ -925,13 +1055,13 @@
                 if (zipEl) {
                     zipEl.addEventListener("change", () => {
                         if (zipEl.files && zipEl.files[0] && folderEl) folderEl.value = "";
-                        if (card === firstCard) placeExtraVariationsAddButton();
+                        placeExtraVariationsAddButton();
                     });
                 }
                 if (folderEl) {
                     folderEl.addEventListener("change", () => {
                         if (folderEl.files && folderEl.files.length && zipEl) zipEl.value = "";
-                        if (card === firstCard) placeExtraVariationsAddButton();
+                        placeExtraVariationsAddButton();
                     });
                 }
                 const rm = card.querySelector("[data-var-remove]");
@@ -940,6 +1070,11 @@
                         extraVariationRows = extraVariationRows.filter((r) => r.id !== id);
                         renderExtraVariationList();
                     });
+                }
+                const dn = card.querySelector('[data-var-field="displayName"]');
+                if (dn) {
+                    dn.addEventListener("input", () => refreshPrimaryGalleryLabelWrapFromDom());
+                    dn.addEventListener("change", () => refreshPrimaryGalleryLabelWrapFromDom());
                 }
             });
             placeExtraVariationsAddButton();
@@ -952,6 +1087,22 @@
                 const id = card.getAttribute("data-variation-id");
                 const row = extraVariationRows.find((r) => r.id === id);
                 if (!row) return;
+                if (row.isPrimaryMain) {
+                    row.galleryLookLabel = String(card.querySelector('[data-var-field="galleryLookLabel"]')?.value || "").trim();
+                    const idx = firstRootThemeEntryIndex();
+                    const entry = themeInfoEntries[idx];
+                    if (!entry) return;
+                    const getP = (field) => String(card.querySelector(`[data-primary-field="${field}"]`)?.value || "").trim();
+                    entry.themeInfo.title = getP("title");
+                    entry.themeInfo.author = getP("author");
+                    entry.themeInfo.authorUrl = getP("authorUrl");
+                    entry.themeInfo.description = getP("description");
+                    const host = card.querySelector('[data-primary-field="externalHost"]');
+                    const wants = !!(host && host.checked);
+                    const ext = getP("externalDownloadUrl");
+                    entry.themeInfo.externalDownloadUrl = wants && ext ? ext : "";
+                    return;
+                }
                 const name = sanitizeVariantSegment(card.querySelector('[data-var-field="displayName"]')?.value || "");
                 row.displayName = name || row.displayName;
                 row.description = String(card.querySelector('[data-var-field="description"]')?.value || "").trim();
@@ -965,6 +1116,7 @@
         }
 
         function syncDiscoveredVariantRowsFromPackage() {
+            ensurePrimaryVariationRow();
             const paths = [];
             if (uploadMode === "zip" && loadedZip && loadedZip.files) {
                 for (const z of Object.values(loadedZip.files || {})) {
@@ -975,6 +1127,7 @@
             }
             const names = discoverVariantFolderNamesFromPaths(paths);
             for (const n of names) ensureExtraVariationRow(n);
+            renderExtraVariationList();
         }
 
         function collectMainPackagePathsForDiscovery() {
@@ -990,7 +1143,10 @@
         }
 
         function isRootThemeConfigPath(entryPath) {
-            return /^[^/]+\/config\.json$/i.test(normRelPath(entryPath));
+            const p = normRelPath(entryPath);
+            if (!p || isVariantStyleConfigPath(p)) return false;
+            if (/^config\.json$/i.test(p)) return true;
+            return /^[^/]+\/config\.json$/i.test(p);
         }
 
         function finalCatalogRootForVariations(renames) {
@@ -1045,10 +1201,11 @@
             readExtraVariationRowsFromDom();
             extraVariationBlobByLowerPath.clear();
             const out = [];
-            if (!extraVariationsEnable || !extraVariationsEnable.checked) return out;
             const catalog = finalCatalogRootForVariations(renames);
             const anyPackaged = extraVariationRows.some(
-                (row) => row.zipFile || (row.folderFiles && row.folderFiles.length)
+                (row) =>
+                    !row.isPrimaryMain &&
+                    (row.zipFile || (row.folderFiles && row.folderFiles.length))
             );
             if (anyPackaged && !catalog) {
                 throw new Error(
@@ -1058,6 +1215,7 @@
             if (!catalog) return out;
 
             for (const row of extraVariationRows) {
+                if (row.isPrimaryMain) continue;
                 const seg = sanitizeVariantSegment(row.displayName);
                 const hasZip = !!row.zipFile;
                 const hasFolder = !!(row.folderFiles && row.folderFiles.length);
@@ -1147,7 +1305,13 @@
                     const gallery = { ...(nextParsed.gallery || {}) };
                     gallery.compatibilityMedal = medal;
                     if (variantFolders.length) gallery.variantFolders = variantFolders;
-                    const gdl = String(entry.galleryDefaultVariantLabel || "").trim();
+                    const primary = extraVariationRows.find((r) => r.isPrimaryMain);
+                    let gdl = "";
+                    if (variantFolders.length && primary) {
+                        gdl =
+                            String(primary.galleryLookLabel || "").trim() ||
+                            String(entry.themeInfo.title || "").trim();
+                    }
                     if (gdl) gallery.defaultVariantLabel = gdl;
                     nextParsed = { ...nextParsed, gallery };
                 }
@@ -1156,19 +1320,12 @@
             return map;
         }
 
-        if (extraVariationsEnable && extraVariationsPanel) {
-            extraVariationsEnable.addEventListener("change", () => {
-                extraVariationsPanel.style.display = extraVariationsEnable.checked ? "block" : "none";
-                if (!extraVariationsEnable.checked) {
-                    extraVariationRows = [];
-                    renderExtraVariationList();
-                } else {
-                    syncDiscoveredVariantRowsFromPackage();
-                }
-            });
-        }
         if (extraVariationsAddBtn) {
             extraVariationsAddBtn.addEventListener("click", () => promptAndAddExtraVariation());
+        }
+        if (extraVariationsList) {
+            extraVariationsList.addEventListener("input", () => syncCollisionUi());
+            extraVariationsList.addEventListener("change", () => syncCollisionUi());
         }
 
         const metaEditor = document.getElementById("meta-editor");
@@ -1303,6 +1460,10 @@
                 document.querySelectorAll(".file-input-row").forEach((el) => {
                     el.hidden = true;
                 });
+                if (extraVariationsPanel) {
+                    extraVariationsPanel.hidden = true;
+                    extraVariationsPanel.style.display = "none";
+                }
                 afterTitle.textContent = "What happens after you send";
                 afterList.innerHTML = [
                     "<li>We open a <strong>metadata-only</strong> pull request on GitHub (no new image binaries).</li>",
@@ -1315,6 +1476,10 @@
             document.querySelectorAll(".file-input-row").forEach((el) => {
                 el.hidden = false;
             });
+            if (extraVariationsPanel) {
+                extraVariationsPanel.hidden = false;
+                extraVariationsPanel.style.display = "block";
+            }
 
             if (pageMode === "edit") {
                 if (docTitle) docTitle.textContent = "Submit a theme update — Innioasis Y1 Themes";
@@ -1823,8 +1988,7 @@
             extraVariationBlobByLowerPath.clear();
             pendingExtraVariationEntries = null;
             if (extraVariationsList) extraVariationsList.innerHTML = "";
-            if (extraVariationsEnable) extraVariationsEnable.checked = false;
-            if (extraVariationsPanel) extraVariationsPanel.style.display = "none";
+            if (extraVariationsPanel) extraVariationsPanel.style.display = "block";
             if (editAck) editAck.checked = false;
             if (editNotice) editNotice.hidden = true;
             renderThemeInfoEditors();
@@ -2111,6 +2275,8 @@
             if (!themeInfoEntries.length) {
                 metaEditor.classList.remove("show");
                 metaEditorList.innerHTML = "";
+                extraVariationRows = [];
+                renderExtraVariationList();
                 refreshBatchThemePanel();
                 syncCollisionUi();
                 return;
@@ -2120,6 +2286,7 @@
             const html = themeInfoEntries
                 .map((entry, idx) => {
                     const isVariant = isVariantStyleConfigPath(entry.path);
+                    const skipRootFields = usePrimaryLookSlotUi() && isRootThemeConfigPath(entry.path);
                     const head = batchLayout
                         ? ""
                         : `<h4>${escapeHtml(entry.label)} <span class="hint">(${escapeHtml(entry.path)})</span></h4>`;
@@ -2128,15 +2295,6 @@
                         : "";
                     const wrapOpen = batchLayout ? `<details class="meta-card-details" ${idx === 0 ? "open" : ""}>` : "";
                     const wrapClose = batchLayout ? "</details>" : "";
-                    const galleryDefault =
-                        String(
-                            (entry.parsed &&
-                                entry.parsed.gallery &&
-                                typeof entry.parsed.gallery === "object" &&
-                                entry.parsed.gallery.defaultVariantLabel) ||
-                                entry.galleryDefaultVariantLabel ||
-                                ""
-                        ).trim();
                     const inner = isVariant
                         ? `
                 <div class="meta-card" data-entry-idx="${idx}" data-entry-kind="variant">
@@ -2168,7 +2326,13 @@
                         <p class="hint">Only used when the box above is checked. Use a link that clearly offers this look’s download or your support page.</p>
                     </div>
                 </div>`
-                        : `
+                        : skipRootFields
+                          ? `
+                <div class="meta-card" data-entry-idx="${idx}" data-entry-kind="root-skipped">
+                    ${head}
+                    <p class="hint" style="margin:0;">Use the <strong>Look 1 — main package</strong> card above for <strong>title, author, description</strong>, and the main download link for this theme.</p>
+                </div>`
+                          : `
                 <div class="meta-card" data-entry-idx="${idx}" data-entry-kind="root">
                     ${head}
                     <div class="row">
@@ -2182,11 +2346,6 @@
                     <div class="row">
                         <label>Author URL (optional)</label>
                         <input type="text" data-field="authorUrl" value="${escapeHtml(entry.themeInfo.authorUrl)}" />
-                    </div>
-                    <div class="row">
-                        <label>Default look name (optional)</label>
-                        <input type="text" data-field="galleryDefaultVariantLabel" value="${escapeHtml(galleryDefault)}" placeholder="Example: Classic" />
-                        <p class="hint">Shown in the gallery when your theme offers extra looks. Leave blank to use the folder name of your main theme.</p>
                     </div>
                     <div class="row">
                         <label>Description (optional)</label>
@@ -2212,9 +2371,11 @@
             metaEditor.classList.add("show");
             refreshBatchThemePanel();
             syncCollisionUi();
+            renderExtraVariationList();
         }
 
         function readEditorValues() {
+            readExtraVariationRowsFromDom();
             const cards = metaEditorList.querySelectorAll(".meta-card");
             cards.forEach((card) => {
                 const idx = Number(card.getAttribute("data-entry-idx"));
@@ -2235,6 +2396,7 @@
                     entry.themeInfo.externalDownloadUrl = wants && ext ? ext : "";
                     return;
                 }
+                if (kind === "root-skipped") return;
 
                 entry.themeInfo.title = getValue("title");
                 entry.themeInfo.author = getValue("author");
@@ -2244,7 +2406,6 @@
                 const wants = !!(host && host.checked);
                 const ext = getValue("externalDownloadUrl");
                 entry.themeInfo.externalDownloadUrl = wants && ext ? ext : "";
-                entry.galleryDefaultVariantLabel = getValue("galleryDefaultVariantLabel");
             });
         }
 
@@ -2285,7 +2446,7 @@
             for (const entry of themeInfoEntries) {
                 const p = normRelPath(entry.path);
                 if (!p || isVariantStyleConfigPath(p)) continue;
-                if (!/^[^/]+\/config\.json$/i.test(p)) continue;
+                if (!isRootThemeConfigPath(p)) continue;
                 const cat = inferEntryRootFolder(p);
                 if (cat) baseByCatalog.set(cat.toLowerCase(), entry);
             }
