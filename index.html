@@ -1177,6 +1177,24 @@
                 .join(' ');
         }
 
+        /** Alternate mask images: mask_<anything>.(png|webp|jpg) or * _ask_ *.(same) per theme author convention. */
+        function isAlternateMaskBasename(baseName) {
+            const bn = String(baseName || '').trim();
+            if (!bn) return false;
+            if (/^mask\.(png|webp|jpe?g)$/i.test(bn)) return false;
+            if (/^mask_.+\.(png|webp|jpe?g)$/i.test(bn)) return true;
+            if (/^.+_ask_.+\.(png|webp|jpe?g)$/i.test(bn)) return true;
+            return false;
+        }
+
+        function maskVariantLabelFromBasename(baseName) {
+            const bn = String(baseName || '').trim();
+            const m1 = bn.match(/^mask_(.+)\.(png|webp|jpe?g)$/i);
+            if (m1) return titleCaseWords(String(m1[1] || '').trim());
+            const stem = bn.replace(/\.(png|webp|jpe?g)$/i, '');
+            return titleCaseWords(stem.replace(/_/g, ' '));
+        }
+
         function maskVariantChoicesFromFilePaths(folderPath, files, baseMaskPath) {
             const basePath = normalizeConfigAssetPath(baseMaskPath || 'mask.png', folderPath) || 'mask.png';
             const seen = new Set();
@@ -1185,16 +1203,13 @@
                 const relPath = normalizeConfigAssetPath(raw, folderPath);
                 if (!relPath) continue;
                 const baseName = relPath.split('/').pop() || '';
-                const m = baseName.match(/^mask_([a-z0-9][a-z0-9_-]*)\.png$/i);
-                if (!m) continue;
-                const suffix = String(m[1] || '').trim();
-                if (!suffix) continue;
-                const key = suffix.toLowerCase();
+                if (!isAlternateMaskBasename(baseName)) continue;
+                const key = baseName.toLowerCase();
                 if (seen.has(key)) continue;
                 seen.add(key);
                 variants.push({
                     value: key,
-                    label: titleCaseWords(suffix),
+                    label: maskVariantLabelFromBasename(baseName),
                     sourcePath: relPath
                 });
             }
@@ -1226,7 +1241,7 @@
                 const entries = await res.json();
                 if (!Array.isArray(entries)) return [];
                 return entries
-                    .filter(item => item && item.type === 'file' && /^mask_[a-z0-9][a-z0-9_-]*\.png$/i.test(String(item.name || '')))
+                    .filter(item => item && item.type === 'file' && isAlternateMaskBasename(String(item.name || '')))
                     .map(item => String(item.name || '').trim())
                     .filter(Boolean);
             } catch (_) {
@@ -1249,7 +1264,7 @@
                 return files
                     .map((f) => String((f && f.name) || '').trim().replace(/^\/+/, ''))
                     .map((name) => name.split('/').pop() || '')
-                    .filter((name) => /^mask_[a-z0-9][a-z0-9_-]*\.png$/i.test(name));
+                    .filter((name) => isAlternateMaskBasename(name));
             } catch (_) {
                 return [];
             }
