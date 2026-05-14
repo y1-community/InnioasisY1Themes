@@ -17,9 +17,10 @@
     var HOME_ROW_WIDTH = 200;
     var HOME_ROW_LEFT_PAD = 0;
 
-    var PREVIEW_WIDTH = 179;
-    var PREVIEW_RIGHT_MARGIN = 23;
-    var PREVIEW_TOP_MARGIN = 86;
+    /** HomeView.tsx: right preview tile (iv_now), fitCenter / adjustViewBounds */
+    var HOME_PREVIEW_WIDTH = 179;
+    var HOME_PREVIEW_RIGHT_MARGIN = 23;
+    var HOME_PREVIEW_TOP_MARGIN = 86;
 
     var SETTINGS_MENU_LEFT = 9;
     var SETTINGS_MENU_TOP = 45;
@@ -948,23 +949,16 @@
                 dev.appendChild(viewport);
 
                 var wheel = null;
+                var wheelScrollOpts = { passive: false };
                 if (interactive) {
                     wheel = document.createElement('div');
-                    wheel.className = 'y1-tp-wheel';
+                    wheel.className = 'y1-tp-wheel y1-tp-clickwheel';
                     wheel.innerHTML =
-                        '<div class="y1-tp-wheel-row y1-tp-wheel-row--top">' +
-                        '<button type="button" class="y1-tp-wbtn" data-y1act="menu" title="Menu">Menu</button>' +
-                        '</div>' +
-                        '<div class="y1-tp-wheel-mid">' +
-                        '<button type="button" class="y1-tp-wbtn" data-y1act="up" title="Up">\u25B2</button>' +
-                        '<button type="button" class="y1-tp-wbtn y1-tp-wbtn--round" data-y1act="center" title="Select"></button>' +
-                        '<button type="button" class="y1-tp-wbtn" data-y1act="down" title="Down">\u25BC</button>' +
-                        '</div>' +
-                        '<div class="y1-tp-wheel-row y1-tp-wheel-row--btm">' +
-                        '<button type="button" class="y1-tp-wbtn" data-y1act="prev" title="Previous">\u23EE</button>' +
-                        '<button type="button" class="y1-tp-wbtn" data-y1act="play" title="Play/Pause">\u23EF</button>' +
-                        '<button type="button" class="y1-tp-wbtn" data-y1act="next" title="Next">\u23ED</button>' +
-                        '</div>';
+                        '<button type="button" class="y1-tp-cw y1-tp-cw--menu" data-y1act="menu" title="Back">BACK</button>' +
+                        '<button type="button" class="y1-tp-cw y1-tp-cw--prev" data-y1act="prev" title="Previous" aria-label="Previous">\u23EE</button>' +
+                        '<button type="button" class="y1-tp-cw y1-tp-cw--next" data-y1act="next" title="Next" aria-label="Next">\u23ED</button>' +
+                        '<button type="button" class="y1-tp-cw y1-tp-cw--play" data-y1act="play" title="Play / Pause" aria-label="Play Pause">\u23EF</button>' +
+                        '<button type="button" class="y1-tp-cw y1-tp-cw--center" data-y1act="center" title="Select" aria-label="Select"></button>';
                     dev.appendChild(wheel);
                 }
 
@@ -974,8 +968,13 @@
                 function updateScale() {
                     var vw = viewport.clientWidth || 1;
                     var vh = viewport.clientHeight || 1;
-                    var s = Math.min(vw / W, vh / H);
+                    /* Cover the viewport (4:3) so the 480×360 stage always fills the preview; letterboxing was leaving black bars. */
+                    var s = Math.max(vw / W, vh / H);
                     if (!(s > 0) || !isFinite(s)) s = 1;
+                    var sw = W * s;
+                    var sh = H * s;
+                    scaleWrap.style.left = (vw - sw) / 2 + 'px';
+                    scaleWrap.style.top = (vh - sh) / 2 + 'px';
                     scaleWrap.style.transform = 'scale(' + s + ')';
                 }
 
@@ -990,12 +989,21 @@
                 function paint() {
                     canvas.innerHTML = '';
                     var bgUrl = backgroundUrlForView(cfg, sim.themeViewId, buildFileUrl, contentFolder);
-                    canvas.style.backgroundImage = bgUrl ? 'url("' + bgUrl.replace(/"/g, '%22') + '")' : '';
-                    /* Match ThemeDisplay / device: wallpaper fills 480×360 (BitmapDrawable scale). */
-                    canvas.style.backgroundSize = bgUrl ? 'cover' : '';
-                    canvas.style.backgroundPosition = bgUrl ? 'center' : '';
-                    canvas.style.backgroundRepeat = bgUrl ? 'no-repeat' : '';
-                    canvas.style.backgroundColor = '#000';
+                    canvas.style.backgroundColor = 'transparent';
+                    var wall = document.createElement('div');
+                    wall.className = 'y1-tp-wallpaper';
+                    wall.style.cssText =
+                        'position:absolute;left:0;top:0;width:' +
+                        W +
+                        'px;height:' +
+                        H +
+                        'px;z-index:0;pointer-events:none;background-color:#000;' +
+                        (bgUrl
+                            ? 'background-image:url("' +
+                              bgUrl.replace(/"/g, '%22') +
+                              '");background-size:cover;background-position:center;background-repeat:no-repeat;'
+                            : '');
+                    canvas.appendChild(wall);
 
                     var status = document.createElement('div');
                     status.className = 'y1-tp-status';
@@ -1124,17 +1132,19 @@
                                 var tile = document.createElement('div');
                                 tile.style.cssText =
                                     'position:absolute;right:' +
-                                    PREVIEW_RIGHT_MARGIN +
+                                    HOME_PREVIEW_RIGHT_MARGIN +
                                     'px;top:' +
-                                    PREVIEW_TOP_MARGIN +
+                                    HOME_PREVIEW_TOP_MARGIN +
                                     'px;width:' +
-                                    PREVIEW_WIDTH +
-                                    'px;height:auto;display:flex;align-items:center;justify-content:center;z-index:10;';
+                                    HOME_PREVIEW_WIDTH +
+                                    'px;height:auto;max-height:' +
+                                    Math.max(0, H - HOME_PREVIEW_TOP_MARGIN - 8) +
+                                    'px;display:flex;align-items:center;justify-content:center;overflow:hidden;z-index:10;box-sizing:border-box;';
                                 var im = document.createElement('img');
                                 im.src = iu;
                                 im.alt = sel.label || '';
                                 im.style.cssText =
-                                    'max-width:100%;width:auto;height:auto;object-fit:contain;display:block;';
+                                    'max-width:100%;width:auto;height:auto;max-height:100%;object-fit:contain;object-position:center;display:block;';
                                 tile.appendChild(im);
                                 layer.appendChild(tile);
                             }
@@ -1975,32 +1985,147 @@
                     }
                 }
 
-                function onWheelClick(ev) {
-                    var t = ev.target && ev.target.closest && ev.target.closest('[data-y1act]');
-                    if (!t) return;
-                    var act = t.getAttribute('data-y1act');
-                    if (act === 'up') handleScroll('up');
-                    else if (act === 'down') handleScroll('down');
-                    else if (act === 'center') handleCenterClick();
+                function invokeWheelQuadrantAction(act) {
+                    if (act === 'center') handleCenterClick();
                     else if (act === 'menu') goBack();
                     else if (act === 'play') {
                         sim.playState = sim.playState === 'playing' ? 'pause' : 'playing';
                         paint();
-                    } else showToast('Not implemented');
+                    } else if (act === 'prev') {
+                        handleScroll('up');
+                    } else if (act === 'next') {
+                        handleScroll('down');
+                    }
+                }
+
+                var cwPointer = null;
+
+                function detachCwPointerTracking() {
+                    document.removeEventListener('pointermove', onCwPointerDocMove, true);
+                    document.removeEventListener('pointerup', onCwPointerDocEnd, true);
+                    document.removeEventListener('pointercancel', onCwPointerDocEnd, true);
+                }
+
+                function onCwPointerDocMove(ev) {
+                    if (!cwPointer || ev.pointerId !== cwPointer.pid) return;
+                    var dx = ev.clientX - cwPointer.x0;
+                    var dy = ev.clientY - cwPointer.y0;
+                    if (dx * dx + dy * dy > 49) cwPointer.moved = true;
+                }
+
+                function onCwPointerDocEnd(ev) {
+                    if (!cwPointer || ev.pointerId !== cwPointer.pid) return;
+                    detachCwPointerTracking();
+                    var moved = cwPointer.moved;
+                    var act = cwPointer.act;
+                    cwPointer = null;
+                    if (!moved) invokeWheelQuadrantAction(act);
+                }
+
+                function onWheelButtonPointerDownCap(ev) {
+                    if (!interactive || (ev.pointerType === 'mouse' && ev.button !== 0)) return;
+                    var btn = ev.target && ev.target.closest && ev.target.closest('[data-y1act]');
+                    if (!btn || !wheel.contains(btn)) return;
+                    if (cwPointer) return;
+                    cwPointer = {
+                        pid: ev.pointerId,
+                        x0: ev.clientX,
+                        y0: ev.clientY,
+                        moved: false,
+                        act: btn.getAttribute('data-y1act')
+                    };
+                    document.addEventListener('pointermove', onCwPointerDocMove, true);
+                    document.addEventListener('pointerup', onCwPointerDocEnd, true);
+                    document.addEventListener('pointercancel', onCwPointerDocEnd, true);
+                    try {
+                        ev.preventDefault();
+                    } catch (e) {}
+                }
+
+                function onWheelDelta(ev) {
+                    if (!interactive) return;
+                    ev.preventDefault();
+                    var dy = ev.deltaY;
+                    if (dy > 0.5) handleScroll('down');
+                    else if (dy < -0.5) handleScroll('up');
+                }
+
+                var ringDrag = { active: false, lastAngle: 0, acc: 0 };
+
+                function wheelClientCenter() {
+                    var r = wheel.getBoundingClientRect();
+                    return { cx: r.left + r.width * 0.5, cy: r.top + r.height * 0.5 };
+                }
+
+                function onWheelPointerDown(ev) {
+                    if (!interactive || (ev.pointerType === 'mouse' && ev.button !== 0)) return;
+                    if (ev.target && ev.target.closest && ev.target.closest('[data-y1act]')) return;
+                    ringDrag.active = true;
+                    ringDrag.acc = 0;
+                    var c = wheelClientCenter();
+                    ringDrag.lastAngle = Math.atan2(ev.clientY - c.cy, ev.clientX - c.cx);
+                    try {
+                        wheel.setPointerCapture(ev.pointerId);
+                    } catch (e) {}
+                    ev.preventDefault();
+                }
+
+                function onWheelPointerMove(ev) {
+                    if (!ringDrag.active) return;
+                    var c = wheelClientCenter();
+                    var a = Math.atan2(ev.clientY - c.cy, ev.clientX - c.cx);
+                    var da = a - ringDrag.lastAngle;
+                    if (da > Math.PI) da -= 2 * Math.PI;
+                    if (da < -Math.PI) da += 2 * Math.PI;
+                    ringDrag.lastAngle = a;
+                    ringDrag.acc += da;
+                    var step = 0.28;
+                    while (ringDrag.acc > step) {
+                        handleScroll('down');
+                        ringDrag.acc -= step;
+                    }
+                    while (ringDrag.acc < -step) {
+                        handleScroll('up');
+                        ringDrag.acc += step;
+                    }
+                    ev.preventDefault();
+                }
+
+                function onWheelPointerEnd(ev) {
+                    if (!ringDrag.active) return;
+                    ringDrag.active = false;
+                    ringDrag.acc = 0;
+                    try {
+                        wheel.releasePointerCapture(ev.pointerId);
+                    } catch (e) {}
                 }
 
                 if (interactive) {
                     dev.tabIndex = 0;
                     dev.addEventListener('keydown', onKeyDown);
-                    wheel.addEventListener('click', onWheelClick);
+                    wheel.addEventListener('pointerdown', onWheelButtonPointerDownCap, true);
+                    wheel.addEventListener('wheel', onWheelDelta, wheelScrollOpts);
+                    wheel.addEventListener('pointerdown', onWheelPointerDown);
+                    wheel.addEventListener('pointermove', onWheelPointerMove);
+                    wheel.addEventListener('pointerup', onWheelPointerEnd);
+                    wheel.addEventListener('pointercancel', onWheelPointerEnd);
                 }
 
                 container._y1TpCleanup = function () {
                     if (ro) ro.disconnect();
                     if (interactive) {
                         dev.removeEventListener('keydown', onKeyDown);
-                        if (wheel) wheel.removeEventListener('click', onWheelClick);
+                        if (wheel) {
+                            wheel.removeEventListener('pointerdown', onWheelButtonPointerDownCap, true);
+                            wheel.removeEventListener('wheel', onWheelDelta, wheelScrollOpts);
+                            wheel.removeEventListener('pointerdown', onWheelPointerDown);
+                            wheel.removeEventListener('pointermove', onWheelPointerMove);
+                            wheel.removeEventListener('pointerup', onWheelPointerEnd);
+                            wheel.removeEventListener('pointercancel', onWheelPointerEnd);
+                        }
                     }
+                    detachCwPointerTracking();
+                    cwPointer = null;
                     var st = document.getElementById(fontStyleId);
                     if (st) st.remove();
                     global.clearTimeout(container._y1TpToastT);

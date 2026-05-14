@@ -179,6 +179,7 @@
             align-items: center;
             border: 2px solid var(--bg-card);
             position: relative;
+            min-width: 0;
         }
 
         .theme-card-corner-actions {
@@ -256,17 +257,19 @@
             position: relative;
             width: min(360px, 100%);
             aspect-ratio: 4 / 3;
-            min-height: 200px;
             border-radius: 10px;
             background: rgba(255, 255, 255, 0.04);
             display: grid;
-            place-items: center;
+            /* Stretch children to the 4:3 cell; centering shrink-wrap broke aspect ratio on many cards */
+            place-items: stretch;
             overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .theme-preview-frame > * {
             grid-area: 1 / 1;
+            min-width: 0;
+            min-height: 0;
         }
 
         .theme-preview-frame .y1-theme-preview-host {
@@ -279,12 +282,49 @@
             justify-content: center;
         }
 
+        .theme-preview-frame .y1-tp-root {
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+        }
+
         .theme-card .theme-preview-frame img {
             width: 100%;
             height: 100%;
             border-radius: 8px;
             transition: all 0.2s ease;
             object-fit: contain;
+            object-position: center;
+        }
+
+        .theme-card-variant-row {
+            width: min(360px, 100%);
+            margin: 6px auto 0;
+            padding: 0 2px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .theme-card-variant-row label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            flex: 1;
+            min-width: 0;
+        }
+
+        .theme-card-variant-select {
+            flex: 1;
+            min-width: 0;
+            background: #222733;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #eaf0ff;
+            border-radius: 8px;
+            padding: 0.35rem 0.45rem;
+            font-size: 0.82rem;
         }
 
         .theme-card .theme-preview-frame img:hover {
@@ -1702,9 +1742,10 @@
             };
         }
 
-        async function promptVariantCombination(theme) {
+        async function promptVariantCombination(theme, hints) {
             const catalogFolder = String((theme && theme.folder) || '').replace(/^\.\/+/, '').trim();
             if (!catalogFolder) throw new Error('No downloadable folder info for this theme.');
+            const hintsObj = hints || {};
             let rootGalleryDefaultLabel = '';
             try {
                 const enc = catalogFolder.split('/').filter(Boolean).map(encodeURIComponent).join('/');
@@ -1728,11 +1769,30 @@
                 contextMap.set(opt.content, await buildVariantContext(theme, opt.content, catalogFolder, opt.variant));
             }
             const needPrompt = options.length > 1 || Array.from(contextMap.values()).some((ctx) => (ctx.maskChoices.options || []).length > 1);
+            const preferredVariant = String(hintsObj.preferredVariant || '').trim();
+            const preferredContent = preferredVariant
+                ? effectiveThemeContentPrefix(catalogFolder, preferredVariant)
+                : String(hintsObj.preferredContentFolder || '').trim().replace(/^\.\/+/, '');
+            let prefCtx = null;
+            if (preferredContent && contextMap.has(preferredContent)) {
+                prefCtx = contextMap.get(preferredContent);
+            }
+            const prefMaskN =
+                prefCtx && prefCtx.maskChoices && Array.isArray(prefCtx.maskChoices.options)
+                    ? prefCtx.maskChoices.options.length
+                    : 0;
+
             if (!needPrompt) {
                 const only = contextMap.get(options[0].content);
                 return {
                     ...only,
                     selectedMask: (only.maskChoices.options || [])[0] || null,
+                };
+            }
+            if (prefCtx && prefMaskN <= 1 && (options.length <= 1 || !!preferredContent)) {
+                return {
+                    ...prefCtx,
+                    selectedMask: (prefCtx.maskChoices.options || [])[0] || null,
                 };
             }
             return new Promise((resolve) => {
@@ -1777,6 +1837,9 @@
                     variationSelect.appendChild(o);
                 }
                 variationSelect.value = options[0].content;
+                if (preferredContent && options.some((o) => o.content === preferredContent)) {
+                    variationSelect.value = preferredContent;
+                }
                 variationWrap.append(variationLabel, variationSelect);
                 if (options.length > 1) panel.appendChild(variationWrap);
 
@@ -1822,7 +1885,7 @@
                 okBtn.className = 'btn';
                 okBtn.innerHTML = '<i class="fa-solid fa-check" style="margin-right:6px;"></i>Continue';
 
-                let previousVariationKey = String(options[0].content);
+                let previousVariationKey = String(variationSelect.value || options[0].content);
 
                 const refreshMaskPreview = () => {
                     const ctx = contextMap.get(String(variationSelect.value || options[0].content));
@@ -2038,7 +2101,16 @@
         // =========================================================
         // DIRECT INSTALL (NO GITHUB API)
         // =========================================================
-        async function directInstallTheme(theme, buttonNode) {
+        function readCardVariantInstallHints(card) {
+            if (!card) return {};
+            const sel = card.querySelector('.theme-card-variant-select');
+            const row = card.querySelector('.theme-card-variant-row');
+            if (!sel || !row || row.style.display === 'none') return {};
+            const v = String(sel.value || '').trim();
+            return v ? { preferredVariant: v } : {};
+        }
+
+        async function directInstallTheme(theme, buttonNode, hints) {
             if (!selectedThemesFolder) {
                 alert('Please select your Y1 Themes folder first');
                 return;
@@ -2054,7 +2126,7 @@
 
             try {
                 if (!theme.folder) throw new Error('No downloadable folder info for this theme.');
-                const selectedCombo = await promptVariantCombination(theme);
+                const selectedCombo = await promptVariantCombination(theme, hints || {});
                 if (selectedCombo === null) {
                     progressUI.abortAndRestore(buttonNode);
                     if (dlBtn) dlBtn.style.display = '';
@@ -2198,7 +2270,7 @@
         // =========================================================
         // ZIP DOWNLOAD (NO GITHUB API)
         // =========================================================
-        async function downloadTheme(theme, buttonNode) {
+        async function downloadTheme(theme, buttonNode, hints) {
             const card = buttonNode.closest('.theme-card');
             if (!card) return;
             const diBtn = card.querySelector('[data-direct-install-btn]');
@@ -2208,7 +2280,7 @@
             const progressUI = createProgressUI(card, buttonNode, theme.name || 'theme');
             try {
                 if (!theme.folder) throw new Error('No downloadable folder info for this theme.');
-                const selectedCombo = await promptVariantCombination(theme);
+                const selectedCombo = await promptVariantCombination(theme, hints || {});
                 if (selectedCombo === null) {
                     progressUI.abortAndRestore(buttonNode);
                     if (diBtn) diBtn.style.display = '';
@@ -2463,17 +2535,19 @@
                 previewFrame.appendChild(medal);
             }
 
+            const cardPreviewMeta = {
+                trackTitle: safeText(theme.name || '').trim(),
+                trackArtist: safeText(theme.author || '').trim(),
+                trackAlbum: safeText(theme.description || 'Y1 Theme').trim().slice(0, 96)
+            };
+
             if (folderPath && window.Y1ThemePreview && typeof window.Y1ThemePreview.mountGalleryCardLazy === 'function') {
                 window.Y1ThemePreview.mountGalleryCardLazy(simHost, {
                     catalogFolder: folderPath,
                     variantSegment: '',
                     mode: 'menu',
                     buildFileUrl: (cf, rel) => buildThemeFileUrl(cf, rel),
-                    previewMeta: {
-                        trackTitle: safeText(theme.name || '').trim(),
-                        trackArtist: safeText(theme.author || '').trim(),
-                        trackAlbum: safeText(theme.description || 'Y1 Theme').trim().slice(0, 96)
-                    },
+                    previewMeta: cardPreviewMeta,
                     onReady: () => {
                         img.style.visibility = 'hidden';
                         img.style.pointerEvents = 'none';
@@ -2486,6 +2560,74 @@
                 simHost.style.display = 'none';
             }
 
+            const variantRow = document.createElement('div');
+            variantRow.className = 'theme-card-variant-row';
+            const variantLbl = document.createElement('label');
+            const variantSpan = document.createElement('span');
+            variantSpan.textContent = 'Variant';
+            const variantSelect = document.createElement('select');
+            variantSelect.className = 'theme-card-variant-select';
+            variantSelect.setAttribute('aria-label', 'Theme variant for preview and download');
+            const defOptV = document.createElement('option');
+            defOptV.value = '';
+            defOptV.textContent = 'Default';
+            variantSelect.appendChild(defOptV);
+            variantLbl.append(variantSpan, variantSelect);
+            variantRow.appendChild(variantLbl);
+
+            if (folderPath) {
+                void (async () => {
+                    try {
+                        let defaultLabel = 'Default';
+                        try {
+                            const enc = folderPath.split('/').filter(Boolean).map(encodeURIComponent).join('/');
+                            const rc = await fetch(`./${enc}/config.json`, { cache: 'no-cache' });
+                            if (rc.ok) {
+                                const j = await rc.json();
+                                const gl = String((j.gallery && j.gallery.defaultVariantLabel) || '').trim();
+                                if (gl) defaultLabel = gl;
+                            }
+                        } catch (_) {}
+                        defOptV.textContent = defaultLabel;
+                        const names = await listThemeVariantFolderNames(folderPath, theme);
+                        if (!names.length) return;
+                        variantRow.style.display = 'flex';
+                        for (const vn of names) {
+                            const o = document.createElement('option');
+                            o.value = vn;
+                            o.textContent = formatVariantDisplayLabel(vn);
+                            variantSelect.appendChild(o);
+                        }
+                    } catch (e) {
+                        console.warn('variant list failed', e);
+                    }
+                })();
+            }
+
+            variantSelect.addEventListener('change', () => {
+                if (!folderPath || !window.Y1ThemePreview) return;
+                const seg = String(variantSelect.value || '').trim();
+                if (typeof window.Y1ThemePreview.unmount === 'function') {
+                    window.Y1ThemePreview.unmount(simHost);
+                }
+                if (typeof window.Y1ThemePreview.mountGalleryCardLazy === 'function') {
+                    window.Y1ThemePreview.mountGalleryCardLazy(simHost, {
+                        catalogFolder: folderPath,
+                        variantSegment: seg,
+                        mode: 'menu',
+                        buildFileUrl: (cf, rel) => buildThemeFileUrl(cf, rel),
+                        previewMeta: cardPreviewMeta,
+                        onReady: () => {
+                            img.style.visibility = 'hidden';
+                            img.style.pointerEvents = 'none';
+                        },
+                        onError: () => {
+                            simHost.style.display = 'none';
+                        }
+                    });
+                }
+            });
+
             const n = document.createElement('a');
             n.className = 'theme-name';
             n.textContent = safeText(theme.name);
@@ -2494,12 +2636,8 @@
                 n.target = '_blank';
                 n.rel = 'noopener';
             } else {
-                const encodedFolderPath = folderPath.split('/').map(seg => encodeURIComponent(seg)).join('/');
                 const themeQueryKey = folderPath || String(theme.name || '');
-                const fallbackHref = `theme.html?theme=${encodeURIComponent(themeQueryKey)}`;
-                n.href = (theme.hasIndexPage === true && encodedFolderPath) ?
-                    `./${encodedFolderPath}/` :
-                    fallbackHref;
+                n.href = `/theme.html?theme=${encodeURIComponent(themeQueryKey)}`;
             }
 
             const d = document.createElement('div');
@@ -2795,7 +2933,7 @@
             dl.style.marginTop = 'auto';
             dl.innerHTML = '<i class="fa-solid fa-download"></i> Download';
             dl.type = 'button';
-            dl.onclick = () => downloadTheme(theme, dl);
+            dl.onclick = () => downloadTheme(theme, dl, readCardVariantInstallHints(c));
             dl.style.color = buttonStyle.color || 'white';
 
             dl.style.fontFamily = 'Inter, sans-serif';
@@ -2822,7 +2960,7 @@
                 di.disabled = true;
                 di.innerHTML = '<i class="fa-solid fa-bolt"></i> Direct Install';
                 di.type = 'button';
-                di.onclick = () => directInstallTheme(theme, di);
+                di.onclick = () => directInstallTheme(theme, di, readCardVariantInstallHints(c));
                 di.setAttribute('data-direct-install-btn', 'true');
                 if (selectedThemesFolder) {
                     di.disabled = false;
@@ -2841,7 +2979,7 @@
                 } catch (e) {}
                 bd.append(dl, di);
             }
-            c.append(previewFrame, n, d, a, bd);
+            c.append(previewFrame, variantRow, n, d, a, bd);
             if (theme.sourceType !== 'external' && folderPath) {
                 const corner = document.createElement('div');
                 corner.className = 'theme-card-corner-actions';
