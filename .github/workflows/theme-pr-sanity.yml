@@ -24,7 +24,15 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Classify PR (zip-only gallery upload vs extracted theme files)
+        id: prkind
+        run: |
+          out="$(python scripts/is_zip_only_gallery_upload_pr.py "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}")"
+          echo "kind=${out}" >> "$GITHUB_OUTPUT"
+          echo "PR change class: ${out}"
+
       - name: Sync metadata model from repo state
+        if: ${{ steps.prkind.outputs.kind != 'zip_only' }}
         run: python scripts/sync_theme_metadata.py
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -33,6 +41,7 @@ jobs:
         run: python scripts/sync_theme_metadata.py --check-theme-indexes
 
       - name: Ensure generated metadata is committed
+        if: ${{ steps.prkind.outputs.kind != 'zip_only' }}
         run: |
           set -e
           if [[ -n "$(git status --porcelain)" ]]; then

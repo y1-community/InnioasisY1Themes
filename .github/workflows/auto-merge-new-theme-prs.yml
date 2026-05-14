@@ -69,12 +69,42 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const pull_number = context.payload.pull_request.number;
+            const prHeadSha = context.payload.pull_request.head.sha;
             const files = await github.paginate(
               github.rest.pulls.listFiles,
               { owner, repo, pull_number, per_page: 100 }
             );
 
             const folders = new Set();
+
+            async function readShareHintsFromMeta(nextToZipPath) {
+              const metaPath = nextToZipPath + ".meta.json";
+              try {
+                const { data } = await github.rest.repos.getContent({
+                  owner,
+                  repo,
+                  path: metaPath,
+                  ref: prHeadSha,
+                });
+                if (!data || data.type !== "file" || !data.content) return false;
+                const text = Buffer.from(data.content, "base64").toString("utf8");
+                const j = JSON.parse(text);
+                const hints = j && Array.isArray(j.shareFolderHints) ? j.shareFolderHints : [];
+                let added = false;
+                for (const h of hints) {
+                  const s = String(h || "").trim();
+                  if (s) {
+                    folders.add(s);
+                    added = true;
+                  }
+                }
+                return added;
+              } catch (e) {
+                return false;
+              }
+            }
+
+            const rootZips = [];
             for (const file of files) {
               if (!file || file.status !== "added") continue;
               const name = String(file.filename || "").trim();
@@ -84,7 +114,14 @@ jobs:
                 continue;
               }
               if (/^[^/]+\.zip$/i.test(name)) {
-                const stem = name.replace(/\.zip$/i, "").trim();
+                rootZips.push(name);
+              }
+            }
+
+            for (const zipPath of rootZips) {
+              const fromMeta = await readShareHintsFromMeta(zipPath);
+              if (!fromMeta) {
+                const stem = zipPath.replace(/\.zip$/i, "").trim();
                 if (stem) folders.add(stem);
               }
             }

@@ -74,6 +74,18 @@ function hasReservedAuthorName(value) {
   return BLOCKED_AUTHOR_KEYS.has(key);
 }
 
+function hyphenSlugForZipPrefix(title) {
+  let s = String(title || "")
+    .trim()
+    .replace(/^u\//i, "")
+    .replace(/[^a-zA-Z0-9._-]+/g, "-")
+    .replace(/_+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 40);
+  return s || "";
+}
+
 function sanitizeThemeTitle(value) {
   const trimmed = normalizeSpaces(value);
   if (!trimmed) return { value: "", changed: false };
@@ -425,13 +437,32 @@ export async function handleUploadPost(request, env) {
       .replace(/^-+|-+$/g, "")
       .slice(0, 40);
 
+    let shareFolderHints = [];
+    const hintsRaw = form.get("shareFolderHints");
+    if (typeof hintsRaw === "string" && hintsRaw.trim()) {
+      try {
+        const parsed = JSON.parse(hintsRaw.trim());
+        if (Array.isArray(parsed)) {
+          shareFolderHints = parsed
+            .map((x) => String(x || "").trim())
+            .filter(Boolean)
+            .slice(0, 24);
+        }
+      } catch {
+        shareFolderHints = [];
+      }
+    }
+
     let zipPath = "";
     if (!hasDirectFiles) {
       const arrayBuffer = await zipFile.arrayBuffer();
       const contentB64 = toBase64(arrayBuffer);
       const zipPrefix = zipDir ? `${zipDir.replace(/^\/+|\/+$/g, "")}/` : "";
       const unique = `${now.toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
-      const zipName = `gallery-upload-${unique}.zip`;
+      const titleTag = hyphenSlugForZipPrefix(themeTitle);
+      const zipName = titleTag
+        ? `gallery-upload-${titleTag}-${unique}.zip`
+        : `gallery-upload-${unique}.zip`;
       zipPath = zipPrefix ? `${zipPrefix}${zipName}` : zipName;
       await ghJson(
         `${apiBase}/contents/${zipPath.split("/").map(encodeURIComponent).join("/")}`,
@@ -452,6 +483,8 @@ export async function handleUploadPost(request, env) {
         {
           uploaderName: uploaderName || "",
           uploaderSlug: uploaderSlug || "",
+          shareFolderHints,
+          themeTitle: themeTitle || "",
         },
         null,
         2

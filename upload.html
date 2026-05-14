@@ -1869,6 +1869,16 @@
             return withExt;
         }
 
+        /** JSON array string for upload handler: expected theme folder name(s) after ingest (for share URLs). */
+        function shareFolderHintsForForm(renames) {
+            const map = renames && renames.size ? renames : new Map();
+            const stems = new Set();
+            for (const root of collectThemeRootFolders()) {
+                stems.add(map.get(root) || root);
+            }
+            return JSON.stringify([...stems].sort((a, b) => a.localeCompare(b)));
+        }
+
         function refreshBatchThemePanel() {
             const panel = document.getElementById("batch-theme-panel");
             const list = document.getElementById("batch-theme-status-list");
@@ -3166,8 +3176,9 @@
                 validateThemeInfoEntriesForSubmit();
                 pendingExtraVariationEntries = null;
                 let artworkWarnings = [];
+                let renamesForExtras = new Map();
                 if (!metadataSubmitScenario()) {
-                    const renamesForExtras = variationRootRenames();
+                    renamesForExtras = variationRootRenames();
                     pendingExtraVariationEntries = await collectExtraVariationMappedEntries(renamesForExtras);
                     artworkWarnings = await collectArtworkCompatibilityWarnings();
                 }
@@ -3194,6 +3205,7 @@
                 // One outer batch ZIP (inner = packaged theme) → Worker does 2 file PUTs + branch + PR (low subrequests).
                 // GitHub Actions expands gallery-upload-batch-*.zip via scripts/process_theme_zips.py.
                 const rebuiltZip = await buildZipForUpload(artworkWarnings);
+                data.set("shareFolderHints", shareFolderHintsForForm(renamesForExtras));
                 const batchZip = await wrapAsUploaderBatchZip(rebuiltZip);
                 data.set("zip", batchZip, batchZip.name);
                 const res = await fetch(window.uploadThemeEndpoint(), {
