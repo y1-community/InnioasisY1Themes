@@ -110,6 +110,55 @@ function asTrimmedString(value) {
   return String(value ?? "").trim();
 }
 
+const BLOCKED_AUTHOR_KEYS = new Set([
+  "community",
+  "user",
+  "users",
+  "anonymous",
+  "anon",
+  "unknown",
+  "guest",
+  "admin",
+  "administrator",
+  "moderator",
+  "mod",
+  "creator",
+  "themecreator",
+  "themeauthor",
+  "nobody",
+  "someone",
+  "test",
+  "tester",
+  "default",
+  "null",
+  "none",
+  "na",
+  "n/a",
+]);
+
+function normalizeSpaces(value) {
+  return asTrimmedString(value).replace(/\s+/g, " ");
+}
+
+function normalizeAuthorKey(value) {
+  return normalizeSpaces(value).toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
+function hasReservedAuthorName(value) {
+  const key = normalizeAuthorKey(value);
+  if (!key) return true;
+  if (key.includes("innioasis")) return true;
+  return BLOCKED_AUTHOR_KEYS.has(key);
+}
+
+function sanitizeThemeTitle(value) {
+  const trimmed = normalizeSpaces(value);
+  if (!trimmed) return "";
+  if (/^theme\s+/i.test(trimmed)) return trimmed;
+  if (/\s+theme$/i.test(trimmed)) return trimmed.replace(/\s+theme$/i, "").trim();
+  return trimmed;
+}
+
 function buildSearchText(row) {
   const name = asTrimmedString(row.name);
   const description = asTrimmedString(row.description);
@@ -134,6 +183,14 @@ function normalizeListingFromThemeInfo(themeInfo, listing) {
         : safeThemeInfo[themeInfoKey] !== undefined
         ? safeThemeInfo[themeInfoKey]
         : "";
+    if (key === "name") {
+      out[key] = sanitizeThemeTitle(raw);
+      continue;
+    }
+    if (key === "author") {
+      out[key] = normalizeSpaces(raw);
+      continue;
+    }
     out[key] = asTrimmedString(raw);
   }
   return out;
@@ -240,7 +297,24 @@ export async function handleMetadataPost(request, env) {
         if (!THEME_INFO_KEYS.has(k)) continue;
         const v = themeInfo[k];
         if (v === undefined) continue;
-        nextTi[k] = typeof v === "string" ? v : String(v ?? "");
+        if (k === "title") {
+          nextTi[k] = sanitizeThemeTitle(v);
+          continue;
+        }
+        if (k === "author") {
+          const author = normalizeSpaces(v);
+          if (hasReservedAuthorName(author)) {
+            return jsonResponse(
+              {
+                error: `Author name "${author || "(empty)"}" is reserved or too generic for folder ${folder}.`,
+              },
+              400
+            );
+          }
+          nextTi[k] = author;
+          continue;
+        }
+        nextTi[k] = typeof v === "string" ? v.trim() : String(v ?? "");
       }
       const nextConfig = { ...config, theme_info: nextTi };
       const nextText = stableStringify(nextConfig);
@@ -257,6 +331,14 @@ export async function handleMetadataPost(request, env) {
         }
       }
       const normalizedListing = normalizeListingFromThemeInfo(themeInfo, listing);
+      if (hasReservedAuthorName(normalizedListing.author)) {
+        return jsonResponse(
+          {
+            error: `Author name "${normalizedListing.author || "(empty)"}" is reserved or too generic for folder ${folder}.`,
+          },
+          400
+        );
+      }
       if (Object.values(normalizedListing).some((v) => v !== "")) {
         puts.push({ _listingUpdate: true, folder, listing: normalizedListing });
       }

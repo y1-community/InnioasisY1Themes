@@ -31,6 +31,62 @@ function slugify(value) {
     .slice(0, 120);
 }
 
+const BLOCKED_AUTHOR_KEYS = new Set([
+  "community",
+  "user",
+  "users",
+  "anonymous",
+  "anon",
+  "unknown",
+  "guest",
+  "admin",
+  "administrator",
+  "moderator",
+  "mod",
+  "creator",
+  "themecreator",
+  "themeauthor",
+  "nobody",
+  "someone",
+  "test",
+  "tester",
+  "default",
+  "null",
+  "none",
+  "na",
+  "n/a",
+]);
+
+function normalizeSpaces(value) {
+  return String(value || "")
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+function normalizeAuthorKey(value) {
+  return normalizeSpaces(value).toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
+function hasReservedAuthorName(value) {
+  const key = normalizeAuthorKey(value);
+  if (!key) return true;
+  if (key.includes("innioasis")) return true;
+  return BLOCKED_AUTHOR_KEYS.has(key);
+}
+
+function sanitizeThemeTitle(value) {
+  const trimmed = normalizeSpaces(value);
+  if (!trimmed) return { value: "", changed: false };
+  if (/^theme\s+/i.test(trimmed)) return { value: trimmed, changed: false };
+  if (/\s+theme$/i.test(trimmed)) {
+    return {
+      value: trimmed.replace(/\s+theme$/i, "").trim(),
+      changed: true,
+    };
+  }
+  return { value: trimmed, changed: false };
+}
+
 function toBase64(buffer) {
   const bytes = new Uint8Array(buffer);
   let binary = "";
@@ -125,6 +181,24 @@ export async function handleUploadPost(request, env) {
     let themeAuthor = String(form.get("themeAuthor") || "").trim();
     if (!themeTitle) themeTitle = String(form.get("themeName") || "").trim();
     if (!themeAuthor) themeAuthor = String(form.get("uploaderName") || "").trim();
+    const sanitizedTitle = sanitizeThemeTitle(themeTitle);
+    themeTitle = sanitizedTitle.value;
+    themeAuthor = normalizeSpaces(themeAuthor);
+    if (!themeTitle) {
+      return jsonResponse({ error: "Theme title is required." }, 400);
+    }
+    if (!themeAuthor) {
+      return jsonResponse({ error: "Theme author is required." }, 400);
+    }
+    if (hasReservedAuthorName(themeAuthor)) {
+      return jsonResponse(
+        {
+          error:
+            "Author name is reserved or too generic. Use your own creator handle (manufacturer-only names like 'Innioasis' are not allowed).",
+        },
+        400
+      );
+    }
     const uploaderName = themeAuthor;
 
     if (!(zipFile instanceof File)) {

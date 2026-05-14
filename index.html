@@ -1154,6 +1154,162 @@
             return `./${encodedFolder ? `${encodedFolder}/` : ''}${encodedFile}`;
         }
 
+        function titleCaseWords(value) {
+            return String(value || '')
+                .split(/[\s_-]+/)
+                .filter(Boolean)
+                .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+                .join(' ');
+        }
+
+        function maskVariantChoicesFromFilePaths(folderPath, files, baseMaskPath) {
+            const basePath = normalizeConfigAssetPath(baseMaskPath || 'mask.png', folderPath) || 'mask.png';
+            const seen = new Set();
+            const variants = [];
+            for (const raw of Array.isArray(files) ? files : []) {
+                const relPath = normalizeConfigAssetPath(raw, folderPath);
+                if (!relPath) continue;
+                const baseName = relPath.split('/').pop() || '';
+                const m = baseName.match(/^mask_([a-z0-9][a-z0-9_-]*)\.png$/i);
+                if (!m) continue;
+                const suffix = String(m[1] || '').trim();
+                if (!suffix) continue;
+                const key = suffix.toLowerCase();
+                if (seen.has(key)) continue;
+                seen.add(key);
+                variants.push({
+                    value: key,
+                    label: titleCaseWords(suffix),
+                    sourcePath: relPath
+                });
+            }
+            variants.sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }));
+            return {
+                baseMaskPath: basePath,
+                options: [{ value: '', label: 'Original theme', sourcePath: basePath }, ...variants]
+            };
+        }
+
+        async function fetchMaskVariantPathsFromGitHub(folderPath) {
+            const folder = String(folderPath || '').trim().replace(/\\/g, '/').replace(/^\.\/+/, '').replace(/\/+$/, '');
+            if (!folder) return [];
+            try {
+                const res = await fetch(githubApiUrlForFolder(folder), { cache: 'no-cache' });
+                if (!res.ok) return [];
+                const entries = await res.json();
+                if (!Array.isArray(entries)) return [];
+                return entries
+                    .filter(item => item && item.type === 'file' && /^mask_[a-z0-9][a-z0-9_-]*\.png$/i.test(String(item.name || '')))
+                    .map(item => String(item.name || '').trim())
+                    .filter(Boolean);
+            } catch (_) {
+                return [];
+            }
+        }
+
+        async function promptMaskVariant(themeName, choices) {
+            const options = choices && Array.isArray(choices.options) ? choices.options : [];
+            if (options.length <= 1) return options[0] || null;
+            return new Promise((resolve) => {
+                const overlay = document.createElement('div');
+                overlay.style.position = 'fixed';
+                overlay.style.inset = '0';
+                overlay.style.background = 'rgba(0,0,0,0.55)';
+                overlay.style.display = 'flex';
+                overlay.style.alignItems = 'center';
+                overlay.style.justifyContent = 'center';
+                overlay.style.zIndex = '2500';
+
+                const panel = document.createElement('div');
+                panel.style.background = '#17191f';
+                panel.style.border = '1px solid rgba(255,255,255,0.12)';
+                panel.style.borderRadius = '10px';
+                panel.style.padding = '14px';
+                panel.style.width = 'min(92vw, 420px)';
+                panel.style.color = '#eaf0ff';
+
+                const title = document.createElement('div');
+                title.style.fontWeight = '700';
+                title.style.marginBottom = '8px';
+                title.textContent = `Choose mask variation for ${themeName || 'theme'}`;
+
+                const select = document.createElement('select');
+                select.style.width = '100%';
+                select.style.background = '#222733';
+                select.style.border = '1px solid rgba(255,255,255,0.12)';
+                select.style.color = '#eaf0ff';
+                select.style.borderRadius = '8px';
+                select.style.padding = '0.45rem 0.5rem';
+                for (const option of options) {
+                    const opt = document.createElement('option');
+                    opt.value = option.sourcePath;
+                    opt.textContent = option.label;
+                    select.appendChild(opt);
+                }
+
+                const row = document.createElement('div');
+                row.style.display = 'flex';
+                row.style.justifyContent = 'flex-end';
+                row.style.gap = '8px';
+                row.style.marginTop = '12px';
+
+                const cancelBtn = document.createElement('button');
+                cancelBtn.className = 'btn';
+                cancelBtn.type = 'button';
+                cancelBtn.textContent = 'Cancel';
+                cancelBtn.style.background = '#2a2f3a';
+                cancelBtn.style.color = '#eaf0ff';
+
+                const okBtn = document.createElement('button');
+                okBtn.className = 'btn';
+                okBtn.type = 'button';
+                okBtn.innerHTML = '<i class="fa-solid fa-check" style="margin-right:6px;"></i>Continue';
+
+                const close = (choice) => {
+                    try {
+                        overlay.remove();
+                    } catch (_) {}
+                    resolve(choice);
+                };
+
+                cancelBtn.onclick = () => close(null);
+                okBtn.onclick = () => {
+                    const selected = options.find(o => o.sourcePath === String(select.value || '')) || options[0] || null;
+                    close(selected);
+                };
+                overlay.onclick = (event) => {
+                    if (event.target === overlay) close(null);
+                };
+
+                row.append(cancelBtn, okBtn);
+                panel.append(title, select, row);
+                overlay.appendChild(panel);
+                document.body.appendChild(overlay);
+                select.focus();
+            });
+        }
+
+        function applyMaskVariantToFileList(fileList, variantSourcePath, baseMaskPath, folderPath) {
+            const src = normalizeConfigAssetPath(variantSourcePath, folderPath);
+            const base = normalizeConfigAssetPath(baseMaskPath || 'mask.png', folderPath) || 'mask.png';
+            if (!src || src.toLowerCase() === base.toLowerCase()) {
+                return Array.isArray(fileList) ? [...fileList] : [];
+            }
+            const out = [];
+            let hasBase = false;
+            for (const f of Array.isArray(fileList) ? fileList : []) {
+                const rel = normalizeConfigAssetPath(f, folderPath);
+                if (!rel) continue;
+                if (rel.toLowerCase() === src.toLowerCase()) continue;
+                if (rel.toLowerCase() === base.toLowerCase()) {
+                    hasBase = true;
+                }
+                out.push(rel);
+            }
+            if (!hasBase) out.push(base);
+            return out;
+        }
+
         const coverCandidatesByFolder = new Map();
 
         async function loadCoverCandidatesFromConfig(folderPath) {
@@ -1319,7 +1475,25 @@
                 const config = await configRes.json();
 
                 // Generate list of files
-                const filesToInstall = extractFilesFromConfig(config, theme.folder);
+                const filesToInstallRaw = extractFilesFromConfig(config, theme.folder);
+                const remoteMaskPaths = await fetchMaskVariantPathsFromGitHub(theme.folder);
+                const maskChoices = maskVariantChoicesFromFilePaths(
+                    theme.folder,
+                    [...filesToInstallRaw, ...remoteMaskPaths],
+                    config && config.desktopMask
+                );
+                const selectedMask = await promptMaskVariant(theme.name, maskChoices);
+                if (selectedMask === null) {
+                    progressUI.abortAndRestore(buttonNode);
+                    if (dlBtn) dlBtn.style.display = '';
+                    return;
+                }
+                const filesToInstall = applyMaskVariantToFileList(
+                    filesToInstallRaw,
+                    selectedMask && selectedMask.sourcePath,
+                    maskChoices.baseMaskPath,
+                    theme.folder
+                );
                 let installedCount = 0;
                 const totalFiles = filesToInstall.length;
                 let installedSuccess = 0;
@@ -1330,7 +1504,11 @@
                         const percent = 5 + Math.round((installedCount / totalFiles) * 90);
                         progressUI.setProgress(percent, `Installing ${file}...`);
 
-                        const fileUrl = buildThemeFileUrl(theme.folder, file);
+                        const sourcePath = selectedMask && selectedMask.sourcePath &&
+                            normalizeConfigAssetPath(file, theme.folder).toLowerCase() === String(maskChoices.baseMaskPath || '').toLowerCase()
+                            ? selectedMask.sourcePath
+                            : file;
+                        const fileUrl = buildThemeFileUrl(theme.folder, sourcePath);
                         if (!fileUrl) {
                             installedCount++;
                             continue;
@@ -1418,7 +1596,25 @@
                 const config = await configRes.json();
 
                 // Determine files to download
-                const filesToDownload = extractFilesFromConfig(config, theme.folder);
+                const filesToDownloadRaw = extractFilesFromConfig(config, theme.folder);
+                const remoteMaskPaths = await fetchMaskVariantPathsFromGitHub(theme.folder);
+                const maskChoices = maskVariantChoicesFromFilePaths(
+                    theme.folder,
+                    [...filesToDownloadRaw, ...remoteMaskPaths],
+                    config && config.desktopMask
+                );
+                const selectedMask = await promptMaskVariant(theme.name, maskChoices);
+                if (selectedMask === null) {
+                    progressUI.abortAndRestore(buttonNode);
+                    if (diBtn) diBtn.style.display = '';
+                    return;
+                }
+                const filesToDownload = applyMaskVariantToFileList(
+                    filesToDownloadRaw,
+                    selectedMask && selectedMask.sourcePath,
+                    maskChoices.baseMaskPath,
+                    theme.folder
+                );
                 const zip = new JSZip();
 
                 let downloadedCount = 0;
@@ -1430,7 +1626,11 @@
                         const percent = 5 + Math.round((downloadedCount / totalFiles) * 80);
                         progressUI.setProgress(percent, `Downloading ${file}...`);
 
-                        const fileUrl = buildThemeFileUrl(theme.folder, file);
+                        const sourcePath = selectedMask && selectedMask.sourcePath &&
+                            normalizeConfigAssetPath(file, theme.folder).toLowerCase() === String(maskChoices.baseMaskPath || '').toLowerCase()
+                            ? selectedMask.sourcePath
+                            : file;
+                        const fileUrl = buildThemeFileUrl(theme.folder, sourcePath);
                         if (!fileUrl) {
                             downloadedCount++;
                             continue;

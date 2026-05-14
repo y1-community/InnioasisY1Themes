@@ -49,8 +49,18 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Extract root theme zip submissions
+      - name: Install ingest dependencies
+        run: python -m pip install --upgrade pip pillow
+
+      - name: Extract root theme zip submissions (identity-aware overwrite)
         run: python scripts/process_theme_zips.py
+        env:
+          PROCESS_THEME_ZIPS_STRICT: "true"
+
+      - name: Optimize theme assets
+        run: python scripts/optimize_theme_assets.py
+        env:
+          THEME_ASSET_MAX_DIMENSION: "320"
 
       - name: Sync themes.json and theme index pages
         run: python scripts/sync_theme_metadata.py

@@ -529,7 +529,7 @@
                 <div id="meta-editor" class="meta-editor">
                     <h3>Theme details</h3>
                     <p class="hint">We read these from <code>config.json</code>. You can fix spelling or credits before sending. A single ZIP can contain several themes (each with its own <code>config.json</code>).</p>
-                    <p class="hint" style="margin-top:0.45rem;">If you add an <strong>External download URL</strong>, the gallery download button will open that page (great for Ko-Fi/Patreon). You still must include a full ZIP/folder theme package so we can import previews, metadata, and assets into the gallery.</p>
+                    <p class="hint" style="margin-top:0.45rem;">If you add an <strong>External download URL</strong>, the gallery download button will open that page (great for Ko-Fi/Patreon). It must point directly to your theme download or donation page; links that do not clearly do this may be removed by maintainers. You still must include a full ZIP/folder theme package so we can import previews, metadata, and assets into the gallery.</p>
                     <div id="batch-theme-panel" class="batch-theme-panel" hidden>
                         <p class="batch-theme-panel-title">Multiple themes in this package</p>
                         <p id="batch-theme-panel-lead" class="hint" style="margin:0;"></p>
@@ -1567,7 +1567,7 @@
                     <div class="row">
                         <label>External download URL (optional)</label>
                         <input type="text" data-field="externalDownloadUrl" value="${escapeHtml(entry.themeInfo.externalDownloadUrl)}" placeholder="https://ko-fi.com/... or https://patreon.com/..." />
-                        <p class="hint">When set, gallery download buttons open this URL instead of downloading a ZIP directly. Use this to send users to your own release/support page.</p>
+                        <p class="hint">When set, gallery download buttons open this URL instead of downloading a ZIP directly. Use this only for your direct theme download or donation/support page; unrelated links may be removed.</p>
                     </div>
                 </div>`;
                     return `${wrapOpen}${summary}${inner}${wrapClose}`;
@@ -1600,33 +1600,81 @@
             });
         }
 
-        function validateThemeInfoEntriesForSubmit() {
-            readEditorValues();
-            const blockedAuthorNames = new Set([
-                "innioasis",
-                "user",
-                "community",
-                "innioasiscommunity",
-            ]);
-            const normalizeAuthorKey = (value) =>
-                String(value || "")
+        function normalizeSpaces(value) {
+            return String(value || "")
                 .trim()
+                .replace(/\s+/g, " ");
+        }
+
+        function sanitizeThemeTitleInput(value) {
+            const trimmed = normalizeSpaces(value);
+            if (!trimmed) return { value: "", changed: false };
+            if (/^theme\s+/i.test(trimmed)) return { value: trimmed, changed: false };
+            if (/\s+theme$/i.test(trimmed)) {
+                return {
+                    value: trimmed.replace(/\s+theme$/i, "").trim(),
+                    changed: true
+                };
+            }
+            return { value: trimmed, changed: false };
+        }
+
+        function normalizeAuthorKey(value) {
+            return normalizeSpaces(value)
                 .toLowerCase()
                 .replace(/[^a-z0-9]+/g, "");
+        }
+
+        function isReservedAuthorName(value) {
+            const key = normalizeAuthorKey(value);
+            if (!key) return true;
+            if (key.includes("innioasis")) return true;
+            const blocked = new Set([
+                "community",
+                "user",
+                "users",
+                "anonymous",
+                "anon",
+                "unknown",
+                "guest",
+                "admin",
+                "administrator",
+                "moderator",
+                "mod",
+                "creator",
+                "themecreator",
+                "themeauthor",
+                "nobody",
+                "someone",
+                "test",
+                "tester",
+                "default",
+                "null",
+                "none",
+                "na"
+            ]);
+            return blocked.has(key);
+        }
+
+        function validateThemeInfoEntriesForSubmit() {
+            readEditorValues();
             if (!themeInfoEntries.length) {
                 throw new Error("No theme metadata was found. Include a valid config.json in your ZIP/folder so title/author fields can be reviewed.");
             }
             for (const entry of themeInfoEntries) {
                 const label = String(entry.label || entry.path || "theme").trim();
-                const title = String(entry.themeInfo.title || "").trim();
-                const author = String(entry.themeInfo.author || "").trim();
+                const titleSanitized = sanitizeThemeTitleInput(entry.themeInfo.title);
+                const title = titleSanitized.value;
+                const author = normalizeSpaces(entry.themeInfo.author);
                 const authorUrl = String(entry.themeInfo.authorUrl || "").trim();
                 const extUrl = String(entry.themeInfo.externalDownloadUrl || "").trim();
+                entry.themeInfo.title = title;
+                entry.themeInfo.author = author;
                 if (!title) throw new Error(`Title is required for ${label}.`);
                 if (!author) throw new Error(`Author is required for ${label}.`);
-                if (blockedAuthorNames.has(normalizeAuthorKey(author))) {
+                if (isReservedAuthorName(author)) {
                     throw new Error(
-                        `Author name "${author}" is too generic for ${label}. Use your own creator handle so attribution is accurate.`
+                        `Author name "${author}" is reserved or too generic for ${label}. Use your own creator handle (manufacturer-only names like "Innioasis" are blocked).`
                     );
                 }
                 if (authorUrl && !/^https?:\/\//i.test(authorUrl)) {
@@ -1634,6 +1682,10 @@
                 }
                 if (extUrl && !/^https?:\/\//i.test(extUrl)) {
                     throw new Error(`External download URL must start with http:// or https:// for ${label}.`);
+                }
+                if (titleSanitized.changed) {
+                    // Keep payload canonical to avoid duplicate theme naming in catalog.
+                    entry.themeInfo.title = title;
                 }
             }
         }
