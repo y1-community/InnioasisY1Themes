@@ -3,7 +3,8 @@ name: Theme ingest and sync
 # Supports both uploader modes:
 # - direct file PRs (preferred): worker/client commits extracted theme files directly
 # - root zip artifacts (legacy fallback): extracted by scripts/process_theme_zips.py
-# Then sync themes.json + per-theme index.html and cleanup upload artifacts.
+# Then sync themes.json + per-theme index.html, regenerate sitemap.xml, and cleanup upload artifacts.
+# (Do not run a separate “sitemap on themes.json push” workflow — it raced this job and caused rebase conflicts.)
 
 on:
   push:
@@ -81,6 +82,9 @@ jobs:
       - name: Commit and push
         run: |
           set -e
+          # Never ship bytecode (was accidentally tracked and caused “binary” merge conflicts on rebase).
+          rm -rf scripts/__pycache__ 2>/dev/null || true
+          find scripts -name '*.pyc' -delete 2>/dev/null || true
           if [[ -z "$(git status --porcelain)" ]]; then
             echo "No theme ingest or metadata changes."
             exit 0
@@ -92,13 +96,39 @@ jobs:
           git add -A
           git commit -m "Theme ingest: extract zips, sync metadata, cleanup upload artifacts"
           ok=0
-          for attempt in 1 2 3 4 5 6; do
-            if git pull --rebase origin "${TARGET_BRANCH}" && git push origin "HEAD:${TARGET_BRANCH}"; then
+          for attempt in 1 2 3 4 5 6 7 8; do
+            if [[ -d .git/rebase-merge ]] || [[ -d .git/rebase-apply ]]; then
+              git rebase --abort || true
+            fi
+            if [[ -f .git/MERGE_HEAD ]]; then
+              git merge --abort || true
+            fi
+            git fetch origin "${TARGET_BRANCH}"
+            if ! git pull --rebase origin "${TARGET_BRANCH}"; then
+              echo "Rebase conflict or pull failed (attempt ${attempt}) — trying to resolve generated files..."
+              UNMERGED=$(git diff --name-only --diff-filter=U 2>/dev/null || true)
+              if echo "${UNMERGED}" | grep -qE '(^|/)sitemap\.xml$'; then
+                python scripts/generate_sitemap.py
+                git add sitemap.xml || true
+              fi
+              if echo "${UNMERGED}" | grep -qE '\.pyc$|__pycache__'; then
+                git rm -rf --cached scripts/__pycache__ 2>/dev/null || true
+                rm -rf scripts/__pycache__ 2>/dev/null || true
+                git add -u || true
+              fi
+              if [[ -d .git/rebase-merge ]] || [[ -d .git/rebase-apply ]]; then
+                if ! GIT_EDITOR=true git rebase --continue; then
+                  echo "Could not continue rebase after auto-resolve; aborting this round."
+                  git rebase --abort || true
+                fi
+              fi
+            fi
+            if git push origin "HEAD:${TARGET_BRANCH}"; then
               ok=1
               break
             fi
-            echo "Rebase/push attempt ${attempt} failed; backing off before retry..."
-            sleep $(( attempt * 10 ))
+            echo "Push attempt ${attempt} failed (or pull/rebase not complete); backing off..."
+            sleep $(( attempt * 15 ))
           done
           if [[ "$ok" != "1" ]]; then
             echo "ERROR: could not push theme ingest commit after retries."
