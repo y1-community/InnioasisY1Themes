@@ -783,8 +783,8 @@
         function catalogRootFolderForVariations() {
             const roots = collectThemeRootFolders();
             if (roots.length === 1) return String(roots[0] || "").trim();
-            const first = themeInfoEntries[0];
-            if (first && first.path) return inferEntryRootFolder(first.path);
+            const pri = primaryRootThemeEntry();
+            if (pri && pri.path) return inferEntryRootFolder(pri.path);
             return "";
         }
 
@@ -862,6 +862,23 @@
                 if (isRootThemeConfigPath(themeInfoEntries[i].path)) return i;
             }
             return 0;
+        }
+
+        /** Main package config (not Variants/.../config.json); order in themeInfoEntries is zip-dependent. */
+        function primaryRootThemeEntry() {
+            readEditorValues();
+            readExtraVariationRowsFromDom();
+            if (!themeInfoEntries.length) return null;
+            const idx = firstRootThemeEntryIndex();
+            const e = themeInfoEntries[idx];
+            if (e && isRootThemeConfigPath(e.path)) return e;
+            return themeInfoEntries[0];
+        }
+
+        /** Title for ZIP naming / worker slug — always the overall theme, not the first variant row. */
+        function overallThemeTitleForPackaging() {
+            const e = primaryRootThemeEntry();
+            return e ? String(e.themeInfo.title || "").trim() : "";
         }
 
         function subsequentLooksExistForPrimaryLabel() {
@@ -1889,11 +1906,11 @@
 
         /** When a catalog collision is resolved by renaming roots, match the outgoing ZIP name to the new folder stem (server uses zip filename stem for root themes). */
         function packagedZipFileName(renames, fallbackZipName, preferredTitle) {
-            readEditorValues();
             const map = renames && renames.size ? renames : new Map();
             const roots = collectThemeRootFolders();
+            const titleRaw = String(preferredTitle || "").trim() || overallThemeTitleForPackaging();
             const stemFromTitle = titleBasedFolderStemFromEntry({
-                themeInfo: { title: String(preferredTitle || "").trim() },
+                themeInfo: { title: titleRaw },
             });
             if (stemFromTitle && roots.length) {
                 const r0 = roots[0];
@@ -2838,9 +2855,8 @@
         }
 
         function primaryThemeTitleAndAuthor() {
-            readEditorValues();
-            if (!themeInfoEntries.length) return { title: "", author: "" };
-            const e = themeInfoEntries[0];
+            const e = primaryRootThemeEntry();
+            if (!e) return { title: "", author: "" };
             return {
                 title: String(e.themeInfo.title || "").trim(),
                 author: String(e.themeInfo.author || "").trim()
@@ -3120,11 +3136,7 @@
 
                 const blob = await outputZip.generateAsync({ type: "blob" });
                 const name = loadedZipFileName || inferFolderZipName(folderFiles);
-                const preferredTitle =
-                    themeInfoEntries.length && themeInfoEntries[0].themeInfo
-                        ? String(themeInfoEntries[0].themeInfo.title || "").trim()
-                        : "";
-                const outName = packagedZipFileName(renames, name, preferredTitle);
+                const outName = packagedZipFileName(renames, name, overallThemeTitleForPackaging());
                 return new File([blob], outName, { type: "application/zip" });
             }
 
@@ -3169,11 +3181,7 @@
             }
 
             const blob = await outputZip.generateAsync({ type: "blob" });
-            const preferredTitle =
-                themeInfoEntries.length && themeInfoEntries[0].themeInfo
-                    ? String(themeInfoEntries[0].themeInfo.title || "").trim()
-                    : "";
-            const outName = packagedZipFileName(renames, loadedZipFileName || file.name || "theme.zip", preferredTitle);
+            const outName = packagedZipFileName(renames, loadedZipFileName || file.name || "theme.zip", overallThemeTitleForPackaging());
             return new File([blob], outName, {
                 type: "application/zip"
             });
