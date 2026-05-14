@@ -215,25 +215,7 @@ async function ghJson(url, token, init = {}, context = "") {
   return json;
 }
 
-async function ghPathExists(apiBase, token, path, ref) {
-  const enc = String(path || "")
-    .split("/")
-    .filter(Boolean)
-    .map((part) => encodeURIComponent(part))
-    .join("/");
-  const res = await fetch(`${apiBase}/contents/${enc}?ref=${encodeURIComponent(ref)}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/vnd.github+json",
-      "X-GitHub-Api-Version": "2022-11-28",
-      "User-Agent": "y1-theme-upload/1.0 (+https://github.com/y1-community/InnioasisY1Themes)",
-    },
-  });
-  if (res.status === 404) return false;
-  return res.ok;
-}
-
-async function ghGetFileMeta(apiBase, token, path, ref) {
+async function ghJson(url, token, init = {}, context = "") {
   const enc = String(path || "")
     .split("/")
     .filter(Boolean)
@@ -447,22 +429,10 @@ export async function handleUploadPost(request, env) {
     if (!hasDirectFiles) {
       const arrayBuffer = await zipFile.arrayBuffer();
       const contentB64 = toBase64(arrayBuffer);
-      const zipStem = originalName.replace(/\.zip$/i, "") || "theme";
-      const candidateNames = [
-        originalName,
-        uploaderSlug ? `${zipStem}-${uploaderSlug}.zip` : "",
-        `${zipStem}-${Math.random().toString(36).slice(2, 8)}.zip`,
-      ].filter(Boolean);
       const zipPrefix = zipDir ? `${zipDir.replace(/^\/+|\/+$/g, "")}/` : "";
-      let zipName = candidateNames[candidateNames.length - 1];
-      for (const cand of candidateNames) {
-        const exists = await ghPathExists(apiBase, token, `${zipPrefix}${cand}`, baseBranch);
-        if (!exists) {
-          zipName = cand;
-          break;
-        }
-      }
-      zipPath = `${zipPrefix}${zipName}`;
+      const unique = `${now.toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+      const zipName = `gallery-upload-${unique}.zip`;
+      zipPath = zipPrefix ? `${zipPrefix}${zipName}` : zipName;
       await ghJson(
         `${apiBase}/contents/${zipPath.split("/").map(encodeURIComponent).join("/")}`,
         token,

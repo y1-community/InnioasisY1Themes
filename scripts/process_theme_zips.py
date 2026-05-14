@@ -19,6 +19,7 @@ import json
 import os
 import re
 import shutil
+import tempfile
 from pathlib import Path, PurePosixPath
 from typing import Any
 import zipfile
@@ -266,12 +267,10 @@ def _is_blocked_file(path_value: str) -> bool:
 
 
 def _config_has_image_refs(config: dict[str, Any]) -> bool:
-    for key, value in config.items():
-        if key in {"theme_info", "source_info"}:
-            continue
-        for item in _iter_values(value):
-            if isinstance(item, str) and _looks_like_image(item.strip()):
-                return True
+    """True if any JSON string value looks like an image path (incl. theme_info / source_info)."""
+    for item in _iter_values(config):
+        if isinstance(item, str) and _looks_like_image(item.strip()):
+            return True
     return False
 
 
@@ -345,8 +344,59 @@ def _extract_theme(
     return True, f"Extracted {theme_key} -> {dest_name}/"
 
 
+def _zip_processing_label(path: Path) -> str:
+    try:
+        return str(path.relative_to(REPO_ROOT))
+    except ValueError:
+        return path.name
+
+
+def _process_root_zip_bundle(
+    path: Path,
+    outer: zipfile.ZipFile,
+    inner_names: list[str],
+    logs: list[str],
+) -> tuple[bool, list[str]]:
+    logs = logs + [
+        f"Detected uploader batch archive ({len(inner_names)} inner theme zip(s)); extracting each."
+    ]
+    for inner in inner_names:
+        try:
+            buf = outer.read(inner)
+        except Exception as exc:
+            return False, logs + [f"ERROR: Could not read inner archive {inner!r}: {exc}"]
+        tmp = Path(
+            tempfile.mkstemp(prefix="ingest-inner-", suffix=".zip", dir=tempfile.gettempdir())[1]
+        )
+        try:
+            tmp.write_bytes(buf)
+            inner_ok, inner_logs = _process_zip(tmp)
+            logs.extend(inner_logs)
+            if not inner_ok:
+                return False, logs + [f"ERROR: Inner archive failed: {inner!r}"]
+        finally:
+            try:
+                tmp.unlink(missing_ok=True)
+            except OSError:
+                pass
+
+    try:
+        path.unlink()
+        logs.append("Removed processed bundle zip.")
+    except Exception as exc:
+        return False, logs + [f"ERROR: Could not remove outer bundle zip after ingest: {exc}"]
+    meta = Path(str(path) + ".meta.json")
+    if meta.is_file():
+        try:
+            meta.unlink()
+            logs.append("Removed upload metadata sidecar.")
+        except Exception as exc:
+            logs.append(f"WARNING: Could not remove metadata sidecar: {exc}")
+    return True, logs
+
+
 def _process_zip(path: Path) -> tuple[bool, list[str]]:
-    logs: list[str] = [f"Processing {path.relative_to(REPO_ROOT)}"]
+    logs: list[str] = [f"Processing {_zip_processing_label(path)}"]
     try:
         blob = path.read_bytes()
     except Exception as exc:
@@ -369,6 +419,10 @@ def _process_zip(path: Path) -> tuple[bool, list[str]]:
                 return False, logs + [f"ERROR: Blocked file type in zip: {name}"]
 
         names_t = ztu.filter_zip_names_for_theme_logic(names)
+        bundle_inner = ztu.root_theme_bundle_zip_entries(names_t)
+        if bundle_inner is not None:
+            return _process_root_zip_bundle(path, archive, bundle_inner, logs)
+
         keys = ztu.zip_theme_keys(names_t)
         if not keys:
             return False, logs + ["ERROR: Zip must contain at least one theme folder with config.json."]
@@ -476,9 +530,10 @@ def _process_zip(path: Path) -> tuple[bool, list[str]]:
             if meta.is_file():
                 meta.unlink()
                 logs.append("Removed upload metadata sidecar.")
-        else:
-            logs.append("No new themes extracted; zip retained.")
-        return True, logs
+            return True, logs
+
+        logs.append("ERROR: No theme folders were extracted from this archive (nothing written).")
+        return False, logs
 
 
 def _discard_zip(path: Path, logs: list[str], *, reason: str) -> list[str]:

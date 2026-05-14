@@ -468,11 +468,65 @@
         head.appendChild(link);
     }
 
+    /** True when value should be loaded as a font file URL (not a generic CSS family name). */
+    function looksLikeThemeFontFileRef(value) {
+        var s = String(value || '').trim();
+        if (!s || /^https?:\/\//i.test(s)) return false;
+        return /\.(ttf|otf|woff2?)(\?|#|$)/i.test(s);
+    }
+
+    /** Collect font asset paths referenced anywhere in config.json (fallback when theme.fonts is incomplete). */
+    function walkConfigForFontFilePaths(obj, out, seen) {
+        if (!obj) return;
+        if (typeof obj === 'string') {
+            var s = obj.trim();
+            if (!s) return;
+            var low = s.toLowerCase();
+            if (seen[low]) return;
+            if (looksLikeThemeFontFileRef(s)) {
+                seen[low] = true;
+                out.push(s);
+            }
+            return;
+        }
+        if (Array.isArray(obj)) {
+            for (var i = 0; i < obj.length; i++) walkConfigForFontFilePaths(obj[i], out, seen);
+            return;
+        }
+        if (typeof obj === 'object') {
+            for (var k in obj) {
+                if (Object.prototype.hasOwnProperty.call(obj, k)) walkConfigForFontFilePaths(obj[k], out, seen);
+            }
+        }
+    }
+
     function injectThemeFonts(spec, buildFileUrl, contentFolder, styleId) {
         if (typeof document === 'undefined') return;
         var modern = (spec.theme && spec.theme.fonts) || [];
         var fontFamily = spec.fontFamily;
-        var themeFonts = modern.length ? modern : fontFamily ? [{ file: fontFamily, default: true }] : [];
+        var discovered = [];
+        walkConfigForFontFilePaths(spec, discovered, {});
+
+        var themeFonts = modern.length ? modern.slice() : [];
+        if (!themeFonts.length && looksLikeThemeFontFileRef(fontFamily)) {
+            themeFonts.push({ file: String(fontFamily).trim(), default: true });
+        }
+        for (var di = 0; di < discovered.length; di++) {
+            var fp = discovered[di];
+            var dup = false;
+            for (var ti = 0; ti < themeFonts.length; ti++) {
+                if (String((themeFonts[ti] && themeFonts[ti].file) || '').toLowerCase() === fp.toLowerCase()) {
+                    dup = true;
+                    break;
+                }
+            }
+            if (!dup) {
+                themeFonts.push({
+                    file: fp,
+                    default: themeFonts.length === 0 && !looksLikeThemeFontFileRef(fontFamily)
+                });
+            }
+        }
 
         var head = document.head || document.getElementsByTagName('head')[0];
         if (!head) return;
@@ -487,6 +541,7 @@
         var css = '';
         for (var i = 0; i < themeFonts.length; i++) {
             var f = themeFonts[i];
+            if (!f || !f.file) continue;
             var url = buildFileUrl(contentFolder, f.file);
             if (!url) continue;
             var family = f.id || stripExt(f.file);
@@ -503,7 +558,7 @@
                 url.replace(/"/g, '%22') +
                 '") format("' +
                 format +
-                '");font-weight:400;font-style:normal;font-display:swap;}';
+                '");font-weight:400;font-style:normal;font-display:block;}';
         }
         if (!css) {
             injectRobotoFallback();
@@ -518,7 +573,29 @@
     function defaultFontStack(spec) {
         var modern = (spec.theme && spec.theme.fonts) || [];
         var fontFamily = spec.fontFamily;
-        var themeFonts = modern.length ? modern : fontFamily ? [{ file: fontFamily, default: true }] : [];
+        var discovered = [];
+        walkConfigForFontFilePaths(spec, discovered, {});
+
+        var themeFonts = modern.length ? modern.slice() : [];
+        if (!themeFonts.length && looksLikeThemeFontFileRef(fontFamily)) {
+            themeFonts.push({ file: String(fontFamily).trim(), default: true });
+        }
+        for (var di = 0; di < discovered.length; di++) {
+            var fp = discovered[di];
+            var dup = false;
+            for (var ti = 0; ti < themeFonts.length; ti++) {
+                if (String((themeFonts[ti] && themeFonts[ti].file) || '').toLowerCase() === fp.toLowerCase()) {
+                    dup = true;
+                    break;
+                }
+            }
+            if (!dup) {
+                themeFonts.push({
+                    file: fp,
+                    default: themeFonts.length === 0 && !looksLikeThemeFontFileRef(fontFamily)
+                });
+            }
+        }
         if (!themeFonts.length) {
             return '"Roboto", "Helvetica Neue", Arial, sans-serif';
         }
@@ -1690,7 +1767,23 @@
                     }
                 }
 
-                paint();
+                function primeLoadedThemeFontsThenInitialPaint() {
+                    function initialPaint() {
+                        paint();
+                    }
+                    if (typeof document !== 'undefined' && document.fonts && document.fonts.load) {
+                        var firstFam = String(fontStack || '')
+                            .split(',')[0]
+                            .trim();
+                        document.fonts
+                            .load('22px ' + firstFam)
+                            .catch(function () {})
+                            .then(initialPaint);
+                        return;
+                    }
+                    global.setTimeout(initialPaint, 60);
+                }
+                primeLoadedThemeFontsThenInitialPaint();
 
                 function showToast(msg) {
                     sim.toastMessage = msg;

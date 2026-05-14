@@ -134,3 +134,22 @@ def zip_inner_folder_collision_errors(
             f"(after normalizing case). Each theme must extract to a unique folder."
         )
     return errors
+
+
+def root_theme_bundle_zip_entries(entry_names: list[str]) -> list[str] | None:
+    """Return sorted inner zip names if the archive contains only root-level ``*.zip`` members.
+
+    Browser / uploader may send ``gallery-upload-batch-*.zip`` whose members are only inner
+    theme packages. ``entry_names`` must already be noise-filtered.
+    """
+    if not entry_names:
+        return None
+    inner: list[str] = []
+    for name in entry_names:
+        path = PurePosixPath(name)
+        if len(path.parts) != 1:
+            return None
+        if path.suffix.lower() != ".zip":
+            return None
+        inner.append(name)
+    return sorted(inner, key=lambda s: s.lower())

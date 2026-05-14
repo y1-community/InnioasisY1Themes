@@ -126,12 +126,10 @@ def _iter_values(value: Any) -> list[Any]:
 
 
 def _config_has_image_refs(config: dict[str, Any]) -> bool:
-    for key, value in config.items():
-        if key in {"theme_info", "source_info"}:
-            continue
-        for item in _iter_values(value):
-            if isinstance(item, str) and _looks_like_image(item.strip()):
-                return True
+    """True if any JSON string value looks like an image path (incl. theme_info / source_info)."""
+    for item in _iter_values(config):
+        if isinstance(item, str) and _looks_like_image(item.strip()):
+            return True
     return False
 
 
@@ -310,6 +308,16 @@ def _inner_themes_from_zip_blob(blob: bytes, *, zip_stem: str) -> list[dict[str,
     with archive:
         names = [n for n in archive.namelist() if n and not n.endswith("/")]
         names_t = ztu.filter_zip_names_for_theme_logic(names)
+        bundle = ztu.root_theme_bundle_zip_entries(names_t)
+        if bundle is not None:
+            for inner in bundle:
+                try:
+                    ib = archive.read(inner)
+                except KeyError:
+                    continue
+                inner_stem = PurePosixPath(inner).stem
+                out.extend(_inner_themes_from_zip_blob(ib, zip_stem=inner_stem))
+            return out
         theme_keys = ztu.zip_theme_keys(names_t)
         dest_names = ztu.inner_folder_names_for_zip(theme_keys, zip_stem)
         seen_folder: set[str] = set()
@@ -513,6 +521,17 @@ def _zip_title_impersonation_scan(
     with archive:
         names = [n for n in archive.namelist() if n and not n.endswith("/")]
         names_t = ztu.filter_zip_names_for_theme_logic(names)
+        bundle = ztu.root_theme_bundle_zip_entries(names_t)
+        if bundle is not None:
+            for inner in bundle:
+                try:
+                    ib = archive.read(inner)
+                except KeyError:
+                    continue
+                errors.extend(
+                    _zip_title_impersonation_scan(ib, meta, catalog_title_rows, PurePosixPath(inner).name)
+                )
+            return errors
         theme_keys = ztu.zip_theme_keys(names_t)
         dest_names = ztu.inner_folder_names_for_zip(theme_keys, PurePosixPath(zip_repo_path).stem)
         seen: set[str] = set()
@@ -638,6 +657,18 @@ def _validate_zip_blob(path: str, blob: bytes) -> list[str]:
             return errors
 
         names_t = ztu.filter_zip_names_for_theme_logic(names)
+        bundle_inner = ztu.root_theme_bundle_zip_entries(names_t)
+        if bundle_inner is not None:
+            errs: list[str] = []
+            for inner in bundle_inner:
+                try:
+                    ib = archive.read(inner)
+                except KeyError:
+                    errs.append(f"{path} missing inner member {inner!r}.")
+                    continue
+                errs.extend(_validate_zip_blob(PurePosixPath(inner).name, ib))
+            return errs
+
         theme_keys = ztu.zip_theme_keys(names_t)
         if not theme_keys:
             return [

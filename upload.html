@@ -3094,6 +3094,27 @@
             });
         }
 
+        /**
+         * Wrap the packaged theme ZIP in a root-level "batch" archive (only *.zip members).
+         * GitHub Actions / process_theme_zips.py unpacks each inner archive — one PR needs at most
+         * one outer zip + meta (minimal Worker → GitHub subrequests).
+         */
+        async function wrapAsUploaderBatchZip(innerFile) {
+            if (!window.JSZip) throw new Error("ZIP library is unavailable.");
+            const outer = new window.JSZip();
+            let innerName = String(innerFile.name || "theme.zip")
+                .replace(/\\/g, "/")
+                .split("/")
+                .pop();
+            innerName = innerName.replace(/[^\w.\-()+[\] ]+/g, "_").trim() || "theme.zip";
+            if (!/\.zip$/i.test(innerName)) innerName = `${innerName}.zip`;
+            const buf = await innerFile.arrayBuffer();
+            outer.file(innerName, buf);
+            const blob = await outer.generateAsync({ type: "blob", compression: "DEFLATE" });
+            const stamp = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+            return new File([blob], `gallery-upload-batch-${stamp}.zip`, { type: "application/zip" });
+        }
+
         zipInput.addEventListener("change", async () => {
             const file = zipInput.files && zipInput.files[0];
             await inspectZipForThemeInfo(file);
@@ -3170,10 +3191,11 @@
                 fieldThemeAuthor.value = ta.author;
 
                 const data = new FormData(form);
-                // Always ship a single rebuilt ZIP so the Worker uses the low-subrequest ZIP path.
-                // (Direct per-file JSON commits one GitHub request per file and quickly hits Worker limits.)
+                // One outer batch ZIP (inner = packaged theme) → Worker does 2 file PUTs + branch + PR (low subrequests).
+                // GitHub Actions expands gallery-upload-batch-*.zip via scripts/process_theme_zips.py.
                 const rebuiltZip = await buildZipForUpload(artworkWarnings);
-                data.set("zip", rebuiltZip, rebuiltZip.name);
+                const batchZip = await wrapAsUploaderBatchZip(rebuiltZip);
+                data.set("zip", batchZip, batchZip.name);
                 const res = await fetch(window.uploadThemeEndpoint(), {
                     method: "POST",
                     body: data
