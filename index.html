@@ -1220,6 +1220,48 @@
             };
         }
 
+        const THEME_VARIANTS_SEGMENT = 'Variants';
+
+        function effectiveThemeContentPrefix(catalogFolder, variantSubfolder) {
+            const root = String(catalogFolder || '').replace(/^\.\/+/, '').replace(/\/+$/, '').trim();
+            const v = String(variantSubfolder || '').trim();
+            if (!root) return '';
+            if (!v) return root;
+            return `${root}/${THEME_VARIANTS_SEGMENT}/${v}`;
+        }
+
+        function formatVariantDisplayLabel(segmentName) {
+            const raw = String(segmentName || '').trim().replace(/[-_]+/g, ' ');
+            return titleCaseWords(raw);
+        }
+
+        async function fetchGithubRepoContents(repoRelativeDir) {
+            const dir = String(repoRelativeDir || '').replace(/^\.\/+/, '').replace(/\/+$/, '').trim();
+            if (!dir) return null;
+            const encoded = dir.split('/').filter(Boolean).map((seg) => encodeURIComponent(seg)).join('/');
+            const url = `https://api.github.com/repos/y1-community/InnioasisY1Themes/contents/${encoded}`;
+            try {
+                const res = await fetch(url, { cache: 'no-cache' });
+                if (!res.ok) return null;
+                const entries = await res.json();
+                return Array.isArray(entries) ? entries : null;
+            } catch (_) {
+                return null;
+            }
+        }
+
+        async function listThemeVariantFolderNames(catalogFolder) {
+            const root = String(catalogFolder || '').replace(/^\.\/+/, '').replace(/\/+$/, '').trim();
+            if (!root) return [];
+            const entries = await fetchGithubRepoContents(`${root}/${THEME_VARIANTS_SEGMENT}`);
+            if (!entries) return [];
+            return entries
+                .filter((item) => item && item.type === 'dir')
+                .map((item) => String(item.name || '').trim())
+                .filter(Boolean)
+                .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+        }
+
         function resolveMaskTargetPath(folderPath, files, configuredMaskPath) {
             const configured = normalizeConfigAssetPath(configuredMaskPath || '', folderPath);
             const relFiles = new Set(
@@ -1394,6 +1436,17 @@
             return /_dark[-_]?mode$/i.test(String(folderPath || '').replace(/^\.\/+/, '').trim());
         }
 
+        function zipThemeDisplayName(themeName, catalogFolder, variantSegment) {
+            const v = String(variantSegment || '').trim();
+            if (v) return `${String(themeName || '').trim()} (${formatVariantDisplayLabel(v)})`.trim();
+            if (isDarkModeFolderPath(String(catalogFolder || ''))) {
+                const cleanName = String(themeName || '').trim();
+                if (/\(dark\)\s*$/i.test(cleanName)) return cleanName;
+                return cleanName ? `${cleanName} (Dark)` : 'Theme (Dark)';
+            }
+            return String(themeName || '').trim();
+        }
+
         function ensureDarkModeDisplayName(themeName, folderPath) {
             const cleanName = String(themeName || '').trim();
             if (!isDarkModeFolderPath(folderPath)) return cleanName;
@@ -1525,21 +1578,28 @@
             });
         }
 
-        async function buildVariantContext(theme, folderPath) {
-            const folder = String(folderPath || '').replace(/^\.\/+/, '').trim();
-            const configRes = await fetch(`./${folder}/config.json`, { cache: 'no-cache' });
-            if (!configRes.ok) throw new Error(`Could not locate config.json in /${folder}`);
+        async function buildVariantContext(theme, contentFolderPath, catalogFolderPath, variantSegment) {
+            const content = String(contentFolderPath || '').replace(/^\.\/+/, '').trim();
+            const catalog = String(catalogFolderPath || '').replace(/^\.\/+/, '').trim();
+            if (!content) throw new Error('Missing theme content folder');
+            const encoded = content.split('/').map((seg) => encodeURIComponent(seg)).join('/');
+            const configRes = await fetch(`./${encoded}/config.json`, { cache: 'no-cache' });
+            if (!configRes.ok) throw new Error(`Could not locate config.json in /${content}`);
             const config = await configRes.json();
-            const filesRaw = extractFilesFromConfig(config, folder);
-            const remoteMaskPaths = await fetchMaskVariantPaths(folder);
+            const filesRaw = extractFilesFromConfig(config, content);
+            const remoteMaskPaths = await fetchMaskVariantPaths(content);
             const maskChoices = maskVariantChoicesFromFilePaths(
-                folder,
+                content,
                 [...filesRaw, ...remoteMaskPaths],
                 config && config.desktopMask
             );
+            const vSeg = String(variantSegment || '').trim();
+            const catalogRoot = catalog || content.split('/')[0] || '';
             return {
-                folder,
-                name: ensureDarkModeDisplayName(theme && theme.name, folder) || String((theme && theme.name) || 'theme'),
+                folder: content,
+                catalogFolder: catalogRoot,
+                variant: vSeg,
+                name: zipThemeDisplayName(theme && theme.name, catalogRoot, vSeg) || String((theme && theme.name) || 'theme'),
                 config,
                 filesRaw,
                 maskChoices,
@@ -1547,30 +1607,24 @@
         }
 
         async function promptVariantCombination(theme) {
-            const initialFolder = String((theme && theme.folder) || '').replace(/^\.\/+/, '').trim();
-            if (!initialFolder) throw new Error('No downloadable folder info for this theme.');
-            const candidatePairs = darkPairFolderCandidates(initialFolder).filter((p) => p.toLowerCase() !== initialFolder.toLowerCase());
-            let pair = '';
-            for (const candidate of candidatePairs) {
-                if (await folderHasConfig(candidate)) {
-                    pair = candidate;
-                    break;
-                }
+            const catalogFolder = String((theme && theme.folder) || '').replace(/^\.\/+/, '').trim();
+            if (!catalogFolder) throw new Error('No downloadable folder info for this theme.');
+            const variantNames = await listThemeVariantFolderNames(catalogFolder);
+            const options = [{ label: 'Default', content: catalogFolder, variant: '' }];
+            for (const vn of variantNames) {
+                options.push({
+                    label: formatVariantDisplayLabel(vn),
+                    content: effectiveThemeContentPrefix(catalogFolder, vn),
+                    variant: vn,
+                });
             }
-            const pairExists = !!pair;
-            const options = pairExists
-                ? [
-                    { label: 'Light variation', folder: /_dark-mode$/i.test(initialFolder) ? pair : initialFolder },
-                    { label: 'Dark variation', folder: /_dark-mode$/i.test(initialFolder) ? initialFolder : pair },
-                ]
-                : [{ label: 'Theme', folder: initialFolder }];
             const contextMap = new Map();
             for (const opt of options) {
-                contextMap.set(opt.folder, await buildVariantContext(theme, opt.folder));
+                contextMap.set(opt.content, await buildVariantContext(theme, opt.content, catalogFolder, opt.variant));
             }
             const needPrompt = options.length > 1 || Array.from(contextMap.values()).some((ctx) => (ctx.maskChoices.options || []).length > 1);
             if (!needPrompt) {
-                const only = contextMap.get(options[0].folder);
+                const only = contextMap.get(options[0].content);
                 return {
                     ...only,
                     selectedMask: (only.maskChoices.options || [])[0] || null,
@@ -1613,11 +1667,11 @@
                 variationSelect.style.padding = '0.45rem 0.5rem';
                 for (const opt of options) {
                     const o = document.createElement('option');
-                    o.value = opt.folder;
+                    o.value = opt.content;
                     o.textContent = opt.label;
                     variationSelect.appendChild(o);
                 }
-                variationSelect.value = initialFolder;
+                variationSelect.value = options[0].content;
                 variationWrap.append(variationLabel, variationSelect);
                 if (options.length > 1) panel.appendChild(variationWrap);
 
@@ -1664,20 +1718,22 @@
                 okBtn.innerHTML = '<i class="fa-solid fa-check" style="margin-right:6px;"></i>Continue';
 
                 const renderMaskOptions = () => {
-                    const ctx = contextMap.get(String(variationSelect.value || initialFolder));
+                    const ctx = contextMap.get(String(variationSelect.value || options[0].content));
                     const opts = (ctx && ctx.maskChoices && Array.isArray(ctx.maskChoices.options)) ? ctx.maskChoices.options : [];
                     maskSelect.innerHTML = '';
-                    for (const item of opts) {
+                    opts.forEach((item, idx) => {
                         const option = document.createElement('option');
-                        option.value = item.sourcePath;
+                        option.value = String(idx);
                         option.textContent = item.label;
                         maskSelect.appendChild(option);
-                    }
+                    });
                     maskWrap.style.display = opts.length > 1 ? 'block' : 'none';
-                    const selectedPath = String(maskSelect.value || (opts[0] && opts[0].sourcePath) || '');
-                    const previewUrl = buildThemeFileUrl(ctx ? ctx.folder : initialFolder, selectedPath);
+                    const idx = parseInt(String(maskSelect.value || '0'), 10);
+                    const picked = opts[Number.isFinite(idx) ? idx : 0] || opts[0];
+                    const selectedPath = String(picked && picked.sourcePath || '');
+                    const previewUrl = buildThemeFileUrl(ctx ? ctx.folder : catalogFolder, selectedPath);
                     if (previewUrl) {
-                        preview.src = previewUrl;
+                        preview.src = `${previewUrl}${previewUrl.includes('?') ? '&' : '?'}mvc=${Date.now()}`;
                         preview.style.display = 'block';
                     } else {
                         preview.style.display = 'none';
@@ -1693,10 +1749,11 @@
                 };
                 cancelBtn.onclick = () => close(null);
                 okBtn.onclick = () => {
-                    const ctx = contextMap.get(String(variationSelect.value || initialFolder));
+                    const ctx = contextMap.get(String(variationSelect.value || options[0].content));
                     if (!ctx) return close(null);
                     const opts = ctx.maskChoices && Array.isArray(ctx.maskChoices.options) ? ctx.maskChoices.options : [];
-                    const selectedMask = opts.find((item) => String(item.sourcePath || '') === String(maskSelect.value || '')) || opts[0] || null;
+                    const idx = parseInt(String(maskSelect.value || '0'), 10);
+                    const selectedMask = opts[Number.isFinite(idx) ? idx : 0] || opts[0] || null;
                     close({ ...ctx, selectedMask });
                 };
                 overlay.onclick = (event) => {
@@ -1875,7 +1932,13 @@
                 const config = selectedCombo.config || {};
                 const filesToInstallRaw = Array.isArray(selectedCombo.filesRaw) ? selectedCombo.filesRaw : extractFilesFromConfig(config, selectedFolder);
 
-                const installFolderSafe = safeInstallFolderName({ ...theme, folder: selectedFolder, name: selectedName });
+                const catalogForInstall = String(selectedCombo.catalogFolder || theme.folder || '').replace(/^\.\/+/, '').trim();
+                const variantForInstall = String(selectedCombo.variant || '').trim();
+                const installFolderSafe = safeInstallFolderName({
+                    ...theme,
+                    folder: catalogForInstall || theme.folder,
+                    name: zipThemeDisplayName(selectedName, catalogForInstall, variantForInstall),
+                });
                 const themeFolder = await selectedThemesFolder.getDirectoryHandle(installFolderSafe, { create: true });
 
                 progressUI.setProgress(5, `Reading config for ${selectedName}...`);

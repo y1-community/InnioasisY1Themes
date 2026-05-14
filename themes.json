@@ -223,23 +223,12 @@
             "folder": "DORFic",
             "author": "u/Angel_50000",
             "authorUrl": "https://reddit.com/user/Angel_50000",
-            "description": "Download the DORFic theme for Innioasis Y1 by u/Angel_50000 and personalize your player's look with curated UI assets.",
+            "description": "DORFic theme for Innioasis Y1. Optional iPod-style UI lives under Variants/iPod Version (choose it in Theme variation on the theme page).",
+            "externalDownloadUrl": "https://drive.google.com/drive/folders/14deBuoQmPI9jSR0ymvyy-rRqmKx8M6dC?usp=sharing",
             "screenshot": "./DORFic/cover.png",
             "sourceType": "internal",
             "sortName": "dorfic",
-            "searchText": "dorfic download the dorfic theme for innioasis y1 by u/angel_50000 and personalize your player's look with curated ui assets. u/angel_50000 dorfic"
-        },
-        {
-            "name": "DORFic (iPod Ver.)",
-            "folder": "DORFic (iPod Ver.)",
-            "author": "Angel_50000",
-            "authorUrl": "https://www.reddit.com/user/Angel_50000/",
-            "description": "A version of my DORFic theme with an iPod themed UI.",
-            "externalDownloadUrl": "https://drive.google.com/drive/folders/14deBuoQmPI9jSR0ymvyy-rRqmKx8M6dC?usp=sharing",
-            "screenshot": "./DORFic (iPod Ver.)/cover.png",
-            "sourceType": "internal",
-            "sortName": "dorfic (ipod ver.)",
-            "searchText": "dorfic (ipod ver.) a version of my dorfic theme with an ipod themed ui. angel_50000 dorfic (ipod ver.) https://drive.google.com/drive/folders/14debuoqmpi9jsr0ymvyy-rrqmkx8m6dc?usp=sharing"
+            "searchText": "dorfic dorfic ipod version variant optional ipod themed ui download the dorfic theme for innioasis y1 by u/angel_50000 u/angel_50000 dorfic dorfic (ipod ver.) https://drive.google.com/drive/folders/14debuoqmpi9jsr0ymvyy-rrqmkx8m6dc?usp=sharing"
         },
         {
             "name": "Electric Hues",
@@ -936,11 +925,11 @@
             "name": "Sudsy Business Theme",
             "folder": "Sudsy_Business_Theme",
             "author": "Floppet",
-            "description": "Sudsy business theme!",
+            "description": "Sudsy business theme! Optional dark styling is under Variants/Dark (Theme variation → Dark).",
             "screenshot": "./Sudsy_Business_Theme/cover.png",
             "sourceType": "internal",
             "sortName": "sudsy business theme",
-            "searchText": "sudsy business theme sudsy business theme! floppet sudsy_business_theme"
+            "searchText": "sudsy business theme sudsy business theme! dark mode variant sudsy_business_theme floppet sudsy_business_theme"
         },
         {
             "name": "Sugar",

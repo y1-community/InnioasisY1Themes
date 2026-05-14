@@ -529,21 +529,25 @@
                 <div class="row file-input-row">
                     <label class="variation-row" style="margin-top:0;">
                         <input id="dark-variant-package-enable" type="checkbox" />
-                        <span>This submission includes a separate dark mode package.</span>
+                        <span><strong>Legacy:</strong> include a separate dark package as a sibling folder (older gallery format).</span>
                     </label>
                 </div>
 
                 <div id="dark-variant-package-row" style="display:none;">
                     <div class="row file-input-row">
-                        <label for="dark-zip-file">Dark variation ZIP (optional)</label>
+                        <label for="dark-zip-file">Legacy dark ZIP (optional)</label>
                         <input id="dark-zip-file" type="file" accept=".zip,application/zip" />
-                        <div class="hint">Use when your dark variation is provided as a separate ZIP package. Folder naming is handled automatically during submission.</div>
+                        <div class="hint">Prefer <code>YourTheme/Variants/Dark/</code> (full theme + <code>config.json</code>) in your main upload — that is what the gallery uses now. This option remains for older workflows.</div>
                     </div>
                     <div class="row file-input-row">
-                        <label for="dark-folder-file">Dark variation folder (optional)</label>
+                        <label for="dark-folder-file">Legacy dark folder (optional)</label>
                         <input id="dark-folder-file" type="file" webkitdirectory multiple />
-                        <div class="hint">Use when your dark variation is provided as a separate folder package. Folder naming is handled automatically during submission.</div>
+                        <div class="hint">Same as ZIP: new themes should ship alternate looks under <code>Variants/&lt;Name&gt;/</code> inside the main theme folder.</div>
                     </div>
+                </div>
+
+                <div class="row file-input-row">
+                    <p class="hint" style="margin:0;"><strong>Theme variations (recommended):</strong> put each alternate look in <code>YourTheme/Variants/&lt;Variation Name&gt;/</code> with its own <code>config.json</code> and assets (for example <code>Variants/Dark</code> or <code>Variants/iPod Version</code>). The site lists one catalog entry; visitors pick a variation on the theme page.</p>
                 </div>
 
                 <div id="meta-editor" class="meta-editor">
