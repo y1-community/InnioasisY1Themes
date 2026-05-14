@@ -1,4 +1,4 @@
-/* Y1 theme preview: logical 480×360 (4:3), scaled to fit host. Matches Theme Maker device frame. */
+/* Y1 theme preview: logical 480×360 (4:3), scaled to cover the host viewport (no letterboxing). */
 
 @keyframes y1-tp-marquee {
     0% {
@@ -19,18 +19,26 @@
     -webkit-font-smoothing: antialiased;
 }
 
+.theme-preview-frame .y1-tp-root {
+    align-items: center;
+    justify-content: center;
+}
+
 .y1-tp-device:not(.y1-tp-device--full) {
     max-width: none;
     width: 100%;
     height: 100%;
     min-height: 0;
+    justify-content: center;
 }
 
 .y1-tp-device:not(.y1-tp-device--full) .y1-tp-viewport {
-    max-height: none;
-    flex: 1 1 auto;
-    min-height: 0;
+    flex: 0 0 auto;
     width: 100%;
+    max-width: 100%;
+    aspect-ratio: 4 / 3;
+    height: auto;
+    min-height: 0;
 }
 
 .y1-tp-device {
@@ -39,32 +47,107 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     position: relative;
 }
 
+/* Silver Innioasis Y1 / iPod-classic style shell (full simulator on theme page) */
 .y1-tp-device--full {
     max-width: min(420px, 100%);
-    padding: 12px 14px 16px;
-    border-radius: 22px;
-    background: linear-gradient(180deg, #1a9aa8 0%, #0d6b76 55%, #084852 100%);
+    padding: 14px 16px 18px;
+    border-radius: 26px;
+    background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0) 42%),
+        linear-gradient(180deg, #eceff3 0%, #d4d9e0 18%, #b8c0ca 52%, #9aa3ad 100%);
     box-shadow:
-        0 16px 48px rgba(0, 0, 0, 0.5),
-        inset 0 1px 0 rgba(255, 255, 255, 0.22);
-    border: 1px solid rgba(0, 0, 0, 0.35);
+        0 18px 44px rgba(0, 0, 0, 0.48),
+        inset 0 1px 0 rgba(255, 255, 255, 0.92),
+        inset 0 -2px 6px rgba(0, 0, 0, 0.12);
+    border: 1px solid rgba(70, 78, 88, 0.45);
 }
 
 .y1-tp-viewport {
     width: 100%;
     aspect-ratio: 4 / 3;
-    max-height: min(56vh, 360px);
+    max-height: none;
     position: relative;
-    border-radius: 6px;
+    border-radius: 8px;
     overflow: hidden;
     background: #050608;
     box-shadow:
-        inset 0 0 0 2px rgba(0, 0, 0, 0.65),
-        0 4px 20px rgba(0, 0, 0, 0.45);
+        inset 0 0 0 3px #0a0a0c,
+        inset 0 0 0 4px rgba(255, 255, 255, 0.06),
+        0 4px 18px rgba(0, 0, 0, 0.55);
+}
+
+/* Full-device viewport: rely on width + aspect-ratio only; max-height here caused
+   mismatched layout and black bands inside the bezel on some viewports. */
+.y1-tp-device--full .y1-tp-viewport {
+    max-height: none;
+}
+
+/* Gallery cards: full frame width; device height follows the 4:3 viewport (no extra flex gap / bands). */
+.theme-preview-frame .y1-tp-device:not(.y1-tp-device--full) {
+    max-width: 100%;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    flex: 0 0 auto;
+}
+
+.theme-preview-frame .y1-tp-device:not(.y1-tp-device--full) .y1-tp-viewport {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 100%;
+    aspect-ratio: 4 / 3;
+    height: auto;
+    min-height: 0;
+}
+
+/* Download / install variant modal: same preview chrome as gallery cards */
+.variant-modal-theme-sim {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    max-height: min(52vh, 320px);
+    border-radius: 10px;
+    overflow: hidden;
+    background: #050608;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    margin-bottom: 10px;
+}
+
+.variant-modal-theme-sim .y1-theme-preview-host {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.variant-modal-theme-sim .y1-tp-root {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+.variant-modal-theme-sim .y1-tp-device:not(.y1-tp-device--full) {
+    max-width: 100%;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    flex: 0 0 auto;
+}
+
+.variant-modal-theme-sim .y1-tp-device:not(.y1-tp-device--full) .y1-tp-viewport {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 100%;
+    aspect-ratio: 4 / 3;
+    height: auto;
+    min-height: 0;
 }
 
 .y1-tp-scale-wrap {
@@ -83,7 +166,7 @@
     width: 480px;
     height: 360px;
     overflow: hidden;
-    border-radius: 4px;
+    border-radius: 5px;
     user-select: none;
 }
 
@@ -94,70 +177,109 @@
 .y1-tp-device--full .y1-tp-root:focus-within .y1-tp-viewport,
 .y1-tp-device--full:focus .y1-tp-viewport {
     box-shadow:
-        inset 0 0 0 2px rgba(0, 0, 0, 0.65),
-        0 0 0 2px rgba(120, 220, 255, 0.35);
+        inset 0 0 0 3px #0a0a0c,
+        inset 0 0 0 4px rgba(255, 255, 255, 0.06),
+        0 0 0 2px rgba(140, 200, 255, 0.45);
 }
 
-.y1-tp-wheel {
-    width: 100%;
-    max-width: 220px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
+/* Click wheel: scroll with mouse wheel; MENU / prev / play / next / center */
+.y1-tp-clickwheel {
+    position: relative;
+    width: 138px;
+    height: 138px;
     flex-shrink: 0;
+    touch-action: none;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 32% 22%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0) 38%),
+        radial-gradient(circle at 50% 100%, rgba(0, 0, 0, 0.18) 0%, rgba(0, 0, 0, 0) 55%),
+        radial-gradient(circle at 50% 50%, #e8ecf0 0%, #c5ccd6 55%, #9da8b4 100%);
+    box-shadow:
+        inset 0 2px 3px rgba(255, 255, 255, 0.75),
+        inset 0 -4px 10px rgba(0, 0, 0, 0.22),
+        0 6px 14px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(55, 62, 72, 0.5);
 }
 
-.y1-tp-wheel-row {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-}
-
-.y1-tp-wheel-mid {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 18px;
-    width: 100%;
-}
-
-.y1-tp-wbtn {
-    font: inherit;
+.y1-tp-cw {
+    position: absolute;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: rgba(30, 35, 42, 0.88);
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-weight: 800;
+    letter-spacing: 0.02em;
     cursor: pointer;
-    border: 1px solid rgba(0, 0, 0, 0.35);
-    background: linear-gradient(180deg, #f3f7fa 0%, #c8d4dc 100%);
-    color: #1a1f24;
-    border-radius: 10px;
-    padding: 6px 12px;
-    font-size: 12px;
-    font-weight: 700;
-    min-width: 44px;
-    box-shadow: 0 2px 0 rgba(255, 255, 255, 0.5) inset;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+    -webkit-tap-highlight-color: transparent;
 }
 
-.y1-tp-wbtn:hover {
-    filter: brightness(1.05);
+.y1-tp-cw:hover {
+    color: #0b0d10;
 }
 
-.y1-tp-wbtn:active {
-    transform: translateY(1px);
+.y1-tp-cw--menu:active,
+.y1-tp-cw--prev:active,
+.y1-tp-cw--next:active,
+.y1-tp-cw--play:active {
+    filter: brightness(0.92);
 }
 
-.y1-tp-wbtn--round {
+.y1-tp-cw--menu {
+    left: 50%;
+    top: 10px;
+    transform: translateX(-50%);
+    font-size: 10px;
+}
+
+.y1-tp-cw--prev {
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 15px;
+    line-height: 1;
+    padding: 4px;
+}
+
+.y1-tp-cw--next {
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 15px;
+    line-height: 1;
+    padding: 4px;
+}
+
+.y1-tp-cw--play {
+    left: 50%;
+    bottom: 12px;
+    transform: translateX(-50%);
+    font-size: 16px;
+    line-height: 1;
+    padding: 4px;
+}
+
+.y1-tp-cw--center {
+    left: 50%;
+    top: 50%;
     width: 52px;
     height: 52px;
+    transform: translate(-50%, -50%);
     border-radius: 50%;
-    padding: 0;
-    min-width: 52px;
-    border: 2px solid rgba(255, 255, 255, 0.35);
-    background: radial-gradient(circle at 30% 25%, #ffffff 0%, #d0dae2 45%, #9fb0bd 100%);
+    background:
+        radial-gradient(circle at 30% 22%, #ffffff 0%, #e2e7ed 38%, #b9c4cf 72%, #8f9baa 100%);
+    border: 1px solid rgba(60, 68, 78, 0.45);
     box-shadow:
-        0 3px 8px rgba(0, 0, 0, 0.35),
-        inset 0 2px 6px rgba(255, 255, 255, 0.85);
+        inset 0 2px 5px rgba(255, 255, 255, 0.85),
+        inset 0 -3px 6px rgba(0, 0, 0, 0.18),
+        0 2px 6px rgba(0, 0, 0, 0.25);
 }
 
-.y1-tp-wheel-row--btm .y1-tp-wbtn {
-    flex: 1;
-    max-width: 72px;
+.y1-tp-cw--center:active {
+    transform: translate(-50%, -50%) scale(0.96);
+    box-shadow:
+        inset 0 1px 4px rgba(0, 0, 0, 0.25),
+        inset 0 2px 4px rgba(255, 255, 255, 0.4);
 }

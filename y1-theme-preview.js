@@ -1129,6 +1129,7 @@
                         if (sel && sel.iconFile) {
                             var iu = buildFileUrl(contentFolder, sel.iconFile);
                             if (iu) {
+                                var maxPrevH = Math.max(40, H - HOME_PREVIEW_TOP_MARGIN - 8);
                                 var tile = document.createElement('div');
                                 tile.style.cssText =
                                     'position:absolute;right:' +
@@ -1137,14 +1138,16 @@
                                     HOME_PREVIEW_TOP_MARGIN +
                                     'px;width:' +
                                     HOME_PREVIEW_WIDTH +
-                                    'px;height:auto;max-height:' +
-                                    Math.max(0, H - HOME_PREVIEW_TOP_MARGIN - 8) +
-                                    'px;display:flex;align-items:center;justify-content:center;overflow:hidden;z-index:10;box-sizing:border-box;';
+                                    'px;max-height:' +
+                                    maxPrevH +
+                                    'px;height:auto;display:flex;align-items:center;justify-content:center;overflow:hidden;z-index:10;box-sizing:border-box;';
                                 var im = document.createElement('img');
                                 im.src = iu;
                                 im.alt = sel.label || '';
                                 im.style.cssText =
-                                    'max-width:100%;width:auto;height:auto;max-height:100%;object-fit:contain;object-position:center;display:block;';
+                                    'max-width:100%;width:auto;height:auto;max-height:' +
+                                    maxPrevH +
+                                    'px;object-fit:contain;object-position:center;display:block;';
                                 tile.appendChild(im);
                                 layer.appendChild(tile);
                             }

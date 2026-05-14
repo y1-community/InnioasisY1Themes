@@ -286,6 +286,8 @@
             width: 100%;
             height: 100%;
             min-height: 0;
+            align-items: center;
+            justify-content: center;
         }
 
         .theme-card .theme-preview-frame img {
@@ -328,7 +330,7 @@
         }
 
         .theme-card .theme-preview-frame img:hover {
-            scale: 1.05;
+            transform: scale(1.02);
         }
 
         .theme-name {
@@ -1714,14 +1716,31 @@
             });
         }
 
+        const FETCH_JSON_TIMEOUT_MS = 25000;
+
+        async function fetchJsonWithTimeout(url) {
+            const ctrl = new AbortController();
+            const id = setTimeout(() => ctrl.abort(), FETCH_JSON_TIMEOUT_MS);
+            try {
+                const res = await fetch(url, { cache: 'no-cache', signal: ctrl.signal });
+                if (!res.ok) throw new Error(String(res.status));
+                return await res.json();
+            } finally {
+                clearTimeout(id);
+            }
+        }
+
         async function buildVariantContext(theme, contentFolderPath, catalogFolderPath, variantSegment) {
             const content = String(contentFolderPath || '').replace(/^\.\/+/, '').trim();
             const catalog = String(catalogFolderPath || '').replace(/^\.\/+/, '').trim();
             if (!content) throw new Error('Missing theme content folder');
             const encoded = content.split('/').map((seg) => encodeURIComponent(seg)).join('/');
-            const configRes = await fetch(`./${encoded}/config.json`, { cache: 'no-cache' });
-            if (!configRes.ok) throw new Error(`Could not locate config.json in /${content}`);
-            const config = await configRes.json();
+            let config;
+            try {
+                config = await fetchJsonWithTimeout(`./${encoded}/config.json`);
+            } catch (e) {
+                throw new Error(`Could not locate config.json in /${content} (${e && e.message ? e.message : e})`);
+            }
             const filesRaw = extractFilesFromConfig(config, content);
             const remoteMaskPaths = await fetchMaskVariantPaths(content);
             const maskChoices = maskVariantChoicesFromFilePaths(
@@ -1766,7 +1785,15 @@
             }
             const contextMap = new Map();
             for (const opt of options) {
-                contextMap.set(opt.content, await buildVariantContext(theme, opt.content, catalogFolder, opt.variant));
+                try {
+                    contextMap.set(
+                        opt.content,
+                        await buildVariantContext(theme, opt.content, catalogFolder, opt.variant)
+                    );
+                } catch (e) {
+                    const msg = e && e.message ? e.message : String(e);
+                    throw new Error(`Could not load variation "${opt.label}": ${msg}`);
+                }
             }
             const needPrompt = options.length > 1 || Array.from(contextMap.values()).some((ctx) => (ctx.maskChoices.options || []).length > 1);
             const preferredVariant = String(hintsObj.preferredVariant || '').trim();
@@ -1805,7 +1832,7 @@
                 overlay.style.zIndex = '2600';
 
                 const panel = document.createElement('div');
-                panel.style.width = 'min(480px, 92vw)';
+                panel.style.width = 'min(520px, 94vw)';
                 panel.style.background = '#151922';
                 panel.style.border = '1px solid rgba(255,255,255,0.12)';
                 panel.style.borderRadius = '12px';
@@ -1841,19 +1868,33 @@
                     variationSelect.value = preferredContent;
                 }
                 variationWrap.append(variationLabel, variationSelect);
-                if (options.length > 1) panel.appendChild(variationWrap);
+                variationWrap.style.display = options.length > 1 ? 'block' : 'none';
+                panel.appendChild(variationWrap);
 
-                const preview = document.createElement('img');
-                preview.alt = 'Mask preview';
-                preview.style.display = 'none';
-                preview.style.width = '100%';
-                preview.style.maxHeight = '170px';
-                preview.style.objectFit = 'contain';
-                preview.style.borderRadius = '8px';
-                preview.style.border = '1px solid rgba(255,255,255,0.12)';
-                preview.style.background = 'rgba(255,255,255,0.04)';
-                preview.style.marginBottom = '10px';
-                panel.appendChild(preview);
+                const themeSimWrap = document.createElement('div');
+                themeSimWrap.className = 'variant-modal-theme-sim';
+                const simHostModal = document.createElement('div');
+                simHostModal.className = 'y1-theme-preview-host';
+                themeSimWrap.appendChild(simHostModal);
+                panel.appendChild(themeSimWrap);
+
+                const modalPreviewMeta = {
+                    trackTitle: safeText((theme && theme.name) || '').trim(),
+                    trackArtist: safeText((theme && theme.author) || '').trim(),
+                    trackAlbum: safeText((theme && theme.description) || 'Y1 Theme').trim().slice(0, 96)
+                };
+
+                const maskPreviewImg = document.createElement('img');
+                maskPreviewImg.alt = 'Mask preview';
+                maskPreviewImg.style.display = 'none';
+                maskPreviewImg.style.width = '100%';
+                maskPreviewImg.style.maxHeight = '170px';
+                maskPreviewImg.style.objectFit = 'contain';
+                maskPreviewImg.style.borderRadius = '8px';
+                maskPreviewImg.style.border = '1px solid rgba(255,255,255,0.12)';
+                maskPreviewImg.style.background = 'rgba(255,255,255,0.04)';
+                maskPreviewImg.style.marginBottom = '10px';
+                panel.appendChild(maskPreviewImg);
 
                 const maskWrap = document.createElement('div');
                 maskWrap.style.marginBottom = '12px';
@@ -1889,16 +1930,41 @@
 
                 const refreshMaskPreview = () => {
                     const ctx = contextMap.get(String(variationSelect.value || options[0].content));
-                    const opts = (ctx && ctx.maskChoices && Array.isArray(ctx.maskChoices.options)) ? ctx.maskChoices.options : [];
+                    const maskOpts = (ctx && ctx.maskChoices && Array.isArray(ctx.maskChoices.options)) ? ctx.maskChoices.options : [];
                     const idx = parseInt(String(maskSelect.value || '0'), 10);
-                    const picked = opts[Number.isFinite(idx) ? idx : 0] || opts[0];
+                    const picked = maskOpts[Number.isFinite(idx) ? idx : 0] || maskOpts[0];
                     const selectedPath = String(picked && picked.sourcePath || '');
                     const previewUrl = buildThemeFileUrl(ctx ? ctx.folder : catalogFolder, selectedPath);
                     if (previewUrl) {
-                        preview.src = `${previewUrl}${previewUrl.includes('?') ? '&' : '?'}mvc=${Date.now()}`;
-                        preview.style.display = 'block';
+                        maskPreviewImg.src = `${previewUrl}${previewUrl.includes('?') ? '&' : '?'}mvc=${Date.now()}`;
+                        maskPreviewImg.style.display = 'block';
                     } else {
-                        preview.style.display = 'none';
+                        maskPreviewImg.style.display = 'none';
+                    }
+                };
+
+                const refreshThemeSimModal = async () => {
+                    if (!window.Y1ThemePreview || typeof window.Y1ThemePreview.mount !== 'function') {
+                        themeSimWrap.style.display = 'none';
+                        return;
+                    }
+                    themeSimWrap.style.display = 'block';
+                    const key = String(variationSelect.value || options[0].content);
+                    const pickedOpt = options.find((o) => o.content === key) || options[0];
+                    const seg = String((pickedOpt && pickedOpt.variant) || '').trim();
+                    if (typeof window.Y1ThemePreview.unmount === 'function') {
+                        window.Y1ThemePreview.unmount(simHostModal);
+                    }
+                    try {
+                        await window.Y1ThemePreview.mount(simHostModal, {
+                            catalogFolder,
+                            variantSegment: seg,
+                            mode: 'menu',
+                            buildFileUrl: (cf, rel) => buildThemeFileUrl(cf, rel),
+                            previewMeta: modalPreviewMeta
+                        });
+                    } catch (_) {
+                        themeSimWrap.style.display = 'none';
                     }
                 };
 
@@ -1937,11 +2003,18 @@
                     }
                     previousVariationKey = String(variationSelect.value || options[0].content);
                     rebuildMaskSelect(preserve);
+                    void refreshThemeSimModal();
                 };
                 maskSelect.onchange = refreshMaskPreview;
                 rebuildMaskSelect('');
+                void refreshThemeSimModal();
 
                 const close = (choice) => {
+                    try {
+                        if (window.Y1ThemePreview && typeof window.Y1ThemePreview.unmount === 'function') {
+                            window.Y1ThemePreview.unmount(simHostModal);
+                        }
+                    } catch (_) {}
                     try { overlay.remove(); } catch (_) {}
                     resolve(choice);
                 };
@@ -2122,16 +2195,17 @@
             if (dlBtn) dlBtn.style.display = 'none';
             buttonNode.disabled = true;
 
-            const progressUI = createProgressUI(card, buttonNode, theme.name || 'theme');
-
+            let progressUI = null;
             try {
                 if (!theme.folder) throw new Error('No downloadable folder info for this theme.');
                 const selectedCombo = await promptVariantCombination(theme, hints || {});
                 if (selectedCombo === null) {
-                    progressUI.abortAndRestore(buttonNode);
                     if (dlBtn) dlBtn.style.display = '';
+                    buttonNode.disabled = false;
                     return;
                 }
+
+                progressUI = createProgressUI(card, buttonNode, theme.name || 'theme');
                 const selectedFolder = String(selectedCombo.folder || theme.folder || '').replace(/^\.\/+/, '');
                 const selectedName = String(selectedCombo.name || theme.name || 'theme');
                 const selectedMask = selectedCombo.selectedMask || null;
@@ -2262,8 +2336,9 @@
             } catch (err) {
                 console.error('Direct install failed', err);
                 alert(`Failed to install theme "${theme && theme.name ? theme.name : 'theme'}": ${err.message || err}`);
-                progressUI.abortAndRestore(buttonNode);
+                if (progressUI) progressUI.abortAndRestore(buttonNode);
                 if (dlBtn) dlBtn.style.display = '';
+                buttonNode.disabled = false;
             }
         }
 
@@ -2277,15 +2352,17 @@
             if (diBtn) diBtn.style.display = 'none';
             buttonNode.disabled = true;
 
-            const progressUI = createProgressUI(card, buttonNode, theme.name || 'theme');
+            let progressUI = null;
             try {
                 if (!theme.folder) throw new Error('No downloadable folder info for this theme.');
                 const selectedCombo = await promptVariantCombination(theme, hints || {});
                 if (selectedCombo === null) {
-                    progressUI.abortAndRestore(buttonNode);
                     if (diBtn) diBtn.style.display = '';
+                    buttonNode.disabled = false;
                     return;
                 }
+
+                progressUI = createProgressUI(card, buttonNode, theme.name || 'theme');
                 const selectedFolder = String(selectedCombo.folder || theme.folder || '').replace(/^\.\/+/, '');
                 const selectedName = String(selectedCombo.name || theme.name || 'theme');
                 const selectedMask = selectedCombo.selectedMask || null;
@@ -2402,8 +2479,9 @@
             } catch (err) {
                 console.error('Download failed', err);
                 alert(`Failed to download theme "${theme && theme.name ? theme.name : 'theme'}": ${err.message || err}`);
-                progressUI.abortAndRestore(buttonNode);
+                if (progressUI) progressUI.abortAndRestore(buttonNode);
                 if (diBtn) diBtn.style.display = '';
+                buttonNode.disabled = false;
             }
         }
 
@@ -2637,7 +2715,7 @@
                 n.rel = 'noopener';
             } else {
                 const themeQueryKey = folderPath || String(theme.name || '');
-                n.href = `/theme.html?theme=${encodeURIComponent(themeQueryKey)}`;
+                n.href = `./theme.html?theme=${encodeURIComponent(themeQueryKey)}`;
             }
 
             const d = document.createElement('div');

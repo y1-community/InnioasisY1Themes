@@ -130,5 +130,10 @@
     "playerConfig": {
         "progressColor": "#24F2A0",
         "progressBackgroundColor": "#33FFFFFF"
+    },
+    "gallery": {
+        "variantFolders": [
+            "iPod Version"
+        ]
     }
 }

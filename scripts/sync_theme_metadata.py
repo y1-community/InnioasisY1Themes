@@ -187,6 +187,47 @@ def _is_theme_dir(path: Path) -> bool:
     return config_path.is_file() and _is_theme_config(config_path)
 
 
+def _discover_pack_variant_folder_names(folder: str) -> list[str]:
+    """Subfolders of <folder>/Variants/ that ship a usable theme config.json (for gallery/install UX)."""
+    variants_root = REPO_ROOT / folder / "Variants"
+    if not variants_root.is_dir():
+        return []
+    names: list[str] = []
+    for child in sorted(variants_root.iterdir(), key=lambda p: str(p.name).casefold()):
+        if not child.is_dir() or child.name.startswith("."):
+            continue
+        cfg_path = child / "config.json"
+        if not cfg_path.is_file():
+            continue
+        sub_cfg = _load_json_file(cfg_path)
+        if not isinstance(sub_cfg, dict):
+            continue
+        if not _has_theme_image_assets(sub_cfg):
+            continue
+        names.append(child.name)
+    return names
+
+
+def _sync_gallery_variant_folders_metadata(config: dict[str, Any], folder: str) -> bool:
+    """Write gallery.variantFolders on the catalog root config from disk (no GitHub API needed in browser)."""
+    discovered = _discover_pack_variant_folder_names(folder)
+    gallery = config.get("gallery")
+    if not isinstance(gallery, dict):
+        if not discovered:
+            return False
+        config["gallery"] = {"variantFolders": discovered}
+        return True
+    prev = gallery.get("variantFolders")
+    prev_list = [str(x).strip() for x in (prev if isinstance(prev, list) else []) if str(x or "").strip()]
+    if sorted(prev_list, key=str.casefold) == sorted(discovered, key=str.casefold):
+        return False
+    if discovered:
+        gallery["variantFolders"] = discovered
+    else:
+        gallery.pop("variantFolders", None)
+    return True
+
+
 def _discover_theme_folders(root: Path) -> list[str]:
     folders = [p.name for p in root.iterdir() if _is_theme_dir(p)]
     return sorted(folders, key=lambda s: s.lower())
@@ -434,6 +475,9 @@ def _theme_entry_from_folder(folder: str, config: dict[str, Any] | None) -> dict
         )
         if variants:
             entry["maskVariants"] = variants
+    pack_variants = _discover_pack_variant_folder_names(folder)
+    if pack_variants:
+        entry["variantFolders"] = pack_variants
 
     return entry
 
@@ -525,6 +569,12 @@ def _refresh_existing_theme_entry(entry: dict[str, Any], folder: str, config: di
         name_for_default = str(refreshed.get("name") or folder).strip()
         if _is_default_description(description, name_for_default) and fallback_desc:
             refreshed["description"] = fallback_desc
+
+    pack_variants = _discover_pack_variant_folder_names(folder)
+    if pack_variants:
+        refreshed["variantFolders"] = pack_variants
+    else:
+        refreshed.pop("variantFolders", None)
 
     return refreshed
 
@@ -818,6 +868,8 @@ def main() -> int:
             config_changed = _sync_theme_info(config, page_entry, force_all=True) or config_changed
         else:
             config_changed = _sync_theme_info(config, page_entry, force_all=False) or config_changed
+        if _sync_gallery_variant_folders_metadata(config, folder):
+            config_changed = True
         if config_changed:
             _write_json(cfg_path, config)
         if template_html:
