@@ -526,6 +526,26 @@
                     <div class="hint">Select the folder that contains your theme’s <code>config.json</code> and images. Works in Chrome, Edge, Firefox, and Safari.</div>
                 </div>
 
+                <div class="row file-input-row">
+                    <label class="variation-row" style="margin-top:0;">
+                        <input id="dark-variant-package-enable" type="checkbox" />
+                        <span>This submission includes a separate dark mode package (recommended when you keep light and dark variants as separate folders/zips).</span>
+                    </label>
+                </div>
+
+                <div id="dark-variant-package-row" style="display:none;">
+                    <div class="row file-input-row">
+                        <label for="dark-zip-file">Dark variation ZIP (optional)</label>
+                        <input id="dark-zip-file" type="file" accept=".zip,application/zip" />
+                        <div class="hint">Use when your dark variant is in a separate ZIP. Must contain a <code>_dark-mode/config.json</code> path.</div>
+                    </div>
+                    <div class="row file-input-row">
+                        <label for="dark-folder-file">Dark variation folder (optional)</label>
+                        <input id="dark-folder-file" type="file" webkitdirectory multiple />
+                        <div class="hint">Use when your dark variant is in a separate folder package. Must include a <code>_dark-mode</code> folder with <code>config.json</code>.</div>
+                    </div>
+                </div>
+
                 <div id="meta-editor" class="meta-editor">
                     <h3>Theme details</h3>
                     <p class="hint">We read these from <code>config.json</code>. You can fix spelling or credits before sending. A single ZIP can contain several themes (each with its own <code>config.json</code>).</p>
@@ -705,6 +725,10 @@
         const submitBtn = document.getElementById("submit-btn");
         const zipInput = document.getElementById("zip-file");
         const folderInput = document.getElementById("folder-file");
+        const darkVariantEnable = document.getElementById("dark-variant-package-enable");
+        const darkVariantRow = document.getElementById("dark-variant-package-row");
+        const darkZipInput = document.getElementById("dark-zip-file");
+        const darkFolderInput = document.getElementById("dark-folder-file");
         const metaEditor = document.getElementById("meta-editor");
         const metaEditorList = document.getElementById("meta-editor-list");
         metaEditorList.addEventListener("input", () => syncCollisionUi());
@@ -1355,6 +1379,10 @@
             loadedZipFileName = "";
             folderFiles = null;
             themeInfoEntries = [];
+            if (darkVariantEnable) darkVariantEnable.checked = false;
+            if (darkVariantRow) darkVariantRow.style.display = "none";
+            if (darkZipInput) darkZipInput.value = "";
+            if (darkFolderInput) darkFolderInput.value = "";
             if (editAck) editAck.checked = false;
             if (editNotice) editNotice.hidden = true;
             renderThemeInfoEditors();
@@ -2363,7 +2391,74 @@
                     });
                 }
             }
+            const includeSeparateDark = !!(darkVariantEnable && darkVariantEnable.checked);
+            if (includeSeparateDark) {
+                const darkEntries = await collectDarkPackageEntriesFromExtraInputs();
+                for (const entry of darkEntries) {
+                    files.push({
+                        path: entry.path,
+                        contentBase64: bytesToBase64(entry.bytes),
+                    });
+                }
+                if (darkEntries.length) {
+                    const allPaths = files.map((f) => f.path);
+                    if (!uploadedPackageHasDarkConfigPath(allPaths)) {
+                        throw new Error("Dark package must include at least one *_dark-mode/config.json path.");
+                    }
+                }
+            }
             return files;
+        }
+
+        function uploadedPackageHasDarkConfigPath(paths) {
+            return (Array.isArray(paths) ? paths : []).some((p) =>
+                /(^|\/)[^\/]+_dark-mode\/config\.json$/i.test(String(p || "").trim().replace(/\\/g, "/"))
+            );
+        }
+
+        async function collectDarkPackageEntriesFromExtraInputs() {
+            const entries = [];
+            if (darkZipInput && darkZipInput.files && darkZipInput.files[0]) {
+                if (!window.JSZip) throw new Error("ZIP parser is unavailable.");
+                const zip = await window.JSZip.loadAsync(await darkZipInput.files[0].arrayBuffer());
+                for (const zipEntry of Object.values(zip.files || {})) {
+                    if (!zipEntry || zipEntry.dir) continue;
+                    const path = normRelPath(zipEntry.name);
+                    if (!path) continue;
+                    entries.push({
+                        path,
+                        bytes: new Uint8Array(await zipEntry.async("uint8array")),
+                    });
+                }
+            } else if (darkFolderInput && darkFolderInput.files && darkFolderInput.files.length) {
+                for (const file of Array.from(darkFolderInput.files)) {
+                    const path = normRelPath(file.webkitRelativePath);
+                    if (!path || path.endsWith("/")) continue;
+                    entries.push({
+                        path,
+                        bytes: new Uint8Array(await file.arrayBuffer()),
+                    });
+                }
+            }
+            return entries;
+        }
+
+        async function appendDarkPackageToZip(baseZipFile) {
+            const darkEntries = await collectDarkPackageEntriesFromExtraInputs();
+            if (!darkEntries.length) return baseZipFile;
+            if (!window.JSZip) throw new Error("ZIP parser is unavailable.");
+            const merged = await window.JSZip.loadAsync(await baseZipFile.arrayBuffer());
+            for (const entry of darkEntries) {
+                merged.file(entry.path, entry.bytes);
+            }
+            const mergedPaths = Object.values(merged.files || {})
+                .filter((f) => f && !f.dir)
+                .map((f) => normRelPath(f.name));
+            if (!uploadedPackageHasDarkConfigPath(mergedPaths)) {
+                throw new Error("Dark package must include at least one *_dark-mode/config.json path.");
+            }
+            const blob = await merged.generateAsync({ type: "blob" });
+            return new File([blob], baseZipFile.name, { type: "application/zip" });
         }
 
         zipInput.addEventListener("change", async () => {
@@ -2376,6 +2471,32 @@
             await inspectFolderForThemeInfo(folderInput.files);
             syncSubmitButtonLabel();
         });
+
+        if (darkVariantEnable && darkVariantRow) {
+            darkVariantEnable.addEventListener("change", () => {
+                darkVariantRow.style.display = darkVariantEnable.checked ? "block" : "none";
+                if (!darkVariantEnable.checked) {
+                    if (darkZipInput) darkZipInput.value = "";
+                    if (darkFolderInput) darkFolderInput.value = "";
+                }
+            });
+        }
+
+        if (darkZipInput) {
+            darkZipInput.addEventListener("change", () => {
+                if (darkZipInput.files && darkZipInput.files[0] && darkFolderInput) {
+                    darkFolderInput.value = "";
+                }
+            });
+        }
+
+        if (darkFolderInput) {
+            darkFolderInput.addEventListener("change", () => {
+                if (darkFolderInput.files && darkFolderInput.files.length && darkZipInput) {
+                    darkZipInput.value = "";
+                }
+            });
+        }
 
         window.addEventListener("DOMContentLoaded", () => {
             loadThemesIndex().then(() => {
@@ -2417,7 +2538,16 @@
                 if (!metadataSubmitScenario() && (uploadMode === "zip" || uploadMode === "folder")) {
                     const roots = collectThemeRootFolders();
                     const hasDarkPackage = roots.some((root) => isDarkModeFolderName(root));
-                    if (!hasDarkPackage) {
+                    const includeSeparateDark = !!(darkVariantEnable && darkVariantEnable.checked);
+                    const hasExtraDarkInput = !!(
+                        (darkZipInput && darkZipInput.files && darkZipInput.files[0]) ||
+                        (darkFolderInput && darkFolderInput.files && darkFolderInput.files.length)
+                    );
+                    if (includeSeparateDark && !hasDarkPackage && !hasExtraDarkInput) {
+                        setStatus("Dark mode variant is enabled. Add a dark ZIP/folder package or include a *_dark-mode folder in your main package.", false);
+                        return;
+                    }
+                    if (!hasDarkPackage && !hasExtraDarkInput) {
                         const continueWithoutDark = window.confirm(
                             "Do you want to continue without uploading a dark mode variation package?\n\nSelect Cancel to add a second ZIP/folder for the _dark-mode variation."
                         );
@@ -2453,7 +2583,8 @@
                     data.set("directFilesJson", JSON.stringify(directFiles));
                 }
                 const rebuiltZip = await buildZipForUpload();
-                data.set("zip", rebuiltZip, rebuiltZip.name);
+                const mergedZip = await appendDarkPackageToZip(rebuiltZip);
+                data.set("zip", mergedZip, mergedZip.name);
                 const res = await fetch(window.uploadThemeEndpoint(), {
                     method: "POST",
                     body: data
