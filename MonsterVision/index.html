@@ -732,23 +732,19 @@
         const REQUIRED_ARTWORK_FEATURES = [
             {
                 feature: 'eBook reader (3.0.7+)',
-                configPath: ['homePageConfig', 'ebook'],
-                expectedFileHint: '*ebook*.*'
+                configPath: ['homePageConfig', 'ebook']
             },
             {
                 feature: 'Rockbox launcher switch',
-                configPath: ['settingConfig', 'launcher'],
-                expectedFileHint: '*auncher*.*'
+                configPath: ['settingConfig', 'launcher']
             },
             {
                 feature: 'Calendar',
-                configPath: ['homePageConfig', 'calendar'],
-                expectedFileHint: '*alendar*.*'
+                configPath: ['homePageConfig', 'calendar']
             },
             {
                 feature: 'Calculator',
-                configPath: ['homePageConfig', 'calculator'],
-                expectedFileHint: '*alculator*.*'
+                configPath: ['homePageConfig', 'calculator']
             }
         ];
 
@@ -828,14 +824,20 @@
             for (const requirement of REQUIRED_ARTWORK_FEATURES) {
                 const configured = getConfigValueByPath(configObj, requirement.configPath);
                 if (!configured) {
-                    warnings.push(`${requirement.feature}: missing \`${requirement.configPath.join('.')}\` in config.json.`);
+                    warnings.push(`${requirement.feature}: this setting is missing in the theme configuration.`);
                     continue;
                 }
                 const health = await checkArtworkAssetHealth(folderPath, configured);
                 if (!health.ok) {
-                    warnings.push(
-                        `${requirement.feature}: \`${configured}\` is not ready (${health.issue}; expected ${requirement.expectedFileHint}).`
-                    );
+                    const issueText =
+                        health.issue === 'file not found'
+                            ? 'linked artwork file is missing'
+                            : health.issue === '0-byte file'
+                            ? 'linked artwork file is empty (0 bytes)'
+                            : health.issue === 'fully transparent PNG'
+                            ? 'linked artwork is fully transparent'
+                            : health.issue;
+                    warnings.push(`${requirement.feature}: ${issueText}.`);
                 }
             }
             return warnings;
@@ -1069,11 +1071,19 @@
                     return;
                 }
 
-                const maskChoices = maskVariantChoicesFromFiles(
-                    theme.folder,
-                    downloadableFiles,
-                    maskVariantState && maskVariantState.baseMaskPath
-                );
+                const maskChoices =
+                    maskVariantState &&
+                    Array.isArray(maskVariantState.options) &&
+                    maskVariantState.options.length
+                        ? {
+                              baseMaskPath: maskVariantState.baseMaskPath,
+                              options: maskVariantState.options,
+                          }
+                        : maskVariantChoicesFromFiles(
+                              theme.folder,
+                              downloadableFiles,
+                              maskVariantState && maskVariantState.baseMaskPath
+                          );
                 const selectedMask = await promptMaskVariant(
                     theme.name,
                     maskChoices,
@@ -1209,7 +1219,8 @@
             })();
             const maskVariantState = {
                 baseMaskPath: normalizeConfigAssetPath(themeMeta && themeMeta.rawConfig && themeMeta.rawConfig.desktopMask, folder) || 'mask.png',
-                selectEl: maskVariantSelect
+                selectEl: maskVariantSelect,
+                options: []
             };
             const remoteMaskVariantPaths = await fetchMaskVariantPathsFromGitHub(folder);
             const maskChoiceSeedFiles = [
@@ -1221,6 +1232,7 @@
                 }))
             ];
             const maskChoices = maskVariantChoicesFromFiles(folder, maskChoiceSeedFiles, maskVariantState.baseMaskPath);
+            maskVariantState.options = maskChoices.options || [];
             if (maskVariantWrap && maskVariantSelect && maskChoices.options.length > 1) {
                 maskVariantState.baseMaskPath = maskChoices.baseMaskPath;
                 maskVariantSelect.innerHTML = '';
