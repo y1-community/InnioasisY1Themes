@@ -28,7 +28,11 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
+    <link rel="stylesheet" href="y1-theme-preview.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="theme-packaging.js"></script>
+    <script src="y1-theme-preview.js"></script>
+    <script src="gallery-loaded-theme.js"></script>
 
     <style>
         html,
@@ -249,18 +253,33 @@
         }
 
         .theme-preview-frame {
-            width: min(250px, 100%);
-            aspect-ratio: 1 / 1;
+            position: relative;
+            width: min(360px, 100%);
+            aspect-ratio: 4 / 3;
+            min-height: 200px;
             border-radius: 10px;
             background: rgba(255, 255, 255, 0.04);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: grid;
+            place-items: center;
             overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        .theme-card img {
+        .theme-preview-frame > * {
+            grid-area: 1 / 1;
+        }
+
+        .theme-preview-frame .y1-theme-preview-host {
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-card .theme-preview-frame img {
             width: 100%;
             height: 100%;
             border-radius: 8px;
@@ -268,7 +287,7 @@
             object-fit: contain;
         }
 
-        .theme-card img:hover {
+        .theme-card .theme-preview-frame img:hover {
             scale: 1.05;
         }
 
@@ -1184,14 +1203,36 @@
             return Array.from(files);
         }
 
+        function encodePathSegments(pathValue) {
+            return String(pathValue || '')
+                .split('/')
+                .filter(Boolean)
+                .map(seg => encodeURIComponent(seg))
+                .join('/');
+        }
+
+        /** Collapse `.` / `..` so variant configs can use `../../asset.png` and static hosts resolve correctly. */
+        function resolvedRepoPath(folderPath, rawRelativePath) {
+            const folder = String(folderPath || '').trim().replace(/\\/g, '/').replace(/^\.\/+/, '').replace(/\/+$/, '');
+            const rel = normalizeConfigAssetPath(String(rawRelativePath || '').trim().replace(/\\/g, '/'), folder);
+            if (!rel) return '';
+            const stack = folder.split('/').filter(Boolean);
+            for (const seg of rel.split('/')) {
+                if (!seg || seg === '.') continue;
+                if (seg === '..') {
+                    if (stack.length) stack.pop();
+                    continue;
+                }
+                stack.push(seg);
+            }
+            return stack.join('/');
+        }
+
         function buildThemeFileUrl(folderPath, relativePath) {
             const folder = String(folderPath || '').trim().replace(/\\/g, '/').replace(/^\.\/+/, '').replace(/\/+$/, '');
-            const normalized = normalizeConfigAssetPath(relativePath, folder);
-            if (!normalized) return '';
-            const encodedFolder = folder.split('/').filter(Boolean).map(seg => encodeURIComponent(seg)).join('/');
-            const encodedFile = normalized.split('/').filter(Boolean).map(seg => encodeURIComponent(seg)).join('/');
-            if (!encodedFile) return '';
-            return `./${encodedFolder ? `${encodedFolder}/` : ''}${encodedFile}`;
+            const full = resolvedRepoPath(folder, relativePath);
+            if (!full) return '';
+            return `./${encodePathSegments(full)}`;
         }
 
         function titleCaseWords(value) {
@@ -1275,16 +1316,46 @@
             }
         }
 
-        async function listThemeVariantFolderNames(catalogFolder) {
+        async function listThemeVariantFolderNames(catalogFolder, manifestSource) {
             const root = String(catalogFolder || '').replace(/^\.\/+/, '').replace(/\/+$/, '').trim();
-            if (!root) return [];
+            const fromManifest = [];
+            if (root) {
+                try {
+                    const encRoot = root.split('/').filter(Boolean).map(encodeURIComponent).join('/');
+                    const rc = await fetch(`./${encRoot}/config.json`, { cache: 'no-cache' });
+                    if (rc.ok) {
+                        const j = await rc.json();
+                        const gv = j.gallery && Array.isArray(j.gallery.variantFolders) ? j.gallery.variantFolders : null;
+                        if (gv) {
+                            for (const n of gv) {
+                                const s = String(n || '').trim();
+                                if (s) fromManifest.push(s);
+                            }
+                        }
+                    }
+                } catch (_) {}
+            }
+            const g = manifestSource && typeof manifestSource === 'object' ? manifestSource : null;
+            const vfLists = [];
+            if (g && Array.isArray(g.variantFolders)) vfLists.push(g.variantFolders);
+            const gal = g && g.rawConfig && g.rawConfig.gallery;
+            if (gal && Array.isArray(gal.variantFolders)) vfLists.push(gal.variantFolders);
+            for (const vf of vfLists) {
+                for (const n of vf) {
+                    const s = String(n || '').trim();
+                    if (s) fromManifest.push(s);
+                }
+            }
+            if (!root) return [...new Set(fromManifest)].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
             const entries = await fetchGithubRepoContents(`${root}/${THEME_VARIANTS_SEGMENT}`);
-            if (!entries) return [];
-            return entries
-                .filter((item) => item && item.type === 'dir')
-                .map((item) => String(item.name || '').trim())
-                .filter(Boolean)
-                .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+            const fromApi = Array.isArray(entries)
+                ? entries
+                      .filter((item) => item && item.type === 'dir')
+                      .map((item) => String(item.name || '').trim())
+                      .filter(Boolean)
+                : [];
+            const merged = new Set([...fromApi, ...fromManifest]);
+            return [...merged].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
         }
 
         function resolveMaskTargetPath(folderPath, files, configuredMaskPath) {
@@ -1634,8 +1705,17 @@
         async function promptVariantCombination(theme) {
             const catalogFolder = String((theme && theme.folder) || '').replace(/^\.\/+/, '').trim();
             if (!catalogFolder) throw new Error('No downloadable folder info for this theme.');
-            const variantNames = await listThemeVariantFolderNames(catalogFolder);
-            const options = [{ label: 'Default', content: catalogFolder, variant: '' }];
+            let rootGalleryDefaultLabel = '';
+            try {
+                const enc = catalogFolder.split('/').filter(Boolean).map(encodeURIComponent).join('/');
+                const rc = await fetch(`./${enc}/config.json`, { cache: 'no-cache' });
+                if (rc.ok) {
+                    const j = await rc.json();
+                    rootGalleryDefaultLabel = String((j.gallery && j.gallery.defaultVariantLabel) || '').trim();
+                }
+            } catch (_) {}
+            const variantNames = await listThemeVariantFolderNames(catalogFolder, theme);
+            const options = [{ label: rootGalleryDefaultLabel || 'Default', content: catalogFolder, variant: '' }];
             for (const vn of variantNames) {
                 options.push({
                     label: formatVariantDisplayLabel(vn),
@@ -1742,17 +1822,11 @@
                 okBtn.className = 'btn';
                 okBtn.innerHTML = '<i class="fa-solid fa-check" style="margin-right:6px;"></i>Continue';
 
-                const renderMaskOptions = () => {
+                let previousVariationKey = String(options[0].content);
+
+                const refreshMaskPreview = () => {
                     const ctx = contextMap.get(String(variationSelect.value || options[0].content));
                     const opts = (ctx && ctx.maskChoices && Array.isArray(ctx.maskChoices.options)) ? ctx.maskChoices.options : [];
-                    maskSelect.innerHTML = '';
-                    opts.forEach((item, idx) => {
-                        const option = document.createElement('option');
-                        option.value = String(idx);
-                        option.textContent = item.label;
-                        maskSelect.appendChild(option);
-                    });
-                    maskWrap.style.display = opts.length > 1 ? 'block' : 'none';
                     const idx = parseInt(String(maskSelect.value || '0'), 10);
                     const picked = opts[Number.isFinite(idx) ? idx : 0] || opts[0];
                     const selectedPath = String(picked && picked.sourcePath || '');
@@ -1764,9 +1838,45 @@
                         preview.style.display = 'none';
                     }
                 };
-                variationSelect.onchange = renderMaskOptions;
-                maskSelect.onchange = renderMaskOptions;
-                renderMaskOptions();
+
+                const rebuildMaskSelect = (preserveSourcePath) => {
+                    const ctx = contextMap.get(String(variationSelect.value || options[0].content));
+                    const opts = (ctx && ctx.maskChoices && Array.isArray(ctx.maskChoices.options)) ? ctx.maskChoices.options : [];
+                    maskSelect.innerHTML = '';
+                    opts.forEach((item, idx) => {
+                        const option = document.createElement('option');
+                        option.value = String(idx);
+                        option.textContent = item.label;
+                        maskSelect.appendChild(option);
+                    });
+                    maskWrap.style.display = opts.length > 1 ? 'block' : 'none';
+                    const want = String(preserveSourcePath || '').trim().toLowerCase();
+                    let pickIdx = opts.findIndex((o) => String(o.sourcePath || '').toLowerCase() === want);
+                    if (pickIdx < 0 && want) {
+                        const base = want.split('/').pop() || want;
+                        pickIdx = opts.findIndex(
+                            (o) => (String(o.sourcePath || '').split('/').pop() || '').toLowerCase() === base
+                        );
+                    }
+                    if (pickIdx < 0) pickIdx = 0;
+                    maskSelect.value = String(pickIdx);
+                    refreshMaskPreview();
+                };
+
+                variationSelect.onchange = () => {
+                    const oldCtx = contextMap.get(previousVariationKey);
+                    let preserve = '';
+                    if (oldCtx && oldCtx.maskChoices && Array.isArray(oldCtx.maskChoices.options) && maskSelect) {
+                        const oopts = oldCtx.maskChoices.options;
+                        const pi = parseInt(String(maskSelect.value || '0'), 10);
+                        const op = oopts[Number.isFinite(pi) ? pi : 0];
+                        preserve = String(op && op.sourcePath || '');
+                    }
+                    previousVariationKey = String(variationSelect.value || options[0].content);
+                    rebuildMaskSelect(preserve);
+                };
+                maskSelect.onchange = refreshMaskPreview;
+                rebuildMaskSelect('');
 
                 const close = (choice) => {
                     try { overlay.remove(); } catch (_) {}
@@ -1973,53 +2083,85 @@
                     maskChoices.baseMaskPath,
                     selectedFolder
                 );
-                let installedCount = 0;
-                const totalFiles = filesToInstall.length;
-                let installedSuccess = 0;
 
-                // Download and write each file
+                const TP = typeof ThemePackaging !== 'undefined' ? ThemePackaging : null;
+                const fileEntries = [];
                 for (const file of filesToInstall) {
-                    try {
-                        const percent = 5 + Math.round((installedCount / totalFiles) * 90);
-                        progressUI.setProgress(percent, `Installing ${file}...`);
-
-                        const sourcePath = selectedMask && selectedMask.sourcePath &&
-                            normalizeConfigAssetPath(file, selectedFolder).toLowerCase() === String(maskChoices.baseMaskPath || '').toLowerCase()
+                    const sourcePath =
+                        selectedMask && selectedMask.sourcePath &&
+                        normalizeConfigAssetPath(file, selectedFolder).toLowerCase() === String(maskChoices.baseMaskPath || '').toLowerCase()
                             ? selectedMask.sourcePath
                             : file;
-                        const fileUrl = buildThemeFileUrl(selectedFolder, sourcePath);
-                        if (!fileUrl) {
-                            installedCount++;
-                            continue;
-                        }
-                        const fileRes = await fetch(fileUrl);
+                    const fileUrl = buildThemeFileUrl(selectedFolder, sourcePath);
+                    if (!fileUrl) continue;
+                    fileEntries.push({
+                        path: normalizeConfigAssetPath(file, selectedFolder) || String(file || '').trim(),
+                        download_url: fileUrl
+                    });
+                }
+
+                let installRows = [];
+                let normalizedConfigObj = null;
+                if (TP && config && typeof config === 'object' && fileEntries.length) {
+                    const man = TP.buildFlattenPackManifest(fileEntries, selectedFolder, catalogForInstall);
+                    normalizedConfigObj = TP.rewriteConfigForDeviceFlatPack(config, selectedFolder, man.logicalToDevice);
+                    installRows = (man.items || []).filter((it) => String(it.devicePath || '').toLowerCase() !== 'config.json');
+                } else {
+                    installRows = fileEntries.map((fe) => ({
+                        devicePath: String(fe.path || '').replace(/\\/g, '/').split('/').pop() || 'file',
+                        download_url: fe.download_url
+                    }));
+                }
+
+                let installedCount = 0;
+                const totalFiles = installRows.length + 1;
+                let installedSuccess = 0;
+
+                const writeBlobToThemeFolder = async (relativePath, blob) => {
+                    const pathParts = String(relativePath || '').split('/').filter(Boolean);
+                    const fileName = pathParts.pop();
+                    if (!fileName || fileName.includes('..')) return false;
+                    let currentFolder = themeFolder;
+                    for (const part of pathParts) {
+                        const safePart = part.replace(/[^\w\d-_ ]/g, '_');
+                        currentFolder = await currentFolder.getDirectoryHandle(safePart, { create: true });
+                    }
+                    const fileHandle = await currentFolder.getFileHandle(fileName, { create: true });
+                    const writable = await fileHandle.createWritable();
+                    await writable.write(blob);
+                    await writable.close();
+                    return true;
+                };
+
+                try {
+                    const cfgBlob = new Blob([JSON.stringify(normalizedConfigObj || config, null, 2)], { type: 'application/json' });
+                    if (await writeBlobToThemeFolder('config.json', cfgBlob)) installedSuccess++;
+                } catch (e) {
+                    console.warn('config.json install failed', e);
+                }
+                installedCount++;
+
+                for (const row of installRows) {
+                    try {
+                        const percent = 5 + Math.round((installedCount / Math.max(totalFiles, 1)) * 90);
+                        progressUI.setProgress(percent, `Installing ${row.devicePath || row.path}...`);
+
+                        const fileRes = await fetch(row.download_url);
                         if (!fileRes.ok) {
-                            console.warn(`Missing file on server: ${file}`);
+                            console.warn(`Missing file on server: ${row.path || row.devicePath}`);
                             installedCount++;
                             continue;
                         }
 
                         const blob = await fileRes.blob();
-
-                        // Handle nested directories if a path has slashes (e.g., "icons/battery.png")
-                        const pathParts = file.split('/');
-                        const fileName = pathParts.pop();
-                        let currentFolder = themeFolder;
-
-                        for (const part of pathParts) {
-                            // Strip any bad characters from directory parts to be safe
-                            const safePart = part.replace(/[^\w\d-_ ]/g, '_');
-                            currentFolder = await currentFolder.getDirectoryHandle(safePart, { create: true });
+                        const rel = String(row.devicePath || '').replace(/\\/g, '/').replace(/^\/+/, '');
+                        if (!rel || rel.includes('..')) {
+                            installedCount++;
+                            continue;
                         }
-
-                        const fileHandle = await currentFolder.getFileHandle(fileName, { create: true });
-                        const writable = await fileHandle.createWritable();
-                        await writable.write(blob);
-                        await writable.close();
-                        installedSuccess++;
-
+                        if (await writeBlobToThemeFolder(rel, blob)) installedSuccess++;
                     } catch (e) {
-                        console.warn(`Error installing ${file}:`, e);
+                        console.warn(`Error installing ${row.path || row.devicePath}:`, e);
                     }
                     installedCount++;
                 }
@@ -2087,37 +2229,79 @@
                     selectedFolder
                 );
                 const zip = new JSZip();
+                const catalogFolder = String(selectedCombo.catalogFolder || theme.folder || '').replace(/^\.\/+/, '').trim();
 
-                let downloadedCount = 0;
-                const totalFiles = filesToDownload.length;
-                let downloadedSuccess = 0;
-
+                const TP = typeof ThemePackaging !== 'undefined' ? ThemePackaging : null;
+                const fileEntries = [];
                 for (const file of filesToDownload) {
-                    try {
-                        const percent = 5 + Math.round((downloadedCount / totalFiles) * 80);
-                        progressUI.setProgress(percent, `Downloading ${file}...`);
-
-                        const sourcePath = selectedMask && selectedMask.sourcePath &&
-                            normalizeConfigAssetPath(file, selectedFolder).toLowerCase() === String(maskChoices.baseMaskPath || '').toLowerCase()
+                    const sourcePath =
+                        selectedMask && selectedMask.sourcePath &&
+                        normalizeConfigAssetPath(file, selectedFolder).toLowerCase() === String(maskChoices.baseMaskPath || '').toLowerCase()
                             ? selectedMask.sourcePath
                             : file;
-                        const fileUrl = buildThemeFileUrl(selectedFolder, sourcePath);
-                        if (!fileUrl) {
-                            downloadedCount++;
-                            continue;
-                        }
-                        const fileRes = await fetch(fileUrl);
-                        if (fileRes.ok) {
-                            const blob = await fileRes.blob();
-                            zip.file(file, blob); // JSZip automatically handles relative paths internally
-                            downloadedSuccess++;
+                    const fileUrl = buildThemeFileUrl(selectedFolder, sourcePath);
+                    if (!fileUrl) continue;
+                    fileEntries.push({
+                        path: normalizeConfigAssetPath(file, selectedFolder) || String(file || '').trim(),
+                        download_url: fileUrl
+                    });
+                }
+
+                let zipRows = [];
+                let normalizedConfigJson = '';
+                if (TP && config && typeof config === 'object' && fileEntries.length) {
+                    const man = TP.buildFlattenPackManifest(fileEntries, selectedFolder, catalogFolder);
+                    const rewritten = TP.rewriteConfigForDeviceFlatPack(config, selectedFolder, man.logicalToDevice);
+                    normalizedConfigJson = JSON.stringify(rewritten, null, 2);
+                    zipRows = (man.items || []).filter((it) => String(it.devicePath || '').toLowerCase() !== 'config.json');
+                } else {
+                    zipRows = fileEntries.map((fe) => ({
+                        devicePath: String(fe.path || '').replace(/\\/g, '/').split('/').pop() || 'file',
+                        download_url: fe.download_url,
+                        path: fe.path
+                    }));
+                }
+
+                let downloadedCount = 0;
+                const totalFiles = zipRows.length + (normalizedConfigJson ? 1 : 0);
+                let downloadedSuccess = 0;
+
+                for (const row of zipRows) {
+                    try {
+                        const percent = 5 + Math.round((downloadedCount / Math.max(totalFiles, 1)) * 80);
+                        progressUI.setProgress(percent, `Downloading ${row.devicePath || row.path}...`);
+
+                        const fr = await fetch(row.download_url);
+                        if (fr.ok) {
+                            const blob = await fr.blob();
+                            const key = String(row.devicePath || row.path || '').replace(/\\/g, '/').replace(/^\/+/, '');
+                            if (key && !key.includes('..')) {
+                                zip.file(key, blob);
+                                downloadedSuccess++;
+                            }
                         } else {
-                            console.warn(`Missing file on server: ${file}`);
+                            console.warn(`Missing file on server: ${row.path || row.devicePath}`);
                         }
                     } catch (e) {
-                        console.warn(`Error downloading ${file}:`, e);
+                        console.warn(`Error downloading ${row.path || row.devicePath}:`, e);
                     }
                     downloadedCount++;
+                }
+
+                if (normalizedConfigJson) {
+                    zip.file('config.json', normalizedConfigJson);
+                    downloadedSuccess++;
+                } else {
+                    const cfgUrl = buildThemeFileUrl(selectedFolder, 'config.json');
+                    if (cfgUrl) {
+                        try {
+                            const fileRes = await fetch(cfgUrl);
+                            if (fileRes.ok) {
+                                zip.file('config.json', await fileRes.blob());
+                                downloadedSuccess++;
+                            }
+                        } catch (_) {}
+                    }
                 }
 
                 if (downloadedSuccess === 0) {
@@ -2207,6 +2391,10 @@
             const previewFrame = document.createElement('div');
             previewFrame.className = 'theme-preview-frame';
 
+            const simHost = document.createElement('div');
+            simHost.className = 'y1-theme-preview-host';
+            previewFrame.appendChild(simHost);
+
             const img = document.createElement('img');
             const metaScreenshot = String(theme.screenshot || '');
             const metaLooksLikeCover = /\.(png|jpe?g|gif|webp)$/i.test(metaScreenshot);
@@ -2273,6 +2461,29 @@
                 medal.title =
                     'This package passed the gallery’s optional newer UI artwork checks (eBook, launcher switch, calendar, calculator).';
                 previewFrame.appendChild(medal);
+            }
+
+            if (folderPath && window.Y1ThemePreview && typeof window.Y1ThemePreview.mountGalleryCardLazy === 'function') {
+                window.Y1ThemePreview.mountGalleryCardLazy(simHost, {
+                    catalogFolder: folderPath,
+                    variantSegment: '',
+                    mode: 'menu',
+                    buildFileUrl: (cf, rel) => buildThemeFileUrl(cf, rel),
+                    previewMeta: {
+                        trackTitle: safeText(theme.name || '').trim(),
+                        trackArtist: safeText(theme.author || '').trim(),
+                        trackAlbum: safeText(theme.description || 'Y1 Theme').trim().slice(0, 96)
+                    },
+                    onReady: () => {
+                        img.style.visibility = 'hidden';
+                        img.style.pointerEvents = 'none';
+                    },
+                    onError: () => {
+                        simHost.style.display = 'none';
+                    }
+                });
+            } else {
+                simHost.style.display = 'none';
             }
 
             const n = document.createElement('a');

@@ -202,7 +202,7 @@
         <div class="wrap" style="max-width:1200px;margin-top:6rem;">
             <div id="theme-root">
                 <div id="left" style="flex:1;display:flex;align-items:center;justify-content:center;min-height:360px;">
-                    <img id="main-screenshot" src="placeholder.png" alt="Screenshot" style="width:400px;height:auto;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,.5)">
+                    <div id="theme-y1-sim-wrap" style="width:100%;max-width:min(440px,100%);min-height:260px;display:none;align-items:center;justify-content:center;" title="Y1 theme preview"></div><img id="main-screenshot" src="placeholder.png" alt="Screenshot" style="width:400px;height:auto;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,.5)">
                 </div>
 
                 <div id="right" style="width:420px;display:flex;flex-direction:column;gap:12px;">
@@ -512,9 +512,9 @@
             const pathClean = normalizeConfigAssetPath(relativePath, folderClean);
             if (!pathClean) return '';
             const encodedPath = encodePathSegments(pathClean);
-            if (!folderClean) return `/${encodedPath}`;
+            if (!folderClean) return `./${encodedPath}`;
             const encodedFolder = encodePathSegments(folderClean);
-            return `/${encodedFolder}/${encodedPath}`;
+            return `./${encodedFolder}/${encodedPath}`;
         }
 
         function normalizeConfigAssetPath(rawPath, folderPath) {
@@ -1839,6 +1839,5 @@
             }
         })()
     </script>
-</body>
-
-</html>
+    <script src="../theme-folder-simulator.js" defer></script>
+</body></html>
