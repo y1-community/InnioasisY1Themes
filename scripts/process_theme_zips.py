@@ -372,7 +372,8 @@ def _process_root_zip_bundle(
         )
         try:
             tmp.write_bytes(buf)
-            inner_ok, inner_logs = _process_zip(tmp)
+            inner_stem = PurePosixPath(inner).stem
+            inner_ok, inner_logs = _process_zip(tmp, folder_stem_override=inner_stem)
             logs.extend(inner_logs)
             if not inner_ok:
                 return False, logs + [f"ERROR: Inner archive failed: {inner!r}"]
@@ -397,7 +398,7 @@ def _process_root_zip_bundle(
     return True, logs
 
 
-def _process_zip(path: Path) -> tuple[bool, list[str]]:
+def _process_zip(path: Path, *, folder_stem_override: str | None = None) -> tuple[bool, list[str]]:
     logs: list[str] = [f"Processing {_zip_processing_label(path)}"]
     try:
         blob = path.read_bytes()
@@ -408,6 +409,8 @@ def _process_zip(path: Path) -> tuple[bool, list[str]]:
         archive = zipfile.ZipFile(io.BytesIO(blob))
     except zipfile.BadZipFile:
         return False, logs + ["ERROR: Invalid zip archive."]
+
+    stem_for_identity = (folder_stem_override or "").strip() or path.stem
 
     with archive:
         names = [n for n in archive.namelist() if n and not n.endswith("/")]
@@ -429,11 +432,11 @@ def _process_zip(path: Path) -> tuple[bool, list[str]]:
         if not keys:
             return False, logs + ["ERROR: Zip must contain at least one theme folder with config.json."]
 
-        for err in ztu.zip_inner_folder_collision_errors(keys, path.stem, zip_label=path.name):
+        for err in ztu.zip_inner_folder_collision_errors(keys, stem_for_identity, zip_label=path.name):
             return False, logs + [f"ERROR: {err}"]
 
         catalog_rows = _catalog_identity_rows()
-        suggested_names = ztu.inner_folder_names_for_zip(keys, path.stem)
+        suggested_names = ztu.inner_folder_names_for_zip(keys, stem_for_identity)
         extraction_plan: list[dict[str, Any]] = []
         resolved_names_seen: set[str] = set()
         forced_slug_by_base: dict[str, str] = {}

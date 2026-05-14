@@ -74,18 +74,6 @@ function hasReservedAuthorName(value) {
   return BLOCKED_AUTHOR_KEYS.has(key);
 }
 
-function hyphenSlugForZipPrefix(title) {
-  let s = String(title || "")
-    .trim()
-    .replace(/^u\//i, "")
-    .replace(/[^a-zA-Z0-9._-]+/g, "-")
-    .replace(/_+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 40);
-  return s || "";
-}
-
 function sanitizeThemeTitle(value) {
   const trimmed = normalizeSpaces(value);
   if (!trimmed) return { value: "", changed: false };
@@ -459,10 +447,8 @@ export async function handleUploadPost(request, env) {
       const contentB64 = toBase64(arrayBuffer);
       const zipPrefix = zipDir ? `${zipDir.replace(/^\/+|\/+$/g, "")}/` : "";
       const unique = `${now.toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
-      const titleTag = hyphenSlugForZipPrefix(themeTitle);
-      const zipName = titleTag
-        ? `gallery-upload-${titleTag}-${unique}.zip`
-        : `gallery-upload-${unique}.zip`;
+      const slugTitle = slugify(themeTitle);
+      const zipName = slugTitle ? `${slugTitle}.zip` : `gallery-upload-${unique}.zip`;
       zipPath = zipPrefix ? `${zipPrefix}${zipName}` : zipName;
       await ghJson(
         `${apiBase}/contents/${zipPath.split("/").map(encodeURIComponent).join("/")}`,
@@ -496,7 +482,7 @@ export async function handleUploadPost(request, env) {
         {
           method: "PUT",
           body: JSON.stringify({
-            message: `Upload metadata for ${originalName}`,
+            message: `Upload metadata for ${zipName}`,
             content: metaB64,
             branch: branchName,
           }),

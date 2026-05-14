@@ -1831,18 +1831,43 @@
             };
         }
 
-        /** Map upload root folder name -> suffixed folder name when author differs from catalog (applied when building the ZIP). */
-        function variationRootRenames() {
+        /** Folder-safe stem from the editor title (underscores; mirrors upload handler slugify). */
+        function titleBasedFolderStemFromEntry(entry) {
+            const t = String((entry && entry.themeInfo && entry.themeInfo.title) || "").trim();
+            if (!t) return "";
+            let s = sanitizeZipFileName(t).replace(/\s+/g, "_").replace(/[^a-zA-Z0-9._-]+/g, "_").replace(/^_+|_+$/g, "");
+            return s.slice(0, 120) || "";
+        }
+
+        /** Target repo folder for each upload root: editor title for new themes, catalog folder on same-author edits, suffixed title when another author owns the name. */
+        function desiredRepoFolderForUploadRoot(root) {
             readEditorValues();
-            const authorCollisionRenames = new Map();
-            for (const root of collectThemeRootFolders()) {
-                const s = collisionSummaryForUploadRoot(root);
-                const candidate = s.kind === "variation" && s.suggested ? s.suggested : root;
-                const entry = entryForUploadRoot(root);
-                const withDark = candidate;
-                if (withDark !== root) authorCollisionRenames.set(root, withDark);
+            const summary = collisionSummaryForUploadRoot(root);
+            const entry = entryForUploadRoot(root);
+            if (summary.kind === "edit") {
+                return String(summary.catalogFolder || "").trim() || root;
             }
-            return authorCollisionRenames;
+            if (summary.kind === "suffixOk") {
+                return root;
+            }
+            const titleStem = titleBasedFolderStemFromEntry(entry);
+            const base = titleStem || root;
+            if (summary.kind === "variation") {
+                const tok = slugToken(authorForUploadRoot(root));
+                return tok ? applyAuthorSlugSuffix(base, tok) : base;
+            }
+            return base;
+        }
+
+        /** Map zip/folder root segment -> final theme directory name on disk (and share URLs). */
+        function effectiveRootRenames() {
+            readEditorValues();
+            const out = new Map();
+            for (const root of collectThemeRootFolders()) {
+                const target = desiredRepoFolderForUploadRoot(root);
+                if (target && target !== root) out.set(root, target);
+            }
+            return out;
         }
 
         function rewriteThemePathForRenames(path, renames) {
@@ -1864,8 +1889,18 @@
 
         /** When a catalog collision is resolved by renaming roots, match the outgoing ZIP name to the new folder stem (server uses zip filename stem for root themes). */
         function packagedZipFileName(renames, fallbackZipName, preferredTitle) {
-            const preferred = sanitizeZipFileName(preferredTitle);
-            if (preferred) return /\.zip$/i.test(preferred) ? preferred : `${preferred}.zip`;
+            readEditorValues();
+            const map = renames && renames.size ? renames : new Map();
+            const roots = collectThemeRootFolders();
+            const stemFromTitle = titleBasedFolderStemFromEntry({
+                themeInfo: { title: String(preferredTitle || "").trim() },
+            });
+            if (stemFromTitle && roots.length) {
+                const r0 = roots[0];
+                const stem = String(map.get(r0) || desiredRepoFolderForUploadRoot(r0) || stemFromTitle).trim() || stemFromTitle;
+                const base = stem.replace(/\.zip$/i, "");
+                return `${base}.zip`;
+            }
             const full = String(fallbackZipName || loadedZipFileName || "theme.zip").trim();
             const withExt = /\.zip$/i.test(full) ? full : `${full}.zip`;
             const m = withExt.match(/^(\d+-)?(.+)\.zip$/i);
@@ -1880,9 +1915,18 @@
             const map = renames && renames.size ? renames : new Map();
             const stems = new Set();
             for (const root of collectThemeRootFolders()) {
-                stems.add(map.get(root) || root);
+                stems.add(String(map.get(root) || desiredRepoFolderForUploadRoot(root) || root).trim());
             }
-            return JSON.stringify([...stems].sort((a, b) => a.localeCompare(b)));
+            return JSON.stringify([...stems].filter(Boolean).sort((a, b) => a.localeCompare(b)));
+        }
+
+        /** First catalog folder name after renames (outer batch zip basename on GitHub). */
+        function primaryDestinationStem(renames) {
+            const roots = collectThemeRootFolders();
+            if (!roots.length) return "theme";
+            const r0 = roots[0];
+            const map = renames && renames.size ? renames : new Map();
+            return String(map.get(r0) || desiredRepoFolderForUploadRoot(r0) || r0 || "theme").trim() || "theme";
         }
 
         function refreshBatchThemePanel() {
@@ -3046,7 +3090,7 @@
             if (uploadMode === "folder" && folderFiles && folderFiles.length) {
                 if (!window.JSZip) throw new Error("ZIP library is unavailable.");
                 validateThemeInfoEntriesForSubmit();
-                const renames = variationRootRenames();
+                const renames = effectiveRootRenames();
                 const editsByOriginalPath = await buildConfigEditsByPath(renames, artworkWarnings);
                 const outputZip = new window.JSZip();
 
@@ -3076,7 +3120,10 @@
 
                 const blob = await outputZip.generateAsync({ type: "blob" });
                 const name = loadedZipFileName || inferFolderZipName(folderFiles);
-                const preferredTitle = themeInfoEntries.length === 1 ? themeInfoEntries[0].themeInfo.title : "";
+                const preferredTitle =
+                    themeInfoEntries.length && themeInfoEntries[0].themeInfo
+                        ? String(themeInfoEntries[0].themeInfo.title || "").trim()
+                        : "";
                 const outName = packagedZipFileName(renames, name, preferredTitle);
                 return new File([blob], outName, { type: "application/zip" });
             }
@@ -3091,7 +3138,7 @@
             }
 
             validateThemeInfoEntriesForSubmit();
-            const renames = variationRootRenames();
+            const renames = effectiveRootRenames();
 
             const outputZip = new window.JSZip();
             const editsByOriginalPath = await buildConfigEditsByPath(renames, artworkWarnings);
@@ -3122,7 +3169,10 @@
             }
 
             const blob = await outputZip.generateAsync({ type: "blob" });
-            const preferredTitle = themeInfoEntries.length === 1 ? themeInfoEntries[0].themeInfo.title : "";
+            const preferredTitle =
+                themeInfoEntries.length && themeInfoEntries[0].themeInfo
+                    ? String(themeInfoEntries[0].themeInfo.title || "").trim()
+                    : "";
             const outName = packagedZipFileName(renames, loadedZipFileName || file.name || "theme.zip", preferredTitle);
             return new File([blob], outName, {
                 type: "application/zip"
@@ -3131,12 +3181,9 @@
 
         /**
          * Wrap the packaged theme ZIP in a root-level "batch" archive (only *.zip members).
-         * Inner member is always a single basename (no folders) so Actions sees a flat bundle.
-         * Outer layer uses STORE so we do not re-compress an already-deflated theme zip.
-         * GitHub Actions / process_theme_zips.py unpacks each inner archive — one PR needs at most
-         * one outer zip + meta (minimal Worker → GitHub subrequests).
+         * @param {string} outerBaseStem Repo-safe folder stem (no .zip); used as the GitHub root zip filename.
          */
-        async function wrapAsUploaderBatchZip(innerFile) {
+        async function wrapAsUploaderBatchZip(innerFile, outerBaseStem) {
             if (!window.JSZip) throw new Error("ZIP library is unavailable.");
             const outer = new window.JSZip();
             let innerName = String(innerFile.name || "theme.zip")
@@ -3148,8 +3195,17 @@
             const buf = await innerFile.arrayBuffer();
             outer.file(innerName, buf);
             const blob = await outer.generateAsync({ type: "blob", compression: "STORE" });
-            const stamp = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-            return new File([blob], `gallery-upload-batch-${stamp}.zip`, { type: "application/zip" });
+            let stem = String(outerBaseStem || "")
+                .replace(/\\/g, "/")
+                .split("/")
+                .pop()
+                .replace(/\.zip$/i, "")
+                .replace(/[^a-zA-Z0-9._-]+/g, "_")
+                .replace(/^_+|_+$/g, "")
+                .slice(0, 120)
+                .trim();
+            if (!stem) stem = "theme";
+            return new File([blob], `${stem}.zip`, { type: "application/zip" });
         }
 
         zipInput.addEventListener("change", async () => {
@@ -3205,7 +3261,7 @@
                 let artworkWarnings = [];
                 let renamesForExtras = new Map();
                 if (!metadataSubmitScenario()) {
-                    renamesForExtras = variationRootRenames();
+                    renamesForExtras = effectiveRootRenames();
                     pendingExtraVariationEntries = await collectExtraVariationMappedEntries(renamesForExtras);
                     artworkWarnings = await collectArtworkCompatibilityWarnings();
                 }
@@ -3229,11 +3285,12 @@
                 fieldThemeAuthor.value = ta.author;
 
                 const data = new FormData(form);
-                // One outer batch ZIP (inner = packaged theme) → Worker does 2 file PUTs + branch + PR (low subrequests).
-                // GitHub Actions expands gallery-upload-batch-*.zip via scripts/process_theme_zips.py.
+                // One outer batch ZIP (inner = packaged theme) → Worker commits root zip + meta.
+                // Root zip basename matches the theme folder stem (title-based) so ingest + share URLs align.
                 const rebuiltZip = await buildZipForUpload(artworkWarnings);
                 data.set("shareFolderHints", shareFolderHintsForForm(renamesForExtras));
-                const batchZip = await wrapAsUploaderBatchZip(rebuiltZip);
+                const outerStem = primaryDestinationStem(renamesForExtras);
+                const batchZip = await wrapAsUploaderBatchZip(rebuiltZip, outerStem);
                 data.set("zip", batchZip, batchZip.name);
                 const res = await fetch(window.uploadThemeEndpoint(), {
                     method: "POST",
