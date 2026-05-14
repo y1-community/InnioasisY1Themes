@@ -159,6 +159,14 @@ function sanitizeThemeTitle(value) {
   return trimmed;
 }
 
+function isDarkModeFolder(folder) {
+  return /_dark-mode$/i.test(String(folder || "").trim());
+}
+
+function baseFolderFromDark(folder) {
+  return String(folder || "").trim().replace(/_dark-mode$/i, "");
+}
+
 function buildSearchText(row) {
   const name = asTrimmedString(row.name);
   const description = asTrimmedString(row.description);
@@ -257,11 +265,11 @@ export async function handleMetadataPost(request, env) {
       if (!raw || typeof raw !== "object") {
         return jsonResponse({ error: "Each item must be an object." }, 400);
       }
-      const folder = String(raw.folder || "").trim();
-      if (!folder || folder.includes("..") || folder.includes("/") || folder.startsWith(".")) {
-        return jsonResponse({ error: `Invalid folder: ${folder || "(empty)"}` }, 400);
+      const requestedFolder = String(raw.folder || "").trim();
+      if (!requestedFolder || requestedFolder.includes("..") || requestedFolder.includes("/") || requestedFolder.startsWith(".")) {
+        return jsonResponse({ error: `Invalid folder: ${requestedFolder || "(empty)"}` }, 400);
       }
-      const top = folder.split("/")[0];
+      const top = requestedFolder.split("/")[0];
       if (RESERVED_TOP.has(top)) {
         return jsonResponse({ error: "That folder cannot be updated via this API." }, 400);
       }
@@ -269,14 +277,40 @@ export async function handleMetadataPost(request, env) {
       const themeInfo = raw.themeInfo && typeof raw.themeInfo === "object" ? raw.themeInfo : {};
       const listing = raw.listing && typeof raw.listing === "object" ? raw.listing : null;
 
-      const path = `${folder}/config.json`;
-      const enc = encodeRepoPath(path);
-      const fileMeta = await ghJson(
-        `${apiBase}/contents/${enc}?ref=${encodeURIComponent(baseBranch)}`,
-        token,
-        {},
-        `read ${path}`
-      );
+      let folder = requestedFolder;
+      let path = `${folder}/config.json`;
+      let fileMeta = null;
+      if (isDarkModeFolder(requestedFolder)) {
+        const baseFolder = baseFolderFromDark(requestedFolder);
+        if (baseFolder) {
+          const basePath = `${baseFolder}/config.json`;
+          const baseEnc = encodeRepoPath(basePath);
+          try {
+            const baseMeta = await ghJson(
+              `${apiBase}/contents/${baseEnc}?ref=${encodeURIComponent(baseBranch)}`,
+              token,
+              {},
+              `read ${basePath}`
+            );
+            if (baseMeta && baseMeta.content) {
+              folder = baseFolder;
+              path = basePath;
+              fileMeta = baseMeta;
+            }
+          } catch {
+            // Fallback to requested folder if base config is missing.
+          }
+        }
+      }
+      if (!fileMeta) {
+        const enc = encodeRepoPath(path);
+        fileMeta = await ghJson(
+          `${apiBase}/contents/${enc}?ref=${encodeURIComponent(baseBranch)}`,
+          token,
+          {},
+          `read ${path}`
+        );
+      }
       if (!fileMeta || !fileMeta.content) {
         return jsonResponse({ error: `Missing ${path} on default branch.` }, 404);
       }

@@ -592,6 +592,16 @@ def _sync_theme_info(config: dict[str, Any], theme_entry: dict[str, Any], *, for
     return changed
 
 
+def _strip_theme_info(config: dict[str, Any]) -> bool:
+    """Remove inline theme_info block so dark variants inherit base metadata only."""
+    if not isinstance(config, dict):
+        return False
+    if "theme_info" not in config:
+        return False
+    config.pop("theme_info", None)
+    return True
+
+
 def _html_attr(value: str) -> str:
     return html.escape(str(value), quote=False).replace('"', "&quot;")
 
@@ -800,7 +810,13 @@ def main() -> int:
                 _write_json(cfg_path, config)
             continue
         inherit_base_metadata = _is_dark_mode_folder(folder) and _base_theme_folder(folder) in by_folder
-        if _sync_theme_info(config, page_entry, force_all=inherit_base_metadata):
+        config_changed = False
+        if inherit_base_metadata:
+            # Keep metadata defined once on the base theme config only.
+            config_changed = _strip_theme_info(config) or config_changed
+        else:
+            config_changed = _sync_theme_info(config, page_entry, force_all=False) or config_changed
+        if config_changed:
             _write_json(cfg_path, config)
         if template_html:
             _sync_theme_index(_theme_index_entry(page_entry, config), template_html)

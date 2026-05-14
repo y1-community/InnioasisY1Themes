@@ -1881,7 +1881,7 @@
                     for (const rule of REQUIRED_ARTWORK_RULES) {
                         const configured = readConfigPath(cfg, rule.configPath);
                         if (!configured) {
-                            warnings.push(`${entry.label}: missing \`${rule.configPath.join(".")}\` for ${rule.feature}.`);
+                            warnings.push(`${entry.label}: ${rule.feature} is missing from theme settings.`);
                             continue;
                         }
                         const rel = normRelPath(configured);
@@ -1894,20 +1894,20 @@
                         try {
                             const response = await fetch(url, { cache: "no-store" });
                             if (!response.ok) {
-                                warnings.push(`${entry.label}: ${rule.feature} points to missing file \`${configured}\` (expected ${rule.expectedPattern}).`);
+                                warnings.push(`${entry.label}: ${rule.feature} points to a missing artwork file.`);
                                 continue;
                             }
                             const blob = await response.blob();
                             const allowTransparent = isIntentionalTransparentPath(scoped);
                             if (blob.size === 0 && !allowTransparent) {
-                                warnings.push(`${entry.label}: ${rule.feature} asset \`${configured}\` is a 0-byte file.`);
+                                warnings.push(`${entry.label}: ${rule.feature} artwork file is empty (0 bytes).`);
                                 continue;
                             }
                             if (/\.png$/i.test(scoped) && !allowTransparent && (await isPngFullyTransparentBlob(blob))) {
-                                warnings.push(`${entry.label}: ${rule.feature} asset \`${configured}\` is a fully transparent PNG.`);
+                                warnings.push(`${entry.label}: ${rule.feature} artwork is fully transparent.`);
                             }
                         } catch (_) {
-                            warnings.push(`${entry.label}: could not verify \`${configured}\` for ${rule.feature}.`);
+                            warnings.push(`${entry.label}: could not verify artwork for ${rule.feature}.`);
                         }
                     }
                 }
@@ -1923,26 +1923,26 @@
                 for (const rule of REQUIRED_ARTWORK_RULES) {
                     const configured = readConfigPath(cfg, rule.configPath);
                     if (!configured) {
-                        warnings.push(`${entry.label}: missing \`${rule.configPath.join(".")}\` for ${rule.feature}.`);
+                        warnings.push(`${entry.label}: ${rule.feature} is missing from theme settings.`);
                         continue;
                     }
                     const scoped = scopedAssetPath(configured, root).toLowerCase();
                     if (!scoped || !fileSet.has(scoped)) {
-                        warnings.push(`${entry.label}: ${rule.feature} points to missing file \`${configured}\` (expected ${rule.expectedPattern}).`);
+                        warnings.push(`${entry.label}: ${rule.feature} points to a missing artwork file.`);
                         continue;
                     }
                     const blob = await readSubmissionBlob(scoped);
                     if (!blob) {
-                        warnings.push(`${entry.label}: ${rule.feature} could not be read from package (\`${configured}\`).`);
+                        warnings.push(`${entry.label}: could not read artwork for ${rule.feature} from the package.`);
                         continue;
                     }
                     const allowTransparent = isIntentionalTransparentPath(scoped);
                     if (blob.size === 0 && !allowTransparent) {
-                        warnings.push(`${entry.label}: ${rule.feature} asset \`${configured}\` is a 0-byte file.`);
+                        warnings.push(`${entry.label}: ${rule.feature} artwork file is empty (0 bytes).`);
                         continue;
                     }
                     if (/\.png$/i.test(scoped) && !allowTransparent && (await isPngFullyTransparentBlob(blob))) {
-                        warnings.push(`${entry.label}: ${rule.feature} asset \`${configured}\` is a fully transparent PNG.`);
+                        warnings.push(`${entry.label}: ${rule.feature} artwork is fully transparent.`);
                     }
                 }
             }
