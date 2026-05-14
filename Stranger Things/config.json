@@ -3,7 +3,7 @@
         "title": "Stranger Things",
         "author": "u/_Adusik_gaV_",
         "authorUrl": "https://www.reddit.com/user/_Adusik_gaV_/",
-        "description": "Theme for Stranger Things fans!",
+        "description": "Theme for Stranger Things fans! The default look is Will; choose other characters from Extra looks on the theme page.",
         "externalDownloadUrl": ""
     },
     "themeCover": "cover.png",
@@ -48,7 +48,7 @@
     },
     "fileConfig": {
         "folderIcon": "folder.png",
-        "musicIcon": "music_icon.png"
+        "musicIcon": "music_file.png"
     },
     "settingConfig": {
         "shutdown": "Shutdown@1x.png",
@@ -124,6 +124,21 @@
             "batterycharge_002.png",
             "batterycharge_003.png",
             "batterycharge_004.png"
+        ]
+    },
+    "gallery": {
+        "defaultVariantLabel": "Will",
+        "variantFolders": [
+            "Dustin",
+            "Eddie",
+            "Eleven",
+            "Jonathan",
+            "Lucas",
+            "Max",
+            "Mike",
+            "Nancy",
+            "Robin",
+            "Steve"
         ]
     }
 }
