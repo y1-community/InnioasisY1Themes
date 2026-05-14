@@ -991,7 +991,8 @@
                     canvas.innerHTML = '';
                     var bgUrl = backgroundUrlForView(cfg, sim.themeViewId, buildFileUrl, contentFolder);
                     canvas.style.backgroundImage = bgUrl ? 'url("' + bgUrl.replace(/"/g, '%22') + '")' : '';
-                    canvas.style.backgroundSize = bgUrl ? 'contain' : '';
+                    /* Match ThemeDisplay / device: wallpaper fills 480×360 (BitmapDrawable scale). */
+                    canvas.style.backgroundSize = bgUrl ? 'cover' : '';
                     canvas.style.backgroundPosition = bgUrl ? 'center' : '';
                     canvas.style.backgroundRepeat = bgUrl ? 'no-repeat' : '';
                     canvas.style.backgroundColor = '#000';
