@@ -198,8 +198,9 @@
         }
 
         /*
-          FabForm field names (configure the same keys in your FabForm dashboard so emails are readable):
-          contact_email, theme_folder, theme_title, theme_author, issue_category, details, page_url
+          FabForm email templates commonly use the field names from your HTML `name` attributes.
+          This form sends the standard keys `email` and `message` (FabForm docs), plus mirrors
+          `contact_email` and `details` for older templates, plus `reason` (category + body).
         */
     </style>
 </head>
@@ -250,11 +251,13 @@
             <form id="report-form" action="https://fabform.io/f/-OtVqbq" method="post">
                 <input id="field-redirect" type="hidden" name="_redirect" value="https://themes.innioasis.app/report-theme.html?sent=1" />
                 <input type="hidden" name="page_url" id="field-page-url" value="" />
-                <input type="hidden" name="email" id="field-email-alias" value="" />
+                <input type="hidden" name="contact_email" id="field-contact-email-mirror" value="" />
+                <input type="hidden" name="details" id="field-details-mirror" value="" />
+                <input type="hidden" name="reason" id="field-reason-full" value="" />
 
                 <div class="row">
                     <label for="field-contact-email">Your email <span style="font-weight:500;color:var(--text-secondary)">(required)</span></label>
-                    <input id="field-contact-email" name="contact_email" type="email" required maxlength="320" autocomplete="email" placeholder="you@example.com" />
+                    <input id="field-contact-email" name="email" type="email" required maxlength="320" autocomplete="email" placeholder="you@example.com" />
                     <p class="hint">So we can follow up if we need more detail. We do not publish your address.</p>
                 </div>
 
@@ -291,7 +294,7 @@
 
                 <div class="row">
                     <label for="field-details">Please explain</label>
-                    <textarea id="field-details" name="details" required maxlength="8000" minlength="20" placeholder="Describe what is wrong and, if relevant, which files or screenshots on the theme page are involved."></textarea>
+                    <textarea id="field-details" name="message" required maxlength="8000" minlength="20" placeholder="Describe what is wrong and, if relevant, which files or screenshots on the theme page are involved."></textarea>
                     <p class="hint">Minimum 20 characters. Be specific — it helps maintainers act faster.</p>
                 </div>
 
@@ -314,7 +317,7 @@
             const author = (params.get("author") || "").trim();
             const ref = (params.get("ref") || "").trim();
             const issueCategory = (params.get("issue_category") || "").trim();
-            const details = (params.get("details") || "").trim();
+            const details = (params.get("details") || params.get("message") || "").trim();
 
             const form = document.getElementById("report-form");
             const formCard = document.getElementById("report-form-card");
@@ -327,7 +330,9 @@
             const elPage = document.getElementById("field-page-url");
             const redirectEl = document.getElementById("field-redirect");
             const elContactEmail = document.getElementById("field-contact-email");
-            const elEmailAlias = document.getElementById("field-email-alias");
+            const elContactEmailMirror = document.getElementById("field-contact-email-mirror");
+            const elDetailsMirror = document.getElementById("field-details-mirror");
+            const elReasonFull = document.getElementById("field-reason-full");
             const guidance = document.getElementById("report-guidance");
             const optoutPanel = document.getElementById("report-optout-panel");
             const optoutStatus = document.getElementById("optout-status");
@@ -552,8 +557,24 @@
                     if (submitBtn) submitBtn.disabled = true;
                     try {
                         syncRedirectUrl();
-                        if (elEmailAlias) {
-                            elEmailAlias.value = String(elContactEmail && elContactEmail.value || "").trim();
+                        const emailVal = String(elContactEmail && elContactEmail.value || "").trim();
+                        const detailsVal = String(detailsEl && detailsEl.value || "").trim();
+                        const issueVal = String(issueSelect && issueSelect.value || "").trim();
+                        const issueLabel =
+                            issueSelect && issueSelect.selectedIndex >= 0
+                                ? String(issueSelect.options[issueSelect.selectedIndex].textContent || "").trim()
+                                : "";
+                        if (elContactEmailMirror) elContactEmailMirror.value = emailVal;
+                        if (elDetailsMirror) elDetailsMirror.value = detailsVal;
+                        if (elReasonFull) {
+                            elReasonFull.value = [
+                                issueVal ? `Issue type: ${issueVal}` : "",
+                                issueLabel ? `Issue label: ${issueLabel}` : "",
+                                "",
+                                detailsVal,
+                            ]
+                                .filter(Boolean)
+                                .join("\n");
                         }
                         // FabForm docs use direct HTML form POST to /f/{id}; avoid CORS-sensitive AJAX fetch here.
                         form.setAttribute("action", target);

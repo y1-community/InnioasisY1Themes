@@ -1464,13 +1464,25 @@
             return postToFabformViaIframe(fabUrl, {
                 contact_email: String(fields.contactEmail || ""),
                 email: String(fields.contactEmail || ""),
+                message: [
+                    "Theme removal request (private verification copy)",
+                    `Pull request: ${String(fields.prUrl || "").trim() || "(none)"}`,
+                    `Theme folder: ${String(fields.themeFolder || "").trim()}`,
+                    `Catalog title: ${String(fields.catalogTitle || "").trim()}`,
+                    `Catalog author: ${String(fields.catalogAuthor || "").trim()}`,
+                    `Requester / handle: ${String(fields.requesterName || "").trim() || "(none)"}`,
+                    `Blacklist opt-out: ${fields.blacklistOptOut ? "yes" : "no"}`,
+                    "",
+                    "Reason / notes:",
+                    String(fields.reason || "").trim() || "(none)",
+                ].join("\n"),
                 pr_url: String(fields.prUrl || ""),
                 theme_folder: String(fields.themeFolder || ""),
                 catalog_title: String(fields.catalogTitle || ""),
                 catalog_author: String(fields.catalogAuthor || ""),
                 requester_name: String(fields.requesterName || ""),
                 reason: String(fields.reason || ""),
-                blacklist_opt_out: fields.blacklistOptOut ? "yes" : "no"
+                blacklist_opt_out: fields.blacklistOptOut ? "yes" : "no",
             });
         }
 
