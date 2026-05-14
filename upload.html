@@ -562,8 +562,10 @@
 
                 <div id="extra-variations-panel" style="display:none;margin-top:0.75rem;padding:0.85rem 1rem;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(0,0,0,0.14);">
                     <p class="hint" style="margin:0 0 0.65rem 0;">If your main ZIP or folder already contains <code>Variants/&lt;Name&gt;/</code> (capital <strong>V</strong> or lowercase), those names appear below automatically. You can still attach a replacement ZIP or folder for the same name — we keep one copy per name.</p>
-                    <div style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;margin-bottom:0.65rem;">
-                        <button type="button" class="btn" id="extra-variations-add-btn" style="background:#2a2f3a;color:#eaf0ff;">+ Add variation package</button>
+                    <div id="extra-variations-add-toolbar" style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;margin-bottom:0.65rem;">
+                        <span id="extra-variations-add-top-anchor">
+                            <button type="button" class="btn" id="extra-variations-add-btn" style="background:#2a2f3a;color:#eaf0ff;">+ Add variation package</button>
+                        </span>
                         <span class="hint" style="margin:0;">Each row: a short <strong>variation name</strong>, then a ZIP <em>or</em> a folder (not both).</span>
                     </div>
                     <div id="extra-variations-list"></div>
@@ -756,6 +758,7 @@
         const extraVariationsPanel = document.getElementById("extra-variations-panel");
         const extraVariationsList = document.getElementById("extra-variations-list");
         const extraVariationsAddBtn = document.getElementById("extra-variations-add-btn");
+        const extraVariationsAddTopAnchor = document.getElementById("extra-variations-add-top-anchor");
         const THEME_VARIANTS_SEGMENT = "Variants";
         /** @type {{ id: string, displayName: string, description: string, externalEnabled: boolean, externalUrl: string, zipFile: File|null, folderFiles: FileList|null }[]} */
         let extraVariationRows = [];
@@ -804,6 +807,38 @@
             return out.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
         }
 
+        function promptAndAddExtraVariation() {
+            if (!extraVariationsEnable || !extraVariationsPanel) return;
+            if (!extraVariationsEnable.checked) {
+                extraVariationsEnable.checked = true;
+                extraVariationsPanel.style.display = "block";
+            }
+            const suggested = window.prompt("Variation folder name (for example: Dark or iPod Version)", "");
+            if (!suggested) return;
+            ensureExtraVariationRow(suggested);
+        }
+
+        function firstVariationRowHasZipOrFolderInDom() {
+            if (!extraVariationsList) return false;
+            const firstCard = extraVariationsList.querySelector(".extra-variation-card");
+            if (!firstCard) return false;
+            const z = firstCard.querySelector('[data-var-field="zip"]');
+            const f = firstCard.querySelector('[data-var-field="folder"]');
+            return !!(z && z.files && z.files[0]) || !!(f && f.files && f.files.length);
+        }
+
+        function placeExtraVariationsAddButton() {
+            if (!extraVariationsAddBtn || !extraVariationsAddTopAnchor || !extraVariationsList) return;
+            const anchorInline = extraVariationsList.querySelector("[data-extra-var-add-anchor]");
+            if (firstVariationRowHasZipOrFolderInDom() && anchorInline) {
+                anchorInline.appendChild(extraVariationsAddBtn);
+                extraVariationsAddBtn.textContent = "Add another";
+            } else {
+                extraVariationsAddTopAnchor.appendChild(extraVariationsAddBtn);
+                extraVariationsAddBtn.textContent = "+ Add variation package";
+            }
+        }
+
         function ensureExtraVariationRow(displayName) {
             const seg = sanitizeVariantSegment(displayName);
             if (!seg) return;
@@ -823,15 +858,20 @@
 
         function renderExtraVariationList() {
             if (!extraVariationsList) return;
+            if (extraVariationsAddBtn && extraVariationsAddTopAnchor) {
+                extraVariationsAddTopAnchor.appendChild(extraVariationsAddBtn);
+            }
             if (!extraVariationRows.length) {
                 extraVariationsList.innerHTML = "";
+                placeExtraVariationsAddButton();
                 return;
             }
             extraVariationsList.innerHTML = extraVariationRows
-                .map((row) => {
+                .map((row, idx) => {
                     const safe = escapeHtml(row.displayName);
                     const desc = escapeHtml(row.description);
                     const ext = escapeHtml(row.externalUrl);
+                    const addAnchor = idx === 0 ? `<span data-extra-var-add-anchor></span>` : "";
                     return `
 <div class="extra-variation-card" data-variation-id="${escapeHtml(row.id)}">
   <h4>Variation: ${safe}</h4>
@@ -861,12 +901,14 @@
     <input type="file" webkitdirectory multiple data-var-field="folder" />
     <div class="hint">Pick one: ZIP <em>or</em> folder — not both for the same row.</div>
   </div>
-  <div style="display:flex;justify-content:flex-end;margin-top:0.35rem;">
+  <div style="display:flex;justify-content:flex-end;align-items:center;gap:0.5rem;margin-top:0.35rem;flex-wrap:wrap;">
+    ${addAnchor}
     <button type="button" class="btn" data-var-remove style="background:#3a2a2a;color:#ffd6d6;">Remove row</button>
   </div>
 </div>`;
                 })
                 .join("");
+            const firstCard = extraVariationsList.querySelector(".extra-variation-card");
             extraVariationsList.querySelectorAll(".extra-variation-card").forEach((card) => {
                 const id = card.getAttribute("data-variation-id");
                 const row = extraVariationRows.find((r) => r.id === id);
@@ -883,11 +925,13 @@
                 if (zipEl) {
                     zipEl.addEventListener("change", () => {
                         if (zipEl.files && zipEl.files[0] && folderEl) folderEl.value = "";
+                        if (card === firstCard) placeExtraVariationsAddButton();
                     });
                 }
                 if (folderEl) {
                     folderEl.addEventListener("change", () => {
                         if (folderEl.files && folderEl.files.length && zipEl) zipEl.value = "";
+                        if (card === firstCard) placeExtraVariationsAddButton();
                     });
                 }
                 const rm = card.querySelector("[data-var-remove]");
@@ -898,6 +942,7 @@
                     });
                 }
             });
+            placeExtraVariationsAddButton();
         }
 
         function readExtraVariationRowsFromDom() {
@@ -1123,15 +1168,7 @@
             });
         }
         if (extraVariationsAddBtn) {
-            extraVariationsAddBtn.addEventListener("click", () => {
-                if (!extraVariationsEnable || !extraVariationsEnable.checked) {
-                    extraVariationsEnable.checked = true;
-                    extraVariationsPanel.style.display = "block";
-                }
-                const suggested = window.prompt("Variation folder name (for example: Dark or iPod Version)", "");
-                if (!suggested) return;
-                ensureExtraVariationRow(suggested);
-            });
+            extraVariationsAddBtn.addEventListener("click", () => promptAndAddExtraVariation());
         }
 
         const metaEditor = document.getElementById("meta-editor");
