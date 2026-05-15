@@ -1,0 +1,41 @@
+y1-theme-upload Worker — Cloudflare dashboard settings (copy/paste)
+====================================================================
+
+Your build log shows:
+  Executing user deploy command: npx wrangler deploy
+
+That command is failing because Wrangler is not loading a Worker config in that step.
+You must change the dashboard commands below (this cannot be fixed from HTML/JS in the repo alone).
+
+Workers & Pages → y1-theme-upload → Settings → Builds & deployments
+-------------------------------------------------------------------
+
+  Root directory:     (leave EMPTY — not "/" and not "/workers/theme-upload")
+
+  Build command:        node scripts/deploy-upload-worker.mjs
+
+  Deploy command:       exit 0
+
+  Version command:      (leave EMPTY)
+
+Why: Deploy runs in a step that often does not see wrangler.toml. Running our deploy
+script during **Build** runs while the full Git clone is present.
+
+Alternative (if you prefer deploy in the Deploy step):
+
+  Build command:        exit 0
+
+  Deploy command:       node scripts/deploy-upload-worker.mjs
+
+  (or: npm run deploy)
+
+Do NOT use plain `npx wrangler deploy` unless Root directory is workers/theme-upload
+AND you only use `npx wrangler deploy` with no --config path.
+
+Secrets (Worker → Settings → Variables)
+---------------------------------------
+  GITHUB_UPLOAD_TOKEN   (required, encrypted)
+
+After a green build, test:
+  https://y1-theme-upload.itsryanspecter.workers.dev/api/upload-theme
+  (OPTIONS should return 204; POST needs multipart from upload.html)

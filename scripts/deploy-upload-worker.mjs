@@ -24,18 +24,21 @@ function run(cmd) {
   execSync(cmd, { cwd: root, stdio: "inherit", env: process.env });
 }
 
-for (const config of configs) {
-  if (existsSync(config)) {
-    run(`npx wrangler deploy --config "${config.replace(/"/g, '\\"')}"`);
-    process.exit(0);
-  }
-}
+console.log("[deploy-upload-worker] repo root:", root);
+console.log("[deploy-upload-worker] cwd:", process.cwd());
 
 if (existsSync(entry)) {
   run(
     `npx wrangler deploy "${entry.replace(/"/g, '\\"')}" --name y1-theme-upload --compatibility-date 2026-05-11`,
   );
   process.exit(0);
+}
+
+for (const config of configs) {
+  if (existsSync(config)) {
+    run(`npx wrangler deploy --config "${config.replace(/"/g, '\\"')}"`);
+    process.exit(0);
+  }
 }
 
 console.error("[deploy-upload-worker] No config or entry under:", root);
