@@ -14,6 +14,25 @@ CORS allows browser calls from the static site origin.
 
 ## Deploy
 
+### Fix Git deploy error `10181` (placeholder database_id)
+
+If CI logs show `database '00000000-0000-0000-0000-000000000000' which was not found`:
+
+1. Open **Cloudflare Dashboard** → **Storage & Databases** → **D1**.
+2. Open **`y1-theme-metrics`** (create it first if missing: **Create database**).
+3. Copy **Database ID** (a real UUID, not all zeros).
+4. Paste it into `workers/theme-analytics/wrangler.toml` as `database_id = "…"`.
+5. Commit, push to `main`, or click **Retry deployment**.
+
+Then apply tables once:
+
+```bash
+cd workers/theme-analytics
+npx wrangler d1 execute y1-theme-metrics --remote --file=./schema.sql
+```
+
+### First-time (CLI)
+
 ```bash
 cd workers/theme-analytics
 npx wrangler d1 create y1-theme-metrics
