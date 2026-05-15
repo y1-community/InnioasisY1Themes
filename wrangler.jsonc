@@ -1,0 +1,8 @@
+{
+  "name": "y1-theme-upload",
+  "main": "upload-worker.js",
+  "compatibility_date": "2026-05-11",
+  "limits": {
+    "subrequests": 150
+  }
+}

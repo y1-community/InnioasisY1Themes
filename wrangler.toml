@@ -1,15 +1,9 @@
-# y1-theme-upload Worker — used when Cloudflare Git Deploy command is:
-#   npx wrangler deploy
-#
-# Do NOT add pages_build_output_dir here; Wrangler then treats this as a Pages
-# project and ignores `main` (deploy fails with "Missing entry-point").
-#
-# Cloudflare Pages (themes site): use wrangler.pages.toml + empty Deploy command.
-# Or deploy this Worker explicitly:
-#   npx wrangler deploy --config cloudflare-worker-upload.toml
+# y1-theme-upload — Cloudflare Worker (Git deploy)
+# Entry at repo root so `npx wrangler deploy` finds main regardless of monorepo layout.
+# Pages site: wrangler.pages.toml + empty Deploy command on the Pages project.
 
 name = "y1-theme-upload"
-main = "workers/theme-upload/src/index.js"
+main = "upload-worker.js"
 compatibility_date = "2026-05-11"
 
 [limits]

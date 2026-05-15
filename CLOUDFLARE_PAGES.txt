@@ -155,11 +155,13 @@ On a **Pages** project: delete the Deploy command (see above). Pages must not ru
 On the **y1-theme-upload Worker** project (workers.dev): root `wrangler.toml` must
 NOT include `pages_build_output_dir` (Wrangler ignores `main` and deploy fails).
 
-  Deploy command (pick one):
+  Deploy command (recommended — works when plain wrangler deploy does not):
+    node scripts/deploy-upload-worker.mjs
+
+  Also valid:
+    npm run deploy
     npx wrangler deploy
     npx wrangler deploy --config cloudflare-worker-upload.toml
-    npm run deploy:upload-worker
-    sh scripts/deploy-upload-worker.sh
 
   Root directory: leave empty (repo root), OR `workers/theme-upload` with
   `npx wrangler deploy` only (no --config path).

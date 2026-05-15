@@ -24,7 +24,7 @@ npx wrangler deploy
 
 ### Cloudflare dashboard: Git-connected Worker
 
-The root [`wrangler.toml`](../../wrangler.toml) is **Pages-only** (no `main`). You must deploy using **this** folder’s config — but **do not combine** the two options below (that doubles the path and causes `ENOENT .../workers/theme-upload/workers/theme-upload/wrangler.toml`).
+The repo root has `upload-worker.js` + `wrangler.toml` for Git deploy (`npx wrangler deploy`). You can also deploy from **this** folder — but **do not combine** the two options below (that doubles the path and causes `ENOENT .../workers/theme-upload/workers/theme-upload/wrangler.toml`).
 
 **Option A — Root directory empty (repo root)**
 
@@ -47,6 +47,14 @@ The root [`wrangler.toml`](../../wrangler.toml) is **Pages-only** (no `main`). Y
   Do **not** add `--config workers/theme-upload/wrangler.toml` here — paths are relative to the root directory, so Wrangler would look for `workers/theme-upload/workers/theme-upload/wrangler.toml`.
 
 **Build command:** leave empty or `exit 0` (Wrangler bundles during deploy).
+
+**Deploy command (recommended if `npx wrangler deploy` keeps failing):**
+
+```bash
+node scripts/deploy-upload-worker.mjs
+```
+
+(or `npm run deploy` from repo root)
 
 **Version command:** leave **empty** unless Cloudflare’s template requires otherwise; `npx wrangler versions upload` is not the normal deploy step for this Worker.
 

@@ -1,9 +1,10 @@
 {
   "name": "innioasis-y1-themes",
   "private": true,
+  "type": "module",
   "scripts": {
-    "deploy:upload-worker": "wrangler deploy --config cloudflare-worker-upload.toml",
-    "deploy": "npm run deploy:upload-worker"
+    "deploy": "node scripts/deploy-upload-worker.mjs",
+    "deploy:upload-worker": "node scripts/deploy-upload-worker.mjs"
   },
   "devDependencies": {
     "wrangler": "^4.92.0"
