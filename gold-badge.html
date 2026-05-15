@@ -10,12 +10,11 @@
     <link rel="icon" href="y1_illustration.png" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="https://innioasis.app/styles.css" />
-    <link rel="stylesheet" href="site-theme.css?v=20260519" />
-    <link rel="stylesheet" href="theme-analytics.css?v=20260519" />
+    <link rel="stylesheet" href="site-theme.css?v=20260520" />
+    <link rel="stylesheet" href="theme-analytics.css?v=20260520" />
     <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
-    <script src="theme-artwork-compat.js?v=20260516"></script>
-    <script src="gold-theme-detect.js?v=20260519"></script>
-    <script src="theme-analytics.js?v=20260519"></script>
+    <script src="gold-theme-detect.js?v=20260520"></script>
+    <script src="theme-analytics.js?v=20260520"></script>
     <style>
         body {
             margin: 0;
@@ -245,8 +244,8 @@
             <div class="gold-hero-badge" aria-hidden="true"><span>🏅</span> Gold Badge</div>
             <h1 class="site-display">Themes built for the Y1 you have today</h1>
             <p class="site-lead">
-                Gold Badge themes pass our compatibility review: they load on current firmware, cover the screens we
-                check, and are maintained so they keep working as the player software evolves.
+                Gold Badge themes declare artwork for the launcher, ebook, calculator, and calendar screens in
+                <code>config.json</code>—the same optional surfaces we check on current Innioasis Y1 firmware.
             </p>
             <a class="gold-hero-cta" href="index.html?gold=1"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i> Browse Gold themes in gallery</a>
         </header>
@@ -259,8 +258,8 @@
                     <p>Verified on the latest Innioasis Y1 OS build—not just an older package format.</p>
                 </article>
                 <article class="pill-card">
-                    <h3>Complete experience</h3>
-                    <p>Includes wallpapers and UI assets for the optional screens we test, not only the main menu.</p>
+                    <h3>Complete artwork paths</h3>
+                    <p>Defines <code>settingConfig.launcher</code> plus ebook, calculator, and calendar under <code>homePageConfig</code>.</p>
                 </article>
                 <article class="pill-card">
                     <h3>Future-ready</h3>
@@ -274,7 +273,7 @@
                 <h2 class="section-display">How a theme earns Gold</h2>
                 <ol class="steps">
                     <li><strong>Submit to the gallery</strong> Upload through the community portal with a complete theme package.</li>
-                    <li><strong>Automated checks</strong> We validate structure, assets, and variant layout against current guidelines.</li>
+                    <li><strong>Config check</strong> The theme’s <code>config.json</code> lists non-empty paths for launcher, ebook, calculator, and calendar artwork.</li>
                     <li><strong>Hands-on review</strong> Maintainers install the theme on hardware and walk through our screen checklist.</li>
                     <li><strong>Ongoing badge</strong> If a future OS update breaks compatibility, the badge may be withdrawn until fixed.</li>
                 </ol>

@@ -36,8 +36,9 @@
     <script src="theme-packaging.js"></script>
     <script src="y1-theme-preview.js?v=20260215"></script>
     <script src="theme-artwork-compat.js?v=20260516"></script>
+    <script src="gold-theme-detect.js?v=20260520"></script>
     <script src="gallery-loaded-theme.js"></script>
-    <script src="theme-analytics.js?v=20260518"></script>
+    <script src="theme-analytics.js?v=20260520"></script>
 
     <style>
         html {
@@ -2905,17 +2906,8 @@
             const diEl = card.querySelector('[data-direct-install-btn]');
             if (dlEl) applyThemeCardDownloadButtonStyles(dlEl, cfg, cf, stack);
             if (diEl) applyThemeCardDownloadButtonStyles(diEl, cfg, cf, stack);
-            const warnFn =
-                window.y1ThemeArtworkCompat && typeof window.y1ThemeArtworkCompat.warnings === 'function'
-                    ? window.y1ThemeArtworkCompat.warnings
-                    : null;
-            if (warnFn) {
-                const cfEff = effectiveThemeContentFolder(folderPath, seg);
-                void warnFn((cf2, rel) => buildThemeFileUrl(cf2, rel), cfg, cfEff)
-                    .then((warns) => {
-                        setGalleryCardGoldTitleBadge(card, Array.isArray(warns) && warns.length === 0);
-                    })
-                    .catch(() => {});
+            if (window.GoldThemeDetect && typeof window.GoldThemeDetect.configQualifiesForGold === 'function') {
+                setGalleryCardGoldTitleBadge(card, window.GoldThemeDetect.configQualifiesForGold(cfg));
             }
         }
 
@@ -3298,31 +3290,8 @@
 
 
         async function enrichThemesWithCompatibilityMedals(themes) {
-            const warnFn = window.y1ThemeArtworkCompat && typeof window.y1ThemeArtworkCompat.warnings === 'function'
-                ? window.y1ThemeArtworkCompat.warnings
-                : null;
-            if (!warnFn) return;
-            const internals = (themes || []).filter(
-                (t) => t && t.folder && String(t.sourceType || 'internal').toLowerCase() !== 'external'
-            );
-            const batch = 12;
-            for (let i = 0; i < internals.length; i += batch) {
-                const slice = internals.slice(i, i + batch);
-                await Promise.all(
-                    slice.map(async (t) => {
-                        const folder = String(t.folder || '').replace(/^\.\/+/, '');
-                        if (!folder) return;
-                        try {
-                            const enc = folder.split('/').map((seg) => encodeURIComponent(seg)).join('/');
-                            const res = await fetch(`./${enc}/config.json`, { cache: 'no-cache' });
-                            if (!res.ok) return;
-                            const cfg = await res.json();
-                            const warnings = await warnFn((cf, rel) => buildThemeFileUrl(cf, rel), cfg, folder);
-                            if (!warnings.length) t.compatibilityMedal = 'gold';
-                        } catch (_) {}
-                    })
-                );
-            }
+            if (!window.GoldThemeDetect || typeof window.GoldThemeDetect.annotateThemes !== 'function') return;
+            await window.GoldThemeDetect.annotateThemes(themes, { batchSize: 16 });
         }
 
         async function load() {
@@ -3353,6 +3322,9 @@
                 return;
             }
             populateAuthorFilter(filteredThemes);
+            if (goldOnlyFilter && window.GoldThemeDetect) {
+                await window.GoldThemeDetect.annotateThemes(filteredThemes, { batchSize: 16 });
+            }
             let cardsAdded = 0;
             filteredThemes.forEach(t => {
                 const merged = {
