@@ -121,7 +121,8 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
     # Meta refresh content= must escape & as &amp; in HTML attributes.
     $previewUrlRefreshAttr = ($previewUrl -replace '&', '&amp;')
     $sharePageUrl = Build-SharePageUrl $catalogFolder $variant
-    $title = if ($variant) { "$displayName ($variant) by $author | Innioasis Y1" } else { "$displayName by $author | Innioasis Y1" }
+    # Document title / social: "ThemeName Theme for Innioasis Y1 by Author" (variant in the theme name slot when present).
+    $title = if ($variant) { "$displayName ($variant) Theme for Innioasis Y1 by $author" } else { "$displayName Theme for Innioasis Y1 by $author" }
 
     $kwSet = New-Object 'System.Collections.Generic.HashSet[string]'
     foreach ($x in @($displayName, $catalogFolder, $variant, 'Innioasis Y1', 'Y1 theme', 'Rockbox', 'MP3 player theme', $author)) {
@@ -155,7 +156,7 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
 
     return @"
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-themes-preview-redirect="$previewE">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -166,6 +167,24 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
   <meta name="author" content="$authorE" />
   <meta name="robots" content="index,follow" />
   <link rel="canonical" href="$previewE" />
+  <script>
+(function () {
+  function destFromEmbed() {
+    try {
+      var h = document.documentElement;
+      var a = h && h.getAttribute('data-themes-preview-redirect');
+      if (a) return String(a).trim();
+      var c = document.querySelector('link[rel="canonical"]');
+      if (c && c.href) return String(c.href).trim();
+    } catch (e) {}
+    return '';
+  }
+  var dest = destFromEmbed();
+  if (dest) {
+    try { location.replace(dest); } catch (e) {}
+  }
+})();
+  </script>
   <meta http-equiv="refresh" content="0;url=$previewUrlRefreshAttr" />
 
   <meta property="og:type" content="website" />
