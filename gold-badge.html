@@ -4,9 +4,9 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Gold Badge — Innioasis Y1 Themes</title>
+    <title>Gold — Innioasis Y1 Themes</title>
     <meta name="description"
-        content="Gold Badge themes are checked against the latest Innioasis Y1 firmware so menus, wallpapers, and optional screens work today and after updates." />
+        content="Gold themes are ready for your Innioasis Y1 today. See what the badge means, browse the list, and download with confidence." />
     <link rel="icon" href="y1_illustration.png" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="https://innioasis.app/styles.css" />
@@ -106,64 +106,14 @@
             margin: 0;
             font-size: 0.9rem;
             color: var(--site-muted);
-        }
-
-        .gold-section-dark {
-            background: var(--site-bg-elevated, #12141c);
-            border-top: 1px solid var(--site-border);
-            border-bottom: 1px solid var(--site-border);
-            padding: 2.5rem 0.75rem;
-            margin-bottom: 3rem;
-        }
-
-        .steps {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            counter-reset: step;
-            max-width: 52rem;
-        }
-
-        .steps li {
-            counter-increment: step;
-            padding: 16px 0 16px 48px;
-            position: relative;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            color: var(--site-muted);
-        }
-
-        .steps li:last-child {
-            border-bottom: none;
-        }
-
-        .steps li::before {
-            content: counter(step);
-            position: absolute;
-            left: 0;
-            top: 16px;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.06);
-            color: var(--site-text);
-            font-weight: 700;
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .steps strong {
-            display: block;
-            color: var(--site-text);
-            margin-bottom: 4px;
+            line-height: 1.5;
         }
 
         #gold-theme-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
             gap: 14px;
-            margin-top: 1rem;
+            margin-top: 0.5rem;
         }
 
         .gold-theme-card {
@@ -221,6 +171,84 @@
             font-size: 0.82rem;
             color: var(--site-muted);
             margin-top: 1.5rem;
+            line-height: 1.5;
+        }
+
+        .gold-gallery-intro {
+            margin: 0 0 0.25rem;
+            color: var(--site-muted);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .gold-gallery-count {
+            margin: 0 0 1rem;
+            font-size: 0.88rem;
+            color: var(--site-muted);
+        }
+
+        .gold-tech {
+            padding: 2rem 1.25rem;
+            border-radius: var(--site-radius-lg, 16px);
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--site-border);
+            margin-bottom: 2.5rem;
+        }
+
+        .gold-tech > p {
+            margin: 0 0 1rem;
+            color: var(--site-muted);
+            line-height: 1.55;
+            font-size: 0.95rem;
+        }
+
+        .gold-tech details {
+            margin-top: 1rem;
+        }
+
+        .gold-tech summary {
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--site-text);
+            font-size: 0.92rem;
+            list-style: none;
+        }
+
+        .gold-tech summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .gold-tech summary::after {
+            content: " +";
+            color: var(--site-muted);
+            font-weight: 400;
+        }
+
+        .gold-tech details[open] summary::after {
+            content: " −";
+        }
+
+        .gold-tech-body {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            color: var(--site-muted);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .gold-tech-body ul {
+            margin: 0.75rem 0 0;
+            padding-left: 1.2rem;
+        }
+
+        .gold-tech-body li {
+            margin-bottom: 0.5rem;
+        }
+
+        .gold-tech-body code {
+            font-size: 0.85em;
+            color: #c8d4ee;
         }
     </style>
 </head>
@@ -242,52 +270,66 @@
 
     <div class="wrap">
         <header class="gold-hero">
-            <div class="gold-hero-badge" aria-hidden="true"><span>🏅</span> Gold Badge</div>
-            <h1 class="site-display">Themes built for the Y1 you have today</h1>
+            <div class="gold-hero-badge" aria-hidden="true"><span>🏅</span> Gold</div>
+            <h1 class="site-display">Themes you can trust on your Y1</h1>
             <p class="site-lead">
-                Gold Badge themes pass our artwork compatibility check: launcher, ebook, calculator, and calendar
-                assets are configured and load correctly on current Innioasis Y1 firmware.
+                When you see Gold in the gallery, that theme is ready for the Y1 you have today. Less guesswork, more
+                confidence before you tap download.
             </p>
-            <a class="gold-hero-cta" href="index.html?gold=1"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i> Browse Gold themes in gallery</a>
+            <a class="gold-hero-cta" href="index.html?gold=1"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i> Browse Gold themes</a>
         </header>
 
-        <section class="gold-section">
-            <h2 class="section-display">What Gold means</h2>
+        <section class="gold-section" aria-labelledby="gold-means-heading">
+            <h2 id="gold-means-heading" class="section-display">What Gold means for you</h2>
             <div class="pill-grid">
                 <article class="pill-card">
-                    <h3>Current firmware</h3>
-                    <p>Verified on the latest Innioasis Y1 OS build—not just an older package format.</p>
+                    <h3>Ready now</h3>
+                    <p>Made for the software on your player today, so everything behaves the way you expect.</p>
                 </article>
                 <article class="pill-card">
-                    <h3>Artwork that loads</h3>
-                    <p>Linked files exist, aren’t empty, and aren’t broken transparent placeholders—same checks as the gallery badge.</p>
+                    <h3>The full picture</h3>
+                    <p>Covers the extra screens we care about, not just the home wallpaper.</p>
                 </article>
                 <article class="pill-card">
-                    <h3>Future-ready</h3>
-                    <p>Authors commit to updates when the platform changes, so your download stays trustworthy.</p>
+                    <h3>One simple signal</h3>
+                    <p>Same Gold badge in the gallery and on this page. Easy to spot, easy to trust.</p>
                 </article>
             </div>
         </section>
 
-        <section class="gold-section-dark">
-            <div class="wrap" style="margin-top:0;padding-bottom:0;">
-                <h2 class="section-display">How a theme earns Gold</h2>
-                <ol class="steps">
-                    <li><strong>Submit to the gallery</strong> Upload through the community portal with a complete theme package.</li>
-                    <li><strong>Compatibility check</strong> Automated validation confirms launcher, ebook, calculator, and calendar artwork paths and files.</li>
-                    <li><strong>Hands-on review</strong> Maintainers install the theme on hardware and walk through our screen checklist.</li>
-                    <li><strong>Ongoing badge</strong> If a future OS update breaks compatibility, the badge may be withdrawn until fixed.</li>
-                </ol>
-            </div>
-        </section>
-
-        <section class="gold-section">
-            <h2 class="section-display">Gold Badge themes</h2>
-            <p class="site-lead" style="margin:0 0 0.5rem;">Themes that currently qualify in the gallery.</p>
+        <section class="gold-section" aria-labelledby="gold-gallery-heading">
+            <h2 id="gold-gallery-heading" class="section-display">Gold themes right now</h2>
+            <p class="gold-gallery-intro">Tap a theme to preview it and download when you are ready.</p>
+            <p id="gold-gallery-count" class="gold-gallery-count" hidden></p>
             <div id="gold-theme-grid" aria-live="polite">
-                <p class="gold-loading">Checking themes for Gold Badge compatibility…</p>
+                <p class="gold-loading">Finding Gold themes…</p>
             </div>
-            <p class="gold-footnote">Gold Badge is a community quality mark, not a warranty. Always back up your player before installing themes.</p>
+        </section>
+
+        <section class="gold-tech" aria-labelledby="gold-tech-heading">
+            <h2 id="gold-tech-heading" class="section-display">How we decide</h2>
+            <p>
+                Gold is a community quality mark, not a warranty. We automatically check each theme so the badge matches
+                what is in the package. If a future Y1 update breaks something, the badge can come off until it is fixed.
+            </p>
+            <details>
+                <summary>Technical details (for theme makers)</summary>
+                <div class="gold-tech-body">
+                    <p>A theme earns Gold when it passes our artwork compatibility check (same as the gallery badge):</p>
+                    <ul>
+                        <li><code>config.json</code> lists paths for the Rockbox launcher switch, eBook reader, calculator, and calendar.</li>
+                        <li>Each image file exists, is not empty, and is not a broken fully-transparent PNG (unless named transparent on purpose).</li>
+                        <li>Authors may set <code>gallery.compatibilityMedal</code> to <code>gold</code> or <code>none</code> to force the badge on or off.</li>
+                    </ul>
+                    <p style="margin-top:1rem;margin-bottom:0;">
+                        Themes are checked in batches when you open this page or the gallery. Brand-new uploads may take a
+                        moment before Gold appears.
+                    </p>
+                </div>
+            </details>
+            <p class="gold-footnote" style="margin-top:1.25rem;margin-bottom:0;">
+                Always back up your Y1 before installing any theme.
+            </p>
         </section>
     </div>
 
@@ -323,6 +365,18 @@
                 .replace(/</g, "&lt;");
         }
 
+        function setGalleryCount(n) {
+            const el = document.getElementById("gold-gallery-count");
+            if (!el) return;
+            if (!n) {
+                el.hidden = true;
+                el.textContent = "";
+                return;
+            }
+            el.hidden = false;
+            el.textContent = n === 1 ? "1 theme with Gold" : n + " themes with Gold";
+        }
+
         async function loadGoldThemes() {
             const grid = document.getElementById("gold-theme-grid");
             if (!grid || !window.GoldThemeDetect) return;
@@ -335,10 +389,12 @@
                 );
                 const gold = await window.GoldThemeDetect.findGoldThemes(catalog, { batchSize: 8 });
                 if (!gold.length) {
+                    setGalleryCount(0);
                     grid.innerHTML =
-                        '<p class="gold-loading">No Gold Badge themes yet. Check back soon or <a href="index.html">browse the full gallery</a>.</p>';
+                        '<p class="gold-loading">No Gold themes yet. <a href="index.html">Browse the full gallery</a> or check back soon.</p>';
                     return;
                 }
+                setGalleryCount(gold.length);
                 grid.innerHTML = gold
                     .map((t) => {
                         const folder = String(t.folder || t.name || "").replace(/^\.\/+/, "");
@@ -363,8 +419,9 @@
                     .join("");
             } catch (err) {
                 console.error("Gold theme list failed", err);
+                setGalleryCount(0);
                 grid.innerHTML =
-                    '<p class="gold-loading">Could not load themes. <a href="index.html">Open the gallery</a>.</p>';
+                    '<p class="gold-loading">Could not load themes right now. <a href="index.html">Open the gallery</a>.</p>';
             }
         }
 
