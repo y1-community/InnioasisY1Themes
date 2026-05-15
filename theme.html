@@ -506,6 +506,10 @@
                 .replace(/[^\w\s-]/g, '');
         }
 
+        const LEGACY_THEME_QUERY_FOLDER_ALIASES = {
+            sb_blueswirl: 'SpongeBob_SquarePants'
+        };
+
         async function tryFetchThemes() {
             const urls = [
                 'https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/themes.json',
@@ -1584,6 +1588,13 @@
 
             if (themeQuery) {
                 const themeName = String(themeQuery || '').replace(/\+/g, ' ').trim();
+                const legacyFolder = LEGACY_THEME_QUERY_FOLDER_ALIASES[normalizeThemeKey(themeName)];
+                if (legacyFolder) {
+                    const u = new URL(location.href);
+                    u.searchParams.set('theme', legacyFolder);
+                    location.replace(u.toString());
+                    return;
+                }
                 if (/_dark[-_]?mode$/i.test(themeName)) {
                     const base = themeName.replace(/_dark[-_]?mode$/i, '');
                     const u = new URL(location.href);
