@@ -132,6 +132,16 @@
             "screenshot": "./BlueCollage/cover.png"
         },
         {
+            "name": "Boxd",
+            "folder": "Boxd",
+            "author": "u/highwaycrisis",
+            "description": "A letterboxd theme. If you want, replace the menu icons with your top 4! (or I guess here... top 8?)",
+            "screenshot": "./Boxd/cover_Themeless.png",
+            "sourceType": "internal",
+            "sortName": "boxd",
+            "searchText": "boxd a letterboxd theme. if you want, replace the menu icons with your top 4! (or i guess here... top 8?) u/highwaycrisis boxd"
+        },
+        {
             "name": "CabinFever",
             "folder": "CabinFever",
             "sourceType": "internal",
@@ -1093,6 +1103,19 @@
             "searchText": "tomie tomie theme for innioasis y1. angel_50000 tomie",
             "description": "Tomie theme for Innioasis Y1.",
             "screenshot": "./Tomie/cover.png"
+        },
+        {
+            "name": "Trainspotting",
+            "folder": "Trainspotting",
+            "author": "u/highwaycrisis",
+            "description": "Choose life.",
+            "screenshot": "./Trainspotting/cover_Themeless.png",
+            "variantFolders": [
+                "Renton"
+            ],
+            "sourceType": "internal",
+            "sortName": "trainspotting",
+            "searchText": "trainspotting choose life. u/highwaycrisis trainspotting"
         },
         {
             "name": "TwinPeaks",
