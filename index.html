@@ -27,7 +27,7 @@
 
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="site-theme.css?v=20260518">
+    <link rel="stylesheet" href="site-theme.css?v=20260519">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
     <link rel="stylesheet" href="y1-theme-preview.css?v=20260215">
     <link rel="stylesheet" href="theme-analytics.css?v=20260518">
@@ -3353,6 +3353,7 @@
                 return;
             }
             populateAuthorFilter(filteredThemes);
+            let cardsAdded = 0;
             filteredThemes.forEach(t => {
                 const merged = {
                     ...t,
@@ -3360,8 +3361,17 @@
                     hasIndexPage: t.sourceType === 'external' ? false : t.hasIndexPage !== false
                 };
                 if (merged.sourceType !== 'external' && merged.hasConfigFile === false) return;
-                grid.appendChild(createCard(merged));
+                try {
+                    grid.appendChild(createCard(merged));
+                    cardsAdded += 1;
+                } catch (cardErr) {
+                    console.error('Failed to render theme card', merged.folder || merged.name, cardErr);
+                }
             });
+            if (!cardsAdded) {
+                grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#94a3b8">Unable to display themes. Try refreshing the page.</p>';
+                return;
+            }
             applyFilters();
 
             void (async () => {

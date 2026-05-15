@@ -9,72 +9,27 @@
         content="Gold Badge themes are checked against the latest Innioasis Y1 firmware so menus, wallpapers, and optional screens work today and after updates." />
     <link rel="icon" href="y1_illustration.png" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link rel="stylesheet" href="site-theme.css?v=20260518" />
-    <link rel="stylesheet" href="theme-analytics.css?v=20260518" />
+    <link rel="stylesheet" href="https://innioasis.app/styles.css" />
+    <link rel="stylesheet" href="site-theme.css?v=20260519" />
+    <link rel="stylesheet" href="theme-analytics.css?v=20260519" />
     <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
-    <script src="theme-analytics.js?v=20260518"></script>
+    <script src="theme-artwork-compat.js?v=20260516"></script>
+    <script src="gold-theme-detect.js?v=20260519"></script>
+    <script src="theme-analytics.js?v=20260519"></script>
     <style>
-        * {
-            box-sizing: border-box;
-        }
-
         body {
             margin: 0;
             min-height: 100vh;
-            background: var(--site-bg);
-            color: var(--site-text);
-            line-height: 1.55;
+            background: var(--site-bg, #0a0b0f);
+            color: var(--site-text, #f4f6fb);
         }
 
-        a {
-            color: var(--site-accent);
-            text-decoration: none;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
-
-        .topnav {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            padding: 14px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            background: rgba(10, 11, 15, 0.92);
-            backdrop-filter: blur(12px);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .topnav-links {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px 16px;
-            font-size: 0.88rem;
-            font-weight: 600;
-        }
-
-        .topnav-links a {
-            color: var(--site-muted);
-            text-decoration: none;
-        }
-
-        .topnav-links a:hover,
-        .topnav-links a.active {
-            color: var(--site-text);
-        }
-
-        .hero {
-            max-width: 920px;
-            margin: 0 auto;
-            padding: clamp(2.5rem, 8vw, 5rem) 20px 3rem;
+        .gold-hero {
             text-align: center;
+            padding: 0 0 2.5rem;
         }
 
-        .hero-badge {
+        .gold-hero-badge {
             display: inline-flex;
             align-items: center;
             gap: 10px;
@@ -87,27 +42,21 @@
             font-size: 0.82rem;
             letter-spacing: 0.12em;
             text-transform: uppercase;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.25rem;
             box-shadow: 0 8px 32px rgba(201, 162, 39, 0.25);
         }
 
-        .hero h1 {
-            font-family: var(--site-font-display);
-            font-size: clamp(2.2rem, 6vw, 3.4rem);
-            font-weight: 400;
-            line-height: 1.12;
-            margin: 0 0 1rem;
-            letter-spacing: -0.02em;
+        .gold-hero h1 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            margin: 0 0 0.75rem;
         }
 
-        .hero .lead {
-            font-size: 1.08rem;
-            color: var(--site-muted);
+        .gold-hero .site-lead {
             max-width: 36rem;
-            margin: 0 auto 1.75rem;
+            margin: 0 auto 1.5rem;
         }
 
-        .hero-cta {
+        .gold-hero-cta {
             display: inline-flex;
             align-items: center;
             gap: 8px;
@@ -117,38 +66,21 @@
             color: #0a0b0f;
             font-weight: 600;
             text-decoration: none;
-            border: none;
             font-size: 0.95rem;
         }
 
-        .hero-cta:hover {
-            text-decoration: none;
+        .gold-hero-cta:hover {
             opacity: 0.92;
+            text-decoration: none;
         }
 
-        .section {
-            max-width: 960px;
-            margin: 0 auto;
-            padding: 0 20px 4rem;
+        .gold-section {
+            margin-bottom: 3rem;
         }
 
-        .section-dark {
-            background: var(--site-bg-elevated);
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            padding: 3rem 20px;
-        }
-
-        .section-dark .inner {
-            max-width: 960px;
-            margin: 0 auto;
-        }
-
-        .section h2 {
-            font-family: var(--site-font-display);
-            font-size: clamp(1.6rem, 4vw, 2.1rem);
-            font-weight: 400;
-            margin: 0 0 1.25rem;
+        .gold-section h2 {
+            font-size: clamp(1.5rem, 3.5vw, 2rem);
+            margin: 0 0 1rem;
         }
 
         .pill-grid {
@@ -176,11 +108,20 @@
             color: var(--site-muted);
         }
 
+        .gold-section-dark {
+            background: var(--site-bg-elevated, #12141c);
+            border-top: 1px solid var(--site-border);
+            border-bottom: 1px solid var(--site-border);
+            padding: 2.5rem 0.75rem;
+            margin-bottom: 3rem;
+        }
+
         .steps {
             list-style: none;
             padding: 0;
             margin: 0;
             counter-reset: step;
+            max-width: 52rem;
         }
 
         .steps li {
@@ -220,134 +161,215 @@
 
         #gold-theme-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 12px;
-            margin-top: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+            gap: 14px;
+            margin-top: 1rem;
         }
 
-        #gold-theme-grid a {
-            display: block;
-            border-radius: 12px;
+        .gold-theme-card {
+            display: flex;
+            flex-direction: column;
+            border-radius: 14px;
             overflow: hidden;
-            aspect-ratio: 4/3;
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.08);
             text-decoration: none;
+            color: inherit;
             transition: border-color 0.15s, transform 0.15s;
         }
 
-        #gold-theme-grid a:hover {
+        .gold-theme-card:hover {
             border-color: rgba(232, 197, 106, 0.45);
             transform: translateY(-2px);
             text-decoration: none;
         }
 
-        #gold-theme-grid img {
+        .gold-theme-card img {
             width: 100%;
-            height: 100%;
+            aspect-ratio: 4/3;
             object-fit: cover;
+            background: rgba(255, 255, 255, 0.04);
         }
 
-        .footnote {
+        .gold-theme-card span {
+            padding: 10px 12px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .gold-theme-card .gold-pill {
+            margin: 0 12px 10px;
+            align-self: flex-start;
+            font-size: 0.68rem;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #1a1206;
+            padding: 2px 7px;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #5c4014, #b8891e 42%, #f2d06a 52%, #b8891e 62%, #5c4014);
+        }
+
+        .gold-loading {
+            grid-column: 1 / -1;
+            color: var(--site-muted);
+            font-size: 0.92rem;
+        }
+
+        .gold-footnote {
             font-size: 0.82rem;
             color: var(--site-muted);
-            margin-top: 2rem;
+            margin-top: 1.5rem;
         }
     </style>
 </head>
 
 <body>
-    <nav class="topnav" aria-label="Site">
-        <a href="index.html" style="color:var(--site-text);font-weight:700;text-decoration:none;">Y1 Themes</a>
-        <div class="topnav-links">
-            <a href="index.html">Gallery</a>
-            <a href="upload.html">Upload</a>
-            <a href="gold-badge.html" class="active">About Gold</a>
+    <div id="nav-root"></div>
+    <div class="gallery-topbar">
+        <div aria-hidden="true"></div>
+        <div class="gallery-tabs" aria-label="Site sections">
+            <a class="gallery-tab" href="https://y1-themes.vercel.app">Editor</a>
+            <a class="gallery-tab" href="index.html">Gallery</a>
+            <a class="gallery-tab" href="upload.html">Upload</a>
         </div>
-    </nav>
+        <form class="topbar-search-wrap" action="index.html" method="get">
+            <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
+            <input class="topbar-search" type="search" name="q" placeholder="&#128269;" aria-label="Search themes" />
+        </form>
+    </div>
 
-    <header class="hero">
-        <div class="hero-badge" aria-hidden="true"><span>🏅</span> Gold Badge</div>
-        <h1 class="site-display">Themes built for the Y1 you have today</h1>
-        <p class="lead site-lead">
-            Gold Badge themes pass our compatibility review: they load on current firmware, cover the screens we check,
-            and are maintained so they keep working as the player software evolves.
-        </p>
-        <a class="hero-cta" href="index.html"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i> Browse gallery</a>
-    </header>
+    <div class="wrap">
+        <header class="gold-hero">
+            <div class="gold-hero-badge" aria-hidden="true"><span>🏅</span> Gold Badge</div>
+            <h1 class="site-display">Themes built for the Y1 you have today</h1>
+            <p class="site-lead">
+                Gold Badge themes pass our compatibility review: they load on current firmware, cover the screens we
+                check, and are maintained so they keep working as the player software evolves.
+            </p>
+            <a class="gold-hero-cta" href="index.html?gold=1"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i> Browse Gold themes in gallery</a>
+        </header>
 
-    <section class="section">
-        <h2>What Gold means</h2>
-        <div class="pill-grid">
-            <article class="pill-card">
-                <h3>Current firmware</h3>
-                <p>Verified on the latest Innioasis Y1 OS build—not just an older package format.</p>
-            </article>
-            <article class="pill-card">
-                <h3>Complete experience</h3>
-                <p>Includes wallpapers and UI assets for the optional screens we test, not only the main menu.</p>
-            </article>
-            <article class="pill-card">
-                <h3>Future-ready</h3>
-                <p>Authors commit to updates when the platform changes, so your download stays trustworthy.</p>
-            </article>
-        </div>
-    </section>
+        <section class="gold-section">
+            <h2 class="section-display">What Gold means</h2>
+            <div class="pill-grid">
+                <article class="pill-card">
+                    <h3>Current firmware</h3>
+                    <p>Verified on the latest Innioasis Y1 OS build—not just an older package format.</p>
+                </article>
+                <article class="pill-card">
+                    <h3>Complete experience</h3>
+                    <p>Includes wallpapers and UI assets for the optional screens we test, not only the main menu.</p>
+                </article>
+                <article class="pill-card">
+                    <h3>Future-ready</h3>
+                    <p>Authors commit to updates when the platform changes, so your download stays trustworthy.</p>
+                </article>
+            </div>
+        </section>
 
-    <section class="section-dark">
-        <div class="inner">
-            <h2>How a theme earns Gold</h2>
-            <ol class="steps">
-                <li><strong>Submit to the gallery</strong> Upload through the community portal with a complete theme package.</li>
-                <li><strong>Automated checks</strong> We validate structure, assets, and variant layout against current guidelines.</li>
-                <li><strong>Hands-on review</strong> Maintainers install the theme on hardware and walk through our screen checklist.</li>
-                <li><strong>Ongoing badge</strong> If a future OS update breaks compatibility, the badge may be withdrawn until fixed.</li>
-            </ol>
-        </div>
-    </section>
+        <section class="gold-section-dark">
+            <div class="wrap" style="margin-top:0;padding-bottom:0;">
+                <h2 class="section-display">How a theme earns Gold</h2>
+                <ol class="steps">
+                    <li><strong>Submit to the gallery</strong> Upload through the community portal with a complete theme package.</li>
+                    <li><strong>Automated checks</strong> We validate structure, assets, and variant layout against current guidelines.</li>
+                    <li><strong>Hands-on review</strong> Maintainers install the theme on hardware and walk through our screen checklist.</li>
+                    <li><strong>Ongoing badge</strong> If a future OS update breaks compatibility, the badge may be withdrawn until fixed.</li>
+                </ol>
+            </div>
+        </section>
 
-    <section class="section">
-        <h2>Recently awarded</h2>
-        <p style="color:var(--muted);margin:0;">Gold themes in the gallery right now.</p>
-        <div id="gold-theme-grid" aria-live="polite"></div>
-        <p class="footnote">Gold Badge is a community quality mark, not a warranty. Always back up your player before installing themes.</p>
-    </section>
+        <section class="gold-section">
+            <h2 class="section-display">Gold Badge themes</h2>
+            <p class="site-lead" style="margin:0 0 0.5rem;">Themes that currently qualify in the gallery.</p>
+            <div id="gold-theme-grid" aria-live="polite">
+                <p class="gold-loading">Checking themes for Gold Badge compatibility…</p>
+            </div>
+            <p class="gold-footnote">Gold Badge is a community quality mark, not a warranty. Always back up your player before installing themes.</p>
+        </section>
+    </div>
 
+    <div id="footer-root"></div>
+    <div id="support-toolbar-slot"></div>
+
+    <script src="https://innioasis.app/nav.js"></script>
     <script>
-        (async function loadGoldThemes() {
+        async function loadSupportToolbar() {
+            const slot = document.getElementById("support-toolbar-slot");
+            if (!slot) return;
+            const urls = ["support_toolbar.html", "https://themes.innioasis.app/support_toolbar.html"];
+            for (const url of urls) {
+                try {
+                    const res = await fetch(url, { cache: "no-cache" });
+                    if (!res.ok) continue;
+                    slot.innerHTML = await res.text();
+                    slot.querySelectorAll("script").forEach((old) => {
+                        const s = document.createElement("script");
+                        for (const a of old.attributes) s.setAttribute(a.name, a.value);
+                        s.textContent = old.textContent;
+                        old.replaceWith(s);
+                    });
+                    return;
+                } catch (_) {}
+            }
+        }
+
+        function escAttr(s) {
+            return String(s || "")
+                .replace(/&/g, "&amp;")
+                .replace(/"/g, "&quot;")
+                .replace(/</g, "&lt;");
+        }
+
+        async function loadGoldThemes() {
             const grid = document.getElementById("gold-theme-grid");
-            if (!grid) return;
+            if (!grid || !window.GoldThemeDetect) return;
             try {
                 const res = await fetch("themes.json", { cache: "no-store" });
                 if (!res.ok) throw new Error("themes.json");
                 const data = await res.json();
-                const themes = (Array.isArray(data) ? data : data.themes || [])
-                    .filter((t) => String(t.compatibilityMedal || "").toLowerCase() === "gold")
-                    .slice(0, 24);
-                if (!themes.length) {
-                    grid.innerHTML = '<p style="grid-column:1/-1;color:#9aa3b5;">Gold themes will appear here as they are awarded.</p>';
+                const catalog = (Array.isArray(data) ? data : data.themes || []).filter(
+                    (t) => t && String(t.sourceType || "internal").toLowerCase() !== "external",
+                );
+                const gold = await window.GoldThemeDetect.findGoldThemes(catalog, { batchSize: 8 });
+                if (!gold.length) {
+                    grid.innerHTML =
+                        '<p class="gold-loading">No Gold Badge themes yet. Check back soon or <a href="index.html">browse the full gallery</a>.</p>';
                     return;
                 }
-                grid.innerHTML = themes
+                grid.innerHTML = gold
                     .map((t) => {
-                        const folder = encodeURIComponent(t.folder || t.name || "");
-                        const cover = t.cover || t.coverImage || (folder ? folder + "/cover.png" : "");
-                        const name = String(t.name || t.folder || "Theme").replace(/</g, "");
+                        const folder = String(t.folder || t.name || "").replace(/^\.\/+/, "");
+                        const q = encodeURIComponent(folder);
+                        const name = escAttr(t.name || folder || "Theme");
+                        const cover = window.GoldThemeDetect.coverUrlForTheme(t);
                         return (
-                            '<a href="./theme.html?theme=' +
-                            folder +
+                            '<a class="gold-theme-card" href="./theme.html?theme=' +
+                            q +
                             '" title="' +
                             name +
-                            '"><img src="' +
-                            cover +
-                            '" alt="" loading="lazy" /></a>'
+                            '">' +
+                            '<img src="' +
+                            escAttr(cover) +
+                            '" alt="" loading="lazy" onerror="this.src=\'placeholder.png\'" />' +
+                            '<span class="gold-pill">Gold</span>' +
+                            "<span>" +
+                            name +
+                            "</span></a>"
                         );
                     })
                     .join("");
-            } catch (_) {
-                grid.innerHTML = '<p style="color:#9aa3b5;">Could not load themes. <a href="index.html">Open the gallery</a>.</p>';
+            } catch (err) {
+                console.error("Gold theme list failed", err);
+                grid.innerHTML =
+                    '<p class="gold-loading">Could not load themes. <a href="index.html">Open the gallery</a>.</p>';
             }
-        })();
+        }
+
+        loadSupportToolbar();
+        loadGoldThemes();
     </script>
 </body>
 
