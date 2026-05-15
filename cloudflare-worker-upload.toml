@@ -1,0 +1,10 @@
+# Same Worker as root wrangler.toml — use when Deploy command is:
+#   npx wrangler deploy --config cloudflare-worker-upload.toml
+# Or: npm run deploy:upload-worker
+
+name = "y1-theme-upload"
+main = "workers/theme-upload/src/index.js"
+compatibility_date = "2026-05-11"
+
+[limits]
+subrequests = 150

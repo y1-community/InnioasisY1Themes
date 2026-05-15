@@ -1,19 +1,23 @@
 # =============================================================================
-# CLOUDFLARE PAGES ONLY — not a Worker. Never run: npx wrangler deploy
-# That command expects main = "..." or [assets] in this file and fails with:
-#   "Missing entry-point to Worker script or to assets directory"
-# Fix in the Pages dashboard: leave the Deploy command field EMPTY.
+# Repository root — used by Cloudflare Git when Deploy command is:
+#   npx wrangler deploy
+# That deploys the **y1-theme-upload** Worker (upload + removal API).
 #
-# If you see that error on a **Workers** project (e.g. y1-theme-upload), the Git build
-# is using this file by mistake. Set the Worker root directory to `workers/theme-upload`
-# or set Deploy command to:
-#   npx wrangler deploy --config workers/theme-upload/wrangler.toml
-# (see workers/theme-upload/README.md — do not combine root dir + that --config path).
+# Cloudflare **Pages** (if you use it for themes.innioasis.app):
+#   Build command: exit 0
+#   Deploy command: leave EMPTY (never npx wrangler deploy)
+#   pages_build_output_dir below is for Pages only; Git publish ignores Worker main.
+#
+# Prefer explicit config (avoids Pages warning):
+#   npx wrangler deploy --config cloudflare-worker-upload.toml
 # =============================================================================
-# Static site + Pages Functions live at the repository root (see pages_build_output_dir).
-# Dashboard (recommended): Root directory = (empty), Build output = ., Build = exit 0
-# Deploy command MUST be empty (do not use wrangler deploy / wrangler pages deploy).
-# Must match your Pages project name in the dashboard (rename here if different).
-name = "y1themes"
+
+name = "y1-theme-upload"
+main = "workers/theme-upload/src/index.js"
 compatibility_date = "2026-05-11"
+
+[limits]
+subrequests = 150
+
+# Cloudflare Pages static output (repo root). No effect on Worker deploy.
 pages_build_output_dir = "."

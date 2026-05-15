@@ -1,0 +1,29 @@
+# Deploy y1-theme-upload when upload handler or Worker code changes.
+# Requires repository secret: CLOUDFLARE_API_TOKEN (Workers Scripts: Edit).
+name: Deploy theme-upload Worker
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "workers/theme-upload/**"
+      - "functions/_lib/theme-upload-handler.js"
+      - "functions/_lib/theme-removal-handler.js"
+      - "functions/_lib/theme-metadata-handler.js"
+      - "cloudflare-worker-upload.toml"
+      - "wrangler.toml"
+      - ".github/workflows/deploy-theme-upload-worker.yml"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          workingDirectory: workers/theme-upload
+          command: deploy
