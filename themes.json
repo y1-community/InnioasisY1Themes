@@ -727,6 +727,15 @@
             "screenshot": "./Prisoner/@Pris_cover.png"
         },
         {
+            "name": "Purple Pineapple",
+            "folder": "Purple Pineapple",
+            "description": "Download the Purple Pineapple theme for Innioasis Y1 and personalize your player's look with curated UI assets.",
+            "screenshot": "./Purple Pineapple/Cover.png",
+            "sourceType": "internal",
+            "sortName": "purple pineapple",
+            "searchText": "purple pineapple download the purple pineapple theme for innioasis y1 and personalize your player's look with curated ui assets.  purple pineapple"
+        },
+        {
             "name": "Pusheen",
             "folder": "Pusheen",
             "sourceType": "internal",
@@ -835,6 +844,20 @@
             "sourceType": "internal",
             "sortName": "santa cruz",
             "searchText": "santa cruz white, black, gray and green (just a test run) tai santa_cruz"
+        },
+        {
+            "name": "SpongeBob SquarePants",
+            "folder": "SB_BlueSwirl",
+            "author": "u/Terrible-Young-3477",
+            "authorUrl": "https://reddit.com/u/Terrible-Young-3477",
+            "description": "Absorbent and yellow and porous is he!",
+            "screenshot": "./SB_BlueSwirl/Cover.png",
+            "variantFolders": [
+                "Purple Pineapple"
+            ],
+            "sourceType": "internal",
+            "sortName": "spongebob squarepants",
+            "searchText": "spongebob squarepants absorbent and yellow and porous is he! u/terrible-young-3477 sb_blueswirl"
         },
         {
             "name": "SilentHill2",
