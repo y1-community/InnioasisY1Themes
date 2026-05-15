@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generate sitemap.xml for themes.innioasis.app.
 
-Includes each catalog theme folder and ``Theme/Variants/Name/`` URLs when
+Includes each catalog theme folder and ``Theme/Variants/Name/_share/`` URLs when
 ``themes.json`` lists ``variantFolders``.
 """
 
@@ -36,12 +36,12 @@ def _url_for_folder(folder: str) -> str:
 
 
 def _url_for_theme_variant(theme_folder: str, variant_name: str) -> str:
-    """Per-variant SEO shell lives at ``ThemeFolder/Variants/VariantName/``."""
+    """Per-variant SEO shell lives at ``ThemeFolder/Variants/VariantName/_share/``."""
     base = str(theme_folder or "").strip().strip("/")
     var = str(variant_name or "").strip().strip("/")
     if not base or not var:
         return ""
-    parts = [base, "Variants", var]
+    parts = [base, "Variants", var, "_share"]
     encoded = "/".join(quote(seg, safe="") for seg in parts if seg)
     return f"{SITE_BASE}/{encoded}/"
 

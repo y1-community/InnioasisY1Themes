@@ -2446,6 +2446,83 @@
             return false;
         }
 
+        /** Canonical theme index locations (matches scripts/zip_theme_utils.py). */
+        function isAllowedPackagedThemeIndexRelPath(rel) {
+            const parts = String(rel || "")
+                .split("/")
+                .filter(Boolean);
+            const n = parts.length;
+            if (!n || parts[n - 1].toLowerCase() !== "index.html") return false;
+            if (n === 1) return true;
+            if (n < 4) return false;
+            return parts[0].toLowerCase() === "variants";
+        }
+
+        function catalogFolderStemsAfterRenames(renames) {
+            const map = renames && renames.size ? renames : new Map();
+            const s = new Set();
+            for (const root of collectThemeRootFolders()) {
+                s.add(String(map.get(root) || desiredRepoFolderForUploadRoot(root) || root).trim());
+            }
+            return s;
+        }
+
+        function pathRelUnderCatalogFolder(outPath, stems) {
+            const p = normRelPath(outPath);
+            const first = p.split("/").filter(Boolean)[0] || "";
+            if (!first) return null;
+            for (const stem of stems) {
+                if (first.toLowerCase() !== String(stem || "").toLowerCase()) continue;
+                return p.slice(stem.length).replace(/^\//, "");
+            }
+            return null;
+        }
+
+        function gatherRawSubmissionPaths() {
+            const paths = [];
+            if (uploadMode === "zip" && loadedZip && loadedZip.files) {
+                for (const ze of Object.values(loadedZip.files)) {
+                    if (ze && !ze.dir) paths.push(normRelPath(ze.name));
+                }
+            } else if (uploadMode === "folder" && folderFiles && folderFiles.length) {
+                for (const f of folderFiles) {
+                    if (f) paths.push(normRelPath(f.webkitRelativePath));
+                }
+            }
+            return paths;
+        }
+
+        /** Blocks submit when theme trees contain disallowed HTML (server-side manual review). */
+        function assertNoDisallowedHtmlInSubmission(renames) {
+            const stems = catalogFolderStemsAfterRenames(renames);
+            if (!stems.size) return;
+            for (const raw of gatherRawSubmissionPaths()) {
+                const outPath = rewriteThemePathForRenames(collapseStutterPathSegments(raw), renames);
+                const rel = pathRelUnderCatalogFolder(outPath, stems);
+                if (rel === null) continue;
+                const low = outPath.toLowerCase();
+                if (!/\.(html|htm)$/i.test(low)) continue;
+                if (/\.htm$/i.test(outPath)) {
+                    throw new Error(
+                        `This theme contains ${outPath}, but .htm files are not allowed. Remove them and try again.`
+                    );
+                }
+                if (!isAllowedPackagedThemeIndexRelPath(rel)) {
+                    throw new Error(
+                        `This theme contains disallowed HTML (${outPath}). Only index.html at the theme root or ` +
+                            `under Variants/<look>/<subfolder>/... (not directly in the variant folder) is allowed. ` +
+                            `Remove extra .html files or rebuild the ZIP with this upload page so shells are regenerated.`
+                    );
+                }
+            }
+        }
+
+        /** Packager drops all markup from the source archive; injectThemeSeoShellsIntoZip re-adds canonical index.html only. */
+        function isPackagerStrippedMarkupPath(outPath) {
+            const low = normRelPath(outPath).toLowerCase();
+            return /\.html$/i.test(low) || /\.htm$/i.test(low);
+        }
+
         function detectThemeLabel(path) {
             const parts = String(path || "").split("/");
             if (parts.length <= 1) return "(zip root)";
@@ -3289,6 +3366,7 @@
         /**
          * SEO landing pages (per theme + per variant) are written here in the browser so CI ingest
          * does not need to regenerate hundreds of index.html files (avoids merge races).
+         * Variant shells live under ``Variants/<name>/_share/index.html`` (never directly in the variant folder).
          * Site-wide sitemap.xml is still refreshed on a schedule (generate-sitemap.yml), not per upload.
          */
         async function injectThemeSeoShellsIntoZip(outputZip, renames) {
@@ -3296,6 +3374,8 @@
             readEditorValues();
             readExtraVariationRowsFromDom();
             const SITE = "https://themes.innioasis.app";
+            /** Reserved under each variant; never place index.html directly in the variant folder. */
+            const VARIANT_SEO_SUBDIR = "_share";
             const _cs = "<" + "/" + "script>";
             const pathKeys = Object.keys(outputZip.files || {}).filter((k) => {
                 const o = outputZip.files[k];
@@ -3382,7 +3462,7 @@
                     }`;
                     const refreshAttr = previewUrl.replace(/&/g, "&amp;");
                     const shareSegs = [catalogFolder];
-                    if (variant) shareSegs.push("Variants", variant);
+                    if (variant) shareSegs.push("Variants", variant, VARIANT_SEO_SUBDIR);
                     const sharePageUrl = `${SITE}/${shareSegs.map((s) => encodeURIComponent(s)).join("/")}`;
                     const ogImageUrl = await absoluteOgImageUrl(outputZip, catalogFolder, variant);
 
@@ -3428,7 +3508,7 @@
                         : "";
 
                     const outPath = variant
-                        ? `${catalogFolder}/Variants/${variant}/index.html`
+                        ? `${catalogFolder}/Variants/${variant}/${VARIANT_SEO_SUBDIR}/index.html`
                         : `${catalogFolder}/index.html`;
 
                     const html =
@@ -3522,6 +3602,7 @@
                 if (!window.JSZip) throw new Error("ZIP library is unavailable.");
                 validateThemeInfoEntriesForSubmit();
                 const renames = effectiveRootRenames();
+                assertNoDisallowedHtmlInSubmission(renames);
                 const editsByOriginalPath = await buildConfigEditsByPath(renames, artworkWarnings);
                 const outputZip = new window.JSZip();
 
@@ -3529,6 +3610,10 @@
                     const path = collapseStutterPathSegments(file.webkitRelativePath);
                     if (!path || path.endsWith("/")) continue;
                     const outPath = rewriteThemePathForRenames(path, renames);
+                    if (isPackagerStrippedMarkupPath(outPath)) {
+                        rememberScrubbedSubmissionPath(outPath);
+                        continue;
+                    }
                     if (isBlockedSubmissionPath(outPath)) {
                         rememberScrubbedSubmissionPath(outPath);
                         continue;
@@ -3544,6 +3629,10 @@
                 }
                 const extra = pendingExtraVariationEntries || [];
                 for (const e of extra) {
+                    if (isPackagerStrippedMarkupPath(e.path)) {
+                        rememberScrubbedSubmissionPath(e.path);
+                        continue;
+                    }
                     if (isBlockedSubmissionPath(e.path)) {
                         rememberScrubbedSubmissionPath(e.path);
                         continue;
@@ -3576,6 +3665,7 @@
 
             validateThemeInfoEntriesForSubmit();
             const renames = effectiveRootRenames();
+            assertNoDisallowedHtmlInSubmission(renames);
 
             const outputZip = new window.JSZip();
             const editsByOriginalPath = await buildConfigEditsByPath(renames, artworkWarnings);
@@ -3585,6 +3675,10 @@
                 if (!zipEntry || zipEntry.dir) continue;
                 const path = collapseStutterPathSegments(zipEntry.name);
                 const outPath = rewriteThemePathForRenames(path, renames);
+                if (isPackagerStrippedMarkupPath(outPath)) {
+                    rememberScrubbedSubmissionPath(outPath);
+                    continue;
+                }
                 if (isBlockedSubmissionPath(outPath)) {
                     rememberScrubbedSubmissionPath(outPath);
                     continue;
@@ -3599,6 +3693,10 @@
             }
             const extra = pendingExtraVariationEntries || [];
             for (const e of extra) {
+                if (isPackagerStrippedMarkupPath(e.path)) {
+                    rememberScrubbedSubmissionPath(e.path);
+                    continue;
+                }
                 if (isBlockedSubmissionPath(e.path)) {
                     rememberScrubbedSubmissionPath(e.path);
                     continue;

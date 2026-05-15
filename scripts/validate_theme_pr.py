@@ -17,12 +17,15 @@ Rules:
 - Non-zip **theme** additions must be under ``<ThemeFolder>/...`` at repo root (brand-new
   folder for automatic merge; **additive files under a folder that already exists on base**
   still validate but require maintainer merge).
-- Dangerous/disallowed files are blocked (executables, scripts, etc.). ``.html`` / ``.htm``
-  inside zips do not fail validation; ingest skips writing them into theme folders.
+- Dangerous/disallowed files are blocked (executables, scripts, etc.). Theme zips may include
+  only canonical ``index.html`` at the theme root or under ``Variants/<look>/<subfolder>/...``
+  (never directly as ``Variants/<look>/index.html``); any other ``.html`` / ``.htm`` entry
+  disables automatic merge (maintainer review). Ingest writes allowed ``index.html`` and skips
+  other markup.
 - New direct theme folders must include config.json + at least one image file.
 - Added zip files are allowed and validated:
   - path-safe entries only (no path traversal/absolute paths)
-  - dangerous file types blocked inside zips (except ``.html`` / ``.htm``, which are ignored)
+  - dangerous file types blocked inside zips; disallowed ``.html`` / ``.htm`` forces manual review
   - zip must contain one or more theme folders, each with a unique folder name
   - each theme folder in zip must include config.json and image assets
   - root ``config.json`` theme may use images in subfolders that are not another
@@ -735,17 +738,19 @@ def _is_safe_zip_member(member_name: str) -> bool:
     return True
 
 
-def _validate_zip_blob(path: str, blob: bytes) -> list[str]:
+def _validate_zip_blob(path: str, blob: bytes) -> tuple[list[str], list[str]]:
+    """Return (hard errors, manual-review notes). Manual notes disable auto-merge but exit 0."""
     errors: list[str] = []
+    manual: list[str] = []
     try:
         archive = zipfile.ZipFile(io.BytesIO(blob))
     except zipfile.BadZipFile:
-        return [f"{path} is not a valid zip archive."]
+        return [f"{path} is not a valid zip archive."], []
 
     with archive:
         names = [n for n in archive.namelist() if n and not n.endswith("/")]
         if not names:
-            return [f"{path} contains no files."]
+            return [f"{path} contains no files."], []
 
         for name in names:
             if not _is_safe_zip_member(name):
@@ -755,20 +760,23 @@ def _validate_zip_blob(path: str, blob: bytes) -> list[str]:
                 errors.append(f"{path} contains blocked file type: {name}")
 
         if errors:
-            return errors
+            return errors, []
 
         names_t = ztu.filter_zip_names_for_theme_logic(names)
         bundle_inner = ztu.root_theme_bundle_zip_entries(names_t)
         if bundle_inner is not None:
             errs: list[str] = []
+            mans: list[str] = []
             for inner in bundle_inner:
                 try:
                     ib = archive.read(inner)
                 except KeyError:
                     errs.append(f"{path} missing inner member {inner!r}.")
                     continue
-                errs.extend(_validate_zip_blob(PurePosixPath(inner).name, ib))
-            return errs
+                sub_e, sub_m = _validate_zip_blob(PurePosixPath(inner).name, ib)
+                errs.extend(sub_e)
+                mans.extend(sub_m)
+            return errs, mans
 
         theme_keys = ztu.zip_theme_keys(names_t)
         zip_stem = PurePosixPath(path).stem
@@ -777,11 +785,19 @@ def _validate_zip_blob(path: str, blob: bytes) -> list[str]:
         if not theme_keys:
             return [
                 f"{path} must contain at least one config.json (at zip root or under a theme subfolder)."
-            ]
+            ], []
 
         errors.extend(ztu.zip_inner_folder_collision_errors(theme_keys, zip_stem, zip_label=path))
         if errors:
-            return errors
+            return errors, []
+
+        for bad in ztu.disallowed_theme_markup_zip_members(names_t, theme_keys):
+            manual.append(
+                f"{path}: disallowed HTML entry {bad!r} — only theme `index.html` at the theme root "
+                "or `Variants/<look>/<subfolder>/.../index.html` (not directly under the variant folder) "
+                "is accepted for automatic merge. Remove other `.html`/`.htm` files or repackage with "
+                "https://themes.innioasis.app/upload.html so shells are regenerated."
+            )
 
         for key in theme_keys:
             config_entry = "config.json" if key == "." else f"{key}/config.json"
@@ -808,7 +824,7 @@ def _validate_zip_blob(path: str, blob: bytes) -> list[str]:
             if not _config_has_image_refs(config):
                 errors.append(f"{path} {config_entry} must reference at least one image asset.")
 
-    return errors
+    return errors, manual
 
 
 METADATA_LISTING_KEYS = frozenset(
@@ -1152,8 +1168,9 @@ def main() -> int:
         except subprocess.CalledProcessError:
             errors.append(f"Unable to read zip {path} from PR ref.")
             continue
-        zip_errs = _validate_zip_blob(path, blob)
+        zip_errs, zip_manual = _validate_zip_blob(path, blob)
         errors.extend(zip_errs)
+        manual_review_notes.extend(zip_manual)
         if not zip_errs:
             meta = _read_upload_meta_pr(pr_ref, path)
             stem = PurePosixPath(path).stem

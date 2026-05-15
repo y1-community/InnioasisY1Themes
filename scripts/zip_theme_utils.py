@@ -3,6 +3,8 @@
 
 Ignored entries are skipped for theme detection, image presence, and inner-folder collision
 checks. They are still subject to path-safety checks in the caller before filtering.
+Allowed ``index.html`` locations inside a theme folder are the theme root and
+``Variants/<look>/<subfolder>/.../index.html`` (never directly under ``Variants/<look>/``).
 """
 
 from __future__ import annotations
@@ -222,3 +224,75 @@ def root_theme_bundle_zip_entries(entry_names: list[str]) -> list[str] | None:
             return None
         inner.append(name)
     return sorted(inner, key=lambda s: s.lower())
+
+
+def allowed_theme_index_html_relpath(rel: PurePosixPath) -> bool:
+    """Whether ``rel`` is an allowed ``index.html`` path inside a single theme folder.
+
+    Allowed:
+    - ``index.html`` at the theme root.
+    - ``Variants/<look>/<subfolder>/.../index.html`` with at least one path segment
+      between the variant name and ``index.html`` (never ``Variants/<look>/index.html``).
+    """
+    if rel.name.lower() != "index.html":
+        return False
+    parts = rel.parts
+    if len(parts) == 1:
+        return True
+    if len(parts) < 4:
+        return False
+    return parts[0].lower() == "variants"
+
+
+def is_allowed_theme_index_html_zip_member(name: str, theme_keys: list[str]) -> bool:
+    """True when ``name`` is an allowed ``index.html`` under one of ``theme_keys``."""
+    norm = (name or "").strip().replace("\\", "/")
+    if not norm:
+        return False
+    pl = PurePosixPath(norm)
+    if pl.name.lower() != "index.html":
+        return False
+    low = norm.lower()
+    for key in theme_keys:
+        if key == ".":
+            if allowed_theme_index_html_relpath(pl):
+                return True
+        else:
+            pref = (key + "/").lower()
+            if not low.startswith(pref):
+                continue
+            suffix = norm[len(key) + 1 :].lstrip("/")
+            if not suffix:
+                continue
+            if allowed_theme_index_html_relpath(PurePosixPath(suffix)):
+                return True
+    return False
+
+
+def disallowed_theme_markup_zip_members(names: list[str], theme_keys: list[str]) -> list[str]:
+    """``.htm`` / stray ``.html`` entries that are not an allowed theme ``index.html`` shell path."""
+    out: list[str] = []
+    for name in names:
+        suf = PurePosixPath(name).suffix.lower()
+        if suf not in {".html", ".htm"}:
+            continue
+        if is_allowed_theme_index_html_zip_member(name, theme_keys):
+            continue
+        out.append(name)
+    return out
+
+
+def theme_index_shell_rel_parts_ok(rel: PurePosixPath) -> bool:
+    """Whether ``rel`` (path inside a theme folder) is an allowed ``index.html`` location."""
+    return allowed_theme_index_html_relpath(rel)
+
+
+def theme_html_zip_member_should_skip_extract(rel: str) -> bool:
+    """Skip ``.htm`` and any ``.html`` that is not an allowed theme ``index.html`` path."""
+    p = PurePosixPath((rel or "").strip().replace("\\", "/"))
+    suf = p.suffix.lower()
+    if suf not in {".html", ".htm"}:
+        return False
+    if suf == ".htm":
+        return True
+    return not theme_index_shell_rel_parts_ok(p)

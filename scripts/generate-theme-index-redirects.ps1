@@ -35,7 +35,7 @@ Get-ChildItem -LiteralPath $root -Recurse -Filter 'index.html' | ForEach-Object 
 
     $themeKey = $relNorm
     $variantSeg = ''
-    if ($relNorm -match '^(.*)/Variants/(.+)$') {
+    if ($relNorm -match '(?i)^(.*)/variants/([^/]+)/') {
         $themeKey = $Matches[1]
         $variantSeg = $Matches[2]
     }

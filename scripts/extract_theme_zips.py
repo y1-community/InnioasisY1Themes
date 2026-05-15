@@ -7,6 +7,7 @@ Behavior:
 - Detect one or more theme folders by locating config.json files.
 - Extract only validated theme folders that reference image assets.
 - Block archives that contain dangerous executable/script-like files.
+- ``.html`` / ``.htm`` are written only for allowed theme ``index.html`` paths (see ``zip_theme_utils``).
 - Remove processed ZIP files after successful extraction.
 """
 
@@ -18,14 +19,14 @@ import zipfile
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+import zip_theme_utils as ztu
+
 
 _GIT_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = _GIT_ROOT
 EXCLUDED_DIRS = {".git", ".github", ".vscode", "__pycache__", "assets", "scripts", "functions", "themes"}
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"}
 BLOCKED_EXTENSIONS = {
-    ".html",
-    ".htm",
     ".exe",
     ".msi",
     ".dll",
@@ -177,6 +178,8 @@ def _extract_zip(zip_path: Path) -> tuple[int, int]:
             destination.mkdir(parents=True, exist_ok=False)
             for member_path in members:
                 relative = member_path.relative_to(theme_root) if str(theme_root) not in {".", ""} else member_path
+                if ztu.theme_html_zip_member_should_skip_extract(str(relative)):
+                    continue
                 target = destination / Path(str(relative))
                 target.parent.mkdir(parents=True, exist_ok=True)
                 with zf.open(str(member_path).replace("\\", "/")) as src, target.open("wb") as dst:

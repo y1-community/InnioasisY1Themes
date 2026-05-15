@@ -65,7 +65,11 @@ function Build-SharePageUrl([string]$catalogFolder, [string]$variant) {
     $segs = New-Object System.Collections.Generic.List[string]
     [void]$segs.Add($catalogFolder)
     $v = ($variant -as [string]).Trim()
-    if ($v) { [void]$segs.Add('Variants'); [void]$segs.Add($v) }
+    if ($v) {
+        [void]$segs.Add('Variants')
+        [void]$segs.Add($v)
+        [void]$segs.Add('_share')
+    }
     return $Site + '/' + (($segs | ForEach-Object { [Uri]::EscapeDataString($_) }) -join '/')
 }
 
@@ -89,8 +93,8 @@ foreach ($folder in ($folderSet | Sort-Object)) {
     $rootIndex = Join-Path (Join-Path $Root $folder) 'index.html'
     $targets[$rootIndex] = @{ CatalogFolder = $folder; Variant = '' }
     foreach ($v in (Get-VariantSubfolders $folder $tm)) {
-        $vp = Join-Path (Join-Path (Join-Path (Join-Path $Root $folder) 'Variants') $v) 'index.html'
-        $targets[$vp] = @{ CatalogFolder = $folder; Variant = $v }
+        $vp = Join-Path (Join-Path (Join-Path (Join-Path $Root $folder) 'Variants') $v) '_share'
+        $targets[(Join-Path $vp 'index.html')] = @{ CatalogFolder = $folder; Variant = $v }
     }
 }
 
