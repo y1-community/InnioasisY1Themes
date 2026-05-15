@@ -879,7 +879,11 @@
                 opt.textContent = a;
                 authorFilter.appendChild(opt);
             }
-            if (current !== 'all' && authors.includes(current)) authorFilter.value = current;
+            if (current !== 'all' && authors.includes(current)) {
+                authorFilter.value = current;
+            } else {
+                authorFilter.value = 'all';
+            }
         }
 
         function applyFilters() {
@@ -2892,6 +2896,53 @@
             }
         }
 
+        function applyGalleryCardPreviewReady(card, cfg, meta, folderPath, variantSeg) {
+            if (!card || !cfg || !folderPath) return;
+            const seg = String(variantSeg || '').trim();
+            const cf = effectiveThemeContentFolder(folderPath, seg);
+            const stack = meta && meta.previewFontFamily ? meta.previewFontFamily : '';
+            const dlEl = card.querySelector('[data-card-download]');
+            const diEl = card.querySelector('[data-direct-install-btn]');
+            if (dlEl) applyThemeCardDownloadButtonStyles(dlEl, cfg, cf, stack);
+            if (diEl) applyThemeCardDownloadButtonStyles(diEl, cfg, cf, stack);
+            const warnFn =
+                window.y1ThemeArtworkCompat && typeof window.y1ThemeArtworkCompat.warnings === 'function'
+                    ? window.y1ThemeArtworkCompat.warnings
+                    : null;
+            if (warnFn) {
+                const cfEff = effectiveThemeContentFolder(folderPath, seg);
+                void warnFn((cf2, rel) => buildThemeFileUrl(cf2, rel), cfg, cfEff)
+                    .then((warns) => {
+                        setGalleryCardGoldTitleBadge(card, Array.isArray(warns) && warns.length === 0);
+                    })
+                    .catch(() => {});
+            }
+        }
+
+        function mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, card, variantSeg) {
+            if (!folderPath || !window.Y1ThemePreview || typeof window.Y1ThemePreview.mountGalleryCardLazy !== 'function') {
+                if (simHost) simHost.style.display = 'none';
+                return;
+            }
+            window.Y1ThemePreview.mountGalleryCardLazy(simHost, {
+                catalogFolder: folderPath,
+                variantSegment: variantSeg || '',
+                mode: 'gallery',
+                buildFileUrl: (cf, rel) => buildThemeFileUrl(cf, rel),
+                previewMeta: cardPreviewMeta,
+                onReady: (cfg, meta) => {
+                    if (img) {
+                        img.style.visibility = 'hidden';
+                        img.style.pointerEvents = 'none';
+                    }
+                    applyGalleryCardPreviewReady(card, cfg, meta, folderPath, variantSeg);
+                },
+                onError: () => {
+                    if (simHost) simHost.style.display = 'none';
+                },
+            });
+        }
+
         function createCard(theme) {
             const c = document.createElement('article');
             c.className = 'theme-card';
@@ -2994,44 +3045,6 @@
                 trackAlbum: safeText(theme.description || 'Y1 Theme').trim().slice(0, 96)
             };
 
-            if (folderPath && window.Y1ThemePreview && typeof window.Y1ThemePreview.mountGalleryCardLazy === 'function') {
-                window.Y1ThemePreview.mountGalleryCardLazy(simHost, {
-                    catalogFolder: folderPath,
-                    variantSegment: '',
-                    mode: 'gallery',
-                    buildFileUrl: (cf, rel) => buildThemeFileUrl(cf, rel),
-                    previewMeta: cardPreviewMeta,
-                    onReady: (cfg, meta) => {
-                        img.style.visibility = 'hidden';
-                        img.style.pointerEvents = 'none';
-                        if (cfg && folderPath) {
-                            const cf = effectiveThemeContentFolder(folderPath, String(variantSelect.value || '').trim());
-                            const stack = meta && meta.previewFontFamily ? meta.previewFontFamily : '';
-                            applyThemeCardDownloadButtonStyles(dl, cfg, cf, stack);
-                            if (di) applyThemeCardDownloadButtonStyles(di, cfg, cf, stack);
-                        }
-                        const warnFn =
-                            window.y1ThemeArtworkCompat && typeof window.y1ThemeArtworkCompat.warnings === 'function'
-                                ? window.y1ThemeArtworkCompat.warnings
-                                : null;
-                        if (warnFn && cfg && folderPath) {
-                            const seg = String(variantSelect.value || '').trim();
-                            const cfEff = effectiveThemeContentFolder(folderPath, seg);
-                            void warnFn((cf, rel) => buildThemeFileUrl(cf, rel), cfg, cfEff)
-                                .then((warns) => {
-                                    setGalleryCardGoldTitleBadge(c, Array.isArray(warns) && warns.length === 0);
-                                })
-                                .catch(() => {});
-                        }
-                    },
-                    onError: () => {
-                        simHost.style.display = 'none';
-                    }
-                });
-            } else {
-                simHost.style.display = 'none';
-            }
-
             const variantRow = document.createElement('div');
             variantRow.className = 'theme-card-variant-row';
             const variantLbl = document.createElement('label');
@@ -3102,40 +3115,7 @@
                 if (typeof window.Y1ThemePreview.unmount === 'function') {
                     window.Y1ThemePreview.unmount(simHost);
                 }
-                if (typeof window.Y1ThemePreview.mountGalleryCardLazy === 'function') {
-                    window.Y1ThemePreview.mountGalleryCardLazy(simHost, {
-                        catalogFolder: folderPath,
-                        variantSegment: seg,
-                        mode: 'gallery',
-                        buildFileUrl: (cf, rel) => buildThemeFileUrl(cf, rel),
-                        previewMeta: cardPreviewMeta,
-                        onReady: (cfg, meta) => {
-                            img.style.visibility = 'hidden';
-                            img.style.pointerEvents = 'none';
-                            if (cfg && folderPath) {
-                                const cf = effectiveThemeContentFolder(folderPath, seg);
-                                const stack = meta && meta.previewFontFamily ? meta.previewFontFamily : '';
-                                applyThemeCardDownloadButtonStyles(dl, cfg, cf, stack);
-                                if (di) applyThemeCardDownloadButtonStyles(di, cfg, cf, stack);
-                            }
-                            const warnFn =
-                                window.y1ThemeArtworkCompat && typeof window.y1ThemeArtworkCompat.warnings === 'function'
-                                    ? window.y1ThemeArtworkCompat.warnings
-                                    : null;
-                            if (warnFn && cfg && folderPath) {
-                                const cfEff = effectiveThemeContentFolder(folderPath, seg);
-                                void warnFn((cf, rel) => buildThemeFileUrl(cf, rel), cfg, cfEff)
-                                    .then((warns) => {
-                                        setGalleryCardGoldTitleBadge(c, Array.isArray(warns) && warns.length === 0);
-                                    })
-                                    .catch(() => {});
-                            }
-                        },
-                        onError: () => {
-                            simHost.style.display = 'none';
-                        }
-                    });
-                }
+                mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, c, seg);
                 void syncDownloadButtonToThemeConfig(seg);
             });
 
@@ -3233,6 +3213,7 @@
 
             dl.innerHTML = '<i class="fa-solid fa-download"></i> Download';
             dl.type = 'button';
+            dl.setAttribute('data-card-download', '1');
             dl.onclick = () => downloadTheme(theme, dl, readCardVariantInstallHints(c));
 
             const outboundUrl = hasExternalDownload ? externalDownloadUrl :
@@ -3275,6 +3256,7 @@
                 } catch (e) {}
                 bd.append(dl, di);
             }
+            mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, c, '');
             c.append(previewFrame, variantRow, titleRow, d, metricsHost, a, bd);
             c.insertBefore(variantRow, previewFrame);
             if (theme.sourceType !== 'external' && folderPath) {
@@ -3346,6 +3328,7 @@
         async function load() {
             const grid = document.getElementById('theme-grid');
             if (!grid) return;
+            try {
             const pageSizeSelectEl = document.getElementById('page-size');
             const skeletonCount = Math.min(48, Math.max(12, Number(pageSizeSelectEl && pageSizeSelectEl.value) || 24));
             showThemeGridSkeleton(grid, skeletonCount);
@@ -3403,6 +3386,11 @@
                 .catch(() => {});
 
             handleHashAutoDownload();
+            } catch (err) {
+                console.error('Gallery load failed', err);
+                clearThemeGridLoadingState(grid);
+                grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#94a3b8">Unable to load themes. Try refreshing the page.</p>';
+            }
         }
 
         load()
