@@ -5,13 +5,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title id="upload-doc-title">Upload your theme — Innioasis Y1 Themes</title>
-    <meta name="description" content="Upload an Innioasis Y1 theme in a few steps. We package it in your browser and open a pull request for you to track." />
+    <meta name="description" content="Upload an Innioasis Y1 theme in a few steps. We package it in your browser and give you a link to follow until it is live." />
     <meta name="author" content="Innioasis Community" />
     <link rel="canonical" href="https://themes.innioasis.app/upload.html">
 
     <meta property="og:type" content="website">
     <meta property="og:title" content="Upload your theme — Innioasis Y1 Themes">
-    <meta property="og:description" content="Upload a theme and track it on GitHub—we’ll take care of the rest.">
+    <meta property="og:description" content="Upload a theme in a few steps—we package it in your browser and you get a link to follow until it is live.">
     <meta property="og:url" content="https://themes.innioasis.app/upload.html">
     <meta property="og:image" content="https://innioasis.app/y1_illustration.png">
 
@@ -587,9 +587,9 @@
         <header>
             <h1 id="upload-page-title">Upload your theme</h1>
             <p class="lead" id="upload-lead">
-                One package is all we need—we polish it in your browser, open a pull request, and you follow along on GitHub.
+                One package is all we need—we prepare everything privately in your browser, then you get a simple link to watch it land.
             </p>
-            <p class="hint" id="upload-hint">You’ll get a tracking link. <strong>New theme submissions</strong> on the automatic path usually appear within about <strong>20 minutes to an hour</strong> after merge. Updates and removals are always reviewed by the team first.</p>
+            <p class="hint" id="upload-hint">You’ll get a link to follow along. <strong>New theme submissions</strong> that pass our checks usually appear within about <strong>20 minutes to an hour</strong>. Updates and removals are always reviewed by hand first.</p>
         </header>
 
         <div class="card" id="panel-upload">
@@ -609,7 +609,7 @@
                         <span id="extra-variations-add-top-anchor">
                             <button type="button" class="btn" id="extra-variations-add-btn" style="background:#2a2f3a;color:#eaf0ff;">+ Add another look</button>
                         </span>
-                        <span class="hint" style="margin:0;">Optional — only when you have another finished package.</span>
+                        <span class="hint" style="margin:0;">Only when you have more than one variation of the same theme.</span>
                     </div>
                     <div id="extra-variations-list"></div>
                 </div>
@@ -699,16 +699,16 @@
             <h3>Submission received</h3>
             <p id="submitted-lead" class="lead" style="margin-top:0.5rem;"></p>
             <div id="submitted-auto-callout" class="callout-info" style="display:none;" role="status">
-                <p style="margin:0;">This submission is on the <strong>fast path</strong>—after checks and merge, it usually appears on the gallery within about <strong>20 minutes to an hour</strong>.</p>
+                <p style="margin:0;">This submission can move quickly—after our checks, it often appears on the gallery within about <strong>20 minutes to an hour</strong>.</p>
             </div>
             <p class="hint" id="submitted-hint"></p>
             <div class="row" style="margin-top:1rem;">
-                <label for="submitted-pr-input">Pull request link</label>
+                <label for="submitted-pr-input">Link to your submission</label>
                 <input id="submitted-pr-input" type="text" readonly style="opacity:0.95;" />
             </div>
             <div class="submitted-pr-actions">
                 <a id="submitted-track-pr" class="submitted-track-pr" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true">
-                    <i class="fa-brands fa-github" aria-hidden="true"></i>
+                    <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
                     Track your submission
                 </a>
                 <button type="button" class="btn" id="submitted-copy-btn">Copy link</button>
@@ -720,9 +720,9 @@
         <div class="card" id="after-send-card">
             <h3 id="after-send-title">What happens after you send</h3>
             <ul id="after-send-list">
-                <li>Your theme is sent securely; you get a link to follow on GitHub.</li>
+                <li>Your theme is sent securely; you get a link to follow its progress.</li>
                 <li>We run safety checks on every submission.</li>
-                <li><strong>New theme submissions</strong> often go live within about <strong>20 minutes to an hour</strong> after merge when they qualify for automatic handling.</li>
+                <li><strong>New theme submissions</strong> that pass our checks often go live within about <strong>20 minutes to an hour</strong>.</li>
                 <li>If the <strong>same theme</strong> is already listed under your author, we treat it as an update and a teammate reviews it before anything changes.</li>
                 <li>Once it’s in, everyone can browse and download it from the gallery.</li>
             </ul>
@@ -1451,16 +1451,16 @@
                             "Your removal request was created. A maintainer will review it and may contact you at the email you provided to verify you represent the original author.";
                     } else if (submittedFlow === "metadata") {
                         leadEl.textContent =
-                            "Your theme details update was submitted as a pull request for maintainer review. It does not auto-merge.";
+                            "Your listing details were sent for review. A teammate approves them before they go live.";
                     } else {
                         leadEl.textContent =
-                            "Your theme upload was queued. Use the link below to track the pull request on GitHub.";
+                            "Your theme was received. Use the link below any time to see where it is in the process.";
                     }
                 }
                 if (hintEl) {
                     hintEl.textContent = dec
-                        ? "Keep this link somewhere safe until the change is merged."
-                        : "No pull request URL was returned; check your email or site status.";
+                        ? "Save this link—you can use it until your theme is live in the gallery."
+                        : "We couldn't return a tracking link just now. Check your email or try again shortly.";
                 }
                 if (prInput) prInput.value = dec || "";
                 const trackPr = document.getElementById("submitted-track-pr");
@@ -1503,7 +1503,7 @@
             if (afterCard) afterCard.hidden = false;
 
             const commonHint =
-                "New theme submissions that qualify for automatic handling often appear within about 20 minutes to an hour after merge. Updates and removals are reviewed by the team first.";
+                "New themes that pass our checks often appear within about 20 minutes to an hour. Updates and removals are always reviewed by hand first.";
 
             if (pageMode === "remove") {
                 panelUpload.hidden = true;
@@ -1514,7 +1514,7 @@
                     "You can opt your theme out of the Innioasis Y1 gallery. We verify listed metadata and contact details before maintainers remove it.";
                 if (hint) {
                     hint.textContent =
-                        "This flow is for author opt-out. We may contact you to confirm ownership before removal. Requests open a tracked maintainer-only change and are never auto-merged. " +
+                        "This flow is for author opt-out. We may contact you to confirm ownership before removal. Each request is reviewed in private before anything changes. " +
                         commonHint;
                 }
                 const disp = document.getElementById("removal-folder-display");
@@ -1525,9 +1525,9 @@
                 }
                 afterTitle.textContent = "What happens next";
                 afterList.innerHTML = [
-                    "<li>After you confirm listed metadata and your contact email, a <strong>removal request</strong> pull request is created for maintainers.</li>",
+                    "<li>After you confirm your details, we <strong>queue a removal request</strong> for the team.</li>",
                     "<li>We verify you represent the listed author. If needed, we contact you at the email you provided.</li>",
-                    "<li>The request is <strong>not</strong> auto-merged. When approved, the theme is removed from the gallery.</li>"
+                    "<li>It is <strong>not</strong> processed automatically. When approved, the theme is removed from the gallery.</li>"
                 ].join("");
                 void refreshRemovalCatalogDisplay();
                 return;
@@ -1543,7 +1543,7 @@
                     "Adjust how your listing reads on the gallery — no files required.";
                 if (hint) {
                     const pre = themeFolderParam ? `Theme: ${themeFolderParam}. ` : "";
-                    hint.textContent = pre + "We open a short GitHub change for the team to approve. " + commonHint;
+                    hint.textContent = pre + "We send a small update for the team to approve. " + commonHint;
                 }
                 document.querySelectorAll(".file-input-row").forEach((el) => {
                     el.hidden = true;
@@ -1554,8 +1554,8 @@
                 }
                 afterTitle.textContent = "What happens after you send";
                 afterList.innerHTML = [
-                    "<li>We open a small GitHub change for reviewers.</li>",
-                    "<li>It is not auto-merged.</li>",
+                    "<li>We queue your listing edits for review.</li>",
+                    "<li>They are not applied automatically.</li>",
                     "<li>To ship new visuals, use the main upload flow with a package.</li>"
                 ].join("");
                 return;
@@ -1576,13 +1576,13 @@
                     "Ship new artwork or refresh details. Use the same theme name as the live listing when you’re updating.";
                 if (hint) {
                     const pre = themeFolderParam ? `Theme: ${themeFolderParam}. ` : "";
-                    hint.textContent = pre + "You can send files or, for text-only tweaks, skip attachments and we’ll open a small GitHub change. " + commonHint;
+                    hint.textContent = pre + "You can attach files or send text-only tweaks—either way we queue an update for the team. " + commonHint;
                 }
                 afterTitle.textContent = "What happens after you send";
                 afterList.innerHTML = [
                     "<li>Your package is queued for review.</li>",
                     "<li>Updates to an existing listing are always checked by a teammate before they go live.</li>",
-                    "<li><strong>New theme submissions</strong> that qualify for automatic handling often appear within about <strong>20 minutes to an hour</strong> after merge.</li>",
+                    "<li><strong>New theme submissions</strong> that pass our checks often appear within about <strong>20 minutes to an hour</strong>.</li>",
                     "<li>Once it’s in, the gallery updates for everyone.</li>"
                 ].join("");
                 return;
@@ -1591,13 +1591,13 @@
             if (docTitle) docTitle.textContent = "Upload your theme — Innioasis Y1 Themes";
             h1.textContent = "Upload your theme";
             lead.textContent =
-                "One package is all we need—we polish it in your browser, open a pull request, and you follow along on GitHub.";
-            if (hint) hint.textContent = "You'll get a GitHub link to follow. " + commonHint;
+                "One package is all we need—we prepare everything privately in your browser, then you get a simple link to watch it land.";
+            if (hint) hint.textContent = "You'll get a link to follow along. " + commonHint;
             afterTitle.textContent = "What happens after you send";
             afterList.innerHTML = [
-                "<li>Your theme is sent securely; you get a link to follow on GitHub.</li>",
+                "<li>Your theme is sent securely; you get a link to follow its progress.</li>",
                 "<li>We run safety checks on every submission.</li>",
-                "<li><strong>New theme submissions</strong> that qualify for automatic handling often go live within about <strong>20 minutes to an hour</strong> after merge.</li>",
+                "<li><strong>New theme submissions</strong> that pass our checks often go live within about <strong>20 minutes to an hour</strong>.</li>",
                 "<li>If the <strong>same theme</strong> is already listed under your author, a teammate reviews before anything changes.</li>",
                 "<li>Once it’s in, everyone can browse and download it from the gallery.</li>"
             ].join("");
@@ -2319,7 +2319,7 @@
                             fabNote = "\n\n(Email notification skipped: FabForm removal URL is not configured in page meta.)";
                         }
                     } catch (fabErr) {
-                        fabNote = `\n\n(PR created, but FabForm notification failed: ${String(fabErr && fabErr.message ? fabErr.message : fabErr)})`;
+                        fabNote = `\n\n(Submission was created, but FabForm notification failed: ${String(fabErr && fabErr.message ? fabErr.message : fabErr)})`;
                     }
                     setRemovalStatus(
                         link
@@ -3284,7 +3284,7 @@
                 location.href = next.toString();
                 return;
             }
-            setStatus("Theme information update was submitted, but no PR URL was returned.", true);
+            setStatus("Theme information update was submitted, but we could not return a tracking link.", true);
         }
 
         async function buildZipForUpload(artworkWarnings) {
