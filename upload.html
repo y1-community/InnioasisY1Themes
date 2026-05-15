@@ -3287,6 +3287,237 @@
             setStatus("Theme information update was submitted, but we could not return a tracking link.", true);
         }
 
+        /**
+         * SEO landing pages (per theme + per variant) are written here in the browser so CI ingest
+         * does not need to regenerate hundreds of index.html files (avoids merge races).
+         * Site-wide sitemap.xml is still refreshed on a schedule (generate-sitemap.yml), not per upload.
+         */
+        async function injectThemeSeoShellsIntoZip(outputZip, renames) {
+            if (!outputZip || !themeInfoEntries.length) return;
+            readEditorValues();
+            readExtraVariationRowsFromDom();
+            const SITE = "https://themes.innioasis.app";
+            const _cs = "<" + "/" + "script>";
+            const pathKeys = Object.keys(outputZip.files || {}).filter((k) => {
+                const o = outputZip.files[k];
+                return o && !o.dir;
+            });
+            const map = renames && renames.size ? renames : new Map();
+            const catalogFolders = [];
+            for (const root of collectThemeRootFolders()) {
+                const stem = String(map.get(root) || desiredRepoFolderForUploadRoot(root) || root).trim();
+                if (stem) catalogFolders.push(stem);
+            }
+            const uniq = [...new Set(catalogFolders)];
+            if (!uniq.length) return;
+
+            function rewrittenConfigPath(entPath) {
+                return normRelPath(rewriteThemePathForRenames(collapseStutterPathSegments(entPath), renames));
+            }
+
+            function themeEntryForConfigRel(cfgRel) {
+                const want = normRelPath(cfgRel).toLowerCase();
+                for (const ent of themeInfoEntries) {
+                    if (rewrittenConfigPath(ent.path).toLowerCase() === want) return ent;
+                }
+                return null;
+            }
+
+            async function absoluteOgImageUrl(zip, catalogFolder, variant) {
+                const tryPaths = variant
+                    ? [
+                          `${catalogFolder}/Variants/${variant}/config.json`,
+                          `${catalogFolder}/config.json`,
+                      ]
+                    : [`${catalogFolder}/config.json`];
+                let cover = "";
+                for (const cp of tryPaths) {
+                    const f = zip.file(cp);
+                    if (!f) continue;
+                    try {
+                        const j = JSON.parse(await f.async("string"));
+                        if (j && j.themeCover) {
+                            cover = String(j.themeCover).trim();
+                            break;
+                        }
+                    } catch (_) {}
+                }
+                if (!cover) cover = "Cover.png";
+                const folder = variant ? `${catalogFolder}/Variants/${variant}` : catalogFolder;
+                const rel = `${folder}/${String(cover).replace(/^\.+\/+/, "")}`;
+                const enc = rel.split("/").map((s) => encodeURIComponent(s)).join("/");
+                return `${SITE}/${enc}`;
+            }
+
+            for (const catalogFolder of uniq) {
+                const variants = new Set();
+                const prefix = `${catalogFolder}/Variants/`;
+                for (const pk of pathKeys) {
+                    if (!pk.startsWith(prefix)) continue;
+                    const rest = pk.slice(prefix.length);
+                    const m = rest.match(/^([^/]+)\/config\.json$/i);
+                    if (m && m[1]) variants.add(m[1]);
+                }
+                const variantList = [...variants].sort((a, b) => a.localeCompare(b));
+                const jobs = [{ variant: "" }, ...variantList.map((variant) => ({ variant }))];
+
+                for (const { variant } of jobs) {
+                    const cfgRel = variant
+                        ? `${catalogFolder}/Variants/${variant}/config.json`
+                        : `${catalogFolder}/config.json`;
+                    let ent = themeEntryForConfigRel(cfgRel);
+                    if (!ent && variant) ent = themeEntryForConfigRel(`${catalogFolder}/config.json`);
+                    if (!ent) ent = primaryRootThemeEntry();
+                    const ti = ent && ent.themeInfo ? ent.themeInfo : {};
+                    const displayName = String(ti.title || catalogFolder).trim() || catalogFolder;
+                    const author = String(ti.author || "Innioasis Community").trim();
+                    let rawDesc = String(ti.description || "").trim();
+                    if (!rawDesc) rawDesc = `${displayName} UI theme for the Innioasis Y1 media player.`;
+                    const variantNote = variant ? ` Variant: ${variant}.` : "";
+                    const fullDesc = `${rawDesc}${variantNote}`.trim();
+                    const descPlain = fullDesc.length <= 320 ? fullDesc : fullDesc.slice(0, 320);
+                    const description = escapeHtml(descPlain);
+
+                    const previewUrl = `${SITE}/theme.html?theme=${encodeURIComponent(catalogFolder)}${
+                        variant ? `&variant=${encodeURIComponent(variant)}` : ""
+                    }`;
+                    const refreshAttr = previewUrl.replace(/&/g, "&amp;");
+                    const shareSegs = [catalogFolder];
+                    if (variant) shareSegs.push("Variants", variant);
+                    const sharePageUrl = `${SITE}/${shareSegs.map((s) => encodeURIComponent(s)).join("/")}`;
+                    const ogImageUrl = await absoluteOgImageUrl(outputZip, catalogFolder, variant);
+
+                    const title = variant
+                        ? `${displayName} (${variant}) Theme for Innioasis Y1 by ${author}`
+                        : `${displayName} Theme for Innioasis Y1 by ${author}`;
+                    const kw = new Set(
+                        [
+                            displayName,
+                            catalogFolder,
+                            variant,
+                            "Innioasis Y1",
+                            "Y1 theme",
+                            "Rockbox",
+                            "MP3 player theme",
+                            author,
+                        ].filter(Boolean)
+                    );
+                    const keywords = escapeHtml([...kw].sort((a, b) => a.localeCompare(b)).join(", "));
+                    const jsonLd = {
+                        "@context": "https://schema.org",
+                        "@type": "SoftwareApplication",
+                        name: title,
+                        description: `${rawDesc}${variantNote}`,
+                        applicationCategory: "MultimediaApplication",
+                        operatingSystem: "Innioasis Y1",
+                        offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+                        url: previewUrl,
+                        image: ogImageUrl,
+                        author: { "@type": "Person", name: author },
+                    };
+                    const jsonLdSafe = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
+
+                    const titleE = escapeHtml(title);
+                    const authorE = escapeHtml(author);
+                    const previewE = escapeHtml(previewUrl);
+                    const shareE = escapeHtml(sharePageUrl);
+                    const ogImageE = escapeHtml(ogImageUrl);
+                    const dispE = escapeHtml(displayName);
+                    const varE = escapeHtml(variant);
+                    const variantHeading = variant
+                        ? ` <span style="opacity:.85;font-weight:500">(${varE})</span>`
+                        : "";
+
+                    const outPath = variant
+                        ? `${catalogFolder}/Variants/${variant}/index.html`
+                        : `${catalogFolder}/index.html`;
+
+                    const html =
+                        "<!DOCTYPE html>\n" +
+                        `<html lang="en" data-themes-preview-redirect="${previewE}">\n` +
+                        "<head>\n" +
+                        '  <meta charset="utf-8" />\n' +
+                        '  <meta name="viewport" content="width=device-width,initial-scale=1" />\n' +
+                        '  <meta name="themes-preview-base-path" content="" />\n' +
+                        `  <title>${titleE}</title>\n` +
+                        `  <meta name="description" content="${description}" />\n` +
+                        `  <meta name="keywords" content="${keywords}" />\n` +
+                        `  <meta name="author" content="${authorE}" />\n` +
+                        '  <meta name="robots" content="index,follow" />\n' +
+                        `  <link rel="canonical" href="${previewE}" />\n` +
+                        "  <" +
+                        "script>\n" +
+                        "(function () {\n" +
+                        "  function destFromEmbed() {\n" +
+                        "    try {\n" +
+                        "      var h = document.documentElement;\n" +
+                        "      var a = h && h.getAttribute('data-themes-preview-redirect');\n" +
+                        "      if (a) return String(a).trim();\n" +
+                        "      var c = document.querySelector('link[rel=\"canonical\"]');\n" +
+                        "      if (c && c.href) return String(c.href).trim();\n" +
+                        "    } catch (e) {}\n" +
+                        "    return '';\n" +
+                        "  }\n" +
+                        "  var dest = destFromEmbed();\n" +
+                        "  if (dest) {\n" +
+                        "    try { location.replace(dest); } catch (e) {}\n" +
+                        "  }\n" +
+                        "})();\n" +
+                        "  " +
+                        _cs +
+                        "\n" +
+                        `  <meta http-equiv="refresh" content="0;url=${refreshAttr}" />\n\n` +
+                        '  <meta property="og:type" content="website" />\n' +
+                        '  <meta property="og:site_name" content="Innioasis Y1 Themes" />\n' +
+                        `  <meta property="og:title" content="${titleE}" />\n` +
+                        `  <meta property="og:description" content="${description}" />\n` +
+                        `  <meta property="og:url" content="${previewE}" />\n` +
+                        `  <meta property="og:image" content="${ogImageE}" />\n\n` +
+                        '  <meta name="twitter:card" content="summary_large_image" />\n' +
+                        `  <meta name="twitter:title" content="${titleE}" />\n` +
+                        `  <meta name="twitter:description" content="${description}" />\n` +
+                        `  <meta name="twitter:image" content="${ogImageE}" />\n\n` +
+                        '  <' +
+                        'script type="application/ld+json">' +
+                        jsonLdSafe +
+                        _cs +
+                        "\n" +
+                        "</head>\n" +
+                        "<body>\n" +
+                        '  <main style="font-family:system-ui,Segoe UI,sans-serif;max-width:28rem;margin:2.5rem auto;padding:0 1.25rem;color:#eaeef7;background:#0f1116;min-height:100vh;">\n' +
+                        '    <p style="margin:0 0 1rem 0;font-size:0.9rem;color:#8b95a8;">Opening the live preview...</p>\n' +
+                        `    <button type="button" id="theme-seo-copy" data-copy-url="${shareE}" style="margin:0 0 1rem 0;padding:0.5rem 1rem;border-radius:999px;border:1px solid rgba(255,255,255,0.18);background:rgba(255,255,255,0.06);color:#eaf0ff;font:inherit;cursor:pointer;">Copy page link</button>\n` +
+                        `    <h1 style="font-size:1.35rem;font-weight:650;margin:0 0 0.5rem 0;">${dispE}${variantHeading}</h1>\n` +
+                        `    <p style="margin:0 0 0.35rem 0;font-size:0.92rem;color:#aeb6c5;">${authorE}</p>\n` +
+                        `    <p style="line-height:1.5;color:#aeb6c5;">${description}</p>\n` +
+                        `    <p style="margin-top:1.25rem;"><a href="${previewE}" style="color:#8ec5ff;font-weight:600;text-decoration:none;">Open preview</a></p>\n` +
+                        "  </main>\n" +
+                        "  <" +
+                        "script>\n" +
+                        "(function () {\n" +
+                        "  var btn = document.getElementById('theme-seo-copy');\n" +
+                        "  if (!btn) return;\n" +
+                        "  btn.addEventListener('click', function () {\n" +
+                        "    var u = btn.getAttribute('data-copy-url');\n" +
+                        "    if (!u) return;\n" +
+                        "    if (navigator.clipboard && navigator.clipboard.writeText) {\n" +
+                        "      navigator.clipboard.writeText(u).then(function () {\n" +
+                        "        btn.textContent = 'Copied';\n" +
+                        "      }).catch(function () {});\n" +
+                        "    }\n" +
+                        "  });\n" +
+                        "})();\n" +
+                        "  " +
+                        _cs +
+                        "\n" +
+                        "</body>\n" +
+                        "</html>\n";
+
+                    outputZip.file(outPath, html);
+                }
+            }
+        }
+
         async function buildZipForUpload(artworkWarnings) {
             if (uploadMode === "folder" && folderFiles && folderFiles.length) {
                 if (!window.JSZip) throw new Error("ZIP library is unavailable.");
@@ -3326,6 +3557,8 @@
                         outputZip.file(e.path, e.bytes);
                     }
                 }
+
+                await injectThemeSeoShellsIntoZip(outputZip, renames);
 
                 const blob = await outputZip.generateAsync({ type: "blob" });
                 const name = loadedZipFileName || inferFolderZipName(folderFiles);
@@ -3379,6 +3612,8 @@
                     outputZip.file(e.path, e.bytes);
                 }
             }
+
+            await injectThemeSeoShellsIntoZip(outputZip, renames);
 
             const blob = await outputZip.generateAsync({ type: "blob" });
             const outName = packagedZipFileName(renames, loadedZipFileName || file.name || "theme.zip", overallThemeTitleForPackaging());

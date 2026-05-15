@@ -5,8 +5,8 @@ name: Theme ingest and sync
 # - root zip artifacts (legacy fallback): extracted by scripts/process_theme_zips.py
 # Then sync themes.json / theme configs and cleanup upload artifacts.
 # Intentionally does NOT regenerate every theme index.html or sitemap.xml here — those touched hundreds of
-# files and caused rebase conflicts when two uploads landed close together. SEO shells stay maintained
-# elsewhere (e.g. manual script, PR checks); sitemap is updated on a separate schedule (generate-sitemap.yml).
+# files and caused rebase conflicts when two uploads landed close together. The browser uploader (upload.html)
+# injects per-theme / variant SEO index.html into the ZIP before submit; sitemap is updated on a separate schedule (generate-sitemap.yml).
 # A follow-up job comments on the originating upload PR when sync succeeds or fails (notify-source-pr-after-ingest),
 # including a plain-language note and the theme page URL(s).
 # Theme raster downsizing (max ~320px) runs in the browser during packaging (upload.html), not here.
