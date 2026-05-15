@@ -217,6 +217,19 @@ h2.section-display,
     max-width: 16rem;
 }
 
+.gallery-control--gold {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.gallery-control--gold input {
+    margin: 0;
+    accent-color: #e8c56a;
+}
+
 /* —— Theme cards —— */
 .theme-card {
     background: var(--site-bg-card) !important;
