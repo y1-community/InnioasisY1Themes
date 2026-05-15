@@ -1,13 +1,12 @@
-# Merges only when scripts/validate_theme_pr.py exits 0. That script blocks auto-merge when:
-# - The PR is not strictly additive, or zips/files fail safety checks.
-# - A theme folder path already exists on the default branch, or another root ZIP still
-#   claims the same logical folder name (avoids races before extraction).
-# - themes.json identity matches (logical folder slug by case-insensitive path;
-#   same author or both unknown => treated as edit). Different authors must use a
-#   suffixed folder name (e.g. ThemeName-handle) inside the ZIP.
-# - Catalog title (theme_info.title) matches an existing entry (normalized).
-# - Gallery upload PRs may add a paired *.zip.meta.json next to the same PR's root *.zip
-#   (upload handler sidecar); multi-theme zips are validated per config.json root.
+# Merges only when validate_theme_pr.py exits 0 and prints THEME_PR_AUTO_MERGE_ALLOWED=1.
+# Hard failures (exit 1): unsafe zips, mixed add/edit PRs, different-author reuse without
+# a suffixed folder, pending root ZIP claiming the same logical name, title impersonation, etc.
+# Validation passes (exit 0) but auto-merge is skipped (THEME_PR_AUTO_MERGE_ALLOWED=0) when
+# the submission updates an existing theme (folder already on main with matching catalog author),
+# matches gallery identity as an edit/replacement/variant pack (same author), or adds files
+# under an existing theme folder — those PRs need maintainer merge for correct placement.
+# Only brand-new theme identities get THEME_PR_AUTO_MERGE_ALLOWED=1.
+# Gallery upload PRs may add a paired *.zip.meta.json next to the same PR's root *.zip.
 #
 # After a successful merge, theme extraction + themes.json + sitemap run on main via
 # [.github/workflows/theme-ingest-and-sync.yml] (push to main and workflow_run hook).
@@ -52,11 +51,18 @@ jobs:
           git fetch origin "pull/${{ github.event.pull_request.number }}/head:pr-head"
 
       - name: Validate PR policy for auto-merge
+        id: validate
         run: |
-          python scripts/validate_theme_pr.py "${{ github.event.pull_request.base.sha }}" "pr-head"
+          set -eo pipefail
+          python scripts/validate_theme_pr.py "${{ github.event.pull_request.base.sha }}" "pr-head" | tee /tmp/theme_pr_validate.txt
+          if grep -qx 'THEME_PR_AUTO_MERGE_ALLOWED=1' /tmp/theme_pr_validate.txt; then
+            echo "auto_merge_allowed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "auto_merge_allowed=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Auto-merge validated PR
-        if: ${{ !startsWith(github.event.pull_request.title, '[Removal]') }}
+        if: ${{ steps.validate.outputs.auto_merge_allowed == 'true' && !startsWith(github.event.pull_request.title, '[Removal]') }}
         uses: actions/github-script@v7
         with:
           script: |
@@ -68,7 +74,7 @@ jobs:
               merge_method: "squash"
             });
       - name: Comment with share URL(s)
-        if: ${{ !startsWith(github.event.pull_request.title, '[Removal]') }}
+        if: ${{ steps.validate.outputs.auto_merge_allowed == 'true' && !startsWith(github.event.pull_request.title, '[Removal]') }}
         continue-on-error: true
         uses: actions/github-script@v7
         with:
@@ -159,6 +165,41 @@ jobs:
               body
             });
 
+      - name: Comment when maintainer merge is required
+        if: ${{ success() && steps.validate.outputs.auto_merge_allowed != 'true' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require("fs");
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const pull_number = context.payload.pull_request.number;
+            let details = "";
+            try {
+              const t = fs.readFileSync("/tmp/theme_pr_validate.txt", "utf8");
+              const lines = t.split("\n").filter((l) => l.startsWith("THEME_PR_MANUAL_REVIEW:"));
+              if (lines.length) {
+                details =
+                  "\n\n**Why not auto-merged:**\n" +
+                  lines
+                    .map((l) => "- " + l.replace(/^THEME_PR_MANUAL_REVIEW:\s*/, "").trim())
+                    .join("\n");
+              }
+            } catch (_) {}
+            const body = [
+              "### Maintainer merge required",
+              "",
+              "This PR **passed automated validation** but is **not** eligible for automatic squash-merge.",
+              "",
+              "Typical cases: updating an existing theme (same folder on `main` and matching catalog author), replacing or extending a theme that already has a gallery entry under the same identity and author, adding assets under an existing theme folder, or mixing **new** themes with **updates** in one submission (only all-new theme packs auto-merge).",
+              "",
+              "Please **review and merge manually** so files land in the correct theme folder (including `Variants/…` when applicable) and `themes.json` stays consistent.",
+              details,
+              "",
+              "_After merge to `main`, theme ingest and sync still runs on the default branch._"
+            ].join("\n");
+            await github.rest.issues.createComment({ owner, repo, issue_number: pull_number, body });
+
   notify-validation-failed:
     needs: validate-and-merge
     if: ${{ failure() }}
@@ -183,7 +224,7 @@ jobs:
               "**Typical reasons:**",
               "- The package changes paths or file types we do not allow for gallery uploads.",
               "- The theme name or folder matches an existing listing in a way that needs a maintainer to confirm before it goes live.",
-              "- The theme folder already exists on the main branch (updates are normally reviewed by hand).",
+              "- The package failed a safety or structure rule (not the same as “passed validation but needs manual merge” — see the other bot comment if applicable).",
               "",
               "A maintainer can still review and merge this pull request. You do not need to re-upload unless they ask for changes."
             ].join("\n");

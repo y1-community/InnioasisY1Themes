@@ -12,8 +12,10 @@ Rules:
   gallery upload sidecar ``<same-path>.meta.json`` (i.e. ``*.zip.meta.json``) added
   alongside the same PR's ``*.zip`` (see theme-upload-handler).
 - Other **new** single-segment root files (e.g. OS junk next to a zip) are ignored for
-  auto-merge validation unless they use a blocked extension or are a stray ``config.json``.
-- Non-zip **theme** additions must be under ``<newThemeFolder>/...`` only.
+  this validator unless they use a blocked extension or are a stray ``config.json``.
+- Non-zip **theme** additions must be under ``<ThemeFolder>/...`` at repo root (brand-new
+  folder for automatic merge; **additive files under a folder that already exists on base**
+  still validate but require maintainer merge).
 - Dangerous/disallowed files are blocked.
 - New direct theme folders must include config.json + at least one image file.
 - Added zip files are allowed and validated:
@@ -24,16 +26,20 @@ Rules:
   - root ``config.json`` theme may use images in subfolders that are not another
     theme's tree (non-theme zip noise is otherwise ignored)
   - config.json must reference at least one image asset
-- Identity / duplicate policy (auto-merge only when safe):
+- Identity / duplicate policy:
   - Theme folders are compared by a logical slug: path name case-folded.
   - If a zip on the default branch is still waiting to be extracted and claims the
-    same logical name, auto-merge is blocked (avoids parallel duplicate merges).
-  - If the logical name matches an existing themes.json entry and authors match
-    (or both missing), the change is treated as an edit — auto-merge disabled.
+    same logical name, validation **fails** (avoid duplicate listings before extraction).
+  - If the submission targets an existing catalog theme (same logical folder / identity)
+    with the **same author** (or both authors unknown), it is an **update, replacement,
+    or variant pack** — validation **passes** but the script prints
+    ``THEME_PR_AUTO_MERGE_ALLOWED=0`` so the auto-merge workflow opens a normal PR
+    for maintainers (correct placement in the existing folder, ``themes.json``, etc.).
   - If authors differ, the incoming folder must end with ``-<slug>`` where slug
-    comes from upload metadata or theme author (e.g. ``WarCraft_3-reapsv``);
-    otherwise auto-merge is disabled.
-- Catalog display title (theme_info.title) collisions still block auto-merge.
+    comes from upload metadata or theme author; otherwise validation **fails**.
+  - **Only brand-new** theme identities (no matching catalog row, folder not on base)
+    print ``THEME_PR_AUTO_MERGE_ALLOWED=1`` for automatic squash-merge.
+- Catalog display title (theme_info.title) collisions still block validation (fail).
 """
 
 from __future__ import annotations
@@ -246,6 +252,61 @@ def _read_upload_meta_pr(pr_ref: str, zip_path: str) -> dict[str, Any]:
         return {}
 
 
+def _read_upload_meta_base(base_sha: str, zip_path: str) -> dict[str, Any]:
+    """Sidecar next to a root zip on the default branch (same shape as PR meta)."""
+    meta_path = f"{zip_path}.meta.json"
+    try:
+        raw = _git_blob_text(f"{base_sha}:{meta_path}")
+        data = json.loads(raw)
+        return data if isinstance(data, dict) else {}
+    except (subprocess.CalledProcessError, json.JSONDecodeError):
+        return {}
+
+
+def _pending_root_zip_same_steward_for_logical(
+    base_sha: str,
+    logical: str,
+    catalog_rows: list[dict[str, Any]],
+) -> bool:
+    """True if some root zip on base already claims ``logical`` and matches that listing's author."""
+    catalog_norm = ""
+    for r in catalog_rows:
+        if r["logical"] == logical:
+            catalog_norm = str(r.get("author_norm") or "")
+            break
+    if not catalog_norm:
+        return False
+    for name in _git_ls_root_filenames(base_sha):
+        if "/" in name or not name.lower().endswith(ZIP_EXTENSION):
+            continue
+        try:
+            blob = _git_blob_bytes(f"{base_sha}:{name}")
+        except subprocess.CalledProcessError:
+            continue
+        stem = PurePosixPath(name).stem
+        meta = _read_upload_meta_base(base_sha, name)
+        for item in _inner_themes_from_zip_blob(blob, zip_stem=stem):
+            if item["logical"] != logical:
+                continue
+            cfg = item.get("config")
+            pa = ""
+            if isinstance(cfg, dict):
+                for key in ("theme_info", "source_info"):
+                    block = cfg.get(key)
+                    if isinstance(block, dict):
+                        auth = block.get("author")
+                        if isinstance(auth, str) and auth.strip():
+                            pa = auth.strip()
+                            break
+            if not pa.strip():
+                un = meta.get("uploaderName")
+                if isinstance(un, str) and un.strip():
+                    pa = un.strip()
+            if _authors_equivalent(catalog_norm, pa):
+                return True
+    return False
+
+
 def _read_config_author_base(base_sha: str, folder: str) -> str:
     fp = f"{folder.strip()}/config.json"
     try:
@@ -360,7 +421,7 @@ def _pending_logical_slugs_from_root_zips(base_sha: str) -> set[str]:
     return slugs
 
 
-def _identity_policy_errors(
+def _identity_policy_assess(
     *,
     base_sha: str,
     inner_folder: str,
@@ -369,8 +430,13 @@ def _identity_policy_errors(
     catalog_rows: list[dict[str, Any]],
     pending_logical_slugs: set[str],
     context: str,
-) -> list[str]:
+) -> tuple[list[str], list[str]]:
+    """Return (hard_errors, manual_review_reasons).
+
+    manual_review_reasons are non-fatal: validation passes but auto-merge must be skipped.
+    """
     errors: list[str] = []
+    manual: list[str] = []
     logical = logical_theme_slug(inner_folder)
     incoming_auth = ""
     if config:
@@ -389,46 +455,51 @@ def _identity_policy_errors(
     if _theme_folder_has_config_on_base(base_sha, inner_folder):
         matches_existing = [r for r in catalog_rows if r["logical"] == logical]
         if matches_existing:
-            errors.append(
-                f"{context}: Theme folder {inner_folder!r} already exists on the default branch "
-                f"(with config.json) and matches gallery identity in themes.json. "
-                f"A previous upload was likely merged and extracted by theme-ingest-and-sync. "
-                f"Auto-merge is only for brand-new theme folders; updates, replacements, and duplicate "
-                f"ZIP submissions need a maintainer-reviewed PR (or use a '[Metadata]' PR for listing-only edits)."
-            )
+            exist_author_norm = str(matches_existing[0].get("author_norm") or "")
+            if _authors_equivalent(exist_author_norm, incoming_auth):
+                manual.append(
+                    f"{context}: Update or variant pack for existing theme folder {inner_folder!r} "
+                    "(catalog author matches submission). Maintainer review is required before merge."
+                )
+            else:
+                errors.append(
+                    f"{context}: Theme folder {inner_folder!r} already exists on the default branch "
+                    f"and matches gallery identity in themes.json, but the credited author differs from "
+                    f"this submission. Use a suffixed folder name for your remix or coordinate with the "
+                    f"listed author."
+                )
         else:
-            errors.append(
+            manual.append(
                 f"{context}: Theme folder {inner_folder!r} already exists on the default branch with "
-                f"config.json, but there is no matching themes.json entry (unusual). "
-                f"Auto-merge disabled — maintainers should reconcile the orphan folder before re-uploading."
+                "config.json but has no matching themes.json entry (unusual). Maintainer review is required."
             )
-        return errors
+        return errors, manual
 
     if logical in pending_logical_slugs:
         errors.append(
             f"{context}: Another ZIP on the default branch already claims theme folder identity matching {inner_folder!r} "
             "(after case-insensitive normalization). Wait for extraction or remove/rename that archive — "
-            "auto-merge disabled to avoid duplicate listings."
+            "validation failed to avoid duplicate listings."
         )
-        return errors
+        return errors, manual
 
     matches = [r for r in catalog_rows if r["logical"] == logical]
     if not matches:
-        return errors
+        return errors, manual
 
     exist_author_norm = matches[0].get("author_norm") or ""
 
     if _authors_equivalent(exist_author_norm, incoming_auth):
-        errors.append(
+        manual.append(
             f"{context}: Theme folder {inner_folder!r} matches an existing gallery entry (same identity after "
-            "case-insensitive normalization). Authors match or both are unknown — treated as an edit/update. "
-            "Auto-merge disabled; maintainers must review."
+            "case-insensitive normalization) and authors match or both are unknown — treated as an update, "
+            "replacement, or duplicate ZIP path. Maintainer review is required before merge."
         )
-        return errors
+        return errors, manual
 
     slug_cands = _collect_slug_candidates(meta, config)
     if _folder_has_disambiguator(inner_folder, slug_cands):
-        return errors
+        return errors, manual
 
     hint = slug_cands[0] if slug_cands else "your-handle"
     sample_base = re.sub(r"_dark[_-]?mode$", "", inner_folder, flags=re.I)
@@ -438,9 +509,9 @@ def _identity_policy_errors(
     errors.append(
         f"{context}: Folder {inner_folder!r} matches an existing theme credited to a different author. "
         f"Rename the theme root folder to include your suffix, e.g. {sample}, "
-        "then re-upload — auto-merge disabled."
+        "then re-upload — validation failed."
     )
-    return errors
+    return errors, manual
 
 
 def _load_catalog_title_rows(base_sha: str) -> list[dict[str, Any]]:
@@ -641,6 +712,17 @@ def _fail(errors: list[str]) -> int:
     for msg in errors:
         print(f"ERROR: {msg}")
     return 1
+
+
+def _dedupe_strs(seq: list[str]) -> list[str]:
+    seen: set[str] = set()
+    out: list[str] = []
+    for x in seq:
+        if not x or x in seen:
+            continue
+        seen.add(x)
+        out.append(x)
+    return out
 
 
 def _is_safe_zip_member(member_name: str) -> bool:
@@ -874,6 +956,7 @@ def main() -> int:
         return _fail(["PR has no file changes."])
 
     errors: list[str] = []
+    manual_review_notes: list[str] = []
     parsed: list[tuple[str, str]] = []
     for row in rows:
         parts = row.split("\t", 1)
@@ -896,6 +979,7 @@ def main() -> int:
             f"{sum(1 for _, p in parsed if p.endswith('/config.json'))} config.json update(s) "
             f"and themes.json={'yes' if any(p == 'themes.json' for _, p in parsed) else 'no'}."
         )
+        print("THEME_PR_AUTO_MERGE_ALLOWED=1")
         return 0
 
     if any(s != "A" for s, _ in parsed):
@@ -974,8 +1058,9 @@ def main() -> int:
         composite = f"{THEMES_PREFIX}{theme_name}" if THEMES_PREFIX else theme_name
         if _folder_exists_in_base(base_sha, composite):
             if composite not in existing_folder_blocked:
-                errors.append(
-                    f"Folder {composite}/ already exists in base; only new folders are auto-mergeable."
+                manual_review_notes.append(
+                    f"Additive files under existing folder {composite}/ require maintainer merge "
+                    "(theme update, variant assets, or edit — automatic merge is only for brand-new theme folders)."
                 )
                 existing_folder_blocked.add(composite)
             continue
@@ -1039,17 +1124,17 @@ def main() -> int:
                 context=f"Added folder {composite}",
             )
         )
-        errors.extend(
-            _identity_policy_errors(
-                base_sha=base_sha,
-                inner_folder=composite,
-                config=config,
-                meta={},
-                catalog_rows=catalog_identity_rows,
-                pending_logical_slugs=pending_logical_slugs,
-                context=f"Added folder {composite}",
-            )
+        id_errs, id_manual = _identity_policy_assess(
+            base_sha=base_sha,
+            inner_folder=composite,
+            config=config,
+            meta={},
+            catalog_rows=catalog_identity_rows,
+            pending_logical_slugs=pending_logical_slugs,
+            context=f"Added folder {composite}",
         )
+        errors.extend(id_errs)
+        manual_review_notes.extend(id_manual)
         logical = logical_theme_slug(composite)
         if logical in seen_pr_logical:
             errors.append(
@@ -1096,17 +1181,17 @@ def main() -> int:
                     )
                 else:
                     seen_pr_logical.add(logical)
-                errors.extend(
-                    _identity_policy_errors(
-                        base_sha=base_sha,
-                        inner_folder=inner["folder"],
-                        config=inner["config"],
-                        meta=meta,
-                        catalog_rows=catalog_identity_rows,
-                        pending_logical_slugs=pending_logical_slugs,
-                        context=f"ZIP {path}",
-                    )
+                id_errs, id_manual = _identity_policy_assess(
+                    base_sha=base_sha,
+                    inner_folder=inner["folder"],
+                    config=inner["config"],
+                    meta=meta,
+                    catalog_rows=catalog_identity_rows,
+                    pending_logical_slugs=pending_logical_slugs,
+                    context=f"ZIP {path}",
                 )
+                errors.extend(id_errs)
+                manual_review_notes.extend(id_manual)
             errors.extend(
                 _zip_title_impersonation_scan(
                     blob,
@@ -1119,9 +1204,16 @@ def main() -> int:
     if errors:
         return _fail(errors)
 
+    manual_review_notes = _dedupe_strs(manual_review_notes)
+    auto_merge_ok = len(manual_review_notes) == 0
+    print(f"THEME_PR_AUTO_MERGE_ALLOWED={'1' if auto_merge_ok else '0'}")
+    for note in manual_review_notes:
+        print(f"THEME_PR_MANUAL_REVIEW: {note}")
+
     print(
         f"Validation passed for {len(folder_state)} new theme folder(s)"
         f" and {len(zip_paths)} zip submission(s)."
+        + (" Automatic merge is allowed." if auto_merge_ok else " Maintainer review is required before merge.")
     )
     return 0
 
