@@ -27,7 +27,7 @@
 
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="site-theme.css?v=20260522">
+    <link rel="stylesheet" href="site-theme.css?v=20260523">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
     <link rel="stylesheet" href="y1-theme-preview.css?v=20260215">
     <link rel="stylesheet" href="theme-analytics.css?v=20260518">
@@ -35,10 +35,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="theme-packaging.js"></script>
     <script src="y1-theme-preview.js?v=20260215"></script>
-    <script src="theme-artwork-compat.js?v=20260516"></script>
-    <script src="gold-theme-detect.js?v=20260522"></script>
+    <script src="theme-artwork-compat.js?v=20260523"></script>
+    <script src="gold-theme-detect.js?v=20260523"></script>
     <script src="gallery-loaded-theme.js"></script>
-    <script src="theme-analytics.js?v=20260521"></script>
+    <script src="theme-analytics.js?v=20260523"></script>
 
     <style>
         html {
@@ -341,25 +341,6 @@
             margin: 0;
         }
 
-        .theme-gold-title-badge {
-            display: inline-block;
-            font-size: 0.68rem;
-            font-weight: 800;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            color: #1a1206;
-            padding: 2px 7px;
-            border-radius: 6px;
-            background: linear-gradient(135deg, #5c4014, #b8891e 42%, #f2d06a 52%, #b8891e 62%, #5c4014);
-            border: 1px solid rgba(255, 230, 160, 0.75);
-            box-shadow: 0 1px 6px rgba(201, 162, 39, 0.28);
-            vertical-align: middle;
-        }
-
-        .theme-gold-title-badge[hidden] {
-            display: none !important;
-        }
-
         .theme-preview-frame {
             position: relative;
             width: min(360px, 100%);
@@ -377,6 +358,13 @@
             grid-area: 1 / 1;
             min-width: 0;
             min-height: 0;
+        }
+
+        .theme-preview-frame .theme-preview-gold-badge {
+            z-index: 4;
+            align-self: start;
+            justify-self: start;
+            margin: 8px;
         }
 
         .theme-preview-frame .y1-theme-preview-host {
@@ -2861,6 +2849,8 @@
             if (!card) return;
             const b = card.querySelector('.theme-gold-title-badge');
             if (b) b.hidden = !visible;
+            const corner = card.querySelector('.theme-preview-gold-badge');
+            if (corner) corner.hidden = !visible;
             if (visible) card.setAttribute('data-gold', '1');
             else card.removeAttribute('data-gold');
         }
@@ -2908,6 +2898,7 @@
                 setGalleryCardGoldTitleBadge(card, false);
                 return;
             }
+            if (card.getAttribute('data-gold') === '1') return;
             if (window.GoldThemeDetect && typeof window.GoldThemeDetect.qualifiesForGoldAsync === 'function') {
                 const ok = await window.GoldThemeDetect.qualifiesForGoldAsync(
                     cfg,
@@ -2994,9 +2985,17 @@
             const previewFrame = document.createElement('div');
             previewFrame.className = 'theme-preview-frame';
 
+            const previewGoldBadge = document.createElement('a');
+            previewGoldBadge.className = 'theme-preview-gold-badge';
+            previewGoldBadge.href = 'gold-badge.html';
+            previewGoldBadge.textContent = 'Gold';
+            previewGoldBadge.hidden = true;
+            previewGoldBadge.title = 'Gold Badge — fully compatible with the latest OS';
+            previewGoldBadge.setAttribute('aria-label', 'Learn about the Gold Badge');
+
             const simHost = document.createElement('div');
             simHost.className = 'y1-theme-preview-host';
-            previewFrame.appendChild(simHost);
+            previewFrame.append(previewGoldBadge, simHost);
 
             const img = document.createElement('img');
             const metaScreenshot = String(theme.screenshot || '');
@@ -3156,10 +3155,6 @@
             goldBadge.hidden = true;
             goldBadge.title = 'What Gold Badge means — fully compatible with the latest OS';
             goldBadge.setAttribute('aria-label', 'Learn about the Gold Badge');
-            if (String(theme.compatibilityMedal || '').toLowerCase() === 'gold') {
-                goldBadge.hidden = false;
-                c.setAttribute('data-gold', '1');
-            }
             titleRow.append(n, goldBadge);
 
             const d = document.createElement('div');
@@ -3274,6 +3269,9 @@
             mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, c, '');
             c.append(previewFrame, variantRow, titleRow, d, metricsHost, a, bd);
             c.insertBefore(variantRow, previewFrame);
+            if (String(theme.compatibilityMedal || '').toLowerCase() === 'gold') {
+                setGalleryCardGoldTitleBadge(c, true);
+            }
             if (theme.sourceType !== 'external' && folderPath) {
                 const corner = document.createElement('div');
                 corner.className = 'theme-card-corner-actions';
@@ -3348,7 +3346,7 @@
                 return;
             }
             populateAuthorFilter(filteredThemes);
-            if (goldOnlyFilter && window.GoldThemeDetect) {
+            if (window.GoldThemeDetect) {
                 await window.GoldThemeDetect.annotateThemes(filteredThemes, {
                     batchSize: 8,
                     buildFileUrl: (cf, rel) => buildThemeFileUrl(cf, rel),
@@ -3389,12 +3387,7 @@
                 }
             })();
 
-            void enrichThemesWithCompatibilityMedals(themes)
-                .then(() => {
-                    syncTitleGoldBadgesFromEnrichedThemes(themes);
-                    applyFilters();
-                })
-                .catch(() => {});
+            syncTitleGoldBadgesFromEnrichedThemes(filteredThemes);
 
             handleHashAutoDownload();
             } catch (err) {

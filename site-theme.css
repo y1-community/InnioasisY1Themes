@@ -292,6 +292,36 @@ a.theme-gold-medal-banner:hover {
     text-decoration: none;
 }
 
+.theme-preview-gold-badge,
+a.theme-preview-gold-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 4;
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #1a1206;
+    padding: 2px 7px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #5c4014, #b8891e 42%, #f2d06a 52%, #b8891e 62%, #5c4014);
+    border: 1px solid rgba(255, 230, 160, 0.75);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+    text-decoration: none;
+    pointer-events: auto;
+}
+
+a.theme-preview-gold-badge:hover {
+    filter: brightness(1.08);
+    text-decoration: none;
+}
+
+.theme-preview-gold-badge[hidden],
+a.theme-preview-gold-badge[hidden] {
+    display: none !important;
+}
+
 /* —— Primary actions (gallery hero) —— */
 .cast-div .btn,
 .wrap .cast-div a.btn {

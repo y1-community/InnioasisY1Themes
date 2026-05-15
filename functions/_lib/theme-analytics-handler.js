@@ -47,6 +47,28 @@ const SCHEMA_STATEMENTS = [
 let schemaReady = false;
 let schemaInitPromise = null;
 
+/** Add direct_installs column when theme_metrics predates that field. */
+async function migrateDirectInstallsColumn(db) {
+  const done = await db
+    .prepare(`SELECT 1 AS ok FROM _y1_migrations WHERE id = ?`)
+    .bind("direct_installs_v1")
+    .first();
+  if (done) return;
+  try {
+    await db
+      .prepare(
+        `ALTER TABLE theme_metrics ADD COLUMN direct_installs INTEGER NOT NULL DEFAULT 0`,
+      )
+      .run();
+  } catch (_) {
+    /* column may already exist */
+  }
+  await db
+    .prepare(`INSERT OR IGNORE INTO _y1_migrations (id) VALUES (?)`)
+    .bind("direct_installs_v1")
+    .run();
+}
+
 /** Migrate legacy 1–5 star votes to 0–5 reaction scale (down=0, up=2.5, heart=5). */
 async function migrateRatingSchemaToReactions(db) {
   const done = await db
@@ -94,6 +116,7 @@ export async function ensureAnalyticsSchema(db) {
       for (const sql of SCHEMA_STATEMENTS) {
         await db.prepare(sql).run();
       }
+      await migrateDirectInstallsColumn(db);
       await migrateRatingSchemaToReactions(db);
       schemaReady = true;
     })().catch((err) => {

@@ -10,11 +10,11 @@
     <link rel="icon" href="y1_illustration.png" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="https://innioasis.app/styles.css" />
-    <link rel="stylesheet" href="site-theme.css?v=20260522" />
+    <link rel="stylesheet" href="site-theme.css?v=20260523" />
     <link rel="stylesheet" href="theme-analytics.css?v=20260521" />
     <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
-    <script src="theme-artwork-compat.js?v=20260516"></script>
-    <script src="gold-theme-detect.js?v=20260522"></script>
+    <script src="theme-artwork-compat.js?v=20260523"></script>
+    <script src="gold-theme-detect.js?v=20260523"></script>
     <script src="theme-analytics.js?v=20260521"></script>
     <style>
         body {
@@ -387,7 +387,11 @@
                 const catalog = (Array.isArray(data) ? data : data.themes || []).filter(
                     (t) => t && String(t.sourceType || "internal").toLowerCase() !== "external",
                 );
-                const gold = await window.GoldThemeDetect.findGoldThemes(catalog, { batchSize: 8 });
+                const gold = await window.GoldThemeDetect.findGoldThemes(catalog, {
+                    batchSize: 8,
+                    buildFileUrl: (cf, rel) =>
+                        window.GoldThemeDetect.buildThemeFileUrl(cf, rel),
+                });
                 if (!gold.length) {
                     setGalleryCount(0);
                     grid.innerHTML =

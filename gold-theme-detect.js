@@ -93,6 +93,11 @@
         return artworkCompatQualifiesForGold(cfg, folderPath, fileUrlFn);
     }
 
+    /** Gold = config declares required artwork paths and each linked asset passes health checks. */
+    async function qualifiesFromConfigAndAssets(cfg, folderPath, fileUrlFn) {
+        return qualifiesForGoldAsync(cfg, folderPath, fileUrlFn);
+    }
+
     function coverUrlForTheme(theme) {
         const shot = String(theme.screenshot || theme.cover || "").trim();
         if (shot) {
@@ -173,6 +178,7 @@
         configQualifiesForGold,
         artworkCompatQualifiesForGold,
         qualifiesForGoldAsync,
+        qualifiesFromConfigAndAssets,
         isGoldTheme,
         annotateThemes,
         findGoldThemes,

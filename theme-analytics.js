@@ -236,7 +236,7 @@
             const data = await res.json();
             const themes = data && data.themes ? data.themes : {};
             for (const k of missing) {
-                statsCache.set(k, themes[k] || emptyStats());
+                statsCache.set(k, normalizeStats(themes[k]));
             }
         } catch (_) {}
     }
@@ -257,23 +257,37 @@
     }
 
     function emptyStats() {
+        return normalizeStats({});
+    }
+
+    /** Public download count = ZIP downloads + direct installs (always recomputed). */
+    function normalizeStats(raw) {
+        const s = raw && typeof raw === "object" ? raw : {};
+        const zipDownloads =
+            Number(s.zipDownloads != null ? s.zipDownloads : s.zip_downloads) || 0;
+        const directInstalls =
+            Number(s.directInstalls != null ? s.directInstalls : s.direct_installs) || 0;
+        const pageViews = Number(s.pageViews != null ? s.pageViews : s.page_views) || 0;
+        const ratingCount = Number(s.ratingCount != null ? s.ratingCount : s.rating_count) || 0;
+        const ratingAverage =
+            Number(s.ratingAverage != null ? s.ratingAverage : s.rating_average) || 0;
         return {
-            pageViews: 0,
-            zipDownloads: 0,
-            directInstalls: 0,
-            downloads: 0,
-            ratingCount: 0,
-            ratingAverage: 0,
-            userRating: null,
+            pageViews,
+            zipDownloads,
+            directInstalls,
+            downloads: zipDownloads + directInstalls,
+            ratingCount,
+            ratingAverage,
+            userRating:
+                typeof s.userRating === "number" && !Number.isNaN(s.userRating)
+                    ? s.userRating
+                    : null,
         };
     }
 
     function bumpLocalStat(themeKey, field, delta) {
         const cur = statsCache.get(themeKey) || emptyStats();
-        const next = { ...cur, [field]: (Number(cur[field]) || 0) + delta };
-        if (field === "zipDownloads" || field === "directInstalls") {
-            next.downloads = (Number(next.zipDownloads) || 0) + (Number(next.directInstalls) || 0);
-        }
+        const next = normalizeStats({ ...cur, [field]: (Number(cur[field]) || 0) + delta });
         statsCache.set(themeKey, next);
     }
 
@@ -447,7 +461,7 @@
             voterId: getVisitorId(),
         });
         if (body && body.stats) {
-            statsCache.set(key, body.stats);
+            statsCache.set(key, normalizeStats(body.stats));
         } else {
             const cur = statsCache.get(key) || emptyStats();
             statsCache.set(key, { ...cur, userRating: rating });

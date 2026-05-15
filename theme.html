@@ -46,7 +46,7 @@
     <link rel="icon" href="y1_illustration.png">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="site-theme.css?v=20260522">
+    <link rel="stylesheet" href="site-theme.css?v=20260523">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
     <link rel="stylesheet" href="y1-theme-preview.css?v=20260215">
     <link rel="stylesheet" href="theme-analytics.css?v=20260518">
@@ -237,20 +237,6 @@
         font-family: Inter;
         font-weight: normal;
         cursor: pointer;
-    }
-
-    .theme-gold-medal-banner {
-        border-radius: 10px;
-        padding: 10px 12px;
-        border: 1px solid rgba(212, 175, 55, 0.55);
-        background: linear-gradient(135deg, rgba(90, 62, 20, 0.42), rgba(201, 162, 39, 0.26));
-        color: #fdecc8;
-        font-size: 0.88rem;
-        line-height: 1.35;
-    }
-
-    .theme-gold-medal-banner strong {
-        margin-left: 4px;
     }
 
     #theme-page-loading {
@@ -1840,9 +1826,27 @@
             if (warnFn && themeMeta && themeMeta.rawConfig) {
                 artworkWarnings = await warnFn(themeFileUrl, themeMeta.rawConfig, activeContentFolder);
             }
-            const earnedGold = !!(warnFn && themeMeta && themeMeta.rawConfig && Array.isArray(artworkWarnings) && artworkWarnings.length === 0);
+            let showGoldMedal = false;
+            if (themeMeta && themeMeta.rawConfig && activeContentFolder) {
+                const medalOverride = String(
+                    (themeMeta.rawConfig.gallery && themeMeta.rawConfig.gallery.compatibilityMedal) || ''
+                ).trim().toLowerCase();
+                if (medalOverride === 'gold' || String(themeMeta.compatibilityMedal || '').toLowerCase() === 'gold') {
+                    showGoldMedal = true;
+                } else if (medalOverride === 'none') {
+                    showGoldMedal = false;
+                } else if (window.GoldThemeDetect && typeof window.GoldThemeDetect.qualifiesForGoldAsync === 'function') {
+                    showGoldMedal = await window.GoldThemeDetect.qualifiesForGoldAsync(
+                        themeMeta.rawConfig,
+                        activeContentFolder,
+                        themeFileUrl
+                    );
+                } else {
+                    showGoldMedal = !!(Array.isArray(artworkWarnings) && artworkWarnings.length === 0);
+                }
+            }
             if (medalEl) {
-                medalEl.style.display = earnedGold ? 'block' : 'none';
+                medalEl.style.display = showGoldMedal ? 'block' : 'none';
             }
             if (artworkMessageWrap && artworkSummaryEl && artworkListEl) {
                 if (artworkWarnings.length) {
