@@ -13,14 +13,16 @@ Rules:
   alongside the same PR's ``*.zip`` (see theme-upload-handler).
 - Other **new** single-segment root files (e.g. OS junk next to a zip) are ignored for
   this validator unless they use a blocked extension or are a stray ``config.json``.
+  (Root ``.html`` / ``.htm`` files are ignored like other stray single-segment files.)
 - Non-zip **theme** additions must be under ``<ThemeFolder>/...`` at repo root (brand-new
   folder for automatic merge; **additive files under a folder that already exists on base**
   still validate but require maintainer merge).
-- Dangerous/disallowed files are blocked.
+- Dangerous/disallowed files are blocked (executables, scripts, etc.). ``.html`` / ``.htm``
+  inside zips do not fail validation; ingest skips writing them into theme folders.
 - New direct theme folders must include config.json + at least one image file.
 - Added zip files are allowed and validated:
   - path-safe entries only (no path traversal/absolute paths)
-  - dangerous file types blocked inside zips
+  - dangerous file types blocked inside zips (except ``.html`` / ``.htm``, which are ignored)
   - zip must contain one or more theme folders, each with a unique folder name
   - each theme folder in zip must include config.json and image assets
   - root ``config.json`` theme may use images in subfolders that are not another
@@ -64,8 +66,6 @@ THEMES_PREFIX = ""
 RESERVED_ROOT_SEGMENTS = {"scripts", "functions", "assets"}
 ZIP_EXTENSION = ".zip"
 BLOCKED_EXTENSIONS = {
-    ".html",
-    ".htm",
     ".exe",
     ".msi",
     ".dll",

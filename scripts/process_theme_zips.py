@@ -6,10 +6,12 @@ each theme folder (identified by folder-local config.json) into the repository
 root (this script's REPO_ROOT). Root-level ``config.json`` themes may keep
 images in subfolders that are not another theme's directory (same rule as
 ``validate_theme_pr.py``).
-Dangerous file types are blocked. If an incoming zip identity matches an
-existing catalog/config identity (author + title), extraction overwrites that
-existing theme folder in place; otherwise new destination folders must still be
-unique. Successfully processed zip files are removed.
+Dangerous file types are blocked during zip scan. ``.html`` / ``.htm`` members are
+allowed in archives but are **not written** when extracting (they are not stored in
+the repository).
+If an incoming zip identity matches an existing catalog/config identity (author +
+title), extraction overwrites that existing theme folder in place; otherwise new
+destination folders must still be unique. Successfully processed zip files are removed.
 """
 
 from __future__ import annotations
@@ -32,8 +34,6 @@ REPO_ROOT = _GIT_ROOT
 ZIP_EXTENSION = ".zip"
 EXCLUDED_SCAN_DIRS = {".git", ".github", "scripts", "assets", "functions", ".vscode", "themes"}
 BLOCKED_EXTENSIONS = {
-    ".html",
-    ".htm",
     ".exe",
     ".msi",
     ".dll",
@@ -266,6 +266,11 @@ def _is_blocked_file(path_value: str) -> bool:
     return Path(path_value).suffix.lower() in BLOCKED_EXTENSIONS
 
 
+def _skip_extract_suffix(path_value: str) -> bool:
+    """Do not materialize web shells from zips into theme folders."""
+    return Path(path_value).suffix.lower() in {".html", ".htm"}
+
+
 def _config_has_image_refs(config: dict[str, Any]) -> bool:
     """True if any JSON string value looks like an image path (incl. theme_info / source_info)."""
     for item in _iter_values(config):
@@ -336,6 +341,8 @@ def _extract_theme(
         else:
             rel = PurePosixPath(name[len(prefix) :])
         if not rel.parts:
+            continue
+        if _skip_extract_suffix(str(rel)):
             continue
         out_path = dest.joinpath(*rel.parts)
         out_path.parent.mkdir(parents=True, exist_ok=True)
