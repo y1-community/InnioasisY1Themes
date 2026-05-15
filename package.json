@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "deploy": "node scripts/deploy-upload-worker.mjs",
-    "deploy:upload-worker": "node scripts/deploy-upload-worker.mjs"
+    "deploy:upload-worker": "node scripts/deploy-upload-worker.mjs",
+    "deploy:analytics-worker": "node scripts/deploy-analytics-worker.mjs"
   },
   "devDependencies": {
     "wrangler": "^4.92.0"

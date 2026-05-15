@@ -1,0 +1,11 @@
+# y1-theme-analytics — npx wrangler deploy --config cloudflare-worker-analytics.toml
+# Free plan: no [limits] block.
+
+name = "y1-theme-analytics"
+main = "analytics-worker.js"
+compatibility_date = "2026-05-11"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "y1-theme-metrics"
+database_id = "c2bffa31-ebe4-473e-b1f9-f0e829e7eb6b"

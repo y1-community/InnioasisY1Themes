@@ -1,12 +1,7 @@
 # Standalone Worker: theme ZIP upload API for GitHub Pages (or any static host).
 # Local: cd workers/theme-upload && npx wrangler deploy
-# Git-connected: from repo root use --config workers/theme-upload/wrangler.toml
-# If Cloudflare "Root directory" is workers/theme-upload, use plain: npx wrangler deploy (no --config path).
-# Do not use the repository ROOT wrangler.toml here — that file is Pages-only (no Worker main).
-
-# Direct multi-file uploads issue many GitHub API calls; raise the per-invocation cap (free tier allows up to 50 by default).
-[limits]
-subrequests = 150
+# Git-connected (repo root): npx wrangler deploy --config cloudflare-worker-upload.toml
+# Free plan: no [limits] block (paid-only); default subrequest cap applies.
 
 name = "y1-theme-upload"
 main = "src/index.js"

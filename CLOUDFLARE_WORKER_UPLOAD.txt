@@ -32,6 +32,11 @@ Alternative (if you prefer deploy in the Deploy step):
 Do NOT use plain `npx wrangler deploy` unless Root directory is workers/theme-upload
 AND you only use `npx wrangler deploy` with no --config path.
 
+Free plan note
+--------------
+  Do not add [limits] cpu_ms or high subrequests in wrangler.toml — deploy fails with
+  error 100328 ("CPU limits are not supported for the Free plan"). Defaults apply.
+
 Secrets (Worker → Settings → Variables)
 ---------------------------------------
   GITHUB_UPLOAD_TOKEN   (required, encrypted)
