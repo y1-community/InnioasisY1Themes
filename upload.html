@@ -1347,14 +1347,26 @@
             extraVariationsAddBtn.addEventListener("click", () => promptAndAddExtraVariation());
         }
         if (extraVariationsList) {
-            extraVariationsList.addEventListener("input", () => syncCollisionUi());
-            extraVariationsList.addEventListener("change", () => syncCollisionUi());
+            extraVariationsList.addEventListener("input", () => {
+                syncCollisionUi();
+                updateIngestPathPreviews();
+            });
+            extraVariationsList.addEventListener("change", () => {
+                syncCollisionUi();
+                updateIngestPathPreviews();
+            });
         }
 
         const metaEditor = document.getElementById("meta-editor");
         const metaEditorList = document.getElementById("meta-editor-list");
-        metaEditorList.addEventListener("input", () => syncCollisionUi());
-        metaEditorList.addEventListener("change", () => syncCollisionUi());
+        metaEditorList.addEventListener("input", () => {
+            syncCollisionUi();
+            updateIngestPathPreviews();
+        });
+        metaEditorList.addEventListener("change", () => {
+            syncCollisionUi();
+            updateIngestPathPreviews();
+        });
         const editAck = document.getElementById("edit-ack");
         const editNotice = document.getElementById("edit-notice");
         const editFolderEl = editNotice && editNotice.querySelector("[data-edit-folder]");
@@ -2283,6 +2295,35 @@
                 .replaceAll("\"", "&quot;");
         }
 
+        /**
+         * Folder label + path for meta cards: post-ingest folder from title/author rules (matches packaging + Actions).
+         * @param {Map<string,string>|null} renamesSnapshot from effectiveRootRenames()
+         */
+        function ingestPreviewLabelAndPath(entry, renamesSnapshot) {
+            const p = normRelPath(entry.path || "");
+            if (isVariantStyleConfigPath(p)) {
+                return { label: detectThemeLabel(p), pathDisplay: p };
+            }
+            if (!isRootThemeConfigPath(p)) {
+                return { label: detectThemeLabel(p), pathDisplay: p };
+            }
+            const rawRoot = inferEntryRootFolder(p);
+            if (!rawRoot) return { label: entry.label, pathDisplay: p };
+            const map = renamesSnapshot && renamesSnapshot.size ? renamesSnapshot : new Map();
+            const dest = String(
+                map.get(rawRoot) || desiredRepoFolderForUploadRoot(rawRoot) || rawRoot
+            ).trim();
+            let inner = "config.json";
+            if (rawRoot && p.length > rawRoot.length + 1 && p.toLowerCase().startsWith(rawRoot.toLowerCase() + "/")) {
+                inner = p.slice(rawRoot.length + 1);
+            } else if (!/^config\.json$/i.test(p)) {
+                const slash = p.indexOf("/");
+                inner = slash >= 0 ? p.slice(slash + 1) : "config.json";
+            }
+            const pathDisplay = inner ? `${dest}/${inner}`.replace(/\/+/g, "/") : `${dest}/config.json`;
+            return { label: dest, pathDisplay };
+        }
+
         function isConfigPath(path) {
             return /(^|\/)config\.json$/i.test(String(path || ""));
         }
@@ -2370,24 +2411,20 @@
                 return;
             }
 
-            if (
-                usePrimaryLookSlotUi() &&
-                extraVariationsList &&
-                extraVariationsList.querySelector(".extra-variation-card")
-            ) {
-                readExtraVariationRowsFromDom();
-            }
-
+            const renamesSnapshot = effectiveRootRenames();
             const batchLayout = themeInfoEntries.length > 1;
             const html = themeInfoEntries
                 .map((entry, idx) => {
                     const isVariant = isVariantStyleConfigPath(entry.path);
                     const skipRootFields = usePrimaryLookSlotUi() && isRootThemeConfigPath(entry.path);
+                    const preview = isRootThemeConfigPath(entry.path)
+                        ? ingestPreviewLabelAndPath(entry, renamesSnapshot)
+                        : { label: entry.label, pathDisplay: entry.path };
                     const head = batchLayout
                         ? ""
-                        : `<h4>${escapeHtml(entry.label)} <span class="hint">(${escapeHtml(entry.path)})</span></h4>`;
+                        : `<h4>${escapeHtml(preview.label)} <span class="hint">(${escapeHtml(preview.pathDisplay)})</span></h4>`;
                     const summary = batchLayout
-                        ? `<summary class="meta-card-details-summary"><strong>${escapeHtml(entry.label)}</strong> <span class="hint">(${escapeHtml(entry.path)})</span></summary>`
+                        ? `<summary class="meta-card-details-summary"><strong>${escapeHtml(preview.label)}</strong> <span class="hint">(${escapeHtml(preview.pathDisplay)})</span></summary>`
                         : "";
                     const wrapOpen = batchLayout ? `<details class="meta-card-details" ${idx === 0 ? "open" : ""}>` : "";
                     const wrapClose = batchLayout ? "</details>" : "";
@@ -2468,6 +2505,31 @@
             refreshBatchThemePanel();
             syncCollisionUi();
             renderExtraVariationList();
+            updateIngestPathPreviews();
+        }
+
+        /** Refresh folder/path hints on meta cards when title or author changes (live preview of ingest output). */
+        function updateIngestPathPreviews() {
+            if (!metaEditorList || !themeInfoEntries.length) return;
+            readEditorValues();
+            const re = effectiveRootRenames();
+            themeInfoEntries.forEach((entry, idx) => {
+                if (!isRootThemeConfigPath(entry.path)) return;
+                const preview = ingestPreviewLabelAndPath(entry, re);
+                const card = metaEditorList.querySelector(`.meta-card[data-entry-idx="${idx}"]`);
+                if (!card) return;
+                const h4 = card.querySelector(":scope > h4");
+                if (h4) {
+                    h4.innerHTML = `${escapeHtml(preview.label)} <span class="hint">(${escapeHtml(preview.pathDisplay)})</span>`;
+                }
+                const details = card.closest(".meta-card-details");
+                if (details) {
+                    const sum = details.querySelector("summary.meta-card-details-summary");
+                    if (sum) {
+                        sum.innerHTML = `<strong>${escapeHtml(preview.label)}</strong> <span class="hint">(${escapeHtml(preview.pathDisplay)})</span>`;
+                    }
+                }
+            });
         }
 
         function readEditorValues() {
