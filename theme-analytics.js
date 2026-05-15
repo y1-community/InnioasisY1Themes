@@ -63,6 +63,27 @@
         }
     }
 
+    /** Public aggregate stats are shown until the user opts out after choosing preferences. */
+    function shouldShowAnalyticsCounts(c) {
+        const s = c || loadConsent();
+        return !s.decided || s.analytics;
+    }
+
+    function shouldShowRatings(c) {
+        const s = c || loadConsent();
+        return !s.decided || s.ratingsView;
+    }
+
+    function shouldTrackAnalytics(c) {
+        const s = c || loadConsent();
+        return s.decided && s.analytics;
+    }
+
+    function shouldSubmitRatings(c) {
+        const s = c || loadConsent();
+        return s.decided && s.ratingsSubmit;
+    }
+
     function saveConsent(c) {
         localStorage.setItem(
             CONSENT_KEY,
@@ -115,27 +136,32 @@
         }
     }
 
+    async function fetchStatsChunk(missing) {
+        if (!missing.length || !apiUrl("/api/theme-stats")) return;
+        const q = new URLSearchParams();
+        q.set("themes", missing.join(","));
+        const c = loadConsent();
+        if (shouldSubmitRatings(c)) q.set("voterId", getVisitorId());
+        try {
+            const res = await fetch(apiUrl("/api/theme-stats") + "?" + q.toString(), {
+                cache: "no-store",
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+            const themes = data && data.themes ? data.themes : {};
+            for (const k of missing) {
+                statsCache.set(k, themes[k] || emptyStats());
+            }
+        } catch (_) {}
+    }
+
     async function fetchStatsMap(themeKeys) {
         const keys = [...new Set(themeKeys.map(normalizeThemeKey).filter(Boolean))];
         if (!keys.length) return {};
         const missing = keys.filter((k) => !statsCache.has(k));
-        if (missing.length && apiUrl("/api/theme-stats")) {
-            const q = new URLSearchParams();
-            q.set("themes", missing.join(","));
-            const c = loadConsent();
-            if (c.ratingsSubmit) q.set("voterId", getVisitorId());
-            try {
-                const res = await fetch(apiUrl("/api/theme-stats") + "?" + q.toString(), {
-                    cache: "no-store",
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    const themes = data && data.themes ? data.themes : {};
-                    for (const k of missing) {
-                        statsCache.set(k, themes[k] || emptyStats());
-                    }
-                }
-            } catch (_) {}
+        const CHUNK = 40;
+        for (let i = 0; i < missing.length; i += CHUNK) {
+            await fetchStatsChunk(missing.slice(i, i + CHUNK));
         }
         const out = {};
         for (const k of keys) {
@@ -169,7 +195,7 @@
         const key = normalizeThemeKey(themeKey);
         if (!key) return;
         const consent = loadConsent();
-        if (!consent.decided || !consent.analytics) return;
+        if (!shouldTrackAnalytics(consent)) return;
         if (event === "page_view") {
             try {
                 const sk = PV_SESSION_PREFIX + key;
@@ -192,7 +218,7 @@
         el.innerHTML = "";
         el.className = "y1-theme-metrics" + (el.dataset.cardMetrics === "1" ? " y1-theme-metrics--card" : "");
 
-        if (c.decided && c.analytics) {
+        if (shouldShowAnalyticsCounts(c)) {
             const views = document.createElement("span");
             views.className = "y1-metric";
             views.title = "Page views (gallery + theme page + preview)";
@@ -212,14 +238,14 @@
             el.append(views, dls);
         }
 
-        if (c.decided && c.ratingsView) {
+        if (shouldShowRatings(c)) {
             const ratingWrap = document.createElement("div");
             ratingWrap.className = "y1-theme-rating";
             ratingWrap.setAttribute("data-theme-key", themeKey);
 
             const label = document.createElement("span");
             label.className = "y1-rating-label";
-            label.textContent = c.ratingsSubmit ? "Rate:" : "Rating:";
+            label.textContent = shouldSubmitRatings(c) ? "Rate:" : "Rating:";
 
             const stars = document.createElement("span");
             stars.className = "y1-rating-stars";
@@ -239,7 +265,7 @@
                 if (filled) btn.classList.add("y1-star--on");
                 btn.innerHTML = filled ? "&#9733;" : "&#9734;";
                 btn.setAttribute("aria-label", i + " star" + (i > 1 ? "s" : ""));
-                if (!c.ratingsSubmit) {
+                if (!shouldSubmitRatings(c)) {
                     btn.disabled = true;
                 } else {
                     btn.addEventListener("click", () => submitRating(themeKey, i, ratingWrap));
@@ -259,9 +285,7 @@
             el.appendChild(ratingWrap);
         }
 
-        if (!c.decided) {
-            el.style.display = "none";
-        } else if (!c.analytics && !c.ratingsView) {
+        if (!shouldShowAnalyticsCounts(c) && !shouldShowRatings(c)) {
             el.style.display = "none";
         } else {
             el.style.display = "";
@@ -310,7 +334,7 @@
     async function submitRating(themeKey, rating, hostEl) {
         const key = normalizeThemeKey(themeKey);
         const consent = loadConsent();
-        if (!consent.decided || !consent.ratingsSubmit) return;
+        if (!shouldSubmitRatings(consent)) return;
         const body = await postJson("/api/theme-rating", {
             theme: key,
             rating,
@@ -474,7 +498,11 @@
         hasApi: () => !!readMetaOrigin(),
     };
 
-    global.addEventListener("y1-consent-changed", () => {
-        for (const key of metricsHosts.keys()) refreshMetricsHosts(key);
+    global.addEventListener("y1-consent-changed", async () => {
+        const keys = [...metricsHosts.keys()];
+        if (!keys.length) return;
+        statsCache.clear();
+        await fetchStatsMap(keys);
+        for (const key of keys) refreshMetricsHosts(key);
     });
 })(typeof window !== "undefined" ? window : globalThis);

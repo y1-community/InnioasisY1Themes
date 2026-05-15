@@ -9,9 +9,50 @@ export const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "Content-Type",
 };
 
-const THEME_KEY_RE = /^[a-zA-Z0-9][a-zA-Z0-9._\- ]{0,118}[a-zA-Z0-9.]?$/;
+const THEME_KEY_RE = /^[a-zA-Z0-9][a-zA-Z0-9._\- &()'+!]{0,118}[a-zA-Z0-9.()]?$/;
 const EVENTS = new Set(["page_view", "zip_download", "direct_install"]);
 const SOURCES = new Set(["gallery", "theme_page", "theme_lookup", "other"]);
+
+const SCHEMA_STATEMENTS = [
+  `CREATE TABLE IF NOT EXISTS theme_metrics (
+  theme_key TEXT PRIMARY KEY NOT NULL,
+  page_views INTEGER NOT NULL DEFAULT 0,
+  zip_downloads INTEGER NOT NULL DEFAULT 0,
+  direct_installs INTEGER NOT NULL DEFAULT 0,
+  rating_sum INTEGER NOT NULL DEFAULT 0,
+  rating_count INTEGER NOT NULL DEFAULT 0,
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+)`,
+  `CREATE TABLE IF NOT EXISTS theme_rating_votes (
+  theme_key TEXT NOT NULL,
+  voter_id TEXT NOT NULL,
+  rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+  PRIMARY KEY (theme_key, voter_id)
+)`,
+  `CREATE INDEX IF NOT EXISTS idx_theme_rating_votes_theme ON theme_rating_votes (theme_key)`,
+];
+
+let schemaReady = false;
+let schemaInitPromise = null;
+
+/** Create D1 tables on first use (Git deploy does not run schema.sql automatically). */
+export async function ensureAnalyticsSchema(db) {
+  if (!db) return;
+  if (schemaReady) return;
+  if (!schemaInitPromise) {
+    schemaInitPromise = (async () => {
+      for (const sql of SCHEMA_STATEMENTS) {
+        await db.prepare(sql).run();
+      }
+      schemaReady = true;
+    })().catch((err) => {
+      schemaInitPromise = null;
+      throw err;
+    });
+  }
+  await schemaInitPromise;
+}
 
 function jsonResponse(body, status = 200) {
   return Response.json(body, { status, headers: CORS_HEADERS });
@@ -90,6 +131,12 @@ export async function handleThemeEventPost(request, env) {
   if (!env.DB) {
     return jsonResponse({ error: "Analytics database not configured." }, 503);
   }
+  try {
+    await ensureAnalyticsSchema(env.DB);
+  } catch (err) {
+    console.error("schema init", err);
+    return jsonResponse({ error: "Analytics database not ready." }, 503);
+  }
   let body;
   try {
     body = await request.json();
@@ -120,6 +167,12 @@ export async function handleThemeEventPost(request, env) {
 export async function handleThemeRatingPost(request, env) {
   if (!env.DB) {
     return jsonResponse({ error: "Analytics database not configured." }, 503);
+  }
+  try {
+    await ensureAnalyticsSchema(env.DB);
+  } catch (err) {
+    console.error("schema init", err);
+    return jsonResponse({ error: "Analytics database not ready." }, 503);
   }
   let body;
   try {
@@ -169,11 +222,20 @@ export async function handleThemeStatsGet(request, env) {
   if (!env.DB) {
     return jsonResponse({ error: "Analytics database not configured." }, 503);
   }
+  try {
+    await ensureAnalyticsSchema(env.DB);
+  } catch (err) {
+    console.error("schema init", err);
+    return jsonResponse({ error: "Analytics database not ready." }, 503);
+  }
   const url = new URL(request.url);
   const voterId = String(url.searchParams.get("voterId") || "").trim().slice(0, 64);
   const keys = [];
   const single = url.searchParams.get("theme");
-  if (single) keys.push(single);
+  if (single) {
+    const k = normalizeThemeKey(single);
+    if (k) keys.push(k);
+  }
   const list = url.searchParams.get("themes");
   if (list) {
     for (const part of list.split(",")) {
