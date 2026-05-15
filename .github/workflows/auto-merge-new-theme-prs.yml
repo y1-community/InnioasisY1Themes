@@ -8,14 +8,14 @@
 # Only brand-new theme identities get THEME_PR_AUTO_MERGE_ALLOWED=1.
 # Gallery upload PRs may add a paired *.zip.meta.json next to the same PR's root *.zip.
 #
-# After a successful merge, theme extraction + themes.json + sitemap run on main via
+# After a successful merge, theme extraction + themes.json sync run on main via
 # [.github/workflows/theme-ingest-and-sync.yml] (push to main and workflow_run hook).
 # This job does not extract themes itself.
 # Removal PRs (title starts with [Removal]) never run this job: the workflow is skipped so
 # removal requests are always reviewed and merged manually — no automatic submission.
 #
 # Concurrency is per PR (cancel in-flight) so rapid pushes do not stack duplicate merge attempts.
-# Git pushes to main are serialized by theme-ingest-and-sync / generate-sitemap (theme-publish-main).
+# Git pushes to main are serialized by theme-ingest-and-sync / generate-sitemap / manual sync (theme-publish-main).
 
 name: Auto Merge New Theme PRs
 

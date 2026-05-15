@@ -3,11 +3,13 @@ name: Theme ingest and sync
 # Supports both uploader modes:
 # - direct file PRs (preferred): worker/client commits extracted theme files directly
 # - root zip artifacts (legacy fallback): extracted by scripts/process_theme_zips.py
-# Then sync themes.json; regenerate per-theme SEO index.html (Rewrite-ThemeIndexPages.ps1); sitemap; cleanup.
+# Then sync themes.json / theme configs and cleanup upload artifacts.
+# Intentionally does NOT regenerate every theme index.html or sitemap.xml here — those touched hundreds of
+# files and caused rebase conflicts when two uploads landed close together. SEO shells stay maintained
+# elsewhere (e.g. manual script, PR checks); sitemap is updated on a separate schedule (generate-sitemap.yml).
 # A follow-up job comments on the originating upload PR when sync succeeds or fails (notify-source-pr-after-ingest),
 # including a plain-language note and the theme page URL(s).
 # Theme raster downsizing (max ~320px) runs in the browser during packaging (upload.html), not here.
-# (Do not run a separate “sitemap on themes.json push” workflow — it raced this job and caused rebase conflicts.)
 
 on:
   push:
@@ -24,7 +26,8 @@ on:
     types:
       - completed
   schedule:
-    - cron: "*/30 * * * *"
+    # Catch-up if a push-triggered run lost a race; runs at most every 15 minutes (same concurrency queue).
+    - cron: "*/15 * * * *"
   workflow_dispatch:
 
 concurrency:
@@ -69,17 +72,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Regenerate theme SEO redirect index pages
-        run: pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/Rewrite-ThemeIndexPages.ps1
-
       - name: Cleanup stale upload zip/meta artifacts
         run: python scripts/cleanup_upload_artifacts.py
-
-      - name: Verify theme index pages exist
-        run: python scripts/sync_theme_metadata.py --check-theme-indexes
-
-      - name: Generate sitemap.xml
-        run: python scripts/generate_sitemap.py
 
       - name: Commit and push
         run: |
@@ -96,7 +90,7 @@ jobs:
             TARGET_BRANCH="main"
           fi
           git add -A
-          git commit -m "Theme ingest: extract zips, sync metadata, SEO index shells, sitemap, cleanup upload artifacts"
+          git commit -m "Theme ingest: extract zips, sync themes.json, cleanup upload artifacts"
           ok=0
           for attempt in 1 2 3 4 5 6 7 8; do
             if [[ -d .git/rebase-merge ]] || [[ -d .git/rebase-apply ]]; then
@@ -107,12 +101,8 @@ jobs:
             fi
             git fetch origin "${TARGET_BRANCH}"
             if ! git pull --rebase origin "${TARGET_BRANCH}"; then
-              echo "Rebase conflict or pull failed (attempt ${attempt}) — trying to resolve generated files..."
+              echo "Rebase conflict or pull failed (attempt ${attempt}) — trying to resolve trivial conflicts..."
               UNMERGED=$(git diff --name-only --diff-filter=U 2>/dev/null || true)
-              if echo "${UNMERGED}" | grep -qE '(^|/)sitemap\.xml$'; then
-                python scripts/generate_sitemap.py
-                git add sitemap.xml || true
-              fi
               if echo "${UNMERGED}" | grep -qE '\.pyc$|__pycache__'; then
                 git rm -rf --cached scripts/__pycache__ 2>/dev/null || true
                 rm -rf scripts/__pycache__ 2>/dev/null || true
@@ -305,7 +295,7 @@ jobs:
               const body = [
                 "### Gallery sync finished",
                 "",
-                "The automated listing update finished successfully. The theme list and related pages on the site are now in sync.",
+                "The automated listing update finished successfully. **themes.json** and your theme files on `main` are up to date.",
                 "",
                 "**Your theme page** (bookmark or share this link):",
                 urlLines,
@@ -334,7 +324,7 @@ jobs:
                 "",
                 "**This can happen when:**",
                 "- Two gallery updates landed close together and the automated commit could not be rebased or pushed cleanly.",
-                "- Generated metadata or theme index checks failed partway through the sync.",
+                "- Metadata sync or cleanup hit an unexpected error mid-run.",
                 "- A transient network or GitHub API issue stopped the job.",
                 "",
                 "You do not need to re-upload unless a maintainer asks. You can watch this PR for updates, or open a discussion with a link to this thread.",

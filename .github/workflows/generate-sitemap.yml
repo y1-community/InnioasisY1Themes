@@ -1,8 +1,7 @@
 name: Generate Sitemap
 
-# Sitemap updates on every themes.json push are handled inside **Theme ingest and sync**
-# (same run as metadata sync) to avoid a second workflow committing sitemap.xml and racing on rebase.
-# This workflow remains for scheduled drift correction and manual runs only.
+# Theme ingest no longer commits sitemap.xml (avoids huge rebases when uploads overlap).
+# This workflow refreshes sitemap.xml on a schedule and via manual runs.
 on:
   schedule:
     - cron: "23 */6 * * *"

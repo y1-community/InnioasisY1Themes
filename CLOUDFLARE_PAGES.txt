@@ -113,8 +113,8 @@ Production env vars (Settings → Environment variables):
 
 ZIP processing on default branch: after merges to **main**, the workflow
 **theme-ingest-and-sync** (see .github/workflows/theme-ingest-and-sync.yml) runs
-extract → sync_theme_metadata → deletes processed root zips and *.zip.meta.json,
-then verifies per-theme index.html where applicable.
+extract → sync_theme_metadata → deletes processed root zips and *.zip.meta.json.
+Bulk SEO ``index.html`` and sitemap updates are handled separately to avoid merge races.
 
 Custom domain — CNAME at repository root
 -----------------------------------------

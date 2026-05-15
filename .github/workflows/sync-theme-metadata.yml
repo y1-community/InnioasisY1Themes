@@ -30,9 +30,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Regenerate theme SEO redirect index pages
-        run: pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/Rewrite-ThemeIndexPages.ps1
-
       - name: Cleanup stale upload zip/meta artifacts
         run: python scripts/cleanup_upload_artifacts.py
 
@@ -51,7 +48,7 @@ jobs:
             exit 0
           fi
           git add -A
-          git commit -m "Auto-sync theme metadata and SEO index shells from folders"
+          git commit -m "Auto-sync theme metadata from folders"
           BRANCH="${GITHUB_REF_NAME:-main}"
           ok=0
           for attempt in 1 2 3 4 5 6; do
@@ -64,10 +61,6 @@ jobs:
             git fetch origin "${BRANCH}"
             if ! git pull --rebase origin "${BRANCH}"; then
               UNMERGED=$(git diff --name-only --diff-filter=U 2>/dev/null || true)
-              if echo "${UNMERGED}" | grep -qE '(^|/)sitemap\.xml$'; then
-                python scripts/generate_sitemap.py
-                git add sitemap.xml || true
-              fi
               if echo "${UNMERGED}" | grep -qE '\.pyc$|__pycache__'; then
                 git rm -rf --cached scripts/__pycache__ 2>/dev/null || true
                 rm -rf scripts/__pycache__ 2>/dev/null || true

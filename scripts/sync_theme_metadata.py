@@ -7,10 +7,10 @@ Behavior:
 - Ensure each theme config.json contains theme_info (backfilled from themes.json/folder).
 - Skip source-only folders that do not define theme image assets.
 
-Per-theme and variant ``index.html`` SEO redirect shells (meta + ``theme.html`` redirect) are
-written by ``scripts/Rewrite-ThemeIndexPages.ps1`` (Theme ingest CI on ``main``, or run locally).
-``python scripts/sync_theme_metadata.py --check-theme-indexes`` still verifies those files exist
-for image-backed catalog themes.
+Per-theme and variant ``index.html`` SEO redirect shells can be generated with
+``scripts/Rewrite-ThemeIndexPages.ps1`` (run locally or in a dedicated workflow when needed).
+``python scripts/sync_theme_metadata.py --check-theme-indexes`` verifies those files exist
+for image-backed catalog themes (e.g. PR sanity CI).
 """
 
 from __future__ import annotations
