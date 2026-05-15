@@ -37,8 +37,8 @@ const SCHEMA_STATEMENTS = [
   `CREATE INDEX IF NOT EXISTS idx_theme_rating_votes_theme ON theme_rating_votes (theme_key)`,
   `CREATE TABLE IF NOT EXISTS visitor_preferences (
   voter_id TEXT PRIMARY KEY NOT NULL,
-  contribute_analytics INTEGER NOT NULL DEFAULT 0,
-  contribute_ratings INTEGER NOT NULL DEFAULT 0,
+  contribute_analytics INTEGER NOT NULL DEFAULT 1,
+  contribute_ratings INTEGER NOT NULL DEFAULT 1,
   hide_ratings_view INTEGER NOT NULL DEFAULT 0,
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 )`,
@@ -215,17 +215,19 @@ async function saveVisitorPreferences(db, voterId, prefs) {
     .run();
 }
 
-/** No stored preference means do not contribute (opt-out by default). */
+/** No stored preference means contribute (opt-out only after explicit save). */
 async function visitorContributesAnalytics(db, voterId) {
   if (!voterId || voterId.length < 8) return false;
   const p = await loadVisitorPreferences(db, voterId);
-  return !!(p && p.analytics);
+  if (!p) return true;
+  return p.analytics !== false;
 }
 
 async function visitorContributesRatings(db, voterId) {
   if (!voterId || voterId.length < 8) return false;
   const p = await loadVisitorPreferences(db, voterId);
-  return !!(p && p.ratingsSubmit);
+  if (!p) return true;
+  return p.ratingsSubmit !== false;
 }
 
 export async function handleThemePrivacyGet(request, env) {
@@ -249,8 +251,8 @@ export async function handleThemePrivacyGet(request, env) {
       ok: true,
       stored: !!prefs,
       preferences: prefs || {
-        analytics: false,
-        ratingsSubmit: false,
+        analytics: true,
+        ratingsSubmit: true,
         ratingsView: true,
       },
     });
@@ -281,8 +283,8 @@ export async function handleThemePrivacyPost(request, env) {
     return jsonResponse({ error: "Missing visitor id." }, 400);
   }
   const prefs = {
-    analytics: body.analytics === true,
-    ratingsSubmit: body.ratingsSubmit === true,
+    analytics: body.analytics !== false,
+    ratingsSubmit: body.ratingsSubmit !== false,
     ratingsView: body.ratingsView !== false,
   };
   try {

@@ -4,23 +4,24 @@
 (function (global) {
     "use strict";
 
-    const CONSENT_KEY = "y1-theme-consent-v1";
+    const CONSENT_KEY = "y1-theme-consent-v2";
+    const LEGACY_CONSENT_KEY = "y1-theme-consent-v1";
     const VISITOR_KEY = "y1-rating-visitor-id";
     const PV_SESSION_PREFIX = "y1-pv-session:";
 
-    /** New visitors do not contribute until they opt in; public stats remain visible. */
+    /** Visitors contribute by default; they may opt out via Privacy settings. Public stats stay visible. */
     const DEFAULT_CONSENT = {
         decided: false,
-        analytics: false,
+        analytics: true,
         ratingsView: true,
-        ratingsSubmit: false,
+        ratingsSubmit: true,
     };
 
-    const OPT_IN_CONSENT = {
+    const DEFAULT_ACCEPT_CONSENT = {
         decided: true,
-        analytics: false,
+        analytics: true,
         ratingsView: true,
-        ratingsSubmit: false,
+        ratingsSubmit: true,
     };
 
     const statsCache = new Map();
@@ -89,16 +90,30 @@
     function normalizeConsentObject(c) {
         return {
             decided: !!c.decided,
-            analytics: c.analytics === true,
+            analytics: c.analytics !== false,
             ratingsView: c.ratingsView !== false,
-            ratingsSubmit: c.ratingsSubmit === true,
+            ratingsSubmit: c.ratingsSubmit !== false,
         };
+    }
+
+    function migrateLegacyConsent(parsed) {
+        if (!parsed || typeof parsed !== "object") return { ...DEFAULT_CONSENT };
+        if (!parsed.decided) return { ...DEFAULT_CONSENT };
+        return normalizeConsentObject(parsed);
     }
 
     function loadConsent() {
         try {
-            const raw = localStorage.getItem(CONSENT_KEY);
-            if (!raw) return { ...DEFAULT_CONSENT };
+            let raw = localStorage.getItem(CONSENT_KEY);
+            if (!raw) {
+                const legacyRaw = localStorage.getItem(LEGACY_CONSENT_KEY);
+                if (legacyRaw) {
+                    const migrated = migrateLegacyConsent(JSON.parse(legacyRaw));
+                    localStorage.setItem(CONSENT_KEY, JSON.stringify(migrated));
+                    return migrated;
+                }
+                return { ...DEFAULT_CONSENT };
+            }
             return normalizeConsentObject(JSON.parse(raw));
         } catch (_) {
             return { ...DEFAULT_CONSENT };
@@ -117,12 +132,12 @@
 
     function shouldTrackAnalytics(c) {
         const s = c || loadConsent();
-        return s.analytics === true;
+        return s.analytics !== false;
     }
 
     function shouldSubmitRatings(c) {
         const s = c || loadConsent();
-        return s.ratingsSubmit === true;
+        return s.ratingsSubmit !== false;
     }
 
     function saveConsentLocal(c) {
@@ -136,8 +151,8 @@
         if (!vid || !apiUrl("/api/theme-privacy")) return;
         await postJson("/api/theme-privacy", {
             voterId: vid,
-            analytics: prefs.analytics === true,
-            ratingsSubmit: prefs.ratingsSubmit === true,
+            analytics: prefs.analytics !== false,
+            ratingsSubmit: prefs.ratingsSubmit !== false,
             ratingsView: prefs.ratingsView !== false,
         });
     }
@@ -160,8 +175,8 @@
             if (!data || !data.stored || !data.preferences) return;
             const p = data.preferences;
             saveConsentLocal({
-                analytics: p.analytics === true,
-                ratingsSubmit: p.ratingsSubmit === true,
+                analytics: p.analytics !== false,
+                ratingsSubmit: p.ratingsSubmit !== false,
                 ratingsView: p.ratingsView !== false,
             });
         } catch (_) {}
@@ -460,8 +475,8 @@
         banner.innerHTML =
             '<div class="y1-consent-inner">' +
             "<p>Theme view, download, and rating <strong>totals are public</strong> for everyone. " +
-            "By default we do <strong>not</strong> add your visits, downloads, or ratings to those totals unless you opt in. " +
-            "Use the <strong>Privacy</strong> button (bottom-left) to change anytime.</p>" +
+            "By default we <strong>do</strong> include your visits, downloads, and ratings in those totals. " +
+            "Use the <strong>Privacy</strong> button (bottom-left) to opt out anytime.</p>" +
             '<div class="y1-consent-actions">' +
             '<button type="button" class="y1-consent-customize">Customize</button>' +
             '<button type="button" class="y1-consent-accept">Continue</button>' +
@@ -479,10 +494,10 @@
         panel.id = "y1-privacy-panel";
         panel.innerHTML =
             "<h3>Privacy &amp; ratings</h3>" +
-            '<p class="y1-privacy-hint">Public totals are always visible. Check a box only if you want your activity included.</p>' +
-            '<label><input type="checkbox" id="y1-opt-analytics" /> Contribute my page views &amp; download counts</label>' +
+            '<p class="y1-privacy-hint">Public totals are always visible. Uncheck a box to stop contributing that data.</p>' +
+            '<label><input type="checkbox" id="y1-opt-analytics" checked /> Contribute my page views &amp; download counts</label>' +
             '<label><input type="checkbox" id="y1-opt-ratings-view" checked /> Show star ratings from other visitors</label>' +
-            '<label><input type="checkbox" id="y1-opt-ratings-submit" /> Contribute my theme ratings</label>' +
+            '<label><input type="checkbox" id="y1-opt-ratings-submit" checked /> Contribute my theme ratings</label>' +
             '<button type="button" class="y1-privacy-save">Save preferences</button>';
 
         document.body.appendChild(banner);
@@ -512,7 +527,7 @@
         };
 
         banner.querySelector(".y1-consent-accept").addEventListener("click", () => {
-            void saveConsent({ ...OPT_IN_CONSENT }).then(() => {
+            void saveConsent({ ...DEFAULT_ACCEPT_CONSENT }).then(() => {
                 applyBannerVisibility();
                 global.dispatchEvent(new CustomEvent("y1-consent-changed"));
             });
