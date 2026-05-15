@@ -118,6 +118,8 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
     else { To-Absolute-AssetUrl '' }
 
     $previewUrl = Build-PreviewUrl $catalogFolder $variant
+    # Meta refresh content= must escape & as &amp; in HTML attributes.
+    $previewUrlRefreshAttr = ($previewUrl -replace '&', '&amp;')
     $sharePageUrl = Build-SharePageUrl $catalogFolder $variant
     $title = if ($variant) { "$displayName ($variant) by $author | Innioasis Y1" } else { "$displayName by $author | Innioasis Y1" }
 
@@ -164,6 +166,7 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
   <meta name="author" content="$authorE" />
   <meta name="robots" content="index,follow" />
   <link rel="canonical" href="$previewE" />
+  <meta http-equiv="refresh" content="0;url=$previewUrlRefreshAttr" />
 
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Innioasis Y1 Themes" />
@@ -178,7 +181,6 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
   <meta name="twitter:image" content="$ogImageE" />
 
   <script type="application/ld+json">$jsonLdSafe</script>
-  <noscript><meta http-equiv="refresh" content="0;url=$previewE" /></noscript>
 </head>
 <body>
   <main style="font-family:system-ui,Segoe UI,sans-serif;max-width:28rem;margin:2.5rem auto;padding:0 1.25rem;color:#eaeef7;background:#0f1116;min-height:100vh;">
@@ -191,85 +193,17 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
   </main>
   <script>
 (function () {
-  function trimTrailingSlashes(s) {
-    var t = String(s || '');
-    while (t.length > 1 && t.charAt(t.length - 1) === '/') t = t.slice(0, -1);
-    return t;
-  }
-  function stripIndexHtml(pathname) {
-    var p = String(pathname || '');
-    var low = p.toLowerCase();
-    if (low.endsWith('/index.html')) p = p.slice(0, -11);
-    else if (low.endsWith('/index.htm')) p = p.slice(0, -10);
-    return trimTrailingSlashes(p);
-  }
-  function previewUrlFromPath() {
-    try {
-      var pathPart = stripIndexHtml(location.pathname);
-      var segs = pathPart.split('/').filter(Boolean).map(function (seg) {
-        try { return decodeURIComponent(seg); } catch (e) { return seg; }
-      });
-      var meta = document.querySelector('meta[name="themes-preview-base-path"]');
-      var base = meta && meta.getAttribute('content') != null ? String(meta.getAttribute('content')).trim() : '';
-      if (base && base.charAt(0) !== '/') base = '/' + base;
-      if (base && base.charAt(base.length - 1) !== '/') base += '/';
-      if (base) {
-        var prefixSegs = trimTrailingSlashes(base).split('/').filter(Boolean);
-        if (prefixSegs.length && segs.length >= prefixSegs.length) {
-          var ok = true;
-          for (var j = 0; j < prefixSegs.length; j++) {
-            if (segs[j] !== prefixSegs[j]) { ok = false; break; }
-          }
-          if (ok) segs = segs.slice(prefixSegs.length);
-        }
-      }
-      if (!segs.length) return '';
-      var vidx = -1;
-      for (var i = 0; i < segs.length; i++) {
-        if (String(segs[i]).toLowerCase() === 'variants') { vidx = i; break; }
-      }
-      var theme = '';
-      var variant = '';
-      if (vidx > 0 && vidx < segs.length - 1) {
-        theme = segs.slice(0, vidx).join('/');
-        variant = segs.slice(vidx + 1).join('/');
-      } else {
-        theme = segs.join('/');
-      }
-      if (!theme) return '';
-      var rootBase = base ? new URL(base, location.origin).toString() : new URL('/', location.origin).toString();
-      var u = new URL('theme.html', rootBase);
-      u.searchParams.set('theme', theme);
-      if (variant) u.searchParams.set('variant', variant);
-      return u.toString();
-    } catch (e) {
-      return '';
-    }
-  }
-  var dest = previewUrlFromPath();
-  if (!dest) {
-    var c = document.querySelector('link[rel="canonical"]');
-    if (c && c.href) dest = c.href;
-  }
-  if (!dest) dest = $($previewUrl | ConvertTo-Json);
-  var cancelled = false;
-  var t = setTimeout(function () {
-    if (!cancelled && dest) location.replace(dest);
-  }, 420);
   var btn = document.getElementById('theme-seo-copy');
-  if (btn) {
-    btn.addEventListener('click', function () {
-      cancelled = true;
-      clearTimeout(t);
-      var u = btn.getAttribute('data-copy-url');
-      if (!u) return;
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(u).then(function () {
-          btn.textContent = 'Copied';
-        }).catch(function () {});
-      }
-    });
-  }
+  if (!btn) return;
+  btn.addEventListener('click', function () {
+    var u = btn.getAttribute('data-copy-url');
+    if (!u) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(u).then(function () {
+        btn.textContent = 'Copied';
+      }).catch(function () {});
+    }
+  });
 })();
   </script>
 </body>
