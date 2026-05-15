@@ -148,14 +148,14 @@ jobs:
               ? urls.map((u) => `- ${u}`).join("\n")
               : "- https://themes.innioasis.app/";
             const body = [
-              "Theme auto-submission succeeded and this PR was auto-merged.",
+              "Your theme was **merged automatically**—thank you for submitting it.",
               "",
-              "You can now share the theme URL:",
+              "**Because yours qualified for automatic merging**, it usually appears on the public gallery in **about 50 minutes**. The live site needs a short time to catch up; that is normal.",
+              "",
+              "**When it is ready**, open your theme page here:",
               shareLines,
               "",
-              "The gallery will pick up the new files next; allow **up to about 50 minutes** for https://themes.innioasis.app to refresh (GitHub Pages + CDN).",
-              "",
-              "_You will get another short update on this thread when the listing sync finishes—or if it needs manual attention._"
+              "We will post one more short note on this thread after the listing update behind the scenes finishes, or if the team needs to take a closer look.",
             ].join("\n");
 
             await github.rest.issues.createComment({

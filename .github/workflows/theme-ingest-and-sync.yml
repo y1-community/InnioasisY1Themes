@@ -4,7 +4,8 @@ name: Theme ingest and sync
 # - direct file PRs (preferred): worker/client commits extracted theme files directly
 # - root zip artifacts (legacy fallback): extracted by scripts/process_theme_zips.py
 # Then sync themes.json; regenerate per-theme SEO index.html (Rewrite-ThemeIndexPages.ps1); sitemap; cleanup.
-# A follow-up job comments on the originating upload PR when sync succeeds or fails (notify-source-pr-after-ingest).
+# A follow-up job comments on the originating upload PR when sync succeeds or fails (notify-source-pr-after-ingest),
+# including a plain-language note and the theme page URL(s).
 # Theme raster downsizing (max ~320px) runs in the browser during packaging (upload.html), not here.
 # (Do not run a separate “sitemap on themes.json push” workflow — it raced this job and caused rebase conflicts.)
 
@@ -179,6 +180,71 @@ jobs:
               return merged || list[0] || null;
             }
 
+            async function themePageUrlsForPr(prNumber) {
+              const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number: prNumber });
+              const prHeadSha = pr && pr.head && pr.head.sha;
+              const files = await github.paginate(github.rest.pulls.listFiles, {
+                owner,
+                repo,
+                pull_number: prNumber,
+                per_page: 100,
+              });
+              const folders = new Set();
+              async function readShareHintsFromMeta(nextToZipPath) {
+                const metaPath = nextToZipPath + ".meta.json";
+                try {
+                  const { data } = await github.rest.repos.getContent({
+                    owner,
+                    repo,
+                    path: metaPath,
+                    ref: prHeadSha,
+                  });
+                  if (!data || data.type !== "file" || !data.content) return false;
+                  const text = Buffer.from(data.content, "base64").toString("utf8");
+                  const j = JSON.parse(text);
+                  const hints = j && Array.isArray(j.shareFolderHints) ? j.shareFolderHints : [];
+                  let added = false;
+                  for (const h of hints) {
+                    const s = String(h || "").trim();
+                    if (s) {
+                      folders.add(s);
+                      added = true;
+                    }
+                  }
+                  return added;
+                } catch (e) {
+                  return false;
+                }
+              }
+              const rootZips = [];
+              for (const file of files) {
+                if (!file) continue;
+                const name = String(file.filename || "").trim();
+                if (!name) continue;
+                if (/^[^/]+\/config\.json$/i.test(name)) {
+                  if (["added", "modified", "renamed"].includes(file.status)) {
+                    folders.add(name.replace(/\/config\.json$/i, ""));
+                  }
+                  continue;
+                }
+                if (file.status === "added" && /^[^/]+\.zip$/i.test(name)) {
+                  rootZips.push(name);
+                }
+              }
+              for (const zipPath of rootZips) {
+                const fromMeta = await readShareHintsFromMeta(zipPath);
+                if (!fromMeta) {
+                  const stem = zipPath.replace(/\.zip$/i, "").trim();
+                  if (stem) folders.add(stem);
+                }
+              }
+              const urls = [...folders].map((folder) => {
+                const encoded = folder.split("/").filter(Boolean).map(encodeURIComponent).join("/");
+                return `https://themes.innioasis.app/${encoded}`;
+              });
+              return urls.length ? urls : ["https://themes.innioasis.app/"];
+            }
+
             let prNum = null;
             const ev = context.eventName;
 
@@ -224,7 +290,7 @@ jobs:
                 per_page: 25,
               });
               const recent = (comments || []).find((c) => {
-                if (!c || !c.body || !c.body.includes("### Gallery listing sync finished")) return false;
+                if (!c || !c.body || !c.body.includes("### Gallery sync finished")) return false;
                 const ageMs = Date.now() - new Date(c.created_at).getTime();
                 return ageMs < 45 * 60 * 1000;
               });
@@ -233,14 +299,20 @@ jobs:
                 return;
               }
 
+              const themeUrls = await themePageUrlsForPr(prNum);
+              const urlLines = themeUrls.map((u) => `- ${u}`).join("\n");
+
               const body = [
-                "### Gallery listing sync finished",
+                "### Gallery sync finished",
                 "",
-                "The automated **Theme ingest and sync** run completed successfully on `main` (themes catalog, per-theme pages, and sitemap were refreshed where needed).",
+                "The automated listing update finished successfully. The theme list and related pages on the site are now in sync.",
                 "",
-                "Your theme should appear on **https://themes.innioasis.app** within **about 50 minutes** while GitHub Pages and the CDN catch up.",
+                "**Your theme page** (bookmark or share this link):",
+                urlLines,
                 "",
-                "_If anything still looks out of date after that, try a hard refresh or check back later._",
+                "The main gallery at **https://themes.innioasis.app** can still take **up to about 50 minutes** to look fully updated in your browser—that delay is normal.",
+                "",
+                "_If it still looks out of date after that, try refreshing the page or check back a little later._",
                 "",
                 marker,
               ].join("\n");
