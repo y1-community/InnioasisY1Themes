@@ -24,6 +24,37 @@
     };
 
     const statsCache = new Map();
+    const REACTIONS = [
+        { key: "down", value: 0, label: "Thumbs down", icon: "&#128078;" },
+        { key: "up", value: 2.5, label: "Thumbs up", icon: "&#128077;" },
+        { key: "heart", value: 5, label: "Love it", icon: "&#10084;&#65039;" },
+    ];
+
+    function formatScoreOutOfFive(avg) {
+        const n = Number(avg) || 0;
+        return (Math.round(n * 10) / 10).toFixed(1);
+    }
+
+    function syncCardStatsAttributes(themeKey) {
+        const key = normalizeThemeKey(themeKey);
+        const stats = statsCache.get(key);
+        if (!stats) return;
+        const cards = document.querySelectorAll(".theme-card[data-catalog-folder]");
+        for (const card of cards) {
+            if (normalizeThemeKey(card.getAttribute("data-catalog-folder")) !== key) continue;
+            card.setAttribute("data-views", String(Number(stats.pageViews) || 0));
+            card.setAttribute("data-downloads", String(Number(stats.downloads) || 0));
+            card.setAttribute("data-rating", String(Number(stats.ratingAverage) || 0));
+            card.setAttribute("data-rating-count", String(Number(stats.ratingCount) || 0));
+        }
+    }
+
+    function syncAllCardStats() {
+        for (const key of statsCache.keys()) syncCardStatsAttributes(key);
+        try {
+            global.dispatchEvent(new CustomEvent("y1-theme-stats-updated"));
+        } catch (_) {}
+    }
 
     function readMetaOrigin() {
         const meta = document.querySelector('meta[name="cf-theme-analytics-origin"]');
@@ -290,43 +321,52 @@
 
             const label = document.createElement("span");
             label.className = "y1-rating-label";
-            label.textContent = shouldSubmitRatings(c) ? "Rate:" : "Rating:";
+            label.textContent = shouldSubmitRatings(c) ? "Rate:" : "Score:";
 
-            const stars = document.createElement("span");
-            stars.className = "y1-rating-stars";
-            stars.setAttribute("role", "group");
-            stars.setAttribute("aria-label", "Theme star rating");
+            const reactions = document.createElement("span");
+            reactions.className = "y1-reaction-group";
+            reactions.setAttribute("role", "group");
+            reactions.setAttribute("aria-label", "Theme rating");
 
             const avg = Number(stats.ratingAverage) || 0;
             const count = Number(stats.ratingCount) || 0;
             const userR = stats.userRating;
 
-            for (let i = 1; i <= 5; i++) {
+            for (const r of REACTIONS) {
                 const btn = document.createElement("button");
                 btn.type = "button";
-                btn.className = "y1-star";
-                btn.dataset.value = String(i);
-                const filled = userR ? i <= userR : count > 0 && i <= Math.round(avg);
-                if (filled) btn.classList.add("y1-star--on");
-                btn.innerHTML = filled ? "&#9733;" : "&#9734;";
-                btn.setAttribute("aria-label", i + " star" + (i > 1 ? "s" : ""));
+                btn.className = "y1-reaction-btn y1-reaction-btn--" + r.key;
+                btn.dataset.value = String(r.value);
+                if (userR === r.value) btn.classList.add("y1-reaction-btn--active");
+                btn.innerHTML = r.icon;
+                btn.title = r.label;
+                btn.setAttribute("aria-label", r.label);
+                btn.setAttribute("aria-pressed", userR === r.value ? "true" : "false");
                 if (!shouldSubmitRatings(c)) {
                     btn.disabled = true;
                 } else {
-                    btn.addEventListener("click", () => submitRating(themeKey, i, ratingWrap));
+                    btn.addEventListener("click", () => submitRating(themeKey, r.value, ratingWrap));
                 }
-                stars.appendChild(btn);
+                reactions.appendChild(btn);
             }
 
             const avgEl = document.createElement("span");
             avgEl.className = "y1-rating-avg";
             if (count > 0) {
-                avgEl.textContent = avg.toFixed(1) + " (" + formatCount(count) + ")";
+                avgEl.textContent = formatScoreOutOfFive(avg) + " / 5 · " + formatCount(count);
             } else {
                 avgEl.textContent = "No ratings yet";
             }
 
-            ratingWrap.append(label, stars, avgEl);
+            const meter = document.createElement("span");
+            meter.className = "y1-rating-meter";
+            meter.setAttribute("aria-hidden", "true");
+            const fill = document.createElement("span");
+            fill.className = "y1-rating-meter-fill";
+            fill.style.width = count > 0 ? Math.min(100, (avg / 5) * 100) + "%" : "0%";
+            meter.appendChild(fill);
+
+            ratingWrap.append(label, reactions, meter, avgEl);
             el.appendChild(ratingWrap);
         }
 
@@ -353,6 +393,7 @@
         for (const el of metricsHosts.get(key)) {
             renderMetricsInto(el, stats, key);
         }
+        syncCardStatsAttributes(key);
     }
 
     async function mountMetrics(el, themeKey) {
@@ -361,6 +402,7 @@
         registerMetricsHost(key, el);
         const map = await fetchStatsMap([key]);
         renderMetricsInto(el, map[key] || emptyStats(), key);
+        syncCardStatsAttributes(key);
     }
 
     async function mountMetricsBatch(entries) {
@@ -374,15 +416,19 @@
             registerMetricsHost(key, el);
             renderMetricsInto(el, map[key] || emptyStats(), key);
         }
+        syncAllCardStats();
     }
 
     async function submitRating(themeKey, rating, hostEl) {
         const key = normalizeThemeKey(themeKey);
         const consent = loadConsent();
         if (!shouldSubmitRatings(consent)) return;
+        const reaction =
+            rating === 0 ? "down" : rating === 2.5 ? "up" : rating === 5 ? "heart" : "";
         const body = await postJson("/api/theme-rating", {
             theme: key,
             rating,
+            reaction,
             voterId: getVisitorId(),
         });
         if (body && body.stats) {
@@ -396,6 +442,7 @@
             if (metricsEl) renderMetricsInto(metricsEl, statsCache.get(key), key);
         }
         refreshMetricsHosts(key);
+        syncCardStatsAttributes(key);
     }
 
     const PRIVACY_GEAR_SVG =
@@ -435,7 +482,7 @@
             '<p class="y1-privacy-hint">Public totals are always visible. Check a box only if you want your activity included.</p>' +
             '<label><input type="checkbox" id="y1-opt-analytics" /> Contribute my page views &amp; download counts</label>' +
             '<label><input type="checkbox" id="y1-opt-ratings-view" checked /> Show star ratings from other visitors</label>' +
-            '<label><input type="checkbox" id="y1-opt-ratings-submit" /> Contribute my star ratings</label>' +
+            '<label><input type="checkbox" id="y1-opt-ratings-submit" /> Contribute my theme ratings</label>' +
             '<button type="button" class="y1-privacy-save">Save preferences</button>';
 
         document.body.appendChild(banner);
@@ -554,8 +601,11 @@
         mountMetrics,
         mountMetricsBatch,
         fetchStatsMap,
+        getStats: (themeKey) => statsCache.get(normalizeThemeKey(themeKey)) || emptyStats(),
+        syncAllCardStats,
         refreshAll: () => {
             for (const key of metricsHosts.keys()) refreshMetricsHosts(key);
+            syncAllCardStats();
         },
         hasApi: () => !!readMetaOrigin(),
     };

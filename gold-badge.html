@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gold Badge — Innioasis Y1 Themes</title>
+    <meta name="description"
+        content="Gold Badge themes are checked against the latest Innioasis Y1 firmware so menus, wallpapers, and optional screens work today and after updates." />
+    <link rel="icon" href="y1_illustration.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Instrument+Serif:ital@0;1&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="theme-analytics.css?v=20260517" />
+    <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
+    <script src="theme-analytics.js?v=20260517"></script>
+    <style>
+        :root {
+            --bg: #0a0b0f;
+            --bg-elevated: #12141c;
+            --text: #f4f6fb;
+            --muted: #9aa3b5;
+            --gold: #e8c56a;
+            --gold-dim: #9a7b2e;
+            --accent: #6b9fff;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: clamp(15px, 2.8vw, 17px);
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "DM Sans", system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.55;
+        }
+
+        a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .topnav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 14px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(10, 11, 15, 0.92);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .topnav-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 16px;
+            font-size: 0.88rem;
+            font-weight: 600;
+        }
+
+        .topnav-links a {
+            color: var(--muted);
+            text-decoration: none;
+        }
+
+        .topnav-links a:hover,
+        .topnav-links a.active {
+            color: var(--text);
+        }
+
+        .hero {
+            max-width: 920px;
+            margin: 0 auto;
+            padding: clamp(2.5rem, 8vw, 5rem) 20px 3rem;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 18px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #3d2a08, #b8891e 45%, #f2d06a 55%, #8a6420);
+            border: 1px solid rgba(255, 230, 160, 0.5);
+            color: #1a1206;
+            font-weight: 800;
+            font-size: 0.82rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 8px 32px rgba(201, 162, 39, 0.25);
+        }
+
+        .hero h1 {
+            font-family: "Instrument Serif", Georgia, serif;
+            font-size: clamp(2.2rem, 6vw, 3.4rem);
+            font-weight: 400;
+            line-height: 1.12;
+            margin: 0 0 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .hero .lead {
+            font-size: 1.08rem;
+            color: var(--muted);
+            max-width: 36rem;
+            margin: 0 auto 1.75rem;
+        }
+
+        .hero-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 22px;
+            border-radius: 999px;
+            background: #fff;
+            color: #0a0b0f;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            font-size: 0.95rem;
+        }
+
+        .hero-cta:hover {
+            text-decoration: none;
+            opacity: 0.92;
+        }
+
+        .section {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 20px 4rem;
+        }
+
+        .section-dark {
+            background: var(--bg-elevated);
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 3rem 20px;
+        }
+
+        .section-dark .inner {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        .section h2 {
+            font-family: "Instrument Serif", Georgia, serif;
+            font-size: clamp(1.6rem, 4vw, 2.1rem);
+            font-weight: 400;
+            margin: 0 0 1.25rem;
+        }
+
+        .pill-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 14px;
+        }
+
+        .pill-card {
+            padding: 18px 20px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .pill-card h3 {
+            margin: 0 0 8px;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .pill-card p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--muted);
+        }
+
+        .steps {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            counter-reset: step;
+        }
+
+        .steps li {
+            counter-increment: step;
+            padding: 16px 0 16px 48px;
+            position: relative;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            color: var(--muted);
+        }
+
+        .steps li:last-child {
+            border-bottom: none;
+        }
+
+        .steps li::before {
+            content: counter(step);
+            position: absolute;
+            left: 0;
+            top: 16px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text);
+            font-weight: 700;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .steps strong {
+            display: block;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        #gold-theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            margin-top: 1.5rem;
+        }
+
+        #gold-theme-grid a {
+            display: block;
+            border-radius: 12px;
+            overflow: hidden;
+            aspect-ratio: 4/3;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            text-decoration: none;
+            transition: border-color 0.15s, transform 0.15s;
+        }
+
+        #gold-theme-grid a:hover {
+            border-color: rgba(232, 197, 106, 0.45);
+            transform: translateY(-2px);
+            text-decoration: none;
+        }
+
+        #gold-theme-grid img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .footnote {
+            font-size: 0.82rem;
+            color: var(--muted);
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="topnav" aria-label="Site">
+        <a href="index.html" style="color:var(--text);font-weight:700;text-decoration:none;">Y1 Themes</a>
+        <div class="topnav-links">
+            <a href="index.html">Gallery</a>
+            <a href="upload.html">Upload</a>
+            <a href="gold-badge.html" class="active">Gold Badge</a>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-badge" aria-hidden="true"><span>🏅</span> Gold Badge</div>
+        <h1>Themes built for the Y1 you have today</h1>
+        <p class="lead">
+            Gold Badge themes pass our compatibility review: they load on current firmware, cover the screens we check,
+            and are maintained so they keep working as the player software evolves.
+        </p>
+        <a class="hero-cta" href="index.html?gold=1"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i> Browse Gold themes</a>
+    </header>
+
+    <section class="section">
+        <h2>What Gold means</h2>
+        <div class="pill-grid">
+            <article class="pill-card">
+                <h3>Current firmware</h3>
+                <p>Verified on the latest Innioasis Y1 OS build—not just an older package format.</p>
+            </article>
+            <article class="pill-card">
+                <h3>Complete experience</h3>
+                <p>Includes wallpapers and UI assets for the optional screens we test, not only the main menu.</p>
+            </article>
+            <article class="pill-card">
+                <h3>Future-ready</h3>
+                <p>Authors commit to updates when the platform changes, so your download stays trustworthy.</p>
+            </article>
+        </div>
+    </section>
+
+    <section class="section-dark">
+        <div class="inner">
+            <h2>How a theme earns Gold</h2>
+            <ol class="steps">
+                <li><strong>Submit to the gallery</strong> Upload through the community portal with a complete theme package.</li>
+                <li><strong>Automated checks</strong> We validate structure, assets, and variant layout against current guidelines.</li>
+                <li><strong>Hands-on review</strong> Maintainers install the theme on hardware and walk through our screen checklist.</li>
+                <li><strong>Ongoing badge</strong> If a future OS update breaks compatibility, the badge may be withdrawn until fixed.</li>
+            </ol>
+        </div>
+    </section>
+
+    <section class="section">
+        <h2>Recently awarded</h2>
+        <p style="color:var(--muted);margin:0;">Gold themes in the gallery right now.</p>
+        <div id="gold-theme-grid" aria-live="polite"></div>
+        <p class="footnote">Gold Badge is a community quality mark, not a warranty. Always back up your player before installing themes.</p>
+    </section>
+
+    <script>
+        (async function loadGoldThemes() {
+            const grid = document.getElementById("gold-theme-grid");
+            if (!grid) return;
+            try {
+                const res = await fetch("themes.json", { cache: "no-store" });
+                if (!res.ok) throw new Error("themes.json");
+                const data = await res.json();
+                const themes = (Array.isArray(data) ? data : data.themes || [])
+                    .filter((t) => String(t.compatibilityMedal || "").toLowerCase() === "gold")
+                    .slice(0, 24);
+                if (!themes.length) {
+                    grid.innerHTML = '<p style="grid-column:1/-1;color:#9aa3b5;">Gold themes will appear here as they are awarded.</p>';
+                    return;
+                }
+                grid.innerHTML = themes
+                    .map((t) => {
+                        const folder = encodeURIComponent(t.folder || t.name || "");
+                        const cover = t.cover || t.coverImage || (folder ? folder + "/cover.png" : "");
+                        const name = String(t.name || t.folder || "Theme").replace(/</g, "");
+                        return (
+                            '<a href="./theme.html?theme=' +
+                            folder +
+                            '" title="' +
+                            name +
+                            '"><img src="' +
+                            cover +
+                            '" alt="" loading="lazy" /></a>'
+                        );
+                    })
+                    .join("");
+            } catch (_) {
+                grid.innerHTML = '<p style="color:#9aa3b5;">Could not load themes. <a href="index.html">Open the gallery</a>.</p>';
+            }
+        })();
+    </script>
+</body>
+
+</html>

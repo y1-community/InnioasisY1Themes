@@ -19,16 +19,20 @@ const SCHEMA_STATEMENTS = [
   page_views INTEGER NOT NULL DEFAULT 0,
   zip_downloads INTEGER NOT NULL DEFAULT 0,
   direct_installs INTEGER NOT NULL DEFAULT 0,
-  rating_sum INTEGER NOT NULL DEFAULT 0,
+  rating_sum REAL NOT NULL DEFAULT 0,
   rating_count INTEGER NOT NULL DEFAULT 0,
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 )`,
   `CREATE TABLE IF NOT EXISTS theme_rating_votes (
   theme_key TEXT NOT NULL,
   voter_id TEXT NOT NULL,
-  rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  rating REAL NOT NULL CHECK (rating >= 0 AND rating <= 5),
   updated_at TEXT NOT NULL DEFAULT (datetime('now')),
   PRIMARY KEY (theme_key, voter_id)
+)`,
+  `CREATE TABLE IF NOT EXISTS _y1_migrations (
+  id TEXT PRIMARY KEY NOT NULL,
+  applied_at TEXT NOT NULL DEFAULT (datetime('now'))
 )`,
   `CREATE INDEX IF NOT EXISTS idx_theme_rating_votes_theme ON theme_rating_votes (theme_key)`,
   `CREATE TABLE IF NOT EXISTS visitor_preferences (
@@ -43,6 +47,44 @@ const SCHEMA_STATEMENTS = [
 let schemaReady = false;
 let schemaInitPromise = null;
 
+/** Migrate legacy 1–5 star votes to 0–5 reaction scale (down=0, up=2.5, heart=5). */
+async function migrateRatingSchemaToReactions(db) {
+  const done = await db
+    .prepare(`SELECT 1 AS ok FROM _y1_migrations WHERE id = ?`)
+    .bind("rating_reactions_v1")
+    .first();
+  if (done) return;
+  try {
+    const probe = await db
+      .prepare(`SELECT rating FROM theme_rating_votes LIMIT 1`)
+      .first();
+    if (probe && Number(probe.rating) > 0 && Number(probe.rating) <= 5 && !String(probe.rating).includes(".")) {
+      await db
+        .prepare(
+          `UPDATE theme_rating_votes SET rating = CASE rating
+             WHEN 1 THEN 0
+             WHEN 2 THEN 2.5
+             WHEN 3 THEN 2.5
+             WHEN 4 THEN 5
+             WHEN 5 THEN 5
+             ELSE rating END`,
+        )
+        .run();
+    }
+  } catch (_) {
+    /* table may be empty */
+  }
+  try {
+    await db.prepare(`UPDATE theme_metrics SET rating_sum = (
+      SELECT COALESCE(SUM(rating), 0) FROM theme_rating_votes v WHERE v.theme_key = theme_metrics.theme_key
+    )`).run();
+  } catch (_) {}
+  await db
+    .prepare(`INSERT OR IGNORE INTO _y1_migrations (id) VALUES (?)`)
+    .bind("rating_reactions_v1")
+    .run();
+}
+
 /** Create D1 tables on first use (Git deploy does not run schema.sql automatically). */
 export async function ensureAnalyticsSchema(db) {
   if (!db) return;
@@ -52,6 +94,7 @@ export async function ensureAnalyticsSchema(db) {
       for (const sql of SCHEMA_STATEMENTS) {
         await db.prepare(sql).run();
       }
+      await migrateRatingSchemaToReactions(db);
       schemaReady = true;
     })().catch((err) => {
       schemaInitPromise = null;
@@ -59,6 +102,20 @@ export async function ensureAnalyticsSchema(db) {
     });
   }
   await schemaInitPromise;
+}
+
+const ALLOWED_REACTION_RATINGS = new Set([0, 2.5, 5]);
+
+export function normalizeReactionRating(body) {
+  const reaction = String(body?.reaction || body?.type || "")
+    .trim()
+    .toLowerCase();
+  if (reaction === "down" || reaction === "thumbs_down" || reaction === "thumbsdown") return 0;
+  if (reaction === "up" || reaction === "thumbs_up" || reaction === "thumbsup") return 2.5;
+  if (reaction === "heart" || reaction === "love") return 5;
+  const rating = Number(body?.rating);
+  if (ALLOWED_REACTION_RATINGS.has(rating)) return rating;
+  return null;
 }
 
 function jsonResponse(body, status = 200) {
@@ -89,8 +146,9 @@ function metricRowToStats(row, userRating) {
     downloads:
       Number(row?.zip_downloads || 0) + Number(row?.direct_installs || 0),
     ratingCount: count,
-    ratingAverage: count > 0 ? Math.round((sum / count) * 10) / 10 : 0,
-    userRating: typeof userRating === "number" ? userRating : null,
+    ratingAverage: count > 0 ? Math.round((sum / count) * 100) / 100 : 0,
+    userRating:
+      typeof userRating === "number" && !Number.isNaN(userRating) ? userRating : null,
   };
 }
 
@@ -313,11 +371,13 @@ export async function handleThemeRatingPost(request, env) {
     return jsonResponse({ error: "Invalid JSON body." }, 400);
   }
   const themeKey = normalizeThemeKey(body.theme || body.themeKey || body.folder);
-  const rating = Number(body.rating);
+  const rating = normalizeReactionRating(body);
   const voterId = String(body.voterId || body.visitorId || "").trim().slice(0, 64);
   if (!themeKey) return jsonResponse({ error: "Invalid theme key." }, 400);
-  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
-    return jsonResponse({ error: "Rating must be an integer from 1 to 5." }, 400);
+  if (rating === null) {
+    return jsonResponse({
+      error: "Rating must be thumbs down (0), thumbs up (2.5), or heart (5).",
+    }, 400);
   }
   if (!voterId || voterId.length < 8) {
     return jsonResponse({ error: "Missing visitor id." }, 400);

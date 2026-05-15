@@ -26,17 +26,20 @@
     <link rel="icon" href="y1_illustration.png">
 
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
     <link rel="stylesheet" href="y1-theme-preview.css?v=20260215">
-    <link rel="stylesheet" href="theme-analytics.css?v=20260516d">
+    <link rel="stylesheet" href="theme-analytics.css?v=20260517">
     <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="theme-packaging.js"></script>
     <script src="y1-theme-preview.js?v=20260215"></script>
     <script src="theme-artwork-compat.js?v=20260516"></script>
     <script src="gallery-loaded-theme.js"></script>
-    <script src="theme-analytics.js?v=20260516d"></script>
+    <script src="theme-analytics.js?v=20260517"></script>
 
     <style>
         html {
@@ -45,7 +48,8 @@
 
         html,
         body {
-            height: 100%
+            height: 100%;
+            font-family: "DM Sans", Inter, system-ui, sans-serif;
         }
 
         #nav-root {
@@ -164,12 +168,18 @@
         }
 
         header h1 {
-            margin: 0 0 8px 0
+            margin: 0 0 8px 0;
+            font-family: "Instrument Serif", Georgia, serif;
+            font-weight: 400;
+            font-size: clamp(1.85rem, 4.5vw, 2.5rem);
+            letter-spacing: -0.02em;
         }
 
         header p {
             margin: 0;
-            color: var(--text-secondary)
+            color: var(--text-secondary);
+            font-size: 1.02rem;
+            max-width: 36rem;
         }
 
         .theme-grid {
@@ -179,10 +189,22 @@
             margin-top: 18px
         }
 
+        .gallery-controls {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 12px 18px;
+            margin-top: 1.75rem;
+            padding: 14px 16px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
         .theme-card {
             justify-content: center;
-            border-radius: 10px;
-            padding: 12px;
+            border-radius: 14px;
+            padding: 14px;
             display: flex;
             flex-direction: column;
             gap: 10px;
@@ -539,14 +561,6 @@
             background: var(--primary-dark);
         }
 
-        .gallery-controls {
-            margin-top: 1rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.7rem;
-            align-items: center;
-        }
-
         .gallery-control {
             display: flex;
             align-items: center;
@@ -556,12 +570,19 @@
         }
 
         .gallery-control select {
-            background: #222733;
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: #1a1e28;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             color: #eaf0ff;
-            border-radius: 8px;
-            padding: 0.4rem 0.5rem;
+            border-radius: 10px;
+            padding: 0.45rem 0.65rem;
             font-family: inherit;
+            font-size: 0.86rem;
+            min-width: 8.5rem;
+        }
+
+        .gallery-control--author select {
+            min-width: 11rem;
+            max-width: 16rem;
         }
 
         .pager {
@@ -596,6 +617,7 @@
         <div class="gallery-tabs" aria-label="Site sections">
             <a class="gallery-tab" href="https://y1-themes.vercel.app">Editor</a>
             <a class="gallery-tab active" href="index.html">Gallery</a>
+            <a class="gallery-tab" href="gold-badge.html">Gold</a>
             <a class="gallery-tab" href="upload.html">Upload</a>
         </div>
         <div class="topbar-search-wrap">
@@ -642,12 +664,24 @@
                     <option value="external">External links</option>
                 </select>
             </label>
+            <label class="gallery-control gallery-control--author" for="author-filter">
+                Author
+                <select id="author-filter">
+                    <option value="all">All authors</option>
+                </select>
+            </label>
             <label class="gallery-control" for="sort-filter">
                 Sort
                 <select id="sort-filter">
                     <option value="name_asc">Name (A-Z)</option>
                     <option value="name_desc">Name (Z-A)</option>
                     <option value="author_asc">Author (A-Z)</option>
+                    <option value="views_desc">Most views</option>
+                    <option value="views_asc">Fewest views</option>
+                    <option value="downloads_desc">Most downloads</option>
+                    <option value="downloads_asc">Fewest downloads</option>
+                    <option value="rating_desc">Highest rating</option>
+                    <option value="rating_asc">Lowest rating</option>
                 </select>
             </label>
             <label class="gallery-control" for="page-size">
@@ -761,8 +795,10 @@
 
         const searchInput = document.getElementById('theme-search');
         const sourceFilter = document.getElementById('source-filter');
+        const authorFilter = document.getElementById('author-filter');
         const sortFilter = document.getElementById('sort-filter');
         const pageSizeSelect = document.getElementById('page-size');
+        let goldOnlyFilter = false;
         const pagerEl = document.getElementById('theme-pager');
         let currentPage = 1;
         try {
@@ -773,6 +809,9 @@
             if (sourceFilter && sourceQ) sourceFilter.value = sourceQ;
             const sortQ = qp.get('sort');
             if (sortFilter && sortQ) sortFilter.value = sortQ;
+            const authorQ = qp.get('author');
+            if (authorFilter && authorQ) authorFilter.value = authorQ;
+            goldOnlyFilter = qp.get('gold') === '1';
             const sizeQ = qp.get('size');
             if (pageSizeSelect && sizeQ && ['12', '24', '48'].includes(sizeQ)) pageSizeSelect.value = sizeQ;
             const pageQ = Number(qp.get('page') || '1');
@@ -791,6 +830,11 @@
                 const sortV = sortFilter ? String(sortFilter.value || 'name_asc') : 'name_asc';
                 if (sortV !== 'name_asc') params.set('sort', sortV);
                 else params.delete('sort');
+                const authorV = authorFilter ? String(authorFilter.value || 'all') : 'all';
+                if (authorV !== 'all') params.set('author', authorV);
+                else params.delete('author');
+                if (goldOnlyFilter) params.set('gold', '1');
+                else params.delete('gold');
                 const sizeV = pageSizeSelect ? String(pageSizeSelect.value || '24') : '24';
                 if (sizeV !== '24') params.set('size', sizeV);
                 else params.delete('size');
@@ -835,10 +879,31 @@
             syncQueryState(totalPages);
         }
 
+        function cardMetric(card, attr) {
+            return Number(card.getAttribute(attr) || 0) || 0;
+        }
+
+        function populateAuthorFilter(themes) {
+            if (!authorFilter) return;
+            const current = String(authorFilter.value || 'all');
+            const authors = [...new Set(
+                (themes || [])
+                    .map((t) => safeText(t.author || '').trim())
+                    .filter(Boolean)
+            )].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+            authorFilter.innerHTML = '<option value="all">All authors</option>' +
+                authors.map((a) => {
+                    const esc = a.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+                    return '<option value="' + esc + '">' + esc + '</option>';
+                }).join('');
+            if (current !== 'all' && authors.includes(current)) authorFilter.value = current;
+        }
+
         function applyFilters() {
             const query = (searchInput && searchInput.value || '').trim().toLowerCase();
             const onlyOn = onlyOnDeviceCheckbox && onlyOnDeviceCheckbox.checked;
             const sourceV = sourceFilter ? String(sourceFilter.value || 'all') : 'all';
+            const authorV = authorFilter ? String(authorFilter.value || 'all') : 'all';
             const sortV = sortFilter ? String(sortFilter.value || 'name_asc') : 'name_asc';
             const pageSize = Number(pageSizeSelect && pageSizeSelect.value || '24') || 24;
             const cards = document.querySelectorAll('.theme-card');
@@ -849,7 +914,10 @@
                 const onDevice = !onlyOn || card.classList.contains('on-device');
                 const sourceType = String(card.getAttribute('data-source') || 'internal');
                 const sourcePass = sourceV === 'all' || sourceType === sourceV;
-                const visible = matches && onDevice && sourcePass;
+                const cardAuthor = String(card.getAttribute('data-author') || '');
+                const authorPass = authorV === 'all' || cardAuthor === authorV;
+                const goldPass = !goldOnlyFilter || !!card.querySelector('.theme-gold-title-badge:not([hidden])');
+                const visible = matches && onDevice && sourcePass && authorPass && goldPass;
                 card.style.display = visible ? '' : 'none';
                 if (visible) matched.push(card);
             }
@@ -861,6 +929,12 @@
                 const authorB = String(b.getAttribute('data-author') || '').toLowerCase();
                 if (sortV === 'name_desc') return nameB.localeCompare(nameA);
                 if (sortV === 'author_asc') return authorA.localeCompare(authorB) || nameA.localeCompare(nameB);
+                if (sortV === 'views_desc') return cardMetric(b, 'data-views') - cardMetric(a, 'data-views') || nameA.localeCompare(nameB);
+                if (sortV === 'views_asc') return cardMetric(a, 'data-views') - cardMetric(b, 'data-views') || nameA.localeCompare(nameB);
+                if (sortV === 'downloads_desc') return cardMetric(b, 'data-downloads') - cardMetric(a, 'data-downloads') || nameA.localeCompare(nameB);
+                if (sortV === 'downloads_asc') return cardMetric(a, 'data-downloads') - cardMetric(b, 'data-downloads') || nameA.localeCompare(nameB);
+                if (sortV === 'rating_desc') return cardMetric(b, 'data-rating') - cardMetric(a, 'data-rating') || nameA.localeCompare(nameB);
+                if (sortV === 'rating_asc') return cardMetric(a, 'data-rating') - cardMetric(b, 'data-rating') || nameA.localeCompare(nameB);
                 return nameA.localeCompare(nameB);
             });
             const grid = document.getElementById('theme-grid');
@@ -887,6 +961,10 @@
             currentPage = 1;
             applyFilters();
         });
+        if (authorFilter) authorFilter.addEventListener('change', () => {
+            currentPage = 1;
+            applyFilters();
+        });
         if (sortFilter) sortFilter.addEventListener('change', () => {
             currentPage = 1;
             applyFilters();
@@ -895,6 +973,8 @@
             currentPage = 1;
             applyFilters();
         });
+        global.addEventListener('y1-theme-stats-updated', () => applyFilters());
+        global.addEventListener('y1-consent-changed', () => applyFilters());
 
         if (supportDirectInstall) {
             bannerEl.style.display = 'block';
@@ -3298,6 +3378,7 @@
                 grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#94a3b8">Unable to load themes</p>';
                 return;
             }
+            populateAuthorFilter(filteredThemes);
             filteredThemes.forEach(t => {
                 const merged = {
                     ...t,
@@ -3309,8 +3390,25 @@
             });
             applyFilters();
 
+            void (async () => {
+                if (!window.ThemeAnalytics) return;
+                const entries = [...grid.querySelectorAll('.theme-card')].map((card) => {
+                    const folder = card.getAttribute('data-catalog-folder');
+                    const el = card.querySelector('.y1-theme-metrics');
+                    return folder && el ? { themeKey: folder, el } : null;
+                }).filter(Boolean);
+                if (entries.length) {
+                    await window.ThemeAnalytics.mountMetricsBatch(entries);
+                    window.ThemeAnalytics.syncAllCardStats();
+                    applyFilters();
+                }
+            })();
+
             void enrichThemesWithCompatibilityMedals(themes)
-                .then(() => syncTitleGoldBadgesFromEnrichedThemes(themes))
+                .then(() => {
+                    syncTitleGoldBadgesFromEnrichedThemes(themes);
+                    applyFilters();
+                })
                 .catch(() => {});
 
             handleHashAutoDownload();

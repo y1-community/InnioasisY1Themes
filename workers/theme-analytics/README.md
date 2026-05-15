@@ -8,7 +8,7 @@ Public API for **unified theme statistics** (page views, ZIP downloads, direct i
 |--------|------|---------|
 | `POST` | `/api/theme-event` | `{ "theme": "FolderName", "event": "page_view" \| "zip_download" \| "direct_install", "source": "gallery" \| "theme_page" }` |
 | `GET` | `/api/theme-stats?themes=A,B&voterId=…` | Batch stats + optional user rating |
-| `POST` | `/api/theme-rating` | `{ "theme": "FolderName", "rating": 1-5, "voterId": "…" }` |
+| `POST` | `/api/theme-rating` | `{ "theme": "FolderName", "rating": 0 \| 2.5 \| 5, "reaction": "down" \| "up" \| "heart", "voterId": "…" }` — average shown as 0–5 |
 | `GET` | `/api/theme-privacy?voterId=…` | Load stored opt-in flags (`stored: true` when a row exists) |
 | `POST` | `/api/theme-privacy` | `{ "voterId": "…", "analytics": bool, "ratingsSubmit": bool, "ratingsView": bool }` |
 
