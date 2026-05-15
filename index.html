@@ -966,7 +966,7 @@
             clearTimeout(statsFilterTimer);
             statsFilterTimer = setTimeout(applyFilters, 150);
         }
-        global.addEventListener('y1-theme-stats-updated', scheduleApplyFiltersFromStats);
+        window.addEventListener('y1-theme-stats-updated', scheduleApplyFiltersFromStats);
 
         if (supportDirectInstall) {
             bannerEl.style.display = 'block';
