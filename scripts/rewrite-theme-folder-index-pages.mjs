@@ -1,6 +1,11 @@
 /**
- * One-off / maintenance: rewrite each theme folder's index.html (not repo root)
- * into a small SEO shell that redirects to theme.html on themes.innioasis.app.
+ * Rewrite or create each theme folder's index.html (not repo root): SEO shell +
+ * redirect to theme.html on themes.innioasis.app.
+ *
+ * Covers:
+ * - Every catalog folder from themes.json that exists on disk
+ * - Every other root subfolder that has ./config.json (e.g. not yet in JSON)
+ * - Every ./ThemeFolder/Variants/<name>/ that has config.json or is listed in variantFolders
  *
  * Run from repo root: node scripts/rewrite-theme-folder-index-pages.mjs
  */
@@ -40,30 +45,44 @@ function readJsonSafe(p) {
   }
 }
 
-function collectIndexHtmlPaths(dir, acc = []) {
-  for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (ent.name.startsWith('.')) continue;
-    const p = path.join(dir, ent.name);
-    if (ent.isDirectory()) {
-      collectIndexHtmlPaths(p, acc);
-    } else if (ent.name === 'index.html') {
-      const parent = path.dirname(p);
-      if (path.relative(ROOT, parent) === '' || parent === ROOT) continue;
-      acc.push(p);
-    }
+function catalogFoldersFromDisk() {
+  const out = [];
+  let names;
+  try {
+    names = fs.readdirSync(ROOT, { withFileTypes: true });
+  } catch {
+    return out;
   }
-  return acc;
+  for (const ent of names) {
+    if (!ent.isDirectory() || ent.name.startsWith('.')) continue;
+    const cfg = path.join(ROOT, ent.name, 'config.json');
+    if (fs.existsSync(cfg)) out.push(ent.name);
+  }
+  return out;
 }
 
-function parseThemeDir(relDirPosix) {
-  const segs = relDirPosix.split('/').filter(Boolean);
-  const vIdx = segs.findIndex((s) => s.toLowerCase() === 'variants');
-  if (vIdx > 0 && vIdx < segs.length - 1) {
-    const catalogFolder = segs.slice(0, vIdx).join('/');
-    const variant = segs.slice(vIdx + 1).join('/');
-    return { catalogFolder, variant };
+function listVariantSubfolderNames(folder, themeMeta) {
+  const variantsPath = path.join(ROOT, folder, 'Variants');
+  if (!fs.existsSync(variantsPath)) return [];
+  let st;
+  try {
+    st = fs.statSync(variantsPath);
+  } catch {
+    return [];
   }
-  return { catalogFolder: segs.join('/'), variant: '' };
+  if (!st.isDirectory()) return [];
+
+  const listed = new Set(
+    Array.isArray(themeMeta && themeMeta.variantFolders) ? themeMeta.variantFolders : []
+  );
+  const out = [];
+  for (const ent of fs.readdirSync(variantsPath, { withFileTypes: true })) {
+    if (!ent.isDirectory() || ent.name.startsWith('.')) continue;
+    const sub = path.join(variantsPath, ent.name);
+    const hasCfg = fs.existsSync(path.join(sub, 'config.json'));
+    if (hasCfg || listed.has(ent.name)) out.push(ent.name);
+  }
+  return out;
 }
 
 function buildPreviewUrl(catalogFolder, variant) {
@@ -74,75 +93,60 @@ function buildPreviewUrl(catalogFolder, variant) {
   return u.toString();
 }
 
-function main() {
-  const { themes } = readJsonSafe(THEMES_JSON) || { themes: [] };
-  const byFolder = new Map();
-  for (const t of themes) {
-    if (t && t.folder) byFolder.set(t.folder, t);
+function renderIndexHtml(catalogFolder, variant, byFolder) {
+  const meta = byFolder.get(catalogFolder) || {};
+  const cfgPath = path.join(ROOT, catalogFolder, 'config.json');
+  const cfg = readJsonSafe(cfgPath);
+  const ti = (cfg && (cfg.theme_info || cfg.source_info)) || {};
+
+  const displayName = String(meta.name || ti.title || catalogFolder).trim() || catalogFolder;
+  const author = String(meta.author || ti.author || 'Innioasis Community').trim();
+  const rawDesc = String(
+    meta.description || ti.description || `${displayName} UI theme for the Innioasis Y1 media player.`
+  ).trim();
+  const variantNote = variant ? ` Variant: ${variant}.` : '';
+  const description = escapeHtml((rawDesc + variantNote).slice(0, 320));
+
+  const shot = meta.screenshot || '';
+  let ogImage = toAbsoluteAssetUrl(shot);
+  if (!shot && cfg && cfg.themeCover) {
+    ogImage = toAbsoluteAssetUrl(`${catalogFolder}/${cfg.themeCover}`);
   }
 
-  const indexFiles = collectIndexHtmlPaths(ROOT);
-  let written = 0;
+  const previewUrl = buildPreviewUrl(catalogFolder, variant);
+  const title = variant
+    ? `${displayName} (${variant}) — Innioasis Y1 theme`
+    : `${displayName} — Innioasis Y1 theme`;
 
-  for (const abs of indexFiles) {
-    const relDir = path.relative(ROOT, path.dirname(abs));
-    const relDirPosix = relDir.split(path.sep).join('/');
-    const { catalogFolder, variant } = parseThemeDir(relDirPosix);
-    if (!catalogFolder) continue;
+  const keywords = [
+    ...new Set(
+      [
+        displayName,
+        catalogFolder,
+        variant,
+        'Innioasis Y1',
+        'Y1 theme',
+        'Rockbox',
+        'MP3 player theme',
+        author
+      ].filter(Boolean)
+    )
+  ].join(', ');
 
-    const meta = byFolder.get(catalogFolder) || {};
-    const cfgPath = path.join(ROOT, catalogFolder, 'config.json');
-    const cfg = readJsonSafe(cfgPath);
-    const ti = (cfg && (cfg.theme_info || cfg.source_info)) || {};
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: title,
+    description: rawDesc + variantNote,
+    applicationCategory: 'MultimediaApplication',
+    operatingSystem: 'Innioasis Y1',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    url: previewUrl,
+    image: ogImage,
+    author: { '@type': 'Person', name: author }
+  };
 
-    const displayName = String(meta.name || ti.title || catalogFolder).trim() || catalogFolder;
-    const author = String(meta.author || ti.author || 'Innioasis Community').trim();
-    const rawDesc = String(
-      meta.description || ti.description || `${displayName} UI theme for the Innioasis Y1 media player.`
-    ).trim();
-    const variantNote = variant ? ` Variant: ${variant}.` : '';
-    const description = escapeHtml((rawDesc + variantNote).slice(0, 320));
-
-    const shot = meta.screenshot || '';
-    let ogImage = toAbsoluteAssetUrl(shot);
-    if (!shot && cfg && cfg.themeCover) {
-      ogImage = toAbsoluteAssetUrl(`${catalogFolder}/${cfg.themeCover}`);
-    }
-
-    const previewUrl = buildPreviewUrl(catalogFolder, variant);
-    const title = variant
-      ? `${displayName} (${variant}) — Innioasis Y1 theme`
-      : `${displayName} — Innioasis Y1 theme`;
-
-    const keywords = [
-      ...new Set(
-        [
-          displayName,
-          catalogFolder,
-          variant,
-          'Innioasis Y1',
-          'Y1 theme',
-          'Rockbox',
-          'MP3 player theme',
-          author
-        ].filter(Boolean)
-      )
-    ].join(', ');
-
-    const jsonLd = {
-      '@context': 'https://schema.org',
-      '@type': 'SoftwareApplication',
-      name: title,
-      description: rawDesc + variantNote,
-      applicationCategory: 'MultimediaApplication',
-      operatingSystem: 'Innioasis Y1',
-      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-      url: previewUrl,
-      image: ogImage,
-      author: { '@type': 'Person', name: author }
-    };
-
-    const html = `<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -186,12 +190,44 @@ function main() {
 </body>
 </html>
 `;
+}
 
-    fs.writeFileSync(abs, html, 'utf8');
+function main() {
+  const { themes } = readJsonSafe(THEMES_JSON) || { themes: [] };
+  const byFolder = new Map();
+  for (const t of themes) {
+    if (t && t.folder) byFolder.set(t.folder, t);
+  }
+
+  const folderSet = new Set();
+  for (const t of themes) {
+    if (t && t.folder && fs.existsSync(path.join(ROOT, t.folder))) folderSet.add(t.folder);
+  }
+  for (const f of catalogFoldersFromDisk()) folderSet.add(f);
+
+  const targets = new Map();
+
+  for (const folder of folderSet) {
+    const themeMeta = byFolder.get(folder) || {};
+    const rootIndex = path.join(ROOT, folder, 'index.html');
+    targets.set(path.normalize(rootIndex), { catalogFolder: folder, variant: '' });
+
+    for (const v of listVariantSubfolderNames(folder, themeMeta)) {
+      const p = path.join(ROOT, folder, 'Variants', v, 'index.html');
+      targets.set(path.normalize(p), { catalogFolder: folder, variant: v });
+    }
+  }
+
+  let written = 0;
+  const sortedPaths = [...targets.keys()].sort();
+  for (const abs of sortedPaths) {
+    const { catalogFolder, variant } = targets.get(abs);
+    fs.mkdirSync(path.dirname(abs), { recursive: true });
+    fs.writeFileSync(abs, renderIndexHtml(catalogFolder, variant, byFolder), 'utf8');
     written += 1;
   }
 
-  console.log(`Wrote ${written} theme folder index.html file(s).`);
+  console.log(`Wrote ${written} theme / variant index.html file(s).`);
 }
 
 main();
