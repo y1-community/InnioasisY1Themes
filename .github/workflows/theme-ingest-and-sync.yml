@@ -3,7 +3,7 @@ name: Theme ingest and sync
 # Supports both uploader modes:
 # - direct file PRs (preferred): worker/client commits extracted theme files directly
 # - root zip artifacts (legacy fallback): extracted by scripts/process_theme_zips.py
-# Then sync themes.json + per-theme index.html, regenerate sitemap.xml, and cleanup upload artifacts.
+# Then sync themes.json; regenerate per-theme SEO index.html (Rewrite-ThemeIndexPages.ps1); sitemap; cleanup.
 # A follow-up job comments on the originating upload PR when sync succeeds or fails (notify-source-pr-after-ingest).
 # Theme raster downsizing (max ~320px) runs in the browser during packaging (upload.html), not here.
 # (Do not run a separate “sitemap on themes.json push” workflow — it raced this job and caused rebase conflicts.)
@@ -63,10 +63,13 @@ jobs:
         env:
           PROCESS_THEME_ZIPS_STRICT: "true"
 
-      - name: Sync themes.json and theme index pages
+      - name: Sync themes.json and theme configs
         run: python scripts/sync_theme_metadata.py
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Regenerate theme SEO redirect index pages
+        run: pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/Rewrite-ThemeIndexPages.ps1
 
       - name: Cleanup stale upload zip/meta artifacts
         run: python scripts/cleanup_upload_artifacts.py
@@ -92,7 +95,7 @@ jobs:
             TARGET_BRANCH="main"
           fi
           git add -A
-          git commit -m "Theme ingest: extract zips, sync metadata, cleanup upload artifacts"
+          git commit -m "Theme ingest: extract zips, sync metadata, SEO index shells, sitemap, cleanup upload artifacts"
           ok=0
           for attempt in 1 2 3 4 5 6 7 8; do
             if [[ -d .git/rebase-merge ]] || [[ -d .git/rebase-apply ]]; then

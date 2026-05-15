@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
-"""Synchronize theme folders, themes.json, config theme_info, and theme pages.
+"""Synchronize theme folders, themes.json, and config theme_info.
 
 Behavior:
 - Detect theme folders (root directories containing config.json).
 - Ensure every detected folder has an entry in themes.json.
 - Ensure each theme config.json contains theme_info (backfilled from themes.json/folder).
-- Ensure each theme index.html exists and has theme-specific SEO metadata.
 - Skip source-only folders that do not define theme image assets.
+
+Per-theme and variant ``index.html`` SEO redirect shells (meta + ``theme.html`` redirect) are
+written by ``scripts/Rewrite-ThemeIndexPages.ps1`` (Theme ingest CI on ``main``, or run locally).
+``python scripts/sync_theme_metadata.py --check-theme-indexes`` still verifies those files exist
+for image-backed catalog themes.
 """
 
 from __future__ import annotations
 
-import html
 import json
 import os
 import re
@@ -26,10 +29,6 @@ from typing import Any
 _GIT_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = _GIT_ROOT
 THEMES_JSON_PATH = REPO_ROOT / "themes.json"
-# Per-theme index.html is regenerated from theme.html on each sync (SEO + shared UI).
-# The floating toolbar comes from support_toolbar.html (fetched at runtime). Keep
-# theme.html’s support-toolbar-slot + loadSupportToolbar() in sync when changing toolbar wiring.
-THEME_TEMPLATE_PATH = REPO_ROOT / "theme.html"
 SITE_BASE_URL = "https://themes.innioasis.app"
 IMAGE_EXTENSIONS = {".gif", ".jpeg", ".jpg", ".png", ".svg", ".webp"}
 PROTECTED_UPLOADERS = {
@@ -654,93 +653,6 @@ def _sync_theme_info(config: dict[str, Any], theme_entry: dict[str, Any], *, for
     return changed
 
 
-def _html_attr(value: str) -> str:
-    return html.escape(str(value), quote=False).replace('"', "&quot;")
-
-
-def _theme_title(theme_entry: dict[str, Any]) -> str:
-    name = str(theme_entry.get("name") or theme_entry.get("folder") or "Theme").strip()
-    return f"{name} theme for Innioasis Y1 - Y1 Themes"
-
-
-def _theme_description(theme_entry: dict[str, Any]) -> str:
-    name = str(theme_entry.get("name") or theme_entry.get("folder") or "Theme").strip()
-    author = str(theme_entry.get("author") or "").strip()
-    description = str(theme_entry.get("description") or "").strip()
-    if description and not _is_default_description(description, name):
-        return description
-    return _download_description(name, author)
-
-
-def _theme_keywords(theme_entry: dict[str, Any]) -> str:
-    name = str(theme_entry.get("name") or theme_entry.get("folder") or "Theme").strip()
-    return f"{name} theme, Innioasis Y1 theme, {name}, Y1 customization, MP3 player theme"
-
-
-def _theme_url(folder: str) -> str:
-    encoded = "/".join(part.replace(" ", "%20") for part in folder.strip("/").split("/"))
-    return f"{SITE_BASE_URL}/{encoded}/"
-
-
-def _replace_once(pattern: str, replacement: str, text: str) -> str:
-    return re.sub(pattern, replacement, text, count=1, flags=re.I)
-
-
-def _build_theme_index_html(template: str, theme_entry: dict[str, Any]) -> str:
-    folder = str(theme_entry.get("folder") or "").strip()
-    title = _html_attr(_theme_title(theme_entry))
-    description = _html_attr(_theme_description(theme_entry))
-    keywords = _html_attr(_theme_keywords(theme_entry))
-    url = _html_attr(_theme_url(folder))
-    folder_enc = urllib.parse.quote(folder, safe="")
-
-    html_text = template
-    html_text = _replace_once(r"<title id=\"page-title\">.*?</title>", f'<title id="page-title">{title}</title>', html_text)
-    html_text = _replace_once(r'<meta name=\"description\" content=\"[^\"]*\">', f'<meta name="description" content="{description}">', html_text)
-    html_text = _replace_once(r'<meta name=\"keywords\" content=\"[^\"]*\">', f'<meta name="keywords" content="{keywords}">', html_text)
-    html_text = _replace_once(r'<link rel=\"canonical\" href=\"[^\"]*\">', f'<link rel="canonical" href="{url}">', html_text)
-    html_text = _replace_once(r'<meta property=\"og:title\" content=\"[^\"]*\">', f'<meta property="og:title" content="{title}">', html_text)
-    html_text = _replace_once(r'<meta property=\"og:description\" content=\"[^\"]*\">', f'<meta property="og:description" content="{description}">', html_text)
-    html_text = _replace_once(r'<meta property=\"og:url\" content=\"[^\"]*\">', f'<meta property="og:url" content="{url}">', html_text)
-    html_text = _replace_once(r'<meta name=\"twitter:title\" content=\"[^\"]*\">', f'<meta name="twitter:title" content="{title}">', html_text)
-    html_text = _replace_once(r'<meta name=\"twitter:description\" content=\"[^\"]*\">', f'<meta name="twitter:description" content="{description}">', html_text)
-    edit_href = f"{SITE_BASE_URL}/upload.html?mode=edit-metadata&folder={folder_enc}"
-    remove_href = f"{SITE_BASE_URL}/upload.html?mode=remove&folder={folder_enc}"
-    html_text = html_text.replace("__THEME_UPLOAD_EDIT_HREF__", edit_href)
-    html_text = html_text.replace("__THEME_UPLOAD_REMOVE_HREF__", remove_href)
-    return html_text
-
-
-def _sync_theme_index(theme_entry: dict[str, Any], master_template: str) -> bool:
-    folder = _extract_folder_key(theme_entry)
-    if not folder:
-        return False
-    path = REPO_ROOT / folder / "index.html"
-    existing = path.read_text(encoding="utf-8") if path.exists() else ""
-    # Always render from theme.html so new UI (e.g. report link) propagates to every theme index.
-    updated = _build_theme_index_html(master_template, theme_entry)
-    if updated == existing and path.exists():
-        return False
-    path.write_text(updated, encoding="utf-8")
-    return True
-
-
-def _theme_index_entry(theme_entry: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
-    index_entry = dict(theme_entry)
-    info = _theme_info_for_folder(str(index_entry.get("folder") or ""), config)
-    if info.get("title"):
-        index_entry["name"] = info["title"]
-    if info.get("description") and not index_entry.get("description"):
-        index_entry["description"] = info["description"]
-    if info.get("author") and not index_entry.get("author"):
-        index_entry["author"] = info["author"]
-    if info.get("authorUrl") and not index_entry.get("authorUrl"):
-        index_entry["authorUrl"] = info["authorUrl"]
-    if info.get("externalDownloadUrl") and not index_entry.get("externalDownloadUrl"):
-        index_entry["externalDownloadUrl"] = info["externalDownloadUrl"]
-    return index_entry
-
-
 def _sync_source_only_config(config: dict[str, Any]) -> bool:
     if not isinstance(config.get("source_info"), dict):
         return False
@@ -838,7 +750,6 @@ def main() -> int:
         for folder in sorted(catalog_by_folder.keys(), key=lambda s: s.lower())
     ]
     _write_json(THEMES_JSON_PATH, {"themes": ordered_themes})
-    template_html = THEME_TEMPLATE_PATH.read_text(encoding="utf-8") if THEME_TEMPLATE_PATH.exists() else ""
 
     for folder in theme_folders:
         page_entry = dict(by_folder.get(folder) or {})
@@ -872,8 +783,6 @@ def main() -> int:
             config_changed = True
         if config_changed:
             _write_json(cfg_path, config)
-        if template_html:
-            _sync_theme_index(_theme_index_entry(page_entry, config), template_html)
 
     return 0
 

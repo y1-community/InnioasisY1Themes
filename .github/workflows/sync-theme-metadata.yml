@@ -30,6 +30,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Regenerate theme SEO redirect index pages
+        run: pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/Rewrite-ThemeIndexPages.ps1
+
       - name: Cleanup stale upload zip/meta artifacts
         run: python scripts/cleanup_upload_artifacts.py
 
@@ -48,7 +51,7 @@ jobs:
             exit 0
           fi
           git add -A
-          git commit -m "Auto-sync theme metadata from folders"
+          git commit -m "Auto-sync theme metadata and SEO index shells from folders"
           BRANCH="${GITHUB_REF_NAME:-main}"
           ok=0
           for attempt in 1 2 3 4 5 6; do

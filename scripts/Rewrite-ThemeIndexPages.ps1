@@ -1,7 +1,7 @@
 <#!
   Regenerate theme/variant index.html SEO shells (repo root index.html is untouched).
-  Static GitHub Pages — no Node required. Run from repo root:
-    powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Rewrite-ThemeIndexPages.ps1
+  Static GitHub Pages — no Node required. Run from repo root (or via theme-ingest-and-sync CI):
+    pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/Rewrite-ThemeIndexPages.ps1
 #>
 $ErrorActionPreference = 'Stop'
 $Root = Resolve-Path (Join-Path $PSScriptRoot '..')
@@ -52,13 +52,13 @@ function Get-VariantSubfolders([string]$folder, $themeMeta) {
 }
 
 function Build-PreviewUrl([string]$catalogFolder, [string]$variant) {
-    $u = [System.UriBuilder]::new("$Site/theme.html")
-    $q = [System.Web.HttpUtility]::ParseQueryString('')
-    $q['theme'] = $catalogFolder
+    $t = [Uri]::EscapeDataString($catalogFolder)
+    $qs = "theme=$t"
     $v = ($variant -as [string]).Trim()
-    if ($v) { $q['variant'] = $v }
-    $u.Query = $q.ToString()
-    return $u.Uri.AbsoluteUri
+    if ($v) {
+        $qs += "&variant=$([Uri]::EscapeDataString($v))"
+    }
+    return "$Site/theme.html?$qs"
 }
 
 function Build-SharePageUrl([string]$catalogFolder, [string]$variant) {
@@ -68,8 +68,6 @@ function Build-SharePageUrl([string]$catalogFolder, [string]$variant) {
     if ($v) { [void]$segs.Add('Variants'); [void]$segs.Add($v) }
     return $Site + '/' + (($segs | ForEach-Object { [Uri]::EscapeDataString($_) }) -join '/')
 }
-
-Add-Type -AssemblyName System.Web
 
 $themesDoc = Read-JsonObject $ThemesPath
 $byFolder = @{}
