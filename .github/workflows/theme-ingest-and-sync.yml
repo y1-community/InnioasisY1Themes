@@ -4,6 +4,7 @@ name: Theme ingest and sync
 # - direct file PRs (preferred): worker/client commits extracted theme files directly
 # - root zip artifacts (legacy fallback): extracted by scripts/process_theme_zips.py
 # Then sync themes.json + per-theme index.html, regenerate sitemap.xml, and cleanup upload artifacts.
+# Theme raster downsizing (max ~320px) runs in the browser during packaging (upload.html), not here.
 # (Do not run a separate “sitemap on themes.json push” workflow — it raced this job and caused rebase conflicts.)
 
 on:
@@ -53,17 +54,12 @@ jobs:
           python-version: "3.11"
 
       - name: Install ingest dependencies
-        run: python -m pip install --upgrade pip pillow
+        run: python -m pip install --upgrade pip
 
       - name: Extract root theme zip submissions (legacy fallback)
         run: python scripts/process_theme_zips.py
         env:
           PROCESS_THEME_ZIPS_STRICT: "true"
-
-      - name: Optimize theme assets
-        run: python scripts/optimize_theme_assets.py
-        env:
-          THEME_ASSET_MAX_DIMENSION: "320"
 
       - name: Sync themes.json and theme index pages
         run: python scripts/sync_theme_metadata.py

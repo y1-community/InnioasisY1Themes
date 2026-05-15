@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Optimize theme image assets for device-friendly package sizes.
 
-Workflow intent:
-- Shrink oversized images to a bounded max dimension.
-- Re-encode PNG files with optimization/compression while preserving alpha.
+Historically this ran in GitHub Actions during theme ingest; uploads now downsize
+raster images in the browser when building the ZIP (see ``upload.html``). You can
+still run this script locally or in a one-off job to shrink themes already in the repo.
 
-This runs in the regular ingest/sync pipeline to keep uploaded themes efficient.
+- Shrink oversized images to a bounded max dimension (``THEME_ASSET_MAX_DIMENSION``, default 320).
+- Re-encode PNG files with optimization/compression while preserving alpha.
 """
 
 from __future__ import annotations

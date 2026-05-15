@@ -2764,6 +2764,76 @@
             }
         }
 
+        /** Match scripts/optimize_theme_assets.py default (THEME_ASSET_MAX_DIMENSION). */
+        const CLIENT_THEME_ASSET_MAX_DIMENSION = 320;
+
+        /**
+         * Downscale raster theme images that exceed CLIENT_THEME_ASSET_MAX_DIMENSION on the longest edge.
+         * Keeps CPU off GitHub Actions (was optimize_theme_assets.py in theme-ingest-and-sync).
+         * @param {ArrayBuffer|Uint8Array} data
+         * @param {string} relPath path used only for extension / mime
+         * @returns {Promise<Uint8Array>}
+         */
+        async function maybeShrinkThemeImageBytes(data, relPath) {
+            const low = String(relPath || "").toLowerCase();
+            const extM = low.match(/\.(png|jpg|jpeg|webp)$/);
+            if (!extM) {
+                return data instanceof Uint8Array ? data : new Uint8Array(data);
+            }
+            const ext = extM[1];
+            const u8 = data instanceof Uint8Array ? data : new Uint8Array(data);
+            if (!u8.length) return u8;
+            const mime =
+                ext === "png"
+                    ? "image/png"
+                    : ext === "webp"
+                      ? "image/webp"
+                      : "image/jpeg";
+            let bitmap;
+            try {
+                const blob = new Blob([u8], { type: mime });
+                bitmap = await createImageBitmap(blob);
+            } catch (_) {
+                return u8;
+            }
+            const maxDim = CLIENT_THEME_ASSET_MAX_DIMENSION;
+            const w = bitmap.width;
+            const h = bitmap.height;
+            let tw = w;
+            let th = h;
+            if (w > maxDim || h > maxDim) {
+                const ratio = Math.min(maxDim / w, maxDim / h);
+                tw = Math.max(1, Math.round(w * ratio));
+                th = Math.max(1, Math.round(h * ratio));
+            }
+            if (tw === w && th === h) {
+                bitmap.close();
+                return u8;
+            }
+            const canvas = document.createElement("canvas");
+            canvas.width = tw;
+            canvas.height = th;
+            const ctx = canvas.getContext("2d");
+            if (!ctx) {
+                bitmap.close();
+                return u8;
+            }
+            if (ext === "png") {
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = "high";
+            }
+            ctx.drawImage(bitmap, 0, 0, tw, th);
+            bitmap.close();
+            const outMime = ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
+            const quality = ext === "png" ? undefined : ext === "webp" ? 0.86 : 0.88;
+            const outBlob = await new Promise((resolve) => {
+                canvas.toBlob((b) => resolve(b || null), outMime, quality);
+            });
+            if (!outBlob) return u8;
+            const ab = await outBlob.arrayBuffer();
+            return new Uint8Array(ab);
+        }
+
         async function readSubmissionBlob(scopedLowerPath) {
             const target = String(scopedLowerPath || "").toLowerCase();
             if (!target) return null;
@@ -3184,7 +3254,9 @@
                         outputZip.file(outPath, editsByOriginalPath.get(path));
                     } else {
                         const buf = await file.arrayBuffer();
-                        outputZip.file(outPath, buf);
+                        const raw = new Uint8Array(buf);
+                        const packed = await maybeShrinkThemeImageBytes(raw, outPath);
+                        outputZip.file(outPath, packed);
                     }
                 }
                 const extra = pendingExtraVariationEntries || [];
@@ -3193,7 +3265,13 @@
                         rememberScrubbedSubmissionPath(e.path);
                         continue;
                     }
-                    outputZip.file(e.path, e.bytes);
+                    const extLow = String(e.path || "").toLowerCase();
+                    if (/\.(png|jpg|jpeg|webp)$/i.test(extLow)) {
+                        const packed = await maybeShrinkThemeImageBytes(e.bytes, e.path);
+                        outputZip.file(e.path, packed);
+                    } else {
+                        outputZip.file(e.path, e.bytes);
+                    }
                 }
 
                 const blob = await outputZip.generateAsync({ type: "blob" });
@@ -3230,7 +3308,8 @@
                     outputZip.file(outPath, editsByOriginalPath.get(path));
                 } else {
                     const bytes = await zipEntry.async("uint8array");
-                    outputZip.file(outPath, bytes);
+                    const packed = await maybeShrinkThemeImageBytes(bytes, outPath);
+                    outputZip.file(outPath, packed);
                 }
             }
             const extra = pendingExtraVariationEntries || [];
@@ -3239,7 +3318,13 @@
                     rememberScrubbedSubmissionPath(e.path);
                     continue;
                 }
-                outputZip.file(e.path, e.bytes);
+                const extLow = String(e.path || "").toLowerCase();
+                if (/\.(png|jpg|jpeg|webp)$/i.test(extLow)) {
+                    const packed = await maybeShrinkThemeImageBytes(e.bytes, e.path);
+                    outputZip.file(e.path, packed);
+                } else {
+                    outputZip.file(e.path, e.bytes);
+                }
             }
 
             const blob = await outputZip.generateAsync({ type: "blob" });
