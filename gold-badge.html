@@ -10,11 +10,11 @@
     <link rel="icon" href="y1_illustration.png" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="https://innioasis.app/styles.css" />
-    <link rel="stylesheet" href="site-theme.css?v=20260523" />
+    <link rel="stylesheet" href="site-theme.css?v=20260524" />
     <link rel="stylesheet" href="theme-analytics.css?v=20260521" />
     <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
-    <script src="theme-artwork-compat.js?v=20260523"></script>
-    <script src="gold-theme-detect.js?v=20260523"></script>
+    <script src="theme-artwork-compat.js?v=20260524"></script>
+    <script src="gold-theme-detect.js?v=20260524"></script>
     <script src="theme-analytics.js?v=20260521"></script>
     <style>
         body {
@@ -302,7 +302,7 @@
             <p class="gold-gallery-intro">Tap a theme to preview it and download when you are ready.</p>
             <p id="gold-gallery-count" class="gold-gallery-count" hidden></p>
             <div id="gold-theme-grid" aria-live="polite">
-                <p class="gold-loading">Finding Gold themes…</p>
+                <p class="gold-loading" id="gold-scan-status">Finding Gold themes…</p>
             </div>
         </section>
 
@@ -377,9 +377,51 @@
             el.textContent = n === 1 ? "1 theme with Gold" : n + " themes with Gold";
         }
 
+        function goldCardHtml(t) {
+            const folder = String(t.folder || t.name || "").replace(/^\.\/+/, "");
+            const q = encodeURIComponent(folder);
+            const name = escAttr(t.name || folder || "Theme");
+            const cover = window.GoldThemeDetect.coverUrlForTheme(t);
+            return (
+                '<a class="gold-theme-card" href="./theme.html?theme=' +
+                q +
+                '" title="' +
+                name +
+                '">' +
+                '<img src="' +
+                escAttr(cover) +
+                '" alt="" loading="lazy" onerror="this.src=\'placeholder.png\'" />' +
+                '<span class="gold-pill">Gold</span>' +
+                "<span>" +
+                name +
+                "</span></a>"
+            );
+        }
+
         async function loadGoldThemes() {
             const grid = document.getElementById("gold-theme-grid");
+            const statusEl = document.getElementById("gold-scan-status");
             if (!grid || !window.GoldThemeDetect) return;
+
+            const seen = new Set();
+            let goldCount = 0;
+
+            function appendGoldCard(theme) {
+                const folder = String(theme.folder || "").replace(/^\.\/+/, "");
+                if (!folder || seen.has(folder)) return;
+                seen.add(folder);
+                goldCount += 1;
+                const wrap = document.createElement("div");
+                wrap.innerHTML = goldCardHtml(theme);
+                const card = wrap.firstElementChild;
+                if (card && statusEl && statusEl.parentNode === grid) {
+                    grid.insertBefore(card, statusEl);
+                } else if (card) {
+                    grid.appendChild(card);
+                }
+                setGalleryCount(goldCount);
+            }
+
             try {
                 const res = await fetch("themes.json", { cache: "no-store" });
                 if (!res.ok) throw new Error("themes.json");
@@ -387,40 +429,48 @@
                 const catalog = (Array.isArray(data) ? data : data.themes || []).filter(
                     (t) => t && String(t.sourceType || "internal").toLowerCase() !== "external",
                 );
-                const gold = await window.GoldThemeDetect.findGoldThemes(catalog, {
-                    batchSize: 8,
-                    buildFileUrl: (cf, rel) =>
-                        window.GoldThemeDetect.buildThemeFileUrl(cf, rel),
+                const buildFileUrl = (cf, rel) => window.GoldThemeDetect.buildThemeFileUrl(cf, rel);
+
+                for (const t of catalog) {
+                    const folder = String(t.folder || "").replace(/^\.\/+/, "");
+                    if (!folder) continue;
+                    try {
+                        const cfg = await window.GoldThemeDetect.fetchThemeConfig(folder);
+                        const gallery =
+                            cfg && cfg.gallery && typeof cfg.gallery === "object" ? cfg.gallery : {};
+                        if (String(gallery.compatibilityMedal || "").trim().toLowerCase() === "gold") {
+                            t.compatibilityMedal = "gold";
+                            appendGoldCard(t);
+                        }
+                    } catch (_) {}
+                }
+
+                await window.GoldThemeDetect.annotateThemes(catalog, {
+                    batchSize: 4,
+                    buildFileUrl,
+                    emitEvents: false,
+                    onProgress: ({ done, total: scanTotal }) => {
+                        if (statusEl) {
+                            statusEl.textContent = "Checking theme " + done + " of " + scanTotal + "…";
+                        }
+                    },
                 });
-                if (!gold.length) {
-                    setGalleryCount(0);
+
+                for (const t of catalog) {
+                    if (String(t.compatibilityMedal || "").toLowerCase() === "gold") {
+                        appendGoldCard(t);
+                    }
+                }
+
+                if (statusEl) statusEl.remove();
+
+                if (!goldCount) {
                     grid.innerHTML =
                         '<p class="gold-loading">No Gold themes yet. <a href="index.html">Browse the full gallery</a> or check back soon.</p>';
+                    setGalleryCount(0);
                     return;
                 }
-                setGalleryCount(gold.length);
-                grid.innerHTML = gold
-                    .map((t) => {
-                        const folder = String(t.folder || t.name || "").replace(/^\.\/+/, "");
-                        const q = encodeURIComponent(folder);
-                        const name = escAttr(t.name || folder || "Theme");
-                        const cover = window.GoldThemeDetect.coverUrlForTheme(t);
-                        return (
-                            '<a class="gold-theme-card" href="./theme.html?theme=' +
-                            q +
-                            '" title="' +
-                            name +
-                            '">' +
-                            '<img src="' +
-                            escAttr(cover) +
-                            '" alt="" loading="lazy" onerror="this.src=\'placeholder.png\'" />' +
-                            '<span class="gold-pill">Gold</span>' +
-                            "<span>" +
-                            name +
-                            "</span></a>"
-                        );
-                    })
-                    .join("");
+                setGalleryCount(goldCount);
             } catch (err) {
                 console.error("Gold theme list failed", err);
                 setGalleryCount(0);

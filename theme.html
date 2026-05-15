@@ -46,7 +46,7 @@
     <link rel="icon" href="y1_illustration.png">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="site-theme.css?v=20260523">
+    <link rel="stylesheet" href="site-theme.css?v=20260524">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
     <link rel="stylesheet" href="y1-theme-preview.css?v=20260215">
     <link rel="stylesheet" href="theme-analytics.css?v=20260518">
@@ -54,9 +54,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="theme-packaging.js"></script>
     <script src="y1-theme-preview.js?v=20260215"></script>
-    <script src="theme-artwork-compat.js?v=20260515"></script>
+    <script src="theme-artwork-compat.js?v=20260524"></script>
+    <script src="gold-theme-detect.js?v=20260524"></script>
     <script src="gallery-loaded-theme.js"></script>
-    <script src="theme-analytics.js?v=20260521"></script>
+    <script src="theme-analytics.js?v=20260524"></script>
 </head>
 <style>
     html {
@@ -651,6 +652,29 @@
             const full = resolvedRepoPath(folderPath, relativePath);
             if (!full) return '';
             return `./${encodePathSegments(full)}`;
+        }
+
+        async function refreshThemeGoldMedal(catalogFolder, variantSeg, themeMetaOpt) {
+            const medalEl = document.getElementById('theme-compatibility-medal');
+            if (!medalEl || !window.GoldThemeDetect || typeof window.GoldThemeDetect.evaluateThemeGoldStatus !== 'function') {
+                return;
+            }
+            const catalog = String(catalogFolder || '').replace(/^\.\/+/, '').trim();
+            if (!catalog) {
+                medalEl.style.display = 'none';
+                return;
+            }
+            const status = await window.GoldThemeDetect.evaluateThemeGoldStatus(
+                {
+                    folder: catalog,
+                    compatibilityMedal: themeMetaOpt && themeMetaOpt.compatibilityMedal,
+                },
+                {
+                    buildFileUrl: (cf, rel) => themeFileUrl(cf, rel),
+                    variantSegment: String(variantSeg || '').trim(),
+                }
+            );
+            medalEl.style.display = status.gold ? 'block' : 'none';
         }
 
         function normalizeConfigAssetPath(rawPath, folderPath) {
@@ -1826,28 +1850,7 @@
             if (warnFn && themeMeta && themeMeta.rawConfig) {
                 artworkWarnings = await warnFn(themeFileUrl, themeMeta.rawConfig, activeContentFolder);
             }
-            let showGoldMedal = false;
-            if (themeMeta && themeMeta.rawConfig && activeContentFolder) {
-                const medalOverride = String(
-                    (themeMeta.rawConfig.gallery && themeMeta.rawConfig.gallery.compatibilityMedal) || ''
-                ).trim().toLowerCase();
-                if (medalOverride === 'gold' || String(themeMeta.compatibilityMedal || '').toLowerCase() === 'gold') {
-                    showGoldMedal = true;
-                } else if (medalOverride === 'none') {
-                    showGoldMedal = false;
-                } else if (window.GoldThemeDetect && typeof window.GoldThemeDetect.qualifiesForGoldAsync === 'function') {
-                    showGoldMedal = await window.GoldThemeDetect.qualifiesForGoldAsync(
-                        themeMeta.rawConfig,
-                        activeContentFolder,
-                        themeFileUrl
-                    );
-                } else {
-                    showGoldMedal = !!(Array.isArray(artworkWarnings) && artworkWarnings.length === 0);
-                }
-            }
-            if (medalEl) {
-                medalEl.style.display = showGoldMedal ? 'block' : 'none';
-            }
+            await refreshThemeGoldMedal(folder, activeVariant, themeMeta);
             if (artworkMessageWrap && artworkSummaryEl && artworkListEl) {
                 if (artworkWarnings.length) {
                     artworkSummaryEl.textContent =

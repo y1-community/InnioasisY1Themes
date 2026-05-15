@@ -27,7 +27,7 @@
 
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="site-theme.css?v=20260523">
+    <link rel="stylesheet" href="site-theme.css?v=20260524">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
     <link rel="stylesheet" href="y1-theme-preview.css?v=20260215">
     <link rel="stylesheet" href="theme-analytics.css?v=20260518">
@@ -35,8 +35,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="theme-packaging.js"></script>
     <script src="y1-theme-preview.js?v=20260215"></script>
-    <script src="theme-artwork-compat.js?v=20260523"></script>
-    <script src="gold-theme-detect.js?v=20260523"></script>
+    <script src="theme-artwork-compat.js?v=20260524"></script>
+    <script src="gold-theme-detect.js?v=20260524"></script>
     <script src="gallery-loaded-theme.js"></script>
     <script src="theme-analytics.js?v=20260523"></script>
 
@@ -660,6 +660,10 @@
                     <option value="48">48</option>
                 </select>
             </label>
+            <label class="gallery-control gallery-control--gold" for="gold-only-filter">
+                <input type="checkbox" id="gold-only-filter" />
+                Gold only
+            </label>
         </div>
 
         <div id="theme-grid" class="theme-grid"></div>
@@ -766,6 +770,7 @@
         const authorFilter = document.getElementById('author-filter');
         const sortFilter = document.getElementById('sort-filter');
         const pageSizeSelect = document.getElementById('page-size');
+        const goldOnlyCheckbox = document.getElementById('gold-only-filter');
         let goldOnlyFilter = false;
         const pagerEl = document.getElementById('theme-pager');
         let currentPage = 1;
@@ -780,6 +785,7 @@
             const authorQ = qp.get('author');
             if (authorFilter && authorQ) authorFilter.value = authorQ;
             goldOnlyFilter = qp.get('gold') === '1';
+            if (goldOnlyCheckbox) goldOnlyCheckbox.checked = goldOnlyFilter;
             const sizeQ = qp.get('size');
             if (pageSizeSelect && sizeQ && ['12', '24', '48'].includes(sizeQ)) pageSizeSelect.value = sizeQ;
             const pageQ = Number(qp.get('page') || '1');
@@ -947,6 +953,25 @@
         });
         if (pageSizeSelect) pageSizeSelect.addEventListener('change', () => {
             currentPage = 1;
+            applyFilters();
+        });
+        if (goldOnlyCheckbox) {
+            goldOnlyCheckbox.addEventListener('change', () => {
+                goldOnlyFilter = !!goldOnlyCheckbox.checked;
+                currentPage = 1;
+                applyFilters();
+            });
+        }
+        window.addEventListener('y1-gold-themes-updated', (ev) => {
+            const grid = document.getElementById('theme-grid');
+            if (!grid) return;
+            const folder = ev.detail && ev.detail.folder ? String(ev.detail.folder) : '';
+            if (folder) {
+                const card = findGalleryCardByFolder(grid, folder);
+                if (card) {
+                    setGalleryCardGoldTitleBadge(card, !!(ev.detail && ev.detail.gold));
+                }
+            }
             applyFilters();
         });
         let statsFilterTimer;
@@ -2887,30 +2912,17 @@
             }
         }
 
-        async function evaluateCardGoldBadge(card, cfg, contentFolder) {
-            if (!card || !cfg || !contentFolder) return;
-            const medal = String((cfg.gallery && cfg.gallery.compatibilityMedal) || '').trim().toLowerCase();
-            if (medal === 'gold') {
-                setGalleryCardGoldTitleBadge(card, true);
-                return;
-            }
-            if (medal === 'none') {
-                setGalleryCardGoldTitleBadge(card, false);
-                return;
-            }
-            if (card.getAttribute('data-gold') === '1') return;
-            if (window.GoldThemeDetect && typeof window.GoldThemeDetect.qualifiesForGoldAsync === 'function') {
-                const ok = await window.GoldThemeDetect.qualifiesForGoldAsync(
-                    cfg,
-                    contentFolder,
-                    (cf, rel) => buildThemeFileUrl(cf, rel)
-                );
-                setGalleryCardGoldTitleBadge(card, ok);
-                return;
-            }
-            if (window.GoldThemeDetect && typeof window.GoldThemeDetect.configQualifiesForGold === 'function') {
-                setGalleryCardGoldTitleBadge(card, window.GoldThemeDetect.configQualifiesForGold(cfg));
-            }
+        async function evaluateCardGoldBadge(card, catalogFolder, variantSeg) {
+            if (!card || !catalogFolder || !window.GoldThemeDetect) return;
+            if (typeof window.GoldThemeDetect.evaluateThemeGoldStatus !== 'function') return;
+            const status = await window.GoldThemeDetect.evaluateThemeGoldStatus(
+                { folder: catalogFolder },
+                {
+                    buildFileUrl: (cf, rel) => buildThemeFileUrl(cf, rel),
+                    variantSegment: String(variantSeg || '').trim(),
+                }
+            );
+            setGalleryCardGoldTitleBadge(card, status.gold);
         }
 
         function applyGalleryCardPreviewReady(card, cfg, meta, folderPath, variantSeg) {
@@ -2922,7 +2934,7 @@
             const diEl = card.querySelector('[data-direct-install-btn]');
             if (dlEl) applyThemeCardDownloadButtonStyles(dlEl, cfg, cf, stack);
             if (diEl) applyThemeCardDownloadButtonStyles(diEl, cfg, cf, stack);
-            void evaluateCardGoldBadge(card, cfg, cf);
+            void evaluateCardGoldBadge(card, folderPath, seg);
         }
 
         function mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, card, variantSeg) {
@@ -3124,13 +3136,13 @@
 
             variantSelect.addEventListener('change', () => {
                 if (!folderPath || !window.Y1ThemePreview) return;
-                setGalleryCardGoldTitleBadge(c, false);
                 const seg = String(variantSelect.value || '').trim();
                 if (typeof window.Y1ThemePreview.unmount === 'function') {
                     window.Y1ThemePreview.unmount(simHost);
                 }
                 mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, c, seg);
                 void syncDownloadButtonToThemeConfig(seg);
+                void evaluateCardGoldBadge(c, folderPath, seg);
             });
 
             const titleRow = document.createElement('div');
@@ -3310,10 +3322,12 @@
         }
 
 
-        async function enrichThemesWithCompatibilityMedals(themes) {
-            if (!window.GoldThemeDetect || typeof window.GoldThemeDetect.annotateThemes !== 'function') return;
-            await window.GoldThemeDetect.annotateThemes(themes, {
-                batchSize: 8,
+        function startProgressiveGoldEnrichment(themes) {
+            if (!window.GoldThemeDetect || typeof window.GoldThemeDetect.annotateThemesProgressive !== 'function') {
+                return;
+            }
+            window.GoldThemeDetect.annotateThemesProgressive(themes, {
+                batchSize: 4,
                 buildFileUrl: (cf, rel) => buildThemeFileUrl(cf, rel),
             });
         }
@@ -3346,12 +3360,6 @@
                 return;
             }
             populateAuthorFilter(filteredThemes);
-            if (window.GoldThemeDetect) {
-                await window.GoldThemeDetect.annotateThemes(filteredThemes, {
-                    batchSize: 8,
-                    buildFileUrl: (cf, rel) => buildThemeFileUrl(cf, rel),
-                });
-            }
             let cardsAdded = 0;
             filteredThemes.forEach(t => {
                 const merged = {
@@ -3372,6 +3380,7 @@
                 return;
             }
             applyFilters();
+            startProgressiveGoldEnrichment(filteredThemes);
 
             void (async () => {
                 if (!window.ThemeAnalytics) return;
@@ -3386,8 +3395,6 @@
                     applyFilters();
                 }
             })();
-
-            syncTitleGoldBadgesFromEnrichedThemes(filteredThemes);
 
             handleHashAutoDownload();
             } catch (err) {

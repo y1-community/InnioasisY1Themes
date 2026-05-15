@@ -123,6 +123,28 @@
         });
     }
 
+    var ASSET_FETCH_TIMEOUT_MS = 8000;
+
+    function fetchWithTimeout(url, init) {
+        if (typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function') {
+            return fetch(url, Object.assign({}, init || {}, { signal: AbortSignal.timeout(ASSET_FETCH_TIMEOUT_MS) }));
+        }
+        return new Promise(function (resolve, reject) {
+            var timer = setTimeout(function () {
+                reject(new Error('timeout'));
+            }, ASSET_FETCH_TIMEOUT_MS);
+            fetch(url, init || {})
+                .then(function (res) {
+                    clearTimeout(timer);
+                    resolve(res);
+                })
+                .catch(function (err) {
+                    clearTimeout(timer);
+                    reject(err);
+                });
+        });
+    }
+
     function checkArtworkAssetHealth(fileUrlFn, folderPath, configuredPath) {
         return new Promise(function (resolve) {
             var normalized = normalizeConfigAssetPath(configuredPath, folderPath);
@@ -130,7 +152,7 @@
             var url = fileUrlFn(folderPath, normalized);
             if (!url) return resolve({ ok: false, issue: 'invalid path' });
             var allowTransparent = isIntentionalTransparentPath(normalized);
-            fetch(url, { cache: 'no-cache' })
+            fetchWithTimeout(url, { cache: 'no-cache' })
                 .then(function (response) {
                     if (!response.ok) return resolve({ ok: false, issue: 'file not found' });
                     return response.blob();
