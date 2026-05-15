@@ -10,7 +10,7 @@
     <meta name="keywords" content="Innioasis Y1 themes, Rockbox themes Y1, Y1 UI themes, Rockbox customization">
     <meta name="author" content="Innioasis Community">
 
-    <link rel="canonical" href="https://themes.innioasis.app/">
+    <link rel="preload" href="themes.json" as="fetch" crossorigin="anonymous" />
 
     <meta property="og:type" content="website">
     <meta property="og:title" content="Innioasis Y1 Rockbox Themes">
@@ -32,7 +32,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="theme-packaging.js"></script>
     <script src="y1-theme-preview.js?v=20260215"></script>
-    <script src="theme-artwork-compat.js?v=20260515"></script>
+    <script src="theme-artwork-compat.js?v=20260516"></script>
     <script src="gallery-loaded-theme.js"></script>
 
     <style>
@@ -240,24 +240,118 @@
             }
         }
 
-        .theme-preview-frame .theme-artwork-gold-badge {
-            position: absolute;
-            left: 8px;
-            bottom: 8px;
-            z-index: 3;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            background: linear-gradient(135deg, #5c4014, #b8891e 42%, #f2d06a 55%, #b8891e 68%, #5c4014);
-            color: #1a1206;
-            padding: 4px 9px;
-            border-radius: 999px;
-            font-size: 0.72rem;
-            font-weight: 800;
-            letter-spacing: 0.02em;
-            box-shadow: 0 2px 12px rgba(201, 162, 39, 0.4);
-            border: 1px solid rgba(255, 230, 160, 0.85);
+        .theme-grid.theme-grid--loading {
+            min-height: min(52vh, 640px);
+        }
+
+        .theme-card--skeleton {
             pointer-events: none;
+            user-select: none;
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+
+        .theme-card-skeleton-preview {
+            width: min(360px, 100%);
+            aspect-ratio: 4 / 3;
+            border-radius: 10px;
+            background: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0.05) 0%,
+                rgba(255, 255, 255, 0.11) 45%,
+                rgba(255, 255, 255, 0.05) 90%
+            );
+            background-size: 200% 100%;
+            animation: theme-skel-shimmer 1.15s ease-in-out infinite;
+        }
+
+        .theme-card-skeleton-line {
+            height: 13px;
+            border-radius: 6px;
+            width: 72%;
+            background: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0.05) 0%,
+                rgba(255, 255, 255, 0.11) 45%,
+                rgba(255, 255, 255, 0.05) 90%
+            );
+            background-size: 200% 100%;
+            animation: theme-skel-shimmer 1.15s ease-in-out infinite;
+        }
+
+        .theme-card-skeleton-line--title {
+            width: 58%;
+            height: 15px;
+        }
+
+        .theme-card-skeleton-line--short {
+            width: 42%;
+            opacity: 0.9;
+        }
+
+        .theme-card-skeleton-actions {
+            margin-top: auto;
+            display: flex;
+            gap: 8px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .theme-card-skeleton-actions span {
+            flex: 1;
+            max-width: 118px;
+            height: 34px;
+            border-radius: 8px;
+            background: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0.05) 0%,
+                rgba(255, 255, 255, 0.11) 45%,
+                rgba(255, 255, 255, 0.05) 90%
+            );
+            background-size: 200% 100%;
+            animation: theme-skel-shimmer 1.15s ease-in-out infinite;
+        }
+
+        @keyframes theme-skel-shimmer {
+            0% {
+                background-position: 100% 0;
+            }
+
+            100% {
+                background-position: 0 0;
+            }
+        }
+
+        .theme-card-title-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            justify-content: center;
+            gap: 0.35rem 0.6rem;
+            width: 100%;
+            text-align: center;
+        }
+
+        .theme-card-title-row .theme-name {
+            margin: 0;
+        }
+
+        .theme-gold-title-badge {
+            display: inline-block;
+            font-size: 0.68rem;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #1a1206;
+            padding: 2px 7px;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #5c4014, #b8891e 42%, #f2d06a 52%, #b8891e 62%, #5c4014);
+            border: 1px solid rgba(255, 230, 160, 0.75);
+            box-shadow: 0 1px 6px rgba(201, 162, 39, 0.28);
+            vertical-align: middle;
+        }
+
+        .theme-gold-title-badge[hidden] {
+            display: none !important;
         }
 
         .theme-preview-frame {
@@ -2646,6 +2740,56 @@
         }
 
 
+        function showThemeGridSkeleton(grid, count) {
+            if (!grid) return;
+            grid.classList.add('theme-grid--loading');
+            grid.innerHTML = '';
+            const n = Math.min(48, Math.max(6, Number(count) || 24));
+            for (let i = 0; i < n; i++) {
+                const sk = document.createElement('div');
+                sk.className = 'theme-card theme-card--skeleton';
+                sk.setAttribute('aria-hidden', 'true');
+                sk.innerHTML =
+                    '<div class="theme-card-skeleton-preview"></div>' +
+                    '<div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div>' +
+                    '<div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div>' +
+                    '<div class="theme-card-skeleton-actions"><span></span><span></span></div>';
+                grid.appendChild(sk);
+            }
+        }
+
+        function clearThemeGridLoadingState(grid) {
+            if (!grid) return;
+            grid.classList.remove('theme-grid--loading');
+            grid.innerHTML = '';
+        }
+
+        function findGalleryCardByFolder(grid, folderPath) {
+            if (!grid || !folderPath) return null;
+            for (const el of grid.querySelectorAll('.theme-card[data-catalog-folder]')) {
+                if (el.getAttribute('data-catalog-folder') === folderPath) return el;
+            }
+            return null;
+        }
+
+        function setGalleryCardGoldTitleBadge(card, visible) {
+            if (!card) return;
+            const b = card.querySelector('.theme-gold-title-badge');
+            if (b) b.hidden = !visible;
+        }
+
+        function syncTitleGoldBadgesFromEnrichedThemes(themes) {
+            const grid = document.getElementById('theme-grid');
+            if (!grid || !themes) return;
+            for (const t of themes) {
+                if (String(t.compatibilityMedal || '').toLowerCase() !== 'gold') continue;
+                const folder = String(t.folder || '').replace(/^\.\/+/, '');
+                if (!folder) continue;
+                const card = findGalleryCardByFolder(grid, folder);
+                if (card) setGalleryCardGoldTitleBadge(card, true);
+            }
+        }
+
         function handleHashAutoDownload() {
             const hash = location.hash.replace('#', '').toLowerCase()
             if (!hash) return
@@ -2762,18 +2906,6 @@
             img.alt = safeText(theme.name);
             previewFrame.appendChild(img);
 
-            if (folderPath && String(theme.compatibilityMedal || '').toLowerCase() === 'gold') {
-                previewFrame.style.position = 'relative';
-                const medalEarly = document.createElement('div');
-                medalEarly.className = 'theme-artwork-gold-badge';
-                medalEarly.innerHTML = '<span aria-hidden="true">🏅</span><span>Gold rated</span>';
-                medalEarly.setAttribute('role', 'img');
-                medalEarly.setAttribute('aria-label', 'Gold rated compatibility');
-                medalEarly.title =
-                    'This theme includes the full set of optional screens we verify for the latest Y1 experience.';
-                previewFrame.appendChild(medalEarly);
-            }
-
             const cardPreviewMeta = {
                 trackTitle: safeText(theme.name || '').trim(),
                 trackArtist: safeText(theme.author || '').trim(),
@@ -2805,17 +2937,7 @@
                             const cfEff = effectiveThemeContentFolder(folderPath, seg);
                             void warnFn((cf, rel) => buildThemeFileUrl(cf, rel), cfg, cfEff)
                                 .then((warns) => {
-                                    if (!Array.isArray(warns) || warns.length) return;
-                                    if (previewFrame.querySelector('.theme-artwork-gold-badge')) return;
-                                    previewFrame.style.position = 'relative';
-                                    const medal = document.createElement('div');
-                                    medal.className = 'theme-artwork-gold-badge';
-                                    medal.innerHTML = '<span aria-hidden="true">🏅</span><span>Gold rated</span>';
-                                    medal.setAttribute('role', 'img');
-                                    medal.setAttribute('aria-label', 'Gold rated compatibility');
-                                    medal.title =
-                                        'This theme includes the full set of optional screens we verify for the latest Y1 experience.';
-                                    previewFrame.appendChild(medal);
+                                    setGalleryCardGoldTitleBadge(c, Array.isArray(warns) && warns.length === 0);
                                 })
                                 .catch(() => {});
                         }
@@ -2893,7 +3015,7 @@
 
             variantSelect.addEventListener('change', () => {
                 if (!folderPath || !window.Y1ThemePreview) return;
-                previewFrame.querySelectorAll('.theme-artwork-gold-badge').forEach((el) => el.remove());
+                setGalleryCardGoldTitleBadge(c, false);
                 const seg = String(variantSelect.value || '').trim();
                 if (typeof window.Y1ThemePreview.unmount === 'function') {
                     window.Y1ThemePreview.unmount(simHost);
@@ -2922,17 +3044,7 @@
                                 const cfEff = effectiveThemeContentFolder(folderPath, seg);
                                 void warnFn((cf, rel) => buildThemeFileUrl(cf, rel), cfg, cfEff)
                                     .then((warns) => {
-                                        if (!Array.isArray(warns) || warns.length) return;
-                                        if (previewFrame.querySelector('.theme-artwork-gold-badge')) return;
-                                        previewFrame.style.position = 'relative';
-                                        const medal = document.createElement('div');
-                                        medal.className = 'theme-artwork-gold-badge';
-                                        medal.innerHTML = '<span aria-hidden="true">🏅</span><span>Gold rated</span>';
-                                        medal.setAttribute('role', 'img');
-                                        medal.setAttribute('aria-label', 'Gold rated compatibility');
-                                        medal.title =
-                                            'This theme includes the full set of optional screens we verify for the latest Y1 experience.';
-                                        previewFrame.appendChild(medal);
+                                        setGalleryCardGoldTitleBadge(c, Array.isArray(warns) && warns.length === 0);
                                     })
                                     .catch(() => {});
                             }
@@ -2945,6 +3057,9 @@
                 void syncDownloadButtonToThemeConfig(seg);
             });
 
+            const titleRow = document.createElement('div');
+            titleRow.className = 'theme-card-title-row';
+
             const n = document.createElement('a');
             n.className = 'theme-name';
             n.textContent = safeText(theme.name);
@@ -2956,6 +3071,17 @@
                 const themeQueryKey = folderPath || String(theme.name || '');
                 n.href = `./theme.html?theme=${encodeURIComponent(themeQueryKey)}`;
             }
+
+            const goldBadge = document.createElement('span');
+            goldBadge.className = 'theme-gold-title-badge';
+            goldBadge.textContent = 'Gold';
+            goldBadge.hidden = true;
+            goldBadge.title = 'Optional artwork checks passed for this theme.';
+            goldBadge.setAttribute('aria-label', 'Gold compatibility');
+            if (String(theme.compatibilityMedal || '').toLowerCase() === 'gold') {
+                goldBadge.hidden = false;
+            }
+            titleRow.append(n, goldBadge);
 
             const d = document.createElement('div');
             d.className = 'theme-desc';
@@ -3058,7 +3184,7 @@
                 } catch (e) {}
                 bd.append(dl, di);
             }
-            c.append(previewFrame, variantRow, n, d, a, bd);
+            c.append(previewFrame, variantRow, titleRow, d, a, bd);
             c.insertBefore(variantRow, previewFrame);
             if (theme.sourceType !== 'external' && folderPath) {
                 const corner = document.createElement('div');
@@ -3106,7 +3232,7 @@
             const internals = (themes || []).filter(
                 (t) => t && t.folder && String(t.sourceType || 'internal').toLowerCase() !== 'external'
             );
-            const batch = 5;
+            const batch = 12;
             for (let i = 0; i < internals.length; i += batch) {
                 const slice = internals.slice(i, i + batch);
                 await Promise.all(
@@ -3127,26 +3253,30 @@
         }
 
         async function load() {
-            const grid = document.getElementById('theme-grid')
-            const cachedThemes = await tryFetchThemeCache()
-            let themes = dedupeThemes(cachedThemes || [])
+            const grid = document.getElementById('theme-grid');
+            if (!grid) return;
+            const pageSizeSelectEl = document.getElementById('page-size');
+            const skeletonCount = Math.min(48, Math.max(12, Number(pageSizeSelectEl && pageSizeSelectEl.value) || 24));
+            showThemeGridSkeleton(grid, skeletonCount);
+
+            const cachedThemes = await tryFetchThemeCache();
+            let themes = dedupeThemes(cachedThemes || []);
             if (!themes.length) {
-                const discoveredThemes = await discoverThemesFromSubfolders(cachedThemes)
-                const themesSource = mergeDiscoveredWithCached(discoveredThemes, cachedThemes)
-                themes = dedupeThemes(themesSource)
+                const discoveredThemes = await discoverThemesFromSubfolders(cachedThemes);
+                const themesSource = mergeDiscoveredWithCached(discoveredThemes, cachedThemes);
+                themes = dedupeThemes(themesSource);
             }
-            themes = filterDarkModeVariantListings(themes)
-            await enrichThemesWithCompatibilityMedals(themes);
+            themes = filterDarkModeVariantListings(themes);
             themes.sort((a, b) => String(a?.name || '')
                 .localeCompare(String(b?.name || ''), undefined, {
                     sensitivity: 'base',
                     ignorePunctuation: true
-                }))
-            const filteredThemes = themes.filter(t => !!t)
-            if (!grid) return;
+                }));
+            const filteredThemes = themes.filter(t => !!t);
+            clearThemeGridLoadingState(grid);
             if (!filteredThemes.length) {
-                grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#94a3b8">Unable to load themes</p>'
-                return
+                grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#94a3b8">Unable to load themes</p>';
+                return;
             }
             filteredThemes.forEach(t => {
                 const merged = {
@@ -3155,11 +3285,15 @@
                     hasIndexPage: t.sourceType === 'external' ? false : t.hasIndexPage !== false
                 };
                 if (merged.sourceType !== 'external' && merged.hasConfigFile === false) return;
-                grid.appendChild(createCard(merged))
-            })
-            applyFilters()
+                grid.appendChild(createCard(merged));
+            });
+            applyFilters();
 
-            handleHashAutoDownload()
+            void enrichThemesWithCompatibilityMedals(themes)
+                .then(() => syncTitleGoldBadgesFromEnrichedThemes(themes))
+                .catch(() => {});
+
+            handleHashAutoDownload();
         }
 
         load()
