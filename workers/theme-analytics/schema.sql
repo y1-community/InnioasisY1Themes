@@ -20,3 +20,11 @@ CREATE TABLE IF NOT EXISTS theme_rating_votes (
 );
 
 CREATE INDEX IF NOT EXISTS idx_theme_rating_votes_theme ON theme_rating_votes (theme_key);
+
+CREATE TABLE IF NOT EXISTS visitor_preferences (
+  voter_id TEXT PRIMARY KEY NOT NULL,
+  contribute_analytics INTEGER NOT NULL DEFAULT 0,
+  contribute_ratings INTEGER NOT NULL DEFAULT 0,
+  hide_ratings_view INTEGER NOT NULL DEFAULT 0,
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);

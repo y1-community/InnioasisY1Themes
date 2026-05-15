@@ -8,11 +8,19 @@
     const VISITOR_KEY = "y1-rating-visitor-id";
     const PV_SESSION_PREFIX = "y1-pv-session:";
 
+    /** New visitors do not contribute until they opt in; public stats remain visible. */
     const DEFAULT_CONSENT = {
         decided: false,
-        analytics: true,
+        analytics: false,
         ratingsView: true,
-        ratingsSubmit: true,
+        ratingsSubmit: false,
+    };
+
+    const OPT_IN_CONSENT = {
+        decided: true,
+        analytics: false,
+        ratingsView: true,
+        ratingsSubmit: false,
     };
 
     const statsCache = new Map();
@@ -47,53 +55,85 @@
         return s;
     }
 
+    function normalizeConsentObject(c) {
+        return {
+            decided: !!c.decided,
+            analytics: c.analytics === true,
+            ratingsView: c.ratingsView !== false,
+            ratingsSubmit: c.ratingsSubmit === true,
+        };
+    }
+
     function loadConsent() {
         try {
             const raw = localStorage.getItem(CONSENT_KEY);
             if (!raw) return { ...DEFAULT_CONSENT };
-            const parsed = JSON.parse(raw);
-            return {
-                decided: !!parsed.decided,
-                analytics: parsed.analytics !== false,
-                ratingsView: parsed.ratingsView !== false,
-                ratingsSubmit: parsed.ratingsSubmit !== false,
-            };
+            return normalizeConsentObject(JSON.parse(raw));
         } catch (_) {
             return { ...DEFAULT_CONSENT };
         }
     }
 
-    /** Public aggregate stats are shown until the user opts out after choosing preferences. */
-    function shouldShowAnalyticsCounts(c) {
-        const s = c || loadConsent();
-        return !s.decided || s.analytics;
+    /** Public view/download counts are always shown (community totals). */
+    function shouldShowAnalyticsCounts() {
+        return true;
     }
 
     function shouldShowRatings(c) {
         const s = c || loadConsent();
-        return !s.decided || s.ratingsView;
+        return s.ratingsView !== false;
     }
 
     function shouldTrackAnalytics(c) {
         const s = c || loadConsent();
-        return s.decided && s.analytics;
+        return s.analytics === true;
     }
 
     function shouldSubmitRatings(c) {
         const s = c || loadConsent();
-        return s.decided && s.ratingsSubmit;
+        return s.ratingsSubmit === true;
     }
 
-    function saveConsent(c) {
-        localStorage.setItem(
-            CONSENT_KEY,
-            JSON.stringify({
-                decided: true,
-                analytics: !!c.analytics,
-                ratingsView: !!c.ratingsView,
-                ratingsSubmit: !!c.ratingsSubmit,
-            }),
-        );
+    function saveConsentLocal(c) {
+        const normalized = normalizeConsentObject({ ...c, decided: true });
+        localStorage.setItem(CONSENT_KEY, JSON.stringify(normalized));
+        return normalized;
+    }
+
+    async function syncConsentToServer(prefs) {
+        const vid = getVisitorId();
+        if (!vid || !apiUrl("/api/theme-privacy")) return;
+        await postJson("/api/theme-privacy", {
+            voterId: vid,
+            analytics: prefs.analytics === true,
+            ratingsSubmit: prefs.ratingsSubmit === true,
+            ratingsView: prefs.ratingsView !== false,
+        });
+    }
+
+    async function saveConsent(c) {
+        const normalized = saveConsentLocal(c);
+        void syncConsentToServer(normalized);
+        return normalized;
+    }
+
+    async function hydrateConsentFromServer() {
+        if (loadConsent().decided) return;
+        const vid = getVisitorId();
+        const url = apiUrl("/api/theme-privacy");
+        if (!vid || !url) return;
+        try {
+            const res = await fetch(url + "?voterId=" + encodeURIComponent(vid), { cache: "no-store" });
+            if (!res.ok) return;
+            const data = await res.json();
+            if (!data || !data.stored || !data.preferences) return;
+            const p = data.preferences;
+            saveConsentLocal({
+                analytics: p.analytics === true,
+                ratingsSubmit: p.ratingsSubmit === true,
+                ratingsView: p.ratingsView !== false,
+            });
+        } catch (_) {}
     }
 
     function getVisitorId() {
@@ -208,7 +248,12 @@
         } else if (event === "direct_install") {
             bumpLocalStat(key, "directInstalls", 1);
         }
-        void postJson("/api/theme-event", { theme: key, event, source: source || "other" });
+        void postJson("/api/theme-event", {
+            theme: key,
+            event,
+            source: source || "other",
+            voterId: getVisitorId(),
+        });
         refreshMetricsHosts(key);
     }
 
@@ -218,7 +263,7 @@
         el.innerHTML = "";
         el.className = "y1-theme-metrics" + (el.dataset.cardMetrics === "1" ? " y1-theme-metrics--card" : "");
 
-        if (shouldShowAnalyticsCounts(c)) {
+        if (shouldShowAnalyticsCounts()) {
             const views = document.createElement("span");
             views.className = "y1-metric";
             views.title = "Page views (gallery + theme page + preview)";
@@ -285,8 +330,8 @@
             el.appendChild(ratingWrap);
         }
 
-        if (!shouldShowAnalyticsCounts(c) && !shouldShowRatings(c)) {
-            el.style.display = "none";
+        if (!shouldShowRatings(c)) {
+            el.style.display = el.querySelector(".y1-metric") ? "" : "none";
         } else {
             el.style.display = "";
         }
@@ -362,10 +407,12 @@
         banner.setAttribute("aria-label", "Privacy preferences");
         banner.innerHTML =
             '<div class="y1-consent-inner">' +
-            "<p>We use optional analytics (page views and download counts) and an optional star rating system so creators can see how themes are used. You can change these anytime.</p>" +
+            "<p>Theme view, download, and rating <strong>totals are public</strong> for everyone. " +
+            "By default we do <strong>not</strong> add your visits, downloads, or ratings to those totals unless you opt in. " +
+            "Change anytime via the gear icon.</p>" +
             '<div class="y1-consent-actions">' +
             '<button type="button" class="y1-consent-customize">Customize</button>' +
-            '<button type="button" class="y1-consent-accept">Accept all</button>' +
+            '<button type="button" class="y1-consent-accept">Continue</button>' +
             "</div></div>";
 
         const settingsBtn = document.createElement("button");
@@ -379,10 +426,10 @@
         panel.id = "y1-privacy-panel";
         panel.innerHTML =
             "<h3>Privacy &amp; ratings</h3>" +
-            '<p class="y1-privacy-hint">Counts and ratings are stored on our analytics service (not sold). Opt out of any feature below.</p>' +
-            '<label><input type="checkbox" id="y1-opt-analytics" checked /> Usage statistics (page views &amp; download counts)</label>' +
+            '<p class="y1-privacy-hint">Public totals are always visible. Check a box only if you want your activity included.</p>' +
+            '<label><input type="checkbox" id="y1-opt-analytics" /> Contribute my page views &amp; download counts</label>' +
             '<label><input type="checkbox" id="y1-opt-ratings-view" checked /> Show star ratings from other visitors</label>' +
-            '<label><input type="checkbox" id="y1-opt-ratings-submit" checked /> Allow me to submit star ratings</label>' +
+            '<label><input type="checkbox" id="y1-opt-ratings-submit" /> Contribute my star ratings</label>' +
             '<button type="button" class="y1-privacy-save">Save preferences</button>';
 
         document.body.appendChild(banner);
@@ -411,9 +458,10 @@
         };
 
         banner.querySelector(".y1-consent-accept").addEventListener("click", () => {
-            saveConsent({ analytics: true, ratingsView: true, ratingsSubmit: true });
-            applyBannerVisibility();
-            global.dispatchEvent(new CustomEvent("y1-consent-changed"));
+            void saveConsent({ ...OPT_IN_CONSENT }).then(() => {
+                applyBannerVisibility();
+                global.dispatchEvent(new CustomEvent("y1-consent-changed"));
+            });
         });
 
         banner.querySelector(".y1-consent-customize").addEventListener("click", () => {
@@ -427,14 +475,15 @@
         });
 
         panel.querySelector(".y1-privacy-save").addEventListener("click", () => {
-            saveConsent({
+            void saveConsent({
                 analytics: !!document.getElementById("y1-opt-analytics")?.checked,
                 ratingsView: !!document.getElementById("y1-opt-ratings-view")?.checked,
                 ratingsSubmit: !!document.getElementById("y1-opt-ratings-submit")?.checked,
+            }).then(() => {
+                panel.classList.remove("y1-privacy-panel--open");
+                applyBannerVisibility();
+                global.dispatchEvent(new CustomEvent("y1-consent-changed"));
             });
-            panel.classList.remove("y1-privacy-panel--open");
-            applyBannerVisibility();
-            global.dispatchEvent(new CustomEvent("y1-consent-changed"));
         });
 
         document.addEventListener("click", (ev) => {
@@ -452,10 +501,16 @@
     }
 
     function initConsent() {
-        if (document.body) {
+        const start = () => {
             ensureConsentDom();
+            void hydrateConsentFromServer().then(() => {
+                global.dispatchEvent(new CustomEvent("y1-consent-changed"));
+            });
+        };
+        if (document.body) {
+            start();
         } else {
-            document.addEventListener("DOMContentLoaded", ensureConsentDom);
+            document.addEventListener("DOMContentLoaded", start);
         }
     }
 

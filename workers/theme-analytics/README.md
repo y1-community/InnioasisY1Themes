@@ -9,6 +9,10 @@ Public API for **unified theme statistics** (page views, ZIP downloads, direct i
 | `POST` | `/api/theme-event` | `{ "theme": "FolderName", "event": "page_view" \| "zip_download" \| "direct_install", "source": "gallery" \| "theme_page" }` |
 | `GET` | `/api/theme-stats?themes=A,B&voterId=…` | Batch stats + optional user rating |
 | `POST` | `/api/theme-rating` | `{ "theme": "FolderName", "rating": 1-5, "voterId": "…" }` |
+| `GET` | `/api/theme-privacy?voterId=…` | Load stored opt-in flags (`stored: true` when a row exists) |
+| `POST` | `/api/theme-privacy` | `{ "voterId": "…", "analytics": bool, "ratingsSubmit": bool, "ratingsView": bool }` |
+
+Visitors **opt out by default**: events and ratings increment only when preferences are saved with the corresponding flag enabled. Public stats remain readable for everyone.
 
 CORS allows browser calls from the static site origin.
 
