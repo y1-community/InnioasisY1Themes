@@ -606,6 +606,17 @@
             "screenshot": "./LCD/cover.png"
         },
         {
+            "name": "LSD Dream",
+            "folder": "LSD_Dream",
+            "author": "heckhound",
+            "authorUrl": "https://alldogsgotoheck.neocities.org",
+            "description": "A theme based around the PS1 game LSD Dream Emulator by Osamu Sato. \nImages are from the LSD wiki, some are made pngs by me.\nThis is my first theme attempt! With help from the Y1 theme editor.",
+            "screenshot": "./LSD_Dream/cover.png",
+            "sourceType": "internal",
+            "sortName": "lsd dream",
+            "searchText": "lsd dream a theme based around the ps1 game lsd dream emulator by osamu sato. \nimages are from the lsd wiki, some are made pngs by me.\nthis is my first theme attempt! with help from the y1 theme editor. heckhound lsd_dream"
+        },
+        {
             "name": "MarvinTheMartian",
             "folder": "MarvinTheMartian",
             "author": "Angel_50000",
