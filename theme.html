@@ -48,11 +48,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
     <link rel="stylesheet" href="y1-theme-preview.css?v=20260215">
+    <link rel="stylesheet" href="theme-analytics.css?v=20260516">
+    <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="theme-packaging.js"></script>
     <script src="y1-theme-preview.js?v=20260215"></script>
     <script src="theme-artwork-compat.js?v=20260515"></script>
     <script src="gallery-loaded-theme.js"></script>
+    <script src="theme-analytics.js?v=20260516"></script>
 </head>
 <style>
     html {
@@ -338,6 +341,7 @@
                 <div id="right" style="width:100%;display:flex;flex-direction:column;gap:12px;">
                     <div style="background:var(--bg-card);padding:16px;border-radius:10px;">
                         <h1 id="theme-name" style="margin:0 0 6px 0;font-size:1.5rem"></h1>
+                        <div id="theme-metrics-host" class="y1-theme-metrics"></div>
                         <div id="theme-variant-subtitle" style="display:none;margin:-2px 0 8px 0;font-size:0.92rem;font-weight:600;color:var(--text-secondary);" aria-live="polite"></div>
                         <div id="theme-author" style="margin-bottom:8px;color:var(--text-secondary)"></div>
                         <div id="theme-desc" style="color:var(--text-secondary);margin-bottom:12px"></div>
@@ -1554,6 +1558,10 @@
                 a.click();
                 a.remove();
 
+                if (catalogFolder && window.ThemeAnalytics) {
+                    window.ThemeAnalytics.trackZipDownload(catalogFolder, 'theme_page');
+                }
+
                 progressUI.removeAndRestoreButton(buttonNode);
             } catch (err) {
                 console.error('Download failed', err);
@@ -1656,6 +1664,12 @@
 
             if (!activeContentFolder) {
                 activeContentFolder = effectiveThemeContentPrefix(folder, activeVariant) || folder;
+            }
+
+            if (folder && window.ThemeAnalytics) {
+                window.ThemeAnalytics.trackPageView(folder, 'theme_page');
+                const metricsHostEl = document.getElementById('theme-metrics-host');
+                if (metricsHostEl) void window.ThemeAnalytics.mountMetrics(metricsHostEl, folder);
             }
 
             if ((!themeMeta || !themeMeta.rawConfig) && folder) {

@@ -1,0 +1,15 @@
+# Theme analytics: page views, downloads, star ratings (D1).
+# Local: cd workers/theme-analytics && npx wrangler deploy
+# First-time D1:
+#   npx wrangler d1 create y1-theme-metrics
+#   (paste database_id below)
+#   npx wrangler d1 execute y1-theme-metrics --remote --file=./schema.sql
+
+name = "y1-theme-analytics"
+main = "src/index.js"
+compatibility_date = "2026-05-11"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "y1-theme-metrics"
+database_id = "00000000-0000-0000-0000-000000000000"

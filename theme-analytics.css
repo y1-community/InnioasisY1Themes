@@ -1,0 +1,218 @@
+/* Consent banner + privacy settings + unified theme stats / ratings */
+
+#y1-consent-banner {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10000;
+    display: none;
+    padding: 12px 14px calc(12px + env(safe-area-inset-bottom, 0px));
+    background: rgba(18, 20, 28, 0.97);
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.45);
+    font-family: Inter, system-ui, Segoe UI, sans-serif;
+    font-size: 0.88rem;
+    color: #d9e0ef;
+}
+
+#y1-consent-banner.y1-consent--visible {
+    display: block;
+}
+
+#y1-consent-banner .y1-consent-inner {
+    max-width: 52rem;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
+}
+
+#y1-consent-banner p {
+    margin: 0;
+    flex: 1 1 16rem;
+    line-height: 1.45;
+    color: #aeb6c5;
+}
+
+#y1-consent-banner .y1-consent-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+#y1-consent-banner button {
+    font: inherit;
+    cursor: pointer;
+    border-radius: 8px;
+    padding: 8px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+#y1-consent-banner .y1-consent-accept {
+    background: #3d6fd4;
+    color: #fff;
+    border-color: transparent;
+}
+
+#y1-consent-banner .y1-consent-customize {
+    background: rgba(255, 255, 255, 0.06);
+    color: #eaf0ff;
+}
+
+#y1-privacy-settings-btn {
+    position: fixed;
+    right: 14px;
+    bottom: 14px;
+    z-index: 9999;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(22, 26, 36, 0.94);
+    color: #c5cee0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+    font-size: 1.05rem;
+}
+
+#y1-privacy-settings-btn:hover {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.28);
+}
+
+body.y1-consent-banner-open #y1-privacy-settings-btn {
+    bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+}
+
+#y1-privacy-panel {
+    position: fixed;
+    right: 14px;
+    bottom: 64px;
+    z-index: 10001;
+    width: min(22rem, calc(100vw - 28px));
+    display: none;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: #1a1e28;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    font-family: Inter, system-ui, sans-serif;
+    font-size: 0.86rem;
+    color: #d9e0ef;
+}
+
+body.y1-consent-banner-open #y1-privacy-panel.y1-privacy-panel--open {
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+}
+
+#y1-privacy-panel.y1-privacy-panel--open {
+    display: block;
+}
+
+#y1-privacy-panel h3 {
+    margin: 0 0 10px 0;
+    font-size: 0.95rem;
+}
+
+#y1-privacy-panel label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 8px 0;
+    cursor: pointer;
+    line-height: 1.4;
+}
+
+#y1-privacy-panel .y1-privacy-hint {
+    margin: 0 0 8px 0;
+    font-size: 0.8rem;
+    color: #8b95a8;
+    line-height: 1.4;
+}
+
+#y1-privacy-panel .y1-privacy-save {
+    margin-top: 10px;
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: none;
+    background: #3d6fd4;
+    color: #fff;
+    font: inherit;
+    cursor: pointer;
+}
+
+.y1-theme-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
+    margin: 6px 0 8px 0;
+    font-size: 0.8rem;
+    color: #8b95a8;
+}
+
+.y1-theme-metrics .y1-metric {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+.y1-theme-metrics .y1-metric i {
+    opacity: 0.85;
+    font-size: 0.75rem;
+}
+
+.y1-theme-rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    flex-wrap: wrap;
+}
+
+.y1-theme-rating .y1-rating-label {
+    margin-right: 4px;
+    color: #8b95a8;
+    font-size: 0.78rem;
+}
+
+.y1-theme-rating button.y1-star {
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: none;
+    color: #4a5568;
+    cursor: pointer;
+    font-size: 0.95rem;
+    line-height: 1;
+}
+
+.y1-theme-rating button.y1-star:hover,
+.y1-theme-rating button.y1-star.y1-star--on {
+    color: #f5c842;
+}
+
+.y1-theme-rating button.y1-star:disabled {
+    cursor: default;
+    opacity: 0.65;
+}
+
+.y1-theme-rating .y1-rating-avg {
+    margin-left: 6px;
+    font-size: 0.78rem;
+    color: #aeb6c5;
+}
+
+.y1-theme-metrics--card {
+    margin: 4px 0 6px 0;
+}
+
+.theme-card .y1-theme-metrics--card {
+    width: 100%;
+}
