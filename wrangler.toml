@@ -1,16 +1,12 @@
-# =============================================================================
-# Repository root — used by Cloudflare Git when Deploy command is:
+# y1-theme-upload Worker — used when Cloudflare Git Deploy command is:
 #   npx wrangler deploy
-# That deploys the **y1-theme-upload** Worker (upload + removal API).
 #
-# Cloudflare **Pages** (if you use it for themes.innioasis.app):
-#   Build command: exit 0
-#   Deploy command: leave EMPTY (never npx wrangler deploy)
-#   pages_build_output_dir below is for Pages only; Git publish ignores Worker main.
+# Do NOT add pages_build_output_dir here; Wrangler then treats this as a Pages
+# project and ignores `main` (deploy fails with "Missing entry-point").
 #
-# Prefer explicit config (avoids Pages warning):
+# Cloudflare Pages (themes site): use wrangler.pages.toml + empty Deploy command.
+# Or deploy this Worker explicitly:
 #   npx wrangler deploy --config cloudflare-worker-upload.toml
-# =============================================================================
 
 name = "y1-theme-upload"
 main = "workers/theme-upload/src/index.js"
@@ -18,6 +14,3 @@ compatibility_date = "2026-05-11"
 
 [limits]
 subrequests = 150
-
-# Cloudflare Pages static output (repo root). No effect on Worker deploy.
-pages_build_output_dir = "."

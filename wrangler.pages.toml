@@ -1,0 +1,13 @@
+# Cloudflare Pages only (themes.innioasis.app) — NOT used by `npx wrangler deploy`.
+#
+# Pages Git settings:
+#   Build command:  exit 0
+#   Deploy command: (empty)
+#   Build output:   .
+#
+# If your Pages project requires a wrangler file, copy or symlink this to wrangler.toml
+# only on the Pages project — never on the y1-theme-upload Worker project.
+
+name = "y1themes"
+compatibility_date = "2026-05-11"
+pages_build_output_dir = "."

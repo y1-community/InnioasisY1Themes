@@ -152,13 +152,19 @@ Troubleshooting: "Missing entry-point to Worker script or to assets directory"
 On a **Pages** project: delete the Deploy command (see above). Pages must not run
 `npx wrangler deploy`.
 
-On the **y1-theme-upload Worker** project (workers.dev): `npx wrangler deploy` from
-the repo root is supported — root `wrangler.toml` sets
-`main = "workers/theme-upload/src/index.js"`. Retry the build after pulling main.
+On the **y1-theme-upload Worker** project (workers.dev): root `wrangler.toml` must
+NOT include `pages_build_output_dir` (Wrangler ignores `main` and deploy fails).
 
-Alternative deploy commands (also valid):
-  npx wrangler deploy --config cloudflare-worker-upload.toml
-  npm run deploy:upload-worker
+  Deploy command (pick one):
+    npx wrangler deploy
+    npx wrangler deploy --config cloudflare-worker-upload.toml
+    npm run deploy:upload-worker
+    sh scripts/deploy-upload-worker.sh
+
+  Root directory: leave empty (repo root), OR `workers/theme-upload` with
+  `npx wrangler deploy` only (no --config path).
+
+Pages static site uses **wrangler.pages.toml** (or dashboard Build output = `.`).
 
 Troubleshooting: "/bin/sh: 1: wrangler: not found"
 --------------------------------------------------

@@ -52,7 +52,7 @@ The root [`wrangler.toml`](../../wrangler.toml) is **Pages-only** (no `main`). Y
 
 ### Cloudflare build: `Missing entry-point to Worker script or to assets directory`
 
-That happens when the Git build runs `npx wrangler deploy` against an old root `wrangler.toml` with no `main`. **Fix:** pull latest `main` — root `wrangler.toml` now sets `main = "workers/theme-upload/src/index.js"` and `name = "y1-theme-upload"`, then retry the Worker deployment.
+That happens when root `wrangler.toml` has **`pages_build_output_dir`** (Wrangler treats it as Pages and ignores `main`) or when `main` is missing/wrong. **Fix:** pull latest `main` — root `wrangler.toml` is Worker-only; Pages settings moved to `wrangler.pages.toml`. Retry the Worker deployment.
 
 You can still use **Option A or B** above if you prefer deploying from this folder only.
 
