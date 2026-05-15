@@ -319,6 +319,10 @@ def _inner_themes_from_zip_blob(blob: bytes, *, zip_stem: str) -> list[dict[str,
                 out.extend(_inner_themes_from_zip_blob(ib, zip_stem=inner_stem))
             return out
         theme_keys = ztu.zip_theme_keys(names_t)
+        theme_keys = ztu.collapse_redundant_root_theme_key(names_t, theme_keys, zip_stem)
+        theme_keys = ztu.drop_variant_keys_under_parent_theme(theme_keys)
+        if not theme_keys:
+            return out
         dest_names = ztu.inner_folder_names_for_zip(theme_keys, zip_stem)
         seen_folder: set[str] = set()
         for idx, key in enumerate(theme_keys):
@@ -533,6 +537,10 @@ def _zip_title_impersonation_scan(
                 )
             return errors
         theme_keys = ztu.zip_theme_keys(names_t)
+        theme_keys = ztu.collapse_redundant_root_theme_key(
+            names_t, theme_keys, PurePosixPath(zip_repo_path).stem
+        )
+        theme_keys = ztu.drop_variant_keys_under_parent_theme(theme_keys)
         dest_names = ztu.inner_folder_names_for_zip(theme_keys, PurePosixPath(zip_repo_path).stem)
         seen: set[str] = set()
         for idx, key in enumerate(theme_keys):
@@ -670,12 +678,14 @@ def _validate_zip_blob(path: str, blob: bytes) -> list[str]:
             return errs
 
         theme_keys = ztu.zip_theme_keys(names_t)
+        zip_stem = PurePosixPath(path).stem
+        theme_keys = ztu.collapse_redundant_root_theme_key(names_t, theme_keys, zip_stem)
+        theme_keys = ztu.drop_variant_keys_under_parent_theme(theme_keys)
         if not theme_keys:
             return [
                 f"{path} must contain at least one config.json (at zip root or under a theme subfolder)."
             ]
 
-        zip_stem = PurePosixPath(path).stem
         errors.extend(ztu.zip_inner_folder_collision_errors(theme_keys, zip_stem, zip_label=path))
         if errors:
             return errors

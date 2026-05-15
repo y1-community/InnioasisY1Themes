@@ -75,6 +75,10 @@ def collapse_redundant_root_theme_key(
     redundant. Without collapsing, :func:`zip_inner_folder_collision_errors` rejects the archive
     because the root theme would extract to the same folder name as the subfolder key.
 
+    Archives may also include ``Musica_Metro/Variants/.../config.json`` under that same folder.
+    Those paths are allowed here: every key must be ``.``, the lone stem-matching folder, or a
+    strict descendant ``lone/...`` (so ``Musica_Metro_evil`` does not match ``Musica_Metro/``).
+
     Root-level files besides ``config.json`` (e.g. stray PNGs) no longer block this collapse:
     the subfolder matching the archive stem is treated as the single source of truth.
     """
@@ -89,7 +93,14 @@ def collapse_redundant_root_theme_key(
     if len(matching) != 1:
         return keys
     lone = matching[0]
-    if any(k not in (".", lone) for k in keys):
+    lone_prefix = lone + "/"
+
+    def _under_lone_tree(k: str) -> bool:
+        if k in (".", lone):
+            return True
+        return k.startswith(lone_prefix)
+
+    if any(not _under_lone_tree(k) for k in keys):
         return keys
     root_level = [n for n in entry_names if "/" not in n and n.strip()]
     root_basenames = {PurePosixPath(n).name.lower() for n in root_level}
@@ -98,6 +109,21 @@ def collapse_redundant_root_theme_key(
     # Do not require the root to contain *only* config.json — real uploads often add loose
     # files at the zip root (extra PNGs, notes). The subfolder ``lone/`` is the canonical tree.
     return [k for k in keys if k != "."]
+
+
+def drop_variant_keys_under_parent_theme(theme_keys: list[str]) -> list[str]:
+    """Remove ``Root/Variants/...`` keys when ``Root`` is already a single-segment theme key.
+
+    Variant ``config.json`` files live under the main catalog folder; they must not be treated
+    as separate top-level extract targets (which would map only the last path segment).
+    """
+    roots = {k for k in theme_keys if k != "." and "/" not in k}
+    out: list[str] = []
+    for k in theme_keys:
+        if "/" in k and any(k.startswith(r + "/Variants/") for r in roots):
+            continue
+        out.append(k)
+    return out
 
 
 def zip_other_theme_prefixes(theme_keys: list[str], theme_key: str) -> list[str]:
