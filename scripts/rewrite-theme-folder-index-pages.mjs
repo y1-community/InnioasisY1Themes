@@ -18,6 +18,89 @@ const ROOT = path.resolve(__dirname, '..');
 const SITE_ORIGIN = 'https://themes.innioasis.app';
 const THEMES_JSON = path.join(ROOT, 'themes.json');
 
+/**
+ * Identical in every generated index.html: redirect URL is derived from
+ * `location.pathname` (and optional `themes-preview-base-path` for GitHub Pages
+ * project sites). If parsing fails, falls back to `<link rel="canonical">`.
+ * Per-theme meta tags stay fixed for crawlers.
+ */
+const THEME_INDEX_REDIRECT_SCRIPT = `<script>
+(function () {
+  function trimTrailingSlashes(s) {
+    var t = String(s || '');
+    while (t.length > 1 && t.charAt(t.length - 1) === '/') t = t.slice(0, -1);
+    return t;
+  }
+  function stripIndexHtml(pathname) {
+    var p = String(pathname || '');
+    var low = p.toLowerCase();
+    if (low.endsWith('/index.html')) p = p.slice(0, -11);
+    else if (low.endsWith('/index.htm')) p = p.slice(0, -10);
+    return trimTrailingSlashes(p);
+  }
+  function previewUrlFromPath() {
+    try {
+      var pathPart = stripIndexHtml(location.pathname);
+      var segs = pathPart.split('/').filter(Boolean).map(function (seg) {
+        try {
+          return decodeURIComponent(seg);
+        } catch (e) {
+          return seg;
+        }
+      });
+      var meta = document.querySelector('meta[name="themes-preview-base-path"]');
+      var base = meta && meta.getAttribute('content') != null ? String(meta.getAttribute('content')).trim() : '';
+      if (base && base.charAt(0) !== '/') base = '/' + base;
+      if (base && base.charAt(base.length - 1) !== '/') base += '/';
+      if (base) {
+        var prefixSegs = trimTrailingSlashes(base).split('/').filter(Boolean);
+        if (prefixSegs.length && segs.length >= prefixSegs.length) {
+          var ok = true;
+          for (var j = 0; j < prefixSegs.length; j++) {
+            if (segs[j] !== prefixSegs[j]) {
+              ok = false;
+              break;
+            }
+          }
+          if (ok) segs = segs.slice(prefixSegs.length);
+        }
+      }
+      if (!segs.length) return '';
+      var vidx = -1;
+      for (var i = 0; i < segs.length; i++) {
+        if (String(segs[i]).toLowerCase() === 'variants') {
+          vidx = i;
+          break;
+        }
+      }
+      var theme = '';
+      var variant = '';
+      if (vidx > 0 && vidx < segs.length - 1) {
+        theme = segs.slice(0, vidx).join('/');
+        variant = segs.slice(vidx + 1).join('/');
+      } else {
+        theme = segs.join('/');
+      }
+      if (!theme) return '';
+      var rootBase = base ? new URL(base, location.origin).toString() : new URL('/', location.origin).toString();
+      var u = new URL('theme.html', rootBase);
+      u.searchParams.set('theme', theme);
+      if (variant) u.searchParams.set('variant', variant);
+      return u.toString();
+    } catch (e) {
+      return '';
+    }
+  }
+  var u = previewUrlFromPath();
+  if (!u) {
+    var c = document.querySelector('link[rel="canonical"]');
+    if (c && c.href) u = c.href;
+  }
+  if (u && typeof location !== 'undefined' && location.replace) location.replace(u);
+  else if (u) location.href = u;
+})();
+</script>`;
+
 function escapeHtml(s) {
   return String(s ?? '')
     .replace(/&/g, '&amp;')
@@ -151,6 +234,7 @@ function renderIndexHtml(catalogFolder, variant, byFolder) {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="themes-preview-base-path" content="" />
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${description}" />
   <meta name="keywords" content="${escapeHtml(keywords)}" />
@@ -172,13 +256,7 @@ function renderIndexHtml(catalogFolder, variant, byFolder) {
 
   <script type="application/ld+json">${JSON.stringify(jsonLd)}</script>
 
-  <script>
-    (function () {
-      var u = ${JSON.stringify(previewUrl)};
-      if (typeof location !== "undefined" && location.replace) location.replace(u);
-      else if (typeof location !== "undefined") location.href = u;
-    })();
-  </script>
+  ${THEME_INDEX_REDIRECT_SCRIPT}
   <noscript><meta http-equiv="refresh" content="0;url=${escapeHtml(previewUrl)}" /></noscript>
 </head>
 <body>

@@ -516,6 +516,38 @@
             color: var(--text-secondary);
             margin-bottom: 0.45rem;
         }
+
+        .submitted-pr-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.65rem;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        a.submitted-track-pr {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.65rem 1.2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            text-decoration: none;
+            color: #0b0d12 !important;
+            background: linear-gradient(135deg, #b8e7ff 0%, #6aa9ff 42%, #3d7be0 100%);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            box-shadow: 0 4px 16px rgba(40, 120, 220, 0.38);
+        }
+
+        a.submitted-track-pr:hover {
+            filter: brightness(1.07);
+        }
+
+        a.submitted-track-pr[aria-disabled="true"] {
+            opacity: 0.42;
+            pointer-events: none;
+        }
     </style>
 </head>
 
@@ -540,7 +572,7 @@
             <p class="lead" id="upload-lead">
                 Share a new look for the Innioasis Y1 player. Choose a ZIP file or a whole theme folder — we’ll package it safely in your browser and send it to the team.
             </p>
-            <p class="hint" id="upload-hint">You’ll get a link to track your submission. Only <strong>brand-new</strong> theme identities may qualify for <strong>automatic submission</strong> after our checks; edits, anything that still needs a maintainer after automatic checks, and removals always go through someone on the team before they appear on the site.</p>
+            <p class="hint" id="upload-hint">You’ll get a link to track your submission. Only <strong>brand-new</strong> theme identities may qualify for <strong>automatic submission</strong> after our checks; when yours qualifies (a new title and author combination that does not match an existing listing in a way that triggers a maintainer review), the theme usually appears on this site within about <strong>20 minutes to an hour</strong> after the pull request merges. Edits, anything that still needs a maintainer after automatic checks, and removals always go through someone on the team before they appear on the site.</p>
         </header>
 
         <div class="card" id="panel-upload">
@@ -661,13 +693,19 @@
         <div class="card" id="panel-submitted" hidden>
             <h3>Submission received</h3>
             <p id="submitted-lead" class="lead" style="margin-top:0.5rem;"></p>
+            <div id="submitted-auto-callout" class="callout-info" style="display:none;" role="status">
+                <p style="margin:0;">Your upload is on the <strong>automatic submission</strong> path (a brand-new theme identity: folder/title and author do not match an existing listing in a way that triggers a maintainer review). After checks pass and the pull request merges, the theme usually appears on this site within about <strong>20 minutes to an hour</strong>.</p>
+            </div>
             <p class="hint" id="submitted-hint"></p>
             <div class="row" style="margin-top:1rem;">
-                <label>Pull request (tracking)</label>
+                <label for="submitted-pr-input">Pull request link</label>
                 <input id="submitted-pr-input" type="text" readonly style="opacity:0.95;" />
             </div>
-            <div class="row" style="margin-top:0.75rem; display:flex; flex-wrap:wrap; gap:0.5rem;">
-                <button type="button" class="btn btn-primary" id="submitted-open-btn">Track submission</button>
+            <div class="submitted-pr-actions">
+                <a id="submitted-track-pr" class="submitted-track-pr" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true">
+                    <i class="fa-brands fa-github" aria-hidden="true"></i>
+                    Track your submission
+                </a>
                 <button type="button" class="btn" id="submitted-copy-btn">Copy link</button>
                 <a class="btn" href="upload.html">Back to upload</a>
             </div>
@@ -679,7 +717,7 @@
             <ul id="after-send-list">
                 <li>Your theme is uploaded securely and <strong>a submission is queued</strong> for the maintainers.</li>
                 <li>They check that files are safe and the theme structure looks good.</li>
-                <li><strong>Brand-new folder names</strong> can often go through <strong>automatic submission</strong> once our checks pass.</li>
+                <li><strong>Brand-new folder names</strong> can often go through <strong>automatic submission</strong> once our checks pass; those themes usually show up on the gallery within about <strong>20 minutes to an hour</strong> after the pull request merges.</li>
                 <li>If the <strong>same folder name</strong> already exists, we <strong>do not</strong> use automatic submission — someone on the team will review your submission first so nothing is overwritten by surprise.</li>
                 <li>Once accepted, your theme appears on this site for everyone to download.</li>
             </ul>
@@ -742,6 +780,7 @@
             .toLowerCase();
         const submittedFlow = String(urlParams.get("flow") || "").trim().toLowerCase();
         const submittedPrUrl = String(urlParams.get("prUrl") || "").trim();
+        const submittedAutoTimeline = String(urlParams.get("autoTimeline") || "").trim() === "1";
         if (pageMode === "submitted") {
             /* keep */
         } else if (!["new", "edit", "edit-metadata", "remove"].includes(pageMode)) pageMode = "new";
@@ -1419,15 +1458,27 @@
                         : "No pull request URL was returned; check your email or site status.";
                 }
                 if (prInput) prInput.value = dec || "";
-                const openBtn = document.getElementById("submitted-open-btn");
+                const trackPr = document.getElementById("submitted-track-pr");
+                const autoBox = document.getElementById("submitted-auto-callout");
+                if (autoBox) {
+                    const showAuto =
+                        !!dec &&
+                        submittedAutoTimeline &&
+                        submittedFlow !== "removal" &&
+                        submittedFlow !== "metadata";
+                    autoBox.style.display = showAuto ? "block" : "none";
+                }
+                if (trackPr) {
+                    if (dec) {
+                        trackPr.href = dec;
+                        trackPr.setAttribute("aria-disabled", "false");
+                    } else {
+                        trackPr.href = "#";
+                        trackPr.setAttribute("aria-disabled", "true");
+                    }
+                }
                 const copyBtn = document.getElementById("submitted-copy-btn");
                 const copyStatus = document.getElementById("submitted-copy-status");
-                if (openBtn) {
-                    openBtn.disabled = !dec;
-                    openBtn.onclick = () => {
-                        if (dec) window.open(dec, "_blank", "noopener,noreferrer");
-                    };
-                }
                 if (copyBtn) {
                     copyBtn.disabled = !dec;
                     copyBtn.onclick = async () => {
@@ -1447,7 +1498,7 @@
             if (afterCard) afterCard.hidden = false;
 
             const commonHint =
-                "Only brand-new theme identities may qualify for automatic submission after our checks; edits, anything that still needs a maintainer after automatic checks, and removals always go through someone on the team before they appear on the site.";
+                "Only brand-new theme identities may qualify for automatic submission after our checks; when yours qualifies (a new title and author combination that does not match an existing listing in a way that triggers a maintainer review), the theme usually appears on this site within about 20 minutes to an hour after the pull request merges. Edits, anything that still needs a maintainer after automatic checks, and removals always go through someone on the team before they appear on the site.";
 
             if (pageMode === "remove") {
                 panelUpload.hidden = true;
@@ -1529,7 +1580,7 @@
                 afterList.innerHTML = [
                     "<li>Your ZIP is uploaded and <strong>a submission is queued</strong> for the maintainers.</li>",
                     "<li>Same-folder updates are <strong>never</strong> sent through automatic submission; a maintainer checks everything before publishing.</li>",
-                    "<li>Brand-new folder names may still qualify for automatic submission when checks pass and the submission is clearly a new identity.</li>",
+                    "<li>Brand-new folder names may still qualify for automatic submission when checks pass; those usually appear within about <strong>20 minutes to an hour</strong> after merge.</li>",
                     "<li>Once accepted, the gallery updates after the next site refresh from the main catalog.</li>"
                 ].join("");
                 return;
@@ -1544,7 +1595,7 @@
             afterList.innerHTML = [
                 "<li>Your theme is uploaded securely and <strong>a submission is queued</strong> for the maintainers.</li>",
                 "<li>They check that files are safe and the theme structure looks good.</li>",
-                "<li><strong>Brand-new folder names</strong> can often go through <strong>automatic submission</strong> once our checks pass.</li>",
+                "<li><strong>Brand-new folder names</strong> can often go through <strong>automatic submission</strong> once our checks pass; those themes usually show up on the gallery within about <strong>20 minutes to an hour</strong> after the pull request merges.</li>",
                 "<li>If the <strong>same folder name</strong> already exists, we <strong>do not</strong> use automatic submission — someone on the team will review your submission first so nothing is overwritten by surprise.</li>",
                 "<li>Once accepted, your theme appears on this site for everyone to download.</li>"
             ].join("");
@@ -3458,12 +3509,20 @@
                 }
 
                 const link = payload.prUrl ? String(payload.prUrl) : "";
+                const coll = analyzeCollision();
+                const autoEligible = pageMode === "new" && !(coll.hasCollision && coll.isEdit);
+                if (link) {
+                    const next = new URL("upload.html", location.href);
+                    next.searchParams.set("mode", "submitted");
+                    next.searchParams.set("prUrl", link);
+                    if (autoEligible) next.searchParams.set("autoTimeline", "1");
+                    location.href = next.toString();
+                    return;
+                }
                 const scrubbedNote = scrubbedSubmissionPaths.length
                     ? `\n\nSecurity scrub: ${scrubbedSubmissionPaths.length} path(s) were not included (web/script files, CI/workflow manifests, or repository tooling paths).`
                     : "";
-                const msg = link
-                    ? `Thanks! Your theme is queued with the team.\n\nTrack your submission here:\n${link}\n\nIf your theme uses an existing folder name, a maintainer will confirm before anything goes live.${scrubbedNote}`
-                    : `Thanks! Your theme was received. If your theme uses an existing folder name, a maintainer will confirm before anything goes live.${scrubbedNote}`;
+                const msg = `Thanks! Your theme was received. If your theme uses an existing folder name, a maintainer will confirm before anything goes live.${scrubbedNote}`;
                 setStatus(msg, true);
                 form.reset();
                 resetThemeState();

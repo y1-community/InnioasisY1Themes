@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="themes-preview-base-path" content="" />
   <title>Stranger Things (Steve) — Innioasis Y1 theme</title>
   <meta name="description" content="Theme for Stranger Things fans! Variant: Steve." />
   <meta name="keywords" content="Stranger Things, Steve, Innioasis Y1, Y1 theme, Rockbox, MP3 player theme, u/_Adusik_gaV_" />
@@ -25,12 +26,81 @@
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Stranger Things (Steve) — Innioasis Y1 theme","description":"Theme for Stranger Things fans! Variant: Steve.","applicationCategory":"MultimediaApplication","operatingSystem":"Innioasis Y1","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"url":"https://themes.innioasis.app/theme.html?theme=Stranger+Things&variant=Steve","image":"https://themes.innioasis.app/Stranger%20Things/cover.png","author":{"@type":"Person","name":"u/_Adusik_gaV_"}}</script>
 
   <script>
-    (function () {
-      var u = "https://themes.innioasis.app/theme.html?theme=Stranger+Things&variant=Steve";
-      if (typeof location !== "undefined" && location.replace) location.replace(u);
-      else if (typeof location !== "undefined") location.href = u;
-    })();
-  </script>
+(function () {
+  function trimTrailingSlashes(s) {
+    var t = String(s || '');
+    while (t.length > 1 && t.charAt(t.length - 1) === '/') t = t.slice(0, -1);
+    return t;
+  }
+  function stripIndexHtml(pathname) {
+    var p = String(pathname || '');
+    var low = p.toLowerCase();
+    if (low.endsWith('/index.html')) p = p.slice(0, -11);
+    else if (low.endsWith('/index.htm')) p = p.slice(0, -10);
+    return trimTrailingSlashes(p);
+  }
+  function previewUrlFromPath() {
+    try {
+      var pathPart = stripIndexHtml(location.pathname);
+      var segs = pathPart.split('/').filter(Boolean).map(function (seg) {
+        try {
+          return decodeURIComponent(seg);
+        } catch (e) {
+          return seg;
+        }
+      });
+      var meta = document.querySelector('meta[name="themes-preview-base-path"]');
+      var base = meta && meta.getAttribute('content') != null ? String(meta.getAttribute('content')).trim() : '';
+      if (base && base.charAt(0) !== '/') base = '/' + base;
+      if (base && base.charAt(base.length - 1) !== '/') base += '/';
+      if (base) {
+        var prefixSegs = trimTrailingSlashes(base).split('/').filter(Boolean);
+        if (prefixSegs.length && segs.length >= prefixSegs.length) {
+          var ok = true;
+          for (var j = 0; j < prefixSegs.length; j++) {
+            if (segs[j] !== prefixSegs[j]) {
+              ok = false;
+              break;
+            }
+          }
+          if (ok) segs = segs.slice(prefixSegs.length);
+        }
+      }
+      if (!segs.length) return '';
+      var vidx = -1;
+      for (var i = 0; i < segs.length; i++) {
+        if (String(segs[i]).toLowerCase() === 'variants') {
+          vidx = i;
+          break;
+        }
+      }
+      var theme = '';
+      var variant = '';
+      if (vidx > 0 && vidx < segs.length - 1) {
+        theme = segs.slice(0, vidx).join('/');
+        variant = segs.slice(vidx + 1).join('/');
+      } else {
+        theme = segs.join('/');
+      }
+      if (!theme) return '';
+      var rootBase = base ? new URL(base, location.origin).toString() : new URL('/', location.origin).toString();
+      var u = new URL('theme.html', rootBase);
+      u.searchParams.set('theme', theme);
+      if (variant) u.searchParams.set('variant', variant);
+      return u.toString();
+    } catch (e) {
+      return '';
+    }
+  }
+  var u = previewUrlFromPath();
+  if (!u) {
+    var c = document.querySelector('link[rel="canonical"]');
+    if (c && c.href) u = c.href;
+  }
+  if (u && typeof location !== 'undefined' && location.replace) location.replace(u);
+  else if (u) location.href = u;
+})();
+</script>
   <noscript><meta http-equiv="refresh" content="0;url=https://themes.innioasis.app/theme.html?theme=Stranger+Things&amp;variant=Steve" /></noscript>
 </head>
 <body>
