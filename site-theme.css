@@ -1,0 +1,127 @@
+/* Shared Innioasis Y1 Themes — typography & chrome (matches gold-badge.html) */
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Instrument+Serif:ital@0;1&display=swap");
+
+:root {
+    --site-bg: #0a0b0f;
+    --site-bg-elevated: #12141c;
+    --site-text: #f4f6fb;
+    --site-muted: #9aa3b5;
+    --site-accent: #6b9fff;
+    --site-border: rgba(255, 255, 255, 0.08);
+    --site-font: "DM Sans", system-ui, -apple-system, Segoe UI, sans-serif;
+    --site-font-display: "Instrument Serif", Georgia, "Times New Roman", serif;
+}
+
+html {
+    font-size: clamp(15px, 2.8vw, 17px);
+}
+
+body {
+    font-family: var(--site-font);
+}
+
+.site-display,
+header h1,
+.wrap > header h1,
+.upload-hero h1,
+.report-page h1 {
+    font-family: var(--site-font-display);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.12;
+}
+
+.site-lead,
+header p,
+.wrap > header > p {
+    color: var(--site-muted, var(--text-secondary, #9aa3b5));
+    font-size: 1.02rem;
+    line-height: 1.5;
+}
+
+.gallery-topbar {
+    background: rgba(10, 11, 15, 0.94) !important;
+    border-bottom: 1px solid var(--site-border) !important;
+    backdrop-filter: blur(12px);
+}
+
+.gallery-tabs {
+    background: var(--site-bg-elevated) !important;
+    border: 1px solid var(--site-border) !important;
+}
+
+.gallery-tab {
+    font-family: var(--site-font) !important;
+}
+
+.topbar-search,
+.gallery-control select {
+    font-family: var(--site-font) !important;
+    background: #1a1e28 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 10px !important;
+}
+
+.gallery-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 12px 18px;
+    margin-top: 1.75rem;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.gallery-control {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    color: var(--site-muted);
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.gallery-control select {
+    min-width: 8.5rem;
+    padding: 0.45rem 0.65rem;
+    color: var(--site-text);
+    font-size: 0.86rem;
+}
+
+.gallery-control--author select {
+    min-width: 11rem;
+    max-width: 16rem;
+}
+
+a.theme-gold-title-badge {
+    display: inline-block;
+    text-decoration: none;
+    color: #1a1206;
+    cursor: pointer;
+}
+
+a.theme-gold-title-badge:hover {
+    filter: brightness(1.08);
+    text-decoration: none;
+}
+
+a.theme-gold-title-badge[hidden] {
+    display: none !important;
+}
+
+.theme-gold-medal-banner {
+    display: block;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(232, 197, 106, 0.35);
+    background: linear-gradient(135deg, rgba(92, 64, 20, 0.35), rgba(184, 137, 30, 0.2));
+    transition: border-color 0.15s, background 0.15s;
+}
+
+a.theme-gold-medal-banner:hover {
+    border-color: rgba(242, 208, 106, 0.55);
+    text-decoration: none;
+}

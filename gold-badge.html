@@ -8,45 +8,26 @@
     <meta name="description"
         content="Gold Badge themes are checked against the latest Innioasis Y1 firmware so menus, wallpapers, and optional screens work today and after updates." />
     <link rel="icon" href="y1_illustration.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-        href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Instrument+Serif:ital@0;1&display=swap"
-        rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link rel="stylesheet" href="theme-analytics.css?v=20260517" />
+    <link rel="stylesheet" href="site-theme.css?v=20260518" />
+    <link rel="stylesheet" href="theme-analytics.css?v=20260518" />
     <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
-    <script src="theme-analytics.js?v=20260517"></script>
+    <script src="theme-analytics.js?v=20260518"></script>
     <style>
-        :root {
-            --bg: #0a0b0f;
-            --bg-elevated: #12141c;
-            --text: #f4f6fb;
-            --muted: #9aa3b5;
-            --gold: #e8c56a;
-            --gold-dim: #9a7b2e;
-            --accent: #6b9fff;
-        }
-
         * {
             box-sizing: border-box;
-        }
-
-        html {
-            font-size: clamp(15px, 2.8vw, 17px);
         }
 
         body {
             margin: 0;
             min-height: 100vh;
-            font-family: "DM Sans", system-ui, sans-serif;
-            background: var(--bg);
-            color: var(--text);
+            background: var(--site-bg);
+            color: var(--site-text);
             line-height: 1.55;
         }
 
         a {
-            color: var(--accent);
+            color: var(--site-accent);
             text-decoration: none;
         }
 
@@ -77,13 +58,13 @@
         }
 
         .topnav-links a {
-            color: var(--muted);
+            color: var(--site-muted);
             text-decoration: none;
         }
 
         .topnav-links a:hover,
         .topnav-links a.active {
-            color: var(--text);
+            color: var(--site-text);
         }
 
         .hero {
@@ -111,7 +92,7 @@
         }
 
         .hero h1 {
-            font-family: "Instrument Serif", Georgia, serif;
+            font-family: var(--site-font-display);
             font-size: clamp(2.2rem, 6vw, 3.4rem);
             font-weight: 400;
             line-height: 1.12;
@@ -121,7 +102,7 @@
 
         .hero .lead {
             font-size: 1.08rem;
-            color: var(--muted);
+            color: var(--site-muted);
             max-width: 36rem;
             margin: 0 auto 1.75rem;
         }
@@ -152,7 +133,7 @@
         }
 
         .section-dark {
-            background: var(--bg-elevated);
+            background: var(--site-bg-elevated);
             border-top: 1px solid rgba(255, 255, 255, 0.06);
             border-bottom: 1px solid rgba(255, 255, 255, 0.06);
             padding: 3rem 20px;
@@ -164,7 +145,7 @@
         }
 
         .section h2 {
-            font-family: "Instrument Serif", Georgia, serif;
+            font-family: var(--site-font-display);
             font-size: clamp(1.6rem, 4vw, 2.1rem);
             font-weight: 400;
             margin: 0 0 1.25rem;
@@ -192,7 +173,7 @@
         .pill-card p {
             margin: 0;
             font-size: 0.9rem;
-            color: var(--muted);
+            color: var(--site-muted);
         }
 
         .steps {
@@ -207,7 +188,7 @@
             padding: 16px 0 16px 48px;
             position: relative;
             border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            color: var(--muted);
+            color: var(--site-muted);
         }
 
         .steps li:last-child {
@@ -223,7 +204,7 @@
             height: 32px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.06);
-            color: var(--text);
+            color: var(--site-text);
             font-weight: 700;
             font-size: 0.85rem;
             display: flex;
@@ -233,7 +214,7 @@
 
         .steps strong {
             display: block;
-            color: var(--text);
+            color: var(--site-text);
             margin-bottom: 4px;
         }
 
@@ -269,7 +250,7 @@
 
         .footnote {
             font-size: 0.82rem;
-            color: var(--muted);
+            color: var(--site-muted);
             margin-top: 2rem;
         }
     </style>
@@ -277,18 +258,18 @@
 
 <body>
     <nav class="topnav" aria-label="Site">
-        <a href="index.html" style="color:var(--text);font-weight:700;text-decoration:none;">Y1 Themes</a>
+        <a href="index.html" style="color:var(--site-text);font-weight:700;text-decoration:none;">Y1 Themes</a>
         <div class="topnav-links">
             <a href="index.html">Gallery</a>
             <a href="upload.html">Upload</a>
-            <a href="gold-badge.html" class="active">Gold Badge</a>
+            <a href="gold-badge.html" class="active">About Gold</a>
         </div>
     </nav>
 
     <header class="hero">
         <div class="hero-badge" aria-hidden="true"><span>🏅</span> Gold Badge</div>
-        <h1>Themes built for the Y1 you have today</h1>
-        <p class="lead">
+        <h1 class="site-display">Themes built for the Y1 you have today</h1>
+        <p class="lead site-lead">
             Gold Badge themes pass our compatibility review: they load on current firmware, cover the screens we check,
             and are maintained so they keep working as the player software evolves.
         </p>

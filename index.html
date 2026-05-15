@@ -26,20 +26,18 @@
     <link rel="icon" href="y1_illustration.png">
 
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="site-theme.css?v=20260518">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
     <link rel="stylesheet" href="y1-theme-preview.css?v=20260215">
-    <link rel="stylesheet" href="theme-analytics.css?v=20260517">
+    <link rel="stylesheet" href="theme-analytics.css?v=20260518">
     <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="theme-packaging.js"></script>
     <script src="y1-theme-preview.js?v=20260215"></script>
     <script src="theme-artwork-compat.js?v=20260516"></script>
     <script src="gallery-loaded-theme.js"></script>
-    <script src="theme-analytics.js?v=20260517"></script>
+    <script src="theme-analytics.js?v=20260518"></script>
 
     <style>
         html {
@@ -49,7 +47,6 @@
         html,
         body {
             height: 100%;
-            font-family: "DM Sans", Inter, system-ui, sans-serif;
         }
 
         #nav-root {
@@ -169,16 +166,11 @@
 
         header h1 {
             margin: 0 0 8px 0;
-            font-family: "Instrument Serif", Georgia, serif;
-            font-weight: 400;
             font-size: clamp(1.85rem, 4.5vw, 2.5rem);
-            letter-spacing: -0.02em;
         }
 
         header p {
             margin: 0;
-            color: var(--text-secondary);
-            font-size: 1.02rem;
             max-width: 36rem;
         }
 
@@ -187,18 +179,6 @@
             grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
             gap: 16px;
             margin-top: 18px
-        }
-
-        .gallery-controls {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: flex-end;
-            gap: 12px 18px;
-            margin-top: 1.75rem;
-            padding: 14px 16px;
-            border-radius: 14px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.07);
         }
 
         .theme-card {
@@ -617,7 +597,6 @@
         <div class="gallery-tabs" aria-label="Site sections">
             <a class="gallery-tab" href="https://y1-themes.vercel.app">Editor</a>
             <a class="gallery-tab active" href="index.html">Gallery</a>
-            <a class="gallery-tab" href="gold-badge.html">Gold</a>
             <a class="gallery-tab" href="upload.html">Upload</a>
         </div>
         <div class="topbar-search-wrap">
@@ -627,8 +606,8 @@
     </div>
     <div class="wrap">
         <header>
-            <h1>Themes</h1>
-            <p>Download themes for your Y1, or upload your own for the gallery.</p>
+            <h1 class="site-display">Themes</h1>
+            <p class="site-lead">Download themes for your Y1, or upload your own for the gallery.</p>
         </header>
 
         <div class="cast-div" style="margin-top: 3rem;">
@@ -886,16 +865,20 @@
         function populateAuthorFilter(themes) {
             if (!authorFilter) return;
             const current = String(authorFilter.value || 'all');
+            while (authorFilter.options.length > 1) {
+                authorFilter.remove(1);
+            }
             const authors = [...new Set(
                 (themes || [])
                     .map((t) => safeText(t.author || '').trim())
                     .filter(Boolean)
             )].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
-            authorFilter.innerHTML = '<option value="all">All authors</option>' +
-                authors.map((a) => {
-                    const esc = a.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
-                    return '<option value="' + esc + '">' + esc + '</option>';
-                }).join('');
+            for (const a of authors) {
+                const opt = document.createElement('option');
+                opt.value = a;
+                opt.textContent = a;
+                authorFilter.appendChild(opt);
+            }
             if (current !== 'all' && authors.includes(current)) authorFilter.value = current;
         }
 
@@ -916,7 +899,7 @@
                 const sourcePass = sourceV === 'all' || sourceType === sourceV;
                 const cardAuthor = String(card.getAttribute('data-author') || '');
                 const authorPass = authorV === 'all' || cardAuthor === authorV;
-                const goldPass = !goldOnlyFilter || !!card.querySelector('.theme-gold-title-badge:not([hidden])');
+                const goldPass = !goldOnlyFilter || card.getAttribute('data-gold') === '1';
                 const visible = matches && onDevice && sourcePass && authorPass && goldPass;
                 card.style.display = visible ? '' : 'none';
                 if (visible) matched.push(card);
@@ -973,8 +956,12 @@
             currentPage = 1;
             applyFilters();
         });
-        global.addEventListener('y1-theme-stats-updated', () => applyFilters());
-        global.addEventListener('y1-consent-changed', () => applyFilters());
+        let statsFilterTimer;
+        function scheduleApplyFiltersFromStats() {
+            clearTimeout(statsFilterTimer);
+            statsFilterTimer = setTimeout(applyFilters, 150);
+        }
+        global.addEventListener('y1-theme-stats-updated', scheduleApplyFiltersFromStats);
 
         if (supportDirectInstall) {
             bannerEl.style.display = 'block';
@@ -2869,6 +2856,8 @@
             if (!card) return;
             const b = card.querySelector('.theme-gold-title-badge');
             if (b) b.hidden = !visible;
+            if (visible) card.setAttribute('data-gold', '1');
+            else card.removeAttribute('data-gold');
         }
 
         function syncTitleGoldBadgesFromEnrichedThemes(themes) {
@@ -3165,14 +3154,16 @@
                 n.href = `./theme.html?theme=${encodeURIComponent(themeQueryKey)}`;
             }
 
-            const goldBadge = document.createElement('span');
+            const goldBadge = document.createElement('a');
             goldBadge.className = 'theme-gold-title-badge';
+            goldBadge.href = 'gold-badge.html';
             goldBadge.textContent = 'Gold';
             goldBadge.hidden = true;
-            goldBadge.title = 'Fully compatible with the latest OS and future versions.';
-            goldBadge.setAttribute('aria-label', 'Fully compatible with the latest OS and future versions');
+            goldBadge.title = 'What Gold Badge means — fully compatible with the latest OS';
+            goldBadge.setAttribute('aria-label', 'Learn about the Gold Badge');
             if (String(theme.compatibilityMedal || '').toLowerCase() === 'gold') {
                 goldBadge.hidden = false;
+                c.setAttribute('data-gold', '1');
             }
             titleRow.append(n, goldBadge);
 
