@@ -27,7 +27,7 @@
 
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="site-theme.css?v=20260519">
+    <link rel="stylesheet" href="site-theme.css?v=20260522">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
     <link rel="stylesheet" href="y1-theme-preview.css?v=20260215">
     <link rel="stylesheet" href="theme-analytics.css?v=20260518">
@@ -36,7 +36,7 @@
     <script src="theme-packaging.js"></script>
     <script src="y1-theme-preview.js?v=20260215"></script>
     <script src="theme-artwork-compat.js?v=20260516"></script>
-    <script src="gold-theme-detect.js?v=20260520"></script>
+    <script src="gold-theme-detect.js?v=20260522"></script>
     <script src="gallery-loaded-theme.js"></script>
     <script src="theme-analytics.js?v=20260521"></script>
 
@@ -2897,6 +2897,31 @@
             }
         }
 
+        async function evaluateCardGoldBadge(card, cfg, contentFolder) {
+            if (!card || !cfg || !contentFolder) return;
+            const medal = String((cfg.gallery && cfg.gallery.compatibilityMedal) || '').trim().toLowerCase();
+            if (medal === 'gold') {
+                setGalleryCardGoldTitleBadge(card, true);
+                return;
+            }
+            if (medal === 'none') {
+                setGalleryCardGoldTitleBadge(card, false);
+                return;
+            }
+            if (window.GoldThemeDetect && typeof window.GoldThemeDetect.qualifiesForGoldAsync === 'function') {
+                const ok = await window.GoldThemeDetect.qualifiesForGoldAsync(
+                    cfg,
+                    contentFolder,
+                    (cf, rel) => buildThemeFileUrl(cf, rel)
+                );
+                setGalleryCardGoldTitleBadge(card, ok);
+                return;
+            }
+            if (window.GoldThemeDetect && typeof window.GoldThemeDetect.configQualifiesForGold === 'function') {
+                setGalleryCardGoldTitleBadge(card, window.GoldThemeDetect.configQualifiesForGold(cfg));
+            }
+        }
+
         function applyGalleryCardPreviewReady(card, cfg, meta, folderPath, variantSeg) {
             if (!card || !cfg || !folderPath) return;
             const seg = String(variantSeg || '').trim();
@@ -2906,9 +2931,7 @@
             const diEl = card.querySelector('[data-direct-install-btn]');
             if (dlEl) applyThemeCardDownloadButtonStyles(dlEl, cfg, cf, stack);
             if (diEl) applyThemeCardDownloadButtonStyles(diEl, cfg, cf, stack);
-            if (window.GoldThemeDetect && typeof window.GoldThemeDetect.configQualifiesForGold === 'function') {
-                setGalleryCardGoldTitleBadge(card, window.GoldThemeDetect.configQualifiesForGold(cfg));
-            }
+            void evaluateCardGoldBadge(card, cfg, cf);
         }
 
         function mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, card, variantSeg) {
@@ -3291,7 +3314,10 @@
 
         async function enrichThemesWithCompatibilityMedals(themes) {
             if (!window.GoldThemeDetect || typeof window.GoldThemeDetect.annotateThemes !== 'function') return;
-            await window.GoldThemeDetect.annotateThemes(themes, { batchSize: 16 });
+            await window.GoldThemeDetect.annotateThemes(themes, {
+                batchSize: 8,
+                buildFileUrl: (cf, rel) => buildThemeFileUrl(cf, rel),
+            });
         }
 
         async function load() {
@@ -3323,7 +3349,10 @@
             }
             populateAuthorFilter(filteredThemes);
             if (goldOnlyFilter && window.GoldThemeDetect) {
-                await window.GoldThemeDetect.annotateThemes(filteredThemes, { batchSize: 16 });
+                await window.GoldThemeDetect.annotateThemes(filteredThemes, {
+                    batchSize: 8,
+                    buildFileUrl: (cf, rel) => buildThemeFileUrl(cf, rel),
+                });
             }
             let cardsAdded = 0;
             filteredThemes.forEach(t => {

@@ -10,10 +10,11 @@
     <link rel="icon" href="y1_illustration.png" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="https://innioasis.app/styles.css" />
-    <link rel="stylesheet" href="site-theme.css?v=20260520" />
-    <link rel="stylesheet" href="theme-analytics.css?v=20260520" />
+    <link rel="stylesheet" href="site-theme.css?v=20260522" />
+    <link rel="stylesheet" href="theme-analytics.css?v=20260521" />
     <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
-    <script src="gold-theme-detect.js?v=20260520"></script>
+    <script src="theme-artwork-compat.js?v=20260516"></script>
+    <script src="gold-theme-detect.js?v=20260522"></script>
     <script src="theme-analytics.js?v=20260521"></script>
     <style>
         body {
@@ -244,8 +245,8 @@
             <div class="gold-hero-badge" aria-hidden="true"><span>🏅</span> Gold Badge</div>
             <h1 class="site-display">Themes built for the Y1 you have today</h1>
             <p class="site-lead">
-                Gold Badge themes declare artwork for the launcher, ebook, calculator, and calendar screens in
-                <code>config.json</code>—the same optional surfaces we check on current Innioasis Y1 firmware.
+                Gold Badge themes pass our artwork compatibility check: launcher, ebook, calculator, and calendar
+                assets are configured and load correctly on current Innioasis Y1 firmware.
             </p>
             <a class="gold-hero-cta" href="index.html?gold=1"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i> Browse Gold themes in gallery</a>
         </header>
@@ -258,8 +259,8 @@
                     <p>Verified on the latest Innioasis Y1 OS build—not just an older package format.</p>
                 </article>
                 <article class="pill-card">
-                    <h3>Complete artwork paths</h3>
-                    <p>Defines <code>settingConfig.launcher</code> plus ebook, calculator, and calendar under <code>homePageConfig</code>.</p>
+                    <h3>Artwork that loads</h3>
+                    <p>Linked files exist, aren’t empty, and aren’t broken transparent placeholders—same checks as the gallery badge.</p>
                 </article>
                 <article class="pill-card">
                     <h3>Future-ready</h3>
@@ -273,7 +274,7 @@
                 <h2 class="section-display">How a theme earns Gold</h2>
                 <ol class="steps">
                     <li><strong>Submit to the gallery</strong> Upload through the community portal with a complete theme package.</li>
-                    <li><strong>Config check</strong> The theme’s <code>config.json</code> lists non-empty paths for launcher, ebook, calculator, and calendar artwork.</li>
+                    <li><strong>Compatibility check</strong> Automated validation confirms launcher, ebook, calculator, and calendar artwork paths and files.</li>
                     <li><strong>Hands-on review</strong> Maintainers install the theme on hardware and walk through our screen checklist.</li>
                     <li><strong>Ongoing badge</strong> If a future OS update breaks compatibility, the badge may be withdrawn until fixed.</li>
                 </ol>

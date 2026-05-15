@@ -1,29 +1,71 @@
-/* Shared Innioasis Y1 Themes — typography & chrome (matches gold-badge.html) */
+/* Innioasis Y1 Themes — fintech-grade typography & chrome (Gold Badge aesthetic) */
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Instrument+Serif:ital@0;1&display=swap");
 
 :root {
     --site-bg: #0a0b0f;
     --site-bg-elevated: #12141c;
+    --site-bg-card: rgba(255, 255, 255, 0.03);
     --site-text: #f4f6fb;
     --site-muted: #9aa3b5;
     --site-accent: #6b9fff;
     --site-border: rgba(255, 255, 255, 0.08);
-    --site-font: "DM Sans", system-ui, -apple-system, Segoe UI, sans-serif;
+    --site-font: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
     --site-font-display: "Instrument Serif", Georgia, "Times New Roman", serif;
+    --site-radius-lg: 16px;
+    --site-radius-md: 12px;
+    --site-radius-pill: 999px;
 }
 
 html {
     font-size: clamp(15px, 2.8vw, 17px);
 }
 
+html,
+body {
+    background: var(--site-bg);
+    color: var(--site-text);
+}
+
 body {
     font-family: var(--site-font);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 #nav-root {
     display: none;
 }
 
+/* —— Display typography (serif headlines) —— */
+.section-display,
+.site-display,
+header h1,
+.wrap > header h1,
+.upload-hero h1,
+.report-page h1,
+.theme-page-title {
+    font-family: var(--site-font-display);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.12;
+}
+
+.site-lead,
+header p,
+.wrap > header > p,
+.upload-hero .lead {
+    color: var(--site-muted);
+    font-size: 1.02rem;
+    line-height: 1.55;
+    font-family: var(--site-font);
+}
+
+h2.section-display,
+.gold-section h2 {
+    font-size: clamp(1.35rem, 3.2vw, 1.85rem);
+}
+
+/* —— Top bar —— */
 .gallery-topbar {
     position: sticky;
     top: 0;
@@ -33,6 +75,9 @@ body {
     align-items: center;
     gap: 10px;
     padding: 8px 14px;
+    background: rgba(10, 11, 15, 0.94);
+    border-bottom: 1px solid var(--site-border);
+    backdrop-filter: blur(12px);
 }
 
 .gallery-tabs {
@@ -42,6 +87,8 @@ body {
     border-radius: 9px;
     justify-self: center;
     grid-column: 2;
+    background: var(--site-bg-elevated);
+    border: 1px solid var(--site-border);
 }
 
 .gallery-tab {
@@ -51,6 +98,7 @@ body {
     text-decoration: none;
     font-size: clamp(0.82rem, 2.6vw, 0.95rem);
     font-weight: 600;
+    font-family: var(--site-font);
     border: 1px solid transparent;
     line-height: 1.1;
 }
@@ -70,10 +118,13 @@ body {
 .topbar-search {
     width: 100%;
     padding: 8px 12px 8px 32px;
-    border-radius: 9px;
+    border-radius: 10px;
     color: #eaf0ff;
     outline: none;
     font-size: 0.82rem;
+    font-family: var(--site-font);
+    background: #1a1e28;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .topbar-search::placeholder {
@@ -118,6 +169,7 @@ body {
     }
 }
 
+/* —— Layout —— */
 .wrap {
     max-width: 1200px;
     margin: 0 auto;
@@ -126,54 +178,7 @@ body {
     box-sizing: border-box;
 }
 
-.section-display {
-    font-family: var(--site-font-display);
-    font-weight: 400;
-    letter-spacing: -0.02em;
-}
-
-.site-display,
-header h1,
-.wrap > header h1,
-.upload-hero h1,
-.report-page h1 {
-    font-family: var(--site-font-display);
-    font-weight: 400;
-    letter-spacing: -0.02em;
-    line-height: 1.12;
-}
-
-.site-lead,
-header p,
-.wrap > header > p {
-    color: var(--site-muted, var(--text-secondary, #9aa3b5));
-    font-size: 1.02rem;
-    line-height: 1.5;
-}
-
-.gallery-topbar {
-    background: rgba(10, 11, 15, 0.94) !important;
-    border-bottom: 1px solid var(--site-border) !important;
-    backdrop-filter: blur(12px);
-}
-
-.gallery-tabs {
-    background: var(--site-bg-elevated) !important;
-    border: 1px solid var(--site-border) !important;
-}
-
-.gallery-tab {
-    font-family: var(--site-font) !important;
-}
-
-.topbar-search,
-.gallery-control select {
-    font-family: var(--site-font) !important;
-    background: #1a1e28 !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 10px !important;
-}
-
+/* —— Gallery filters —— */
 .gallery-controls {
     display: flex;
     flex-wrap: wrap;
@@ -181,8 +186,8 @@ header p,
     gap: 12px 18px;
     margin-top: 1.75rem;
     padding: 14px 16px;
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.02);
+    border-radius: var(--site-radius-md);
+    background: var(--site-bg-card);
     border: 1px solid rgba(255, 255, 255, 0.07);
 }
 
@@ -201,6 +206,10 @@ header p,
     padding: 0.45rem 0.65rem;
     color: var(--site-text);
     font-size: 0.86rem;
+    font-family: var(--site-font);
+    background: #1a1e28;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
 }
 
 .gallery-control--author select {
@@ -208,10 +217,54 @@ header p,
     max-width: 16rem;
 }
 
+/* —— Theme cards —— */
+.theme-card {
+    background: var(--site-bg-card) !important;
+    border: 1px solid var(--site-border) !important;
+    border-radius: var(--site-radius-lg) !important;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04);
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.theme-card:hover {
+    border-color: rgba(255, 255, 255, 0.14) !important;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+}
+
+.theme-card .theme-name {
+    font-family: var(--site-font);
+    font-weight: 600;
+    font-size: 1.02rem;
+    letter-spacing: -0.01em;
+}
+
+.theme-card .theme-desc,
+.theme-card .theme-author {
+    font-size: 0.88rem;
+    color: var(--site-muted);
+}
+
+.theme-card .btn {
+    font-family: var(--site-font) !important;
+    border-radius: var(--site-radius-pill) !important;
+}
+
+/* —— Gold badge pill —— */
+.theme-gold-title-badge,
 a.theme-gold-title-badge {
     display: inline-block;
-    text-decoration: none;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     color: #1a1206;
+    padding: 2px 7px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #5c4014, #b8891e 42%, #f2d06a 52%, #b8891e 62%, #5c4014);
+    border: 1px solid rgba(255, 230, 160, 0.75);
+    box-shadow: 0 1px 6px rgba(201, 162, 39, 0.28);
+    vertical-align: middle;
+    text-decoration: none;
     cursor: pointer;
 }
 
@@ -220,6 +273,7 @@ a.theme-gold-title-badge:hover {
     text-decoration: none;
 }
 
+.theme-gold-title-badge[hidden],
 a.theme-gold-title-badge[hidden] {
     display: none !important;
 }
@@ -227,7 +281,7 @@ a.theme-gold-title-badge[hidden] {
 .theme-gold-medal-banner {
     display: block;
     padding: 12px 14px;
-    border-radius: 12px;
+    border-radius: var(--site-radius-md);
     border: 1px solid rgba(232, 197, 106, 0.35);
     background: linear-gradient(135deg, rgba(92, 64, 20, 0.35), rgba(184, 137, 30, 0.2));
     transition: border-color 0.15s, background 0.15s;
@@ -236,4 +290,34 @@ a.theme-gold-title-badge[hidden] {
 a.theme-gold-medal-banner:hover {
     border-color: rgba(242, 208, 106, 0.55);
     text-decoration: none;
+}
+
+/* —— Primary actions (gallery hero) —— */
+.cast-div .btn,
+.wrap .cast-div a.btn {
+    font-family: var(--site-font) !important;
+    border-radius: var(--site-radius-pill) !important;
+    font-weight: 600 !important;
+}
+
+/* —— Pager —— */
+.pager button {
+    font-family: var(--site-font);
+    border-radius: 10px;
+}
+
+/* —— Upload / report cards —— */
+.card,
+.upload-card,
+.report-card {
+    border-radius: var(--site-radius-lg);
+    border: 1px solid var(--site-border);
+    background: var(--site-bg-card);
+}
+
+.card h2,
+.upload-card h2 {
+    font-family: var(--site-font-display);
+    font-weight: 400;
+    letter-spacing: -0.02em;
 }
