@@ -166,15 +166,15 @@
 
         #theme-y1-sim-wrap,
         #theme-page-variant-bar {
-            max-width: min(1320px, 98vw) !important;
+            max-width: min(400px, 94vw) !important;
         }
 
         #theme-root #left {
-            max-width: min(1320px, 100%);
+            max-width: min(960px, 100%);
         }
 
         #theme-root #right {
-            max-width: min(920px, 100%) !important;
+            max-width: min(720px, 100%) !important;
         }
     }
 
@@ -205,17 +205,19 @@
 
         #theme-y1-sim-wrap,
         #theme-page-variant-bar {
-            max-width: min(560px, 100%) !important;
+            max-width: min(400px, 100%) !important;
         }
     }
 
     #theme-y1-sim-wrap .y1-tp-device--full {
-        max-width: min(560px, 98vw) !important;
+        max-width: min(360px, 92vw, 48vh) !important;
+        width: 100%;
     }
 
     @media (min-width: 901px) {
+        /* Handheld-sized preview: cap vw and vh so 4k / ultrawide vmin does not oversize the device */
         #theme-y1-sim-wrap .y1-tp-device--full {
-            max-width: min(1180px, 98vw) !important;
+            max-width: min(360px, 32vw, 48vh) !important;
         }
     }
 
