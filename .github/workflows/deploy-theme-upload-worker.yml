@@ -12,7 +12,8 @@ on:
       - "functions/_lib/theme-removal-handler.js"
       - "functions/_lib/theme-metadata-handler.js"
       - "cloudflare-worker-upload.toml"
-      - "wrangler.toml"
+      - "upload-worker.js"
+      - "scripts/deploy-upload-worker.mjs"
       - ".github/workflows/deploy-theme-upload-worker.yml"
 
 jobs:
@@ -22,8 +23,10 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
-      - uses: cloudflare/wrangler-action@v3
+      - uses: actions/setup-node@v4
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          workingDirectory: workers/theme-upload
-          command: deploy
+          node-version: "22"
+      - run: npm ci || npm install
+      - run: node scripts/deploy-upload-worker.mjs
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

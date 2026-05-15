@@ -1,0 +1,30 @@
+# Deploy y1-theme-analytics when analytics handler or Worker code changes.
+# Requires repository secret: CLOUDFLARE_API_TOKEN (Workers Scripts: Edit).
+name: Deploy theme-analytics Worker
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "workers/theme-analytics/**"
+      - "functions/_lib/theme-analytics-handler.js"
+      - "cloudflare-worker-analytics.toml"
+      - "analytics-worker.js"
+      - "scripts/deploy-analytics-worker.mjs"
+      - ".github/workflows/deploy-theme-analytics-worker.yml"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci || npm install
+      - run: node scripts/deploy-analytics-worker.mjs
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

@@ -1,8 +1,13 @@
 y1-theme-analytics Worker — Cloudflare dashboard settings
 ============================================================
 
-Do NOT use plain `npx wrangler deploy` from repo root — that loads the UPLOAD
-worker config (wrong name / wrong script).
+Your build log shows this WARNING — fix it or analytics runs the UPLOAD code:
+
+  Failed to match Worker name. Your config file is using the Worker name
+  "y1-theme-upload", but the CI system expected "y1-theme-analytics".
+
+That happens when Deploy command is plain `npx wrangler deploy` (reads upload config).
+There is NO root wrangler.toml in this repo anymore — use the script below.
 
 Workers & Pages → y1-theme-analytics → Settings → Builds & deployments
 ----------------------------------------------------------------------
@@ -15,10 +20,20 @@ Workers & Pages → y1-theme-analytics → Settings → Builds & deployments
 
   Version command:      (leave EMPTY)
 
-Free plan: no custom [limits] in wrangler.toml (avoids error 100328).
+Do NOT use:
+  Build: exit 0
+  Deploy: npx wrangler deploy
+
+After a green build, the log should show:
+  [deploy-analytics-worker] npx wrangler deploy --config ".../cloudflare-worker-analytics.toml"
+  (no "y1-theme-upload" name mismatch warning)
 
 D1: database_id in cloudflare-worker-analytics.toml must match your
 y1-theme-metrics database in the dashboard.
 
-After deploy, set on gallery pages:
-  <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.<your-subdomain>.workers.dev" />
+Test:
+  curl -s -o /dev/null -w "%{http_code}" "https://y1-theme-analytics.<subdomain>.workers.dev/api/theme-stats"
+  (expect 400 or 200, not 404 — 404 means upload worker was deployed by mistake)
+
+Gallery meta tag:
+  <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.<subdomain>.workers.dev" />

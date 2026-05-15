@@ -1,7 +1,0 @@
-# y1-theme-upload — default when this repo is used for upload Worker Git builds.
-# Free plan: do not use [limits] here (custom limits require a paid Workers plan).
-# Analytics Worker: cloudflare-worker-analytics.toml + scripts/deploy-analytics-worker.mjs
-
-name = "y1-theme-upload"
-main = "upload-worker.js"
-compatibility_date = "2026-05-11"

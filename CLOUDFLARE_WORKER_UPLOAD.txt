@@ -1,11 +1,8 @@
 y1-theme-upload Worker — Cloudflare dashboard settings (copy/paste)
 ====================================================================
 
-Your build log shows:
-  Executing user deploy command: npx wrangler deploy
-
-That command is failing because Wrangler is not loading a Worker config in that step.
-You must change the dashboard commands below (this cannot be fixed from HTML/JS in the repo alone).
+This repo has no root wrangler.toml (avoids analytics accidentally deploying upload code).
+Use the build script below — do not use plain `npx wrangler deploy` at repo root.
 
 Workers & Pages → y1-theme-upload → Settings → Builds & deployments
 -------------------------------------------------------------------

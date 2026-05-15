@@ -11,11 +11,7 @@ import { fileURLToPath } from "node:url";
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(scriptDir, "..");
 
-const configs = [
-  join(root, "cloudflare-worker-upload.toml"),
-  join(root, "wrangler.toml"),
-  join(root, "wrangler.jsonc"),
-];
+const configs = [join(root, "cloudflare-worker-upload.toml")];
 
 const entry = join(root, "upload-worker.js");
 
