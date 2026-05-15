@@ -1,5 +1,7 @@
 # How to Update or Edit This Theme
 
+The **Dark** look lives under `Variants/Dark` (same author as the default/light pack).
+
 ## For Beginners
 
 You can edit this theme even if you've never used GitHub before.

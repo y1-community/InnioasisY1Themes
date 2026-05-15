@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Generate sitemap.xml for themes.innioasis.app."""
+"""Generate sitemap.xml for themes.innioasis.app.
+
+Includes each catalog theme folder and ``Theme/Variants/Name/`` URLs when
+``themes.json`` lists ``variantFolders``.
+"""
 
 from __future__ import annotations
 
@@ -31,6 +35,17 @@ def _url_for_folder(folder: str) -> str:
     return f"{SITE_BASE}/{encoded}/"
 
 
+def _url_for_theme_variant(theme_folder: str, variant_name: str) -> str:
+    """Per-variant SEO shell lives at ``ThemeFolder/Variants/VariantName/``."""
+    base = str(theme_folder or "").strip().strip("/")
+    var = str(variant_name or "").strip().strip("/")
+    if not base or not var:
+        return ""
+    parts = [base, "Variants", var]
+    encoded = "/".join(quote(seg, safe="") for seg in parts if seg)
+    return f"{SITE_BASE}/{encoded}/"
+
+
 def generate() -> str:
     now = _iso_now()
     static_urls: list[tuple[str, str]] = [
@@ -41,14 +56,24 @@ def generate() -> str:
         (f"{SITE_BASE}/theme.html", "weekly"),
     ]
     themes = _load_themes()
-    theme_urls = sorted(
-        {
-            _url_for_folder(str(item.get("folder") or ""))
-            for item in themes
-            if str(item.get("sourceType") or "internal").strip().lower() != "external"
-            and str(item.get("folder") or "").strip()
-        }
-    )
+    theme_urls: set[str] = set()
+    for item in themes:
+        if str(item.get("sourceType") or "internal").strip().lower() == "external":
+            continue
+        folder = str(item.get("folder") or "").strip()
+        if not folder:
+            continue
+        theme_urls.add(_url_for_folder(folder))
+        vfs = item.get("variantFolders")
+        if isinstance(vfs, list):
+            for vn in vfs:
+                v = str(vn or "").strip()
+                if not v:
+                    continue
+                u = _url_for_theme_variant(folder, v)
+                if u:
+                    theme_urls.add(u)
+    theme_urls_sorted = sorted(theme_urls)
 
     lines = ['<?xml version="1.0" encoding="UTF-8"?>']
     lines.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
@@ -63,7 +88,7 @@ def generate() -> str:
                 "  </url>",
             ]
         )
-    for url in theme_urls:
+    for url in theme_urls_sorted:
         lines.extend(
             [
                 "  <url>",

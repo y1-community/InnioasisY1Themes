@@ -1276,22 +1276,14 @@
             "folder": "yPod",
             "sourceType": "internal",
             "sortName": "ypod",
-            "searchText": "ypod a light ipod inspired theme u/akikokumagara ypod",
+            "searchText": "ypod a light and dark ipod inspired theme u/akikokumagara ypod dark variant ypoddark",
             "author": "u/AkikoKumagara",
             "authorUrl": "https://www.github.com/AkikoKumagara",
-            "description": "A light iPod inspired theme",
-            "screenshot": "./yPod/cover.png"
-        },
-        {
-            "name": "yPodDark",
-            "folder": "yPodDark",
-            "sourceType": "internal",
-            "sortName": "ypoddark",
-            "searchText": "ypoddark a dark ipod inspired theme u/akikokumagara ypoddark",
-            "author": "u/AkikoKumagara",
-            "authorUrl": "https://www.github.com/AkikoKumagara",
-            "description": "A dark iPod inspired theme",
-            "screenshot": "./yPodDark/cover.png"
+            "description": "A light iPod inspired theme with a Dark variant.",
+            "screenshot": "./yPod/cover.png",
+            "variantFolders": [
+                "Dark"
+            ]
         },
         {
             "name": "Yume Nikki",

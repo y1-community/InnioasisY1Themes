@@ -123,5 +123,11 @@
             "batterycharge.003.png",
             "batterycharge.004.png"
         ]
+    },
+    "gallery": {
+        "variantFolders": [
+            "Dark"
+        ],
+        "defaultVariantLabel": "Light"
     }
 }
