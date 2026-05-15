@@ -61,23 +61,39 @@
     color: #eaf0ff;
 }
 
+/* Bottom-left so the support toolbar (bottom-right) never covers privacy controls. */
 #y1-privacy-settings-btn {
     position: fixed;
-    right: 14px;
+    left: 14px;
+    right: auto;
     bottom: 14px;
-    z-index: 9999;
-    width: 44px;
+    z-index: 10002;
+    min-width: 44px;
     height: 44px;
-    border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    background: rgba(22, 26, 36, 0.94);
-    color: #c5cee0;
+    padding: 0 12px;
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    background: rgba(22, 26, 36, 0.97);
+    color: #eaf0ff;
     cursor: pointer;
-    display: flex;
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
-    font-size: 1.05rem;
+    gap: 6px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+    font: 600 0.78rem/1 Inter, system-ui, Segoe UI, sans-serif;
+}
+
+#y1-privacy-settings-btn .y1-privacy-settings-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+#y1-privacy-settings-btn .y1-privacy-settings-label {
+    white-space: nowrap;
 }
 
 #y1-privacy-settings-btn:hover {
@@ -91,9 +107,10 @@ body.y1-consent-banner-open #y1-privacy-settings-btn {
 
 #y1-privacy-panel {
     position: fixed;
-    right: 14px;
+    left: 14px;
+    right: auto;
     bottom: 64px;
-    z-index: 10001;
+    z-index: 10003;
     width: min(22rem, calc(100vw - 28px));
     display: none;
     padding: 14px 16px;

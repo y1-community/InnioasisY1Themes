@@ -398,8 +398,13 @@
         refreshMetricsHosts(key);
     }
 
+    const PRIVACY_GEAR_SVG =
+        '<svg class="y1-privacy-settings-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' +
+        '<path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7Zm8.94-2.06-.76-.44.12-1.02.12-1.02.88-.5.88-.5-.76-1.32-.76-1.32-.88.5-.88.5-1.02-.12-1.02-.12-.76-.44-.76-.44.12-1.02.12-1.02-.88-.5-.88-.5.76-1.32.76-1.32.88.5.88.5 1.02-.12 1.02-.12.76-.44.76-.44-.12-1.02-.12-1.02.88-.5.88-.5-.76-1.32-.76-1.32-.88.5-.88.5-1.02.12-1.02.12.76.44.76.44-.12 1.02-.12 1.02.88.5.88.5.76 1.32.76 1.32-.88.5-.88.5-1.02.12-1.02.12-.76.44Z"/>' +
+        "</svg>";
+
     function ensureConsentDom() {
-        if (document.getElementById("y1-consent-banner")) return;
+        if (document.getElementById("y1-privacy-settings-btn")) return;
 
         const banner = document.createElement("div");
         banner.id = "y1-consent-banner";
@@ -409,7 +414,7 @@
             '<div class="y1-consent-inner">' +
             "<p>Theme view, download, and rating <strong>totals are public</strong> for everyone. " +
             "By default we do <strong>not</strong> add your visits, downloads, or ratings to those totals unless you opt in. " +
-            "Change anytime via the gear icon.</p>" +
+            "Use the <strong>Privacy</strong> button (bottom-left) to change anytime.</p>" +
             '<div class="y1-consent-actions">' +
             '<button type="button" class="y1-consent-customize">Customize</button>' +
             '<button type="button" class="y1-consent-accept">Continue</button>' +
@@ -418,9 +423,10 @@
         const settingsBtn = document.createElement("button");
         settingsBtn.type = "button";
         settingsBtn.id = "y1-privacy-settings-btn";
-        settingsBtn.title = "Privacy & ratings settings";
-        settingsBtn.setAttribute("aria-label", "Privacy and ratings settings");
-        settingsBtn.innerHTML = '<i class="fa-solid fa-gear" aria-hidden="true"></i>';
+        settingsBtn.title = "Privacy & analytics settings";
+        settingsBtn.setAttribute("aria-label", "Privacy and analytics settings");
+        settingsBtn.innerHTML =
+            PRIVACY_GEAR_SVG + '<span class="y1-privacy-settings-label">Privacy</span>';
 
         const panel = document.createElement("div");
         panel.id = "y1-privacy-panel";
@@ -435,6 +441,7 @@
         document.body.appendChild(banner);
         document.body.appendChild(settingsBtn);
         document.body.appendChild(panel);
+        settingsBtn.style.display = "inline-flex";
 
         const syncPanelFromConsent = () => {
             const c = loadConsent();
