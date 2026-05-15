@@ -69,6 +69,7 @@ jobs:
             });
       - name: Comment with share URL(s)
         if: ${{ !startsWith(github.event.pull_request.title, '[Removal]') }}
+        continue-on-error: true
         uses: actions/github-script@v7
         with:
           script: |
@@ -146,7 +147,9 @@ jobs:
               "You can now share the theme URL:",
               shareLines,
               "",
-              "If the page is not live yet, wait a minute for the ingest/sync workflow to finish."
+              "The gallery will pick up the new files next; allow **up to about 50 minutes** for https://themes.innioasis.app to refresh (GitHub Pages + CDN).",
+              "",
+              "_You will get another short update on this thread when the listing sync finishes—or if it needs manual attention._"
             ].join("\n");
 
             await github.rest.issues.createComment({
@@ -155,3 +158,33 @@ jobs:
               issue_number: pull_number,
               body
             });
+
+  notify-validation-failed:
+    needs: validate-and-merge
+    if: ${{ failure() }}
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Comment when automatic merge did not complete
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const pr = context.payload.pull_request;
+            if (!pr || pr.draft) return;
+            const pull_number = pr.number;
+            const body = [
+              "### Automatic merge did not run",
+              "",
+              "This submission did not complete the automatic path (validation did not pass, or the merge step could not finish). Check the **Auto Merge New Theme PRs** workflow logs on this PR for the exact reason.",
+              "",
+              "**Typical reasons:**",
+              "- The package changes paths or file types we do not allow for gallery uploads.",
+              "- The theme name or folder matches an existing listing in a way that needs a maintainer to confirm before it goes live.",
+              "- The theme folder already exists on the main branch (updates are normally reviewed by hand).",
+              "",
+              "A maintainer can still review and merge this pull request. You do not need to re-upload unless they ask for changes."
+            ].join("\n");
+            await github.rest.issues.createComment({ owner, repo, issue_number: pull_number, body });

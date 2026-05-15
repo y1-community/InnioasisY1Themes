@@ -4,6 +4,7 @@ name: Theme ingest and sync
 # - direct file PRs (preferred): worker/client commits extracted theme files directly
 # - root zip artifacts (legacy fallback): extracted by scripts/process_theme_zips.py
 # Then sync themes.json + per-theme index.html, regenerate sitemap.xml, and cleanup upload artifacts.
+# A follow-up job comments on the originating upload PR when sync succeeds or fails (notify-source-pr-after-ingest).
 # Theme raster downsizing (max ~320px) runs in the browser during packaging (upload.html), not here.
 # (Do not run a separate “sitemap on themes.json push” workflow — it raced this job and caused rebase conflicts.)
 
@@ -32,6 +33,7 @@ concurrency:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   ingest-and-sync:
@@ -130,3 +132,145 @@ jobs:
             echo "ERROR: could not push theme ingest commit after retries."
             exit 1
           fi
+
+  notify-source-pr-after-ingest:
+    needs: ingest-and-sync
+    if: ${{ always() && (needs.ingest-and-sync.result == 'success' || needs.ingest-and-sync.result == 'failure') }}
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Comment on originating theme PR (listing sync outcome)
+        uses: actions/github-script@v7
+        env:
+          INGEST_RESULT: ${{ needs.ingest-and-sync.result }}
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const ingestResult = process.env.INGEST_RESULT || "";
+
+            async function prsForSha(sha) {
+              if (!sha || /^0+$/.test(String(sha))) return [];
+              try {
+                const { data } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                  owner,
+                  repo,
+                  commit_sha: sha,
+                });
+                return Array.isArray(data) ? data : [];
+              } catch (e) {
+                console.warn("listPullRequestsAssociatedWithCommit failed:", e.message);
+                return [];
+              }
+            }
+
+            function pickThemeUploadPr(prs) {
+              const list = [...prs].filter((p) => p && p.number);
+              list.sort((a, b) => {
+                const ta = new Date(a.merged_at || 0).getTime();
+                const tb = new Date(b.merged_at || 0).getTime();
+                return tb - ta;
+              });
+              const merged = list.find((p) => p.merged_at && !String(p.title || "").startsWith("[Removal]"));
+              return merged || list[0] || null;
+            }
+
+            let prNum = null;
+            const ev = context.eventName;
+
+            if (ev === "pull_request") {
+              const pr = context.payload.pull_request;
+              if (pr && pr.merged === true && pr.base && pr.base.ref === "main") {
+                prNum = pr.number;
+              }
+            } else if (ev === "workflow_run") {
+              const wr = context.payload.workflow_run;
+              const sha = wr && wr.head_sha;
+              let prs = await prsForSha(sha);
+              let pick = pickThemeUploadPr(prs);
+              if (!pick && wr && Array.isArray(wr.pull_requests) && wr.pull_requests.length) {
+                const n = wr.pull_requests[0].number;
+                if (n) prNum = n;
+              } else if (pick) {
+                prNum = pick.number;
+              }
+            } else if (ev === "push") {
+              let prs = await prsForSha(context.sha);
+              let pick = pickThemeUploadPr(prs);
+              if (!pick) {
+                const before = context.payload.before;
+                prs = await prsForSha(before);
+                pick = pickThemeUploadPr(prs);
+              }
+              if (pick) prNum = pick.number;
+            }
+
+            if (!prNum) {
+              console.log("No source PR resolved for ingest notification; skipping.");
+              return;
+            }
+
+            const marker = `<!-- gallery-ingest-notify:${context.runId}:${ingestResult} -->`;
+
+            if (ingestResult === "success") {
+              const { data: comments } = await github.rest.issues.listComments({
+                owner,
+                repo,
+                issue_number: prNum,
+                per_page: 25,
+              });
+              const recent = (comments || []).find((c) => {
+                if (!c || !c.body || !c.body.includes("### Gallery listing sync finished")) return false;
+                const ageMs = Date.now() - new Date(c.created_at).getTime();
+                return ageMs < 45 * 60 * 1000;
+              });
+              if (recent) {
+                console.log("Recent gallery sync success comment exists; skipping duplicate.");
+                return;
+              }
+
+              const body = [
+                "### Gallery listing sync finished",
+                "",
+                "The automated **Theme ingest and sync** run completed successfully on `main` (themes catalog, per-theme pages, and sitemap were refreshed where needed).",
+                "",
+                "Your theme should appear on **https://themes.innioasis.app** within **about 50 minutes** while GitHub Pages and the CDN catch up.",
+                "",
+                "_If anything still looks out of date after that, try a hard refresh or check back later._",
+                "",
+                marker,
+              ].join("\n");
+
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: prNum,
+                body,
+              });
+              return;
+            }
+
+            if (ingestResult === "failure") {
+              const body = [
+                "### Gallery sync needs a maintainer",
+                "",
+                "The **Theme ingest and sync** workflow hit an error after your submission was merged. **Your theme may be under manual review** until someone on the team fixes the pipeline or resolves a conflict.",
+                "",
+                "**This can happen when:**",
+                "- Two gallery updates landed close together and the automated commit could not be rebased or pushed cleanly.",
+                "- Generated metadata or theme index checks failed partway through the sync.",
+                "- A transient network or GitHub API issue stopped the job.",
+                "",
+                "You do not need to re-upload unless a maintainer asks. You can watch this PR for updates, or open a discussion with a link to this thread.",
+                "",
+                marker,
+              ].join("\n");
+
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: prNum,
+                body,
+              });
+            }
