@@ -215,7 +215,7 @@ async function ghJson(url, token, init = {}, context = "") {
   return json;
 }
 
-async function ghJson(url, token, init = {}, context = "") {
+async function ghGetFileMeta(apiBase, token, path, ref) {
   const enc = String(path || "")
     .split("/")
     .filter(Boolean)
