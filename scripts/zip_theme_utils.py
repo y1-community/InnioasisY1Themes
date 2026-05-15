@@ -65,6 +65,41 @@ def zip_theme_keys(entry_names: list[str]) -> list[str]:
     return keys
 
 
+def collapse_redundant_root_theme_key(
+    entry_names: list[str], theme_keys: list[str], zip_stem: str
+) -> list[str]:
+    """Drop a spurious zip-root ``.`` theme when it duplicates the only subfolder theme.
+
+    Upload tooling can produce ``Musica_Metro.zip`` containing both ``config.json`` (root) and
+    ``Musica_Metro/config.json``. That is one catalog theme (the folder); the root config is
+    redundant. Without collapsing, :func:`zip_inner_folder_collision_errors` rejects the archive
+    because the root theme would extract to the same folder name as the subfolder key.
+
+    Root-level files besides ``config.json`` (e.g. stray PNGs) no longer block this collapse:
+    the subfolder matching the archive stem is treated as the single source of truth.
+    """
+    keys = list(theme_keys)
+    if "." not in keys:
+        return keys
+    stem = _TIMESTAMP_PREFIX_RE.sub("", str(zip_stem or "").strip(), count=1).strip() or str(zip_stem or "").strip()
+    if not stem:
+        return keys
+    stem_l = stem.lower()
+    matching = [k for k in keys if k != "." and PurePosixPath(k).name.lower() == stem_l]
+    if len(matching) != 1:
+        return keys
+    lone = matching[0]
+    if any(k not in (".", lone) for k in keys):
+        return keys
+    root_level = [n for n in entry_names if "/" not in n and n.strip()]
+    root_basenames = {PurePosixPath(n).name.lower() for n in root_level}
+    if "config.json" not in root_basenames:
+        return keys
+    # Do not require the root to contain *only* config.json — real uploads often add loose
+    # files at the zip root (extra PNGs, notes). The subfolder ``lone/`` is the canonical tree.
+    return [k for k in keys if k != "."]
+
+
 def zip_other_theme_prefixes(theme_keys: list[str], theme_key: str) -> list[str]:
     return [f"{k}/" for k in theme_keys if k != theme_key]
 
@@ -118,15 +153,19 @@ def zip_inner_folder_collision_errors(
     if not stem:
         return errors
     stem_l = stem.lower()
-    for k in theme_keys:
-        if k == ".":
-            continue
-        base = PurePosixPath(k).name
-        if base.lower() == stem_l:
-            errors.append(
-                f"{zip_label}: zip root theme would extract to folder {stem!r}, which "
-                f"collides with subfolder theme {k!r}. Rename the archive or the inner folder."
-            )
+    # A lone subfolder theme ``MyTheme/config.json`` inside ``MyTheme.zip`` is normal; the zip
+    # stem matches the folder name but there is no zip-root (``.``) theme competing for the same
+    # destination. Only flag stem == subfolder basename when a root ``config.json`` theme exists.
+    if "." in theme_keys:
+        for k in theme_keys:
+            if k == ".":
+                continue
+            base = PurePosixPath(k).name
+            if base.lower() == stem_l:
+                errors.append(
+                    f"{zip_label}: zip root theme would extract to folder {stem!r}, which "
+                    f"collides with subfolder theme {k!r}. Rename the archive or the inner folder."
+                )
     targets = inner_folder_names_for_zip(theme_keys, zip_stem)
     if len(targets) != len(set(t.lower() for t in targets)):
         errors.append(
