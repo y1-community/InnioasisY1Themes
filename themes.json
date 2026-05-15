@@ -618,6 +618,17 @@
             "screenshot": "./LCD/cover.png"
         },
         {
+            "name": "LiquidGlass",
+            "folder": "LiquidGlass",
+            "author": "u/moralesnery",
+            "authorUrl": "https://www.reddit.com/u/moralesnery",
+            "description": "Lightweight take on MacOS \"Liquid Glass\" style for the Y1. Glassification of the icons in a future update :)",
+            "screenshot": "./LiquidGlass/cover.png",
+            "sourceType": "internal",
+            "sortName": "liquidglass",
+            "searchText": "liquidglass lightweight take on macos \"liquid glass\" style for the y1. glassification of the icons in a future update :) u/moralesnery liquidglass"
+        },
+        {
             "name": "LSD Dream",
             "folder": "LSD_Dream",
             "author": "heckhound",
@@ -1229,6 +1240,17 @@
             "authorUrl": "https://www.reddit.com/r/innioasis/comments/1jwetyl/comment/mt6rwci/",
             "description": "Theme inspired by the nostalgic and history-making OS from Microsoft",
             "screenshot": "./Win95Theme/cover.png"
+        },
+        {
+            "name": "Win98",
+            "folder": "Win98",
+            "author": "u/moralesnery",
+            "authorUrl": "https://www.reddit.com/u/moralesnery",
+            "description": "Based on Win95 theme. Changed background, colors and fonts to reflect Windows 95 start menu as much as possible (within the theme engine capabilites)",
+            "screenshot": "./Win98/cover.png",
+            "sourceType": "internal",
+            "sortName": "win98",
+            "searchText": "win98 based on win95 theme. changed background, colors and fonts to reflect windows 95 start menu as much as possible (within the theme engine capabilites) u/moralesnery win98"
         },
         {
             "name": "Wolverine",
