@@ -9,6 +9,9 @@
 # - Gallery upload PRs may add a paired *.zip.meta.json next to the same PR's root *.zip
 #   (upload handler sidecar); multi-theme zips are validated per config.json root.
 #
+# After a successful merge, theme extraction + themes.json + sitemap run on main via
+# [.github/workflows/theme-ingest-and-sync.yml] (push to main and workflow_run hook).
+# This job does not extract themes itself.
 # Removal PRs (title starts with [Removal]) never run this job: the workflow is skipped so
 # removal requests are always reviewed and merged manually — no automatic submission.
 #

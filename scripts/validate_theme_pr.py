@@ -387,10 +387,21 @@ def _identity_policy_errors(
             incoming_auth = un.strip()
 
     if _theme_folder_has_config_on_base(base_sha, inner_folder):
-        errors.append(
-            f"{context}: A theme folder named {inner_folder!r} already exists on the default branch. "
-            "Auto-merge disabled (assumed edit or duplicate path)."
-        )
+        matches_existing = [r for r in catalog_rows if r["logical"] == logical]
+        if matches_existing:
+            errors.append(
+                f"{context}: Theme folder {inner_folder!r} already exists on the default branch "
+                f"(with config.json) and matches gallery identity in themes.json. "
+                f"A previous upload was likely merged and extracted by theme-ingest-and-sync. "
+                f"Auto-merge is only for brand-new theme folders; updates, replacements, and duplicate "
+                f"ZIP submissions need a maintainer-reviewed PR (or use a '[Metadata]' PR for listing-only edits)."
+            )
+        else:
+            errors.append(
+                f"{context}: Theme folder {inner_folder!r} already exists on the default branch with "
+                f"config.json, but there is no matching themes.json entry (unusual). "
+                f"Auto-merge disabled — maintainers should reconcile the orphan folder before re-uploading."
+            )
         return errors
 
     if logical in pending_logical_slugs:

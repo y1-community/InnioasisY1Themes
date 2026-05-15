@@ -1,3 +1,9 @@
+# Lightweight PR checks on `pull_request` (fork-safe checkout of the PR merge ref).
+# This does NOT gate auto-merge: [.github/workflows/auto-merge-new-theme-prs.yml] runs on
+# `pull_request_target`, validates with scripts/validate_theme_pr.py, then merges.
+# Keep zip-only gallery PRs from failing unrelated guards (index pages exist for themes
+# already on main; the uploader PR only adds root *.zip + *.zip.meta.json until ingest runs).
+
 name: Theme PR Sanity
 
 on:
@@ -43,6 +49,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Verify theme index pages exist
+        if: ${{ steps.prkind.outputs.kind != 'zip_only' }}
         run: python scripts/sync_theme_metadata.py --check-theme-indexes
 
       - name: Ensure generated metadata is committed

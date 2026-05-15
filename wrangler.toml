@@ -3,6 +3,12 @@
 # That command expects main = "..." or [assets] in this file and fails with:
 #   "Missing entry-point to Worker script or to assets directory"
 # Fix in the Pages dashboard: leave the Deploy command field EMPTY.
+#
+# If you see that error on a **Workers** project (e.g. y1-theme-upload), the Git build
+# is using this file by mistake. Set the Worker root directory to `workers/theme-upload`
+# or set Deploy command to:
+#   npx wrangler deploy --config workers/theme-upload/wrangler.toml
+# (see workers/theme-upload/README.md — do not combine root dir + that --config path).
 # =============================================================================
 # Static site + Pages Functions live at the repository root (see pages_build_output_dir).
 # Dashboard (recommended): Root directory = (empty), Build output = ., Build = exit 0

@@ -50,6 +50,10 @@ The root [`wrangler.toml`](../../wrangler.toml) is **Pages-only** (no `main`). Y
 
 **Version command:** leave **empty** unless Cloudflare’s template requires otherwise; `npx wrangler versions upload` is not the normal deploy step for this Worker.
 
+### Cloudflare build: `Missing entry-point to Worker script or to assets directory`
+
+That happens when the Git-connected Worker build uses the **repository root** `wrangler.toml` (Pages-only, no `main`). Fix: use **Option A or B** above so Wrangler loads **this** folder’s `wrangler.toml` with `main = "src/index.js"`.
+
 ## Secrets and variables
 
 Required (secret):
