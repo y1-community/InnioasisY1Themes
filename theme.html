@@ -51,6 +51,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="theme-packaging.js"></script>
     <script src="y1-theme-preview.js?v=20260215"></script>
+    <script src="theme-artwork-compat.js?v=20260515"></script>
     <script src="gallery-loaded-theme.js"></script>
 </head>
 <style>
@@ -247,9 +248,64 @@
     .theme-gold-medal-banner strong {
         margin-left: 4px;
     }
+
+    #theme-page-loading {
+        position: fixed;
+        inset: 0;
+        z-index: 2000;
+        display: none;
+        place-items: center;
+        align-content: center;
+        background: rgba(10, 12, 18, 0.78);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+
+    #theme-page-loading[aria-busy="true"] {
+        display: grid;
+    }
+
+    .theme-page-loading-inner {
+        text-align: center;
+        padding: 1.5rem 1.75rem;
+        border-radius: 16px;
+        background: rgba(22, 26, 36, 0.92);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        max-width: 20rem;
+    }
+
+    .theme-loading-spinner {
+        width: 46px;
+        height: 46px;
+        margin: 0 auto 1rem auto;
+        border-radius: 50%;
+        border: 3px solid rgba(255, 255, 255, 0.15);
+        border-top-color: #8ec5ff;
+        animation: theme-page-spin 0.7s linear infinite;
+    }
+
+    @keyframes theme-page-spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .theme-page-loading-text {
+        margin: 0;
+        font-size: 0.95rem;
+        color: #c5cee0;
+        line-height: 1.45;
+    }
 </style>
 
 <body>
+
+    <div id="theme-page-loading" aria-busy="true" role="status" aria-live="polite">
+        <div class="theme-page-loading-inner">
+            <div class="theme-loading-spinner" aria-hidden="true"></div>
+            <p class="theme-page-loading-text">Loading theme preview…</p>
+        </div>
+    </div>
 
     <div id="nav-root"></div>
     <div class="gallery-topbar">
@@ -286,11 +342,11 @@
                         <div id="theme-author" style="margin-bottom:8px;color:var(--text-secondary)"></div>
                         <div id="theme-desc" style="color:var(--text-secondary);margin-bottom:12px"></div>
                         <div id="theme-compatibility-medal" class="theme-gold-medal-banner" style="display:none;margin:0 0 12px 0;" role="status">
-                            <span aria-hidden="true">🏅</span><strong>Gold artwork compatibility</strong>
-                            <span style="display:block;margin-top:4px;font-weight:500;opacity:0.92;font-size:0.86rem;">This creator included every optional asset we check for newer and upcoming Y1 UI screens.</span>
+                            <span aria-hidden="true">🏅</span><strong>Gold rated compatibility</strong>
+                            <span style="display:block;margin-top:4px;font-weight:500;opacity:0.92;font-size:0.86rem;">This theme includes the full set of optional screens we verify for the latest Y1 experience.</span>
                         </div>
                         <div id="artwork-check-message" style="display:none;border:1px solid rgba(255,180,80,0.45);background:rgba(255,180,80,0.11);border-radius:10px;padding:10px 12px;margin:0 0 12px 0;color:#fdecc8;">
-                            <div style="font-weight:700;margin-bottom:5px;">Artwork compatibility check</div>
+                            <div style="font-weight:700;margin-bottom:5px;">A few screens may need attention</div>
                             <div id="artwork-check-summary" style="font-size:0.9rem;line-height:1.45;"></div>
                             <ul id="artwork-check-list" style="margin:7px 0 0 1.15rem;padding:0;"></ul>
                         </div>
@@ -308,6 +364,7 @@
                             </label>
                             <a id="raw-folder-link" class="btn btn-secondary" style="text-decoration:none;padding:.6rem .9rem" target="_blank" rel="noopener"><i class="fa-solid fa-folder-open"></i> Open folder</a>
                             <a id="theme-action-report" class="btn btn-secondary" style="text-decoration:none;padding:.45rem .75rem;font-size:0.82rem;font-weight:normal;" href="https://themes.innioasis.app/report-theme.html" rel="noopener"><i class="fa-solid fa-flag" style="margin-right:4px;"></i> Report issue</a>
+                            <button type="button" id="theme-copy-share-url" class="btn btn-secondary" style="font-weight:normal;"><i class="fa-solid fa-link" style="margin-right:4px;"></i> Copy page link</button>
                         </div>
                     </div>
 
@@ -425,7 +482,7 @@
         function buildSeoTitle(name, author) {
             const cleanName = String(name || '').trim() || 'Theme';
             const cleanAuthor = String(author || '').trim();
-            return cleanAuthor ? `${cleanName} Innioasis Y1 theme by ${cleanAuthor}` : `${cleanName} Innioasis Y1 theme`;
+            return cleanAuthor ? `${cleanName} by ${cleanAuthor} | Innioasis Y1` : `${cleanName} | Innioasis Y1`;
         }
 
         function applySeoMetadata(name, author, description) {
@@ -1101,120 +1158,6 @@
             return cleanName ? `${cleanName} (Dark)` : 'Theme (Dark)';
         }
 
-        const REQUIRED_ARTWORK_FEATURES = [
-            {
-                feature: 'eBook reader (3.0.7+)',
-                configPath: ['homePageConfig', 'ebook']
-            },
-            {
-                feature: 'Rockbox launcher switch',
-                configPath: ['settingConfig', 'launcher']
-            },
-            {
-                feature: 'Calendar',
-                configPath: ['homePageConfig', 'calendar']
-            },
-            {
-                feature: 'Calculator',
-                configPath: ['homePageConfig', 'calculator']
-            }
-        ];
-
-        function getConfigValueByPath(rootObj, pathParts) {
-            let cursor = rootObj;
-            for (const key of pathParts) {
-                if (!cursor || typeof cursor !== 'object') return '';
-                cursor = cursor[key];
-            }
-            return typeof cursor === 'string' ? String(cursor).trim() : '';
-        }
-
-        function isIntentionalTransparentPath(pathValue) {
-            const name = String(pathValue || '').split('/').pop() || '';
-            return /transparent/i.test(name);
-        }
-
-        async function isPngFullyTransparentBlob(blob) {
-            try {
-                if (!(blob instanceof Blob)) return false;
-                if (!/^image\/png$/i.test(String(blob.type || ''))) return false;
-                const bitmap = await createImageBitmap(blob);
-                const canvas = document.createElement('canvas');
-                canvas.width = bitmap.width;
-                canvas.height = bitmap.height;
-                const ctx = canvas.getContext('2d', { willReadFrequently: true });
-                if (!ctx) {
-                    bitmap.close();
-                    return false;
-                }
-                ctx.drawImage(bitmap, 0, 0);
-                bitmap.close();
-                const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-                for (let i = 3; i < data.length; i += 4) {
-                    if (data[i] !== 0) return false;
-                }
-                return true;
-            } catch (_) {
-                return false;
-            }
-        }
-
-        async function checkArtworkAssetHealth(folderPath, configuredPath) {
-            const normalized = normalizeConfigAssetPath(configuredPath, folderPath);
-            if (!normalized) return { ok: false, issue: 'invalid path' };
-            const url = themeFileUrl(folderPath, normalized);
-            if (!url) return { ok: false, issue: 'invalid path' };
-            const allowTransparent = isIntentionalTransparentPath(normalized);
-            let response;
-            try {
-                response = await fetch(url, { cache: 'no-cache' });
-            } catch (_) {
-                return { ok: false, issue: 'could not fetch asset' };
-            }
-            if (!response.ok) return { ok: false, issue: 'file not found' };
-            let blob;
-            try {
-                blob = await response.blob();
-            } catch (_) {
-                return { ok: false, issue: 'failed to read asset' };
-            }
-            if (blob.size === 0 && !allowTransparent) {
-                return { ok: false, issue: '0-byte file' };
-            }
-            if (/\.png$/i.test(normalized) && !allowTransparent) {
-                const fullyTransparent = await isPngFullyTransparentBlob(blob);
-                if (fullyTransparent) {
-                    return { ok: false, issue: 'fully transparent PNG' };
-                }
-            }
-            return { ok: true, issue: '' };
-        }
-
-        async function artworkCompatibilityWarnings(configObj, folderPath) {
-            if (!configObj || typeof configObj !== 'object') return [];
-            const warnings = [];
-            for (const requirement of REQUIRED_ARTWORK_FEATURES) {
-                const configured = getConfigValueByPath(configObj, requirement.configPath);
-                if (!configured) {
-                    warnings.push(`${requirement.feature}: this setting is missing in the theme configuration.`);
-                    continue;
-                }
-                const health = await checkArtworkAssetHealth(folderPath, configured);
-                if (!health.ok) {
-                    const issueText =
-                        health.issue === 'file not found'
-                            ? 'linked artwork file is missing'
-                            : health.issue === '0-byte file'
-                            ? 'linked artwork file is empty (0 bytes)'
-                            : health.issue === 'fully transparent PNG'
-                            ? 'linked artwork is fully transparent'
-                            : health.issue;
-                    warnings.push(`${requirement.feature}: ${issueText}.`);
-                }
-            }
-            return warnings;
-        }
-
         function extractFilesFromConfig(cfg, folderPath) {
             if (!cfg || typeof cfg !== 'object') return [];
             const out = [];
@@ -1616,6 +1559,13 @@
         }
 
         (async function main() {
+            const loadingEl = document.getElementById('theme-page-loading');
+            function setThemePageLoading(on) {
+                if (!loadingEl) return;
+                loadingEl.setAttribute('aria-busy', on ? 'true' : 'false');
+            }
+            setThemePageLoading(true);
+            try {
             const supportDirectInstall = typeof window.showDirectoryPicker === 'function';
             const directInstallPromo = document.getElementById('direct-install-promo');
             const downloadBtn = document.getElementById('download-btn');
@@ -1642,7 +1592,6 @@
                     location.replace(u.toString());
                     return;
                 }
-                document.title = `${themeName} Innioasis Y1 theme`;
                 let themes = [];
                 try {
                     themes = await tryFetchThemes();
@@ -1681,7 +1630,6 @@
                 }
                 if (themeMeta) {
                     folder = themeMeta.folder || '';
-                    document.title = `${themeMeta.name} Innioasis Y1 theme`;
                     activeContentFolder = effectiveThemeContentPrefix(folder, activeVariant);
                     if (activeVariant) {
                         const altCfg = await tryFetchFolderConfigTheme(activeContentFolder, themes, folder);
@@ -1857,17 +1805,23 @@
             }
             descEl.textContent = (themeMeta && themeMeta.description) ? themeMeta.description : 'No description available.'
             const medalEl = document.getElementById('theme-compatibility-medal');
-            if (medalEl) {
-                const show = themeMeta && String(themeMeta.compatibilityMedal || '').toLowerCase() === 'gold';
-                medalEl.style.display = show ? 'block' : 'none';
-            }
             const seoAuthor = themeMeta && themeMeta.author ? String(themeMeta.author).trim() : '';
             applySeoMetadata(displayName, seoAuthor, themeMeta && themeMeta.description);
-            const artworkWarnings = await artworkCompatibilityWarnings(themeMeta && themeMeta.rawConfig, activeContentFolder);
+            const warnFn = window.y1ThemeArtworkCompat && typeof window.y1ThemeArtworkCompat.warnings === 'function'
+                ? window.y1ThemeArtworkCompat.warnings
+                : null;
+            let artworkWarnings = [];
+            if (warnFn && themeMeta && themeMeta.rawConfig) {
+                artworkWarnings = await warnFn(themeFileUrl, themeMeta.rawConfig, activeContentFolder);
+            }
+            const earnedGold = !!(warnFn && themeMeta && themeMeta.rawConfig && Array.isArray(artworkWarnings) && artworkWarnings.length === 0);
+            if (medalEl) {
+                medalEl.style.display = earnedGold ? 'block' : 'none';
+            }
             if (artworkMessageWrap && artworkSummaryEl && artworkListEl) {
                 if (artworkWarnings.length) {
                     artworkSummaryEl.textContent =
-                        'This theme may not be fully ready for newer/upcoming firmware features (eBook, launcher switch, calendar, calculator). Missing or placeholder artwork can cause broken UI in future updates.';
+                        'Some optional screens in this theme are missing or look incomplete. Everything still works today — this is just a heads-up if you update firmware later.';
                     artworkListEl.innerHTML = '';
                     for (const warning of artworkWarnings) {
                         const li = document.createElement('li');
@@ -1984,35 +1938,37 @@
             if (simWrap && window.Y1ThemePreview && typeof window.Y1ThemePreview.mount === 'function' && folder) {
                 simWrap.style.display = 'flex';
                 const ti = (themeMeta && themeMeta.rawConfig && themeMeta.rawConfig.theme_info) || {};
-                void window.Y1ThemePreview.mount(simWrap, {
-                    catalogFolder: folder,
-                    variantSegment: activeVariant || '',
-                    mode: 'full',
-                    buildFileUrl: (cf, rel) => themeFileUrl(cf, rel),
-                    previewMeta: {
-                        trackTitle: String(ti.title || themeMeta.name || catalogTitle || '').trim(),
-                        trackArtist: String(ti.author || themeMeta.author || '').trim(),
-                        trackAlbum: String(
-                            (themeMeta && themeMeta.description) || ti.description || 'Y1 Theme'
-                        )
-                            .trim()
-                            .slice(0, 96)
-                    },
-                    onReady: () => {
-                        screenshotEl.style.display = 'none';
-                        const focusSim = () => {
-                            const d = simWrap && simWrap.querySelector && simWrap.querySelector('.y1-tp-device--full');
-                            if (d && typeof d.focus === 'function') d.focus();
-                        };
-                        focusSim();
-                        setTimeout(focusSim, 50);
-                    },
-                    onError: () => {
-                        simWrap.style.display = 'none';
-                    }
-                }).catch((err) => {
+                try {
+                    await window.Y1ThemePreview.mount(simWrap, {
+                        catalogFolder: folder,
+                        variantSegment: activeVariant || '',
+                        mode: 'full',
+                        buildFileUrl: (cf, rel) => themeFileUrl(cf, rel),
+                        previewMeta: {
+                            trackTitle: String(ti.title || themeMeta.name || catalogTitle || '').trim(),
+                            trackArtist: String(ti.author || themeMeta.author || '').trim(),
+                            trackAlbum: String(
+                                (themeMeta && themeMeta.description) || ti.description || 'Y1 Theme'
+                            )
+                                .trim()
+                                .slice(0, 96)
+                        },
+                        onReady: () => {
+                            screenshotEl.style.display = 'none';
+                            const focusSim = () => {
+                                const d = simWrap && simWrap.querySelector && simWrap.querySelector('.y1-tp-device--full');
+                                if (d && typeof d.focus === 'function') d.focus();
+                            };
+                            focusSim();
+                            setTimeout(focusSim, 50);
+                        },
+                        onError: () => {
+                            simWrap.style.display = 'none';
+                        }
+                    });
+                } catch (err) {
                     console.warn('Y1 theme preview mount failed', err);
-                });
+                }
             } else if (simWrap) {
                 simWrap.style.display = 'none';
             }
@@ -2092,6 +2048,31 @@
             }
             if (maskVariantPreview && (!maskVariantWrap || maskVariantWrap.style.display === 'none')) {
                 maskVariantPreview.style.display = 'none';
+            }
+
+            const copyShareBtn = document.getElementById('theme-copy-share-url');
+            if (copyShareBtn) {
+                copyShareBtn.addEventListener('click', async () => {
+                    const segs = [folder];
+                    const av = String(activeVariant || '').trim();
+                    if (av) {
+                        segs.push('Variants', av);
+                    }
+                    const pretty = 'https://themes.innioasis.app/' + segs.map((s) => encodeURIComponent(s)).join('/');
+                    try {
+                        await navigator.clipboard.writeText(pretty);
+                        const prev = copyShareBtn.innerHTML;
+                        copyShareBtn.innerHTML = '<i class="fa-solid fa-check" style="margin-right:4px;"></i> Copied';
+                        setTimeout(() => {
+                            copyShareBtn.innerHTML = prev;
+                        }, 2000);
+                    } catch (_) {}
+                });
+            }
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setThemePageLoading(false);
             }
         })()
     </script>

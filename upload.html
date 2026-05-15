@@ -5,13 +5,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title id="upload-doc-title">Upload your theme — Innioasis Y1 Themes</title>
-    <meta name="description" content="Share a new look for the Innioasis Y1 themes gallery. Upload a ZIP or folder; we’ll send it to the team for listing." />
+    <meta name="description" content="Upload an Innioasis Y1 theme in a few steps. We package it in your browser and open a pull request for you to track." />
     <meta name="author" content="Innioasis Community" />
     <link rel="canonical" href="https://themes.innioasis.app/upload.html">
 
     <meta property="og:type" content="website">
     <meta property="og:title" content="Upload your theme — Innioasis Y1 Themes">
-    <meta property="og:description" content="Send a ZIP or theme folder to the team for listing on the gallery.">
+    <meta property="og:description" content="Upload a theme and track it on GitHub—we’ll take care of the rest.">
     <meta property="og:url" content="https://themes.innioasis.app/upload.html">
     <meta property="og:image" content="https://innioasis.app/y1_illustration.png">
 
@@ -189,6 +189,23 @@
 
         .upload-prose header h1 {
             margin: 0 0 8px 0;
+            font-size: clamp(1.85rem, 4.2vw, 2.35rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        #panel-upload.card,
+        #panel-remove.card,
+        #panel-submitted.card,
+        #after-send-card.card {
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+        }
+
+        #panel-upload .row label {
+            font-weight: 600;
+            color: var(--text-primary, #eaf0ff);
         }
 
         .upload-prose .lead {
@@ -570,48 +587,36 @@
         <header>
             <h1 id="upload-page-title">Upload your theme</h1>
             <p class="lead" id="upload-lead">
-                Share a new look for the Innioasis Y1 player. Choose a ZIP file or a whole theme folder — we’ll package it safely in your browser and send it to the team.
+                One package is all we need—we polish it in your browser, open a pull request, and you follow along on GitHub.
             </p>
-            <p class="hint" id="upload-hint">You’ll get a link to track your submission. Only <strong>brand-new</strong> theme identities may qualify for <strong>automatic submission</strong> after our checks; when yours qualifies (a new title and author combination that does not match an existing listing in a way that triggers a maintainer review), the theme usually appears on this site within about <strong>20 minutes to an hour</strong> after the pull request merges. Edits, anything that still needs a maintainer after automatic checks, and removals always go through someone on the team before they appear on the site.</p>
+            <p class="hint" id="upload-hint">You’ll get a tracking link. <strong>New theme submissions</strong> on the automatic path usually appear within about <strong>20 minutes to an hour</strong> after merge. Updates and removals are always reviewed by the team first.</p>
         </header>
 
         <div class="card" id="panel-upload">
             <form id="upload-form">
                 <div class="row file-input-row">
-                    <label for="zip-file">Option A — ZIP file</label>
+                    <label for="zip-file">ZIP</label>
                     <input id="zip-file" name="zip" type="file" accept=".zip,application/zip" />
-                    <div class="hint">You can include several theme folders (each with <code>config.json</code>) in one ZIP. Don’t pick both a ZIP and a folder.</div>
                 </div>
 
                 <div class="row file-input-row">
-                    <label for="folder-file">Option B — Theme folder</label>
+                    <label for="folder-file">Or pick a theme folder</label>
                     <input id="folder-file" type="file" webkitdirectory multiple />
-                    <div class="hint">Select the folder that contains your theme’s <code>config.json</code> and images. Works in Chrome, Edge, Firefox, and Safari.</div>
-                </div>
-
-                <div class="row file-input-row" style="margin-top:0.75rem;">
-                    <p class="hint" style="margin:0;"><strong>Looks in this submission:</strong> your main ZIP or folder is <strong>look 1</strong>. Add more rows only if you are shipping extra looks from separate ZIPs or folders (each becomes <code>YourTheme/Variants/&lt;Name&gt;/</code>).</p>
                 </div>
 
                 <div id="extra-variations-panel" style="display:block;margin-top:0.75rem;padding:0.85rem 1rem;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(0,0,0,0.14);">
-                    <p class="hint" style="margin:0 0 0.65rem 0;">If your main ZIP or folder already contains <code>Variants/&lt;Name&gt;/</code> (capital <strong>V</strong> or lowercase), those names appear below automatically. You can still attach a replacement ZIP or folder for the same name — we keep one copy per name.</p>
                     <div id="extra-variations-add-toolbar" style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;margin-bottom:0.65rem;">
                         <span id="extra-variations-add-top-anchor">
-                            <button type="button" class="btn" id="extra-variations-add-btn" style="background:#2a2f3a;color:#eaf0ff;">+ Add variation package</button>
+                            <button type="button" class="btn" id="extra-variations-add-btn" style="background:#2a2f3a;color:#eaf0ff;">+ Add another look</button>
                         </span>
-                        <span class="hint" style="margin:0;">Each row: a short <strong>variation name</strong>, then a ZIP <em>or</em> a folder (not both).</span>
+                        <span class="hint" style="margin:0;">Optional — only when you have another finished package.</span>
                     </div>
                     <div id="extra-variations-list"></div>
                 </div>
 
-                <div class="row file-input-row">
-                    <p class="hint" style="margin:0;"><strong>Theme variations (recommended):</strong> put each alternate look in <code>YourTheme/Variants/&lt;Variation Name&gt;/</code> with its own <code>config.json</code> and assets (for example <code>Variants/Dark</code> or <code>Variants/iPod Version</code>). The gallery shows one card; visitors pick a variation on the theme page.</p>
-                </div>
-
                 <div id="meta-editor" class="meta-editor">
-                    <h3>Theme details</h3>
-                    <p class="hint">We read these from <code>config.json</code>. You can fix spelling or credits before sending. A single ZIP can contain several themes (each with its own <code>config.json</code>).</p>
-                    <p class="hint" style="margin-top:0.45rem;">If you add an <strong>External download URL</strong>, the gallery download button will open that page (great for Ko-Fi/Patreon). It must point directly to your theme download or donation page; links that do not clearly do this may be removed by maintainers. You still must include a full ZIP/folder theme package so we can import previews, metadata, and assets into the gallery.</p>
+                    <h3>Gallery listing</h3>
+                    <p class="hint" style="margin:0 0 0.75rem 0;">How the theme reads for visitors: title, credits, and a short line.</p>
                     <div id="batch-theme-panel" class="batch-theme-panel" hidden>
                         <p class="batch-theme-panel-title">Multiple themes in this package</p>
                         <p id="batch-theme-panel-lead" class="hint" style="margin:0;"></p>
@@ -621,10 +626,10 @@
                 </div>
 
                 <div id="edit-notice" class="callout-info" hidden>
-                    <p><strong>Update to an existing listing</strong></p>
-                    <p>Your <strong>Author</strong> matches the catalog entry for <strong data-edit-folder></strong> (same person or team as the live listing). This is sent as an <strong>update</strong> — it does <strong>not</strong> use automatic submission; a maintainer will review.</p>
-                    <p class="hint" style="margin-top: 0.65rem;">If this is actually a <em>different</em> theme or a remix, change the <strong>Author</strong> field above so it clearly identifies you — then it is treated as a new package. Folder paths inside your ZIP are adjusted in the browser when needed (using the catalog) so titles can stay the same while authors stay distinct.</p>
-                    <p class="hint" style="margin-top: 0.35rem;">Catalog title: <span data-edit-catalog-title>—</span></p>
+                    <p><strong>This looks like an update</strong></p>
+                    <p>Your <strong>Author</strong> matches the listing for <strong data-edit-folder></strong>. We’ll treat this as an update to that theme—someone on the team will review before it goes live.</p>
+                    <p class="hint" style="margin-top: 0.65rem;">If this is actually a different theme, change <strong>Author</strong> so it clearly represents you.</p>
+                    <p class="hint" style="margin-top: 0.35rem;">Gallery title: <span data-edit-catalog-title>—</span></p>
                     <label class="variation-row" style="margin-top:0.75rem;">
                         <input type="checkbox" id="edit-ack" />
                         <span>I confirm I’m submitting an update to this existing listing, not a different theme.</span>
@@ -643,7 +648,7 @@
             <form id="removal-form">
                 <p class="lead" style="margin-bottom:1rem;">We’re sorry to hear you want a theme removed from the gallery. This form is for authors who want to opt out. We verify the listed title/author and your contact email before maintainers remove the theme from the catalog.</p>
                 <div class="row">
-                    <label>Theme folder</label>
+                    <label>Theme</label>
                     <input type="text" id="removal-folder-display" readonly style="opacity:0.9;" />
                     <input type="hidden" name="folder" id="removal-folder-value" value="" />
                 </div>
@@ -682,7 +687,7 @@
                 <div class="row">
                     <label class="variation-row" style="margin-top:0;">
                         <input id="removal-blacklist-optout" name="blacklistOptOut" type="checkbox" />
-                        <span>Also block future re-uploads of this theme package by folder/title (blacklist preference).</span>
+                        <span>Also ask us to block future re-uploads of this theme.</span>
                     </label>
                 </div>
                 <button id="removal-submit-btn" type="submit" class="btn btn-primary"><i class="fa-solid fa-trash-can" style="margin-right: 6px;"></i>Submit removal request</button>
@@ -694,7 +699,7 @@
             <h3>Submission received</h3>
             <p id="submitted-lead" class="lead" style="margin-top:0.5rem;"></p>
             <div id="submitted-auto-callout" class="callout-info" style="display:none;" role="status">
-                <p style="margin:0;">Your upload is on the <strong>automatic submission</strong> path (a brand-new theme identity: folder/title and author do not match an existing listing in a way that triggers a maintainer review). After checks pass and the pull request merges, the theme usually appears on this site within about <strong>20 minutes to an hour</strong>.</p>
+                <p style="margin:0;">This submission is on the <strong>fast path</strong>—after checks and merge, it usually appears on the gallery within about <strong>20 minutes to an hour</strong>.</p>
             </div>
             <p class="hint" id="submitted-hint"></p>
             <div class="row" style="margin-top:1rem;">
@@ -715,11 +720,11 @@
         <div class="card" id="after-send-card">
             <h3 id="after-send-title">What happens after you send</h3>
             <ul id="after-send-list">
-                <li>Your theme is uploaded securely and <strong>a submission is queued</strong> for the maintainers.</li>
-                <li>They check that files are safe and the theme structure looks good.</li>
-                <li><strong>Brand-new folder names</strong> can often go through <strong>automatic submission</strong> once our checks pass; those themes usually show up on the gallery within about <strong>20 minutes to an hour</strong> after the pull request merges.</li>
-                <li>If the <strong>same folder name</strong> already exists, we <strong>do not</strong> use automatic submission — someone on the team will review your submission first so nothing is overwritten by surprise.</li>
-                <li>Once accepted, your theme appears on this site for everyone to download.</li>
+                <li>Your theme is sent securely; you get a link to follow on GitHub.</li>
+                <li>We run safety checks on every submission.</li>
+                <li><strong>New theme submissions</strong> often go live within about <strong>20 minutes to an hour</strong> after merge when they qualify for automatic handling.</li>
+                <li>If the <strong>same theme</strong> is already listed under your author, we treat it as an update and a teammate reviews it before anything changes.</li>
+                <li>Once it’s in, everyone can browse and download it from the gallery.</li>
             </ul>
         </div>
     </div>
@@ -930,7 +935,7 @@
 
         function promptAndAddExtraVariation() {
             if (!extraVariationsPanel) return;
-            const suggested = window.prompt("Variation folder name (for example: Dark or iPod Version)", "");
+            const suggested = window.prompt("Name for this extra look (for example: Dark or iPod Version)", "");
             if (!suggested) return;
             ensureExtraVariationRow(suggested);
         }
@@ -1003,7 +1008,7 @@
                         return `
 <div class="extra-variation-card extra-variation-card--primary" data-variation-id="${escapeHtml(row.id)}" data-variation-primary="1">
   <h4>Look 1 — main package</h4>
-  <div class="extra-variation-meta">This is the ZIP or folder from <strong>Option A</strong> or <strong>Option B</strong>. Add more rows only if you are attaching <em>separate</em> packages for extra looks.</div>
+  <div class="extra-variation-meta">Your main package from above. Add another row only if that look ships as its own upload.</div>
   <div class="row">
     <label>Title</label>
     <input type="text" data-primary-field="title" value="${escapeHtml(ti.title || "")}" />
@@ -1011,7 +1016,7 @@
   <div class="row" data-primary-gallery-wrap style="display:${showLookLabel ? "block" : "none"};">
     <label>Variation name (gallery)</label>
     <input type="text" data-var-field="galleryLookLabel" value="${galleryLab}" placeholder="e.g. Blue Swirl" />
-    <p class="hint" style="margin:0;">Only when this submission has more than one look — so the gallery can label your main look next to the others.</p>
+    <p class="hint" style="margin:0;">Shown when this submission includes more than one look.</p>
   </div>
   <div class="row">
     <label>Author</label>
@@ -1032,7 +1037,7 @@
   <div class="row" data-primary-external-wrap style="display:${String(ti.externalDownloadUrl || "").trim() ? "block" : "none"};">
     <label>External download URL (optional)</label>
     <input type="text" data-primary-field="externalDownloadUrl" value="${escapeHtml(ti.externalDownloadUrl || "")}" placeholder="https://" />
-    <p class="hint">When set (and the box above is checked), the gallery can open this page instead of a direct ZIP.</p>
+    <p class="hint">Optional — send people to your own download page.</p>
   </div>
   <div style="display:flex;justify-content:flex-end;align-items:center;gap:0.5rem;margin-top:0.35rem;flex-wrap:wrap;">
     ${addAnchor}
@@ -1046,7 +1051,7 @@
                     return `
 <div class="extra-variation-card" data-variation-id="${escapeHtml(row.id)}">
   <h4>Variation: ${safe}</h4>
-  <div class="extra-variation-meta">Optional — add or replace files under <code>${THEME_VARIANTS_SEGMENT}/${safe}/</code> from a separate ZIP or folder.</div>
+  <div class="extra-variation-meta">Optional — another package for this look.</div>
   <div class="row">
     <label>Variation name</label>
     <input type="text" data-var-field="displayName" value="${safe}" />
@@ -1064,13 +1069,13 @@
     <input type="url" data-var-field="externalUrl" value="${ext}" placeholder="https://" />
   </div>
   <div class="row">
-    <label>Variation ZIP (optional)</label>
+    <label>Package (optional)</label>
     <input type="file" accept=".zip,application/zip" data-var-field="zip" />
   </div>
   <div class="row">
-    <label>Variation folder (optional)</label>
+    <label>Folder (optional)</label>
     <input type="file" webkitdirectory multiple data-var-field="folder" />
-    <div class="hint">Pick one: ZIP <em>or</em> folder — not both for the same row.</div>
+    <div class="hint">One package per row — not both.</div>
   </div>
   <div style="display:flex;justify-content:flex-end;align-items:center;gap:0.5rem;margin-top:0.35rem;flex-wrap:wrap;">
     ${addAnchor}
@@ -1498,7 +1503,7 @@
             if (afterCard) afterCard.hidden = false;
 
             const commonHint =
-                "Only brand-new theme identities may qualify for automatic submission after our checks; when yours qualifies (a new title and author combination that does not match an existing listing in a way that triggers a maintainer review), the theme usually appears on this site within about 20 minutes to an hour after the pull request merges. Edits, anything that still needs a maintainer after automatic checks, and removals always go through someone on the team before they appear on the site.";
+                "New theme submissions that qualify for automatic handling often appear within about 20 minutes to an hour after merge. Updates and removals are reviewed by the team first.";
 
             if (pageMode === "remove") {
                 panelUpload.hidden = true;
@@ -1522,7 +1527,7 @@
                 afterList.innerHTML = [
                     "<li>After you confirm listed metadata and your contact email, a <strong>removal request</strong> pull request is created for maintainers.</li>",
                     "<li>We verify you represent the listed author. If needed, we contact you at the email you provided.</li>",
-                    "<li>The request is <strong>not</strong> auto-merged. When approved, the theme folder and catalog listing are removed.</li>"
+                    "<li>The request is <strong>not</strong> auto-merged. When approved, the theme is removed from the gallery.</li>"
                 ].join("");
                 void refreshRemovalCatalogDisplay();
                 return;
@@ -1535,13 +1540,10 @@
                 if (docTitle) docTitle.textContent = "Update theme details — Innioasis Y1 Themes";
                 h1.textContent = "Update theme details";
                 lead.textContent =
-                    "Edit title, author, description, and gallery listing fields. No ZIP is required — we open a pull request that only updates config and catalog metadata.";
+                    "Adjust how your listing reads on the gallery — no files required.";
                 if (hint) {
-                    const pre = themeFolderParam ? `Folder: ${themeFolderParam}. ` : "";
-                    hint.textContent =
-                        pre +
-                        "Change the description or listing fields (or use the full upload flow to ship new assets). " +
-                        commonHint;
+                    const pre = themeFolderParam ? `Theme: ${themeFolderParam}. ` : "";
+                    hint.textContent = pre + "We open a short GitHub change for the team to approve. " + commonHint;
                 }
                 document.querySelectorAll(".file-input-row").forEach((el) => {
                     el.hidden = true;
@@ -1552,9 +1554,9 @@
                 }
                 afterTitle.textContent = "What happens after you send";
                 afterList.innerHTML = [
-                    "<li>We open a <strong>metadata-only</strong> pull request on GitHub (no new image binaries).</li>",
-                    "<li>The pull request is reviewed by maintainers and <strong>does not auto-merge</strong>.</li>",
-                    "<li>To ship artwork changes, use the normal ZIP or folder upload instead.</li>"
+                    "<li>We open a small GitHub change for reviewers.</li>",
+                    "<li>It is not auto-merged.</li>",
+                    "<li>To ship new visuals, use the main upload flow with a package.</li>"
                 ].join("");
                 return;
             }
@@ -1571,17 +1573,17 @@
                 if (docTitle) docTitle.textContent = "Submit a theme update — Innioasis Y1 Themes";
                 h1.textContent = "Submit a theme update";
                 lead.textContent =
-                    "Upload a ZIP/theme folder for artwork changes, or submit metadata changes directly with no ZIP. Use the same root folder name as the listing you are updating.";
+                    "Ship new artwork or refresh details. Use the same theme name as the live listing when you’re updating.";
                 if (hint) {
-                    const pre = themeFolderParam ? `Editing folder: ${themeFolderParam}. ` : "";
-                    hint.textContent = pre + "If no ZIP/folder is selected, this submits only themes.json + config.json metadata updates. " + commonHint;
+                    const pre = themeFolderParam ? `Theme: ${themeFolderParam}. ` : "";
+                    hint.textContent = pre + "You can send files or, for text-only tweaks, skip attachments and we’ll open a small GitHub change. " + commonHint;
                 }
                 afterTitle.textContent = "What happens after you send";
                 afterList.innerHTML = [
-                    "<li>Your ZIP is uploaded and <strong>a submission is queued</strong> for the maintainers.</li>",
-                    "<li>Same-folder updates are <strong>never</strong> sent through automatic submission; a maintainer checks everything before publishing.</li>",
-                    "<li>Brand-new folder names may still qualify for automatic submission when checks pass; those usually appear within about <strong>20 minutes to an hour</strong> after merge.</li>",
-                    "<li>Once accepted, the gallery updates after the next site refresh from the main catalog.</li>"
+                    "<li>Your package is queued for review.</li>",
+                    "<li>Updates to an existing listing are always checked by a teammate before they go live.</li>",
+                    "<li><strong>New theme submissions</strong> that qualify for automatic handling often appear within about <strong>20 minutes to an hour</strong> after merge.</li>",
+                    "<li>Once it’s in, the gallery updates for everyone.</li>"
                 ].join("");
                 return;
             }
@@ -1589,15 +1591,15 @@
             if (docTitle) docTitle.textContent = "Upload your theme — Innioasis Y1 Themes";
             h1.textContent = "Upload your theme";
             lead.textContent =
-                "Share a new look for the Innioasis Y1 player. Choose a ZIP file or a whole theme folder — we’ll package it safely in your browser and send it to the team.";
-            if (hint) hint.textContent = "You’ll get a link to track your submission. " + commonHint;
+                "One package is all we need—we polish it in your browser, open a pull request, and you follow along on GitHub.";
+            if (hint) hint.textContent = "You'll get a GitHub link to follow. " + commonHint;
             afterTitle.textContent = "What happens after you send";
             afterList.innerHTML = [
-                "<li>Your theme is uploaded securely and <strong>a submission is queued</strong> for the maintainers.</li>",
-                "<li>They check that files are safe and the theme structure looks good.</li>",
-                "<li><strong>Brand-new folder names</strong> can often go through <strong>automatic submission</strong> once our checks pass; those themes usually show up on the gallery within about <strong>20 minutes to an hour</strong> after the pull request merges.</li>",
-                "<li>If the <strong>same folder name</strong> already exists, we <strong>do not</strong> use automatic submission — someone on the team will review your submission first so nothing is overwritten by surprise.</li>",
-                "<li>Once accepted, your theme appears on this site for everyone to download.</li>"
+                "<li>Your theme is sent securely; you get a link to follow on GitHub.</li>",
+                "<li>We run safety checks on every submission.</li>",
+                "<li><strong>New theme submissions</strong> that qualify for automatic handling often go live within about <strong>20 minutes to an hour</strong> after merge.</li>",
+                "<li>If the <strong>same theme</strong> is already listed under your author, a teammate reviews before anything changes.</li>",
+                "<li>Once it’s in, everyone can browse and download it from the gallery.</li>"
             ].join("");
         }
 
@@ -2021,7 +2023,7 @@
                 return;
             }
             panel.hidden = false;
-            lead.textContent = `Found ${themeInfoEntries.length} theme configs. Status is per folder name inside the ZIP (catalog rules match the server validator). You still send one ZIP for the whole package.`;
+            lead.textContent = `We found ${themeInfoEntries.length} themes in this package. Each row shows how it will be listed — you still send everything in one go.`;
             const roots = collectThemeRootFolders();
             list.innerHTML = roots
                 .map((root) => {
@@ -2483,7 +2485,7 @@
                         ? `
                 <div class="meta-card" data-entry-idx="${idx}" data-entry-kind="variant">
                     ${head}
-                    <p class="hint" style="margin:0 0 0.65rem 0;">This file is an <strong>extra look</strong> under <code>${THEME_VARIANTS_SEGMENT}/</code>. Title and author stay the same as your main theme — only this look’s description and optional external link are edited here.</p>
+                    <p class="hint" style="margin:0 0 0.65rem 0;">Extra look — title and credits stay with your main theme.</p>
                     <div class="row">
                         <label>Title (locked)</label>
                         <input type="text" data-field="title" readonly style="opacity:0.9;" value="${escapeHtml(entry.themeInfo.title)}" />
@@ -2507,14 +2509,14 @@
                     <div class="row">
                         <label>External download URL for this look (optional)</label>
                         <input type="text" data-field="externalDownloadUrl" value="${escapeHtml(entry.themeInfo.externalDownloadUrl)}" placeholder="https://" />
-                        <p class="hint">Only used when the box above is checked. Use a link that clearly offers this look’s download or your support page.</p>
+                        <p class="hint">Only when the box above is checked — link to your shop or download page.</p>
                     </div>
                 </div>`
                         : skipRootFields
                           ? `
                 <div class="meta-card" data-entry-idx="${idx}" data-entry-kind="root-skipped">
                     ${head}
-                    <p class="hint" style="margin:0;">Use the <strong>Look 1 — main package</strong> card above for <strong>title, author, description</strong>, and the main download link for this theme.</p>
+                    <p class="hint" style="margin:0;">Use <strong>Look 1 — main package</strong> above for title, author, description, and the main download link.</p>
                 </div>`
                           : `
                 <div class="meta-card" data-entry-idx="${idx}" data-entry-kind="root">
@@ -2544,7 +2546,7 @@
                     <div class="row">
                         <label>External download URL (optional)</label>
                         <input type="text" data-field="externalDownloadUrl" value="${escapeHtml(entry.themeInfo.externalDownloadUrl)}" placeholder="https://ko-fi.com/... or https://patreon.com/..." />
-                        <p class="hint">When set (and the box above is checked), the gallery can open this page instead of a direct ZIP. You still include a full package so previews work.</p>
+                        <p class="hint">When set (with the box checked), the gallery can open your page instead of a direct file. Include a full package so previews work.</p>
                     </div>
                 </div>`;
                     return `${wrapOpen}${summary}${inner}${wrapClose}`;
@@ -3006,7 +3008,7 @@
             readEditorValues();
             syncVariantMetadataFromBase();
             if (!themeInfoEntries.length) {
-                throw new Error("No theme metadata was found. Include a valid config.json in your ZIP/folder so title/author fields can be reviewed.");
+                throw new Error("We couldn't read your theme package. Add your complete theme files and try again.");
             }
             for (const entry of themeInfoEntries) {
                 const label = String(entry.label || entry.path || "theme").trim();
@@ -3522,7 +3524,7 @@
                 const scrubbedNote = scrubbedSubmissionPaths.length
                     ? `\n\nSecurity scrub: ${scrubbedSubmissionPaths.length} path(s) were not included (web/script files, CI/workflow manifests, or repository tooling paths).`
                     : "";
-                const msg = `Thanks! Your theme was received. If your theme uses an existing folder name, a maintainer will confirm before anything goes live.${scrubbedNote}`;
+                const msg = `Thanks! Your theme was received. If this updates an existing listing, a maintainer will confirm before anything goes live.${scrubbedNote}`;
                 setStatus(msg, true);
                 form.reset();
                 resetThemeState();

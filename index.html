@@ -32,6 +32,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="theme-packaging.js"></script>
     <script src="y1-theme-preview.js?v=20260215"></script>
+    <script src="theme-artwork-compat.js?v=20260515"></script>
     <script src="gallery-loaded-theme.js"></script>
 
     <style>
@@ -2761,16 +2762,16 @@
             img.alt = safeText(theme.name);
             previewFrame.appendChild(img);
 
-            if (String(theme.compatibilityMedal || '').toLowerCase() === 'gold') {
+            if (folderPath && String(theme.compatibilityMedal || '').toLowerCase() === 'gold') {
                 previewFrame.style.position = 'relative';
-                const medal = document.createElement('div');
-                medal.className = 'theme-artwork-gold-badge';
-                medal.setAttribute('role', 'img');
-                medal.setAttribute('aria-label', 'Gold artwork compatibility');
-                medal.innerHTML = '<span aria-hidden="true">🏅</span><span>Full artwork</span>';
-                medal.title =
-                    'This package passed the gallery’s optional newer UI artwork checks (eBook, launcher switch, calendar, calculator).';
-                previewFrame.appendChild(medal);
+                const medalEarly = document.createElement('div');
+                medalEarly.className = 'theme-artwork-gold-badge';
+                medalEarly.innerHTML = '<span aria-hidden="true">🏅</span><span>Gold rated</span>';
+                medalEarly.setAttribute('role', 'img');
+                medalEarly.setAttribute('aria-label', 'Gold rated compatibility');
+                medalEarly.title =
+                    'This theme includes the full set of optional screens we verify for the latest Y1 experience.';
+                previewFrame.appendChild(medalEarly);
             }
 
             const cardPreviewMeta = {
@@ -2794,6 +2795,29 @@
                             const stack = meta && meta.previewFontFamily ? meta.previewFontFamily : '';
                             applyThemeCardDownloadButtonStyles(dl, cfg, cf, stack);
                             if (di) applyThemeCardDownloadButtonStyles(di, cfg, cf, stack);
+                        }
+                        const warnFn =
+                            window.y1ThemeArtworkCompat && typeof window.y1ThemeArtworkCompat.warnings === 'function'
+                                ? window.y1ThemeArtworkCompat.warnings
+                                : null;
+                        if (warnFn && cfg && folderPath) {
+                            const seg = String(variantSelect.value || '').trim();
+                            const cfEff = effectiveThemeContentFolder(folderPath, seg);
+                            void warnFn((cf, rel) => buildThemeFileUrl(cf, rel), cfg, cfEff)
+                                .then((warns) => {
+                                    if (!Array.isArray(warns) || warns.length) return;
+                                    if (previewFrame.querySelector('.theme-artwork-gold-badge')) return;
+                                    previewFrame.style.position = 'relative';
+                                    const medal = document.createElement('div');
+                                    medal.className = 'theme-artwork-gold-badge';
+                                    medal.innerHTML = '<span aria-hidden="true">🏅</span><span>Gold rated</span>';
+                                    medal.setAttribute('role', 'img');
+                                    medal.setAttribute('aria-label', 'Gold rated compatibility');
+                                    medal.title =
+                                        'This theme includes the full set of optional screens we verify for the latest Y1 experience.';
+                                    previewFrame.appendChild(medal);
+                                })
+                                .catch(() => {});
                         }
                     },
                     onError: () => {
@@ -2869,6 +2893,7 @@
 
             variantSelect.addEventListener('change', () => {
                 if (!folderPath || !window.Y1ThemePreview) return;
+                previewFrame.querySelectorAll('.theme-artwork-gold-badge').forEach((el) => el.remove());
                 const seg = String(variantSelect.value || '').trim();
                 if (typeof window.Y1ThemePreview.unmount === 'function') {
                     window.Y1ThemePreview.unmount(simHost);
@@ -2888,6 +2913,28 @@
                                 const stack = meta && meta.previewFontFamily ? meta.previewFontFamily : '';
                                 applyThemeCardDownloadButtonStyles(dl, cfg, cf, stack);
                                 if (di) applyThemeCardDownloadButtonStyles(di, cfg, cf, stack);
+                            }
+                            const warnFn =
+                                window.y1ThemeArtworkCompat && typeof window.y1ThemeArtworkCompat.warnings === 'function'
+                                    ? window.y1ThemeArtworkCompat.warnings
+                                    : null;
+                            if (warnFn && cfg && folderPath) {
+                                const cfEff = effectiveThemeContentFolder(folderPath, seg);
+                                void warnFn((cf, rel) => buildThemeFileUrl(cf, rel), cfg, cfEff)
+                                    .then((warns) => {
+                                        if (!Array.isArray(warns) || warns.length) return;
+                                        if (previewFrame.querySelector('.theme-artwork-gold-badge')) return;
+                                        previewFrame.style.position = 'relative';
+                                        const medal = document.createElement('div');
+                                        medal.className = 'theme-artwork-gold-badge';
+                                        medal.innerHTML = '<span aria-hidden="true">🏅</span><span>Gold rated</span>';
+                                        medal.setAttribute('role', 'img');
+                                        medal.setAttribute('aria-label', 'Gold rated compatibility');
+                                        medal.title =
+                                            'This theme includes the full set of optional screens we verify for the latest Y1 experience.';
+                                        previewFrame.appendChild(medal);
+                                    })
+                                    .catch(() => {});
                             }
                         },
                         onError: () => {
@@ -3051,6 +3098,34 @@
         }
 
 
+        async function enrichThemesWithCompatibilityMedals(themes) {
+            const warnFn = window.y1ThemeArtworkCompat && typeof window.y1ThemeArtworkCompat.warnings === 'function'
+                ? window.y1ThemeArtworkCompat.warnings
+                : null;
+            if (!warnFn) return;
+            const internals = (themes || []).filter(
+                (t) => t && t.folder && String(t.sourceType || 'internal').toLowerCase() !== 'external'
+            );
+            const batch = 5;
+            for (let i = 0; i < internals.length; i += batch) {
+                const slice = internals.slice(i, i + batch);
+                await Promise.all(
+                    slice.map(async (t) => {
+                        const folder = String(t.folder || '').replace(/^\.\/+/, '');
+                        if (!folder) return;
+                        try {
+                            const enc = folder.split('/').map((seg) => encodeURIComponent(seg)).join('/');
+                            const res = await fetch(`./${enc}/config.json`, { cache: 'no-cache' });
+                            if (!res.ok) return;
+                            const cfg = await res.json();
+                            const warnings = await warnFn((cf, rel) => buildThemeFileUrl(cf, rel), cfg, folder);
+                            if (!warnings.length) t.compatibilityMedal = 'gold';
+                        } catch (_) {}
+                    })
+                );
+            }
+        }
+
         async function load() {
             const grid = document.getElementById('theme-grid')
             const cachedThemes = await tryFetchThemeCache()
@@ -3061,6 +3136,7 @@
                 themes = dedupeThemes(themesSource)
             }
             themes = filterDarkModeVariantListings(themes)
+            await enrichThemesWithCompatibilityMedals(themes);
             themes.sort((a, b) => String(a?.name || '')
                 .localeCompare(String(b?.name || ''), undefined, {
                     sensitivity: 'base',
