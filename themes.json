@@ -618,6 +618,17 @@
             "screenshot": "./LCD/cover.png"
         },
         {
+            "name": "LiquidGlass",
+            "folder": "LiquidGlass",
+            "author": "u/moralesnery",
+            "authorUrl": "https://www.reddit.com/u/moralesnery",
+            "description": "Lightweight take on MacOS \"Liquid Glass\" style for the Y1. Glassification of the icons in a future update :)",
+            "screenshot": "./LiquidGlass/cover.png",
+            "sourceType": "internal",
+            "sortName": "liquidglass",
+            "searchText": "liquidglass lightweight take on macos \"liquid glass\" style for the y1. glassification of the icons in a future update :) u/moralesnery liquidglass"
+        },
+        {
             "name": "LSD Dream",
             "folder": "LSD_Dream",
             "author": "heckhound",
