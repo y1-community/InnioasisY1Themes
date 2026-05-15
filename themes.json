@@ -1231,6 +1231,17 @@
             "screenshot": "./Win95Theme/cover.png"
         },
         {
+            "name": "Win98",
+            "folder": "Win98",
+            "author": "u/moralesnery",
+            "authorUrl": "https://www.reddit.com/u/moralesnery",
+            "description": "Based on Win95 theme. Changed background, colors and fonts to reflect Windows 95 start menu as much as possible (within the theme engine capabilites)",
+            "screenshot": "./Win98/cover.png",
+            "sourceType": "internal",
+            "sortName": "win98",
+            "searchText": "win98 based on win95 theme. changed background, colors and fonts to reflect windows 95 start menu as much as possible (within the theme engine capabilites) u/moralesnery win98"
+        },
+        {
             "name": "Wolverine",
             "folder": "Wolverine",
             "author": "Angel_50000",
