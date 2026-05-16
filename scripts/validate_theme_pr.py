@@ -18,14 +18,14 @@ Rules:
   folder for automatic merge; **additive files under a folder that already exists on base**
   still validate but require maintainer merge).
 - Dangerous/disallowed files are blocked (executables, scripts, etc.). Theme zips may include
-  only canonical ``index.html`` at the theme root or under ``Variants/<look>/<subfolder>/...``
-  (never directly as ``Variants/<look>/index.html``); any other ``.html`` / ``.htm`` entry
-  disables automatic merge (maintainer review). Ingest writes allowed ``index.html`` and skips
-  other markup.
+  only canonical ``index.html`` at the theme root or under ``Variants/<look>/...``
+  (including ``Variants/<look>/index.html``). Extra ``.html`` / ``.htm`` members are stripped
+  on ingest (``process_theme_zips.py``); they do not disable automatic merge. Ingest writes allowed
+  ``index.html`` and skips other markup.
 - New direct theme folders must include config.json + at least one image file.
 - Added zip files are allowed and validated:
   - path-safe entries only (no path traversal/absolute paths)
-  - dangerous file types blocked inside zips; disallowed ``.html`` / ``.htm`` forces manual review
+  - dangerous file types blocked inside zips; stray ``.html`` / ``.htm`` entries are stripped on ingest (not merged)
   - zip must contain one or more theme folders, each with a unique folder name
   - each theme folder in zip must include config.json and image assets
   - root ``config.json`` theme may use images in subfolders that are not another
@@ -791,13 +791,8 @@ def _validate_zip_blob(path: str, blob: bytes) -> tuple[list[str], list[str]]:
         if errors:
             return errors, []
 
-        for bad in ztu.disallowed_theme_markup_zip_members(names_t, theme_keys):
-            manual.append(
-                f"{path}: disallowed HTML entry {bad!r} — only theme `index.html` at the theme root "
-                "or `Variants/<look>/<subfolder>/.../index.html` (not directly under the variant folder) "
-                "is accepted for automatic merge. Remove other `.html`/`.htm` files or repackage with "
-                "https://themes.innioasis.app/upload.html so shells are regenerated."
-            )
+        # Stray markup is stripped when zips extract on main; listing it here used to flip
+        # THEME_PR_AUTO_MERGE_ALLOWED=0 despite harmless extra `.html`/`.htm` blobs in archives.
 
         for key in theme_keys:
             config_entry = "config.json" if key == "." else f"{key}/config.json"

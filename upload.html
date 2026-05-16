@@ -2086,7 +2086,13 @@
         let themeInfoEntries = [];
 
         function normRelPath(p) {
-            return String(p || "").replace(/\\/g, "/").replace(/^\/+/, "");
+            let s = String(p || "").replace(/\\/g, "/").trim();
+            s = s.replace(/^\/+/, "");
+            while (s.startsWith("./")) {
+                s = s.slice(2).trim();
+                s = s.replace(/^\/+/, "");
+            }
+            return s;
         }
 
         /** Collapse duplicated leading folder segments (e.g. Theme/Theme/config.json → Theme/config.json). */
@@ -2452,14 +2458,20 @@
 
         /** Canonical theme index locations (matches scripts/zip_theme_utils.py). */
         function isAllowedPackagedThemeIndexRelPath(rel) {
-            const parts = String(rel || "")
+            const raw = String(rel || "")
                 .split("/")
                 .filter(Boolean);
-            const n = parts.length;
-            if (!n || parts[n - 1].toLowerCase() !== "index.html") return false;
+            if (!raw.length || raw[raw.length - 1].toLowerCase() !== "index.html") return false;
+            /** @type {string[]} */
+            let segs = raw.map((s) => s.toLowerCase());
+            while (segs.length >= 3 && segs[segs.length - 1] === "index.html" && segs[0] === segs[1]) {
+                segs = [segs[0]].concat(segs.slice(2));
+            }
+            const n = segs.length;
             if (n === 1) return true;
-            if (n < 4) return false;
-            return parts[0].toLowerCase() === "variants";
+            if (segs[0] !== "variants") return false;
+            // Variants/<look>/index.html (not bare Variants/index.html).
+            return n >= 3;
         }
 
         function catalogFolderStemsAfterRenames(renames) {
@@ -2514,7 +2526,7 @@
                 if (!isAllowedPackagedThemeIndexRelPath(rel)) {
                     throw new Error(
                         `This theme contains disallowed HTML (${outPath}). Only index.html at the theme root or ` +
-                            `under Variants/<look>/<subfolder>/... (not directly in the variant folder) is allowed. ` +
+                            `under Variants/<look>/... (including Variants/<look>/index.html) is allowed. ` +
                             `Remove extra .html files or rebuild the ZIP with this upload page so shells are regenerated.`
                     );
                 }

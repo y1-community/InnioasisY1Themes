@@ -2912,11 +2912,25 @@
             }
         }
 
-        async function evaluateCardGoldBadge(card, catalogFolder, variantSeg) {
-            if (!card || !catalogFolder || !window.GoldThemeDetect) return;
+        async function evaluateCardGoldBadge(card, galleryThemeEntry, variantSeg, loadedConfig) {
+            if (!card || !window.GoldThemeDetect) return;
             if (typeof window.GoldThemeDetect.evaluateThemeGoldStatus !== 'function') return;
+            const folderRaw = galleryThemeEntry && galleryThemeEntry.folder != null ?
+                galleryThemeEntry.folder :
+                '';
+            const catalogFolder = String(folderRaw).replace(/^\.\/+/, '').trim();
+            if (!catalogFolder) return;
+            const themeProbe = Object.assign({}, galleryThemeEntry || {}, { folder: catalogFolder });
+            if (loadedConfig && typeof loadedConfig === 'object') {
+                const g = loadedConfig.gallery && typeof loadedConfig.gallery === 'object' ?
+                    loadedConfig.gallery :
+                    {};
+                const mr = String(g.compatibilityMedal || '').trim().toLowerCase();
+                if (mr === 'gold') themeProbe.compatibilityMedal = 'gold';
+                else if (mr === 'none') themeProbe.compatibilityMedal = '';
+            }
             const status = await window.GoldThemeDetect.evaluateThemeGoldStatus(
-                { folder: catalogFolder },
+                themeProbe,
                 {
                     buildFileUrl: (cf, rel) => buildThemeFileUrl(cf, rel),
                     variantSegment: String(variantSeg || '').trim(),
@@ -2925,7 +2939,7 @@
             setGalleryCardGoldTitleBadge(card, status.gold);
         }
 
-        function applyGalleryCardPreviewReady(card, cfg, meta, folderPath, variantSeg) {
+        function applyGalleryCardPreviewReady(card, cfg, meta, folderPath, variantSeg, galleryThemeEntry) {
             if (!card || !cfg || !folderPath) return;
             const seg = String(variantSeg || '').trim();
             const cf = effectiveThemeContentFolder(folderPath, seg);
@@ -2934,10 +2948,11 @@
             const diEl = card.querySelector('[data-direct-install-btn]');
             if (dlEl) applyThemeCardDownloadButtonStyles(dlEl, cfg, cf, stack);
             if (diEl) applyThemeCardDownloadButtonStyles(diEl, cfg, cf, stack);
-            void evaluateCardGoldBadge(card, folderPath, seg);
+            const themeWrap = galleryThemeEntry || { folder: folderPath };
+            void evaluateCardGoldBadge(card, themeWrap, seg, cfg);
         }
 
-        function mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, card, variantSeg) {
+        function mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, card, variantSeg, galleryThemeEntry) {
             if (!folderPath || !window.Y1ThemePreview || typeof window.Y1ThemePreview.mountGalleryCardLazy !== 'function') {
                 if (simHost) simHost.style.display = 'none';
                 return;
@@ -2953,7 +2968,7 @@
                         img.style.visibility = 'hidden';
                         img.style.pointerEvents = 'none';
                     }
-                    applyGalleryCardPreviewReady(card, cfg, meta, folderPath, variantSeg);
+                    applyGalleryCardPreviewReady(card, cfg, meta, folderPath, variantSeg, galleryThemeEntry);
                 },
                 onError: () => {
                     if (simHost) simHost.style.display = 'none';
@@ -3140,9 +3155,8 @@
                 if (typeof window.Y1ThemePreview.unmount === 'function') {
                     window.Y1ThemePreview.unmount(simHost);
                 }
-                mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, c, seg);
+                mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, c, seg, theme);
                 void syncDownloadButtonToThemeConfig(seg);
-                void evaluateCardGoldBadge(c, folderPath, seg);
             });
 
             const titleRow = document.createElement('div');
@@ -3278,7 +3292,7 @@
                 } catch (e) {}
                 bd.append(dl, di);
             }
-            mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, c, '');
+            mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, c, '', theme);
             c.append(previewFrame, variantRow, titleRow, d, metricsHost, a, bd);
             c.insertBefore(variantRow, previewFrame);
             if (String(theme.compatibilityMedal || '').toLowerCase() === 'gold') {

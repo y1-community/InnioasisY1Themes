@@ -84,7 +84,16 @@
             .replace(/^\.\/+/, "")
             .replace(/\/+$/, "");
         if (!s || s.includes("..") || s.includes("/")) return "";
+        if (s.length > 240) return "";
         return s;
+    }
+
+    /** Compare stored REAL ratings (0 | 2.5 | 5) to meter values without IEEE noise. */
+    function reactionStoredMatches(userStored, needle) {
+        if (userStored === null || userStored === undefined) return false;
+        return (
+            Math.round(Number(userStored) * 100) === Math.round(Number(needle) * 100)
+        );
     }
 
     function normalizeConsentObject(c) {
@@ -366,11 +375,11 @@
                 btn.type = "button";
                 btn.className = "y1-reaction-btn y1-reaction-btn--" + r.key;
                 btn.dataset.value = String(r.value);
-                if (userR === r.value) btn.classList.add("y1-reaction-btn--active");
+                if (reactionStoredMatches(userR, r.value)) btn.classList.add("y1-reaction-btn--active");
                 btn.innerHTML = r.icon;
                 btn.title = r.label;
                 btn.setAttribute("aria-label", r.label);
-                btn.setAttribute("aria-pressed", userR === r.value ? "true" : "false");
+                btn.setAttribute("aria-pressed", reactionStoredMatches(userR, r.value) ? "true" : "false");
                 if (!shouldSubmitRatings(c)) {
                     btn.disabled = true;
                 } else {

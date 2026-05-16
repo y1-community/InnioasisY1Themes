@@ -7,8 +7,8 @@ root (this script's REPO_ROOT). Root-level ``config.json`` themes may keep
 images in subfolders that are not another theme's directory (same rule as
 ``validate_theme_pr.py``).
 Dangerous file types are blocked during zip scan. ``.htm`` and stray ``.html`` are
-skipped on extract. Allowed ``index.html`` shells (theme root or
-``Variants/<look>/<subfolder>/.../index.html``) are written; other markup is dropped.
+skipped on extract. Allowed ``index.html`` shells (theme root or under
+``Variants/<look>/...`` including ``Variants/<look>/index.html``) are written; other markup is dropped.
 If an incoming zip identity matches an existing catalog/config identity (author +
 title), extraction overwrites that existing theme folder in place; otherwise new
 destination folders must still be unique. Successfully processed zip files are removed.

@@ -4,7 +4,7 @@
 Ignored entries are skipped for theme detection, image presence, and inner-folder collision
 checks. They are still subject to path-safety checks in the caller before filtering.
 Allowed ``index.html`` locations inside a theme folder are the theme root and
-``Variants/<look>/<subfolder>/.../index.html`` (never directly under ``Variants/<look>/``).
+``Variants/<look>/index.html`` (any depth shell under ``Variants/`` ending in ``index.html``).
 """
 
 from __future__ import annotations
@@ -231,17 +231,17 @@ def allowed_theme_index_html_relpath(rel: PurePosixPath) -> bool:
 
     Allowed:
     - ``index.html`` at the theme root.
-    - ``Variants/<look>/<subfolder>/.../index.html`` with at least one path segment
-      between the variant name and ``index.html`` (never ``Variants/<look>/index.html``).
+    - ``Variants/<look>/index.html`` or deeper (``Variants/<look>/<subfolder>/.../index.html``).
     """
     if rel.name.lower() != "index.html":
         return False
     parts = rel.parts
     if len(parts) == 1:
         return True
-    if len(parts) < 4:
+    if parts[0].lower() != "variants":
         return False
-    return parts[0].lower() == "variants"
+    # Variants/<look>/index.html (3 parts minimum) — not bare ``Variants/index.html``.
+    return len(parts) >= 3
 
 
 def is_allowed_theme_index_html_zip_member(name: str, theme_keys: list[str]) -> bool:

@@ -154,10 +154,6 @@
             .trim();
         if (!catalogFolder) return empty;
 
-        if (String(theme.compatibilityMedal || "").toLowerCase() === "gold") {
-            return { gold: true, medal: "gold", checkedFolder: catalogFolder };
-        }
-
         const fileUrlFn =
             options && typeof options.buildFileUrl === "function"
                 ? options.buildFileUrl
@@ -224,16 +220,20 @@
     }
 
     async function annotateOneTheme(t, fileUrlFn) {
-        if (String(t.sourceType || "internal").toLowerCase() === "external") return false;
+        if (String(t.sourceType || "internal").toLowerCase() === "external") {
+            t.compatibilityMedal = "";
+            return false;
+        }
         const folder = String(t.folder || "").replace(/^\.\/+/, "");
-        if (!folder) return false;
+        if (!folder) {
+            t.compatibilityMedal = "";
+            return false;
+        }
 
         const status = await evaluateThemeGoldStatus(t, { buildFileUrl: fileUrlFn });
-        if (status.gold) {
-            t.compatibilityMedal = "gold";
-        } else if (status.medal === "none") {
-            t.compatibilityMedal = "";
-        }
+        // Always sync from evaluated status so stale medals from themes.json / cache cannot
+        // bypass artwork checks or stay gold after compat fails.
+        t.compatibilityMedal = status.gold ? "gold" : "";
         return status.gold;
     }
 

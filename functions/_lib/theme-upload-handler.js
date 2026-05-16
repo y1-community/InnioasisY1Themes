@@ -88,7 +88,9 @@ function sanitizeThemeTitle(value) {
 }
 
 const BLOCKED_DIRECT_FILE_EXTENSIONS = new Set([
-  ".htm", ".html", ".xhtml", ".shtml",
+  ".htm",
+  ".xhtml",
+  ".shtml",
   ".js", ".mjs", ".cjs", ".jsx", ".ts", ".tsx",
   ".php", ".phtml", ".php3", ".php4", ".php5", ".phar",
   ".asp", ".aspx", ".jsp", ".cgi", ".pl", ".py", ".rb",
@@ -125,10 +127,12 @@ const CI_MANIFEST_BASENAMES = new Set(
 );
 
 function normalizedUploadRepoPath(pathValue) {
-  return String(pathValue || "")
-    .replace(/\\/g, "/")
-    .replace(/^\/+/, "")
-    .trim();
+  let path = String(pathValue || "").replace(/\\/g, "/").trim();
+  path = path.replace(/^\/+/, "");
+  while (path.startsWith("./")) {
+    path = path.slice(2);
+  }
+  return path.trim();
 }
 
 function fileSuffixLower(pathValue) {
@@ -137,6 +141,47 @@ function fileSuffixLower(pathValue) {
   const dot = file.lastIndexOf(".");
   if (dot < 0) return "";
   return file.slice(dot);
+}
+
+/**
+ * Theme gallery `index.html` paths allowed for ZIP ingest / validate_theme_pr (must match scripts/zip_theme_utils.py).
+ *
+ * Accepted:
+ * - `ThemeName/index.html`
+ * - `ThemeName/Variants/<look>/index.html` and deeper nesting under `Variants/`.
+ */
+export function allowedGalleryThemeIndexHtmlPath(pathValue) {
+  const normRaw = normalizedUploadRepoPath(pathValue);
+  const normLow = normRaw.toLowerCase();
+  if (!normLow || normLow.includes("..")) return false;
+
+  /** @type {string[]} */
+  let segments = normLow.split("/").filter((seg) => seg && seg !== "." && seg !== "..");
+  if (segments.length < 2) return false;
+
+  const leaf = segments[segments.length - 1];
+  if (leaf !== "index.html") return false;
+
+  // Collapse duplicated leading folder segments (folder-picker / ZIP quirk): Theme/Theme/index.html
+  while (segments.length >= 3 && segments[0] === segments[1]) {
+    segments = [segments[0]].concat(segments.slice(2));
+  }
+
+  const inner = segments.slice(1);
+
+  // Theme-folder-relative path is exactly `index.html`.
+  if (inner.length === 1 && inner[0] === "index.html") {
+    return true;
+  }
+
+  // Variants shells: variants/<look>/index.html (or deeper paths before index.html).
+  if (
+    inner.length >= 3 &&
+    inner[0] === "variants"
+  ) {
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -156,6 +201,10 @@ function shouldOmitFromDirectThemeCommit(pathValue) {
   if (leaf && CI_MANIFEST_BASENAMES.has(leaf)) return true;
 
   const ext = fileSuffixLower(pathValue);
+  if (ext === ".html") {
+    return !allowedGalleryThemeIndexHtmlPath(normRaw);
+  }
+
   if (ext && BLOCKED_DIRECT_FILE_EXTENSIONS.has(ext)) return true;
 
   if (ext === ".yml" || ext === ".yaml") {
@@ -386,7 +435,7 @@ export async function handleUploadPost(request, env) {
         return jsonResponse(
           {
             error:
-              "Nothing left to attach to this pull request: every uploaded path was withheld for repository security (.html/.js/.php/scripts/CI/workflows are not merged). Resubmit theme images, fonts, and config.json.",
+              "Nothing left to attach to this pull request: every uploaded path was withheld for repository security (most HTML besides theme SEO shells, JS/PHP, CI/workflow manifests, infra folders). Theme `ThemeName/index.html` and `Variants/` SEO shells may be merged. Resubmit theme images, fonts, and config.json.",
           },
           400
         );
@@ -521,7 +570,7 @@ export async function handleUploadPost(request, env) {
         ? `- Upload mode: direct file commit (${directCommitted.length} file(s) attached; ${directOmittedForSecurity > 0 ? `${directOmittedForSecurity} path(s) withheld for security` : "no paths withheld"})`
         : `- Package: \`${originalName}\``,
       directOmittedForSecurity > 0
-        ? `- **Security:** withheld ${directOmittedForSecurity} repo path(s) (e.g. HTML/JS/PHP, CI/workflow manifests, or \`scripts\`/\`functions\`/\`.github\`). They may still have been sent to the uploader but were not written to this branch.`
+        ? `- **Security:** withheld ${directOmittedForSecurity} repo path(s) (e.g. stray HTML/markup other than canonical theme \`index.html\`, JS/PHP, CI/workflow manifests, or \`scripts\`/\`functions\`/\`.github\`). They may still have been sent to the uploader but were not written to this branch.`
         : null,
       themeTitle ? `- Title (from config): ${themeTitle}` : null,
       themeAuthor ? `- Author (from config): ${themeAuthor}` : null,

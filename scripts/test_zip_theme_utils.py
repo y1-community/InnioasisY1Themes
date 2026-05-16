@@ -40,15 +40,21 @@ def test_allowed_theme_index_html_relpath_variant_subfolder() -> None:
     assert ztu.allowed_theme_index_html_relpath(PurePosixPath("Variants/Dark/preview/index.html")) is True
 
 
-def test_allowed_theme_index_html_relpath_rejects_direct_variant_index() -> None:
+def test_allowed_theme_index_html_relpath_allows_variant_root_index() -> None:
     from pathlib import PurePosixPath
 
-    assert ztu.allowed_theme_index_html_relpath(PurePosixPath("Variants/Dark/index.html")) is False
+    assert ztu.allowed_theme_index_html_relpath(PurePosixPath("Variants/Dark/index.html")) is True
+
+
+def test_allowed_theme_index_html_relpath_rejects_bare_variants_index() -> None:
+    from pathlib import PurePosixPath
+
+    assert ztu.allowed_theme_index_html_relpath(PurePosixPath("Variants/index.html")) is False
 
 
 def test_is_allowed_theme_index_html_zip_member() -> None:
     keys = ["Tomodachi_Life"]
     assert ztu.is_allowed_theme_index_html_zip_member("Tomodachi_Life/index.html", keys) is True
     assert ztu.is_allowed_theme_index_html_zip_member("Tomodachi_Life/Variants/Look/_share/index.html", keys) is True
-    assert ztu.is_allowed_theme_index_html_zip_member("Tomodachi_Life/Variants/Look/index.html", keys) is False
+    assert ztu.is_allowed_theme_index_html_zip_member("Tomodachi_Life/Variants/Look/index.html", keys) is True
     assert ztu.is_allowed_theme_index_html_zip_member("Tomodachi_Life/other.html", keys) is False

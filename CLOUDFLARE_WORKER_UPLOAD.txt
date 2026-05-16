@@ -7,7 +7,7 @@ Use the build script below — do not use plain `npx wrangler deploy` at repo ro
 Workers & Pages → y1-theme-upload → Settings → Builds & deployments
 -------------------------------------------------------------------
 
-  Root directory:     (leave EMPTY — not "/" and not "/workers/theme-upload")
+  Root directory:     (repository root — leave empty/default so `scripts/` resolves)
 
   Build command:        node scripts/deploy-upload-worker.mjs
 
@@ -18,6 +18,12 @@ Workers & Pages → y1-theme-upload → Settings → Builds & deployments
 Why: Deploy runs in a step that often does not see wrangler.toml. Running our deploy
 script during **Build** runs while the full Git clone is present.
 
+⚠ Fatal misconfiguration seen in CI: Deploy command **`npx wrangler deploy`** (no config)
+against this repository root discovers `functions/`, guesses **Workers Static + assets `.` ,
+node_modules)** and fails with **"Asset too large"** (~workerd binary in node_modules).
+
+  Fix that failure by NEVER using bare `npx wrangler deploy` at repo root for this project.
+
 Alternative (if you prefer deploy in the Deploy step):
 
   Build command:        exit 0
@@ -26,8 +32,10 @@ Alternative (if you prefer deploy in the Deploy step):
 
   (or: npm run deploy)
 
-Do NOT use plain `npx wrangler deploy` unless Root directory is workers/theme-upload
-AND you only use `npx wrangler deploy` with no --config path.
+Do NOT use plain `npx wrangler deploy` at repository root.
+
+If Wrangler insists on scaffolding: set **Workers project → Root directory** to a minimal
+subdir that contains only Worker files (recommended: keep Deploy as **`exit 0`** anyway).
 
 Free plan note
 --------------

@@ -9,7 +9,6 @@ export const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "Content-Type",
 };
 
-const THEME_KEY_RE = /^[a-zA-Z0-9][a-zA-Z0-9._\- &()'+!]{0,118}[a-zA-Z0-9.()]?$/;
 const EVENTS = new Set(["page_view", "zip_download", "direct_install"]);
 const SOURCES = new Set(["gallery", "theme_page", "theme_lookup", "other"]);
 
@@ -155,7 +154,8 @@ export function normalizeThemeKey(raw) {
     .replace(/^\.\/+/, "")
     .replace(/\/+$/, "");
   if (!s || s.includes("..") || s.includes("/")) return "";
-  if (!THEME_KEY_RE.test(s)) return "";
+  // Match gallery folder names allowed on disk (slashes already rejected).
+  if (s.length > 240) return "";
   return s;
 }
 
