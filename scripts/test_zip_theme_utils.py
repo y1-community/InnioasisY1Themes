@@ -58,3 +58,11 @@ def test_is_allowed_theme_index_html_zip_member() -> None:
     assert ztu.is_allowed_theme_index_html_zip_member("Tomodachi_Life/Variants/Look/_share/index.html", keys) is True
     assert ztu.is_allowed_theme_index_html_zip_member("Tomodachi_Life/Variants/Look/index.html", keys) is True
     assert ztu.is_allowed_theme_index_html_zip_member("Tomodachi_Life/other.html", keys) is False
+
+
+def test_pr_clean_allowlist_duplicate_theme_folder_index_path() -> None:
+    """CI clean-tree helper must tolerate doubled folder segments like the upload Worker."""
+    import require_pr_workspace_clean as rpw
+
+    assert rpw.seo_theme_repo_index_shell_path("Green_Apples/Green_Apples/index.html") is True
+    assert rpw.seo_theme_repo_index_shell_path("Foo/Variants/Renton/index.html") is True

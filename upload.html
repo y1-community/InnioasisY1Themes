@@ -573,6 +573,89 @@
 </head>
 
 <body>
+    <!-- Filled serverlessly in injectThemeSeoShellsIntoZip; mirrors theme.html SEO head + crawler-friendly redirect shells. -->
+    <template id="y1-theme-seo-index-shell">
+<!DOCTYPE html>
+<html lang="en" data-themes-preview-redirect="__Y1_DATA_REDIRECT__">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#17191f" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="themes-preview-base-path" content="" />
+    <title>__Y1_TITLE__</title>
+    <meta name="description" content="__Y1_META_DESC__" />
+    <meta name="keywords" content="__Y1_KEYWORDS__" />
+    <meta name="author" content="__Y1_AUTHOR__" />
+    <meta name="robots" content="__Y1_META_ROBOTS__" />
+    <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
+
+    <link rel="canonical" href="__Y1_CANONICAL__" />
+    <link rel="icon" href="https://themes.innioasis.app/y1_illustration.png" />
+
+    <script>
+        (function () {
+            function destFromEmbed() {
+                try {
+                    var h = document.documentElement;
+                    var a = h && h.getAttribute("data-themes-preview-redirect");
+                    if (a) return String(a).trim();
+                    var c = document.querySelector('link[rel="canonical"]');
+                    if (c && c.href) return String(c.href).trim();
+                } catch (e) {}
+                return "";
+            }
+            var dest = destFromEmbed();
+            if (dest) {
+                try { location.replace(dest); } catch (e) {}
+            }
+        })();
+    </script>
+
+    <meta http-equiv="refresh" content="0;url=__Y1_REFRESH_URL__" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Innioasis Y1 Themes" />
+    <meta property="og:title" content="__Y1_TITLE__" />
+    <meta property="og:description" content="__Y1_META_DESC__" />
+    <meta property="og:url" content="__Y1_CANONICAL__" />
+    <meta property="og:image" content="__Y1_OG_IMAGE__" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="__Y1_TITLE__" />
+    <meta name="twitter:description" content="__Y1_META_DESC__" />
+    <meta name="twitter:image" content="__Y1_OG_IMAGE__" />
+
+    <script type="application/ld+json">__Y1_JSON_LD__</script>
+</head>
+<body>
+    <main style="font-family:system-ui,Segoe UI,sans-serif;max-width:28rem;margin:2.5rem auto;padding:0 1.25rem;color:#eaeef7;background:#0f1116;min-height:100vh;">
+        <p style="margin:0 0 1rem 0;font-size:0.9rem;color:#8b95a8;">Opening the live preview...</p>
+        <button type="button" id="theme-seo-copy" data-copy-url="__Y1_SHARE_URL_DATA__" style="margin:0 0 1rem 0;padding:0.5rem 1rem;border-radius:999px;border:1px solid rgba(255,255,255,0.18);background:rgba(255,255,255,0.06);color:#eaf0ff;font:inherit;cursor:pointer;">Copy page link</button>
+        <h1 style="font-size:1.35rem;font-weight:650;margin:0 0 0.5rem 0;">__Y1_DISPLAY_NAME____Y1_VARIANT_HEADING__</h1>
+        <p style="margin:0 0 0.35rem 0;font-size:0.92rem;color:#aeb6c5;">__Y1_AUTHOR__</p>
+        <p style="line-height:1.5;color:#aeb6c5;">__Y1_META_DESC__</p>
+        <p style="margin-top:1.25rem;"><a href="__Y1_PREVIEW_HREF__" style="color:#8ec5ff;font-weight:600;text-decoration:none;">Open preview</a></p>
+    </main>
+    <script>
+        (function () {
+            var btn = document.getElementById("theme-seo-copy");
+            if (!btn) return;
+            btn.addEventListener("click", function () {
+                var u = btn.getAttribute("data-copy-url");
+                if (!u) return;
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(u).then(function () {
+                        btn.textContent = "Copied";
+                    }).catch(function () {});
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
+    </template>
+
     <div id="nav-root"></div>
     <div class="gallery-topbar">
         <div aria-hidden="true"></div>
@@ -2526,8 +2609,9 @@
                 if (!isAllowedPackagedThemeIndexRelPath(rel)) {
                     throw new Error(
                         `This theme contains disallowed HTML (${outPath}). Only index.html at the theme root or ` +
-                            `under Variants/<look>/... (including Variants/<look>/index.html) is allowed. ` +
-                            `Remove extra .html files or rebuild the ZIP with this upload page so shells are regenerated.`
+                            `under Variants/<look>/… (including Variants/<look>/index.html) is allowed. ` +
+                            `Author-supplied canonical index.html files are removed during packaging and replaced ` +
+                            `with generated SEO shells; remove any other .html/.htm files.`
                     );
                 }
             }
@@ -3379,10 +3463,49 @@
             setStatus("Theme information update was submitted, but we could not return a tracking link.", true);
         }
 
+        /** @typedef {{ titleE:string, previewE:string, previewHref:string, description:string, keywords:string, authorE:string, refreshAttr:string, shareE:string, ogImageE:string, jsonLdSafe:string, dispE:string, variantHeading:string }} ThemeSeoIndexVars */
+
+        /**
+         * Filled from `#y1-theme-seo-index-shell`; mirrors ``theme.html`` head SEO (+ redirect shells for crawler UX).
+         * @param {ThemeSeoIndexVars} v
+         */
+        function buildThemeFolderSeoIndexHtmlFromTemplate(v) {
+            const tpl = /** @type {HTMLTemplateElement | null} */ (document.getElementById("y1-theme-seo-index-shell"));
+            const raw = tpl && tpl.innerHTML ? tpl.innerHTML.trim() : "";
+            if (!raw) {
+                throw new Error('Missing embedded template "#y1-theme-seo-index-shell". Cannot generate theme index.html shells.');
+            }
+            const reps = /** @type {Record<string, string>} */ ({
+                __Y1_DATA_REDIRECT__: v.previewE,
+                __Y1_TITLE__: v.titleE,
+                __Y1_META_DESC__: v.description,
+                __Y1_KEYWORDS__: v.keywords,
+                __Y1_AUTHOR__: v.authorE,
+                __Y1_META_ROBOTS__: "index,follow",
+                __Y1_CANONICAL__: v.previewE,
+                __Y1_REFRESH_URL__: v.refreshAttr,
+                __Y1_OG_IMAGE__: v.ogImageE,
+                __Y1_SHARE_URL_DATA__: v.shareE,
+                __Y1_JSON_LD__: v.jsonLdSafe,
+                __Y1_DISPLAY_NAME__: v.dispE,
+                __Y1_VARIANT_HEADING__: v.variantHeading,
+                __Y1_PREVIEW_HREF__: v.previewHref,
+            });
+            let html = raw;
+            for (const token of Object.keys(reps)) {
+                html = html.split(token).join(reps[token]);
+            }
+            return html;
+        }
+
         /**
          * SEO landing pages (per theme + per variant) are written here in the browser so CI ingest
          * does not need to regenerate hundreds of index.html files (avoids merge races).
-         * Variant shells live under ``Variants/<name>/_share/index.html`` (never directly in the variant folder).
+         * Variant shells include ``Variants/<name>/_share/index.html`` and a mirrored
+         * ``Variants/<name>/index.html`` so uploads replace author HTML at either location.
+         * Any author ``index.html`` under those canonical paths is dropped during ZIP build
+         * (markup stripping), then unconditionally overwritten here with this template so
+         * every theme ships the same redirect + structured-data shell as ``theme.html`` SEO.
          * Site-wide sitemap.xml is still refreshed on a schedule (generate-sitemap.yml), not per upload.
          */
         async function injectThemeSeoShellsIntoZip(outputZip, renames) {
@@ -3392,7 +3515,6 @@
             const SITE = "https://themes.innioasis.app";
             /** Reserved under each variant; never place index.html directly in the variant folder. */
             const VARIANT_SEO_SUBDIR = "_share";
-            const _cs = "<" + "/" + "script>";
             const pathKeys = Object.keys(outputZip.files || {}).filter((k) => {
                 const o = outputZip.files[k];
                 return o && !o.dir;
@@ -3498,17 +3620,54 @@
                         ].filter(Boolean)
                     );
                     const keywords = escapeHtml([...kw].sort((a, b) => a.localeCompare(b)).join(", "));
+                    const appDesc = `${rawDesc}${variantNote}`.trim();
+                    const faqExplain =
+                        appDesc.length <= 900 ? appDesc : `${appDesc.slice(0, 897)}...`;
                     const jsonLd = {
                         "@context": "https://schema.org",
-                        "@type": "SoftwareApplication",
-                        name: title,
-                        description: `${rawDesc}${variantNote}`,
-                        applicationCategory: "MultimediaApplication",
-                        operatingSystem: "Innioasis Y1",
-                        offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-                        url: previewUrl,
-                        image: ogImageUrl,
-                        author: { "@type": "Person", name: author },
+                        "@graph": [
+                            {
+                                "@type": "SoftwareApplication",
+                                name: title,
+                                description: appDesc,
+                                applicationCategory: "MultimediaApplication",
+                                operatingSystem: "Innioasis Y1",
+                                offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+                                url: previewUrl,
+                                image: ogImageUrl,
+                                author: { "@type": "Person", name: author },
+                                publisher: {
+                                    "@type": "Organization",
+                                    name: "Innioasis Community",
+                                    url: "https://innioasis.app",
+                                },
+                            },
+                            {
+                                "@type": "FAQPage",
+                                mainEntity: [
+                                    {
+                                        "@type": "Question",
+                                        name: `Where can I preview the ${displayName} Innioasis Y1 theme${
+                                            variant ? ` (${variant})` : ""
+                                        }?`,
+                                        acceptedAnswer: {
+                                            "@type": "Answer",
+                                            text: `Open the Innioasis Y1 themes gallery preview: ${previewUrl}.`,
+                                        },
+                                    },
+                                    {
+                                        "@type": "Question",
+                                        name: `What is the ${displayName} theme on Innioasis Y1?`,
+                                        acceptedAnswer: {
+                                            "@type": "Answer",
+                                            text:
+                                                faqExplain ||
+                                                `A community UI theme for Innioasis Y1 media players.`,
+                                        },
+                                    },
+                                ],
+                            },
+                        ],
                     };
                     const jsonLdSafe = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
 
@@ -3523,92 +3682,30 @@
                         ? ` <span style="opacity:.85;font-weight:500">(${varE})</span>`
                         : "";
 
-                    const outPath = variant
-                        ? `${catalogFolder}/Variants/${variant}/${VARIANT_SEO_SUBDIR}/index.html`
-                        : `${catalogFolder}/index.html`;
+                    const html = buildThemeFolderSeoIndexHtmlFromTemplate({
+                        titleE,
+                        previewE,
+                        previewHref: previewE,
+                        description,
+                        keywords,
+                        authorE,
+                        refreshAttr,
+                        shareE,
+                        ogImageE,
+                        jsonLdSafe,
+                        dispE,
+                        variantHeading,
+                    });
 
-                    const html =
-                        "<!DOCTYPE html>\n" +
-                        `<html lang="en" data-themes-preview-redirect="${previewE}">\n` +
-                        "<head>\n" +
-                        '  <meta charset="utf-8" />\n' +
-                        '  <meta name="viewport" content="width=device-width,initial-scale=1" />\n' +
-                        '  <meta name="themes-preview-base-path" content="" />\n' +
-                        `  <title>${titleE}</title>\n` +
-                        `  <meta name="description" content="${description}" />\n` +
-                        `  <meta name="keywords" content="${keywords}" />\n` +
-                        `  <meta name="author" content="${authorE}" />\n` +
-                        '  <meta name="robots" content="index,follow" />\n' +
-                        `  <link rel="canonical" href="${previewE}" />\n` +
-                        "  <" +
-                        "script>\n" +
-                        "(function () {\n" +
-                        "  function destFromEmbed() {\n" +
-                        "    try {\n" +
-                        "      var h = document.documentElement;\n" +
-                        "      var a = h && h.getAttribute('data-themes-preview-redirect');\n" +
-                        "      if (a) return String(a).trim();\n" +
-                        "      var c = document.querySelector('link[rel=\"canonical\"]');\n" +
-                        "      if (c && c.href) return String(c.href).trim();\n" +
-                        "    } catch (e) {}\n" +
-                        "    return '';\n" +
-                        "  }\n" +
-                        "  var dest = destFromEmbed();\n" +
-                        "  if (dest) {\n" +
-                        "    try { location.replace(dest); } catch (e) {}\n" +
-                        "  }\n" +
-                        "})();\n" +
-                        "  " +
-                        _cs +
-                        "\n" +
-                        `  <meta http-equiv="refresh" content="0;url=${refreshAttr}" />\n\n` +
-                        '  <meta property="og:type" content="website" />\n' +
-                        '  <meta property="og:site_name" content="Innioasis Y1 Themes" />\n' +
-                        `  <meta property="og:title" content="${titleE}" />\n` +
-                        `  <meta property="og:description" content="${description}" />\n` +
-                        `  <meta property="og:url" content="${previewE}" />\n` +
-                        `  <meta property="og:image" content="${ogImageE}" />\n\n` +
-                        '  <meta name="twitter:card" content="summary_large_image" />\n' +
-                        `  <meta name="twitter:title" content="${titleE}" />\n` +
-                        `  <meta name="twitter:description" content="${description}" />\n` +
-                        `  <meta name="twitter:image" content="${ogImageE}" />\n\n` +
-                        '  <' +
-                        'script type="application/ld+json">' +
-                        jsonLdSafe +
-                        _cs +
-                        "\n" +
-                        "</head>\n" +
-                        "<body>\n" +
-                        '  <main style="font-family:system-ui,Segoe UI,sans-serif;max-width:28rem;margin:2.5rem auto;padding:0 1.25rem;color:#eaeef7;background:#0f1116;min-height:100vh;">\n' +
-                        '    <p style="margin:0 0 1rem 0;font-size:0.9rem;color:#8b95a8;">Opening the live preview...</p>\n' +
-                        `    <button type="button" id="theme-seo-copy" data-copy-url="${shareE}" style="margin:0 0 1rem 0;padding:0.5rem 1rem;border-radius:999px;border:1px solid rgba(255,255,255,0.18);background:rgba(255,255,255,0.06);color:#eaf0ff;font:inherit;cursor:pointer;">Copy page link</button>\n` +
-                        `    <h1 style="font-size:1.35rem;font-weight:650;margin:0 0 0.5rem 0;">${dispE}${variantHeading}</h1>\n` +
-                        `    <p style="margin:0 0 0.35rem 0;font-size:0.92rem;color:#aeb6c5;">${authorE}</p>\n` +
-                        `    <p style="line-height:1.5;color:#aeb6c5;">${description}</p>\n` +
-                        `    <p style="margin-top:1.25rem;"><a href="${previewE}" style="color:#8ec5ff;font-weight:600;text-decoration:none;">Open preview</a></p>\n` +
-                        "  </main>\n" +
-                        "  <" +
-                        "script>\n" +
-                        "(function () {\n" +
-                        "  var btn = document.getElementById('theme-seo-copy');\n" +
-                        "  if (!btn) return;\n" +
-                        "  btn.addEventListener('click', function () {\n" +
-                        "    var u = btn.getAttribute('data-copy-url');\n" +
-                        "    if (!u) return;\n" +
-                        "    if (navigator.clipboard && navigator.clipboard.writeText) {\n" +
-                        "      navigator.clipboard.writeText(u).then(function () {\n" +
-                        "        btn.textContent = 'Copied';\n" +
-                        "      }).catch(function () {});\n" +
-                        "    }\n" +
-                        "  });\n" +
-                        "})();\n" +
-                        "  " +
-                        _cs +
-                        "\n" +
-                        "</body>\n" +
-                        "</html>\n";
-
-                    outputZip.file(outPath, html);
+                    if (variant) {
+                        outputZip.file(
+                            `${catalogFolder}/Variants/${variant}/${VARIANT_SEO_SUBDIR}/index.html`,
+                            html,
+                        );
+                        outputZip.file(`${catalogFolder}/Variants/${variant}/index.html`, html);
+                    } else {
+                        outputZip.file(`${catalogFolder}/index.html`, html);
+                    }
                 }
             }
         }

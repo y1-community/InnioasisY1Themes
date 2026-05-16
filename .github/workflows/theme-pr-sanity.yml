@@ -52,14 +52,8 @@ jobs:
         if: ${{ steps.prkind.outputs.kind != 'zip_only' }}
         run: python scripts/sync_theme_metadata.py --check-theme-indexes
 
-      - name: Ensure generated metadata is committed
+      # Canonical theme index.html churn (including Theme/Theme/index.html quirks) is ignored here;
+      # sync_theme_metadata output for themes.json / config.json still must be committed.
+      - name: Ensure generated metadata is committed (allow drift on canonical theme index.html shells only)
         if: ${{ steps.prkind.outputs.kind != 'zip_only' }}
-        run: |
-          set -e
-          if [[ -n "$(git status --porcelain)" ]]; then
-            echo "Generated metadata/index updates are missing from this PR:"
-            git status --short
-            echo
-            echo "Run scripts/sync_theme_metadata.py locally and commit the resulting changes."
-            exit 1
-          fi
+        run: python scripts/require_pr_workspace_clean.py
