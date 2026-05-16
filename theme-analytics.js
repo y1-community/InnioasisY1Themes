@@ -25,6 +25,10 @@
     };
 
     const statsCache = new Map();
+    /** Gallery has 100+ themes; batch + session cache keeps Worker usage under Free-tier limits. */
+    const STATS_SESSION_CACHE_KEY = "y1-theme-stats-batch-v1";
+    const STATS_SESSION_CACHE_TTL_MS = 10 * 60 * 1000;
+    const STATS_FETCH_CHUNK = 80;
     const REACTIONS = [
         { key: "down", value: 0, label: "Thumbs down", icon: "&#128078;" },
         { key: "up", value: 2.5, label: "Thumbs up", icon: "&#128077;" },
@@ -231,6 +235,35 @@
         }
     }
 
+    function hydrateStatsCacheFromSession() {
+        try {
+            const raw = sessionStorage.getItem(STATS_SESSION_CACHE_KEY);
+            if (!raw) return;
+            const parsed = JSON.parse(raw);
+            if (!parsed || typeof parsed !== "object") return;
+            const ts = Number(parsed.ts) || 0;
+            if (!ts || Date.now() - ts > STATS_SESSION_CACHE_TTL_MS) return;
+            const themes = parsed.themes;
+            if (!themes || typeof themes !== "object") return;
+            for (const k of Object.keys(themes)) {
+                const key = normalizeThemeKey(k);
+                if (!key) continue;
+                statsCache.set(key, normalizeStats(themes[k]));
+            }
+        } catch (_) {}
+    }
+
+    function persistStatsCacheToSession() {
+        try {
+            const themes = {};
+            for (const [k, v] of statsCache.entries()) themes[k] = v;
+            sessionStorage.setItem(
+                STATS_SESSION_CACHE_KEY,
+                JSON.stringify({ ts: Date.now(), themes }),
+            );
+        } catch (_) {}
+    }
+
     async function fetchStatsChunk(missing) {
         if (!missing.length || !apiUrl("/api/theme-stats")) return;
         const q = new URLSearchParams();
@@ -247,16 +280,17 @@
             for (const k of missing) {
                 statsCache.set(k, normalizeStats(themes[k]));
             }
+            persistStatsCacheToSession();
         } catch (_) {}
     }
 
     async function fetchStatsMap(themeKeys) {
+        hydrateStatsCacheFromSession();
         const keys = [...new Set(themeKeys.map(normalizeThemeKey).filter(Boolean))];
         if (!keys.length) return {};
         const missing = keys.filter((k) => !statsCache.has(k));
-        const CHUNK = 40;
-        for (let i = 0; i < missing.length; i += CHUNK) {
-            await fetchStatsChunk(missing.slice(i, i + CHUNK));
+        for (let i = 0; i < missing.length; i += STATS_FETCH_CHUNK) {
+            await fetchStatsChunk(missing.slice(i, i + STATS_FETCH_CHUNK));
         }
         const out = {};
         for (const k of keys) {
@@ -422,6 +456,7 @@
         if (!key || !el) return;
         if (!metricsHosts.has(key)) metricsHosts.set(key, new Set());
         metricsHosts.get(key).add(el);
+        renderMetricsInto(el, statsCache.get(key) || emptyStats(), key);
     }
 
     function refreshMetricsHosts(themeKey) {
@@ -563,7 +598,11 @@
 
         settingsBtn.addEventListener("click", () => {
             syncPanelFromConsent();
+            const opening = !panel.classList.contains("y1-privacy-panel--open");
             panel.classList.toggle("y1-privacy-panel--open");
+            if (opening && !loadConsent().decided) {
+                void hydrateConsentFromServer().then(syncPanelFromConsent);
+            }
         });
 
         panel.querySelector(".y1-privacy-save").addEventListener("click", () => {
@@ -595,9 +634,6 @@
     function initConsent() {
         const start = () => {
             ensureConsentDom();
-            void hydrateConsentFromServer().then(() => {
-                global.dispatchEvent(new CustomEvent("y1-consent-changed"));
-            });
         };
         if (document.body) {
             start();
@@ -636,6 +672,7 @@
         trackPageView,
         trackZipDownload,
         trackDirectInstall,
+        registerMetricsHost,
         mountMetrics,
         mountMetricsBatch,
         fetchStatsMap,
@@ -648,11 +685,7 @@
         hasApi: () => !!readMetaOrigin(),
     };
 
-    global.addEventListener("y1-consent-changed", async () => {
-        const keys = [...metricsHosts.keys()];
-        if (!keys.length) return;
-        statsCache.clear();
-        await fetchStatsMap(keys);
-        for (const key of keys) refreshMetricsHosts(key);
+    global.addEventListener("y1-consent-changed", () => {
+        for (const key of metricsHosts.keys()) refreshMetricsHosts(key);
     });
 })(typeof window !== "undefined" ? window : globalThis);
