@@ -3196,7 +3196,7 @@
             metricsHost.className = 'y1-theme-metrics y1-theme-metrics--card';
             metricsHost.dataset.cardMetrics = '1';
             if (folderPath && window.ThemeAnalytics) {
-                window.ThemeAnalytics.registerMetricsHost(metricsHost, folderPath);
+                window.ThemeAnalytics.registerMetricsHost(folderPath, metricsHost);
             }
 
             const a = document.createElement('div');
