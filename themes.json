@@ -555,6 +555,17 @@
             "screenshot": "./iOS26Theme/gregcover.png"
         },
         {
+            "name": "IOS Theme",
+            "folder": "IOS_Theme_me",
+            "author": "Me",
+            "authorUrl": "https://github.com/ope-nz",
+            "description": "Customize your Innioasis Y1 with the IOS Theme theme.",
+            "screenshot": "./IOS_Theme_me/gregcover.png",
+            "sourceType": "internal",
+            "sortName": "ios theme",
+            "searchText": "ios theme customize your innioasis y1 with the ios theme theme. me ios_theme_me"
+        },
+        {
             "name": "iPod-ish",
             "folder": "iPod-ish",
             "sourceType": "internal",
