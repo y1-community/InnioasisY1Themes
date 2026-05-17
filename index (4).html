@@ -91,7 +91,7 @@
         <div class="section-div">
             <h2>Donate</h2>
             <p id="donate-intro" style="text-align: center; color: var(--text-secondary); margin-bottom: 2rem;">
-                Support development and help Ryan's growing family via the Baby Wishlist.
+                The Y1 Themes site is a community-run hobby project. Hosting and upkeep cost real money—optional donations help keep it online.
             </p>
 
             <div class="donate-options">
@@ -109,16 +109,6 @@
                             <option>Ethereum / Arbitrum / Optimism</option>
                         </select>
                         <div id="ryanMethodContent"></div>
-                    </div>
-                </div>
-
-                <div id="baby-wishlist-card" class="donate-card" style="display: flex; flex-direction: column; justify-content: space-between;">
-                    <div>
-                        <h3>Baby Wishlist</h3>
-                        <p>Ryan and his partner are expecting a baby in December. If you'd like to help with the new addition to the family, gifts from the wishlist are deeply appreciated.</p>
-                    </div>
-                    <div style="display: flex; justify-content: right;">
-                        <a href="https://www.amazon.co.uk/baby-reg/kayla-mallett-ryan-specter-november-2026-norwich/26D94K25Z5HWD" class="btn btn-primary" style="color: white; padding: 2px 15px; display:flex; align-items: center; gap:.5rem;"><span style="font-size: 16px;">👶</span>Open Baby Wishlist</a>
                     </div>
                 </div>
 
@@ -274,20 +264,9 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             const sel = document.getElementById('ryanMethods');
-            const babyCard = document.getElementById('baby-wishlist-card');
-            const donateIntro = document.getElementById('donate-intro');
             if (sel) {
                 sel.addEventListener('change', updateRyanMethod);
                 updateRyanMethod();
-            }
-            if (babyCard) {
-                const showBabyCard = Math.random() < 0.5;
-                babyCard.style.display = showBabyCard ? 'flex' : 'none';
-                if (donateIntro) {
-                    donateIntro.textContent = showBabyCard
-                        ? "Support development and help Ryan's growing family via the Baby Wishlist."
-                        : "Support development and ongoing work on Innioasis Updater and the themes ecosystem.";
-                }
             }
         });
 
