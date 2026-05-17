@@ -309,7 +309,9 @@
         const gold = list.filter((t) => String(t.compatibilityMedal || "").toLowerCase() === "gold");
         gold.sort((a, b) =>
             String(a.name || a.folder || "").localeCompare(String(b.name || b.folder || ""), undefined, {
-                sensitivity: "base",
+                sensitivity: "accent",
+                ignorePunctuation: true,
+                numeric: true,
             }),
         );
         return gold;

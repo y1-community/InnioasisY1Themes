@@ -765,6 +765,34 @@
             };
         }
 
+        const themeTitleCollator = new Intl.Collator(undefined, {
+            sensitivity: 'accent',
+            ignorePunctuation: true,
+            numeric: true
+        });
+
+        /** Strip leading brackets/symbols so "[NIИ] stuff" sorts under N, not before A. */
+        function themeTitleSortKey(name) {
+            const s = String(name || '').trim();
+            if (!s) return '';
+            const stripped = s.replace(/^[\p{P}\p{S}\p{Z}\p{C}]+/u, '');
+            return stripped || s;
+        }
+
+        function compareThemeTitles(a, b, direction) {
+            const keyA = themeTitleSortKey(a);
+            const keyB = themeTitleSortKey(b);
+            let cmp = themeTitleCollator.compare(keyA, keyB);
+            if (cmp === 0) {
+                cmp = themeTitleCollator.compare(String(a || '').trim(), String(b || '').trim());
+            }
+            return direction === 'desc' ? -cmp : cmp;
+        }
+
+        function compareAuthorNames(a, b) {
+            return themeTitleCollator.compare(themeTitleSortKey(a), themeTitleSortKey(b));
+        }
+
         const searchInput = document.getElementById('theme-search');
         const sourceFilter = document.getElementById('source-filter');
         const authorFilter = document.getElementById('author-filter');
@@ -867,7 +895,7 @@
                 (themes || [])
                     .map((t) => safeText(t.author || '').trim())
                     .filter(Boolean)
-            )].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+            )].sort((a, b) => compareAuthorNames(a, b));
             for (const a of authors) {
                 const opt = document.createElement('option');
                 opt.value = a;
@@ -905,19 +933,19 @@
             }
 
             matched.sort((a, b) => {
-                const nameA = String(a.getAttribute('data-name') || '').toLowerCase();
-                const nameB = String(b.getAttribute('data-name') || '').toLowerCase();
-                const authorA = String(a.getAttribute('data-author') || '').toLowerCase();
-                const authorB = String(b.getAttribute('data-author') || '').toLowerCase();
-                if (sortV === 'name_desc') return nameB.localeCompare(nameA);
-                if (sortV === 'author_asc') return authorA.localeCompare(authorB) || nameA.localeCompare(nameB);
-                if (sortV === 'views_desc') return cardMetric(b, 'data-views') - cardMetric(a, 'data-views') || nameA.localeCompare(nameB);
-                if (sortV === 'views_asc') return cardMetric(a, 'data-views') - cardMetric(b, 'data-views') || nameA.localeCompare(nameB);
-                if (sortV === 'downloads_desc') return cardMetric(b, 'data-downloads') - cardMetric(a, 'data-downloads') || nameA.localeCompare(nameB);
-                if (sortV === 'downloads_asc') return cardMetric(a, 'data-downloads') - cardMetric(b, 'data-downloads') || nameA.localeCompare(nameB);
-                if (sortV === 'rating_desc') return cardMetric(b, 'data-rating') - cardMetric(a, 'data-rating') || nameA.localeCompare(nameB);
-                if (sortV === 'rating_asc') return cardMetric(a, 'data-rating') - cardMetric(b, 'data-rating') || nameA.localeCompare(nameB);
-                return nameA.localeCompare(nameB);
+                const nameA = String(a.getAttribute('data-name') || '');
+                const nameB = String(b.getAttribute('data-name') || '');
+                const authorA = String(a.getAttribute('data-author') || '');
+                const authorB = String(b.getAttribute('data-author') || '');
+                if (sortV === 'name_desc') return compareThemeTitles(nameA, nameB, 'desc');
+                if (sortV === 'author_asc') return compareAuthorNames(authorA, authorB) || compareThemeTitles(nameA, nameB);
+                if (sortV === 'views_desc') return cardMetric(b, 'data-views') - cardMetric(a, 'data-views') || compareThemeTitles(nameA, nameB);
+                if (sortV === 'views_asc') return cardMetric(a, 'data-views') - cardMetric(b, 'data-views') || compareThemeTitles(nameA, nameB);
+                if (sortV === 'downloads_desc') return cardMetric(b, 'data-downloads') - cardMetric(a, 'data-downloads') || compareThemeTitles(nameA, nameB);
+                if (sortV === 'downloads_asc') return cardMetric(a, 'data-downloads') - cardMetric(b, 'data-downloads') || compareThemeTitles(nameA, nameB);
+                if (sortV === 'rating_desc') return cardMetric(b, 'data-rating') - cardMetric(a, 'data-rating') || compareThemeTitles(nameA, nameB);
+                if (sortV === 'rating_asc') return cardMetric(a, 'data-rating') - cardMetric(b, 'data-rating') || compareThemeTitles(nameA, nameB);
+                return compareThemeTitles(nameA, nameB);
             });
             const grid = document.getElementById('theme-grid');
             if (grid) {
@@ -1289,7 +1317,7 @@
 
             return discovered
                 .filter(Boolean)
-                .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+                .sort((a, b) => compareThemeTitles(a.name, b.name));
         }
 
         function mergeDiscoveredWithCached(discovered, cached) {
@@ -3362,11 +3390,7 @@
                 themes = dedupeThemes(themesSource);
             }
             themes = filterDarkModeVariantListings(themes);
-            themes.sort((a, b) => String(a?.name || '')
-                .localeCompare(String(b?.name || ''), undefined, {
-                    sensitivity: 'base',
-                    ignorePunctuation: true
-                }));
+            themes.sort((a, b) => compareThemeTitles(a?.name, b?.name));
             const filteredThemes = themes.filter(t => !!t);
             clearThemeGridLoadingState(grid);
             if (!filteredThemes.length) {
