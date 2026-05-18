@@ -2,7 +2,12 @@
   Regenerate theme/variant index.html SEO shells (repo root index.html is untouched).
   Static GitHub Pages — no Node required. Run from repo root (or via theme-ingest-and-sync CI):
     pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/Rewrite-ThemeIndexPages.ps1
+    pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/Rewrite-ThemeIndexPages.ps1 -MissingOnly
+  -MissingOnly writes only when index.html is absent or lacks theme-seo-shell-analytics.js (safe for ingest).
 #>
+param(
+  [switch]$MissingOnly
+)
 $ErrorActionPreference = 'Stop'
 $Root = Resolve-Path (Join-Path $PSScriptRoot '..')
 $Site = 'https://themes.innioasis.app'
@@ -170,6 +175,8 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
   <meta name="keywords" content="$keywords" />
   <meta name="author" content="$authorE" />
   <meta name="robots" content="index,follow" />
+  <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
+  <script src="/theme-seo-shell-analytics.js"></script>
   <link rel="canonical" href="$previewE" />
   <script>
 (function () {
@@ -234,9 +241,23 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
 "@
 }
 
+function Test-IndexShellNeedsWrite([string]$abs) {
+    if (-not (Test-Path -LiteralPath $abs)) { return $true }
+    if (-not $MissingOnly) { return $true }
+    try {
+        $c = Get-Content -LiteralPath $abs -Raw -Encoding UTF8
+        if ($c -notmatch 'theme-seo-shell-analytics\.js') { return $true }
+        if ($c -notmatch 'cf-theme-analytics-origin') { return $true }
+        return $false
+    } catch {
+        return $true
+    }
+}
+
 $written = 0
 foreach ($kv in $targets.GetEnumerator()) {
     $abs = $kv.Key
+    if (-not (Test-IndexShellNeedsWrite $abs)) { continue }
     $cf = $kv.Value.CatalogFolder
     $va = $kv.Value.Variant
     $dir = Split-Path -Parent $abs

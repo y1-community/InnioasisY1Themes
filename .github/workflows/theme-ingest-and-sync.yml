@@ -4,9 +4,9 @@ name: Theme ingest and sync
 # - direct file PRs (preferred): worker/client commits extracted theme files directly
 # - root zip artifacts (legacy fallback): extracted by scripts/process_theme_zips.py
 # Then sync themes.json / theme configs and cleanup upload artifacts.
-# Intentionally does NOT regenerate every theme index.html or sitemap.xml here — those touched hundreds of
-# files and caused rebase conflicts when two uploads landed close together. The browser uploader (upload.html)
-# injects per-theme / variant SEO index.html into the ZIP before submit; sitemap is updated on a separate schedule (generate-sitemap.yml).
+# Does not bulk-rewrite every theme index.html (avoids rebase races). The browser uploader (upload.html)
+# injects per-theme / variant SEO index.html into the ZIP before submit. Ingest runs Rewrite-ThemeIndexPages.ps1
+# -MissingOnly to add shells that are absent or lack analytics. Sitemap is updated on a separate schedule (generate-sitemap.yml).
 # A follow-up job comments on the originating upload PR when sync succeeds or fails (notify-source-pr-after-ingest),
 # including a plain-language note and the theme page URL(s).
 # Theme raster downsizing (max ~320px) runs in the browser during packaging (upload.html), not here.
@@ -72,6 +72,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Write missing theme SEO index shells
+        run: pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/Rewrite-ThemeIndexPages.ps1 -MissingOnly
+
       - name: Cleanup stale upload zip/meta artifacts
         run: python scripts/cleanup_upload_artifacts.py
 
@@ -134,12 +137,21 @@ jobs:
     permissions:
       pull-requests: write
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Comment on originating theme PR (listing sync outcome)
         uses: actions/github-script@v7
         env:
           INGEST_RESULT: ${{ needs.ingest-and-sync.result }}
         with:
           script: |
+            const path = require("path");
+            const { themePreviewUrlsFromHints } = require(path.join(
+              process.env.GITHUB_WORKSPACE,
+              "scripts",
+              "theme_preview_urls.cjs"
+            ));
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const ingestResult = process.env.INGEST_RESULT || "";
@@ -228,11 +240,7 @@ jobs:
                   if (stem) folders.add(stem);
                 }
               }
-              const urls = [...folders].map((folder) => {
-                const encoded = folder.split("/").filter(Boolean).map(encodeURIComponent).join("/");
-                return `https://themes.innioasis.app/${encoded}`;
-              });
-              return urls.length ? urls : ["https://themes.innioasis.app/"];
+              return themePreviewUrlsFromHints(folders);
             }
 
             let prNum = null;

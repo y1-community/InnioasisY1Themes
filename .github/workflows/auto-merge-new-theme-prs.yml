@@ -79,6 +79,12 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
+            const path = require("path");
+            const { themePreviewUrlsFromHints } = require(path.join(
+              process.env.GITHUB_WORKSPACE,
+              "scripts",
+              "theme_preview_urls.cjs"
+            ));
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const pull_number = context.payload.pull_request.number;
@@ -139,10 +145,7 @@ jobs:
               }
             }
 
-            const urls = [...folders].map((folder) => {
-              const encoded = folder.split("/").filter(Boolean).map(encodeURIComponent).join("/");
-              return `https://themes.innioasis.app/${encoded}`;
-            });
+            const urls = themePreviewUrlsFromHints(folders);
 
             const shareLines = urls.length
               ? urls.map((u) => `- ${u}`).join("\n")

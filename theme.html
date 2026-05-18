@@ -1635,6 +1635,9 @@
                     console.warn('themes.json fetch failed', e)
                 }
                 const catalogFolder = (themeMeta && themeMeta.folder) ? themeMeta.folder : themeName;
+                if (catalogFolder && window.ThemeAnalytics) {
+                    window.ThemeAnalytics.trackPageView(catalogFolder, 'theme_page');
+                }
                 activeContentFolder = effectiveThemeContentPrefix(catalogFolder, activeVariant);
                 let cfgMeta = await tryFetchFolderConfigTheme(activeContentFolder, themes, catalogFolder);
                 if (!cfgMeta && activeVariant) {
@@ -1660,6 +1663,9 @@
                 }
                 if (themeMeta) {
                     folder = themeMeta.folder || '';
+                    if (folder && window.ThemeAnalytics) {
+                        window.ThemeAnalytics.trackPageView(folder, 'theme_page');
+                    }
                     activeContentFolder = effectiveThemeContentPrefix(folder, activeVariant);
                     if (activeVariant) {
                         const altCfg = await tryFetchFolderConfigTheme(activeContentFolder, themes, folder);
@@ -1678,7 +1684,6 @@
             }
 
             if (folder && window.ThemeAnalytics) {
-                window.ThemeAnalytics.trackPageView(folder, 'theme_page');
                 const metricsHostEl = document.getElementById('theme-metrics-host');
                 if (metricsHostEl) void window.ThemeAnalytics.mountMetrics(metricsHostEl, folder);
             }
