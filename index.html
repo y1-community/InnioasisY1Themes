@@ -771,7 +771,7 @@
     <div id="bulk-update-backdrop" role="dialog" aria-modal="true" aria-labelledby="bulk-update-title" hidden>
         <div class="bulk-update-panel">
             <h2 id="bulk-update-title">Update all themes on Y1</h2>
-            <p class="bulk-update-lead" id="bulk-update-lead">Install or refresh every gallery theme from the site onto your player. This can take several minutes.</p>
+            <p class="bulk-update-lead" id="bulk-update-lead">Refresh every theme already on your Y1 with the latest files from this gallery. New themes are not installed—use Direct Install on each card first.</p>
             <div class="bulk-update-overall-bar" aria-hidden="true">
                 <div class="bulk-update-overall-bar-inner" id="bulk-update-overall-bar"></div>
             </div>
@@ -848,6 +848,7 @@
         const supportDirectInstall = typeof window.showDirectoryPicker === 'function';
         let selectedThemesFolder = null;
         let galleryCatalogThemes = [];
+        let bulkUpdateQueue = [];
         let bulkUpdateRunActive = false;
         let bulkUpdateAbortRequested = false;
 
@@ -882,6 +883,42 @@
             });
         }
 
+        function themeRecordFromCard(card) {
+            if (!card) return null;
+            const folder = String(card.getAttribute('data-catalog-folder') || '').replace(/^\.\/+/, '').trim();
+            if (!folder) return null;
+            const found = (galleryCatalogThemes || []).find(
+                (t) => String((t && t.folder) || '').replace(/^\.\/+/, '').trim() === folder
+            );
+            if (found) return found;
+            return {
+                folder,
+                name: card.getAttribute('data-name') || folder,
+                sourceType: 'internal',
+                hasConfigFile: true,
+            };
+        }
+
+        async function isThemeFolderOnDevice(theme) {
+            if (!selectedThemesFolder || !theme) return false;
+            const installName = safeInstallFolderName(theme);
+            if (!installName) return false;
+            try {
+                await selectedThemesFolder.getDirectoryHandle(installName, { create: false });
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        async function buildBulkOnDeviceUpdateQueue() {
+            const queue = [];
+            for (const theme of getBulkInstallableThemes()) {
+                if (await isThemeFolderOnDevice(theme)) queue.push(theme);
+            }
+            return queue;
+        }
+
         function readThemeInstallHints(theme) {
             const grid = document.getElementById('theme-grid');
             const folder = String((theme && theme.folder) || '').replace(/^\.\/+/, '').trim();
@@ -907,7 +944,7 @@
             }
         }
 
-        function openBulkUpdateModal(queueLength) {
+        function openBulkUpdateModalScanning() {
             if (!bulkUpdateBackdrop) return;
             bulkUpdateAbortRequested = false;
             bulkUpdateBackdrop.hidden = false;
@@ -915,17 +952,37 @@
             document.body.classList.add('bulk-install-active');
             if (bulkUpdateLeadEl) {
                 bulkUpdateLeadEl.textContent =
-                    `This will install or update ${queueLength} gallery theme(s) from the site onto your Y1. ` +
-                    'Keep the device connected; do not close this tab until finished.';
+                    'Checking which gallery themes are already on your Y1…';
             }
-            if (bulkUpdateCountEl) bulkUpdateCountEl.textContent = `${queueLength} theme(s) queued`;
-            if (bulkUpdateStatusEl) bulkUpdateStatusEl.textContent = 'Ready to start.';
+            if (bulkUpdateCountEl) bulkUpdateCountEl.textContent = '';
+            if (bulkUpdateStatusEl) bulkUpdateStatusEl.textContent = 'Scanning device folder…';
             if (bulkUpdateOverallBar) bulkUpdateOverallBar.style.width = '0%';
             if (bulkUpdateStartBtn) {
-                bulkUpdateStartBtn.disabled = false;
+                bulkUpdateStartBtn.disabled = true;
                 bulkUpdateStartBtn.style.display = '';
             }
             if (bulkUpdateCancelBtn) bulkUpdateCancelBtn.textContent = 'Cancel';
+        }
+
+        function configureBulkUpdateModalReady(queueLength) {
+            if (bulkUpdateLeadEl) {
+                bulkUpdateLeadEl.textContent =
+                    `This will update ${queueLength} theme(s) already on your Y1 with the latest files from the gallery. ` +
+                    'Themes not on your player are skipped. Keep the device connected; do not close this tab until finished.';
+            }
+            if (bulkUpdateCountEl) bulkUpdateCountEl.textContent = `${queueLength} theme(s) on your Y1`;
+            if (bulkUpdateStatusEl) bulkUpdateStatusEl.textContent = 'Ready to start.';
+            if (bulkUpdateStartBtn) bulkUpdateStartBtn.disabled = false;
+        }
+
+        function configureBulkUpdateModalEmpty() {
+            if (bulkUpdateLeadEl) {
+                bulkUpdateLeadEl.textContent =
+                    'No themes from this gallery were found on your Y1. Use Direct Install on individual themes first, then return here to refresh them all.';
+            }
+            if (bulkUpdateCountEl) bulkUpdateCountEl.textContent = '0 themes on device';
+            if (bulkUpdateStatusEl) bulkUpdateStatusEl.textContent = 'Nothing to update.';
+            if (bulkUpdateStartBtn) bulkUpdateStartBtn.disabled = true;
         }
 
         function onBulkUpdateCancelClick() {
@@ -1246,11 +1303,12 @@
 
                     const cards = document.querySelectorAll('.theme-card');
                     for (const card of cards) {
-                        const themeName = card.getAttribute('data-theme-name');
+                        const themeRef = themeRecordFromCard(card);
                         const status = card.querySelector('.theme-status');
                         const di = card.querySelector('[data-direct-install-btn]');
                         try {
-                            await selectedThemesFolder.getDirectoryHandle(themeName, {
+                            if (!themeRef) throw new Error('no theme');
+                            await selectedThemesFolder.getDirectoryHandle(safeInstallFolderName(themeRef), {
                                 create: false
                             });
                             card.classList.add('on-device');
@@ -1292,18 +1350,30 @@
                 }
             };
             if (bulkUpdateAllBtn) {
-                bulkUpdateAllBtn.onclick = () => {
+                bulkUpdateAllBtn.onclick = async () => {
                     if (bulkUpdateRunActive) return;
                     if (!selectedThemesFolder) {
                         alert('Please select your Y1 Themes folder first');
                         return;
                     }
-                    const queue = getBulkInstallableThemes();
-                    if (!queue.length) {
+                    if (!getBulkInstallableThemes().length) {
                         alert('No installable gallery themes are loaded yet. Try refreshing the page.');
                         return;
                     }
-                    openBulkUpdateModal(queue.length);
+                    openBulkUpdateModalScanning();
+                    try {
+                        bulkUpdateQueue = await buildBulkOnDeviceUpdateQueue();
+                    } catch (err) {
+                        console.error('Bulk update scan failed', err);
+                        alert('Could not read themes on your Y1: ' + (err.message || err));
+                        closeBulkUpdateModal();
+                        return;
+                    }
+                    if (!bulkUpdateQueue.length) {
+                        configureBulkUpdateModalEmpty();
+                        return;
+                    }
+                    configureBulkUpdateModalReady(bulkUpdateQueue.length);
                 };
             }
             if (bulkUpdateCancelBtn) bulkUpdateCancelBtn.onclick = onBulkUpdateCancelClick;
@@ -2968,10 +3038,10 @@
 
         async function runBulkUpdateAllThemes() {
             if (!selectedThemesFolder || bulkUpdateRunActive) return;
-            const queue = getBulkInstallableThemes();
+            const queue = bulkUpdateQueue.length ? bulkUpdateQueue : await buildBulkOnDeviceUpdateQueue();
+            bulkUpdateQueue = queue;
             if (!queue.length) {
-                alert('No installable gallery themes are loaded.');
-                closeBulkUpdateModal();
+                configureBulkUpdateModalEmpty();
                 return;
             }
 
@@ -3051,7 +3121,7 @@
                     `${okCount} succeeded, ${failed.length} failed, ${total - okCount - failed.length} skipped.`
                 );
             } else {
-                setBulkUpdateProgress(100, 'All themes updated.', `${okCount} of ${total} theme(s) installed or updated.`);
+                setBulkUpdateProgress(100, 'All on-device themes updated.', `${okCount} of ${total} theme(s) refreshed on your Y1.`);
             }
 
             if (onlyOnDeviceCheckbox && onlyOnDeviceCheckbox.checked) applyFilters();
