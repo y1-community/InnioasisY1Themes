@@ -42,7 +42,10 @@
         "fm": "Radio.png",
         "bluetooth": "Bluetooth.png",
         "settings": "Settings.png",
-        "shuffleQuick": "Shuffle.png"
+        "shuffleQuick": "Shuffle.png",
+        "ebook": "transparent.png",
+        "calendar": "transparent.png",
+        "calculator": "transparent.png"
     },
     "fileConfig": {
         "folderIcon": "",
@@ -96,7 +99,8 @@
         "clearCache": "transparent.png",
         "theme": "transparent.png",
         "fileExtensionOn": "transparent.png",
-        "fileExtensionOff": "transparent.png"
+        "fileExtensionOff": "transparent.png",
+        "launcher": "transparent.png"
     },
     "statusConfig": {
         "playing": "",

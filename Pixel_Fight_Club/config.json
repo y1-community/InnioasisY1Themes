@@ -41,7 +41,10 @@
         "fm": "Themeless_icon.png",
         "bluetooth": "Themeless_icon.png",
         "settings": "Themeless_icon.png",
-        "shuffleQuick": "Themeless_icon.png"
+        "shuffleQuick": "Themeless_icon.png",
+        "ebook": "transparent.png",
+        "calendar": "transparent.png",
+        "calculator": "transparent.png"
     },
     "fileConfig": {
         "folderIcon": "",
@@ -95,7 +98,8 @@
         "clearCache": "soap-on.png",
         "theme": "Change Theme@1x.png",
         "fileExtensionOn": "soap-on.png",
-        "fileExtensionOff": "soap-off.png"
+        "fileExtensionOff": "soap-off.png",
+        "launcher": "transparent.png"
     },
     "statusConfig": {
         "playing": "",

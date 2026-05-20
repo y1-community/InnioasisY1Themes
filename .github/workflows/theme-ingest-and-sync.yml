@@ -67,6 +67,9 @@ jobs:
         env:
           PROCESS_THEME_ZIPS_STRICT: "true"
 
+      - name: Backfill legacy OS config keys (additive only)
+        run: python scripts/backfill_legacy_os_keys.py
+
       - name: Sync themes.json and theme configs
         run: python scripts/sync_theme_metadata.py
         env:

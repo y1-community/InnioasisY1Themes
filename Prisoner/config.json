@@ -40,7 +40,10 @@
         "fm": "@Pris_FM Radio.png",
         "bluetooth": "@Pris_Bluetooth.png",
         "settings": "@Pris_Settings.png",
-        "shuffleQuick": "Shuffle Quick.png"
+        "shuffleQuick": "Shuffle Quick.png",
+        "ebook": "transparent.png",
+        "calendar": "transparent.png",
+        "calculator": "transparent.png"
     },
     "fileConfig": {
         "folderIcon": "",
@@ -94,7 +97,8 @@
         "clearCache": "Clear cache@1x.png",
         "theme": "Change Theme@1x.png",
         "fileExtensionOn": "file_ext_on.png",
-        "fileExtensionOff": "file_ext_off.png"
+        "fileExtensionOff": "file_ext_off.png",
+        "launcher": "transparent.png"
     },
     "statusConfig": {
         "playing": "@Pris_play.png",

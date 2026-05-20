@@ -34,7 +34,10 @@
         "fm": "FM Radio.png",
         "bluetooth": "Bluetooth.png",
         "settings": "Settings.png",
-        "shuffleQuick": "Shuffle Quick.png"
+        "shuffleQuick": "Shuffle Quick.png",
+        "ebook": "transparent.png",
+        "calendar": "transparent.png",
+        "calculator": "transparent.png"
     },
     "fileConfig": {
         "folderIcon": "Cover.png",
@@ -88,7 +91,8 @@
         "clearCache": "Clear cache@1x.png",
         "theme": "Change Theme@1x.png",
         "fileExtensionOn": "file_ext_on.png",
-        "fileExtensionOff": "file_ext_off.png"
+        "fileExtensionOff": "file_ext_off.png",
+        "launcher": "transparent.png"
     },
     "statusConfig": {
         "playing": "Play.png",
@@ -102,7 +106,7 @@
         "headsetWithMic": "",
         "headsetWithoutMic": "",
         "statusBarColor": "#00000000",
-      "battery": [
+        "battery": [
             "Battery1.png",
             "Battery2.png",
             "Battery3.png",
@@ -119,4 +123,3 @@
         "progressColor": "#ffff00"
     }
 }
-  

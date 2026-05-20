@@ -41,7 +41,10 @@
     "fm": "fmRadio.png",
     "bluetooth": "bt.png",
     "settings": "Settings.png",
-    "shuffleQuick": "Shuffle Quick.png"
+    "shuffleQuick": "Shuffle Quick.png",
+    "ebook": "transparent.png",
+    "calendar": "transparent.png",
+    "calculator": "transparent.png"
   },
   "fileConfig": {
     "folderIcon": "",
@@ -97,7 +100,8 @@
     "clearCache": "Property 1=clearCache.png",
     "theme": "Property 1=theme.png",
     "fileExtensionOn": "Property 1=fileExtensionOn.png",
-    "fileExtensionOff": "Property 1=fileExtensionOff.png"
+    "fileExtensionOff": "Property 1=fileExtensionOff.png",
+    "launcher": "transparent.png"
   },
   "statusConfig": {
     "statusTextColor": "#5C4B51",

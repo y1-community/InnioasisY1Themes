@@ -28,6 +28,8 @@ import zipfile
 
 import zip_theme_utils as ztu
 
+from backfill_legacy_os_keys import fill_theme_folder
+
 
 _GIT_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = _GIT_ROOT
@@ -531,6 +533,11 @@ def _process_zip(path: Path, *, folder_stem_override: str | None = None) -> tupl
             logs.append(msg)
             if ok:
                 extracted_any = True
+                try:
+                    if fill_theme_folder(REPO_ROOT / dest_name):
+                        logs.append(f"Legacy OS config backfill applied in {dest_name}/.")
+                except Exception as exc:
+                    logs.append(f"WARNING: Legacy OS backfill failed for {dest_name}/: {exc}")
 
         if extracted_any:
             path.unlink()
