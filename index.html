@@ -948,6 +948,48 @@
             return names;
         }
 
+        async function removeDeviceThemeFolder(folderName) {
+            const name = String(folderName || '').trim();
+            if (!selectedThemesFolder || !name) return false;
+            try {
+                await selectedThemesFolder.removeEntry(name, { recursive: true });
+                return true;
+            } catch (err) {
+                if (err && (err.name === 'NotFoundError' || err.name === 'InvalidModificationError')) {
+                    return false;
+                }
+                throw err;
+            }
+        }
+
+        async function replaceDeviceThemeFolder(folderName) {
+            const name = String(folderName || '').trim();
+            if (!selectedThemesFolder || !name) {
+                throw new Error('Y1 Themes folder is not selected.');
+            }
+            await removeDeviceThemeFolder(name);
+            return await selectedThemesFolder.getDirectoryHandle(name, { create: true });
+        }
+
+        async function assertDeviceThemeContents(themeFolder, keepOnDevice, installFolderSafe) {
+            const onDevice = await listDeviceRootFilenames(themeFolder);
+            const onSet = new Set(onDevice.map((n) => n.toLowerCase()));
+            const missing = [];
+            for (const expected of keepOnDevice) {
+                const key = String(expected || '').toLowerCase();
+                if (key && !onSet.has(key)) missing.push(expected);
+            }
+            if (missing.length) {
+                throw new Error(
+                    'Install incomplete in "' +
+                        installFolderSafe +
+                        '": missing ' +
+                        missing.slice(0, 6).join(', ') +
+                        (missing.length > 6 ? '…' : '')
+                );
+            }
+        }
+
         async function fetchThemeAssetBlob(downloadUrl) {
             const base = String(downloadUrl || '').trim();
             if (!base) throw new Error('Missing download URL');
@@ -3074,21 +3116,10 @@
         // =========================================================
         // DIRECT INSTALL (NO GITHUB API)
         // =========================================================
-        async function pruneStaleDeviceFiles(themeFolder, keepLowercaseSet) {
-            for await (const [name, handle] of themeFolder.entries()) {
-                if (handle.kind !== 'file') continue;
-                if (keepLowercaseSet.has(name.toLowerCase())) continue;
-                try {
-                    await themeFolder.removeEntry(name);
-                } catch (e) {
-                    console.warn('Could not remove stale file on device:', name, e);
-                }
-            }
-        }
-
         async function runDirectInstallJob(theme, selectedCombo, progress, installOpts) {
             if (!selectedThemesFolder) throw new Error('Y1 Themes folder is not selected.');
             const opts = installOpts || {};
+            const replaceExisting = opts.replaceExisting !== false;
             const setProgress = (pct, msg) => {
                 if (progress && typeof progress.setProgress === 'function') {
                     progress.setProgress(pct, msg);
@@ -3111,24 +3142,41 @@
                     name: zipThemeDisplayName(selectedName, catalogForInstall, variantForInstall),
                 });
 
-            const themeFolder =
-                opts.deviceDirHandle ||
-                (await selectedThemesFolder.getDirectoryHandle(installFolderSafe, { create: true }));
+            let themeFolder;
+            if (replaceExisting) {
+                setProgress(2, `Removing old folder ${installFolderSafe}…`);
+                themeFolder = await replaceDeviceThemeFolder(installFolderSafe);
+            } else {
+                themeFolder = await selectedThemesFolder.getDirectoryHandle(installFolderSafe, {
+                    create: true,
+                });
+            }
 
-            setProgress(5, `Writing to ${installFolderSafe}…`);
+            setProgress(5, `Copying into ${installFolderSafe}…`);
 
             const plan = buildInstallPlan(theme, selectedCombo);
             const { installRows, normalizedConfigObj, config, keepOnDevice } = plan;
+
+            if (!installRows.length && !config) {
+                throw new Error('No files to install for this theme.');
+            }
 
             let installedCount = 0;
             const totalFiles = installRows.length + 1;
             let installedSuccess = 0;
             const fetchFailures = [];
+            const writtenFiles = [];
 
             const writeBlobToThemeFolder = async (relativePath, blob) => {
                 const pathParts = String(relativePath || '').split('/').filter(Boolean);
                 const fileName = pathParts.pop();
-                if (!fileName || fileName.includes('..')) return false;
+                if (!fileName || fileName.includes('..')) {
+                    throw new Error('Invalid install path: ' + relativePath);
+                }
+                const expectedSize = blob.size;
+                if (!Number.isFinite(expectedSize) || expectedSize <= 0) {
+                    throw new Error('Empty file for ' + fileName);
+                }
                 let currentFolder = themeFolder;
                 for (const part of pathParts) {
                     const safePart = part.replace(/[^\w\d-_ ]/g, '_');
@@ -3146,6 +3194,13 @@
                 } catch (_) {}
                 await writable.write(blob);
                 await writable.close();
+                const written = await fileHandle.getFile();
+                if (written.size !== expectedSize) {
+                    throw new Error(
+                        fileName + ' size mismatch on device (' + written.size + ' vs ' + expectedSize + ')'
+                    );
+                }
+                writtenFiles.push(fileName);
                 return true;
             };
 
@@ -3153,7 +3208,9 @@
                 const cfgBlob = new Blob([JSON.stringify(normalizedConfigObj || config, null, 2)], {
                     type: 'application/json',
                 });
-                if (await writeBlobToThemeFolder('config.json', cfgBlob)) installedSuccess++;
+                if (cfgBlob.size <= 2) throw new Error('config.json would be empty');
+                await writeBlobToThemeFolder('config.json', cfgBlob);
+                installedSuccess++;
             } catch (e) {
                 console.warn('config.json install failed', e);
                 fetchFailures.push('config.json');
@@ -3166,7 +3223,7 @@
                 }
                 const percent = 5 + Math.round((installedCount / Math.max(totalFiles, 1)) * 90);
                 const leaf = String(row.devicePath || row.path || '').split('/').pop() || 'file';
-                setProgress(percent, `Installing ${leaf}…`);
+                setProgress(percent, `Copying ${leaf}…`);
 
                 let blob;
                 try {
@@ -3184,7 +3241,8 @@
                     continue;
                 }
                 try {
-                    if (await writeBlobToThemeFolder(rel, blob)) installedSuccess++;
+                    await writeBlobToThemeFolder(rel, blob);
+                    installedSuccess++;
                 } catch (e) {
                     console.warn('Write failed:', rel, e);
                     fetchFailures.push(leaf);
@@ -3192,28 +3250,51 @@
                 installedCount++;
             }
 
-            if (opts.pruneStale) {
-                setProgress(92, 'Removing old files…');
-                await pruneStaleDeviceFiles(themeFolder, keepOnDevice);
+            if (fetchFailures.includes('config.json')) {
+                throw new Error(
+                    'config.json could not be written to "' + installFolderSafe + '". Check USB permissions and try again.'
+                );
+            }
+
+            const assetExpected = installRows.length;
+            const assetWritten = Math.max(0, installedSuccess - 1);
+            if (assetExpected > 0 && assetWritten < assetExpected) {
+                throw new Error(
+                    'Only ' +
+                        assetWritten +
+                        ' of ' +
+                        assetExpected +
+                        ' assets copied to "' +
+                        installFolderSafe +
+                        '".' +
+                        (fetchFailures.length
+                            ? ' Failed: ' + fetchFailures.filter((f) => f !== 'config.json').slice(0, 5).join(', ')
+                            : '')
+                );
             }
 
             if (installedSuccess === 0) {
-                const detail = fetchFailures.length ? ` Failed: ${fetchFailures.slice(0, 5).join(', ')}.` : '';
                 throw new Error(
-                    'No theme files could be written to the Y1 folder "' +
-                        installFolderSafe +
-                        '".' +
-                        detail
+                    'No theme files were copied to "' + installFolderSafe + '".' +
+                        (fetchFailures.length ? ' Failed: ' + fetchFailures.slice(0, 5).join(', ') + '.' : '')
                 );
             }
+
+            setProgress(92, 'Verifying files on device…');
+            await assertDeviceThemeContents(themeFolder, keepOnDevice, installFolderSafe);
 
             const installCatalogKey = String(selectedCombo.catalogFolder || theme.folder || '').replace(/^\.\/+/, '');
             if (installCatalogKey && window.ThemeAnalytics) {
                 window.ThemeAnalytics.trackDirectInstall(installCatalogKey, 'gallery');
             }
 
-            setProgress(95, 'Finalizing...');
-            return { installCatalogKey, installFolderSafe, fetchFailures };
+            setProgress(95, 'Done — ' + writtenFiles.length + ' file(s) on device');
+            return {
+                installCatalogKey,
+                installFolderSafe,
+                fetchFailures,
+                filesWritten: writtenFiles.length,
+            };
         }
 
         async function runBulkUpdateAllThemes() {
@@ -3281,16 +3362,8 @@
                         },
                     }, {
                         deviceFolderName,
-                        deviceDirHandle,
-                        pruneStale: true,
+                        replaceExisting: true,
                     });
-                    if (jobResult.fetchFailures && jobResult.fetchFailures.length) {
-                        console.warn(
-                            'Bulk update partial for',
-                            deviceFolderName || theme.folder,
-                            jobResult.fetchFailures
-                        );
-                    }
                     markGalleryCardOnDevice(theme);
                     okCount++;
                 } catch (err) {
@@ -3389,7 +3462,10 @@
                             progressUI.setProgress(pct, msg);
                         },
                     },
-                    onDeviceLoc ? { ...onDeviceLoc, pruneStale: true } : undefined
+                    {
+                        deviceFolderName: onDeviceLoc ? onDeviceLoc.deviceFolderName : undefined,
+                        replaceExisting: true,
+                    }
                 );
                 progressUI.setProgress(95, 'Finalizing...');
                 progressUI.removeAndRestoreButton(buttonNode);
