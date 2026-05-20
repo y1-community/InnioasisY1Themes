@@ -246,6 +246,99 @@
             }
         }
 
+        #bulk-update-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 5000;
+            background: rgba(0, 0, 0, 0.78);
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        #bulk-update-backdrop.is-open {
+            display: flex;
+        }
+
+        .bulk-update-panel {
+            width: min(520px, 100%);
+            max-height: min(90vh, 640px);
+            overflow: auto;
+            background: var(--bg-card, #151922);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 12px;
+            padding: 20px;
+            color: #eaf0ff;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+        }
+
+        .bulk-update-panel h2 {
+            margin: 0 0 8px;
+            font-size: 1.15rem;
+        }
+
+        .bulk-update-panel .bulk-update-lead {
+            margin: 0 0 16px;
+            font-size: 0.92rem;
+            color: var(--text-secondary, #94a3b8);
+            line-height: 1.45;
+        }
+
+        .bulk-update-overall-bar {
+            height: 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .bulk-update-overall-bar-inner {
+            height: 100%;
+            width: 0%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, #4a9eff, #64c8ff);
+            transition: width 0.2s ease;
+        }
+
+        .bulk-update-status {
+            font-size: 0.88rem;
+            color: #c5d0e6;
+            margin-bottom: 6px;
+            min-height: 2.6em;
+        }
+
+        .bulk-update-count {
+            font-size: 0.85rem;
+            color: #8b95a8;
+            margin-bottom: 16px;
+        }
+
+        .bulk-update-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        body.bulk-install-active {
+            overflow: hidden;
+        }
+
+        body.bulk-install-active .gallery-topbar,
+        body.bulk-install-active .gallery-controls,
+        body.bulk-install-active .cast-div,
+        body.bulk-install-active #theme-grid,
+        body.bulk-install-active #theme-pager,
+        body.bulk-install-active #direct-install-banner .btn:not(#bulk-update-cancel-btn):not(#bulk-update-start-btn) {
+            pointer-events: none;
+            user-select: none;
+        }
+
+        body.bulk-install-active #bulk-update-backdrop {
+            pointer-events: auto;
+        }
+
         .theme-grid.theme-grid--loading {
             min-height: min(52vh, 640px);
         }
@@ -615,6 +708,9 @@
                     <i class="fas fa-folder" style="margin-right: 8px;"></i>Choose Y1 Themes Folder
                 </button>
                 <div id="folder-selected-indicator" style="font-size: 0.85rem; color: #4caf50; display: none;"><i class="fas fa-check-circle" style="margin-right: 4px;"></i>Folder selected</div>
+                <button id="bulk-update-all-btn" class="btn" type="button" disabled style="font-family: Inter; padding: .875rem 1.5rem; font-weight: normal; white-space: nowrap; opacity: 0.5; cursor: not-allowed;">
+                    <i class="fas fa-arrows-rotate" style="margin-right: 8px;"></i>Update all themes on Y1
+                </button>
             </div>
             <div id="filter-on-device" style="margin-top:8px; display:none;">
                 <label style="font-size:0.95rem;color:var(--text-secondary);">
@@ -670,6 +766,24 @@
         <div id="theme-empty" style="display:none; margin-top:1rem; text-align:center; color:#94a3b8;">No themes match your current filters.</div>
         <div id="theme-pager" class="pager" hidden></div>
 
+    </div>
+
+    <div id="bulk-update-backdrop" role="dialog" aria-modal="true" aria-labelledby="bulk-update-title" hidden>
+        <div class="bulk-update-panel">
+            <h2 id="bulk-update-title">Update all themes on Y1</h2>
+            <p class="bulk-update-lead" id="bulk-update-lead">Install or refresh every gallery theme from the site onto your player. This can take several minutes.</p>
+            <div class="bulk-update-overall-bar" aria-hidden="true">
+                <div class="bulk-update-overall-bar-inner" id="bulk-update-overall-bar"></div>
+            </div>
+            <div class="bulk-update-status" id="bulk-update-status" aria-live="polite">Ready to start.</div>
+            <div class="bulk-update-count" id="bulk-update-count"></div>
+            <div class="bulk-update-actions">
+                <button type="button" class="btn" id="bulk-update-cancel-btn" style="font-family: Inter; font-weight: normal; background: #2a2f3a;">Cancel</button>
+                <button type="button" class="btn" id="bulk-update-start-btn" style="font-family: Inter; font-weight: normal;">
+                    <i class="fas fa-play" style="margin-right: 6px;"></i>Start update
+                </button>
+            </div>
+        </div>
     </div>
 
     <div id="rockbox-backdrop" style="display:none;position:fixed;inset:0;background:rgba(0, 0, 0, 0.5);align-items:center;justify-content:center;z-index:1000">
@@ -733,13 +847,120 @@
 
         const supportDirectInstall = typeof window.showDirectoryPicker === 'function';
         let selectedThemesFolder = null;
+        let galleryCatalogThemes = [];
+        let bulkUpdateRunActive = false;
+        let bulkUpdateAbortRequested = false;
 
         const bannerEl = document.getElementById('direct-install-banner');
         const browserWarning = document.getElementById('browser-support-warning');
         const chooseFolderBtn = document.getElementById('choose-folder-btn');
         const folderIndicator = document.getElementById('folder-selected-indicator');
+        const bulkUpdateAllBtn = document.getElementById('bulk-update-all-btn');
+        const bulkUpdateBackdrop = document.getElementById('bulk-update-backdrop');
+        const bulkUpdateStartBtn = document.getElementById('bulk-update-start-btn');
+        const bulkUpdateCancelBtn = document.getElementById('bulk-update-cancel-btn');
+        const bulkUpdateStatusEl = document.getElementById('bulk-update-status');
+        const bulkUpdateCountEl = document.getElementById('bulk-update-count');
+        const bulkUpdateOverallBar = document.getElementById('bulk-update-overall-bar');
+        const bulkUpdateLeadEl = document.getElementById('bulk-update-lead');
         const filterDiv = document.getElementById('filter-on-device');
         const onlyOnDeviceCheckbox = document.getElementById('only-on-device-checkbox');
+
+        function setBulkUpdateButtonEnabled(enabled) {
+            if (!bulkUpdateAllBtn) return;
+            bulkUpdateAllBtn.disabled = !enabled;
+            bulkUpdateAllBtn.style.opacity = enabled ? '1' : '0.5';
+            bulkUpdateAllBtn.style.cursor = enabled ? 'pointer' : 'not-allowed';
+        }
+
+        function getBulkInstallableThemes() {
+            return (galleryCatalogThemes || []).filter((t) => {
+                if (!t || !t.folder) return false;
+                if (String(t.sourceType || 'internal').toLowerCase() === 'external') return false;
+                if (t.hasConfigFile === false) return false;
+                return true;
+            });
+        }
+
+        function readThemeInstallHints(theme) {
+            const grid = document.getElementById('theme-grid');
+            const folder = String((theme && theme.folder) || '').replace(/^\.\/+/, '').trim();
+            const card = findGalleryCardByFolder(grid, folder);
+            if (card) return readCardVariantInstallHints(card);
+            return folder ? { preferredContentFolder: folder } : {};
+        }
+
+        function markGalleryCardOnDevice(theme) {
+            const grid = document.getElementById('theme-grid');
+            const folder = String((theme && theme.folder) || '').replace(/^\.\/+/, '').trim();
+            const card = findGalleryCardByFolder(grid, folder);
+            if (!card) return;
+            card.classList.add('on-device');
+            const status = card.querySelector('.theme-status');
+            if (status) status.style.display = 'block';
+            const di = card.querySelector('[data-direct-install-btn]');
+            if (di) {
+                di.disabled = false;
+                di.style.opacity = '1';
+                di.style.cursor = 'pointer';
+                di.innerHTML = '<i class="fa-solid fa-download"></i> Update';
+            }
+        }
+
+        function openBulkUpdateModal(queueLength) {
+            if (!bulkUpdateBackdrop) return;
+            bulkUpdateAbortRequested = false;
+            bulkUpdateBackdrop.hidden = false;
+            bulkUpdateBackdrop.classList.add('is-open');
+            document.body.classList.add('bulk-install-active');
+            if (bulkUpdateLeadEl) {
+                bulkUpdateLeadEl.textContent =
+                    `This will install or update ${queueLength} gallery theme(s) from the site onto your Y1. ` +
+                    'Keep the device connected; do not close this tab until finished.';
+            }
+            if (bulkUpdateCountEl) bulkUpdateCountEl.textContent = `${queueLength} theme(s) queued`;
+            if (bulkUpdateStatusEl) bulkUpdateStatusEl.textContent = 'Ready to start.';
+            if (bulkUpdateOverallBar) bulkUpdateOverallBar.style.width = '0%';
+            if (bulkUpdateStartBtn) {
+                bulkUpdateStartBtn.disabled = false;
+                bulkUpdateStartBtn.style.display = '';
+            }
+            if (bulkUpdateCancelBtn) bulkUpdateCancelBtn.textContent = 'Cancel';
+        }
+
+        function onBulkUpdateCancelClick() {
+            if (bulkUpdateRunActive) {
+                bulkUpdateAbortRequested = true;
+                if (bulkUpdateStatusEl) bulkUpdateStatusEl.textContent = 'Cancelling after current theme…';
+                if (bulkUpdateCancelBtn) bulkUpdateCancelBtn.disabled = true;
+                return;
+            }
+            closeBulkUpdateModal();
+        }
+
+        function closeBulkUpdateModal() {
+            if (!bulkUpdateBackdrop) return;
+            bulkUpdateBackdrop.classList.remove('is-open');
+            bulkUpdateBackdrop.hidden = true;
+            document.body.classList.remove('bulk-install-active');
+            bulkUpdateRunActive = false;
+            bulkUpdateAbortRequested = false;
+            if (bulkUpdateStartBtn) {
+                bulkUpdateStartBtn.disabled = false;
+                bulkUpdateStartBtn.style.display = '';
+            }
+            if (bulkUpdateCancelBtn) {
+                bulkUpdateCancelBtn.disabled = false;
+                bulkUpdateCancelBtn.textContent = 'Cancel';
+            }
+        }
+
+        function setBulkUpdateProgress(overallPct, statusText, countText) {
+            const clamped = Math.max(0, Math.min(100, Math.round(overallPct)));
+            if (bulkUpdateOverallBar) bulkUpdateOverallBar.style.width = clamped + '%';
+            if (bulkUpdateStatusEl && statusText) bulkUpdateStatusEl.textContent = statusText;
+            if (bulkUpdateCountEl && countText) bulkUpdateCountEl.textContent = countText;
+        }
 
         function updateOnDeviceFilter() {
             const checked = onlyOnDeviceCheckbox && onlyOnDeviceCheckbox.checked;
@@ -1062,6 +1283,7 @@
                         onlyOnDeviceCheckbox.checked = false;
                         onlyOnDeviceCheckbox.onchange = applyFilters;
                     }
+                    setBulkUpdateButtonEnabled(true);
                     applyFilters();
                 } catch (err) {
                     if (err.name !== 'AbortError') {
@@ -1069,6 +1291,23 @@
                     }
                 }
             };
+            if (bulkUpdateAllBtn) {
+                bulkUpdateAllBtn.onclick = () => {
+                    if (bulkUpdateRunActive) return;
+                    if (!selectedThemesFolder) {
+                        alert('Please select your Y1 Themes folder first');
+                        return;
+                    }
+                    const queue = getBulkInstallableThemes();
+                    if (!queue.length) {
+                        alert('No installable gallery themes are loaded yet. Try refreshing the page.');
+                        return;
+                    }
+                    openBulkUpdateModal(queue.length);
+                };
+            }
+            if (bulkUpdateCancelBtn) bulkUpdateCancelBtn.onclick = onBulkUpdateCancelClick;
+            if (bulkUpdateStartBtn) bulkUpdateStartBtn.onclick = () => void runBulkUpdateAllThemes();
         } else {
             bannerEl.style.display = 'block';
             browserWarning.style.display = 'block';
@@ -2124,7 +2363,8 @@
             };
         }
 
-        async function promptVariantCombination(theme, hints) {
+        async function resolveInstallCombination(theme, hints, opts) {
+            const optionsIn = opts || {};
             const catalogFolder = String((theme && theme.folder) || '').replace(/^\.\/+/, '').trim();
             if (!catalogFolder) throw new Error('No downloadable folder info for this theme.');
             const hintsObj = hints || {};
@@ -2172,18 +2412,63 @@
                     ? prefCtx.maskChoices.options.length
                     : 0;
 
-            if (!needPrompt) {
-                const only = contextMap.get(options[0].content);
-                return {
-                    ...only,
-                    selectedMask: (only.maskChoices.options || [])[0] || null,
-                };
+            const pickCtx = (contentKey) => {
+                const ctx = contextMap.get(contentKey || options[0].content);
+                if (!ctx) return null;
+                const maskOpts = (ctx.maskChoices && ctx.maskChoices.options) || [];
+                return { ...ctx, selectedMask: maskOpts[0] || null };
+            };
+
+            if (!needPrompt || optionsIn.forceDefault) {
+                if (prefCtx && (optionsIn.forceDefault || prefMaskN <= 1) && (optionsIn.forceDefault || options.length <= 1 || preferredContent)) {
+                    const maskOpts = (prefCtx.maskChoices && prefCtx.maskChoices.options) || [];
+                    return { ...prefCtx, selectedMask: maskOpts[0] || null };
+                }
+                return pickCtx(preferredContent || options[0].content);
             }
             if (prefCtx && prefMaskN <= 1 && (options.length <= 1 || !!preferredContent)) {
-                return {
-                    ...prefCtx,
-                    selectedMask: (prefCtx.maskChoices.options || [])[0] || null,
-                };
+                const maskOpts = (prefCtx.maskChoices && prefCtx.maskChoices.options) || [];
+                return { ...prefCtx, selectedMask: maskOpts[0] || null };
+            }
+            if (optionsIn.allowPrompt === false) return null;
+            return undefined;
+        }
+
+        async function promptVariantCombination(theme, hints) {
+            const auto = await resolveInstallCombination(theme, hints, { allowPrompt: true });
+            if (auto) return auto;
+            const catalogFolder = String((theme && theme.folder) || '').replace(/^\.\/+/, '').trim();
+            if (!catalogFolder) throw new Error('No downloadable folder info for this theme.');
+            const hintsObj = hints || {};
+            let rootGalleryDefaultLabel = '';
+            try {
+                const enc = catalogFolder.split('/').filter(Boolean).map(encodeURIComponent).join('/');
+                const rc = await fetch(`./${enc}/config.json`, { cache: 'no-cache' });
+                if (rc.ok) {
+                    const j = await rc.json();
+                    rootGalleryDefaultLabel = String((j.gallery && j.gallery.defaultVariantLabel) || '').trim();
+                }
+            } catch (_) {}
+            const variantNames = await listThemeVariantFolderNames(catalogFolder, theme);
+            const options = [{ label: rootGalleryDefaultLabel || 'Default', content: catalogFolder, variant: '' }];
+            for (const vn of variantNames) {
+                options.push({
+                    label: formatVariantDisplayLabel(vn),
+                    content: effectiveThemeContentPrefix(catalogFolder, vn),
+                    variant: vn,
+                });
+            }
+            const contextMap = new Map();
+            for (const opt of options) {
+                try {
+                    contextMap.set(
+                        opt.content,
+                        await buildVariantContext(theme, opt.content, catalogFolder, opt.variant)
+                    );
+                } catch (e) {
+                    const msg = e && e.message ? e.message : String(e);
+                    throw new Error(`Could not load variation "${opt.label}": ${msg}`);
+                }
             }
             return new Promise((resolve) => {
                 const overlay = document.createElement('div');
@@ -2538,6 +2823,246 @@
         // =========================================================
         // DIRECT INSTALL (NO GITHUB API)
         // =========================================================
+        async function runDirectInstallJob(theme, selectedCombo, progress) {
+            if (!selectedThemesFolder) throw new Error('Y1 Themes folder is not selected.');
+            const setProgress = (pct, msg) => {
+                if (progress && typeof progress.setProgress === 'function') {
+                    progress.setProgress(pct, msg);
+                }
+            };
+            if (progress && progress.isAborted && progress.isAborted()) {
+                throw new Error('Update cancelled.');
+            }
+
+            const selectedFolder = String(selectedCombo.folder || theme.folder || '').replace(/^\.\/+/, '');
+            const selectedName = String(selectedCombo.name || theme.name || 'theme');
+            const selectedMask = selectedCombo.selectedMask || null;
+            const maskChoices = selectedCombo.maskChoices || {
+                baseMaskPath: resolveMaskTargetPath(
+                    selectedFolder,
+                    selectedCombo.filesRaw || [],
+                    selectedCombo.config && selectedCombo.config.desktopMask
+                ),
+            };
+            const config = selectedCombo.config || {};
+            const filesToInstallRaw = Array.isArray(selectedCombo.filesRaw)
+                ? selectedCombo.filesRaw
+                : extractFilesFromConfig(config, selectedFolder);
+
+            const catalogForInstall = String(selectedCombo.catalogFolder || theme.folder || '')
+                .replace(/^\.\/+/, '')
+                .trim();
+            const variantForInstall = String(selectedCombo.variant || '').trim();
+            const installFolderSafe = safeInstallFolderName({
+                ...theme,
+                folder: catalogForInstall || theme.folder,
+                name: zipThemeDisplayName(selectedName, catalogForInstall, variantForInstall),
+            });
+            const themeFolder = await selectedThemesFolder.getDirectoryHandle(installFolderSafe, { create: true });
+
+            setProgress(5, `Reading config for ${selectedName}...`);
+            const filesToInstall = applyMaskVariantToFileList(
+                filesToInstallRaw,
+                selectedMask && selectedMask.sourcePath,
+                maskChoices.baseMaskPath,
+                selectedFolder
+            );
+
+            const TP = typeof ThemePackaging !== 'undefined' ? ThemePackaging : null;
+            const fileEntries = [];
+            for (const file of filesToInstall) {
+                const sourcePath =
+                    selectedMask &&
+                    selectedMask.sourcePath &&
+                    normalizeConfigAssetPath(file, selectedFolder).toLowerCase() ===
+                        String(maskChoices.baseMaskPath || '').toLowerCase()
+                        ? selectedMask.sourcePath
+                        : file;
+                const fileUrl = buildThemeFileUrl(selectedFolder, sourcePath);
+                if (!fileUrl) continue;
+                fileEntries.push({
+                    path: normalizeConfigAssetPath(file, selectedFolder) || String(file || '').trim(),
+                    download_url: fileUrl,
+                });
+            }
+
+            let installRows = [];
+            let normalizedConfigObj = null;
+            if (TP && config && typeof config === 'object' && fileEntries.length) {
+                const man = TP.buildFlattenPackManifest(fileEntries, selectedFolder, catalogForInstall);
+                normalizedConfigObj = TP.rewriteConfigForDeviceFlatPack(config, selectedFolder, man.logicalToDevice);
+                installRows = (man.items || []).filter((it) => String(it.devicePath || '').toLowerCase() !== 'config.json');
+            } else {
+                installRows = fileEntries.map((fe) => ({
+                    devicePath: String(fe.path || '').replace(/\\/g, '/').split('/').pop() || 'file',
+                    download_url: fe.download_url,
+                }));
+            }
+
+            let installedCount = 0;
+            const totalFiles = installRows.length + 1;
+            let installedSuccess = 0;
+
+            const writeBlobToThemeFolder = async (relativePath, blob) => {
+                const pathParts = String(relativePath || '').split('/').filter(Boolean);
+                const fileName = pathParts.pop();
+                if (!fileName || fileName.includes('..')) return false;
+                let currentFolder = themeFolder;
+                for (const part of pathParts) {
+                    const safePart = part.replace(/[^\w\d-_ ]/g, '_');
+                    currentFolder = await currentFolder.getDirectoryHandle(safePart, { create: true });
+                }
+                const fileHandle = await currentFolder.getFileHandle(fileName, { create: true });
+                const writable = await fileHandle.createWritable();
+                await writable.write(blob);
+                await writable.close();
+                return true;
+            };
+
+            try {
+                const cfgBlob = new Blob([JSON.stringify(normalizedConfigObj || config, null, 2)], {
+                    type: 'application/json',
+                });
+                if (await writeBlobToThemeFolder('config.json', cfgBlob)) installedSuccess++;
+            } catch (e) {
+                console.warn('config.json install failed', e);
+            }
+            installedCount++;
+
+            for (const row of installRows) {
+                if (progress && progress.isAborted && progress.isAborted()) {
+                    throw new Error('Update cancelled.');
+                }
+                const percent = 5 + Math.round((installedCount / Math.max(totalFiles, 1)) * 90);
+                setProgress(percent, `Installing ${row.devicePath || row.path}...`);
+
+                const fileRes = await fetch(row.download_url);
+                if (!fileRes.ok) {
+                    console.warn(`Missing file on server: ${row.path || row.devicePath}`);
+                    installedCount++;
+                    continue;
+                }
+
+                const blob = await fileRes.blob();
+                const rel = String(row.devicePath || '').replace(/\\/g, '/').replace(/^\/+/, '');
+                if (!rel || rel.includes('..')) {
+                    installedCount++;
+                    continue;
+                }
+                if (await writeBlobToThemeFolder(rel, blob)) installedSuccess++;
+                installedCount++;
+            }
+
+            if (installedSuccess === 0) {
+                throw new Error('No theme files could be installed. Please verify file paths in config.json.');
+            }
+
+            const installCatalogKey = String(selectedCombo.catalogFolder || theme.folder || '').replace(/^\.\/+/, '');
+            if (installCatalogKey && window.ThemeAnalytics) {
+                window.ThemeAnalytics.trackDirectInstall(installCatalogKey, 'gallery');
+            }
+
+            setProgress(95, 'Finalizing...');
+            return { installCatalogKey, installFolderSafe };
+        }
+
+        async function runBulkUpdateAllThemes() {
+            if (!selectedThemesFolder || bulkUpdateRunActive) return;
+            const queue = getBulkInstallableThemes();
+            if (!queue.length) {
+                alert('No installable gallery themes are loaded.');
+                closeBulkUpdateModal();
+                return;
+            }
+
+            bulkUpdateRunActive = true;
+            bulkUpdateAbortRequested = false;
+            if (bulkUpdateStartBtn) {
+                bulkUpdateStartBtn.disabled = true;
+                bulkUpdateStartBtn.style.display = 'none';
+            }
+            if (bulkUpdateCancelBtn) {
+                bulkUpdateCancelBtn.disabled = false;
+                bulkUpdateCancelBtn.textContent = 'Cancel update';
+            }
+
+            const total = queue.length;
+            let done = 0;
+            let okCount = 0;
+            const failed = [];
+
+            for (let i = 0; i < total; i++) {
+                if (bulkUpdateAbortRequested) break;
+                const theme = queue[i];
+                const themeLabel = safeText(theme.name || theme.folder || 'theme');
+                const overallBase = (i / total) * 100;
+                setBulkUpdateProgress(
+                    overallBase,
+                    `Preparing ${themeLabel}…`,
+                    `Theme ${i + 1} of ${total} · ${okCount} succeeded` + (failed.length ? ` · ${failed.length} failed` : '')
+                );
+
+                try {
+                    const hints = readThemeInstallHints(theme);
+                    const selectedCombo = await resolveInstallCombination(theme, hints, { forceDefault: true });
+                    if (!selectedCombo) throw new Error('Could not resolve theme variation.');
+
+                    await runDirectInstallJob(theme, selectedCombo, {
+                        setProgress(filePct) {
+                            const slice = 100 / total;
+                            const overall = overallBase + (Math.max(0, Math.min(100, filePct)) / 100) * slice;
+                            setBulkUpdateProgress(
+                                overall,
+                                `Updating ${themeLabel}…`,
+                                `Theme ${i + 1} of ${total} · ${okCount} succeeded`
+                            );
+                        },
+                        isAborted() {
+                            return bulkUpdateAbortRequested;
+                        },
+                    });
+                    markGalleryCardOnDevice(theme);
+                    okCount++;
+                } catch (err) {
+                    if (bulkUpdateAbortRequested && (err.message === 'Update cancelled.' || err.name === 'AbortError')) {
+                        break;
+                    }
+                    console.warn('Bulk update failed for', theme.folder || theme.name, err);
+                    failed.push({ name: themeLabel, message: err.message || String(err) });
+                }
+                done++;
+                setBulkUpdateProgress(
+                    (done / total) * 100,
+                    bulkUpdateAbortRequested ? 'Cancelled.' : `Finished ${themeLabel}`,
+                    `Theme ${done} of ${total} · ${okCount} succeeded` + (failed.length ? ` · ${failed.length} failed` : '')
+                );
+            }
+
+            if (bulkUpdateAbortRequested) {
+                setBulkUpdateProgress(
+                    (done / total) * 100,
+                    'Update cancelled.',
+                    `${okCount} of ${done} theme(s) updated before cancel.` + (failed.length ? ` ${failed.length} failed.` : '')
+                );
+            } else if (failed.length) {
+                setBulkUpdateProgress(
+                    100,
+                    'Update complete with some errors.',
+                    `${okCount} succeeded, ${failed.length} failed, ${total - okCount - failed.length} skipped.`
+                );
+            } else {
+                setBulkUpdateProgress(100, 'All themes updated.', `${okCount} of ${total} theme(s) installed or updated.`);
+            }
+
+            if (onlyOnDeviceCheckbox && onlyOnDeviceCheckbox.checked) applyFilters();
+
+            bulkUpdateRunActive = false;
+            if (bulkUpdateCancelBtn) {
+                bulkUpdateCancelBtn.disabled = false;
+                bulkUpdateCancelBtn.textContent = 'Close';
+            }
+        }
+
         function readCardVariantInstallHints(card) {
             if (!card) return {};
             const sel = card.querySelector('.theme-card-variant-select');
@@ -2554,6 +3079,10 @@
         }
 
         async function directInstallTheme(theme, buttonNode, hints) {
+            if (bulkUpdateRunActive) {
+                alert('Please wait for the bulk theme update to finish, or cancel it first.');
+                return;
+            }
             if (!selectedThemesFolder) {
                 alert('Please select your Y1 Themes folder first');
                 return;
@@ -2576,121 +3105,11 @@
                 }
 
                 progressUI = createProgressUI(card, buttonNode, theme.name || 'theme');
-                const selectedFolder = String(selectedCombo.folder || theme.folder || '').replace(/^\.\/+/, '');
-                const selectedName = String(selectedCombo.name || theme.name || 'theme');
-                const selectedMask = selectedCombo.selectedMask || null;
-                const maskChoices = selectedCombo.maskChoices || { baseMaskPath: resolveMaskTargetPath(selectedFolder, selectedCombo.filesRaw || [], selectedCombo.config && selectedCombo.config.desktopMask) };
-                const config = selectedCombo.config || {};
-                const filesToInstallRaw = Array.isArray(selectedCombo.filesRaw) ? selectedCombo.filesRaw : extractFilesFromConfig(config, selectedFolder);
-
-                const catalogForInstall = String(selectedCombo.catalogFolder || theme.folder || '').replace(/^\.\/+/, '').trim();
-                const variantForInstall = String(selectedCombo.variant || '').trim();
-                const installFolderSafe = safeInstallFolderName({
-                    ...theme,
-                    folder: catalogForInstall || theme.folder,
-                    name: zipThemeDisplayName(selectedName, catalogForInstall, variantForInstall),
+                await runDirectInstallJob(theme, selectedCombo, {
+                    setProgress(pct, msg) {
+                        progressUI.setProgress(pct, msg);
+                    },
                 });
-                const themeFolder = await selectedThemesFolder.getDirectoryHandle(installFolderSafe, { create: true });
-
-                progressUI.setProgress(5, `Reading config for ${selectedName}...`);
-                const filesToInstall = applyMaskVariantToFileList(
-                    filesToInstallRaw,
-                    selectedMask && selectedMask.sourcePath,
-                    maskChoices.baseMaskPath,
-                    selectedFolder
-                );
-
-                const TP = typeof ThemePackaging !== 'undefined' ? ThemePackaging : null;
-                const fileEntries = [];
-                for (const file of filesToInstall) {
-                    const sourcePath =
-                        selectedMask && selectedMask.sourcePath &&
-                        normalizeConfigAssetPath(file, selectedFolder).toLowerCase() === String(maskChoices.baseMaskPath || '').toLowerCase()
-                            ? selectedMask.sourcePath
-                            : file;
-                    const fileUrl = buildThemeFileUrl(selectedFolder, sourcePath);
-                    if (!fileUrl) continue;
-                    fileEntries.push({
-                        path: normalizeConfigAssetPath(file, selectedFolder) || String(file || '').trim(),
-                        download_url: fileUrl
-                    });
-                }
-
-                let installRows = [];
-                let normalizedConfigObj = null;
-                if (TP && config && typeof config === 'object' && fileEntries.length) {
-                    const man = TP.buildFlattenPackManifest(fileEntries, selectedFolder, catalogForInstall);
-                    normalizedConfigObj = TP.rewriteConfigForDeviceFlatPack(config, selectedFolder, man.logicalToDevice);
-                    installRows = (man.items || []).filter((it) => String(it.devicePath || '').toLowerCase() !== 'config.json');
-                } else {
-                    installRows = fileEntries.map((fe) => ({
-                        devicePath: String(fe.path || '').replace(/\\/g, '/').split('/').pop() || 'file',
-                        download_url: fe.download_url
-                    }));
-                }
-
-                let installedCount = 0;
-                const totalFiles = installRows.length + 1;
-                let installedSuccess = 0;
-
-                const writeBlobToThemeFolder = async (relativePath, blob) => {
-                    const pathParts = String(relativePath || '').split('/').filter(Boolean);
-                    const fileName = pathParts.pop();
-                    if (!fileName || fileName.includes('..')) return false;
-                    let currentFolder = themeFolder;
-                    for (const part of pathParts) {
-                        const safePart = part.replace(/[^\w\d-_ ]/g, '_');
-                        currentFolder = await currentFolder.getDirectoryHandle(safePart, { create: true });
-                    }
-                    const fileHandle = await currentFolder.getFileHandle(fileName, { create: true });
-                    const writable = await fileHandle.createWritable();
-                    await writable.write(blob);
-                    await writable.close();
-                    return true;
-                };
-
-                try {
-                    const cfgBlob = new Blob([JSON.stringify(normalizedConfigObj || config, null, 2)], { type: 'application/json' });
-                    if (await writeBlobToThemeFolder('config.json', cfgBlob)) installedSuccess++;
-                } catch (e) {
-                    console.warn('config.json install failed', e);
-                }
-                installedCount++;
-
-                for (const row of installRows) {
-                    try {
-                        const percent = 5 + Math.round((installedCount / Math.max(totalFiles, 1)) * 90);
-                        progressUI.setProgress(percent, `Installing ${row.devicePath || row.path}...`);
-
-                        const fileRes = await fetch(row.download_url);
-                        if (!fileRes.ok) {
-                            console.warn(`Missing file on server: ${row.path || row.devicePath}`);
-                            installedCount++;
-                            continue;
-                        }
-
-                        const blob = await fileRes.blob();
-                        const rel = String(row.devicePath || '').replace(/\\/g, '/').replace(/^\/+/, '');
-                        if (!rel || rel.includes('..')) {
-                            installedCount++;
-                            continue;
-                        }
-                        if (await writeBlobToThemeFolder(rel, blob)) installedSuccess++;
-                    } catch (e) {
-                        console.warn(`Error installing ${row.path || row.devicePath}:`, e);
-                    }
-                    installedCount++;
-                }
-
-                if (installedSuccess === 0) {
-                    throw new Error('No theme files could be installed. Please verify file paths in config.json.');
-                }
-
-                const installCatalogKey = String(selectedCombo.catalogFolder || theme.folder || '').replace(/^\.\/+/, '');
-                if (installCatalogKey && window.ThemeAnalytics) {
-                    window.ThemeAnalytics.trackDirectInstall(installCatalogKey, 'gallery');
-                }
-
                 progressUI.setProgress(95, 'Finalizing...');
                 progressUI.removeAndRestoreButton(buttonNode);
 
@@ -2721,6 +3140,10 @@
         // ZIP DOWNLOAD (NO GITHUB API)
         // =========================================================
         async function downloadTheme(theme, buttonNode, hints) {
+            if (bulkUpdateRunActive) {
+                alert('Please wait for the bulk theme update to finish, or cancel it first.');
+                return;
+            }
             const card = buttonNode.closest('.theme-card');
             if (!card) return;
             const diBtn = card.querySelector('[data-direct-install-btn]');
@@ -3392,6 +3815,12 @@
             themes = filterDarkModeVariantListings(themes);
             themes.sort((a, b) => compareThemeTitles(a?.name, b?.name));
             const filteredThemes = themes.filter(t => !!t);
+            galleryCatalogThemes = filteredThemes.filter((t) => {
+                if (!t || !t.folder) return false;
+                if (String(t.sourceType || 'internal').toLowerCase() === 'external') return false;
+                return t.hasConfigFile !== false;
+            });
+            if (selectedThemesFolder) setBulkUpdateButtonEnabled(true);
             clearThemeGridLoadingState(grid);
             if (!filteredThemes.length) {
                 grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#94a3b8">Unable to load themes</p>';
