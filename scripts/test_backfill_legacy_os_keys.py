@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -10,7 +11,10 @@ from backfill_legacy_os_keys import (
     add_legacy_os_keys,
     backfill_config_file,
     ensure_canonical_transparent_source,
-    ensure_transparent_png,
+    fill_theme_folder,
+    iter_content_dirs,
+    sync_transparent_png,
+    sync_transparent_in_theme_folder,
 )
 
 
@@ -53,23 +57,24 @@ class LegacyOsBackfillTests(unittest.TestCase):
         add_legacy_os_keys(cfg, REF)
         self.assertEqual(cfg["homePageConfig"]["ebook"], "")
 
-    def test_does_not_replace_existing_transparent(self) -> None:
+    def test_sync_replaces_wrong_transparent(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             theme = Path(tmp) / "Theme"
             theme.mkdir()
             dest = theme / TRANSPARENT_FILENAME
             dest.write_bytes(b"legacy-custom-transparent")
             source = ensure_canonical_transparent_source()
-            self.assertFalse(ensure_transparent_png(theme, source))
-            self.assertEqual(dest.read_bytes(), b"legacy-custom-transparent")
+            self.assertTrue(sync_transparent_png(theme, source))
+            self.assertEqual(dest.read_bytes(), source.read_bytes())
 
-    def test_copies_transparent_when_missing(self) -> None:
+    def test_sync_skips_when_already_canonical(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             theme = Path(tmp) / "Theme"
             theme.mkdir()
             source = ensure_canonical_transparent_source()
-            self.assertTrue(ensure_transparent_png(theme, source))
-            self.assertTrue((theme / TRANSPARENT_FILENAME).is_file())
+            shutil_copy = source.read_bytes()
+            (theme / TRANSPARENT_FILENAME).write_bytes(shutil_copy)
+            self.assertFalse(sync_transparent_png(theme, source))
 
     def test_backfill_config_file_additive_only(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -100,6 +105,24 @@ class LegacyOsBackfillTests(unittest.TestCase):
             self.assertTrue(changed)
             self.assertTrue(copied)
             self.assertTrue((variant / TRANSPARENT_FILENAME).is_file())
+
+    def test_fill_theme_folder_syncs_root_and_variant(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            theme = Path(tmp) / "Theme"
+            root = theme
+            root.mkdir(parents=True)
+            (root / "config.json").write_text(json.dumps({"homePageConfig": {}}, indent=4) + "\n", encoding="utf-8")
+            variant = theme / "Variants" / "Light"
+            variant.mkdir(parents=True)
+            (variant / "config.json").write_text(json.dumps({"homePageConfig": {}}, indent=4) + "\n", encoding="utf-8")
+            (root / TRANSPARENT_FILENAME).write_bytes(b"bad-root")
+            (variant / TRANSPARENT_FILENAME).write_bytes(b"bad-variant")
+            source = ensure_canonical_transparent_source()
+            self.assertTrue(fill_theme_folder(theme))
+            self.assertEqual((root / TRANSPARENT_FILENAME).read_bytes(), source.read_bytes())
+            self.assertEqual((variant / TRANSPARENT_FILENAME).read_bytes(), source.read_bytes())
+            dirs = iter_content_dirs(theme)
+            self.assertEqual(len(dirs), 2)
 
 
 if __name__ == "__main__":

@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Additive legacy OS backfill: missing eBook/Calendar/Calculator/Launcher keys → transparent.png.
 
-Only adds absent keys in homePageConfig and settingConfig. Copies repo-root transparent.png
-only into folders where keys were added and transparent.png is missing. Never overwrites files.
+Adds only absent keys in homePageConfig and settingConfig. Copies repo-root transparent.png
+into each theme root and Variants/<look>/ folder that has config.json, replacing any existing
+transparent.png so bad assets from earlier backfills cannot linger.
 """
 
 from __future__ import annotations
@@ -93,16 +94,6 @@ def ensure_canonical_transparent_source() -> Path:
     return TRANSPARENT_CANONICAL
 
 
-def ensure_transparent_png(theme_dir: Path, source: Path) -> bool:
-    """Copy canonical transparent.png only when the file does not exist."""
-    dest = theme_dir / TRANSPARENT_FILENAME
-    if dest.is_file():
-        return False
-    theme_dir.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(source, dest)
-    return True
-
-
 def iter_config_paths(theme_dir: Path) -> list[Path]:
     paths: list[Path] = []
     root_cfg = theme_dir / "config.json"
@@ -117,6 +108,40 @@ def iter_config_paths(theme_dir: Path) -> list[Path]:
             if cfg.is_file():
                 paths.append(cfg)
     return paths
+
+
+def iter_content_dirs(theme_dir: Path) -> list[Path]:
+    """Theme root and each Variants/<look>/ dir that has config.json."""
+    seen: set[str] = set()
+    out: list[Path] = []
+    for cfg_path in iter_config_paths(theme_dir):
+        parent = cfg_path.parent
+        key = str(parent.resolve())
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(parent)
+    return out
+
+
+def sync_transparent_png(content_dir: Path, source: Path) -> bool:
+    """Copy repo-root canonical transparent.png, replacing any existing file."""
+    dest = content_dir / TRANSPARENT_FILENAME
+    content_dir.mkdir(parents=True, exist_ok=True)
+    source_bytes = source.read_bytes()
+    if dest.is_file() and dest.read_bytes() == source_bytes:
+        return False
+    shutil.copy2(source, dest)
+    return True
+
+
+def sync_transparent_in_theme_folder(theme_dir: Path, source: Path) -> int:
+    """Place canonical transparent.png in theme root and every variant content folder."""
+    updated = 0
+    for content_dir in iter_content_dirs(theme_dir):
+        if sync_transparent_png(content_dir, source):
+            updated += 1
+    return updated
 
 
 def backfill_config_file(
@@ -140,8 +165,8 @@ def backfill_config_file(
     if before == after:
         return False, False
     _write_json_preserve_indent(cfg_path, config, original_text)
-    transparent_copied = ensure_transparent_png(cfg_path.parent, transparent_source)
-    return True, transparent_copied
+    transparent_synced = sync_transparent_png(cfg_path.parent, transparent_source)
+    return True, transparent_synced
 
 
 def fill_theme_folder(theme_dir: Path, reference: dict[str, Any] | None = None) -> bool:
@@ -151,11 +176,14 @@ def fill_theme_folder(theme_dir: Path, reference: dict[str, Any] | None = None) 
     source = ensure_canonical_transparent_source()
     any_change = False
     for cfg_path in iter_config_paths(theme_dir):
-        cfg_changed, transparent_copied = backfill_config_file(
+        cfg_changed, transparent_synced = backfill_config_file(
             cfg_path, ref, transparent_source=source
         )
-        if cfg_changed or transparent_copied:
+        if cfg_changed or transparent_synced:
             any_change = True
+    synced = sync_transparent_in_theme_folder(theme_dir, source)
+    if synced:
+        any_change = True
     return any_change
 
 
@@ -169,18 +197,22 @@ def discover_catalog_theme_dirs(root: Path | None = None) -> list[Path]:
     for child in sorted(base.iterdir(), key=lambda p: str(p.name).casefold()):
         if not child.is_dir() or child.name in EXCLUDED_DIRS or child.name.startswith("."):
             continue
-        if (child / "config.json").is_file():
+        if (child / "config.json").is_file() or (child / "Variants").is_dir():
             out.append(child)
     return out
 
 
-def _folder_would_change(theme_dir: Path, ref: dict[str, Any]) -> bool:
+def _folder_would_change(theme_dir: Path, ref: dict[str, Any], source: Path) -> bool:
     for cfg_path in iter_config_paths(theme_dir):
         config = _load_json(cfg_path)
         if not config:
             continue
         clone = json.loads(json.dumps(config))
         if add_legacy_os_keys(clone, ref):
+            return True
+    for content_dir in iter_content_dirs(theme_dir):
+        dest = content_dir / TRANSPARENT_FILENAME
+        if not dest.is_file() or dest.read_bytes() != source.read_bytes():
             return True
     return False
 
@@ -189,9 +221,10 @@ def check_all_theme_folders() -> list[str]:
     ref = _load_reference_config()
     if not ref:
         raise SystemExit(f"ERROR: Reference config missing: {REFERENCE_CONFIG_PATH}")
+    source = ensure_canonical_transparent_source()
     would_change: list[str] = []
     for theme_dir in discover_catalog_theme_dirs():
-        if _folder_would_change(theme_dir, ref):
+        if _folder_would_change(theme_dir, ref, source):
             would_change.append(str(theme_dir.name))
     return sorted(set(would_change), key=str.lower)
 
@@ -203,22 +236,26 @@ def fill_all_theme_folders(root: Path | None = None) -> tuple[int, int, int]:
     source = ensure_canonical_transparent_source()
     folders_touched = 0
     configs_updated = 0
-    transparencies_added = 0
+    transparencies_synced = 0
     for theme_dir in discover_catalog_theme_dirs(root):
         folder_changed = False
         for cfg_path in iter_config_paths(theme_dir):
-            cfg_changed, transparent_copied = backfill_config_file(
+            cfg_changed, transparent_synced = backfill_config_file(
                 cfg_path, ref, transparent_source=source
             )
             if cfg_changed:
                 configs_updated += 1
                 folder_changed = True
-            if transparent_copied:
-                transparencies_added += 1
+            if transparent_synced:
+                transparencies_synced += 1
                 folder_changed = True
+        synced = sync_transparent_in_theme_folder(theme_dir, source)
+        if synced:
+            transparencies_synced += synced
+            folder_changed = True
         if folder_changed:
             folders_touched += 1
-    return folders_touched, configs_updated, transparencies_added
+    return folders_touched, configs_updated, transparencies_synced
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -233,17 +270,17 @@ def main(argv: list[str] | None = None) -> int:
     if args.check:
         pending = check_all_theme_folders()
         if not pending:
-            print("OK: No theme folders need legacy OS config backfill.")
+            print("OK: No theme folders need legacy OS config or transparent.png sync.")
             return 0
-        print("Theme folders that would receive backfill:")
+        print("Theme folders that would receive backfill or transparent sync:")
         for name in pending:
             print(f"  - {name}")
         return 0
 
-    folders, configs, trans_added = fill_all_theme_folders()
+    folders, configs, trans_synced = fill_all_theme_folders()
     print(
         f"OK: Legacy OS backfill in {folders} theme folder(s) "
-        f"({configs} config.json updated, {trans_added} transparent.png copied where missing)."
+        f"({configs} config.json updated, {trans_synced} transparent.png synced from repo root)."
     )
     return 0
 

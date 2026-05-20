@@ -899,22 +899,197 @@
             };
         }
 
+        function installFolderNameCandidates(theme) {
+            const folder = String((theme && theme.folder) || '').replace(/^\.\/+/, '').trim();
+            const name = String((theme && theme.name) || '').trim() || 'theme';
+            const candidates = new Set();
+            if (folder) {
+                candidates.add(safeInstallFolderName({ folder, name }));
+                candidates.add(folder);
+            }
+            candidates.add(name.replace(/[^\w\d-_ ]/g, '_') || 'theme');
+            if (name) candidates.add(name);
+            return [...candidates].filter(Boolean);
+        }
+
+        function catalogThemeForDeviceFolder(deviceFolderName) {
+            const key = String(deviceFolderName || '').trim();
+            if (!key) return null;
+            for (const t of getBulkInstallableThemes()) {
+                for (const candidate of installFolderNameCandidates(t)) {
+                    if (candidate === key) return t;
+                }
+            }
+            return null;
+        }
+
         async function isThemeFolderOnDevice(theme) {
             if (!selectedThemesFolder || !theme) return false;
-            const installName = safeInstallFolderName(theme);
-            if (!installName) return false;
-            try {
-                await selectedThemesFolder.getDirectoryHandle(installName, { create: false });
-                return true;
-            } catch (_) {
-                return false;
+            return !!(await resolveDeviceThemeLocation(theme));
+        }
+
+        async function resolveDeviceThemeLocation(theme) {
+            if (!selectedThemesFolder || !theme) return null;
+            for (const candidate of installFolderNameCandidates(theme)) {
+                try {
+                    const handle = await selectedThemesFolder.getDirectoryHandle(candidate, { create: false });
+                    return { deviceFolderName: candidate, deviceDirHandle: handle };
+                } catch (_) {}
             }
+            return null;
+        }
+
+        async function listDeviceRootFilenames(dirHandle) {
+            const names = [];
+            if (!dirHandle) return names;
+            for await (const [name, handle] of dirHandle.entries()) {
+                if (handle.kind === 'file') names.push(name);
+            }
+            return names;
+        }
+
+        async function fetchThemeAssetBlob(downloadUrl) {
+            const base = String(downloadUrl || '').trim();
+            if (!base) throw new Error('Missing download URL');
+            const bust = base.includes('?') ? `${base}&_di=${Date.now()}` : `${base}?_di=${Date.now()}`;
+            const res = await fetch(bust, { cache: 'no-store' });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return await res.blob();
+        }
+
+        function buildInstallPlan(theme, selectedCombo) {
+            const selectedFolder = String(selectedCombo.folder || theme.folder || '').replace(/^\.\/+/, '');
+            const selectedMask = selectedCombo.selectedMask || null;
+            const maskChoices = selectedCombo.maskChoices || {
+                baseMaskPath: resolveMaskTargetPath(
+                    selectedFolder,
+                    selectedCombo.filesRaw || [],
+                    selectedCombo.config && selectedCombo.config.desktopMask
+                ),
+            };
+            const config = selectedCombo.config || {};
+            const filesToInstallRaw = Array.isArray(selectedCombo.filesRaw)
+                ? selectedCombo.filesRaw
+                : extractFilesFromConfig(config, selectedFolder);
+            const catalogForInstall = String(selectedCombo.catalogFolder || theme.folder || '')
+                .replace(/^\.\/+/, '')
+                .trim();
+
+            const filesToInstall = applyMaskVariantToFileList(
+                filesToInstallRaw,
+                selectedMask && selectedMask.sourcePath,
+                maskChoices.baseMaskPath,
+                selectedFolder
+            );
+
+            const TP = typeof ThemePackaging !== 'undefined' ? ThemePackaging : null;
+            const fileEntries = [];
+            for (const file of filesToInstall) {
+                const sourcePath =
+                    selectedMask &&
+                    selectedMask.sourcePath &&
+                    normalizeConfigAssetPath(file, selectedFolder).toLowerCase() ===
+                        String(maskChoices.baseMaskPath || '').toLowerCase()
+                        ? selectedMask.sourcePath
+                        : file;
+                const fileUrl = buildThemeFileUrl(selectedFolder, sourcePath);
+                if (!fileUrl) continue;
+                fileEntries.push({
+                    path: normalizeConfigAssetPath(file, selectedFolder) || String(file || '').trim(),
+                    download_url: fileUrl,
+                });
+            }
+
+            let installRows = [];
+            let normalizedConfigObj = null;
+            if (TP && config && typeof config === 'object' && fileEntries.length) {
+                const man = TP.buildFlattenPackManifest(fileEntries, selectedFolder, catalogForInstall);
+                normalizedConfigObj = TP.rewriteConfigForDeviceFlatPack(config, selectedFolder, man.logicalToDevice);
+                installRows = (man.items || []).filter(
+                    (it) => String(it.devicePath || '').toLowerCase() !== 'config.json'
+                );
+            } else {
+                installRows = fileEntries.map((fe) => ({
+                    devicePath: String(fe.path || '').replace(/\\/g, '/').split('/').pop() || 'file',
+                    download_url: fe.download_url,
+                }));
+            }
+
+            const keepOnDevice = new Set(['config.json']);
+            for (const row of installRows) {
+                const leaf = String(row.devicePath || '').split('/').pop();
+                if (leaf) keepOnDevice.add(leaf.toLowerCase());
+            }
+
+            return {
+                selectedFolder,
+                catalogForInstall,
+                config,
+                normalizedConfigObj,
+                installRows,
+                keepOnDevice,
+            };
+        }
+
+        async function detectInstallComboForDevice(theme, deviceDirHandle, hints) {
+            const catalogFolder = String((theme && theme.folder) || '').replace(/^\.\/+/, '').trim();
+            const hintsObj = hints || {};
+            const auto = await resolveInstallCombination(theme, hintsObj, { allowPrompt: false });
+            if (auto) return auto;
+
+            const deviceFiles = await listDeviceRootFilenames(deviceDirHandle);
+            const deviceFileSet = new Set(deviceFiles.map((n) => n.toLowerCase()));
+
+            const variantNames = await listThemeVariantFolderNames(catalogFolder, theme);
+            const options = [{ content: catalogFolder, variant: '' }];
+            for (const vn of variantNames) {
+                options.push({
+                    content: effectiveThemeContentPrefix(catalogFolder, vn),
+                    variant: vn,
+                });
+            }
+
+            let bestCtx = null;
+            let bestScore = -1;
+            for (const opt of options) {
+                try {
+                    const ctx = await buildVariantContext(theme, opt.content, catalogFolder, opt.variant);
+                    const plan = buildInstallPlan(theme, {
+                        ...ctx,
+                        selectedMask: (ctx.maskChoices.options || [])[0] || null,
+                    });
+                    let score = 0;
+                    for (const name of plan.keepOnDevice) {
+                        if (name === 'config.json') continue;
+                        if (deviceFileSet.has(name)) score += 1;
+                    }
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestCtx = ctx;
+                    }
+                } catch (_) {}
+            }
+
+            if (bestCtx) {
+                const maskOpts = (bestCtx.maskChoices && bestCtx.maskChoices.options) || [];
+                return { ...bestCtx, selectedMask: maskOpts[0] || null };
+            }
+
+            return resolveInstallCombination(theme, hintsObj, { forceDefault: true });
         }
 
         async function buildBulkOnDeviceUpdateQueue() {
             const queue = [];
-            for (const theme of getBulkInstallableThemes()) {
-                if (await isThemeFolderOnDevice(theme)) queue.push(theme);
+            if (!selectedThemesFolder) return queue;
+            for await (const [deviceName, handle] of selectedThemesFolder.entries()) {
+                if (handle.kind !== 'directory') continue;
+                const theme = catalogThemeForDeviceFolder(deviceName);
+                if (!theme) continue;
+                queue.push({
+                    theme,
+                    deviceFolderName: deviceName,
+                    deviceDirHandle: handle,
+                });
             }
             return queue;
         }
@@ -1308,9 +1483,15 @@
                         const di = card.querySelector('[data-direct-install-btn]');
                         try {
                             if (!themeRef) throw new Error('no theme');
-                            await selectedThemesFolder.getDirectoryHandle(safeInstallFolderName(themeRef), {
-                                create: false
-                            });
+                            let foundOnDevice = false;
+                            for (const candidate of installFolderNameCandidates(themeRef)) {
+                                try {
+                                    await selectedThemesFolder.getDirectoryHandle(candidate, { create: false });
+                                    foundOnDevice = true;
+                                    break;
+                                } catch (_) {}
+                            }
+                            if (!foundOnDevice) throw new Error('not on device');
                             card.classList.add('on-device');
                             if (status) status.style.display = 'block';
                             if (di) {
@@ -2893,8 +3074,21 @@
         // =========================================================
         // DIRECT INSTALL (NO GITHUB API)
         // =========================================================
-        async function runDirectInstallJob(theme, selectedCombo, progress) {
+        async function pruneStaleDeviceFiles(themeFolder, keepLowercaseSet) {
+            for await (const [name, handle] of themeFolder.entries()) {
+                if (handle.kind !== 'file') continue;
+                if (keepLowercaseSet.has(name.toLowerCase())) continue;
+                try {
+                    await themeFolder.removeEntry(name);
+                } catch (e) {
+                    console.warn('Could not remove stale file on device:', name, e);
+                }
+            }
+        }
+
+        async function runDirectInstallJob(theme, selectedCombo, progress, installOpts) {
             if (!selectedThemesFolder) throw new Error('Y1 Themes folder is not selected.');
+            const opts = installOpts || {};
             const setProgress = (pct, msg) => {
                 if (progress && typeof progress.setProgress === 'function') {
                     progress.setProgress(pct, msg);
@@ -2904,74 +3098,32 @@
                 throw new Error('Update cancelled.');
             }
 
-            const selectedFolder = String(selectedCombo.folder || theme.folder || '').replace(/^\.\/+/, '');
             const selectedName = String(selectedCombo.name || theme.name || 'theme');
-            const selectedMask = selectedCombo.selectedMask || null;
-            const maskChoices = selectedCombo.maskChoices || {
-                baseMaskPath: resolveMaskTargetPath(
-                    selectedFolder,
-                    selectedCombo.filesRaw || [],
-                    selectedCombo.config && selectedCombo.config.desktopMask
-                ),
-            };
-            const config = selectedCombo.config || {};
-            const filesToInstallRaw = Array.isArray(selectedCombo.filesRaw)
-                ? selectedCombo.filesRaw
-                : extractFilesFromConfig(config, selectedFolder);
-
             const catalogForInstall = String(selectedCombo.catalogFolder || theme.folder || '')
                 .replace(/^\.\/+/, '')
                 .trim();
             const variantForInstall = String(selectedCombo.variant || '').trim();
-            const installFolderSafe = safeInstallFolderName({
-                ...theme,
-                folder: catalogForInstall || theme.folder,
-                name: zipThemeDisplayName(selectedName, catalogForInstall, variantForInstall),
-            });
-            const themeFolder = await selectedThemesFolder.getDirectoryHandle(installFolderSafe, { create: true });
-
-            setProgress(5, `Reading config for ${selectedName}...`);
-            const filesToInstall = applyMaskVariantToFileList(
-                filesToInstallRaw,
-                selectedMask && selectedMask.sourcePath,
-                maskChoices.baseMaskPath,
-                selectedFolder
-            );
-
-            const TP = typeof ThemePackaging !== 'undefined' ? ThemePackaging : null;
-            const fileEntries = [];
-            for (const file of filesToInstall) {
-                const sourcePath =
-                    selectedMask &&
-                    selectedMask.sourcePath &&
-                    normalizeConfigAssetPath(file, selectedFolder).toLowerCase() ===
-                        String(maskChoices.baseMaskPath || '').toLowerCase()
-                        ? selectedMask.sourcePath
-                        : file;
-                const fileUrl = buildThemeFileUrl(selectedFolder, sourcePath);
-                if (!fileUrl) continue;
-                fileEntries.push({
-                    path: normalizeConfigAssetPath(file, selectedFolder) || String(file || '').trim(),
-                    download_url: fileUrl,
+            const installFolderSafe =
+                String(opts.deviceFolderName || '').trim() ||
+                safeInstallFolderName({
+                    ...theme,
+                    folder: catalogForInstall || theme.folder,
+                    name: zipThemeDisplayName(selectedName, catalogForInstall, variantForInstall),
                 });
-            }
 
-            let installRows = [];
-            let normalizedConfigObj = null;
-            if (TP && config && typeof config === 'object' && fileEntries.length) {
-                const man = TP.buildFlattenPackManifest(fileEntries, selectedFolder, catalogForInstall);
-                normalizedConfigObj = TP.rewriteConfigForDeviceFlatPack(config, selectedFolder, man.logicalToDevice);
-                installRows = (man.items || []).filter((it) => String(it.devicePath || '').toLowerCase() !== 'config.json');
-            } else {
-                installRows = fileEntries.map((fe) => ({
-                    devicePath: String(fe.path || '').replace(/\\/g, '/').split('/').pop() || 'file',
-                    download_url: fe.download_url,
-                }));
-            }
+            const themeFolder =
+                opts.deviceDirHandle ||
+                (await selectedThemesFolder.getDirectoryHandle(installFolderSafe, { create: true }));
+
+            setProgress(5, `Writing to ${installFolderSafe}…`);
+
+            const plan = buildInstallPlan(theme, selectedCombo);
+            const { installRows, normalizedConfigObj, config, keepOnDevice } = plan;
 
             let installedCount = 0;
             const totalFiles = installRows.length + 1;
             let installedSuccess = 0;
+            const fetchFailures = [];
 
             const writeBlobToThemeFolder = async (relativePath, blob) => {
                 const pathParts = String(relativePath || '').split('/').filter(Boolean);
@@ -2983,7 +3135,15 @@
                     currentFolder = await currentFolder.getDirectoryHandle(safePart, { create: true });
                 }
                 const fileHandle = await currentFolder.getFileHandle(fileName, { create: true });
-                const writable = await fileHandle.createWritable();
+                let writable;
+                try {
+                    writable = await fileHandle.createWritable({ keepExistingData: false });
+                } catch (_) {
+                    writable = await fileHandle.createWritable();
+                }
+                try {
+                    if (typeof writable.truncate === 'function') await writable.truncate(0);
+                } catch (_) {}
                 await writable.write(blob);
                 await writable.close();
                 return true;
@@ -2996,6 +3156,7 @@
                 if (await writeBlobToThemeFolder('config.json', cfgBlob)) installedSuccess++;
             } catch (e) {
                 console.warn('config.json install failed', e);
+                fetchFailures.push('config.json');
             }
             installedCount++;
 
@@ -3004,27 +3165,46 @@
                     throw new Error('Update cancelled.');
                 }
                 const percent = 5 + Math.round((installedCount / Math.max(totalFiles, 1)) * 90);
-                setProgress(percent, `Installing ${row.devicePath || row.path}...`);
+                const leaf = String(row.devicePath || row.path || '').split('/').pop() || 'file';
+                setProgress(percent, `Installing ${leaf}…`);
 
-                const fileRes = await fetch(row.download_url);
-                if (!fileRes.ok) {
-                    console.warn(`Missing file on server: ${row.path || row.devicePath}`);
+                let blob;
+                try {
+                    blob = await fetchThemeAssetBlob(row.download_url);
+                } catch (e) {
+                    console.warn(`Missing file on server: ${row.path || row.devicePath}`, e);
+                    fetchFailures.push(leaf);
                     installedCount++;
                     continue;
                 }
 
-                const blob = await fileRes.blob();
                 const rel = String(row.devicePath || '').replace(/\\/g, '/').replace(/^\/+/, '');
                 if (!rel || rel.includes('..')) {
                     installedCount++;
                     continue;
                 }
-                if (await writeBlobToThemeFolder(rel, blob)) installedSuccess++;
+                try {
+                    if (await writeBlobToThemeFolder(rel, blob)) installedSuccess++;
+                } catch (e) {
+                    console.warn('Write failed:', rel, e);
+                    fetchFailures.push(leaf);
+                }
                 installedCount++;
             }
 
+            if (opts.pruneStale) {
+                setProgress(92, 'Removing old files…');
+                await pruneStaleDeviceFiles(themeFolder, keepOnDevice);
+            }
+
             if (installedSuccess === 0) {
-                throw new Error('No theme files could be installed. Please verify file paths in config.json.');
+                const detail = fetchFailures.length ? ` Failed: ${fetchFailures.slice(0, 5).join(', ')}.` : '';
+                throw new Error(
+                    'No theme files could be written to the Y1 folder "' +
+                        installFolderSafe +
+                        '".' +
+                        detail
+                );
             }
 
             const installCatalogKey = String(selectedCombo.catalogFolder || theme.folder || '').replace(/^\.\/+/, '');
@@ -3033,7 +3213,7 @@
             }
 
             setProgress(95, 'Finalizing...');
-            return { installCatalogKey, installFolderSafe };
+            return { installCatalogKey, installFolderSafe, fetchFailures };
         }
 
         async function runBulkUpdateAllThemes() {
@@ -3063,42 +3243,65 @@
 
             for (let i = 0; i < total; i++) {
                 if (bulkUpdateAbortRequested) break;
-                const theme = queue[i];
+                const entry = queue[i];
+                const theme = entry.theme || entry;
+                const deviceFolderName = String(entry.deviceFolderName || '').trim();
+                const deviceDirHandle = entry.deviceDirHandle || null;
                 const themeLabel = safeText(theme.name || theme.folder || 'theme');
+                const folderHint = deviceFolderName ? ` → ${deviceFolderName}` : '';
                 const overallBase = (i / total) * 100;
                 setBulkUpdateProgress(
                     overallBase,
-                    `Preparing ${themeLabel}…`,
+                    `Preparing ${themeLabel}${folderHint}…`,
                     `Theme ${i + 1} of ${total} · ${okCount} succeeded` + (failed.length ? ` · ${failed.length} failed` : '')
                 );
 
                 try {
                     const hints = readThemeInstallHints(theme);
-                    const selectedCombo = await resolveInstallCombination(theme, hints, { forceDefault: true });
+                    const selectedCombo = await detectInstallComboForDevice(
+                        theme,
+                        deviceDirHandle,
+                        hints
+                    );
                     if (!selectedCombo) throw new Error('Could not resolve theme variation.');
 
-                    await runDirectInstallJob(theme, selectedCombo, {
-                        setProgress(filePct) {
+                    const jobResult = await runDirectInstallJob(theme, selectedCombo, {
+                        setProgress(filePct, fileMsg) {
                             const slice = 100 / total;
                             const overall = overallBase + (Math.max(0, Math.min(100, filePct)) / 100) * slice;
+                            const detail = fileMsg ? ` · ${fileMsg}` : '';
                             setBulkUpdateProgress(
                                 overall,
-                                `Updating ${themeLabel}…`,
-                                `Theme ${i + 1} of ${total} · ${okCount} succeeded`
+                                `Updating ${themeLabel}${folderHint}…`,
+                                `Theme ${i + 1} of ${total} · ${okCount} succeeded${detail}`
                             );
                         },
                         isAborted() {
                             return bulkUpdateAbortRequested;
                         },
+                    }, {
+                        deviceFolderName,
+                        deviceDirHandle,
+                        pruneStale: true,
                     });
+                    if (jobResult.fetchFailures && jobResult.fetchFailures.length) {
+                        console.warn(
+                            'Bulk update partial for',
+                            deviceFolderName || theme.folder,
+                            jobResult.fetchFailures
+                        );
+                    }
                     markGalleryCardOnDevice(theme);
                     okCount++;
                 } catch (err) {
                     if (bulkUpdateAbortRequested && (err.message === 'Update cancelled.' || err.name === 'AbortError')) {
                         break;
                     }
-                    console.warn('Bulk update failed for', theme.folder || theme.name, err);
-                    failed.push({ name: themeLabel, message: err.message || String(err) });
+                    console.warn('Bulk update failed for', deviceFolderName || theme.folder || theme.name, err);
+                    failed.push({
+                        name: themeLabel + (deviceFolderName ? ` (${deviceFolderName})` : ''),
+                        message: err.message || String(err),
+                    });
                 }
                 done++;
                 setBulkUpdateProgress(
@@ -3175,11 +3378,19 @@
                 }
 
                 progressUI = createProgressUI(card, buttonNode, theme.name || 'theme');
-                await runDirectInstallJob(theme, selectedCombo, {
-                    setProgress(pct, msg) {
-                        progressUI.setProgress(pct, msg);
+                const onDeviceLoc = card.classList.contains('on-device')
+                    ? await resolveDeviceThemeLocation(theme)
+                    : null;
+                await runDirectInstallJob(
+                    theme,
+                    selectedCombo,
+                    {
+                        setProgress(pct, msg) {
+                            progressUI.setProgress(pct, msg);
+                        },
                     },
-                });
+                    onDeviceLoc ? { ...onDeviceLoc, pruneStale: true } : undefined
+                );
                 progressUI.setProgress(95, 'Finalizing...');
                 progressUI.removeAndRestoreButton(buttonNode);
 
