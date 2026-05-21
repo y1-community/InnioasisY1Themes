@@ -32,6 +32,37 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+body.site-themes-app {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+}
+
+html.site-themes-html,
+html.site-themes-html body.site-themes-app {
+    min-height: 100%;
+}
+
+body.site-themes-app > .gallery-topbar {
+    flex-shrink: 0;
+}
+
+body.site-themes-app > .wrap,
+body.site-themes-app > main,
+body.site-themes-app > .gold-page-wrap {
+    flex: 1 0 auto;
+}
+
+/* Hide Y1 badge until Direct Install folder scan marks the card */
+.theme-card .theme-status,
+.theme-card .theme-status[hidden] {
+    display: none !important;
+}
+
+.theme-card.on-device .theme-status:not([hidden]) {
+    display: inline-block !important;
+}
+
 #nav-root {
     display: none;
 }
@@ -419,23 +450,35 @@ a.theme-preview-gold-badge[hidden] {
 }
 
 /* —— Site footer (nav.js) —— */
-.site-footer--themes {
+body.site-themes-app #footer-root {
+    margin-top: auto;
+    width: 100%;
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
     background: var(--site-bg-elevated);
     border-top: 1px solid var(--site-border);
+    padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+    box-sizing: border-box;
+}
+
+.site-footer--themes {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    background: transparent;
+    border-top: none;
     color: var(--site-muted);
-    padding: 2.5rem 1.25rem 2rem;
-    margin-top: 3rem;
-    margin-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
-    position: relative;
-    z-index: 10001;
+    padding: 2.5rem 1.25rem 0.5rem;
+    margin-top: 0;
+    margin-bottom: 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .gallery-home-lead {
     max-width: 42rem;
-}
-
-#footer-root {
-    margin-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
 }
 
 .site-footer--themes .footer-col a {
@@ -445,6 +488,12 @@ a.theme-preview-gold-badge[hidden] {
 .site-footer--themes .footer-bottom {
     color: var(--site-muted);
     font-size: 0.82rem;
+    text-align: center;
+    padding-top: 1rem;
+    padding-bottom: 0.25rem;
+    margin: 0;
+    position: relative;
+    z-index: 1;
 }
 
 .site-footer--themes .footer-bottom .footer-copyleft,
@@ -510,8 +559,7 @@ body.site-themes-app #direct-install-banner {
     border-radius: var(--site-radius-md) !important;
 }
 
-body.site-themes-app .bulk-update-panel,
-body.site-themes-app #rockbox-backdrop > div {
+body.site-themes-app .bulk-update-panel {
     background: var(--site-bg-elevated) !important;
     border: 1px solid var(--site-border) !important;
     color: var(--site-text) !important;

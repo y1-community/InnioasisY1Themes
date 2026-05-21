@@ -66,11 +66,21 @@
                 setDonateOpen(false);
             }
 
+            function closePrivacyPanel() {
+                try {
+                    document.dispatchEvent(new CustomEvent("y1-close-privacy-panel"));
+                } catch (_) {}
+                var privacyPanel = document.getElementById("y1-privacy-panel");
+                if (privacyPanel) privacyPanel.classList.remove("y1-privacy-panel--open");
+            }
+
             if (donateToggle) {
                 donateToggle.addEventListener('click', function (e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    setDonateOpen(!donatePanel.classList.contains('is-open'));
+                    var opening = !donatePanel.classList.contains('is-open');
+                    if (opening) closePrivacyPanel();
+                    setDonateOpen(opening);
                 });
             }
             if (donateClose) {
@@ -92,6 +102,8 @@
                     closeDonateOptions();
                 }
             });
+
+            document.addEventListener("y1-close-donate-panel", closeDonateOptions);
 
             if (window.location.hash === '#donate') {
                 openDonateOptions();

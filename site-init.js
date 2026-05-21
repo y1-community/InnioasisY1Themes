@@ -44,6 +44,9 @@
     }
 
     function init() {
+        if (document.documentElement) {
+            document.documentElement.classList.add("site-themes-html");
+        }
         if (document.body) {
             document.body.classList.add("site-themes-app", "site-dock-mode");
         }

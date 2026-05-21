@@ -3,7 +3,7 @@
 body.site-themes-app {
     background: var(--site-bg, #0a0b0f);
     color: var(--site-text, #f4f6fb);
-    padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: 0;
 }
 
 body.site-themes-app .site-footer,
@@ -102,8 +102,12 @@ body.site-themes-app .theme-card-buttons {
     white-space: nowrap;
 }
 
-.theme-card.on-device .theme-status {
+.theme-card.on-device .theme-status:not([hidden]) {
     display: inline-block;
+}
+
+.theme-card .theme-status[hidden] {
+    display: none !important;
 }
 
 .theme-card-corner-actions {
@@ -164,7 +168,7 @@ body.site-themes-app .theme-card-buttons {
     bottom: calc(12px + env(safe-area-inset-bottom, 0px));
     transform: translateX(-50%);
     z-index: 10001;
-    width: min(96vw, 720px);
+    width: min(92vw, 420px);
     pointer-events: none;
 }
 

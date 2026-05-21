@@ -779,30 +779,13 @@
         </div>
     </div>
 
-    <div id="rockbox-backdrop" style="display:none;position:fixed;inset:0;background:rgba(0, 0, 0, 0.5);align-items:center;justify-content:center;z-index:1000">
-        <div style="background:var(--bg-card);border-radius:12px;min-width:400px;padding:20px;display:flex;flex-direction:column;gap:16px;position:relative">
-            <button id="rockbox-close" style="position:absolute;top:12px;right:12px;background:none;border:0;color:var(--text-secondary);font-size:1.2rem;cursor:pointer">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-
-            <div style="font-size:1.2rem;font-weight:800">Rockbox themes</div>
-            <div style="color:var(--text-secondary);font-size:.95rem">
-                Choose your screen resolution
-            </div>
-
-            <button class="btn rckbox-btn" id="rb-240">240p themes</button>
-            <button class="btn rckbox-btn" id="rb-360">360p themes</button>
-        </div>
-    </div>
-
     <div id="footer-root"></div>
     <div id="support-toolbar-slot"></div>
 
     <script src="nav.js"></script>
     <script>
         const rbBtn = document.getElementById('rockbox-btn')
-        const rbBackdrop = document.getElementById('rockbox-backdrop')
-        const rbClose = document.getElementById('rockbox-close')
+        const ROCKBOX_THEMES_URL = 'https://github.com/rockbox-y1/themes/releases/tag/for_the_gays_and_the_theys'
 
         const supportDirectInstall = typeof window.showDirectoryPicker === 'function';
         let selectedThemesFolder = null;
@@ -1103,21 +1086,43 @@
             return folder ? { preferredContentFolder: folder } : {};
         }
 
-        function markGalleryCardOnDevice(theme) {
-            const grid = document.getElementById('theme-grid');
-            const folder = String((theme && theme.folder) || '').replace(/^\.\/+/, '').trim();
-            const card = findGalleryCardByFolder(grid, folder);
+        function setCardOnDeviceState(card, onDevice) {
             if (!card) return;
-            card.classList.add('on-device');
             const status = card.querySelector('.theme-status');
-            if (status) status.style.display = 'block';
             const di = card.querySelector('[data-direct-install-btn]');
+            const show = !!(onDevice && selectedThemesFolder);
+            if (!show) {
+                card.classList.remove('on-device');
+                if (status) status.hidden = true;
+                if (di && selectedThemesFolder) {
+                    di.disabled = false;
+                    di.style.opacity = '1';
+                    di.style.cursor = 'pointer';
+                    di.innerHTML = '<i class="fa-solid fa-bolt"></i> Direct Install';
+                }
+                return;
+            }
+            card.classList.add('on-device');
+            if (status) status.hidden = false;
             if (di) {
                 di.disabled = false;
                 di.style.opacity = '1';
                 di.style.cursor = 'pointer';
                 di.innerHTML = '<i class="fa-solid fa-download"></i> Update';
             }
+        }
+
+        function clearAllCardsOnDeviceState() {
+            document.querySelectorAll('.theme-card').forEach((card) => setCardOnDeviceState(card, false));
+        }
+
+        function markGalleryCardOnDevice(theme) {
+            if (!selectedThemesFolder) return;
+            const grid = document.getElementById('theme-grid');
+            const folder = String((theme && theme.folder) || '').replace(/^\.\/+/, '').trim();
+            const card = findGalleryCardByFolder(grid, folder);
+            if (!card) return;
+            setCardOnDeviceState(card, true);
         }
 
         function openBulkUpdateModalScanning() {
@@ -1477,10 +1482,10 @@
                         btn.style.cursor = 'pointer';
                     });
 
+                    clearAllCardsOnDeviceState();
                     const cards = document.querySelectorAll('.theme-card');
                     for (const card of cards) {
                         const themeRef = themeRecordFromCard(card);
-                        const status = card.querySelector('.theme-status');
                         const di = card.querySelector('[data-direct-install-btn]');
                         try {
                             if (!themeRef) throw new Error('no theme');
@@ -1493,28 +1498,13 @@
                                 } catch (_) {}
                             }
                             if (!foundOnDevice) throw new Error('not on device');
-                            card.classList.add('on-device');
-                            if (status) status.style.display = 'block';
-                            if (di) {
+                            setCardOnDeviceState(card, true);
+                        } catch (e) {
+                            setCardOnDeviceState(card, false);
+                            if (di && selectedThemesFolder) {
                                 di.disabled = false;
                                 di.style.opacity = '1';
                                 di.style.cursor = 'pointer';
-                                di.innerHTML = '<i class="fa-solid fa-download"></i> Update';
-                            }
-                        } catch (e) {
-                            card.classList.remove('on-device');
-                            if (status) status.style.display = 'none';
-                            if (di) {
-                                if (selectedThemesFolder) {
-                                    di.disabled = false;
-                                    di.style.opacity = '1';
-                                    di.style.cursor = 'pointer';
-                                    di.innerHTML = '<i class="fa-solid fa-bolt"></i> Direct Install';
-                                } else {
-                                    di.disabled = true;
-                                    di.style.opacity = '0.5';
-                                    di.style.cursor = 'not-allowed';
-                                }
                             }
                         }
                     }
@@ -1569,26 +1559,14 @@
             if (filterDiv) filterDiv.style.display = 'none';
         }
 
-        rbBtn.onclick = (e) => {
-            if (e) e.preventDefault();
-            rbBackdrop.style.display = 'flex';
-        };
-        rbClose.onclick = () => {
-            rbBackdrop.style.display = 'none'
-        }
-
-        rbBackdrop.onclick = e => {
-            if (e.target === rbBackdrop) rbBackdrop.style.display = 'none'
-        }
-
-        document.getElementById('rb-240').onclick = () => {
-            rbBackdrop.style.display = 'none'
-            window.open('https://themes.rockbox.org/index.php?target=ipodvideo')
-        }
-
-        document.getElementById('rb-360').onclick = () => {
-            rbBackdrop.style.display = 'none'
-            window.open('https://github.com/rockbox-y1/themes/releases/tag/for_the_gays_and_the_theys')
+        if (rbBtn) {
+            rbBtn.href = ROCKBOX_THEMES_URL;
+            rbBtn.target = '_blank';
+            rbBtn.rel = 'noopener noreferrer';
+            rbBtn.onclick = (e) => {
+                e.preventDefault();
+                window.open(ROCKBOX_THEMES_URL, '_blank', 'noopener,noreferrer');
+            };
         }
 
         function extractThemesArrayFromText(text) {
@@ -3442,9 +3420,7 @@
                 progressUI.removeAndRestoreButton(buttonNode);
 
                 if (dlBtn) dlBtn.style.display = '';
-                card.classList.add('on-device');
-                const statusEl = card.querySelector('.theme-status');
-                if (statusEl) statusEl.style.display = 'block';
+                setCardOnDeviceState(card, true);
 
                 setTimeout(() => {
                     buttonNode.innerHTML = '<i class="fa-solid fa-download"></i> Update';
@@ -3772,6 +3748,7 @@
             const statusBadge = document.createElement('div');
             statusBadge.className = 'theme-status';
             statusBadge.textContent = 'Already on your Y1';
+            statusBadge.hidden = true;
             cardTop.appendChild(statusBadge);
 
             const previewFrame = document.createElement('div');
@@ -4137,6 +4114,7 @@
                 return;
             }
             populateAuthorFilter(filteredThemes);
+            clearAllCardsOnDeviceState();
             let cardsAdded = 0;
             filteredThemes.forEach(t => {
                 const merged = {

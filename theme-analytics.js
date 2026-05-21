@@ -621,10 +621,26 @@
         settingsBtn.addEventListener("click", () => {
             syncPanelFromConsent();
             const opening = !panel.classList.contains("y1-privacy-panel--open");
+            if (opening) {
+                try {
+                    document.dispatchEvent(new CustomEvent("y1-close-donate-panel"));
+                } catch (_) {}
+                const donatePanel = document.getElementById("y1-donate-panel");
+                const donateToggle = document.getElementById("donate-toggle");
+                if (donatePanel) {
+                    donatePanel.classList.remove("is-open");
+                    donatePanel.setAttribute("aria-hidden", "true");
+                }
+                if (donateToggle) donateToggle.setAttribute("aria-expanded", "false");
+            }
             panel.classList.toggle("y1-privacy-panel--open");
             if (opening && !loadConsent().decided) {
                 void hydrateConsentFromServer().then(syncPanelFromConsent);
             }
+        });
+
+        document.addEventListener("y1-close-privacy-panel", () => {
+            panel.classList.remove("y1-privacy-panel--open");
         });
 
         panel.querySelector(".y1-privacy-save").addEventListener("click", () => {
