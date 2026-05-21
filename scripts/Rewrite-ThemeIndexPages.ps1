@@ -179,10 +179,12 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
   <meta name="robots" content="index,follow" />
   <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <link rel="stylesheet" href="/site-theme.css?v=20260621" />
-  <link rel="stylesheet" href="/site-toolbar.css?v=20260621" />
+  <link rel="stylesheet" href="/site-theme.css?v=20260622" />
+  <link rel="stylesheet" href="/site-toolbar.css?v=20260622" />
+  <link rel="stylesheet" href="/site-pages.css?v=20260622" />
   <script src="/theme-seo-shell-analytics.js"></script>
-  <script src="/gallery-chrome.js?v=20260621"></script>
+  <script src="/gallery-chrome.js?v=20260622"></script>
+  <script src="/site-init.js?v=20260622"></script>
   <link rel="canonical" href="$previewE" />
   <script>
 (function () {
@@ -261,32 +263,6 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
       }
     });
   }
-  function executeInlineScripts(container) {
-    if (!container) return;
-    container.querySelectorAll('script').forEach(function (oldScript) {
-      var newScript = document.createElement('script');
-      Array.from(oldScript.attributes).forEach(function (attr) {
-        newScript.setAttribute(attr.name, attr.value);
-      });
-      newScript.textContent = oldScript.textContent;
-      oldScript.parentNode.replaceChild(newScript, oldScript);
-    });
-  }
-  async function loadSupportToolbar() {
-    var slot = document.getElementById('support-toolbar-slot');
-    if (!slot) return;
-    var urls = ['/support_toolbar.html', 'https://themes.innioasis.app/support_toolbar.html'];
-    for (var i = 0; i < urls.length; i++) {
-      try {
-        var res = await fetch(urls[i], { cache: 'no-cache' });
-        if (!res.ok) continue;
-        slot.innerHTML = await res.text();
-        executeInlineScripts(slot);
-        return;
-      } catch (e) {}
-    }
-  }
-  loadSupportToolbar();
 })();
   </script>
 </body>
@@ -305,6 +281,8 @@ function Test-IndexShellNeedsWrite([string]$abs) {
         if ($c -notmatch 'site-themes-app') { return $true }
         if ($c -notmatch 'site-toolbar\.css') { return $true }
         if ($c -notmatch 'gallery-chrome\.js') { return $true }
+        if ($c -notmatch 'site-init\.js') { return $true }
+        if ($c -notmatch 'site-pages\.css') { return $true }
         if ($c -notmatch 'gallery-brand') { return $true }
         return $false
     } catch {

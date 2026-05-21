@@ -29,9 +29,10 @@
 
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="site-theme.css?v=20260621">
-    <link rel="stylesheet" href="site-toolbar.css?v=20260620">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
+    <link rel="stylesheet" href="site-theme.css?v=20260622">
+    <link rel="stylesheet" href="site-toolbar.css?v=20260622">
+    <link rel="stylesheet" href="site-pages.css?v=20260622">
     <link rel="stylesheet" href="y1-theme-preview.css?v=20260215">
     <link rel="stylesheet" href="theme-analytics.css?v=20260518">
     <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
@@ -40,7 +41,8 @@
     <script src="y1-theme-preview.js?v=20260215"></script>
     <script src="theme-artwork-compat.js?v=20260524"></script>
     <script src="gold-theme-detect.js?v=20260621"></script>
-    <script src="gallery-chrome.js?v=20260621"></script>
+    <script src="gallery-chrome.js?v=20260622"></script>
+    <script src="site-init.js?v=20260622"></script>
     <script src="gallery-loaded-theme.js"></script>
     <script src="theme-analytics.js?v=20260524b"></script>
 
@@ -798,40 +800,6 @@
 
     <script src="nav.js"></script>
     <script>
-        function executeInlineScripts(container) {
-            if (!container) return;
-            const scripts = container.querySelectorAll('script');
-            for (const oldScript of scripts) {
-                const newScript = document.createElement('script');
-                for (const attr of oldScript.attributes) {
-                    newScript.setAttribute(attr.name, attr.value);
-                }
-                newScript.textContent = oldScript.textContent;
-                oldScript.parentNode.replaceChild(newScript, oldScript);
-            }
-        }
-
-        async function loadSupportToolbar() {
-            const slot = document.getElementById('support-toolbar-slot');
-            if (!slot) return;
-            const candidates = [
-                'support_toolbar.html',
-                '../support_toolbar.html',
-                'https://themes.innioasis.app/support_toolbar.html'
-            ];
-            for (const url of candidates) {
-                try {
-                    const res = await fetch(url, { cache: 'no-cache' });
-                    if (!res.ok) continue;
-                    slot.innerHTML = await res.text();
-                    executeInlineScripts(slot);
-                    return;
-                } catch (e) {}
-            }
-        }
-
-        loadSupportToolbar();
-
         const rbBtn = document.getElementById('rockbox-btn')
         const rbBackdrop = document.getElementById('rockbox-backdrop')
         const rbClose = document.getElementById('rockbox-close')

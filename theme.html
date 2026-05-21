@@ -48,9 +48,10 @@
     <link rel="icon" href="y1_illustration.png">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="site-theme.css?v=20260620">
-    <link rel="stylesheet" href="site-toolbar.css?v=20260620">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
+    <link rel="stylesheet" href="site-theme.css?v=20260622">
+    <link rel="stylesheet" href="site-toolbar.css?v=20260622">
+    <link rel="stylesheet" href="site-pages.css?v=20260622">
     <link rel="stylesheet" href="y1-theme-preview.css?v=20260215">
     <link rel="stylesheet" href="theme-analytics.css?v=20260518">
     <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
@@ -59,97 +60,13 @@
     <script src="y1-theme-preview.js?v=20260215"></script>
     <script src="theme-artwork-compat.js?v=20260524"></script>
     <script src="gold-theme-detect.js?v=20260621"></script>
-    <script src="gallery-chrome.js?v=20260621"></script>
+    <script src="gallery-chrome.js?v=20260622"></script>
     <script src="gallery-loaded-theme.js"></script>
     <script src="theme-analytics.js?v=20260524"></script>
 </head>
 <style>
     html {
         font-size: clamp(15px, 2.8vw, 17px);
-    }
-
-    #nav-root {
-        display: none;
-    }
-
-    .gallery-topbar {
-        position: sticky;
-        top: 0;
-        z-index: 1200;
-        display: grid;
-        grid-template-columns: 1fr auto 1fr;
-        align-items: center;
-        gap: 10px;
-        padding: 8px 14px;
-        background: #17191f;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .gallery-tabs {
-        display: inline-flex;
-        gap: 3px;
-        padding: 3px;
-        border-radius: 9px;
-        background: #101217;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        justify-self: center;
-        grid-column: 2;
-    }
-
-    .gallery-tab {
-        padding: 8px 14px;
-        border-radius: 7px;
-        color: #aeb6c5;
-        text-decoration: none;
-        font-size: clamp(0.82rem, 2.6vw, 0.95rem);
-        font-weight: 600;
-        border: 1px solid transparent;
-        line-height: 1.1;
-    }
-
-    .gallery-tab:hover {
-        color: #d9e0ef;
-    }
-
-    .gallery-tab.active {
-        color: #ffffff;
-        background: #2a2f3a;
-        border-color: rgba(255, 255, 255, 0.18);
-        box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.12);
-    }
-
-    .topbar-search {
-        width: 100%;
-        padding: 8px 12px 8px 32px;
-        border-radius: 9px;
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        background: #222733;
-        color: #eaf0ff;
-        font-family: Inter, sans-serif;
-        outline: none;
-        font-size: 0.82rem;
-    }
-
-    .topbar-search::placeholder {
-        color: #94a0b8;
-    }
-
-    .topbar-search-wrap {
-        position: relative;
-        width: 100%;
-        max-width: 360px;
-        justify-self: end;
-        grid-column: 3;
-    }
-
-    .topbar-search-icon {
-        position: absolute;
-        left: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #8ea0bf;
-        font-size: 0.78rem;
-        pointer-events: none;
     }
 
     #theme-root {
@@ -189,24 +106,6 @@
     }
 
     @media (max-width: 900px) {
-        .gallery-topbar {
-            grid-template-columns: 1fr;
-            gap: 10px;
-        }
-
-        .gallery-tabs {
-            order: 1;
-            justify-self: center;
-            grid-column: auto;
-        }
-
-        .topbar-search-wrap {
-            order: 2;
-            max-width: 360px;
-            justify-self: center;
-            grid-column: auto;
-        }
-
         #theme-root #right {
             width: 100% !important;
             max-width: 100% !important;
@@ -229,19 +128,6 @@
         #theme-y1-sim-wrap .y1-tp-device--full {
             max-width: min(360px, 32vw, 48vh) !important;
         }
-    }
-
-    .btn-primary {
-        font-family: Inter;
-        font-weight: normal;
-        cursor: pointer;
-        border: none;
-    }
-
-    .btn-secondary {
-        font-family: Inter;
-        font-weight: normal;
-        cursor: pointer;
     }
 
     #theme-page-loading {
@@ -320,7 +206,7 @@
     </div>
 
     <div style="display: flex; justify-content: center;">
-        <div class="wrap" style="max-width:1200px;margin-top:6rem;">
+        <div class="wrap theme-page-wrap">
             <div id="theme-root">
                 <div id="left" style="display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:12px;min-height:0;padding:8px 0;width:100%;">
                     <div id="theme-page-variant-bar" style="display:none;width:100%;justify-content:center;padding:0 8px 2px;box-sizing:border-box;">
@@ -334,7 +220,7 @@
                 </div>
 
                 <div id="right" style="width:100%;display:flex;flex-direction:column;gap:12px;">
-                    <div style="background:var(--bg-card);padding:16px;border-radius:10px;">
+                    <div class="theme-panel">
                         <h1 id="theme-name" class="site-display" style="margin:0 0 6px 0;font-size:clamp(1.5rem,4vw,2rem)"></h1>
                         <div id="theme-metrics-host" class="y1-theme-metrics"></div>
                         <div id="theme-variant-subtitle" style="display:none;margin:-2px 0 8px 0;font-size:0.92rem;font-weight:600;color:var(--text-secondary);" aria-live="polite"></div>
@@ -367,19 +253,19 @@
                         </div>
                     </div>
 
-                    <div id="direct-install-promo" style="background:var(--bg-card);padding:16px;border-radius:10px;display:none;">
+                    <div id="direct-install-promo" class="theme-panel" style="display:none;">
                         <h4 style="margin:0 0 8px 0;color:var(--accent)">Quick Install</h4>
                         <p style="color:var(--text-secondary);margin:0 0 12px 0;font-size:0.95rem;">Directly install theme to Y1 with one click!</p>
                         <a href="https://themes.innioasis.app/index.html#direct-install-banner" class="btn btn-primary" style="font-weight: normal; display:inline-flex; align-items:center; gap:6px;"><i class="fa-solid fa-bolt"></i> Go to Direct Install</a>
                     </div>
 
-                    <div id="assets-wrap" style="background:var(--bg-card);padding:12px;border-radius:8px;min-height:120px;">
+                    <div id="assets-wrap" class="theme-panel">
                         <h4 style="margin:0 0 8px 0;color:var(--accent)">Theme assets</h4>
                         <div id="assets-list" style="display:flex;flex-direction:column;gap:8px;max-height:420px;overflow:auto"></div>
                     </div>
                 </div>
             </div>
-            <section id="fallback-root" style="display:none;background:var(--bg-card);padding:20px;border-radius:12px;max-width:900px;margin:0 auto;">
+            <section id="fallback-root" class="theme-panel" style="display:none;max-width:900px;margin:0 auto;">
                 <h1 style="margin:0 0 10px 0;">Innioasis Y1 Themes</h1>
                 <p id="fallback-copy" style="color:var(--text-secondary);margin:0 0 10px 0;"></p>
                 <p id="fallback-redirect-note" style="color:var(--text-secondary);margin:0;"></p>
@@ -391,43 +277,9 @@
     <div id="footer-root"></div>
     <div id="support-toolbar-slot"></div>
 
+    <script src="site-init.js?v=20260622"></script>
     <script src="nav.js"></script>
     <script>
-        function executeInlineScripts(container) {
-            if (!container) return;
-            const scripts = container.querySelectorAll('script');
-            for (const oldScript of scripts) {
-                const newScript = document.createElement('script');
-                for (const attr of oldScript.attributes) {
-                    newScript.setAttribute(attr.name, attr.value);
-                }
-                newScript.textContent = oldScript.textContent;
-                oldScript.parentNode.replaceChild(newScript, oldScript);
-            }
-        }
-
-        async function loadSupportToolbar() {
-            const slot = document.getElementById('support-toolbar-slot');
-            if (!slot) return;
-            const candidates = [
-                'support_toolbar.html',
-                '../support_toolbar.html',
-                'https://themes.innioasis.app/support_toolbar.html'
-            ];
-            for (const url of candidates) {
-                try {
-                    const res = await fetch(url, {
-                        cache: 'no-cache'
-                    });
-                    if (!res.ok) continue;
-                    slot.innerHTML = await res.text();
-                    executeInlineScripts(slot);
-                    return;
-                } catch (e) {}
-            }
-        }
-
-        loadSupportToolbar();
 
         const FALLBACK_PLACEHOLDER_URL = 'https://themes.innioasis.app/placeholder.png';
         const globalThemeSearch = document.getElementById('global-theme-search');

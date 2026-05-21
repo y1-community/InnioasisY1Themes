@@ -28,8 +28,11 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="site-theme.css?v=20260620">
-    <link rel="stylesheet" href="site-toolbar.css?v=20260620">
+    <link rel="stylesheet" href="site-theme.css?v=20260622">
+    <link rel="stylesheet" href="site-toolbar.css?v=20260622">
+    <link rel="stylesheet" href="site-pages.css?v=20260622">
+    <script src="gallery-chrome.js?v=20260622"></script>
+    <script src="site-init.js?v=20260622"></script>
     <meta name="publisher" content="Luci Ltd" />
     <link rel="author" href="https://www.luci.ltd" title="Luci Ltd — web hosting for Innioasis Y1 Themes" />
     <script src="https://storage.ko-fi.com/cdn/widget/Widget_2.js"></script>
@@ -52,6 +55,21 @@
         </div>
     </dialog>
     <div id="nav-root"></div>
+    <div class="gallery-topbar">
+        <a class="gallery-brand" href="https://themes.innioasis.app/index.html" title="Innioasis Y1 Themes gallery">
+            <span class="gallery-brand-icon" aria-hidden="true"><i class="fa-solid fa-palette"></i></span>
+            <span class="gallery-brand-text">Y1 Themes</span>
+        </a>
+        <div class="gallery-tabs" aria-label="Site sections">
+            <a class="gallery-tab" href="https://y1-themes.vercel.app">Editor</a>
+            <a class="gallery-tab" href="https://themes.innioasis.app/index.html">Gallery</a>
+            <a class="gallery-tab" href="https://themes.innioasis.app/upload.html">Upload</a>
+        </div>
+        <form class="topbar-search-wrap" action="https://themes.innioasis.app/index.html" method="get">
+            <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
+            <input class="topbar-search" name="q" type="search" placeholder="Search themes" aria-label="Search themes">
+        </form>
+    </div>
 
     <div class="hero" id="home">
         <div class="hero-content">
@@ -130,69 +148,12 @@
         </div>
     </section>
 
-    <div id="footer-root">
-        <footer class="site-footer">
-            <div class="footer-grid">
-                <div class="footer-col">
-                    <h4>Links</h4>
-                    <a href="https://innioasis.app/index.html#home">Home</a>
-                    <a href="https://innioasis.app/guide.html">Guide</a>
-                    <a href="https://themes.innioasis.app/">Themes</a>
-                    <a href="https://innioasis.app/index.html#versions">Versions</a>
-                    <a href="https://ko-fi.com/teamslide" target="_blank" rel="noopener">Donate</a>
-                </div>
-                <div class="footer-col footer-col-powered" style="display:flex;flex-direction:column;justify-content:space-between;">
-                    <div>
-                        <p class="footer-powered-label">This site is powered by</p>
-                        <a href="https://www.luci.ltd" target="_blank" rel="noopener noreferrer">
-                            <img src="luci-alt.svg" class="footer-logo footer-logo-luci" alt="Luci Ltd web hosting — powers themes.innioasis.app (luci.ltd)" title="Luci hosting and domains — www.luci.ltd">
-                        </a>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <a href="https://en.wikipedia.org/wiki/Copyleft" class="footer-copyleft" target="_blank" rel="noopener noreferrer" title="Copyleft — Wikipedia">🄯</a> - Ryan Specter- Made with ❤️ by Y1 users, for Y1 users
-            </div>
-        </footer>
-    </div>
+    <div id="footer-root"></div>
     <div id="support-toolbar-slot"></div>
 
     <script src="nav.js"></script>
 
     <script>
-        function executeInlineScripts(container) {
-            if (!container) return;
-            const scripts = container.querySelectorAll('script');
-            for (const oldScript of scripts) {
-                const newScript = document.createElement('script');
-                for (const attr of oldScript.attributes) {
-                    newScript.setAttribute(attr.name, attr.value);
-                }
-                newScript.textContent = oldScript.textContent;
-                oldScript.parentNode.replaceChild(newScript, oldScript);
-            }
-        }
-
-        async function loadSupportToolbar() {
-            const slot = document.getElementById('support-toolbar-slot');
-            if (!slot) return;
-            const candidates = [
-                'support_toolbar.html',
-                '../support_toolbar.html',
-                'https://themes.innioasis.app/support_toolbar.html'
-            ];
-            for (const url of candidates) {
-                try {
-                    const res = await fetch(url, { cache: 'no-cache' });
-                    if (!res.ok) continue;
-                    slot.innerHTML = await res.text();
-                    executeInlineScripts(slot);
-                    return;
-                } catch (e) {}
-            }
-        }
-
-        loadSupportToolbar();
 
         function copyAddress(inputId, btn) {
             const input = document.getElementById(inputId);

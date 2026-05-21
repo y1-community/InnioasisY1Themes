@@ -13,12 +13,15 @@
     <link rel="icon" href="y1_illustration.png" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="https://innioasis.app/styles.css" />
-    <link rel="stylesheet" href="site-theme.css?v=20260524" />
+    <link rel="stylesheet" href="site-theme.css?v=20260622" />
+    <link rel="stylesheet" href="site-toolbar.css?v=20260622" />
+    <link rel="stylesheet" href="site-pages.css?v=20260622" />
     <link rel="stylesheet" href="theme-analytics.css?v=20260521" />
     <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
     <script src="theme-artwork-compat.js?v=20260524"></script>
     <script src="gold-theme-detect.js?v=20260621"></script>
-    <script src="gallery-chrome.js?v=20260621"></script>
+    <script src="gallery-chrome.js?v=20260622"></script>
+    <script src="site-init.js?v=20260622"></script>
     <script src="theme-analytics.js?v=20260521"></script>
     <style>
         body {
@@ -345,26 +348,6 @@
 
     <script src="nav.js"></script>
     <script>
-        async function loadSupportToolbar() {
-            const slot = document.getElementById("support-toolbar-slot");
-            if (!slot) return;
-            const urls = ["support_toolbar.html", "https://themes.innioasis.app/support_toolbar.html"];
-            for (const url of urls) {
-                try {
-                    const res = await fetch(url, { cache: "no-cache" });
-                    if (!res.ok) continue;
-                    slot.innerHTML = await res.text();
-                    slot.querySelectorAll("script").forEach((old) => {
-                        const s = document.createElement("script");
-                        for (const a of old.attributes) s.setAttribute(a.name, a.value);
-                        s.textContent = old.textContent;
-                        old.replaceWith(s);
-                    });
-                    return;
-                } catch (_) {}
-            }
-        }
-
         function escAttr(s) {
             return String(s || "")
                 .replace(/&/g, "&amp;")
@@ -486,7 +469,6 @@
             }
         }
 
-        loadSupportToolbar();
         loadGoldThemes();
     </script>
 </body>
