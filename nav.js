@@ -61,6 +61,11 @@
     const footerRoot = document.getElementById('footer-root')
     if (!footerRoot) return
 
+    let luciLogoSrc = 'luci-alt.svg'
+    try {
+        luciLogoSrc = new URL('luci-alt.svg', document.baseURI || window.location.href).href
+    } catch (_) {}
+
     footerRoot.innerHTML = `
     <footer class="site-footer site-footer--themes">
         <div class="footer-grid">
@@ -76,8 +81,8 @@
 
             <div class="footer-col footer-col-powered">
                 <p class="footer-powered-label">This site is powered by</p>
-                <a href="https://www.luci.ltd" target="_blank" rel="noopener noreferrer">
-                    <img src="/luci-alt.svg" class="footer-logo-luci" alt="Luci Ltd web hosting — powers themes.innioasis.app (luci.ltd)" title="Luci hosting and domains — www.luci.ltd" width="240" height="170" decoding="async">
+                <a href="https://www.luci.ltd" target="_blank" rel="noopener noreferrer" class="footer-luci-link">
+                    <img src="${luciLogoSrc}" class="footer-logo footer-logo-luci" alt="Luci Ltd web hosting — powers themes.innioasis.app (luci.ltd)" title="Luci hosting and domains — www.luci.ltd" decoding="async">
                 </a>
             </div>
 

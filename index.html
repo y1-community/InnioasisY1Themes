@@ -30,7 +30,7 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
-    <link rel="stylesheet" href="site-theme.css?v=20260623">
+    <link rel="stylesheet" href="site-theme.css?v=20260624">
     <link rel="stylesheet" href="site-toolbar.css?v=20260622">
     <link rel="stylesheet" href="site-pages.css?v=20260622">
     <link rel="stylesheet" href="y1-theme-preview.css?v=20260215">
@@ -698,14 +698,13 @@
             </label>
             <label class="gallery-control gallery-control--author" for="author-filter">
                 Author
-                <select id="author-filter">
-                    <option value="all">All authors</option>
-                </select>
+                <span class="gallery-control-author-field">
+                    <select id="author-filter">
+                        <option value="all">All authors</option>
+                    </select>
+                    <button type="button" id="gallery-author-clear" class="gallery-author-clear" hidden>clear</button>
+                </span>
             </label>
-            <div id="gallery-author-active-pill" class="gallery-author-active-pill" hidden>
-                <span class="gallery-author-active-pill__label" id="gallery-author-active-label"></span>
-                <button type="button" class="gallery-author-active-pill__clear" id="gallery-author-active-clear" aria-label="Clear author filter" title="Clear author filter">×</button>
-            </div>
             <label class="gallery-control" for="sort-filter">
                 Sort
                 <select id="sort-filter">
@@ -1680,17 +1679,10 @@
             syncAuthorFilterUi(name);
             currentPage = 1;
             applyFilters();
-            try {
-                if (authorActivePill && !authorActivePill.hidden) {
-                    authorActivePill.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                } else if (authorFilter) {
-                    authorFilter.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }
-            } catch (_) {}
         }
 
-        if (authorActiveClear) {
-            authorActiveClear.addEventListener('click', (e) => {
+        if (authorClearLink) {
+            authorClearLink.addEventListener('click', (e) => {
                 e.preventDefault();
                 clearAuthorFilter();
             });

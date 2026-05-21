@@ -534,13 +534,17 @@
         const btn = document.getElementById("y1-privacy-settings-btn");
         if (!btn) return;
         const dockSlot = document.getElementById("y1-site-dock-privacy-slot");
-        if (dockSlot && btn.parentElement !== dockSlot) {
+        const heroSlot = document.getElementById("y1-hero-privacy-slot");
+        if (heroSlot && btn.parentElement === heroSlot && dockSlot) {
+            dockSlot.appendChild(btn);
+        } else if (dockSlot && btn.parentElement !== dockSlot) {
             dockSlot.appendChild(btn);
         } else if (!dockSlot) {
             btn.style.display = "inline-flex";
         }
         btn.style.display = "inline-flex";
         btn.style.visibility = "visible";
+        btn.style.marginLeft = "";
         if (document.getElementById("y1-site-dock") || dockSlot) {
             document.body.classList.add("site-dock-mode");
         }
