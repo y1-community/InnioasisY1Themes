@@ -183,11 +183,26 @@
         return clone;
     }
 
+    /** Google Drive folder shares are poor download targets; use on-site ZIP/install instead. */
+    function isDriveGoogleFolderExternalUrl(url) {
+        const u = String(url || '').trim();
+        if (!/^https?:\/\//i.test(u) || !/drive\.google\.com/i.test(u)) return false;
+        return /folder/i.test(u);
+    }
+
+    function effectiveExternalDownloadUrl(url) {
+        const u = String(url || '').trim();
+        if (!u || isDriveGoogleFolderExternalUrl(u)) return '';
+        return /^https?:\/\//i.test(u) ? u : '';
+    }
+
     global.ThemePackaging = {
         normalizeConfigAssetPath,
         resolvedRepoPath,
         buildFlattenPackManifest,
         rewriteConfigForDeviceFlatPack,
-        isLikelyAssetPathString
+        isLikelyAssetPathString,
+        isDriveGoogleFolderExternalUrl,
+        effectiveExternalDownloadUrl
     };
 })(typeof window !== 'undefined' ? window : this);

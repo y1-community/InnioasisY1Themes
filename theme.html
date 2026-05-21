@@ -1785,10 +1785,14 @@
             }
 
             const externalDownloadUrl = String(themeObj.externalDownloadUrl || '').trim();
-            const hasExternalDownload = /^https?:\/\//i.test(externalDownloadUrl);
+            const effectiveExternalDownloadUrl =
+                window.ThemePackaging && typeof window.ThemePackaging.effectiveExternalDownloadUrl === 'function'
+                    ? window.ThemePackaging.effectiveExternalDownloadUrl(externalDownloadUrl)
+                    : externalDownloadUrl;
+            const hasExternalDownload = !!effectiveExternalDownloadUrl;
             if (hasExternalDownload) {
                 downloadBtn.innerHTML = `<i class="fa-solid fa-arrow-up-right-from-square" style="margin-right: 4px;"></i> ${safeText(themeObj.authorCTA || 'Open download page')}`;
-                downloadBtn.onclick = () => window.open(externalDownloadUrl, '_blank', 'noopener');
+                downloadBtn.onclick = () => window.open(effectiveExternalDownloadUrl, '_blank', 'noopener');
                 if (maskVariantWrap) maskVariantWrap.style.display = 'none';
                 if (directInstallPromo) directInstallPromo.style.display = 'none';
             } else {

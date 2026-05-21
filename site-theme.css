@@ -488,6 +488,15 @@ body.site-themes-app .gallery-home-hero .y1-hero {
     color: var(--site-muted);
 }
 
+.theme-card-title-row + .theme-author {
+    margin-top: 0.1rem;
+    margin-bottom: 0.25rem;
+}
+
+.theme-card-title-row + .theme-author + .theme-desc {
+    margin-top: 0.15rem;
+}
+
 .theme-card .btn {
     font-family: var(--site-font) !important;
     border-radius: var(--site-radius-pill) !important;

@@ -30,7 +30,7 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
-    <link rel="stylesheet" href="site-theme.css?v=20260624">
+    <link rel="stylesheet" href="site-theme.css?v=20260520">
     <link rel="stylesheet" href="site-toolbar.css?v=20260622">
     <link rel="stylesheet" href="site-pages.css?v=20260622">
     <link rel="stylesheet" href="y1-theme-preview.css?v=20260215">
@@ -355,6 +355,12 @@
         .theme-card-skeleton-line--title {
             width: 58%;
             height: 15px;
+        }
+
+        .theme-card-skeleton-line--author {
+            width: 46%;
+            height: 11px;
+            opacity: 0.85;
         }
 
         .theme-card-skeleton-line--short {
@@ -3632,6 +3638,7 @@
                 sk.innerHTML =
                     '<div class="theme-card-skeleton-preview"></div>' +
                     '<div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div>' +
+                    '<div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div>' +
                     '<div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div>' +
                     '<div class="theme-card-skeleton-actions"><span></span><span></span></div>';
                 grid.appendChild(sk);
@@ -3759,7 +3766,11 @@
             c.setAttribute('data-theme-name', safeThemeName);
             const folderPath = String(theme.folder || '').replace(/^\.\/+/, '');
             const externalDownloadUrl = String(theme.externalDownloadUrl || '').trim();
-            const hasExternalDownload = /^https?:\/\//i.test(externalDownloadUrl);
+            const effectiveExternalDownloadUrl =
+                window.ThemePackaging && typeof window.ThemePackaging.effectiveExternalDownloadUrl === 'function'
+                    ? window.ThemePackaging.effectiveExternalDownloadUrl(externalDownloadUrl)
+                    : externalDownloadUrl;
+            const hasExternalDownload = !!effectiveExternalDownloadUrl;
             c.setAttribute('data-name', safeText(theme.name || folderPath));
             c.setAttribute('data-author', safeText(theme.author || ''));
             c.setAttribute('data-source', String(theme.sourceType || 'internal').toLowerCase());
@@ -4012,7 +4023,7 @@
             dl.setAttribute('data-card-download', '1');
             dl.onclick = () => downloadTheme(theme, dl, readCardVariantInstallHints(c));
 
-            const outboundUrl = hasExternalDownload ? externalDownloadUrl :
+            const outboundUrl = hasExternalDownload ? effectiveExternalDownloadUrl :
                 (theme.sourceType === 'external' ? String(theme.authorUrl || '').trim() : '');
             if (outboundUrl) {
                 dl.innerHTML = `<i class="fa-solid fa-arrow-up-right-from-square"></i> ${safeText(theme.authorCTA || (hasExternalDownload ? 'Open download page' : 'Visit author'))}`;
@@ -4052,7 +4063,7 @@
             }
             mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, c, '', theme);
             cardActions.appendChild(bd);
-            c.append(cardTop, previewFrame, variantRow, titleRow, d, metricsHost, a, cardActions);
+            c.append(cardTop, previewFrame, variantRow, titleRow, a, d, metricsHost, cardActions);
             c.insertBefore(variantRow, previewFrame);
             if (String(theme.compatibilityMedal || '').toLowerCase() === 'gold') {
                 setGalleryCardGoldTitleBadge(c, true);
