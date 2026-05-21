@@ -530,15 +530,24 @@
         '<path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7Zm8.94-2.06-.76-.44.12-1.02.12-1.02.88-.5.88-.5-.76-1.32-.76-1.32-.88.5-.88.5-1.02-.12-1.02-.12-.76-.44-.76-.44.12-1.02.12-1.02-.88-.5-.88-.5.76-1.32.76-1.32.88.5.88.5 1.02-.12 1.02-.12.76-.44.76-.44-.12-1.02-.12-1.02.88-.5.88-.5-.76-1.32-.76-1.32-.88.5-.88.5-1.02.12-1.02.12.76.44.76.44-.12 1.02-.12 1.02.88.5.88.5.76 1.32.76 1.32-.88.5-.88.5-1.02.12-1.02.12-.76.44Z"/>' +
         "</svg>";
 
-    function mountPrivacyToDock() {
-        const slot = document.getElementById("y1-site-dock-privacy-slot");
+    function mountPrivacyButton() {
         const btn = document.getElementById("y1-privacy-settings-btn");
-        if (slot && btn && btn.parentElement !== slot) {
-            slot.appendChild(btn);
+        if (!btn) return;
+        const heroSlot = document.getElementById("y1-hero-toolbar-privacy-slot");
+        const dockSlot = document.getElementById("y1-site-dock-privacy-slot");
+        const target = heroSlot || dockSlot;
+        if (target && btn.parentElement !== target) {
+            target.appendChild(btn);
+        } else if (!target) {
+            btn.style.display = "inline-flex";
         }
-        if (document.getElementById("y1-site-dock") || slot) {
+        if (document.getElementById("y1-site-dock") || dockSlot || heroSlot) {
             document.body.classList.add("site-dock-mode");
         }
+    }
+
+    function mountPrivacyToDock() {
+        mountPrivacyButton();
     }
 
     function ensureConsentDom() {
@@ -555,7 +564,7 @@
             '<div class="y1-consent-inner">' +
             "<p>Theme view, download, and rating <strong>totals are public</strong> for everyone. " +
             "By default we <strong>do</strong> include your visits, downloads, and ratings in those totals. " +
-            "Use <strong>Privacy</strong> in the bottom dock to opt out anytime.</p>" +
+            "Use <strong>Privacy</strong> in the toolbar to opt out anytime.</p>" +
             '<div class="y1-consent-actions">' +
             '<button type="button" class="y1-consent-customize">Customize</button>' +
             '<button type="button" class="y1-consent-accept">Continue</button>' +
@@ -581,16 +590,21 @@
 
         document.body.appendChild(banner);
         document.body.appendChild(panel);
+        const heroSlot = document.getElementById("y1-hero-toolbar-privacy-slot");
         const dockSlot = document.getElementById("y1-site-dock-privacy-slot");
-        if (dockSlot) {
+        if (heroSlot) {
+            heroSlot.appendChild(settingsBtn);
+            document.body.classList.add("site-dock-mode");
+        } else if (dockSlot) {
             dockSlot.appendChild(settingsBtn);
             document.body.classList.add("site-dock-mode");
         } else {
             document.body.appendChild(settingsBtn);
             settingsBtn.style.display = "inline-flex";
         }
-        mountPrivacyToDock();
-        window.addEventListener("y1-dock-slot-ready", mountPrivacyToDock);
+        mountPrivacyButton();
+        window.addEventListener("y1-dock-slot-ready", mountPrivacyButton);
+        window.addEventListener("DOMContentLoaded", mountPrivacyButton);
 
         const syncPanelFromConsent = () => {
             const c = loadConsent();

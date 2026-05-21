@@ -291,6 +291,42 @@ body.site-themes-app .theme-card-buttons {
     height: 16px;
 }
 
+/* Gallery hero toolbar (Upload / Rockbox / Privacy) */
+#y1-hero-toolbar-privacy-slot #y1-privacy-settings-btn,
+.y1-hero-toolbar-privacy-slot #y1-privacy-settings-btn {
+    position: static !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    min-width: 0;
+    height: auto;
+    padding: 0.55rem 1.15rem !important;
+    border-radius: var(--site-radius-pill, 999px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: none !important;
+    font: inherit;
+    font-weight: 600 !important;
+    color: #eaf0ff !important;
+    gap: 6px;
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    cursor: pointer;
+}
+
+#y1-hero-toolbar-privacy-slot #y1-privacy-settings-btn:hover,
+.y1-hero-toolbar-privacy-slot #y1-privacy-settings-btn:hover {
+    background: rgba(255, 255, 255, 0.14) !important;
+    border-color: rgba(255, 255, 255, 0.24) !important;
+    color: #fff !important;
+}
+
+#y1-hero-toolbar-privacy-slot #y1-privacy-settings-btn .y1-privacy-settings-icon {
+    width: 16px;
+    height: 16px;
+}
+
 /* Donate panel — dark on all viewports */
 .y1-donate-panel {
     display: none;
@@ -437,8 +473,9 @@ body.site-dock-mode.y1-consent-banner-open #y1-privacy-panel.y1-privacy-panel--o
     bottom: calc(140px + env(safe-area-inset-bottom, 0px));
 }
 
-/* Hide legacy fixed chip only when it was left on body (dock slot owns the control). */
-body.site-dock-mode > #y1-privacy-settings-btn {
+/* Hide orphaned fixed chip once mounted in hero toolbar or bottom dock. */
+body.site-dock-mode:has(#y1-hero-toolbar-privacy-slot #y1-privacy-settings-btn) > #y1-privacy-settings-btn,
+body.site-dock-mode:has(#y1-site-dock-privacy-slot #y1-privacy-settings-btn) > #y1-privacy-settings-btn {
     display: none !important;
 }
 
