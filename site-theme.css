@@ -151,14 +151,7 @@ h2.section-display,
     white-space: nowrap;
 }
 
-body.site-themes-app .cast-div.hero-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: center;
-}
-
-/* —— Gallery home hero (copy left; device flush atop full-width action toolbar) —— */
+/* —— Gallery home hero (mockup: copy left, device right, flush on toolbar) —— */
 .gallery-home-hero {
     display: flex;
     flex-direction: column;
@@ -167,9 +160,14 @@ body.site-themes-app .cast-div.hero-actions {
     background: var(--site-bg, #0a0b0f);
 }
 
+.gallery-home-hero__row {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
 .gallery-home-intro {
     margin: 0;
-    order: 1;
 }
 
 .gallery-home-intro .site-display {
@@ -182,33 +180,29 @@ body.site-themes-app .cast-div.hero-actions {
 }
 
 .y1-hero {
-    order: 2;
-    margin: 1rem 0 0;
+    margin: 0.65rem auto 0;
     padding: 0;
     line-height: 0;
-    display: flex;
-    justify-content: center;
-    align-items: flex-end;
-    flex-shrink: 0;
-    width: 100%;
-    background: transparent;
+    width: fit-content;
+    max-width: 100%;
+    background: var(--site-bg, #0a0b0f);
     border: none;
+    flex-shrink: 0;
 }
 
 .y1-hero img {
     display: block;
     width: auto;
-    max-width: min(100%, 190px);
     height: auto;
-    max-height: min(20vh, 140px);
+    max-width: min(100%, 200px);
+    max-height: clamp(120px, 32vw, 155px);
     object-fit: contain;
     object-position: bottom center;
-    background: transparent;
+    background: var(--site-bg, #0a0b0f);
     vertical-align: bottom;
 }
 
 body.site-themes-app .gallery-home-hero .hero-actions.cast-div {
-    order: 3;
     margin: 0 !important;
     margin-top: 0 !important;
     width: 100%;
@@ -218,71 +212,40 @@ body.site-themes-app .gallery-home-hero .hero-actions.cast-div {
     flex-wrap: wrap;
     align-items: center;
     gap: 10px;
-    border-top-left-radius: var(--site-radius-lg, 16px);
-    border-top-right-radius: var(--site-radius-lg, 16px);
-}
-
-/* Device sits flush on the top edge of the toolbar card (no gap) */
-body.site-themes-app .gallery-home-hero .y1-hero + .hero-actions.cast-div {
-    margin-top: 0 !important;
-    padding-top: 0.9rem;
+    padding: 0.9rem 1.25rem 1rem;
+    border-radius: var(--site-radius-lg, 16px);
 }
 
 body.site-themes-app .gallery-home-hero .y1-hero {
     margin-bottom: 0;
-    padding-bottom: 0;
-    position: relative;
-    z-index: 1;
 }
 
 @media (min-width: 900px) {
-    .gallery-home-hero {
+    .gallery-home-hero__row {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(200px, 34%);
-        grid-template-rows: auto auto;
-        column-gap: clamp(1.25rem, 3vw, 2.5rem);
-        row-gap: 0;
+        grid-template-columns: minmax(0, 1fr) auto;
         align-items: end;
+        column-gap: clamp(1rem, 2.5vw, 2rem);
     }
 
     .gallery-home-intro {
-        grid-column: 1;
-        grid-row: 1;
         align-self: start;
-        order: unset;
-        padding-right: 0.5rem;
-        padding-bottom: 0.75rem;
+        padding-bottom: 0.5rem;
     }
 
     .y1-hero {
-        grid-column: 2;
-        grid-row: 1;
-        order: unset;
-        align-self: end;
-        justify-self: end;
-        justify-content: flex-end;
         margin: 0;
-        padding: 0 0.25rem 0 0;
-        width: 100%;
+        justify-self: end;
+        align-self: end;
     }
 
     .y1-hero img {
-        max-width: min(100%, 220px);
-        max-height: min(24vh, 175px);
+        max-width: min(240px, 32vw);
+        max-height: clamp(150px, 20vw, 190px);
         object-position: bottom right;
     }
 
     body.site-themes-app .gallery-home-hero .hero-actions.cast-div {
-        grid-column: 1 / -1;
-        grid-row: 2;
-        order: unset;
-        margin-top: 0 !important;
-        border-radius: var(--site-radius-lg, 16px);
-        border-top-left-radius: var(--site-radius-lg, 16px);
-        border-top-right-radius: var(--site-radius-lg, 16px);
-    }
-
-    body.site-themes-app .gallery-home-hero .y1-hero + .hero-actions.cast-div {
         padding-top: 1rem;
     }
 }
@@ -711,6 +674,7 @@ body.site-themes-app #footer-root {
 .gallery-author-active-pill {
     display: inline-flex;
     align-items: center;
+    align-self: center;
     gap: 0;
     max-width: min(100%, 18rem);
     padding: 0;
@@ -787,6 +751,33 @@ body.site-themes-app #footer-root {
     color: #fff;
     border-color: rgba(107, 159, 255, 0.45);
     background: rgba(107, 159, 255, 0.18);
+}
+
+.site-footer--themes .footer-grid {
+    align-items: start;
+}
+
+.site-footer--themes .footer-col-powered {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+}
+
+.site-footer--themes .footer-powered-label {
+    margin: 0 0 0.65rem;
+    text-align: center;
+}
+
+.site-footer--themes .footer-logo-luci {
+    display: block;
+    max-width: min(200px, 42vw);
+    width: auto;
+    height: auto;
+    max-height: none;
+    margin: 0 auto;
+    opacity: 1;
 }
 
 .site-footer--themes .footer-col a {

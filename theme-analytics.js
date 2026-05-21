@@ -533,8 +533,10 @@
     function mountPrivacyButton() {
         const btn = document.getElementById("y1-privacy-settings-btn");
         if (!btn) return;
+        const heroSlot = document.getElementById("y1-hero-privacy-slot");
         const dockSlot = document.getElementById("y1-site-dock-privacy-slot");
-        const target = dockSlot;
+        const useHero = !!(heroSlot && document.querySelector(".gallery-home-hero"));
+        const target = useHero ? heroSlot : dockSlot;
         if (target && btn.parentElement !== target) {
             target.appendChild(btn);
         } else if (!target) {
@@ -542,7 +544,8 @@
         }
         btn.style.display = "inline-flex";
         btn.style.visibility = "visible";
-        if (document.getElementById("y1-site-dock") || dockSlot) {
+        if (heroSlot) heroSlot.removeAttribute("aria-hidden");
+        if (document.getElementById("y1-site-dock") || dockSlot || heroSlot) {
             document.body.classList.add("site-dock-mode");
         }
     }
@@ -565,7 +568,7 @@
             '<div class="y1-consent-inner">' +
             "<p>Theme view, download, and rating <strong>totals are public</strong> for everyone. " +
             "By default we <strong>do</strong> include your visits, downloads, and ratings in those totals. " +
-            "Use <strong>Privacy</strong> in the bottom dock to opt out anytime.</p>" +
+            "Use <strong>Privacy</strong> in the toolbar or bottom dock to opt out anytime.</p>" +
             '<div class="y1-consent-actions">' +
             '<button type="button" class="y1-consent-customize">Customize</button>' +
             '<button type="button" class="y1-consent-accept">Continue</button>' +
@@ -591,9 +594,13 @@
 
         document.body.appendChild(banner);
         document.body.appendChild(panel);
+        const heroSlot = document.getElementById("y1-hero-privacy-slot");
         const dockSlot = document.getElementById("y1-site-dock-privacy-slot");
-        if (dockSlot) {
-            dockSlot.appendChild(settingsBtn);
+        const useHero = !!(heroSlot && document.querySelector(".gallery-home-hero"));
+        const slot = useHero ? heroSlot : dockSlot;
+        if (slot) {
+            slot.appendChild(settingsBtn);
+            if (heroSlot) heroSlot.removeAttribute("aria-hidden");
             document.body.classList.add("site-dock-mode");
         } else {
             document.body.appendChild(settingsBtn);

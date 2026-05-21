@@ -30,7 +30,7 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
-    <link rel="stylesheet" href="site-theme.css?v=20260622">
+    <link rel="stylesheet" href="site-theme.css?v=20260623">
     <link rel="stylesheet" href="site-toolbar.css?v=20260622">
     <link rel="stylesheet" href="site-pages.css?v=20260622">
     <link rel="stylesheet" href="y1-theme-preview.css?v=20260215">
@@ -650,16 +650,19 @@
     </div>
     <div class="wrap">
         <section class="gallery-home-hero" aria-label="Themes gallery introduction">
-            <header class="gallery-home-intro">
-                <h1 class="site-display">Themes</h1>
-                <p class="site-lead gallery-home-lead">Here is a community-led gallery of themes to customise your Innioasis Y1 audio player — find a new look for your screens, try previews before you install, and share your own looks for the MP3 player with other Y1 users.</p>
-            </header>
-            <figure class="y1-hero" aria-hidden="true">
-                <img src="y1-hero.png" alt="" width="640" height="640" decoding="async" />
-            </figure>
+            <div class="gallery-home-hero__row">
+                <header class="gallery-home-intro">
+                    <h1 class="site-display">Themes</h1>
+                    <p class="site-lead gallery-home-lead">Here is a community-led gallery of themes to customise your Innioasis Y1 audio player — find a new look for your screens, try previews before you install, and share your own looks for the MP3 player with other Y1 users.</p>
+                </header>
+                <figure class="y1-hero" aria-hidden="true">
+                    <img src="y1-hero.png" alt="" width="640" height="640" decoding="async" />
+                </figure>
+            </div>
             <div class="cast-div hero-actions">
                 <a href="upload.html" class="btn"><i class="fa-solid fa-upload" aria-hidden="true"></i> Upload theme</a>
                 <a id="rockbox-btn" class="btn" href="#"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Rockbox themes</a>
+                <span id="y1-hero-privacy-slot" class="y1-hero-privacy-slot" aria-hidden="true"></span>
             </div>
         </section>
 
@@ -4076,8 +4079,8 @@
                 const editA = document.createElement('a');
                 editA.className = 'theme-card-corner-btn';
                 editA.href = `upload.html?mode=edit&folder=${encodeURIComponent(folderPath)}`;
-                editA.title = 'Edit on site';
-                editA.setAttribute('aria-label', 'Edit theme');
+                editA.title = 'Change Details';
+                editA.setAttribute('aria-label', 'Change Details');
                 editA.innerHTML = '<i class="fa-solid fa-pencil" aria-hidden="true"></i>';
 
                 const repA = document.createElement('a');
