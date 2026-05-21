@@ -1631,24 +1631,16 @@
             return '';
         }
 
-        const authorActivePill = document.getElementById('gallery-author-active-pill');
-        const authorActiveLabel = document.getElementById('gallery-author-active-label');
-        const authorActiveClear = document.getElementById('gallery-author-active-clear');
+        const authorClearLink = document.getElementById('gallery-author-clear');
 
         function syncAuthorFilterUi(activeAuthor) {
             const name = String(activeAuthor || '').trim();
+            const active = !!(name && name !== 'all');
             document.querySelectorAll('.theme-author-filter').forEach((btn) => {
                 const match = btn.textContent.trim() === name;
-                btn.classList.toggle('theme-author-filter--active', !!name && match);
+                btn.classList.toggle('theme-author-filter--active', active && match);
             });
-            if (!authorActivePill || !authorActiveLabel) return;
-            if (!name || name === 'all') {
-                authorActivePill.hidden = true;
-                authorActiveLabel.textContent = '';
-                return;
-            }
-            authorActivePill.hidden = false;
-            authorActiveLabel.textContent = name;
+            if (authorClearLink) authorClearLink.hidden = !active;
         }
 
         function clearAuthorFilter() {
@@ -1662,6 +1654,10 @@
             if (!authorFilter) return;
             const name = String(authorName || '').trim();
             if (!name || isUnknownish(name)) return;
+            if (authorFilter.value === name) {
+                clearAuthorFilter();
+                return;
+            }
             let found = false;
             for (let i = 0; i < authorFilter.options.length; i++) {
                 if (authorFilter.options[i].value === name) {
