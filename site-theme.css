@@ -14,6 +14,7 @@
     --site-radius-lg: 16px;
     --site-radius-md: 12px;
     --site-radius-pill: 999px;
+    --site-footer-luci-max-width: 248px;
 }
 
 html {
@@ -48,9 +49,14 @@ body.site-themes-app > .gallery-topbar {
 }
 
 body.site-themes-app > .wrap,
+body.site-themes-app > .wrap.upload-prose,
 body.site-themes-app > main,
-body.site-themes-app > .gold-page-wrap {
+body.site-themes-app > .gold-page-wrap,
+body.site-themes-app > .site-page-main,
+body.site-themes-app > .error-container {
     flex: 1 0 auto;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* Hide Y1 badge until Direct Install folder scan marks the card */
@@ -609,13 +615,21 @@ a.theme-preview-gold-badge[hidden] {
 body.site-themes-app #footer-root {
     margin-top: auto;
     width: 100%;
-    flex: 1 0 auto;
+    flex: 0 0 auto;
     display: flex;
     flex-direction: column;
     background: var(--site-bg-elevated);
     border-top: 1px solid var(--site-border);
     padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
     box-sizing: border-box;
+}
+
+body.site-themes-app #footer-root .site-footer.site-footer--themes,
+body.site-themes-app #footer-root footer.site-footer--themes {
+    margin-top: 0 !important;
+    padding: 2.5rem 1.25rem 0.5rem !important;
+    background: transparent !important;
+    border-top: none !important;
 }
 
 .site-footer--themes {
@@ -740,16 +754,46 @@ body.site-themes-app #footer-root {
     background: rgba(107, 159, 255, 0.18);
 }
 
+body.site-themes-app .site-footer--themes .footer-grid,
 .site-footer--themes .footer-grid {
     align-items: start;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 2rem 2.5rem;
+    max-width: 1100px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 0 0.5rem;
+    box-sizing: border-box;
 }
 
 @media (max-width: 640px) {
+    body.site-themes-app .site-footer--themes .footer-grid,
     .site-footer--themes .footer-grid {
         grid-template-columns: 1fr;
     }
+}
+
+body.site-themes-app .site-footer--themes .footer-col h4,
+.site-footer--themes .footer-col h4 {
+    margin: 0 0 0.75rem;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    color: var(--site-muted);
+    letter-spacing: 0.04em;
+}
+
+body.site-themes-app .site-footer--themes .footer-col a,
+.site-footer--themes .footer-col a {
+    display: block;
+    margin-bottom: 0.35rem;
+    color: var(--site-text);
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+body.site-themes-app .site-footer--themes .footer-col a:hover,
+.site-footer--themes .footer-col a:hover {
+    text-decoration: underline;
 }
 
 .site-footer--themes .footer-col-powered {
@@ -764,21 +808,30 @@ body.site-themes-app #footer-root {
     margin: 0 0 0.75rem;
     text-align: center;
     width: 100%;
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-transform: none;
+    color: var(--site-muted);
 }
 
+body.site-themes-app .site-footer--themes .footer-luci-link,
 .site-footer--themes .footer-luci-link {
     display: block;
     width: 100%;
-    max-width: 165px;
+    max-width: var(--site-footer-luci-max-width);
     margin: 0 auto;
 }
 
-.site-footer--themes .footer-logo-luci {
+body.site-themes-app .site-footer--themes .footer-logo-luci,
+body.site-themes-app .site-footer--themes .footer-logo.footer-logo-luci,
+.site-footer--themes .footer-logo-luci,
+.site-footer--themes .footer-logo.footer-logo-luci {
     display: block !important;
     width: 100% !important;
-    max-width: 165px !important;
+    max-width: var(--site-footer-luci-max-width) !important;
+    max-height: none !important;
     height: auto !important;
-    min-height: 36px;
+    min-height: 48px;
     margin: 0 auto !important;
     opacity: 1 !important;
     visibility: visible !important;
@@ -789,13 +842,15 @@ body.site-themes-app #footer-root {
     color: var(--site-text);
 }
 
+body.site-themes-app .site-footer--themes .footer-bottom,
 .site-footer--themes .footer-bottom {
     color: var(--site-muted);
     font-size: 0.82rem;
     text-align: center;
     padding-top: 1rem;
     padding-bottom: 0.25rem;
-    margin: 0;
+    margin: 1.25rem auto 0 !important;
+    max-width: 1100px;
     position: relative;
     z-index: 1;
 }
