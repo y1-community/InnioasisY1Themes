@@ -770,14 +770,21 @@ body.site-themes-app #footer-root {
     text-align: center;
 }
 
-.site-footer--themes .footer-logo-luci {
+.site-footer--themes .footer-col-powered a {
     display: block;
-    max-width: min(200px, 42vw);
-    width: auto;
-    height: auto;
-    max-height: none;
-    margin: 0 auto;
-    opacity: 1;
+    line-height: 0;
+}
+
+.site-footer--themes .footer-logo-luci {
+    display: block !important;
+    width: min(240px, 58vw) !important;
+    max-width: 240px !important;
+    height: auto !important;
+    max-height: none !important;
+    min-width: 120px;
+    margin: 0.5rem auto 0 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 .site-footer--themes .footer-col a {

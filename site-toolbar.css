@@ -297,50 +297,6 @@ body.site-themes-app .theme-card-buttons {
     height: 16px;
 }
 
-/* Privacy in gallery hero toolbar (index) */
-.y1-hero-privacy-slot {
-    display: inline-flex;
-    align-items: center;
-    margin-left: auto;
-    min-height: 2rem;
-}
-
-.y1-hero-privacy-slot:empty {
-    display: none;
-    margin: 0;
-}
-
-#y1-hero-privacy-slot #y1-privacy-settings-btn {
-    position: static !important;
-    display: inline-flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    padding: 0.55rem 1.15rem !important;
-    border-radius: var(--site-radius-pill, 999px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.16) !important;
-    background: rgba(255, 255, 255, 0.08) !important;
-    color: #eaf0ff !important;
-    font-family: var(--site-font) !important;
-    font-weight: 600 !important;
-    font-size: 0.88rem !important;
-    gap: 6px;
-    box-shadow: none !important;
-}
-
-#y1-hero-privacy-slot #y1-privacy-settings-btn:hover {
-    background: rgba(255, 255, 255, 0.14) !important;
-    border-color: rgba(255, 255, 255, 0.24) !important;
-}
-
-#y1-hero-privacy-slot #y1-privacy-settings-btn .y1-privacy-settings-icon {
-    width: 14px;
-    height: 14px;
-}
-
-#y1-hero-privacy-slot .y1-privacy-settings-label {
-    display: inline;
-}
-
 /* Donate panel — dark on all viewports */
 .y1-donate-panel {
     display: none;

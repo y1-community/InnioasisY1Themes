@@ -77,7 +77,7 @@
             <div class="footer-col footer-col-powered">
                 <p class="footer-powered-label">This site is powered by</p>
                 <a href="https://www.luci.ltd" target="_blank" rel="noopener noreferrer">
-                    <img src="luci-alt.svg" class="footer-logo footer-logo-luci" alt="Luci Ltd web hosting — powers themes.innioasis.app (luci.ltd)" title="Luci hosting and domains — www.luci.ltd">
+                    <img src="/luci-alt.svg" class="footer-logo-luci" alt="Luci Ltd web hosting — powers themes.innioasis.app (luci.ltd)" title="Luci hosting and domains — www.luci.ltd" width="240" height="170" decoding="async">
                 </a>
             </div>
 
