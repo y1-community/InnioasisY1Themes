@@ -760,16 +760,16 @@ body.site-themes-app #footer-root {
 .site-footer--themes .footer-luci-link {
     display: block;
     width: 100%;
-    max-width: 220px;
+    max-width: 165px;
     margin: 0 auto;
 }
 
 .site-footer--themes .footer-logo-luci {
     display: block !important;
     width: 100% !important;
-    max-width: 220px !important;
+    max-width: 165px !important;
     height: auto !important;
-    min-height: 48px;
+    min-height: 36px;
     margin: 0 auto !important;
     opacity: 1 !important;
     visibility: visible !important;
