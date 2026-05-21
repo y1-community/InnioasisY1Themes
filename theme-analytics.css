@@ -277,9 +277,18 @@ body.y1-consent-banner-open #y1-privacy-panel.y1-privacy-panel--open {
     margin: 4px 0 6px 0;
     width: 100%;
     max-width: 100%;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+}
+
+.y1-theme-metrics--card .y1-metrics-counts {
+    display: inline-flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 16px;
 }
 
 .theme-card .y1-theme-metrics--card {
@@ -288,6 +297,7 @@ body.y1-consent-banner-open #y1-privacy-panel.y1-privacy-panel--open {
 }
 
 .y1-theme-metrics--card .y1-theme-rating {
+    flex: 1 1 100%;
     width: 100%;
     flex-wrap: wrap;
     gap: 6px 8px;
@@ -300,7 +310,6 @@ body.y1-consent-banner-open #y1-privacy-panel.y1-privacy-panel--open {
 }
 
 .y1-theme-metrics--card .y1-rating-avg {
-    flex: 1 1 100%;
     margin-left: 0;
-    margin-top: 2px;
+    margin-top: 0;
 }

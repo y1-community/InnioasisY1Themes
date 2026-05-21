@@ -42,6 +42,7 @@
     <script src="theme-artwork-compat.js?v=20260524"></script>
     <script src="gold-theme-detect.js?v=20260621"></script>
     <script src="gallery-chrome.js?v=20260622"></script>
+    <script src="author-links.js?v=20260622"></script>
     <script src="site-init.js?v=20260622"></script>
     <script src="gallery-loaded-theme.js"></script>
     <script src="theme-analytics.js?v=20260524b"></script>
@@ -1608,21 +1609,38 @@
             return v == null ? '' : String(v)
         }
 
-        function getRedditProfileUrl(authorValue) {
-            const raw = String(authorValue || '').trim();
-            if (!raw) return '';
-            if (/^https?:\/\/(www\.)?reddit\.com\//i.test(raw)) return raw;
-            const cleaned = raw.replace(/^\/+|\/+$/g, '');
-            if (/^u\//i.test(cleaned) || /^user\//i.test(cleaned)) {
-                return `https://reddit.com/${cleaned}`;
-            }
-            return `https://reddit.com/user/${cleaned}`;
-        }
-
         function getPreferredAuthorUrl(author, authorUrl) {
+            if (window.Y1AuthorLinks && typeof window.Y1AuthorLinks.resolveAuthorOutboundUrl === 'function') {
+                return window.Y1AuthorLinks.resolveAuthorOutboundUrl(author, authorUrl);
+            }
             const explicit = String(authorUrl || '').trim();
             if (/^https?:\/\//i.test(explicit)) return explicit;
-            return getRedditProfileUrl(author);
+            return '';
+        }
+
+        function applyAuthorFilter(authorName) {
+            if (!authorFilter) return;
+            const name = String(authorName || '').trim();
+            if (!name || isUnknownish(name)) return;
+            let found = false;
+            for (let i = 0; i < authorFilter.options.length; i++) {
+                if (authorFilter.options[i].value === name) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                authorFilter.appendChild(opt);
+            }
+            authorFilter.value = name;
+            currentPage = 1;
+            applyFilters();
+            try {
+                authorFilter.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            } catch (_) {}
         }
 
         function isUnknownish(v) {
@@ -3909,20 +3927,14 @@
                 window.ThemeAnalytics.registerMetricsHost(folderPath, metricsHost);
             }
 
-            const a = document.createElement('div');
-            a.className = 'theme-author';
-            if (theme.sourceType === 'external' || isUnknownish(theme.author)) {
-                a.style.display = 'none';
-            } else if (theme.author === 'Innioasis') {
-                a.innerHTML = `by <a href="https://innioasis.com" target="_blank" rel="noopener">Innioasis</a>`;
-            } else if (theme.author === 'u/ope-nz | Normal-Curve-1642') {
-                a.innerHTML = `by <a href="https://reddit.com/u/Normal-Curve-1642" target="_blank" rel="noopener">Normal-Curve-1642</a>`;
-            } else {
-                const preferredUrl = getPreferredAuthorUrl(theme.author, theme.authorUrl);
-                a.innerHTML = preferredUrl ?
-                    `by <a href="${preferredUrl}" target="_blank" rel="noopener">${theme.author}</a>` :
-                    `by ${theme.author}`;
-            }
+            const a = (window.Y1AuthorLinks && typeof window.Y1AuthorLinks.buildGalleryAuthorRow === 'function')
+                ? window.Y1AuthorLinks.buildGalleryAuthorRow(theme, applyAuthorFilter)
+                : (function () {
+                    const fallback = document.createElement('div');
+                    fallback.className = 'theme-author';
+                    fallback.textContent = theme.author ? `by ${theme.author}` : '';
+                    return fallback;
+                })();
 
             const cardActions = document.createElement('div');
             cardActions.className = 'theme-card-actions';

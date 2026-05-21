@@ -383,7 +383,14 @@
                 formatCount(stats.downloads) +
                 " downloads";
 
-            el.append(views, dls);
+            if (el.dataset.cardMetrics === "1") {
+                const countsRow = document.createElement("div");
+                countsRow.className = "y1-metrics-counts";
+                countsRow.append(views, dls);
+                el.append(countsRow);
+            } else {
+                el.append(views, dls);
+            }
         }
 
         if (shouldShowRatings(c)) {

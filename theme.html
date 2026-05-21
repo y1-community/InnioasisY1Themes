@@ -61,6 +61,7 @@
     <script src="theme-artwork-compat.js?v=20260524"></script>
     <script src="gold-theme-detect.js?v=20260621"></script>
     <script src="gallery-chrome.js?v=20260622"></script>
+    <script src="author-links.js?v=20260622"></script>
     <script src="gallery-loaded-theme.js"></script>
     <script src="theme-analytics.js?v=20260524"></script>
 </head>
@@ -307,21 +308,13 @@
             return v == null ? '' : String(v)
         }
 
-        function getRedditProfileUrl(authorValue) {
-            const raw = String(authorValue || '').trim();
-            if (!raw) return '';
-            if (/^https?:\/\/(www\.)?reddit\.com\//i.test(raw)) return raw;
-            const cleaned = raw.replace(/^\/+|\/+$/g, '');
-            if (/^u\//i.test(cleaned) || /^user\//i.test(cleaned)) {
-                return `https://reddit.com/${cleaned}`;
-            }
-            return `https://reddit.com/user/${cleaned}`;
-        }
-
         function getPreferredAuthorUrl(author, authorUrl) {
+            if (window.Y1AuthorLinks && typeof window.Y1AuthorLinks.resolveAuthorOutboundUrl === 'function') {
+                return window.Y1AuthorLinks.resolveAuthorOutboundUrl(author, authorUrl);
+            }
             const explicit = String(authorUrl || '').trim();
             if (/^https?:\/\//i.test(explicit)) return explicit;
-            return getRedditProfileUrl(author);
+            return '';
         }
 
         function setMetaContent(selector, value) {
@@ -1735,28 +1728,17 @@
             if (!themeMeta || !themeMeta.author) {
                 authorEl.style.display = 'none'
             } else {
-                const a = document.createElement('span')
-                if (themeMeta.author === 'Innioasis') {
-                    a.innerHTML = `by <a href="https://innioasis.com" target="_blank" rel="noopener">Innioasis</a>`
-                } else if (themeMeta.author === 'u/ope-nz | Normal-Curve-1642') {
-                    a.innerHTML = `by <a href="https://reddit.com/u/Normal-Curve-1642" target="_blank" rel="noopener">Normal-Curve-1642</a>`
-                } else {
-                    const preferredUrl = getPreferredAuthorUrl(themeMeta.author, themeMeta.authorUrl)
-                    a.innerHTML = preferredUrl ?
-                        `by <a href="${preferredUrl}" target="_blank" rel="noopener">${themeMeta.author}</a>` :
-                        `by ${themeMeta.author}`
-                }
                 authorEl.innerHTML = ''
-                authorEl.appendChild(a)
-                if (themeMeta.authorUrl) {
-                    const ic = document.createElement('a')
-                    ic.href = themeMeta.authorUrl
-                    ic.target = '_blank'
-                    ic.rel = 'noopener'
-                    ic.style.marginLeft = '8px'
-                    ic.innerHTML = `<i class="fa-brands fa-reddit" title="author link"></i>`
-                    authorEl.appendChild(ic)
-                }
+                authorEl.style.display = ''
+                const row = (window.Y1AuthorLinks && typeof window.Y1AuthorLinks.buildThemePageAuthorRow === 'function')
+                    ? window.Y1AuthorLinks.buildThemePageAuthorRow(themeMeta)
+                    : (function () {
+                        const fallback = document.createElement('div')
+                        fallback.className = 'theme-author theme-author--page'
+                        fallback.textContent = 'by ' + themeMeta.author
+                        return fallback
+                    })()
+                authorEl.appendChild(row)
             }
 
             const screenshotCandidates = buildScreenshotCandidates(themeMeta?.screenshot, displayFiles)
