@@ -45,6 +45,7 @@
     <script src="author-links.js?v=20260622"></script>
     <script src="site-init.js?v=20260522privacy"></script>
     <script src="gallery-loaded-theme.js"></script>
+    <script src="theme-share-links.js"></script>
     <script src="theme-analytics.js?v=20260524b"></script>
 
     <style>
@@ -413,6 +414,15 @@
 
         .theme-card-title-row .theme-name {
             margin: 0;
+        }
+
+        .theme-preview-frame.theme-preview-frame--linkable {
+            cursor: pointer;
+        }
+
+        .theme-preview-frame.theme-preview-frame--linkable:focus-visible {
+            outline: 2px solid rgba(88, 166, 255, 0.85);
+            outline-offset: 2px;
         }
 
         .theme-preview-frame {
@@ -3786,6 +3796,18 @@
             const previewFrame = document.createElement('div');
             previewFrame.className = 'theme-preview-frame';
 
+            const themeQueryKey = folderPath || String(theme.name || '');
+            const buildCardDetailHref = (variantSeg) => {
+                if (theme.sourceType === 'external' || !themeQueryKey) return '';
+                if (window.ThemeShareLinks && typeof ThemeShareLinks.buildThemeDetailPageUrl === 'function') {
+                    return ThemeShareLinks.buildThemeDetailPageUrl(themeQueryKey, variantSeg);
+                }
+                const v = String(variantSeg || '').trim();
+                let href = `./theme.html?theme=${encodeURIComponent(themeQueryKey)}`;
+                if (v) href += `&variant=${encodeURIComponent(v)}`;
+                return href;
+            };
+
             const previewGoldBadge = document.createElement('a');
             previewGoldBadge.className = 'theme-preview-gold-badge';
             previewGoldBadge.href = 'gold-badge.html';
@@ -3923,15 +3945,27 @@
                 })();
             }
 
-            variantSelect.addEventListener('change', () => {
-                if (!folderPath || !window.Y1ThemePreview) return;
-                const seg = String(variantSelect.value || '').trim();
-                if (typeof window.Y1ThemePreview.unmount === 'function') {
-                    window.Y1ThemePreview.unmount(simHost);
-                }
-                mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, c, seg, theme);
-                void syncDownloadButtonToThemeConfig(seg);
-            });
+            const goToThemeDetailPage = () => {
+                const href = buildCardDetailHref(String(variantSelect.value || '').trim());
+                if (href) location.href = href;
+            };
+
+            if (theme.sourceType !== 'external' && themeQueryKey) {
+                previewFrame.classList.add('theme-preview-frame--linkable');
+                previewFrame.setAttribute('role', 'link');
+                previewFrame.setAttribute('tabindex', '0');
+                previewFrame.setAttribute('aria-label', `Open ${safeText(theme.name)} theme page`);
+                previewFrame.title = 'Open theme page';
+                previewFrame.addEventListener('click', (ev) => {
+                    if (ev.target.closest('select, button, a, .theme-card-corner-actions')) return;
+                    goToThemeDetailPage();
+                });
+                previewFrame.addEventListener('keydown', (ev) => {
+                    if (ev.key !== 'Enter' && ev.key !== ' ') return;
+                    ev.preventDefault();
+                    goToThemeDetailPage();
+                });
+            }
 
             const titleRow = document.createElement('div');
             titleRow.className = 'theme-card-title-row';
@@ -3944,9 +3978,24 @@
                 n.target = '_blank';
                 n.rel = 'noopener';
             } else {
-                const themeQueryKey = folderPath || String(theme.name || '');
-                n.href = `./theme.html?theme=${encodeURIComponent(themeQueryKey)}`;
+                n.href = buildCardDetailHref(String(variantSelect.value || '').trim());
             }
+
+            const updateCardThemeNameHref = () => {
+                if (theme.sourceType === 'external' || !themeQueryKey) return;
+                n.href = buildCardDetailHref(String(variantSelect.value || '').trim());
+            };
+
+            variantSelect.addEventListener('change', () => {
+                updateCardThemeNameHref();
+                if (!folderPath || !window.Y1ThemePreview) return;
+                const seg = String(variantSelect.value || '').trim();
+                if (typeof window.Y1ThemePreview.unmount === 'function') {
+                    window.Y1ThemePreview.unmount(simHost);
+                }
+                mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, c, seg, theme);
+                void syncDownloadButtonToThemeConfig(seg);
+            });
 
             const goldBadge = document.createElement('a');
             goldBadge.className = 'theme-gold-title-badge';
@@ -4093,7 +4142,53 @@
                 remA.setAttribute('aria-label', 'Request removal');
                 remA.innerHTML = '<i class="fa-solid fa-xmark" aria-hidden="true"></i>';
 
-                corner.append(editA, repA, remA);
+                const shareBtn = document.createElement('button');
+                shareBtn.type = 'button';
+                shareBtn.className = 'theme-card-corner-btn';
+                shareBtn.title = 'Share theme link';
+                shareBtn.setAttribute('aria-label', 'Share theme link');
+                shareBtn.innerHTML = '<i class="fa-solid fa-share-nodes" aria-hidden="true"></i>';
+                shareBtn.addEventListener('click', async (ev) => {
+                    ev.stopPropagation();
+                    const seg = String(variantSelect.value || '').trim();
+                    if (!window.ThemeShareLinks) return;
+                    const res = await ThemeShareLinks.shareThemeLink({
+                        catalogFolder: folderPath,
+                        variantSegment: seg,
+                        title: safeText(theme.name),
+                        text: safeText(theme.name)
+                    });
+                    if (res.ok && res.method === 'clipboard') {
+                        shareBtn.title = 'Link copied';
+                        setTimeout(() => {
+                            shareBtn.title = 'Share theme link';
+                        }, 2000);
+                    }
+                });
+
+                const copyBtn = document.createElement('button');
+                copyBtn.type = 'button';
+                copyBtn.className = 'theme-card-corner-btn';
+                copyBtn.title = 'Copy theme link';
+                copyBtn.setAttribute('aria-label', 'Copy theme link');
+                copyBtn.innerHTML = '<i class="fa-solid fa-link" aria-hidden="true"></i>';
+                copyBtn.addEventListener('click', async (ev) => {
+                    ev.stopPropagation();
+                    const seg = String(variantSelect.value || '').trim();
+                    if (!window.ThemeShareLinks) return;
+                    const res = await ThemeShareLinks.copyThemeLink({
+                        catalogFolder: folderPath,
+                        variantSegment: seg
+                    });
+                    if (res.ok) {
+                        copyBtn.title = 'Copied!';
+                        setTimeout(() => {
+                            copyBtn.title = 'Copy theme link';
+                        }, 2000);
+                    }
+                });
+
+                corner.append(shareBtn, copyBtn, editA, repA, remA);
                 cardTop.appendChild(corner);
             }
             return c;

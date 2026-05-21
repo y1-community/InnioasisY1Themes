@@ -63,6 +63,7 @@
     <script src="gallery-chrome.js?v=20260622"></script>
     <script src="author-links.js?v=20260622"></script>
     <script src="gallery-loaded-theme.js"></script>
+    <script src="theme-share-links.js"></script>
     <script src="theme-analytics.js?v=20260524"></script>
 </head>
 <style>
@@ -249,6 +250,7 @@
                                 <select id="mask-variant-select" style="background:#222733;border:1px solid rgba(255,255,255,0.12);color:#eaf0ff;border-radius:8px;padding:0.35rem 0.45rem;"></select>
                             </label>
                             <a id="raw-folder-link" class="btn btn-secondary" style="text-decoration:none;padding:.6rem .9rem" target="_blank" rel="noopener"><i class="fa-solid fa-folder-open"></i> Open folder</a>
+                            <button type="button" id="theme-action-share" class="btn btn-secondary" style="font-weight:normal;padding:.45rem .75rem;font-size:0.82rem;"><i class="fa-solid fa-share-nodes" style="margin-right:4px;"></i> Share</button>
                             <a id="theme-action-report" class="btn btn-secondary" style="text-decoration:none;padding:.45rem .75rem;font-size:0.82rem;font-weight:normal;" href="https://themes.innioasis.app/report-theme.html" rel="noopener"><i class="fa-solid fa-flag" style="margin-right:4px;"></i> Report issue</a>
                             <button type="button" id="theme-copy-share-url" class="btn btn-secondary" style="font-weight:normal;"><i class="fa-solid fa-link" style="margin-right:4px;"></i> Copy page link</button>
                         </div>
@@ -1451,8 +1453,15 @@
             const maskVariantPreview = document.getElementById('mask-variant-preview');
 
             const params = new URLSearchParams(location.search);
-            const themeQuery = params.get('theme') || params.get('t') || params.get('folder') || '';
             let activeVariant = String(params.get('variant') || '').trim();
+            let themeQuery = params.get('theme') || params.get('t') || params.get('folder') || '';
+            if (!themeQuery && window.ThemeShareLinks && typeof ThemeShareLinks.parseThemePathFromLocation === 'function') {
+                const pathParsed = ThemeShareLinks.parseThemePathFromLocation();
+                if (pathParsed && pathParsed.folder) {
+                    themeQuery = pathParsed.folder;
+                    if (!activeVariant && pathParsed.variant) activeVariant = pathParsed.variant;
+                }
+            }
             let themeMeta = null;
             let folder = '';
             let activeContentFolder = '';
@@ -1775,6 +1784,36 @@
                 const aq = encodeURIComponent(seoAuthor || '');
                 const ref = encodeURIComponent(location.href.split('#')[0]);
                 reportA.href = `${siteBase}/report-theme.html?folder=${enc}&title=${tq}&author=${aq}&ref=${ref}`;
+            }
+
+            const shareBtn = document.getElementById('theme-action-share');
+            const readShareVariant = () => {
+                if (previewVariationSelect && previewVariationWrap && previewVariationWrap.style.display !== 'none') {
+                    return String(previewVariationSelect.value || '').trim();
+                }
+                return String(activeVariant || '').trim();
+            };
+            const runThemeShare = async () => {
+                if (!window.ThemeShareLinks || !folderClean) return;
+                const v = readShareVariant();
+                const res = await ThemeShareLinks.shareThemeLink({
+                    catalogFolder: folderClean,
+                    variantSegment: v,
+                    title: displayName || catalogTitle,
+                    text: displayName || catalogTitle
+                });
+                if (shareBtn && res.ok && res.method === 'clipboard') {
+                    const prev = shareBtn.innerHTML;
+                    shareBtn.innerHTML = '<i class="fa-solid fa-check" style="margin-right:4px;"></i> Link copied';
+                    setTimeout(() => {
+                        shareBtn.innerHTML = prev;
+                    }, 2200);
+                }
+            };
+            if (shareBtn && folderClean) {
+                shareBtn.onclick = () => void runThemeShare();
+            } else if (shareBtn) {
+                shareBtn.style.display = 'none';
             }
 
             const themeObj = {
