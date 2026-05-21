@@ -574,6 +574,7 @@
             pointer-events: none;
         }
     </style>
+    <script src="gallery-chrome.js?v=20260621"></script>
 </head>
 
 <body class="site-themes-app site-dock-mode">
@@ -663,7 +664,10 @@
 
     <div id="nav-root"></div>
     <div class="gallery-topbar">
-        <div aria-hidden="true"></div>
+        <a class="gallery-brand" href="https://themes.innioasis.app/index.html" title="Innioasis Y1 Themes gallery">
+            <span class="gallery-brand-icon" aria-hidden="true"><i class="fa-solid fa-palette"></i></span>
+            <span class="gallery-brand-text">Y1 Themes</span>
+        </a>
         <div class="gallery-tabs" aria-label="Site sections">
             <a class="gallery-tab" href="https://y1-themes.vercel.app">Editor</a>
             <a class="gallery-tab" href="https://themes.innioasis.app/index.html">Gallery</a>
@@ -671,7 +675,7 @@
         </div>
         <form class="topbar-search-wrap" action="https://themes.innioasis.app/index.html" method="get">
             <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
-            <input id="global-theme-search" name="q" class="topbar-search" type="search" placeholder="&#128269;" aria-label="Search themes">
+            <input id="global-theme-search" name="q" class="topbar-search" type="search" placeholder="Search themes" aria-label="Search themes">
         </form>
     </div>
 

@@ -29,7 +29,7 @@
 
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="site-theme.css?v=20260620">
+    <link rel="stylesheet" href="site-theme.css?v=20260621">
     <link rel="stylesheet" href="site-toolbar.css?v=20260620">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
     <link rel="stylesheet" href="y1-theme-preview.css?v=20260215">
@@ -39,7 +39,8 @@
     <script src="theme-packaging.js"></script>
     <script src="y1-theme-preview.js?v=20260215"></script>
     <script src="theme-artwork-compat.js?v=20260524"></script>
-    <script src="gold-theme-detect.js?v=20260524"></script>
+    <script src="gold-theme-detect.js?v=20260621"></script>
+    <script src="gallery-chrome.js?v=20260621"></script>
     <script src="gallery-loaded-theme.js"></script>
     <script src="theme-analytics.js?v=20260524b"></script>
 
@@ -591,22 +592,6 @@
             color: var(--text-secondary);
         }
 
-        #rockbox-btn {
-            background: var(--bg-card);
-            color: var(--text-primary);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            font-weight: normal;
-            padding: .875rem 2rem;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-left: 15px;
-        }
-
-        #rockbox-btn:hover {
-            background: var(--bg-card);
-            color: var(--primary);
-        }
-
         .btn {
             background: var(--primary);
             color: #fff;
@@ -678,7 +663,10 @@
 <body class="site-themes-app site-dock-mode">
     <div id="nav-root"></div>
     <div class="gallery-topbar">
-        <div aria-hidden="true"></div>
+        <a class="gallery-brand" href="index.html" title="Innioasis Y1 Themes gallery">
+            <span class="gallery-brand-icon" aria-hidden="true"><i class="fa-solid fa-palette"></i></span>
+            <span class="gallery-brand-text">Y1 Themes</span>
+        </a>
         <div class="gallery-tabs" aria-label="Site sections">
             <a class="gallery-tab" href="https://y1-themes.vercel.app">Editor</a>
             <a class="gallery-tab active" href="index.html">Gallery</a>
@@ -686,18 +674,18 @@
         </div>
         <div class="topbar-search-wrap">
             <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
-            <input id="theme-search" class="topbar-search" type="search" placeholder="&#128269;" aria-label="Search themes">
+            <input id="theme-search" class="topbar-search" type="search" placeholder="Search themes" aria-label="Search themes">
         </div>
     </div>
     <div class="wrap">
         <header>
             <h1 class="site-display">Themes</h1>
-            <p class="site-lead">Download themes for your Y1, or upload your own for the gallery.</p>
+            <p class="site-lead gallery-home-lead">Here is a community-led gallery of themes to customise your Innioasis Y1 audio player — find a new look for your screens, try previews before you install, and share your own looks for the MP3 player with other Y1 users.</p>
         </header>
 
-        <div class="cast-div" style="margin-top: 3rem;">
-            <a href="upload.html" class="btn" style="font-family: Inter; padding: .875rem 2rem; font-weight: normal;"><i class="fas fa-upload" style="margin-right: 4px"></i>Upload theme</a>
-            <a id="rockbox-btn"><i class="fas fa-external-link" style="margin-right: 8px;"></i>Rockbox themes</a>
+        <div class="cast-div hero-actions" style="margin-top: 3rem;">
+            <a href="upload.html" class="btn"><i class="fa-solid fa-upload" aria-hidden="true"></i> Upload theme</a>
+            <a id="rockbox-btn" class="btn" href="#"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Rockbox themes</a>
         </div>
 
         <div id="direct-install-banner" style="margin-top: 2rem; padding: 16px; background: rgba(100, 200, 255, 0.1); border: 1px solid rgba(100, 200, 255, 0.3); border-radius: 8px; display: none;">
@@ -1613,9 +1601,10 @@
             if (filterDiv) filterDiv.style.display = 'none';
         }
 
-        rbBtn.onclick = () => {
-            rbBackdrop.style.display = 'flex'
-        }
+        rbBtn.onclick = (e) => {
+            if (e) e.preventDefault();
+            rbBackdrop.style.display = 'flex';
+        };
         rbClose.onclick = () => {
             rbBackdrop.style.display = 'none'
         }
@@ -3743,14 +3732,7 @@
             const catalogFolder = String(folderRaw).replace(/^\.\/+/, '').trim();
             if (!catalogFolder) return;
             const themeProbe = Object.assign({}, galleryThemeEntry || {}, { folder: catalogFolder });
-            if (loadedConfig && typeof loadedConfig === 'object') {
-                const g = loadedConfig.gallery && typeof loadedConfig.gallery === 'object' ?
-                    loadedConfig.gallery :
-                    {};
-                const mr = String(g.compatibilityMedal || '').trim().toLowerCase();
-                if (mr === 'gold') themeProbe.compatibilityMedal = 'gold';
-                else if (mr === 'none') themeProbe.compatibilityMedal = '';
-            }
+            delete themeProbe.compatibilityMedal;
             const status = await window.GoldThemeDetect.evaluateThemeGoldStatus(
                 themeProbe,
                 {

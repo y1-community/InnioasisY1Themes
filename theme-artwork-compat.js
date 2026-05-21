@@ -12,6 +12,25 @@
         { feature: 'Calculator', configPath: ['homePageConfig', 'calculator'] }
     ];
 
+    /** Basenames that must be real artwork for Gold (not transparent.png placeholders). */
+    var GOLD_CRITICAL_BASENAMES = {
+        'launcher.png': true,
+        'calendar.png': true,
+        'ebook.png': true,
+        'calculator.png': true
+    };
+
+    function basenameOfPath(pathValue) {
+        return String(pathValue || '')
+            .split('/')
+            .pop()
+            .toLowerCase();
+    }
+
+    function isGoldCriticalArtworkPath(pathValue) {
+        return !!GOLD_CRITICAL_BASENAMES[basenameOfPath(pathValue)];
+    }
+
     function encodePathSegments(pathValue) {
         return String(pathValue || '')
             .split('/')
@@ -151,7 +170,11 @@
             if (!normalized) return resolve({ ok: false, issue: 'invalid path' });
             var url = fileUrlFn(folderPath, normalized);
             if (!url) return resolve({ ok: false, issue: 'invalid path' });
-            var allowTransparent = isIntentionalTransparentPath(normalized);
+            var critical = isGoldCriticalArtworkPath(normalized);
+            var allowTransparent = isIntentionalTransparentPath(normalized) && !critical;
+            if (critical && /transparent\.png$/i.test(normalized)) {
+                return resolve({ ok: false, issue: 'transparent placeholder not allowed for Gold artwork' });
+            }
             fetchWithTimeout(url, { cache: 'no-cache' })
                 .then(function (response) {
                     if (!response.ok) return resolve({ ok: false, issue: 'file not found' });
@@ -214,6 +237,8 @@
 
     global.y1ThemeArtworkCompat = {
         warnings: artworkCompatibilityWarnings,
-        defaultFileUrl: defaultFileUrl
+        defaultFileUrl: defaultFileUrl,
+        isGoldCriticalArtworkPath: isGoldCriticalArtworkPath,
+        GOLD_CRITICAL_BASENAMES: GOLD_CRITICAL_BASENAMES
     };
 })(typeof window !== 'undefined' ? window : globalThis);

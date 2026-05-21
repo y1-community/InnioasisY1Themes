@@ -80,6 +80,53 @@ h2.section-display,
     backdrop-filter: blur(12px);
 }
 
+.gallery-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    grid-column: 1;
+    justify-self: start;
+    text-decoration: none;
+    color: var(--site-text);
+    font-weight: 700;
+    font-size: 0.92rem;
+    letter-spacing: -0.02em;
+    padding: 4px 6px;
+    border-radius: 8px;
+    font-family: var(--site-font);
+}
+
+.gallery-brand:hover {
+    text-decoration: none;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.gallery-brand-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(107, 159, 255, 0.18);
+    border: 1px solid rgba(107, 159, 255, 0.35);
+    color: #9ec0ff;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+
+.gallery-brand-text {
+    white-space: nowrap;
+}
+
+body.site-themes-app .cast-div.hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
 .gallery-tabs {
     display: inline-flex;
     gap: 3px;
@@ -153,6 +200,12 @@ h2.section-display,
     .gallery-topbar {
         grid-template-columns: 1fr;
         gap: 10px;
+    }
+
+    .gallery-brand {
+        order: 0;
+        justify-self: start;
+        grid-column: auto;
     }
 
     .gallery-tabs {
@@ -372,6 +425,17 @@ a.theme-preview-gold-badge[hidden] {
     color: var(--site-muted);
     padding: 2.5rem 1.25rem 2rem;
     margin-top: 3rem;
+    margin-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+    position: relative;
+    z-index: 10001;
+}
+
+.gallery-home-lead {
+    max-width: 42rem;
+}
+
+#footer-root {
+    margin-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
 }
 
 .site-footer--themes .footer-col a {

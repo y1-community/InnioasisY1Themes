@@ -179,9 +179,10 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
   <meta name="robots" content="index,follow" />
   <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <link rel="stylesheet" href="/site-theme.css?v=20260620" />
-  <link rel="stylesheet" href="/site-toolbar.css?v=20260620" />
+  <link rel="stylesheet" href="/site-theme.css?v=20260621" />
+  <link rel="stylesheet" href="/site-toolbar.css?v=20260621" />
   <script src="/theme-seo-shell-analytics.js"></script>
+  <script src="/gallery-chrome.js?v=20260621"></script>
   <link rel="canonical" href="$previewE" />
   <script>
 (function () {
@@ -220,7 +221,10 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
 <body class="site-themes-app site-dock-mode">
   <div id="nav-root"></div>
   <div class="gallery-topbar">
-    <div aria-hidden="true"></div>
+    <a class="gallery-brand" href="https://themes.innioasis.app/index.html" title="Innioasis Y1 Themes gallery">
+      <span class="gallery-brand-icon" aria-hidden="true"><i class="fa-solid fa-palette"></i></span>
+      <span class="gallery-brand-text">Y1 Themes</span>
+    </a>
     <div class="gallery-tabs" aria-label="Site sections">
       <a class="gallery-tab" href="https://y1-themes.vercel.app">Editor</a>
       <a class="gallery-tab active" href="https://themes.innioasis.app/index.html">Gallery</a>
@@ -300,6 +304,8 @@ function Test-IndexShellNeedsWrite([string]$abs) {
         if ($c -notmatch 'gallery-topbar') { return $true }
         if ($c -notmatch 'site-themes-app') { return $true }
         if ($c -notmatch 'site-toolbar\.css') { return $true }
+        if ($c -notmatch 'gallery-chrome\.js') { return $true }
+        if ($c -notmatch 'gallery-brand') { return $true }
         return $false
     } catch {
         return $true

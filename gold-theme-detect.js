@@ -59,11 +59,10 @@
         return String(gallery.compatibilityMedal || "").trim().toLowerCase();
     }
 
-    /** Fast check: required paths declared in config (and honour gallery.medal overrides). */
+    /** Fast check: required paths declared in config (medal "none" opts out; "gold" does not bypass assets). */
     function configQualifiesForGold(cfg) {
         if (!cfg || typeof cfg !== "object") return false;
         const medal = medalFromConfig(cfg);
-        if (medal === "gold") return true;
         if (medal === "none") return false;
         return GOLD_ARTWORK_PATHS.every((parts) => !!getConfigValueByPath(cfg, parts));
     }
@@ -110,11 +109,10 @@
         return `${root}/${THEME_VARIANTS_FOLDER}/${v}`;
     }
 
-    /** Full check: artwork compat passes (paths + files healthy). */
+    /** Full check: artwork compat passes (paths + real assets; no transparent placeholders on critical PNGs). */
     async function artworkCompatQualifiesForGold(cfg, folderPath, fileUrlFn) {
         if (!cfg || !folderPath) return false;
         const medal = medalFromConfig(cfg);
-        if (medal === "gold") return true;
         if (medal === "none") return false;
         const warnFn = artworkWarningsFn();
         if (!warnFn) return configQualifiesForGold(cfg);
@@ -170,7 +168,6 @@
             if (!cfg) return empty;
             const medal = medalFromConfig(cfg);
             if (medal === "none") return { gold: false, medal: "none", checkedFolder: contentFolder };
-            if (medal === "gold") return { gold: true, medal: "gold", checkedFolder: contentFolder };
             const ok = await artworkCompatQualifiesForGold(cfg, contentFolder, fileUrlFn);
             return { gold: ok, medal: ok ? "gold" : "", checkedFolder: contentFolder };
         }
@@ -186,9 +183,6 @@
                 if (!vCfg) continue;
                 const vMedal = medalFromConfig(vCfg);
                 if (vMedal === "none") continue;
-                if (vMedal === "gold") {
-                    return { gold: true, medal: "gold", checkedFolder: contentFolder };
-                }
                 if (await artworkCompatQualifiesForGold(vCfg, contentFolder, fileUrlFn)) {
                     return { gold: true, medal: "gold", checkedFolder: contentFolder };
                 }
@@ -203,9 +197,6 @@
             if (!cfg) continue;
             const medal = medalFromConfig(cfg);
             if (medal === "none") continue;
-            if (medal === "gold") {
-                return { gold: true, medal: "gold", checkedFolder: contentFolder };
-            }
             if (await artworkCompatQualifiesForGold(cfg, contentFolder, fileUrlFn)) {
                 return { gold: true, medal: "gold", checkedFolder: contentFolder };
             }
