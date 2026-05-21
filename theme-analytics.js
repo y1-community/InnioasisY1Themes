@@ -533,10 +533,8 @@
     function mountPrivacyButton() {
         const btn = document.getElementById("y1-privacy-settings-btn");
         if (!btn) return;
-        const heroSlot = document.getElementById("y1-hero-toolbar-privacy-slot");
         const dockSlot = document.getElementById("y1-site-dock-privacy-slot");
-        const galleryHero = document.querySelector(".gallery-home-hero");
-        const target = galleryHero && heroSlot ? heroSlot : heroSlot || dockSlot;
+        const target = dockSlot;
         if (target && btn.parentElement !== target) {
             target.appendChild(btn);
         } else if (!target) {
@@ -544,7 +542,7 @@
         }
         btn.style.display = "inline-flex";
         btn.style.visibility = "visible";
-        if (document.getElementById("y1-site-dock") || dockSlot || heroSlot) {
+        if (document.getElementById("y1-site-dock") || dockSlot) {
             document.body.classList.add("site-dock-mode");
         }
     }
@@ -567,7 +565,7 @@
             '<div class="y1-consent-inner">' +
             "<p>Theme view, download, and rating <strong>totals are public</strong> for everyone. " +
             "By default we <strong>do</strong> include your visits, downloads, and ratings in those totals. " +
-            "Use <strong>Privacy</strong> in the toolbar to opt out anytime.</p>" +
+            "Use <strong>Privacy</strong> in the bottom dock to opt out anytime.</p>" +
             '<div class="y1-consent-actions">' +
             '<button type="button" class="y1-consent-customize">Customize</button>' +
             '<button type="button" class="y1-consent-accept">Continue</button>' +
@@ -593,12 +591,8 @@
 
         document.body.appendChild(banner);
         document.body.appendChild(panel);
-        const heroSlot = document.getElementById("y1-hero-toolbar-privacy-slot");
         const dockSlot = document.getElementById("y1-site-dock-privacy-slot");
-        if (heroSlot) {
-            heroSlot.appendChild(settingsBtn);
-            document.body.classList.add("site-dock-mode");
-        } else if (dockSlot) {
+        if (dockSlot) {
             dockSlot.appendChild(settingsBtn);
             document.body.classList.add("site-dock-mode");
         } else {
@@ -714,11 +708,9 @@
         const poll = setInterval(function () {
             mountPrivacyToDock();
             const btn = document.getElementById("y1-privacy-settings-btn");
-            const heroSlot = document.getElementById("y1-hero-toolbar-privacy-slot");
             const dockSlot = document.getElementById("y1-site-dock-privacy-slot");
-            const inHero = heroSlot && btn && heroSlot.contains(btn);
             const inDock = dockSlot && btn && dockSlot.contains(btn);
-            if (inHero || inDock || !btn) {
+            if (inDock || !btn) {
                 clearInterval(poll);
                 return;
             }
