@@ -383,6 +383,17 @@ a.theme-preview-gold-badge[hidden] {
     font-size: 0.82rem;
 }
 
+.site-footer--themes .footer-bottom .footer-copyleft,
+.site-footer .footer-bottom .footer-copyleft {
+    color: var(--site-text);
+    text-decoration: none;
+}
+
+.site-footer--themes .footer-bottom .footer-copyleft:hover,
+.site-footer .footer-bottom .footer-copyleft:hover {
+    text-decoration: underline;
+}
+
 body.site-themes-app .cast-div {
     padding: 1.25rem 1.5rem;
     border-radius: var(--site-radius-lg);

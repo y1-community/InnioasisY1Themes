@@ -86,7 +86,7 @@
         </div>
 
         <div class="footer-bottom">
-            Copyleft - Ryan Specter- Made with ❤️ by Y1 users, for Y1 users
+            <a href="https://en.wikipedia.org/wiki/Copyleft" class="footer-copyleft" target="_blank" rel="noopener noreferrer" title="Copyleft — Wikipedia">🄯</a> - Ryan Specter- Made with ❤️ by Y1 users, for Y1 users
         </div>
     </footer>`
 
