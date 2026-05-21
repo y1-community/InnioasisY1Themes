@@ -48,9 +48,13 @@
             document.documentElement.classList.add("site-themes-html");
         }
         if (document.body) {
-            document.body.classList.add("site-themes-app", "site-dock-mode");
+            document.body.classList.add("site-themes-app");
         }
-        loadSupportToolbar();
+        loadSupportToolbar().then(function () {
+            if (document.body) {
+                document.body.classList.add("site-dock-mode");
+            }
+        });
     }
 
     if (document.readyState === "loading") {

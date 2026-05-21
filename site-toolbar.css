@@ -257,6 +257,9 @@ body.site-themes-app .theme-card-buttons {
 
 #y1-site-dock-privacy-slot #y1-privacy-settings-btn {
     position: static !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
     min-width: 0;
     height: auto;
     padding: 6px 10px;
@@ -268,6 +271,14 @@ body.site-themes-app .theme-card-buttons {
     font-weight: 600;
     color: #eaf0ff;
     gap: 6px;
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+#y1-site-dock-privacy-slot:not(:empty) {
+    display: inline-flex;
+    align-items: center;
 }
 
 #y1-site-dock-privacy-slot #y1-privacy-settings-btn:hover {

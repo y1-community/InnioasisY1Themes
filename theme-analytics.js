@@ -679,12 +679,34 @@
     function initConsent() {
         const start = () => {
             ensureConsentDom();
+            mountPrivacyToDock();
+        };
+        const onDockReady = () => {
+            mountPrivacyToDock();
         };
         if (document.body) {
             start();
         } else {
             document.addEventListener("DOMContentLoaded", start);
         }
+        window.addEventListener("y1-dock-slot-ready", onDockReady);
+        if (typeof global.y1LoadSupportToolbar === "function") {
+            void global.y1LoadSupportToolbar().then(onDockReady).catch(function () {});
+        }
+        let tries = 0;
+        const poll = setInterval(function () {
+            mountPrivacyToDock();
+            if (
+                document.getElementById("y1-site-dock-privacy-slot") &&
+                document.getElementById("y1-site-dock-privacy-slot").contains(
+                    document.getElementById("y1-privacy-settings-btn")
+                )
+            ) {
+                clearInterval(poll);
+                return;
+            }
+            if (++tries > 40) clearInterval(poll);
+        }, 150);
     }
 
     function trackPageView(themeKey, source) {
