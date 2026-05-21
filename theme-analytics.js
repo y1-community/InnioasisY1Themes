@@ -535,12 +535,15 @@
         if (!btn) return;
         const heroSlot = document.getElementById("y1-hero-toolbar-privacy-slot");
         const dockSlot = document.getElementById("y1-site-dock-privacy-slot");
-        const target = heroSlot || dockSlot;
+        const galleryHero = document.querySelector(".gallery-home-hero");
+        const target = galleryHero && heroSlot ? heroSlot : heroSlot || dockSlot;
         if (target && btn.parentElement !== target) {
             target.appendChild(btn);
         } else if (!target) {
             btn.style.display = "inline-flex";
         }
+        btn.style.display = "inline-flex";
+        btn.style.visibility = "visible";
         if (document.getElementById("y1-site-dock") || dockSlot || heroSlot) {
             document.body.classList.add("site-dock-mode");
         }
@@ -710,12 +713,12 @@
         let tries = 0;
         const poll = setInterval(function () {
             mountPrivacyToDock();
-            if (
-                document.getElementById("y1-site-dock-privacy-slot") &&
-                document.getElementById("y1-site-dock-privacy-slot").contains(
-                    document.getElementById("y1-privacy-settings-btn")
-                )
-            ) {
+            const btn = document.getElementById("y1-privacy-settings-btn");
+            const heroSlot = document.getElementById("y1-hero-toolbar-privacy-slot");
+            const dockSlot = document.getElementById("y1-site-dock-privacy-slot");
+            const inHero = heroSlot && btn && heroSlot.contains(btn);
+            const inDock = dockSlot && btn && dockSlot.contains(btn);
+            if (inHero || inDock || !btn) {
                 clearInterval(poll);
                 return;
             }

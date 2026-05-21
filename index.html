@@ -703,6 +703,10 @@
                     <option value="all">All authors</option>
                 </select>
             </label>
+            <div id="gallery-author-active-pill" class="gallery-author-active-pill" hidden>
+                <span class="gallery-author-active-pill__label" id="gallery-author-active-label"></span>
+                <button type="button" class="gallery-author-active-pill__clear" id="gallery-author-active-clear" aria-label="Clear author filter" title="Clear author filter">×</button>
+            </div>
             <label class="gallery-control" for="sort-filter">
                 Sort
                 <select id="sort-filter">
@@ -1246,7 +1250,9 @@
             const sortQ = qp.get('sort');
             if (sortFilter && sortQ) sortFilter.value = sortQ;
             const authorQ = qp.get('author');
-            if (authorFilter && authorQ) authorFilter.value = authorQ;
+            if (authorFilter && authorQ) {
+                authorFilter.value = authorQ;
+            }
             goldOnlyFilter = qp.get('gold') === '1';
             if (goldOnlyCheckbox) goldOnlyCheckbox.checked = goldOnlyFilter;
             const sizeQ = qp.get('size');
@@ -1407,6 +1413,8 @@
             applyFilters();
         });
         if (authorFilter) authorFilter.addEventListener('change', () => {
+            const v = String(authorFilter.value || 'all');
+            syncAuthorFilterUi(v === 'all' ? '' : v);
             currentPage = 1;
             applyFilters();
         });
@@ -1625,6 +1633,33 @@
             return '';
         }
 
+        const authorActivePill = document.getElementById('gallery-author-active-pill');
+        const authorActiveLabel = document.getElementById('gallery-author-active-label');
+        const authorActiveClear = document.getElementById('gallery-author-active-clear');
+
+        function syncAuthorFilterUi(activeAuthor) {
+            const name = String(activeAuthor || '').trim();
+            document.querySelectorAll('.theme-author-filter').forEach((btn) => {
+                const match = btn.textContent.trim() === name;
+                btn.classList.toggle('theme-author-filter--active', !!name && match);
+            });
+            if (!authorActivePill || !authorActiveLabel) return;
+            if (!name || name === 'all') {
+                authorActivePill.hidden = true;
+                authorActiveLabel.textContent = '';
+                return;
+            }
+            authorActivePill.hidden = false;
+            authorActiveLabel.textContent = name;
+        }
+
+        function clearAuthorFilter() {
+            if (authorFilter) authorFilter.value = 'all';
+            syncAuthorFilterUi('');
+            currentPage = 1;
+            applyFilters();
+        }
+
         function applyAuthorFilter(authorName) {
             if (!authorFilter) return;
             const name = String(authorName || '').trim();
@@ -1643,11 +1678,23 @@
                 authorFilter.appendChild(opt);
             }
             authorFilter.value = name;
+            syncAuthorFilterUi(name);
             currentPage = 1;
             applyFilters();
             try {
-                authorFilter.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                if (authorActivePill && !authorActivePill.hidden) {
+                    authorActivePill.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                } else if (authorFilter) {
+                    authorFilter.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
             } catch (_) {}
+        }
+
+        if (authorActiveClear) {
+            authorActiveClear.addEventListener('click', (e) => {
+                e.preventDefault();
+                clearAuthorFilter();
+            });
         }
 
         function isUnknownish(v) {
@@ -4122,6 +4169,9 @@
                 return;
             }
             applyFilters();
+            if (authorFilter && String(authorFilter.value || 'all') !== 'all') {
+                syncAuthorFilterUi(authorFilter.value);
+            }
             startProgressiveGoldEnrichment(filteredThemes);
 
             void (async () => {

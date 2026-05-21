@@ -80,6 +80,12 @@ body.site-themes-app .theme-author-name.theme-author-filter:hover {
     border-color: rgba(255, 255, 255, 0.24) !important;
 }
 
+body.site-themes-app .theme-author-name.theme-author-filter--active {
+    color: #fff !important;
+    background: rgba(107, 159, 255, 0.32) !important;
+    border-color: rgba(107, 159, 255, 0.65) !important;
+}
+
 body.site-themes-app .theme-author-outbound {
     color: #c5d0e8 !important;
     background: rgba(255, 255, 255, 0.08) !important;
