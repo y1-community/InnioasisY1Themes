@@ -86,54 +86,8 @@
         </div>
 
         <div class="footer-bottom">
-            © 2025 innioasis Community
+            Copyleft - Ryan Specter- Made with ❤️ by Y1 users, for Y1 users
         </div>
     </footer>`
-
-    const footerBottom = footerRoot.querySelector('.footer-bottom')
-
-    const PUNCH_URL = 'https://counter.sipped.org/punch/innioasisupdater-counter/12336c13dc3fd1c8ddfbe1953149debc/website'
-    const GET_URL = 'https://counter.sipped.org/get/innioasisupdater-counter/12336c13dc3fd1c8ddfbe1953149debc/website'
-
-    async function fetchCounter(url) {
-        try {
-            const res = await fetch(url, {
-                cache: 'no-store'
-            })
-            if (!res.ok) throw new Error('Failed to fetch counter')
-
-            try {
-                const data = await res.json()
-                if (typeof data.count === 'number') return data.count
-                if (typeof data.value === 'number') return data.value
-            } catch {}
-
-            const text = await res.text()
-            const num = parseInt(text, 10)
-            if (!isNaN(num)) return num
-
-            return null
-        } catch {
-            return null
-        }
-    }
-
-    async function initCounter() {
-        const hasRun = localStorage.getItem("hasrun")
-        const urlToUse = hasRun ? GET_URL : PUNCH_URL
-
-        const count = await fetchCounter(urlToUse)
-
-        if (!hasRun) localStorage.setItem("hasrun", 'true')
-
-        const span = document.createElement('span')
-        span.style.marginLeft = '20px'
-        span.innerHTML = `<i class="fas fa-eye" style="font-size: 11px; margin-right: 6px;"></i>${
-    count !== null ? count.toLocaleString() + ' views' : '... views'
-  }`
-        footerBottom.appendChild(span)
-    }
-
-    initCounter()
 
 })();
