@@ -78,6 +78,16 @@
             "screenshot": "./Alucard/Cover.png"
         },
         {
+            "name": "Android",
+            "folder": "Android",
+            "author": "Robertpugle",
+            "description": "Simple Android theme.",
+            "screenshot": "./Android/cover_YS.png",
+            "sourceType": "internal",
+            "sortName": "android",
+            "searchText": "android simple android theme. robertpugle android"
+        },
+        {
             "name": "Animal Crossing Population Growing",
             "folder": "Animal_Crossing_Population_Growing",
             "author": "Angel_50000",
@@ -461,6 +471,16 @@
             "screenshot": "./FinKL/cover.png"
         },
         {
+            "name": "Flyff",
+            "folder": "Flyff",
+            "author": "Robertpuggle",
+            "description": "This theme is inspired by Flyff.",
+            "screenshot": "./Flyff/cover.png",
+            "sourceType": "internal",
+            "sortName": "flyff",
+            "searchText": "flyff this theme is inspired by flyff. robertpuggle flyff"
+        },
+        {
             "name": "Ghostbusters",
             "folder": "Ghostbusters",
             "author": "Angel_50000",
@@ -690,6 +710,16 @@
             "author": "Unknown",
             "description": "Customize your Innioasis Y1 with the Junji Ito Theme theme.",
             "screenshot": "./Junji Ito Theme/cover.png"
+        },
+        {
+            "name": "KH2",
+            "folder": "KH2",
+            "author": "Robertpuggle",
+            "description": "KH2/Kingdom of hearts 2 Theme",
+            "screenshot": "./KH2/cover_Themeless.png",
+            "sourceType": "internal",
+            "sortName": "kh2",
+            "searchText": "kh2 kh2/kingdom of hearts 2 theme robertpuggle kh2"
         },
         {
             "name": "Lain-ish",
@@ -1318,6 +1348,17 @@
             "searchText": "superman superman theme for innioasis y1. angel_50000 superman",
             "description": "Superman theme for Innioasis Y1.",
             "screenshot": "./Superman/cover.png"
+        },
+        {
+            "name": "TF2",
+            "folder": "TF2",
+            "author": "Robertpuggle",
+            "authorUrl": "https://steamcommunity.com/id/Robertpuggle/",
+            "description": "This theme is inspired by TF2/Team Fortress 2.",
+            "screenshot": "./TF2/cover.png",
+            "sourceType": "internal",
+            "sortName": "tf2",
+            "searchText": "tf2 this theme is inspired by tf2/team fortress 2. robertpuggle tf2"
         },
         {
             "name": "The Magnus Archives",
