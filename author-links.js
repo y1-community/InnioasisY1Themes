@@ -69,7 +69,13 @@
             wrap.style.display = "none";
             return wrap;
         }
-        wrap.appendChild(document.createTextNode("by "));
+        const prefix = document.createElement("span");
+        prefix.className = "theme-author-prefix";
+        prefix.textContent = "by";
+        wrap.appendChild(prefix);
+
+        const chips = document.createElement("span");
+        chips.className = "theme-author-chips";
 
         const nameBtn = document.createElement("button");
         nameBtn.type = "button";
@@ -81,7 +87,7 @@
                 onFilterAuthor(author);
             });
         }
-        wrap.appendChild(nameBtn);
+        chips.appendChild(nameBtn);
 
         let iconUrl = resolveAuthorOutboundUrl(author, theme && theme.authorUrl);
         if (author === "Innioasis") iconUrl = "https://innioasis.com";
@@ -98,8 +104,9 @@
             ic.setAttribute("aria-label", "Open author profile");
             ic.innerHTML =
                 '<i class="' + authorOutboundIconClass(iconUrl) + '" aria-hidden="true"></i>';
-            wrap.appendChild(ic);
+            chips.appendChild(ic);
         }
+        wrap.appendChild(chips);
         return wrap;
     }
 
@@ -114,11 +121,18 @@
             wrap.style.display = "none";
             return wrap;
         }
-        wrap.appendChild(document.createTextNode("by "));
+        const prefix = document.createElement("span");
+        prefix.className = "theme-author-prefix";
+        prefix.textContent = "by";
+        wrap.appendChild(prefix);
+
+        const chips = document.createElement("span");
+        chips.className = "theme-author-chips";
+
         const nameSpan = document.createElement("span");
-        nameSpan.className = "theme-author-name";
+        nameSpan.className = "theme-author-name theme-author-pill";
         nameSpan.textContent = author;
-        wrap.appendChild(nameSpan);
+        chips.appendChild(nameSpan);
 
         let iconUrl = resolveAuthorOutboundUrl(author, themeMeta && themeMeta.authorUrl);
         if (author === "Innioasis") iconUrl = "https://innioasis.com";
@@ -135,8 +149,9 @@
             ic.setAttribute("aria-label", "Open author profile");
             ic.innerHTML =
                 '<i class="' + authorOutboundIconClass(iconUrl) + '" aria-hidden="true"></i>';
-            wrap.appendChild(ic);
+            chips.appendChild(ic);
         }
+        wrap.appendChild(chips);
         return wrap;
     }
 
