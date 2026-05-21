@@ -184,7 +184,7 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
   <link rel="stylesheet" href="/site-pages.css?v=20260622" />
   <script src="/theme-seo-shell-analytics.js"></script>
   <script src="/gallery-chrome.js?v=20260622"></script>
-  <script src="/site-init.js?v=20260622"></script>
+  <script src="/site-init.js?v=20260522privacy"></script>
   <link rel="canonical" href="$previewE" />
   <script>
 (function () {
