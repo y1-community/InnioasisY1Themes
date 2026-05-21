@@ -523,8 +523,22 @@
         '<path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7Zm8.94-2.06-.76-.44.12-1.02.12-1.02.88-.5.88-.5-.76-1.32-.76-1.32-.88.5-.88.5-1.02-.12-1.02-.12-.76-.44-.76-.44.12-1.02.12-1.02-.88-.5-.88-.5.76-1.32.76-1.32.88.5.88.5 1.02-.12 1.02-.12.76-.44.76-.44-.12-1.02-.12-1.02.88-.5.88-.5-.76-1.32-.76-1.32-.88.5-.88.5-1.02.12-1.02.12.76.44.76.44-.12 1.02-.12 1.02.88.5.88.5.76 1.32.76 1.32-.88.5-.88.5-1.02.12-1.02.12-.76.44Z"/>' +
         "</svg>";
 
+    function mountPrivacyToDock() {
+        const slot = document.getElementById("y1-site-dock-privacy-slot");
+        const btn = document.getElementById("y1-privacy-settings-btn");
+        if (slot && btn && btn.parentElement !== slot) {
+            slot.appendChild(btn);
+        }
+        if (document.getElementById("y1-site-dock") || slot) {
+            document.body.classList.add("site-dock-mode");
+        }
+    }
+
     function ensureConsentDom() {
-        if (document.getElementById("y1-privacy-settings-btn")) return;
+        if (document.getElementById("y1-privacy-settings-btn")) {
+            mountPrivacyToDock();
+            return;
+        }
 
         const banner = document.createElement("div");
         banner.id = "y1-consent-banner";
@@ -534,7 +548,7 @@
             '<div class="y1-consent-inner">' +
             "<p>Theme view, download, and rating <strong>totals are public</strong> for everyone. " +
             "By default we <strong>do</strong> include your visits, downloads, and ratings in those totals. " +
-            "Use the <strong>Privacy</strong> button (bottom-left) to opt out anytime.</p>" +
+            "Use <strong>Privacy</strong> in the bottom dock to opt out anytime.</p>" +
             '<div class="y1-consent-actions">' +
             '<button type="button" class="y1-consent-customize">Customize</button>' +
             '<button type="button" class="y1-consent-accept">Continue</button>' +
@@ -559,9 +573,17 @@
             '<button type="button" class="y1-privacy-save">Save preferences</button>';
 
         document.body.appendChild(banner);
-        document.body.appendChild(settingsBtn);
         document.body.appendChild(panel);
-        settingsBtn.style.display = "inline-flex";
+        const dockSlot = document.getElementById("y1-site-dock-privacy-slot");
+        if (dockSlot) {
+            dockSlot.appendChild(settingsBtn);
+            document.body.classList.add("site-dock-mode");
+        } else {
+            document.body.appendChild(settingsBtn);
+            settingsBtn.style.display = "inline-flex";
+        }
+        mountPrivacyToDock();
+        window.addEventListener("y1-dock-slot-ready", mountPrivacyToDock);
 
         const syncPanelFromConsent = () => {
             const c = loadConsent();

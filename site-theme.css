@@ -364,3 +364,80 @@ a.theme-preview-gold-badge[hidden] {
     font-weight: 400;
     letter-spacing: -0.02em;
 }
+
+/* —— Site footer (nav.js) —— */
+.site-footer--themes {
+    background: var(--site-bg-elevated);
+    border-top: 1px solid var(--site-border);
+    color: var(--site-muted);
+    padding: 2.5rem 1.25rem 2rem;
+    margin-top: 3rem;
+}
+
+.site-footer--themes .footer-col a {
+    color: var(--site-text);
+}
+
+.site-footer--themes .footer-bottom {
+    color: var(--site-muted);
+    font-size: 0.82rem;
+}
+
+body.site-themes-app .cast-div {
+    padding: 1.25rem 1.5rem;
+    border-radius: var(--site-radius-lg);
+    background: var(--site-bg-card);
+    border: 1px solid var(--site-border);
+}
+
+.theme-seo-shell-main {
+    max-width: 28rem;
+    margin: 2rem auto 3rem;
+    padding: 0 1.25rem;
+}
+
+.theme-seo-shell-lead {
+    margin: 0 0 1rem;
+    font-size: 0.9rem;
+    color: var(--site-muted);
+}
+
+.theme-seo-shell-author {
+    margin: 0 0 0.35rem;
+    font-size: 0.92rem;
+    color: var(--site-muted);
+}
+
+.theme-seo-shell-desc {
+    line-height: 1.5;
+    color: var(--site-muted);
+}
+
+.theme-seo-shell-actions {
+    margin-top: 1.25rem;
+}
+
+.theme-seo-hosting-mark {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+body.site-themes-app #direct-install-banner {
+    background: rgba(107, 159, 255, 0.08) !important;
+    border: 1px solid rgba(107, 159, 255, 0.22) !important;
+    border-radius: var(--site-radius-md) !important;
+}
+
+body.site-themes-app .bulk-update-panel,
+body.site-themes-app #rockbox-backdrop > div {
+    background: var(--site-bg-elevated) !important;
+    border: 1px solid var(--site-border) !important;
+    color: var(--site-text) !important;
+}

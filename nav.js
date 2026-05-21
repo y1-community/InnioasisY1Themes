@@ -62,7 +62,7 @@
     if (!footerRoot) return
 
     footerRoot.innerHTML = `
-    <footer class="site-footer">
+    <footer class="site-footer site-footer--themes">
         <div class="footer-grid">
 
             <div class="footer-col">
@@ -78,7 +78,7 @@
                 <div>
                     <p class="footer-powered-label">This site is powered by</p>
                     <a href="https://www.luci.ltd" target="_blank" rel="noopener noreferrer">
-                        <img src="luci-alt.svg" class="footer-logo footer-logo-luci" alt="Luci">
+                        <img src="luci-alt.svg" class="footer-logo footer-logo-luci" alt="Luci Ltd web hosting — powers themes.innioasis.app (luci.ltd)" title="Luci hosting and domains — www.luci.ltd">
                     </a>
                 </div>
             </div>

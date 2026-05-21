@@ -7,8 +7,10 @@
     <title>Browse themes — Innioasis Y1</title>
 
     <meta name="description" content="Browse and download Rockbox themes for the Innioasis Y1. Customize your player with community-made themes for 240p and 360p models.">
-    <meta name="keywords" content="Innioasis Y1 themes, Rockbox themes Y1, Y1 UI themes, Rockbox customization">
+    <meta name="keywords" content="Innioasis Y1 themes, Rockbox themes Y1, Y1 UI themes, Rockbox customization, Innioasis theme gallery, Luci web hosting, themes.innioasis.app hosting">
     <meta name="author" content="Innioasis Community">
+    <meta name="publisher" content="Luci Ltd">
+    <link rel="author" href="https://www.luci.ltd" title="Luci Ltd — web hosting for Innioasis Y1 Themes">
 
     <link rel="preload" href="themes.json" as="fetch" crossorigin="anonymous" />
 
@@ -27,7 +29,8 @@
 
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="site-theme.css?v=20260524">
+    <link rel="stylesheet" href="site-theme.css?v=20260620">
+    <link rel="stylesheet" href="site-toolbar.css?v=20260620">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
     <link rel="stylesheet" href="y1-theme-preview.css?v=20260215">
     <link rel="stylesheet" href="theme-analytics.css?v=20260518">
@@ -672,7 +675,7 @@
     </style>
 </head>
 
-<body>
+<body class="site-themes-app site-dock-mode">
     <div id="nav-root"></div>
     <div class="gallery-topbar">
         <div aria-hidden="true"></div>
@@ -2109,6 +2112,17 @@
         /** Match Y1 list “selected row” look: selected item background + selected text color. */
         function applyThemeCardDownloadButtonStyles(dl, cfg, contentFolder, previewFontFamily) {
             if (!dl) return;
+            if (document.body && document.body.classList.contains('site-themes-app')) {
+                dl.style.border = '';
+                dl.style.fontWeight = '';
+                dl.style.marginTop = '';
+                dl.style.borderRadius = '';
+                dl.style.backgroundImage = '';
+                dl.style.backgroundColor = '';
+                dl.style.color = '';
+                dl.style.fontFamily = '';
+                return;
+            }
             if (!cfg || typeof cfg !== 'object' || !contentFolder) {
                 dl.style.border = 'none';
                 dl.style.fontWeight = 'normal';
@@ -3802,20 +3816,13 @@
             );
             if (folderPath) c.setAttribute('data-catalog-folder', folderPath);
 
+            const cardTop = document.createElement('div');
+            cardTop.className = 'theme-card-top';
+
             const statusBadge = document.createElement('div');
             statusBadge.className = 'theme-status';
-            statusBadge.style.display = 'none';
-            statusBadge.style.position = 'absolute';
-            statusBadge.style.top = '8px';
-            statusBadge.style.right = '8px';
-            statusBadge.style.background = '#4caf50';
-            statusBadge.style.color = '#fff';
-            statusBadge.style.padding = '4px 8px';
-            statusBadge.style.borderRadius = '999px';
-            statusBadge.style.fontSize = '0.8rem';
-            statusBadge.style.fontWeight = '700';
             statusBadge.textContent = 'Already on your Y1';
-            c.appendChild(statusBadge);
+            cardTop.appendChild(statusBadge);
 
             const previewFrame = document.createElement('div');
             previewFrame.className = 'theme-preview-frame';
@@ -4022,15 +4029,14 @@
                     `by ${theme.author}`;
             }
 
+            const cardActions = document.createElement('div');
+            cardActions.className = 'theme-card-actions';
             const bd = document.createElement('div');
-            bd.style.display = 'flex';
-            bd.style.gap = '8px';
+            bd.className = 'theme-card-buttons';
 
             let di = null;
             const dl = document.createElement('button');
             dl.className = 'btn';
-            dl.style.fontWeight = 'normal';
-            dl.style.marginTop = 'auto';
             applyThemeCardDownloadButtonStyles(dl, null, '');
 
             async function syncDownloadButtonToThemeConfig(variantSeg) {
@@ -4071,8 +4077,6 @@
             } else {
                 di = document.createElement('button');
                 di.className = 'btn';
-                di.style.fontWeight = 'normal';
-                di.style.marginTop = 'auto';
                 applyThemeCardDownloadButtonStyles(di, null, '');
                 di.style.opacity = '0.5';
                 di.style.cursor = 'not-allowed';
@@ -4099,7 +4103,8 @@
                 bd.append(dl, di);
             }
             mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, c, '', theme);
-            c.append(previewFrame, variantRow, titleRow, d, metricsHost, a, bd);
+            cardActions.appendChild(bd);
+            c.append(cardTop, previewFrame, variantRow, titleRow, d, metricsHost, a, cardActions);
             c.insertBefore(variantRow, previewFrame);
             if (String(theme.compatibilityMedal || '').toLowerCase() === 'gold') {
                 setGalleryCardGoldTitleBadge(c, true);
@@ -4136,7 +4141,7 @@
                 remA.innerHTML = '<i class="fa-solid fa-xmark" aria-hidden="true"></i>';
 
                 corner.append(editA, repA, remA);
-                c.appendChild(corner);
+                cardTop.appendChild(corner);
             }
             return c;
         }

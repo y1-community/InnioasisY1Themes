@@ -134,7 +134,7 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
     $title = if ($variant) { "$displayName ($variant) Theme for Innioasis Y1 by $author" } else { "$displayName Theme for Innioasis Y1 by $author" }
 
     $kwSet = New-Object 'System.Collections.Generic.HashSet[string]'
-    foreach ($x in @($displayName, $catalogFolder, $variant, 'Innioasis Y1', 'Y1 theme', 'Rockbox', 'MP3 player theme', $author)) {
+    foreach ($x in @($displayName, $catalogFolder, $variant, 'Innioasis Y1', 'Y1 theme', 'Rockbox', 'MP3 player theme', $author, 'Luci web hosting', 'themes.innioasis.app hosting', 'luci.ltd')) {
         if ($x) { [void]$kwSet.Add("$x") }
     }
     $keywords = Escape-Html (($kwSet | Sort-Object) -join ', ')
@@ -174,8 +174,13 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
   <meta name="description" content="$description" />
   <meta name="keywords" content="$keywords" />
   <meta name="author" content="$authorE" />
+  <meta name="publisher" content="Luci Ltd" />
+  <link rel="author" href="https://www.luci.ltd" title="Luci Ltd — web hosting for Innioasis Y1 Themes" />
   <meta name="robots" content="index,follow" />
   <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="/site-theme.css?v=20260620" />
+  <link rel="stylesheet" href="/site-toolbar.css?v=20260620" />
   <script src="/theme-seo-shell-analytics.js"></script>
   <link rel="canonical" href="$previewE" />
   <script>
@@ -212,28 +217,72 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
 
   <script type="application/ld+json">$jsonLdSafe</script>
 </head>
-<body>
-  <main style="font-family:system-ui,Segoe UI,sans-serif;max-width:28rem;margin:2.5rem auto;padding:0 1.25rem;color:#eaeef7;background:#0f1116;min-height:100vh;">
-    <p style="margin:0 0 1rem 0;font-size:0.9rem;color:#8b95a8;">Opening the live preview...</p>
-    <button type="button" id="theme-seo-copy" data-copy-url="$shareE" style="margin:0 0 1rem 0;padding:0.5rem 1rem;border-radius:999px;border:1px solid rgba(255,255,255,0.18);background:rgba(255,255,255,0.06);color:#eaf0ff;font:inherit;cursor:pointer;">Copy page link</button>
-    <h1 style="font-size:1.35rem;font-weight:650;margin:0 0 0.5rem 0;">$dispE$variantHeading</h1>
-    <p style="margin:0 0 0.35rem 0;font-size:0.92rem;color:#aeb6c5;">$authorE</p>
-    <p style="line-height:1.5;color:#aeb6c5;">$description</p>
-    <p style="margin-top:1.25rem;"><a href="$previewE" style="color:#8ec5ff;font-weight:600;text-decoration:none;">Open preview</a></p>
+<body class="site-themes-app site-dock-mode">
+  <div id="nav-root"></div>
+  <div class="gallery-topbar">
+    <div aria-hidden="true"></div>
+    <div class="gallery-tabs" aria-label="Site sections">
+      <a class="gallery-tab" href="https://y1-themes.vercel.app">Editor</a>
+      <a class="gallery-tab active" href="https://themes.innioasis.app/index.html">Gallery</a>
+      <a class="gallery-tab" href="https://themes.innioasis.app/upload.html">Upload</a>
+    </div>
+    <form class="topbar-search-wrap" action="https://themes.innioasis.app/index.html" method="get">
+      <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
+      <input class="topbar-search" name="q" type="search" placeholder="Search themes" aria-label="Search themes">
+    </form>
+  </div>
+  <main class="theme-seo-shell-main">
+    <p class="theme-seo-shell-lead">Opening the live preview…</p>
+    <button type="button" class="btn" id="theme-seo-copy" data-copy-url="$shareE">Copy page link</button>
+    <h1 class="site-display">$dispE$variantHeading</h1>
+    <p class="theme-seo-shell-author">$authorE</p>
+    <p class="theme-seo-shell-desc">$description</p>
+    <p class="theme-seo-shell-actions"><a class="btn btn-primary" href="$previewE">Open preview</a></p>
+    <img src="/luci-alt.svg" alt="Innioasis Y1 Themes gallery hosted by Luci Ltd at luci.ltd — themes.innioasis.app" width="1" height="1" decoding="async" class="theme-seo-hosting-mark" aria-hidden="true" />
   </main>
+  <div id="footer-root"></div>
+  <div id="support-toolbar-slot"></div>
+  <script src="/nav.js"></script>
   <script>
 (function () {
   var btn = document.getElementById('theme-seo-copy');
-  if (!btn) return;
-  btn.addEventListener('click', function () {
-    var u = btn.getAttribute('data-copy-url');
-    if (!u) return;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(u).then(function () {
-        btn.textContent = 'Copied';
-      }).catch(function () {});
+  if (btn) {
+    btn.addEventListener('click', function () {
+      var u = btn.getAttribute('data-copy-url');
+      if (!u) return;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(u).then(function () {
+          btn.textContent = 'Copied';
+        }).catch(function () {});
+      }
+    });
+  }
+  function executeInlineScripts(container) {
+    if (!container) return;
+    container.querySelectorAll('script').forEach(function (oldScript) {
+      var newScript = document.createElement('script');
+      Array.from(oldScript.attributes).forEach(function (attr) {
+        newScript.setAttribute(attr.name, attr.value);
+      });
+      newScript.textContent = oldScript.textContent;
+      oldScript.parentNode.replaceChild(newScript, oldScript);
+    });
+  }
+  async function loadSupportToolbar() {
+    var slot = document.getElementById('support-toolbar-slot');
+    if (!slot) return;
+    var urls = ['/support_toolbar.html', 'https://themes.innioasis.app/support_toolbar.html'];
+    for (var i = 0; i < urls.length; i++) {
+      try {
+        var res = await fetch(urls[i], { cache: 'no-cache' });
+        if (!res.ok) continue;
+        slot.innerHTML = await res.text();
+        executeInlineScripts(slot);
+        return;
+      } catch (e) {}
     }
-  });
+  }
+  loadSupportToolbar();
 })();
   </script>
 </body>
@@ -248,6 +297,9 @@ function Test-IndexShellNeedsWrite([string]$abs) {
         $c = Get-Content -LiteralPath $abs -Raw -Encoding UTF8
         if ($c -notmatch 'theme-seo-shell-analytics\.js') { return $true }
         if ($c -notmatch 'cf-theme-analytics-origin') { return $true }
+        if ($c -notmatch 'gallery-topbar') { return $true }
+        if ($c -notmatch 'site-themes-app') { return $true }
+        if ($c -notmatch 'site-toolbar\.css') { return $true }
         return $false
     } catch {
         return $true

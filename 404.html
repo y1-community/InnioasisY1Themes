@@ -4,15 +4,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Page Not Found — Innioasis.app</title>
-
-    <link rel="canonical" href="https://innioasis.app/404.html">
+    <title>Page Not Found — Innioasis Y1 Themes</title>
+    <meta name="description" content="This page was not found on the Innioasis Y1 Themes gallery hosted at themes.innioasis.app.">
+    <meta name="keywords" content="Innioasis Y1 themes, theme gallery 404, Luci web hosting, themes.innioasis.app" />
+    <meta name="publisher" content="Luci Ltd" />
+    <link rel="author" href="https://www.luci.ltd" title="Luci Ltd — web hosting for Innioasis Y1 Themes" />
+    <link rel="canonical" href="https://themes.innioasis.app/404.html">
 
     <link rel="icon" href="y1_illustration.png">
 
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="site-theme.css?v=20260522">
+    <link rel="stylesheet" href="site-theme.css?v=20260620">
+    <link rel="stylesheet" href="site-toolbar.css?v=20260620">
     <link rel="stylesheet" href="theme-analytics.css?v=20260518">
     <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
     <script src="theme-analytics.js?v=20260521"></script>
@@ -106,8 +110,20 @@
     </style>
 </head>
 
-<body>
+<body class="site-themes-app site-dock-mode">
     <div id="nav-root"></div>
+    <div class="gallery-topbar">
+        <div aria-hidden="true"></div>
+        <div class="gallery-tabs" aria-label="Site sections">
+            <a class="gallery-tab" href="https://y1-themes.vercel.app">Editor</a>
+            <a class="gallery-tab active" href="index.html">Gallery</a>
+            <a class="gallery-tab" href="upload.html">Upload</a>
+        </div>
+        <form class="topbar-search-wrap" action="index.html" method="get">
+            <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
+            <input class="topbar-search" name="q" type="search" placeholder="Search themes" aria-label="Search themes">
+        </form>
+    </div>
 
     <div class="error-container" style="margin-top: 3rem;">
         <div class="error-mosaic" id="mosaic404"></div>
@@ -122,8 +138,39 @@
     </div>
 
     <div id="footer-root"></div>
+    <div id="support-toolbar-slot"></div>
 
     <script src="nav.js"></script>
+    <script>
+        (function () {
+            function executeInlineScripts(container) {
+                if (!container) return;
+                container.querySelectorAll('script').forEach(function (oldScript) {
+                    var newScript = document.createElement('script');
+                    Array.from(oldScript.attributes).forEach(function (attr) {
+                        newScript.setAttribute(attr.name, attr.value);
+                    });
+                    newScript.textContent = oldScript.textContent;
+                    oldScript.parentNode.replaceChild(newScript, oldScript);
+                });
+            }
+            async function loadSupportToolbar() {
+                var slot = document.getElementById('support-toolbar-slot');
+                if (!slot) return;
+                var urls = ['support_toolbar.html', 'https://themes.innioasis.app/support_toolbar.html'];
+                for (var i = 0; i < urls.length; i++) {
+                    try {
+                        var res = await fetch(urls[i], { cache: 'no-cache' });
+                        if (!res.ok) continue;
+                        slot.innerHTML = await res.text();
+                        executeInlineScripts(slot);
+                        return;
+                    } catch (e) {}
+                }
+            }
+            loadSupportToolbar();
+        })();
+    </script>
     <script>
         const errorMessages = [
             'Page not found',

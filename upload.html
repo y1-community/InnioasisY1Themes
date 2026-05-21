@@ -6,7 +6,10 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title id="upload-doc-title">Upload your theme — Innioasis Y1 Themes</title>
     <meta name="description" content="Upload an Innioasis Y1 theme in a few steps. We package it in your browser and give you a link to follow until it is live." />
+    <meta name="keywords" content="Innioasis Y1 theme upload, Y1 Rockbox theme, theme gallery, Luci web hosting, themes.innioasis.app" />
     <meta name="author" content="Innioasis Community" />
+    <meta name="publisher" content="Luci Ltd" />
+    <link rel="author" href="https://www.luci.ltd" title="Luci Ltd — web hosting for Innioasis Y1 Themes" />
     <link rel="canonical" href="https://themes.innioasis.app/upload.html">
 
     <meta property="og:type" content="website">
@@ -18,7 +21,8 @@
     <link rel="icon" href="y1_illustration.png">
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="site-theme.css?v=20260522">
+    <link rel="stylesheet" href="site-theme.css?v=20260620">
+    <link rel="stylesheet" href="site-toolbar.css?v=20260620">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
     <!-- Same origin as upload; POST {origin}/api/upload-theme and /api/removal-request -->
     <meta name="cf-pages-upload-api-origin" content="https://y1-theme-upload.itsryanspecter.workers.dev" />
@@ -572,7 +576,7 @@
     </style>
 </head>
 
-<body>
+<body class="site-themes-app site-dock-mode">
     <!-- Filled serverlessly in injectThemeSeoShellsIntoZip; mirrors theme.html SEO head + crawler-friendly redirect shells. -->
     <template id="y1-theme-seo-index-shell">
 <!DOCTYPE html>
