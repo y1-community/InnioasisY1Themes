@@ -74,11 +74,11 @@
                 <a href="https://ko-fi.com/teamslide" target="_blank" rel="noopener">Donate</a>
             </div>
 
-            <div class="footer-col" style="display:flex;flex-direction:column;justify-content:space-between;">   
+            <div class="footer-col footer-col-powered" style="display:flex;flex-direction:column;justify-content:space-between;">   
                 <div>
-                    <h4>In collaboration with</h4>
-                    <a href="https://www.innioasis.com" target="_blank">
-                        <img src="innioasis.png" class="footer-logo" alt="Innioasis">
+                    <p class="footer-powered-label">This site is powered by</p>
+                    <a href="https://www.luci.ltd" target="_blank" rel="noopener noreferrer">
+                        <img src="luci-alt.svg" class="footer-logo footer-logo-luci" alt="Luci">
                     </a>
                 </div>
             </div>
