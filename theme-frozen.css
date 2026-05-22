@@ -117,18 +117,47 @@
     background: rgba(37, 99, 235, 0.95);
 }
 
-/* Simulator LCD (theme page) and gallery card viewport targets */
-.y1-tp-viewport.theme-frozen-viewport-target,
-.theme-preview-frame.theme-frozen-viewport-target {
+/* Theme page: frost only the simulator LCD */
+.y1-tp-viewport.theme-frozen-viewport-target {
     overflow: hidden;
 }
 
-.y1-tp-viewport .theme-frozen-layer {
+.y1-tp-viewport > .theme-frozen-layer {
     border-radius: 8px;
 }
 
-.theme-preview-frame .theme-frozen-layer {
+/* Gallery: frost fills the entire 4:3 preview frame grid cell */
+.theme-card .theme-preview-frame.theme-frozen-viewport-target {
+    overflow: hidden;
+}
+
+.theme-card .theme-preview-frame > .theme-frozen-layer {
+    grid-area: 1 / 1;
+    align-self: stretch;
+    justify-self: stretch;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
     border-radius: inherit;
+}
+
+.theme-card .theme-preview-frame--frozen:hover .theme-frozen-hover,
+.theme-card .theme-preview-frame--frozen:focus-within .theme-frozen-hover,
+.theme-card .theme-preview-frame--frozen.is-frozen-touch-open .theme-frozen-hover {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .theme-card .theme-preview-frame--frozen .theme-frozen-hover {
+        opacity: 0;
+    }
+
+    .theme-card .theme-preview-frame--frozen.is-frozen-touch-open .theme-frozen-hover {
+        opacity: 1;
+        pointer-events: auto;
+    }
 }
 
 .theme-frozen-page-notice {

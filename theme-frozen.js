@@ -151,23 +151,17 @@
     }
 
     /**
-     * Prefer simulator viewport on gallery cards once lazy preview has mounted.
+     * Gallery cards: frost the full 4:3 .theme-preview-frame (not the smaller sim LCD).
      */
     function attachToGalleryPreview(cardEl, theme, options) {
         if (!cardEl || !isFrozen(theme)) return false;
-        const host = cardEl.querySelector('.y1-theme-preview-host');
-        const viewport = host && host.querySelector('.y1-tp-viewport');
-        if (viewport) {
-            return attachFrozenOverlay(viewport, theme, {
-                viewAnywayLabel: 'View anyway',
-                onViewAnyway: options && options.onViewAnyway,
-            });
-        }
         const previewFrame = cardEl.querySelector('.theme-preview-frame');
-        if (previewFrame) {
-            return attachToCardPreview(previewFrame, theme, options);
-        }
-        return false;
+        if (!previewFrame) return false;
+        const viewport = cardEl.querySelector('.y1-tp-viewport');
+        if (viewport) removeFrozenLayer(viewport);
+        const host = cardEl.querySelector('.y1-theme-preview-host');
+        if (host) removeFrozenLayer(host);
+        return attachToCardPreview(previewFrame, theme, options);
     }
 
     function buildPageNoticeElement(theme) {
