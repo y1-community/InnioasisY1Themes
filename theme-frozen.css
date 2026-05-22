@@ -1,0 +1,166 @@
+/* Frozen theme overlay (Monzo-style ice on 4:3 previews) */
+
+.theme-preview-frame--frozen {
+    cursor: default;
+}
+
+.theme-preview-frame--frozen.theme-preview-frame--linkable {
+    cursor: pointer;
+}
+
+.theme-frozen-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    border-radius: inherit;
+    overflow: hidden;
+    pointer-events: auto;
+}
+
+.theme-preview-frame--unfrozen .theme-frozen-layer {
+    display: none;
+}
+
+.theme-frozen-ice {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    opacity: 0.88;
+    mix-blend-mode: screen;
+}
+
+.theme-frozen-hover {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    padding: 1rem 1.1rem;
+    text-align: center;
+    background: rgba(8, 14, 28, 0.55);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.theme-preview-frame--frozen:hover .theme-frozen-hover,
+.theme-preview-frame--frozen:focus-within .theme-frozen-hover,
+.theme-preview-frame--frozen.is-frozen-touch-open .theme-frozen-hover {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .theme-preview-frame--frozen .theme-frozen-hover {
+        opacity: 0;
+    }
+
+    .theme-preview-frame--frozen.is-frozen-touch-open .theme-frozen-hover {
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
+.theme-frozen-badge {
+    margin: 0;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #bfdbfe;
+}
+
+.theme-frozen-heading {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: #f0f9ff;
+}
+
+.theme-frozen-reason {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: #cbd5e1;
+    max-width: 28ch;
+}
+
+.theme-frozen-maintainer {
+    margin: 0;
+    font-size: 0.82rem;
+    line-height: 1.4;
+    color: #93c5fd;
+    max-width: 32ch;
+}
+
+.theme-frozen-view-btn {
+    margin-top: 0.25rem;
+    font-weight: 600;
+    border: 1px solid rgba(147, 197, 253, 0.55);
+    background: rgba(30, 64, 175, 0.85);
+    color: #f0f9ff;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.theme-frozen-view-btn:hover {
+    background: rgba(37, 99, 235, 0.95);
+}
+
+.theme-frozen-viewport {
+    position: relative;
+    width: min(400px, 100%);
+    aspect-ratio: 4 / 3;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(147, 197, 253, 0.25);
+}
+
+.theme-frozen-viewport > * {
+    width: 100%;
+    height: 100%;
+}
+
+.theme-frozen-viewport .theme-frozen-layer {
+    border-radius: 10px;
+}
+
+.theme-frozen-page-notice {
+    border: 2px solid rgba(96, 165, 250, 0.45);
+    background: linear-gradient(145deg, rgba(30, 58, 138, 0.35), rgba(15, 23, 42, 0.5));
+    border-radius: 12px;
+    padding: 1rem 1.15rem;
+    margin: 0 0 14px 0;
+    color: #e2e8f0;
+}
+
+.theme-frozen-page-notice h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.15rem;
+    color: #f0f9ff;
+}
+
+.theme-frozen-page-notice p {
+    margin: 0 0 0.65rem;
+    line-height: 1.5;
+    font-size: 0.92rem;
+    color: #cbd5e1;
+}
+
+.theme-frozen-page-notice p:last-child {
+    margin-bottom: 0;
+}
+
+.theme-frozen-page-notice .theme-frozen-author-note {
+    color: #93c5fd;
+    font-weight: 600;
+}

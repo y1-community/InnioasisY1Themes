@@ -65,6 +65,8 @@
     <script src="gallery-loaded-theme.js"></script>
     <script src="theme-share-links.js"></script>
     <script src="author-submission-policy.js?v=20260523"></script>
+    <link rel="stylesheet" href="theme-frozen.css?v=20260524">
+    <script src="theme-frozen.js?v=20260524"></script>
     <script src="theme-analytics.js?v=20260524"></script>
 </head>
 <style>
@@ -238,6 +240,8 @@
                             <div id="artwork-check-summary" style="font-size:0.9rem;line-height:1.45;"></div>
                             <ul id="artwork-check-list" style="margin:7px 0 0 1.15rem;padding:0;"></ul>
                         </div>
+
+                        <div id="theme-frozen-notice-host"></div>
 
                         <div id="theme-maintainer-row" style="display:none;flex-wrap:wrap;gap:8px;margin:0 0 12px 0;align-items:center;">
                             <a id="theme-action-edit" class="btn btn-secondary" style="text-decoration:none;padding:.45rem .75rem;font-size:0.82rem;font-weight:normal;" href="__THEME_UPLOAD_EDIT_HREF__">Change Details</a>
@@ -1825,7 +1829,17 @@
                 name: catalogTitle,
                 folder: folder,
                 externalDownloadUrl: String(themeMeta && themeMeta.externalDownloadUrl || '').trim(),
-                authorCTA: String(themeMeta && themeMeta.authorCTA || '').trim()
+                authorCTA: String(themeMeta && themeMeta.authorCTA || '').trim(),
+                notice: String((themeMeta && themeMeta.notice) || '').trim()
+            };
+            if (
+                window.ThemeFrozen &&
+                typeof ThemeFrozen.mergeNoticeFromCatalog === 'function' &&
+                themeMeta &&
+                themeMeta.rawConfig
+            ) {
+                const merged = ThemeFrozen.mergeNoticeFromCatalog(themeObj, themeMeta.rawConfig);
+                if (merged && merged.notice) themeObj.notice = merged.notice;
             }
 
             const externalDownloadUrl = String(themeObj.externalDownloadUrl || '').trim();
@@ -1857,6 +1871,16 @@
                 if (supportDirectInstall && directInstallPromo) {
                     directInstallPromo.style.display = 'block';
                 }
+            }
+
+            if (window.ThemeFrozen) {
+                ThemeFrozen.applyThemePage({
+                    theme: themeObj,
+                    noticeHostEl: document.getElementById('theme-frozen-notice-host'),
+                    downloadBtn: document.getElementById('download-btn'),
+                    simWrapEl: document.getElementById('theme-y1-sim-wrap'),
+                    screenshotEl: document.getElementById('main-screenshot'),
+                });
             }
 
             const simWrap = document.getElementById('theme-y1-sim-wrap');

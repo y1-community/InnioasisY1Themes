@@ -47,6 +47,8 @@
     <script src="gallery-loaded-theme.js"></script>
     <script src="theme-share-links.js"></script>
     <script src="author-submission-policy.js?v=20260523"></script>
+    <link rel="stylesheet" href="theme-frozen.css?v=20260524">
+    <script src="theme-frozen.js?v=20260524"></script>
     <script src="theme-analytics.js?v=20260524b"></script>
 
     <style>
@@ -3959,6 +3961,15 @@
                 previewFrame.title = 'Open theme page';
                 previewFrame.addEventListener('click', (ev) => {
                     if (ev.target.closest('select, button, a, .theme-card-corner-actions')) return;
+                    if (
+                        previewFrame.classList.contains('theme-preview-frame--frozen') &&
+                        !previewFrame.classList.contains('theme-preview-frame--unfrozen')
+                    ) {
+                        if (!ev.target.closest('.theme-frozen-view-btn')) {
+                            previewFrame.classList.add('is-frozen-touch-open');
+                        }
+                        return;
+                    }
                     goToThemeDetailPage();
                 });
                 previewFrame.addEventListener('keydown', (ev) => {
@@ -4062,7 +4073,10 @@
                 if (di) applyThemeCardDownloadButtonStyles(di, cfg, cf, previewFont);
             }
 
-            dl.innerHTML = '<i class="fa-solid fa-download"></i> Download';
+            const cardIsFrozen = window.ThemeFrozen && window.ThemeFrozen.isFrozen(theme);
+            dl.innerHTML = cardIsFrozen
+                ? '<i class="fa-solid fa-download"></i> Download anyway'
+                : '<i class="fa-solid fa-download"></i> Download';
             dl.type = 'button';
             dl.setAttribute('data-card-download', '1');
             dl.onclick = () => downloadTheme(theme, dl, readCardVariantInstallHints(c));
@@ -4106,6 +4120,11 @@
                 bd.append(dl, di);
             }
             mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, c, '', theme);
+            if (window.ThemeFrozen && window.ThemeFrozen.isFrozen(theme)) {
+                window.ThemeFrozen.attachToCardPreview(previewFrame, theme, {
+                    onViewAnyway: () => goToThemeDetailPage(),
+                });
+            }
             cardActions.appendChild(bd);
             c.append(cardTop, previewFrame, variantRow, titleRow, a, d, metricsHost, cardActions);
             c.insertBefore(variantRow, previewFrame);
