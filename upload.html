@@ -71,6 +71,7 @@
     <link rel="stylesheet" href="theme-analytics.css?v=20260518">
     <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
     <script src="theme-analytics.js?v=20260521"></script>
+    <script src="author-submission-policy.js?v=20260521"></script>
     <style>
         html {
             font-size: clamp(15px, 2.9vw, 17px);
@@ -705,6 +706,8 @@
                 <input type="hidden" name="themeTitle" id="field-theme-title" value="" />
                 <input type="hidden" name="themeAuthor" id="field-theme-author" value="" />
 
+                <div id="author-policy-banner" class="callout-info" hidden role="status" style="margin-top:0.75rem;"></div>
+
                 <button id="submit-btn" type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane" style="margin-right: 6px;"></i>Send my theme</button>
             </form>
             <div id="status" class="status"></div>
@@ -1131,8 +1134,14 @@
                     }
                     card.querySelectorAll("[data-primary-field]").forEach((el) => {
                         if (el === extToggle) return;
-                        el.addEventListener("input", () => syncCollisionUi());
-                        el.addEventListener("change", () => syncCollisionUi());
+                        el.addEventListener("input", () => {
+                            syncCollisionUi();
+                            void syncAuthorPolicyBanner();
+                        });
+                        el.addEventListener("change", () => {
+                            syncCollisionUi();
+                            void syncAuthorPolicyBanner();
+                        });
                     });
                     const gl = card.querySelector('[data-var-field="galleryLookLabel"]');
                     if (gl) {
@@ -1450,6 +1459,37 @@
         const editCatalogTitleEl = editNotice && editNotice.querySelector("[data-edit-catalog-title]");
         const fieldThemeTitle = document.getElementById("field-theme-title");
         const fieldThemeAuthor = document.getElementById("field-theme-author");
+        const authorPolicyBanner = document.getElementById("author-policy-banner");
+
+        async function syncAuthorPolicyBanner() {
+            if (!authorPolicyBanner || !window.ThemeAuthorPolicy) return;
+            let author = "";
+            try {
+                const ta = primaryThemeTitleAndAuthor();
+                author = ta && ta.author ? ta.author : "";
+            } catch (_) {}
+            if (!author && fieldThemeAuthor) {
+                author = String(fieldThemeAuthor.value || "").trim();
+            }
+            await window.ThemeAuthorPolicy.ready();
+            const policy = window.ThemeAuthorPolicy.uploadPolicyForAuthor(author);
+            if (!policy || !policy.message) {
+                authorPolicyBanner.hidden = true;
+                authorPolicyBanner.textContent = "";
+                return;
+            }
+            authorPolicyBanner.hidden = false;
+            authorPolicyBanner.className =
+                policy.level === "block" ? "callout-info" : "callout-info";
+            if (policy.level === "block") {
+                authorPolicyBanner.style.borderColor = "rgba(248, 113, 113, 0.45)";
+                authorPolicyBanner.style.background = "rgba(127, 29, 29, 0.35)";
+            } else {
+                authorPolicyBanner.style.borderColor = "";
+                authorPolicyBanner.style.background = "";
+            }
+            authorPolicyBanner.innerHTML = `<p><strong>Public gallery notice</strong></p><p>${policy.message}</p>`;
+        }
         const removalForm = document.getElementById("removal-form");
         const removalStatus = document.getElementById("removal-status");
         const removalSubmitBtn = document.getElementById("removal-submit-btn");
@@ -3811,17 +3851,20 @@
             const file = zipInput.files && zipInput.files[0];
             await inspectZipForThemeInfo(file);
             syncSubmitButtonLabel();
+            void syncAuthorPolicyBanner();
         });
 
         folderInput.addEventListener("change", async () => {
             await inspectFolderForThemeInfo(folderInput.files);
             syncSubmitButtonLabel();
+            void syncAuthorPolicyBanner();
         });
 
         window.addEventListener("DOMContentLoaded", () => {
             loadThemesIndex().then(() => {
                 if ((pageMode === "edit" || pageMode === "edit-metadata") && themeFolderParam) prefetchConfigForEdit();
                 syncSubmitButtonLabel();
+                void syncAuthorPolicyBanner();
             });
         });
 
@@ -3856,6 +3899,21 @@
 
             try {
                 validateThemeInfoEntriesForSubmit();
+                if (window.ThemeAuthorPolicy) {
+                    await window.ThemeAuthorPolicy.ready();
+                    const taPolicy = primaryThemeTitleAndAuthor();
+                    const uploadPolicy = window.ThemeAuthorPolicy.uploadPolicyForAuthor(taPolicy.author);
+                    if (uploadPolicy.level === "block") {
+                        const proceedBlocked = window.confirm(
+                            `${uploadPolicy.message}\n\nSend this package to GitHub anyway?`
+                        );
+                        if (!proceedBlocked) {
+                            setStatus("Upload canceled.", false);
+                            submitBtn.disabled = false;
+                            return;
+                        }
+                    }
+                }
                 pendingExtraVariationEntries = null;
                 let artworkWarnings = [];
                 let renamesForExtras = new Map();

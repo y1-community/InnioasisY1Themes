@@ -46,6 +46,7 @@
     <script src="site-init.js?v=20260522privacy"></script>
     <script src="gallery-loaded-theme.js"></script>
     <script src="theme-share-links.js"></script>
+    <script src="author-submission-policy.js?v=20260521"></script>
     <script src="theme-analytics.js?v=20260524b"></script>
 
     <style>
@@ -4221,6 +4222,10 @@
                 themes = dedupeThemes(themesSource);
             }
             themes = filterDarkModeVariantListings(themes);
+            if (window.ThemeAuthorPolicy) {
+                await window.ThemeAuthorPolicy.ready();
+                themes = window.ThemeAuthorPolicy.filterPublicThemes(themes);
+            }
             themes.sort((a, b) => compareThemeTitles(a?.name, b?.name));
             const filteredThemes = themes.filter(t => !!t);
             galleryCatalogThemes = filteredThemes.filter((t) => {

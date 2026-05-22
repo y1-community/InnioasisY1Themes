@@ -64,6 +64,7 @@
     <script src="author-links.js?v=20260622"></script>
     <script src="gallery-loaded-theme.js"></script>
     <script src="theme-share-links.js"></script>
+    <script src="author-submission-policy.js?v=20260521"></script>
     <script src="theme-analytics.js?v=20260524"></script>
 </head>
 <style>
@@ -1496,9 +1497,6 @@
                     console.warn('themes.json fetch failed', e)
                 }
                 const catalogFolder = (themeMeta && themeMeta.folder) ? themeMeta.folder : themeName;
-                if (catalogFolder && window.ThemeAnalytics) {
-                    window.ThemeAnalytics.trackPageView(catalogFolder, 'theme_page');
-                }
                 activeContentFolder = effectiveThemeContentPrefix(catalogFolder, activeVariant);
                 let cfgMeta = await tryFetchFolderConfigTheme(activeContentFolder, themes, catalogFolder);
                 if (!cfgMeta && activeVariant) {
@@ -1524,9 +1522,6 @@
                 }
                 if (themeMeta) {
                     folder = themeMeta.folder || '';
-                    if (folder && window.ThemeAnalytics) {
-                        window.ThemeAnalytics.trackPageView(folder, 'theme_page');
-                    }
                     activeContentFolder = effectiveThemeContentPrefix(folder, activeVariant);
                     if (activeVariant) {
                         const altCfg = await tryFetchFolderConfigTheme(activeContentFolder, themes, folder);
@@ -1544,11 +1539,6 @@
                 activeContentFolder = effectiveThemeContentPrefix(folder, activeVariant) || folder;
             }
 
-            if (folder && window.ThemeAnalytics) {
-                const metricsHostEl = document.getElementById('theme-metrics-host');
-                if (metricsHostEl) void window.ThemeAnalytics.mountMetrics(metricsHostEl, folder);
-            }
-
             if ((!themeMeta || !themeMeta.rawConfig) && folder) {
                 try {
                     const tlist = await tryFetchThemes();
@@ -1559,6 +1549,21 @@
                 } catch (e) {
                     console.warn('theme config recovery fetch failed', e);
                 }
+            }
+
+            if (window.ThemeAuthorPolicy) {
+                await window.ThemeAuthorPolicy.ready();
+                const authorForPolicy = window.ThemeAuthorPolicy.readAuthorFromTheme(themeMeta);
+                if (window.ThemeAuthorPolicy.listingHidden({ author: authorForPolicy }).hidden) {
+                    showFallbackAndRedirect();
+                    return;
+                }
+            }
+
+            if (folder && window.ThemeAnalytics) {
+                window.ThemeAnalytics.trackPageView(folder, 'theme_page');
+                const metricsHostEl = document.getElementById('theme-metrics-host');
+                if (metricsHostEl) void window.ThemeAnalytics.mountMetrics(metricsHostEl, folder);
             }
 
             const variantNames = await listThemeVariantFolderNames(folder, themeMeta);

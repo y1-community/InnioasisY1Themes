@@ -9,14 +9,21 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import sys
 from pathlib import Path
 from urllib.parse import quote
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+SCRIPTS_DIR = Path(__file__).resolve().parent
+if str(SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_DIR))
+
 THEMES_JSON_PATH = REPO_ROOT / "themes.json"
 SITEMAP_PATH = REPO_ROOT / "sitemap.xml"
 SITE_BASE = "https://themes.innioasis.app"
+
+from author_submission_policy import theme_is_publicly_listed
 
 
 def _iso_now() -> str:
@@ -59,6 +66,8 @@ def generate() -> str:
     theme_urls: set[str] = set()
     for item in themes:
         if str(item.get("sourceType") or "internal").strip().lower() == "external":
+            continue
+        if not theme_is_publicly_listed(item):
             continue
         folder = str(item.get("folder") or "").strip()
         if not folder:

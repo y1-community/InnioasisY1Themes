@@ -162,6 +162,7 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
     $jsonLdSafe = $jsonLd -replace '</', '<\/'
 
     $variantHeading = if ($variant) { " <span style=`"opacity:.85;font-weight:500`">($varE)</span>" } else { '' }
+    $authorJs = if ($author) { ($author | ConvertTo-Json -Compress) } else { '""' }
 
     return @"
 <!DOCTYPE html>
@@ -183,9 +184,22 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
   <link rel="stylesheet" href="/site-toolbar.css?v=20260622" />
   <link rel="stylesheet" href="/site-pages.css?v=20260622" />
   <script src="/theme-seo-shell-analytics.js"></script>
+  <script src="/author-submission-policy.js?v=20260521"></script>
   <script src="/gallery-chrome.js?v=20260622"></script>
   <script src="/site-init.js?v=20260522privacy"></script>
   <link rel="canonical" href="$previewE" />
+  <script>
+(function () {
+  var shellAuthor = $authorJs;
+  if (window.ThemeAuthorPolicy) {
+    ThemeAuthorPolicy.ready().then(function () {
+      if (ThemeAuthorPolicy.listingHidden({ author: shellAuthor }).hidden) {
+        location.replace('https://themes.innioasis.app/index.html');
+      }
+    });
+  }
+})();
+  </script>
   <script>
 (function () {
   function destFromEmbed() {

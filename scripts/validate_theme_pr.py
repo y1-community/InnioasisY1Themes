@@ -62,6 +62,12 @@ import zipfile
 
 import zip_theme_utils as ztu
 
+SCRIPTS_DIR = Path(__file__).resolve().parent
+if str(SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_DIR))
+
+from author_submission_policy import listing_hidden
+
 
 # Site root = repository root. Diff paths are repo-relative.
 THEMES_PREFIX = ""
@@ -205,6 +211,42 @@ def _slug_token(value: str) -> str:
     s = re.sub(r"[^a-z0-9-]+", "-", s)
     s = re.sub(r"-+", "-", s).strip("-")
     return s[:40]
+
+
+def _gallery_visibility_note(
+    config: dict[str, Any] | None,
+    meta: dict[str, Any] | None,
+    context: str,
+) -> str:
+    """Non-blocking notice when a submission author is opt-out or blocked from the public site."""
+    cfg = config if isinstance(config, dict) else {}
+    md = meta if isinstance(meta, dict) else {}
+    author = ""
+    for key in ("theme_info", "source_info"):
+        block = cfg.get(key)
+        if isinstance(block, dict):
+            auth = block.get("author")
+            if isinstance(auth, str) and auth.strip():
+                author = auth.strip()
+                break
+    if not author:
+        uname = md.get("uploaderName")
+        if isinstance(uname, str) and uname.strip():
+            author = uname.strip()
+    slug = md.get("uploaderSlug") if isinstance(md.get("uploaderSlug"), str) else None
+    form_id = md.get("fabformFormId") or md.get("fabformId")
+    hidden, reason = listing_hidden(
+        author=author,
+        uploader_slug=slug,
+        fabform_form_id=str(form_id).strip() if form_id else None,
+    )
+    if not hidden:
+        return ""
+    label = "opt-out" if reason == "opt_out" else "block"
+    return (
+        f"{context}: credited author/uploader is on the public-gallery {label} list "
+        f"({reason}) — the theme may still be ingested but will not appear on themes.innioasis.app."
+    )
 
 
 def _collect_slug_candidates(meta: dict[str, Any], config: dict[str, Any] | None) -> list[str]:
@@ -1218,6 +1260,32 @@ def main() -> int:
 
     manual_review_notes = _dedupe_strs(manual_review_notes)
     auto_merge_ok = len(manual_review_notes) == 0
+    gallery_visibility_notes: list[str] = []
+    for composite, state in folder_state.items():
+        if not state.get("has_config"):
+            continue
+        try:
+            config_raw = _git_blob_text(f"{pr_ref}:{composite}/config.json")
+            config = json.loads(config_raw)
+        except Exception:
+            continue
+        if isinstance(config, dict):
+            note = _gallery_visibility_note(config, {}, f"Added folder {composite}")
+            if note:
+                gallery_visibility_notes.append(note)
+    for path in zip_paths:
+        try:
+            blob = _git_blob_bytes(f"{pr_ref}:{path}")
+            meta = _read_upload_meta_pr(pr_ref, path)
+            stem = PurePosixPath(path).stem
+            for inner in _inner_themes_from_zip_blob(blob, zip_stem=stem):
+                note = _gallery_visibility_note(inner.get("config"), meta, f"ZIP {path}")
+                if note:
+                    gallery_visibility_notes.append(note)
+        except Exception:
+            pass
+    for note in _dedupe_strs(gallery_visibility_notes):
+        print(f"THEME_GALLERY_VISIBILITY: {note}")
     print(f"THEME_PR_AUTO_MERGE_ALLOWED={'1' if auto_merge_ok else '0'}")
     for note in manual_review_notes:
         print(f"THEME_PR_MANUAL_REVIEW: {note}")
