@@ -47,8 +47,8 @@
     <script src="gallery-loaded-theme.js"></script>
     <script src="theme-share-links.js"></script>
     <script src="author-submission-policy.js?v=20260523"></script>
-    <link rel="stylesheet" href="theme-frozen.css?v=20260524">
-    <script src="theme-frozen.js?v=20260524"></script>
+    <link rel="stylesheet" href="theme-frozen.css?v=20260525">
+    <script src="theme-frozen.js?v=20260525"></script>
     <script src="theme-analytics.js?v=20260524b"></script>
 
     <style>
@@ -3739,6 +3739,26 @@
             if (diEl) applyThemeCardDownloadButtonStyles(diEl, cfg, cf, stack);
             const themeWrap = galleryThemeEntry || { folder: folderPath };
             void evaluateCardGoldBadge(card, themeWrap, seg, cfg);
+            if (window.ThemeFrozen && ThemeFrozen.isFrozen(themeWrap)) {
+                const previewFrame = card.querySelector('.theme-preview-frame');
+                const goDetail = () => {
+                    const sel = card.querySelector('.theme-card-variant-select');
+                    const v = sel ? String(sel.value || '').trim() : '';
+                    const key = folderPath || '';
+                    if (!key) return;
+                    if (window.ThemeShareLinks && typeof ThemeShareLinks.buildThemeDetailPageUrl === 'function') {
+                        location.href = ThemeShareLinks.buildThemeDetailPageUrl(key, v);
+                        return;
+                    }
+                    let href = `./theme.html?theme=${encodeURIComponent(key)}`;
+                    if (v) href += `&variant=${encodeURIComponent(v)}`;
+                    location.href = href;
+                };
+                ThemeFrozen.attachToGalleryPreview(card, themeWrap, { onViewAnyway: goDetail });
+                if (previewFrame) {
+                    previewFrame.classList.remove('theme-preview-frame--unfrozen');
+                }
+            }
         }
 
         function mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, card, variantSeg, galleryThemeEntry) {
@@ -4007,6 +4027,11 @@
                 }
                 mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, c, seg, theme);
                 void syncDownloadButtonToThemeConfig(seg);
+                if (window.ThemeFrozen && ThemeFrozen.isFrozen(theme)) {
+                    ThemeFrozen.attachToGalleryPreview(c, theme, {
+                        onViewAnyway: () => goToThemeDetailPage(),
+                    });
+                }
             });
 
             const goldBadge = document.createElement('a');
@@ -4121,7 +4146,7 @@
             }
             mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, c, '', theme);
             if (window.ThemeFrozen && window.ThemeFrozen.isFrozen(theme)) {
-                window.ThemeFrozen.attachToCardPreview(previewFrame, theme, {
+                window.ThemeFrozen.attachToGalleryPreview(c, theme, {
                     onViewAnyway: () => goToThemeDetailPage(),
                 });
             }

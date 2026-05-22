@@ -11,7 +11,7 @@
 .theme-frozen-layer {
     position: absolute;
     inset: 0;
-    z-index: 5;
+    z-index: 12;
     border-radius: inherit;
     overflow: hidden;
     pointer-events: auto;
@@ -24,6 +24,7 @@
 .theme-frozen-ice {
     position: absolute;
     inset: 0;
+    z-index: 1;
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -116,22 +117,18 @@
     background: rgba(37, 99, 235, 0.95);
 }
 
-.theme-frozen-viewport {
-    position: relative;
-    width: min(400px, 100%);
-    aspect-ratio: 4 / 3;
-    border-radius: 10px;
+/* Simulator LCD (theme page) and gallery card viewport targets */
+.y1-tp-viewport.theme-frozen-viewport-target,
+.theme-preview-frame.theme-frozen-viewport-target {
     overflow: hidden;
-    border: 1px solid rgba(147, 197, 253, 0.25);
 }
 
-.theme-frozen-viewport > * {
-    width: 100%;
-    height: 100%;
+.y1-tp-viewport .theme-frozen-layer {
+    border-radius: 8px;
 }
 
-.theme-frozen-viewport .theme-frozen-layer {
-    border-radius: 10px;
+.theme-preview-frame .theme-frozen-layer {
+    border-radius: inherit;
 }
 
 .theme-frozen-page-notice {

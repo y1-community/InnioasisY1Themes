@@ -59,7 +59,9 @@
             viewBtn.addEventListener('click', (ev) => {
                 ev.preventDefault();
                 ev.stopPropagation();
-                const host = layer.closest('.theme-preview-frame, .theme-frozen-viewport');
+                const host = layer.closest(
+                    '.theme-preview-frame, .y1-tp-viewport, .theme-frozen-viewport'
+                );
                 if (host) {
                     host.classList.add('theme-preview-frame--unfrozen', 'is-frozen-unfrozen');
                 }
@@ -87,30 +89,85 @@
         );
     }
 
-    function attachToCardPreview(previewFrame, theme, options) {
-        if (!previewFrame || !isFrozen(theme)) return false;
-        previewFrame.classList.add('theme-preview-frame--frozen');
-        previewFrame.classList.remove('theme-preview-frame--unfrozen');
-        const existing = previewFrame.querySelector('.theme-frozen-layer');
-        if (existing) existing.remove();
-        const layer = buildFrozenLayer(theme, {
-            viewAnywayLabel: 'View anyway',
-            onViewAnyway: options && options.onViewAnyway,
-        });
-        previewFrame.appendChild(layer);
-        bindTouchReveal(previewFrame);
+    function removeFrozenLayer(host) {
+        if (!host) return;
+        host.querySelectorAll(':scope > .theme-frozen-layer').forEach((el) => el.remove());
+        host.classList.remove(
+            'theme-preview-frame--frozen',
+            'theme-frozen-viewport',
+            'theme-frozen-viewport-target'
+        );
+    }
+
+    /** Undo legacy theme-page wrapper that caused a second empty 4:3 box. */
+    function unwrapLegacyFrozenShell(simWrapEl) {
+        if (!simWrapEl) return;
+        const legacyWrap = simWrapEl.closest('.theme-frozen-viewport');
+        if (legacyWrap && legacyWrap.classList.contains('theme-frozen-viewport') && legacyWrap.contains(simWrapEl)) {
+            const parent = legacyWrap.parentNode;
+            if (parent) {
+                parent.insertBefore(simWrapEl, legacyWrap);
+                legacyWrap.remove();
+            }
+        }
+        delete simWrapEl.dataset.frozenWrapped;
+    }
+
+    function attachFrozenOverlay(host, theme, options) {
+        if (!host || !isFrozen(theme)) return false;
+        removeFrozenLayer(host);
+        host.classList.add('theme-preview-frame--frozen', 'theme-frozen-viewport-target');
+        if (!host.style.position || host.style.position === 'static') {
+            host.style.position = 'relative';
+        }
+        const layer = buildFrozenLayer(theme, options || {});
+        host.appendChild(layer);
+        bindTouchReveal(host);
         return true;
     }
 
-    function attachToViewport(viewportEl, theme, options) {
-        if (!viewportEl || !isFrozen(theme)) return false;
-        viewportEl.classList.add('theme-frozen-viewport', 'theme-preview-frame--frozen');
-        const existing = viewportEl.querySelector('.theme-frozen-layer');
-        if (existing) existing.remove();
-        const layer = buildFrozenLayer(theme, options || {});
-        viewportEl.appendChild(layer);
-        bindTouchReveal(viewportEl);
-        return true;
+    function attachToCardPreview(previewFrame, theme, options) {
+        if (!previewFrame || !isFrozen(theme)) return false;
+        previewFrame.classList.remove('theme-preview-frame--unfrozen');
+        return attachFrozenOverlay(previewFrame, theme, {
+            viewAnywayLabel: 'View anyway',
+            onViewAnyway: options && options.onViewAnyway,
+        });
+    }
+
+    /**
+     * Ice overlay on the Y1 simulator LCD (4:3 .y1-tp-viewport) — theme detail page.
+     */
+    function attachToSimulator(simWrapEl, theme, options) {
+        if (!simWrapEl || !isFrozen(theme)) return false;
+        unwrapLegacyFrozenShell(simWrapEl);
+        const viewport = simWrapEl.querySelector('.y1-tp-viewport');
+        if (!viewport) return false;
+        viewport.classList.remove('theme-preview-frame--unfrozen');
+        return attachFrozenOverlay(viewport, theme, {
+            viewAnywayLabel: 'Preview anyway',
+            onViewAnyway: options && options.onViewAnyway,
+        });
+    }
+
+    /**
+     * Prefer simulator viewport on gallery cards once lazy preview has mounted.
+     */
+    function attachToGalleryPreview(cardEl, theme, options) {
+        if (!cardEl || !isFrozen(theme)) return false;
+        const host = cardEl.querySelector('.y1-theme-preview-host');
+        const viewport = host && host.querySelector('.y1-tp-viewport');
+        if (viewport) {
+            return attachFrozenOverlay(viewport, theme, {
+                viewAnywayLabel: 'View anyway',
+                onViewAnyway: options && options.onViewAnyway,
+            });
+        }
+        const previewFrame = cardEl.querySelector('.theme-preview-frame');
+        if (previewFrame) {
+            return attachToCardPreview(previewFrame, theme, options);
+        }
+        return false;
     }
 
     function buildPageNoticeElement(theme) {
@@ -134,6 +191,24 @@
         const theme = c.theme;
         if (!isFrozen(theme)) return false;
 
+        const simWrap = c.simWrapEl;
+        if (simWrap) unwrapLegacyFrozenShell(simWrap);
+
+        const screenshot = c.screenshotEl;
+        if (screenshot) {
+            screenshot.classList.remove('theme-frozen-viewport', 'theme-preview-frame--frozen');
+            const shotWrap = screenshot.closest('.theme-frozen-viewport');
+            if (shotWrap && !shotWrap.querySelector('.y1-tp-viewport')) {
+                const parent = shotWrap.parentNode;
+                if (parent && shotWrap.contains(screenshot)) {
+                    parent.insertBefore(screenshot, shotWrap);
+                    shotWrap.remove();
+                }
+            }
+            removeFrozenLayer(screenshot);
+            screenshot.style.display = 'none';
+        }
+
         const noticeHost = c.noticeHostEl;
         if (noticeHost) {
             noticeHost.innerHTML = '';
@@ -144,31 +219,6 @@
         if (c.downloadBtn && !c.downloadBtn.querySelector('.fa-arrow-up-right-from-square')) {
             c.downloadBtn.innerHTML =
                 '<i class="fa-solid fa-download" style="margin-right: 4px;"></i> Download anyway';
-        }
-
-        const simWrap = c.simWrapEl;
-        if (simWrap && !simWrap.dataset.frozenWrapped) {
-            const parent = simWrap.parentElement;
-            if (parent && !parent.classList.contains('theme-frozen-viewport')) {
-                const wrap = document.createElement('div');
-                wrap.className = 'theme-frozen-viewport';
-                simWrap.parentNode.insertBefore(wrap, simWrap);
-                wrap.appendChild(simWrap);
-                attachToViewport(wrap, theme, { viewAnywayLabel: 'Preview anyway' });
-                simWrap.dataset.frozenWrapped = '1';
-            }
-        }
-
-        const screenshot = c.screenshotEl;
-        if (screenshot && screenshot.style.display !== 'none') {
-            const shotWrap = screenshot.closest('.theme-frozen-viewport') || (() => {
-                const w = document.createElement('div');
-                w.className = 'theme-frozen-viewport';
-                screenshot.parentNode.insertBefore(w, screenshot);
-                w.appendChild(screenshot);
-                return w;
-            })();
-            attachToViewport(shotWrap, theme, { viewAnywayLabel: 'Preview anyway' });
         }
 
         return true;
@@ -189,7 +239,8 @@
         noticeText,
         freezeHeading,
         attachToCardPreview,
-        attachToViewport,
+        attachToSimulator,
+        attachToGalleryPreview,
         buildPageNoticeElement,
         applyThemePage,
         mergeNoticeFromCatalog,
