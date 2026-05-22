@@ -1,8 +1,8 @@
 {
-  "version": 1,
-  "authors": [
-    "u/jasperhooloop",
-    "mp3li"
-  ],
-  "comment": "Themes stay in the repo and ingest pipeline; hidden from the public gallery, theme pages, and sitemap."
+  "version": 2,
+  "authors": {
+    "u/jasperhooloop": "Author requested removal from the public gallery.",
+    "mp3li": "Author requested removal from the public gallery."
+  },
+  "comment": "Opt-out (archival): themes stay in the GitHub repo for preservation but are not listed or offered for download on the public site."
 }

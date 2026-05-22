@@ -1,10 +1,18 @@
 /**
  * Author opt-out and block lists (opt_out.json, block.json).
  * Themes from listed authors remain in the repo; the public site hides them.
+ *
+ * block.json / opt_out.json "authors" may be:
+ *   - object: { "AuthorHandle": "reason shown on upload (block) or maintainer note (opt-out)" }
+ *   - array (legacy): ["AuthorHandle", ...]
+ * uploaderSlugs accept the same object-or-array shapes.
+ * block.json bannedAuthorAttemptNotifyFabformId: Fabform form id for email when any banned author tries to upload (not a block list entry).
  */
 (function (global) {
     const OPT_OUT_URL = './opt_out.json';
     const BLOCK_URL = './block.json';
+
+    const DEFAULT_BLOCK_REASON = 'abuse or repeated low-quality submissions';
 
     let optOutData = null;
     let blockData = null;
@@ -43,34 +51,67 @@
         return '';
     }
 
-    function authorSetFromList(list) {
-        const set = new Set();
-        if (!Array.isArray(list)) return set;
-        for (const item of list) {
-            const n = normAuthor(item);
-            if (n) set.add(n);
+    /**
+     * @param {unknown} items
+     * @param {(v: string) => string} normFn
+     * @returns {Map<string, string>} normalized key -> reason
+     */
+    function reasonMapFromField(items, normFn) {
+        const map = new Map();
+        if (!items) return map;
+
+        if (typeof items === 'object' && !Array.isArray(items)) {
+            for (const [key, val] of Object.entries(items)) {
+                const nk = normFn(String(key || ''));
+                if (!nk) continue;
+                const reason = val != null ? String(val).trim() : '';
+                map.set(nk, reason);
+            }
+            return map;
         }
-        return set;
+
+        if (!Array.isArray(items)) return map;
+
+        for (const item of items) {
+            if (item == null) continue;
+            if (typeof item === 'object' && !Array.isArray(item)) {
+                const key = item.author || item.id || item.slug || item.formId;
+                const reason = item.reason != null ? String(item.reason).trim() : '';
+                const nk = normFn(String(key || ''));
+                if (nk) map.set(nk, reason);
+                continue;
+            }
+            const nk = normFn(String(item));
+            if (nk) map.set(nk, map.get(nk) || '');
+        }
+        return map;
     }
 
-    function slugSetFromList(list) {
-        const set = new Set();
-        if (!Array.isArray(list)) return set;
-        for (const item of list) {
-            const n = normSlug(item);
-            if (n) set.add(n);
-        }
-        return set;
+    function lookupReason(map, normalizedKey) {
+        if (!normalizedKey || !map || !map.has(normalizedKey)) return null;
+        return map.get(normalizedKey) ?? '';
     }
 
-    function fabformIdSetFromList(list) {
-        const set = new Set();
-        if (!Array.isArray(list)) return set;
-        for (const item of list) {
-            const n = normFabformId(item);
-            if (n) set.add(n);
-        }
-        return set;
+    function getOptOutAuthorMap() {
+        return reasonMapFromField(optOutData && optOutData.authors, normAuthor);
+    }
+
+    function getBlockAuthorMap() {
+        return reasonMapFromField(blockData && blockData.authors, normAuthor);
+    }
+
+    function getBlockSlugMap() {
+        return reasonMapFromField(blockData && blockData.uploaderSlugs, normSlug);
+    }
+
+    function bannedAuthorAttemptNotifyFabformUrl() {
+        const raw =
+            (blockData && blockData.bannedAuthorAttemptNotifyFabformId) ||
+            (blockData && blockData.bannedAuthorAttemptNotifyFabform) ||
+            '';
+        const id = normFabformId(raw);
+        if (!id) return '';
+        return `https://fabform.io/f/${encodeURIComponent(id)}`;
     }
 
     async function ready() {
@@ -98,30 +139,33 @@
         const authorRaw = o.author != null ? o.author : (o.theme ? readAuthorFromTheme(o.theme) : '');
         const author = normAuthor(authorRaw);
         const slug = normSlug(o.uploaderSlug);
-        const formId = normFabformId(o.fabformFormId);
-        const submissionId = normFabformId(o.fabformSubmissionId);
 
-        const optAuthors = authorSetFromList(optOutData && optOutData.authors);
-        const blockAuthors = authorSetFromList(blockData && blockData.authors);
-        const blockSlugs = slugSetFromList(blockData && blockData.uploaderSlugs);
-        const blockFab = fabformIdSetFromList(blockData && blockData.fabformFormIds);
+        const optAuthors = getOptOutAuthorMap();
+        const blockAuthors = getBlockAuthorMap();
+        const blockSlugs = getBlockSlugMap();
 
         if (author && optAuthors.has(author)) {
-            return { hidden: true, reason: 'opt_out' };
+            return {
+                hidden: true,
+                reason: 'opt_out',
+                detail: lookupReason(optAuthors, author) || '',
+            };
         }
         if (author && blockAuthors.has(author)) {
-            return { hidden: true, reason: 'block' };
+            return {
+                hidden: true,
+                reason: 'block',
+                detail: lookupReason(blockAuthors, author) || DEFAULT_BLOCK_REASON,
+            };
         }
         if (slug && blockSlugs.has(slug)) {
-            return { hidden: true, reason: 'block' };
+            return {
+                hidden: true,
+                reason: 'block',
+                detail: lookupReason(blockSlugs, slug) || DEFAULT_BLOCK_REASON,
+            };
         }
-        if (formId && blockFab.has(formId)) {
-            return { hidden: true, reason: 'block' };
-        }
-        if (submissionId && blockFab.has(submissionId)) {
-            return { hidden: true, reason: 'block' };
-        }
-        return { hidden: false, reason: '' };
+        return { hidden: false, reason: '', detail: '' };
     }
 
     function isPubliclyListed(themeOrOpts) {
@@ -133,25 +177,35 @@
         return themes.filter((t) => isPubliclyListed({ theme: t }));
     }
 
+    function blockNotAllowedMessage(banReason) {
+        const reason = String(banReason || '').trim() || DEFAULT_BLOCK_REASON;
+        return `Themes from this author are not allowed because "${reason}".`;
+    }
+
     function uploadPolicyForAuthor(authorRaw) {
         const author = normAuthor(authorRaw);
-        const optAuthors = authorSetFromList(optOutData && optOutData.authors);
-        const blockAuthors = authorSetFromList(blockData && blockData.authors);
+        const blockAuthors = getBlockAuthorMap();
+        const optAuthors = getOptOutAuthorMap();
+
         if (author && blockAuthors.has(author)) {
+            const banReason = lookupReason(blockAuthors, author) || DEFAULT_BLOCK_REASON;
             return {
                 level: 'block',
-                message:
-                    'This author is blocked from the public gallery due to abuse or low-quality submissions. Your package can still be sent to GitHub, but it will not appear on themes.innioasis.app.',
+                banReason,
+                message: blockNotAllowedMessage(banReason),
             };
         }
         if (author && optAuthors.has(author)) {
+            const note = lookupReason(optAuthors, author) || '';
+            const archival =
+                'This author has opted out of the public gallery. Themes are preserved in the GitHub repository for archival purposes but are not shown or offered for download on themes.innioasis.app.';
             return {
                 level: 'opt_out',
-                message:
-                    'This author has opted out of the public gallery. The theme can remain in the repository but will not be listed on the site.',
+                banReason: note,
+                message: note ? `${archival} (${note})` : archival,
             };
         }
-        return { level: '', message: '' };
+        return { level: '', banReason: '', message: '' };
     }
 
     const api = {
@@ -163,6 +217,8 @@
         filterPublicThemes,
         readAuthorFromTheme,
         uploadPolicyForAuthor,
+        blockNotAllowedMessage,
+        bannedAuthorAttemptNotifyFabformUrl,
     };
 
     if (typeof module !== 'undefined' && module.exports) {

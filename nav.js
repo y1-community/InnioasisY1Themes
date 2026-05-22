@@ -72,10 +72,7 @@
 
             <div class="footer-col">
                 <h4>Links</h4>
-                <a href="https://innioasis.app/index.html#home">Home</a>
-                <a href="https://innioasis.app/guide.html">Guide</a>
-                <a href="https://themes.innioasis.app/">Themes</a>
-                <a href="https://innioasis.app/index.html#versions">Versions</a>
+                <a href="https://themes.innioasis.app/banned-users.html">Banned Users</a>
                 <a href="https://ko-fi.com/teamslide" target="_blank" rel="noopener">Donate</a>
             </div>
 

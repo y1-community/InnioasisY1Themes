@@ -12,6 +12,8 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 OPT_OUT_PATH = REPO_ROOT / "opt_out.json"
 BLOCK_PATH = REPO_ROOT / "block.json"
 
+DEFAULT_BLOCK_REASON = "abuse or repeated low-quality submissions"
+
 _opt_out_cache: dict[str, Any] | None = None
 _block_cache: dict[str, Any] | None = None
 
@@ -60,37 +62,38 @@ def norm_fabform_id(value: str | None) -> str:
     return str(value or "").strip()
 
 
-def _author_set(items: Any) -> set[str]:
-    out: set[str] = set()
+def _reason_map(items: Any, norm_fn) -> dict[str, str]:
+    """Normalize keys; values are ban/opt-out reason strings."""
+    out: dict[str, str] = {}
+    if isinstance(items, dict):
+        for key, val in items.items():
+            nk = norm_fn(str(key))
+            if not nk:
+                continue
+            out[nk] = str(val).strip() if val is not None else ""
+        return out
     if not isinstance(items, list):
         return out
     for item in items:
-        n = norm_author(str(item) if item is not None else "")
-        if n:
-            out.add(n)
+        if item is None:
+            continue
+        if isinstance(item, dict):
+            key = item.get("author") or item.get("id") or item.get("slug") or item.get("formId")
+            reason = str(item.get("reason") or "").strip()
+            nk = norm_fn(str(key) if key is not None else "")
+            if nk:
+                out[nk] = reason
+            continue
+        nk = norm_fn(str(item))
+        if nk:
+            out.setdefault(nk, "")
     return out
 
 
-def _slug_set(items: Any) -> set[str]:
-    out: set[str] = set()
-    if not isinstance(items, list):
-        return out
-    for item in items:
-        n = norm_slug(str(item) if item is not None else "")
-        if n:
-            out.add(n)
-    return out
-
-
-def _fabform_set(items: Any) -> set[str]:
-    out: set[str] = set()
-    if not isinstance(items, list):
-        return out
-    for item in items:
-        n = norm_fabform_id(str(item) if item is not None else "")
-        if n:
-            out.add(n)
-    return out
+def _lookup_reason(reason_map: dict[str, str], normalized_key: str) -> str | None:
+    if not normalized_key or normalized_key not in reason_map:
+        return None
+    return reason_map[normalized_key]
 
 
 def author_from_catalog_entry(entry: dict[str, Any]) -> str:
@@ -108,41 +111,44 @@ def author_from_catalog_entry(entry: dict[str, Any]) -> str:
     return ""
 
 
+def banned_author_attempt_notify_fabform_id() -> str:
+    """Fabform form id for emailing maintainers when a banned author tries to upload."""
+    data = _block()
+    raw = data.get("bannedAuthorAttemptNotifyFabformId") or data.get(
+        "bannedAuthorAttemptNotifyFabform"
+    )
+    return norm_fabform_id(str(raw) if raw is not None else "")
+
+
 def listing_hidden(
     *,
     author: str | None = None,
     uploader_slug: str | None = None,
-    fabform_form_id: str | None = None,
-    fabform_submission_id: str | None = None,
     catalog_entry: dict[str, Any] | None = None,
-) -> tuple[bool, str]:
+) -> tuple[bool, str, str]:
+    """Returns (hidden, kind, detail_reason)."""
     auth = norm_author(author)
     if not auth and catalog_entry:
         auth = norm_author(author_from_catalog_entry(catalog_entry))
     slug = norm_slug(uploader_slug)
-    form_id = norm_fabform_id(fabform_form_id)
-    sub_id = norm_fabform_id(fabform_submission_id)
 
-    opt_authors = _author_set(_opt_out().get("authors"))
-    block_authors = _author_set(_block().get("authors"))
-    block_slugs = _slug_set(_block().get("uploaderSlugs"))
-    block_fab = _fabform_set(_block().get("fabformFormIds"))
+    opt_authors = _reason_map(_opt_out().get("authors"), norm_author)
+    block_authors = _reason_map(_block().get("authors"), norm_author)
+    block_slugs = _reason_map(_block().get("uploaderSlugs"), norm_slug)
 
     if auth and auth in opt_authors:
-        return True, "opt_out"
+        return True, "opt_out", _lookup_reason(opt_authors, auth) or ""
     if auth and auth in block_authors:
-        return True, "block"
+        detail = _lookup_reason(block_authors, auth) or DEFAULT_BLOCK_REASON
+        return True, "block", detail
     if slug and slug in block_slugs:
-        return True, "block"
-    if form_id and form_id in block_fab:
-        return True, "block"
-    if sub_id and sub_id in block_fab:
-        return True, "block"
-    return False, ""
+        detail = _lookup_reason(block_slugs, slug) or DEFAULT_BLOCK_REASON
+        return True, "block", detail
+    return False, "", ""
 
 
 def theme_is_publicly_listed(entry: dict[str, Any]) -> bool:
-    hidden, _ = listing_hidden(catalog_entry=entry)
+    hidden, _, _ = listing_hidden(catalog_entry=entry)
     return not hidden
 
 

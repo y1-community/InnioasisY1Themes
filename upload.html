@@ -71,7 +71,7 @@
     <link rel="stylesheet" href="theme-analytics.css?v=20260518">
     <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
     <script src="theme-analytics.js?v=20260521"></script>
-    <script src="author-submission-policy.js?v=20260521"></script>
+    <script src="author-submission-policy.js?v=20260523"></script>
     <style>
         html {
             font-size: clamp(15px, 2.9vw, 17px);
@@ -1464,10 +1464,16 @@
         async function syncAuthorPolicyBanner() {
             if (!authorPolicyBanner || !window.ThemeAuthorPolicy) return;
             let author = "";
-            try {
-                const ta = primaryThemeTitleAndAuthor();
-                author = ta && ta.author ? ta.author : "";
-            } catch (_) {}
+            const authorInput = document.querySelector('[data-primary-field="author"]');
+            if (authorInput) {
+                author = String(authorInput.value || "").trim();
+            }
+            if (!author) {
+                try {
+                    const ta = primaryThemeTitleAndAuthor();
+                    author = ta && ta.author ? ta.author : "";
+                } catch (_) {}
+            }
             if (!author && fieldThemeAuthor) {
                 author = String(fieldThemeAuthor.value || "").trim();
             }
@@ -1476,19 +1482,23 @@
             if (!policy || !policy.message) {
                 authorPolicyBanner.hidden = true;
                 authorPolicyBanner.textContent = "";
+                if (submitBtn) submitBtn.removeAttribute("aria-describedby");
                 return;
             }
             authorPolicyBanner.hidden = false;
-            authorPolicyBanner.className =
-                policy.level === "block" ? "callout-info" : "callout-info";
+            authorPolicyBanner.id = "author-policy-banner";
+            if (submitBtn) submitBtn.setAttribute("aria-describedby", "author-policy-banner");
             if (policy.level === "block") {
                 authorPolicyBanner.style.borderColor = "rgba(248, 113, 113, 0.45)";
                 authorPolicyBanner.style.background = "rgba(127, 29, 29, 0.35)";
+                authorPolicyBanner.innerHTML =
+                    `<p><strong>Author not allowed</strong></p><p>${escapeHtml(policy.message)}</p>`;
             } else {
-                authorPolicyBanner.style.borderColor = "";
-                authorPolicyBanner.style.background = "";
+                authorPolicyBanner.style.borderColor = "rgba(96, 165, 250, 0.35)";
+                authorPolicyBanner.style.background = "rgba(30, 58, 138, 0.25)";
+                authorPolicyBanner.innerHTML =
+                    `<p><strong>Gallery opt-out (archival)</strong></p><p>${escapeHtml(policy.message)}</p>`;
             }
-            authorPolicyBanner.innerHTML = `<p><strong>Public gallery notice</strong></p><p>${policy.message}</p>`;
         }
         const removalForm = document.getElementById("removal-form");
         const removalStatus = document.getElementById("removal-status");
@@ -2293,6 +2303,38 @@
                 } catch (err) {
                     reject(err instanceof Error ? err : new Error(String(err)));
                 }
+            });
+        }
+
+        async function postBannedAuthorAttemptFabform(authorRaw, policy, themeTitle) {
+            if (!window.ThemeAuthorPolicy || !policy || policy.level !== "block") {
+                return { skipped: true };
+            }
+            const fabUrl = String(
+                window.ThemeAuthorPolicy.bannedAuthorAttemptNotifyFabformUrl
+                    ? window.ThemeAuthorPolicy.bannedAuthorAttemptNotifyFabformUrl()
+                    : ""
+            ).trim();
+            if (!fabUrl) return { skipped: true };
+            const author = String(authorRaw || "").trim();
+            const banReason = String(policy.banReason || "").trim();
+            const title = String(themeTitle || "").trim();
+            const pageUrl = String(location.href || "").trim();
+            return postToFabformViaIframe(fabUrl, {
+                email: "itsryanspecter@gmail.com",
+                contact_email: "itsryanspecter@gmail.com",
+                message: [
+                    "Banned author theme upload attempt (themes.innioasis.app)",
+                    `Author: ${author || "(unknown)"}`,
+                    `Ban reason: ${banReason || "(not specified)"}`,
+                    `Theme title: ${title || "(not specified)"}`,
+                    `Page: ${pageUrl}`,
+                    `Time (UTC): ${new Date().toISOString()}`,
+                ].join("\n"),
+                author: author,
+                ban_reason: banReason,
+                theme_title: title,
+                page_url: pageUrl,
             });
         }
 
@@ -3904,6 +3946,15 @@
                     const taPolicy = primaryThemeTitleAndAuthor();
                     const uploadPolicy = window.ThemeAuthorPolicy.uploadPolicyForAuthor(taPolicy.author);
                     if (uploadPolicy.level === "block") {
+                        try {
+                            await postBannedAuthorAttemptFabform(
+                                taPolicy.author,
+                                uploadPolicy,
+                                taPolicy.title
+                            );
+                        } catch (fabErr) {
+                            console.warn("Banned-author Fabform notify failed", fabErr);
+                        }
                         const proceedBlocked = window.confirm(
                             `${uploadPolicy.message}\n\nSend this package to GitHub anyway?`
                         );

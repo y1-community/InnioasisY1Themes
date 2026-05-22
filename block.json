@@ -1,9 +1,9 @@
 {
-  "version": 1,
-  "authors": [],
-  "fabformFormIds": [
-    "NJGz8VP"
-  ],
-  "uploaderSlugs": [],
-  "comment": "Blocked for abuse or low-quality submissions. Same public visibility rules as opt_out; uploads may still reach GitHub but show a gallery warning."
+  "version": 2,
+  "authors": {
+    "Yas": "Continually uploading poor-quality themes similar to Matrix_S."
+  },
+  "uploaderSlugs": {},
+  "bannedAuthorAttemptNotifyFabformId": "NJGz8VP",
+  "comment": "authors: banned handles → ban reason (shown on upload). bannedAuthorAttemptNotifyFabformId: Fabform form used to email itsryanspecter@gmail.com whenever anyone on authors attempts a theme upload (not a per-author block key)."
 }

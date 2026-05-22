@@ -234,19 +234,21 @@ def _gallery_visibility_note(
         if isinstance(uname, str) and uname.strip():
             author = uname.strip()
     slug = md.get("uploaderSlug") if isinstance(md.get("uploaderSlug"), str) else None
-    form_id = md.get("fabformFormId") or md.get("fabformId")
-    hidden, reason = listing_hidden(
-        author=author,
-        uploader_slug=slug,
-        fabform_form_id=str(form_id).strip() if form_id else None,
-    )
+    hidden, kind, detail = listing_hidden(author=author, uploader_slug=slug)
     if not hidden:
         return ""
-    label = "opt-out" if reason == "opt_out" else "block"
-    return (
-        f"{context}: credited author/uploader is on the public-gallery {label} list "
-        f"({reason}) — the theme may still be ingested but will not appear on themes.innioasis.app."
+    if kind == "block":
+        ban = detail or "abuse or repeated low-quality submissions"
+        return (
+            f'{context}: author/uploader is banned from the public gallery — '
+            f'themes from this author are not allowed because "{ban}".'
+        )
+    archival = (
+        "opt-out list (archival: preserved on GitHub, not shown or offered for download on the site)"
     )
+    if detail:
+        return f"{context}: credited author is on the {archival}. Note: {detail}"
+    return f"{context}: credited author is on the {archival}."
 
 
 def _collect_slug_candidates(meta: dict[str, Any], config: dict[str, Any] | None) -> list[str]:
