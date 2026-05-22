@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Opted out and blocked users — Innioasis Y1 Themes</title>
+    <meta name="description" content="Theme authors who opted out of the public gallery or are banned from the Innioasis Y1 Themes site, and what that means for uploads and downloads.">
+    <meta name="robots" content="index,follow" />
+    <link rel="icon" href="y1_illustration.png" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://innioasis.app/styles.css" />
+    <link rel="stylesheet" href="site-theme.css?v=20260521footer" />
+    <link rel="stylesheet" href="site-toolbar.css?v=20260622" />
+    <link rel="stylesheet" href="site-pages.css?v=20260622" />
+    <script src="gallery-chrome.js?v=20260622"></script>
+    <script src="site-init.js?v=20260522privacy"></script>
+    <style>
+        #nav-root { display: none; }
+
+        .wrap {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 2rem 1rem 3rem;
+        }
+
+        .policy-section {
+            margin-top: 2rem;
+        }
+
+        .policy-section h2 {
+            margin: 0 0 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .policy-intro {
+            margin: 0 0 1rem;
+            line-height: 1.55;
+            color: var(--text-secondary, #94a3b8);
+        }
+
+        .author-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .author-list li {
+            padding: 1rem 1.1rem;
+            margin-bottom: 0.65rem;
+            border-radius: 10px;
+        }
+
+        .author-list--optout li {
+            border: 1px solid rgba(96, 165, 250, 0.4);
+            background: rgba(30, 58, 138, 0.22);
+        }
+
+        .author-list--block li {
+            border: 1px solid rgba(248, 113, 113, 0.35);
+            background: rgba(127, 29, 29, 0.2);
+        }
+
+        .author-list .name {
+            font-weight: 700;
+            margin: 0 0 0.35rem;
+        }
+
+        .author-list .reason {
+            margin: 0;
+            color: var(--text-secondary, #94a3b8);
+            line-height: 1.5;
+        }
+
+        .empty-note {
+            color: var(--text-secondary, #94a3b8);
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body class="site-themes-app site-dock-mode">
+    <div id="nav-root"></div>
+    <div class="gallery-topbar">
+        <a class="gallery-brand" href="https://themes.innioasis.app/index.html" title="Innioasis Y1 Themes gallery">
+            <span class="gallery-brand-icon" aria-hidden="true"><i class="fa-solid fa-palette"></i></span>
+            <span class="gallery-brand-text">Y1 Themes</span>
+        </a>
+        <div class="gallery-tabs" aria-label="Site sections">
+            <a class="gallery-tab" href="https://y1-themes.vercel.app">Editor</a>
+            <a class="gallery-tab" href="https://themes.innioasis.app/index.html">Gallery</a>
+            <a class="gallery-tab" href="https://themes.innioasis.app/upload.html">Upload</a>
+        </div>
+        <form class="topbar-search-wrap" action="https://themes.innioasis.app/index.html" method="get">
+            <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
+            <input class="topbar-search" name="q" type="search" placeholder="Search themes" aria-label="Search themes">
+        </form>
+    </div>
+
+    <div class="wrap">
+        <header>
+            <h1 class="site-display" style="margin:0 0 0.5rem 0;">Opted out and blocked users</h1>
+            <p class="hint" style="margin:0;line-height:1.55;">
+                Some creators do not want their work listed on themes.innioasis.app. Others are banned for abuse or
+                low-quality submissions. Lists are maintained in
+                <a href="https://github.com/y1-community/InnioasisY1Themes/blob/main/opt_out.json" style="color:#93c5fd;">opt_out.json</a>
+                and
+                <a href="https://github.com/y1-community/InnioasisY1Themes/blob/main/block.json" style="color:#93c5fd;">block.json</a>.
+            </p>
+        </header>
+
+        <section class="policy-section" aria-labelledby="optout-heading">
+            <h2 id="optout-heading">Opted-out authors</h2>
+            <p class="policy-intro">
+                These authors have asked not to have themes submitted or offered for download on the Themes Site.
+                You can still upload packages credited to them for <strong>preservation and archiving</strong> in the
+                <a href="https://github.com/y1-community/InnioasisY1Themes" target="_blank" rel="noopener" style="color:#93c5fd;">y1-community/InnioasisY1Themes</a>
+                GitHub repository — files stay in the community archive, but they will not appear in the public gallery.
+                Opted-out creators usually prefer to host their own portfolio (shop, Ko-fi, Patreon, personal site)
+                and often encourage a <strong>Pay What You Feel</strong> donations model rather than listing here.
+            </p>
+            <ul id="optout-users-list" class="author-list author-list--optout" aria-live="polite"></ul>
+            <p id="optout-users-empty" class="empty-note" hidden>No authors are currently opted out.</p>
+        </section>
+
+        <section class="policy-section" aria-labelledby="blocked-heading">
+            <h2 id="blocked-heading">Blocked authors</h2>
+            <p class="policy-intro">
+                These authors are not allowed on the public gallery or through the upload form. Themes credited to them
+                are hidden from visitors. Upload attempts may still reach GitHub in some cases, but they will not be
+                listed for download on themes.innioasis.app.
+            </p>
+            <ul id="blocked-users-list" class="author-list author-list--block" aria-live="polite"></ul>
+            <p id="blocked-users-empty" class="empty-note" hidden>No authors are currently blocked.</p>
+        </section>
+
+        <p id="policy-load-error" class="empty-note" hidden>Could not load author lists. Try again later.</p>
+    </div>
+
+    <div id="footer-root"></div>
+    <div id="support-toolbar-slot"></div>
+    <script src="nav.js"></script>
+    <script>
+        (function () {
+            function esc(s) {
+                return String(s || "")
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;");
+            }
+
+            function entriesFromAuthorsField(authors) {
+                const out = [];
+                if (!authors) return out;
+                if (Array.isArray(authors)) {
+                    for (const item of authors) {
+                        if (item == null) continue;
+                        if (typeof item === "object") {
+                            const name = item.author || item.id || "";
+                            const reason = item.reason != null ? String(item.reason).trim() : "";
+                            if (name) out.push({ name: String(name), reason });
+                        } else {
+                            out.push({ name: String(item), reason: "" });
+                        }
+                    }
+                    return out;
+                }
+                if (typeof authors === "object") {
+                    for (const [name, reason] of Object.entries(authors)) {
+                        out.push({
+                            name: String(name),
+                            reason: reason != null ? String(reason).trim() : "",
+                        });
+                    }
+                }
+                return out.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
+            }
+
+            function renderList(listEl, emptyEl, rows, emptyText, defaultReason) {
+                if (!listEl) return;
+                if (!rows.length) {
+                    listEl.innerHTML = "";
+                    if (emptyEl) {
+                        emptyEl.textContent = emptyText;
+                        emptyEl.hidden = false;
+                    }
+                    return;
+                }
+                if (emptyEl) emptyEl.hidden = true;
+                listEl.innerHTML = rows
+                    .map(
+                        (row) =>
+                            `<li><p class="name">${esc(row.name)}</p>` +
+                            `<p class="reason">${esc(row.reason || defaultReason)}</p></li>`
+                    )
+                    .join("");
+            }
+
+            const errEl = document.getElementById("policy-load-error");
+
+            Promise.all([
+                fetch("./opt_out.json", { cache: "no-cache" }).then((r) =>
+                    r.ok ? r.json() : Promise.reject()
+                ),
+                fetch("./block.json", { cache: "no-cache" }).then((r) =>
+                    r.ok ? r.json() : Promise.reject()
+                ),
+            ])
+                .then(([optData, blockData]) => {
+                    renderList(
+                        document.getElementById("optout-users-list"),
+                        document.getElementById("optout-users-empty"),
+                        entriesFromAuthorsField(optData && optData.authors),
+                        "No authors are currently opted out.",
+                        "Opted out of the public gallery; archival uploads may still be accepted on GitHub."
+                    );
+                    renderList(
+                        document.getElementById("blocked-users-list"),
+                        document.getElementById("blocked-users-empty"),
+                        entriesFromAuthorsField(blockData && blockData.authors),
+                        "No authors are currently blocked.",
+                        "Banned from the public gallery and upload."
+                    );
+                })
+                .catch(() => {
+                    if (errEl) errEl.hidden = false;
+                });
+        })();
+    </script>
+</body>
+
+</html>

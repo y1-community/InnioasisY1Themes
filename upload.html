@@ -466,6 +466,90 @@
             margin-bottom: 0;
         }
 
+        .author-policy-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.25rem;
+            box-sizing: border-box;
+        }
+
+        .author-policy-modal[hidden] {
+            display: none !important;
+        }
+
+        .author-policy-modal-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(5, 8, 16, 0.82);
+            backdrop-filter: blur(4px);
+        }
+
+        .author-policy-modal-panel {
+            position: relative;
+            z-index: 1;
+            width: min(560px, 100%);
+            max-height: min(90vh, 680px);
+            overflow: auto;
+            border-radius: 16px;
+            border: 2px solid rgba(96, 165, 250, 0.65);
+            background: linear-gradient(165deg, #1e3a6e 0%, #12151c 48%);
+            box-shadow: 0 0 0 1px rgba(147, 197, 253, 0.25), 0 28px 72px rgba(0, 0, 0, 0.6);
+            padding: 1.5rem 1.55rem 1.35rem;
+            color: #eaf0ff;
+        }
+
+        .author-policy-modal-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            margin-bottom: 0.75rem;
+            background: rgba(96, 165, 250, 0.25);
+            border: 1px solid rgba(147, 197, 253, 0.5);
+            color: #93c5fd;
+            font-size: 1.15rem;
+        }
+
+        .author-policy-modal-panel h2 {
+            margin: 0 0 0.65rem;
+            font-size: 1.45rem;
+            line-height: 1.25;
+        }
+
+        .author-policy-modal-author {
+            display: inline-block;
+            margin: 0 0 1rem;
+            padding: 0.35rem 0.65rem;
+            border-radius: 8px;
+            background: rgba(96, 165, 250, 0.2);
+            border: 1px solid rgba(96, 165, 250, 0.45);
+            font-weight: 700;
+        }
+
+        .author-policy-modal-panel p,
+        .author-policy-modal-panel ul {
+            margin: 0 0 0.85rem;
+            line-height: 1.55;
+            color: #c8d4ea;
+        }
+
+        .author-policy-modal-panel ul {
+            padding-left: 1.2rem;
+        }
+
+        .author-policy-modal-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.55rem;
+            margin-top: 1.1rem;
+        }
+
         .variation-row {
             display: flex;
             align-items: flex-start;
@@ -710,6 +794,32 @@
 
                 <button id="submit-btn" type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane" style="margin-right: 6px;"></i>Send my theme</button>
             </form>
+
+            <div id="author-opt-out-modal" class="author-policy-modal" hidden role="dialog" aria-modal="true" aria-labelledby="author-opt-out-modal-title">
+                <div class="author-policy-modal-backdrop" data-opt-out-dismiss tabindex="-1"></div>
+                <div class="author-policy-modal-panel">
+                    <span class="author-policy-modal-icon" aria-hidden="true"><i class="fa-solid fa-archive"></i></span>
+                    <h2 id="author-opt-out-modal-title">This author has opted out of gallery submissions</h2>
+                    <p class="author-policy-modal-author" id="author-opt-out-modal-author"></p>
+                    <p id="author-opt-out-modal-lead">
+                        <strong id="author-opt-out-modal-author-inline"></strong> does not want themes submitted or listed for download on
+                        <strong>themes.innioasis.app</strong>. If you are not preserving their work with permission, choose a different author name
+                        or contact them for where they host their portfolio.
+                    </p>
+                    <ul>
+                        <li><strong>Archival uploads are OK:</strong> you may still send packages so files are preserved in the
+                            <a href="https://github.com/y1-community/InnioasisY1Themes" target="_blank" rel="noopener" style="color:#93c5fd;">y1-community/InnioasisY1Themes</a>
+                            GitHub repo.</li>
+                        <li><strong>Not on this site:</strong> opted-out themes will not appear in the gallery or as downloads here.</li>
+                        <li><strong>Where creators usually host:</strong> their own shop, Ko-fi, Patreon, or personal pages — often with a Pay What You Feel model.</li>
+                    </ul>
+                    <p id="author-opt-out-modal-note" class="hint" style="margin-bottom:0;color:#9eb0d0;"></p>
+                    <div class="author-policy-modal-actions">
+                        <button type="button" class="btn btn-primary" data-opt-out-dismiss>I understand — archival only</button>
+                        <a class="btn" href="https://themes.innioasis.app/opted-out-blocked-users.html" style="text-decoration:none;">Opted out &amp; blocked list</a>
+                    </div>
+                </div>
+            </div>
             <div id="status" class="status"></div>
         </div>
 
@@ -1460,9 +1570,45 @@
         const fieldThemeTitle = document.getElementById("field-theme-title");
         const fieldThemeAuthor = document.getElementById("field-theme-author");
         const authorPolicyBanner = document.getElementById("author-policy-banner");
+        const authorOptOutModal = document.getElementById("author-opt-out-modal");
+        const optOutModalDismissedAuthors = new Set();
+        let optOutModalOpenForAuthor = "";
+
+        function setAuthorOptOutModalOpen(open) {
+            if (!authorOptOutModal) return;
+            authorOptOutModal.hidden = !open;
+            document.body.style.overflow = open ? "hidden" : "";
+        }
+
+        function showAuthorOptOutModal(authorDisplay, policy) {
+            const authorEl = document.getElementById("author-opt-out-modal-author");
+            const inlineEl = document.getElementById("author-opt-out-modal-author-inline");
+            const noteEl = document.getElementById("author-opt-out-modal-note");
+            const label = String(authorDisplay || "").trim() || "This author";
+            if (authorEl) authorEl.textContent = label;
+            if (inlineEl) inlineEl.textContent = label;
+            if (noteEl) {
+                const note = String((policy && policy.banReason) || "").trim();
+                noteEl.textContent = note ? `Maintainer note: ${note}` : "";
+            }
+            setAuthorOptOutModalOpen(true);
+        }
+
+        function bindAuthorOptOutModalDismiss() {
+            if (!authorOptOutModal) return;
+            authorOptOutModal.querySelectorAll("[data-opt-out-dismiss]").forEach((el) => {
+                el.addEventListener("click", () => {
+                    if (optOutModalOpenForAuthor) {
+                        optOutModalDismissedAuthors.add(optOutModalOpenForAuthor);
+                    }
+                    setAuthorOptOutModalOpen(false);
+                });
+            });
+        }
+        bindAuthorOptOutModalDismiss();
 
         async function syncAuthorPolicyBanner() {
-            if (!authorPolicyBanner || !window.ThemeAuthorPolicy) return;
+            if (!window.ThemeAuthorPolicy) return;
             let author = "";
             const authorInput = document.querySelector('[data-primary-field="author"]');
             if (authorInput) {
@@ -1479,26 +1625,47 @@
             }
             await window.ThemeAuthorPolicy.ready();
             const policy = window.ThemeAuthorPolicy.uploadPolicyForAuthor(author);
+            const norm = window.ThemeAuthorPolicy.normAuthor(author);
+
             if (!policy || !policy.message) {
-                authorPolicyBanner.hidden = true;
-                authorPolicyBanner.textContent = "";
+                if (authorPolicyBanner) {
+                    authorPolicyBanner.hidden = true;
+                    authorPolicyBanner.textContent = "";
+                }
+                setAuthorOptOutModalOpen(false);
+                optOutModalOpenForAuthor = "";
                 if (submitBtn) submitBtn.removeAttribute("aria-describedby");
                 return;
             }
+
+            if (policy.level === "opt_out") {
+                optOutModalOpenForAuthor = norm;
+                if (norm && !optOutModalDismissedAuthors.has(norm)) {
+                    showAuthorOptOutModal(author, policy);
+                }
+                if (authorPolicyBanner) {
+                    authorPolicyBanner.hidden = false;
+                    authorPolicyBanner.style.borderColor = "rgba(96, 165, 250, 0.45)";
+                    authorPolicyBanner.style.background = "rgba(30, 58, 138, 0.3)";
+                    authorPolicyBanner.innerHTML =
+                        `<p><strong>Gallery opt-out (archival only)</strong></p><p>${escapeHtml(policy.message)}</p>` +
+                        `<p class="hint" style="margin:0.5rem 0 0;">This author has opted out of being listed or submitted on the Themes Site. Archival uploads to GitHub may still be accepted.</p>`;
+                }
+                if (submitBtn) submitBtn.setAttribute("aria-describedby", "author-policy-banner");
+                return;
+            }
+
+            setAuthorOptOutModalOpen(false);
+            optOutModalOpenForAuthor = "";
+
+            if (!authorPolicyBanner) return;
             authorPolicyBanner.hidden = false;
             authorPolicyBanner.id = "author-policy-banner";
             if (submitBtn) submitBtn.setAttribute("aria-describedby", "author-policy-banner");
-            if (policy.level === "block") {
-                authorPolicyBanner.style.borderColor = "rgba(248, 113, 113, 0.45)";
-                authorPolicyBanner.style.background = "rgba(127, 29, 29, 0.35)";
-                authorPolicyBanner.innerHTML =
-                    `<p><strong>Author not allowed</strong></p><p>${escapeHtml(policy.message)}</p>`;
-            } else {
-                authorPolicyBanner.style.borderColor = "rgba(96, 165, 250, 0.35)";
-                authorPolicyBanner.style.background = "rgba(30, 58, 138, 0.25)";
-                authorPolicyBanner.innerHTML =
-                    `<p><strong>Gallery opt-out (archival)</strong></p><p>${escapeHtml(policy.message)}</p>`;
-            }
+            authorPolicyBanner.style.borderColor = "rgba(248, 113, 113, 0.45)";
+            authorPolicyBanner.style.background = "rgba(127, 29, 29, 0.35)";
+            authorPolicyBanner.innerHTML =
+                `<p><strong>Author not allowed</strong></p><p>${escapeHtml(policy.message)}</p>`;
         }
         const removalForm = document.getElementById("removal-form");
         const removalStatus = document.getElementById("removal-status");

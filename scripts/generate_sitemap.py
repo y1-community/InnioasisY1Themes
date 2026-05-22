@@ -61,6 +61,7 @@ def generate() -> str:
         (f"{SITE_BASE}/upload.html", "weekly"),
         (f"{SITE_BASE}/report-theme.html", "weekly"),
         (f"{SITE_BASE}/theme.html", "weekly"),
+        (f"{SITE_BASE}/opted-out-blocked-users.html", "monthly"),
     ]
     themes = _load_themes()
     theme_urls: set[str] = set()

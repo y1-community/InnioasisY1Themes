@@ -157,6 +157,9 @@
             removeLegacyFooterCredits();
             setTimeout(removeLegacyFooterCredits, 500);
 
+            window.openY1DonatePanel = openDonateOptions;
+            window.closeY1DonatePanel = closeDonateOptions;
+
             try {
                 window.dispatchEvent(new Event('y1-dock-slot-ready'));
             } catch (_) {}

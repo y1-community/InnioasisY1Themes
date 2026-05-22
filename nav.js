@@ -32,8 +32,12 @@
         const t = e.target.closest('a')
         if (!t) return
         const href = t.getAttribute('href') || ''
-        if (t.classList.contains('open-donate-toolbar')) {
+        if (t.classList.contains('open-donate-toolbar') || href === '#donate') {
             e.preventDefault()
+            if (typeof window.openY1DonatePanel === 'function') {
+                window.openY1DonatePanel()
+                return
+            }
             const donateToggle = document.getElementById('donate-toggle')
             if (donateToggle) {
                 donateToggle.click()
@@ -72,8 +76,8 @@
 
             <div class="footer-col">
                 <h4>Links</h4>
-                <a href="https://themes.innioasis.app/banned-users.html">Banned Users</a>
-                <a href="https://ko-fi.com/teamslide" target="_blank" rel="noopener">Donate</a>
+                <a href="https://themes.innioasis.app/opted-out-blocked-users.html">Opted Out &amp; Blocked Users</a>
+                <a href="#donate" class="open-donate-toolbar">Donate</a>
             </div>
 
             <div class="footer-col footer-col-powered">
