@@ -113,19 +113,18 @@
         <div class="section-div">
             <h2>Donate</h2>
             <p id="donate-intro" style="text-align: center; color: var(--text-secondary); margin-bottom: 2rem;">
-                Support development and help Ryan's growing family via the Baby Wishlist.
+                Ryan and his partner are expecting a baby in December — your support would mean a lot. Donations also help keep the gallery online: hosting, the domain, and running costs.
             </p>
 
             <div class="donate-options">
                 <div class="donate-card">
                     <h3>Ryan Specter</h3>
-                    <p>Support the app creator</p>
+                    <p>Help cover hosting, the domain, and running costs for the themes gallery and related tools.</p>
                     <div style="margin-top:.5rem; display: flex; justify-content: space-between; align-items: center;">
                         <select id="ryanMethods" style="font-family: Inter; padding:.5rem;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:var(--bg-dark);color:var(--text-primary);">
                             <option>PayPal</option>
                             <option>Revolut</option>
                             <option>Ko-fi</option>
-                            <option>Patreon</option>
                             <option>Bitcoin</option>
                             <option>SHIBA INU (ERC-20)</option>
                             <option>Ethereum / Arbitrum / Optimism</option>
@@ -137,7 +136,7 @@
                 <div id="baby-wishlist-card" class="donate-card" style="display: flex; flex-direction: column; justify-content: space-between;">
                     <div>
                         <h3>Baby Wishlist</h3>
-                        <p>Ryan and his partner are expecting a baby in December. If you'd like to help with the new addition to the family, gifts from the wishlist are deeply appreciated.</p>
+                        <p>Ryan and his partner are expecting a baby in December. Donations above also help with everyday costs; if you'd like to help welcome the new arrival, gifts from the wishlist are deeply appreciated.</p>
                     </div>
                     <div style="display: flex; justify-content: right;">
                         <a href="https://www.amazon.co.uk/baby-reg/kayla-mallett-ryan-specter-november-2026-norwich/26D94K25Z5HWD" class="btn btn-primary" style="color: white; padding: 2px 15px; display:flex; align-items: center; gap:.5rem;"><span style="font-size: 16px;">👶</span>Open Baby Wishlist</a>
@@ -235,8 +234,6 @@
                 container.innerHTML = '<a href="https://revolut.me/rspecter" class="btn btn-primary" style="color: white; padding: 2px 15px; display:inline-flex;align-items:center;gap:.5rem;"><img src="https://img.icons8.com/ios_filled/512/FFFFFF/revolut--v2.png" alt="Revolut" style="height:20px;"/><span>Donate via Revolut</span></a>';
             } else if (val === 'Ko-fi') {
                 container.innerHTML = '<a href="https://ko-fi.com/teamslide" class="btn btn-primary" style="color: white; padding: 2px 15px; display:inline-flex;align-items:center;gap:.5rem;"><img src="https://boost.space/wp-content/uploads/2025/02/ko-fi.png" alt="Ko-fi" style="height:20px;"/>Donate via Ko-fi</a>';
-            } else if (val === 'Patreon') {
-                container.innerHTML = '<a href="https://www.patreon.com/teamslide" class="btn btn-primary" style="color: white; padding: 2px 15px; display:inline-flex;align-items:center;gap:.5rem;"><span style="font-size: 16px;">🧡</span>Donate via Patreon</a>';
             } else if (val === 'PayPal') {
                 container.innerHTML = '<a href="https://www.paypal.com/paypalme/RyanSpecter282" class="btn btn-primary" style="color: white; padding: 2px 15px; display:inline-flex;align-items:center;gap:.5rem;"><i class="fab fa-paypal"></i>Donate via PayPal</a>';
             } else if (val === 'Bitcoin') {
@@ -263,8 +260,8 @@
                 babyCard.style.display = showBabyCard ? 'flex' : 'none';
                 if (donateIntro) {
                     donateIntro.textContent = showBabyCard
-                        ? "Support development and help Ryan's growing family via the Baby Wishlist."
-                        : "Support development and ongoing work on Innioasis Updater and the themes ecosystem.";
+                        ? "Ryan and his partner are expecting a baby in December — your support would mean a lot. Donations help with hosting, the domain, and running costs; you can also chip in via the Baby Wishlist below."
+                        : "Ryan and his partner are expecting a baby in December — thank you for any support. Donations also help keep the gallery and related tools online: hosting, the domain, and running costs.";
                 }
             }
         });
