@@ -311,7 +311,8 @@ async function ghPutContentsCreateOrUpdate(apiBase, token, path, branchName, mes
     );
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    const needsSha = /422|409/.test(msg) && /sha|exists/i.test(msg);
+    const needsSha =
+      /422|409/.test(msg) && /sha|exists|wasn't supplied|not supplied/i.test(msg);
     if (!needsSha) throw err;
     const existing = await ghGetFileMeta(apiBase, token, path, branchName);
     if (!existing || !existing.sha) throw err;
@@ -499,18 +500,13 @@ export async function handleUploadPost(request, env) {
       const slugTitle = slugify(themeTitle);
       const zipName = slugTitle ? `${slugTitle}.zip` : `gallery-upload-${unique}.zip`;
       zipPath = zipPrefix ? `${zipPrefix}${zipName}` : zipName;
-      await ghJson(
-        `${apiBase}/contents/${zipPath.split("/").map(encodeURIComponent).join("/")}`,
+      await ghPutContentsCreateOrUpdate(
+        apiBase,
         token,
-        {
-          method: "PUT",
-          body: JSON.stringify({
-            message: `Upload theme zip: ${themeTitle || originalName}`,
-            content: contentB64,
-            branch: branchName,
-          }),
-        },
-        `upload file ${zipPath}`
+        zipPath,
+        branchName,
+        `Upload theme zip: ${themeTitle || originalName}`,
+        contentB64
       );
 
       const metaPath = `${zipPath}.meta.json`;
@@ -525,18 +521,13 @@ export async function handleUploadPost(request, env) {
         2
       ) + "\n";
       const metaB64 = toBase64(new TextEncoder().encode(metaPayload));
-      await ghJson(
-        `${apiBase}/contents/${metaPath.split("/").map(encodeURIComponent).join("/")}`,
+      await ghPutContentsCreateOrUpdate(
+        apiBase,
         token,
-        {
-          method: "PUT",
-          body: JSON.stringify({
-            message: `Upload metadata for ${zipName}`,
-            content: metaB64,
-            branch: branchName,
-          }),
-        },
-        `upload file ${metaPath}`
+        metaPath,
+        branchName,
+        `Upload metadata for ${zipName}`,
+        metaB64
       );
     } else {
       for (const file of directCommitted) {
