@@ -2,18 +2,20 @@
     "theme_info": {
         "title": "StyleSavvy",
         "author": "Angel_50000",
-        "authorUrl": "https://reddit.com/user/Angel_50000",
-        "description": "StyleSavvy theme for Innioasis Y1.",
-        "externalDownloadUrl": ""
+        "authorUrl": "https://www.reddit.com/user/Angel_50000/?solution=5fe6668e09f373c05fe6668e09f373c0&js_challenge=1&token=bbbe4bf1c9a2b5160829c4be34da5861488f4b2b3d32bc7794ef7096eb4ccc7e&jsc_orig_r=",
+        "description": "Theme based off the Style Savvy/Style Boutique games DS & 3DS games.",
+        "externalDownloadUrl": "https://drive.google.com/drive/folders/14deBuoQmPI9jSR0ymvyy-rRqmKx8M6dC?usp=sharing"
     },
+    "author": "Angel",
+    "authorUrl": "",
     "themeCover": "cover.png",
     "desktopWallpaper": "desk.png",
-    "globalWallpaper": "desk.png",
+    "globalWallpaper": "global.png",
     "desktopMask": "mask.png",
     "fontFamily": "font.ttf",
     "itemConfig": {
-        "itemTextColor": "FD98BA",
-        "itemSelectedTextColor": "FFFFFF",
+        "itemTextColor": "#FFFFFF",
+        "itemSelectedTextColor": "#FFFFFF",
         "itemSelectedBackground": "",
         "itemBackground": "",
         "itemRightArrow": ""
@@ -82,7 +84,7 @@
         "keyToneOff": "Key tone-OFF.png",
         "keyVibrationOn": "Key vibration-ON.png",
         "keyVibrationOff": "Key vibration-OFF.png",
-        "wallpaper": "Wallpapper.png",
+        "wallpaper": "Wallpaper.png",
         "backlight_10": "Backlight-10.png",
         "backlight_15": "Backlight-15.png",
         "backlight_30": "Backlight-30.png",
@@ -131,6 +133,7 @@
         "progressColor": "#24F2A0",
         "progressBackgroundColor": "#33FFFFFF"
     },
-    "author": "Angel_50000",
-    "authorUrl": "https://reddit.com/user/Angel_50000"
+    "gallery": {
+        "compatibilityMedal": "gold"
+    }
 }

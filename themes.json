@@ -27,8 +27,8 @@
             "folder": "Aero",
             "sourceType": "internal",
             "sortName": "aero",
-            "searchText": "aero this theme is inspired by windows vista. u/neither-classic2058 aero",
-            "author": "u/Neither-Classic2058",
+            "searchText": "aero this theme is inspired by windows vista. neither-classic2058 aero",
+            "author": "Neither-Classic2058",
             "authorUrl": "https://www.reddit.com/r/innioasis/comments/1n6nhw9/repost_aero_theme_y1_stock_firmware/",
             "description": "This theme is inspired by Windows Vista.",
             "screenshot": "./Aero/cover.png"
@@ -816,6 +816,16 @@
             "screenshot": "./LCD/cover.png"
         },
         {
+            "name": "Life is Strange",
+            "folder": "Life_is_Strange",
+            "author": "strangebiology",
+            "description": "Blank template theme with full config coverage for easy customization.",
+            "screenshot": "./Life_is_Strange/cover.png",
+            "sourceType": "internal",
+            "sortName": "life is strange",
+            "searchText": "life is strange blank template theme with full config coverage for easy customization. strangebiology life_is_strange"
+        },
+        {
             "name": "LiquidGlass",
             "folder": "LiquidGlass",
             "author": "u/moralesnery",
@@ -1248,6 +1258,16 @@
             "searchText": "scene theme this took me a while to figure out since i am doing this on mobile but it's a scene theme (lots of gir cause i like gir) stary_scene_xd scene_theme"
         },
         {
+            "name": "SECURITY BREACH!!!!!!",
+            "folder": "SECURITY_BREACH",
+            "author": "CityStar-Asmrtist!!",
+            "description": "FNAF SECURITY BREACH PEAK GAME BTWWW!!",
+            "screenshot": "./SECURITY_BREACH/cover.png",
+            "sourceType": "internal",
+            "sortName": "security breach!!!!!!",
+            "searchText": "security breach!!!!!! fnaf security breach peak game btwww!! citystar-asmrtist!! security_breach"
+        },
+        {
             "name": "SilentHill2",
             "folder": "SilentHill2",
             "sourceType": "internal",
@@ -1365,12 +1385,13 @@
             "name": "StyleSavvy",
             "folder": "StyleSavvy",
             "author": "Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "authorUrl": "https://www.reddit.com/user/Angel_50000/?solution=5fe6668e09f373c05fe6668e09f373c0&js_challenge=1&token=bbbe4bf1c9a2b5160829c4be34da5861488f4b2b3d32bc7794ef7096eb4ccc7e&jsc_orig_r=",
             "sourceType": "internal",
             "sortName": "stylesavvy",
-            "searchText": "stylesavvy stylesavvy theme for innioasis y1. angel_50000 stylesavvy",
-            "description": "StyleSavvy theme for Innioasis Y1.",
-            "screenshot": "./StyleSavvy/cover.png"
+            "searchText": "stylesavvy theme based off the style savvy/style boutique games ds & 3ds games. angel_50000 stylesavvy https://drive.google.com/drive/folders/14debuoqmpi9jsr0ymvyy-rrqmkx8m6dc?usp=sharing",
+            "description": "Theme based off the Style Savvy/Style Boutique games DS & 3DS games.",
+            "screenshot": "./StyleSavvy/cover.png",
+            "externalDownloadUrl": "https://drive.google.com/drive/folders/14deBuoQmPI9jSR0ymvyy-rRqmKx8M6dC?usp=sharing"
         },
         {
             "name": "Sudsy Business Theme",
@@ -1461,6 +1482,16 @@
             "authorUrl": "https://www.tumblr.com/riioykah",
             "description": "TMA style theme in black-green tones",
             "screenshot": "./The Magnus Archives/cover.png"
+        },
+        {
+            "name": "The Owl House",
+            "folder": "The_Owl_House",
+            "author": "Strangebiology",
+            "description": "Blank template theme with full config coverage for easy customization.",
+            "screenshot": "./The_Owl_House/cover.png",
+            "sourceType": "internal",
+            "sortName": "the owl house",
+            "searchText": "the owl house blank template theme with full config coverage for easy customization. strangebiology the_owl_house"
         },
         {
             "name": "TheMatrix",
@@ -1651,14 +1682,25 @@
             "screenshot": "./Whimsical/cover.png"
         },
         {
-            "name": "Whimsy",
+            "name": "Whimsical",
+            "folder": "Whimsical_angel-50000",
+            "author": "Angel_50000",
+            "authorUrl": "https://www.reddit.com/user/Angel_50000/?solution=5fe6668e09f373c05fe6668e09f373c0&js_challenge=1&token=bbbe4bf1c9a2b5160829c4be34da5861488f4b2b3d32bc7794ef7096eb4ccc7e&jsc_orig_r=",
+            "description": "Theme based of the whimsical aesthetic.",
+            "screenshot": "./Whimsical_angel-50000/cover.png",
+            "sourceType": "internal",
+            "sortName": "whimsical",
+            "searchText": "whimsical theme based of the whimsical aesthetic. angel_50000 whimsical_angel-50000"
+        },
+        {
+            "name": "Whimsy 2.0",
             "folder": "Whimsy",
             "author": "angiee",
-            "description": "faart",
+            "description": "Updated version (kinda),, didn't feel too satisfied with some of the pngs",
             "screenshot": "./Whimsy/cover.png",
             "sourceType": "internal",
-            "sortName": "whimsy",
-            "searchText": "whimsy faart angiee whimsy"
+            "sortName": "whimsy 2.0",
+            "searchText": "whimsy 2.0 updated version (kinda),, didn't feel too satisfied with some of the pngs angiee whimsy"
         },
         {
             "name": "William Jakrapatr",
