@@ -1,6 +1,16 @@
 {
     "themes": [
         {
+            "name": "2000s spider-man",
+            "folder": "2000s_spider-man",
+            "author": "andrew",
+            "description": "Blank template theme with full config coverage for easy customization.",
+            "screenshot": "./2000s_spider-man/cover.png",
+            "sourceType": "internal",
+            "sortName": "2000s spider-man",
+            "searchText": "2000s spider-man blank template theme with full config coverage for easy customization. andrew 2000s_spider-man"
+        },
+        {
             "name": "Ace Attorney",
             "folder": "Ace_Attorney",
             "author": "u/highwaycrisis",
