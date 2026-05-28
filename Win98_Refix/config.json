@@ -3,7 +3,7 @@
     "title": "Win98 Refix",
     "author": "Robertpuggle",
     "authorUrl": "",
-    "description": "Win95 theme Refix The Organal was made By u/moralesnery. P.S. I made Special Charge lightning bolts on the battery charge",
+    "description": "Win9 theme Refix of The Organal was made By u/moralesnery. P.S. I made Special Charge lightning bolts on the battery charge and Change the arrow with a warning icon but all wight and some of the sharers and the Bluetooth disconnict is the wring colors",
     "externalDownloadUrl": ""
   },
   "themeCover": "cover.png",
@@ -23,12 +23,13 @@
     "dialogOptionTextColor": "#000000",
     "dialogOptionSelectedBackground": "4.png",
     "dialogOptionSelectedTextColor": "#000000",
-    "dialogBackgroundColor": "#cccccc"
+    "dialogBackgroundColor": "#cccccc",
+    "dialogTextColor": "#000000"
   },
   "menuConfig": {
-    "menuBackgroundColor": "#ffffff",
+    "menuBackgroundColor": "",
     "menuItemBackground": "",
-    "menuItemTextColor": "#00000",
+    "menuItemTextColor": "#000000",
     "menuItemSelectedBackground": "1.png",
     "menuItemSelectedTextColor": "#ffffff"
   },
@@ -45,7 +46,8 @@
     "selectedColor": "",
     "calculator": "calculator.png",
     "calendar": "calendar.png",
-    "ebook": "ebook.png"
+    "ebook": "ebook.png",
+    "unselectedColor": "#000000"
   },
   "fileConfig": {
     "folderIcon": "folder.png",
@@ -102,7 +104,8 @@
     "fileExtensionOff": "file_ext_off.png",
     "settingMask": "setting_mask.png",
     "selectedColor": "",
-    "launcher": "Launcher.png"
+    "launcher": "Launcher.png",
+    "unselectedColor": "#000000"
   },
   "statusConfig": {
     "playing": "playing.png",
@@ -134,6 +137,6 @@
     "progressColor": "#c0c0c0"
   },
   "gallery": {
-    "compatibilityMedal": "none"
+    "compatibilityMedal": "gold"
   }
 }

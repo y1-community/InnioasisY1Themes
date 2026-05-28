@@ -1,6 +1,16 @@
 {
     "themes": [
         {
+            "name": "2000s spider-man",
+            "folder": "2000s_spider-man",
+            "author": "andrew",
+            "description": "Blank template theme with full config coverage for easy customization.",
+            "screenshot": "./2000s_spider-man/cover.png",
+            "sourceType": "internal",
+            "sortName": "2000s spider-man",
+            "searchText": "2000s spider-man blank template theme with full config coverage for easy customization. andrew 2000s_spider-man"
+        },
+        {
             "name": "Ace Attorney",
             "folder": "Ace_Attorney",
             "author": "u/highwaycrisis",
@@ -944,6 +954,26 @@
             "screenshot": "./Minecraft/cover.png"
         },
         {
+            "name": "Minimal Max Payne",
+            "folder": "Minimal_Max_Payne",
+            "author": "Knight",
+            "description": "minimalist Max Payne, minor adjustment to dark themes and Max background",
+            "screenshot": "./Minimal_Max_Payne/cover.png",
+            "sourceType": "internal",
+            "sortName": "minimal max payne",
+            "searchText": "minimal max payne minimalist max payne, minor adjustment to dark themes and max background knight minimal_max_payne"
+        },
+        {
+            "name": "Minimal Max Payne 2",
+            "folder": "Minimal_Max_Payne_2",
+            "author": "Knight",
+            "description": "Just Payne",
+            "screenshot": "./Minimal_Max_Payne_2/cover.png",
+            "sourceType": "internal",
+            "sortName": "minimal max payne 2",
+            "searchText": "minimal max payne 2 just payne knight minimal_max_payne_2"
+        },
+        {
             "name": "Mini Medieval",
             "folder": "MiniMedieval",
             "sourceType": "internal",
@@ -1051,6 +1081,17 @@
             "sourceType": "internal",
             "sortName": "[niи] stuff",
             "searchText": "[niи] stuff nine inch nails rulz! theme for true industrial suckers. kolo ni__stuff"
+        },
+        {
+            "name": "night",
+            "folder": "night",
+            "author": "u/WorldlyGift4272",
+            "authorUrl": "https://www.reddit.com/r/innioasis/comments/1nku169/gta3_theme",
+            "description": "fireworks. sea. night",
+            "screenshot": "./night/cover.png",
+            "sourceType": "internal",
+            "sortName": "night",
+            "searchText": "night fireworks. sea. night u/worldlygift4272 night"
         },
         {
             "name": "Orange",
@@ -1842,11 +1883,11 @@
             "name": "Win98 Refix",
             "folder": "Win98_Refix",
             "author": "Robertpuggle",
-            "description": "Win95 theme Refix The Organal was made By u/moralesnery. P.S. I made Special Charge lightning bolts on the battery charge",
+            "description": "Win9 theme Refix of The Organal was made By u/moralesnery. P.S. I made Special Charge lightning bolts on the battery charge and Change the arrow with a warning icon but all wight and some of the sharers and the Bluetooth disconnict is the wring colors",
             "screenshot": "./Win98_Refix/cover.png",
             "sourceType": "internal",
             "sortName": "win98 refix",
-            "searchText": "win98 refix win95 theme refix the organal was made by u/moralesnery. p.s. i made special charge lightning bolts on the battery charge robertpuggle win98_refix"
+            "searchText": "win98 refix win9 theme refix of the organal was made by u/moralesnery. p.s. i made special charge lightning bolts on the battery charge and change the arrow with a warning icon but all wight and some of the sharers and the bluetooth disconnict is the wring colors robertpuggle win98_refix"
         },
         {
             "name": "Wolverine",
