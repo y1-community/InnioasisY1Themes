@@ -3,18 +3,19 @@
     "title": "TrueBlackWhite",
     "author": "productofmytime",
     "authorUrl": "",
-    "description": "TrueBlack & White theme. \nBuilt upon u/Neither-Classic2058's YellowSub theme and Sipped's Black&White. \nDeeper black and Gohu font",
+    "description": "TrueBlack & White theme. Built upon u/Neither-Classic2058's YellowSub theme and Sipped's Black&White. Deeper black and Gohu font, more icon matching",
     "externalDownloadUrl": ""
   },
   "themeCover": "cover_YS.png",
   "desktopWallpaper": "desk_bg001_YS.png",
   "globalWallpaper": "global_bg001_YS.png",
+  "desktopMask": "transparent.png",
   "fontFamily": "opensans-condbold.ttf",
   "itemConfig": {
     "itemTextColor": "#ffffff",
     "itemSelectedTextColor": "#000000",
     "itemSelectedBackground": "1_YS.png",
-    "itemBackground": "",
+    "itemBackground": "0.png",
     "itemRightArrow": "2_YS.png"
   },
   "dialogConfig": {
@@ -41,13 +42,13 @@
     "bluetooth": "Bluetooth_YS.png",
     "settings": "Settings_YS.png",
     "shuffleQuick": "Shuffle Quick.png",
-    "ebook": "transparent.png",
-    "calendar": "transparent.png",
-    "calculator": "transparent.png"
+    "calculator": "calculator.png",
+    "calendar": "calendar.png",
+    "ebook": "ebook.png"
   },
   "fileConfig": {
-    "folderIcon": "",
-    "musicIcon": ""
+    "folderIcon": "folder.png",
+    "musicIcon": "music_file.png"
   },
   "settingConfig": {
     "shutdown": "Shutdown@1x.png",
@@ -98,19 +99,20 @@
     "theme": "Change Theme@1x.png",
     "fileExtensionOn": "file_ext_on.png",
     "fileExtensionOff": "file_ext_off.png",
-    "launcher": "transparent.png"
+    "launcher": "Launcher.png",
+    "settingMask": "setting_mask.png"
   },
   "statusConfig": {
-    "playing": "",
-    "audiobookPlaying": "",
-    "pause": "",
-    "fmPlaying": "",
-    "stop": "",
-    "blConnected": "",
-    "blConnecting": "",
-    "blDisconnected": "",
-    "headsetWithMic": "",
-    "headsetWithoutMic": "",
+    "playing": "playing.png",
+    "audiobookPlaying": "audiobookPlaying.png",
+    "pause": "pause.png",
+    "fmPlaying": "fmPlaying.png",
+    "stop": "stop.png",
+    "blConnected": "blConnected.png",
+    "blConnecting": "blConnecting.png",
+    "blDisconnected": "blDisconnected.png",
+    "headsetWithMic": "headset2.png",
+    "headsetWithoutMic": "headset1.png",
     "statusBarColor": "",
     "battery": [
       "battery.001.png",
@@ -124,6 +126,10 @@
       "batterycharge.003.png",
       "batterycharge.004.png"
     ]
+  },
+  "playerConfig": {
+    "progressBackgroundColor": "#242424",
+    "progressColor": "#FFFFFF"
   },
   "gallery": {
     "compatibilityMedal": "none"
