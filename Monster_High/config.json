@@ -4,7 +4,7 @@
     "author": "Bajillumi",
     "authorUrl": "https://www.instagram.com/bajillumi/",
     "description": "MONSTER HIGH THEME ;p",
-    "externalDownloadUrl": ""
+    "externalDownloadUrl": "https://ko-fi.com/bajillumi"
   },
   "themeCover": "cover.png",
   "desktopWallpaper": "desktop_wallpaper.png",
@@ -23,8 +23,8 @@
     "dialogOptionTextColor": "#000000",
     "dialogOptionSelectedBackground": "4.png",
     "dialogOptionSelectedTextColor": "#000000",
-    "dialogBackgroundColor": "#000000",
-    "dialogTextColor": "#000000"
+    "dialogBackgroundColor": "#8c8c8c",
+    "dialogTextColor": "#ffffff"
   },
   "menuConfig": {
     "menuBackgroundColor": "#000000",
@@ -134,8 +134,8 @@
   },
   "playerConfig": {
     "progressTextColor": "#ffffff",
-    "progressColor": "#000000",
-    "progressBackgroundColor": ""
+    "progressColor": "#ffffff",
+    "progressBackgroundColor": "#ffffff"
   },
   "gallery": {
     "compatibilityMedal": "none"
