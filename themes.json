@@ -1328,6 +1328,16 @@
             "screenshot": "./RetroMusic/cover.png"
         },
         {
+            "name": "Rock",
+            "folder": "Rock",
+            "author": "Laura Abril Uribe",
+            "description": "Rock",
+            "screenshot": "./Rock/cover.png",
+            "sourceType": "internal",
+            "sortName": "rock",
+            "searchText": "rock rock laura abril uribe rock"
+        },
+        {
             "name": "Rudy",
             "folder": "Rudy",
             "sourceType": "internal",
