@@ -297,6 +297,20 @@ body.site-themes-app .theme-card-buttons {
     height: 16px;
 }
 
+.y1-dock-discord {
+    padding: 6px 8px;
+    color: #b5bcff;
+}
+
+.y1-dock-discord:hover {
+    color: #fff;
+    background: rgba(88, 101, 242, 0.22);
+}
+
+.y1-dock-discord .fa-discord {
+    font-size: 0.95rem;
+}
+
 /* Donate panel — dark on all viewports */
 .y1-donate-panel {
     display: none;

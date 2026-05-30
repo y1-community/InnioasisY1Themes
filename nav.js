@@ -78,6 +78,9 @@
                 <h4>Links</h4>
                 <a href="https://themes.innioasis.app/opted-out-blocked-users.html">Opted Out &amp; Blocked Users</a>
                 <a href="#donate" class="open-donate-toolbar">Donate</a>
+                <a href="https://discord.gg/u95pr8XfN" class="footer-discord-btn" target="_blank" rel="noopener noreferrer" title="T-ROM/Y1 development Discord">
+                    <i class="fa-brands fa-discord" aria-hidden="true"></i> Discord
+                </a>
             </div>
 
             <div class="footer-col footer-col-powered">
