@@ -17,9 +17,22 @@
   <link rel="stylesheet" href="/site-toolbar.css?v=20260622" />
   <link rel="stylesheet" href="/site-pages.css?v=20260622" />
   <script src="/theme-seo-shell-analytics.js"></script>
+  <script src="/author-submission-policy.js?v=20260522"></script>
   <script src="/gallery-chrome.js?v=20260622"></script>
   <script src="/site-init.js?v=20260522privacy"></script>
   <link rel="canonical" href="https://themes.innioasis.app/theme.html?theme=Ultimate_Muscle" />
+  <script>
+(function () {
+  var shellAuthor = "Robertpuggle";
+  if (window.ThemeAuthorPolicy) {
+    ThemeAuthorPolicy.ready().then(function () {
+      if (ThemeAuthorPolicy.listingHidden({ author: shellAuthor }).hidden) {
+        location.replace('https://themes.innioasis.app/index.html');
+      }
+    });
+  }
+})();
+  </script>
   <script>
 (function () {
   function destFromEmbed() {
@@ -52,7 +65,7 @@
   <meta name="twitter:description" content="Ultimate Muscle Theme" />
   <meta name="twitter:image" content="https://themes.innioasis.app/Ultimate_Muscle/cover.png" />
 
-  <script type="application/ld+json">{"url":"https://themes.innioasis.app/theme.html?theme=Ultimate_Muscle","author":{"name":"Robertpuggle","@type":"Person"},"applicationCategory":"MultimediaApplication","operatingSystem":"Innioasis Y1","image":"https://themes.innioasis.app/Ultimate_Muscle/cover.png","@context":"https://schema.org","description":"Ultimate Muscle Theme","offers":{"priceCurrency":"USD","@type":"Offer","price":"0"},"name":"Ultimate Muscle Theme for Innioasis Y1 by Robertpuggle","@type":"SoftwareApplication"}</script>
+  <script type="application/ld+json">{"operatingSystem":"Innioasis Y1","image":"https://themes.innioasis.app/Ultimate_Muscle/cover.png","url":"https://themes.innioasis.app/theme.html?theme=Ultimate_Muscle","@type":"SoftwareApplication","name":"Ultimate Muscle Theme for Innioasis Y1 by Robertpuggle","author":{"@type":"Person","name":"Robertpuggle"},"applicationCategory":"MultimediaApplication","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Ultimate Muscle Theme","@context":"https://schema.org"}</script>
 </head>
 <body class="site-themes-app site-dock-mode">
   <div id="nav-root"></div>
