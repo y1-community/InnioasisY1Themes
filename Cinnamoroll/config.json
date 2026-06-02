@@ -1,9 +1,9 @@
 {
     "theme_info": {
         "title": "Cinnamoroll",
-        "author": "Angel_50000",
+        "author": "alexmakesthemes",
         "authorUrl": "https://reddit.com/user/Angel_50000",
-        "description": "Cinnamoroll theme for Innioasis Y1.",
+        "description": "For the Innioasis Y1-\nIf you love Cinnamoroll like me, then you'll love this theme. Also, this theme uses the Starborn font, so it's aesthetic.",
         "externalDownloadUrl": ""
     },
     "themeCover": "cover.png",
@@ -131,6 +131,7 @@
         "progressColor": "#2faced",
         "progressBackgroundColor": "#33FFFFFF"
     },
-    "author": "Angel_50000",
-    "authorUrl": "https://reddit.com/user/Angel_50000"
+    "gallery": {
+        "compatibilityMedal": "none"
+    }
 }
