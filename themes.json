@@ -800,6 +800,16 @@
             "searchText": "gothic (updated) red and back, gothic-inspired layout. brighter text for better visibility. littlebeedle gothic__updated"
         },
         {
+            "name": "Gothic aesthetic theme",
+            "folder": "Gothic_aesthetic_theme",
+            "author": "Weronika",
+            "description": "Cyber Gothic aesthetic Mp.3 theme. I'm new to this so there might be glitches so sorry if there are :3",
+            "screenshot": "./Gothic_aesthetic_theme/cover.png",
+            "sourceType": "internal",
+            "sortName": "gothic aesthetic theme",
+            "searchText": "gothic aesthetic theme cyber gothic aesthetic mp.3 theme. i'm new to this so there might be glitches so sorry if there are :3 weronika gothic_aesthetic_theme"
+        },
+        {
             "name": "Green Apples",
             "folder": "Green Apples",
             "author": "Angel_50000",
@@ -942,15 +952,25 @@
             "screenshot": "./Hollow Knight/cover.png"
         },
         {
-            "name": "HoloBubble",
+            "name": "Apple 4",
             "folder": "HoloBubble",
             "sourceType": "internal",
-            "sortName": "holobubble",
-            "searchText": "holobubble customize your innioasis y1 with the holobubble theme. innioasis holobubble",
-            "author": "Innioasis",
+            "sortName": "apple 4",
+            "searchText": "apple 4 customize your innioasis y1 with the holobubble theme. ange holobubble",
+            "author": "Ange",
             "authorUrl": "https://www.innioasis.com",
             "description": "Customize your Innioasis Y1 with the HoloBubble theme.",
             "screenshot": "./HoloBubble/cover.png"
+        },
+        {
+            "name": "Apple 1",
+            "folder": "HoloFacet",
+            "author": "Ange",
+            "description": "Download the Apple 1 theme for Innioasis Y1 by Ange and personalize your player's look with curated UI assets.",
+            "screenshot": "./HoloFacet/cover.png",
+            "sourceType": "internal",
+            "sortName": "apple 1",
+            "searchText": "apple 1 download the apple 1 theme for innioasis y1 by ange and personalize your player's look with curated ui assets. ange holofacet"
         },
         {
             "name": "HotWheels",
@@ -1187,6 +1207,17 @@
             "sourceType": "internal",
             "sortName": "matrix’s",
             "searchText": "matrix’s blank template theme with full config coverage for easy customization. yas matrix_s"
+        },
+        {
+            "name": "Apple 2",
+            "folder": "Melody Munchkin",
+            "author": "Ange",
+            "authorUrl": "https://github.com/ope-nz",
+            "description": "Download the Apple 2 theme for Innioasis Y1 by Ange and personalize your player's look with curated UI assets.",
+            "screenshot": "./Melody Munchkin/cover.png",
+            "sourceType": "internal",
+            "sortName": "apple 2",
+            "searchText": "apple 2 download the apple 2 theme for innioasis y1 by ange and personalize your player's look with curated ui assets. ange melody munchkin"
         },
         {
             "name": "MelodyMuncher",
@@ -2043,6 +2074,17 @@
         },
         {
             "name": "test",
+            "folder": "test",
+            "author": "seal",
+            "authorUrl": "https://www.innioasis.com",
+            "description": "Customize your Innioasis Y1 with the MelodyMuncher theme.",
+            "screenshot": "./test/cover.png",
+            "sourceType": "internal",
+            "sortName": "test",
+            "searchText": "test customize your innioasis y1 with the melodymuncher theme. seal test"
+        },
+        {
+            "name": "test",
             "folder": "test_me",
             "author": "me",
             "description": "Download the test theme for Innioasis Y1 by me and personalize your player's look with curated UI assets.",
@@ -2281,12 +2323,12 @@
             "screenshot": "./UNDERTALE/cover.png"
         },
         {
-            "name": "Unseen",
+            "name": "Apple 3",
             "folder": "Unseen",
             "sourceType": "internal",
-            "sortName": "unseen",
-            "searchText": "unseen customize your innioasis y1 with the unseen theme. innioasis unseen",
-            "author": "Innioasis",
+            "sortName": "apple 3",
+            "searchText": "apple 3 customize your innioasis y1 with the unseen theme. ange unseen",
+            "author": "Ange",
             "authorUrl": "https://www.innioasis.com",
             "description": "Customize your Innioasis Y1 with the Unseen theme.",
             "screenshot": "./Unseen/cover.png"
