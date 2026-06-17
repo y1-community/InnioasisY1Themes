@@ -253,9 +253,11 @@
     function mergeItemBackgrounds(spec, buildFileUrl, contentFolder) {
         var itemCfg = (spec && spec.itemConfig) || {};
         var menuCfg = (spec && spec.menuConfig) || {};
-        var itemBg =
-            resolveBackgroundStyle(itemCfg.itemBackground, buildFileUrl, contentFolder) ||
-            resolveBackgroundStyle(menuCfg.menuItemBackground, buildFileUrl, contentFolder);
+        var itemBg = resolveBackgroundStyle(itemCfg.itemBackground, buildFileUrl, contentFolder);
+        // menuItemBackground hex values are accent/menu chrome on device, not list-row fills.
+        if (!itemBg && menuCfg.menuItemBackground && !isHexColor8or6(menuCfg.menuItemBackground)) {
+            itemBg = resolveBackgroundStyle(menuCfg.menuItemBackground, buildFileUrl, contentFolder);
+        }
         var sel =
             resolveBackgroundStyle(itemCfg.itemSelectedBackground, buildFileUrl, contentFolder) ||
             resolveBackgroundStyle(menuCfg.menuItemSelectedBackground, buildFileUrl, contentFolder);
@@ -368,7 +370,7 @@
             var selected = idx === selectedIndex;
             var row = document.createElement('div');
             row.className = 'y1-tp-row' + (selected ? ' is-selected' : '');
-            var bg = selected ? itemSel : itemBg || { backgroundColor: 'rgba(0,0,0,0.1)' };
+            var bg = selected ? itemSel : itemBg || { backgroundColor: 'transparent' };
             applyCssProps(row, bg);
             row.style.cssText +=
                 'position:absolute;left:' +
@@ -478,7 +480,7 @@
             var item = items[idx];
             var selected = idx === selectedIndex;
             var row = document.createElement('div');
-            var bg = selected ? itemSel : itemBg || { backgroundColor: 'rgba(0,0,0,0.1)' };
+            var bg = selected ? itemSel : itemBg || { backgroundColor: 'transparent' };
             applyCssProps(row, bg);
             row.style.cssText +=
                 'position:absolute;left:0;top:' +
