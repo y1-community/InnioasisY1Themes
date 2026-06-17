@@ -1,9 +1,9 @@
 {
     "theme_info": {
-        "title": "1G Pip-Boy",
+        "title": "Pip-Boy",
         "author": "Arthur_Moss",
         "authorUrl": "https://www.reddit.com/user/Arthur_Moss/",
-        "description": "This theme is inspired by the Pip-boy from the Fallout 3 game.",
+        "description": "Fallout Pip-Boy themes for the Innioasis Y1 (1G, 1M, 1P, and 1Y color variants).",
         "externalDownloadUrl": ""
     },
     "themeCover": "cover.png",
@@ -133,5 +133,13 @@
         "progressColor": "#25cb64",
         "progressBackgroundColor": "#80808080",
         "progressTextColor": "#25cb64"
+    },
+    "gallery": {
+        "defaultVariantLabel": "1G",
+        "variantFolders": [
+            "1M",
+            "1P",
+            "1Y"
+        ]
     }
 }
