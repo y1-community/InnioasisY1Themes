@@ -1,14 +1,68 @@
 {
     "themes": [
         {
-            "name": "2000s spider-man",
+            "name": "1G Pip-Boy",
+            "folder": "1G Fallout Pip-Boy",
+            "author": "Arthur_Moss",
+            "authorUrl": "https://www.reddit.com/user/Arthur_Moss/",
+            "description": "This theme is inspired by the Pip-boy from the Fallout 3 game.",
+            "screenshot": "./1G Fallout Pip-Boy/cover.png",
+            "sourceType": "internal",
+            "sortName": "1g pip-boy",
+            "searchText": "1g pip-boy this theme is inspired by the pip-boy from the fallout 3 game. arthur_moss 1g fallout pip-boy"
+        },
+        {
+            "name": "1M Pip-Boy",
+            "folder": "1M Fallout Pip-Boy",
+            "author": "Arthur_Moss",
+            "authorUrl": "https://www.reddit.com/user/Arthur_Moss/",
+            "description": "This theme is inspired by the Pip-boy from the Fallout 3 game.",
+            "screenshot": "./1M Fallout Pip-Boy/cover.png",
+            "sourceType": "internal",
+            "sortName": "1m pip-boy",
+            "searchText": "1m pip-boy this theme is inspired by the pip-boy from the fallout 3 game. arthur_moss 1m fallout pip-boy"
+        },
+        {
+            "name": "1P Pip-Boy",
+            "folder": "1P Fallout Pip-Boy",
+            "author": "Arthur_Moss",
+            "authorUrl": "https://www.reddit.com/user/Arthur_Moss/",
+            "description": "This theme is inspired by the Pip-boy from the Fallout 3 game.",
+            "screenshot": "./1P Fallout Pip-Boy/cover.png",
+            "sourceType": "internal",
+            "sortName": "1p pip-boy",
+            "searchText": "1p pip-boy this theme is inspired by the pip-boy from the fallout 3 game. arthur_moss 1p fallout pip-boy"
+        },
+        {
+            "name": "1Y Pip-Boy",
+            "folder": "1Y Fallout Pip-Boy",
+            "author": "Arthur_Moss",
+            "authorUrl": "https://www.reddit.com/user/Arthur_Moss/",
+            "description": "This theme is inspired by the Pip-boy from the Fallout: New Vegas game.",
+            "screenshot": "./1Y Fallout Pip-Boy/cover.png",
+            "sourceType": "internal",
+            "sortName": "1y pip-boy",
+            "searchText": "1y pip-boy this theme is inspired by the pip-boy from the fallout: new vegas game. arthur_moss 1y fallout pip-boy"
+        },
+        {
+            "name": "Cute core",
             "folder": "2000s_spider-man",
-            "author": "andrew",
+            "author": "Sophia",
             "description": "Blank template theme with full config coverage for easy customization.",
             "screenshot": "./2000s_spider-man/cover.png",
             "sourceType": "internal",
-            "sortName": "2000s spider-man",
-            "searchText": "2000s spider-man blank template theme with full config coverage for easy customization. andrew 2000s_spider-man"
+            "sortName": "cute core",
+            "searchText": "cute core blank template theme with full config coverage for easy customization. sophia 2000s_spider-man"
+        },
+        {
+            "name": "90s/2000s Teen",
+            "folder": "90s_2000s_Teen",
+            "author": "CityStar-Asmrtist!!",
+            "description": "90s/2000s Teen mountain dew y2k",
+            "screenshot": "./90s_2000s_Teen/cover.png",
+            "sourceType": "internal",
+            "sortName": "90s/2000s teen",
+            "searchText": "90s/2000s teen 90s/2000s teen mountain dew y2k citystar-asmrtist!! 90s_2000s_teen"
         },
         {
             "name": "Ace Attorney",
@@ -26,11 +80,11 @@
             "folder": "ACmp3",
             "author": "Scarylyn",
             "authorUrl": "https://github.com/user/scarylyn",
-            "description": "An Animal Crossing New Horizons inspired theme for the Y1 stock firmware",
+            "description": "An Animal Crossing New Horizons inspired theme for the Y1 stock firmware and 999",
             "screenshot": "./ACmp3/cover.png",
             "sourceType": "internal",
             "sortName": "acmp3",
-            "searchText": "acmp3 an animal crossing new horizons inspired theme for the y1 stock firmware scarylyn acmp3"
+            "searchText": "acmp3 an animal crossing new horizons inspired theme for the y1 stock firmware and 999 scarylyn acmp3"
         },
         {
             "name": "ADVENTURE TIME",
@@ -102,11 +156,11 @@
             "name": "Amy Rose tema",
             "folder": "Amy_Rose_tema",
             "author": "Dimoti",
-            "description": "Blank template theme with full config coverage for easy customization.",
+            "description": "Amy Rose theme",
             "screenshot": "./Amy_Rose_tema/cover.png",
             "sourceType": "internal",
             "sortName": "amy rose tema",
-            "searchText": "amy rose tema blank template theme with full config coverage for easy customization. dimoti amy_rose_tema"
+            "searchText": "amy rose tema amy rose theme dimoti amy_rose_tema"
         },
         {
             "name": "Android",
@@ -137,7 +191,7 @@
             "sortName": "apple music",
             "searchText": "apple music simple apple music-like theme. built upon u/neither-classic2058's yellowsub theme. sipped applemusic",
             "author": "sipped",
-            "authorUrl": "",
+            "authorUrl": "https://github.com/sipped",
             "description": "Simple Apple Music-like theme. Built upon u/Neither-Classic2058's YellowSub theme.",
             "screenshot": "./AppleMusic/cover_YS.png"
         },
@@ -273,7 +327,7 @@
             "sortName": "black&white",
             "searchText": "black&white simple black&white theme. built upon u/neither-classic2058's yellowsub theme. sipped blackwhite",
             "author": "sipped",
-            "authorUrl": "",
+            "authorUrl": "https://github.com/sipped",
             "description": "Simple Black&White theme. Built upon u/Neither-Classic2058's YellowSub theme.",
             "screenshot": "./BlackWhite/cover_YS.png"
         },
@@ -379,7 +433,7 @@
             "sortName": "circular",
             "searchText": "circular circular, a spotify inspired theme. built upon u/neither-classic2058's yellowsub theme. sipped circular",
             "author": "sipped",
-            "authorUrl": "",
+            "authorUrl": "https://github.com/sipped",
             "description": "Circular, a Spotify inspired theme. Built upon u/Neither-Classic2058's YellowSub theme.",
             "screenshot": "./Circular/cover_YS.png"
         },
@@ -411,7 +465,9 @@
             "screenshot": "./Clean_green/cover.png",
             "sourceType": "internal",
             "sortName": "clean green",
-            "searchText": "clean green a simple theme with cute icons and a plain green background. (battery icons taken from girlypop) bagel clean_green"
+            "searchText": "clean green a simple theme with cute icons and a plain green background. (battery icons taken from girlypop) bagel clean_green",
+            "authorUrl": "",
+            "externalDownloadUrl": ""
         },
         {
             "name": "Clovers&Apples",
@@ -503,12 +559,12 @@
         {
             "name": "Default blank (Clone)",
             "folder": "Default_blank__Clone",
-            "author": "Marie_existiert",
-            "description": "Black creepy vibe",
+            "author": "mariaa",
+            "description": "Blank template theme with full config coverage for easy customization.",
             "screenshot": "./Default_blank__Clone/cover.png",
             "sourceType": "internal",
             "sortName": "default blank (clone)",
-            "searchText": "default blank (clone) black creepy vibe marie_existiert default_blank__clone"
+            "searchText": "default blank (clone) blank template theme with full config coverage for easy customization. mariaa default_blank__clone"
         },
         {
             "name": "DELTARUNE",
@@ -557,6 +613,17 @@
             ]
         },
         {
+            "name": "Dorohedoro",
+            "folder": "Dorohedoro",
+            "author": "u/Y0URNARRAT0R2",
+            "authorUrl": "https://www.reddit.com/user/Y0URNARRAT0R2/",
+            "description": "A theme inspired by the manga/anime series Dorohedoro",
+            "screenshot": "./Dorohedoro/Cover.png",
+            "sourceType": "internal",
+            "sortName": "dorohedoro",
+            "searchText": "dorohedoro a theme inspired by the manga/anime series dorohedoro u/y0urnarrat0r2 dorohedoro"
+        },
+        {
             "name": "Draco Malfoy",
             "folder": "Draco_Malfoy",
             "author": "RavenBlvk",
@@ -598,15 +665,15 @@
             "searchText": "echo vn theme mp3 theme based of the ui from the furry visual novel \"echo\" combatbreed echo_vn_theme"
         },
         {
-            "name": "Electra Heart - Marina and The Diamonds",
+            "name": "♡ ELECTRA HEART ♡",
             "folder": "Electra_Heart_-_Marina_and_The_Diamonds",
             "author": "ashotvmsi",
             "authorUrl": "https://www.instagram.com/ashotvmsi/",
-            "description": "MARINA (Marina and The Diamonds) - Electra Heart Theme mixed with early 2010's design system.",
+            "description": "MARINA (Marina and The Diamonds) - Electra Heart inspired theme, mixed with early 2010s design system. ♡",
             "screenshot": "./Electra_Heart_-_Marina_and_The_Diamonds/cover.png",
             "sourceType": "internal",
-            "sortName": "electra heart - marina and the diamonds",
-            "searchText": "electra heart - marina and the diamonds marina (marina and the diamonds) - electra heart theme mixed with early 2010's design system. ashotvmsi electra_heart_-_marina_and_the_diamonds"
+            "sortName": "♡ electra heart ♡",
+            "searchText": "♡ electra heart ♡ marina (marina and the diamonds) - electra heart inspired theme, mixed with early 2010s design system. ♡ ashotvmsi electra_heart_-_marina_and_the_diamonds"
         },
         {
             "name": "Electric Hues",
@@ -740,11 +807,11 @@
             "name": "Frutiger Aero",
             "folder": "Frutiger_Aero",
             "author": "AG",
-            "description": "Great frutiger aero theme. Partially based on/inspired by the concept of the XP theme on Rockbox. This is version 2 of my original theme. The theme is updated to suit the frutiger aero theme much better.",
+            "description": "Great frutiger aero theme. Partially based on/inspired by the concept of the XP theme on Rockbox.",
             "screenshot": "./Frutiger_Aero/cover.png",
             "sourceType": "internal",
             "sortName": "frutiger aero",
-            "searchText": "frutiger aero great frutiger aero theme. partially based on/inspired by the concept of the xp theme on rockbox. this is version 2 of my original theme. the theme is updated to suit the frutiger aero theme much better. ag frutiger_aero"
+            "searchText": "frutiger aero great frutiger aero theme. partially based on/inspired by the concept of the xp theme on rockbox. ag frutiger_aero"
         },
         {
             "name": "Frutiger Aqua",
@@ -823,11 +890,11 @@
             "name": "Gothic aesthetic theme",
             "folder": "Gothic_aesthetic_theme",
             "author": "Weronika",
-            "description": "Cyber Gothic aesthetic Mp.3 theme. I'm new to this so there might be glitches so sorry if there are :3",
+            "description": "Gothic aesthetic Mp.3 theme.",
             "screenshot": "./Gothic_aesthetic_theme/cover.png",
             "sourceType": "internal",
             "sortName": "gothic aesthetic theme",
-            "searchText": "gothic aesthetic theme cyber gothic aesthetic mp.3 theme. i'm new to this so there might be glitches so sorry if there are :3 weronika gothic_aesthetic_theme"
+            "searchText": "gothic aesthetic theme gothic aesthetic mp.3 theme. weronika gothic_aesthetic_theme"
         },
         {
             "name": "Green Apples",
@@ -960,6 +1027,16 @@
             "searchText": "hawaii a blank canvas to start. drop in your own desktop_wallpaper.png and global_wallpaper.png images in the theme folder, or use the photos feature on the y1 to set your own wallpaper images. albini hawaii"
         },
         {
+            "name": "Hawaii relax",
+            "folder": "Hawaii_relax",
+            "author": "albini",
+            "description": "A blank canvas to start. Drop in your own desktop_wallpaper.png and global_wallpaper.png images in the theme folder, or use the Photos feature on the Y1 to set your own wallpaper images.",
+            "screenshot": "./Hawaii_relax/cover_Themeless.png",
+            "sourceType": "internal",
+            "sortName": "hawaii relax",
+            "searchText": "hawaii relax a blank canvas to start. drop in your own desktop_wallpaper.png and global_wallpaper.png images in the theme folder, or use the photos feature on the y1 to set your own wallpaper images. albini hawaii_relax"
+        },
+        {
             "name": "Heated Rivalry Theme",
             "folder": "Heated_Rivalry_Theme",
             "author": "TK",
@@ -1023,6 +1100,16 @@
             "searchText": "apple 1 download the apple 1 theme for innioasis y1 by ange and personalize your player's look with curated ui assets. ange holofacet"
         },
         {
+            "name": "Hot Pink",
+            "folder": "Hot_Pink",
+            "author": "Cluxdyvtears",
+            "description": "Hot pink theme <3",
+            "screenshot": "./Hot_Pink/cover.png",
+            "sourceType": "internal",
+            "sortName": "hot pink",
+            "searchText": "hot pink hot pink theme <3 cluxdyvtears hot_pink"
+        },
+        {
             "name": "HotWheels",
             "folder": "HotWheels",
             "author": "Angel_50000",
@@ -1065,6 +1152,17 @@
             "authorUrl": "https://www.reddit.com/user/principezelda/",
             "description": "A high-contrast theme celebrating offline listening and distraction-free audio in today's streaming era.",
             "screenshot": "./inniPod/cover.png"
+        },
+        {
+            "name": "InnoPod Rev.2",
+            "folder": "InnoPod_Rev.2",
+            "author": "Kyoukopilled",
+            "authorUrl": "https://ko-fi.com/kyoukopilled",
+            "description": "This is the most accurate iPod theme for this platform yet. For those wanting an experience similar to the iPod Classics, I went and recreated the user interface of an iPod, based off of the \"iPod-ish\" theme.\n\nI personally recommend you change out the home page wallpaper for an album art of your choice, as that's what the original did.\n\nThe \"Rev.2\" in the name signifies a modern take on the theme, that displays the icons of certain menus, something the iPod Classic doesn't do.\n\nIf you wish for a more faithful experience, please check out \"InnoPod Classic\".",
+            "screenshot": "./InnoPod_Rev.2/gregcover.png",
+            "sourceType": "internal",
+            "sortName": "innopod rev.2",
+            "searchText": "innopod rev.2 this is the most accurate ipod theme for this platform yet. for those wanting an experience similar to the ipod classics, i went and recreated the user interface of an ipod, based off of the \"ipod-ish\" theme.\n\ni personally recommend you change out the home page wallpaper for an album art of your choice, as that's what the original did.\n\nthe \"rev.2\" in the name signifies a modern take on the theme, that displays the icons of certain menus, something the ipod classic doesn't do.\n\nif you wish for a more faithful experience, please check out \"innopod classic\". kyoukopilled innopod_rev.2"
         },
         {
             "name": "iOS Theme",
@@ -1140,6 +1238,16 @@
             "sourceType": "internal",
             "sortName": "kh2",
             "searchText": "kh2 kh2/kingdom of hearts 2 theme robertpuggle kh2"
+        },
+        {
+            "name": "Kirby Pastel Space",
+            "folder": "Kirby_Pastel_Space",
+            "author": "panda",
+            "description": "A dreamy pastel-space Kirby theme filled with soft nebula colors, glowing Warp Stars, and a cohesive cosmic UI design.",
+            "screenshot": "./Kirby_Pastel_Space/cover.png",
+            "sourceType": "internal",
+            "sortName": "kirby pastel space",
+            "searchText": "kirby pastel space a dreamy pastel-space kirby theme filled with soft nebula colors, glowing warp stars, and a cohesive cosmic ui design. panda kirby_pastel_space"
         },
         {
             "name": "kittenlandia",
@@ -1379,13 +1487,13 @@
         {
             "name": "Monster High",
             "folder": "Monster_High",
-            "author": "Bajillumi",
-            "authorUrl": "https://www.instagram.com/bajillumi/",
-            "description": "MONSTER HIGH THEME ;p",
+            "author": "Angel_50000",
+            "authorUrl": "https://www.reddit.com/user/Angel_50000/?solution=0835f5601889bd3e0835f5601889bd3e&js_challenge=1&token=7afd7253fec22262ff1c52b1703fe9ecf8c5eaef1ff640ed899c00a250dbffaa&jsc_orig_r=",
+            "description": "Theme based off the 2010 Monster High doll line.",
             "screenshot": "./Monster_High/cover.png",
             "sourceType": "internal",
             "sortName": "monster high",
-            "searchText": "monster high monster high theme ;p bajillumi monster_high https://ko-fi.com/bajillumi",
+            "searchText": "monster high theme based off the 2010 monster high doll line. angel_50000 monster_high https://ko-fi.com/bajillumi",
             "externalDownloadUrl": "https://ko-fi.com/bajillumi"
         },
         {
@@ -1558,14 +1666,14 @@
             "searchText": "pink medieval medieval theme for all the modern princesses! sailorshouganai pink_medieval"
         },
         {
-            "name": "Pink metal",
+            "name": "Pink metal better ver.",
             "folder": "Pink_metal",
             "author": "albini",
             "description": "Download the Pink metal theme for Innioasis Y1 by albini and personalize your player's look with curated UI assets.",
             "screenshot": "./Pink_metal/gregcover.png",
             "sourceType": "internal",
-            "sortName": "pink metal",
-            "searchText": "pink metal download the pink metal theme for innioasis y1 by albini and personalize your player's look with curated ui assets. albini pink_metal"
+            "sortName": "pink metal better ver.",
+            "searchText": "pink metal better ver. download the pink metal theme for innioasis y1 by albini and personalize your player's look with curated ui assets. albini pink_metal"
         },
         {
             "name": "Pink metal better version",
@@ -1870,12 +1978,13 @@
         {
             "name": "Sailor Moon",
             "folder": "Sailor_Moon",
-            "author": "SailorShouganai",
-            "description": "Blank template theme with full config coverage for easy customization.",
-            "screenshot": "./Sailor_Moon/cover.png",
+            "author": "TORI",
+            "description": "SAILOR MOON Hope you like it!!!!",
+            "screenshot": "./Sailor_Moon/Cover.png",
             "sourceType": "internal",
             "sortName": "sailor moon",
-            "searchText": "sailor moon blank template theme with full config coverage for easy customization. sailorshouganai sailor_moon"
+            "searchText": "sailor moon sailor moon hope you like it!!!! tori sailor_moon",
+            "authorUrl": "https://www.reddit.com/r/innioasis/comments/1m9ofl5/naruto_theme_v20_update_naruto_font_added/"
         },
         {
             "name": "Santa Cruz",
@@ -1896,16 +2005,6 @@
             "sourceType": "internal",
             "sortName": "scene theme",
             "searchText": "scene theme this took me a while to figure out since i am doing this on mobile but it's a scene theme (lots of gir cause i like gir) stary_scene_xd scene_theme"
-        },
-        {
-            "name": "SECURITY BREACH!!!!!!",
-            "folder": "SECURITY_BREACH",
-            "author": "CityStar-Asmrtist!!",
-            "description": "FNAF SECURITY BREACH PEAK GAME BTWWW!!",
-            "screenshot": "./SECURITY_BREACH/cover.png",
-            "sourceType": "internal",
-            "sortName": "security breach!!!!!!",
-            "searchText": "security breach!!!!!! fnaf security breach peak game btwww!! citystar-asmrtist!! security_breach"
         },
         {
             "name": "Shinku",
@@ -2380,6 +2479,48 @@
             "searchText": "trueblackwhite trueblack & white theme. built upon u/neither-classic2058's yellowsub theme and sipped's black&white. deeper black and gohu font, more icon matching productofmytime trueblackwhite"
         },
         {
+            "name": "Turtle water chill",
+            "folder": "Turtle_water_chill",
+            "author": "albini",
+            "description": "A blank canvas to start. Drop in your own desktop_wallpaper.png and global_wallpaper.png images in the theme folder, or use the Photos feature on the Y1 to set your own wallpaper images.",
+            "screenshot": "./Turtle_water_chill/cover_Themeless.png",
+            "sourceType": "internal",
+            "sortName": "turtle water chill",
+            "searchText": "turtle water chill a blank canvas to start. drop in your own desktop_wallpaper.png and global_wallpaper.png images in the theme folder, or use the photos feature on the y1 to set your own wallpaper images. albini turtle_water_chill"
+        },
+        {
+            "name": "TVA AmberMono",
+            "folder": "TVA AmberMono",
+            "author": "Arthur_Moss",
+            "authorUrl": "https://www.reddit.com/user/Arthur_Moss/",
+            "description": "This theme is inspired by the TVA TimePad and Miss Minutes from Loki series.",
+            "screenshot": "./TVA AmberMono/cover.png",
+            "sourceType": "internal",
+            "sortName": "tva ambermono",
+            "searchText": "tva ambermono this theme is inspired by the tva timepad and miss minutes from loki series. arthur_moss tva ambermono"
+        },
+        {
+            "name": "TVA Classic",
+            "folder": "TVA Classic",
+            "author": "Arthur_Moss",
+            "authorUrl": "https://www.reddit.com/user/Arthur_Moss/",
+            "description": "This theme is inspired by the TVA TimePad and Miss Minutes from Loki series.",
+            "screenshot": "./TVA Classic/cover.png",
+            "sourceType": "internal",
+            "sortName": "tva classic",
+            "searchText": "tva classic this theme is inspired by the tva timepad and miss minutes from loki series. arthur_moss tva classic"
+        },
+        {
+            "name": "Twenty One Pilots Meme",
+            "folder": "Twenty_One_Pilots_Meme",
+            "author": "Powitchi",
+            "description": "Twenty One Pilots theme with random funny images :)",
+            "screenshot": "./Twenty_One_Pilots_Meme/cover.png",
+            "sourceType": "internal",
+            "sortName": "twenty one pilots meme",
+            "searchText": "twenty one pilots meme twenty one pilots theme with random funny images :) powitchi twenty_one_pilots_meme"
+        },
+        {
             "name": "Twilight",
             "folder": "Twilight",
             "author": "Angel_50000",
@@ -2446,6 +2587,16 @@
             "screenshot": "./VivaPinata/@VP_cover.png"
         },
         {
+            "name": "Water chill",
+            "folder": "Water_chill",
+            "author": "albini",
+            "description": "A blank canvas to start. Drop in your own desktop_wallpaper.png and global_wallpaper.png images in the theme folder, or use the Photos feature on the Y1 to set your own wallpaper images.",
+            "screenshot": "./Water_chill/cover_Themeless.png",
+            "sourceType": "internal",
+            "sortName": "water chill",
+            "searchText": "water chill a blank canvas to start. drop in your own desktop_wallpaper.png and global_wallpaper.png images in the theme folder, or use the photos feature on the y1 to set your own wallpaper images. albini water_chill"
+        },
+        {
             "name": "Whimsical",
             "folder": "Whimsical_angel-50000",
             "author": "Angel_50000",
@@ -2509,6 +2660,26 @@
             "sourceType": "internal",
             "sortName": "win98 refix",
             "searchText": "win98 refix win9 theme refix of the organal was made by u/moralesnery. p.s. i made special charge lightning bolts on the battery charge and change the arrow with a warning icon but all wight and some of the sharers and the bluetooth disconnict is the wring colors robertpuggle win98_refix"
+        },
+        {
+            "name": "Wings of Fire",
+            "folder": "Wings_of_Fire",
+            "author": "rainy",
+            "description": "A theme inspired by Wings of Fire.",
+            "screenshot": "./Wings_of_Fire/Cover.png",
+            "sourceType": "internal",
+            "sortName": "wings of fire",
+            "searchText": "wings of fire a theme inspired by wings of fire. rainy wings_of_fire"
+        },
+        {
+            "name": "Witchy",
+            "folder": "Witchy",
+            "author": "Addie.mp3",
+            "description": "Purple, witchy themed Innioasis Y1 theme!",
+            "screenshot": "./Witchy/cover.png",
+            "sourceType": "internal",
+            "sortName": "witchy",
+            "searchText": "witchy purple, witchy themed innioasis y1 theme! addie.mp3 witchy"
         },
         {
             "name": "Wolverine",

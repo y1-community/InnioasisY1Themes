@@ -1,9 +1,9 @@
 {
   "theme_info": {
     "title": "Default blank (Clone)",
-    "author": "Marie_existiert",
+    "author": "mariaa",
     "authorUrl": "",
-    "description": "Black creepy vibe",
+    "description": "Blank template theme with full config coverage for easy customization.",
     "externalDownloadUrl": ""
   },
   "themeCover": "cover.png",
@@ -12,17 +12,17 @@
   "desktopMask": "transparent.png",
   "fontFamily": "opensans-condbold.ttf",
   "itemConfig": {
-    "itemTextColor": "#ffffff",
-    "itemSelectedTextColor": "#ffffff",
+    "itemTextColor": "#4b112d",
+    "itemSelectedTextColor": "#aa3c8c",
     "itemBackground": "0.png",
     "itemSelectedBackground": "1.png",
     "itemRightArrow": "2.png"
   },
   "dialogConfig": {
     "dialogOptionBackground": "3.png",
-    "dialogOptionTextColor": "#ffffff",
+    "dialogOptionTextColor": "#000000",
     "dialogOptionSelectedBackground": "4.png",
-    "dialogOptionSelectedTextColor": "#ffffff",
+    "dialogOptionSelectedTextColor": "#000000",
     "dialogBackgroundColor": "#000000",
     "dialogTextColor": "#ffffff"
   },

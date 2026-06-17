@@ -6,3 +6,13 @@ node_modules/
 __pycache__/
 *.py[cod]
 *.pyc
+
+# Maintainer-only / local tooling (not referenced by .github/workflows)
+scripts/_*.py
+scripts/test_*.py
+scripts/extract_theme_zips.py
+scripts/optimize_theme_assets.py
+scripts/fix_stranger_variant_paths.py
+scripts/generate-theme-index-redirects.ps1
+scripts/deploy-upload-worker.sh
+_bulk_update_theme_pages.py
