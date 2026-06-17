@@ -1005,7 +1005,7 @@ def main() -> int:
 
     # Compare PR head against the current base tree directly (2-dot),
     # which avoids stale-branch false positives for changes already on base.
-    diff = _run("git", "diff", "--name-status", "--no-renames", f"{base_sha}", f"{pr_ref}")
+    diff = _run("git", "diff", "--name-status", "--no-renames", f"{base_sha}...{pr_ref}")
     rows = [line for line in diff.stdout.splitlines() if line.strip()]
     if not rows:
         return _fail(["PR has no file changes."])

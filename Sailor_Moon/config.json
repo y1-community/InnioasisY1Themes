@@ -1,36 +1,35 @@
 {
   "theme_info": {
     "title": "Sailor Moon",
-    "author": "SailorShouganai",
-    "authorUrl": "",
-    "description": "Blank template theme with full config coverage for easy customization.",
+    "author": "TORI",
+    "authorUrl": "https://www.reddit.com/r/innioasis/comments/1m9ofl5/naruto_theme_v20_update_naruto_font_added/",
+    "description": "SAILOR MOON Hope you like it!!!!",
     "externalDownloadUrl": ""
   },
-  "themeCover": "cover.png",
-  "desktopWallpaper": "desktop_wallpaper.png",
-  "globalWallpaper": "global_wallpaper.png",
-  "desktopMask": "transparent.png",
-  "fontFamily": "opensans-condbold.ttf",
+  "themeCover": "Cover.png",
+  "desktopWallpaper": "Background1.png",
+  "globalWallpaper": "Background2.png",
+  "desktopMask": "Mask.png",
+  "fontFamily": "Font.ttf",
   "itemConfig": {
-    "itemTextColor": "#ff61a5",
-    "itemSelectedTextColor": "#ffa8ce",
-    "itemBackground": "0.png",
-    "itemSelectedBackground": "1.png",
-    "itemRightArrow": "2.png"
+    "itemTextColor": "#ffccff",
+    "itemSelectedTextColor": "#663a82",
+    "itemSelectedBackground": "ItemSelect.png",
+    "itemBackground": "",
+    "itemRightArrow": "RightArrow.png"
   },
   "dialogConfig": {
-    "dialogOptionBackground": "3.png",
-    "dialogOptionTextColor": "#ff61a5",
-    "dialogOptionSelectedBackground": "4.png",
-    "dialogOptionSelectedTextColor": "#ff61a5",
-    "dialogBackgroundColor": "#000000",
-    "dialogTextColor": "#ff61a5"
+    "dialogOptionBackground": "Option.png",
+    "dialogOptionTextColor": "#",
+    "dialogOptionSelectedBackground": "OptionSelect.png",
+    "dialogOptionSelectedTextColor": "#ffffff",
+    "dialogBackgroundColor": "#FFFFFF"
   },
   "menuConfig": {
-    "menuBackgroundColor": "#000000",
-    "menuItemBackground": "0.png",
-    "menuItemTextColor": "#ffffff",
-    "menuItemSelectedBackground": "1.png",
+    "menuBackgroundColor": "#663a82",
+    "menuItemBackground": "",
+    "menuItemTextColor": "#663a82",
+    "menuItemSelectedBackground": "ItemSelect.png",
     "menuItemSelectedTextColor": "#ffffff"
   },
   "homePageConfig": {
@@ -43,16 +42,15 @@
     "bluetooth": "Bluetooth.png",
     "settings": "Settings.png",
     "shuffleQuick": "Shuffle Quick.png",
-    "ebook": "ebook.png",
-    "calculator": "calculator.png",
-    "calendar": "calendar.png"
+    "ebook": "transparent.png",
+    "calendar": "transparent.png",
+    "calculator": "transparent.png"
   },
   "fileConfig": {
-    "folderIcon": "folder.png",
-    "musicIcon": "music_file.png"
+    "folderIcon": "Cover.png",
+    "musicIcon": ""
   },
   "settingConfig": {
-    "settingMask": "setting_mask.png",
     "shutdown": "Shutdown@1x.png",
     "timedShutdown_off": "Timed shutdown_001@1x.png",
     "timedShutdown_10": "Timed shutdown_002@1x.png",
@@ -82,7 +80,7 @@
     "keyToneOff": "Key tone_off@1x.png",
     "keyVibrationOn": "Key vibration_on@1x.png",
     "keyVibrationOff": "Key vibration_off@1x.png",
-    "wallpaper": "Wallpaper@1x.png",
+    "wallpaper": "Wallpapper@1x.png",
     "backlight_10": "Backlight_001@1x.png",
     "backlight_15": "Backlight_003@1x.png",
     "backlight_30": "Backlight_004@1x.png",
@@ -96,42 +94,42 @@
     "displayBatteryOff": "Display battery_off@1x.png",
     "dateTime": "Date & Time@1x.png",
     "language": "Language@1x.png",
-    "launcher": "Launcher.png",
     "factoryReset": "Factory@1x.png",
     "clearCache": "Clear cache@1x.png",
     "theme": "Change Theme@1x.png",
     "fileExtensionOn": "file_ext_on.png",
-    "fileExtensionOff": "file_ext_off.png"
+    "fileExtensionOff": "file_ext_off.png",
+    "selectedColor": "#",
+    "launcher": "transparent.png"
   },
   "statusConfig": {
-    "playing": "playing.png",
-    "audiobookPlaying": "audiobookPlaying.png",
-    "pause": "pause.png",
-    "fmPlaying": "fmPlaying.png",
-    "stop": "stop.png",
-    "blConnected": "blConnected.png",
-    "blConnecting": "blConnecting.png",
-    "blDisconnected": "blDisconnected.png",
-    "headsetWithMic": "headset2.png",
-    "headsetWithoutMic": "headset1.png",
-    "statusBarColor": "#ffb3d4",
+    "playing": "Play.png",
+    "audiobookPlaying": "",
+    "pause": "Pause.png",
+    "fmPlaying": "",
+    "stop": "Stop.png",
+    "blConnected": "",
+    "blConnecting": "",
+    "blDisconnected": "",
+    "headsetWithMic": "",
+    "headsetWithoutMic": "",
+    "statusBarColor": "#a57398",
     "battery": [
-      "battery.001.png",
-      "battery.002.png",
-      "battery.003.png",
-      "battery.004.png"
+      "Battery1.png",
+      "Battery2.png",
+      "Battery3.png",
+      "Battery4.png"
     ],
     "batteryCharging": [
-      "batterycharge.001.png",
-      "batterycharge.002.png",
-      "batterycharge.003.png",
-      "batterycharge.004.png"
+      "BatteryCharge1.png",
+      "BatteryCharge2.png",
+      "BatteryCharge3.png",
+      "BatteryCharge4.png"
     ]
   },
   "playerConfig": {
-    "progressTextColor": "#ffffff",
-    "progressColor": "#ff2986",
-    "progressBackgroundColor": "#ffc2dc"
+    "progressColor": "#ffd1dc",
+    "progressBackgroundColor": "#c29d93"
   },
   "gallery": {
     "compatibilityMedal": "none"

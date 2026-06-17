@@ -7,29 +7,29 @@
     "externalDownloadUrl": ""
   },
   "themeCover": "cover.png",
-  "desktopWallpaper": "desk_bg001.png",
+  "desktopWallpaper": "desktop_wallpaper.png",
   "globalWallpaper": "global_wallpaper.png",
   "desktopMask": "transparent.png",
-  "fontFamily": "sans.ttf",
+  "fontFamily": "opensans-condbold.ttf",
   "itemConfig": {
     "itemTextColor": "#ffffff",
-    "itemSelectedTextColor": "#2795FE",
-    "itemSelectedBackground": "1.png",
+    "itemSelectedTextColor": "#ffffff",
     "itemBackground": "0.png",
+    "itemSelectedBackground": "1.png",
     "itemRightArrow": "2.png"
   },
   "dialogConfig": {
     "dialogOptionBackground": "3.png",
-    "dialogOptionTextColor": "#000000",
+    "dialogOptionTextColor": "#ffffff",
     "dialogOptionSelectedBackground": "4.png",
-    "dialogOptionSelectedTextColor": "#000000",
-    "dialogBackgroundColor": "#ebebeb",
-    "dialogTextColor": "#000000"
+    "dialogOptionSelectedTextColor": "#ffffff",
+    "dialogBackgroundColor": "#000000",
+    "dialogTextColor": "#ffffff"
   },
   "menuConfig": {
-    "menuBackgroundColor": "#ffffff",
-    "menuItemBackground": "",
-    "menuItemTextColor": "#00000",
+    "menuBackgroundColor": "#000000",
+    "menuItemBackground": "0.png",
+    "menuItemTextColor": "#ffffff",
     "menuItemSelectedBackground": "1.png",
     "menuItemSelectedTextColor": "#ffffff"
   },
@@ -43,16 +43,16 @@
     "bluetooth": "Bluetooth.png",
     "settings": "Settings.png",
     "shuffleQuick": "Shuffle Quick.png",
-    "selectedColor": "",
+    "ebook": "ebook.png",
     "calculator": "calculator.png",
-    "calendar": "calendar.png",
-    "ebook": "ebook.png"
+    "calendar": "calendar.png"
   },
   "fileConfig": {
     "folderIcon": "folder.png",
     "musicIcon": "music_file.png"
   },
   "settingConfig": {
+    "settingMask": "setting_mask.png",
     "shutdown": "Shutdown@1x.png",
     "timedShutdown_off": "Timed shutdown_001@1x.png",
     "timedShutdown_10": "Timed shutdown_002@1x.png",
@@ -82,7 +82,7 @@
     "keyToneOff": "Key tone_off@1x.png",
     "keyVibrationOn": "Key vibration_on@1x.png",
     "keyVibrationOff": "Key vibration_off@1x.png",
-    "wallpaper": "Wallpapper@1x.png",
+    "wallpaper": "Wallpaper@1x.png",
     "backlight_10": "Backlight_001@1x.png",
     "backlight_15": "Backlight_003@1x.png",
     "backlight_30": "Backlight_004@1x.png",
@@ -96,14 +96,12 @@
     "displayBatteryOff": "Display battery_off@1x.png",
     "dateTime": "Date & Time@1x.png",
     "language": "Language@1x.png",
+    "launcher": "Launcher.png",
     "factoryReset": "Factory@1x.png",
     "clearCache": "Clear cache@1x.png",
     "theme": "Change Theme@1x.png",
     "fileExtensionOn": "file_ext_on.png",
-    "fileExtensionOff": "file_ext_off.png",
-    "settingMask": "setting_mask.png",
-    "selectedColor": "",
-    "launcher": "Launcher.png"
+    "fileExtensionOff": "file_ext_off.png"
   },
   "statusConfig": {
     "playing": "playing.png",
@@ -116,11 +114,24 @@
     "blDisconnected": "blDisconnected.png",
     "headsetWithMic": "headset2.png",
     "headsetWithoutMic": "headset1.png",
-    "statusBarColor": "#2854C7"
+    "statusBarColor": "#000000",
+    "battery": [
+      "battery.001.png",
+      "battery.002.png",
+      "battery.003.png",
+      "battery.004.png"
+    ],
+    "batteryCharging": [
+      "batterycharge.001.png",
+      "batterycharge.002.png",
+      "batterycharge.003.png",
+      "batterycharge.004.png"
+    ]
   },
   "playerConfig": {
-    "progressBackgroundColor": "#00000000",
-    "progressColor": "#ffffff"
+    "progressTextColor": "#ffffff",
+    "progressColor": "#ffffff",
+    "progressBackgroundColor": "#333333"
   },
   "gallery": {
     "compatibilityMedal": "none"
