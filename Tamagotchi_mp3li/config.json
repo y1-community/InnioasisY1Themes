@@ -1,0 +1,148 @@
+{
+    "theme_info": {
+        "title": "myTamagotchi (Handheld V.)",
+        "author": "mp3li",
+        "authorUrl": "https://www.patreon.com/cw/mp3li",
+        "description": "Tamagotchi (V1) theme for the Innioasis Y1 mp3 player, including Tamagotchi device and character icons and Tamagotchi backgrounds. Check the Patreon for the other Y2K Toybox themes. This theme may not be hosted elsewhere: only on mp3li original channels such as their Patreon and Github. Check license file in theme folder for more information. Font by @glazentchi, go check them out and support them!",
+        "externalDownloadUrl": ""
+    },
+    "themeCover": "cover.png",
+    "themeColor": "#fcc8e6",
+    "themeTextColor": "#fcc8e6",
+    "desktopWallpaper": "backgrounds/b17 (cropped) (1).png",
+    "globalWallpaper": "backgrounds/b16 (cropped).png",
+    "fontFamily": "font/tamaconnecttype.ttf",
+    "itemConfig": {
+        "itemTextColor": "#333333",
+        "itemSelectedTextColor": "#333333",
+        "itemSelectedBackground": "all other images/settings menu/behind selection/5080c0 (recolored).png",
+        "itemBackground": "all other images/settings menu/behind selection/5080c0.png",
+        "itemRightArrow": "all other images/settings menu/arrow/t50.png"
+    },
+    "dialogConfig": {
+        "dialogOptionBackground": "#c9dffd",
+        "dialogOptionTextColor": "#333333",
+        "dialogOptionSelectedBackground": "#fefae6",
+        "dialogOptionSelectedTextColor": "#333333",
+        "dialogBackgroundColor": "#fcc8e6",
+        "dialogTextColor": "#333333"
+    },
+    "menuConfig": {
+        "menuBackgroundColor": "#f0f0e0a7",
+        "menuItemBackground": "all other images/settings menu/behind selection/5080c0.png",
+        "menuItemTextColor": "#333333",
+        "menuItemSelectedBackground": "all other images/settings menu/behind selection/5080c0 (recolored).png",
+        "menuItemSelectedTextColor": "#333333"
+    },
+    "homePageConfig": {
+        "nowPlaying": "main menu icons/t25.png",
+        "music": "main menu icons/t2.png",
+        "video": "main menu icons/t37.png",
+        "audiobooks": "main menu icons/t36.png",
+        "photos": "main menu icons/t7.png",
+        "fm": "main menu icons/t38.png",
+        "bluetooth": "main menu icons/t9.png",
+        "settings": "main menu icons/t17.png",
+        "shuffleQuick": "",
+        "ebook": "main menu icons/ebookicon.png",
+        "calculator": "",
+        "calendar": ""
+    },
+    "fileConfig": {
+        "folderIcon": "all other images/folder view/folder icon/t25.png",
+        "musicIcon": "all other images/folder view/music icon/t50.png"
+    },
+    "settingConfig": {
+        "shutdown": "all other images/settings menu/shutdown/t28.png",
+        "timedShutdown_off": "all other images/settings menu/timed shutdown/t58.png",
+        "timedShutdown_10": "all other images/settings menu/timed shutdown/t60.png",
+        "timedShutdown_20": "all other images/settings menu/timed shutdown/t59.png",
+        "timedShutdown_30": "all other images/settings menu/timed shutdown/t61.png",
+        "timedShutdown_60": "all other images/settings menu/timed shutdown/t62.png",
+        "timedShutdown_90": "all other images/settings menu/timed shutdown/t63.png",
+        "timedShutdown_120": "all other images/settings menu/timed shutdown/t64.png",
+        "shuffleOn": "all other images/settings menu/shuffle on off/t43.png",
+        "shuffleOff": "all other images/settings menu/shuffle on off/t4.png",
+        "repeatOff": "all other images/settings menu/repeat/t8.png",
+        "repeatAll": "all other images/settings menu/repeat/t3.png",
+        "repeatOne": "all other images/settings menu/repeat/t11.png",
+        "equalizer_normal": "all other images/settings menu/equalizer/t13.png",
+        "equalizer_classical": "all other images/settings menu/equalizer/t48.png",
+        "equalizer_dance": "all other images/settings menu/equalizer/t45.png",
+        "equalizer_flat": "all other images/settings menu/equalizer/t6.png",
+        "equalizer_folk": "all other images/settings menu/equalizer/t52.png",
+        "equalizer_heavymetal": "all other images/settings menu/equalizer/t33.png",
+        "equalizer_hiphop": "all other images/settings menu/equalizer/t18.png",
+        "equalizer_jazz": "all other images/settings menu/equalizer/t10.png",
+        "equalizer_pop": "all other images/settings menu/equalizer/t46.png",
+        "equalizer_rock": "all other images/settings menu/equalizer/t39.png",
+        "keyLockOn": "all other images/settings menu/key lock on off/t19.png",
+        "keyLockOff": "all other images/settings menu/key lock on off/t16.png",
+        "keyToneOn": "all other images/settings menu/key tone on off/t1.png",
+        "keyToneOff": "all other images/settings menu/key tone on off/t5.png",
+        "keyVibrationOn": "all other images/settings menu/key vibration on off/t27.png",
+        "keyVibrationOff": "all other images/settings menu/key vibration on off/t53.png",
+        "wallpaper": "all other images/settings menu/wallpaper mini icon/t32.png",
+        "backlight_10": "all other images/settings menu/backlight/t58.png",
+        "backlight_15": "all other images/settings menu/backlight/t60.png",
+        "backlight_30": "all other images/settings menu/backlight/t59.png",
+        "backlight_45": "all other images/settings menu/backlight/t63.png",
+        "backlight_60": "all other images/settings menu/backlight/t64.png",
+        "backlight_120": "all other images/settings menu/backlight/t66.png",
+        "backlight_300": "all other images/settings menu/backlight/t61.png",
+        "backlight_always": "all other images/settings menu/backlight/t65.png",
+        "brightness": "all other images/settings menu/brightness/t20.png",
+        "displayBatteryOn": "all other images/settings menu/display battery on off/t29.png",
+        "displayBatteryOff": "all other images/settings menu/display battery on off/t30.png",
+        "dateTime": "all other images/settings menu/date and time/t23.png",
+        "language": "all other images/settings menu/language/t42.png",
+        "factoryReset": "all other images/settings menu/factory/t40.png",
+        "clearCache": "all other images/settings menu/clear cache/t26.png",
+        "theme": "all other images/settings menu/change theme/t35.png",
+        "fileExtensionOn": "all other images/settings menu/file ext on off/t22.png",
+        "fileExtensionOff": "all other images/settings menu/file ext on off/t12.png",
+        "settingMask": "backgrounds/b16 (cropped).png",
+        "launcher": ""
+    },
+    "statusConfig": {
+        "playing": "all other images/status bar/music playing/t50.png",
+        "audiobookPlaying": "all other images/status bar/audiobook playing/t55 Background Removed.png",
+        "pause": "all other images/status bar/paused/t56 Background Removed.png",
+        "fmPlaying": "all other images/status bar/fm radio playing/t50.png",
+        "stop": "all other images/status bar/stopped/t57 Background Removed.png",
+        "blConnected": "all other images/status bar/bluetooth connected/bluetooth connected (recolored).png",
+        "blConnecting": "all other images/status bar/bluetooth connecting/connecting (recolored).png",
+        "blDisconnected": "all other images/status bar/bluetooth disconnected/bluetooth disconnected (recolored).png",
+        "headsetWithMic": "all other images/status bar/headphones with mic connected/headphoneswithmic (recolored).png",
+        "headsetWithoutMic": "all other images/status bar/headphones without mic connected/headphones icon (recolored).png",
+        "battery": [
+            "all other images/status bar/battery/BatteryFourth (recolored).png",
+            "all other images/status bar/battery/Charge.BatteryHalf (recolored).png",
+            "all other images/status bar/battery/BatterySeventyFive (recolored).png",
+            "all other images/status bar/battery/BatteryFull (recolored).png"
+        ],
+        "batteryCharging": [
+            "all other images/status bar/battery/Charge.BatteryFourth (recolored).png",
+            "all other images/status bar/battery/Charge.BatteryHalf (recolored).png",
+            "all other images/status bar/battery/Charge.BatterySeventyFive (recolored).png",
+            "all other images/status bar/battery/Charge.BatteryFull (recolored).png"
+        ],
+        "statusBarColor": "#f8cdea"
+    },
+    "playerConfig": {
+        "progressColor": "#cee5fc",
+        "progressBackgroundColor": "#fcf7cd",
+        "progressTextColor": "#333333"
+    },
+    "author": "mp3li",
+    "authorUrl": "https://www.patreon.com/cw/mp3li",
+    "title": "myTamagotchi (Handheld V.)",
+    "description": "Tamagotchi (V1) theme for the Innioasis Y1 mp3 player, including Tamagotchi device and character icons and Tamagotchi backgrounds. Check the Patreon for the other Y2K Toybox themes. This theme may not be hosted elsewhere: only on mp3li original channels such as their Patreon and Github. Check license file in theme folder for more information. Font by @glazentchi, go check them out and support them!",
+    "desktopMask": "",
+    "gallery": {
+        "defaultVariantLabel": "Handheld",
+        "variantFolders": [
+            "Game Boy"
+        ]
+    }
+}

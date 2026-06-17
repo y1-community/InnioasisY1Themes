@@ -9,8 +9,10 @@ Allowed ``index.html`` locations inside a theme folder are the theme root and
 
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path, PurePosixPath
+from typing import Any
 
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"}
 
@@ -125,6 +127,106 @@ def drop_variant_keys_under_parent_theme(theme_keys: list[str]) -> list[str]:
         if "/" in k and any(k.startswith(r + "/Variants/") for r in roots):
             continue
         out.append(k)
+    return out
+
+
+def _iter_config_string_values(node: Any) -> list[str]:
+    if isinstance(node, dict):
+        out: list[str] = []
+        for val in node.values():
+            out.extend(_iter_config_string_values(val))
+        return out
+    if isinstance(node, list):
+        out = []
+        for val in node:
+            out.extend(_iter_config_string_values(val))
+        return out
+    if isinstance(node, str):
+        return [node]
+    return []
+
+
+def _asset_folder_prefixes_from_config(config: dict[str, Any]) -> set[str]:
+    """First path segment of asset-like config strings (e.g. ``Settings/foo.png``)."""
+    prefixes: set[str] = set()
+    gallery = config.get("gallery")
+    if isinstance(gallery, dict):
+        declared = gallery.get("assetFolders")
+        if isinstance(declared, list):
+            for raw in declared:
+                seg = str(raw or "").strip().replace("\\", "/").strip("/").split("/")
+                if seg and seg[0].lower() != "variants":
+                    prefixes.add(seg[0])
+    for item in _iter_config_string_values(config):
+        if not isinstance(item, str):
+            continue
+        val = item.strip().replace("\\", "/")
+        if not val or "://" in val or val.startswith("#") or "../" in val:
+            continue
+        if not looks_like_image(val) and not Path(val.split("?", 1)[0]).suffix.lower() in {
+            ".ttf",
+            ".otf",
+            ".woff",
+            ".woff2",
+            ".json",
+            ".txt",
+            ".md",
+            ".ini",
+        }:
+            continue
+        rel = val.lstrip("./")
+        parts = PurePosixPath(rel).parts
+        if len(parts) >= 2 and parts[0].lower() != "variants":
+            prefixes.add(parts[0])
+    return prefixes
+
+
+def drop_asset_subfolder_theme_keys(
+    theme_keys: list[str], configs_by_key: dict[str, dict[str, Any]]
+) -> list[str]:
+    """Drop ``Root/AssetFolder`` theme keys when the parent theme references that asset folder.
+
+    Asset directories (``Settings/``, etc.) are not gallery variants — only ``Variants/<look>/``
+    carries alternate theme configs.
+    """
+    roots = {k for k in theme_keys if k != "." and "/" not in k}
+    has_dot_root = "." in theme_keys
+    out: list[str] = []
+    for k in theme_keys:
+        if k == ".":
+            out.append(k)
+            continue
+        parts = PurePosixPath(k).parts
+        if len(parts) == 1 and has_dot_root:
+            parent_cfg = configs_by_key.get(".")
+            if isinstance(parent_cfg, dict) and k in _asset_folder_prefixes_from_config(parent_cfg):
+                continue
+        if len(parts) == 2 and parts[0] in roots and parts[1].lower() != "variants":
+            parent_cfg = configs_by_key.get(parts[0]) or configs_by_key.get(".")
+            if isinstance(parent_cfg, dict) and parts[1] in _asset_folder_prefixes_from_config(parent_cfg):
+                continue
+        out.append(k)
+    return out
+
+
+def theme_config_entry_path(key: str) -> str:
+    return "config.json" if key == "." else f"{key}/config.json"
+
+
+def load_configs_by_theme_key(
+    theme_keys: list[str],
+    read_bytes: Any,
+) -> dict[str, dict[str, Any]]:
+    """Load ``config.json`` for each theme key via ``read_bytes(entry_path) -> bytes``."""
+    out: dict[str, dict[str, Any]] = {}
+    for key in theme_keys:
+        try:
+            raw = read_bytes(theme_config_entry_path(key)).decode("utf-8")
+            parsed = json.loads(raw)
+            if isinstance(parsed, dict):
+                out[key] = parsed
+        except Exception:
+            pass
     return out
 
 

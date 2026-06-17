@@ -881,6 +881,21 @@
             return names;
         }
 
+        async function listDeviceRelativeFilenames(dirHandle, prefix) {
+            const names = [];
+            if (!dirHandle) return names;
+            const base = String(prefix || '').replace(/\\/g, '/').replace(/^\/+/, '').replace(/\/+$/, '');
+            for await (const [name, handle] of dirHandle.entries()) {
+                const rel = base ? `${base}/${name}` : name;
+                if (handle.kind === 'file') names.push(rel);
+                else if (handle.kind === 'directory') {
+                    const nested = await listDeviceRelativeFilenames(handle, rel);
+                    names.push(...nested);
+                }
+            }
+            return names;
+        }
+
         async function removeDeviceThemeFolder(folderName) {
             const name = String(folderName || '').trim();
             if (!selectedThemesFolder || !name) return false;
@@ -905,7 +920,10 @@
         }
 
         async function assertDeviceThemeContents(themeFolder, keepOnDevice, installFolderSafe) {
-            const onDevice = await listDeviceRootFilenames(themeFolder);
+            const structured = [...(keepOnDevice || [])].some((n) => String(n || '').includes('/'));
+            const onDevice = structured
+                ? await listDeviceRelativeFilenames(themeFolder)
+                : await listDeviceRootFilenames(themeFolder);
             const onSet = new Set(onDevice.map((n) => n.toLowerCase()));
             const missing = [];
             for (const expected of keepOnDevice) {
@@ -977,9 +995,14 @@
 
             let installRows = [];
             let normalizedConfigObj = null;
+            let packMode = 'flat';
             if (TP && config && typeof config === 'object' && fileEntries.length) {
-                const man = TP.buildFlattenPackManifest(fileEntries, selectedFolder, catalogForInstall);
-                normalizedConfigObj = TP.rewriteConfigForDeviceFlatPack(config, selectedFolder, man.logicalToDevice);
+                const man = TP.buildPackManifest(fileEntries, selectedFolder, catalogForInstall, config);
+                packMode = man.mode || 'flat';
+                normalizedConfigObj =
+                    packMode === 'structured'
+                        ? config
+                        : TP.rewriteConfigForDeviceFlatPack(config, selectedFolder, man.logicalToDevice);
                 installRows = (man.items || []).filter(
                     (it) => String(it.devicePath || '').toLowerCase() !== 'config.json'
                 );
@@ -992,8 +1015,11 @@
 
             const keepOnDevice = new Set(['config.json']);
             for (const row of installRows) {
-                const leaf = String(row.devicePath || '').split('/').pop();
-                if (leaf) keepOnDevice.add(leaf.toLowerCase());
+                const rel = String(row.devicePath || '')
+                    .replace(/\\/g, '/')
+                    .replace(/^\/+/, '')
+                    .toLowerCase();
+                if (rel) keepOnDevice.add(rel);
             }
 
             return {
@@ -1003,6 +1029,7 @@
                 normalizedConfigObj,
                 installRows,
                 keepOnDevice,
+                packMode,
             };
         }
 
@@ -1954,6 +1981,7 @@
         function extractFilesFromConfig(configObj, folderPath) {
             const files = new Set();
             files.add('config.json'); // Always include the root config
+            const TP = typeof ThemePackaging !== 'undefined' ? ThemePackaging : null;
 
             function traverse(obj) {
                 for (const key in obj) {
@@ -1961,8 +1989,10 @@
                         traverse(obj[key]);
                     } else if (typeof obj[key] === 'string') {
                         const val = normalizeConfigAssetPath(obj[key], folderPath);
-                        // Find any strings ending in common theme file extensions
-                        if (/\.(png|jpe?g|gif|webp|bmp|ttf|otf|woff|json|txt|md)$/i.test(val)) {
+                        const looksAsset = TP
+                            ? TP.isLikelyAssetPathString(val)
+                            : /\.(png|jpe?g|gif|webp|bmp|ttf|otf|woff|json|txt|md)$/i.test(val);
+                        if (looksAsset) {
                             files.add(val);
                         }
                     }
@@ -3540,11 +3570,23 @@
 
                 let zipRows = [];
                 let normalizedConfigJson = '';
+                let packMode = 'flat';
                 if (TP && config && typeof config === 'object' && fileEntries.length) {
-                    const man = TP.buildFlattenPackManifest(fileEntries, selectedFolder, catalogFolder);
-                    const rewritten = TP.rewriteConfigForDeviceFlatPack(config, selectedFolder, man.logicalToDevice);
-                    normalizedConfigJson = JSON.stringify(rewritten, null, 2);
-                    zipRows = (man.items || []).filter((it) => String(it.devicePath || '').toLowerCase() !== 'config.json');
+                    const man = TP.buildPackManifest(fileEntries, selectedFolder, catalogFolder, config);
+                    packMode = man.mode || 'flat';
+                    if (packMode === 'structured') {
+                        normalizedConfigJson = JSON.stringify(config, null, 2);
+                    } else {
+                        const rewritten = TP.rewriteConfigForDeviceFlatPack(
+                            config,
+                            selectedFolder,
+                            man.logicalToDevice
+                        );
+                        normalizedConfigJson = JSON.stringify(rewritten, null, 2);
+                    }
+                    zipRows = (man.items || []).filter(
+                        (it) => String(it.devicePath || '').toLowerCase() !== 'config.json'
+                    );
                 } else {
                     zipRows = fileEntries.map((fe) => ({
                         devicePath: String(fe.path || '').replace(/\\/g, '/').split('/').pop() || 'file',
@@ -4331,6 +4373,27 @@
                 grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#94a3b8">Unable to load themes. Try refreshing the page.</p>';
             }
         }
+
+        (function bindGalleryArchivePreviewToggle() {
+            let lastCtrlOAt = 0;
+            document.addEventListener('keydown', (e) => {
+                if (!e.ctrlKey || e.altKey || e.metaKey || String(e.key || '').toLowerCase() !== 'o') return;
+                const now = Date.now();
+                if (now - lastCtrlOAt < 650) {
+                    if (window.ThemeAuthorPolicy && typeof window.ThemeAuthorPolicy.toggleArchivePreview === 'function') {
+                        window.ThemeAuthorPolicy.toggleArchivePreview();
+                        void load();
+                    }
+                    lastCtrlOAt = 0;
+                    e.preventDefault();
+                    return;
+                }
+                lastCtrlOAt = now;
+            });
+            window.addEventListener('y1-gallery-archive-preview', () => {
+                void load();
+            });
+        })();
 
         load()
     </script>

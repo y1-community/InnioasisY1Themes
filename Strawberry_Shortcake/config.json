@@ -1,0 +1,148 @@
+{
+    "theme_info": {
+        "title": "myStrawberryShortcake (80s V.)",
+        "author": "mp3li",
+        "authorUrl": "https://www.patreon.com/cw/mp3li",
+        "description": "Requested Strawberry Shortcake (80s V.) theme by mp3li. For other themes, check the Patreon. Before remixing/editing, read the entire license file.",
+        "externalDownloadUrl": ""
+    },
+    "themeCover": "cover.png",
+    "themeColor": "#c84948",
+    "themeTextColor": "#fefefe",
+    "desktopWallpaper": "backgrounds/mp3li custom bg 9.png",
+    "globalWallpaper": "backgrounds/mp3li custom bg 6.png",
+    "fontFamily": "font/Sunshine_1.ttf",
+    "itemConfig": {
+        "itemTextColor": "#fefefe",
+        "itemSelectedTextColor": "#fefefe",
+        "itemSelectedBackground": "all other images/settings menu/behind selection/selected.png",
+        "itemBackground": "all other images/settings menu/behind selection/unselected.png",
+        "itemRightArrow": "all other images/settings menu/arrow/s27.png"
+    },
+    "dialogConfig": {
+        "dialogOptionBackground": "#c84948",
+        "dialogOptionTextColor": "#fefefe",
+        "dialogOptionSelectedBackground": "#fefefe",
+        "dialogOptionSelectedTextColor": "#c84948",
+        "dialogBackgroundColor": "#c84948",
+        "dialogTextColor": "#fefefe"
+    },
+    "menuConfig": {
+        "menuBackgroundColor": "#c84a4abf",
+        "menuItemBackground": "all other images/settings menu/behind selection/unselected dim.png",
+        "menuItemTextColor": "#fefefe",
+        "menuItemSelectedBackground": "all other images/settings menu/behind selection/selected dim.png",
+        "menuItemSelectedTextColor": "#fefefe"
+    },
+    "homePageConfig": {
+        "nowPlaying": "main menu icons/s7.png",
+        "music": "main menu icons/s20.png",
+        "video": "main menu icons/s30.png",
+        "audiobooks": "main menu icons/s34.png",
+        "photos": "main menu icons/s2.png",
+        "fm": "main menu icons/s12.png",
+        "bluetooth": "main menu icons/s23.png",
+        "settings": "main menu icons/s37.png",
+        "shuffleQuick": "",
+        "ebook": "main menu icons/ebookicon.png",
+        "calculator": "",
+        "calendar": ""
+    },
+    "fileConfig": {
+        "folderIcon": "all other images/folder view/folder icon/s3.png",
+        "musicIcon": "all other images/folder view/music icon/s18.png"
+    },
+    "settingConfig": {
+        "shutdown": "all other images/settings menu/shutdown/s16.png",
+        "timedShutdown_off": "all other images/settings menu/timed shutdown/s1.png",
+        "timedShutdown_10": "all other images/settings menu/timed shutdown/s26.png",
+        "timedShutdown_20": "all other images/settings menu/timed shutdown/s28.png",
+        "timedShutdown_30": "all other images/settings menu/timed shutdown/s25.png",
+        "timedShutdown_60": "all other images/settings menu/timed shutdown/s24.png",
+        "timedShutdown_90": "all other images/settings menu/timed shutdown/s19.png",
+        "timedShutdown_120": "all other images/settings menu/timed shutdown/s6.png",
+        "shuffleOn": "all other images/settings menu/shuffle on off/s15.png",
+        "shuffleOff": "all other images/settings menu/shuffle on off/s13.png",
+        "repeatOff": "all other images/settings menu/repeat/s29.png",
+        "repeatAll": "all other images/settings menu/repeat/s40.png",
+        "repeatOne": "all other images/settings menu/repeat/s31.png",
+        "equalizer_normal": "all other images/settings menu/equalizer/s8.png",
+        "equalizer_classical": "all other images/settings menu/equalizer/transparent.png",
+        "equalizer_dance": "all other images/settings menu/equalizer/transparent.png",
+        "equalizer_flat": "all other images/settings menu/equalizer/transparent.png",
+        "equalizer_folk": "all other images/settings menu/equalizer/transparent.png",
+        "equalizer_heavymetal": "all other images/settings menu/equalizer/transparent.png",
+        "equalizer_hiphop": "all other images/settings menu/equalizer/transparent.png",
+        "equalizer_jazz": "all other images/settings menu/equalizer/transparent.png",
+        "equalizer_pop": "all other images/settings menu/equalizer/transparent.png",
+        "equalizer_rock": "all other images/settings menu/equalizer/transparent.png",
+        "keyLockOn": "all other images/settings menu/key lock on off/s4.png",
+        "keyLockOff": "all other images/settings menu/key lock on off/s35.png",
+        "keyToneOn": "all other images/settings menu/key tone on off/s11.png",
+        "keyToneOff": "all other images/settings menu/key tone on off/s42.png",
+        "keyVibrationOn": "all other images/settings menu/key vibration on off/s36.png",
+        "keyVibrationOff": "all other images/settings menu/key vibration on off/s22.png",
+        "wallpaper": "all other images/settings menu/wallpaper mini icon/s38.png",
+        "backlight_10": "all other images/settings menu/backlight/s32.png",
+        "backlight_15": "all other images/settings menu/backlight/s10.png",
+        "backlight_30": "all other images/settings menu/backlight/s18.png",
+        "backlight_45": "all other images/settings menu/backlight/s15.png",
+        "backlight_60": "all other images/settings menu/backlight/s37.png",
+        "backlight_120": "all other images/settings menu/backlight/s29.png",
+        "backlight_300": "all other images/settings menu/backlight/s7.png",
+        "backlight_always": "all other images/settings menu/backlight/s23.png",
+        "brightness": "all other images/settings menu/brightness/s44.png",
+        "displayBatteryOn": "all other images/settings menu/display battery on off/s41.png",
+        "displayBatteryOff": "all other images/settings menu/display battery on off/s33.png",
+        "dateTime": "all other images/settings menu/date and time/s14.png",
+        "language": "all other images/settings menu/language/s39.png",
+        "factoryReset": "all other images/settings menu/factory/s16.png",
+        "clearCache": "all other images/settings menu/clear cache/s5.png",
+        "theme": "all other images/settings menu/change theme/s43.png",
+        "fileExtensionOn": "all other images/settings menu/file ext on off/s21.png",
+        "fileExtensionOff": "all other images/settings menu/file ext on off/s17.png",
+        "settingMask": "backgrounds/mp3li custom bg 5.png",
+        "launcher": ""
+    },
+    "statusConfig": {
+        "playing": "all other images/status bar/music playing/s45.png",
+        "audiobookPlaying": "all other images/status bar/audiobook playing/s46.png",
+        "pause": "all other images/status bar/paused/s9.png",
+        "fmPlaying": "all other images/status bar/fm radio playing/s46.png",
+        "stop": "all other images/status bar/stopped/stop statusbaricons by mp3li (recolored).png",
+        "blConnected": "all other images/status bar/bluetooth connected/bluetooth connected statusbaricons by mp3li (recolored).png",
+        "blConnecting": "all other images/status bar/bluetooth connecting/bluetooth connecting statusbaricons by mp3li (recolored).png",
+        "blDisconnected": "all other images/status bar/bluetooth disconnected/bluetooth disconnected statusbaricons by mp3li (recolored).png",
+        "headsetWithMic": "all other images/status bar/headphones with mic connected/headset w mic statusbaricons by mp3li (recolored).png",
+        "headsetWithoutMic": "all other images/status bar/headphones without mic connected/headset no mic statusbaricons by mp3li (recolored).png",
+        "battery": [
+            "all other images/status bar/battery/Battery_Blank 4 (recolored).png",
+            "all other images/status bar/battery/Battery_Blank (recolored).png",
+            "all other images/status bar/battery/Battery_Blank 2 (recolored).png",
+            "all other images/status bar/battery/Battery_Blank 6 (recolored).png"
+        ],
+        "batteryCharging": [
+            "all other images/status bar/battery/Battery_Blank 5 (recolored).png",
+            "all other images/status bar/battery/Battery_Blank 1 (recolored).png",
+            "all other images/status bar/battery/Battery_Blank 3 (recolored).png",
+            "all other images/status bar/battery/Battery_Blank 7 (recolored).png"
+        ],
+        "statusBarColor": "#c84948"
+    },
+    "playerConfig": {
+        "progressColor": "#c84948",
+        "progressBackgroundColor": "#fefefe",
+        "progressTextColor": "#fefefe"
+    },
+    "author": "mp3li",
+    "authorUrl": "https://www.patreon.com/cw/mp3li",
+    "title": "myStrawberryShortcake (80s V.)",
+    "description": "Requested Strawberry Shortcake (80s V.) theme by mp3li. For other themes, check the Patreon. Before remixing/editing, read the entire license file.",
+    "desktopMask": "",
+    "gallery": {
+        "defaultVariantLabel": "80s",
+        "variantFolders": [
+            "2003"
+        ]
+    }
+}

@@ -1,0 +1,148 @@
+{
+    "theme_info": {
+        "title": "myAggretsuko (Pink Rage V.)",
+        "author": "mp3li",
+        "authorUrl": "https://www.patreon.com/cw/mp3li",
+        "description": "Aggretsuko Theme for the Innioasis Y1 mp3 player with Aggretsuko icons and backgrounds. Check the patreon for the other Sanrio themes. This theme may not be hosted elsewhere: only on mp3li original channels such as their Patreon and Github. Check license file in theme folder for more information.",
+        "externalDownloadUrl": ""
+    },
+    "themeCover": "cover.png",
+    "themeColor": "#ff90cf",
+    "themeTextColor": "#000000",
+    "desktopWallpaper": "backgrounds/pinksplitrage.png",
+    "globalWallpaper": "backgrounds/pinkbg.png",
+    "fontFamily": "font/ReggaeOne-Regular.ttf",
+    "itemConfig": {
+        "itemTextColor": "#000000",
+        "itemSelectedTextColor": "#fac03b",
+        "itemSelectedBackground": "all other images/settings menu/behind selection/behindunselected1 2.png",
+        "itemBackground": "all other images/settings menu/behind selection/behindunselected1.png",
+        "itemRightArrow": "all other images/settings menu/arrow/a36.png"
+    },
+    "dialogConfig": {
+        "dialogOptionBackground": "#b16490",
+        "dialogOptionTextColor": "#fac03b",
+        "dialogOptionSelectedBackground": "#fac03b",
+        "dialogOptionSelectedTextColor": "#e27cb5",
+        "dialogBackgroundColor": "#e27cb5",
+        "dialogTextColor": "#000000"
+    },
+    "menuConfig": {
+        "menuBackgroundColor": "#ff94d2a4",
+        "menuItemBackground": "all other images/settings menu/behind selection/behindunselected1.png",
+        "menuItemTextColor": "#000000",
+        "menuItemSelectedBackground": "all other images/settings menu/behind selection/behindunselected1 2.png",
+        "menuItemSelectedTextColor": "#fac03b"
+    },
+    "homePageConfig": {
+        "nowPlaying": "main menu icons/a26.png",
+        "music": "main menu icons/a14.png",
+        "video": "main menu icons/a46.png",
+        "audiobooks": "main menu icons/a48.png",
+        "photos": "main menu icons/a27.png",
+        "fm": "main menu icons/a20.png",
+        "bluetooth": "main menu icons/a21.png",
+        "settings": "main menu icons/a10.png",
+        "shuffleQuick": "",
+        "ebook": "main menu icons/ebookicon.png",
+        "calculator": "",
+        "calendar": ""
+    },
+    "fileConfig": {
+        "folderIcon": "all other images/folder view/folder icon/a19.png",
+        "musicIcon": "all other images/folder view/music icon/a33.png"
+    },
+    "settingConfig": {
+        "shutdown": "all other images/settings menu/shutdown/a32.png",
+        "timedShutdown_off": "all other images/settings menu/timed shutdown/a31.png",
+        "timedShutdown_10": "all other images/settings menu/timed shutdown/a49.png",
+        "timedShutdown_20": "all other images/settings menu/timed shutdown/a51.png",
+        "timedShutdown_30": "all other images/settings menu/timed shutdown/a52.png",
+        "timedShutdown_60": "all other images/settings menu/timed shutdown/a47.png",
+        "timedShutdown_90": "all other images/settings menu/timed shutdown/a55.png",
+        "timedShutdown_120": "all other images/settings menu/timed shutdown/a56.png",
+        "shuffleOn": "all other images/settings menu/shuffle on off/a15.png",
+        "shuffleOff": "all other images/settings menu/shuffle on off/a7.png",
+        "repeatOff": "all other images/settings menu/repeat/a24.png",
+        "repeatAll": "all other images/settings menu/repeat/a23.png",
+        "repeatOne": "all other images/settings menu/repeat/a29.png",
+        "equalizer_normal": "all other images/settings menu/equalizer/a.png",
+        "equalizer_classical": "all other images/settings menu/equalizer/a67.png",
+        "equalizer_dance": "all other images/settings menu/equalizer/a50.png",
+        "equalizer_flat": "all other images/settings menu/equalizer/a64.png",
+        "equalizer_folk": "all other images/settings menu/equalizer/a65.png",
+        "equalizer_heavymetal": "all other images/settings menu/equalizer/a6.png",
+        "equalizer_hiphop": "all other images/settings menu/equalizer/a61.png",
+        "equalizer_jazz": "all other images/settings menu/equalizer/a53.png",
+        "equalizer_pop": "all other images/settings menu/equalizer/a63png.png",
+        "equalizer_rock": "all other images/settings menu/equalizer/a68.png",
+        "keyLockOn": "all other images/settings menu/key lock on off/a19.png",
+        "keyLockOff": "all other images/settings menu/key lock on off/a11.png",
+        "keyToneOn": "all other images/settings menu/key tone on off/a8.png",
+        "keyToneOff": "all other images/settings menu/key tone on off/a43.png",
+        "keyVibrationOn": "all other images/settings menu/key vibration on off/a2.png",
+        "keyVibrationOff": "all other images/settings menu/key vibration on off/a30.png",
+        "wallpaper": "all other images/settings menu/wallpaper mini icon/a3.png",
+        "backlight_10": "all other images/settings menu/backlight/a9.png",
+        "backlight_15": "all other images/settings menu/backlight/a54.png",
+        "backlight_30": "all other images/settings menu/backlight/a66.png",
+        "backlight_45": "all other images/settings menu/backlight/a63png.png",
+        "backlight_60": "all other images/settings menu/backlight/a62.png",
+        "backlight_120": "all other images/settings menu/backlight/a58.png",
+        "backlight_300": "all other images/settings menu/backlight/a60.png",
+        "backlight_always": "all other images/settings menu/backlight/a70.png",
+        "brightness": "all other images/settings menu/brightness/a25.png",
+        "displayBatteryOn": "all other images/settings menu/display battery on off/a42.png",
+        "displayBatteryOff": "all other images/settings menu/display battery on off/a39.png",
+        "dateTime": "all other images/settings menu/date and time/a45.png",
+        "language": "all other images/settings menu/language/a18.png",
+        "factoryReset": "all other images/settings menu/factory/a34.png",
+        "clearCache": "all other images/settings menu/clear cache/a4.png",
+        "theme": "all other images/settings menu/change theme/a41.png",
+        "fileExtensionOn": "all other images/settings menu/file ext on off/a5.png",
+        "fileExtensionOff": "all other images/settings menu/file ext on off/a44.png",
+        "settingMask": "backgrounds/office.png",
+        "launcher": ""
+    },
+    "statusConfig": {
+        "playing": "all other images/status bar/music playing/a12.png",
+        "audiobookPlaying": "all other images/status bar/audiobook playing/a36.png",
+        "pause": "all other images/status bar/paused/a3.png",
+        "fmPlaying": "all other images/status bar/fm radio playing/a35.png",
+        "stop": "all other images/status bar/stopped/a19.png",
+        "blConnected": "all other images/status bar/bluetooth connected/bluetooth connected (recolored).png",
+        "blConnecting": "all other images/status bar/bluetooth connecting/connecting (recolored).png",
+        "blDisconnected": "all other images/status bar/bluetooth disconnected/bluetooth disconnected (recolored).png",
+        "headsetWithMic": "all other images/status bar/headphones with mic connected/headphoneswithmic (recolored).png",
+        "headsetWithoutMic": "all other images/status bar/headphones without mic connected/headphones icon (recolored).png",
+        "battery": [
+            "all other images/status bar/battery/BatteryFourth (recolored).png",
+            "all other images/status bar/battery/BatteryHalf.002 (recolored).png",
+            "all other images/status bar/battery/BatterySeventyFive (recolored).png",
+            "all other images/status bar/battery/BatteryFull (recolored).png"
+        ],
+        "batteryCharging": [
+            "all other images/status bar/battery/Charge.BatteryFourth (recolored).png",
+            "all other images/status bar/battery/Charge.BatteryHalf (recolored).png",
+            "all other images/status bar/battery/Charge.BatterySeventyFive (recolored).png",
+            "all other images/status bar/battery/Charge.BatteryFull (recolored).png"
+        ],
+        "statusBarColor": "#e27cb5"
+    },
+    "playerConfig": {
+        "progressColor": "#fac03b",
+        "progressBackgroundColor": "",
+        "progressTextColor": "#000000"
+    },
+    "author": "mp3li",
+    "authorUrl": "https://www.patreon.com/cw/mp3li",
+    "title": "myAggretsuko (Pink Rage V.)",
+    "description": "Aggretsuko Theme for the Innioasis Y1 mp3 player with Aggretsuko icons and backgrounds. Check the patreon for the other Sanrio themes. This theme may not be hosted elsewhere: only on mp3li original channels such as their Patreon and Github. Check license file in theme folder for more information.",
+    "desktopMask": "",
+    "gallery": {
+        "defaultVariantLabel": "Pink Rage",
+        "variantFolders": [
+            "Teal Rage"
+        ]
+    }
+}
