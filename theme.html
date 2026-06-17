@@ -1040,7 +1040,11 @@
             if (!cfg || typeof cfg !== 'object') return [];
             const out = [];
             const seen = new Set();
-            const hasFileExt = (v) => /\.(png|jpe?g|gif|webp|bmp|svg|ttf|otf|woff2?|json|txt|md|ini)$/i.test(String(v || ''));
+            const TP = typeof ThemePackaging !== 'undefined' ? ThemePackaging : null;
+            const hasFileExt = (v) =>
+                TP
+                    ? TP.isLikelyAssetPathString(v)
+                    : /\.(png|jpe?g|gif|webp|bmp|svg|ttf|otf|woff2?|json|txt|md|ini)$/i.test(String(v || ''));
             const pushFile = (value) => {
                 const v = normalizeConfigAssetPath(value, folderPath);
                 if (!v || v.includes('://') || !hasFileExt(v)) return;
@@ -1143,9 +1147,17 @@
             let zipRows = [];
             let normalizedConfigJson = '';
             if (TP && sourceConfigForNormalize && typeof sourceConfigForNormalize === 'object') {
-                const man = TP.buildFlattenPackManifest(fileEntries, contentRoot, catalog);
-                const rewritten = TP.rewriteConfigForDeviceFlatPack(sourceConfigForNormalize, contentRoot, man.logicalToDevice);
-                normalizedConfigJson = JSON.stringify(rewritten, null, 2);
+                const man = TP.buildPackManifest(fileEntries, contentRoot, catalog, sourceConfigForNormalize);
+                if (man.mode === 'structured') {
+                    normalizedConfigJson = JSON.stringify(sourceConfigForNormalize, null, 2);
+                } else {
+                    const rewritten = TP.rewriteConfigForDeviceFlatPack(
+                        sourceConfigForNormalize,
+                        contentRoot,
+                        man.logicalToDevice
+                    );
+                    normalizedConfigJson = JSON.stringify(rewritten, null, 2);
+                }
                 zipRows = (man.items || []).filter((it) => String(it.devicePath || '').toLowerCase() !== 'config.json');
             } else {
                 for (const file of fileEntries) {
@@ -1558,7 +1570,8 @@
             if (window.ThemeAuthorPolicy) {
                 await window.ThemeAuthorPolicy.ready();
                 const authorForPolicy = window.ThemeAuthorPolicy.readAuthorFromTheme(themeMeta);
-                if (window.ThemeAuthorPolicy.listingHidden({ author: authorForPolicy }).hidden) {
+                const policy = window.ThemeAuthorPolicy.listingHidden({ author: authorForPolicy });
+                if (policy.hidden && !(policy.reason === 'opt_out' && window.ThemeAuthorPolicy.isArchivePreviewActive())) {
                     showFallbackAndRedirect();
                     return;
                 }

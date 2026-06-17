@@ -435,6 +435,9 @@ def _process_zip(path: Path, *, folder_stem_override: str | None = None) -> tupl
         keys = ztu.zip_theme_keys(names_t)
         keys = ztu.collapse_redundant_root_theme_key(names_t, keys, stem_for_identity)
         keys = ztu.drop_variant_keys_under_parent_theme(keys)
+        keys = ztu.drop_asset_subfolder_theme_keys(
+            keys, ztu.load_configs_by_theme_key(keys, archive.read)
+        )
         if not keys:
             return False, logs + ["ERROR: Zip must contain at least one theme folder with config.json."]
 

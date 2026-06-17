@@ -18,6 +18,31 @@
     let blockData = null;
     let readyPromise = null;
 
+    const ARCHIVE_PREVIEW_STORAGE_KEY = '_y1GalleryArchivePreview';
+
+    function isArchivePreviewActive() {
+        try {
+            return sessionStorage.getItem(ARCHIVE_PREVIEW_STORAGE_KEY) === '1';
+        } catch (_) {
+            return false;
+        }
+    }
+
+    function setArchivePreviewActive(active) {
+        try {
+            if (active) sessionStorage.setItem(ARCHIVE_PREVIEW_STORAGE_KEY, '1');
+            else sessionStorage.removeItem(ARCHIVE_PREVIEW_STORAGE_KEY);
+        } catch (_) {}
+        if (typeof global.dispatchEvent === 'function') {
+            global.dispatchEvent(new CustomEvent('y1-gallery-archive-preview', { detail: { active: !!active } }));
+        }
+    }
+
+    function toggleArchivePreview() {
+        setArchivePreviewActive(!isArchivePreviewActive());
+        return isArchivePreviewActive();
+    }
+
     function normAuthor(value) {
         let s = String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
         if (s.startsWith('u/')) s = s.slice(2).trim().replace(/\s+/g, ' ');
@@ -145,6 +170,9 @@
         const blockSlugs = getBlockSlugMap();
 
         if (author && optAuthors.has(author)) {
+            if (isArchivePreviewActive()) {
+                return { hidden: false, reason: '', detail: '' };
+            }
             return {
                 hidden: true,
                 reason: 'opt_out',
@@ -219,6 +247,9 @@
         uploadPolicyForAuthor,
         blockNotAllowedMessage,
         bannedAuthorAttemptNotifyFabformUrl,
+        isArchivePreviewActive,
+        setArchivePreviewActive,
+        toggleArchivePreview,
     };
 
     if (typeof module !== 'undefined' && module.exports) {

@@ -13,6 +13,8 @@ scripts/test_*.py
 scripts/extract_theme_zips.py
 scripts/optimize_theme_assets.py
 scripts/fix_stranger_variant_paths.py
+scripts/reorganize_mp3li_themes.py
+scripts/write_theme_index_shells.py
 scripts/generate-theme-index-redirects.ps1
 scripts/deploy-upload-worker.sh
 _bulk_update_theme_pages.py

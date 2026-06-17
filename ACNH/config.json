@@ -1,0 +1,148 @@
+{
+    "theme_info": {
+        "title": "myACNH (Day v.)",
+        "author": "mp3li",
+        "authorUrl": "https://www.patreon.com/cw/mp3li",
+        "description": "An Animal Crossing New Horizons theme for the Innioasis Y1 mp3 player. License: This theme may not be taken and hosted elsewhere. The only download location of this theme is the original creator, mp3li, on their Patreon. Community members may edit and change mp3li themes as long as they credit mp3li in their config description and public description.",
+        "externalDownloadUrl": ""
+    },
+    "themeCover": "[cover].png",
+    "themeColor": "#88c9a1 ",
+    "themeTextColor": "#017c74,\n\n    • Main menu wallpaper: \n        ",
+    "desktopWallpaper": "background(s)/leafbackground.png",
+    "globalWallpaper": "background(s)/islandbackground.png",
+    "desktopMask": "",
+    "fontFamily": "font(s)/FinkHeavy.ttf",
+    "itemConfig": {
+        "itemTextColor": "#017c74",
+        "itemSelectedTextColor": "#fff9e5",
+        "itemSelectedBackground": "main menu icons/behind selection/behindselection1.png",
+        "itemBackground": "",
+        "itemRightArrow": "main menu icons/icon on selected item/selecteditemicon.png"
+    },
+    "dialogConfig": {
+        "dialogOptionBackground": "#8ecfca",
+        "dialogOptionTextColor": "#017c74",
+        "dialogOptionSelectedBackground": "#88c9a1",
+        "dialogOptionSelectedTextColor": "#017c74",
+        "dialogBackgroundColor": "#8ecfca",
+        "dialogTextColor": "#017c74"
+    },
+    "menuConfig": {
+        "menuBackgroundColor": "background(s)/lightbackground.png",
+        "menuItemBackground": "",
+        "menuItemTextColor": "#017c74",
+        "menuItemSelectedBackground": "main menu icons/behind selection/behindselection2.png",
+        "menuItemSelectedTextColor": "#fff9e5"
+    },
+    "homePageConfig": {
+        "nowPlaying": "main menu icons/1st.nowplaying.png",
+        "music": "main menu icons/2nd.music.png",
+        "video": "main menu icons/3rd.videos.png",
+        "audiobooks": "main menu icons/4th.audiobook.png",
+        "photos": "main menu icons/5th.photos.png",
+        "fm": "main menu icons/6th.fmradio.png",
+        "bluetooth": "main menu icons/7th.bluetooth.png",
+        "settings": "main menu icons/8th.settings.png",
+        "shuffleQuick": "main menu icons/shuffle.png",
+        "ebook": "main menu icons/ebookicon.png",
+        "calculator": "main menu icons/calculator.png",
+        "calendar": "main menu icons/calendar.png"
+    },
+    "fileConfig": {
+        "folderIcon": "all other images/folder view/folder icon/foldericon.png",
+        "musicIcon": "all other images/folder view/music icon/musicicon.png"
+    },
+    "settingConfig": {
+        "settingMask": "background(s)/lightbackgroundsetting.png",
+        "shutdown": "main menu icons/shutdown.png",
+        "timedShutdown_off": "all other images/settings menu/timed shutdown/Timed shutdown_001@1x.png",
+        "timedShutdown_10": "all other images/settings menu/timed shutdown/Timed shutdown_002@1x.png",
+        "timedShutdown_20": "all other images/settings menu/timed shutdown/Timed shutdown_003@1x.png",
+        "timedShutdown_30": "all other images/settings menu/timed shutdown/Timed shutdown_004@1x.png",
+        "timedShutdown_60": "all other images/settings menu/timed shutdown/Timed shutdown_005@1x.png",
+        "timedShutdown_90": "all other images/settings menu/timed shutdown/Timed shutdown_006@1x.png",
+        "timedShutdown_120": "all other images/settings menu/timed shutdown/Timed shutdown_007@1x.png",
+        "shuffleOn": "all other images/settings menu/shuffle on off/Shuffle_on@1x.png",
+        "shuffleOff": "all other images/settings menu/shuffle on off/Shuffle_off@1x.png",
+        "repeatOff": "all other images/settings menu/repeat/Repeat_off@1x.png",
+        "repeatAll": "all other images/settings menu/repeat/Repeat_all@1x.png",
+        "repeatOne": "all other images/settings menu/repeat/Repeat_one@1x.png",
+        "equalizer_normal": "all other images/settings menu/equalizer/Equalizer_normal@1x.png",
+        "equalizer_classical": "all other images/settings menu/equalizer/Equalizer_classical@1x.png",
+        "equalizer_dance": "all other images/settings menu/equalizer/Equalizer_dance@1x.png",
+        "equalizer_flat": "all other images/settings menu/equalizer/Equalizer_flat@1x.png",
+        "equalizer_folk": "all other images/settings menu/equalizer/Equalizer_folk@1x.png",
+        "equalizer_heavymetal": "all other images/settings menu/equalizer/Equalizer_heavy metal@1x.png",
+        "equalizer_hiphop": "all other images/settings menu/equalizer/Equalizer_hiphop@1x.png",
+        "equalizer_jazz": "all other images/settings menu/equalizer/Equalizer_jazz@1x.png",
+        "equalizer_pop": "all other images/settings menu/equalizer/Equalizer_pop@1x.png",
+        "equalizer_rock": "all other images/settings menu/equalizer/Equalizer_rock@1x.png",
+        "keyLockOn": "all other images/settings menu/key lock on off/Key lock_on@1x.png",
+        "keyLockOff": "all other images/settings menu/key lock on off/Key lock_off@1x.png",
+        "keyToneOn": "all other images/settings menu/key tone on off/Key tone_on@1x.png",
+        "keyToneOff": "all other images/settings menu/key tone on off/Key tone_off@1x.png",
+        "keyVibrationOn": "all other images/settings menu/key vibration on off/Key vibration_on@1x.png",
+        "keyVibrationOff": "all other images/settings menu/key vibration on off/Key vibration_off@1x.png",
+        "wallpaper": "all other images/settings menu/wallpaper mini icon/Wallpapper@1x.png",
+        "backlight_10": "all other images/settings menu/backlight/Backlight_001@1x.png",
+        "backlight_15": "all other images/settings menu/backlight/Backlight_003@1x.png",
+        "backlight_30": "all other images/settings menu/backlight/Backlight_004@1x.png",
+        "backlight_45": "all other images/settings menu/backlight/Backlight_005@1x.png",
+        "backlight_60": "all other images/settings menu/backlight/Backlight_006@1x.png",
+        "backlight_120": "all other images/settings menu/backlight/Backlight_007@1x.png",
+        "backlight_300": "all other images/settings menu/backlight/Backlight_008@1x.png",
+        "backlight_always": "all other images/settings menu/backlight/Backlight_002@1x.png",
+        "brightness": "all other images/settings menu/brightness/Brightness@1x.png",
+        "displayBatteryOn": "all other images/settings menu/display battery on off/Display battery_on@1x.png",
+        "displayBatteryOff": "all other images/settings menu/display battery on off/Display battery_off@1x.png",
+        "dateTime": "all other images/settings menu/date and time/Date & Time@1x.png",
+        "language": "all other images/settings menu/language/Language@1x.png",
+        "launcher": "all other images/settings menu/launcher/Launcher.png",
+        "factoryReset": "all other images/settings menu/factory/Factory@1x.png",
+        "clearCache": "all other images/settings menu/clear cache/Clear cache@1x.png",
+        "theme": "all other images/settings menu/change theme/Change Theme@1x.png",
+        "fileExtensionOn": "all other images/settings menu/file ext on off/file_ext_on.png",
+        "fileExtensionOff": "all other images/settings menu/file ext on off/file_ext_off.png"
+    },
+    "statusConfig": {
+        "playing": "all other images/status bar/music playing/Play.png",
+        "audiobookPlaying": "all other images/status bar/audiobook playing/audiobookplaying.png",
+        "pause": "all other images/status bar/paused/Pause.png",
+        "fmPlaying": "all other images/status bar/fm radio playing/cassette player.png",
+        "stop": "all other images/status bar/stopped/Stop.png",
+        "blConnected": "all other images/status bar/bluetooth connected/headphones.png",
+        "blConnecting": "all other images/status bar/bluetooth connecting/headphones white.png",
+        "blDisconnected": "",
+        "headsetWithMic": "all other images/status bar/headphones with mic connected/headphones.png",
+        "headsetWithoutMic": "all other images/status bar/headphones without mic connected/headphones.png",
+        "battery": [
+            "all other images/status bar/battery/BatteryFourth.png",
+            "all other images/status bar/battery/BatteryHalf.png",
+            "all other images/status bar/battery/BatterySeventyFive.png",
+            "all other images/status bar/battery/BatteryFull.png"
+        ],
+        "batteryCharging": [
+            "all other images/status bar/battery/Charge.BatteryFourth.png",
+            "all other images/status bar/battery/Charge.BatteryHalf.png",
+            "all other images/status bar/battery/Charge.BatterySeventyFive.png",
+            "all other images/status bar/battery/Charge.BatteryFull.png"
+        ],
+        "statusBarColor": "#8ecfca"
+    },
+    "playerConfig": {
+        "progressTextColor": "#fff9e5",
+        "progressColor": "#017c74",
+        "progressBackgroundColor": "#88c9a1"
+    },
+    "title": "myACNH (Day v.)",
+    "description": "An Animal Crossing New Horizons theme for the Innioasis Y1 mp3 player. License: This theme may not be taken and hosted elsewhere. The only download location of this theme is the original creator, mp3li, on their Patreon. Community members may edit and change mp3li themes as long as they credit mp3li in their config description and public description.",
+    "gallery": {
+        "defaultVariantLabel": "Day",
+        "variantFolders": [
+            "Night"
+        ]
+    },
+    "author": "mp3li",
+    "authorUrl": "https://www.patreon.com/cw/mp3li"
+}

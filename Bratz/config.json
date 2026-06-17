@@ -1,0 +1,148 @@
+{
+    "theme_info": {
+        "title": "myBratz (Dolls V.)",
+        "author": "mp3li",
+        "authorUrl": "https://www.patreon.com/cw/mp3li",
+        "description": "Bratz theme for the Innioasis Y1 mp3 player, including Bratz icons and Bratz backgrounds. Check the Patreon for the other Y2K Toybox themes. This theme may not be hosted elsewhere: only on mp3li original channels such as their Patreon and Github. Check license file in theme folder for more information.",
+        "externalDownloadUrl": ""
+    },
+    "themeCover": "cover.png",
+    "themeColor": "#7970ac",
+    "themeTextColor": "#3f356a",
+    "desktopWallpaper": "backgrounds/bratzwallpaper1 (cropped).png",
+    "globalWallpaper": "backgrounds/bratzwallpaper4 (cropped) (1).png",
+    "fontFamily": "font/KEnaN & keL.ttf",
+    "itemConfig": {
+        "itemTextColor": "#3f356a",
+        "itemSelectedTextColor": "#ffffff",
+        "itemSelectedBackground": "all other images/settings menu/behind selection/behindunselected1.png",
+        "itemBackground": "all other images/settings menu/behind selection/behindunselected1 2.png",
+        "itemRightArrow": "all other images/settings menu/arrow/blogo2.png"
+    },
+    "dialogConfig": {
+        "dialogOptionBackground": "#7970ac",
+        "dialogOptionTextColor": "#d070b0",
+        "dialogOptionSelectedBackground": "#d070b0",
+        "dialogOptionSelectedTextColor": "#ffffff",
+        "dialogBackgroundColor": "#b2b4d9",
+        "dialogTextColor": "#3f356a"
+    },
+    "menuConfig": {
+        "menuBackgroundColor": "#b2b4d9",
+        "menuItemBackground": "all other images/settings menu/behind selection/behindunselected1 2.png",
+        "menuItemTextColor": "#3f356a",
+        "menuItemSelectedBackground": "all other images/settings menu/behind selection/behindunselected1.png",
+        "menuItemSelectedTextColor": "#ffffff"
+    },
+    "homePageConfig": {
+        "nowPlaying": "main menu icons/d36.png",
+        "music": "main menu icons/d2.png",
+        "video": "main menu icons/d18.png",
+        "audiobooks": "main menu icons/d7.png",
+        "photos": "main menu icons/d52.png",
+        "fm": "main menu icons/d38.png",
+        "bluetooth": "main menu icons/d15.png",
+        "settings": "main menu icons/d31.png",
+        "shuffleQuick": "",
+        "ebook": "main menu icons/ebookicon.png",
+        "calculator": "",
+        "calendar": ""
+    },
+    "fileConfig": {
+        "folderIcon": "all other images/folder view/folder icon/blogo.png",
+        "musicIcon": "all other images/folder view/music icon/b80.png"
+    },
+    "settingConfig": {
+        "shutdown": "all other images/settings menu/shutdown/d71.png",
+        "timedShutdown_off": "all other images/settings menu/timed shutdown/d1.png",
+        "timedShutdown_10": "all other images/settings menu/timed shutdown/d11.png",
+        "timedShutdown_20": "all other images/settings menu/timed shutdown/d16.png",
+        "timedShutdown_30": "all other images/settings menu/timed shutdown/d14.png",
+        "timedShutdown_60": "all other images/settings menu/timed shutdown/d47.png",
+        "timedShutdown_90": "all other images/settings menu/timed shutdown/d48.png",
+        "timedShutdown_120": "all other images/settings menu/timed shutdown/d51.png",
+        "shuffleOn": "all other images/settings menu/shuffle on off/d22.png",
+        "shuffleOff": "all other images/settings menu/shuffle on off/d28.png",
+        "repeatOff": "all other images/settings menu/repeat/d25.png",
+        "repeatAll": "all other images/settings menu/repeat/d9.png",
+        "repeatOne": "all other images/settings menu/repeat/d10.png",
+        "equalizer_normal": "all other images/settings menu/equalizer/d19.png",
+        "equalizer_classical": "all other images/settings menu/equalizer/d49.png",
+        "equalizer_dance": "all other images/settings menu/equalizer/d46.png",
+        "equalizer_flat": "all other images/settings menu/equalizer/d37.png",
+        "equalizer_folk": "all other images/settings menu/equalizer/d4.png",
+        "equalizer_heavymetal": "all other images/settings menu/equalizer/d40.png",
+        "equalizer_hiphop": "all other images/settings menu/equalizer/d74.png",
+        "equalizer_jazz": "all other images/settings menu/equalizer/d70.png",
+        "equalizer_pop": "all other images/settings menu/equalizer/d75.png",
+        "equalizer_rock": "all other images/settings menu/equalizer/d73.png",
+        "keyLockOn": "all other images/settings menu/key lock on off/d3.png",
+        "keyLockOff": "all other images/settings menu/key lock on off/d27.png",
+        "keyToneOn": "all other images/settings menu/key tone on off/d20.png",
+        "keyToneOff": "all other images/settings menu/key tone on off/d30.png",
+        "keyVibrationOn": "all other images/settings menu/key vibration on off/d43.png",
+        "keyVibrationOff": "all other images/settings menu/key vibration on off/d34.png",
+        "wallpaper": "all other images/settings menu/wallpaper mini icon/d23.png",
+        "backlight_10": "all other images/settings menu/backlight/d45.png",
+        "backlight_15": "all other images/settings menu/backlight/d5.png",
+        "backlight_30": "all other images/settings menu/backlight/d13.png",
+        "backlight_45": "all other images/settings menu/backlight/d33.png",
+        "backlight_60": "all other images/settings menu/backlight/d12.png",
+        "backlight_120": "all other images/settings menu/backlight/d21.png",
+        "backlight_300": "all other images/settings menu/backlight/d35.png",
+        "backlight_always": "all other images/settings menu/backlight/d6.png",
+        "brightness": "all other images/settings menu/brightness/d41.png",
+        "displayBatteryOn": "all other images/settings menu/display battery on off/d44.png",
+        "displayBatteryOff": "all other images/settings menu/display battery on off/d53.png",
+        "dateTime": "all other images/settings menu/date and time/d32.png",
+        "language": "all other images/settings menu/language/d39.png",
+        "factoryReset": "all other images/settings menu/factory/d50.png",
+        "clearCache": "all other images/settings menu/clear cache/d42.png",
+        "theme": "all other images/settings menu/change theme/d26.png",
+        "fileExtensionOn": "all other images/settings menu/file ext on off/d24.png",
+        "fileExtensionOff": "all other images/settings menu/file ext on off/d29.png",
+        "settingMask": "backgrounds/bratzwallpaper3 (cropped).png",
+        "launcher": ""
+    },
+    "statusConfig": {
+        "playing": "all other images/status bar/music playing/b10 Background Removed.png",
+        "audiobookPlaying": "all other images/status bar/audiobook playing/b5 Background Removed.png",
+        "pause": "all other images/status bar/paused/b65.png",
+        "fmPlaying": "all other images/status bar/fm radio playing/b66.png",
+        "stop": "all other images/status bar/stopped/blogo.png",
+        "blConnected": "all other images/status bar/bluetooth connected/bluetooth connected (recolored).png",
+        "blConnecting": "all other images/status bar/bluetooth connecting/connecting (recolored).png",
+        "blDisconnected": "all other images/status bar/bluetooth disconnected/bluetooth disconnected (recolored).png",
+        "headsetWithMic": "all other images/status bar/headphones with mic connected/headphoneswithmic (recolored).png",
+        "headsetWithoutMic": "all other images/status bar/headphones without mic connected/headphones icon (recolored).png",
+        "battery": [
+            "all other images/status bar/battery/BatteryFourth (recolored).png",
+            "all other images/status bar/battery/BatteryHalf.002 (recolored).png",
+            "all other images/status bar/battery/BatterySeventyFive (recolored).png",
+            "all other images/status bar/battery/BatteryFull (recolored).png"
+        ],
+        "batteryCharging": [
+            "all other images/status bar/battery/Charge.BatteryFourth (recolored).png",
+            "all other images/status bar/battery/Charge.BatteryHalf (recolored).png",
+            "all other images/status bar/battery/Charge.BatterySeventyFive (recolored).png",
+            "all other images/status bar/battery/Charge.BatteryFull (recolored).png"
+        ],
+        "statusBarColor": "#7970ac"
+    },
+    "playerConfig": {
+        "progressColor": "#d070b0",
+        "progressBackgroundColor": "#7970ac",
+        "progressTextColor": "#ffffff"
+    },
+    "author": "mp3li",
+    "authorUrl": "https://www.patreon.com/cw/mp3li",
+    "title": "myBratz (Dolls V.)",
+    "description": "Bratz theme for the Innioasis Y1 mp3 player, including Bratz icons and Bratz backgrounds. Check the Patreon for the other Y2K Toybox themes. This theme may not be hosted elsewhere: only on mp3li original channels such as their Patreon and Github. Check license file in theme folder for more information.",
+    "desktopMask": "",
+    "gallery": {
+        "defaultVariantLabel": "Dolls",
+        "variantFolders": [
+            "Movies"
+        ]
+    }
+}
