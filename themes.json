@@ -1925,14 +1925,15 @@
             "searchText": "pixel fight club i am jack's pixelated theme holding soap. u/highwaycrisis pixel_fight_club https://drive.proton.me/urls/dbjawgtthw#orvr7yavo1kv"
         },
         {
-            "name": "pixelcutetheme",
+            "name": "Pixel Cute",
             "folder": "pixelcutetheme",
             "sourceType": "internal",
-            "sortName": "pixelcutetheme",
-            "searchText": "pixelcutetheme pixelcutetheme theme for innioasis y1. pixelcutetheme pixelcutetheme",
-            "author": "pixelcutetheme",
-            "description": "pixelcutetheme theme for Innioasis Y1.",
-            "screenshot": "./pixelcutetheme/cover.png"
+            "sortName": "pixel cute",
+            "searchText": "pixel cute a pixel-cute aesthetic theme for the innioasis y1. designer-front2870 pixelcutetheme",
+            "author": "Designer-Front2870",
+            "description": "A pixel-cute aesthetic theme for the Innioasis Y1.",
+            "screenshot": "./pixelcutetheme/cover.png",
+            "authorUrl": "https://ko-fi.com/s/433553dead"
         },
         {
             "name": "Plave",
@@ -2047,6 +2048,17 @@
             "authorUrl": "https://github.com/rottenEgghead",
             "description": "A grey Pusheen cat theme with pink accents",
             "screenshot": "./Pusheen/cover.png"
+        },
+        {
+            "name": "Pusheen",
+            "folder": "pusheentheme",
+            "author": "Designer-Front2870",
+            "authorUrl": "https://ko-fi.com/s/433553dead",
+            "description": "A cute Pusheen-themed Y1 theme.",
+            "screenshot": "./pusheentheme/cover.png",
+            "sourceType": "internal",
+            "sortName": "pusheen",
+            "searchText": "pusheen a cute pusheen-themed y1 theme. designer-front2870 pusheentheme"
         },
         {
             "name": "RAINBOW",
@@ -3056,6 +3068,17 @@
             "authorUrl": "https://www.reddit.com/r/innioasis/comments/1ncxbpd/the_xfiles_theme_y1_stock_firmware/",
             "description": "This theme is inspired by the X-Files TV series.",
             "screenshot": "./XFiles/cover.png"
+        },
+        {
+            "name": "Y2K Older Bro Core",
+            "folder": "y2kolderbrocore",
+            "author": "Designer-Front2870",
+            "authorUrl": "https://ko-fi.com/s/433553dead",
+            "description": "A Y2K older-bro-core aesthetic theme for the Innioasis Y1.",
+            "screenshot": "./y2kolderbrocore/cover1.png",
+            "sourceType": "internal",
+            "sortName": "y2k older bro core",
+            "searchText": "y2k older bro core a y2k older-bro-core aesthetic theme for the innioasis y1. designer-front2870 y2kolderbrocore"
         },
         {
             "name": "Y2KPink",
