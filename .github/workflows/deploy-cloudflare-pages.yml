@@ -1,5 +1,5 @@
 # Publishes themes.innioasis.app from main after ingest/metadata/sitemap commits.
-# Git-connected Pages alone can stall; Wrangler direct upload keeps the public site current.
+# Uses the Cloudflare Pages Git deployment API (correct for Git-connected projects).
 #
 # Requires repository secrets:
 #   CLOUDFLARE_API_TOKEN — Account → Cloudflare Pages → Edit (and Account read)
@@ -32,7 +32,7 @@ jobs:
   deploy:
     if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 30
     steps:
       - name: Checkout main
         uses: actions/checkout@v4
@@ -42,15 +42,6 @@ jobs:
 
       - name: Pipeline health (pre-deploy)
         run: python3 scripts/pipeline_health_check.py || true
-
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: npm
-
-      - name: Install Wrangler
-        run: npm ci
 
       - name: Verify themes catalog present
         run: |
@@ -64,18 +55,19 @@ jobs:
               sys.exit("themes.json looks too small; aborting deploy")
           PY
 
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy . --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT || 'y1themes' }} --branch=main --commit-dirty=true --config wrangler.pages.toml
+      - name: Trigger Cloudflare Pages Git deployment
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_PAGES_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT }}
+          DEPLOY_RUN_ID: ${{ github.run_id }}
+        run: python3 scripts/trigger_pages_git_deploy.py
 
       - name: Verify live themes.json updated
         continue-on-error: true
         run: |
           LOCAL=$(python3 -c "import json; print(len(json.load(open('themes.json'))['themes']))")
-          for i in 1 2 3 4 5 6; do
+          for i in 1 2 3 4 5 6 8 10 12; do
             REMOTE=$(curl -fsSL "https://themes.innioasis.app/themes.json" | python3 -c "import json,sys; print(len(json.load(sys.stdin)['themes']))")
             echo "local=$LOCAL remote=$REMOTE (attempt $i)"
             if [[ "$REMOTE" -ge "$LOCAL" ]]; then

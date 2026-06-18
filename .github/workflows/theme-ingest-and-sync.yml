@@ -163,21 +163,31 @@ jobs:
           ref: main
           fetch-depth: 1
 
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: npm
+      - name: Pipeline health (pre-deploy)
+        run: python3 scripts/pipeline_health_check.py || true
 
-      - name: Install Wrangler
-        run: npm ci
+      - name: Trigger Cloudflare Pages Git deployment
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_PAGES_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT }}
+          DEPLOY_RUN_ID: ${{ github.run_id }}
+        run: python3 scripts/trigger_pages_git_deploy.py
 
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy . --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT || 'y1themes' }} --branch=main --commit-dirty=true --config wrangler.pages.toml
+      - name: Verify live themes.json updated
+        continue-on-error: true
+        run: |
+          LOCAL=$(python3 -c "import json; print(len(json.load(open('themes.json'))['themes']))")
+          for i in 1 2 3 4 5 6 8 10 12; do
+            REMOTE=$(curl -fsSL "https://themes.innioasis.app/themes.json" | python3 -c "import json,sys; print(len(json.load(sys.stdin)['themes']))")
+            echo "local=$LOCAL remote=$REMOTE (attempt $i)"
+            if [[ "$REMOTE" -ge "$LOCAL" ]]; then
+              exit 0
+            fi
+            sleep 30
+          done
+          echo "WARN: live themes.json still behind main ($REMOTE < $LOCAL)"
+          exit 1
 
   notify-source-pr-after-ingest:
     needs: ingest-and-sync
