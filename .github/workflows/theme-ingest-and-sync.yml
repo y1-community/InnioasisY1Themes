@@ -80,6 +80,9 @@ jobs:
 
       - name: Cleanup stale upload zip/meta artifacts
         run: python scripts/cleanup_upload_artifacts.py
+        env:
+          UPLOAD_ARTIFACT_MAX_AGE_HOURS: "0"
+          UPLOAD_ARTIFACT_CLEANUP_ALL: "true"
 
       - name: Commit and push
         run: |
@@ -145,6 +148,36 @@ jobs:
             echo "ERROR: could not push theme ingest commit after retries."
             exit 1
           fi
+
+  deploy-live-site:
+    needs: ingest-and-sync
+    if: ${{ needs.ingest-and-sync.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install Wrangler
+        run: npm ci
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy . --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT || 'y1themes' }} --branch=main --commit-dirty=true --config wrangler.pages.toml
 
   notify-source-pr-after-ingest:
     needs: ingest-and-sync

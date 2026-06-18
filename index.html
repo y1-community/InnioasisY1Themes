@@ -1628,9 +1628,9 @@
             return [];
         }
 
-        async function tryFetchThemeCache() {
+        async function fetchThemesFromUrl(url) {
             try {
-                const r = await fetch('themes.json', { cache: 'no-store' });
+                const r = await fetch(url, { cache: 'no-store' });
                 if (!r.ok) return [];
                 const text = await r.text();
                 try {
@@ -1642,6 +1642,32 @@
             } catch (e) {
                 return [];
             }
+        }
+
+        const GITHUB_MAIN_THEMES_JSON = 'https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/themes.json';
+        const GITHUB_MAIN_RAW_BASE = 'https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/';
+
+        function catalogLooksStale(themes) {
+            if (!Array.isArray(themes) || !themes.length) return true;
+            const folders = new Set(themes.map((t) => String(t.folder || '').trim()));
+            const oldPipboy = ['1G Fallout Pip-Boy', '1M Fallout Pip-Boy', '1P Fallout Pip-Boy', '1Y Fallout Pip-Boy'];
+            if (oldPipboy.some((f) => folders.has(f)) && !folders.has('Fallout Pip-Boy')) return true;
+            return false;
+        }
+
+        async function tryFetchThemeCache() {
+            const [local, remote] = await Promise.all([
+                fetchThemesFromUrl('themes.json'),
+                fetchThemesFromUrl(GITHUB_MAIN_THEMES_JSON),
+            ]);
+            const stale = catalogLooksStale(local);
+            const useRemote = remote.length > local.length || stale;
+            window.__y1UseGithubMainAssets = !!useRemote;
+            const themes = useRemote && remote.length ? remote : (local.length ? local : remote);
+            // #region agent log
+            fetch('http://127.0.0.1:7705/ingest/21da8d3c-5a01-4bd3-994d-cee34753d7dd',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f20d5f'},body:JSON.stringify({sessionId:'f20d5f',location:'index.html:tryFetchThemeCache',message:'catalog source',data:{localCount:local.length,remoteCount:remote.length,stale,useRemote,chosenCount:themes.length,useGithubAssets:!!window.__y1UseGithubMainAssets,host:location.hostname},timestamp:Date.now(),hypothesisId:'A'})}).catch(()=>{});
+            // #endregion
+            return themes;
         }
 
         function resolveScreenshotPath(path) {
@@ -2031,7 +2057,11 @@
             const folder = String(folderPath || '').trim().replace(/\\/g, '/').replace(/^\.\/+/, '').replace(/\/+$/, '');
             const full = resolvedRepoPath(folder, relativePath);
             if (!full) return '';
-            return `./${encodePathSegments(full)}`;
+            const enc = encodePathSegments(full);
+            if (window.__y1UseGithubMainAssets) {
+                return GITHUB_MAIN_RAW_BASE + enc;
+            }
+            return `./${enc}`;
         }
 
         const THEME_VARIANTS_FOLDER = 'Variants';
@@ -2269,8 +2299,7 @@
             const fromManifest = [];
             if (root) {
                 try {
-                    const encRoot = root.split('/').filter(Boolean).map(encodeURIComponent).join('/');
-                    const rc = await fetch(`./${encRoot}/config.json`, { cache: 'no-cache' });
+                    const rc = await fetch(buildThemeFileUrl(root, 'config.json'), { cache: 'no-cache' });
                     if (rc.ok) {
                         const j = await rc.json();
                         const gv = j.gallery && Array.isArray(j.gallery.variantFolders) ? j.gallery.variantFolders : null;
