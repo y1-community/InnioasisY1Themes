@@ -34,10 +34,15 @@ def _log(hypothesis_id: str, location: str, message: str, data: dict) -> None:
 
 
 def _fetch_json(url: str) -> tuple[int, dict | None]:
+    req = urllib.request.Request(
+        url,
+        headers={"User-Agent": "InnioasisY1Themes-pipeline-health/1.0"},
+    )
     try:
-        with urllib.request.urlopen(url, timeout=30) as resp:
+        with urllib.request.urlopen(req, timeout=45) as resp:
             body = resp.read().decode("utf-8")
-            return len(json.loads(body).get("themes") or []), json.loads(body)
+            doc = json.loads(body)
+            return len(doc.get("themes") or []), doc
     except Exception as exc:
         return -1, {"error": str(exc)}
 
@@ -55,6 +60,7 @@ def main() -> int:
     main_count, _ = _fetch_json(MAIN_THEMES_JSON)
     live_count, _ = _fetch_json(LIVE_THEMES_JSON)
     zips = _root_zips()
+    live_behind = main_count >= 0 and live_count >= 0 and live_count < main_count
 
     _log(
         "A",
@@ -64,7 +70,7 @@ def main() -> int:
             "localThemes": local_count,
             "githubMainThemes": main_count,
             "liveSiteThemes": live_count,
-            "liveBehindMain": main_count >= 0 and live_count >= 0 and live_count < main_count,
+            "liveBehindMain": live_behind,
         },
     )
     _log(
@@ -101,7 +107,7 @@ def main() -> int:
     )
 
     print(f"local={local_count} main={main_count} live={live_count} root_zips={zips}")
-    if live_count >= 0 and main_count >= 0 and live_count < main_count:
+    if live_behind:
         print("WARN: live site catalog is behind GitHub main (Pages publish stalled).")
         return 1
     if zips:
