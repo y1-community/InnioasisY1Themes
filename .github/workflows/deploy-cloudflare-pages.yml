@@ -1,0 +1,85 @@
+# Publishes themes.innioasis.app from main after ingest/metadata/sitemap commits.
+# Git-connected Pages alone can stall; this uploads the checked-out tree via Wrangler
+# so new themes (folder + themes.json) go live with ingest.
+#
+# Requires repository secrets:
+#   CLOUDFLARE_API_TOKEN — Account → Cloudflare Pages → Edit (and Account read)
+# Optional:
+#   CLOUDFLARE_ACCOUNT_ID
+#   CLOUDFLARE_PAGES_PROJECT (default y1themes)
+
+name: Deploy Cloudflare Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_run:
+    workflows:
+      - Theme ingest and sync
+      - Generate Sitemap
+    types:
+      - completed
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-cloudflare-pages
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install Wrangler
+        run: npm ci
+
+      - name: Verify themes catalog present
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, sys
+          p = pathlib.Path("themes.json")
+          data = json.loads(p.read_text(encoding="utf-8"))
+          themes = data.get("themes") or []
+          print(f"themes.json entries: {len(themes)}")
+          if len(themes) < 50:
+              sys.exit("themes.json looks too small; aborting deploy")
+          PY
+
+      - name: Deploy to Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_PAGES_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT }}
+        run: node scripts/deploy-pages.mjs
+
+      - name: Verify live themes.json updated
+        continue-on-error: true
+        run: |
+          LOCAL=$(python3 -c "import json; print(len(json.load(open('themes.json'))['themes']))")
+          for i in 1 2 3 4 5 6; do
+            REMOTE=$(curl -fsSL "https://themes.innioasis.app/themes.json" | python3 -c "import json,sys; print(len(json.load(sys.stdin)['themes']))")
+            echo "local=$LOCAL remote=$REMOTE (attempt $i)"
+            if [[ "$REMOTE" -ge "$LOCAL" ]]; then
+              exit 0
+            fi
+            sleep 30
+          done
+          echo "WARN: live themes.json still behind main ($REMOTE < $LOCAL)"
+          exit 1
