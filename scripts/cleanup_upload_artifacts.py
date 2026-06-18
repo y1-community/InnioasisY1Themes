@@ -28,6 +28,11 @@ def _is_stale(path: Path, cutoff_ts: float) -> bool:
 
 
 def main() -> int:
+    cleanup_all = os.environ.get("UPLOAD_ARTIFACT_CLEANUP_ALL", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+    }
     max_age_hours = float(os.environ.get("UPLOAD_ARTIFACT_MAX_AGE_HOURS", "48") or "48")
     cutoff = 0.0 if max_age_hours <= 0 else (time.time() - (max_age_hours * 3600.0))
 
@@ -36,7 +41,7 @@ def main() -> int:
         if not meta.is_file() or meta.parent != REPO_ROOT:
             continue
         zip_path = Path(str(meta)[: -len(".meta.json")])
-        if not zip_path.is_file() or _is_stale(meta, cutoff):
+        if cleanup_all or not zip_path.is_file() or _is_stale(meta, cutoff):
             meta.unlink()
             removed += 1
             print(f"Removed upload metadata: {meta.name}")
@@ -47,15 +52,14 @@ def main() -> int:
         meta = Path(str(zip_path) + ".meta.json")
         if not meta.is_file():
             continue
-        if not _is_stale(zip_path, cutoff):
-            continue
-        zip_path.unlink()
-        removed += 1
-        print(f"Removed stale upload zip: {zip_path.name}")
-        if meta.is_file():
-            meta.unlink()
+        if cleanup_all or _is_stale(zip_path, cutoff):
+            zip_path.unlink()
             removed += 1
-            print(f"Removed paired upload metadata: {meta.name}")
+            print(f"Removed stale upload zip: {zip_path.name}")
+            if meta.is_file():
+                meta.unlink()
+                removed += 1
+                print(f"Removed paired upload metadata: {meta.name}")
 
     if removed:
         print(f"Cleanup done ({removed} artifact file(s) removed).")

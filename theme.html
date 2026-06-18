@@ -437,11 +437,10 @@
         async function tryFetchFolderConfigTheme(contentFolder, cachedThemes, catalogRootOpt) {
             const cleanContent = String(contentFolder || '').replace(/^\.\/+/, '').trim();
             if (!cleanContent) return null;
-            const encodedFolder = cleanContent.split('/').map((seg) => encodeURIComponent(seg)).join('/');
             const catalogRoot = String(catalogRootOpt || cleanContent.split('/')[0] || '').replace(/^\.\/+/, '').trim();
             const catalogKey = catalogRoot.toLowerCase();
             try {
-                const res = await fetch(`${encodedFolder}/config.json`, {
+                const res = await fetch(themeFileUrl(cleanContent, 'config.json'), {
                     cache: 'no-cache'
                 });
                 if (!res.ok) return null;
@@ -507,10 +506,18 @@
             return stack.join('/');
         }
 
+        const GITHUB_MAIN_RAW_BASE = 'https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/';
+
+        function useGithubMainAssets() {
+            return typeof location !== 'undefined' && location.hostname === 'themes.innioasis.app';
+        }
+
         function themeFileUrl(folderPath, relativePath) {
             const full = resolvedRepoPath(folderPath, relativePath);
             if (!full) return '';
-            return `./${encodePathSegments(full)}`;
+            const enc = encodePathSegments(full);
+            if (useGithubMainAssets()) return GITHUB_MAIN_RAW_BASE + enc;
+            return `./${enc}`;
         }
 
         async function refreshThemeGoldMedal(catalogFolder, variantSeg, themeMetaOpt) {
@@ -595,7 +602,7 @@
             if (root) {
                 try {
                     const encRoot = root.split('/').filter(Boolean).map(encodeURIComponent).join('/');
-                    const rc = await fetch(`./${encRoot}/config.json`, { cache: 'no-cache' });
+                    const rc = await fetch(themeFileUrl(root, 'config.json'), { cache: 'no-cache' });
                     if (rc.ok) {
                         const j = await rc.json();
                         const gv = j.gallery && Array.isArray(j.gallery.variantFolders) ? j.gallery.variantFolders : null;
@@ -923,7 +930,7 @@
             if (!clean) return false;
             const encoded = clean.split('/').map(seg => encodeURIComponent(seg)).join('/');
             try {
-                const res = await fetch(`./${encoded}/config.json`, { cache: 'no-cache' });
+                const res = await fetch(themeFileUrl(clean, 'config.json'), { cache: 'no-cache' });
                 return !!res.ok;
             } catch (_) {
                 return false;
@@ -1587,7 +1594,7 @@
             let rootGalleryDefaultLabel = '';
             try {
                 const encRoot = folder.split('/').filter(Boolean).map(encodeURIComponent).join('/');
-                const rr = await fetch(`./${encRoot}/config.json`, { cache: 'no-cache' });
+                const rr = await fetch(themeFileUrl(folder, 'config.json'), { cache: 'no-cache' });
                 if (rr.ok) {
                     const jj = await rr.json();
                     rootGalleryDefaultLabel = String((jj.gallery && jj.gallery.defaultVariantLabel) || '').trim();
