@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "deploy": "node scripts/deploy-upload-worker.mjs",
+    "deploy:pages": "node scripts/deploy-pages.mjs",
     "deploy:upload-worker": "node scripts/deploy-upload-worker.mjs",
     "deploy:analytics-worker": "node scripts/deploy-analytics-worker.mjs"
   },

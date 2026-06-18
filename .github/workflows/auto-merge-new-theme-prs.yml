@@ -153,7 +153,7 @@ jobs:
             const body = [
               "Your theme was **merged automatically**—thank you for submitting it.",
               "",
-              "**Because yours qualified for automatic merging**, it usually appears on the public gallery in **about 50 minutes**. The live site needs a short time to catch up; that is normal.",
+              "**Because yours qualified for automatic merging**, it usually appears on the public gallery within a few minutes after the **Deploy Cloudflare Pages** workflow completes.",
               "",
               "**When it is ready**, open your theme page here:",
               shareLines,

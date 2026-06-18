@@ -1630,7 +1630,7 @@
 
         async function tryFetchThemeCache() {
             try {
-                const r = await fetch('themes.json');
+                const r = await fetch('themes.json', { cache: 'no-store' });
                 if (!r.ok) return [];
                 const text = await r.text();
                 try {

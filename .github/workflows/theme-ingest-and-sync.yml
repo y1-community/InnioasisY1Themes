@@ -324,7 +324,7 @@ jobs:
                 "**Your theme page** (bookmark or share this link):",
                 urlLines,
                 "",
-                "The main gallery at **https://themes.innioasis.app** can still take **up to about 50 minutes** to look fully updated in your browser—that delay is normal.",
+                                "The main gallery at **https://themes.innioasis.app** should update within a few minutes after the **Deploy Cloudflare Pages** workflow finishes (usually right after this ingest run).",
                 "",
                 "_If it still looks out of date after that, try refreshing the page or check back a little later._",
                 "",
