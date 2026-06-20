@@ -1,0 +1,135 @@
+{
+  "theme_info": {
+    "title": "Dark Theme",
+    "author": "osuka",
+    "authorUrl": "",
+    "description": "This theme looks cool on black innioasis, IPodish, and just basic dark theme :)  \nby osuka <3",
+    "externalDownloadUrl": ""
+  },
+  "themeCover": "coolcover.png",
+  "desktopWallpaper": "desk_bg001_YS.png",
+  "globalWallpaper": "global_bg001_YS.png",
+  "fontFamily": "opensans-condbold.ttf",
+  "itemConfig": {
+    "itemTextColor": "#ffffff",
+    "itemSelectedTextColor": "#000000",
+    "itemSelectedBackground": "1_YS.png",
+    "itemBackground": "",
+    "itemRightArrow": "2_YS.png"
+  },
+  "dialogConfig": {
+    "dialogOptionBackground": "3.png",
+    "dialogOptionTextColor": "#ffffff",
+    "dialogOptionSelectedBackground": "4_YS.png",
+    "dialogOptionSelectedTextColor": "#ffffff",
+    "dialogBackgroundColor": "#ffffff"
+  },
+  "menuConfig": {
+    "menuBackgroundColor": "#000000",
+    "menuItemBackground": "",
+    "menuItemTextColor": "#ffffff",
+    "menuItemSelectedBackground": "1_YS.png",
+    "menuItemSelectedTextColor": "#000000"
+  },
+  "homePageConfig": {
+    "nowPlaying": "Now Playing_YS.png",
+    "music": "Music_YS.png",
+    "video": "Videos_YS.png",
+    "audiobooks": "Audiobooks_YS.png",
+    "photos": "Photos_YS.png",
+    "fm": "FM Radio_YS.png",
+    "bluetooth": "Bluetooth_YS.png",
+    "settings": "settingsbg.png",
+    "shuffleQuick": "Shuffle Quick.png",
+    "ebook": "transparent.png",
+    "calendar": "transparent.png",
+    "calculator": "transparent.png"
+  },
+  "fileConfig": {
+    "folderIcon": "",
+    "musicIcon": ""
+  },
+  "settingConfig": {
+    "shutdown": "Shutdown@1x.png",
+    "timedShutdown_off": "Timed shutdown_001@1x.png",
+    "timedShutdown_10": "Timed shutdown_002@1x.png",
+    "timedShutdown_20": "Timed shutdown_003@1x.png",
+    "timedShutdown_30": "Timed shutdown_004@1x.png",
+    "timedShutdown_60": "Timed shutdown_005@1x.png",
+    "timedShutdown_90": "Timed shutdown_006@1x.png",
+    "timedShutdown_120": "Timed shutdown_007@1x.png",
+    "shuffleOn": "Shuffle_on@1x.png",
+    "shuffleOff": "Shuffle_off@1x.png",
+    "repeatOff": "Repeat_off@1x.png",
+    "repeatAll": "Repeat_all@1x.png",
+    "repeatOne": "Repeat_one@1x.png",
+    "equalizer_normal": "equalizericon.png",
+    "equalizer_classical": "equalizericon.png",
+    "equalizer_dance": "equalizericon.png",
+    "equalizer_flat": "equalizericon.png",
+    "equalizer_folk": "equalizericon.png",
+    "equalizer_heavymetal": "equalizericon.png",
+    "equalizer_hiphop": "equalizericon.png",
+    "equalizer_jazz": "equalizericon.png",
+    "equalizer_pop": "equalizericon.png",
+    "equalizer_rock": "equalizericon.png",
+    "keyLockOn": "Key lock_on@1x.png",
+    "keyLockOff": "Key lock_off@1x.png",
+    "keyToneOn": "Key tone_on@1x.png",
+    "keyToneOff": "Key tone_off@1x.png",
+    "keyVibrationOn": "Key vibration_on@1x.png",
+    "keyVibrationOff": "Key vibration_off@1x.png",
+    "wallpaper": "Wallpaper@1x.png",
+    "backlight_10": "sleeptime.png",
+    "backlight_15": "sleeptime.png",
+    "backlight_30": "sleeptime.png",
+    "backlight_45": "sleeptime.png",
+    "backlight_60": "sleeptime.png",
+    "backlight_120": "sleeptime.png",
+    "backlight_300": "sleeptime.png",
+    "backlight_always": "sleeptime.png",
+    "brightness": "Brightness@1x.png",
+    "displayBatteryOn": "Display battery_on@1x.png",
+    "displayBatteryOff": "Display battery_off@1x.png",
+    "dateTime": "Date & Time@1x.png",
+    "language": "Language@1x.png",
+    "factoryReset": "Factory@1x.png",
+    "clearCache": "Clear cache@1x.png",
+    "theme": "Change Theme@1x.png",
+    "fileExtensionOn": "file_ext_on.png",
+    "fileExtensionOff": "file_ext_off.png",
+    "launcher": "transparent.png"
+  },
+  "statusConfig": {
+    "playing": "playing.png",
+    "audiobookPlaying": "",
+    "pause": "pause.png",
+    "fmPlaying": "",
+    "stop": "stop.png",
+    "blConnected": "",
+    "blConnecting": "",
+    "blDisconnected": "",
+    "headsetWithMic": "headset2.png",
+    "headsetWithoutMic": "headset1",
+    "statusBarColor": "",
+    "battery": [
+      "battery.001.png",
+      "battery.002.png",
+      "battery.003.png",
+      "battery.004.png"
+    ],
+    "batteryCharging": [
+      "batterycharge.001.png",
+      "batterycharge.002.png",
+      "batterycharge.003.png",
+      "batterycharge.004.png"
+    ]
+  },
+  "playerConfig": {
+    "progressColor": "#FFFFFF",
+    "progressBackgroundColor": "#FFFFFF"
+  },
+  "gallery": {
+    "compatibilityMedal": "none"
+  }
+}
