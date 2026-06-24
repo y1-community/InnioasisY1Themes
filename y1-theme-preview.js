@@ -1085,7 +1085,11 @@
         if (!configUrl) {
             configUrl = './' + encoded + '/config.json';
         }
-        return fetch(configUrl, { cache: 'no-cache' })
+        var fetchOpts = { cache: 'no-cache' };
+        if (typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function') {
+            fetchOpts.signal = AbortSignal.timeout(12000);
+        }
+        return fetch(configUrl, fetchOpts)
             .then(function (res) {
                 if (!res.ok) throw new Error('config.json not found');
                 return res.json();
