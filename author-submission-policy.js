@@ -121,6 +121,10 @@
         return reasonMapFromField(optOutData && optOutData.authors, normAuthor);
     }
 
+    function getOptOutFolderMap() {
+        return reasonMapFromField(optOutData && optOutData.folders, (v) => String(v || '').trim());
+    }
+
     function getBlockAuthorMap() {
         return reasonMapFromField(blockData && blockData.authors, normAuthor);
     }
@@ -164,11 +168,24 @@
         const authorRaw = o.author != null ? o.author : (o.theme ? readAuthorFromTheme(o.theme) : '');
         const author = normAuthor(authorRaw);
         const slug = normSlug(o.uploaderSlug);
+        const folderRaw = o.folder != null ? o.folder : (o.theme && o.theme.folder);
+        const folder = String(folderRaw || '').trim();
 
         const optAuthors = getOptOutAuthorMap();
+        const optFolders = getOptOutFolderMap();
         const blockAuthors = getBlockAuthorMap();
         const blockSlugs = getBlockSlugMap();
 
+        if (folder && optFolders.has(folder)) {
+            if (isArchivePreviewActive()) {
+                return { hidden: false, reason: '', detail: '' };
+            }
+            return {
+                hidden: true,
+                reason: 'opt_out',
+                detail: lookupReason(optFolders, folder) || '',
+            };
+        }
         if (author && optAuthors.has(author)) {
             if (isArchivePreviewActive()) {
                 return { hidden: false, reason: '', detail: '' };

@@ -1664,9 +1664,6 @@
             const useRemote = remote.length > local.length || stale;
             window.__y1UseGithubMainAssets = !!useRemote;
             const themes = useRemote && remote.length ? remote : (local.length ? local : remote);
-            // #region agent log
-            fetch('http://127.0.0.1:7705/ingest/21da8d3c-5a01-4bd3-994d-cee34753d7dd',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f20d5f'},body:JSON.stringify({sessionId:'f20d5f',location:'index.html:tryFetchThemeCache',message:'catalog source',data:{localCount:local.length,remoteCount:remote.length,stale,useRemote,chosenCount:themes.length,useGithubAssets:!!window.__y1UseGithubMainAssets,host:location.hostname},timestamp:Date.now(),hypothesisId:'A'})}).catch(()=>{});
-            // #endregion
             return themes;
         }
 

@@ -1859,6 +1859,23 @@
         const themesByFolder = new Map();
         /** @type {Map<string, { folder: string, author: string, name: string }>} logical slug -> catalog row */
         const themesByLogical = new Map();
+        const GITHUB_MAIN_THEMES_JSON =
+            "https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/themes.json";
+
+        async function fetchCatalogThemes() {
+            const [localRes, remoteRes] = await Promise.all([
+                fetch("themes.json", { cache: "no-store" }).catch(() => null),
+                fetch(GITHUB_MAIN_THEMES_JSON, { cache: "no-store" }).catch(() => null),
+            ]);
+            const local = localRes && localRes.ok
+                ? ((await localRes.json().catch(() => ({}))).themes || [])
+                : [];
+            const remote = remoteRes && remoteRes.ok
+                ? ((await remoteRes.json().catch(() => ({}))).themes || [])
+                : [];
+            if (remote.length > local.length) return remote;
+            return local.length ? local : remote;
+        }
 
         function logicalThemeSlug(folder) {
             return String(folder || "")
@@ -1938,10 +1955,7 @@
             themesByFolder.clear();
             themesByLogical.clear();
             try {
-                const res = await fetch("themes.json", { cache: "no-store" });
-                if (!res.ok) return;
-                const data = await res.json();
-                const list = data && Array.isArray(data.themes) ? data.themes : [];
+                const list = await fetchCatalogThemes();
                 for (const t of list) {
                     const f = String(t.folder || "").trim();
                     if (!f) continue;
@@ -1994,15 +2008,7 @@
                 return;
             }
             try {
-                const res = await fetch("themes.json", { cache: "no-store" });
-                if (!res.ok) {
-                    nameEl.textContent = "(could not load catalog)";
-                    authorEl.textContent = "—";
-                    if (readout) readout.hidden = false;
-                    return;
-                }
-                const data = await res.json();
-                const list = data && Array.isArray(data.themes) ? data.themes : [];
+                const list = await fetchCatalogThemes();
                 const row = list.find((t) => t && String(t.folder || "").trim() === themeFolderParam);
                 if (!row) {
                     nameEl.textContent = "(folder not in catalog)";

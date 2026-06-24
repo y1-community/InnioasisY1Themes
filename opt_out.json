@@ -1,12 +1,15 @@
 {
-  "version": 2,
-  "authors": {
-    "u/jasperhooloop": "Author requested removal from the public gallery.",
-    "mp3li": "Author requested removal from the public gallery.",
-    "u/highwaycrisis": "Author requested removal from the public gallery.",
-    "u/Neither-Classic2058": "Author requested removal from the public gallery.",
-    "Neither-Classic2058": "Author requested removal from the public gallery.",
-    "albini": "Author requested removal from the public gallery."
-  },
-  "comment": "Opt-out (archival): themes stay in the GitHub repo for preservation but are not listed or offered for download on the public site."
+    "version": 2,
+    "authors": {
+        "u/jasperhooloop": "Author requested removal from the public gallery.",
+        "mp3li": "Author requested removal from the public gallery.",
+        "u/highwaycrisis": "Author requested removal from the public gallery.",
+        "u/Neither-Classic2058": "Author requested removal from the public gallery.",
+        "Neither-Classic2058": "Author requested removal from the public gallery.",
+        "albini": "Author requested removal from the public gallery."
+    },
+    "folders": {
+        "Monster_High": "This is a duplicate of my other Monster High (G1) theme."
+    },
+    "comment": "Opt-out (archival): themes stay in the GitHub repo for preservation but are not listed or offered for download on the public site."
 }

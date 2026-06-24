@@ -123,6 +123,7 @@ def banned_author_attempt_notify_fabform_id() -> str:
 def listing_hidden(
     *,
     author: str | None = None,
+    folder: str | None = None,
     uploader_slug: str | None = None,
     catalog_entry: dict[str, Any] | None = None,
 ) -> tuple[bool, str, str]:
@@ -130,12 +131,16 @@ def listing_hidden(
     auth = norm_author(author)
     if not auth and catalog_entry:
         auth = norm_author(author_from_catalog_entry(catalog_entry))
+    folder_key = str(folder or (catalog_entry or {}).get("folder") or "").strip()
     slug = norm_slug(uploader_slug)
 
     opt_authors = _reason_map(_opt_out().get("authors"), norm_author)
+    opt_folders = _reason_map(_opt_out().get("folders"), lambda v: str(v or "").strip())
     block_authors = _reason_map(_block().get("authors"), norm_author)
     block_slugs = _reason_map(_block().get("uploaderSlugs"), norm_slug)
 
+    if folder_key and folder_key in opt_folders:
+        return True, "opt_out", _lookup_reason(opt_folders, folder_key) or ""
     if auth and auth in opt_authors:
         return True, "opt_out", _lookup_reason(opt_authors, auth) or ""
     if auth and auth in block_authors:

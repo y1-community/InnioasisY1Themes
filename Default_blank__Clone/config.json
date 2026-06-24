@@ -1,9 +1,9 @@
 {
   "theme_info": {
     "title": "Default blank (Clone)",
-    "author": "mariaa",
+    "author": "y2kgirl00",
     "authorUrl": "",
-    "description": "Blank template theme with full config coverage for easy customization.",
+    "description": "my first post guys",
     "externalDownloadUrl": ""
   },
   "themeCover": "cover.png",
@@ -12,17 +12,17 @@
   "desktopMask": "transparent.png",
   "fontFamily": "opensans-condbold.ttf",
   "itemConfig": {
-    "itemTextColor": "#4b112d",
-    "itemSelectedTextColor": "#aa3c8c",
+    "itemTextColor": "#ffffff",
+    "itemSelectedTextColor": "#ffffff",
     "itemBackground": "0.png",
     "itemSelectedBackground": "1.png",
     "itemRightArrow": "2.png"
   },
   "dialogConfig": {
     "dialogOptionBackground": "3.png",
-    "dialogOptionTextColor": "#000000",
+    "dialogOptionTextColor": "#ffffff",
     "dialogOptionSelectedBackground": "4.png",
-    "dialogOptionSelectedTextColor": "#000000",
+    "dialogOptionSelectedTextColor": "#ffffff",
     "dialogBackgroundColor": "#000000",
     "dialogTextColor": "#ffffff"
   },
