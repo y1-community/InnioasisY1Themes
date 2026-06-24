@@ -2825,6 +2825,17 @@
             "searchText": "test customize your innioasis y1 with the melodymuncher theme. seal test"
         },
         {
+            "name": "test",
+            "folder": "test_me",
+            "author": "me",
+            "authorUrl": "https://www.innioasis.com",
+            "description": "Download the test theme for Innioasis Y1 by me and personalize your player's look with curated UI assets.",
+            "screenshot": "./test_me/cover.png",
+            "sourceType": "internal",
+            "sortName": "test",
+            "searchText": "test download the test theme for innioasis y1 by me and personalize your player's look with curated ui assets. me test_me"
+        },
+        {
             "name": "Teto",
             "folder": "Teto",
             "author": "Lezz",
