@@ -333,7 +333,9 @@
         function buildSeoTitle(name, author) {
             const cleanName = String(name || '').trim() || 'Theme';
             const cleanAuthor = String(author || '').trim();
-            return cleanAuthor ? `${cleanName} by ${cleanAuthor} | Innioasis Y1` : `${cleanName} | Innioasis Y1`;
+            return cleanAuthor
+                ? `${cleanName} for Innioasis Y1 by ${cleanAuthor}`
+                : `${cleanName} for Innioasis Y1`;
         }
 
         function applySeoMetadata(name, author, description) {
