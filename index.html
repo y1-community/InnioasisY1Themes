@@ -1440,6 +1440,11 @@
             renderPager(matched.length, pageSize);
             const emptyEl = document.getElementById('theme-empty');
             if (emptyEl) emptyEl.style.display = matched.length === 0 ? 'block' : 'none';
+            // #region agent log
+            if (query && query.includes('club')) {
+                fetch('http://127.0.0.1:7456/ingest/d8e07b1e-08e3-4ae4-9d83-34af60e6d8f7',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7e5608'},body:JSON.stringify({sessionId:'7e5608',location:'index.html:applyFilters',message:'club search results',data:{query,matchedCount:matched.length,matchedNames:matched.slice(0,5).map((c)=>c.getAttribute('data-name'))},timestamp:Date.now(),hypothesisId:'C'})}).catch(()=>{});
+            }
+            // #endregion
         }
 
         if (searchInput) searchInput.addEventListener('input', debounce(() => {
@@ -1664,6 +1669,9 @@
             const useRemote = remote.length > local.length || stale;
             window.__y1UseGithubMainAssets = !!useRemote;
             const themes = useRemote && remote.length ? remote : (local.length ? local : remote);
+            // #region agent log
+            fetch('http://127.0.0.1:7456/ingest/d8e07b1e-08e3-4ae4-9d83-34af60e6d8f7',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7e5608'},body:JSON.stringify({sessionId:'7e5608',location:'index.html:tryFetchThemeCache',message:'catalog fetch',data:{localCount:local.length,remoteCount:remote.length,stale,useRemote,resultCount:themes.length},timestamp:Date.now(),hypothesisId:'A-B'})}).catch(()=>{});
+            // #endregion
             return themes;
         }
 
@@ -4338,6 +4346,10 @@
                 await window.ThemeAuthorPolicy.ready();
                 themes = window.ThemeAuthorPolicy.filterPublicThemes(themes);
             }
+            // #region agent log
+            const clubThemes = themes.filter((t) => String(t.name || t.folder || '').toLowerCase().includes('club'));
+            fetch('http://127.0.0.1:7456/ingest/d8e07b1e-08e3-4ae4-9d83-34af60e6d8f7',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'7e5608'},body:JSON.stringify({sessionId:'7e5608',location:'index.html:load',message:'themes after policy filter',data:{totalThemes:themes.length,clubMatches:clubThemes.map((t)=>({name:t.name,folder:t.folder,author:t.author})),useGithubMain:!!window.__y1UseGithubMainAssets},timestamp:Date.now(),hypothesisId:'C'})}).catch(()=>{});
+            // #endregion
             themes.sort((a, b) => compareThemeTitles(a?.name, b?.name));
             const filteredThemes = themes.filter(t => !!t);
             galleryCatalogThemes = filteredThemes.filter((t) => {
