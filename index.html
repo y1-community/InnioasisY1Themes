@@ -650,7 +650,7 @@
     <div class="gallery-topbar">
         <a class="gallery-brand" href="index.html" title="Innioasis Y1 & Y2 Themes gallery">
             <span class="gallery-brand-icon" aria-hidden="true"><i class="fa-solid fa-palette"></i></span>
-            <span class="gallery-brand-text">Y1 & Y2 Themes</span>
+            <span class="gallery-brand-text">Innioasis Y1 & Y2 Themes</span>
         </a>
         <div class="gallery-tabs" aria-label="Site sections">
             <a class="gallery-tab" href="https://y1-themes.vercel.app">Editor</a>
@@ -683,11 +683,11 @@
             <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
                 <div style="flex: 1; min-width: 300px;">
                     <div style="margin-bottom: 4px;">Direct Install</div>
-                    <div style="font-size: 0.9rem; color: var(--text-secondary);">Connect your Y1 and select its themes folder to install themes directly without downloading zip files.</div>
+                    <div style="font-size: 0.9rem; color: var(--text-secondary);">Connect your Y1 or Y2 and select its themes folder to install themes directly without downloading zip files.</div>
                     <div id="browser-support-warning" style="font-family: Inter; font-size: 0.85rem; color: #ff9800; margin-top: 6px; display: none;"><i class="fas fa-exclamation-triangle" style="margin-right: 4px;"></i>Your browser doesn't support Direct Install. Use Chrome, Edge, or Opera.</div>
                 </div>
                 <button id="choose-folder-btn" class="btn" style="font-family: Inter; padding: .875rem 1.5rem; font-weight: normal; white-space: nowrap;">
-                    <i class="fas fa-folder" style="margin-right: 8px;"></i>Choose Y1 Themes Folder
+                    <i class="fas fa-folder" style="margin-right: 8px;"></i>Choose Y1 & Y2 Themes Folder
                 </button>
                 <div id="folder-selected-indicator" style="font-size: 0.85rem; color: #4caf50; display: none;"><i class="fas fa-check-circle" style="margin-right: 4px;"></i>Folder selected</div>
                 <button id="bulk-update-all-btn" class="btn" type="button" disabled style="font-family: Inter; padding: .875rem 1.5rem; font-weight: normal; white-space: nowrap; opacity: 0.5; cursor: not-allowed;">
@@ -914,7 +914,7 @@
         async function replaceDeviceThemeFolder(folderName) {
             const name = String(folderName || '').trim();
             if (!selectedThemesFolder || !name) {
-                throw new Error('Y1 Themes folder is not selected.');
+                throw new Error('Y1 & Y2 themes folder is not selected.');
             }
             await removeDeviceThemeFolder(name);
             return await selectedThemesFolder.getDirectoryHandle(name, { create: true });
@@ -1548,7 +1548,7 @@
                 bulkUpdateAllBtn.onclick = async () => {
                     if (bulkUpdateRunActive) return;
                     if (!selectedThemesFolder) {
-                        alert('Please select your Y1 Themes folder first');
+                        alert('Please select your Y1 & Y2 themes folder first');
                         return;
                     }
                     if (!getBulkInstallableThemes().length) {
@@ -3166,7 +3166,7 @@
         // DIRECT INSTALL (NO GITHUB API)
         // =========================================================
         async function runDirectInstallJob(theme, selectedCombo, progress, installOpts) {
-            if (!selectedThemesFolder) throw new Error('Y1 Themes folder is not selected.');
+            if (!selectedThemesFolder) throw new Error('Y1 & Y2 themes folder is not selected.');
             const opts = installOpts || {};
             const replaceExisting = opts.replaceExisting !== false;
             const setProgress = (pct, msg) => {
@@ -3479,7 +3479,7 @@
                 return;
             }
             if (!selectedThemesFolder) {
-                alert('Please select your Y1 Themes folder first');
+                alert('Please select your Y1 & Y2 themes folder first');
                 return;
             }
 

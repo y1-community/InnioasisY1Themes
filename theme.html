@@ -35,13 +35,13 @@
     <link rel="canonical" href="https://themes.innioasis.app/theme.html">
 
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Themes for Innioasis Y1 & Y2 - Y1 & Y2 Themes">
+    <meta property="og:title" content="Innioasis Y1 & Y2 Themes">
     <meta property="og:description" content="Browse and download community-made themes for your Innioasis Y1 or Y2 with curated UI assets and easy personalization options.">
     <meta property="og:url" content="https://themes.innioasis.app/theme.html">
     <meta property="og:image" content="https://innioasis.app/y1_illustration.png">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Themes for Innioasis Y1 & Y2 - Y1 & Y2 Themes">
+    <meta name="twitter:title" content="Innioasis Y1 & Y2 Themes">
     <meta name="twitter:description" content="Browse and download community-made themes for your Innioasis Y1 or Y2 with curated UI assets and easy personalization options.">
     <meta name="twitter:image" content="https://innioasis.app/y1_illustration.png">
 
@@ -61,7 +61,7 @@
     <script src="y1-theme-preview.js?v=20260215"></script>
     <script src="theme-artwork-compat.js?v=20260524"></script>
     <script src="gold-theme-detect.js?v=20260621"></script>
-    <script src="gallery-chrome.js?v=20260622"></script>
+    <script src="gallery-chrome.js?v=20260624"></script>
     <script src="author-links.js?v=20260622"></script>
     <script src="gallery-loaded-theme.js"></script>
     <script src="theme-share-links.js"></script>
@@ -338,8 +338,8 @@
                 : rawName;
             const cleanAuthor = String(author || '').trim();
             return cleanAuthor
-                ? `${cleanName} for Innioasis Y1 by ${cleanAuthor}`
-                : `${cleanName} for Innioasis Y1`;
+                ? `${cleanName} for Innioasis Y1 & Y2 by ${cleanAuthor}`
+                : `${cleanName} for Innioasis Y1 & Y2`;
         }
 
         function applySeoMetadata(name, author, description) {
@@ -348,7 +348,7 @@
                 : String(name || '').trim();
             const seoTitle = buildSeoTitle(displayName, author);
             const seoDescription = String(description || '').trim() ||
-                `${displayName || 'Theme'} theme for Innioasis Y1.`;
+                `${displayName || 'Theme'} theme for Innioasis Y1 & Y2.`;
             document.title = seoTitle;
             setMetaContent('meta[property=\"og:title\"]', seoTitle);
             setMetaContent('meta[name=\"twitter:title\"]', seoTitle);

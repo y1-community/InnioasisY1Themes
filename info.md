@@ -1,4 +1,4 @@
-# Welcome to the Innioasis Y1 Themes community site GitHub Repository
+# Welcome to the Innioasis Y1 & Y2 Themes community site GitHub Repository
 
 Adding Themes:
 

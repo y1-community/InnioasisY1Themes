@@ -24,8 +24,8 @@ def build_theme_seo_title(name: str, author: str = "", variant: str = "") -> str
         display = f"{display} ({v})"
     author_clean = str(author or "").strip()
     if author_clean:
-        return f"{display} for Innioasis Y1 by {author_clean}"
-    return f"{display} for Innioasis Y1"
+        return f"{display} for Innioasis Y1 & Y2 by {author_clean}"
+    return f"{display} for Innioasis Y1 & Y2"
 
 
 def _read_author_from_index(text: str) -> str:

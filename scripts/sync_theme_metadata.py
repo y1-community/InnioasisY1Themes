@@ -264,20 +264,22 @@ def _extract_theme_info_from_config(config: dict[str, Any]) -> dict[str, str]:
 
 
 def _default_description(name: str) -> str:
-    return f"{name} theme for Innioasis Y1."
+    return f"{name} theme for Innioasis Y1 & Y2."
 
 
 def _download_description(name: str, author: str = "") -> str:
     if author:
-        return f"Download the {name} theme for Innioasis Y1 by {author} and personalize your player's look with curated UI assets."
-    return f"Download the {name} theme for Innioasis Y1 and personalize your player's look with curated UI assets."
+        return f"Download the {name} theme for Innioasis Y1 & Y2 by {author} and personalize your player's look with curated UI assets."
+    return f"Download the {name} theme for Innioasis Y1 & Y2 and personalize your player's look with curated UI assets."
 
 
 def _is_default_description(value: str, name: str) -> bool:
     clean_value = str(value or "").strip()
     return clean_value in {
         _default_description(name),
+        f"Customize your Innioasis Y1 or Y2 with the {name} theme.",
         f"Customize your Innioasis Y1 with the {name} theme.",
+        f"{name} theme for Innioasis Y1.",
     }
 
 

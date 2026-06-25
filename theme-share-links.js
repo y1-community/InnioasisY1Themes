@@ -104,7 +104,7 @@
      */
     async function shareThemeLink(opts) {
         const url = buildPublicThemeUrl(opts && opts.catalogFolder, opts && opts.variantSegment);
-        const title = String((opts && opts.title) || 'Innioasis Y1 theme').trim();
+        const title = String((opts && opts.title) || 'Innioasis Y1 & Y2 theme').trim();
         const text = String((opts && opts.text) || title).trim();
         if (global.navigator && typeof global.navigator.share === 'function') {
             try {

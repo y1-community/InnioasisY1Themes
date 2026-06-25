@@ -21,7 +21,7 @@
         a.title = "Innioasis Y1 & Y2 Themes gallery";
         a.innerHTML =
             '<span class="gallery-brand-icon" aria-hidden="true"><i class="fa-solid fa-palette"></i></span>' +
-            '<span class="gallery-brand-text">Y1 & Y2 Themes</span>';
+            '<span class="gallery-brand-text">Innioasis Y1 & Y2 Themes</span>';
         return a;
     }
 

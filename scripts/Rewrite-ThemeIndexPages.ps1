@@ -127,7 +127,7 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
     $author = if ($meta.author) { "$($meta.author)".Trim() } elseif ($ti.author) { "$($ti.author)".Trim() } else { 'Innioasis Community' }
     $rawDesc = if ($meta.description) { "$($meta.description)".Trim() }
     elseif ($ti.description) { "$($ti.description)".Trim() }
-    else { "$displayName UI theme for the Innioasis Y1 media player." }
+    else { "$displayName UI theme for the Innioasis Y1 & Y2 media players." }
     $variantNote = if ($variant) { " Variant: $variant." } else { '' }
     $fullDesc = "$rawDesc$variantNote"
     if (-not $fullDesc) { $fullDesc = $displayName }
@@ -143,8 +143,8 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
     # Meta refresh content= must escape & as &amp; in HTML attributes.
     $previewUrlRefreshAttr = ($previewUrl -replace '&', '&amp;')
     $sharePageUrl = Build-SharePageUrl $catalogFolder $variant
-    # Document title / social: "ThemeName for Innioasis Y1 by Author" (variant in the theme name slot when present).
-    $title = if ($variant) { "$displayName ($variant) for Innioasis Y1 by $author" } else { "$displayName for Innioasis Y1 by $author" }
+    # Document title / social: "ThemeName for Innioasis Y1 & Y2 by Author" (variant in the theme name slot when present).
+    $title = if ($variant) { "$displayName ($variant) for Innioasis Y1 & Y2 by $author" } else { "$displayName for Innioasis Y1 & Y2 by $author" }
 
     $kwSet = New-Object 'System.Collections.Generic.HashSet[string]'
     foreach ($x in @($displayName, $catalogFolder, $variant, 'Innioasis Y1', 'Y1 theme', 'Rockbox', 'MP3 player theme', $author, 'Luci web hosting', 'themes.innioasis.app hosting', 'luci.ltd')) {
@@ -158,7 +158,7 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
         name          = $title
         description   = "$rawDesc$variantNote"
         applicationCategory = 'MultimediaApplication'
-        operatingSystem = 'Innioasis Y1'
+        operatingSystem = 'Innioasis Y1 & Y2'
         offers        = @{ '@type' = 'Offer'; price = '0'; priceCurrency = 'USD' }
         url           = $previewUrl
         image         = $ogImage
@@ -252,7 +252,7 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
   <div class="gallery-topbar">
     <a class="gallery-brand" href="https://themes.innioasis.app/index.html" title="Innioasis Y1 & Y2 Themes gallery">
       <span class="gallery-brand-icon" aria-hidden="true"><i class="fa-solid fa-palette"></i></span>
-      <span class="gallery-brand-text">Y1 & Y2 Themes</span>
+      <span class="gallery-brand-text">Innioasis Y1 & Y2 Themes</span>
     </a>
     <div class="gallery-tabs" aria-label="Site sections">
       <a class="gallery-tab" href="https://y1-themes.vercel.app">Editor</a>
