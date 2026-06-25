@@ -4,16 +4,16 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title id="upload-doc-title">Upload your theme — Innioasis Y1 Themes</title>
-    <meta name="description" content="Upload an Innioasis Y1 theme in a few steps. We package it in your browser and give you a link to follow until it is live." />
-    <meta name="keywords" content="Innioasis Y1 theme upload, Y1 Rockbox theme, theme gallery, Luci web hosting, themes.innioasis.app" />
+    <title id="upload-doc-title">Upload your theme — Innioasis Y1 & Y2 Themes</title>
+    <meta name="description" content="Upload an Innioasis Y1 or Y2 theme in a few steps. We package it in your browser and give you a link to follow until it is live." />
+    <meta name="keywords" content="Innioasis Y1 theme upload, Innioasis Y2 theme upload, Y1 Rockbox theme, Y2 Rockbox theme, theme gallery, Luci web hosting, themes.innioasis.app" />
     <meta name="author" content="Innioasis Community" />
     <meta name="publisher" content="Luci Ltd" />
-    <link rel="author" href="https://www.luci.ltd" title="Luci Ltd — web hosting for Innioasis Y1 Themes" />
+    <link rel="author" href="https://www.luci.ltd" title="Luci Ltd — web hosting for Innioasis Y1 & Y2 Themes" />
     <link rel="canonical" href="https://themes.innioasis.app/upload.html">
 
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Upload your theme — Innioasis Y1 Themes">
+    <meta property="og:title" content="Upload your theme — Innioasis Y1 & Y2 Themes">
     <meta property="og:description" content="Upload a theme in a few steps—we package it in your browser and you get a link to follow until it is live.">
     <meta property="og:url" content="https://themes.innioasis.app/upload.html">
     <meta property="og:image" content="https://innioasis.app/y1_illustration.png">
@@ -68,6 +68,7 @@
         })();
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="theme-display-name.js?v=20260624"></script>
     <link rel="stylesheet" href="theme-analytics.css?v=20260518">
     <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
     <script src="theme-analytics.js?v=20260521"></script>
@@ -676,7 +677,7 @@
     <meta http-equiv="refresh" content="0;url=__Y1_REFRESH_URL__" />
 
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Innioasis Y1 Themes" />
+    <meta property="og:site_name" content="Innioasis Y1 & Y2 Themes" />
     <meta property="og:title" content="__Y1_TITLE__" />
     <meta property="og:description" content="__Y1_META_DESC__" />
     <meta property="og:url" content="__Y1_CANONICAL__" />
@@ -719,9 +720,9 @@
 
     <div id="nav-root"></div>
     <div class="gallery-topbar">
-        <a class="gallery-brand" href="https://themes.innioasis.app/index.html" title="Innioasis Y1 Themes gallery">
+        <a class="gallery-brand" href="https://themes.innioasis.app/index.html" title="Innioasis Y1 & Y2 Themes gallery">
             <span class="gallery-brand-icon" aria-hidden="true"><i class="fa-solid fa-palette"></i></span>
-            <span class="gallery-brand-text">Y1 Themes</span>
+            <span class="gallery-brand-text">Y1 & Y2 Themes</span>
         </a>
         <div class="gallery-tabs" aria-label="Site sections">
             <a class="gallery-tab" href="https://y1-themes.vercel.app">Editor</a>
@@ -1244,14 +1245,22 @@
                     }
                     card.querySelectorAll("[data-primary-field]").forEach((el) => {
                         if (el === extToggle) return;
-                        el.addEventListener("input", () => {
+                        const onPrimaryFieldEdit = () => {
+                            if (el.matches('[data-primary-field="title"]')) {
+                                const result = sanitizeThemeTitleInput(el.value);
+                                if (result.changed) el.value = result.value;
+                            }
                             syncCollisionUi();
                             void syncAuthorPolicyBanner();
-                        });
-                        el.addEventListener("change", () => {
-                            syncCollisionUi();
-                            void syncAuthorPolicyBanner();
-                        });
+                        };
+                        el.addEventListener("input", onPrimaryFieldEdit);
+                        el.addEventListener("change", onPrimaryFieldEdit);
+                        if (el.matches('[data-primary-field="title"]')) {
+                            el.addEventListener("blur", () => {
+                                const result = sanitizeThemeTitleInput(el.value);
+                                if (result.changed) el.value = result.value;
+                            });
+                        }
                     });
                     const gl = card.querySelector('[data-var-field="galleryLookLabel"]');
                     if (gl) {
@@ -1310,7 +1319,7 @@
                     const entry = themeInfoEntries[idx];
                     if (!entry) return;
                     const getP = (field) => String(card.querySelector(`[data-primary-field="${field}"]`)?.value || "").trim();
-                    entry.themeInfo.title = getP("title");
+                    entry.themeInfo.title = sanitizeThemeTitleValue(getP("title"));
                     entry.themeInfo.author = getP("author");
                     entry.themeInfo.authorUrl = getP("authorUrl");
                     entry.themeInfo.description = getP("description");
@@ -1559,10 +1568,14 @@
             syncCollisionUi();
             updateIngestPathPreviews();
         });
-        metaEditorList.addEventListener("change", () => {
+        metaEditorList.addEventListener("change", (ev) => {
+            sanitizeTitleFieldFromEvent(ev);
             syncCollisionUi();
             updateIngestPathPreviews();
         });
+        metaEditorList.addEventListener("blur", (ev) => {
+            sanitizeTitleFieldFromEvent(ev);
+        }, true);
         const editAck = document.getElementById("edit-ack");
         const editNotice = document.getElementById("edit-notice");
         const editFolderEl = editNotice && editNotice.querySelector("[data-edit-folder]");
@@ -1689,7 +1702,7 @@
                 panelRemove.hidden = true;
                 if (afterCard) afterCard.hidden = true;
                 panelSubmitted.hidden = false;
-                if (docTitle) docTitle.textContent = "Submission received — Innioasis Y1 Themes";
+                if (docTitle) docTitle.textContent = "Submission received — Innioasis Y1 & Y2 Themes";
                 h1.textContent = "Submission received";
                 const leadEl = document.getElementById("submitted-lead");
                 const hintEl = document.getElementById("submitted-hint");
@@ -1758,10 +1771,10 @@
             if (pageMode === "remove") {
                 panelUpload.hidden = true;
                 panelRemove.hidden = false;
-                if (docTitle) docTitle.textContent = "Request theme removal — Innioasis Y1 Themes";
+                if (docTitle) docTitle.textContent = "Request theme removal — Innioasis Y1 & Y2 Themes";
                 h1.textContent = "Request theme removal";
                 lead.textContent =
-                    "You can opt your theme out of the Innioasis Y1 gallery. We verify listed metadata and contact details before maintainers remove it.";
+                    "You can opt your theme out of the Innioasis Y1 & Y2 gallery. We verify listed metadata and contact details before maintainers remove it.";
                 if (hint) {
                     hint.textContent =
                         "This flow is for author opt-out. We may contact you to confirm ownership before removal. Each request is reviewed in private before anything changes. " +
@@ -1787,7 +1800,7 @@
             panelRemove.hidden = true;
 
             if (pageMode === "edit-metadata") {
-                if (docTitle) docTitle.textContent = "Update theme details — Innioasis Y1 Themes";
+                if (docTitle) docTitle.textContent = "Update theme details — Innioasis Y1 & Y2 Themes";
                 h1.textContent = "Update theme details";
                 lead.textContent =
                     "Adjust how your listing reads on the gallery — no files required.";
@@ -1820,7 +1833,7 @@
             }
 
             if (pageMode === "edit") {
-                if (docTitle) docTitle.textContent = "Submit a theme update — Innioasis Y1 Themes";
+                if (docTitle) docTitle.textContent = "Submit a theme update — Innioasis Y1 & Y2 Themes";
                 h1.textContent = "Submit a theme update";
                 lead.textContent =
                     "Ship new artwork or refresh details. Use the same theme name as the live listing when you’re updating.";
@@ -1838,7 +1851,7 @@
                 return;
             }
 
-            if (docTitle) docTitle.textContent = "Upload your theme — Innioasis Y1 Themes";
+            if (docTitle) docTitle.textContent = "Upload your theme — Innioasis Y1 & Y2 Themes";
             h1.textContent = "Upload your theme";
             lead.textContent =
                 "One package is all we need—we prepare everything privately in your browser, then you get a simple link to watch it land.";
@@ -2389,7 +2402,10 @@
                         .replace(/\.zip$/i, "")
                         .trim();
                 }
-                entry.themeInfo.title = root || "Theme";
+                const titleFromFolder = (window.ThemeDisplayName && typeof window.ThemeDisplayName.titleFromFolderStem === "function")
+                    ? window.ThemeDisplayName.titleFromFolderStem(root)
+                    : root;
+                entry.themeInfo.title = titleFromFolder || "Theme";
             }
         }
 
@@ -2986,7 +3002,7 @@
                 }
                 if (kind === "root-skipped") return;
 
-                entry.themeInfo.title = getValue("title");
+                entry.themeInfo.title = sanitizeThemeTitleValue(getValue("title"));
                 entry.themeInfo.author = getValue("author");
                 entry.themeInfo.authorUrl = getValue("authorUrl");
                 entry.themeInfo.description = getValue("description");
@@ -3003,17 +3019,32 @@
                 .replace(/\s+/g, " ");
         }
 
-        function sanitizeThemeTitleInput(value) {
-            const trimmed = normalizeSpaces(value);
-            if (!trimmed) return { value: "", changed: false };
-            if (/^theme\s+/i.test(trimmed)) return { value: trimmed, changed: false };
-            if (/\s+theme$/i.test(trimmed)) {
-                return {
-                    value: trimmed.replace(/\s+theme$/i, "").trim(),
-                    changed: true
-                };
+        function sanitizeThemeTitleValue(value) {
+            if (window.ThemeDisplayName && typeof window.ThemeDisplayName.sanitizeThemeTitleInput === "function") {
+                return window.ThemeDisplayName.sanitizeThemeTitleInput(value).value;
             }
+            return normalizeSpaces(value);
+        }
+
+        function sanitizeThemeTitleInput(value) {
+            if (window.ThemeDisplayName && typeof window.ThemeDisplayName.sanitizeThemeTitleInput === "function") {
+                return window.ThemeDisplayName.sanitizeThemeTitleInput(value);
+            }
+            const trimmed = normalizeSpaces(value);
             return { value: trimmed, changed: false };
+        }
+
+        function sanitizeTitleFieldFromEvent(ev) {
+            const target = ev && ev.target;
+            if (!target || !target.matches || !target.matches('[data-field="title"]') || target.readOnly) return;
+            const result = sanitizeThemeTitleInput(target.value);
+            if (!result.changed) return;
+            target.value = result.value;
+            const card = target.closest(".meta-card");
+            if (!card) return;
+            const idx = Number(card.getAttribute("data-entry-idx"));
+            const entry = themeInfoEntries[idx];
+            if (entry && entry.themeInfo) entry.themeInfo.title = result.value;
         }
 
         function isDarkModeFolderName(folderName) {
@@ -3410,8 +3441,10 @@
                     throw new Error(`External download URL must start with http:// or https:// for ${label}.`);
                 }
                 if (titleSanitized.changed) {
-                    // Keep payload canonical to avoid duplicate theme naming in catalog.
                     entry.themeInfo.title = title;
+                    const card = metaEditorList && metaEditorList.querySelector(`.meta-card[data-entry-idx="${themeInfoEntries.indexOf(entry)}"]`);
+                    const titleInput = card && card.querySelector('[data-field="title"]');
+                    if (titleInput && !titleInput.readOnly) titleInput.value = title;
                 }
             }
         }
@@ -3853,7 +3886,7 @@
                                         }?`,
                                         acceptedAnswer: {
                                             "@type": "Answer",
-                                            text: `Open the Innioasis Y1 themes gallery preview: ${previewUrl}.`,
+                                            text: `Open the Innioasis Y1 & Y2 themes gallery preview: ${previewUrl}.`,
                                         },
                                     },
                                     {

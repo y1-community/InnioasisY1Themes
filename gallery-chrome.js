@@ -1,5 +1,5 @@
 /**
- * Shared gallery top bar: Y1 Themes brand + consistent search placeholder.
+ * Shared gallery top bar: Y1 & Y2 Themes brand + consistent search placeholder.
  */
 (function () {
     "use strict";
@@ -18,10 +18,10 @@
         const a = document.createElement("a");
         a.className = "gallery-brand";
         a.href = GALLERY_HOME;
-        a.title = "Innioasis Y1 Themes gallery";
+        a.title = "Innioasis Y1 & Y2 Themes gallery";
         a.innerHTML =
             '<span class="gallery-brand-icon" aria-hidden="true"><i class="fa-solid fa-palette"></i></span>' +
-            '<span class="gallery-brand-text">Y1 Themes</span>';
+            '<span class="gallery-brand-text">Y1 & Y2 Themes</span>';
         return a;
     }
 

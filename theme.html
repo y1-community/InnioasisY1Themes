@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title id="page-title">Themes for your Innioasis Y1</title>
+    <title id="page-title">Themes for your Innioasis Y1 & Y2</title>
     <script>
         // Keep the hardcoded title as fallback, but prefer local theme config title when available.
         (function autoTitleFromLocalConfig() {
@@ -26,23 +26,23 @@
         })();
     </script>
 
-    <meta name="description" content="Browse and download community-made themes for your Innioasis Y1 with curated UI assets and easy personalization options.">
-    <meta name="keywords" content="Innioasis Y1 themes, Y1 customization, MP3 player theme, community themes, theme gallery, Luci web hosting, themes.innioasis.app">
+    <meta name="description" content="Browse and download community-made themes for your Innioasis Y1 or Y2 with curated UI assets and easy personalization options.">
+    <meta name="keywords" content="Innioasis Y1 themes, Innioasis Y2 themes, Y1 customization, Y2 customization, MP3 player theme, community themes, theme gallery, Luci web hosting, themes.innioasis.app">
     <meta name="author" content="Innioasis Community">
     <meta name="publisher" content="Luci Ltd">
-    <link rel="author" href="https://www.luci.ltd" title="Luci Ltd — web hosting for Innioasis Y1 Themes">
+    <link rel="author" href="https://www.luci.ltd" title="Luci Ltd — web hosting for Innioasis Y1 & Y2 Themes">
 
     <link rel="canonical" href="https://themes.innioasis.app/theme.html">
 
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Themes for Innioasis Y1 - Y1 Themes">
-    <meta property="og:description" content="Browse and download community-made themes for your Innioasis Y1 with curated UI assets and easy personalization options.">
+    <meta property="og:title" content="Themes for Innioasis Y1 & Y2 - Y1 & Y2 Themes">
+    <meta property="og:description" content="Browse and download community-made themes for your Innioasis Y1 or Y2 with curated UI assets and easy personalization options.">
     <meta property="og:url" content="https://themes.innioasis.app/theme.html">
     <meta property="og:image" content="https://innioasis.app/y1_illustration.png">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Themes for Innioasis Y1 - Y1 Themes">
-    <meta name="twitter:description" content="Browse and download community-made themes for your Innioasis Y1 with curated UI assets and easy personalization options.">
+    <meta name="twitter:title" content="Themes for Innioasis Y1 & Y2 - Y1 & Y2 Themes">
+    <meta name="twitter:description" content="Browse and download community-made themes for your Innioasis Y1 or Y2 with curated UI assets and easy personalization options.">
     <meta name="twitter:image" content="https://innioasis.app/y1_illustration.png">
 
     <link rel="icon" href="y1_illustration.png">
@@ -57,6 +57,7 @@
     <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="theme-packaging.js"></script>
+    <script src="theme-display-name.js?v=20260624"></script>
     <script src="y1-theme-preview.js?v=20260215"></script>
     <script src="theme-artwork-compat.js?v=20260524"></script>
     <script src="gold-theme-detect.js?v=20260621"></script>
@@ -195,9 +196,9 @@
 
     <div id="nav-root"></div>
     <div class="gallery-topbar">
-        <a class="gallery-brand" href="https://themes.innioasis.app/index.html" title="Innioasis Y1 Themes gallery">
+        <a class="gallery-brand" href="https://themes.innioasis.app/index.html" title="Innioasis Y1 & Y2 Themes gallery">
             <span class="gallery-brand-icon" aria-hidden="true"><i class="fa-solid fa-palette"></i></span>
-            <span class="gallery-brand-text">Y1 Themes</span>
+            <span class="gallery-brand-text">Y1 & Y2 Themes</span>
         </a>
         <div class="gallery-tabs" aria-label="Site sections">
             <a class="gallery-tab" href="https://y1-themes.vercel.app">Editor</a>
@@ -274,7 +275,7 @@
                 </div>
             </div>
             <section id="fallback-root" class="theme-panel" style="display:none;max-width:900px;margin:0 auto;">
-                <h1 style="margin:0 0 10px 0;">Innioasis Y1 Themes</h1>
+                <h1 style="margin:0 0 10px 0;">Innioasis Y1 & Y2 Themes</h1>
                 <p id="fallback-copy" style="color:var(--text-secondary);margin:0 0 10px 0;"></p>
                 <p id="fallback-redirect-note" style="color:var(--text-secondary);margin:0;"></p>
             </section>
@@ -331,7 +332,10 @@
         }
 
         function buildSeoTitle(name, author) {
-            const cleanName = String(name || '').trim() || 'Theme';
+            const rawName = String(name || '').trim() || 'Theme';
+            const cleanName = (window.ThemeDisplayName && typeof window.ThemeDisplayName.publicDisplayName === 'function')
+                ? (window.ThemeDisplayName.publicDisplayName(rawName) || rawName)
+                : rawName;
             const cleanAuthor = String(author || '').trim();
             return cleanAuthor
                 ? `${cleanName} for Innioasis Y1 by ${cleanAuthor}`
@@ -339,9 +343,12 @@
         }
 
         function applySeoMetadata(name, author, description) {
-            const seoTitle = buildSeoTitle(name, author);
+            const displayName = (window.ThemeDisplayName && typeof window.ThemeDisplayName.publicDisplayName === 'function')
+                ? (window.ThemeDisplayName.publicDisplayName(name) || String(name || '').trim())
+                : String(name || '').trim();
+            const seoTitle = buildSeoTitle(displayName, author);
             const seoDescription = String(description || '').trim() ||
-                `${String(name || 'Theme').trim()} theme for Innioasis Y1.`;
+                `${displayName || 'Theme'} theme for Innioasis Y1.`;
             document.title = seoTitle;
             setMetaContent('meta[property=\"og:title\"]', seoTitle);
             setMetaContent('meta[name=\"twitter:title\"]', seoTitle);
@@ -406,8 +413,12 @@
             const info = (cfg && (cfg.source_info || cfg.theme_info)) || null;
             const gallery = cfg && cfg.gallery && typeof cfg.gallery === 'object' ? cfg.gallery : {};
             const medal = String(gallery.compatibilityMedal || '').trim().toLowerCase();
+            const rawName = (info && info.title) || cfg.title || (cachedTheme && cachedTheme.name) || catalog || 'Theme';
+            const displayName = (window.ThemeDisplayName && typeof window.ThemeDisplayName.publicDisplayName === 'function')
+                ? (window.ThemeDisplayName.publicDisplayName(rawName) || rawName)
+                : rawName;
             return {
-                name: (info && info.title) || cfg.title || (cachedTheme && cachedTheme.name) || catalog || 'Theme',
+                name: displayName,
                 description: (info && info.description) || cfg.description || (cachedTheme && cachedTheme.description) || '',
                 author: (info && info.author) || cfg.author || (cachedTheme && cachedTheme.author) || null,
                 authorUrl: (info && info.authorUrl) || cfg.authorUrl || (cachedTheme && cachedTheme.authorUrl) || '',
@@ -466,7 +477,7 @@
             const copy = document.getElementById('fallback-copy');
             const note = document.getElementById('fallback-redirect-note');
             if (copy) {
-                copy.textContent = 'Browse and download custom themes to personalize your Innioasis Y1 MP3 player, with community-made styles and easy install options.';
+                copy.textContent = 'Browse and download custom themes to personalize your Innioasis Y1 or Y2 MP3 player, with community-made styles and easy install options.';
             }
             let remaining = 6;
             if (note) {
@@ -1044,7 +1055,10 @@
         }
 
         function zipThemeDisplayName(themeName, catalogFolder, variantSegment) {
-            const base = String(themeName || '').trim();
+            const rawBase = String(themeName || '').trim();
+            const base = (window.ThemeDisplayName && typeof window.ThemeDisplayName.publicDisplayName === 'function')
+                ? window.ThemeDisplayName.publicDisplayName(rawBase)
+                : rawBase;
             const v = String(variantSegment || '').trim();
             if (v) {
                 const label = formatVariantDisplayLabel(v);
@@ -1749,7 +1763,7 @@
                 folder ||
                 'Theme';
             const displayName = zipThemeDisplayName(catalogTitle, folder, activeVariant) || catalogTitle;
-            nameEl.textContent = catalogTitle;
+            nameEl.textContent = displayName;
             const subEl = document.getElementById('theme-variant-subtitle');
             if (subEl) {
                 if (activeVariant) {

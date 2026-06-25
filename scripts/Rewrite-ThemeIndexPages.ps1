@@ -18,6 +18,17 @@ function Escape-Html([string]$s) {
     return ($s -replace '&', '&amp;' -replace '<', '&lt;' -replace '>', '&gt;' -replace '"', '&quot;')
 }
 
+function Strip-RedundantThemeWord([string]$name) {
+    $s = ($name -as [string]).Trim() -replace '\s+', ' '
+    if (-not $s) { return '' }
+    $original = $s
+    while ($s -match '\s+theme$') {
+        $s = ($s -replace '\s+theme$', '').Trim()
+    }
+    if ($s) { return $s }
+    return $original
+}
+
 function To-Absolute-AssetUrl([string]$rel) {
     $r = ($rel -replace '^\./', '').Trim()
     if (-not $r) { return "$Site/y1_illustration.png" }
@@ -111,6 +122,8 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
     if ($cfg.theme_info) { $ti = $cfg.theme_info } elseif ($cfg.source_info) { $ti = $cfg.source_info }
 
     $displayName = if ($meta.name) { "$($meta.name)".Trim() } elseif ($ti.title) { "$($ti.title)".Trim() } else { $catalogFolder }
+    $displayName = Strip-RedundantThemeWord $displayName
+    if (-not $displayName) { $displayName = $catalogFolder }
     $author = if ($meta.author) { "$($meta.author)".Trim() } elseif ($ti.author) { "$($ti.author)".Trim() } else { 'Innioasis Community' }
     $rawDesc = if ($meta.description) { "$($meta.description)".Trim() }
     elseif ($ti.description) { "$($ti.description)".Trim() }
@@ -176,7 +189,7 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
   <meta name="keywords" content="$keywords" />
   <meta name="author" content="$authorE" />
   <meta name="publisher" content="Luci Ltd" />
-  <link rel="author" href="https://www.luci.ltd" title="Luci Ltd — web hosting for Innioasis Y1 Themes" />
+  <link rel="author" href="https://www.luci.ltd" title="Luci Ltd — web hosting for Innioasis Y1 & Y2 Themes" />
   <meta name="robots" content="index,follow" />
   <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -221,7 +234,7 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
   <meta http-equiv="refresh" content="0;url=$previewUrlRefreshAttr" />
 
   <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="Innioasis Y1 Themes" />
+  <meta property="og:site_name" content="Innioasis Y1 & Y2 Themes" />
   <meta property="og:title" content="$titleE" />
   <meta property="og:description" content="$description" />
   <meta property="og:url" content="$previewE" />
@@ -237,9 +250,9 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
 <body class="site-themes-app site-dock-mode">
   <div id="nav-root"></div>
   <div class="gallery-topbar">
-    <a class="gallery-brand" href="https://themes.innioasis.app/index.html" title="Innioasis Y1 Themes gallery">
+    <a class="gallery-brand" href="https://themes.innioasis.app/index.html" title="Innioasis Y1 & Y2 Themes gallery">
       <span class="gallery-brand-icon" aria-hidden="true"><i class="fa-solid fa-palette"></i></span>
-      <span class="gallery-brand-text">Y1 Themes</span>
+      <span class="gallery-brand-text">Y1 & Y2 Themes</span>
     </a>
     <div class="gallery-tabs" aria-label="Site sections">
       <a class="gallery-tab" href="https://y1-themes.vercel.app">Editor</a>
@@ -258,7 +271,7 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
     <p class="theme-seo-shell-author">$authorE</p>
     <p class="theme-seo-shell-desc">$description</p>
     <p class="theme-seo-shell-actions"><a class="btn btn-primary" href="$previewE">Open preview</a></p>
-    <img src="/luci-alt.svg" alt="Innioasis Y1 Themes gallery hosted by Luci Ltd at luci.ltd — themes.innioasis.app" width="1" height="1" decoding="async" class="theme-seo-hosting-mark" aria-hidden="true" />
+    <img src="/luci-alt.svg" alt="Innioasis Y1 & Y2 Themes gallery hosted by Luci Ltd at luci.ltd — themes.innioasis.app" width="1" height="1" decoding="async" class="theme-seo-hosting-mark" aria-hidden="true" />
   </main>
   <div id="footer-root"></div>
   <div id="support-toolbar-slot"></div>

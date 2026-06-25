@@ -4,25 +4,25 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Browse themes — Innioasis Y1</title>
+    <title>Browse themes — Innioasis Y1 & Y2</title>
 
-    <meta name="description" content="Browse and download Rockbox themes for the Innioasis Y1. Customize your player with community-made themes for 240p and 360p models.">
-    <meta name="keywords" content="Innioasis Y1 themes, Rockbox themes Y1, Y1 UI themes, Rockbox customization, Innioasis theme gallery, Luci web hosting, themes.innioasis.app hosting">
+    <meta name="description" content="Browse and download Rockbox themes for the Innioasis Y1 and Y2. Customize your player with community-made themes for 240p and 360p models.">
+    <meta name="keywords" content="Innioasis Y1 themes, Innioasis Y2 themes, Rockbox themes Y1, Y2 UI themes, Rockbox customization, Innioasis theme gallery, Luci web hosting, themes.innioasis.app hosting">
     <meta name="author" content="Innioasis Community">
     <meta name="publisher" content="Luci Ltd">
-    <link rel="author" href="https://www.luci.ltd" title="Luci Ltd — web hosting for Innioasis Y1 Themes">
+    <link rel="author" href="https://www.luci.ltd" title="Luci Ltd — web hosting for Innioasis Y1 & Y2 Themes">
 
     <link rel="preload" href="themes.json" as="fetch" crossorigin="anonymous" />
 
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Innioasis Y1 Rockbox Themes">
-    <meta property="og:description" content="Customize your Innioasis Y1 with Rockbox themes made by the community.">
+    <meta property="og:title" content="Innioasis Y1 & Y2 Rockbox Themes">
+    <meta property="og:description" content="Customize your Innioasis Y1 or Y2 with Rockbox themes made by the community.">
     <meta property="og:url" content="https://themes.innioasis.app/">
     <meta property="og:image" content="https://innioasis.app/y1_illustration.png">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Innioasis Y1 Rockbox Themes">
-    <meta name="twitter:description" content="Download and customize Rockbox themes for the Innioasis Y1.">
+    <meta name="twitter:title" content="Innioasis Y1 & Y2 Rockbox Themes">
+    <meta name="twitter:description" content="Download and customize Rockbox themes for the Innioasis Y1 and Y2.">
     <meta name="twitter:image" content="https://innioasis.app/y1_illustration.png">
 
     <link rel="icon" href="y1_illustration.png">
@@ -38,6 +38,7 @@
     <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="theme-packaging.js"></script>
+    <script src="theme-display-name.js?v=20260624"></script>
     <script src="y1-theme-preview.js?v=20260215"></script>
     <script src="theme-artwork-compat.js?v=20260524"></script>
     <script src="gold-theme-detect.js?v=20260621"></script>
@@ -647,9 +648,9 @@
 <body class="site-themes-app site-dock-mode">
     <div id="nav-root"></div>
     <div class="gallery-topbar">
-        <a class="gallery-brand" href="index.html" title="Innioasis Y1 Themes gallery">
+        <a class="gallery-brand" href="index.html" title="Innioasis Y1 & Y2 Themes gallery">
             <span class="gallery-brand-icon" aria-hidden="true"><i class="fa-solid fa-palette"></i></span>
-            <span class="gallery-brand-text">Y1 Themes</span>
+            <span class="gallery-brand-text">Y1 & Y2 Themes</span>
         </a>
         <div class="gallery-tabs" aria-label="Site sections">
             <a class="gallery-tab" href="https://y1-themes.vercel.app">Editor</a>
@@ -666,7 +667,7 @@
             <div class="gallery-home-hero__row">
                 <header class="gallery-home-intro">
                     <h1 class="site-display">Themes</h1>
-                    <p class="site-lead gallery-home-lead">Here is a community-led gallery of themes to customise your Innioasis Y1 audio player — find a new look for your screens, try previews before you install, and share your own looks for the MP3 player with other Y1 users.</p>
+                    <p class="site-lead gallery-home-lead">Here is a community-led gallery of themes to customise your Innioasis Y1 or Y2 audio player — find a new look for your screens, try previews before you install, and share your own looks with other Innioasis users.</p>
                 </header>
                 <figure class="y1-hero" aria-hidden="true">
                     <img src="y1-hero.png" alt="" width="640" height="640" decoding="async" />
@@ -2507,7 +2508,10 @@
         }
 
         function zipThemeDisplayName(themeName, catalogFolder, variantSegment) {
-            const base = String(themeName || '').trim();
+            const rawBase = String(themeName || '').trim();
+            const base = (window.ThemeDisplayName && typeof window.ThemeDisplayName.publicDisplayName === 'function')
+                ? window.ThemeDisplayName.publicDisplayName(rawBase)
+                : rawBase;
             const v = String(variantSegment || '').trim();
             if (v) {
                 const label = formatVariantDisplayLabel(v);
@@ -3853,6 +3857,13 @@
             });
         }
 
+        function withPublicThemeName(theme) {
+            if (!theme || !window.ThemeDisplayName) return theme;
+            const name = window.ThemeDisplayName.publicDisplayName(theme.name);
+            if (!name || name === theme.name) return theme;
+            return { ...theme, name };
+        }
+
         function createCard(theme) {
             const c = document.createElement('article');
             c.className = 'theme-card';
@@ -4334,6 +4345,9 @@
                 themes = dedupeThemes(themesSource);
             }
             themes = filterDarkModeVariantListings(themes);
+            if (window.ThemeDisplayName) {
+                themes = themes.map(withPublicThemeName);
+            }
             if (window.ThemeAuthorPolicy) {
                 await window.ThemeAuthorPolicy.ready();
                 themes = window.ThemeAuthorPolicy.filterPublicThemes(themes);

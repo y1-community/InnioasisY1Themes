@@ -25,6 +25,12 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
+_SCRIPTS_DIR = Path(__file__).resolve().parent
+if str(_SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS_DIR))
+
+from theme_display_name import strip_redundant_theme_word, title_from_folder_stem
+
 
 _GIT_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = _GIT_ROOT
@@ -250,6 +256,8 @@ def _extract_theme_info_from_config(config: dict[str, Any]) -> dict[str, str]:
     extracted: dict[str, str] = {}
     for key in ("title", "author", "authorUrl", "description", "externalDownloadUrl"):
         value = str(theme_info.get(key) or "").strip()
+        if key == "title" and value:
+            value = strip_redundant_theme_word(value)
         if value:
             extracted[key] = value
     return extracted
@@ -430,7 +438,8 @@ def _infer_folder_uploader(folder: str) -> dict[str, str]:
 
 def _theme_entry_from_folder(folder: str, config: dict[str, Any] | None) -> dict[str, Any]:
     theme_info = _theme_info_for_folder(folder, config)
-    name = str(theme_info.get("title") or folder).strip()
+    raw_name = str(theme_info.get("title") or "").strip()
+    name = strip_redundant_theme_word(raw_name) if raw_name else title_from_folder_stem(folder)
     uploader = _infer_folder_uploader(folder)
     protected_uploader = uploader.get("protected") == "true"
 
@@ -522,7 +531,7 @@ def _refresh_existing_theme_entry(entry: dict[str, Any], folder: str, config: di
     info = _theme_info_for_folder(folder, config)
     baseline = _theme_entry_from_folder(folder, config)
     if info.get("title"):
-        refreshed["name"] = str(info["title"]).strip()
+        refreshed["name"] = strip_redundant_theme_word(str(info["title"]).strip())
     if info.get("author"):
         refreshed["author"] = str(info["author"]).strip()
     if info.get("authorUrl"):
@@ -541,10 +550,10 @@ def _refresh_existing_theme_entry(entry: dict[str, Any], folder: str, config: di
             if cover_clean:
                 refreshed["screenshot"] = f"./{folder}/{cover_clean}"
 
-    title = str(info.get("title") or "").strip()
+    title = strip_redundant_theme_word(str(info.get("title") or "").strip())
     current_name = str(refreshed.get("name") or "").strip()
     if not current_name:
-        refreshed["name"] = title or str(baseline.get("name") or folder)
+        refreshed["name"] = title or str(baseline.get("name") or title_from_folder_stem(folder))
 
     # Housekeeping: only correct stale names that still mirror the folder key.
     if title and _normalize_name_for_compare(current_name) == _normalize_name_for_compare(folder):
@@ -597,7 +606,12 @@ def _with_gallery_fields(entry: dict[str, Any]) -> dict[str, Any]:
 
 
 def _sync_theme_info(config: dict[str, Any], theme_entry: dict[str, Any], *, force_all: bool = False) -> bool:
-    fallback_name = str(theme_entry.get("name") or theme_entry.get("folder") or "Theme").strip()
+    raw_fallback = str(theme_entry.get("name") or theme_entry.get("folder") or "Theme").strip()
+    fallback_name = (
+        strip_redundant_theme_word(raw_fallback)
+        if theme_entry.get("name")
+        else title_from_folder_stem(raw_fallback) or raw_fallback
+    )
     existing_theme_info = config.get("theme_info")
     theme_info = dict(existing_theme_info) if isinstance(existing_theme_info, dict) else {}
     existing_description = str(theme_info.get("description") or "").strip()
