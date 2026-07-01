@@ -9,8 +9,8 @@
   "themeCover": "cover.png",
   "desktopWallpaper": "desk_bg001.png",
   "globalWallpaper": "global_wallpaper.png",
-  "desktopMask": "transparent.png",
-  "fontFamily": "minecraft.ttf",
+  "desktopMask": "desktop_mask.png",
+  "fontFamily": "club_penguin.ttf",
   "itemConfig": {
     "itemTextColor": "#ffffff",
     "itemSelectedTextColor": "#634a1c",
@@ -112,8 +112,8 @@
     "blConnected": "blConnected.png",
     "blConnecting": "blConnecting.png",
     "blDisconnected": "blDisconnected.png",
-    "headsetWithMic": "headsetWithoutMic.png",
-    "headsetWithoutMic": "headset1.png",
+    "headsetWithMic": "headsetWithMic.png",
+    "headsetWithoutMic": "headsetWithoutMic.png",
     "statusBarColor": "",
     "battery": [
       "battery_001.png",
@@ -129,6 +129,6 @@
     ]
   },
   "gallery": {
-    "compatibilityMedal": "none"
+    "compatibilityMedal": "gold"
   }
 }
