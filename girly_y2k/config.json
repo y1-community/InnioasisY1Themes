@@ -1,0 +1,134 @@
+{
+  "theme_info": {
+    "title": "girly y2k",
+    "author": "swampvermin",
+    "authorUrl": "https://swampvermin.neocities.org",
+    "description": "girly y2k theme",
+    "externalDownloadUrl": ""
+  },
+  "themeCover": "cover.png",
+  "desktopWallpaper": "background.png",
+  "globalWallpaper": "global_background.png",
+  "desktopMask": "mask.png",
+  "itemConfig": {
+    "itemTextColor": "#000000",
+    "itemSelectedTextColor": "#ffffff",
+    "itemSelectedBackground": "selected.png",
+    "itemBackground": "item-background.png",
+    "itemRightArrow": "right-arrow.png"
+  },
+  "dialogConfig": {
+    "dialogOptionBackground": "dialog-option-background.png",
+    "dialogOptionTextColor": "#ffffff",
+    "dialogOptionSelectedBackground": "dialog-option-selected-background.png",
+    "dialogOptionSelectedTextColor": "#ffffff",
+    "dialogBackgroundColor": "#ffffff"
+  },
+  "menuConfig": {
+    "menuBackgroundColor": "#000000",
+    "menuItemBackground": "",
+    "menuItemTextColor": "#ffffff",
+    "menuItemSelectedBackground": "selected.png",
+    "menuItemSelectedTextColor": "#ffffff"
+  },
+  "homePageConfig": {
+    "nowPlaying": "Now Playing.png",
+    "music": "music.png",
+    "video": "videos.png",
+    "audiobooks": "audiobooks.png",
+    "photos": "photos.png",
+    "fm": "fm-radio.png",
+    "bluetooth": "bluetooth.png",
+    "settings": "settings.png",
+    "shuffleQuick": "shuffle_quick.png",
+    "ebook": "ebook.png",
+    "calendar": "calender.png",
+    "calculator": "calculator.png"
+  },
+  "fileConfig": {
+    "folderIcon": "folder.png",
+    "musicIcon": "folder.png"
+  },
+  "settingConfig": {
+    "settingMask": "mask.png",
+    "shutdown": "Shutdown@1x.png",
+    "timedShutdown_off": "timed_shutdown_001@1x.png",
+    "timedShutdown_10": "timed_shutdown_002@1x.png",
+    "timedShutdown_20": "timed_shutdown_003@1x.png",
+    "timedShutdown_30": "timed_shutdown_004@1x.png",
+    "timedShutdown_60": "timed_shutdown_005@1x.png",
+    "timedShutdown_90": "timed_shutdown_006@1x.png",
+    "timedShutdown_120": "timed_shutdown_007@1x.png",
+    "shuffleOn": "shuffle_on@1x.png",
+    "shuffleOff": "shuffle_off@1x.png",
+    "repeatOff": "repeat_off@1x.png",
+    "repeatAll": "repeat_all@1x.png",
+    "repeatOne": "repeat_one@1x.png",
+    "equalizer_normal": "equalizer_normal@1x.png",
+    "equalizer_classical": "equalizer_classical@1x.png",
+    "equalizer_dance": "equalizer_dance@1x.png",
+    "equalizer_flat": "equalizer_flat@1x.png",
+    "equalizer_folk": "equalizer_folk@1x.png",
+    "equalizer_heavymetal": "equalizer_heavy_metal@1x.png",
+    "equalizer_hiphop": "equalizer_hiphop@1x.png",
+    "equalizer_jazz": "equalizer_jazz@1x.png",
+    "equalizer_pop": "equalizer_pop@1x.png",
+    "equalizer_rock": "equalizer_rock@1x.png",
+    "keyLockOn": "keylock_on@1x.png",
+    "keyLockOff": "keylock_off@1x.png",
+    "keyToneOn": "keytone_on@1x.png",
+    "keyToneOff": "keytone_off@1x.png",
+    "keyVibrationOn": "key_vibration_on@1x.png",
+    "keyVibrationOff": "key_vibration_off@1x.png",
+    "wallpaper": "wallpaper@1x.png",
+    "backlight_10": "backlight_10@1x.png",
+    "backlight_15": "backlight_15@1x.png",
+    "backlight_30": "backlight_30@1x.png",
+    "backlight_45": "backlight_45@1x.png",
+    "backlight_60": "backlight_60@1x.png",
+    "backlight_120": "backlight_120_300@1x.png",
+    "backlight_300": "backlight_120_300@1x.png",
+    "backlight_always": "backlight_always@1x.png",
+    "brightness": "brightness@1x.png",
+    "displayBatteryOn": "display_battery_on@1x.png",
+    "displayBatteryOff": "display_battery_off@1x.png",
+    "dateTime": "date_time@1x.png",
+    "language": "language@1x.png",
+    "factoryReset": "factory_reset.png",
+    "clearCache": "clear_cache@1x.png",
+    "theme": "theme.png",
+    "fileExtensionOn": "file_ext_on.png",
+    "fileExtensionOff": "file_ext_off.png",
+    "launcher": "transparent.png"
+  },
+  "statusConfig": {
+    "playing": "gregplay.png",
+    "audiobookPlaying": "audiobook_playing.png",
+    "pause": "gregpause.png",
+    "fmPlaying": "fm_playing.png",
+    "stop": "gregstop.png",
+    "blConnected": "bl_connected.png",
+    "blConnecting": "bl_connecting.png",
+    "blDisconnected": "bl_disconnected.png",
+    "headsetWithMic": "headset_with_mic.png",
+    "headsetWithoutMic": "headset_without_mic.png",
+    "battery": [
+      "gregbattery.001.png",
+      "gregbattery.002.png",
+      "gregbattery.003.png",
+      "gregbattery.004.png"
+    ],
+    "batteryCharging": [
+      "gregbatterycharge.001.png",
+      "gregbatterycharge.002.png",
+      "gregbatterycharge.003.png",
+      "gregbatterycharge.004.png"
+    ]
+  },
+  "playerConfig": {
+    "progressColor": "#FFA2FF"
+  },
+  "gallery": {
+    "compatibilityMedal": "gold"
+  }
+}
