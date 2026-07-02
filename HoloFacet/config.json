@@ -1,9 +1,9 @@
 {
     "theme_info": {
-        "title": "Apple 1",
-        "author": "Ange",
-        "authorUrl": "",
-        "description": "Download the Apple 1 theme for Innioasis Y1 by Ange and personalize your player's look with curated UI assets.",
+        "title": "HoloFacet",
+        "author": "Innioasis",
+        "authorUrl": "https://www.innioasis.com",
+        "description": "Customize your Innioasis Y1 with the HoloFacet theme.",
         "externalDownloadUrl": ""
     },
     "themeCover": "cover.png",
@@ -42,7 +42,8 @@
         "shuffleQuick": "Shuffle Quick.png",
         "calendar": "calendar.png",
         "calculator": "calculator.png",
-        "ebook": "ebook.png"
+        "ebook": "ebook.png",
+        "fileManager": "File Manager.png"
     },
     "fileConfig": {
         "folderIcon": "",
