@@ -1,9 +1,9 @@
 {
     "theme_info": {
-        "title": "Apple 2",
-        "author": "Ange",
-        "authorUrl": "https://github.com/ope-nz",
-        "description": "Download the Apple 2 theme for Innioasis Y1 by Ange and personalize your player's look with curated UI assets.",
+        "title": "Melody Munchkin",
+        "author": "Innioasis",
+        "authorUrl": "https://www.innioasis.com",
+        "description": "Customize your Innioasis Y1 with the Melody Munchkin theme.",
         "externalDownloadUrl": ""
     },
     "themeCover": "cover.png",
@@ -11,12 +11,14 @@
     "globalWallpaper": "desk.png",
     "desktopMask": "mask.png",
     "fontFamily": "font.ttf",
+    "fontScale": 1.0,
     "itemConfig": {
-        "itemTextColor": "",
-        "itemSelectedTextColor": "",
-        "itemSelectedBackground": "",
+        "itemTextColor": "#FFFFFFFF",
+        "itemSelectedTextColor": "#FF00F5FF",
+        "itemSelectedBackground": "item_selected_no_arrow.9.png",
         "itemBackground": "",
-        "itemRightArrow": ""
+        "itemRightArrow": "right_arrow.png",
+        "itemSelectedBackgroundIs9Patch": true
     },
     "dialogConfig": {
         "dialogOptionBackground": "dialog_no_selected.png",
@@ -45,7 +47,8 @@
         "shuffleQuick": "Desk-Shuffle Quick.png",
         "calendar": "calendar.png",
         "calculator": "calculator.png",
-        "ebook": "ebook.png"
+        "ebook": "ebook.png",
+        "fileManager": "File Manager.png"
     },
     "fileConfig": {
         "folderIcon": "",
