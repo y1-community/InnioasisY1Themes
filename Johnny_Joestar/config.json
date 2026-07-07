@@ -1,9 +1,9 @@
 {
   "theme_info": {
-    "title": "Johnny Joestar",
-    "author": "u/Bones",
-    "authorUrl": "",
-    "description": "Johnny Joestar from Jojo´s Bizzare Adventure",
+    "title": "Johnny Joestar V3",
+    "author": "u/bones",
+    "authorUrl": "https://www.reddit.com/r/innioasis/comments/1n6nhw9/repost_aero_theme_y1_stock_firmware/",
+    "description": "V3 my bad",
     "externalDownloadUrl": ""
   },
   "themeCover": "cover.png",
@@ -40,7 +40,7 @@
     "bluetooth": "Bluetooth.png",
     "settings": "Settings.png",
     "shuffleQuick": "Shuffle Quick.png",
-    "ebook": "transparent.png",
+    "ebook": "ebook.png",
     "calendar": "transparent.png",
     "calculator": "transparent.png"
   },
@@ -101,11 +101,11 @@
     "launcher": "transparent.png"
   },
   "statusConfig": {
-    "playing": "",
+    "playing": "playing.png",
     "audiobookPlaying": "",
-    "pause": "",
+    "pause": "pause.png",
     "fmPlaying": "",
-    "stop": "",
+    "stop": "stop.png",
     "blConnected": "",
     "blConnecting": "",
     "blDisconnected": "",
