@@ -204,7 +204,7 @@
             'calculator',
             'calendar'
         ];
-        var optionalExtras = { calculator: 1, calendar: 1, ebook: 1, fileManager: 1 };
+        var optionalExtras = { calculator: 1, calendar: 1, ebook: 1 };
         return ordered
             .filter(function (key) {
                 if (optionalExtras[key]) {

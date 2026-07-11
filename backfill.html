@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Theme backfill — Innioasis Y1 & Y2 Themes</title>
+    <meta name="description"
+        content="How automatic icon backfill works on themes.innioasis.app — transparent placeholders for new firmware features, and optional backfill.png for a custom generic icon." />
+    <meta name="keywords" content="Innioasis Y1 theme backfill, Y2 theme placeholders, transparent.png, backfill.png, theme upload, Luci web hosting" />
+    <meta name="publisher" content="Luci Ltd" />
+    <link rel="author" href="https://www.luci.ltd" title="Luci Ltd — web hosting for Innioasis Y1 & Y2 Themes" />
+    <link rel="canonical" href="https://themes.innioasis.app/backfill.html" />
+    <link rel="icon" href="y1_illustration.png" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://innioasis.app/styles.css" />
+    <link rel="stylesheet" href="site-theme.css?v=20260711backfill" />
+    <link rel="stylesheet" href="site-toolbar.css?v=20260622" />
+    <link rel="stylesheet" href="site-pages.css?v=20260622" />
+    <link rel="stylesheet" href="theme-analytics.css?v=20260521" />
+    <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
+    <script src="gallery-chrome.js?v=20260711backfill"></script>
+    <script src="site-init.js?v=20260522privacy"></script>
+    <script src="theme-analytics.js?v=20260521"></script>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: var(--site-bg, #0a0b0f);
+            color: var(--site-text, #f4f6fb);
+        }
+
+        .backfill-hero {
+            text-align: center;
+            padding: 0 0 2.5rem;
+        }
+
+        .backfill-hero h1 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            margin: 0 0 0.75rem;
+        }
+
+        .backfill-hero .site-lead {
+            max-width: 38rem;
+            margin: 0 auto 1.5rem;
+        }
+
+        .backfill-section {
+            margin-bottom: 2.75rem;
+            max-width: 42rem;
+        }
+
+        .backfill-section h2 {
+            font-size: clamp(1.35rem, 3vw, 1.75rem);
+            margin: 0 0 0.85rem;
+        }
+
+        .backfill-section p,
+        .backfill-section li {
+            color: var(--site-muted);
+            line-height: 1.6;
+            font-size: 0.98rem;
+        }
+
+        .backfill-section ul {
+            margin: 0.75rem 0 0;
+            padding-left: 1.2rem;
+        }
+
+        .backfill-section li {
+            margin-bottom: 0.55rem;
+        }
+
+        .backfill-section code {
+            font-size: 0.88em;
+            color: #c8d4ee;
+        }
+
+        .backfill-cta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 1.25rem;
+        }
+
+        .backfill-cta-row a.btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body class="site-themes-app site-dock-mode">
+    <div id="nav-root"></div>
+    <div class="gallery-topbar">
+        <a class="gallery-brand" href="index.html" title="Innioasis Y1 & Y2 Themes gallery">
+            <span class="gallery-brand-icon" aria-hidden="true"><i class="fa-solid fa-palette"></i></span>
+            <span class="gallery-brand-text">Innioasis Y1 & Y2 Themes</span>
+        </a>
+        <div class="gallery-tabs" aria-label="Site sections">
+            <a class="gallery-tab" href="https://y1-themes.vercel.app">Editor</a>
+            <a class="gallery-tab" href="index.html">Gallery</a>
+            <a class="gallery-tab" href="upload.html">Upload</a>
+        </div>
+        <form class="topbar-search-wrap" action="index.html" method="get">
+            <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
+            <input class="topbar-search" type="search" name="q" placeholder="Search themes" aria-label="Search themes" />
+        </form>
+    </div>
+
+    <div class="wrap">
+        <header class="backfill-hero">
+            <h1 class="site-display">Automatic theme backfill</h1>
+            <p class="site-lead">
+                When a theme is uploaded to themes.innioasis.app, we fill in blank placeholders for newer Y1 and Y2
+                features the package did not include — so your player does not fall back to stock OS icons for those slots.
+            </p>
+        </header>
+
+        <section class="backfill-section" aria-labelledby="backfill-what-heading">
+            <h2 id="backfill-what-heading" class="section-display">What happens on upload</h2>
+            <p>
+                Firmware adds home and settings icons over time (for example eBook, calendar, calculator, File Manager,
+                and the Rockbox launcher switch). Older themes often omit those keys. Without a placeholder, the device
+                may show its own default artwork in that slot, which breaks the look of the theme.
+            </p>
+            <p>
+                After you submit a theme, ingest and housekeeping automatically add any missing keys and point them at a
+                blank placeholder image. You do not have to change your package for this default behaviour — it is applied
+                for you.
+            </p>
+        </section>
+
+        <section class="backfill-section" aria-labelledby="backfill-png-heading">
+            <h2 id="backfill-png-heading" class="section-display">Optional: your own <code>backfill.png</code></h2>
+            <p>
+                By default we use a fully transparent <code>transparent.png</code> so the slot stays empty instead of
+                showing a stock icon. If you prefer a single generic icon everywhere those auto-placeholders would go,
+                add a file named <code>backfill.png</code> to the theme folder (and to each variant folder that has its
+                own <code>config.json</code>).
+            </p>
+            <ul>
+                <li>If <code>backfill.png</code> is present, new and transparent placeholders use that file instead.</li>
+                <li>Dedicated icons you already set in <code>config.json</code> are never overwritten.</li>
+                <li>Gold themes still need real, dedicated artwork for eBook, calendar, calculator, and the launcher — a shared backfill image does not count as Gold art.</li>
+            </ul>
+        </section>
+
+        <section class="backfill-section" aria-labelledby="backfill-next-heading">
+            <h2 id="backfill-next-heading" class="section-display">Share a theme</h2>
+            <p>Upload as usual; backfill runs as part of the gallery pipeline.</p>
+            <div class="backfill-cta-row">
+                <a class="btn" href="upload.html"><i class="fa-solid fa-upload" aria-hidden="true"></i> Upload theme</a>
+                <a class="btn" href="creators/"><i class="fa-solid fa-book" aria-hidden="true"></i> Creators guide</a>
+                <a class="btn" href="gold-badge.html"><i class="fa-solid fa-medal" aria-hidden="true"></i> About Gold</a>
+            </div>
+        </section>
+    </div>
+
+    <div id="footer-root"></div>
+    <div id="support-toolbar-slot"></div>
+    <script src="nav.js"></script>
+</body>
+
+</html>

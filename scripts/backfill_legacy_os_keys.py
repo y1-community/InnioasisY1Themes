@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""Additive legacy OS backfill: missing eBook/Calendar/Calculator/File Manager/Launcher keys → transparent.png.
+"""Additive legacy OS backfill: missing eBook/Calendar/Calculator/File Manager/Launcher keys.
 
-Adds only absent keys in homePageConfig and settingConfig. Copies repo-root transparent.png
-into each theme root and Variants/<look>/ folder that has config.json, replacing any existing
-transparent.png so bad assets from earlier backfills cannot linger.
+Missing keys (and transparent.png placeholders) resolve to backfill.png when that file exists
+in the content folder, otherwise transparent.png. Copies repo-root transparent.png into each
+theme root and Variants/<look>/ folder that has config.json when the transparent fallback is
+needed, replacing any existing transparent.png so bad assets from earlier backfills cannot linger.
+Never overwrites a creator-supplied backfill.png.
 """
 
 from __future__ import annotations
@@ -20,8 +22,10 @@ _GIT_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = _GIT_ROOT
 REFERENCE_CONFIG_PATH = Path(__file__).resolve().parent / "legacy_os_config_reference.json"
 TRANSPARENT_FILENAME = "transparent.png"
+BACKFILL_FILENAME = "backfill.png"
 TRANSPARENT_CANONICAL = REPO_ROOT / TRANSPARENT_FILENAME
 TRANSPARENT_VALUE = TRANSPARENT_FILENAME
+BACKFILL_VALUE = BACKFILL_FILENAME
 EXCLUDED_DIRS = {
     ".git",
     ".github",
@@ -61,18 +65,36 @@ def _write_json_preserve_indent(path: Path, payload: dict[str, Any], original_te
     path.write_text(serialized + "\n", encoding="utf-8")
 
 
+def resolve_placeholder_value(content_dir: Path) -> str:
+    """Prefer theme-local backfill.png when present; else transparent.png."""
+    if (content_dir / BACKFILL_FILENAME).is_file():
+        return BACKFILL_VALUE
+    return TRANSPARENT_VALUE
+
+
+def _is_transparent_placeholder_value(value: Any) -> bool:
+    if not isinstance(value, str):
+        return False
+    name = value.strip().replace("\\", "/").split("/")[-1]
+    return name.lower() == TRANSPARENT_FILENAME.lower()
+
+
 def add_legacy_os_keys(
-    theme_config: dict[str, Any], reference: dict[str, Any]
+    theme_config: dict[str, Any],
+    reference: dict[str, Any],
+    *,
+    placeholder_value: str = TRANSPARENT_VALUE,
 ) -> bool:
-    """Add only missing legacy OS keys. Never modify existing keys or values."""
+    """Add missing legacy OS keys; upgrade transparent.png placeholders when preferring backfill."""
     changed = False
+    upgrade_transparent = placeholder_value == BACKFILL_VALUE
     for section, keys_obj in reference.items():
         if not isinstance(keys_obj, dict):
             continue
         if section not in theme_config:
             new_section: dict[str, Any] = {}
             for key in keys_obj:
-                new_section[key] = TRANSPARENT_VALUE
+                new_section[key] = placeholder_value
             theme_config[section] = new_section
             changed = True
             continue
@@ -81,7 +103,10 @@ def add_legacy_os_keys(
             continue
         for key in keys_obj:
             if key not in section_obj:
-                section_obj[key] = TRANSPARENT_VALUE
+                section_obj[key] = placeholder_value
+                changed = True
+            elif upgrade_transparent and _is_transparent_placeholder_value(section_obj[key]):
+                section_obj[key] = placeholder_value
                 changed = True
     return changed
 
@@ -135,10 +160,32 @@ def sync_transparent_png(content_dir: Path, source: Path) -> bool:
     return True
 
 
+def content_dir_needs_transparent_asset(content_dir: Path, config: dict[str, Any] | None) -> bool:
+    """True when configs still reference transparent.png or backfill.png is absent."""
+    if not (content_dir / BACKFILL_FILENAME).is_file():
+        return True
+    if not config:
+        return False
+    ref = _load_reference_config() or {}
+    for section, keys_obj in ref.items():
+        if not isinstance(keys_obj, dict):
+            continue
+        section_obj = config.get(section)
+        if not isinstance(section_obj, dict):
+            continue
+        for key in keys_obj:
+            if _is_transparent_placeholder_value(section_obj.get(key)):
+                return True
+    return False
+
+
 def sync_transparent_in_theme_folder(theme_dir: Path, source: Path) -> int:
-    """Place canonical transparent.png in theme root and every variant content folder."""
+    """Place canonical transparent.png where the transparent fallback is still needed."""
     updated = 0
     for content_dir in iter_content_dirs(theme_dir):
+        cfg = _load_json(content_dir / "config.json")
+        if not content_dir_needs_transparent_asset(content_dir, cfg):
+            continue
         if sync_transparent_png(content_dir, source):
             updated += 1
     return updated
@@ -158,15 +205,18 @@ def backfill_config_file(
         return False, False
     if not isinstance(config, dict):
         return False, False
+    content_dir = cfg_path.parent
+    placeholder = resolve_placeholder_value(content_dir)
     before = json.dumps(config, sort_keys=True)
-    if not add_legacy_os_keys(config, reference):
-        return False, False
+    add_legacy_os_keys(config, reference, placeholder_value=placeholder)
     after = json.dumps(config, sort_keys=True)
-    if before == after:
-        return False, False
-    _write_json_preserve_indent(cfg_path, config, original_text)
-    transparent_synced = sync_transparent_png(cfg_path.parent, transparent_source)
-    return True, transparent_synced
+    cfg_changed = before != after
+    if cfg_changed:
+        _write_json_preserve_indent(cfg_path, config, original_text)
+    transparent_synced = False
+    if content_dir_needs_transparent_asset(content_dir, config):
+        transparent_synced = sync_transparent_png(content_dir, transparent_source)
+    return cfg_changed, transparent_synced
 
 
 def fill_theme_folder(theme_dir: Path, reference: dict[str, Any] | None = None) -> bool:
@@ -208,9 +258,17 @@ def _folder_would_change(theme_dir: Path, ref: dict[str, Any], source: Path) -> 
         if not config:
             continue
         clone = json.loads(json.dumps(config))
-        if add_legacy_os_keys(clone, ref):
+        placeholder = resolve_placeholder_value(cfg_path.parent)
+        if add_legacy_os_keys(clone, ref, placeholder_value=placeholder):
             return True
+        if content_dir_needs_transparent_asset(cfg_path.parent, clone):
+            dest = cfg_path.parent / TRANSPARENT_FILENAME
+            if not dest.is_file() or dest.read_bytes() != source.read_bytes():
+                return True
     for content_dir in iter_content_dirs(theme_dir):
+        cfg = _load_json(content_dir / "config.json")
+        if not content_dir_needs_transparent_asset(content_dir, cfg):
+            continue
         dest = content_dir / TRANSPARENT_FILENAME
         if not dest.is_file() or dest.read_bytes() != source.read_bytes():
             return True

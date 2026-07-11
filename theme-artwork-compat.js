@@ -98,11 +98,17 @@
         return typeof cursor === 'string' ? String(cursor).trim() : '';
     }
 
-    function isIntentionalTransparentPath(pathValue) {
+    function isIntentionalPlaceholderPath(pathValue) {
         var name = String(pathValue || '')
             .split('/')
-            .pop();
-        return /transparent/i.test(name || '');
+            .pop()
+            .toLowerCase();
+        return name === 'transparent.png' || name === 'backfill.png' || /transparent/i.test(name || '');
+    }
+
+    /** @deprecated Use isIntentionalPlaceholderPath */
+    function isIntentionalTransparentPath(pathValue) {
+        return isIntentionalPlaceholderPath(pathValue);
     }
 
     function isPngFullyTransparentBlob(blob) {
@@ -171,7 +177,15 @@
             var url = fileUrlFn(folderPath, normalized);
             if (!url) return resolve({ ok: false, issue: 'invalid path' });
             var critical = isGoldCriticalArtworkPath(normalized);
-            var allowTransparent = isIntentionalTransparentPath(normalized) && !critical;
+            var isPlaceholder = isIntentionalPlaceholderPath(normalized);
+            // Required Gold feature checks call this helper: placeholders never qualify.
+            if (isPlaceholder) {
+                return resolve({
+                    ok: false,
+                    issue: 'placeholder not allowed for Gold artwork'
+                });
+            }
+            var allowTransparent = false;
             if (critical && /transparent\.png$/i.test(normalized)) {
                 return resolve({ ok: false, issue: 'transparent placeholder not allowed for Gold artwork' });
             }
@@ -225,7 +239,10 @@
                                   ? 'linked artwork file is empty (0 bytes)'
                                   : health.issue === 'fully transparent PNG'
                                     ? 'linked artwork is fully transparent'
-                                    : health.issue;
+                                    : health.issue === 'placeholder not allowed for Gold artwork' ||
+                                        health.issue === 'transparent placeholder not allowed for Gold artwork'
+                                      ? 'linked artwork is a placeholder (transparent.png or backfill.png)'
+                                      : health.issue;
                         warnings.push(requirement.feature + ': ' + issueText + '.');
                     }
                     next();

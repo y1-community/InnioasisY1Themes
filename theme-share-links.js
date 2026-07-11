@@ -32,6 +32,20 @@
         return `${SITE_ORIGIN}/${encodePathSegments(root)}/`;
     }
 
+    /** Canonical SEO URL matching sitemap / generated index hosts (variant shells under Variants/.../_share/). */
+    function buildSeoThemeUrl(catalogFolder, variantSegment) {
+        const root = cleanFolder(catalogFolder);
+        if (!root) return `${SITE_ORIGIN}/`;
+        const v = String(variantSegment || '').trim();
+        if (v) {
+            return (
+                `${SITE_ORIGIN}/${encodePathSegments(root)}/Variants/` +
+                `${encodePathSegments(v)}/_share/`
+            );
+        }
+        return `${SITE_ORIGIN}/${encodePathSegments(root)}/`;
+    }
+
     /** Theme detail page (query params). */
     function buildThemeDetailPageUrl(catalogFolder, variantSegment, baseHref) {
         const theme = cleanFolder(catalogFolder);
@@ -68,7 +82,12 @@
         const folder = parts[0];
         if (parts.length === 1) return { folder, variant: '' };
         if (parts[1] === 'Variants') {
-            const variant = parts.slice(2).join('/');
+            let variantParts = parts.slice(2);
+            // SEO hosts live at Variants/<name>/_share/ — strip the share segment.
+            if (variantParts.length && String(variantParts[variantParts.length - 1]).toLowerCase() === '_share') {
+                variantParts = variantParts.slice(0, -1);
+            }
+            const variant = variantParts.join('/');
             return { folder, variant };
         }
         return { folder, variant: parts.slice(1).join('/') };
@@ -127,6 +146,7 @@
     global.ThemeShareLinks = {
         SITE_ORIGIN,
         buildPublicThemeUrl,
+        buildSeoThemeUrl,
         buildThemeDetailPageUrl,
         parseThemePathFromLocation,
         copyTextToClipboard,

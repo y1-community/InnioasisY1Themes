@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Generate sitemap.xml for themes.innioasis.app.
 
-Includes each catalog theme folder and ``Theme/Variants/Name/_share/`` URLs when
-``themes.json`` lists ``variantFolders``.
+Includes static site pages, each catalog theme folder URL, and
+``Theme/Variants/Name/_share/`` URLs when variants exist on disk or in themes.json.
+Uses per-theme config.json mtime for lastmod when available.
 """
 
 from __future__ import annotations
@@ -26,8 +27,12 @@ SITE_BASE = "https://themes.innioasis.app"
 from author_submission_policy import theme_is_publicly_listed
 
 
-def _iso_now() -> str:
-    return dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+def _iso_utc(ts: float | None = None) -> str:
+    if ts is None:
+        when = dt.datetime.now(dt.timezone.utc)
+    else:
+        when = dt.datetime.fromtimestamp(ts, tz=dt.timezone.utc)
+    return when.replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _load_themes() -> list[dict]:
@@ -53,18 +58,53 @@ def _url_for_theme_variant(theme_folder: str, variant_name: str) -> str:
     return f"{SITE_BASE}/{encoded}/"
 
 
+def _lastmod_for_paths(paths: list[Path]) -> str:
+    mtimes: list[float] = []
+    for p in paths:
+        try:
+            if p.is_file():
+                mtimes.append(p.stat().st_mtime)
+        except OSError:
+            continue
+    return _iso_utc(max(mtimes) if mtimes else None)
+
+
+def _variant_names_for_theme(folder: str, item: dict) -> list[str]:
+    names: set[str] = set()
+    vfs = item.get("variantFolders")
+    if isinstance(vfs, list):
+        for vn in vfs:
+            v = str(vn or "").strip()
+            if v:
+                names.add(v)
+    vp = REPO_ROOT / folder / "Variants"
+    if vp.is_dir():
+        for sub in vp.iterdir():
+            if not sub.is_dir() or sub.name.startswith("."):
+                continue
+            if (sub / "config.json").is_file() or (sub / "_share" / "index.html").is_file():
+                names.add(sub.name)
+    return sorted(names, key=str.casefold)
+
+
 def generate() -> str:
-    now = _iso_now()
-    static_urls: list[tuple[str, str]] = [
-        (f"{SITE_BASE}/", "daily"),
-        (f"{SITE_BASE}/index.html", "daily"),
-        (f"{SITE_BASE}/upload.html", "weekly"),
-        (f"{SITE_BASE}/report-theme.html", "weekly"),
-        (f"{SITE_BASE}/theme.html", "weekly"),
-        (f"{SITE_BASE}/opted-out-blocked-users.html", "monthly"),
+    now = _iso_utc()
+    static_entries: list[tuple[str, str, str, str]] = [
+        # loc, changefreq, priority, lastmod
+        (f"{SITE_BASE}/", "daily", "1.0", now),
+        (f"{SITE_BASE}/index.html", "daily", "0.9", now),
+        (f"{SITE_BASE}/upload.html", "weekly", "0.8", now),
+        (f"{SITE_BASE}/backfill.html", "monthly", "0.6", now),
+        (f"{SITE_BASE}/gold-badge.html", "weekly", "0.7", now),
+        (f"{SITE_BASE}/report-theme.html", "monthly", "0.5", now),
+        (f"{SITE_BASE}/theme.html", "weekly", "0.5", now),
+        (f"{SITE_BASE}/opted-out-blocked-users.html", "monthly", "0.3", now),
+        (f"{SITE_BASE}/creators/", "monthly", "0.6", now),
     ]
+
     themes = _load_themes()
-    theme_urls: set[str] = set()
+    # loc -> (lastmod, priority)
+    theme_entries: dict[str, tuple[str, str]] = {}
     for item in themes:
         if str(item.get("sourceType") or "internal").strip().lower() == "external":
             continue
@@ -73,39 +113,47 @@ def generate() -> str:
         folder = str(item.get("folder") or "").strip()
         if not folder:
             continue
-        theme_urls.add(_url_for_folder(folder))
-        vfs = item.get("variantFolders")
-        if isinstance(vfs, list):
-            for vn in vfs:
-                v = str(vn or "").strip()
-                if not v:
-                    continue
-                u = _url_for_theme_variant(folder, v)
-                if u:
-                    theme_urls.add(u)
-    theme_urls_sorted = sorted(theme_urls)
+        root_index = REPO_ROOT / folder / "index.html"
+        root_cfg = REPO_ROOT / folder / "config.json"
+        theme_entries[_url_for_folder(folder)] = (
+            _lastmod_for_paths([root_index, root_cfg]),
+            "0.8",
+        )
+        for v in _variant_names_for_theme(folder, item):
+            u = _url_for_theme_variant(folder, v)
+            if not u:
+                continue
+            share_index = REPO_ROOT / folder / "Variants" / v / "_share" / "index.html"
+            var_cfg = REPO_ROOT / folder / "Variants" / v / "config.json"
+            theme_entries[u] = (
+                _lastmod_for_paths([share_index, var_cfg, root_cfg]),
+                "0.7",
+            )
 
-    lines = ['<?xml version="1.0" encoding="UTF-8"?>']
-    lines.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
-    for url, changefreq in static_urls:
+    lines = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ]
+    for url, changefreq, priority, lastmod in static_entries:
         lines.extend(
             [
                 "  <url>",
                 f"    <loc>{url}</loc>",
-                f"    <lastmod>{now}</lastmod>",
+                f"    <lastmod>{lastmod}</lastmod>",
                 f"    <changefreq>{changefreq}</changefreq>",
-                "    <priority>0.8</priority>",
+                f"    <priority>{priority}</priority>",
                 "  </url>",
             ]
         )
-    for url in theme_urls_sorted:
+    for url in sorted(theme_entries.keys()):
+        lastmod, priority = theme_entries[url]
         lines.extend(
             [
                 "  <url>",
                 f"    <loc>{url}</loc>",
-                f"    <lastmod>{now}</lastmod>",
+                f"    <lastmod>{lastmod}</lastmod>",
                 "    <changefreq>weekly</changefreq>",
-                "    <priority>0.7</priority>",
+                f"    <priority>{priority}</priority>",
                 "  </url>",
             ]
         )
@@ -116,7 +164,8 @@ def generate() -> str:
 def main() -> int:
     xml = generate()
     SITEMAP_PATH.write_text(xml, encoding="utf-8")
-    print(f"Wrote sitemap: {SITEMAP_PATH}")
+    loc_count = xml.count("<loc>")
+    print(f"Wrote sitemap: {SITEMAP_PATH} ({loc_count} URLs)")
     return 0
 
 

@@ -39,10 +39,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="theme-packaging.js"></script>
     <script src="theme-display-name.js?v=20260624"></script>
-    <script src="y1-theme-preview.js?v=20260711"></script>
-    <script src="theme-artwork-compat.js?v=20260524"></script>
+    <script src="y1-theme-preview.js?v=20260711b"></script>
+    <script src="theme-artwork-compat.js?v=20260711"></script>
     <script src="gold-theme-detect.js?v=20260621"></script>
-    <script src="gallery-chrome.js?v=20260622"></script>
+    <script src="gallery-chrome.js?v=20260711"></script>
     <script src="author-links.js?v=20260622"></script>
     <script src="site-init.js?v=20260522privacy"></script>
     <script src="gallery-loaded-theme.js"></script>
@@ -3899,7 +3899,8 @@
             previewFrame.className = 'theme-preview-frame';
 
             const themeQueryKey = folderPath || String(theme.name || '');
-            const buildCardDetailHref = (variantSeg) => {
+            // Preview click → theme.html (reliable in-app preview). Theme name → pretty SEO URL.
+            const buildCardPreviewHref = (variantSeg) => {
                 if (theme.sourceType === 'external' || !themeQueryKey) return '';
                 if (window.ThemeShareLinks && typeof ThemeShareLinks.buildThemeDetailPageUrl === 'function') {
                     return ThemeShareLinks.buildThemeDetailPageUrl(themeQueryKey, variantSeg);
@@ -3908,6 +3909,13 @@
                 let href = `./theme.html?theme=${encodeURIComponent(themeQueryKey)}`;
                 if (v) href += `&variant=${encodeURIComponent(v)}`;
                 return href;
+            };
+            const buildCardSeoHref = (variantSeg) => {
+                if (theme.sourceType === 'external' || !themeQueryKey) return '';
+                if (window.ThemeShareLinks && typeof ThemeShareLinks.buildSeoThemeUrl === 'function') {
+                    return ThemeShareLinks.buildSeoThemeUrl(themeQueryKey, variantSeg);
+                }
+                return buildCardPreviewHref(variantSeg);
             };
 
             const previewGoldBadge = document.createElement('a');
@@ -4047,8 +4055,8 @@
                 })();
             }
 
-            const goToThemeDetailPage = () => {
-                const href = buildCardDetailHref(String(variantSelect.value || '').trim());
+            const goToThemePreviewPage = () => {
+                const href = buildCardPreviewHref(String(variantSelect.value || '').trim());
                 if (href) location.href = href;
             };
 
@@ -4056,8 +4064,8 @@
                 previewFrame.classList.add('theme-preview-frame--linkable');
                 previewFrame.setAttribute('role', 'link');
                 previewFrame.setAttribute('tabindex', '0');
-                previewFrame.setAttribute('aria-label', `Open ${safeText(theme.name)} theme page`);
-                previewFrame.title = 'Open theme page';
+                previewFrame.setAttribute('aria-label', `Open ${safeText(theme.name)} preview`);
+                previewFrame.title = 'Open theme preview';
                 previewFrame.addEventListener('click', (ev) => {
                     if (ev.target.closest('select, button, a, .theme-card-corner-actions')) return;
                     if (
@@ -4069,12 +4077,12 @@
                         }
                         return;
                     }
-                    goToThemeDetailPage();
+                    goToThemePreviewPage();
                 });
                 previewFrame.addEventListener('keydown', (ev) => {
                     if (ev.key !== 'Enter' && ev.key !== ' ') return;
                     ev.preventDefault();
-                    goToThemeDetailPage();
+                    goToThemePreviewPage();
                 });
             }
 
@@ -4089,12 +4097,12 @@
                 n.target = '_blank';
                 n.rel = 'noopener';
             } else {
-                n.href = buildCardDetailHref(String(variantSelect.value || '').trim());
+                n.href = buildCardSeoHref(String(variantSelect.value || '').trim());
             }
 
             const updateCardThemeNameHref = () => {
                 if (theme.sourceType === 'external' || !themeQueryKey) return;
-                n.href = buildCardDetailHref(String(variantSelect.value || '').trim());
+                n.href = buildCardSeoHref(String(variantSelect.value || '').trim());
             };
 
             variantSelect.addEventListener('change', () => {
@@ -4108,7 +4116,7 @@
                 void syncDownloadButtonToThemeConfig(seg);
                 if (window.ThemeFrozen && ThemeFrozen.isFrozen(theme)) {
                     ThemeFrozen.attachToGalleryPreview(c, theme, {
-                        onViewAnyway: () => goToThemeDetailPage(),
+                        onViewAnyway: () => goToThemePreviewPage(),
                     });
                 }
             });
@@ -4226,7 +4234,7 @@
             mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, c, '', theme);
             if (window.ThemeFrozen && window.ThemeFrozen.isFrozen(theme)) {
                 window.ThemeFrozen.attachToGalleryPreview(c, theme, {
-                    onViewAnyway: () => goToThemeDetailPage(),
+                    onViewAnyway: () => goToThemePreviewPage(),
                 });
             }
             cardActions.appendChild(bd);

@@ -22,7 +22,7 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
-    <link rel="stylesheet" href="site-theme.css?v=20260521footer">
+    <link rel="stylesheet" href="site-theme.css?v=20260711backfill">
     <link rel="stylesheet" href="site-toolbar.css?v=20260622">
     <link rel="stylesheet" href="site-pages.css?v=20260622">
     <!-- Same origin as upload; POST {origin}/api/upload-theme and /api/removal-request -->
@@ -629,7 +629,7 @@
             pointer-events: none;
         }
     </style>
-    <script src="gallery-chrome.js?v=20260624"></script>
+    <script src="gallery-chrome.js?v=20260711backfill"></script>
     <script src="site-init.js?v=20260522privacy"></script>
 </head>
 
@@ -3197,7 +3197,8 @@
 
         function isIntentionalTransparentPath(pathValue) {
             const base = String(pathValue || "").split("/").pop() || "";
-            return /transparent/i.test(base);
+            const lower = base.toLowerCase();
+            return lower === "transparent.png" || lower === "backfill.png" || /transparent/i.test(base);
         }
 
         async function isPngFullyTransparentBlob(blob) {
