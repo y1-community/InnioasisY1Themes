@@ -176,32 +176,35 @@
     function buildHomeItems(homeCfg) {
         homeCfg = homeCfg || {};
         var labelMap = {
-            nowPlaying: 'Now playing',
+            nowPlaying: 'Now Playing',
             music: 'Music',
             video: 'Videos',
-            audiobooks: 'Audiobooks',
-            photos: 'Photos',
+            audiobooks: 'Audiobook',
             fm: 'FM Radio',
+            ebook: 'E-Book',
+            photos: 'Photos',
+            fileManager: 'File manager',
+            settings: 'Settings',
             bluetooth: 'Bluetooth',
             calculator: 'Calculator',
-            calendar: 'Calendar',
-            ebook: 'eBook',
-            settings: 'Settings'
+            calendar: 'Calendar'
         };
+        // Device home menu order (shuffleQuick is not shown in previews).
         var ordered = [
             'nowPlaying',
             'music',
             'video',
             'audiobooks',
-            'photos',
             'fm',
+            'ebook',
+            'photos',
+            'fileManager',
+            'settings',
             'bluetooth',
             'calculator',
-            'calendar',
-            'ebook',
-            'settings'
+            'calendar'
         ];
-        var optionalExtras = { calculator: 1, calendar: 1, ebook: 1 };
+        var optionalExtras = { calculator: 1, calendar: 1, ebook: 1, fileManager: 1 };
         return ordered
             .filter(function (key) {
                 if (optionalExtras[key]) {
