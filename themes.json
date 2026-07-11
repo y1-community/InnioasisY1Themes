@@ -1962,6 +1962,16 @@
             "screenshot": "./Minecraft/cover.png"
         },
         {
+            "name": "Minecraft Classic",
+            "folder": "Minecraft_Classic",
+            "author": "purplecray0ns",
+            "description": "A Minecraft theme for old school players",
+            "screenshot": "./Minecraft_Classic/cover.png",
+            "sourceType": "internal",
+            "sortName": "minecraft classic",
+            "searchText": "minecraft classic a minecraft theme for old school players purplecray0ns minecraft_classic"
+        },
+        {
             "name": "Minimal Max Payne 2",
             "folder": "Minimal_Max_Payne_2",
             "author": "Knight",
