@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Additive legacy OS backfill: missing eBook/Calendar/Calculator/Launcher keys → transparent.png.
+"""Additive legacy OS backfill: missing eBook/Calendar/Calculator/File Manager/Launcher keys → transparent.png.
 
 Adds only absent keys in homePageConfig and settingConfig. Copies repo-root transparent.png
 into each theme root and Variants/<look>/ folder that has config.json, replacing any existing

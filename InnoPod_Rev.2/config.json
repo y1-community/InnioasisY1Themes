@@ -3,7 +3,7 @@
     "title": "InnoPod Rev.2",
     "author": "Kyoukopilled",
     "authorUrl": "https://ko-fi.com/kyoukopilled",
-        "description": "This is the most accurate iPod theme for this platform yet. For those wanting an experience similar to the iPod Classics, I went and recreated the user interface of an iPod, based off of the \"iPod-ish\" theme.\n\nI personally recommend you change out the home page wallpaper for an album art of your choice, as that's what the original did.\n\nThe \"Rev.2\" in the name signifies a modern take on the theme, that displays the icons of certain menus, something the iPod Classic doesn't do.",
+    "description": "This is the most accurate iPod theme for this platform yet. For those wanting an experience similar to the iPod Classics, I went and recreated the user interface of an iPod, based off of the \"iPod-ish\" theme.\n\nI personally recommend you change out the home page wallpaper for an album art of your choice, as that's what the original did.\n\nThe \"Rev.2\" in the name signifies a modern take on the theme, that displays the icons of certain menus, something the iPod Classic doesn't do.",
     "externalDownloadUrl": ""
   },
   "themeCover": "gregcover.png",
@@ -44,7 +44,8 @@
     "selectedColor": "#0000",
     "ebook": "transparent.png",
     "calendar": "transparent.png",
-    "calculator": "transparent.png"
+    "calculator": "transparent.png",
+    "fileManager": "transparent.png"
   },
   "fileConfig": {
     "folderIcon": "folder.png",
