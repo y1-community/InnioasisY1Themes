@@ -470,6 +470,19 @@
             "searchText": "bo1 back to bo1 u/continuityinteractive bo1"
         },
         {
+<<<<<<< HEAD
+=======
+            "name": "BO2",
+            "folder": "BO2",
+            "author": "u/ContinuityInteractive",
+            "description": "Back to BO2",
+            "screenshot": "./BO2/cover.png",
+            "sourceType": "internal",
+            "sortName": "bo2",
+            "searchText": "bo2 back to bo2 u/continuityinteractive bo2"
+        },
+        {
+>>>>>>> 2dedbdcc (Theme ingest: extract zips, sync themes.json, cleanup upload artifacts)
             "name": "Boxd",
             "folder": "Boxd",
             "author": "u/highwaycrisis",
