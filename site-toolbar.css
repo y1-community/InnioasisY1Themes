@@ -47,13 +47,17 @@ body.site-themes-app .btn:disabled {
 }
 
 body.site-themes-app .btn.btn-primary {
-    background: rgba(107, 159, 255, 0.22) !important;
-    border-color: rgba(107, 159, 255, 0.45) !important;
-    color: #eaf0ff !important;
+    background: var(--site-accent, #ffb133) !important;
+    border-color: rgba(255, 177, 51, 0.6) !important;
+    color: #13141d !important;
+    font-weight: 650 !important;
+    box-shadow: 0 4px 16px rgba(255, 177, 51, 0.28) !important;
 }
 
 body.site-themes-app .btn.btn-primary:hover:not(:disabled) {
-    background: rgba(107, 159, 255, 0.32) !important;
+    background: #ffbe4d !important;
+    box-shadow: 0 6px 20px rgba(255, 177, 51, 0.4) !important;
+    transform: translateY(-1px);
 }
 
 body.site-themes-app .theme-card .btn {
@@ -82,8 +86,8 @@ body.site-themes-app .theme-author-name.theme-author-filter:hover {
 
 body.site-themes-app .theme-author-name.theme-author-filter--active {
     color: #fff !important;
-    background: rgba(107, 159, 255, 0.32) !important;
-    border-color: rgba(107, 159, 255, 0.65) !important;
+    background: rgba(255, 177, 51, 0.28) !important;
+    border-color: rgba(255, 177, 51, 0.65) !important;
 }
 
 body.site-themes-app .theme-author-outbound {
@@ -95,8 +99,8 @@ body.site-themes-app .theme-author-outbound {
 
 body.site-themes-app .theme-author-outbound:hover {
     color: #fff !important;
-    background: rgba(107, 159, 255, 0.18) !important;
-    border-color: rgba(107, 159, 255, 0.45) !important;
+    background: rgba(255, 177, 51, 0.18) !important;
+    border-color: rgba(255, 177, 51, 0.45) !important;
 }
 
 body.site-themes-app .theme-card-actions {
@@ -172,8 +176,8 @@ body.site-themes-app .theme-card-buttons {
 }
 
 .theme-card-corner-btn:hover {
-    background: rgba(107, 159, 255, 0.25);
-    border-color: rgba(107, 159, 255, 0.45);
+    background: rgba(255, 177, 51, 0.22);
+    border-color: rgba(255, 177, 51, 0.45);
     color: #fff;
 }
 
@@ -434,7 +438,7 @@ body.site-themes-app .theme-card-buttons {
 }
 
 .y1-donate-crypto-code:hover {
-    background: rgba(107, 159, 255, 0.15);
+    background: rgba(255, 177, 51, 0.15);
 }
 
 .y1-donate-crypto-code.copied {

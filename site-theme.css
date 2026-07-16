@@ -1,18 +1,21 @@
 /* Innioasis Y1 Themes — fintech-grade typography & chrome (Gold Badge aesthetic) */
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Instrument+Serif:ital@0;1&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap");
 
 :root {
-    --site-bg: #0a0b0f;
-    --site-bg-elevated: #12141c;
-    --site-bg-card: rgba(255, 255, 255, 0.03);
-    --site-text: #f4f6fb;
-    --site-muted: #9aa3b5;
-    --site-accent: #6b9fff;
-    --site-border: rgba(255, 255, 255, 0.08);
-    --site-font: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    /* Lumen (Night Foundry) — apparatus, not orb · three-register type */
+    --site-bg: #13141d;
+    --site-bg-elevated: #1b1c28;
+    --site-bg-card: rgba(255, 255, 255, 0.04);
+    --site-text: #f5f6fa;
+    --site-muted: #9aa0b8;
+    --site-accent: #ffb133;
+    --site-border: rgba(180, 185, 220, 0.12);
+    --site-border-hover: rgba(180, 185, 220, 0.24);
+    --site-font: "Geist", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
     --site-font-display: "Instrument Serif", Georgia, "Times New Roman", serif;
-    --site-radius-lg: 16px;
-    --site-radius-md: 12px;
+    --site-font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    --site-radius-lg: 14px;
+    --site-radius-md: 10px;
     --site-radius-pill: 999px;
     --site-footer-luci-max-width: 165px;
 }
@@ -83,8 +86,9 @@ header h1,
 .theme-page-title {
     font-family: var(--site-font-display);
     font-weight: 400;
-    letter-spacing: -0.02em;
-    line-height: 1.12;
+    letter-spacing: -0.032em;
+    line-height: 1.08;
+    color: var(--site-text);
 }
 
 .site-lead,
@@ -112,9 +116,9 @@ h2.section-display,
     align-items: center;
     gap: 10px;
     padding: 8px 14px;
-    background: rgba(10, 11, 15, 0.94);
+    background: rgba(19, 20, 29, 0.88);
     border-bottom: 1px solid var(--site-border);
-    backdrop-filter: blur(12px);
+    backdrop-filter: blur(16px);
 }
 
 .gallery-brand {
@@ -146,9 +150,9 @@ h2.section-display,
     width: 32px;
     height: 32px;
     border-radius: 8px;
-    background: rgba(107, 159, 255, 0.18);
-    border: 1px solid rgba(107, 159, 255, 0.35);
-    color: #9ec0ff;
+    background: rgba(255, 177, 51, 0.14);
+    border: 1px solid rgba(255, 177, 51, 0.35);
+    color: #ffb133;
     font-size: 0.95rem;
     flex-shrink: 0;
 }
@@ -286,9 +290,9 @@ body.site-themes-app .gallery-home-hero .y1-hero {
 
 .gallery-tab.active {
     color: #ffffff;
-    background: #2a2f3a;
-    border-color: rgba(255, 255, 255, 0.18);
-    box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.12);
+    background: #252736;
+    border-color: rgba(255, 177, 51, 0.35);
+    box-shadow: 0 0 12px rgba(255, 177, 51, 0.12);
 }
 
 /* Search: flex row so icon never overlaps placeholder text */
@@ -439,7 +443,7 @@ body.site-themes-app .gallery-home-hero .y1-hero {
     font-size: 0.82rem;
     font-weight: 600;
     line-height: 1.2;
-    color: var(--site-accent, #6b9fff);
+    color: var(--site-accent, #ffb133);
     cursor: pointer;
     text-decoration: underline;
     text-underline-offset: 2px;
@@ -447,7 +451,7 @@ body.site-themes-app .gallery-home-hero .y1-hero {
 }
 
 .gallery-author-clear:hover {
-    color: #9ec0ff;
+    color: #ffbe4d;
 }
 
 .gallery-author-clear[hidden] {
@@ -472,13 +476,14 @@ body.site-themes-app .gallery-home-hero .y1-hero {
     background: var(--site-bg-card) !important;
     border: 1px solid var(--site-border) !important;
     border-radius: var(--site-radius-lg) !important;
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04);
-    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .theme-card:hover {
-    border-color: rgba(255, 255, 255, 0.14) !important;
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+    border-color: var(--site-border-hover) !important;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35), 0 0 14px rgba(255, 177, 51, 0.08);
+    transform: translateY(-2px);
 }
 
 .theme-card .theme-name {
@@ -512,16 +517,18 @@ body.site-themes-app .gallery-home-hero .y1-hero {
 .theme-gold-title-badge,
 a.theme-gold-title-badge {
     display: inline-block;
+    font-family: var(--site-font-mono, monospace);
+    font-variant-numeric: tabular-nums;
     font-size: 0.68rem;
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: #1a1206;
+    color: #13141d;
     padding: 2px 7px;
     border-radius: 6px;
-    background: linear-gradient(135deg, #5c4014, #b8891e 42%, #f2d06a 52%, #b8891e 62%, #5c4014);
+    background: linear-gradient(135deg, #e59918, #ffb133 50%, #ffd175);
     border: 1px solid rgba(255, 230, 160, 0.75);
-    box-shadow: 0 1px 6px rgba(201, 162, 39, 0.28);
+    box-shadow: 0 1px 6px rgba(255, 177, 51, 0.28);
     vertical-align: middle;
     text-decoration: none;
     cursor: pointer;
@@ -557,14 +564,16 @@ a.theme-preview-gold-badge {
     top: 8px;
     left: 8px;
     z-index: 4;
+    font-family: var(--site-font-mono, monospace);
+    font-variant-numeric: tabular-nums;
     font-size: 0.62rem;
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: #1a1206;
+    color: #13141d;
     padding: 2px 7px;
     border-radius: 6px;
-    background: linear-gradient(135deg, #5c4014, #b8891e 42%, #f2d06a 52%, #b8891e 62%, #5c4014);
+    background: linear-gradient(135deg, #e59918, #ffb133 50%, #ffd175);
     border: 1px solid rgba(255, 230, 160, 0.75);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
     text-decoration: none;
@@ -715,15 +724,15 @@ body.site-themes-app .site-footer.site-footer--themes {
 }
 
 .theme-author-name.theme-author-filter:focus-visible {
-    outline: 2px solid rgba(107, 159, 255, 0.55);
+    outline: 2px solid rgba(255, 177, 51, 0.55);
     outline-offset: 2px;
 }
 
 .theme-author-name.theme-author-filter--active {
     color: #fff !important;
-    background: rgba(107, 159, 255, 0.32) !important;
-    border-color: rgba(107, 159, 255, 0.65) !important;
-    box-shadow: 0 0 0 1px rgba(107, 159, 255, 0.25);
+    background: rgba(255, 177, 51, 0.28) !important;
+    border-color: rgba(255, 177, 51, 0.65) !important;
+    box-shadow: 0 0 0 1px rgba(255, 177, 51, 0.25);
 }
 
 .theme-author--page .theme-author-name.theme-author-pill {
@@ -751,8 +760,8 @@ body.site-themes-app .site-footer.site-footer--themes {
 
 .theme-author-outbound:hover {
     color: #fff;
-    border-color: rgba(107, 159, 255, 0.45);
-    background: rgba(107, 159, 255, 0.18);
+    border-color: rgba(255, 177, 51, 0.45);
+    background: rgba(255, 177, 51, 0.18);
 }
 
 .site-footer--themes .footer-grid {
@@ -903,8 +912,8 @@ body.site-themes-app .cast-div {
 }
 
 body.site-themes-app #direct-install-banner {
-    background: rgba(107, 159, 255, 0.08) !important;
-    border: 1px solid rgba(107, 159, 255, 0.22) !important;
+    background: rgba(255, 177, 51, 0.08) !important;
+    border: 1px solid rgba(255, 177, 51, 0.22) !important;
     border-radius: var(--site-radius-md) !important;
 }
 
@@ -914,20 +923,27 @@ body.site-themes-app .bulk-update-panel {
     color: var(--site-text) !important;
 }
 
-/* Site-wide automatic backfill hint (injected by gallery-chrome.js) */
-.y1-backfill-hint-banner {
+/* Site-wide automatic backfill & Solar hint banners (injected by gallery-chrome.js) */
+.y1-backfill-hint-banner,
+.y1-solar-hint-banner {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 12px;
     margin: 0;
     padding: 12px 16px;
-    background: rgba(107, 159, 255, 0.1);
-    border-bottom: 1px solid rgba(107, 159, 255, 0.22);
+    background: rgba(255, 177, 51, 0.1);
+    border-bottom: 1px solid rgba(255, 177, 51, 0.22);
     color: var(--site-text, #f4f6fb);
 }
 
-.y1-backfill-hint-banner__body {
+.y1-solar-hint-banner {
+    background: linear-gradient(90deg, rgba(255, 170, 40, 0.14) 0%, rgba(255, 140, 0, 0.08) 100%);
+    border-bottom: 1px solid rgba(255, 170, 40, 0.28);
+}
+
+.y1-backfill-hint-banner__body,
+.y1-solar-hint-banner__body {
     flex: 1;
     min-width: 0;
     display: flex;
@@ -936,24 +952,42 @@ body.site-themes-app .bulk-update-panel {
     gap: 8px 14px;
 }
 
-.y1-backfill-hint-banner__text {
+.y1-backfill-hint-banner__text,
+.y1-solar-hint-banner__text {
     margin: 0;
     font-size: 0.9rem;
     line-height: 1.45;
     color: var(--site-muted, #c8d0e0);
 }
 
-.y1-backfill-hint-banner__text strong {
+.y1-backfill-hint-banner__text strong,
+.y1-solar-hint-banner__text strong {
     color: var(--site-text, #f4f6fb);
     font-weight: 650;
 }
 
-.y1-backfill-hint-banner__text code {
+.y1-solar-hint-banner__text strong {
+    color: #ffca4d;
+}
+
+.y1-backfill-hint-banner__text code,
+.y1-solar-hint-banner__text code {
     font-size: 0.86em;
     color: #c8d4ee;
 }
 
-.y1-backfill-hint-banner__link {
+.y1-solar-hint-banner__text a {
+    color: #ffbe3b;
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+.y1-solar-hint-banner__text a:hover {
+    color: #ffffff;
+}
+
+.y1-backfill-hint-banner__link,
+.y1-solar-hint-banner__link {
     flex: 0 0 auto;
     font-size: 0.88rem;
     font-weight: 600;
@@ -962,11 +996,17 @@ body.site-themes-app .bulk-update-panel {
     white-space: nowrap;
 }
 
-.y1-backfill-hint-banner__link:hover {
+.y1-solar-hint-banner__link {
+    color: #ffbe3b;
+}
+
+.y1-backfill-hint-banner__link:hover,
+.y1-solar-hint-banner__link:hover {
     text-decoration: underline;
 }
 
-.y1-backfill-hint-banner__dismiss {
+.y1-backfill-hint-banner__dismiss,
+.y1-solar-hint-banner__dismiss {
     flex: 0 0 auto;
     margin: 0;
     padding: 4px 8px;
@@ -978,17 +1018,20 @@ body.site-themes-app .bulk-update-panel {
     line-height: 1;
 }
 
-.y1-backfill-hint-banner__dismiss:hover {
+.y1-backfill-hint-banner__dismiss:hover,
+.y1-solar-hint-banner__dismiss:hover {
     background: rgba(255, 255, 255, 0.08);
     color: var(--site-text, #f4f6fb);
 }
 
 @media (max-width: 640px) {
-    .y1-backfill-hint-banner {
+    .y1-backfill-hint-banner,
+    .y1-solar-hint-banner {
         padding: 10px 12px;
     }
 
-    .y1-backfill-hint-banner__link {
+    .y1-backfill-hint-banner__link,
+    .y1-solar-hint-banner__link {
         white-space: normal;
     }
 }

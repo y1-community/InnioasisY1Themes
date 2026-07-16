@@ -1,10 +1,10 @@
 /* Page-level layout + legacy variable bridge (loads after innioasis styles) */
 
 body.site-themes-app {
-    --bg-card: var(--site-bg-elevated, #12141c);
-    --text-primary: var(--site-text, #f4f6fb);
-    --text-secondary: var(--site-muted, #9aa3b5);
-    --accent: var(--site-accent, #6b9fff);
+    --bg-card: var(--site-bg-elevated, #1b1c28);
+    --text-primary: var(--site-text, #f5f6fa);
+    --text-secondary: var(--site-muted, #9aa0b8);
+    --accent: var(--site-accent, #ffb133);
 }
 
 /* —— Theme preview page —— */

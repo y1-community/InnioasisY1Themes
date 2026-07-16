@@ -94,6 +94,7 @@ def generate() -> str:
         (f"{SITE_BASE}/", "daily", "1.0", now),
         (f"{SITE_BASE}/index.html", "daily", "0.9", now),
         (f"{SITE_BASE}/upload.html", "weekly", "0.8", now),
+        (f"{SITE_BASE}/solar.html", "weekly", "0.8", now),
         (f"{SITE_BASE}/backfill.html", "monthly", "0.6", now),
         (f"{SITE_BASE}/gold-badge.html", "weekly", "0.7", now),
         (f"{SITE_BASE}/report-theme.html", "monthly", "0.5", now),
