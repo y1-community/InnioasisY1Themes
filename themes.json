@@ -470,11 +470,6 @@
             "searchText": "bo1 back to bo1 u/continuityinteractive bo1"
         },
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 6fdce997 (Theme ingest: extract zips, sync themes.json, cleanup upload artifacts)
             "name": "BO2",
             "folder": "BO2",
             "author": "u/ContinuityInteractive",
@@ -485,10 +480,6 @@
             "searchText": "bo2 back to bo2 u/continuityinteractive bo2"
         },
         {
-<<<<<<< HEAD
->>>>>>> 2dedbdcc (Theme ingest: extract zips, sync themes.json, cleanup upload artifacts)
-=======
->>>>>>> 6fdce997 (Theme ingest: extract zips, sync themes.json, cleanup upload artifacts)
             "name": "Boxd",
             "folder": "Boxd",
             "author": "u/highwaycrisis",
@@ -3195,6 +3186,16 @@
             "sourceType": "internal",
             "sortName": "smokedoper",
             "searchText": "smokedoper my first theme pls be nice\ntheme based on the album \"dopesmoker\" by sleep sleepfan2005 smokedoper"
+        },
+        {
+            "name": "Snorlax",
+            "folder": "Snorlax",
+            "author": "Broooke",
+            "description": "Snorlax Theme:)",
+            "screenshot": "./Snorlax/cover.png",
+            "sourceType": "internal",
+            "sortName": "snorlax",
+            "searchText": "snorlax snorlax theme:) broooke snorlax"
         },
         {
             "name": "so4 enneagram",
