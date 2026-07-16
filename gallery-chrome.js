@@ -101,7 +101,7 @@
                 '<div class="y1-solar-hint-banner__body">' +
                 '<p class="y1-solar-hint-banner__text">' +
                 "<strong>" + themeName + " works seamlessly with Solar!</strong><br>" +
-                'You can install and use <strong>' + themeName + '</strong> right now on Solar — a custom firmware by <a href="https://github.com/thesolarproject/solar" target="_blank" rel="noopener noreferrer">@TheSolarProject</a> for the Innioasis Y1. Solar unlocks Wi-Fi so you can download and apply themes straight to your device over the air without a PC, plus enjoy free Deezer music streaming &amp; downloads, ad-free YouTube videos, Cover Flow album browsing, and Navidrome, while keeping 100% full compatibility with every theme in this gallery.' +
+                'You can install and use <strong>' + themeName + '</strong> right now on Solar — a new custom firmware by <a href="https://github.com/thesolarproject/solar" target="_blank" rel="noopener noreferrer">@TheSolarProject</a> who are currently <a href="https://github.com/thesolarproject/solar/issues" target="_blank" rel="noopener noreferrer">Looking for testers</a> for their Y1 custom firmware. Solar unlocks Wi-Fi so you can download and apply themes straight to your device over the air without a PC, plus enjoy free Deezer music streaming &amp; downloads, ad-free YouTube videos, Cover Flow album browsing, and Navidrome, while keeping 100% full compatibility with every theme in this gallery.' +
                 "</p>" +
                 '<a class="y1-solar-hint-banner__link" href="' +
                 SOLAR_PAGE +
@@ -112,7 +112,7 @@
                 '<div class="y1-solar-hint-banner__body">' +
                 '<p class="y1-solar-hint-banner__text">' +
                 "<strong>Get YouTube and Soulseek on your Y1</strong><br>" +
-                'Check out Solar — a custom firmware by <a href="https://github.com/thesolarproject/solar" target="_blank" rel="noopener noreferrer">@TheSolarProject</a> with Wi-Fi features including free Deezer streaming &amp; downloads, YouTube videos &amp; music, Cover Flow, Navidrome, full compatibility with our site themes, plus direct theme downloads straight from your device without needing a PC.' +
+                '<a href="https://github.com/thesolarproject/solar" target="_blank" rel="noopener noreferrer">TheSolarProject</a> are looking for testers to try their new Y1 firmware: Solar, with Wi-Fi features including ad-free YouTube music / video streaming and downloads, free Deezer streaming &amp; downloads, Cover Flow, Navidrome, full compatibility with our site themes, plus direct theme downloads straight from your device without needing a PC.' +
                 "</p>" +
                 '<a class="y1-solar-hint-banner__link" href="' +
                 SOLAR_PAGE +
