@@ -137,10 +137,6 @@
     },
     "gallery": {
         "defaultVariantLabel": "1G",
-        "variantFolders": [
-            "1M",
-            "1P",
-            "1Y"
-        ]
+        "compatibilityMedal": "none"
     }
 }

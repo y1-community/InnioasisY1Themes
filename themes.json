@@ -1109,11 +1109,6 @@
             "description": "Fallout Pip-Boy themes for the Innioasis Y1 (1G, 1M, 1P, and 1Y color variants).",
             "screenshot": "./Fallout Pip-Boy/cover.png",
             "defaultVariantLabel": "1G",
-            "variantFolders": [
-                "1M",
-                "1P",
-                "1Y"
-            ],
             "sourceType": "internal",
             "sortName": "pip-boy",
             "searchText": "pip-boy fallout pip-boy themes for the innioasis y1 (1g, 1m, 1p, and 1y color variants). arthur_moss fallout pip-boy"
