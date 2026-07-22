@@ -6,23 +6,22 @@
     "description": "Simple minecraft style theme for Innioasis Y1",
     "externalDownloadUrl": ""
   },
-  "themeCover": "cover.png",
-  "desktopWallpaper": "desk_bg001.png",
-  "globalWallpaper": "desk_bg001.png",
-  "desktopMask": "",
-  "fontFamily": "minecraft.ttf",
+  "themeCover": "gregcover.png",
+  "desktopWallpaper": "gregios4.png",
+  "globalWallpaper": "greglobalwallpaper.png",
+  "desktopMask": "gregmask.png",
   "itemConfig": {
-    "itemTextColor": "#ffffff",
-    "itemSelectedTextColor": "#575757",
+    "itemTextColor": "#000000",
+    "itemSelectedTextColor": "#ffffff",
     "itemSelectedBackground": "1.png",
-    "itemBackground": "",
+    "itemBackground": "1_copy.png",
     "itemRightArrow": "2.png"
   },
   "dialogConfig": {
     "dialogOptionBackground": "3.png",
-    "dialogOptionTextColor": "#575757",
+    "dialogOptionTextColor": "#ffffff",
     "dialogOptionSelectedBackground": "4.png",
-    "dialogOptionSelectedTextColor": "#575757",
+    "dialogOptionSelectedTextColor": "#ffffff",
     "dialogBackgroundColor": "#ffffff"
   },
   "menuConfig": {
@@ -30,26 +29,26 @@
     "menuItemBackground": "",
     "menuItemTextColor": "#ffffff",
     "menuItemSelectedBackground": "1.png",
-    "menuItemSelectedTextColor": "#292929"
+    "menuItemSelectedTextColor": "#ffffff"
   },
   "homePageConfig": {
-    "nowPlaying": "Now Playing.png",
-    "music": "Music.png",
-    "video": "Videos.png",
-    "audiobooks": "Audiobooks.png",
-    "photos": "Photos.png",
-    "fm": "FM Radio.png",
-    "bluetooth": "Bluetooth.png",
-    "settings": "Settings.png",
+    "nowPlaying": "gregNowPlaying.png",
+    "music": "gregMusic.png",
+    "video": "gregVideos.png",
+    "audiobooks": "gregAudiobook.png",
+    "photos": "gregPhotos.png",
+    "fm": "gregFMRadio.png",
+    "bluetooth": "gregBluetooth.png",
+    "settings": "gregSettings.png",
     "shuffleQuick": "Shuffle Quick.png",
-    "calendar": "calendar.png",
-    "calculator": "calculator.png",
-    "ebook": "ebook.png",
+    "ebook": "transparent.png",
+    "calendar": "transparent.png",
+    "calculator": "transparent.png",
     "fileManager": "transparent.png"
   },
   "fileConfig": {
-    "folderIcon": "folder.png",
-    "musicIcon": "music_icon.png"
+    "folderIcon": "",
+    "musicIcon": ""
   },
   "settingConfig": {
     "shutdown": "Shutdown@1x.png",
@@ -95,36 +94,35 @@
     "displayBatteryOff": "Display battery_off@1x.png",
     "dateTime": "Date & Time@1x.png",
     "language": "Language@1x.png",
-    "launcher": "Launcher.png",
     "factoryReset": "Factory@1x.png",
     "clearCache": "Clear cache@1x.png",
     "theme": "Change Theme@1x.png",
     "fileExtensionOn": "file_ext_on.png",
-    "fileExtensionOff": "file_ext_off.png"
+    "fileExtensionOff": "file_ext_off.png",
+    "launcher": "transparent.png"
   },
   "statusConfig": {
-    "playing": "playing.png",
-    "audiobookPlaying": "audiobookPlaying.png",
-    "pause": "pause.png",
-    "fmPlaying": "fmPlaying.png",
-    "stop": "stop.png",
-    "blConnected": "blConnected.png",
-    "blConnecting": "blConnecting.png",
-    "blDisconnected": "blDisconnected.png",
-    "headsetWithMic": "headsetWithoutMic.png",
-    "headsetWithoutMic": "headsetWithoutMic.png",
-    "statusBarColor": "",
+    "playing": "gregplay.png",
+    "audiobookPlaying": "",
+    "pause": "gregpause.png",
+    "fmPlaying": "",
+    "stop": "gregstop.png",
+    "blConnected": "",
+    "blConnecting": "",
+    "blDisconnected": "",
+    "headsetWithMic": "",
+    "headsetWithoutMic": "",
     "battery": [
-      "battery_001.png",
-      "battery_002.png",
-      "battery_003.png",
-      "battery_004.png"
+      "gregbattery.001.png",
+      "gregbattery.002.png",
+      "gregbattery.003.png",
+      "gregbattery.004.png"
     ],
     "batteryCharging": [
-      "batterycharge_001.png",
-      "batterycharge_002.png",
-      "batterycharge_003.png",
-      "batterycharge_004.png"
+      "gregbatterycharge.001.png",
+      "gregbatterycharge.002.png",
+      "gregbatterycharge.003.png",
+      "gregbatterycharge.004.png"
     ]
   },
   "gallery": {
