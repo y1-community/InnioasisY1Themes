@@ -1,0 +1,126 @@
+{
+  "theme_info": {
+    "title": "Minimal",
+    "author": "diegocoxta",
+    "authorUrl": "https://diegocosta.me",
+    "description": "A really simple minimal theme",
+    "externalDownloadUrl": ""
+  },
+  "themeCover": "themeCover.png",
+  "desktopWallpaper": "defaultWallpaper.png",
+  "globalWallpaper": "defaultWallpaper.png",
+  "fontFamily": "fontFamily.ttf",
+  "itemConfig": {
+    "itemTextColor": "#99ffffff",
+    "itemSelectedTextColor": "#ffffff",
+    "itemSelectedBackground": "itemConfig_itemSelectedBackground.png",
+    "itemBackground": "itemConfig_itemBackground.png",
+    "itemRightArrow": "itemConfig_itemRightArrow.png"
+  },
+  "menuConfig": {
+    "menuBackgroundColor": "#000000",
+    "menuItemBackground": "menuConfig_menuItemBackground.png",
+    "menuItemTextColor": "#ffffff",
+    "menuItemSelectedBackground": "menuConfig_menuItemSelectedBackground.png",
+    "menuItemSelectedTextColor": "#000000"
+  },
+  "dialogConfig": {
+    "dialogOptionBackground": "dialogConfig_dialogOptionBackground.png",
+    "dialogOptionTextColor": "#ffffff",
+    "dialogOptionSelectedBackground": "dialogConfig_dialogOptionSelectedBackground.png",
+    "dialogOptionSelectedTextColor": "#ffffff",
+    "dialogBackgroundColor": "#ffffff"
+  },
+  "playerConfig": {
+    "progressColor": "#ffffff",
+    "progressBackgroundColor": "#99ffffff"
+  },
+  "statusConfig": {
+    "statusBarColor": "#00ffffff",
+    "battery": [
+      "statusBar_battery_01.png",
+      "statusBar_battery_02.png",
+      "statusBar_battery_03.png",
+      "statusBar_battery_04.png"
+    ],
+    "batteryCharging": [
+      "statusBar_battery_01_charging.png",
+      "statusBar_battery_02_charging.png",
+      "statusBar_battery_03_charging.png",
+      "statusBar_battery_04_charged.png"
+    ]
+  },
+  "homePageConfig": {
+    "nowPlaying": "homePageConfig_nowPlaying.png",
+    "music": "homePageConfig_music.png",
+    "video": "homePageConfig_video.png",
+    "audiobooks": "homePageConfig_audiobooks.png",
+    "photos": "homePageConfig_photos.png",
+    "fm": "homePageConfig_fm.png",
+    "bluetooth": "homePageConfig_bluetooth.png",
+    "settings": "homePageConfig_settings.png",
+    "shuffleQuick": "homePageConfig_shuffleQuick.png",
+    "calendar": "homePageConfig_calendar.png",
+    "calculator": "homePageConfig_calculator.png",
+    "ebook": "homePageConfig_ebook.png",
+    "fileManager": "ADD ICON HERE"
+  },
+  "fileConfig": {
+    "folderIcon": "",
+    "musicIcon": ""
+  },
+  "settingConfig": {
+    "shutdown": "settingConfig_shutdown.png",
+    "brightness": "settingConfig_brightness.png",
+    "wallpaper": "settingConfig_wallpaper.png",
+    "dateTime": "settingConfig_dateTime.png",
+    "language": "settingConfig_language.png",
+    "factoryReset": "settingConfig_factoryReset.png",
+    "clearCache": "settingConfig_clearCache.png",
+    "theme": "settingConfig_theme.png",
+    "launcher": "settingConfig_launcher.png",
+    "timedShutdown_off": "settingConfig_timedShutdown_off.png",
+    "timedShutdown_10": "settingConfig_shutdown.png",
+    "timedShutdown_20": "settingConfig_shutdown.png",
+    "timedShutdown_30": "settingConfig_shutdown.png",
+    "timedShutdown_60": "settingConfig_shutdown.png",
+    "timedShutdown_90": "settingConfig_shutdown.png",
+    "timedShutdown_120": "settingConfig_shutdown.png",
+    "shuffleOn": "settingConfig_shuffleOn.png",
+    "shuffleOff": "settingConfig_shuffleOff.png",
+    "repeatOff": "settingConfig_repeatOff.png",
+    "repeatAll": "settingConfig_repeatAll.png",
+    "repeatOne": "settingConfig_repeatOne.png",
+    "equalizer_normal": "settingConfig_equalizer.png",
+    "equalizer_classical": "settingConfig_equalizer.png",
+    "equalizer_dance": "settingConfig_equalizer.png",
+    "equalizer_flat": "settingConfig_equalizer.png",
+    "equalizer_folk": "settingConfig_equalizer.png",
+    "equalizer_heavymetal": "settingConfig_equalizer.png",
+    "equalizer_hiphop": "settingConfig_equalizer.png",
+    "equalizer_jazz": "settingConfig_equalizer.png",
+    "equalizer_pop": "settingConfig_equalizer.png",
+    "equalizer_rock": "settingConfig_equalizer.png",
+    "keyLockOn": "settingConfig_keyLockOn.png",
+    "keyLockOff": "settingConfig_keyLockOff.png",
+    "keyToneOn": "settingConfig_keyToneOn.png",
+    "keyToneOff": "settingConfig_keyToneOff.png",
+    "keyVibrationOn": "settingConfig_keyVibrationOn.png",
+    "keyVibrationOff": "settingConfig_keyVibrationOff.png",
+    "backlight_10": "settingConfig_backlight_10.png",
+    "backlight_15": "settingConfig_backlight_15.png",
+    "backlight_30": "settingConfig_backlight_30.png",
+    "backlight_45": "settingConfig_backlight_45.png",
+    "backlight_60": "settingConfig_backlight_60.png",
+    "backlight_120": "settingConfig_backlight_120.png",
+    "backlight_300": "settingConfig_backlight_300.png",
+    "backlight_always": "settingConfig_backlight_always.png",
+    "displayBatteryOn": "settingConfig_displayBatteryOn.png",
+    "displayBatteryOff": "settingConfig_displayBatteryOff.png",
+    "fileExtensionOn": "settingConfig_fileExtensionOn.png",
+    "fileExtensionOff": "settingConfig_fileExtensionOff.png"
+  },
+  "gallery": {
+    "compatibilityMedal": "gold"
+  }
+}
