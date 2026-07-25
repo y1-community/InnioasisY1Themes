@@ -3071,6 +3071,16 @@
             "screenshot": "./Prisoner/@Pris_cover.png"
         },
         {
+            "name": "PSP",
+            "folder": "PSP",
+            "author": "JIJI",
+            "description": "Inspired by the PSP interface",
+            "screenshot": "./PSP/gregcover.png",
+            "sourceType": "internal",
+            "sortName": "psp",
+            "searchText": "psp inspired by the psp interface jiji psp"
+        },
+        {
             "name": "Purple Pineapple",
             "folder": "Purple Pineapple",
             "description": "Download the Purple Pineapple theme for Innioasis Y1 and personalize your player's look with curated UI assets.",
