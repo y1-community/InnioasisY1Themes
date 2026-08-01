@@ -3,7 +3,7 @@
     "title": "Shine",
     "author": "purplecray0ns",
     "authorUrl": "",
-    "description": "Theme inspired by the 2025 Thai drama Shine, enjoy!",
+    "description": "Theme inspired by the Thai drama Shine, enjoy!",
     "externalDownloadUrl": ""
   },
   "themeCover": "cover.png",
@@ -15,7 +15,7 @@
     "itemTextColor": "#ffffff",
     "itemSelectedTextColor": "#e34333",
     "itemSelectedBackground": "1.png",
-    "itemBackground": "",
+    "itemBackground": "0.png",
     "itemRightArrow": "2.png"
   },
   "dialogConfig": {
@@ -23,7 +23,8 @@
     "dialogOptionTextColor": "#ffffff",
     "dialogOptionSelectedBackground": "4.png",
     "dialogOptionSelectedTextColor": "#ffffff",
-    "dialogBackgroundColor": ""
+    "dialogBackgroundColor": "#110b14",
+    "dialogTextColor": "#ffffff"
   },
   "menuConfig": {
     "menuBackgroundColor": "#000000",
@@ -43,14 +44,14 @@
     "settings": "Settings.png",
     "shuffleQuick": "Shuffle Quick.png",
     "selectedColor": "",
-    "ebook": "transparent.png",
-    "calendar": "transparent.png",
-    "calculator": "transparent.png",
+    "calculator": "calculator.png",
+    "calendar": "calendar.png",
+    "ebook": "ebook.png",
     "fileManager": "transparent.png"
   },
   "fileConfig": {
-    "folderIcon": "",
-    "musicIcon": ""
+    "folderIcon": "folder.png",
+    "musicIcon": "music_file.png"
   },
   "settingConfig": {
     "shutdown": "Shutdown@1x.png",
@@ -102,20 +103,21 @@
     "fileExtensionOn": "file_ext_on.png",
     "fileExtensionOff": "file_ext_off.png",
     "selectedColor": "",
-    "launcher": "transparent.png"
+    "settingMask": "setting_mask.png",
+    "launcher": "Launcher.png"
   },
   "statusConfig": {
-    "playing": "",
-    "audiobookPlaying": "",
-    "pause": "",
-    "fmPlaying": "",
-    "stop": "",
-    "blConnected": "",
-    "blConnecting": "",
-    "blDisconnected": "",
-    "headsetWithMic": "",
-    "headsetWithoutMic": "",
-    "statusBarColor": "",
+    "playing": "playing.png",
+    "audiobookPlaying": "audiobookPlaying.png",
+    "pause": "pause.png",
+    "fmPlaying": "fmPlaying.png",
+    "stop": "stop.png",
+    "blConnected": "blConnected.png",
+    "blConnecting": "blConnecting.png",
+    "blDisconnected": "blDisconnected.png",
+    "headsetWithMic": "headset2.png",
+    "headsetWithoutMic": "headset1.png",
+    "statusBarColor": "#c64600",
     "battery": [
       "battery.001.png",
       "battery.002.png",
@@ -130,8 +132,8 @@
     ]
   },
   "playerConfig": {
-    "progressColor": "#f6d32d",
-    "progressBackgroundColor": "#ffffff"
+    "progressColor": "#6006b0",
+    "progressBackgroundColor": "#c64600"
   },
   "gallery": {
     "compatibilityMedal": "none"

@@ -130,9 +130,7 @@
         ]
     },
     "gallery": {
-        "variantFolders": [
-            "Dark"
-        ],
-        "defaultVariantLabel": "Light"
+        "defaultVariantLabel": "Light",
+        "compatibilityMedal": "none"
     }
 }
