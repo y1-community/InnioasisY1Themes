@@ -1325,16 +1325,25 @@
             "screenshot": "./Fallout/cover.png"
         },
         {
-            "name": "Pip-Boy",
+            "name": "1G Pip-Boy",
             "folder": "Fallout Pip-Boy",
             "author": "Arthur_Moss",
             "authorUrl": "https://www.reddit.com/user/Arthur_Moss/",
-            "description": "Fallout Pip-Boy themes for the Innioasis Y1 (1G, 1M, 1P, and 1Y color variants).",
+            "description": "This theme is inspired by the Pip-boy from the Fallout 3 game.",
             "screenshot": "./Fallout Pip-Boy/cover.png",
             "defaultVariantLabel": "1G",
             "sourceType": "internal",
-            "sortName": "pip-boy",
-            "searchText": "pip-boy fallout pip-boy themes for the innioasis y1 (1g, 1m, 1p, and 1y color variants). arthur_moss fallout pip-boy"
+            "sortName": "1g pip-boy",
+            "searchText": "1g pip-boy this theme is inspired by the pip-boy from the fallout 3 game. arthur_moss fallout pip-boy",
+            "variantFolders": [
+                "1M",
+                "1P",
+                "1RG",
+                "1RM",
+                "1RP",
+                "1RY",
+                "1Y"
+            ]
         },
         {
             "name": "FatalFrame2DCB",
