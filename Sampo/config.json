@@ -1,0 +1,140 @@
+{
+  "theme_info": {
+    "title": "Sampo",
+    "author": "yasminatrbl",
+    "authorUrl": "",
+    "description": "An Innioasis Y1 theme inspired by Sampo Koski from Honkai: Star Rail.",
+    "externalDownloadUrl": ""
+  },
+  "themeCover": "cover.png",
+  "desktopWallpaper": "desk_bg001.png",
+  "globalWallpaper": "desk_bg001.png",
+  "desktopMask": "mask.png",
+  "fontFamily": "CanelaText-Regular.ttf",
+  "itemConfig": {
+    "itemTextColor": "#ffffff",
+    "itemSelectedTextColor": "#ffffff",
+    "itemBackground": "item_background.png",
+    "itemSelectedBackground": "item_selected.png",
+    "itemRightArrow": "item_arrow.png"
+  },
+  "dialogConfig": {
+    "dialogOptionBackground": "dialog_bg.png",
+    "dialogOptionTextColor": "#ffffff",
+    "dialogOptionSelectedBackground": "dialog_selected.png",
+    "dialogOptionSelectedTextColor": "#000000",
+    "dialogBackgroundColor": "#871246",
+    "dialogTextColor": "#ffffff"
+  },
+  "menuConfig": {
+    "menuBackgroundColor": "#971f54",
+    "menuItemBackground": "",
+    "menuItemTextColor": "#ffffff",
+    "menuItemSelectedBackground": "item_selected.png",
+    "menuItemSelectedTextColor": "#ffffff"
+  },
+  "homePageConfig": {
+    "nowPlaying": "icon.png",
+    "music": "icon.png",
+    "video": "icon.png",
+    "audiobooks": "icon.png",
+    "photos": "icon.png",
+    "fm": "icon.png",
+    "bluetooth": "icon.png",
+    "settings": "icon.png",
+    "shuffleQuick": "icon.png",
+    "ebook": "icon.png",
+    "calculator": "icon.png",
+    "calendar": "icon.png",
+    "fileManager": "transparent.png"
+  },
+  "fileConfig": {
+    "folderIcon": "folder.png",
+    "musicIcon": "music_file.png"
+  },
+  "settingConfig": {
+    "settingMask": "global_bg001.png",
+    "shutdown": "shutdown.png",
+    "timedShutdown_off": "timedshutdown.png",
+    "timedShutdown_10": "timedshutdown.png",
+    "timedShutdown_20": "timedshutdown.png",
+    "timedShutdown_30": "timedshutdown.png",
+    "timedShutdown_60": "timedshutdown.png",
+    "timedShutdown_90": "timedshutdown.png",
+    "timedShutdown_120": "timedshutdown.png",
+    "shuffleOn": "shuffle.png",
+    "shuffleOff": "shuffle.png",
+    "repeatOff": "repeat.png",
+    "repeatAll": "repeat.png",
+    "repeatOne": "repeat.png",
+    "equalizer_normal": "eq.png",
+    "equalizer_classical": "eq.png",
+    "equalizer_dance": "eq.png",
+    "equalizer_flat": "eq.png",
+    "equalizer_folk": "eq.png",
+    "equalizer_heavymetal": "eq.png",
+    "equalizer_hiphop": "eq.png",
+    "equalizer_jazz": "eq.png",
+    "equalizer_pop": "eq.png",
+    "equalizer_rock": "eq.png",
+    "keyLockOn": "keylock.png",
+    "keyLockOff": "keylock.png",
+    "keyToneOn": "keytone.png",
+    "keyToneOff": "keytone.png",
+    "keyVibrationOn": "keyvib.png",
+    "keyVibrationOff": "keyvib.png",
+    "wallpaper": "wallpaper.png",
+    "backlight_10": "backlight.png",
+    "backlight_15": "backlight.png",
+    "backlight_30": "backlight.png",
+    "backlight_45": "backlight.png",
+    "backlight_60": "backlight.png",
+    "backlight_120": "backlight.png",
+    "backlight_300": "backlight.png",
+    "backlight_always": "backlight.png",
+    "brightness": "brightness.png",
+    "displayBatteryOn": "batterydisplay.png",
+    "displayBatteryOff": "batterydisplay.png",
+    "dateTime": "datetime.png",
+    "language": "language.png",
+    "launcher": "launcher.png",
+    "factoryReset": "factoryreset.png",
+    "clearCache": "clearcache.png",
+    "theme": "themeselector.png",
+    "fileExtensionOn": "fileext.png",
+    "fileExtensionOff": "fileext.png"
+  },
+  "statusConfig": {
+    "playing": "status_playing.png",
+    "audiobookPlaying": "status_audiobook.png",
+    "pause": "status_pause.png",
+    "fmPlaying": "status_fm.png",
+    "stop": "status_stop.png",
+    "blConnected": "status_bt_on.png",
+    "blConnecting": "status_bt_connecting.png",
+    "blDisconnected": "status_bt_off.png",
+    "headsetWithMic": "status_headset_mic.png",
+    "headsetWithoutMic": "status_headset.png",
+    "statusBarColor": "#00000099",
+    "battery": [
+      "battery.001.png",
+      "battery.002.png",
+      "battery.003.png",
+      "battery.004.png"
+    ],
+    "batteryCharging": [
+      "batterycharge.001.png",
+      "batterycharge.002.png",
+      "batterycharge.003.png",
+      "batterycharge.004.png"
+    ]
+  },
+  "playerConfig": {
+    "progressTextColor": "#ffffff",
+    "progressColor": "#971f54",
+    "progressBackgroundColor": "#ffffff"
+  },
+  "gallery": {
+    "compatibilityMedal": "none"
+  }
+}
