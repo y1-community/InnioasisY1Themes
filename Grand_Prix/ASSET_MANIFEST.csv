@@ -1,0 +1,109 @@
+config_section,config_key,asset_file,pixel_size,stock_interface_element
+root,themeCover,cover.png,320x320,Tile shown in Settings > Change Theme picker
+root,desktopWallpaper,desk.png,320x240,Home screen background (behind the icon grid)
+root,globalWallpaper,global.png,320x240,"Background for every other screen: lists, settings, player"
+root,desktopMask,mask.png,320x240,Overlay drawn on top of the home screen (vignette + status scrim)
+root,fontFamily,,,Global TrueType font override
+itemConfig,itemConfig.itemTextColor,#D8DEE5,,"List row label, unselected"
+itemConfig,itemConfig.itemSelectedTextColor,#FFFFFF,,"List row label, selected"
+itemConfig,itemConfig.itemBackground,row_normal.png,640x91,"List row plate, unselected"
+itemConfig,itemConfig.itemSelectedBackground,row_selected.png,640x91,"List row plate, selected (the moving highlight)"
+itemConfig,itemConfig.itemRightArrow,arrow_right.png,28x28,Drill-down chevron at the right edge of a row
+dialogConfig,dialogConfig.dialogOptionBackground,dialog_no_selected.png,88x46,"Pop-up option button, unselected"
+dialogConfig,dialogConfig.dialogOptionTextColor,#D8DEE5,,"Pop-up option label, unselected"
+dialogConfig,dialogConfig.dialogOptionSelectedBackground,dialog_selected.png,88x46,"Pop-up option button, selected"
+dialogConfig,dialogConfig.dialogOptionSelectedTextColor,#FFFFFF,,"Pop-up option label, selected"
+dialogConfig,dialogConfig.dialogBackgroundColor,#E6101317,,Pop-up panel fill (ARGB supported)
+dialogConfig,dialogConfig.dialogTextColor,#FFFFFF,,Pop-up title and body text
+menuConfig,menuConfig.menuBackgroundColor,#0F1216,,Main menu backdrop colour
+menuConfig,menuConfig.menuItemBackground,row_normal.png,640x91,"Menu row plate, unselected"
+menuConfig,menuConfig.menuItemTextColor,#D8DEE5,,"Menu row label, unselected"
+menuConfig,menuConfig.menuItemSelectedBackground,row_selected.png,640x91,"Menu row plate, selected"
+menuConfig,menuConfig.menuItemSelectedTextColor,#FFFFFF,,"Menu row label, selected"
+fileConfig,fileConfig.folderIcon,folder.png,64x64,Folder entry in the file browser
+fileConfig,fileConfig.musicIcon,music_file.png,64x64,Audio file entry in the file browser
+statusConfig,statusConfig.playing,playing.png,22x15,Status bar: music playing
+statusConfig,statusConfig.audiobookPlaying,audiobook_playing.png,22x15,Status bar: audiobook playing
+statusConfig,statusConfig.pause,pause.png,22x15,Status bar: paused
+statusConfig,statusConfig.fmPlaying,fm_playing.png,22x15,Status bar: FM radio live
+statusConfig,statusConfig.stop,stop.png,22x15,Status bar: stopped
+statusConfig,statusConfig.blConnected,bl2.png,22x16,Status bar: Bluetooth connected
+statusConfig,statusConfig.blConnecting,bl3.png,22x16,Status bar: Bluetooth pairing
+statusConfig,statusConfig.blDisconnected,bl1.png,22x16,Status bar: Bluetooth off / not connected
+statusConfig,statusConfig.headsetWithMic,headset2.png,22x17,Status bar: headset with mic inserted
+statusConfig,statusConfig.headsetWithoutMic,headset1.png,22x17,Status bar: headphones inserted
+statusConfig,statusConfig.statusBarColor,#00000000,,"Status bar fill (00000000 = transparent, lets the mask show)"
+statusConfig,statusConfig.battery[0],bt1.png,30x16,"Battery gauge, 4 steps: 0-25 / 26-50 / 51-75 / 76-100 %"
+statusConfig,statusConfig.battery[1],bt2.png,30x16,"Battery gauge, 4 steps: 0-25 / 26-50 / 51-75 / 76-100 %"
+statusConfig,statusConfig.battery[2],bt3.png,30x16,"Battery gauge, 4 steps: 0-25 / 26-50 / 51-75 / 76-100 %"
+statusConfig,statusConfig.battery[3],bt4.png,30x16,"Battery gauge, 4 steps: 0-25 / 26-50 / 51-75 / 76-100 %"
+statusConfig,statusConfig.batteryCharging[0],btc1.png,30x16,"Battery gauge while charging, same 4 steps"
+statusConfig,statusConfig.batteryCharging[1],btc2.png,30x16,"Battery gauge while charging, same 4 steps"
+statusConfig,statusConfig.batteryCharging[2],btc3.png,30x16,"Battery gauge while charging, same 4 steps"
+statusConfig,statusConfig.batteryCharging[3],btc4.png,30x16,"Battery gauge while charging, same 4 steps"
+playerConfig,playerConfig.progressTextColor,#FFFFFF,,Elapsed / remaining time text on Now Playing
+playerConfig,playerConfig.progressColor,#E10600,,Seek bar fill
+playerConfig,playerConfig.progressBackgroundColor,#33FFFFFF,,Seek bar track
+homePageConfig,homePageConfig.nowPlaying,Desk-Now Playing.png,166x166,Home tile: Now Playing
+homePageConfig,homePageConfig.music,Desk-Music.png,166x166,Home tile: Music
+homePageConfig,homePageConfig.video,Desk-Videos.png,166x166,Home tile: Videos
+homePageConfig,homePageConfig.audiobooks,Desk-Audiobooks.png,166x166,Home tile: Audiobooks
+homePageConfig,homePageConfig.photos,Desk-Photos.png,166x166,Home tile: Photos
+homePageConfig,homePageConfig.fm,Desk-FM Radio.png,166x166,Home tile: FM Radio
+homePageConfig,homePageConfig.bluetooth,Desk-Bluetooth.png,166x166,Home tile: Bluetooth
+homePageConfig,homePageConfig.settings,Desk-Settings.png,166x166,Home tile: Settings
+homePageConfig,homePageConfig.shuffleQuick,Desk-Shuffle Quick.png,166x166,Home tile: Shuffle Quick
+homePageConfig,homePageConfig.calendar,Desk-Calendar.png,166x166,Home tile: Calendar
+homePageConfig,homePageConfig.calculator,Desk-Calculator.png,166x166,Home tile: Calculator
+homePageConfig,homePageConfig.ebook,Desk-Ebook.png,166x166,Home tile: E-book
+homePageConfig,homePageConfig.fileManager,Desk-Files.png,166x166,Home tile: File manager
+settingConfig,settingConfig.settingMask,setting_mask.png,320x240,Settings screen overlay mask
+settingConfig,settingConfig.shutdown,set-shutdown.png,146x146,Settings row icon: shutdown
+settingConfig,settingConfig.timedShutdown_off,set-timer-off.png,146x146,Settings row icon: timedShutdown_off
+settingConfig,settingConfig.timedShutdown_10,set-timer-10.png,146x146,Settings row icon: timedShutdown_10
+settingConfig,settingConfig.timedShutdown_20,set-timer-20.png,146x146,Settings row icon: timedShutdown_20
+settingConfig,settingConfig.timedShutdown_30,set-timer-30.png,146x146,Settings row icon: timedShutdown_30
+settingConfig,settingConfig.timedShutdown_60,set-timer-60.png,146x146,Settings row icon: timedShutdown_60
+settingConfig,settingConfig.timedShutdown_90,set-timer-90.png,146x146,Settings row icon: timedShutdown_90
+settingConfig,settingConfig.timedShutdown_120,set-timer-120.png,146x146,Settings row icon: timedShutdown_120
+settingConfig,settingConfig.shuffleOn,set-shuffle-on.png,146x146,Settings row icon: shuffleOn
+settingConfig,settingConfig.shuffleOff,set-shuffle-off.png,146x146,Settings row icon: shuffleOff
+settingConfig,settingConfig.repeatOff,set-repeat-off.png,146x146,Settings row icon: repeatOff
+settingConfig,settingConfig.repeatAll,set-repeat-all.png,146x146,Settings row icon: repeatAll
+settingConfig,settingConfig.repeatOne,set-repeat-one.png,146x146,Settings row icon: repeatOne
+settingConfig,settingConfig.equalizer_normal,set-eq-normal.png,146x146,Settings row icon: equalizer_normal
+settingConfig,settingConfig.equalizer_classical,set-eq-classical.png,146x146,Settings row icon: equalizer_classical
+settingConfig,settingConfig.equalizer_dance,set-eq-dance.png,146x146,Settings row icon: equalizer_dance
+settingConfig,settingConfig.equalizer_flat,set-eq-flat.png,146x146,Settings row icon: equalizer_flat
+settingConfig,settingConfig.equalizer_folk,set-eq-folk.png,146x146,Settings row icon: equalizer_folk
+settingConfig,settingConfig.equalizer_heavymetal,set-eq-heavymetal.png,146x146,Settings row icon: equalizer_heavymetal
+settingConfig,settingConfig.equalizer_hiphop,set-eq-hiphop.png,146x146,Settings row icon: equalizer_hiphop
+settingConfig,settingConfig.equalizer_jazz,set-eq-jazz.png,146x146,Settings row icon: equalizer_jazz
+settingConfig,settingConfig.equalizer_pop,set-eq-pop.png,146x146,Settings row icon: equalizer_pop
+settingConfig,settingConfig.equalizer_rock,set-eq-rock.png,146x146,Settings row icon: equalizer_rock
+settingConfig,settingConfig.keyLockOn,set-keylock-on.png,146x146,Settings row icon: keyLockOn
+settingConfig,settingConfig.keyLockOff,set-keylock-off.png,146x146,Settings row icon: keyLockOff
+settingConfig,settingConfig.keyToneOn,set-keytone-on.png,146x146,Settings row icon: keyToneOn
+settingConfig,settingConfig.keyToneOff,set-keytone-off.png,146x146,Settings row icon: keyToneOff
+settingConfig,settingConfig.keyVibrationOn,set-vibrate-on.png,146x146,Settings row icon: keyVibrationOn
+settingConfig,settingConfig.keyVibrationOff,set-vibrate-off.png,146x146,Settings row icon: keyVibrationOff
+settingConfig,settingConfig.wallpaper,set-livery.png,146x146,Settings row icon: wallpaper
+settingConfig,settingConfig.backlight_10,set-backlight-10.png,146x146,Settings row icon: backlight_10
+settingConfig,settingConfig.backlight_15,set-backlight-15.png,146x146,Settings row icon: backlight_15
+settingConfig,settingConfig.backlight_30,set-backlight-30.png,146x146,Settings row icon: backlight_30
+settingConfig,settingConfig.backlight_45,set-backlight-45.png,146x146,Settings row icon: backlight_45
+settingConfig,settingConfig.backlight_60,set-backlight-60.png,146x146,Settings row icon: backlight_60
+settingConfig,settingConfig.backlight_120,set-backlight-120.png,146x146,Settings row icon: backlight_120
+settingConfig,settingConfig.backlight_300,set-backlight-300.png,146x146,Settings row icon: backlight_300
+settingConfig,settingConfig.backlight_always,set-backlight-always.png,146x146,Settings row icon: backlight_always
+settingConfig,settingConfig.brightness,set-brightness.png,146x146,Settings row icon: brightness
+settingConfig,settingConfig.displayBatteryOn,set-battery-on.png,146x146,Settings row icon: displayBatteryOn
+settingConfig,settingConfig.displayBatteryOff,set-battery-off.png,146x146,Settings row icon: displayBatteryOff
+settingConfig,settingConfig.dateTime,set-racetime.png,146x146,Settings row icon: dateTime
+settingConfig,settingConfig.language,set-language.png,146x146,Settings row icon: language
+settingConfig,settingConfig.launcher,set-launcher.png,146x146,Settings row icon: launcher
+settingConfig,settingConfig.factoryReset,set-reset.png,146x146,Settings row icon: factoryReset
+settingConfig,settingConfig.clearCache,set-cache.png,146x146,Settings row icon: clearCache
+settingConfig,settingConfig.theme,set-theme.png,146x146,Settings row icon: theme
+settingConfig,settingConfig.fileExtensionOn,set-fileext-on.png,146x146,Settings row icon: fileExtensionOn
+settingConfig,settingConfig.fileExtensionOff,set-fileext-off.png,146x146,Settings row icon: fileExtensionOff

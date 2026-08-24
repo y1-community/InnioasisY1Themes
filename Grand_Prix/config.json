@@ -1,0 +1,142 @@
+{
+  "theme_info": {
+    "title": "Grand Prix",
+    "author": "Simon Jahan",
+    "authorUrl": "https://themes.innioasis.app/",
+    "description": "Formula 1 inspired theme for the Innioasis Y1. Carbon-fibre and racing-suit nomex backgrounds, race-flag home buttons, a timing-tower settings set and colour-coded pit-wall status icons.",
+    "externalDownloadUrl": ""
+  },
+  "author": "Grand Prix Asset Pack",
+  "authorUrl": "https://themes.innioasis.app/",
+  "themeCover": "cover.png",
+  "desktopWallpaper": "desk.png",
+  "globalWallpaper": "global.png",
+  "desktopMask": "mask.png",
+  "fontFamily": "",
+  "itemConfig": {
+    "itemTextColor": "#D8DEE5",
+    "itemSelectedTextColor": "#FFFFFF",
+    "itemBackground": "row_normal.png",
+    "itemSelectedBackground": "row_selected.png",
+    "itemRightArrow": "arrow_right.png"
+  },
+  "dialogConfig": {
+    "dialogOptionBackground": "dialog_no_selected.png",
+    "dialogOptionTextColor": "#D8DEE5",
+    "dialogOptionSelectedBackground": "dialog_selected.png",
+    "dialogOptionSelectedTextColor": "#FFFFFF",
+    "dialogBackgroundColor": "#E6101317",
+    "dialogTextColor": "#FFFFFF"
+  },
+  "menuConfig": {
+    "menuBackgroundColor": "#0F1216",
+    "menuItemBackground": "row_normal.png",
+    "menuItemTextColor": "#D8DEE5",
+    "menuItemSelectedBackground": "row_selected.png",
+    "menuItemSelectedTextColor": "#FFFFFF"
+  },
+  "homePageConfig": {
+    "nowPlaying": "Desk-Now Playing.png",
+    "music": "Desk-Music.png",
+    "video": "Desk-Videos.png",
+    "audiobooks": "Desk-Audiobooks.png",
+    "photos": "Desk-Photos.png",
+    "fm": "Desk-FM Radio.png",
+    "bluetooth": "Desk-Bluetooth.png",
+    "settings": "Desk-Settings.png",
+    "shuffleQuick": "Desk-Shuffle Quick.png",
+    "calendar": "Desk-Calendar.png",
+    "calculator": "Desk-Calculator.png",
+    "ebook": "Desk-Ebook.png",
+    "fileManager": "Desk-Files.png"
+  },
+  "fileConfig": {
+    "folderIcon": "folder.png",
+    "musicIcon": "music_file.png"
+  },
+  "settingConfig": {
+    "settingMask": "setting_mask.png",
+    "shutdown": "set-shutdown.png",
+    "timedShutdown_off": "set-timer-off.png",
+    "timedShutdown_10": "set-timer-10.png",
+    "timedShutdown_20": "set-timer-20.png",
+    "timedShutdown_30": "set-timer-30.png",
+    "timedShutdown_60": "set-timer-60.png",
+    "timedShutdown_90": "set-timer-90.png",
+    "timedShutdown_120": "set-timer-120.png",
+    "shuffleOn": "set-shuffle-on.png",
+    "shuffleOff": "set-shuffle-off.png",
+    "repeatOff": "set-repeat-off.png",
+    "repeatAll": "set-repeat-all.png",
+    "repeatOne": "set-repeat-one.png",
+    "equalizer_normal": "set-eq-normal.png",
+    "equalizer_classical": "set-eq-classical.png",
+    "equalizer_dance": "set-eq-dance.png",
+    "equalizer_flat": "set-eq-flat.png",
+    "equalizer_folk": "set-eq-folk.png",
+    "equalizer_heavymetal": "set-eq-heavymetal.png",
+    "equalizer_hiphop": "set-eq-hiphop.png",
+    "equalizer_jazz": "set-eq-jazz.png",
+    "equalizer_pop": "set-eq-pop.png",
+    "equalizer_rock": "set-eq-rock.png",
+    "keyLockOn": "set-keylock-on.png",
+    "keyLockOff": "set-keylock-off.png",
+    "keyToneOn": "set-keytone-on.png",
+    "keyToneOff": "set-keytone-off.png",
+    "keyVibrationOn": "set-vibrate-on.png",
+    "keyVibrationOff": "set-vibrate-off.png",
+    "wallpaper": "set-livery.png",
+    "backlight_10": "set-backlight-10.png",
+    "backlight_15": "set-backlight-15.png",
+    "backlight_30": "set-backlight-30.png",
+    "backlight_45": "set-backlight-45.png",
+    "backlight_60": "set-backlight-60.png",
+    "backlight_120": "set-backlight-120.png",
+    "backlight_300": "set-backlight-300.png",
+    "backlight_always": "set-backlight-always.png",
+    "brightness": "set-brightness.png",
+    "displayBatteryOn": "set-battery-on.png",
+    "displayBatteryOff": "set-battery-off.png",
+    "dateTime": "set-racetime.png",
+    "language": "set-language.png",
+    "launcher": "set-launcher.png",
+    "factoryReset": "set-reset.png",
+    "clearCache": "set-cache.png",
+    "theme": "set-theme.png",
+    "fileExtensionOn": "set-fileext-on.png",
+    "fileExtensionOff": "set-fileext-off.png"
+  },
+  "statusConfig": {
+    "playing": "playing.png",
+    "audiobookPlaying": "audiobook_playing.png",
+    "pause": "pause.png",
+    "fmPlaying": "fm_playing.png",
+    "stop": "stop.png",
+    "blConnected": "bl2.png",
+    "blConnecting": "bl3.png",
+    "blDisconnected": "bl1.png",
+    "headsetWithMic": "headset2.png",
+    "headsetWithoutMic": "headset1.png",
+    "statusBarColor": "#00000000",
+    "battery": [
+      "bt1.png",
+      "bt2.png",
+      "bt3.png",
+      "bt4.png"
+    ],
+    "batteryCharging": [
+      "btc1.png",
+      "btc2.png",
+      "btc3.png",
+      "btc4.png"
+    ]
+  },
+  "playerConfig": {
+    "progressTextColor": "#FFFFFF",
+    "progressColor": "#E10600",
+    "progressBackgroundColor": "#33FFFFFF"
+  },
+  "gallery": {
+    "compatibilityMedal": "gold"
+  }
+}
