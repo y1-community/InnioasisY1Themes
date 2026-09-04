@@ -1,0 +1,54 @@
+{
+  "theme_info": {
+    "title": "Vinland Saga",
+    "author": "Custom",
+    "authorUrl": "",
+    "description": "A muted Nordic-inspired Innioasis Y1 theme using Cinzel typography.",
+    "externalDownloadUrl": ""
+  },
+  "themeCover": "cover.png",
+  "desktopWallpaper": "desktop_wallpaper.png",
+  "globalWallpaper": "global_wallpaper.png",
+  "fontFamily": "Cinzel-VariableFont_wght.ttf",
+  "itemConfig": {
+    "itemTextColor": "#E7DEC9",
+    "itemSelectedTextColor": "#F3EBDD",
+    "itemSelectedBackground": "1.png"
+  },
+  "dialogConfig": {
+    "dialogBackgroundColor": "#181815",
+    "dialogTextColor": "#E7DEC9",
+    "dialogSelectedTextColor": "#F3EBDD"
+  },
+  "menuConfig": {
+    "menuBackgroundColor": "#181815",
+    "menuItemTextColor": "#B9B09D",
+    "menuItemSelectedBackground": "1.png",
+    "menuItemSelectedTextColor": "#F3EBDD"
+  },
+  "homePageConfig": {
+    "selectedColor": "#C7A66A",
+    "unselectedColor": "#B9B09D",
+    "ebook": "transparent.png",
+    "calendar": "transparent.png",
+    "calculator": "transparent.png",
+    "fileManager": "transparent.png"
+  },
+  "fileConfig": {
+    "folderIcon": "",
+    "musicIcon": ""
+  },
+  "settingConfig": {
+    "settingMask": "",
+    "launcher": "transparent.png"
+  },
+  "playerConfig": {
+    "playerBackgroundColor": "#181815",
+    "playerTextColor": "#E7DEC9",
+    "playerSecondaryTextColor": "#9F9786",
+    "playerAccentColor": "#C7A66A"
+  },
+  "gallery": {
+    "compatibilityMedal": "none"
+  }
+}
