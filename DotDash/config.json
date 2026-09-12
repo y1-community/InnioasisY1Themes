@@ -1,0 +1,68 @@
+{
+  "theme_info": {
+    "title": "DotDash",
+    "author": "Urvashi Patel",
+    "authorUrl": "",
+    "description": "A cozy illustrated theme starring the calico cat and pigtailed girl from Urvashi Patel. Follow Dot and Dash's story @deardotdash on instagram and @urvashipateldraws",
+    "externalDownloadUrl": ""
+  },
+  "themeCover": "cover.png",
+  "desktopWallpaper": "desk_bg001.png",
+  "globalWallpaper": "global_bg001.png",
+  "fontFamily": "DotDash-Marker.ttf",
+  "itemConfig": {
+    "itemTextColor": "#3a2f1e",
+    "itemSelectedTextColor": "#3a2f1e",
+    "itemBackground": "",
+    "itemSelectedBackground": "1.png",
+    "itemRightArrow": "2.png"
+  },
+  "dialogConfig": {
+    "dialogOptionBackground": "3.png",
+    "dialogOptionTextColor": "#3a2f1e",
+    "dialogOptionSelectedBackground": "4.png",
+    "dialogOptionSelectedTextColor": "#3a2f1e",
+    "dialogBackgroundColor": "#eed7d1",
+    "dialogTextColor": "#3a2f1e"
+  },
+  "menuConfig": {
+    "menuBackgroundColor": "#eed7d1",
+    "menuItemBackground": "",
+    "menuItemTextColor": "#3a2f1e",
+    "menuItemSelectedBackground": "1.png",
+    "menuItemSelectedTextColor": "#3a2f1e"
+  },
+  "homePageConfig": {
+    "nowPlaying": "Now Playing.png",
+    "music": "Music.png",
+    "video": "Videos.png",
+    "audiobooks": "Audiobooks.png",
+    "photos": "Photos.png",
+    "fm": "FM Radio.png",
+    "bluetooth": "Bluetooth.png",
+    "settings": "Settings.png",
+    "shuffleQuick": "Shuffle Quick.png",
+    "ebook": "ebook.png",
+    "calculator": "calculator.png",
+    "calendar": "calendar.png",
+    "selectedColor": "#3a2f1e",
+    "unselectedColor": "#6b5b4a",
+    "fileManager": "transparent.png"
+  },
+  "settingConfig": {
+    "selectedColor": "#3a2f1e",
+    "unselectedColor": "#6b5b4a",
+    "launcher": "launcher.png"
+  },
+  "playerConfig": {
+    "progressTextColor": "#3a2f1e",
+    "progressColor": "#b7705c",
+    "progressBackgroundColor": "#dac5b0"
+  },
+  "statusConfig": {
+    "statusBarColor": "#eed7d1"
+  },
+  "gallery": {
+    "compatibilityMedal": "gold"
+  }
+}
