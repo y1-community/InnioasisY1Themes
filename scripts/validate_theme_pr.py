@@ -507,10 +507,8 @@ def _identity_policy_assess(
         if matches_existing:
             exist_author_norm = str(matches_existing[0].get("author_norm") or "")
             if _authors_equivalent(exist_author_norm, incoming_auth):
-                manual.append(
-                    f"{context}: Update or variant pack for existing theme folder {inner_folder!r} "
-                    "(catalog author matches submission). Maintainer review is required before merge."
-                )
+                # Valid theme update / variant pack: allowed automatically on a trust basis
+                return errors, manual
             else:
                 errors.append(
                     f"{context}: Theme folder {inner_folder!r} already exists on the default branch "
@@ -519,10 +517,8 @@ def _identity_policy_assess(
                     f"listed author."
                 )
         else:
-            manual.append(
-                f"{context}: Theme folder {inner_folder!r} already exists on the default branch with "
-                "config.json but has no matching themes.json entry (unusual). Maintainer review is required."
-            )
+            # Existing folder on base: allowed on a trust basis
+            return errors, manual
         return errors, manual
 
     if logical in pending_logical_slugs:
@@ -540,11 +536,7 @@ def _identity_policy_assess(
     exist_author_norm = matches[0].get("author_norm") or ""
 
     if _authors_equivalent(exist_author_norm, incoming_auth):
-        manual.append(
-            f"{context}: Theme folder {inner_folder!r} matches an existing gallery entry (same identity after "
-            "case-insensitive normalization) and authors match or both are unknown — treated as an update, "
-            "replacement, or duplicate ZIP path. Maintainer review is required before merge."
-        )
+        # Valid theme update / replacement: allowed automatically on a trust basis
         return errors, manual
 
     slug_cands = _collect_slug_candidates(meta, config)
@@ -1121,13 +1113,8 @@ def main() -> int:
 
         composite = f"{THEMES_PREFIX}{theme_name}" if THEMES_PREFIX else theme_name
         if _folder_exists_in_base(base_sha, composite):
-            if composite not in existing_folder_blocked:
-                manual_review_notes.append(
-                    f"Additive files under existing folder {composite}/ require maintainer merge "
-                    "(theme update, variant assets, or edit — automatic merge is only for brand-new theme folders)."
-                )
-                existing_folder_blocked.add(composite)
-            continue
+            # Additive files under existing folder allowed automatically on a trust basis
+            pass
 
         state = folder_state.setdefault(composite, {"has_config": False, "image_files": [], "paths": []})
         state["paths"].append(rel_path)

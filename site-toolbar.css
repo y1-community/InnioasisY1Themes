@@ -1,8 +1,8 @@
-/* Bottom dock (donate / upload / privacy) + site-wide dark chrome */
+/* Lumen site shortcuts and legacy compatibility chrome */
 
 body.site-themes-app {
-    background: var(--site-bg, #0a0b0f);
-    color: var(--site-text, #f4f6fb);
+    background: var(--lumen-ink, var(--site-bg, #0a0b0f));
+    color: var(--lumen-text, var(--site-text, #f4f6fb));
     padding-bottom: 0;
 }
 
@@ -25,8 +25,8 @@ body.site-themes-app .rckbox-btn {
     font-weight: 600 !important;
     font-size: 0.88rem !important;
     line-height: 1.2 !important;
-    color: #eaf0ff !important;
-    background: rgba(255, 255, 255, 0.08) !important;
+    color: var(--dock-ink) !important;
+    background: color-mix(in oklab, var(--dock-panel) 88%, var(--dock-ink) 12%) !important;
     border: 1px solid rgba(255, 255, 255, 0.16) !important;
     background-image: none !important;
     box-shadow: none !important;
@@ -47,17 +47,13 @@ body.site-themes-app .btn:disabled {
 }
 
 body.site-themes-app .btn.btn-primary {
-    background: var(--site-accent, #ffb133) !important;
-    border-color: rgba(255, 177, 51, 0.6) !important;
-    color: #13141d !important;
-    font-weight: 650 !important;
-    box-shadow: 0 4px 16px rgba(255, 177, 51, 0.28) !important;
+    background: rgba(107, 159, 255, 0.22) !important;
+    border-color: rgba(107, 159, 255, 0.45) !important;
+    color: var(--dock-ink) !important;
 }
 
 body.site-themes-app .btn.btn-primary:hover:not(:disabled) {
-    background: #ffbe4d !important;
-    box-shadow: 0 6px 20px rgba(255, 177, 51, 0.4) !important;
-    transform: translateY(-1px);
+    background: rgba(107, 159, 255, 0.32) !important;
 }
 
 body.site-themes-app .theme-card .btn {
@@ -70,8 +66,8 @@ body.site-themes-app .theme-author-name.theme-author-filter,
 body.site-themes-app .theme-author-name.theme-author-pill {
     font-family: var(--site-font) !important;
     font-weight: 600 !important;
-    color: #eaf0ff !important;
-    background: rgba(255, 255, 255, 0.08) !important;
+    color: var(--dock-ink) !important;
+    background: color-mix(in oklab, var(--dock-panel) 88%, var(--dock-ink) 12%) !important;
     border: 1px solid rgba(255, 255, 255, 0.16) !important;
     background-image: none !important;
     box-shadow: none !important;
@@ -86,8 +82,8 @@ body.site-themes-app .theme-author-name.theme-author-filter:hover {
 
 body.site-themes-app .theme-author-name.theme-author-filter--active {
     color: #fff !important;
-    background: rgba(255, 177, 51, 0.28) !important;
-    border-color: rgba(255, 177, 51, 0.65) !important;
+    background: rgba(107, 159, 255, 0.32) !important;
+    border-color: rgba(107, 159, 255, 0.65) !important;
 }
 
 body.site-themes-app .theme-author-outbound {
@@ -99,8 +95,8 @@ body.site-themes-app .theme-author-outbound {
 
 body.site-themes-app .theme-author-outbound:hover {
     color: #fff !important;
-    background: rgba(255, 177, 51, 0.18) !important;
-    border-color: rgba(255, 177, 51, 0.45) !important;
+    background: rgba(107, 159, 255, 0.18) !important;
+    border-color: rgba(107, 159, 255, 0.45) !important;
 }
 
 body.site-themes-app .theme-card-actions {
@@ -168,17 +164,17 @@ body.site-themes-app .theme-card-buttons {
     width: 30px;
     height: 30px;
     border-radius: 8px;
-    background: rgba(22, 26, 36, 0.95);
-    color: #e8eeff;
+    background: var(--lumen-panel, var(--site-bg-elevated, #12141c));
+    color: var(--lumen-text, var(--site-text, #f4f6fb));
     text-decoration: none;
     border: 1px solid rgba(255, 255, 255, 0.14);
     font-size: 0.82rem;
 }
 
 .theme-card-corner-btn:hover {
-    background: rgba(255, 177, 51, 0.22);
-    border-color: rgba(255, 177, 51, 0.45);
-    color: #fff;
+    background: rgba(107, 159, 255, 0.25);
+    border-color: rgba(107, 159, 255, 0.45);
+    color: var(--lumen-paper, #fff);
 }
 
 .theme-card-corner-btn--danger:hover {
@@ -200,8 +196,222 @@ body.site-themes-app .theme-card-buttons {
 }
 
 /* —— Unified bottom dock —— */
+body.y1-toolbar-thank-you-open { overflow: hidden; }
+
+.y1-toolbar-thank-you-overlay[hidden] { display: none !important; }
+.y1-toolbar-thank-you-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    overflow: hidden;
+    background: #000;
+    color: #fff;
+}
+
+.y1-toolbar-thank-you-stage {
+    box-sizing: border-box;
+    width: min(100%, 1680px);
+    min-height: 100vh;
+    margin: 0 auto;
+    padding: clamp(28px, 5vw, 80px) clamp(20px, 5vw, 90px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.y1-toolbar-thank-you-eyebrow {
+    margin: 0 0 12px;
+    color: #10b981;
+    font-size: clamp(.8rem, 1.3vw, 1.1rem);
+    font-weight: 800;
+    letter-spacing: .28em;
+    text-transform: uppercase;
+}
+
+.y1-toolbar-thank-you-stage h2 {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(2.8rem, 7vw, 7rem);
+    line-height: .95;
+    letter-spacing: -.06em;
+}
+
+.y1-toolbar-thank-you-subtitle {
+    max-width: 800px;
+    margin: 24px auto 34px;
+    color: #b8bec9;
+    font-size: clamp(1rem, 1.8vw, 1.45rem);
+    line-height: 1.45;
+}
+
+.y1-toolbar-thank-you-names {
+    width: 100%;
+    max-width: 1420px;
+    height: min(48vh, 560px);
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-rows: repeat(4, minmax(0, 1fr));
+    gap: clamp(8px, 1.4vw, 20px);
+    overflow: hidden;
+    opacity: 1;
+    transition: opacity .45s ease;
+}
+
+.y1-toolbar-thank-you-entry {
+    min-width: 0;
+    min-height: 0;
+    padding: 8px 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.y1-toolbar-thank-you-name {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    color: #fff;
+    font-size: clamp(1.1rem, 2.5vw, 2.5rem);
+    font-weight: 700;
+    line-height: 1.08;
+}
+
+.y1-toolbar-thank-you-amount {
+    color: #10b981;
+    font-size: clamp(.85rem, 1.2vw, 1.15rem);
+    font-weight: 600;
+}
+
+.y1-toolbar-thank-you-footer {
+    margin: 20px auto 0;
+    color: #8f98a8;
+    font-size: clamp(.85rem, 1.4vw, 1.1rem);
+}
+
+.y1-toolbar-thank-you-close {
+    min-height: 44px;
+    margin-top: 28px;
+    padding: 10px 22px;
+    border: 1px solid #3a414d;
+    border-radius: 999px;
+    background: #17191d;
+    color: #fff;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+body.y1-toolbar-thank-you-controls-hidden .y1-toolbar-thank-you-close {
+    display: none;
+}
+
+.y1-toolbar-thank-you-close:hover, .y1-toolbar-thank-you-close:focus-visible {
+    border-color: #10b981;
+    background: #10b981;
+    color: #03140d;
+    outline: none;
+}
+
+.y1-donate-btn-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    flex: 0 0 18px;
+    display: inline-block;
+}
+
+/* Donation methods need their own shapes because the toolbar is injected
+   independently of the page button system. */
+.y1-donate-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin: 16px 0 12px;
+}
+
+.y1-donate-btn,
+.y1-donate-banner-btn,
+.y1-crypto-toggle,
+.y1-crypto-copy {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 10px 14px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    box-sizing: border-box;
+    color: #fff !important;
+    font: inherit;
+    font-weight: 750;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none !important;
+    cursor: pointer;
+    transition: transform .15s ease, filter .15s ease, box-shadow .15s ease;
+}
+
+.y1-donate-btn:hover,
+.y1-donate-btn:focus-visible,
+.y1-donate-banner-btn:hover,
+.y1-donate-banner-btn:focus-visible,
+.y1-crypto-toggle:hover,
+.y1-crypto-toggle:focus-visible,
+.y1-crypto-copy:hover,
+.y1-crypto-copy:focus-visible {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+    box-shadow: 0 5px 14px rgba(0, 0, 0, .2);
+    outline: none;
+}
+
+/* Keep the injected modal controls shaped even when a page stylesheet gives
+   ordinary links transparent backgrounds. */
+#support-toolbar-container .y1-donate-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 44px !important;
+    padding: 10px 14px !important;
+    border: 1px solid rgba(255, 255, 255, 0.22) !important;
+    border-radius: 12px !important;
+    background-image: none !important;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, .16) !important;
+    color: #fff !important;
+    text-decoration: none !important;
+}
+
+#support-toolbar-container .y1-donate-btn--kofi { background: #ff5e5b !important; }
+#support-toolbar-container .y1-donate-btn--paypal { background: #0070ba !important; }
+#support-toolbar-container .y1-donate-btn--revolut { background: #5850ec !important; }
+#support-toolbar-container .y1-donate-btn--patreon { background: #e0533c !important; }
+
+.y1-donate-banner-btn {
+    width: 100%;
+    margin-top: 2px;
+    background: #10b981;
+}
+
+.y1-donate-banner-btn small {
+    display: inline-block;
+    margin-top: 2px;
+}
+
+@media (max-width: 430px) {
+    .y1-donate-grid { grid-template-columns: 1fr; }
+}
+
+
 #support-toolbar-container {
     font-family: var(--site-font, "DM Sans", system-ui, sans-serif);
+    --dock-ink: var(--lumen-text, var(--site-text, #f4f6fb));
+    --dock-muted: var(--lumen-muted, var(--site-muted, #9aa3b5));
+    --dock-panel: var(--lumen-panel, var(--site-bg-elevated, #12141c));
+    --dock-line: var(--lumen-line-strong, var(--site-border, rgba(255, 255, 255, .22)));
 }
 
 .y1-site-dock-wrap {
@@ -210,8 +420,260 @@ body.site-themes-app .theme-card-buttons {
     bottom: calc(12px + env(safe-area-inset-bottom, 0px));
     transform: translateX(-50%);
     z-index: 10001;
-    width: min(92vw, 420px);
+    width: min(96vw, 1040px);
     pointer-events: none;
+    transition: width 0.3s ease;
+}
+
+/* The permanent two-line toolbar has room for both shortcuts and the appeal. */
+.y1-site-dock-wrap.is-idle {
+    /* Kept for compatibility with older scripts; the toolbar no longer
+       changes width when the pointer leaves it. */
+    width: min(96vw, 1040px) !important;
+}
+
+.y1-site-dock-wrap.is-idle .y1-site-dock-bar {
+    width: 100%;
+    min-height: 0;
+    box-sizing: border-box;
+}
+
+/* The shortcut row and its donation appeal remain visible together. */
+.y1-site-dock-bar {
+    position: relative;
+}
+
+.y1-dock-buttons-layer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 4px 8px;
+    width: 100%;
+    transition: opacity 0.5s ease;
+}
+
+.y1-dock-secondary-line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 30px;
+    box-sizing: border-box;
+    padding: 6px 18px 8px;
+    border-top: 1px solid color-mix(in oklab, var(--dock-line) 55%, transparent);
+    overflow: hidden;
+    cursor: pointer;
+    transition: opacity 0.5s ease;
+}
+
+.y1-dock-secondary-goal-view,
+.y1-dock-secondary-ticker-view {
+    width: 100%;
+    min-width: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.y1-dock-secondary-goal-view {
+    display: flex;
+}
+
+.y1-dock-secondary-ticker-view {
+    display: flex;
+}
+
+.y1-dock-secondary-goal-view[hidden],
+.y1-dock-secondary-ticker-view[hidden] {
+    display: none;
+}
+
+.y1-dock-secondary-text,
+.y1-dock-secondary-ticker {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
+    font-size: clamp(0.72rem, 1.4vw, 0.92rem);
+    font-weight: 700;
+    transition: opacity 0.55s ease;
+}
+
+.y1-dock-secondary-ticker {
+    width: 100%;
+    font-weight: 600;
+}
+
+.y1-dock-secondary-ticker a {
+    color: inherit;
+}
+
+.y1-dock-secondary-bar-wrap {
+    flex: 0 1 150px;
+    min-width: 58px;
+    height: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+    overflow: hidden;
+}
+
+.y1-dock-secondary-bar-fill {
+    width: 0%;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--lumen-green, #10b981);
+    transition: width 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.y1-dock-goal-layer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    min-height: 100%;
+    box-sizing: border-box;
+    display: block;
+    padding: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.y1-dock-idle-goal-view,
+.y1-dock-idle-ticker-view {
+    width: 100%;
+    height: 100%;
+    align-items: center;
+}
+
+.y1-dock-idle-goal-view {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
+    gap: 4px;
+    padding: 7px 22px;
+}
+
+.y1-dock-idle-ticker-view {
+    display: flex;
+    justify-content: center;
+    padding: 7px 22px;
+    box-sizing: border-box;
+}
+
+/* Compatibility with older injected toolbar markup: never add a narrow
+   inline Goal/Regular ticker beside the permanent second line. */
+#support-toolbar-container .y1-dock-ticker-wrap {
+    display: none !important;
+}
+
+.y1-dock-idle-goal-view[hidden],
+.y1-dock-idle-ticker-view[hidden] {
+    display: none;
+}
+
+.y1-dock-goal-layer.is-ticker-view .y1-dock-idle-ticker {
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-size: 0.84rem;
+    font-weight: 600;
+}
+
+/* Compatibility overrides: older toolbar scripts may still add is-idle,
+   but it must never hide the controls or replace the second line. */
+.y1-site-dock-bar.is-idle .y1-dock-buttons-layer,
+.y1-site-dock-bar.is-idle .y1-dock-secondary-line {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+.y1-dock-goal-layer {
+    display: none !important;
+}
+
+/* The donation modal has its own full-width donor stream. Do not leave the
+   dock's secondary appeal visible behind it, where the same entry can appear
+   twice. */
+body.y1-donate-panel-open .y1-dock-secondary-line,
+body.y1-donate-panel-open .y1-dock-goal-layer {
+    display: none !important;
+}
+
+/* Hover has no effect on the permanent two-line toolbar layout. */
+.y1-site-dock-wrap:hover .y1-site-dock-bar.is-idle .y1-dock-buttons-layer {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.y1-site-dock-wrap:hover .y1-site-dock-bar.is-idle .y1-dock-goal-layer {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.y1-site-dock-wrap:hover .y1-site-dock-bar.is-idle .y1-dock-secondary-line {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.y1-dock-goal-bar-wrap {
+    min-width: 0;
+    width: 100%;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.y1-dock-goal-bar-fill {
+    height: 100%;
+    background: #10b981;
+    border-radius: 3px;
+    transition: width 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    width: 0%;
+}
+
+.y1-dock-goal-text {
+    flex-shrink: 0;
+    align-self: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #10b981;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.y1-dock-idle-ticker {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 1.2em;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--dock-ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.y1-dock-idle-ticker a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.y1-dock-idle-heart {
+    flex-shrink: 0;
+    align-self: center;
+    color: var(--dock-ink);
+    font-size: 0.86rem;
+    font-weight: 800;
+    letter-spacing: 0;
+    text-align: center;
 }
 
 .y1-site-dock-wrap > * {
@@ -220,18 +682,19 @@ body.site-themes-app .theme-card-buttons {
 
 .y1-site-dock-bar {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
     justify-content: center;
-    gap: 4px 8px;
-    padding: 8px 14px;
+    gap: 2px;
+    padding: 8px 14px 6px;
     border-radius: 999px;
-    background: rgba(22, 26, 36, 0.97);
-    border: 1px solid rgba(255, 255, 255, 0.22);
+    background: var(--lumen-panel, var(--site-bg-elevated, #12141c));
+    border: 1px solid var(--lumen-line-strong, rgba(255, 255, 255, 0.22));
     box-shadow: 0 4px 22px rgba(0, 0, 0, 0.5);
     font-size: 0.78rem;
     font-weight: 600;
-    color: #eaf0ff;
+    color: var(--dock-ink);
 }
 
 .y1-dock-link {
@@ -240,7 +703,7 @@ body.site-themes-app .theme-card-buttons {
     gap: 6px;
     padding: 6px 10px;
     border-radius: 999px;
-    color: #eaf0ff;
+    color: var(--dock-ink);
     text-decoration: none;
     border: none;
     background: transparent;
@@ -250,15 +713,33 @@ body.site-themes-app .theme-card-buttons {
 }
 
 .y1-dock-link:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: #fff;
+    background: color-mix(in oklab, var(--dock-ink) 10%, transparent);
+    color: var(--lumen-paper, #fff);
     text-decoration: none;
 }
 
 .y1-dock-sep {
-    color: rgba(255, 255, 255, 0.28);
+    color: color-mix(in oklab, var(--dock-muted) 55%, transparent);
     user-select: none;
     padding: 0 2px;
+}
+
+.y1-dock-icon {
+    flex-shrink: 0;
+    display: inline-block;
+}
+
+.y1-dock-link .y1-dock-icon {
+    color: inherit;
+}
+
+.y1-privacy-trigger .y1-dock-icon {
+    color: var(--lumen-green, #7ee787);
+}
+
+.y1-dock-link:hover .y1-privacy-trigger .y1-dock-icon,
+.y1-privacy-trigger:hover .y1-dock-icon {
+    color: var(--lumen-paper, #fff);
 }
 
 #y1-site-dock-privacy-slot .y1-privacy-settings-label {
@@ -279,7 +760,7 @@ body.site-themes-app .theme-card-buttons {
     box-shadow: none;
     font: inherit;
     font-weight: 600;
-    color: #eaf0ff;
+    color: var(--dock-ink);
     gap: 6px;
     display: inline-flex !important;
     visibility: visible !important;
@@ -292,7 +773,7 @@ body.site-themes-app .theme-card-buttons {
 }
 
 #y1-site-dock-privacy-slot #y1-privacy-settings-btn:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: color-mix(in oklab, var(--dock-ink) 10%, transparent);
     border: none;
 }
 
@@ -301,35 +782,23 @@ body.site-themes-app .theme-card-buttons {
     height: 16px;
 }
 
-.y1-dock-discord {
-    color: #b5bcff;
-}
-
-.y1-dock-discord:hover {
-    color: #fff;
-    background: rgba(88, 101, 242, 0.22);
-}
-
-.y1-dock-discord .fa-discord {
-    font-size: 0.95rem;
-}
-
-/* Donate panel — dark on all viewports */
+/* Donate panel — follows the active Lumen theme */
+.y1-donate-panel[hidden] { display: none !important; }
 .y1-donate-panel {
     display: none;
     position: absolute;
     left: 50%;
     bottom: calc(100% + 10px);
     transform: translateX(-50%);
-    width: min(96vw, 420px);
-    max-height: min(70vh, 520px);
+    width: min(96vw, 520px);
+    max-height: min(78vh, 640px);
     overflow: auto;
-    padding: 16px 16px 14px;
-    border-radius: 14px;
-    background: #1a1e28;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
-    color: #d9e0ef;
+    padding: 20px 20px 16px;
+    border-radius: 18px;
+    background: linear-gradient(145deg, var(--lumen-panel, #17243a), var(--lumen-panel-soft, #1a1e28));
+    border: 1px solid var(--lumen-line-strong, rgba(159, 193, 255, 0.35));
+    box-shadow: 0 18px 52px color-mix(in oklab, var(--lumen-ink, #000) 62%, transparent);
+    color: var(--lumen-text, #d9e0ef);
 }
 
 .y1-donate-panel.is-open {
@@ -350,24 +819,48 @@ body.site-themes-app .theme-card-buttons {
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: #8b95a8;
+    color: var(--lumen-muted, #8b95a8);
+}
+
+.y1-donate-panel-hook {
+    max-width: 16ch;
+    margin: 7px 0 0;
+    color: var(--lumen-paper, #fff);
+    font-family: var(--site-font-display, Georgia, serif);
+    font-size: calc(clamp(1.55rem, 5vw, 2.25rem) * var(--lumen-font-scale, 1));
+    font-weight: 400;
+    letter-spacing: -0.035em;
+    line-height: 1;
 }
 
 .y1-donate-panel-intro {
-    margin: 6px 0 0;
-    font-size: 0.86rem;
-    line-height: 1.45;
-    color: #aeb6c5;
+    margin: 10px 0 0;
+    font-size: 0.9rem;
+    line-height: 1.52;
+    color: var(--lumen-muted, #c4ccdc);
+}
+
+.y1-donate-panel-hook span {
+    color: #ff736f;
+    text-decoration: underline;
+    text-decoration-color: #ff736f;
+    text-decoration-thickness: .13em;
+    text-underline-offset: .12em;
+}
+
+.y1-donate-panel-intro strong {
+    color: var(--lumen-paper, #fff);
+    font-weight: 800;
 }
 
 .y1-donate-close {
     flex-shrink: 0;
     width: 36px;
     height: 36px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid var(--dock-line);
     border-radius: 10px;
-    background: rgba(255, 255, 255, 0.08);
-    color: #fff;
+    background: color-mix(in oklab, var(--dock-ink) 8%, transparent);
+    color: var(--dock-ink);
     font-size: 1.35rem;
     line-height: 1;
     cursor: pointer;
@@ -382,71 +875,335 @@ body.site-themes-app .theme-card-buttons {
 }
 
 .y1-donate-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+    margin: 18px 0 12px;
+}
+
+.y1-donate-method {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 46px;
+    padding: 9px 12px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    color: #fff !important;
+    font-size: .88rem;
+    font-weight: 800;
+    text-decoration: none !important;
+    transition: transform .15s ease, filter .15s ease, box-shadow .15s ease;
+}
+
+.y1-donate-method:hover {
+    color: #fff !important;
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+    box-shadow: 0 7px 18px rgba(0, 0, 0, .25);
+}
+
+.y1-donate-method--kofi { background: #ff5e5b; border-color: #ff8a87; }
+.y1-donate-method--paypal { background: #0878c9; border-color: #55b4ef; }
+.y1-donate-method--revolut { background: #5139c6; border-color: #8d7bea; }
+.y1-donate-method--patreon { background: #e85b43; border-color: #ff9a88; }
+
+.y1-donate-smallprint {
+    margin: 0;
+    color: var(--lumen-faint, #8995aa);
+    font-size: .76rem;
+    line-height: 1.45;
+}
+
+/* Privacy notice panel — follows the active Lumen theme like the donate panel */
+.y1-privacy-panel[hidden] { display: none !important; }
+.y1-privacy-panel {
+    display: none;
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 10px);
+    transform: translateX(-50%);
+    width: min(96vw, 520px);
+    max-height: min(78vh, 640px);
+    overflow: auto;
+    padding: 20px 20px 16px;
+    border-radius: 18px;
+    background: linear-gradient(145deg, var(--lumen-panel, #17243a), var(--lumen-panel-soft, #1a1e28));
+    border: 1px solid var(--lumen-line-strong, rgba(159, 193, 255, 0.35));
+    box-shadow: 0 18px 52px color-mix(in oklab, var(--lumen-ink, #000) 62%, transparent);
+    color: var(--lumen-text, #d9e0ef);
+    z-index: 1;
+}
+
+.y1-privacy-panel.is-open {
+    display: block;
+}
+
+.y1-privacy-body {
+    margin: 14px 0 12px;
+    font-size: .9rem;
+    line-height: 1.55;
+    color: var(--lumen-muted, #c4ccdc);
+}
+
+.y1-privacy-body p {
+    margin: 0 0 10px;
+}
+
+.y1-privacy-body p:last-child {
+    margin-bottom: 0;
+}
+
+.y1-privacy-body strong {
+    color: var(--lumen-paper, #fff);
+    font-weight: 800;
+}
+
+/* Privacy opt-out toggles */
+.y1-privacy-options {
+    display: grid;
+    gap: 9px;
+    margin: 4px 0 12px;
+}
+
+.y1-privacy-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 11px 13px;
+    border: 1px solid var(--lumen-line-strong, rgba(159, 193, 255, 0.28));
+    border-radius: 12px;
+    background: color-mix(in oklab, var(--dock-ink) 5%, transparent);
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.y1-privacy-option:hover {
+    border-color: rgba(107, 159, 255, 0.5);
+    background: rgba(107, 159, 255, 0.08);
+}
+
+.y1-privacy-option-label {
+    display: block;
+    min-width: 0;
+}
+
+.y1-privacy-option-label strong {
+    display: block;
+    color: var(--lumen-text, #e6ecf8);
+    font-size: 0.84rem;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.y1-privacy-option-label small {
+    display: block;
+    margin-top: 2px;
+    color: var(--lumen-muted, #9aa8c0);
+    font-size: 0.72rem;
+    line-height: 1.35;
+}
+
+/* Switch control for each opt-out */
+.y1-privacy-toggle {
+    -webkit-appearance: none;
+    appearance: none;
+    position: relative;
+    flex: 0 0 auto;
+    width: 44px;
+    height: 25px;
+    margin: 0;
+    border-radius: 999px;
+    border: 1px solid color-mix(in oklab, var(--dock-ink) 32%, transparent);
+    background: color-mix(in oklab, var(--dock-ink) 15%, transparent);
+    cursor: pointer;
+    transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.y1-privacy-toggle::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    transition: transform 0.18s ease;
+}
+
+.y1-privacy-toggle:checked {
+    background: color-mix(in oklab, var(--lumen-green, #4ade80) 62%, var(--dock-panel));
+    border-color: var(--lumen-green, #4ade80);
+}
+
+.y1-privacy-toggle:checked::after {
+    transform: translateX(19px);
+}
+
+.y1-privacy-toggle:focus-visible {
+    outline: 3px solid var(--lumen-accent, #6b9fff);
+    outline-offset: 2px;
+}
+
+.y1-privacy-note {
+    margin: 0 0 4px;
+    color: var(--lumen-faint, #8995aa);
+    font-size: 0.76rem;
+    line-height: 1.45;
+}
+
+.y1-privacy-actions {
+    margin-top: 6px;
+}
+
+.y1-privacy-save {
+    width: 100%;
+    min-height: 42px;
+    border-radius: 12px;
+    border: 1px solid rgba(107, 159, 255, 0.5);
+    background: rgba(107, 159, 255, 0.24);
+    color: var(--lumen-paper, #fff);
+    font: inherit;
+    font-weight: 800;
+    font-size: 0.86rem;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.y1-privacy-save:hover {
+    background: rgba(107, 159, 255, 0.36);
+    border-color: rgba(107, 159, 255, 0.7);
+}
+
+/* Backdrop behind the dock panels and consent banner */
+.y1-dock-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: rgba(4, 7, 14, 0.55);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+}
+
+.y1-dock-backdrop[hidden] {
+    display: none !important;
+}
+
+/* EU consent banner — fixed bottom bar, shown on visits until decided */
+.y1-consent-banner {
+    position: fixed;
+    left: 50%;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%);
+    z-index: 10002;
+    width: min(96vw, 760px);
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 12px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 18px;
+    padding: 14px 18px;
+    border-radius: 16px;
+    background: linear-gradient(145deg, var(--lumen-panel, #17243a), var(--lumen-panel-soft, #1a1e28));
+    border: 1px solid var(--lumen-line-strong, rgba(159, 193, 255, 0.35));
+    box-shadow: 0 18px 52px color-mix(in oklab, var(--lumen-ink, #000) 62%, transparent);
+    color: var(--lumen-text, #d9e0ef);
+    font-family: var(--site-font, "DM Sans", system-ui, sans-serif);
+    font-size: 0.84rem;
+    line-height: 1.45;
 }
 
-.y1-donate-links .y1-dock-link {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+.y1-consent-banner[hidden] {
+    display: none !important;
 }
 
-.y1-donate-crypto {
+.y1-consent-banner-copy {
+    flex: 1 1 340px;
+    min-width: 0;
+}
+
+.y1-consent-banner-title {
+    margin: 0 0 3px;
+    font-size: 0.92rem;
+    color: var(--lumen-paper, #fff);
+}
+
+.y1-consent-banner-text {
+    margin: 0;
+    color: var(--lumen-muted, #c4ccdc);
+    max-width: 52ch;
+}
+
+.y1-consent-banner-actions {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
+    align-items: center;
     gap: 8px;
 }
 
-.y1-donate-crypto-item {
-    padding: 10px 12px;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.y1-donate-crypto-label {
-    display: block;
-    font-size: 0.68rem;
+.y1-consent-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 7px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--dock-line);
+    background: color-mix(in oklab, var(--dock-ink) 8%, transparent);
+    color: var(--dock-ink);
+    font: inherit;
     font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: #8b95a8;
-    margin-bottom: 4px;
-}
-
-.y1-donate-crypto-hint {
-    font-size: 0.68rem;
-    font-weight: 400;
-    text-transform: none;
-    letter-spacing: 0;
-    color: #6b7588;
-}
-
-.y1-donate-crypto-code {
-    display: block;
-    font-size: 0.72rem;
-    font-family: ui-monospace, "SF Mono", Consolas, monospace;
-    color: #eaf0ff;
-    word-break: break-all;
+    font-size: 0.82rem;
     cursor: pointer;
-    padding: 6px 8px;
-    margin-top: 4px;
-    border-radius: 6px;
-    background: rgba(0, 0, 0, 0.25);
+    transition: background 0.15s ease, border-color 0.15s ease;
 }
 
-.y1-donate-crypto-code:hover {
-    background: rgba(255, 177, 51, 0.15);
+.y1-consent-btn:hover {
+    background: color-mix(in oklab, var(--dock-ink) 16%, transparent);
+    border-color: var(--dock-line);
 }
 
-.y1-donate-crypto-code.copied {
-    color: #9ae6a0;
+.y1-consent-btn--accept {
+    background: rgba(107, 159, 255, 0.28);
+    border-color: rgba(107, 159, 255, 0.55);
+}
+
+.y1-consent-btn--accept:hover {
+    background: rgba(107, 159, 255, 0.4);
+}
+
+.y1-consent-btn--link {
+    background: transparent;
+    border-color: transparent;
+    color: var(--dock-muted);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.y1-consent-btn--link:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--lumen-paper, #fff);
+    text-decoration: none;
 }
 
 body.y1-consent-banner-open .y1-site-dock-wrap {
     bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+}
+
+/* The consent banner must never cover the dock controls: the dock moves
+   up when the banner opens, but the banner is wider and taller, so give
+   the dock a higher stacking layer while the banner is shown. */
+body.y1-consent-banner-open .y1-site-dock-wrap {
+    z-index: 10003;
+}
+
+body.y1-consent-banner-open .y1-donate-panel,
+body.y1-consent-banner-open .y1-privacy-panel {
+    z-index: 10004;
 }
 
 body.site-dock-mode #y1-privacy-panel {
@@ -465,13 +1222,691 @@ body.site-dock-mode:has(#y1-site-dock-privacy-slot #y1-privacy-settings-btn) > #
     display: none !important;
 }
 
+@media (prefers-color-scheme: light) {
+    :root[data-lumen-theme="auto"] #support-toolbar-container,
+    :root[data-lumen-theme="auto"] #support-toolbar-container .y1-site-dock-bar,
+    :root[data-lumen-theme="auto"] #support-toolbar-container .y1-donate-panel { color-scheme: light; }
+}
+
+:root[data-lumen-theme="light"] #support-toolbar-container,
+:root[data-lumen-theme="high-contrast"] #support-toolbar-container {
+    color-scheme: light;
+}
+
+:root[data-lumen-theme="light"] #support-toolbar-container .y1-site-dock-bar,
+:root[data-lumen-theme="light"] #support-toolbar-container .y1-donate-panel,
+:root[data-lumen-theme="light"] #support-toolbar-container .y1-privacy-panel,
+:root[data-lumen-theme="light"] #support-toolbar-container .y1-consent-banner,
+:root[data-lumen-theme="high-contrast"] #support-toolbar-container .y1-site-dock-bar,
+:root[data-lumen-theme="high-contrast"] #support-toolbar-container .y1-donate-panel,
+:root[data-lumen-theme="high-contrast"] #support-toolbar-container .y1-privacy-panel,
+:root[data-lumen-theme="high-contrast"] #support-toolbar-container .y1-consent-banner {
+    background: var(--lumen-panel) !important;
+    color: var(--lumen-text) !important;
+    border-color: var(--lumen-line-strong) !important;
+}
+
+:root[data-lumen-theme="light"] #support-toolbar-container .y1-dock-link,
+:root[data-lumen-theme="light"] #support-toolbar-container .y1-donate-close,
+:root[data-lumen-theme="light"] #support-toolbar-container .y1-donate-panel-title,
+:root[data-lumen-theme="light"] #support-toolbar-container .y1-donate-panel-intro,
+:root[data-lumen-theme="light"] #support-toolbar-container .y1-donate-smallprint,
+:root[data-lumen-theme="light"] #support-toolbar-container .y1-privacy-body,
+:root[data-lumen-theme="light"] #support-toolbar-container .y1-privacy-note,
+:root[data-lumen-theme="light"] #support-toolbar-container .y1-consent-banner-text,
+:root[data-lumen-theme="light"] #support-toolbar-container .y1-consent-btn--link,
+:root[data-lumen-theme="light"] #support-toolbar-container .y1-privacy-option-label small,
+:root[data-lumen-theme="high-contrast"] #support-toolbar-container .y1-dock-link,
+:root[data-lumen-theme="high-contrast"] #support-toolbar-container .y1-donate-close,
+:root[data-lumen-theme="high-contrast"] #support-toolbar-container .y1-donate-panel-title,
+:root[data-lumen-theme="high-contrast"] #support-toolbar-container .y1-donate-panel-intro,
+:root[data-lumen-theme="high-contrast"] #support-toolbar-container .y1-donate-smallprint,
+:root[data-lumen-theme="high-contrast"] #support-toolbar-container .y1-privacy-body,
+:root[data-lumen-theme="high-contrast"] #support-toolbar-container .y1-privacy-note,
+:root[data-lumen-theme="high-contrast"] #support-toolbar-container .y1-consent-banner-text,
+:root[data-lumen-theme="high-contrast"] #support-toolbar-container .y1-consent-btn--link,
+:root[data-lumen-theme="high-contrast"] #support-toolbar-container .y1-privacy-option-label small {
+    color: var(--lumen-text) !important;
+}
+
+:root[data-lumen-theme="light"] #support-toolbar-container .y1-donate-panel-hook,
+:root[data-lumen-theme="high-contrast"] #support-toolbar-container .y1-donate-panel-hook {
+    color: var(--lumen-paper) !important;
+}
+
 @media (max-width: 560px) {
     .y1-site-dock-bar {
         border-radius: 16px;
         padding: 10px 12px;
     }
 
-    .y1-donate-panel {
+    .y1-donate-panel,
+    .y1-privacy-panel {
         width: min(96vw, 100%);
+        padding: 17px 15px 14px;
+    }
+
+    .y1-donate-links {
+        grid-template-columns: 1fr;
+    }
+
+    .y1-consent-banner {
+        width: calc(100vw - 16px);
+        bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+        padding: 12px 14px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .y1-consent-banner-actions {
+        justify-content: stretch;
+    }
+
+    .y1-consent-btn {
+        flex: 1 1 auto;
+    }
+
+    body.y1-consent-banner-open .y1-site-dock-wrap {
+        bottom: calc(132px + env(safe-area-inset-bottom, 0px));
+    }
+}
+
+/* Light theme switch contrast */
+:root[data-lumen-theme="light"] #support-toolbar-container .y1-privacy-toggle {
+    border-color: rgba(0, 0, 0, 0.35);
+    background: rgba(0, 0, 0, 0.12);
+}
+
+:root[data-lumen-theme="light"] #support-toolbar-container .y1-privacy-toggle:checked {
+    background: rgba(22, 138, 68, 0.85);
+    border-color: rgba(22, 138, 68, 0.9);
+}
+
+:root[data-lumen-theme="light"] #support-toolbar-container .y1-privacy-toggle::after {
+    background: #fff;
+}
+
+:root[data-lumen-theme="light"] #support-toolbar-container .y1-privacy-option {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+:root[data-lumen-theme="light"] #support-toolbar-container .y1-privacy-save {
+    color: #fff;
+}
+
+/* High contrast: solid borders, strong hover fills, and a track that stays
+   visible on the black panel — accessibility over the decorative wash. */
+:root[data-lumen-theme="high-contrast"] #support-toolbar-container .y1-dock-link:hover,
+:root[data-lumen-theme="high-contrast"] #support-toolbar-container .y1-donate-close:hover,
+:root[data-lumen-theme="high-contrast"] #support-toolbar-container .y1-consent-btn:hover {
+    background: #2a2a2a;
+    border-color: #fff;
+}
+
+:root[data-lumen-theme="high-contrast"] #support-toolbar-container .y1-dock-sep {
+    color: #fff;
+}
+
+:root[data-lumen-theme="high-contrast"] #support-toolbar-container .y1-privacy-trigger .y1-dock-icon {
+    color: #7dffa8;
+}
+
+:root[data-lumen-theme="high-contrast"] #support-toolbar-container .y1-privacy-option {
+    background: #1c1c1c;
+    border-color: #fff;
+}
+
+:root[data-lumen-theme="high-contrast"] #support-toolbar-container .y1-privacy-option:hover {
+    background: #2a2a2a;
+    border-color: #fff;
+}
+
+:root[data-lumen-theme="high-contrast"] #support-toolbar-container .y1-privacy-toggle {
+    border-color: #fff;
+    background: #2a2a2a;
+}
+
+:root[data-lumen-theme="high-contrast"] #support-toolbar-container .y1-privacy-toggle:checked {
+    background: #00c853;
+    border-color: #fff;
+}
+
+:root[data-lumen-theme="high-contrast"] #support-toolbar-container .y1-consent-btn--accept {
+    background: #0a6bb8;
+    border-color: #fff;
+}
+
+:root[data-lumen-theme="high-contrast"] #support-toolbar-container .y1-consent-btn--accept:hover {
+    background: #0f7fd6;
+}
+
+:root[data-lumen-theme="high-contrast"] #support-toolbar-container .y1-privacy-save {
+    background: #0a6bb8;
+    border-color: #fff;
+}
+
+/* Text size control in the bottom dock */
+.y1-font-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: 2px;
+}
+
+.y1-font-btn {
+    min-width: 30px;
+    justify-content: center;
+    padding: 6px 7px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.y1-font-btn--small { font-size: .64rem; }
+.y1-font-btn--reset { font-size: .78rem; }
+.y1-font-btn--large { font-size: .94rem; }
+
+.y1-font-live {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* —— Developer Message & Donation Goals System —— */
+.y1-developer-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--dock-line, rgba(255, 255, 255, 0.12));
+}
+
+.y1-developer-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 0;
+    object-fit: contain;
+    border: 0;
+    box-shadow: none;
+    flex-shrink: 0;
+}
+
+.y1-developer-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.y1-developer-author {
+    margin: 0;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #ff8a87;
+}
+
+.y1-developer-role {
+    margin: 2px 0 0;
+    font-size: 0.74rem;
+    color: var(--lumen-muted, #9aa3b5);
+}
+
+/* Dual-Color $200 Monthly Goal Progress Bar */
+.y1-goal-card {
+    background: color-mix(in oklab, var(--dock-panel) 92%, var(--dock-ink) 8%);
+    border: 1px solid var(--dock-line, rgba(255, 255, 255, 0.15));
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin: 14px 0;
+}
+
+.y1-goal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.y1-goal-title {
+    color: var(--lumen-paper, #fff);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.y1-goal-stats {
+    font-size: 0.76rem;
+    color: var(--lumen-muted, #9aa3b5);
+}
+
+.y1-goal-bar-wrap {
+    height: 14px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.y1-goal-segment--raised {
+    background: linear-gradient(90deg, #10b981, #34d399);
+    height: 100%;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.y1-goal-segment--remaining {
+    background: linear-gradient(90deg, #f87171, #ef4444);
+    height: 100%;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.y1-goal-legend {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 0.72rem;
+}
+
+.y1-goal-legend-raised {
+    color: #34d399;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.y1-goal-legend-raised::before {
+    content: "";
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10b981;
+}
+
+.y1-goal-legend-remaining {
+    color: #f87171;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.y1-goal-legend-remaining::before {
+    content: "";
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ef4444;
+}
+
+/* Honeygain free contribution banner */
+.y1-honeygain-cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px 14px;
+    margin: 10px 0;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #059669, #10b981);
+    border: 1px solid #34d399;
+    color: #fff !important;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-decoration: none !important;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
+    transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.y1-honeygain-cta:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+    color: #fff !important;
+}
+
+/* Crypto options toggle and panel */
+.y1-crypto-dropdown {
+    margin-top: 6px;
+    text-align: center;
+}
+
+#support-toolbar-container .y1-crypto-toggle {
+    display: inline-flex !important;
+    width: auto !important;
+    min-height: 0 !important;
+    padding: 3px 2px !important;
+    border: 0 !important;
+    border-radius: 0;
+    background: transparent !important;
+    color: var(--lumen-accent, #8db7ff);
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 0;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    box-shadow: none !important;
+    transition: color 0.15s ease;
+}
+
+#support-toolbar-container .y1-crypto-toggle:hover,
+#support-toolbar-container .y1-crypto-toggle:focus-visible {
+    background: transparent !important;
+    color: var(--lumen-paper, #fff);
+    filter: none;
+    transform: none;
+    box-shadow: none !important;
+    outline: none;
+}
+
+.y1-crypto-panel {
+    display: grid;
+    gap: 7px;
+    margin-top: 8px;
+    padding: 9px;
+    border: 1px solid var(--dock-line, rgba(255, 255, 255, .15));
+    border-radius: 10px;
+    background: rgba(0, 0, 0, .16);
+}
+
+.y1-crypto-panel[hidden] { display: none !important; }
+
+.y1-crypto-row {
+    display: grid;
+    grid-template-columns: minmax(92px, auto) minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 7px;
+}
+
+.y1-crypto-label {
+    color: var(--lumen-text, #e5e7eb);
+    font-size: .74rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.y1-crypto-input {
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 5px 7px;
+    border: 1px solid var(--dock-line, rgba(255, 255, 255, .15));
+    border-radius: 6px;
+    background: rgba(0, 0, 0, .2);
+    color: var(--lumen-text, #e5e7eb);
+    font: .68rem ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.y1-crypto-copy {
+    min-height: 30px;
+    padding: 5px 9px;
+    border-radius: 7px;
+    background: rgba(255, 255, 255, .1);
+    border-color: var(--dock-line, rgba(255, 255, 255, .2));
+    font-size: .72rem;
+}
+
+.y1-crypto-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.y1-crypto-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.78rem;
+}
+
+.y1-crypto-item strong {
+    color: #f59e0b;
+}
+
+.y1-crypto-copy {
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--dock-ink);
+    font-size: 0.72rem;
+    cursor: pointer;
+}
+
+.y1-crypto-copy:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Donors and Top Supporters Feed */
+.y1-donors-section {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--dock-line, rgba(255, 255, 255, 0.12));
+}
+
+.y1-donors-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.y1-donors-title {
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--lumen-muted, #9aa3b5);
+}
+
+.y1-donors-feed {
+    max-height: 180px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-right: 4px;
+}
+
+.y1-donors-feed::-webkit-scrollbar {
+    width: 5px;
+}
+
+.y1-donors-feed::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 999px;
+}
+
+.y1-donor-entry {
+    font-size: 0.78rem;
+    line-height: 1.4;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--lumen-text, #d9e0ef);
+}
+
+.y1-donor-entry a {
+    color: #60a5fa !important;
+    text-decoration: underline;
+}
+
+.y1-donor-entry a:hover {
+    color: #93c5fd !important;
+}
+
+.y1-donor-entry--regular {
+    background: color-mix(in oklab, #f59e0b 10%, rgba(255, 255, 255, 0.04));
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+/* Single-line Contributor Crossfade Box (Twitch/Wikipedia Stream style) */
+.y1-contributor-stream-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 78px;
+    padding: 16px 18px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.y1-contributor-stream-line {
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 8px;
+    box-sizing: border-box;
+    font-size: 0.82rem;
+    font-weight: 500;
+    line-height: 1.4;
+    text-align: center;
+    color: var(--lumen-text, #d9e0ef);
+    transition: opacity 0.55s ease, transform 0.55s ease;
+}
+
+.y1-contributor-stream-line a {
+    color: inherit !important;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.y1-contributor-stream-line a:hover {
+    text-decoration: underline;
+}
+
+/* Goal and ticker states share one padded viewport; only one is injected at a time. */
+.y1-contributor-stream-line .y1-goal-header,
+.y1-contributor-stream-line .y1-goal-bar-wrap {
+    width: 100%;
+}
+
+.y1-contributor-stream-line .y1-goal-header {
+    padding: 2px 8px 8px;
+    box-sizing: border-box;
+}
+
+.y1-contributor-stream-line .y1-goal-bar-wrap {
+    margin: 0 8px;
+    width: calc(100% - 16px) !important;
+}
+
+/* Dock Rotating Ticker with Twitch/Wikipedia Stream style Mini Goal Bar */
+.y1-dock-ticker-wrap {
+    display: inline-flex;
+    align-items: center;
+    max-width: 340px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    position: relative;
+    cursor: pointer;
+}
+
+.y1-dock-ticker-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--dock-ink);
+    transition: opacity 0.55s cubic-bezier(0.4, 0, 0.2, 1), transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.y1-dock-ticker-text a {
+    color: inherit !important;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.y1-dock-ticker-text a:hover {
+    text-decoration: underline;
+}
+
+.y1-dock-ticker-badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    flex-shrink: 0;
+}
+
+.y1-dock-ticker-badge--goal {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+    border-color: rgba(245, 158, 11, 0.4);
+}
+
+.y1-dock-mini-bar {
+    display: inline-flex;
+    width: 44px;
+    height: 7px;
+    border-radius: 4px;
+    overflow: hidden;
+    background: rgba(239, 68, 68, 0.85);
+    flex-shrink: 0;
+    vertical-align: middle;
+}
+
+.y1-dock-mini-raised {
+    background: #10b981;
+    height: 100%;
+    transition: width 0.4s ease;
+}
+
+.y1-dock-mini-remaining {
+    background: #ef4444;
+    height: 100%;
+    flex-grow: 1;
+}
+
+
+/* Keep the shortcut row single-line where it has room; the appeal always has
+   its own second line so neither state is squeezed into the button row. */
+@media (min-width: 600px) {
+    .y1-dock-buttons-layer {
+        flex-wrap: nowrap;
+    }
+}
+
+@media (max-width: 560px) {
+    .y1-dock-secondary-goal-view {
+        gap: 5px;
+    }
+
+    .y1-dock-secondary-bar-wrap {
+        flex-basis: 72px;
     }
 }

@@ -23,11 +23,11 @@
     "dialogOptionTextColor": "#ffffff",
     "dialogOptionSelectedBackground": "4.png",
     "dialogOptionSelectedTextColor": "#ffffff",
-    "dialogBackgroundColor": "#0",
+    "dialogBackgroundColor": "",
     "dialogTextColor": "#ffffff"
   },
   "menuConfig": {
-    "menuBackgroundColor": "#0",
+    "menuBackgroundColor": "",
     "menuItemBackground": "0.png",
     "menuItemTextColor": "#ffffff",
     "menuItemSelectedBackground": "1.png",
@@ -46,6 +46,7 @@
     "ebook": "ebook.png",
     "calculator": "calculator.png",
     "calendar": "calendar.png",
+    "unselectedColor": "",
     "fileManager": "transparent.png"
   },
   "fileConfig": {
@@ -103,7 +104,7 @@
     "theme": "Change Theme@1x.png",
     "fileExtensionOn": "file_ext_on.png",
     "fileExtensionOff": "file_ext_off.png",
-    "unselectedColor": "#0"
+    "unselectedColor": ""
   },
   "statusConfig": {
     "playing": "playing.png",
@@ -116,7 +117,7 @@
     "blDisconnected": "blDisconnected.png",
     "headsetWithMic": "headset2.png",
     "headsetWithoutMic": "headset1.png",
-    "statusBarColor": "#0",
+    "statusBarColor": "",
     "battery": [
       "battery.001.png",
       "battery.002.png",
@@ -133,7 +134,7 @@
   "playerConfig": {
     "progressTextColor": "#ffffff",
     "progressColor": "#ffffff",
-    "progressBackgroundColor": "#333333"
+    "progressBackgroundColor": ""
   },
   "gallery": {
     "compatibilityMedal": "none"

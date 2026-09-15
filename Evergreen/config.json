@@ -1,6 +1,6 @@
 {
   "theme_info": {
-    "title": "Evergreen",
+    "title": "Evergreen (v2)",
     "author": "kuroochr",
     "authorUrl": "",
     "description": "A theme for those who love green and the naturecore aesthetic. Credit to random360RROD's theme \"Circular but more circular\" for the theme i used as a base for the rounded corners and system tray/settings page icons.",
@@ -42,8 +42,8 @@
     "settings": "Settings_YS.png",
     "shuffleQuick": "Shuffle Quick.png",
     "ebook": "transparent.png",
-    "calendar": "transparent.png",
-    "calculator": "transparent.png",
+    "calendar": "calendar.png",
+    "calculator": "calculator.png",
     "fileManager": "transparent.png"
   },
   "fileConfig": {
@@ -131,6 +131,6 @@
     "progressBackgroundColor": "#426128"
   },
   "gallery": {
-    "compatibilityMedal": "gold"
+    "compatibilityMedal": "none"
   }
 }
