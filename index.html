@@ -3137,8 +3137,11 @@
                 removeAndRestoreButton(originalButton) {
                     try {
                         const bp = progressWrap.parentElement || buttonParent;
-                        if (!originalButton.parentElement) bp.appendChild(originalButton);
-                        bp.replaceChild(originalButton, progressWrap);
+                        if (progressWrap.parentElement) {
+                            bp.replaceChild(originalButton, progressWrap);
+                        } else if (!originalButton.parentElement) {
+                            bp.appendChild(originalButton);
+                        }
                         const origText = originalButton.innerHTML;
                         originalButton.innerHTML = '<i class="fa-solid fa-check"></i> Complete';
                         originalButton.disabled = false;
@@ -3152,8 +3155,11 @@
                 abortAndRestore(originalButton) {
                     try {
                         const bp = progressWrap.parentElement || buttonParent;
-                        if (!originalButton.parentElement) bp.appendChild(originalButton);
-                        bp.replaceChild(originalButton, progressWrap);
+                        if (progressWrap.parentElement) {
+                            bp.replaceChild(originalButton, progressWrap);
+                        } else if (!originalButton.parentElement) {
+                            bp.appendChild(originalButton);
+                        }
                         originalButton.disabled = false;
                     } catch (e) {
                         console.warn('abort restore failed', e);
@@ -3473,6 +3479,77 @@
             return { preferredContentFolder: catalog };
         }
 
+        async function resolveCardThemeCombo(theme, card, hints, progressUI) {
+            const catalogFolder = String(
+                (theme && theme.folder) ||
+                (card && card.getAttribute('data-catalog-folder')) ||
+                ''
+            ).replace(/^\.\/+/, '').trim();
+            if (!catalogFolder) throw new Error('No downloadable folder info for this theme.');
+
+            const hintsObj = hints || {};
+            const sel = card ? card.querySelector('.theme-card-variant-select') : null;
+            let variantSeg = '';
+            if (hintsObj.preferredVariant) {
+                variantSeg = String(hintsObj.preferredVariant).trim();
+            } else if (sel && sel.value) {
+                variantSeg = String(sel.value).trim();
+            }
+
+            const contentFolder = effectiveThemeContentFolder(catalogFolder, variantSeg);
+            const selectedName = zipThemeDisplayName(theme && theme.name, catalogFolder, variantSeg) || (theme && theme.name) || 'theme';
+
+            if (progressUI) {
+                progressUI.setProgress(5, `Loading config for ${selectedName}...`);
+            }
+
+            let config = null;
+            const primaryCfgUrl = buildThemeFileUrl(contentFolder, 'config.json');
+            if (primaryCfgUrl) {
+                try {
+                    const res = await fetch(primaryCfgUrl, { cache: 'no-cache' });
+                    if (res.ok) {
+                        config = await res.json();
+                    }
+                } catch (_) {}
+            }
+
+            if (!config) {
+                const candidates = [
+                    `./${encodePathSegments(contentFolder)}/config.json`,
+                    GITHUB_MAIN_RAW_BASE + encodePathSegments(contentFolder) + '/config.json'
+                ];
+                for (const url of candidates) {
+                    if (!url || url === primaryCfgUrl) continue;
+                    try {
+                        const res = await fetch(url, { cache: 'no-cache' });
+                        if (res.ok) {
+                            config = await res.json();
+                            break;
+                        }
+                    } catch (_) {}
+                }
+            }
+
+            if (!config || typeof config !== 'object') {
+                throw new Error(`Could not load configuration for "${selectedName}".`);
+            }
+
+            const filesRaw = extractFilesFromConfig(config, contentFolder);
+            const baseMask = resolveMaskTargetPath(contentFolder, filesRaw, config.desktopMask);
+
+            return {
+                folder: contentFolder,
+                catalogFolder: catalogFolder,
+                variant: variantSeg,
+                name: selectedName,
+                config: config,
+                filesRaw: filesRaw,
+                selectedMask: null,
+                maskChoices: { baseMaskPath: baseMask }
+            };
+        }
+
         async function directInstallTheme(theme, buttonNode, hints) {
             if (bulkUpdateRunActive) {
                 alert('Please wait for the bulk theme update to finish, or cancel it first.');
@@ -3492,14 +3569,17 @@
             let progressUI = null;
             try {
                 if (!theme.folder) throw new Error('No downloadable folder info for this theme.');
-                const selectedCombo = await promptVariantCombination(theme, hints || {});
-                if (selectedCombo === null) {
+
+                progressUI = createProgressUI(card, buttonNode, (theme && theme.name) || 'theme');
+                progressUI.setProgress(3, 'Preparing direct install...');
+
+                const selectedCombo = await resolveCardThemeCombo(theme, card, hints, progressUI);
+                if (!selectedCombo) {
                     if (dlBtn) dlBtn.style.display = '';
-                    buttonNode.disabled = false;
+                    progressUI.abortAndRestore(buttonNode);
                     return;
                 }
 
-                progressUI = createProgressUI(card, buttonNode, theme.name || 'theme');
                 const onDeviceLoc = card.classList.contains('on-device')
                     ? await resolveDeviceThemeLocation(theme)
                     : null;
@@ -3567,14 +3647,17 @@
             let progressUI = null;
             try {
                 if (!theme.folder) throw new Error('No downloadable folder info for this theme.');
-                const selectedCombo = await promptVariantCombination(theme, hints || {});
-                if (selectedCombo === null) {
+
+                progressUI = createProgressUI(card, buttonNode, (theme && theme.name) || 'theme');
+                progressUI.setProgress(3, 'Preparing download...');
+
+                const selectedCombo = await resolveCardThemeCombo(theme, card, hints, progressUI);
+                if (!selectedCombo) {
                     if (diBtn) diBtn.style.display = '';
-                    buttonNode.disabled = false;
+                    progressUI.abortAndRestore(buttonNode);
                     return;
                 }
 
-                progressUI = createProgressUI(card, buttonNode, theme.name || 'theme');
                 const selectedFolder = String(selectedCombo.folder || theme.folder || '').replace(/^\.\/+/, '');
                 const selectedName = String(selectedCombo.name || theme.name || 'theme');
                 const selectedMask = selectedCombo.selectedMask || null;
@@ -3582,7 +3665,7 @@
                 const config = selectedCombo.config || {};
                 const filesToDownloadRaw = Array.isArray(selectedCombo.filesRaw) ? selectedCombo.filesRaw : extractFilesFromConfig(config, selectedFolder);
 
-                progressUI.setProgress(5, `Fetching config for ${selectedName}...`);
+                progressUI.setProgress(10, `Preparing files for ${selectedName}...`);
                 const filesToDownload = applyMaskVariantToFileList(
                     filesToDownloadRaw,
                     selectedMask && selectedMask.sourcePath,
@@ -3641,15 +3724,29 @@
 
                 for (const row of zipRows) {
                     try {
-                        const percent = 5 + Math.round((downloadedCount / Math.max(totalFiles, 1)) * 80);
+                        const percent = 10 + Math.round((downloadedCount / Math.max(totalFiles, 1)) * 75);
                         progressUI.setProgress(percent, `Downloading ${row.devicePath || row.path}...`);
 
-                        const fr = await fetch(row.download_url);
-                        if (fr.ok) {
-                            const blob = await fr.blob();
+                        let fr = null;
+                        try {
+                            fr = await fetch(row.download_url, { cache: 'no-cache' });
+                        } catch (fetchErr) {
+                            console.warn(`Fetch error for ${row.download_url}:`, fetchErr);
+                        }
+
+                        if ((!fr || !fr.ok) && !String(row.download_url).startsWith('http')) {
+                            const ghUrl = GITHUB_MAIN_RAW_BASE + encodePathSegments(resolvedRepoPath(selectedFolder, row.path));
+                            try {
+                                const frGh = await fetch(ghUrl, { cache: 'no-cache' });
+                                if (frGh.ok) fr = frGh;
+                            } catch (_) {}
+                        }
+
+                        if (fr && fr.ok) {
+                            const data = fr.arrayBuffer ? await fr.arrayBuffer() : await fr.blob();
                             const key = String(row.devicePath || row.path || '').replace(/\\/g, '/').replace(/^\/+/, '');
                             if (key && !key.includes('..')) {
-                                zip.file(key, blob);
+                                zip.file(key, data);
                                 downloadedSuccess++;
                             }
                         } else {
@@ -3668,9 +3765,9 @@
                     const cfgUrl = buildThemeFileUrl(selectedFolder, 'config.json');
                     if (cfgUrl) {
                         try {
-                            const fileRes = await fetch(cfgUrl);
+                            const fileRes = await fetch(cfgUrl, { cache: 'no-cache' });
                             if (fileRes.ok) {
-                                zip.file('config.json', await fileRes.blob());
+                                zip.file('config.json', await fileRes.text());
                                 downloadedSuccess++;
                             }
                         } catch (_) {}
