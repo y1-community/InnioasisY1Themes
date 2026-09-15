@@ -127,6 +127,54 @@
     border-color: rgba(255, 255, 255, .2);
     font-size: .72rem;
   }
+  #support-toolbar-container .y1-donate-completion-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin: 4px 0 12px;
+    padding: 12px 14px;
+    background: rgba(16, 185, 129, 0.14);
+    border: 1px solid rgba(16, 185, 129, 0.42);
+    border-radius: 12px;
+    color: var(--lumen-paper, #fff);
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.12);
+    animation: y1-notice-fade-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  #support-toolbar-container .y1-donate-completion-notice[hidden] {
+    display: none !important;
+  }
+  #support-toolbar-container .y1-donate-completion-icon {
+    flex: 0 0 24px;
+    width: 24px;
+    height: 24px;
+    color: #10b981;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2px;
+  }
+  #support-toolbar-container .y1-donate-completion-content {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  #support-toolbar-container .y1-donate-completion-title {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 750;
+    color: #10b981;
+    margin-bottom: 2px;
+    line-height: 1.3;
+  }
+  #support-toolbar-container .y1-donate-completion-text {
+    margin: 0;
+    font-size: 0.86rem;
+    line-height: 1.45;
+    color: var(--lumen-text, #d9e0ef);
+  }
+  @keyframes y1-notice-fade-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
   @media (max-width: 430px) {
     #support-toolbar-container .y1-donate-grid { grid-template-columns: 1fr; }
   }
@@ -149,6 +197,19 @@
       <!-- Top Live Donors & Goal Stream Box -->
       <div class="y1-contributor-stream-box" id="y1-contributor-stream-box" aria-live="polite" style="margin-bottom: 12px;">
         <div class="y1-contributor-stream-line" id="y1-contributor-stream-line">Loading supporters...</div>
+      </div>
+
+      <!-- Download / Direct Install Completion Confirmation Notice -->
+      <div class="y1-donate-completion-notice" id="y1-donate-completion-notice" role="status" aria-live="polite" hidden>
+        <div class="y1-donate-completion-icon" aria-hidden="true">
+          <svg viewBox="0 0 20 20" width="20" height="20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <div class="y1-donate-completion-content">
+          <strong class="y1-donate-completion-title" id="y1-donate-completion-title">Theme downloaded!</strong>
+          <p class="y1-donate-completion-text" id="y1-donate-completion-text">Your theme has been downloaded! If you found the Themes Gallery helpful, then it'd be really appreciated if you made a donation via one of the methods below.</p>
+        </div>
       </div>
 
       <!-- Developer Header: Avatar + Headline -->
@@ -526,8 +587,10 @@
     // Keep the modal's donor stream as the only donation display while it is
     // open; the dock appeal is hidden until the modal closes.
     document.body.classList.toggle("y1-donate-panel-open", value && panel === donatePanel);
-    button.setAttribute("aria-expanded", value ? "true" : "false");
-    if (value && closeButton) closeButton.focus();
+    if (button && typeof button.setAttribute === "function") {
+      button.setAttribute("aria-expanded", value ? "true" : "false");
+    }
+    if (value && closeButton && typeof closeButton.focus === "function") closeButton.focus();
     syncBackdrop();
   }
 
@@ -623,21 +686,100 @@
     if (img.complete && img.naturalWidth === 0) useFallback();
   });
 
-  donateOpen.addEventListener("click", function () {
-    var opening = donatePanel.hidden;
-    if (opening) rotateDeveloperAvatar();
+  function openDonatePanel(options) {
+    var noticeBox = document.getElementById("y1-donate-completion-notice");
+    var noticeTitle = document.getElementById("y1-donate-completion-title");
+    var noticeText = document.getElementById("y1-donate-completion-text");
+
+    if (options && (options.action || typeof options === "string" || options.message)) {
+      var action = typeof options === "string" ? options : (options.action || "download");
+      var rawName = options.themeName ? String(options.themeName).trim() : "";
+      var isInstall = action === "install" || action === "direct_install";
+
+      var displayTheme = rawName ? (" \u201c" + rawName + "\u201d") : "";
+      var defaultTitle = isInstall
+        ? (rawName ? "Theme" + displayTheme + " installed!" : "Theme installed!")
+        : (rawName ? "Theme" + displayTheme + " downloaded!" : "Theme downloaded!");
+
+      var defaultText = isInstall
+        ? ((rawName ? "Theme" + displayTheme : "Your theme") + " has been installed to your device! If you found the Themes Gallery helpful, then it'd be really appreciated if you made a donation via one of the methods below.")
+        : ((rawName ? "Theme" + displayTheme : "Your theme") + " has been downloaded! If you found the Themes Gallery helpful, then it'd be really appreciated if you made a donation via one of the methods below.");
+
+      if (noticeTitle) {
+        noticeTitle.textContent = options.title || defaultTitle;
+      }
+      if (noticeText) {
+        noticeText.textContent = options.message || defaultText;
+      }
+
+      if (noticeBox) {
+        noticeBox.hidden = false;
+        noticeBox.style.display = "flex";
+      }
+    } else {
+      if (noticeBox) {
+        noticeBox.hidden = true;
+        noticeBox.style.display = "none";
+      }
+    }
+
+    rotateDeveloperAvatar();
     setPanel(privacyPanel, privacyOpen, false);
-    setPanel(donatePanel, donateOpen, opening, donateClose);
-  });
-  privacyOpen.addEventListener("click", function () {
-    var opening = privacyPanel.hidden;
+    setPanel(donatePanel, donateOpen, true, donateClose);
+  }
+
+  function closeDonatePanel() {
     setPanel(donatePanel, donateOpen, false);
-    if (opening) prefillToggles();
-    setPanel(privacyPanel, privacyOpen, opening, privacyClose);
-  });
-  if (donateClose) donateClose.addEventListener("click", function () { setPanel(donatePanel, donateOpen, false); });
+    var noticeBox = document.getElementById("y1-donate-completion-notice");
+    if (noticeBox) {
+      noticeBox.hidden = true;
+      noticeBox.style.display = "none";
+    }
+  }
+
+  window.openY1DonatePanel = openDonatePanel;
+  window.closeY1DonatePanel = closeDonatePanel;
+
+  if (donateOpen) {
+    donateOpen.addEventListener("click", function () {
+      var opening = donatePanel.hidden;
+      if (opening) {
+        var noticeBox = document.getElementById("y1-donate-completion-notice");
+        if (noticeBox) {
+          noticeBox.hidden = true;
+          noticeBox.style.display = "none";
+        }
+        rotateDeveloperAvatar();
+      }
+      setPanel(privacyPanel, privacyOpen, false);
+      setPanel(donatePanel, donateOpen, opening, donateClose);
+    });
+  }
+  if (privacyOpen) {
+    privacyOpen.addEventListener("click", function () {
+      var opening = privacyPanel.hidden;
+      setPanel(donatePanel, donateOpen, false);
+      if (opening) prefillToggles();
+      setPanel(privacyPanel, privacyOpen, opening, privacyClose);
+    });
+  }
+  if (donateClose) donateClose.addEventListener("click", function () { closeDonatePanel(); });
   if (privacyClose) privacyClose.addEventListener("click", function () { setPanel(privacyPanel, privacyOpen, false); });
   if (privacySave) privacySave.addEventListener("click", saveFromPanel);
+
+  document.addEventListener("y1-close-donate-panel", closeDonatePanel);
+
+  if (window.location.hash === "#donate") {
+    openDonatePanel();
+  }
+
+  if (window._y1PendingDonateOpen) {
+    var pending = window._y1PendingDonateOpen;
+    window._y1PendingDonateOpen = null;
+    setTimeout(function () {
+      openDonatePanel(pending === true ? null : pending);
+    }, 60);
+  }
 
   function setBanner(show) {
     if (!banner) return;

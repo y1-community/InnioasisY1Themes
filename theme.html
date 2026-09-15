@@ -1492,6 +1492,15 @@
                 }
 
                 progressUI.removeAndRestoreButton(buttonNode);
+
+                if (typeof window.openY1DonatePanel === 'function') {
+                    setTimeout(() => {
+                        window.openY1DonatePanel({
+                            action: 'download',
+                            themeName: zipLabel || theme.name || 'theme'
+                        });
+                    }, 400);
+                }
             } catch (err) {
                 console.error('Download failed', err);
                 alert(`Failed to download theme "${zipThemeDisplayName(theme.name, catalogFolder, variantSeg)}": ${err.message || err}`);

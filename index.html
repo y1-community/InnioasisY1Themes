@@ -3531,6 +3531,16 @@
 
                 if (onlyOnDeviceCheckbox && onlyOnDeviceCheckbox.checked) applyFilters();
 
+                const installedThemeName = selectedCombo && selectedCombo.name ? selectedCombo.name : (theme && theme.name ? theme.name : 'theme');
+                if (typeof window.openY1DonatePanel === 'function') {
+                    setTimeout(() => {
+                        window.openY1DonatePanel({
+                            action: 'install',
+                            themeName: installedThemeName
+                        });
+                    }, 400);
+                }
+
             } catch (err) {
                 console.error('Direct install failed', err);
                 alert(`Failed to install theme "${theme && theme.name ? theme.name : 'theme'}": ${err.message || err}`);
@@ -3694,6 +3704,15 @@
 
                 progressUI.removeAndRestoreButton(buttonNode);
                 if (diBtn) diBtn.style.display = '';
+
+                if (typeof window.openY1DonatePanel === 'function') {
+                    setTimeout(() => {
+                        window.openY1DonatePanel({
+                            action: 'download',
+                            themeName: selectedName || (theme && theme.name ? theme.name : 'theme')
+                        });
+                    }, 400);
+                }
 
             } catch (err) {
                 console.error('Download failed', err);

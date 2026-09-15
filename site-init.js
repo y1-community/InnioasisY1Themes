@@ -169,6 +169,15 @@
         void init();
     }
 
+    if (typeof global.openY1DonatePanel !== "function") {
+        global.openY1DonatePanel = function (options) {
+            global._y1PendingDonateOpen = options || true;
+            if (typeof global.y1LoadSupportToolbar === "function") {
+                void global.y1LoadSupportToolbar();
+            }
+        };
+    }
+
     global.y1LoadSupportToolbar = loadSupportToolbar;
     global.y1LoadThemeAnalytics = loadThemeAnalyticsOnce;
 })(typeof window !== "undefined" ? window : globalThis);
