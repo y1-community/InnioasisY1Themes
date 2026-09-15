@@ -1,6 +1,16 @@
 {
     "themes": [
         {
+            "name": "1a Zelda",
+            "folder": "1a_Zelda",
+            "author": "a",
+            "description": "The legend of zelda theme with functioning font (looks cleaner on device). Mostly MM",
+            "screenshot": "./1a_Zelda/cover_Themeless.png",
+            "sourceType": "internal",
+            "sortName": "1a zelda",
+            "searchText": "1a zelda the legend of zelda theme with functioning font (looks cleaner on device). mostly mm a 1a_zelda"
+        },
+        {
             "name": "2000",
             "folder": "2000",
             "author": "metallic madness",
