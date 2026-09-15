@@ -61,51 +61,12 @@
     color: #eaf0ff;
 }
 
-/* Bottom-left so the support toolbar (bottom-right) never covers privacy controls. */
+/* Redundant floating button disabled in favor of consolidated toolbar privacy button */
 #y1-privacy-settings-btn {
-    position: fixed;
-    left: 14px;
-    right: auto;
-    bottom: 14px;
-    z-index: 10002;
-    min-width: 44px;
-    height: 44px;
-    padding: 0 12px;
-    border-radius: 22px;
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    background: rgba(22, 26, 36, 0.97);
-    color: #eaf0ff;
-    cursor: pointer;
-    display: inline-flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
-    font: 600 0.78rem/1 Inter, system-ui, Segoe UI, sans-serif;
+    display: none !important;
 }
 
-#y1-privacy-settings-btn .y1-privacy-settings-icon {
-    width: 18px;
-    height: 18px;
-    flex-shrink: 0;
-}
-
-#y1-privacy-settings-btn .y1-privacy-settings-label {
-    white-space: nowrap;
-}
-
-#y1-privacy-settings-btn:hover {
-    color: #fff;
-    border-color: rgba(255, 255, 255, 0.28);
-}
-
-body.y1-consent-banner-open #y1-privacy-settings-btn {
-    bottom: calc(72px + env(safe-area-inset-bottom, 0px));
-}
-
-#y1-privacy-panel {
+#y1-privacy-panel:not(#support-toolbar-container *) {
     position: fixed;
     left: 14px;
     right: auto;

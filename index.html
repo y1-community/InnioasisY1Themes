@@ -1260,6 +1260,11 @@
         function compareThemeTitles(a, b, direction) {
             const keyA = themeTitleSortKey(a);
             const keyB = themeTitleSortKey(b);
+            const isLetterA = /^\p{L}/u.test(keyA);
+            const isLetterB = /^\p{L}/u.test(keyB);
+            if (isLetterA !== isLetterB) {
+                return isLetterA ? -1 : 1;
+            }
             let cmp = themeTitleCollator.compare(keyA, keyB);
             if (cmp === 0) {
                 cmp = themeTitleCollator.compare(String(a || '').trim(), String(b || '').trim());

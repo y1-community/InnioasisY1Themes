@@ -1969,3 +1969,14 @@ body.site-dock-mode:has(#y1-site-dock-privacy-slot #y1-privacy-settings-btn) > #
         flex-basis: 72px;
     }
 }
+
+/* Redundant floating button disabled in favor of consolidated toolbar privacy button */
+#y1-privacy-settings-btn {
+    display: none !important;
+}
+
+/* Ensure no contributor stream box or goal box ever shows inside the donation modal / completion screen */
+#support-toolbar-container .y1-contributor-stream-box,
+.y1-donate-panel .y1-contributor-stream-box {
+    display: none !important;
+}

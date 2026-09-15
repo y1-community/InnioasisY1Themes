@@ -202,7 +202,7 @@
   <div class="y1-consent-banner" id="y1-consent-banner" role="region" aria-live="polite" aria-label="Privacy choices" hidden>
     <div class="y1-consent-banner-copy">
       <p class="y1-consent-banner-title"><strong>No cookies. No fingerprinting.</strong></p>
-      <p class="y1-consent-banner-text">Innioasis.app — the site for Updater Community Edition — does not use cookies or browser fingerprinting. We remember your site theme and text size, and only the preferences you allow.</p>
+      <p class="y1-consent-banner-text">Theme view, download, and rating totals are public for everyone. By default we include your visits, downloads, and ratings in those totals. Use Privacy in the toolbar to customize anytime.</p>
     </div>
     <div class="y1-consent-banner-actions">
       <button type="button" class="y1-consent-btn y1-consent-btn--accept" data-consent-accept>Accept all</button>
@@ -212,11 +212,6 @@
   </div>
   <div class="y1-site-dock-wrap">
     <div class="y1-donate-panel" id="y1-donate-panel" role="dialog" aria-modal="false" aria-labelledby="y1-donate-title" hidden>
-      <!-- Top Live Donors & Goal Stream Box (Hidden on donations / completion screen per user request) -->
-      <div class="y1-contributor-stream-box" id="y1-contributor-stream-box" aria-live="polite" style="display: none !important;" hidden>
-        <div class="y1-contributor-stream-line" id="y1-contributor-stream-line"></div>
-      </div>
-
       <!-- Download / Direct Install Completion Confirmation Notice -->
       <div class="y1-donate-completion-notice" id="y1-donate-completion-notice" role="status" aria-live="polite" hidden>
         <div class="y1-donate-completion-icon" aria-hidden="true">
@@ -303,24 +298,28 @@
     <div class="y1-privacy-panel" id="y1-privacy-panel" role="dialog" aria-modal="false" aria-labelledby="y1-privacy-title" hidden>
       <div class="y1-donate-panel-header">
         <div>
-          <p class="y1-donate-panel-title">Your privacy on Innioasis.app</p>
+          <p class="y1-donate-panel-title">Privacy choices</p>
           <h2 class="y1-donate-panel-hook" id="y1-privacy-title">No cookies. No fingerprinting.</h2>
         </div>
         <button class="y1-donate-close" type="button" data-privacy-close aria-label="Close privacy notice">×</button>
       </div>
       <div class="y1-privacy-body">
-        <p><strong data-i18n-skip>Innioasis.app — the site for Updater Community Edition — does not use cookies and does not do any browser fingerprinting.</strong> There are no trackers, no analytics beacons, and no third-party ads.</p>
-        <div class="y1-privacy-options" aria-label="What the site may remember">
+        <p><strong data-i18n-skip>Themes Gallery does not use cookies and does not do any browser fingerprinting.</strong> Aggregate theme view, download, and rating totals are public for everyone. You can customize what data you contribute to those public totals below.</p>
+        <div class="y1-privacy-options" aria-label="Privacy and ratings choices">
           <label class="y1-privacy-option">
-            <span class="y1-privacy-option-label"><strong>Remember my "was this useful?" answers</strong><small>Asked on the guide pages.</small></span>
-            <input type="checkbox" class="y1-privacy-toggle" data-privacy-feedback>
+            <span class="y1-privacy-option-label"><strong>Contribute my page views &amp; download counts</strong><small>Included in public community totals for theme popularity.</small></span>
+            <input type="checkbox" class="y1-privacy-toggle" id="y1-opt-analytics" data-privacy-analytics checked>
           </label>
           <label class="y1-privacy-option">
-            <span class="y1-privacy-option-label"><strong>Remember my nightly-builds choice</strong><small>Used on the software directory.</small></span>
-            <input type="checkbox" class="y1-privacy-toggle" data-privacy-nightly>
+            <span class="y1-privacy-option-label"><strong>Show star ratings from other visitors</strong><small>Displays aggregate ratings and review counts on themes.</small></span>
+            <input type="checkbox" class="y1-privacy-toggle" id="y1-opt-ratings-view" data-privacy-ratings-view checked>
+          </label>
+          <label class="y1-privacy-option">
+            <span class="y1-privacy-option-label"><strong>Contribute my theme ratings</strong><small>Allows submitting your reactions and ratings to themes.</small></span>
+            <input type="checkbox" class="y1-privacy-toggle" id="y1-opt-ratings-submit" data-privacy-ratings-submit checked>
           </label>
         </div>
-        <p class="y1-privacy-note">Your site theme and text size are always remembered — they are the look and readability you chose. Links to GitHub, YouTube, Discord, Ko-fi, PayPal, Revolut, and Patreon open those sites' own pages, which have their own policies.</p>
+        <p class="y1-privacy-note">Your site theme and text size preferences are remembered locally in your browser. Links to GitHub, YouTube, Discord, Ko-fi, PayPal, Revolut, and Patreon open those sites' own pages, which have their own policies.</p>
       </div>
       <div class="y1-privacy-actions">
         <button type="button" class="y1-privacy-save" data-privacy-save>Save choices</button>
@@ -394,8 +393,9 @@
   var privacyClose = document.querySelector("[data-privacy-close]");
   var backdrop = document.querySelector("[data-dock-backdrop]");
   var banner = document.getElementById("y1-consent-banner");
-  var feedbackToggle = document.querySelector("[data-privacy-feedback]");
-  var nightlyToggle = document.querySelector("[data-privacy-nightly]");
+  var analyticsToggle = document.getElementById("y1-opt-analytics") || document.querySelector("[data-privacy-analytics]");
+  var ratingsViewToggle = document.getElementById("y1-opt-ratings-view") || document.querySelector("[data-privacy-ratings-view]");
+  var ratingsSubmitToggle = document.getElementById("y1-opt-ratings-submit") || document.querySelector("[data-privacy-ratings-submit]");
   var privacySave = document.querySelector("[data-privacy-save]");
   var cryptoToggle = document.querySelector("[data-crypto-toggle]");
   var cryptoGrid = document.getElementById("y1-crypto-panel");
@@ -568,7 +568,14 @@
   if (!donatePanel || !privacyPanel || !donateOpen || !privacyOpen) return;
 
   function hasDecided() {
-    return !!(consent && consent.hasDecided());
+    if (window.ThemeAnalytics && typeof window.ThemeAnalytics.loadConsent === "function") {
+      return !!window.ThemeAnalytics.loadConsent().decided;
+    }
+    try {
+      var raw = localStorage.getItem("y1-theme-consent-v2") || localStorage.getItem("y1-theme-consent-v1");
+      if (raw) return !!JSON.parse(raw).decided;
+    } catch (_) {}
+    return !!(consent && consent.hasDecided && consent.hasDecided());
   }
 
   function syncBackdrop() {
@@ -620,17 +627,45 @@
   }
 
   function prefillToggles() {
-    var prefs = (consent && consent.read) ? consent.read() : null;
-    if (feedbackToggle) feedbackToggle.checked = prefs ? prefs.feedback : false;
-    if (nightlyToggle) nightlyToggle.checked = prefs ? prefs.nightly : false;
+    analyticsToggle = document.getElementById("y1-opt-analytics") || document.querySelector("[data-privacy-analytics]");
+    ratingsViewToggle = document.getElementById("y1-opt-ratings-view") || document.querySelector("[data-privacy-ratings-view]");
+    ratingsSubmitToggle = document.getElementById("y1-opt-ratings-submit") || document.querySelector("[data-privacy-ratings-submit]");
+
+    var c = null;
+    if (window.ThemeAnalytics && typeof window.ThemeAnalytics.loadConsent === "function") {
+      c = window.ThemeAnalytics.loadConsent();
+    } else {
+      try {
+        var raw = localStorage.getItem("y1-theme-consent-v2") || localStorage.getItem("y1-theme-consent-v1");
+        if (raw) c = JSON.parse(raw);
+      } catch (_) {}
+    }
+    if (analyticsToggle) analyticsToggle.checked = c ? c.analytics !== false : true;
+    if (ratingsViewToggle) ratingsViewToggle.checked = c ? c.ratingsView !== false : true;
+    if (ratingsSubmitToggle) ratingsSubmitToggle.checked = c ? c.ratingsSubmit !== false : true;
   }
 
   function saveFromPanel() {
-    if (consent && consent.save) {
-      consent.save({
-        feedback: feedbackToggle ? feedbackToggle.checked : true,
-        nightly: nightlyToggle ? nightlyToggle.checked : true
-      });
+    analyticsToggle = document.getElementById("y1-opt-analytics") || document.querySelector("[data-privacy-analytics]");
+    ratingsViewToggle = document.getElementById("y1-opt-ratings-view") || document.querySelector("[data-privacy-ratings-view]");
+    ratingsSubmitToggle = document.getElementById("y1-opt-ratings-submit") || document.querySelector("[data-privacy-ratings-submit]");
+
+    var newConsent = {
+      decided: true,
+      analytics: analyticsToggle ? !!analyticsToggle.checked : true,
+      ratingsView: ratingsViewToggle ? !!ratingsViewToggle.checked : true,
+      ratingsSubmit: ratingsSubmitToggle ? !!ratingsSubmitToggle.checked : true
+    };
+
+    if (window.ThemeAnalytics && typeof window.ThemeAnalytics.saveConsent === "function") {
+      void window.ThemeAnalytics.saveConsent(newConsent);
+    } else {
+      try {
+        localStorage.setItem("y1-theme-consent-v2", JSON.stringify(newConsent));
+      } catch (_) {}
+      try {
+        window.dispatchEvent(new CustomEvent("y1-consent-changed"));
+      } catch (_) {}
     }
     setPanel(privacyPanel, privacyOpen, false, null);
     if (banner && !banner.hidden) setBanner(false);
@@ -862,11 +897,23 @@
   var essentialOnly = document.querySelector("[data-consent-essential]");
   var manage = document.querySelector("[data-consent-manage]");
   if (acceptAll) acceptAll.addEventListener("click", function () {
-    if (consent && consent.save) consent.save({ feedback: true, nightly: true });
+    var c = { decided: true, analytics: true, ratingsView: true, ratingsSubmit: true };
+    if (window.ThemeAnalytics && typeof window.ThemeAnalytics.saveConsent === "function") {
+      void window.ThemeAnalytics.saveConsent(c);
+    } else {
+      try { localStorage.setItem("y1-theme-consent-v2", JSON.stringify(c)); } catch (_) {}
+      try { window.dispatchEvent(new CustomEvent("y1-consent-changed")); } catch (_) {}
+    }
     setBanner(false);
   });
   if (essentialOnly) essentialOnly.addEventListener("click", function () {
-    if (consent && consent.save) consent.save({ feedback: false, nightly: false });
+    var c = { decided: true, analytics: false, ratingsView: true, ratingsSubmit: false };
+    if (window.ThemeAnalytics && typeof window.ThemeAnalytics.saveConsent === "function") {
+      void window.ThemeAnalytics.saveConsent(c);
+    } else {
+      try { localStorage.setItem("y1-theme-consent-v2", JSON.stringify(c)); } catch (_) {}
+      try { window.dispatchEvent(new CustomEvent("y1-consent-changed")); } catch (_) {}
+    }
     setBanner(false);
   });
   if (manage) manage.addEventListener("click", function () {
@@ -1192,92 +1239,9 @@
     if (legRaised) legRaised.textContent = goalMsg;
     if (legRem) legRem.textContent = "";
 
-    var goalCardHTML = '<div class="y1-goal-header" style="margin-bottom: 4px;">' +
-      '<span class="y1-goal-stats" style="font-size: 0.76rem; font-weight: bold;">' + goalMsg + '</span>' +
-      '</div>' +
-      '<div class="y1-goal-bar-wrap" role="progressbar" style="height: 6px; border-radius: 4px; overflow: hidden; background: rgba(156,163,175,0.2); border: 1px solid rgba(156,163,175,0.35);">' +
-      '<div class="y1-goal-segment--raised" data-target-width="' + raisedPct + '%" style="width: 0%; height: 100%; background: #10b981; border-radius: 3px; transition: width 0.85s cubic-bezier(0.16, 1, 0.3, 1);"></div>' +
-      '</div>';
-
-    /* Populate Single-Line Rotating Contributor Stream inside panel */
-    var streamLine = document.getElementById("y1-contributor-stream-line");
-    var donorsCountEl = document.getElementById("y1-donors-count");
-    if (donorsCountEl) {
-      var receivedCount = donations.filter(function (donation) {
-        var name = (donation.name || "").trim().toLowerCase();
-        return donation.amount > 0 && name !== "innioasis" && name.indexOf("innioasis") !== 0;
-      }).length;
-      donorsCountEl.textContent = receivedCount + " contributions";
-    }
-
-    var rawDonorLines = [];
-    var topSupporterKeys = {};
-    getTopSupporterGroups(donations).forEach(function (group) {
-      topSupporterKeys[group.name.toLowerCase()] = true;
-      var items = group.items;
-      var lastItem = items[items.length - 1];
-      var methods = Array.from(new Set(items.map(function (item) { return item.method; })));
-      rawDonorLines.push(contributorLabel(lastItem.name, true) + " " + buildCreditHTML(lastItem, true, group.total, methods.length));
-    });
-
-    donations.slice().sort(function (a, b) { return (b.dt ? b.dt.getTime() : 0) - (a.dt ? a.dt.getTime() : 0); }).forEach(function (item) {
-      // Only received community donations belong in this stream. Outgoing
-      // project payments must never reach the credit formatter.
-      if (!isReceivedCommunityDonation(item)) return;
-      // Skip already summarised Top Supporters from the ticker.
-      var cleanItemName = cleanSupporterName(item.name);
-      var isAnon = isAnonymous(cleanItemName);
-      var key = cleanItemName.toLowerCase();
-      if (!isAnon && topSupporterKeys[key]) return;
-      rawDonorLines.push(buildCreditHTML(item, false, 0, 1, false));
-    });
-
-    // The ranked sponsor table is intentionally separate from the live ticker.
-    // Shuffle this sampler so the same Top Supporter does not always lead.
-    for (var rawShuffleI = rawDonorLines.length - 1; rawShuffleI > 0; rawShuffleI--) {
-      var rawShuffleJ = Math.floor(Math.random() * (rawShuffleI + 1));
-      var rawShuffleValue = rawDonorLines[rawShuffleI];
-      rawDonorLines[rawShuffleI] = rawDonorLines[rawShuffleJ];
-      rawDonorLines[rawShuffleJ] = rawShuffleValue;
-    }
-
-    // Show the goal once, then three donation-from / donation-to lines before
-    // showing the goal again. This keeps the appeal visible without rushing the
-    // human stories past the reader.
-    var streamAlternatingItems = [goalCardHTML];
-    rawDonorLines.forEach(function (dLine, index) {
-      streamAlternatingItems.push(dLine);
-      if ((index + 1) % 3 === 0 && index + 1 < rawDonorLines.length) {
-        streamAlternatingItems.push(goalCardHTML);
-      }
-    });
-
-    if (streamLine && streamAlternatingItems.length > 0) {
-      if (window._y1StreamInterval) clearInterval(window._y1StreamInterval);
-      streamLine.innerHTML = streamAlternatingItems[0];
-      var initBar = streamLine.querySelector(".y1-goal-segment--raised");
-      if (initBar) {
-        setTimeout(function () {
-          initBar.style.width = initBar.getAttribute("data-target-width") || "0%";
-        }, 100);
-      }
-      var streamIdx = 0;
-      window._y1StreamInterval = setInterval(function () {
-        streamIdx = (streamIdx + 1) % streamAlternatingItems.length;
-        streamLine.style.opacity = "0";
-        streamLine.style.transform = "translateY(-4px)";
-        setTimeout(function () {
-          streamLine.innerHTML = streamAlternatingItems[streamIdx];
-          var bar = streamLine.querySelector(".y1-goal-segment--raised");
-          if (bar) {
-            requestAnimationFrame(function () {
-              bar.style.width = bar.getAttribute("data-target-width") || "0%";
-            });
-          }
-          streamLine.style.opacity = "1";
-          streamLine.style.transform = "translateY(0)";
-        }, 550);
-      }, 6500);
+    if (window._y1StreamInterval) {
+      clearInterval(window._y1StreamInterval);
+      window._y1StreamInterval = null;
     }
 
     /* Start rotating dock ticker (alternates between Twitch/Wiki-style Goal Bar and single/multi donor lines) */

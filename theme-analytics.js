@@ -532,21 +532,9 @@
 
     function mountPrivacyButton() {
         const btn = document.getElementById("y1-privacy-settings-btn");
-        if (!btn) return;
-        const dockSlot = document.getElementById("y1-site-dock-privacy-slot");
-        const heroSlot = document.getElementById("y1-hero-privacy-slot");
-        if (heroSlot && btn.parentElement === heroSlot && dockSlot) {
-            dockSlot.appendChild(btn);
-        } else if (dockSlot && btn.parentElement !== dockSlot) {
-            dockSlot.appendChild(btn);
-        } else if (!dockSlot) {
-            btn.style.display = "inline-flex";
-        }
-        btn.style.display = "inline-flex";
-        btn.style.visibility = "visible";
-        btn.style.marginLeft = "";
-        if (document.getElementById("y1-site-dock") || dockSlot) {
-            document.body.classList.add("site-dock-mode");
+        if (btn) {
+            btn.style.display = "none";
+            btn.remove();
         }
     }
 
@@ -555,56 +543,45 @@
     }
 
     function ensureConsentDom() {
-        if (document.getElementById("y1-privacy-settings-btn")) {
-            mountPrivacyToDock();
-            return;
+        const existingBtn = document.getElementById("y1-privacy-settings-btn");
+        if (existingBtn) existingBtn.remove();
+
+        const hasToolbar = !!document.getElementById("support-toolbar-container") ||
+                           !!document.querySelector("[data-privacy-open]") ||
+                           !!document.getElementById("support-toolbar-slot");
+
+        let banner = document.getElementById("y1-consent-banner");
+        let panel = document.getElementById("y1-privacy-panel");
+
+        if (!banner && !hasToolbar) {
+            banner = document.createElement("div");
+            banner.id = "y1-consent-banner";
+            banner.setAttribute("role", "dialog");
+            banner.setAttribute("aria-label", "Privacy preferences");
+            banner.innerHTML =
+                '<div class="y1-consent-inner">' +
+                "<p>Theme view, download, and rating <strong>totals are public</strong> for everyone. " +
+                "By default we <strong>do</strong> include your visits, downloads, and ratings in those totals. " +
+                "Use <strong>Privacy</strong> in the bottom dock to opt out anytime.</p>" +
+                '<div class="y1-consent-actions">' +
+                '<button type="button" class="y1-consent-customize">Customize</button>' +
+                '<button type="button" class="y1-consent-accept">Continue</button>' +
+                "</div></div>";
+            document.body.appendChild(banner);
         }
 
-        const banner = document.createElement("div");
-        banner.id = "y1-consent-banner";
-        banner.setAttribute("role", "dialog");
-        banner.setAttribute("aria-label", "Privacy preferences");
-        banner.innerHTML =
-            '<div class="y1-consent-inner">' +
-            "<p>Theme view, download, and rating <strong>totals are public</strong> for everyone. " +
-            "By default we <strong>do</strong> include your visits, downloads, and ratings in those totals. " +
-            "Use <strong>Privacy</strong> in the bottom dock to opt out anytime.</p>" +
-            '<div class="y1-consent-actions">' +
-            '<button type="button" class="y1-consent-customize">Customize</button>' +
-            '<button type="button" class="y1-consent-accept">Continue</button>' +
-            "</div></div>";
-
-        const settingsBtn = document.createElement("button");
-        settingsBtn.type = "button";
-        settingsBtn.id = "y1-privacy-settings-btn";
-        settingsBtn.title = "Privacy & analytics settings";
-        settingsBtn.setAttribute("aria-label", "Privacy and analytics settings");
-        settingsBtn.innerHTML =
-            PRIVACY_GEAR_SVG + '<span class="y1-privacy-settings-label">Privacy</span>';
-
-        const panel = document.createElement("div");
-        panel.id = "y1-privacy-panel";
-        panel.innerHTML =
-            "<h3>Privacy &amp; ratings</h3>" +
-            '<p class="y1-privacy-hint">Public totals are always visible. Uncheck a box to stop contributing that data.</p>' +
-            '<label><input type="checkbox" id="y1-opt-analytics" checked /> Contribute my page views &amp; download counts</label>' +
-            '<label><input type="checkbox" id="y1-opt-ratings-view" checked /> Show star ratings from other visitors</label>' +
-            '<label><input type="checkbox" id="y1-opt-ratings-submit" checked /> Contribute my theme ratings</label>' +
-            '<button type="button" class="y1-privacy-save">Save preferences</button>';
-
-        document.body.appendChild(banner);
-        document.body.appendChild(panel);
-        const dockSlot = document.getElementById("y1-site-dock-privacy-slot");
-        if (dockSlot) {
-            dockSlot.appendChild(settingsBtn);
-            document.body.classList.add("site-dock-mode");
-        } else {
-            document.body.appendChild(settingsBtn);
-            settingsBtn.style.display = "inline-flex";
+        if (!panel && !hasToolbar) {
+            panel = document.createElement("div");
+            panel.id = "y1-privacy-panel";
+            panel.innerHTML =
+                "<h3>Privacy &amp; ratings</h3>" +
+                '<p class="y1-privacy-hint">Public totals are always visible. Uncheck a box to stop contributing that data.</p>' +
+                '<label><input type="checkbox" id="y1-opt-analytics" checked /> Contribute my page views &amp; download counts</label>' +
+                '<label><input type="checkbox" id="y1-opt-ratings-view" checked /> Show star ratings from other visitors</label>' +
+                '<label><input type="checkbox" id="y1-opt-ratings-submit" checked /> Contribute my theme ratings</label>' +
+                '<button type="button" class="y1-privacy-save">Save preferences</button>';
+            document.body.appendChild(panel);
         }
-        mountPrivacyButton();
-        window.addEventListener("y1-dock-slot-ready", mountPrivacyButton);
-        window.addEventListener("DOMContentLoaded", mountPrivacyButton);
 
         const syncPanelFromConsent = () => {
             const c = loadConsent();
@@ -617,74 +594,64 @@
         };
 
         const applyBannerVisibility = () => {
+            const b = document.getElementById("y1-consent-banner");
+            if (!b) return;
             const c = loadConsent();
             if (!c.decided) {
-                banner.classList.add("y1-consent--visible");
+                b.classList.add("y1-consent--visible");
+                b.hidden = false;
                 document.body.classList.add("y1-consent-banner-open");
             } else {
-                banner.classList.remove("y1-consent--visible");
+                b.classList.remove("y1-consent--visible");
+                b.hidden = true;
                 document.body.classList.remove("y1-consent-banner-open");
             }
         };
 
-        banner.querySelector(".y1-consent-accept").addEventListener("click", () => {
-            void saveConsent({ ...DEFAULT_ACCEPT_CONSENT }).then(() => {
-                applyBannerVisibility();
-                global.dispatchEvent(new CustomEvent("y1-consent-changed"));
-            });
-        });
-
-        banner.querySelector(".y1-consent-customize").addEventListener("click", () => {
-            syncPanelFromConsent();
-            panel.classList.add("y1-privacy-panel--open");
-        });
-
-        settingsBtn.addEventListener("click", () => {
-            syncPanelFromConsent();
-            const opening = !panel.classList.contains("y1-privacy-panel--open");
-            if (opening) {
-                try {
-                    document.dispatchEvent(new CustomEvent("y1-close-donate-panel"));
-                } catch (_) {}
-                const donatePanel = document.getElementById("y1-donate-panel");
-                const donateToggle = document.getElementById("donate-toggle");
-                if (donatePanel) {
-                    donatePanel.classList.remove("is-open");
-                    donatePanel.setAttribute("aria-hidden", "true");
-                }
-                if (donateToggle) donateToggle.setAttribute("aria-expanded", "false");
+        if (banner) {
+            const acceptBtn = banner.querySelector(".y1-consent-accept");
+            if (acceptBtn && !acceptBtn._hasConsentListener) {
+                acceptBtn._hasConsentListener = true;
+                acceptBtn.addEventListener("click", () => {
+                    void saveConsent({ ...DEFAULT_ACCEPT_CONSENT }).then(() => {
+                        applyBannerVisibility();
+                        global.dispatchEvent(new CustomEvent("y1-consent-changed"));
+                    });
+                });
             }
-            panel.classList.toggle("y1-privacy-panel--open");
-            if (opening && !loadConsent().decided) {
-                void hydrateConsentFromServer().then(syncPanelFromConsent);
+
+            const customizeBtn = banner.querySelector(".y1-consent-customize");
+            if (customizeBtn && !customizeBtn._hasConsentListener) {
+                customizeBtn._hasConsentListener = true;
+                customizeBtn.addEventListener("click", () => {
+                    syncPanelFromConsent();
+                    const p = document.getElementById("y1-privacy-panel");
+                    if (p) p.classList.add("y1-privacy-panel--open");
+                });
             }
-        });
+        }
+
+        if (panel) {
+            const saveBtn = panel.querySelector(".y1-privacy-save");
+            if (saveBtn && !saveBtn._hasConsentListener) {
+                saveBtn._hasConsentListener = true;
+                saveBtn.addEventListener("click", () => {
+                    void saveConsent({
+                        analytics: !!document.getElementById("y1-opt-analytics")?.checked,
+                        ratingsView: !!document.getElementById("y1-opt-ratings-view")?.checked,
+                        ratingsSubmit: !!document.getElementById("y1-opt-ratings-submit")?.checked,
+                    }).then(() => {
+                        panel.classList.remove("y1-privacy-panel--open");
+                        applyBannerVisibility();
+                        global.dispatchEvent(new CustomEvent("y1-consent-changed"));
+                    });
+                });
+            }
+        }
 
         document.addEventListener("y1-close-privacy-panel", () => {
-            panel.classList.remove("y1-privacy-panel--open");
-        });
-
-        panel.querySelector(".y1-privacy-save").addEventListener("click", () => {
-            void saveConsent({
-                analytics: !!document.getElementById("y1-opt-analytics")?.checked,
-                ratingsView: !!document.getElementById("y1-opt-ratings-view")?.checked,
-                ratingsSubmit: !!document.getElementById("y1-opt-ratings-submit")?.checked,
-            }).then(() => {
-                panel.classList.remove("y1-privacy-panel--open");
-                applyBannerVisibility();
-                global.dispatchEvent(new CustomEvent("y1-consent-changed"));
-            });
-        });
-
-        document.addEventListener("click", (ev) => {
-            if (
-                panel.classList.contains("y1-privacy-panel--open") &&
-                !panel.contains(ev.target) &&
-                ev.target !== settingsBtn &&
-                !settingsBtn.contains(ev.target)
-            ) {
-                panel.classList.remove("y1-privacy-panel--open");
-            }
+            const p = document.getElementById("y1-privacy-panel");
+            if (p) p.classList.remove("y1-privacy-panel--open");
         });
 
         applyBannerVisibility();
@@ -748,6 +715,7 @@
     global.ThemeAnalytics = {
         normalizeThemeKey,
         loadConsent,
+        saveConsent,
         trackPageView,
         trackZipDownload,
         trackDirectInstall,
