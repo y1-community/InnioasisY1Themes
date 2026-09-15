@@ -3,12 +3,10 @@
   /* Keep the injected donation modal self-contained when a cached page has an
      older site-toolbar.css. */
   #support-toolbar-container .y1-contributor-stream-box {
-    box-sizing: border-box;
-    width: 100%;
+    display: none !important;
   }
   #support-toolbar-container .y1-contributor-stream-line {
-    flex: 1 1 auto;
-    width: 100%;
+    display: none !important;
   }
   body.y1-donate-panel-open .y1-dock-secondary-line,
   body.y1-donate-panel-open .y1-dock-goal-layer {
@@ -25,6 +23,26 @@
   }
   #support-toolbar-container .y1-dock-goal-layer {
     display: none !important;
+  }
+  #support-toolbar-container .y1-developer-profile-wrap {
+    text-align: left !important;
+  }
+  #support-toolbar-container .y1-developer-avatar {
+    width: 58px !important;
+    height: 58px !important;
+    min-width: 58px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    flex-shrink: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 2px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+  }
+  #support-toolbar-container .y1-donate-panel-hook {
+    text-align: left !important;
+    margin: 0 0 3px 0 !important;
+    max-width: none !important;
   }
   #support-toolbar-container .y1-donate-grid {
     display: grid;
@@ -194,9 +212,9 @@
   </div>
   <div class="y1-site-dock-wrap">
     <div class="y1-donate-panel" id="y1-donate-panel" role="dialog" aria-modal="false" aria-labelledby="y1-donate-title" hidden>
-      <!-- Top Live Donors & Goal Stream Box -->
-      <div class="y1-contributor-stream-box" id="y1-contributor-stream-box" aria-live="polite" style="margin-bottom: 12px;">
-        <div class="y1-contributor-stream-line" id="y1-contributor-stream-line">Loading supporters...</div>
+      <!-- Top Live Donors & Goal Stream Box (Hidden on donations / completion screen per user request) -->
+      <div class="y1-contributor-stream-box" id="y1-contributor-stream-box" aria-live="polite" style="display: none !important;" hidden>
+        <div class="y1-contributor-stream-line" id="y1-contributor-stream-line"></div>
       </div>
 
       <!-- Download / Direct Install Completion Confirmation Notice -->
@@ -213,18 +231,18 @@
       </div>
 
       <!-- Developer Header: Avatar + Headline -->
-      <div class="y1-developer-profile-wrap" style="margin: 4px 0 10px; display: flex; align-items: center; justify-content: space-between;">
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <img class="y1-developer-avatar" id="y1-developer-avatar-img" src="/assets/developer.png?v=20260831" loading="eager" decoding="async" onerror="if(!this.dataset.t1){this.dataset.t1='1';this.src='/developer.png';}else if(!this.dataset.t2){this.dataset.t2='1';this.src='/assets/developer.png';}else{this.src='https://innioasis.app/mtkclient/gui/images/developer.png';this.onerror=null;}" alt="Ryan (Developer)" width="72" height="72" style="border: 0; display: block; object-fit: contain;">
-          <div>
-            <h2 class="y1-donate-panel-hook" id="y1-donate-title" style="margin: 0; font-size: 1.5rem;">It takes <span>you</span>.</h2>
-            <small style="color: var(--lumen-muted, #9aa3b5); font-weight: 600;">Our projects rely on donations from the community</small>
+      <div class="y1-developer-profile-wrap" style="margin: 0 0 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1;">
+          <img class="y1-developer-avatar" id="y1-developer-avatar-img" src="/assets/developer.png?v=20260831" loading="eager" decoding="async" onerror="if(!this.dataset.t1){this.dataset.t1='1';this.src='/developer.png';}else if(!this.dataset.t2){this.dataset.t2='1';this.src='/assets/developer.png';}else{this.src='https://innioasis.app/mtkclient/gui/images/developer.png';this.onerror=null;}" alt="Ryan (Developer)" width="58" height="58" style="width: 58px; height: 58px; min-width: 58px; border-radius: 50%; object-fit: cover; flex-shrink: 0; display: block; border: 2px solid rgba(255, 255, 255, 0.2); margin: 0; padding: 0;">
+          <div style="display: flex; flex-direction: column; justify-content: center; min-width: 0; text-align: left;">
+            <h2 class="y1-donate-panel-hook" id="y1-donate-title" style="margin: 0 0 3px 0; font-size: 1.55rem; line-height: 1.15; font-weight: 700; max-width: none; text-align: left !important;">It takes <span>you</span>.</h2>
+            <small id="y1-donate-subhead" style="color: var(--lumen-muted, #9aa3b5); font-weight: 600; font-size: 0.85rem; line-height: 1.3; text-align: left; display: block; margin: 0;">Our projects rely on donations from the community</small>
           </div>
         </div>
-        <button class="y1-donate-close" type="button" data-donate-close aria-label="Close donation options" style="position: static;">×</button>
+        <button class="y1-donate-close" type="button" data-donate-close aria-label="Close donation options" style="position: static; flex-shrink: 0; margin-left: 8px;">×</button>
       </div>
 
-      <p class="y1-donate-panel-intro" id="y1-donate-panel-intro" style="margin-top: 4px;">Hey! I'm Ryan, the developer behind <a href="https://innioasis.app" style="color: inherit; text-decoration: underline;">Innioasis Updater</a>, the <a href="https://innioasis.app/firmware.html" style="color: inherit; text-decoration: underline;">Community Firmware Archive</a>, and the <a href="https://themes.innioasis.app" style="color: inherit; text-decoration: underline;">Themes Gallery</a>. I pay for these hobby projects out of my own pocket with my own money to keep them free and accessible for everyone. Server hosting, firmware archive storage, domain renewals, and ongoing maintenance cost around $200 each month, so any support you can give is truly appreciated to help cover running costs!</p>
+      <p class="y1-donate-panel-intro" id="y1-donate-panel-intro" style="margin-top: 6px; text-align: left;">Hey, I'm Ryan. I created the Themes Gallery, <a href="https://innioasis.app" style="color: inherit; text-decoration: underline;" target="_blank" rel="noopener noreferrer">Updater CE</a> and the <a href="https://innioasis.app/firmware.html" style="color: inherit; text-decoration: underline;" target="_blank" rel="noopener noreferrer">Community Firmware archive</a> to ensure our devices always have access to working software, custom ROMs, and themes without paywalls or ads. I pay for the servers and domain costs myself each month.<br><br>If you've found the software useful, chipping in helps cover our monthly costs and keeps these archives preserved for everyone.</p>
 
       <!-- Quick Method Buttons -->
       <div class="y1-donate-grid">
@@ -562,15 +580,15 @@
     var r = Math.random();
     if (r < 0.40) {
       var familyChoices = [
-        "Hey! I'm Ryan, the developer behind <a href=\"https://innioasis.app\" style=\"color: inherit; text-decoration: underline;\">Innioasis Updater</a>, the <a href=\"https://innioasis.app/firmware.html\" style=\"color: inherit; text-decoration: underline;\">Community Firmware Archive</a>, and the <a href=\"https://themes.innioasis.app\" style=\"color: inherit; text-decoration: underline;\">Themes Gallery</a>. I pay for server hosting, firmware archive storage, and domain renewals out of my own pocket to keep everything free and open for the community.<br><br>Monthly upkeep comes to around $200. Any support you give not only keeps these resources alive for the next owner, but also directly helps my partner and me raise our family together. Thank you so much!",
-        "Hey there, I'm Ryan. I build and maintain <a href=\"https://innioasis.app\" style=\"color: inherit; text-decoration: underline;\">Innioasis Updater</a>, the Themes Gallery, and our firmware archives as hobby projects. I cover all our running costs—server bandwidth, storage, and domain renewals—with my own money so everyone has free access.<br><br>Your donations help cover our $200 monthly upkeep and directly support my partner and me as we raise our young family. Every contribution makes a real difference to us."
+        "Hey! I'm Ryan. I created the Themes Gallery, <a href=\"https://innioasis.app\" style=\"color: inherit; text-decoration: underline;\" target=\"_blank\" rel=\"noopener noreferrer\">Updater CE</a> and the <a href=\"https://innioasis.app/firmware.html\" style=\"color: inherit; text-decoration: underline;\" target=\"_blank\" rel=\"noopener noreferrer\">Community Firmware archive</a>. I pay for server hosting, firmware archive storage, and domain renewals out of my own pocket to keep everything free and open for the community.<br><br>Monthly upkeep comes to around $200. Any support you give not only keeps these resources alive for the next owner, but also directly helps my partner and me raise our family together. Thank you so much!",
+        "Hey there, I'm Ryan. I created the Themes Gallery, <a href=\"https://innioasis.app\" style=\"color: inherit; text-decoration: underline;\" target=\"_blank\" rel=\"noopener noreferrer\">Updater CE</a> and the <a href=\"https://innioasis.app/firmware.html\" style=\"color: inherit; text-decoration: underline;\" target=\"_blank\" rel=\"noopener noreferrer\">Community Firmware archive</a> as hobby projects. I cover all our running costs—server bandwidth, storage, and domain renewals—with my own money so everyone has free access.<br><br>Your donations help cover our $200 monthly upkeep and directly support my partner and me as we raise our young family. Every contribution makes a real difference to us."
       ];
       return familyChoices[Math.floor(Math.random() * familyChoices.length)];
     } else {
       var standardChoices = [
-        "Hey! I'm Ryan, the developer behind <a href=\"https://innioasis.app\" style=\"color: inherit; text-decoration: underline;\">Innioasis Updater</a>, the <a href=\"https://innioasis.app/firmware.html\" style=\"color: inherit; text-decoration: underline;\">Community Firmware Archive</a>, and the <a href=\"https://themes.innioasis.app\" style=\"color: inherit; text-decoration: underline;\">Themes Gallery</a>. I pay for our server hosting, firmware archive storage, and domain renewals out of my own pocket with my own money to keep them free and accessible for everyone.<br><br>Keeping everything online costs around $200 each month, so any support you can share helps take the weight off and keeps the project thriving for the community.",
-        "Hey, I'm Ryan. I created <a href=\"https://innioasis.app\" style=\"color: inherit; text-decoration: underline;\">Innioasis Updater</a> and the Firmware Archive to ensure our devices always have access to working software, custom ROMs, and themes without paywalls or ads. I pay for the servers and domain costs myself each month.<br><br>If you've found the software useful, chipping in helps cover our monthly costs and keeps these archives preserved for everyone.",
-        "Hey! I'm Ryan, and I maintain <a href=\"https://innioasis.app\" style=\"color: inherit; text-decoration: underline;\">Innioasis Updater</a>, the Community Firmware Archive, and the Themes Gallery for the community. I fund the server infrastructure and maintenance out of my own pocket because I love this community and want to keep all tools accessible to everyone.<br><br>Monthly running costs come to about $200. Any contribution you make goes directly toward keeping these services online and maintained."
+        "Hey, I'm Ryan. I created the Themes Gallery, <a href=\"https://innioasis.app\" style=\"color: inherit; text-decoration: underline;\" target=\"_blank\" rel=\"noopener noreferrer\">Updater CE</a> and the <a href=\"https://innioasis.app/firmware.html\" style=\"color: inherit; text-decoration: underline;\" target=\"_blank\" rel=\"noopener noreferrer\">Community Firmware archive</a> to ensure our devices always have access to working software, custom ROMs, and themes without paywalls or ads. I pay for the servers and domain costs myself each month.<br><br>If you've found the software useful, chipping in helps cover our monthly costs and keeps these archives preserved for everyone.",
+        "Hey! I'm Ryan. I created the Themes Gallery, <a href=\"https://innioasis.app\" style=\"color: inherit; text-decoration: underline;\" target=\"_blank\" rel=\"noopener noreferrer\">Updater CE</a> and the <a href=\"https://innioasis.app/firmware.html\" style=\"color: inherit; text-decoration: underline;\" target=\"_blank\" rel=\"noopener noreferrer\">Community Firmware archive</a>. I pay for our server hosting, firmware archive storage, and domain renewals out of my own pocket with my own money to keep them free and accessible for everyone.<br><br>Keeping everything online costs around $200 each month, so any support you can share helps take the weight off and keeps the project thriving for the community.",
+        "Hey! I'm Ryan. I created the Themes Gallery, <a href=\"https://innioasis.app\" style=\"color: inherit; text-decoration: underline;\" target=\"_blank\" rel=\"noopener noreferrer\">Updater CE</a> and the <a href=\"https://innioasis.app/firmware.html\" style=\"color: inherit; text-decoration: underline;\" target=\"_blank\" rel=\"noopener noreferrer\">Community Firmware archive</a> for the community. I fund the server infrastructure and maintenance out of my own pocket because I love this community and want to keep all tools accessible to everyone.<br><br>Monthly running costs come to about $200. Any contribution you make goes directly toward keeping these services online and maintained."
       ];
       return standardChoices[Math.floor(Math.random() * standardChoices.length)];
     }

@@ -3503,15 +3503,25 @@
                 progressUI.setProgress(5, `Loading config for ${selectedName}...`);
             }
 
+            async function tryFetchJsonWithTimeout(url, timeoutMs) {
+                if (!url) return null;
+                const ctrl = new AbortController();
+                const tid = setTimeout(() => ctrl.abort(), timeoutMs || 3500);
+                try {
+                    const res = await fetch(url, { cache: 'no-cache', signal: ctrl.signal });
+                    if (res.ok) return await res.json();
+                } catch (_) {
+                    return null;
+                } finally {
+                    clearTimeout(tid);
+                }
+                return null;
+            }
+
             let config = null;
             const primaryCfgUrl = buildThemeFileUrl(contentFolder, 'config.json');
             if (primaryCfgUrl) {
-                try {
-                    const res = await fetch(primaryCfgUrl, { cache: 'no-cache' });
-                    if (res.ok) {
-                        config = await res.json();
-                    }
-                } catch (_) {}
+                config = await tryFetchJsonWithTimeout(primaryCfgUrl, 3500);
             }
 
             if (!config) {
@@ -3521,18 +3531,18 @@
                 ];
                 for (const url of candidates) {
                     if (!url || url === primaryCfgUrl) continue;
-                    try {
-                        const res = await fetch(url, { cache: 'no-cache' });
-                        if (res.ok) {
-                            config = await res.json();
-                            break;
-                        }
-                    } catch (_) {}
+                    config = await tryFetchJsonWithTimeout(url, 3500);
+                    if (config) break;
                 }
             }
 
             if (!config || typeof config !== 'object') {
-                throw new Error(`Could not load configuration for "${selectedName}".`);
+                config = {
+                    name: selectedName,
+                    author: (theme && theme.author) || 'Community',
+                    description: (theme && theme.description) || '',
+                    themeCover: (theme && theme.screenshot) ? String(theme.screenshot).split('/').pop() : 'cover.png'
+                };
             }
 
             const filesRaw = extractFilesFromConfig(config, contentFolder);
@@ -3729,7 +3739,10 @@
 
                         let fr = null;
                         try {
-                            fr = await fetch(row.download_url, { cache: 'no-cache' });
+                            const ctrl = new AbortController();
+                            const tid = setTimeout(() => ctrl.abort(), 6000);
+                            fr = await fetch(row.download_url, { cache: 'no-cache', signal: ctrl.signal });
+                            clearTimeout(tid);
                         } catch (fetchErr) {
                             console.warn(`Fetch error for ${row.download_url}:`, fetchErr);
                         }
@@ -3737,7 +3750,10 @@
                         if ((!fr || !fr.ok) && !String(row.download_url).startsWith('http')) {
                             const ghUrl = GITHUB_MAIN_RAW_BASE + encodePathSegments(resolvedRepoPath(selectedFolder, row.path));
                             try {
-                                const frGh = await fetch(ghUrl, { cache: 'no-cache' });
+                                const ctrl = new AbortController();
+                                const tid = setTimeout(() => ctrl.abort(), 6000);
+                                const frGh = await fetch(ghUrl, { cache: 'no-cache', signal: ctrl.signal });
+                                clearTimeout(tid);
                                 if (frGh.ok) fr = frGh;
                             } catch (_) {}
                         }

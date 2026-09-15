@@ -873,6 +873,7 @@ body.y1-donate-panel-open .y1-dock-goal-layer {
 }
 
 .y1-donate-panel-hook {
+    text-align: left;
     max-width: 16ch;
     margin: 7px 0 0;
     color: var(--lumen-paper, #fff);
@@ -1479,13 +1480,21 @@ body.site-dock-mode:has(#y1-site-dock-privacy-slot #y1-privacy-settings-btn) > #
 }
 
 .y1-developer-avatar {
-    width: 72px;
-    height: 72px;
-    border-radius: 0;
-    object-fit: contain;
-    border: 0;
-    box-shadow: none;
+    width: 58px;
+    height: 58px;
+    min-width: 58px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
     flex-shrink: 0;
+    margin: 0;
+    padding: 0;
+}
+
+#support-toolbar-container .y1-contributor-stream-box,
+.y1-donate-panel .y1-contributor-stream-box {
+    display: none !important;
 }
 
 .y1-developer-info {
