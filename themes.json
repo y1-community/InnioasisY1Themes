@@ -1,6 +1,181 @@
 {
     "themes": [
         {
+            "name": "1a Zelda",
+            "folder": "1a_Zelda",
+            "author": "a",
+            "description": "The legend of zelda theme with functioning font (looks cleaner on device). Mostly MM",
+            "screenshot": "./1a_Zelda/cover_Themeless.png",
+            "sourceType": "internal",
+            "sortName": "1a zelda",
+            "searchText": "1a zelda the legend of zelda theme with functioning font (looks cleaner on device). mostly mm a 1a_zelda"
+        },
+        {
+            "name": "2000",
+            "folder": "2000",
+            "author": "metallic madness",
+            "description": "A Y2K older-bro-core aesthetic theme for the Innioasis Y1.",
+            "screenshot": "./2000/cover1.png",
+            "sourceType": "internal",
+            "sortName": "2000",
+            "searchText": "2000 a y2k older-bro-core aesthetic theme for the innioasis y1. metallic madness 2000"
+        },
+        {
+            "name": "2000’s Teal",
+            "folder": "2000_s_Teal",
+            "author": "Anaya",
+            "description": "The 2000s but make it teal",
+            "screenshot": "./2000_s_Teal/gregcover.png",
+            "sourceType": "internal",
+            "sortName": "2000’s teal",
+            "searchText": "2000’s teal the 2000s but make it teal anaya 2000_s_teal"
+        },
+        {
+            "name": "2000s Blue Scene Kid",
+            "folder": "2000s_Blue_Scene_Kid",
+            "author": "MannyReads14",
+            "authorUrl": "https://www.tiktok.com/@candybrobuds7?is_from_webapp=1&sender_device=pc",
+            "description": "(UPDATE 9/14/26) I've noticed a severe lack of blue themes so this is my contribution. I think this is pretty good for my first time.",
+            "screenshot": "./2000s_Blue_Scene_Kid/cover.png",
+            "sourceType": "internal",
+            "sortName": "2000s blue scene kid",
+            "searchText": "2000s blue scene kid (update 9/14/26) i've noticed a severe lack of blue themes so this is my contribution. i think this is pretty good for my first time. mannyreads14 2000s_blue_scene_kid"
+        },
+        {
+            "name": "2000s fall cozy mall/hotel",
+            "folder": "2000s_fall_cozy_mall_hotel",
+            "author": "CityStar-Asmrtist!!",
+            "description": "tuscan early 2000s fall mall or hotel style",
+            "screenshot": "./2000s_fall_cozy_mall_hotel/@Cup_cover.png",
+            "sourceType": "internal",
+            "sortName": "2000s fall cozy mall/hotel",
+            "searchText": "2000s fall cozy mall/hotel tuscan early 2000s fall mall or hotel style citystar-asmrtist!! 2000s_fall_cozy_mall_hotel"
+        },
+        {
+            "name": "Cute core",
+            "folder": "2000s_spider-man",
+            "author": "Sophia",
+            "description": "Blank template theme with full config coverage for easy customization.",
+            "screenshot": "./2000s_spider-man/cover.png",
+            "sourceType": "internal",
+            "sortName": "cute core",
+            "searchText": "cute core blank template theme with full config coverage for easy customization. sophia 2000s_spider-man"
+        },
+        {
+            "name": "2000s Teal McBling Baddie",
+            "folder": "2000s_Teal_McBling_Baddie",
+            "author": "MannyReads14",
+            "authorUrl": "https://www.tiktok.com/@candybrobuds7?is_from_webapp=1&sender_device=pc",
+            "description": "A 2000s McBling theme for the girls who like blue <3 No file manager icon due to the limits of the mp3 editor sawry (credit to Aisha Shanaya Wasi's teal y3k for the settings icons)",
+            "screenshot": "./2000s_Teal_McBling_Baddie/cover.png",
+            "sourceType": "internal",
+            "sortName": "2000s teal mcbling baddie",
+            "searchText": "2000s teal mcbling baddie a 2000s mcbling theme for the girls who like blue <3 no file manager icon due to the limits of the mp3 editor sawry (credit to aisha shanaya wasi's teal y3k for the settings icons) mannyreads14 2000s_teal_mcbling_baddie"
+        },
+        {
+            "name": "2000s cool older sister",
+            "folder": "200s_cool_older_sister",
+            "author": "Twixx",
+            "description": "So this one is slightly inspired by CityStar-Asmrtist!! who made a male one and I thought why not a female one! so this is 200s popular teen girl.",
+            "screenshot": "./200s_cool_older_sister/cover.png",
+            "sourceType": "internal",
+            "sortName": "2000s cool older sister",
+            "searchText": "2000s cool older sister so this one is slightly inspired by citystar-asmrtist!! who made a male one and i thought why not a female one! so this is 200s popular teen girl. twixx 200s_cool_older_sister"
+        },
+        {
+            "name": "2016 Ipod",
+            "folder": "2016_Ipod",
+            "author": "Mari M",
+            "description": "giving 2016 feels and nostaliga with iconic symbols! feel free to download!",
+            "screenshot": "./2016_Ipod/cover.png",
+            "sourceType": "internal",
+            "sortName": "2016 ipod",
+            "searchText": "2016 ipod giving 2016 feels and nostaliga with iconic symbols! feel free to download! mari m 2016_ipod"
+        },
+        {
+            "name": "2016 lake house",
+            "folder": "2016_lake_house",
+            "author": "Ricklover187",
+            "description": "its hard to read the letters but i like the sunlight very pretty",
+            "screenshot": "./2016_lake_house/cover.png",
+            "sourceType": "internal",
+            "sortName": "2016 lake house",
+            "searchText": "2016 lake house its hard to read the letters but i like the sunlight very pretty ricklover187 2016_lake_house",
+            "authorUrl": "https://www.innioasis.com"
+        },
+        {
+            "name": "66666",
+            "folder": "66666",
+            "author": "taiye",
+            "description": "Blank template theme with full config coverage for easy customization.",
+            "screenshot": "./66666/cover.png",
+            "sourceType": "internal",
+            "sortName": "66666",
+            "searchText": "66666 blank template theme with full config coverage for easy customization. taiye 66666"
+        },
+        {
+            "name": "70s truck!",
+            "folder": "70s_truck",
+            "author": "AD",
+            "description": "70 style trucks and tech",
+            "screenshot": "./70s_truck/gregcover.png",
+            "sourceType": "internal",
+            "sortName": "70s truck!",
+            "searchText": "70s truck! 70 style trucks and tech ad 70s_truck"
+        },
+        {
+            "name": "80s synthwave",
+            "folder": "80s_synthwave",
+            "author": "CityStar-Asmrtist!!",
+            "description": "80s synthwave mid 80s retro nostalgia luv da night!!",
+            "screenshot": "./80s_synthwave/cover.png",
+            "sourceType": "internal",
+            "sortName": "80s synthwave",
+            "searchText": "80s synthwave 80s synthwave mid 80s retro nostalgia luv da night!! citystar-asmrtist!! 80s_synthwave"
+        },
+        {
+            "name": "BoxOffice",
+            "folder": "8oxOffice",
+            "author": "othemia",
+            "authorUrl": "https://ko-fi.com/s/e869e9aec6",
+            "description": "and osx leopard front row and apple tv first generation inspired theme for y1 and y2",
+            "externalDownloadUrl": "https://ko-fi.com/s/e869e9aec6",
+            "screenshot": "./8oxOffice/cover_YS.png",
+            "sourceType": "internal",
+            "sortName": "boxoffice",
+            "searchText": "boxoffice and osx leopard front row and apple tv first generation inspired theme for y1 and y2 othemia 8oxoffice https://ko-fi.com/s/e869e9aec6"
+        },
+        {
+            "name": "90s/2000s Teen",
+            "folder": "90s_2000s_Teen",
+            "author": "CityStar-Asmrtist!!",
+            "description": "90s/2000s Teen mountain dew y2k",
+            "screenshot": "./90s_2000s_Teen/cover.png",
+            "sourceType": "internal",
+            "sortName": "90s/2000s teen",
+            "searchText": "90s/2000s teen 90s/2000s teen mountain dew y2k citystar-asmrtist!! 90s_2000s_teen"
+        },
+        {
+            "name": "90s Z32 Nissan",
+            "folder": "90s_Z32_Nissan",
+            "author": "whereVTEC",
+            "description": "Skin themed after vintage car magazines, specifically the Nissan 300zx TT (Z32 TT)",
+            "screenshot": "./90s_Z32_Nissan/cover.png",
+            "sourceType": "internal",
+            "sortName": "90s z32 nissan",
+            "searchText": "90s z32 nissan skin themed after vintage car magazines, specifically the nissan 300zx tt (z32 tt) wherevtec 90s_z32_nissan"
+        },
+        {
+            "name": "90s Z32 Nissan V2",
+            "folder": "90s_Z32_Nissan_V2",
+            "author": "whereVTEC",
+            "description": "Skin themed after vintage car magazines, specifically the Nissan 300zx TT (Z32 TT)\n\nV2 Fixes everything I didnt like. Feel free to check out V1 aswell",
+            "screenshot": "./90s_Z32_Nissan_V2/cover.png",
+            "sourceType": "internal",
+            "sortName": "90s z32 nissan v2",
+            "searchText": "90s z32 nissan v2 skin themed after vintage car magazines, specifically the nissan 300zx tt (z32 tt)\n\nv2 fixes everything i didnt like. feel free to check out v1 aswell wherevtec 90s_z32_nissan_v2"
+        },
+        {
             "name": "A03 Blue Space Jellyfish",
             "folder": "A03_Blue_Space_Jellyfish",
             "author": "MannyReads14",
@@ -10,6 +185,28 @@
             "sourceType": "internal",
             "sortName": "a03 blue space jellyfish",
             "searchText": "a03 blue space jellyfish theme based off my fav ao3 skin <3 mannyreads14 a03_blue_space_jellyfish"
+        },
+        {
+            "name": "A(ero)OBA",
+            "folder": "A_ero_OBA",
+            "author": "nrvvosa",
+            "authorUrl": "https://www.instagram.com/nrvvosa/",
+            "description": "aoba seragaki from dmmd",
+            "screenshot": "./A_ero_OBA/cover.png",
+            "sourceType": "internal",
+            "sortName": "a(ero)oba",
+            "searchText": "a(ero)oba aoba seragaki from dmmd nrvvosa a_ero_oba"
+        },
+        {
+            "name": "A vintage fleur",
+            "folder": "A_vintage_fleur",
+            "author": "Lilia Zhu",
+            "authorUrl": "https://t.me/lilyno",
+            "description": "Aesthetic, natural theme with a vintage touch, boho style.",
+            "screenshot": "./A_vintage_fleur/cover.png",
+            "sourceType": "internal",
+            "sortName": "a vintage fleur",
+            "searchText": "a vintage fleur aesthetic, natural theme with a vintage touch, boho style. lilia zhu a_vintage_fleur"
         },
         {
             "name": "Ace Attorney",
@@ -32,6 +229,20 @@
             "sourceType": "internal",
             "sortName": "acmp3",
             "searchText": "acmp3 an animal crossing new horizons inspired theme for the y1 stock firmware and 999 scarylyn acmp3"
+        },
+        {
+            "name": "myACNH (Day v.)",
+            "folder": "ACNH",
+            "author": "mp3li",
+            "authorUrl": "https://www.patreon.com/cw/mp3li",
+            "description": "An Animal Crossing New Horizons theme for the Innioasis Y1 mp3 player. License: This theme may not be taken and hosted elsewhere. The only download location of this theme is the original creator, mp3li, on their Patreon. Community members may edit and change mp3li themes as long as they credit mp3li in their config description and public description.",
+            "screenshot": "./ACNH/[cover].png",
+            "variantFolders": [
+                "Night"
+            ],
+            "sourceType": "internal",
+            "sortName": "myacnh (day v.)",
+            "searchText": "myacnh (day v.) an animal crossing new horizons theme for the innioasis y1 mp3 player. license: this theme may not be taken and hosted elsewhere. the only download location of this theme is the original creator, mp3li, on their patreon. community members may edit and change mp3li themes as long as they credit mp3li in their config description and public description. mp3li acnh"
         },
         {
             "name": "ADVENTURE TIME",
@@ -66,17 +277,6 @@
             "searchText": "aero 2 eco a cool theme i made patoboi aero_2_eco"
         },
         {
-            "name": "Aero Advanced",
-            "folder": "Aero_Advanced",
-            "author": "Gottacosmo",
-            "authorUrl": "https:// I don't wanna put anything here",
-            "description": "This theme is too represent the aqua stages that apple and Microsoft took back in 2007 with a sense of eco-friendly",
-            "screenshot": "./Aero_Advanced/cover.png",
-            "sourceType": "internal",
-            "sortName": "aero advanced",
-            "searchText": "aero advanced this theme is too represent the aqua stages that apple and microsoft took back in 2007 with a sense of eco-friendly gottacosmo aero_advanced"
-        },
-        {
             "name": "Aero (Clone)",
             "folder": "Aero__Clone",
             "author": "u/Neither-Classic2058",
@@ -88,6 +288,17 @@
             "searchText": "aero (clone) this theme is inspired by windows vista. u/neither-classic2058 aero__clone"
         },
         {
+            "name": "Aero Advanced",
+            "folder": "Aero_Advanced",
+            "author": "Gottacosmo",
+            "authorUrl": "https:// I don't wanna put anything here",
+            "description": "This theme is too represent the aqua stages that apple and Microsoft took back in 2007 with a sense of eco-friendly",
+            "screenshot": "./Aero_Advanced/cover.png",
+            "sourceType": "internal",
+            "sortName": "aero advanced",
+            "searchText": "aero advanced this theme is too represent the aqua stages that apple and microsoft took back in 2007 with a sense of eco-friendly gottacosmo aero_advanced"
+        },
+        {
             "name": "Aero Hospital",
             "folder": "Aero_Hospital_Theme",
             "author": "u/aaronthecritic2542",
@@ -96,17 +307,6 @@
             "sourceType": "internal",
             "sortName": "aero hospital",
             "searchText": "aero hospital this theme was inspired by the lucile packard children's hospital stanford in palo alto and frutiger aero. the pictures used is from the exterior and interior of the hospital. u/aaronthecritic2542 aero_hospital_theme"
-        },
-        {
-            "name": "A(ero)OBA",
-            "folder": "A_ero_OBA",
-            "author": "nrvvosa",
-            "authorUrl": "https://www.instagram.com/nrvvosa/",
-            "description": "aoba seragaki from dmmd",
-            "screenshot": "./A_ero_OBA/cover.png",
-            "sourceType": "internal",
-            "sortName": "a(ero)oba",
-            "searchText": "a(ero)oba aoba seragaki from dmmd nrvvosa a_ero_oba"
         },
         {
             "name": "Aesthetic",
@@ -120,14 +320,18 @@
             "authorUrl": "https://www.innioasis.com"
         },
         {
-            "name": "aliens",
-            "folder": "aliens",
-            "author": "jules",
-            "description": "bogos binted",
-            "screenshot": "./aliens/cover.png",
+            "name": "myAggretsuko (Pink Rage V.)",
+            "folder": "Aggretsuko",
+            "author": "mp3li",
+            "authorUrl": "https://www.patreon.com/cw/mp3li",
+            "description": "Aggretsuko Theme for the Innioasis Y1 mp3 player with Aggretsuko icons and backgrounds. Check the patreon for the other Sanrio themes. This theme may not be hosted elsewhere: only on mp3li original channels such as their Patreon and Github. Check license file in theme folder for more information.",
+            "screenshot": "./Aggretsuko/cover.png",
+            "variantFolders": [
+                "Teal Rage"
+            ],
             "sourceType": "internal",
-            "sortName": "aliens",
-            "searchText": "aliens bogos binted jules aliens"
+            "sortName": "myaggretsuko (pink rage v.)",
+            "searchText": "myaggretsuko (pink rage v.) aggretsuko theme for the innioasis y1 mp3 player with aggretsuko icons and backgrounds. check the patreon for the other sanrio themes. this theme may not be hosted elsewhere: only on mp3li original channels such as their patreon and github. check license file in theme folder for more information. mp3li aggretsuko"
         },
         {
             "name": "Alien Stage",
@@ -140,6 +344,16 @@
             "sourceType": "internal",
             "sortName": "alien stage",
             "searchText": "alien stage theme based off the web series by vivimos and qmeng. angel_50000 alien_stage https://drive.google.com/drive/folders/14debuoqmpi9jsr0ymvyy-rrqmkx8m6dc?usp=sharing"
+        },
+        {
+            "name": "aliens",
+            "folder": "aliens",
+            "author": "jules",
+            "description": "bogos binted",
+            "screenshot": "./aliens/cover.png",
+            "sourceType": "internal",
+            "sortName": "aliens",
+            "searchText": "aliens bogos binted jules aliens"
         },
         {
             "name": "Alone",
@@ -204,6 +418,16 @@
             "searchText": "android simple android theme. robertpuggle android_robertpuggle"
         },
         {
+            "name": "angel pink",
+            "folder": "angel_pink",
+            "author": "feedmysoul",
+            "description": "Download the angel pink theme for Innioasis Y1 & Y2 by feedmysoul and personalize your player's look with curated UI assets.",
+            "screenshot": "./angel_pink/cover.png",
+            "sourceType": "internal",
+            "sortName": "angel pink",
+            "searchText": "angel pink download the angel pink theme for innioasis y1 & y2 by feedmysoul and personalize your player's look with curated ui assets. feedmysoul angel_pink"
+        },
+        {
             "name": "Angelic",
             "folder": "Angelic",
             "author": "hailes",
@@ -213,16 +437,6 @@
             "sourceType": "internal",
             "sortName": "angelic",
             "searchText": "angelic download the angelic theme for innioasis y1 & y2 by hailes and personalize your player's look with curated ui assets. hailes angelic https://drive.google.com/drive/folders/14debuoqmpi9jsr0ymvyy-rrqmkx8m6dc?usp=sharing"
-        },
-        {
-            "name": "angel pink",
-            "folder": "angel_pink",
-            "author": "feedmysoul",
-            "description": "Download the angel pink theme for Innioasis Y1 & Y2 by feedmysoul and personalize your player's look with curated UI assets.",
-            "screenshot": "./angel_pink/cover.png",
-            "sourceType": "internal",
-            "sortName": "angel pink",
-            "searchText": "angel pink download the angel pink theme for innioasis y1 & y2 by feedmysoul and personalize your player's look with curated ui assets. feedmysoul angel_pink"
         },
         {
             "name": "Animal Crossing Population Growing",
@@ -258,17 +472,6 @@
             "searchText": "animecore!!! eye strain/glitch effect/animecore/webcore customized eye strain/glitch effect/animecore/webcore theme that i put together. i dress in a neon decora style most of the time so i wanted a theme that could match me :) i kept some things stock out of personal preference. enjoy <3 ˚⟡˖ ࣪౨ৎ⋆pixels⋆౨ৎ˚⟡˖ ࣪ animecore__eye_strain_glitch_effect_animecore_webcore"
         },
         {
-            "name": "Apple 3",
-            "folder": "Unseen",
-            "sourceType": "internal",
-            "sortName": "apple 3",
-            "searchText": "apple 3 customize your innioasis y1 with the unseen theme. ange unseen",
-            "author": "Ange",
-            "authorUrl": "https://www.innioasis.com",
-            "description": "Customize your Innioasis Y1 with the Unseen theme.",
-            "screenshot": "./Unseen/cover.png"
-        },
-        {
             "name": "Apple Music",
             "folder": "AppleMusic",
             "sourceType": "internal",
@@ -280,6 +483,16 @@
             "screenshot": "./AppleMusic/cover_YS.png"
         },
         {
+            "name": "aqua y2k (v2)",
+            "folder": "aqua_y2k__v2",
+            "author": "mimi",
+            "description": "frutiger aqua kinda style! lots of blue, teal and gummy textures ^^",
+            "screenshot": "./aqua_y2k__v2/cover.png",
+            "sourceType": "internal",
+            "sortName": "aqua y2k (v2)",
+            "searchText": "aqua y2k (v2) frutiger aqua kinda style! lots of blue, teal and gummy textures ^^ mimi aqua_y2k__v2"
+        },
+        {
             "name": "Aquarium",
             "folder": "Aquarium",
             "sourceType": "internal",
@@ -289,16 +502,6 @@
             "authorUrl": "https://www.reddit.com/r/innioasis/comments/1o0f1w4/aquarium_10_theme_y1_stock_firmware/",
             "description": "This theme is a little bit of an experiment. The angelfish moves as you spin the wheel to select a menu item.",
             "screenshot": "./Aquarium/cover.png"
-        },
-        {
-            "name": "aqua y2k (v2)",
-            "folder": "aqua_y2k__v2",
-            "author": "mimi",
-            "description": "frutiger aqua kinda style! lots of blue, teal and gummy textures ^^",
-            "screenshot": "./aqua_y2k__v2/cover.png",
-            "sourceType": "internal",
-            "sortName": "aqua y2k (v2)",
-            "searchText": "aqua y2k (v2) frutiger aqua kinda style! lots of blue, teal and gummy textures ^^ mimi aqua_y2k__v2"
         },
         {
             "name": "ARCANE JINX",
@@ -322,16 +525,6 @@
             "searchText": "ariana grande ariana grande theme floof123 ariana_grande"
         },
         {
-            "name": "Arizona iced tea",
-            "folder": "Arizona_iced_tea",
-            "author": "Anaya",
-            "description": "A theme that came to me while drinking Arizona Ice tea (credits to angiee for the base of this theme)",
-            "screenshot": "./Arizona_iced_tea/gregcover.png",
-            "sourceType": "internal",
-            "sortName": "arizona iced tea",
-            "searchText": "arizona iced tea a theme that came to me while drinking arizona ice tea (credits to angiee for the base of this theme) anaya arizona_iced_tea"
-        },
-        {
             "name": "Arizona ice tea",
             "folder": "Arizona_ice_tea",
             "author": "Anaya",
@@ -340,6 +533,16 @@
             "sourceType": "internal",
             "sortName": "arizona ice tea",
             "searchText": "arizona ice tea a theme that came to me while drinking arizona ice tea (credits to angie for the base of this theme) anaya arizona_ice_tea"
+        },
+        {
+            "name": "Arizona iced tea",
+            "folder": "Arizona_iced_tea",
+            "author": "Anaya",
+            "description": "A theme that came to me while drinking Arizona Ice tea (credits to angiee for the base of this theme)",
+            "screenshot": "./Arizona_iced_tea/gregcover.png",
+            "sourceType": "internal",
+            "sortName": "arizona iced tea",
+            "searchText": "arizona iced tea a theme that came to me while drinking arizona ice tea (credits to angiee for the base of this theme) anaya arizona_iced_tea"
         },
         {
             "name": "Arrow Vortex",
@@ -413,17 +616,6 @@
             "searchText": "attack on titan i'm lowk new to making the themes and stuff random attack_on_titan"
         },
         {
-            "name": "A vintage fleur",
-            "folder": "A_vintage_fleur",
-            "author": "Lilia Zhu",
-            "authorUrl": "https://t.me/lilyno",
-            "description": "Aesthetic, natural theme with a vintage touch, boho style.",
-            "screenshot": "./A_vintage_fleur/cover.png",
-            "sourceType": "internal",
-            "sortName": "a vintage fleur",
-            "searchText": "a vintage fleur aesthetic, natural theme with a vintage touch, boho style. lilia zhu a_vintage_fleur"
-        },
-        {
             "name": "Aww, So cute",
             "folder": "Aww__So_cute",
             "author": "angiee",
@@ -474,6 +666,17 @@
             "sourceType": "internal",
             "sortName": "bape",
             "searchText": "bape blank template theme with full config coverage for easy customization. tyliya bape"
+        },
+        {
+            "name": "myBarbie (Movie V.)",
+            "folder": "Barbie_Movie",
+            "author": "mp3li",
+            "authorUrl": "https://www.patreon.com/cw/mp3li",
+            "description": "Barbie (Movie V.) theme for the Innioasis Y1 mp3 player, including Barbie movie icons and Barbie movie backgrounds. Check the Patreon for the other Y2K Toybox themes.",
+            "screenshot": "./Barbie_Movie/cover.png",
+            "sourceType": "internal",
+            "sortName": "mybarbie (movie v.)",
+            "searchText": "mybarbie (movie v.) barbie (movie v.) theme for the innioasis y1 mp3 player, including barbie movie icons and barbie movie backgrounds. check the patreon for the other y2k toybox themes. mp3li barbie_movie"
         },
         {
             "name": "BarbiePrincess",
@@ -571,6 +774,16 @@
             "searchText": "billie eilish hmhas billieeeeeeeeeeeeeeeeeeeeeeeeeee thomthom billie_eilish_hmhas"
         },
         {
+            "name": "black and white clean aesthetic",
+            "folder": "black_and_white_clean_aesthetic",
+            "author": "Twixx",
+            "description": "i thought it was a cute idea to make at 12 am i love the look of it hope you do to :)",
+            "screenshot": "./black_and_white_clean_aesthetic/cover.png",
+            "sourceType": "internal",
+            "sortName": "black and white clean aesthetic",
+            "searchText": "black and white clean aesthetic i thought it was a cute idea to make at 12 am i love the look of it hope you do to :) twixx black_and_white_clean_aesthetic"
+        },
+        {
             "name": "Black☆Star - Soul Eater",
             "folder": "Black_Star_-_Soul_Eater",
             "author": "Arou_TW",
@@ -581,14 +794,14 @@
             "searchText": "black☆star - soul eater very first theme i've made lol just for fun and for me honestly i don't expect people to actually use this....\nblack☆star is one of the main characters in the anime/manga series soul eater. he is a ninja from the destroyed star clan who thrives to surpass the gods. his weapon partner is tsubaki nakatsukasa.\nyahoooooooooo arou_tw black_star_-_soul_eater"
         },
         {
-            "name": "black and white clean aesthetic",
-            "folder": "black_and_white_clean_aesthetic",
-            "author": "Twixx",
-            "description": "i thought it was a cute idea to make at 12 am i love the look of it hope you do to :)",
-            "screenshot": "./black_and_white_clean_aesthetic/cover.png",
+            "name": "Black Widow",
+            "folder": "Black_Widow",
+            "author": "Michelle534",
+            "description": "Blank template theme with full config coverage for easy customization.",
+            "screenshot": "./Black_Widow/cover.png",
             "sourceType": "internal",
-            "sortName": "black and white clean aesthetic",
-            "searchText": "black and white clean aesthetic i thought it was a cute idea to make at 12 am i love the look of it hope you do to :) twixx black_and_white_clean_aesthetic"
+            "sortName": "black widow",
+            "searchText": "black widow blank template theme with full config coverage for easy customization. michelle534 black_widow"
         },
         {
             "name": "Black&White",
@@ -600,16 +813,6 @@
             "authorUrl": "https://github.com/sipped",
             "description": "Simple Black&White theme. Built upon u/Neither-Classic2058's YellowSub theme.",
             "screenshot": "./BlackWhite/cover_YS.png"
-        },
-        {
-            "name": "Black Widow",
-            "folder": "Black_Widow",
-            "author": "Michelle534",
-            "description": "Blank template theme with full config coverage for easy customization.",
-            "screenshot": "./Black_Widow/cover.png",
-            "sourceType": "internal",
-            "sortName": "black widow",
-            "searchText": "black widow blank template theme with full config coverage for easy customization. michelle534 black_widow"
         },
         {
             "name": "Blank Slate_",
@@ -651,17 +854,6 @@
             "sourceType": "internal",
             "sortName": "blue and yellow stars",
             "searchText": "blue and yellow stars by floppet floppet blue_and_yellow_stars"
-        },
-        {
-            "name": "BlueCollage",
-            "folder": "BlueCollage",
-            "author": "Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000",
-            "sourceType": "internal",
-            "sortName": "bluecollage",
-            "searchText": "bluecollage bluecollage theme for innioasis y1. angel_50000 bluecollage",
-            "description": "BlueCollage theme for Innioasis Y1.",
-            "screenshot": "./BlueCollage/cover.png"
         },
         {
             "name": "Blue Flowers!!",
@@ -715,6 +907,17 @@
             "searchText": "blue whales blank template theme with full config coverage for easy customization. jayg blue_whales"
         },
         {
+            "name": "BlueCollage",
+            "folder": "BlueCollage",
+            "author": "Angel_50000",
+            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "sourceType": "internal",
+            "sortName": "bluecollage",
+            "searchText": "bluecollage bluecollage theme for innioasis y1. angel_50000 bluecollage",
+            "description": "BlueCollage theme for Innioasis Y1.",
+            "screenshot": "./BlueCollage/cover.png"
+        },
+        {
             "name": "BMO theme WIP",
             "folder": "BMO_theme_WIP",
             "author": "Scott Fernpaw",
@@ -765,16 +968,18 @@
             "searchText": "boxd a letterboxd theme. if you want, replace the menu icons with your top 4! (or i guess here... top 8?) u/highwaycrisis boxd"
         },
         {
-            "name": "BoxOffice",
-            "folder": "8oxOffice",
-            "author": "othemia",
-            "authorUrl": "https://ko-fi.com/s/e869e9aec6",
-            "description": "and osx leopard front row and apple tv first generation inspired theme for y1 and y2",
-            "externalDownloadUrl": "https://ko-fi.com/s/e869e9aec6",
-            "screenshot": "./8oxOffice/cover_YS.png",
+            "name": "myBratz (Dolls V.)",
+            "folder": "Bratz",
+            "author": "mp3li",
+            "authorUrl": "https://www.patreon.com/cw/mp3li",
+            "description": "Bratz theme for the Innioasis Y1 mp3 player, including Bratz icons and Bratz backgrounds. Check the Patreon for the other Y2K Toybox themes. This theme may not be hosted elsewhere: only on mp3li original channels such as their Patreon and Github. Check license file in theme folder for more information.",
+            "screenshot": "./Bratz/cover.png",
+            "variantFolders": [
+                "Movies"
+            ],
             "sourceType": "internal",
-            "sortName": "boxoffice",
-            "searchText": "boxoffice and osx leopard front row and apple tv first generation inspired theme for y1 and y2 othemia boxoffice https://ko-fi.com/s/e869e9aec6"
+            "sortName": "mybratz (dolls v.)",
+            "searchText": "mybratz (dolls v.) bratz theme for the innioasis y1 mp3 player, including bratz icons and bratz backgrounds. check the patreon for the other y2k toybox themes. this theme may not be hosted elsewhere: only on mp3li original channels such as their patreon and github. check license file in theme folder for more information. mp3li bratz"
         },
         {
             "name": "Breath of the Wild",
@@ -817,6 +1022,28 @@
             "authorUrl": "https://reddit.com/u/Neither-Classic2058",
             "description": "Chilling out in a cabin. Sets the mood to relax and reflect.",
             "screenshot": "./CabinFever/cover.png"
+        },
+        {
+            "name": "myCake2",
+            "folder": "Cake2_mp3li",
+            "author": "mp3li",
+            "authorUrl": "https://www.patreon.com/cw/mp3li",
+            "description": "myCake2 Theme for the Innioasis Y1 mp3 player with cake icons and floral textile book backgrounds, and handwriting inspired font. Check the Patreon for other Tea, Toast and Cake themes. This theme may not be hosted elsewhere: only on mp3li original channels such as their Patreon and Github. Check license file in theme folder for more information.",
+            "screenshot": "./Cake2_mp3li/cover.png",
+            "sourceType": "internal",
+            "sortName": "mycake2",
+            "searchText": "mycake2 mycake2 theme for the innioasis y1 mp3 player with cake icons and floral textile book backgrounds, and handwriting inspired font. check the patreon for other tea, toast and cake themes. this theme may not be hosted elsewhere: only on mp3li original channels such as their patreon and github. check license file in theme folder for more information. mp3li cake2_mp3li"
+        },
+        {
+            "name": "myCareBears",
+            "folder": "Care_Bears",
+            "author": "mp3li",
+            "authorUrl": "https://www.patreon.com/cw/mp3li",
+            "description": "Care Bears theme for the Innioasis Y1 mp3 player, including Care Bears icons and Care Bears backgrounds. Check the Patreon for the other Y2K Toybox themes.",
+            "screenshot": "./Care_Bears/cover.png",
+            "sourceType": "internal",
+            "sortName": "mycarebears",
+            "searchText": "mycarebears care bears theme for the innioasis y1 mp3 player, including care bears icons and care bears backgrounds. check the patreon for the other y2k toybox themes. mp3li care_bears"
         },
         {
             "name": "Cas spn",
@@ -1024,17 +1251,6 @@
             "sourceType": "internal",
             "sortName": "citystar no icons",
             "searchText": "citystar no icons a blank canvas to start. drop in your own desktop_wallpaper.png and global_wallpaper.png images in the theme folder, or use the photos feature on the y1 to set your own wallpaper images. albiella citystar_no_icons"
-        },
-        {
-            "name": "Classic Millenial",
-            "folder": "Millennial",
-            "author": "u/jmaus2006",
-            "authorUrl": "https://www.github.com/jmaus2006",
-            "description": "A classic theme that takes you back to the 2000's",
-            "screenshot": "./Millennial/cover.png",
-            "sourceType": "internal",
-            "sortName": "classic millenial",
-            "searchText": "classic millenial a classic theme that takes you back to the 2000's u/jmaus2006 millennial"
         },
         {
             "name": "Classic Millennial",
@@ -1269,16 +1485,6 @@
             "searchText": "cute anime style i hope u find this background as cute as i find it sorry for the small font :/\narts not mine koblamo cute_anime_style"
         },
         {
-            "name": "Cute core",
-            "folder": "2000s_spider-man",
-            "author": "Sophia",
-            "description": "Blank template theme with full config coverage for easy customization.",
-            "screenshot": "./2000s_spider-man/cover.png",
-            "sourceType": "internal",
-            "sortName": "cute core",
-            "searchText": "cute core blank template theme with full config coverage for easy customization. sophia 2000s_spider-man"
-        },
-        {
             "name": "Cute Pokemon Eevee Eeveelutions V2",
             "folder": "Cute_Pokemon_Eevee_Eeveelutions_V2",
             "author": "MaggieMay1923",
@@ -1309,6 +1515,16 @@
             "searchText": "cute strawberry strawberry theme\n\nicons + wallpaper by: https://www.etsy.com/shop/appiconstudio?ref=yr_purchases nikon ;) cute_strawberry"
         },
         {
+            "name": "Cute Teal Style!",
+            "folder": "Cute_Teal_Style",
+            "author": "Sib",
+            "description": ":3",
+            "screenshot": "./Cute_Teal_Style/cover.png",
+            "sourceType": "internal",
+            "sortName": "cute teal style!",
+            "searchText": "cute teal style! :3 sib cute_teal_style"
+        },
+        {
             "name": "Cutesy Pink",
             "folder": "Cutesy_Pink",
             "author": "Sib",
@@ -1327,16 +1543,6 @@
             "sourceType": "internal",
             "sortName": "cutesy theme !!!",
             "searchText": "cutesy theme !!! download the cutesy theme !!! theme for innioasis y1 & y2 by misa._png and personalize your player's look with curated ui assets. misa._png cutesy_theme"
-        },
-        {
-            "name": "Cute Teal Style!",
-            "folder": "Cute_Teal_Style",
-            "author": "Sib",
-            "description": ":3",
-            "screenshot": "./Cute_Teal_Style/cover.png",
-            "sourceType": "internal",
-            "sortName": "cute teal style!",
-            "searchText": "cute teal style! :3 sib cute_teal_style"
         },
         {
             "name": "CyberPunk",
@@ -1380,16 +1586,6 @@
             "sourceType": "internal",
             "sortName": "dante sparda (dmc)",
             "searchText": "dante sparda (dmc) inspired by dante sparda from dmc will prob make a vergil one but im still getting used to this whole thing. vinnie dante_sparda__dmc"
-        },
-        {
-            "name": "Dark",
-            "folder": "Dark_Theme",
-            "author": "osuka",
-            "description": "This theme looks cool on black innioasis, IPodish, and just basic dark theme :)  \nby osuka <3",
-            "screenshot": "./Dark_Theme/coolcover.png",
-            "sourceType": "internal",
-            "sortName": "dark",
-            "searchText": "dark this theme looks cool on black innioasis, ipodish, and just basic dark theme :)  \nby osuka <3 osuka dark_theme"
         },
         {
             "name": "Dark Academia",
@@ -1443,6 +1639,16 @@
             "searchText": "dark souls 3 dark souls 3 theme for the fromsoftware lovers unholyashes dark_souls_3"
         },
         {
+            "name": "Dark",
+            "folder": "Dark_Theme",
+            "author": "osuka",
+            "description": "This theme looks cool on black innioasis, IPodish, and just basic dark theme :)  \nby osuka <3",
+            "screenshot": "./Dark_Theme/coolcover.png",
+            "sourceType": "internal",
+            "sortName": "dark",
+            "searchText": "dark this theme looks cool on black innioasis, ipodish, and just basic dark theme :)  \nby osuka <3 osuka dark_theme"
+        },
+        {
             "name": "Death Note",
             "folder": "Death Note",
             "author": "Angel_50000",
@@ -1455,6 +1661,27 @@
             "searchText": "death note theme based off of the 2000s death note manga and anime. angel_50000 death note https://drive.google.com/drive/folders/14debuoqmpi9jsr0ymvyy-rrqmkx8m6dc?usp=sharing"
         },
         {
+            "name": "Death The Kid d1",
+            "folder": "Death_The_Kid_d1",
+            "author": "Sersei",
+            "description": "A Death the kid Theme",
+            "screenshot": "./Death_The_Kid_d1/cover.png",
+            "sourceType": "internal",
+            "sortName": "death the kid d1",
+            "searchText": "death the kid d1 a death the kid theme sersei death_the_kid_d1"
+        },
+        {
+            "name": "myDeathValley National Park",
+            "folder": "Death_Valley_National_Park",
+            "author": "mp3li",
+            "authorUrl": "https://www.patreon.com/cw/mp3li",
+            "description": "A minimal Death Valley National Park theme for the Innioasis Y1 MP3 player made by mp3li, featuring Death Valley National Park backgrounds and recognizing this land as the homeland of the Timbisha Shoshone, who know this place as Tumpisa. Part of the Defend the Parks collection. For other themes in this collection, visit mp3li's Patreon.",
+            "screenshot": "./Death_Valley_National_Park/cover.png",
+            "sourceType": "internal",
+            "sortName": "mydeathvalley national park",
+            "searchText": "mydeathvalley national park a minimal death valley national park theme for the innioasis y1 mp3 player made by mp3li, featuring death valley national park backgrounds and recognizing this land as the homeland of the timbisha shoshone, who know this place as tumpisa. part of the defend the parks collection. for other themes in this collection, visit mp3li's patreon. mp3li death_valley_national_park"
+        },
+        {
             "name": "Deathnote (L Lawliet)",
             "folder": "Deathnote__L_Lawliet",
             "author": "Ricklover187",
@@ -1464,16 +1691,6 @@
             "sortName": "deathnote (l lawliet)",
             "searchText": "deathnote (l lawliet) l from deathnote! very cute ricklover187 deathnote__l_lawliet",
             "authorUrl": "https://www.innioasis.com"
-        },
-        {
-            "name": "Death The Kid d1",
-            "folder": "Death_The_Kid_d1",
-            "author": "Sersei",
-            "description": "A Death the kid Theme",
-            "screenshot": "./Death_The_Kid_d1/cover.png",
-            "sourceType": "internal",
-            "sortName": "death the kid d1",
-            "searchText": "death the kid d1 a death the kid theme sersei death_the_kid_d1"
         },
         {
             "name": "DEEP SKIN",
@@ -1730,6 +1947,17 @@
             "searchText": "ethereal princess updated download the ethereal princess updated theme for innioasis y1 & y2 by serene oasis and personalize your player's look with curated ui assets. serene oasis ethereal_princess_updated"
         },
         {
+            "name": "myEverglades National Park",
+            "folder": "Everglades_National_Park",
+            "author": "mp3li",
+            "authorUrl": "https://www.patreon.com/cw/mp3li",
+            "description": "A minimal Everglades National Park theme for the Innioasis Y1 MP3 player made by mp3li, featuring Everglades National Park backgrounds and recognizing this land as the homeland of the Miccosukee and Seminole peoples, who know this place as Pahayokee. Part of the Defend the Parks collection. For other themes in this collection, visit mp3li's Patreon.",
+            "screenshot": "./Everglades_National_Park/cover.png",
+            "sourceType": "internal",
+            "sortName": "myeverglades national park",
+            "searchText": "myeverglades national park a minimal everglades national park theme for the innioasis y1 mp3 player made by mp3li, featuring everglades national park backgrounds and recognizing this land as the homeland of the miccosukee and seminole peoples, who know this place as pahayokee. part of the defend the parks collection. for other themes in this collection, visit mp3li's patreon. mp3li everglades_national_park"
+        },
+        {
             "name": "Evergreen (v2)",
             "folder": "Evergreen",
             "author": "kuroochr",
@@ -1760,6 +1988,27 @@
             "authorUrl": "https://reddit.com/Neither-Classic2058",
             "description": "Fallout",
             "screenshot": "./Fallout/cover.png"
+        },
+        {
+            "name": "Pip-Boy",
+            "folder": "Fallout Pip-Boy",
+            "author": "Arthur_Moss",
+            "authorUrl": "https://www.reddit.com/user/Arthur_Moss/",
+            "description": "This theme is inspired by the Pip-boy from the Fallout 3 game.",
+            "screenshot": "./Fallout Pip-Boy/cover.png",
+            "defaultVariantLabel": "1G",
+            "sourceType": "internal",
+            "sortName": "pip-boy",
+            "searchText": "pip-boy this theme is inspired by the pip-boy from the fallout 3 game. arthur_moss fallout pip-boy",
+            "variantFolders": [
+                "1M",
+                "1P",
+                "1RG",
+                "1RM",
+                "1RP",
+                "1RY",
+                "1Y"
+            ]
         },
         {
             "name": "FatalFrame2DCB",
@@ -1950,17 +2199,6 @@
             "searchText": "gc gc theme robertpuggle gc"
         },
         {
-            "name": "Ghostbusters",
-            "folder": "Ghostbusters",
-            "author": "Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000",
-            "sourceType": "internal",
-            "sortName": "ghostbusters",
-            "searchText": "ghostbusters ghostbusters theme for innioasis y1. angel_50000 ghostbusters",
-            "description": "Ghostbusters theme for Innioasis Y1.",
-            "screenshot": "./Ghostbusters/cover.png"
-        },
-        {
             "name": "ghost hunting",
             "folder": "ghost_hunting_theme",
             "author": "jules",
@@ -1970,6 +2208,17 @@
             "sourceType": "internal",
             "sortName": "ghost hunting",
             "searchText": "ghost hunting download the ghost hunting theme theme for innioasis y1 by jules and personalize your player's look with curated ui assets. jules ghost_hunting_theme"
+        },
+        {
+            "name": "Ghostbusters",
+            "folder": "Ghostbusters",
+            "author": "Angel_50000",
+            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "sourceType": "internal",
+            "sortName": "ghostbusters",
+            "searchText": "ghostbusters ghostbusters theme for innioasis y1. angel_50000 ghostbusters",
+            "description": "Ghostbusters theme for Innioasis Y1.",
+            "screenshot": "./Ghostbusters/cover.png"
         },
         {
             "name": "Gilgamesh(Fate)",
@@ -2042,6 +2291,17 @@
             "searchText": "girly pink design hehe <3 cute and simple pink design esteldnwm girly_pink_design_hehe__3"
         },
         {
+            "name": "girly y2k",
+            "folder": "girly_y2k",
+            "author": "swampvermin",
+            "authorUrl": "https://swampvermin.neocities.org",
+            "description": "girly y2k theme",
+            "screenshot": "./girly_y2k/cover.png",
+            "sourceType": "internal",
+            "sortName": "girly y2k",
+            "searchText": "girly y2k girly y2k theme swampvermin girly_y2k"
+        },
+        {
             "name": "Girlypop",
             "folder": "Girlypop",
             "sourceType": "internal",
@@ -2053,15 +2313,15 @@
             "screenshot": "./Girlypop/gregcover.png"
         },
         {
-            "name": "girly y2k",
-            "folder": "girly_y2k",
-            "author": "swampvermin",
-            "authorUrl": "https://swampvermin.neocities.org",
-            "description": "girly y2k theme",
-            "screenshot": "./girly_y2k/cover.png",
+            "name": "myGlacier National Park",
+            "folder": "Glacier_National_Park",
+            "author": "mp3li",
+            "authorUrl": "https://www.patreon.com/cw/mp3li",
+            "description": "A minimal Glacier National Park theme for the Innioasis Y1 MP3 player made by mp3li, featuring Glacier National Park backgrounds and recognizing this land as the homeland of the Blackfeet Nation and the Ktunaxa people, who know these mountains as Miistakis. Part of the Defend the Parks collection. For other themes in this collection, visit mp3li's Patreon.",
+            "screenshot": "./Glacier_National_Park/cover.png",
             "sourceType": "internal",
-            "sortName": "girly y2k",
-            "searchText": "girly y2k girly y2k theme swampvermin girly_y2k"
+            "sortName": "myglacier national park",
+            "searchText": "myglacier national park a minimal glacier national park theme for the innioasis y1 mp3 player made by mp3li, featuring glacier national park backgrounds and recognizing this land as the homeland of the blackfeet nation and the ktunaxa people, who know these mountains as miistakis. part of the defend the parks collection. for other themes in this collection, visit mp3li's patreon. mp3li glacier_national_park"
         },
         {
             "name": "Gojo Satoru",
@@ -2104,6 +2364,16 @@
             "searchText": "gothic2 this a update to \"gothic\" there where some missing icons on it but this one has it all i think :i inkymaster2 gothic2"
         },
         {
+            "name": "Gothic (updated)",
+            "folder": "Gothic__updated",
+            "author": "littlebeedle",
+            "description": "Red and back, gothic-inspired layout. Brighter text for better visibility.",
+            "screenshot": "./Gothic__updated/cover.png",
+            "sourceType": "internal",
+            "sortName": "gothic (updated)",
+            "searchText": "gothic (updated) red and back, gothic-inspired layout. brighter text for better visibility. littlebeedle gothic__updated"
+        },
+        {
             "name": "Gothic aesthetic",
             "folder": "Gothic_aesthetic_theme",
             "author": "Weronika",
@@ -2114,14 +2384,15 @@
             "searchText": "gothic aesthetic gothic aesthetic mp.3 theme. weronika gothic_aesthetic_theme"
         },
         {
-            "name": "Gothic (updated)",
-            "folder": "Gothic__updated",
-            "author": "littlebeedle",
-            "description": "Red and back, gothic-inspired layout. Brighter text for better visibility.",
-            "screenshot": "./Gothic__updated/cover.png",
+            "name": "myGrandCanyon National Park",
+            "folder": "Grand_Canyon_National_Park",
+            "author": "mp3li",
+            "authorUrl": "https://www.patreon.com/cw/mp3li",
+            "description": "A minimal Grand Canyon National Park theme for the Innioasis Y1 MP3 player made by mp3li, featuring Grand Canyon National Park backgrounds and recognizing this land as the homeland of the Havasupai, Hopi, Hualapai, and Navajo peoples, who know this place as Ongtupqa. Part of the Defend the Parks collection. For other themes in this collection, visit mp3li's Patreon.",
+            "screenshot": "./Grand_Canyon_National_Park/cover.png",
             "sourceType": "internal",
-            "sortName": "gothic (updated)",
-            "searchText": "gothic (updated) red and back, gothic-inspired layout. brighter text for better visibility. littlebeedle gothic__updated"
+            "sortName": "mygrandcanyon national park",
+            "searchText": "mygrandcanyon national park a minimal grand canyon national park theme for the innioasis y1 mp3 player made by mp3li, featuring grand canyon national park backgrounds and recognizing this land as the homeland of the havasupai, hopi, hualapai, and navajo peoples, who know this place as ongtupqa. part of the defend the parks collection. for other themes in this collection, visit mp3li's patreon. mp3li grand_canyon_national_park"
         },
         {
             "name": "Grand Prix",
@@ -2143,27 +2414,6 @@
             "sourceType": "internal",
             "sortName": "gravity falls",
             "searchText": "gravity falls gravity falls theme bellawagner gravity_falls"
-        },
-        {
-            "name": "GREEN",
-            "folder": "GREEN_xy",
-            "author": "XY",
-            "description": "Download the GREEN theme for Innioasis Y1 by XY and personalize your player's look with curated UI assets.",
-            "screenshot": "./GREEN_xy/cover.png",
-            "sourceType": "internal",
-            "sortName": "green",
-            "searchText": "green download the green theme for innioasis y1 by xy and personalize your player's look with curated ui assets. xy green_xy"
-        },
-        {
-            "name": "green",
-            "folder": "iPod-ish",
-            "sourceType": "internal",
-            "sortName": "green",
-            "searchText": "green customize your innioasis y1 with the ipod-ish theme. luvrgirl_4jesu5 ipod-ish",
-            "author": "luvrgirl_4jesu5",
-            "authorUrl": "https://github.com/ope-nz",
-            "description": "Customize your Innioasis Y1 with the iPod-ish theme.",
-            "screenshot": "./iPod-ish/gregcover.png"
         },
         {
             "name": "Green Apples",
@@ -2206,6 +2456,16 @@
             "sourceType": "internal",
             "sortName": "green metallic",
             "searchText": "green metallic a blank canvas to start. drop in your own desktop_wallpaper.png and global_wallpaper.png images in the theme folder, or use the photos feature on the y1 to set your own wallpaper images. albini green_metallic"
+        },
+        {
+            "name": "GREEN",
+            "folder": "GREEN_xy",
+            "author": "XY",
+            "description": "Download the GREEN theme for Innioasis Y1 by XY and personalize your player's look with curated UI assets.",
+            "screenshot": "./GREEN_xy/cover.png",
+            "sourceType": "internal",
+            "sortName": "green",
+            "searchText": "green download the green theme for innioasis y1 by xy and personalize your player's look with curated ui assets. xy green_xy"
         },
         {
             "name": "Groovy Matchs",
@@ -2314,6 +2574,17 @@
             "searchText": "halo for the halo fans someone make a better halo theme sammyboy 808 halo"
         },
         {
+            "name": "myHannahMontana",
+            "folder": "Hannah_Montana",
+            "author": "mp3li",
+            "authorUrl": "https://www.patreon.com/cw/mp3li",
+            "description": "Hannah Montana theme for the Innioasis Y1 mp3 player, including Hannah Montana icons and Hannah Montana backgrounds. Check the Patreon for the other Y2K Toybox themes.",
+            "screenshot": "./Hannah_Montana/cover.png",
+            "sourceType": "internal",
+            "sortName": "myhannahmontana",
+            "searchText": "myhannahmontana hannah montana theme for the innioasis y1 mp3 player, including hannah montana icons and hannah montana backgrounds. check the patreon for the other y2k toybox themes. mp3li hannah_montana"
+        },
+        {
             "name": "Happy Mac",
             "folder": "Happy_Mac",
             "author": "worldeaterarchives",
@@ -2334,18 +2605,6 @@
             "searchText": "happy mac (fixed) theme based on classic mac desktop worldeaterarchives happy_mac__fixed"
         },
         {
-            "name": "Harvest Moon Another Wonderful Life",
-            "folder": "Harvest Moon Another Wonderful Life",
-            "author": "Angel_50000",
-            "authorUrl": "https://www.reddit.com/user/Angel_50000/",
-            "description": "Theme based off the 2004 game Harvest Moon Another Wonderful Life.",
-            "externalDownloadUrl": "https://drive.google.com/drive/folders/14deBuoQmPI9jSR0ymvyy-rRqmKx8M6dC?usp=sharing",
-            "screenshot": "./Harvest Moon Another Wonderful Life/cover.png",
-            "sourceType": "internal",
-            "sortName": "harvest moon another wonderful life",
-            "searchText": "harvest moon another wonderful life theme based off the 2004 game harvest moon another wonderful life. angel_50000 harvest moon another wonderful life https://drive.google.com/drive/folders/14debuoqmpi9jsr0ymvyy-rrqmkx8m6dc?usp=sharing"
-        },
-        {
             "name": "Harvest Moon A Wonderful Life",
             "folder": "Harvest Moon A Wonderful Life",
             "author": "Angel_50000",
@@ -2356,6 +2615,18 @@
             "sourceType": "internal",
             "sortName": "harvest moon a wonderful life",
             "searchText": "harvest moon a wonderful life theme based off the 2003 game harvest moon a wonderful life. angel_50000 harvest moon a wonderful life https://drive.google.com/drive/folders/14debuoqmpi9jsr0ymvyy-rrqmkx8m6dc?usp=sharing"
+        },
+        {
+            "name": "Harvest Moon Another Wonderful Life",
+            "folder": "Harvest Moon Another Wonderful Life",
+            "author": "Angel_50000",
+            "authorUrl": "https://www.reddit.com/user/Angel_50000/",
+            "description": "Theme based off the 2004 game Harvest Moon Another Wonderful Life.",
+            "externalDownloadUrl": "https://drive.google.com/drive/folders/14deBuoQmPI9jSR0ymvyy-rRqmKx8M6dC?usp=sharing",
+            "screenshot": "./Harvest Moon Another Wonderful Life/cover.png",
+            "sourceType": "internal",
+            "sortName": "harvest moon another wonderful life",
+            "searchText": "harvest moon another wonderful life theme based off the 2004 game harvest moon another wonderful life. angel_50000 harvest moon another wonderful life https://drive.google.com/drive/folders/14debuoqmpi9jsr0ymvyy-rrqmkx8m6dc?usp=sharing"
         },
         {
             "name": "Hatsune Miku",
@@ -2644,6 +2915,17 @@
             "searchText": "ios customize your innioasis y1 with the ios theme theme. ope-nz | u/normal-curve-1642 ios_theme_me"
         },
         {
+            "name": "green",
+            "folder": "iPod-ish",
+            "sourceType": "internal",
+            "sortName": "green",
+            "searchText": "green customize your innioasis y1 with the ipod-ish theme. luvrgirl_4jesu5 ipod-ish",
+            "author": "luvrgirl_4jesu5",
+            "authorUrl": "https://github.com/ope-nz",
+            "description": "Customize your Innioasis Y1 with the iPod-ish theme.",
+            "screenshot": "./iPod-ish/gregcover.png"
+        },
+        {
             "name": "iPod-ish",
             "folder": "iPod-ish_reddit",
             "author": "reddit",
@@ -2770,6 +3052,17 @@
             "searchText": "kawaii webcore styled themed pink!! yourbunny1212 kawaii"
         },
         {
+            "name": "myKeroppi",
+            "folder": "Keroppi_mp3li",
+            "author": "mp3li",
+            "authorUrl": "https://www.patreon.com/cw/mp3li",
+            "description": "Keroppi Theme for the Innioasis Y1 mp3 player with Keroppi icons and background. Check the patreon for other Sanrio themes. This theme may not be hosted elsewhere: only on mp3li original channels such as their Patreon and Github. Check license file in theme folder for more information.",
+            "screenshot": "./Keroppi_mp3li/cover.png",
+            "sourceType": "internal",
+            "sortName": "mykeroppi",
+            "searchText": "mykeroppi keroppi theme for the innioasis y1 mp3 player with keroppi icons and background. check the patreon for other sanrio themes. this theme may not be hosted elsewhere: only on mp3li original channels such as their patreon and github. check license file in theme folder for more information. mp3li keroppi_mp3li"
+        },
+        {
             "name": "KH2",
             "folder": "KH2",
             "author": "Robertpuggle",
@@ -2799,6 +3092,17 @@
             "sourceType": "internal",
             "sortName": "kingdom hearts",
             "searchText": "kingdom hearts simple kh theme with cool icons a kingdom_hearts"
+        },
+        {
+            "name": "myKingdomHearts Chain of Memories (Atlantis V.)",
+            "folder": "Kingdom_Hearts_CoM_Atlantis",
+            "author": "mp3li",
+            "authorUrl": "https://www.patreon.com/cw/mp3li",
+            "description": "Kingdom Hearts Chain of Memories (Atlantis V.) theme for the Innioasis Y1 mp3 player, by mp3li.",
+            "screenshot": "./Kingdom_Hearts_CoM_Atlantis/mp3li kingdom hearts atlantis theme asset 81.png",
+            "sourceType": "internal",
+            "sortName": "mykingdomhearts chain of memories (atlantis v.)",
+            "searchText": "mykingdomhearts chain of memories (atlantis v.) kingdom hearts chain of memories (atlantis v.) theme for the innioasis y1 mp3 player, by mp3li. mp3li kingdom_hearts_com_atlantis"
         },
         {
             "name": "Kirby Mouthful Mode",
@@ -2840,6 +3144,16 @@
             "sourceType": "internal",
             "sortName": "kratcy cfmot !",
             "searchText": "kratcy cfmot ! kratcy cfmot theme!  f2u the yoshka fan kratcy_cfmot"
+        },
+        {
+            "name": "L Lawliet!!",
+            "folder": "L_Lawliet",
+            "author": "Twixx",
+            "description": "L Lawliet from deathnote bc ive already done Misa so like why not!!",
+            "screenshot": "./L_Lawliet/cover.png",
+            "sourceType": "internal",
+            "sortName": "l lawliet!!",
+            "searchText": "l lawliet!! l lawliet from deathnote bc ive already done misa so like why not!! twixx l_lawliet"
         },
         {
             "name": "Lain",
@@ -2999,14 +3313,15 @@
             "searchText": "liquidglass lightweight take on macos \"liquid glass\" style for the y1. glassification of the icons in a future update :) u/moralesnery liquidglass"
         },
         {
-            "name": "L Lawliet!!",
-            "folder": "L_Lawliet",
-            "author": "Twixx",
-            "description": "L Lawliet from deathnote bc ive already done Misa so like why not!!",
-            "screenshot": "./L_Lawliet/cover.png",
+            "name": "myLisaFrank",
+            "folder": "Lisa_Frank",
+            "author": "mp3li",
+            "authorUrl": "https://www.patreon.com/cw/mp3li",
+            "description": "Lisa Frank theme for the Innioasis Y1 mp3 player, including Lisa Frank icons and Lisa Frank backgrounds. Check the Patreon for the other Y2K Toybox themes.",
+            "screenshot": "./Lisa_Frank/cover.png",
             "sourceType": "internal",
-            "sortName": "l lawliet!!",
-            "searchText": "l lawliet!! l lawliet from deathnote bc ive already done misa so like why not!! twixx l_lawliet"
+            "sortName": "mylisafrank",
+            "searchText": "mylisafrank lisa frank theme for the innioasis y1 mp3 player, including lisa frank icons and lisa frank backgrounds. check the patreon for the other y2k toybox themes. mp3li lisa_frank"
         },
         {
             "name": "LOTR",
@@ -3123,17 +3438,6 @@
             "searchText": "matrix’s blank template theme with full config coverage for easy customization. yas matrix_s"
         },
         {
-            "name": "MelodyMuncher",
-            "folder": "MelodyMuncher",
-            "sourceType": "internal",
-            "sortName": "melodymuncher",
-            "searchText": "melodymuncher customize your innioasis y1 with the melodymuncher theme. innioasis melodymuncher",
-            "author": "Innioasis",
-            "authorUrl": "https://www.innioasis.com",
-            "description": "Customize your Innioasis Y1 with the MelodyMuncher theme.",
-            "screenshot": "./MelodyMuncher/cover.png"
-        },
-        {
             "name": "Melody Munchkin",
             "folder": "Melody Munchkin",
             "author": "Innioasis",
@@ -3153,6 +3457,17 @@
             "sourceType": "internal",
             "sortName": "melody munchkin",
             "searchText": "melody munchkin download the melody munchkin theme for innioasis y1 & y2 by sunny and personalize your player's look with curated ui assets. sunny melody_munchkin_sunny"
+        },
+        {
+            "name": "MelodyMuncher",
+            "folder": "MelodyMuncher",
+            "sourceType": "internal",
+            "sortName": "melodymuncher",
+            "searchText": "melodymuncher customize your innioasis y1 with the melodymuncher theme. innioasis melodymuncher",
+            "author": "Innioasis",
+            "authorUrl": "https://www.innioasis.com",
+            "description": "Customize your Innioasis Y1 with the MelodyMuncher theme.",
+            "screenshot": "./MelodyMuncher/cover.png"
         },
         {
             "name": "Melow",
@@ -3237,6 +3552,17 @@
             "searchText": "miffy cute made from the default theme, it's my first time creating one and aside from a few icon issues i think it turned out pretty cute and i thought others might like it\n\ni am so upset the preview/cover didn't show its a cute miffy plush image with headphones and the theme is beige, pink, and white. i promise its cutie when you actually look at it! prxncess_stxph miffy_cute"
         },
         {
+            "name": "myMiffy",
+            "folder": "Miffy_mp3li",
+            "author": "mp3li",
+            "authorUrl": "https://www.patreon.com/cw/mp3li",
+            "description": "Requested Miffy theme by mp3li. For other themes, check the Patreon. Before remixing/editing, read the entire license file.",
+            "screenshot": "./Miffy_mp3li/cover.png",
+            "sourceType": "internal",
+            "sortName": "mymiffy",
+            "searchText": "mymiffy requested miffy theme by mp3li. for other themes, check the patreon. before remixing/editing, read the entire license file. mp3li miffy_mp3li"
+        },
+        {
             "name": "Miles Morales",
             "folder": "Miles_Morales",
             "author": "hayden :3",
@@ -3245,6 +3571,17 @@
             "sourceType": "internal",
             "sortName": "miles morales",
             "searchText": "miles morales miles morales theme hayden :3 miles_morales"
+        },
+        {
+            "name": "Classic Millenial",
+            "folder": "Millennial",
+            "author": "u/jmaus2006",
+            "authorUrl": "https://www.github.com/jmaus2006",
+            "description": "A classic theme that takes you back to the 2000's",
+            "screenshot": "./Millennial/cover.png",
+            "sourceType": "internal",
+            "sortName": "classic millenial",
+            "searchText": "classic millenial a classic theme that takes you back to the 2000's u/jmaus2006 millennial"
         },
         {
             "name": "mimemamomy",
@@ -3288,6 +3625,17 @@
             "searchText": "minecraft classic a minecraft theme for old school players purplecray0ns minecraft_classic"
         },
         {
+            "name": "Mini Medieval (Clone)",
+            "folder": "Mini_Medieval__Clone",
+            "author": "u/medieval_stinkpot",
+            "authorUrl": "https://www.reddit.com/r/innioasis/comments/1pg9kog/made_a_medieval_theme/",
+            "description": "Mini Medieval theme in green!!",
+            "screenshot": "./Mini_Medieval__Clone/Cover.png",
+            "sourceType": "internal",
+            "sortName": "mini medieval (clone)",
+            "searchText": "mini medieval (clone) mini medieval theme in green!! u/medieval_stinkpot mini_medieval__clone"
+        },
+        {
             "name": "Minimal",
             "folder": "Minimal",
             "author": "diegocoxta",
@@ -3318,17 +3666,6 @@
             "authorUrl": "https://www.reddit.com/r/innioasis/comments/1pg9kog/made_a_medieval_theme/",
             "description": "Your old theme, it's history....",
             "screenshot": "./MiniMedieval/Cover.png"
-        },
-        {
-            "name": "Mini Medieval (Clone)",
-            "folder": "Mini_Medieval__Clone",
-            "author": "u/medieval_stinkpot",
-            "authorUrl": "https://www.reddit.com/r/innioasis/comments/1pg9kog/made_a_medieval_theme/",
-            "description": "Mini Medieval theme in green!!",
-            "screenshot": "./Mini_Medieval__Clone/Cover.png",
-            "sourceType": "internal",
-            "sortName": "mini medieval (clone)",
-            "searchText": "mini medieval (clone) mini medieval theme in green!! u/medieval_stinkpot mini_medieval__clone"
         },
         {
             "name": "Mirror's Edge",
@@ -3505,103 +3842,6 @@
             "searchText": "musica metro download the musica metro theme for innioasis y1 by u/angel_50000 and personalize your player's look with curated ui assets. u/angel_50000 musica_metro"
         },
         {
-            "name": "myACNH (Day v.)",
-            "folder": "ACNH",
-            "author": "mp3li",
-            "authorUrl": "https://www.patreon.com/cw/mp3li",
-            "description": "An Animal Crossing New Horizons theme for the Innioasis Y1 mp3 player. License: This theme may not be taken and hosted elsewhere. The only download location of this theme is the original creator, mp3li, on their Patreon. Community members may edit and change mp3li themes as long as they credit mp3li in their config description and public description.",
-            "screenshot": "./ACNH/[cover].png",
-            "variantFolders": [
-                "Night"
-            ],
-            "sourceType": "internal",
-            "sortName": "myacnh (day v.)",
-            "searchText": "myacnh (day v.) an animal crossing new horizons theme for the innioasis y1 mp3 player. license: this theme may not be taken and hosted elsewhere. the only download location of this theme is the original creator, mp3li, on their patreon. community members may edit and change mp3li themes as long as they credit mp3li in their config description and public description. mp3li acnh"
-        },
-        {
-            "name": "myAggretsuko (Pink Rage V.)",
-            "folder": "Aggretsuko",
-            "author": "mp3li",
-            "authorUrl": "https://www.patreon.com/cw/mp3li",
-            "description": "Aggretsuko Theme for the Innioasis Y1 mp3 player with Aggretsuko icons and backgrounds. Check the patreon for the other Sanrio themes. This theme may not be hosted elsewhere: only on mp3li original channels such as their Patreon and Github. Check license file in theme folder for more information.",
-            "screenshot": "./Aggretsuko/cover.png",
-            "variantFolders": [
-                "Teal Rage"
-            ],
-            "sourceType": "internal",
-            "sortName": "myaggretsuko (pink rage v.)",
-            "searchText": "myaggretsuko (pink rage v.) aggretsuko theme for the innioasis y1 mp3 player with aggretsuko icons and backgrounds. check the patreon for the other sanrio themes. this theme may not be hosted elsewhere: only on mp3li original channels such as their patreon and github. check license file in theme folder for more information. mp3li aggretsuko"
-        },
-        {
-            "name": "myBarbie (Movie V.)",
-            "folder": "Barbie_Movie",
-            "author": "mp3li",
-            "authorUrl": "https://www.patreon.com/cw/mp3li",
-            "description": "Barbie (Movie V.) theme for the Innioasis Y1 mp3 player, including Barbie movie icons and Barbie movie backgrounds. Check the Patreon for the other Y2K Toybox themes.",
-            "screenshot": "./Barbie_Movie/cover.png",
-            "sourceType": "internal",
-            "sortName": "mybarbie (movie v.)",
-            "searchText": "mybarbie (movie v.) barbie (movie v.) theme for the innioasis y1 mp3 player, including barbie movie icons and barbie movie backgrounds. check the patreon for the other y2k toybox themes. mp3li barbie_movie"
-        },
-        {
-            "name": "myBratz (Dolls V.)",
-            "folder": "Bratz",
-            "author": "mp3li",
-            "authorUrl": "https://www.patreon.com/cw/mp3li",
-            "description": "Bratz theme for the Innioasis Y1 mp3 player, including Bratz icons and Bratz backgrounds. Check the Patreon for the other Y2K Toybox themes. This theme may not be hosted elsewhere: only on mp3li original channels such as their Patreon and Github. Check license file in theme folder for more information.",
-            "screenshot": "./Bratz/cover.png",
-            "variantFolders": [
-                "Movies"
-            ],
-            "sourceType": "internal",
-            "sortName": "mybratz (dolls v.)",
-            "searchText": "mybratz (dolls v.) bratz theme for the innioasis y1 mp3 player, including bratz icons and bratz backgrounds. check the patreon for the other y2k toybox themes. this theme may not be hosted elsewhere: only on mp3li original channels such as their patreon and github. check license file in theme folder for more information. mp3li bratz"
-        },
-        {
-            "name": "myCake2",
-            "folder": "Cake2_mp3li",
-            "author": "mp3li",
-            "authorUrl": "https://www.patreon.com/cw/mp3li",
-            "description": "myCake2 Theme for the Innioasis Y1 mp3 player with cake icons and floral textile book backgrounds, and handwriting inspired font. Check the Patreon for other Tea, Toast and Cake themes. This theme may not be hosted elsewhere: only on mp3li original channels such as their Patreon and Github. Check license file in theme folder for more information.",
-            "screenshot": "./Cake2_mp3li/cover.png",
-            "sourceType": "internal",
-            "sortName": "mycake2",
-            "searchText": "mycake2 mycake2 theme for the innioasis y1 mp3 player with cake icons and floral textile book backgrounds, and handwriting inspired font. check the patreon for other tea, toast and cake themes. this theme may not be hosted elsewhere: only on mp3li original channels such as their patreon and github. check license file in theme folder for more information. mp3li cake2_mp3li"
-        },
-        {
-            "name": "myCareBears",
-            "folder": "Care_Bears",
-            "author": "mp3li",
-            "authorUrl": "https://www.patreon.com/cw/mp3li",
-            "description": "Care Bears theme for the Innioasis Y1 mp3 player, including Care Bears icons and Care Bears backgrounds. Check the Patreon for the other Y2K Toybox themes.",
-            "screenshot": "./Care_Bears/cover.png",
-            "sourceType": "internal",
-            "sortName": "mycarebears",
-            "searchText": "mycarebears care bears theme for the innioasis y1 mp3 player, including care bears icons and care bears backgrounds. check the patreon for the other y2k toybox themes. mp3li care_bears"
-        },
-        {
-            "name": "myDeathValley National Park",
-            "folder": "Death_Valley_National_Park",
-            "author": "mp3li",
-            "authorUrl": "https://www.patreon.com/cw/mp3li",
-            "description": "A minimal Death Valley National Park theme for the Innioasis Y1 MP3 player made by mp3li, featuring Death Valley National Park backgrounds and recognizing this land as the homeland of the Timbisha Shoshone, who know this place as Tumpisa. Part of the Defend the Parks collection. For other themes in this collection, visit mp3li's Patreon.",
-            "screenshot": "./Death_Valley_National_Park/cover.png",
-            "sourceType": "internal",
-            "sortName": "mydeathvalley national park",
-            "searchText": "mydeathvalley national park a minimal death valley national park theme for the innioasis y1 mp3 player made by mp3li, featuring death valley national park backgrounds and recognizing this land as the homeland of the timbisha shoshone, who know this place as tumpisa. part of the defend the parks collection. for other themes in this collection, visit mp3li's patreon. mp3li death_valley_national_park"
-        },
-        {
-            "name": "myEverglades National Park",
-            "folder": "Everglades_National_Park",
-            "author": "mp3li",
-            "authorUrl": "https://www.patreon.com/cw/mp3li",
-            "description": "A minimal Everglades National Park theme for the Innioasis Y1 MP3 player made by mp3li, featuring Everglades National Park backgrounds and recognizing this land as the homeland of the Miccosukee and Seminole peoples, who know this place as Pahayokee. Part of the Defend the Parks collection. For other themes in this collection, visit mp3li's Patreon.",
-            "screenshot": "./Everglades_National_Park/cover.png",
-            "sourceType": "internal",
-            "sortName": "myeverglades national park",
-            "searchText": "myeverglades national park a minimal everglades national park theme for the innioasis y1 mp3 player made by mp3li, featuring everglades national park backgrounds and recognizing this land as the homeland of the miccosukee and seminole peoples, who know this place as pahayokee. part of the defend the parks collection. for other themes in this collection, visit mp3li's patreon. mp3li everglades_national_park"
-        },
-        {
             "name": "My Friendly Neighborhood",
             "folder": "My_Friendly_Neighborhood",
             "author": "Robertpuggle",
@@ -3610,72 +3850,6 @@
             "sourceType": "internal",
             "sortName": "my friendly neighborhood",
             "searchText": "my friendly neighborhood download the my friendly neighborhood theme for innioasis y1 & y2 by robertpuggle and personalize your player's look with curated ui assets. robertpuggle my_friendly_neighborhood"
-        },
-        {
-            "name": "myGlacier National Park",
-            "folder": "Glacier_National_Park",
-            "author": "mp3li",
-            "authorUrl": "https://www.patreon.com/cw/mp3li",
-            "description": "A minimal Glacier National Park theme for the Innioasis Y1 MP3 player made by mp3li, featuring Glacier National Park backgrounds and recognizing this land as the homeland of the Blackfeet Nation and the Ktunaxa people, who know these mountains as Miistakis. Part of the Defend the Parks collection. For other themes in this collection, visit mp3li's Patreon.",
-            "screenshot": "./Glacier_National_Park/cover.png",
-            "sourceType": "internal",
-            "sortName": "myglacier national park",
-            "searchText": "myglacier national park a minimal glacier national park theme for the innioasis y1 mp3 player made by mp3li, featuring glacier national park backgrounds and recognizing this land as the homeland of the blackfeet nation and the ktunaxa people, who know these mountains as miistakis. part of the defend the parks collection. for other themes in this collection, visit mp3li's patreon. mp3li glacier_national_park"
-        },
-        {
-            "name": "myGrandCanyon National Park",
-            "folder": "Grand_Canyon_National_Park",
-            "author": "mp3li",
-            "authorUrl": "https://www.patreon.com/cw/mp3li",
-            "description": "A minimal Grand Canyon National Park theme for the Innioasis Y1 MP3 player made by mp3li, featuring Grand Canyon National Park backgrounds and recognizing this land as the homeland of the Havasupai, Hopi, Hualapai, and Navajo peoples, who know this place as Ongtupqa. Part of the Defend the Parks collection. For other themes in this collection, visit mp3li's Patreon.",
-            "screenshot": "./Grand_Canyon_National_Park/cover.png",
-            "sourceType": "internal",
-            "sortName": "mygrandcanyon national park",
-            "searchText": "mygrandcanyon national park a minimal grand canyon national park theme for the innioasis y1 mp3 player made by mp3li, featuring grand canyon national park backgrounds and recognizing this land as the homeland of the havasupai, hopi, hualapai, and navajo peoples, who know this place as ongtupqa. part of the defend the parks collection. for other themes in this collection, visit mp3li's patreon. mp3li grand_canyon_national_park"
-        },
-        {
-            "name": "myHannahMontana",
-            "folder": "Hannah_Montana",
-            "author": "mp3li",
-            "authorUrl": "https://www.patreon.com/cw/mp3li",
-            "description": "Hannah Montana theme for the Innioasis Y1 mp3 player, including Hannah Montana icons and Hannah Montana backgrounds. Check the Patreon for the other Y2K Toybox themes.",
-            "screenshot": "./Hannah_Montana/cover.png",
-            "sourceType": "internal",
-            "sortName": "myhannahmontana",
-            "searchText": "myhannahmontana hannah montana theme for the innioasis y1 mp3 player, including hannah montana icons and hannah montana backgrounds. check the patreon for the other y2k toybox themes. mp3li hannah_montana"
-        },
-        {
-            "name": "myKeroppi",
-            "folder": "Keroppi_mp3li",
-            "author": "mp3li",
-            "authorUrl": "https://www.patreon.com/cw/mp3li",
-            "description": "Keroppi Theme for the Innioasis Y1 mp3 player with Keroppi icons and background. Check the patreon for other Sanrio themes. This theme may not be hosted elsewhere: only on mp3li original channels such as their Patreon and Github. Check license file in theme folder for more information.",
-            "screenshot": "./Keroppi_mp3li/cover.png",
-            "sourceType": "internal",
-            "sortName": "mykeroppi",
-            "searchText": "mykeroppi keroppi theme for the innioasis y1 mp3 player with keroppi icons and background. check the patreon for other sanrio themes. this theme may not be hosted elsewhere: only on mp3li original channels such as their patreon and github. check license file in theme folder for more information. mp3li keroppi_mp3li"
-        },
-        {
-            "name": "myKingdomHearts Chain of Memories (Atlantis V.)",
-            "folder": "Kingdom_Hearts_CoM_Atlantis",
-            "author": "mp3li",
-            "authorUrl": "https://www.patreon.com/cw/mp3li",
-            "description": "Kingdom Hearts Chain of Memories (Atlantis V.) theme for the Innioasis Y1 mp3 player, by mp3li.",
-            "screenshot": "./Kingdom_Hearts_CoM_Atlantis/mp3li kingdom hearts atlantis theme asset 81.png",
-            "sourceType": "internal",
-            "sortName": "mykingdomhearts chain of memories (atlantis v.)",
-            "searchText": "mykingdomhearts chain of memories (atlantis v.) kingdom hearts chain of memories (atlantis v.) theme for the innioasis y1 mp3 player, by mp3li. mp3li kingdom_hearts_com_atlantis"
-        },
-        {
-            "name": "myLisaFrank",
-            "folder": "Lisa_Frank",
-            "author": "mp3li",
-            "authorUrl": "https://www.patreon.com/cw/mp3li",
-            "description": "Lisa Frank theme for the Innioasis Y1 mp3 player, including Lisa Frank icons and Lisa Frank backgrounds. Check the Patreon for the other Y2K Toybox themes.",
-            "screenshot": "./Lisa_Frank/cover.png",
-            "sourceType": "internal",
-            "sortName": "mylisafrank",
-            "searchText": "mylisafrank lisa frank theme for the innioasis y1 mp3 player, including lisa frank icons and lisa frank backgrounds. check the patreon for the other y2k toybox themes. mp3li lisa_frank"
         },
         {
             "name": "My Little Pony",
@@ -3698,64 +3872,6 @@
             "searchText": "my little pony! (mlp) characters: (all in background) pinkie pie, derpy hooves, sunset shimmer sib my_little_pony___mlp"
         },
         {
-            "name": "myMiffy",
-            "folder": "Miffy_mp3li",
-            "author": "mp3li",
-            "authorUrl": "https://www.patreon.com/cw/mp3li",
-            "description": "Requested Miffy theme by mp3li. For other themes, check the Patreon. Before remixing/editing, read the entire license file.",
-            "screenshot": "./Miffy_mp3li/cover.png",
-            "sourceType": "internal",
-            "sortName": "mymiffy",
-            "searchText": "mymiffy requested miffy theme by mp3li. for other themes, check the patreon. before remixing/editing, read the entire license file. mp3li miffy_mp3li"
-        },
-        {
-            "name": "myOlympic National Park",
-            "folder": "Olympic_National_Park",
-            "author": "mp3li",
-            "authorUrl": "https://www.patreon.com/cw/mp3li",
-            "description": "A minimal Olympic National Park theme for the Innioasis Y1 MP3 player made by mp3li, featuring Olympic National Park backgrounds and recognizing this land as the homeland of the Quileute, Hoh, and Makah peoples, whose homelands include the Olympic Peninsula. Part of the Defend the Parks collection. For other themes in this collection, visit mp3li's Patreon.",
-            "screenshot": "./Olympic_National_Park/cover.png",
-            "sourceType": "internal",
-            "sortName": "myolympic national park",
-            "searchText": "myolympic national park a minimal olympic national park theme for the innioasis y1 mp3 player made by mp3li, featuring olympic national park backgrounds and recognizing this land as the homeland of the quileute, hoh, and makah peoples, whose homelands include the olympic peninsula. part of the defend the parks collection. for other themes in this collection, visit mp3li's patreon. mp3li olympic_national_park"
-        },
-        {
-            "name": "myPollyPocket",
-            "folder": "Polly_Pocket",
-            "author": "mp3li",
-            "authorUrl": "https://www.patreon.com/cw/mp3li",
-            "description": "Polly Pocket theme for the Innioasis Y1 mp3 player, including Polly Pocket icons and Polly Pocket backgrounds. Check the Patreon for the other Y2K Toybox themes.",
-            "screenshot": "./Polly_Pocket/cover.png",
-            "sourceType": "internal",
-            "sortName": "mypollypocket",
-            "searchText": "mypollypocket polly pocket theme for the innioasis y1 mp3 player, including polly pocket icons and polly pocket backgrounds. check the patreon for the other y2k toybox themes. mp3li polly_pocket"
-        },
-        {
-            "name": "myRainierNationalPark",
-            "folder": "Rainier_National_Park",
-            "author": "mp3li",
-            "authorUrl": "https://www.patreon.com/cw/mp3li",
-            "description": "A minimal Mount Rainier National Park theme for the Innioasis Y1 MP3 player made by mp3li, featuring Mount Rainier National Park backgrounds and recognizing this land as the homeland of the Puyallup, Nisqually, and Yakama peoples, who know the mountain as Tahoma. Part of the Defend the Parks collection. For other themes in this collection, visit mp3li's Patreon.",
-            "screenshot": "./Rainier_National_Park/cover.png",
-            "sourceType": "internal",
-            "sortName": "myrainiernationalpark",
-            "searchText": "myrainiernationalpark a minimal mount rainier national park theme for the innioasis y1 mp3 player made by mp3li, featuring mount rainier national park backgrounds and recognizing this land as the homeland of the puyallup, nisqually, and yakama peoples, who know the mountain as tahoma. part of the defend the parks collection. for other themes in this collection, visit mp3li's patreon. mp3li rainier_national_park"
-        },
-        {
-            "name": "mySailorMoon 1",
-            "folder": "Sailor_Moon_mp3li",
-            "author": "mp3li",
-            "authorUrl": "https://www.patreon.com/cw/mp3li",
-            "description": "Requested Sailor Moon theme by mp3li. For other themes, check the Patreon. Before remixing/editing, read the entire license file.",
-            "screenshot": "./Sailor_Moon_mp3li/cover.png",
-            "variantFolders": [
-                "3"
-            ],
-            "sourceType": "internal",
-            "sortName": "mysailormoon 1",
-            "searchText": "mysailormoon 1 requested sailor moon theme by mp3li. for other themes, check the patreon. before remixing/editing, read the entire license file. mp3li sailor_moon_mp3li"
-        },
-        {
             "name": "Myspace",
             "folder": "Myspace",
             "author": "Sassie-Sammie",
@@ -3767,47 +3883,6 @@
             "searchText": "myspace simple black&white with glitter background theme. built upon u/neither-classic2058's yellowsub theme. sassie-sammie myspace"
         },
         {
-            "name": "myStardewValley",
-            "folder": "Stardew_Valley",
-            "author": "mp3li",
-            "authorUrl": "https://www.patreon.com/cw/mp3li",
-            "description": "Stardew Valley theme for the Innioasis Y1 mp3 player made by mp3li. This theme contains original and custom made work by mp3li, including all icons and more. Check the license file for more information. Check the Patreon for more themes by mp3li.",
-            "screenshot": "./Stardew_Valley/cover.png",
-            "sourceType": "internal",
-            "sortName": "mystardewvalley",
-            "searchText": "mystardewvalley stardew valley theme for the innioasis y1 mp3 player made by mp3li. this theme contains original and custom made work by mp3li, including all icons and more. check the license file for more information. check the patreon for more themes by mp3li. mp3li stardew_valley"
-        },
-        {
-            "name": "myStrawberryShortcake (80s V.)",
-            "folder": "Strawberry_Shortcake",
-            "author": "mp3li",
-            "authorUrl": "https://www.patreon.com/cw/mp3li",
-            "description": "Requested Strawberry Shortcake (80s V.) theme by mp3li. For other themes, check the Patreon. Before remixing/editing, read the entire license file.",
-            "screenshot": "./Strawberry_Shortcake/cover.png",
-            "variantFolders": [
-                "2003"
-            ],
-            "sourceType": "internal",
-            "sortName": "mystrawberryshortcake (80s v.)",
-            "searchText": "mystrawberryshortcake (80s v.) requested strawberry shortcake (80s v.) theme by mp3li. for other themes, check the patreon. before remixing/editing, read the entire license file. mp3li strawberry_shortcake"
-        },
-        {
-            "name": "myStudioGhibli (Spirited Away V.)",
-            "folder": "Studio_Ghibli",
-            "author": "mp3li",
-            "authorUrl": "https://www.patreon.com/cw/mp3li",
-            "description": "Studio Ghibli Theme for the Innioasis Y1 mp3 player with Spirited Away backgrounds. Check the patreon for the other Ghibli themes. This theme may not be hosted elsewhere: only on mp3li original channels such as their Patreon and Github. Check license file in theme folder for more information.",
-            "screenshot": "./Studio_Ghibli/[cover].png",
-            "variantFolders": [
-                "Howls Moving Castle",
-                "Kikis Delivery Service",
-                "Princess Mononoke"
-            ],
-            "sourceType": "internal",
-            "sortName": "mystudioghibli (spirited away v.)",
-            "searchText": "mystudioghibli (spirited away v.) studio ghibli theme for the innioasis y1 mp3 player with spirited away backgrounds. check the patreon for the other ghibli themes. this theme may not be hosted elsewhere: only on mp3li original channels such as their patreon and github. check license file in theme folder for more information. mp3li studio_ghibli"
-        },
-        {
             "name": "MySweetPiano&MyMelody",
             "folder": "MySweetPiano&MyMelody",
             "author": "Angel_50000",
@@ -3817,89 +3892,6 @@
             "searchText": "mysweetpiano&mymelody mysweetpiano&mymelody theme for innioasis y1. angel_50000 mysweetpiano&mymelody",
             "description": "MySweetPiano&MyMelody theme for Innioasis Y1.",
             "screenshot": "./MySweetPiano&MyMelody/cover.png"
-        },
-        {
-            "name": "myTamagotchi (Handheld V.)",
-            "folder": "Tamagotchi_mp3li",
-            "author": "mp3li",
-            "authorUrl": "https://www.patreon.com/cw/mp3li",
-            "description": "Tamagotchi (V1) theme for the Innioasis Y1 mp3 player, including Tamagotchi device and character icons and Tamagotchi backgrounds. Check the Patreon for the other Y2K Toybox themes. This theme may not be hosted elsewhere: only on mp3li original channels such as their Patreon and Github. Check license file in theme folder for more information. Font by @glazentchi, go check them out and support them!",
-            "screenshot": "./Tamagotchi_mp3li/cover.png",
-            "variantFolders": [
-                "Game Boy"
-            ],
-            "sourceType": "internal",
-            "sortName": "mytamagotchi (handheld v.)",
-            "searchText": "mytamagotchi (handheld v.) tamagotchi (v1) theme for the innioasis y1 mp3 player, including tamagotchi device and character icons and tamagotchi backgrounds. check the patreon for the other y2k toybox themes. this theme may not be hosted elsewhere: only on mp3li original channels such as their patreon and github. check license file in theme folder for more information. font by @glazentchi, go check them out and support them! mp3li tamagotchi_mp3li"
-        },
-        {
-            "name": "myTea",
-            "folder": "Tea_mp3li",
-            "author": "mp3li",
-            "authorUrl": "https://www.patreon.com/cw/mp3li",
-            "description": "myTea Theme for the Innioasis Y1 mp3 player with tea cup and tea bag icons, floral textile backgrounds, and Bridgerton inspired font. Check the Patreon for other themes. This theme may not be hosted elsewhere: only on mp3li original channels such as their Patreon and Github. Check license file in theme folder for more information.",
-            "screenshot": "./Tea_mp3li/cover.png",
-            "sourceType": "internal",
-            "sortName": "mytea",
-            "searchText": "mytea mytea theme for the innioasis y1 mp3 player with tea cup and tea bag icons, floral textile backgrounds, and bridgerton inspired font. check the patreon for other themes. this theme may not be hosted elsewhere: only on mp3li original channels such as their patreon and github. check license file in theme folder for more information. mp3li tea_mp3li"
-        },
-        {
-            "name": "myTinkerbell",
-            "folder": "Tinkerbell_mp3li",
-            "author": "mp3li",
-            "authorUrl": "https://www.patreon.com/cw/mp3li",
-            "description": "Tinkerbell theme for the Innioasis Y1 mp3 player, including Tinkerbell and other Pixie Hollow fairy icons and Pixie Hollow backgrounds. Check the Patreon for the other Y2K Toybox themes.",
-            "screenshot": "./Tinkerbell_mp3li/bg2 (cropped).png",
-            "sourceType": "internal",
-            "sortName": "mytinkerbell",
-            "searchText": "mytinkerbell tinkerbell theme for the innioasis y1 mp3 player, including tinkerbell and other pixie hollow fairy icons and pixie hollow backgrounds. check the patreon for the other y2k toybox themes. mp3li tinkerbell_mp3li"
-        },
-        {
-            "name": "myToast",
-            "folder": "Toast",
-            "author": "mp3li",
-            "authorUrl": "https://www.patreon.com/cw/mp3li",
-            "description": "myToast2 Theme for the Innioasis Y1 mp3 player with toast icons and floral textile backgrounds, and Bridgerton inspired font. Check the Patreon for other Tea and Toast themes. This theme may not be hosted elsewhere: only on mp3li original channels such as their Patreon and Github. Check license file in theme folder for more information.",
-            "screenshot": "./Toast/[cover].png",
-            "variantFolders": [
-                "Toast2"
-            ],
-            "sourceType": "internal",
-            "sortName": "mytoast",
-            "searchText": "mytoast mytoast2 theme for the innioasis y1 mp3 player with toast icons and floral textile backgrounds, and bridgerton inspired font. check the patreon for other tea and toast themes. this theme may not be hosted elsewhere: only on mp3li original channels such as their patreon and github. check license file in theme folder for more information. mp3li toast"
-        },
-        {
-            "name": "myTotallySpies",
-            "folder": "Totally_Spies",
-            "author": "mp3li",
-            "authorUrl": "https://www.patreon.com/cw/mp3li",
-            "description": "Requested Totally Spies theme by mp3li. For other themes, check the Patreon. Before remixing/editing, read the entire license file.",
-            "screenshot": "./Totally_Spies/cover.png",
-            "sourceType": "internal",
-            "sortName": "mytotallyspies",
-            "searchText": "mytotallyspies requested totally spies theme by mp3li. for other themes, check the patreon. before remixing/editing, read the entire license file. mp3li totally_spies"
-        },
-        {
-            "name": "myYellowstone National Park",
-            "folder": "Yellowstone_National_Park",
-            "author": "mp3li",
-            "authorUrl": "https://www.patreon.com/cw/mp3li",
-            "description": "A minimal Yellowstone National Park theme for the Innioasis Y1 MP3 player made by mp3li, featuring Yellowstone National Park backgrounds and recognizing this land as the homeland of the Shoshone, Crow, and Blackfeet peoples, whose ancestral lands include the Yellowstone Plateau. Part of the Defend the Parks collection. For other themes in this collection, visit mp3li's Patreon.",
-            "screenshot": "./Yellowstone_National_Park/cover.png",
-            "sourceType": "internal",
-            "sortName": "myyellowstone national park",
-            "searchText": "myyellowstone national park a minimal yellowstone national park theme for the innioasis y1 mp3 player made by mp3li, featuring yellowstone national park backgrounds and recognizing this land as the homeland of the shoshone, crow, and blackfeet peoples, whose ancestral lands include the yellowstone plateau. part of the defend the parks collection. for other themes in this collection, visit mp3li's patreon. mp3li yellowstone_national_park"
-        },
-        {
-            "name": "myYosemite National Park",
-            "folder": "Yosemite_National_Park",
-            "author": "mp3li",
-            "authorUrl": "https://www.patreon.com/cw/mp3li",
-            "description": "A minimal Yosemite National Park theme for the Innioasis Y1 MP3 player made by mp3li, featuring Yosemite National Park backgrounds and recognizing this land as the homeland of the Ahwahnechee people, who know this place as Ahwahnee. Part of the Defend the Parks collection. For other themes in this collection, visit mp3li's Patreon.",
-            "screenshot": "./Yosemite_National_Park/cover.png",
-            "sourceType": "internal",
-            "sortName": "myyosemite national park",
-            "searchText": "myyosemite national park a minimal yosemite national park theme for the innioasis y1 mp3 player made by mp3li, featuring yosemite national park backgrounds and recognizing this land as the homeland of the ahwahnechee people, who know this place as ahwahnee. part of the defend the parks collection. for other themes in this collection, visit mp3li's patreon. mp3li yosemite_national_park"
         },
         {
             "name": "N",
@@ -3944,17 +3936,6 @@
             "searchText": "neapolitan style! if you like strawberry, vanilla and chocolate, come check it out! :d sib neapolitan_style"
         },
         {
-            "name": "NeonNights",
-            "folder": "NeonNights",
-            "sourceType": "internal",
-            "sortName": "neonnights",
-            "searchText": "neonnights a dark neon theme that is easier to use with the limitations of the stock theme support. u/neither-classic2058 neonnights",
-            "author": "u/Neither-Classic2058",
-            "authorUrl": "https://reddit.com/u/Neither-Classic2058",
-            "description": "A dark neon theme that is easier to use with the limitations of the stock theme support.",
-            "screenshot": "./NeonNights/cover.png"
-        },
-        {
             "name": "neo soul aesthetic",
             "folder": "neo_soul_aesthetic",
             "author": "maï",
@@ -3964,6 +3945,17 @@
             "sourceType": "internal",
             "sortName": "neo soul aesthetic",
             "searchText": "neo soul aesthetic download the neo soul aesthetic theme for innioasis y1 & y2 by maï and personalize your player's look with curated ui assets. maï neo_soul_aesthetic"
+        },
+        {
+            "name": "NeonNights",
+            "folder": "NeonNights",
+            "sourceType": "internal",
+            "sortName": "neonnights",
+            "searchText": "neonnights a dark neon theme that is easier to use with the limitations of the stock theme support. u/neither-classic2058 neonnights",
+            "author": "u/Neither-Classic2058",
+            "authorUrl": "https://reddit.com/u/Neither-Classic2058",
+            "description": "A dark neon theme that is easier to use with the limitations of the stock theme support.",
+            "screenshot": "./NeonNights/cover.png"
         },
         {
             "name": "New jeans",
@@ -4007,6 +3999,16 @@
             "sourceType": "internal",
             "sortName": "ngts",
             "searchText": "ngts download the ngts theme for innioasis y1 & y2 by retsuko sea  fish and personalize your player's look with curated ui assets. retsuko sea  fish ngts"
+        },
+        {
+            "name": "[NIИ] stuff",
+            "folder": "NI__stuff",
+            "author": "kolo",
+            "description": "NINE INCH NAILS RULZ! Theme for true industrial suckers.",
+            "screenshot": "./NI__stuff/cover.png",
+            "sourceType": "internal",
+            "sortName": "[niи] stuff",
+            "searchText": "[niи] stuff nine inch nails rulz! theme for true industrial suckers. kolo ni__stuff"
         },
         {
             "name": "night",
@@ -4072,14 +4074,14 @@
             "searchText": "nigyhs download the nigyhs theme for innioasis y1 & y2 by rpf and personalize your player's look with curated ui assets. rpf nigyhs"
         },
         {
-            "name": "[NIИ] stuff",
-            "folder": "NI__stuff",
-            "author": "kolo",
-            "description": "NINE INCH NAILS RULZ! Theme for true industrial suckers.",
-            "screenshot": "./NI__stuff/cover.png",
+            "name": "Steven Universe (2)",
+            "folder": "No homepage items",
+            "author": "purplecray0ns",
+            "description": "Same theme with Attack the Light items removed (if you want a cleaner look)",
+            "screenshot": "./No homepage items/cover.png",
             "sourceType": "internal",
-            "sortName": "[niи] stuff",
-            "searchText": "[niи] stuff nine inch nails rulz! theme for true industrial suckers. kolo ni__stuff"
+            "sortName": "steven universe (2)",
+            "searchText": "steven universe (2) same theme with attack the light items removed (if you want a cleaner look) purplecray0ns no homepage items"
         },
         {
             "name": "nostalgic kitties",
@@ -4174,6 +4176,17 @@
             "sourceType": "internal",
             "sortName": "olivia rodrigo",
             "searchText": "olivia rodrigo this theme is based on olivia rodrigo's new album!\n\nupdates:\n8/24\nupdated font to match the one on the website more accurate ethan anaya olivia_rodrigo"
+        },
+        {
+            "name": "myOlympic National Park",
+            "folder": "Olympic_National_Park",
+            "author": "mp3li",
+            "authorUrl": "https://www.patreon.com/cw/mp3li",
+            "description": "A minimal Olympic National Park theme for the Innioasis Y1 MP3 player made by mp3li, featuring Olympic National Park backgrounds and recognizing this land as the homeland of the Quileute, Hoh, and Makah peoples, whose homelands include the Olympic Peninsula. Part of the Defend the Parks collection. For other themes in this collection, visit mp3li's Patreon.",
+            "screenshot": "./Olympic_National_Park/cover.png",
+            "sourceType": "internal",
+            "sortName": "myolympic national park",
+            "searchText": "myolympic national park a minimal olympic national park theme for the innioasis y1 mp3 player made by mp3li, featuring olympic national park backgrounds and recognizing this land as the homeland of the quileute, hoh, and makah peoples, whose homelands include the olympic peninsula. part of the defend the parks collection. for other themes in this collection, visit mp3li's patreon. mp3li olympic_national_park"
         },
         {
             "name": "OMORI-LAST RESORT",
@@ -4319,6 +4332,16 @@
             "searchText": "percy jackson percy jackson theme caycaystudio percy_jackson"
         },
         {
+            "name": "Persona5",
+            "folder": "Persona5",
+            "author": "kawaiiseraphichi",
+            "description": "persona 5",
+            "screenshot": "./Persona5/cover.png",
+            "sourceType": "internal",
+            "sortName": "persona5",
+            "searchText": "persona5 persona 5 kawaiiseraphichi persona5"
+        },
+        {
             "name": "Persona 3",
             "folder": "Persona_3",
             "author": "kawaiisraphichi",
@@ -4329,14 +4352,14 @@
             "searchText": "persona 3 persona 3 reload kawaiisraphichi persona_3"
         },
         {
-            "name": "Persona5",
-            "folder": "Persona5",
-            "author": "kawaiiseraphichi",
-            "description": "persona 5",
-            "screenshot": "./Persona5/cover.png",
+            "name": "Persona 5 V2",
+            "folder": "Persona_5",
+            "author": "Antônio Felipe",
+            "description": "VIVA OS FÃS DE PERSONA, Em breve criarei um de persona 3",
+            "screenshot": "./Persona_5/cover.png",
             "sourceType": "internal",
-            "sortName": "persona5",
-            "searchText": "persona5 persona 5 kawaiiseraphichi persona5"
+            "sortName": "persona 5 v2",
+            "searchText": "persona 5 v2 viva os fãs de persona, em breve criarei um de persona 3 antônio felipe persona_5"
         },
         {
             "name": "Persona 5 R",
@@ -4357,16 +4380,6 @@
             "sourceType": "internal",
             "sortName": "persona 5 royal",
             "searchText": "persona 5 royal wake up get up get out there. raise your voice against liars. feed your anger like fire. why does nobody want changeee? glass salad persona_5_royal"
-        },
-        {
-            "name": "Persona 5 V2",
-            "folder": "Persona_5",
-            "author": "Antônio Felipe",
-            "description": "VIVA OS FÃS DE PERSONA, Em breve criarei um de persona 3",
-            "screenshot": "./Persona_5/cover.png",
-            "sourceType": "internal",
-            "sortName": "persona 5 v2",
-            "searchText": "persona 5 v2 viva os fãs de persona, em breve criarei um de persona 3 antônio felipe persona_5"
         },
         {
             "name": "Phasmophobia",
@@ -4397,17 +4410,6 @@
             "sourceType": "internal",
             "sortName": "pink",
             "searchText": "pink still a win, my first theme so still figuring stuff out ladybug realness pink"
-        },
-        {
-            "name": "pink",
-            "folder": "pink_judy",
-            "author": "Judy",
-            "authorUrl": "https:// I don't wanna put anything here",
-            "description": "This theme is too represent the pink life",
-            "screenshot": "./pink_judy/cover.png",
-            "sourceType": "internal",
-            "sortName": "pink",
-            "searchText": "pink this theme is too represent the pink life judy pink_judy"
         },
         {
             "name": "Pink Adela",
@@ -4472,16 +4474,6 @@
             "searchText": "pink and purple - spring just a cute pink and purple theme to look at. cindym pink_and_purple_-_spring"
         },
         {
-            "name": "Pinkerton",
-            "folder": "Pinkerton",
-            "author": "smiling",
-            "description": "Download the Pinkerton theme for Innioasis Y1 & Y2 by smiling and personalize your player's look with curated UI assets.",
-            "screenshot": "./Pinkerton/cover.png",
-            "sourceType": "internal",
-            "sortName": "pinkerton",
-            "searchText": "pinkerton download the pinkerton theme for innioasis y1 & y2 by smiling and personalize your player's look with curated ui assets. smiling pinkerton"
-        },
-        {
             "name": "Pink Ethereal Princess",
             "folder": "Pink_Ethereal_Princess",
             "author": "Serene Oasis",
@@ -4492,25 +4484,15 @@
             "searchText": "pink ethereal princess download the pink ethereal princess theme for innioasis y1 & y2 by serene oasis and personalize your player's look with curated ui assets. serene oasis pink_ethereal_princess"
         },
         {
-            "name": "Pinkie Pop updated",
-            "folder": "Pinkie_Pop_updated",
-            "author": "vivi",
-            "description": "Download the Pinkie Pop updated theme for Innioasis Y1 by vivi and personalize your player's look with curated UI assets.",
-            "screenshot": "./Pinkie_Pop_updated/cover_YS.png",
+            "name": "pink",
+            "folder": "pink_judy",
+            "author": "Judy",
+            "authorUrl": "https:// I don't wanna put anything here",
+            "description": "This theme is too represent the pink life",
+            "screenshot": "./pink_judy/cover.png",
             "sourceType": "internal",
-            "sortName": "pinkie pop updated",
-            "searchText": "pinkie pop updated download the pinkie pop updated theme for innioasis y1 by vivi and personalize your player's look with curated ui assets. vivi pinkie_pop_updated"
-        },
-        {
-            "name": "PinkMartini",
-            "folder": "PinkMartini",
-            "sourceType": "internal",
-            "sortName": "pinkmartini",
-            "searchText": "pinkmartini this theme is a pink variation of cupertino with custom icons. neither-classic2058 pinkmartini",
-            "author": "Neither-Classic2058",
-            "authorUrl": "https://reddit.com/Neither-Classic2058",
-            "description": "This theme is a pink variation of Cupertino with custom icons.",
-            "screenshot": "./PinkMartini/@PM_cover.png"
+            "sortName": "pink",
+            "searchText": "pink this theme is too represent the pink life judy pink_judy"
         },
         {
             "name": "Pink Medieval",
@@ -4553,16 +4535,6 @@
             "searchText": "pink pomni i made this because i havent seen many tadc themes, ashley marinette pink_pomni"
         },
         {
-            "name": "PinkTheme",
-            "folder": "PinkTheme",
-            "author": "hydroxyzined",
-            "description": "Download the PinkTheme theme for Innioasis Y1 & Y2 by hydroxyzined and personalize your player's look with curated UI assets.",
-            "screenshot": "./PinkTheme/cover.png",
-            "sourceType": "internal",
-            "sortName": "pinktheme",
-            "searchText": "pinktheme download the pinktheme theme for innioasis y1 & y2 by hydroxyzined and personalize your player's look with curated ui assets. hydroxyzined pinktheme"
-        },
-        {
             "name": "pink y2k",
             "folder": "pink_y2k",
             "author": "bee",
@@ -4583,25 +4555,45 @@
             "searchText": "pink y3k cirl a somewhat futuristic pink aesthtic y3k theme, perfect for the pastel pink colored innioasis aisha shanaya wasi pink_y3k_cirl"
         },
         {
-            "name": "Pip-Boy",
-            "folder": "Fallout Pip-Boy",
-            "author": "Arthur_Moss",
-            "authorUrl": "https://www.reddit.com/user/Arthur_Moss/",
-            "description": "This theme is inspired by the Pip-boy from the Fallout 3 game.",
-            "screenshot": "./Fallout Pip-Boy/cover.png",
-            "defaultVariantLabel": "1G",
+            "name": "Pinkerton",
+            "folder": "Pinkerton",
+            "author": "smiling",
+            "description": "Download the Pinkerton theme for Innioasis Y1 & Y2 by smiling and personalize your player's look with curated UI assets.",
+            "screenshot": "./Pinkerton/cover.png",
             "sourceType": "internal",
-            "sortName": "pip-boy",
-            "searchText": "pip-boy this theme is inspired by the pip-boy from the fallout 3 game. arthur_moss fallout pip-boy",
-            "variantFolders": [
-                "1M",
-                "1P",
-                "1RG",
-                "1RM",
-                "1RP",
-                "1RY",
-                "1Y"
-            ]
+            "sortName": "pinkerton",
+            "searchText": "pinkerton download the pinkerton theme for innioasis y1 & y2 by smiling and personalize your player's look with curated ui assets. smiling pinkerton"
+        },
+        {
+            "name": "Pinkie Pop updated",
+            "folder": "Pinkie_Pop_updated",
+            "author": "vivi",
+            "description": "Download the Pinkie Pop updated theme for Innioasis Y1 by vivi and personalize your player's look with curated UI assets.",
+            "screenshot": "./Pinkie_Pop_updated/cover_YS.png",
+            "sourceType": "internal",
+            "sortName": "pinkie pop updated",
+            "searchText": "pinkie pop updated download the pinkie pop updated theme for innioasis y1 by vivi and personalize your player's look with curated ui assets. vivi pinkie_pop_updated"
+        },
+        {
+            "name": "PinkMartini",
+            "folder": "PinkMartini",
+            "sourceType": "internal",
+            "sortName": "pinkmartini",
+            "searchText": "pinkmartini this theme is a pink variation of cupertino with custom icons. neither-classic2058 pinkmartini",
+            "author": "Neither-Classic2058",
+            "authorUrl": "https://reddit.com/Neither-Classic2058",
+            "description": "This theme is a pink variation of Cupertino with custom icons.",
+            "screenshot": "./PinkMartini/@PM_cover.png"
+        },
+        {
+            "name": "PinkTheme",
+            "folder": "PinkTheme",
+            "author": "hydroxyzined",
+            "description": "Download the PinkTheme theme for Innioasis Y1 & Y2 by hydroxyzined and personalize your player's look with curated UI assets.",
+            "screenshot": "./PinkTheme/cover.png",
+            "sourceType": "internal",
+            "sortName": "pinktheme",
+            "searchText": "pinktheme download the pinktheme theme for innioasis y1 & y2 by hydroxyzined and personalize your player's look with curated ui assets. hydroxyzined pinktheme"
         },
         {
             "name": "Pixel Fight Club",
@@ -4708,6 +4700,16 @@
             "searchText": "pokemon rumble pokemon rumble theme robertpuggle pokemon_rumble"
         },
         {
+            "name": "Polka dots",
+            "folder": "Polka_dots",
+            "author": "Cluxdyvtears",
+            "description": "A cute and soft polka dot theme",
+            "screenshot": "./Polka_dots/cover.png",
+            "sourceType": "internal",
+            "sortName": "polka dots",
+            "searchText": "polka dots a cute and soft polka dot theme cluxdyvtears polka_dots"
+        },
+        {
             "name": "polkadotgirly (lexi's theme)",
             "folder": "polkadotgirly",
             "author": "nimkypoop",
@@ -4718,14 +4720,15 @@
             "searchText": "polkadotgirly (lexi's theme) hiii i made this 4 the lexi girlies from this band called sicknote!! or 4 those who love pink n polka dots!! pls be mindful i cant change the white text display when the song is playing. thank u for ur understanding <3 \n\nhaving issues? friend rq me @nimkypoop on discord n ill try my best to help u! nimkypoop polkadotgirly"
         },
         {
-            "name": "Polka dots",
-            "folder": "Polka_dots",
-            "author": "Cluxdyvtears",
-            "description": "A cute and soft polka dot theme",
-            "screenshot": "./Polka_dots/cover.png",
+            "name": "myPollyPocket",
+            "folder": "Polly_Pocket",
+            "author": "mp3li",
+            "authorUrl": "https://www.patreon.com/cw/mp3li",
+            "description": "Polly Pocket theme for the Innioasis Y1 mp3 player, including Polly Pocket icons and Polly Pocket backgrounds. Check the Patreon for the other Y2K Toybox themes.",
+            "screenshot": "./Polly_Pocket/cover.png",
             "sourceType": "internal",
-            "sortName": "polka dots",
-            "searchText": "polka dots a cute and soft polka dot theme cluxdyvtears polka_dots"
+            "sortName": "mypollypocket",
+            "searchText": "mypollypocket polly pocket theme for the innioasis y1 mp3 player, including polly pocket icons and polly pocket backgrounds. check the patreon for the other y2k toybox themes. mp3li polly_pocket"
         },
         {
             "name": "Pompompurin",
@@ -4822,6 +4825,15 @@
             "searchText": "pumpkinking monochrome spooky aesthetic inspired by the iconic black‑and‑white world of halloween town\n\njack skellington\nhalloween\nspooky\npumpkin\nchristmas\nxmas\nmerry\n90\n90s\ny2k\ngothic\nemo beaniicelynii pumpkinking https://ko-fi.com/s/ac66f1b19f"
         },
         {
+            "name": "Purple Pineapple",
+            "folder": "Purple Pineapple",
+            "description": "Download the Purple Pineapple theme for Innioasis Y1 and personalize your player's look with curated UI assets.",
+            "screenshot": "./Purple Pineapple/Cover.png",
+            "sourceType": "internal",
+            "sortName": "purple pineapple",
+            "searchText": "purple pineapple download the purple pineapple theme for innioasis y1 and personalize your player's look with curated ui assets.  purple pineapple"
+        },
+        {
             "name": "purple gothic",
             "folder": "purple_gothic",
             "author": "whispering8star",
@@ -4861,15 +4873,6 @@
             "sourceType": "internal",
             "sortName": "purple neon",
             "searchText": "purple neon blank template theme with full config coverage for easy customization. veronica114532 purple_neon"
-        },
-        {
-            "name": "Purple Pineapple",
-            "folder": "Purple Pineapple",
-            "description": "Download the Purple Pineapple theme for Innioasis Y1 and personalize your player's look with curated UI assets.",
-            "screenshot": "./Purple Pineapple/Cover.png",
-            "sourceType": "internal",
-            "sortName": "purple pineapple",
-            "searchText": "purple pineapple download the purple pineapple theme for innioasis y1 and personalize your player's look with curated ui assets.  purple pineapple"
         },
         {
             "name": "Pusheen",
@@ -4927,6 +4930,17 @@
             "searchText": "rainbow♡femboy cute anime boy theme\nwith rainbow gradients.\ni hope u enjoy it !! kallm3kat rainbow_femboy"
         },
         {
+            "name": "myRainierNationalPark",
+            "folder": "Rainier_National_Park",
+            "author": "mp3li",
+            "authorUrl": "https://www.patreon.com/cw/mp3li",
+            "description": "A minimal Mount Rainier National Park theme for the Innioasis Y1 MP3 player made by mp3li, featuring Mount Rainier National Park backgrounds and recognizing this land as the homeland of the Puyallup, Nisqually, and Yakama peoples, who know the mountain as Tahoma. Part of the Defend the Parks collection. For other themes in this collection, visit mp3li's Patreon.",
+            "screenshot": "./Rainier_National_Park/cover.png",
+            "sourceType": "internal",
+            "sortName": "myrainiernationalpark",
+            "searchText": "myrainiernationalpark a minimal mount rainier national park theme for the innioasis y1 mp3 player made by mp3li, featuring mount rainier national park backgrounds and recognizing this land as the homeland of the puyallup, nisqually, and yakama peoples, who know the mountain as tahoma. part of the defend the parks collection. for other themes in this collection, visit mp3li's patreon. mp3li rainier_national_park"
+        },
+        {
             "name": "Ransom Note",
             "folder": "Ransom Note",
             "author": "Crafty_Decision7704",
@@ -4936,6 +4950,17 @@
             "searchText": "ransom note emily the strange inspired theme. crafty_decision7704 ransom note",
             "description": "Emily The Strange Inspired theme.",
             "screenshot": "./Ransom Note/cover.png"
+        },
+        {
+            "name": "Red Dead Redemption",
+            "folder": "RDR",
+            "sourceType": "internal",
+            "sortName": "red dead redemption",
+            "searchText": "red dead redemption a theme inspired by red dead redemption. u/terrible-young-3477 rdr",
+            "author": "u/Terrible-Young-3477",
+            "authorUrl": "https://www.reddit.com/r/innioasis/comments/1mdn475/red_dead_redemption_theme/",
+            "description": "A theme inspired by Red Dead Redemption.",
+            "screenshot": "./RDR/Cover.png"
         },
         {
             "name": "Red + Black Y2K",
@@ -4957,17 +4982,6 @@
             "sortName": "red and teal",
             "searchText": "red and teal a teal and red gothic theme inspired by a picture i found ricklover 187 red_and_teal",
             "authorUrl": "https://www.innioasis.com"
-        },
-        {
-            "name": "Red Dead Redemption",
-            "folder": "RDR",
-            "sourceType": "internal",
-            "sortName": "red dead redemption",
-            "searchText": "red dead redemption a theme inspired by red dead redemption. u/terrible-young-3477 rdr",
-            "author": "u/Terrible-Young-3477",
-            "authorUrl": "https://www.reddit.com/r/innioasis/comments/1mdn475/red_dead_redemption_theme/",
-            "description": "A theme inspired by Red Dead Redemption.",
-            "screenshot": "./RDR/Cover.png"
         },
         {
             "name": "Relaxations",
@@ -5096,6 +5110,30 @@
             "screenshot": "./Rudy/cover.png"
         },
         {
+            "name": "S.E.S.",
+            "folder": "S.E.S",
+            "author": "Angel_50000",
+            "authorUrl": "https://www.reddit.com/user/Angel_50000/",
+            "description": "Theme based off the 90s/00s kpop girl group S.E.S..",
+            "externalDownloadUrl": "https://drive.google.com/drive/folders/14deBuoQmPI9jSR0ymvyy-rRqmKx8M6dC?usp=sharing",
+            "screenshot": "./S.E.S/cover.png",
+            "sourceType": "internal",
+            "sortName": "s.e.s.",
+            "searchText": "s.e.s. theme based off the 90s/00s kpop girl group s.e.s.. angel_50000 s.e.s https://drive.google.com/drive/folders/14debuoqmpi9jsr0ymvyy-rrqmkx8m6dc?usp=sharing"
+        },
+        {
+            "name": "S.E.S.",
+            "folder": "S.E.S.",
+            "author": "Angel_50000",
+            "authorUrl": "https://www.reddit.com/user/Angel_50000/",
+            "description": "Theme based off the 90s/00s kpop girl group S.E.S..",
+            "externalDownloadUrl": "https://drive.google.com/drive/folders/14deBuoQmPI9jSR0ymvyy-rRqmKx8M6dC?usp=sharing",
+            "screenshot": "./S.E.S./cover.png",
+            "sourceType": "internal",
+            "sortName": "s.e.s.",
+            "searchText": "s.e.s. theme based off the 90s/00s kpop girl group s.e.s.. angel_50000 s.e.s. https://drive.google.com/drive/folders/14debuoqmpi9jsr0ymvyy-rrqmkx8m6dc?usp=sharing"
+        },
+        {
             "name": "Sabrina's World",
             "folder": "SabrinasWorld",
             "sourceType": "internal",
@@ -5151,6 +5189,20 @@
             "searchText": "sailor moon compact sailor moon inspired theme kendall916 sailor_moon_compact"
         },
         {
+            "name": "mySailorMoon 1",
+            "folder": "Sailor_Moon_mp3li",
+            "author": "mp3li",
+            "authorUrl": "https://www.patreon.com/cw/mp3li",
+            "description": "Requested Sailor Moon theme by mp3li. For other themes, check the Patreon. Before remixing/editing, read the entire license file.",
+            "screenshot": "./Sailor_Moon_mp3li/cover.png",
+            "variantFolders": [
+                "3"
+            ],
+            "sourceType": "internal",
+            "sortName": "mysailormoon 1",
+            "searchText": "mysailormoon 1 requested sailor moon theme by mp3li. for other themes, check the patreon. before remixing/editing, read the entire license file. mp3li sailor_moon_mp3li"
+        },
+        {
             "name": "Sally face",
             "folder": "Sally_face",
             "author": "meaaahhh",
@@ -5171,16 +5223,6 @@
             "searchText": "sally face 2 original by meaaahhh, this is just a personal edit for it :) finn? sally_face_2_finn"
         },
         {
-            "name": "Sampo",
-            "folder": "Sampo",
-            "author": "yasminatrbl",
-            "description": "An Innioasis Y1 theme inspired by Sampo Koski from Honkai: Star Rail.",
-            "screenshot": "./Sampo/cover.png",
-            "sourceType": "internal",
-            "sortName": "sampo",
-            "searchText": "sampo an innioasis y1 theme inspired by sampo koski from honkai: star rail. yasminatrbl sampo"
-        },
-        {
             "name": "SAM WINCHESTER",
             "folder": "SAM_WINCHESTER",
             "author": "NANASBANNANAS",
@@ -5190,6 +5232,16 @@
             "sourceType": "internal",
             "sortName": "sam winchester",
             "searchText": "sam winchester idk i just really like sam from supernatural nanasbannanas sam_winchester"
+        },
+        {
+            "name": "Sampo",
+            "folder": "Sampo",
+            "author": "yasminatrbl",
+            "description": "An Innioasis Y1 theme inspired by Sampo Koski from Honkai: Star Rail.",
+            "screenshot": "./Sampo/cover.png",
+            "sourceType": "internal",
+            "sortName": "sampo",
+            "searchText": "sampo an innioasis y1 theme inspired by sampo koski from honkai: star rail. yasminatrbl sampo"
         },
         {
             "name": "Santa Cruz",
@@ -5275,30 +5327,6 @@
             "sourceType": "internal",
             "sortName": "sephiroth",
             "searchText": "sephiroth sephiroth inspired theme lucifer-661 sephiroth"
-        },
-        {
-            "name": "S.E.S.",
-            "folder": "S.E.S",
-            "author": "Angel_50000",
-            "authorUrl": "https://www.reddit.com/user/Angel_50000/",
-            "description": "Theme based off the 90s/00s kpop girl group S.E.S..",
-            "externalDownloadUrl": "https://drive.google.com/drive/folders/14deBuoQmPI9jSR0ymvyy-rRqmKx8M6dC?usp=sharing",
-            "screenshot": "./S.E.S/cover.png",
-            "sourceType": "internal",
-            "sortName": "s.e.s.",
-            "searchText": "s.e.s. theme based off the 90s/00s kpop girl group s.e.s.. angel_50000 s.e.s https://drive.google.com/drive/folders/14debuoqmpi9jsr0ymvyy-rrqmkx8m6dc?usp=sharing"
-        },
-        {
-            "name": "S.E.S.",
-            "folder": "S.E.S.",
-            "author": "Angel_50000",
-            "authorUrl": "https://www.reddit.com/user/Angel_50000/",
-            "description": "Theme based off the 90s/00s kpop girl group S.E.S..",
-            "externalDownloadUrl": "https://drive.google.com/drive/folders/14deBuoQmPI9jSR0ymvyy-rRqmKx8M6dC?usp=sharing",
-            "screenshot": "./S.E.S./cover.png",
-            "sourceType": "internal",
-            "sortName": "s.e.s.",
-            "searchText": "s.e.s. theme based off the 90s/00s kpop girl group s.e.s.. angel_50000 s.e.s. https://drive.google.com/drive/folders/14debuoqmpi9jsr0ymvyy-rrqmkx8m6dc?usp=sharing"
         },
         {
             "name": "Seventeeeeeeeeeeen, GO! 💗💙💗💙💗✨✨✨💗💙💗💙💗",
@@ -5551,16 +5579,6 @@
             "searchText": "soft goth edgy and soft. bones and other spooky things included. playing around with making themes. partypoison soft_goth"
         },
         {
-            "name": "Sonic Adventure",
-            "folder": "Sonic_Adventure",
-            "author": "Robertpuggle",
-            "description": "SA1 Theme",
-            "screenshot": "./Sonic_Adventure/cover.png",
-            "sourceType": "internal",
-            "sortName": "sonic adventure",
-            "searchText": "sonic adventure sa1 theme robertpuggle sonic_adventure"
-        },
-        {
             "name": "Sonic :D",
             "folder": "Sonic__D",
             "author": "angiee",
@@ -5569,6 +5587,16 @@
             "sourceType": "internal",
             "sortName": "sonic :d",
             "searchText": "sonic :d ipodish theme with a sprinkle of sonic c: angiee sonic__d"
+        },
+        {
+            "name": "Sonic Adventure",
+            "folder": "Sonic_Adventure",
+            "author": "Robertpuggle",
+            "description": "SA1 Theme",
+            "screenshot": "./Sonic_Adventure/cover.png",
+            "sourceType": "internal",
+            "sortName": "sonic adventure",
+            "searchText": "sonic adventure sa1 theme robertpuggle sonic_adventure"
         },
         {
             "name": "soul eaterv2",
@@ -5696,6 +5724,17 @@
             "searchText": "spring/summer snoopy a cute snoopy, with a lot of pastil colors. not the best but still has cute little snoopy va spring_summer_snoopy"
         },
         {
+            "name": "myStardewValley",
+            "folder": "Stardew_Valley",
+            "author": "mp3li",
+            "authorUrl": "https://www.patreon.com/cw/mp3li",
+            "description": "Stardew Valley theme for the Innioasis Y1 mp3 player made by mp3li. This theme contains original and custom made work by mp3li, including all icons and more. Check the license file for more information. Check the Patreon for more themes by mp3li.",
+            "screenshot": "./Stardew_Valley/cover.png",
+            "sourceType": "internal",
+            "sortName": "mystardewvalley",
+            "searchText": "mystardewvalley stardew valley theme for the innioasis y1 mp3 player made by mp3li. this theme contains original and custom made work by mp3li, including all icons and more. check the license file for more information. check the patreon for more themes by mp3li. mp3li stardew_valley"
+        },
+        {
             "name": "stargazing toro",
             "folder": "stargazing_toro",
             "author": "st-arless",
@@ -5717,6 +5756,16 @@
             "searchText": "starry night blank template theme with full config coverage for easy customization. some dude starry_night"
         },
         {
+            "name": "Stars :D",
+            "folder": "Stars__D",
+            "author": "vanny'scircus.com",
+            "description": "idk bruh I just put a bunch of cool stuff together :D",
+            "screenshot": "./Stars__D/cover.png",
+            "sourceType": "internal",
+            "sortName": "stars :d",
+            "searchText": "stars :d idk bruh i just put a bunch of cool stuff together :d vanny'scircus.com stars__d"
+        },
+        {
             "name": "stars and thunder",
             "folder": "stars_and_thunder",
             "author": "noahsspace",
@@ -5726,16 +5775,6 @@
             "sourceType": "internal",
             "sortName": "stars and thunder",
             "searchText": "stars and thunder a stars and thunder special theme with high contrast and good taste noahsspace stars_and_thunder"
-        },
-        {
-            "name": "Stars :D",
-            "folder": "Stars__D",
-            "author": "vanny'scircus.com",
-            "description": "idk bruh I just put a bunch of cool stuff together :D",
-            "screenshot": "./Stars__D/cover.png",
-            "sourceType": "internal",
-            "sortName": "stars :d",
-            "searchText": "stars :d idk bruh i just put a bunch of cool stuff together :d vanny'scircus.com stars__d"
         },
         {
             "name": "StarWars",
@@ -5757,16 +5796,6 @@
             "sourceType": "internal",
             "sortName": "steven universe",
             "searchText": "steven universe simple steven universe theme with some assets taken from the mobile game attack the light! purplecray0ns steven_universe"
-        },
-        {
-            "name": "Steven Universe (2)",
-            "folder": "No homepage items",
-            "author": "purplecray0ns",
-            "description": "Same theme with Attack the Light items removed (if you want a cleaner look)",
-            "screenshot": "./No homepage items/cover.png",
-            "sourceType": "internal",
-            "sortName": "steven universe (2)",
-            "searchText": "steven universe (2) same theme with attack the light items removed (if you want a cleaner look) purplecray0ns no homepage items"
         },
         {
             "name": "Stranger Things",
@@ -5804,6 +5833,20 @@
             "searchText": "strawberry desert ! *sighs and twirls hair* strawberry cake... @zatannaaaaaa strawberry_desert"
         },
         {
+            "name": "myStrawberryShortcake (80s V.)",
+            "folder": "Strawberry_Shortcake",
+            "author": "mp3li",
+            "authorUrl": "https://www.patreon.com/cw/mp3li",
+            "description": "Requested Strawberry Shortcake (80s V.) theme by mp3li. For other themes, check the Patreon. Before remixing/editing, read the entire license file.",
+            "screenshot": "./Strawberry_Shortcake/cover.png",
+            "variantFolders": [
+                "2003"
+            ],
+            "sourceType": "internal",
+            "sortName": "mystrawberryshortcake (80s v.)",
+            "searchText": "mystrawberryshortcake (80s v.) requested strawberry shortcake (80s v.) theme by mp3li. for other themes, check the patreon. before remixing/editing, read the entire license file. mp3li strawberry_shortcake"
+        },
+        {
             "name": "Strawberry Shortcake",
             "folder": "Strawberry_Shortcake_lovenlow",
             "author": "Lovenlow",
@@ -5835,6 +5878,22 @@
             "sortName": "stray kids grayscale",
             "searchText": "stray kids grayscale simple grayscale theme based on stray kids, because why not? jaya stray_kids_grayscale",
             "authorUrl": "https://pin.it/7vgYvD0By"
+        },
+        {
+            "name": "myStudioGhibli (Spirited Away V.)",
+            "folder": "Studio_Ghibli",
+            "author": "mp3li",
+            "authorUrl": "https://www.patreon.com/cw/mp3li",
+            "description": "Studio Ghibli Theme for the Innioasis Y1 mp3 player with Spirited Away backgrounds. Check the patreon for the other Ghibli themes. This theme may not be hosted elsewhere: only on mp3li original channels such as their Patreon and Github. Check license file in theme folder for more information.",
+            "screenshot": "./Studio_Ghibli/[cover].png",
+            "variantFolders": [
+                "Howls Moving Castle",
+                "Kikis Delivery Service",
+                "Princess Mononoke"
+            ],
+            "sourceType": "internal",
+            "sortName": "mystudioghibli (spirited away v.)",
+            "searchText": "mystudioghibli (spirited away v.) studio ghibli theme for the innioasis y1 mp3 player with spirited away backgrounds. check the patreon for the other ghibli themes. this theme may not be hosted elsewhere: only on mp3li original channels such as their patreon and github. check license file in theme folder for more information. mp3li studio_ghibli"
         },
         {
             "name": "StyleSavvy",
@@ -5917,17 +5976,6 @@
             "searchText": "summer snoopy a summer ui for you y1 it has cute little snoopy snoopylover736 summer_snoopy"
         },
         {
-            "name": "Superman",
-            "folder": "Superman",
-            "author": "Angel_50000",
-            "authorUrl": "https://reddit.com/user/Angel_50000",
-            "sourceType": "internal",
-            "sortName": "superman",
-            "searchText": "superman superman theme for innioasis y1. angel_50000 superman",
-            "description": "Superman theme for Innioasis Y1.",
-            "screenshot": "./Superman/cover.png"
-        },
-        {
             "name": "Super Mario Sunshine",
             "folder": "Super Mario Sunshine",
             "author": "u/Angel-50000",
@@ -5937,6 +5985,17 @@
             "sortName": "super mario sunshine",
             "searchText": "super mario sunshine download the super mario sunshine theme for innioasis y1 by u/angel-50000 and personalize your player's look with curated ui assets. u/angel-50000 super mario sunshine",
             "screenshot": "./Super Mario Sunshine/cover.png"
+        },
+        {
+            "name": "Superman",
+            "folder": "Superman",
+            "author": "Angel_50000",
+            "authorUrl": "https://reddit.com/user/Angel_50000",
+            "sourceType": "internal",
+            "sortName": "superman",
+            "searchText": "superman superman theme for innioasis y1. angel_50000 superman",
+            "description": "Superman theme for Innioasis Y1.",
+            "screenshot": "./Superman/cover.png"
         },
         {
             "name": "Supernatural",
@@ -5990,6 +6049,20 @@
             "searchText": "tae aestethic <3 download the tae aestethic <3 theme for innioasis y1 by irirella and personalize your player's look with curated ui assets. irirella tae_aestethic__3"
         },
         {
+            "name": "myTamagotchi (Handheld V.)",
+            "folder": "Tamagotchi_mp3li",
+            "author": "mp3li",
+            "authorUrl": "https://www.patreon.com/cw/mp3li",
+            "description": "Tamagotchi (V1) theme for the Innioasis Y1 mp3 player, including Tamagotchi device and character icons and Tamagotchi backgrounds. Check the Patreon for the other Y2K Toybox themes. This theme may not be hosted elsewhere: only on mp3li original channels such as their Patreon and Github. Check license file in theme folder for more information. Font by @glazentchi, go check them out and support them!",
+            "screenshot": "./Tamagotchi_mp3li/cover.png",
+            "variantFolders": [
+                "Game Boy"
+            ],
+            "sourceType": "internal",
+            "sortName": "mytamagotchi (handheld v.)",
+            "searchText": "mytamagotchi (handheld v.) tamagotchi (v1) theme for the innioasis y1 mp3 player, including tamagotchi device and character icons and tamagotchi backgrounds. check the patreon for the other y2k toybox themes. this theme may not be hosted elsewhere: only on mp3li original channels such as their patreon and github. check license file in theme folder for more information. font by @glazentchi, go check them out and support them! mp3li tamagotchi_mp3li"
+        },
+        {
             "name": "Tamagotchi",
             "folder": "Tamagotchi_Theme",
             "author": "u/LogEmotional4559",
@@ -5998,6 +6071,17 @@
             "sourceType": "internal",
             "sortName": "tamagotchi",
             "searchText": "tamagotchi tamagotchi theme with some of my fave tamas. on my computer the main background doesn't seem to load on the preview but it works great on the device itself. u/logemotional4559 tamagotchi_theme"
+        },
+        {
+            "name": "myTea",
+            "folder": "Tea_mp3li",
+            "author": "mp3li",
+            "authorUrl": "https://www.patreon.com/cw/mp3li",
+            "description": "myTea Theme for the Innioasis Y1 mp3 player with tea cup and tea bag icons, floral textile backgrounds, and Bridgerton inspired font. Check the Patreon for other themes. This theme may not be hosted elsewhere: only on mp3li original channels such as their Patreon and Github. Check license file in theme folder for more information.",
+            "screenshot": "./Tea_mp3li/cover.png",
+            "sourceType": "internal",
+            "sortName": "mytea",
+            "searchText": "mytea mytea theme for the innioasis y1 mp3 player with tea cup and tea bag icons, floral textile backgrounds, and bridgerton inspired font. check the patreon for other themes. this theme may not be hosted elsewhere: only on mp3li original channels such as their patreon and github. check license file in theme folder for more information. mp3li tea_mp3li"
         },
         {
             "name": "Teal Y3k Girl",
@@ -6063,6 +6147,17 @@
             "sourceType": "internal",
             "sortName": "tf2",
             "searchText": "tf2 this theme is inspired by tf2/team fortress 2. robertpuggle tf2"
+        },
+        {
+            "name": "The Magnus Archives",
+            "folder": "The Magnus Archives",
+            "sourceType": "internal",
+            "sortName": "the magnus archives",
+            "searchText": "the magnus archives tma style theme in black-green tones u/riioykah the magnus archives",
+            "author": "u/riioykah",
+            "authorUrl": "https://www.tumblr.com/riioykah",
+            "description": "TMA style theme in black-green tones",
+            "screenshot": "./The Magnus Archives/cover.png"
         },
         {
             "name": "the amazing digital circus",
@@ -6147,39 +6242,6 @@
             "searchText": "the little prince - by elientee the little prince theme for the innioasis y1 brings a warm and magical atmosphere to your music player. inspired by the timeless story of the little prince, it combines soft colors, elegant icons, and a dreamy fantasy-inspired design to create a cozy and nostalgic listening experience. elientee the_little_prince_-_by_elientee"
         },
         {
-            "name": "The Magnus Archives",
-            "folder": "The Magnus Archives",
-            "sourceType": "internal",
-            "sortName": "the magnus archives",
-            "searchText": "the magnus archives tma style theme in black-green tones u/riioykah the magnus archives",
-            "author": "u/riioykah",
-            "authorUrl": "https://www.tumblr.com/riioykah",
-            "description": "TMA style theme in black-green tones",
-            "screenshot": "./The Magnus Archives/cover.png"
-        },
-        {
-            "name": "TheMatrix",
-            "folder": "TheMatrix",
-            "sourceType": "internal",
-            "sortName": "thematrix",
-            "searchText": "thematrix you have entered the matrix... u/neither-classic2058 thematrix",
-            "author": "u/Neither-Classic2058",
-            "authorUrl": "https://www.reddit.com/r/innioasis/comments/1pgxfhb/thematrix_theme_v10_y1_stock_firmware/",
-            "description": "You have entered the Matrix...",
-            "screenshot": "./TheMatrix/@ThM_cover.png"
-        },
-        {
-            "name": "Themeless",
-            "folder": "Themeless",
-            "sourceType": "internal",
-            "sortName": "themeless",
-            "searchText": "themeless a blank canvas to start. drop in your own desktop_wallpaper.png and global_wallpaper.png images in the theme folder, or use the photos feature on the y1 to set your own wallpaper images. neither-classic2058 themeless",
-            "author": "Neither-Classic2058",
-            "authorUrl": "https://reddit.com/Neither-Classic2058",
-            "description": "A blank canvas to start. Drop in your own desktop_wallpaper.png and global_wallpaper.png images in the theme folder, or use the Photos feature on the Y1 to set your own wallpaper images.",
-            "screenshot": "./Themeless/cover_Themeless.png"
-        },
-        {
             "name": "The Owl House",
             "folder": "The_Owl_House",
             "author": "Strangebiology",
@@ -6228,6 +6290,53 @@
             "sourceType": "internal",
             "sortName": "the summer hikaru died",
             "searchText": "the summer hikaru died the summer hikaru themed ui featuring \"hikaru\" indou and yoshiki tsujinaka. \nlmk if theres any issues with it <3 ieatcopiousamountsofuranium the_summer_hikaru_died"
+        },
+        {
+            "name": "TheMatrix",
+            "folder": "TheMatrix",
+            "sourceType": "internal",
+            "sortName": "thematrix",
+            "searchText": "thematrix you have entered the matrix... u/neither-classic2058 thematrix",
+            "author": "u/Neither-Classic2058",
+            "authorUrl": "https://www.reddit.com/r/innioasis/comments/1pgxfhb/thematrix_theme_v10_y1_stock_firmware/",
+            "description": "You have entered the Matrix...",
+            "screenshot": "./TheMatrix/@ThM_cover.png"
+        },
+        {
+            "name": "Themeless",
+            "folder": "Themeless",
+            "sourceType": "internal",
+            "sortName": "themeless",
+            "searchText": "themeless a blank canvas to start. drop in your own desktop_wallpaper.png and global_wallpaper.png images in the theme folder, or use the photos feature on the y1 to set your own wallpaper images. neither-classic2058 themeless",
+            "author": "Neither-Classic2058",
+            "authorUrl": "https://reddit.com/Neither-Classic2058",
+            "description": "A blank canvas to start. Drop in your own desktop_wallpaper.png and global_wallpaper.png images in the theme folder, or use the Photos feature on the Y1 to set your own wallpaper images.",
+            "screenshot": "./Themeless/cover_Themeless.png"
+        },
+        {
+            "name": "myTinkerbell",
+            "folder": "Tinkerbell_mp3li",
+            "author": "mp3li",
+            "authorUrl": "https://www.patreon.com/cw/mp3li",
+            "description": "Tinkerbell theme for the Innioasis Y1 mp3 player, including Tinkerbell and other Pixie Hollow fairy icons and Pixie Hollow backgrounds. Check the Patreon for the other Y2K Toybox themes.",
+            "screenshot": "./Tinkerbell_mp3li/bg2 (cropped).png",
+            "sourceType": "internal",
+            "sortName": "mytinkerbell",
+            "searchText": "mytinkerbell tinkerbell theme for the innioasis y1 mp3 player, including tinkerbell and other pixie hollow fairy icons and pixie hollow backgrounds. check the patreon for the other y2k toybox themes. mp3li tinkerbell_mp3li"
+        },
+        {
+            "name": "myToast",
+            "folder": "Toast",
+            "author": "mp3li",
+            "authorUrl": "https://www.patreon.com/cw/mp3li",
+            "description": "myToast2 Theme for the Innioasis Y1 mp3 player with toast icons and floral textile backgrounds, and Bridgerton inspired font. Check the Patreon for other Tea and Toast themes. This theme may not be hosted elsewhere: only on mp3li original channels such as their Patreon and Github. Check license file in theme folder for more information.",
+            "screenshot": "./Toast/[cover].png",
+            "variantFolders": [
+                "Toast2"
+            ],
+            "sourceType": "internal",
+            "sortName": "mytoast",
+            "searchText": "mytoast mytoast2 theme for the innioasis y1 mp3 player with toast icons and floral textile backgrounds, and bridgerton inspired font. check the patreon for other tea and toast themes. this theme may not be hosted elsewhere: only on mp3li original channels such as their patreon and github. check license file in theme folder for more information. mp3li toast"
         },
         {
             "name": "Tokidoki",
@@ -6312,6 +6421,17 @@
             "sourceType": "internal",
             "sortName": "toro inoue ps3",
             "searchText": "toro inoue ps3 a purple ps3 inspired theme with the sony cat, toro inoue, logos! vivi toro_inoue_ps3"
+        },
+        {
+            "name": "myTotallySpies",
+            "folder": "Totally_Spies",
+            "author": "mp3li",
+            "authorUrl": "https://www.patreon.com/cw/mp3li",
+            "description": "Requested Totally Spies theme by mp3li. For other themes, check the Patreon. Before remixing/editing, read the entire license file.",
+            "screenshot": "./Totally_Spies/cover.png",
+            "sourceType": "internal",
+            "sortName": "mytotallyspies",
+            "searchText": "mytotallyspies requested totally spies theme by mp3li. for other themes, check the patreon. before remixing/editing, read the entire license file. mp3li totally_spies"
         },
         {
             "name": "Trainspotting",
@@ -6526,6 +6646,17 @@
             "screenshot": "./UNDERTALE/cover.png"
         },
         {
+            "name": "Apple 3",
+            "folder": "Unseen",
+            "sourceType": "internal",
+            "sortName": "apple 3",
+            "searchText": "apple 3 customize your innioasis y1 with the unseen theme. ange unseen",
+            "author": "Ange",
+            "authorUrl": "https://www.innioasis.com",
+            "description": "Customize your Innioasis Y1 with the Unseen theme.",
+            "screenshot": "./Unseen/cover.png"
+        },
+        {
             "name": "Vagabond",
             "folder": "Vagabond",
             "author": "Morikss",
@@ -6586,6 +6717,116 @@
             "authorUrl": "https://reddit.com/Neither-Classic2058",
             "description": "A happy place...",
             "screenshot": "./VivaPinata/@VP_cover.png"
+        },
+        {
+            "name": "Y2 Default",
+            "folder": "Wallpaper_02",
+            "author": "Inni",
+            "authorUrl": "https://www.innioasis.com",
+            "description": "Stock Default theme with factory wallpaper preset 2 (bg_wallpaper_preset2). Extracted from Innioasis MyLauncher.",
+            "screenshot": "./Wallpaper_02/cover.png",
+            "sourceType": "internal",
+            "sortName": "y2 default",
+            "searchText": "y2 default stock default theme with factory wallpaper preset 2 (bg_wallpaper_preset2). extracted from innioasis mylauncher. inni wallpaper_02"
+        },
+        {
+            "name": "Y2 Default",
+            "folder": "Wallpaper_04",
+            "author": "Inni",
+            "authorUrl": "https://www.innioasis.com",
+            "description": "Stock Default theme with factory wallpaper preset 4 (bg_wallpaper_preset4). Extracted from Innioasis MyLauncher.",
+            "screenshot": "./Wallpaper_04/cover.png",
+            "sourceType": "internal",
+            "sortName": "y2 default",
+            "searchText": "y2 default stock default theme with factory wallpaper preset 4 (bg_wallpaper_preset4). extracted from innioasis mylauncher. inni wallpaper_04"
+        },
+        {
+            "name": "Y2 Default",
+            "folder": "Wallpaper_05",
+            "author": "Inni",
+            "authorUrl": "https://www.innioasis.com",
+            "description": "Stock Default theme with factory wallpaper preset 5 (bg_wallpaper_preset5). Extracted from Innioasis MyLauncher.",
+            "screenshot": "./Wallpaper_05/cover.png",
+            "sourceType": "internal",
+            "sortName": "y2 default",
+            "searchText": "y2 default stock default theme with factory wallpaper preset 5 (bg_wallpaper_preset5). extracted from innioasis mylauncher. inni wallpaper_05"
+        },
+        {
+            "name": "Y2 Default",
+            "folder": "Wallpaper_06",
+            "author": "Inni",
+            "authorUrl": "https://www.innioasis.com",
+            "description": "Stock Default theme with factory wallpaper preset 6 (bg_wallpaper_preset6). Extracted from Innioasis MyLauncher.",
+            "screenshot": "./Wallpaper_06/cover.png",
+            "sourceType": "internal",
+            "sortName": "y2 default",
+            "searchText": "y2 default stock default theme with factory wallpaper preset 6 (bg_wallpaper_preset6). extracted from innioasis mylauncher. inni wallpaper_06"
+        },
+        {
+            "name": "Y2 Default",
+            "folder": "Wallpaper_07",
+            "author": "Inni",
+            "authorUrl": "https://www.innioasis.com",
+            "description": "Stock Default theme with factory wallpaper preset 7 (bg_wallpaper_preset7). Extracted from Innioasis MyLauncher.",
+            "screenshot": "./Wallpaper_07/cover.png",
+            "sourceType": "internal",
+            "sortName": "y2 default",
+            "searchText": "y2 default stock default theme with factory wallpaper preset 7 (bg_wallpaper_preset7). extracted from innioasis mylauncher. inni wallpaper_07"
+        },
+        {
+            "name": "Y2 Default",
+            "folder": "Wallpaper_08",
+            "author": "Inni",
+            "authorUrl": "https://www.innioasis.com",
+            "description": "Stock Default theme with factory wallpaper preset 8 (bg_wallpaper_preset8). Extracted from Innioasis MyLauncher.",
+            "screenshot": "./Wallpaper_08/cover.png",
+            "sourceType": "internal",
+            "sortName": "y2 default",
+            "searchText": "y2 default stock default theme with factory wallpaper preset 8 (bg_wallpaper_preset8). extracted from innioasis mylauncher. inni wallpaper_08"
+        },
+        {
+            "name": "Y2 Default",
+            "folder": "Wallpaper_09",
+            "author": "Inni",
+            "authorUrl": "https://www.innioasis.com",
+            "description": "Stock Default theme with factory wallpaper preset 9 (bg_wallpaper_preset9). Extracted from Innioasis MyLauncher.",
+            "screenshot": "./Wallpaper_09/cover.png",
+            "sourceType": "internal",
+            "sortName": "y2 default",
+            "searchText": "y2 default stock default theme with factory wallpaper preset 9 (bg_wallpaper_preset9). extracted from innioasis mylauncher. inni wallpaper_09"
+        },
+        {
+            "name": "Y2 Default",
+            "folder": "Wallpaper_10",
+            "author": "Inni",
+            "authorUrl": "https://www.innioasis.com",
+            "description": "Stock Default theme with factory wallpaper preset 10 (bg_wallpaper_preset10). Extracted from Innioasis MyLauncher.",
+            "screenshot": "./Wallpaper_10/cover.png",
+            "sourceType": "internal",
+            "sortName": "y2 default",
+            "searchText": "y2 default stock default theme with factory wallpaper preset 10 (bg_wallpaper_preset10). extracted from innioasis mylauncher. inni wallpaper_10"
+        },
+        {
+            "name": "Y2 Default",
+            "folder": "Wallpaper_11",
+            "author": "Inni",
+            "authorUrl": "https://www.innioasis.com",
+            "description": "Stock Default theme with factory wallpaper preset 11 (bg_wallpaper_preset11). Extracted from Innioasis MyLauncher.",
+            "screenshot": "./Wallpaper_11/cover.png",
+            "sourceType": "internal",
+            "sortName": "y2 default",
+            "searchText": "y2 default stock default theme with factory wallpaper preset 11 (bg_wallpaper_preset11). extracted from innioasis mylauncher. inni wallpaper_11"
+        },
+        {
+            "name": "Y2 Default",
+            "folder": "Wallpaper_12",
+            "author": "Inni",
+            "authorUrl": "https://www.innioasis.com",
+            "description": "Stock Default theme with factory wallpaper preset 12 (bg_wallpaper_preset12). Extracted from Innioasis MyLauncher.",
+            "screenshot": "./Wallpaper_12/cover.png",
+            "sourceType": "internal",
+            "sortName": "y2 default",
+            "searchText": "y2 default stock default theme with factory wallpaper preset 12 (bg_wallpaper_preset12). extracted from innioasis mylauncher. inni wallpaper_12"
         },
         {
             "name": "Water chill",
@@ -6770,116 +7011,6 @@
         },
         {
             "name": "Y2 Default",
-            "folder": "Wallpaper_02",
-            "author": "Inni",
-            "authorUrl": "https://www.innioasis.com",
-            "description": "Stock Default theme with factory wallpaper preset 2 (bg_wallpaper_preset2). Extracted from Innioasis MyLauncher.",
-            "screenshot": "./Wallpaper_02/cover.png",
-            "sourceType": "internal",
-            "sortName": "y2 default",
-            "searchText": "y2 default stock default theme with factory wallpaper preset 2 (bg_wallpaper_preset2). extracted from innioasis mylauncher. inni wallpaper_02"
-        },
-        {
-            "name": "Y2 Default",
-            "folder": "Wallpaper_04",
-            "author": "Inni",
-            "authorUrl": "https://www.innioasis.com",
-            "description": "Stock Default theme with factory wallpaper preset 4 (bg_wallpaper_preset4). Extracted from Innioasis MyLauncher.",
-            "screenshot": "./Wallpaper_04/cover.png",
-            "sourceType": "internal",
-            "sortName": "y2 default",
-            "searchText": "y2 default stock default theme with factory wallpaper preset 4 (bg_wallpaper_preset4). extracted from innioasis mylauncher. inni wallpaper_04"
-        },
-        {
-            "name": "Y2 Default",
-            "folder": "Wallpaper_05",
-            "author": "Inni",
-            "authorUrl": "https://www.innioasis.com",
-            "description": "Stock Default theme with factory wallpaper preset 5 (bg_wallpaper_preset5). Extracted from Innioasis MyLauncher.",
-            "screenshot": "./Wallpaper_05/cover.png",
-            "sourceType": "internal",
-            "sortName": "y2 default",
-            "searchText": "y2 default stock default theme with factory wallpaper preset 5 (bg_wallpaper_preset5). extracted from innioasis mylauncher. inni wallpaper_05"
-        },
-        {
-            "name": "Y2 Default",
-            "folder": "Wallpaper_06",
-            "author": "Inni",
-            "authorUrl": "https://www.innioasis.com",
-            "description": "Stock Default theme with factory wallpaper preset 6 (bg_wallpaper_preset6). Extracted from Innioasis MyLauncher.",
-            "screenshot": "./Wallpaper_06/cover.png",
-            "sourceType": "internal",
-            "sortName": "y2 default",
-            "searchText": "y2 default stock default theme with factory wallpaper preset 6 (bg_wallpaper_preset6). extracted from innioasis mylauncher. inni wallpaper_06"
-        },
-        {
-            "name": "Y2 Default",
-            "folder": "Wallpaper_07",
-            "author": "Inni",
-            "authorUrl": "https://www.innioasis.com",
-            "description": "Stock Default theme with factory wallpaper preset 7 (bg_wallpaper_preset7). Extracted from Innioasis MyLauncher.",
-            "screenshot": "./Wallpaper_07/cover.png",
-            "sourceType": "internal",
-            "sortName": "y2 default",
-            "searchText": "y2 default stock default theme with factory wallpaper preset 7 (bg_wallpaper_preset7). extracted from innioasis mylauncher. inni wallpaper_07"
-        },
-        {
-            "name": "Y2 Default",
-            "folder": "Wallpaper_08",
-            "author": "Inni",
-            "authorUrl": "https://www.innioasis.com",
-            "description": "Stock Default theme with factory wallpaper preset 8 (bg_wallpaper_preset8). Extracted from Innioasis MyLauncher.",
-            "screenshot": "./Wallpaper_08/cover.png",
-            "sourceType": "internal",
-            "sortName": "y2 default",
-            "searchText": "y2 default stock default theme with factory wallpaper preset 8 (bg_wallpaper_preset8). extracted from innioasis mylauncher. inni wallpaper_08"
-        },
-        {
-            "name": "Y2 Default",
-            "folder": "Wallpaper_09",
-            "author": "Inni",
-            "authorUrl": "https://www.innioasis.com",
-            "description": "Stock Default theme with factory wallpaper preset 9 (bg_wallpaper_preset9). Extracted from Innioasis MyLauncher.",
-            "screenshot": "./Wallpaper_09/cover.png",
-            "sourceType": "internal",
-            "sortName": "y2 default",
-            "searchText": "y2 default stock default theme with factory wallpaper preset 9 (bg_wallpaper_preset9). extracted from innioasis mylauncher. inni wallpaper_09"
-        },
-        {
-            "name": "Y2 Default",
-            "folder": "Wallpaper_10",
-            "author": "Inni",
-            "authorUrl": "https://www.innioasis.com",
-            "description": "Stock Default theme with factory wallpaper preset 10 (bg_wallpaper_preset10). Extracted from Innioasis MyLauncher.",
-            "screenshot": "./Wallpaper_10/cover.png",
-            "sourceType": "internal",
-            "sortName": "y2 default",
-            "searchText": "y2 default stock default theme with factory wallpaper preset 10 (bg_wallpaper_preset10). extracted from innioasis mylauncher. inni wallpaper_10"
-        },
-        {
-            "name": "Y2 Default",
-            "folder": "Wallpaper_11",
-            "author": "Inni",
-            "authorUrl": "https://www.innioasis.com",
-            "description": "Stock Default theme with factory wallpaper preset 11 (bg_wallpaper_preset11). Extracted from Innioasis MyLauncher.",
-            "screenshot": "./Wallpaper_11/cover.png",
-            "sourceType": "internal",
-            "sortName": "y2 default",
-            "searchText": "y2 default stock default theme with factory wallpaper preset 11 (bg_wallpaper_preset11). extracted from innioasis mylauncher. inni wallpaper_11"
-        },
-        {
-            "name": "Y2 Default",
-            "folder": "Wallpaper_12",
-            "author": "Inni",
-            "authorUrl": "https://www.innioasis.com",
-            "description": "Stock Default theme with factory wallpaper preset 12 (bg_wallpaper_preset12). Extracted from Innioasis MyLauncher.",
-            "screenshot": "./Wallpaper_12/cover.png",
-            "sourceType": "internal",
-            "sortName": "y2 default",
-            "searchText": "y2 default stock default theme with factory wallpaper preset 12 (bg_wallpaper_preset12). extracted from innioasis mylauncher. inni wallpaper_12"
-        },
-        {
-            "name": "Y2 Default",
             "folder": "Y2_Default",
             "author": "Inni",
             "authorUrl": "https://www.innioasis.com",
@@ -6890,6 +7021,16 @@
             "searchText": "y2 default default theme from innioasis y2 - compatible with y1, y2 on stock firmware and solar inni y2_default"
         },
         {
+            "name": "Y2 Orange GC",
+            "folder": "Y2_Orange_GC",
+            "author": "Robertpuggle",
+            "description": "Download the Y2 Orange GC theme for Innioasis Y1 & Y2 by Robertpuggle and personalize your player's look with curated UI assets.",
+            "screenshot": "./Y2_Orange_GC/cover.png",
+            "sourceType": "internal",
+            "sortName": "y2 orange gc",
+            "searchText": "y2 orange gc download the y2 orange gc theme for innioasis y1 & y2 by robertpuggle and personalize your player's look with curated ui assets. robertpuggle y2_orange_gc"
+        },
+        {
             "name": "Y2K Black & White",
             "folder": "Y2K_Black___White",
             "author": "ChatGPT",
@@ -6898,6 +7039,16 @@
             "sourceType": "internal",
             "sortName": "y2k black & white",
             "searchText": "y2k black & white black and white y2k chrome theme for innioasis y1 chatgpt y2k_black___white"
+        },
+        {
+            "name": "y2k white",
+            "folder": "y2k_white",
+            "author": "u/Neither-Classic2058",
+            "description": "An LCD-inspired theme",
+            "screenshot": "./y2k_white/cover.png",
+            "sourceType": "internal",
+            "sortName": "y2k white",
+            "searchText": "y2k white an lcd-inspired theme u/neither-classic2058 y2k_white"
         },
         {
             "name": "Y2K Older Bro Core",
@@ -6922,26 +7073,6 @@
             "screenshot": "./y2kpinktheme/cover.png"
         },
         {
-            "name": "y2k white",
-            "folder": "y2k_white",
-            "author": "u/Neither-Classic2058",
-            "description": "An LCD-inspired theme",
-            "screenshot": "./y2k_white/cover.png",
-            "sourceType": "internal",
-            "sortName": "y2k white",
-            "searchText": "y2k white an lcd-inspired theme u/neither-classic2058 y2k_white"
-        },
-        {
-            "name": "Y2 Orange GC",
-            "folder": "Y2_Orange_GC",
-            "author": "Robertpuggle",
-            "description": "Download the Y2 Orange GC theme for Innioasis Y1 & Y2 by Robertpuggle and personalize your player's look with curated UI assets.",
-            "screenshot": "./Y2_Orange_GC/cover.png",
-            "sourceType": "internal",
-            "sortName": "y2 orange gc",
-            "searchText": "y2 orange gc download the y2 orange gc theme for innioasis y1 & y2 by robertpuggle and personalize your player's look with curated ui assets. robertpuggle y2_orange_gc"
-        },
-        {
             "name": "Y3K",
             "folder": "Y3K",
             "author": "fahrenheiit451",
@@ -6963,6 +7094,16 @@
             "searchText": "yaelokre - meadowlark my first ever theme! i was really sad that there were no yaelokre themes, so i decided to do this : ) fatefulbenevolence yaelokre_-_meadowlark"
         },
         {
+            "name": "yandere simulator",
+            "folder": "yandere_simulator",
+            "author": "ashley marinette",
+            "description": "yandere simulator!! i hope you like it. :)",
+            "screenshot": "./yandere_simulator/cover.png",
+            "sourceType": "internal",
+            "sortName": "yandere simulator",
+            "searchText": "yandere simulator yandere simulator!! i hope you like it. :) ashley marinette yandere_simulator"
+        },
+        {
             "name": "YandereSim",
             "folder": "YandereSim",
             "sourceType": "internal",
@@ -6972,16 +7113,6 @@
             "authorUrl": "https://nozomikaizoku.neocities.org/",
             "description": "A (fanmade) Yandere Simulator inspired innioasis Y1 theme!! :D",
             "screenshot": "./YandereSim/gregcover.png"
-        },
-        {
-            "name": "yandere simulator",
-            "folder": "yandere_simulator",
-            "author": "ashley marinette",
-            "description": "yandere simulator!! i hope you like it. :)",
-            "screenshot": "./yandere_simulator/cover.png",
-            "sourceType": "internal",
-            "sortName": "yandere simulator",
-            "searchText": "yandere simulator yandere simulator!! i hope you like it. :) ashley marinette yandere_simulator"
         },
         {
             "name": "YAY PINKU >w<",
@@ -7004,6 +7135,27 @@
             "searchText": "yellow paradise cute y2k yellow themed template, sorry if its sloppy this is my first time and i just got this today but wanted something to match the yellow mp3 since i havent seen many. hope you like it. fpr those of us who got the yellow one :) lisssss.ja yellow_paradise"
         },
         {
+            "name": "Yellow summerie theme! !",
+            "folder": "Yellow_summerie_theme",
+            "author": "The Yoshka Fan",
+            "description": "Yellow summer Theme!  F2U",
+            "screenshot": "./Yellow_summerie_theme/cover.png",
+            "sourceType": "internal",
+            "sortName": "yellow summerie theme! !",
+            "searchText": "yellow summerie theme! ! yellow summer theme!  f2u the yoshka fan yellow_summerie_theme"
+        },
+        {
+            "name": "myYellowstone National Park",
+            "folder": "Yellowstone_National_Park",
+            "author": "mp3li",
+            "authorUrl": "https://www.patreon.com/cw/mp3li",
+            "description": "A minimal Yellowstone National Park theme for the Innioasis Y1 MP3 player made by mp3li, featuring Yellowstone National Park backgrounds and recognizing this land as the homeland of the Shoshone, Crow, and Blackfeet peoples, whose ancestral lands include the Yellowstone Plateau. Part of the Defend the Parks collection. For other themes in this collection, visit mp3li's Patreon.",
+            "screenshot": "./Yellowstone_National_Park/cover.png",
+            "sourceType": "internal",
+            "sortName": "myyellowstone national park",
+            "searchText": "myyellowstone national park a minimal yellowstone national park theme for the innioasis y1 mp3 player made by mp3li, featuring yellowstone national park backgrounds and recognizing this land as the homeland of the shoshone, crow, and blackfeet peoples, whose ancestral lands include the yellowstone plateau. part of the defend the parks collection. for other themes in this collection, visit mp3li's patreon. mp3li yellowstone_national_park"
+        },
+        {
             "name": "YellowSub",
             "folder": "YellowSub",
             "sourceType": "internal",
@@ -7013,16 +7165,6 @@
             "authorUrl": "https://www.reddit.com/r/innioasis/comments/1nyn0jz/yellow_submarine_20_theme_y1_stock_firmware/",
             "description": "This theme is inspired by the Beatles and the Yellow Submarine movie.",
             "screenshot": "./YellowSub/cover_YS.png"
-        },
-        {
-            "name": "Yellow summerie theme! !",
-            "folder": "Yellow_summerie_theme",
-            "author": "The Yoshka Fan",
-            "description": "Yellow summer Theme!  F2U",
-            "screenshot": "./Yellow_summerie_theme/cover.png",
-            "sourceType": "internal",
-            "sortName": "yellow summerie theme! !",
-            "searchText": "yellow summerie theme! ! yellow summer theme!  f2u the yoshka fan yellow_summerie_theme"
         },
         {
             "name": "Yoongi",
@@ -7043,6 +7185,17 @@
             "sourceType": "internal",
             "sortName": "yoongi <3",
             "searchText": "yoongi <3 blank template theme with full config coverage for easy customization. yoongi lover yoongi__3"
+        },
+        {
+            "name": "myYosemite National Park",
+            "folder": "Yosemite_National_Park",
+            "author": "mp3li",
+            "authorUrl": "https://www.patreon.com/cw/mp3li",
+            "description": "A minimal Yosemite National Park theme for the Innioasis Y1 MP3 player made by mp3li, featuring Yosemite National Park backgrounds and recognizing this land as the homeland of the Ahwahnechee people, who know this place as Ahwahnee. Part of the Defend the Parks collection. For other themes in this collection, visit mp3li's Patreon.",
+            "screenshot": "./Yosemite_National_Park/cover.png",
+            "sourceType": "internal",
+            "sortName": "myyosemite national park",
+            "searchText": "myyosemite national park a minimal yosemite national park theme for the innioasis y1 mp3 player made by mp3li, featuring yosemite national park backgrounds and recognizing this land as the homeland of the ahwahnechee people, who know this place as ahwahnee. part of the defend the parks collection. for other themes in this collection, visit mp3li's patreon. mp3li yosemite_national_park"
         },
         {
             "name": "Yoshitomo Nara",
@@ -7149,159 +7302,6 @@
             "authorUrl": "https://reddit.com/Neither-Classic2058",
             "description": "A mashup of Microsoft Zune on an iPod-like device.",
             "screenshot": "./ZuneY/@Z_cover.png"
-        },
-        {
-            "name": "1a Zelda",
-            "folder": "1a_Zelda",
-            "author": "a",
-            "description": "The legend of zelda theme with functioning font (looks cleaner on device). Mostly MM",
-            "screenshot": "./1a_Zelda/cover_Themeless.png",
-            "sourceType": "internal",
-            "sortName": "1a zelda",
-            "searchText": "1a zelda the legend of zelda theme with functioning font (looks cleaner on device). mostly mm a 1a_zelda"
-        },
-        {
-            "name": "70s truck!",
-            "folder": "70s_truck",
-            "author": "AD",
-            "description": "70 style trucks and tech",
-            "screenshot": "./70s_truck/gregcover.png",
-            "sourceType": "internal",
-            "sortName": "70s truck!",
-            "searchText": "70s truck! 70 style trucks and tech ad 70s_truck"
-        },
-        {
-            "name": "80s synthwave",
-            "folder": "80s_synthwave",
-            "author": "CityStar-Asmrtist!!",
-            "description": "80s synthwave mid 80s retro nostalgia luv da night!!",
-            "screenshot": "./80s_synthwave/cover.png",
-            "sourceType": "internal",
-            "sortName": "80s synthwave",
-            "searchText": "80s synthwave 80s synthwave mid 80s retro nostalgia luv da night!! citystar-asmrtist!! 80s_synthwave"
-        },
-        {
-            "name": "90s/2000s Teen",
-            "folder": "90s_2000s_Teen",
-            "author": "CityStar-Asmrtist!!",
-            "description": "90s/2000s Teen mountain dew y2k",
-            "screenshot": "./90s_2000s_Teen/cover.png",
-            "sourceType": "internal",
-            "sortName": "90s/2000s teen",
-            "searchText": "90s/2000s teen 90s/2000s teen mountain dew y2k citystar-asmrtist!! 90s_2000s_teen"
-        },
-        {
-            "name": "90s Z32 Nissan",
-            "folder": "90s_Z32_Nissan",
-            "author": "whereVTEC",
-            "description": "Skin themed after vintage car magazines, specifically the Nissan 300zx TT (Z32 TT)",
-            "screenshot": "./90s_Z32_Nissan/cover.png",
-            "sourceType": "internal",
-            "sortName": "90s z32 nissan",
-            "searchText": "90s z32 nissan skin themed after vintage car magazines, specifically the nissan 300zx tt (z32 tt) wherevtec 90s_z32_nissan"
-        },
-        {
-            "name": "90s Z32 Nissan V2",
-            "folder": "90s_Z32_Nissan_V2",
-            "author": "whereVTEC",
-            "description": "Skin themed after vintage car magazines, specifically the Nissan 300zx TT (Z32 TT)\n\nV2 Fixes everything I didnt like. Feel free to check out V1 aswell",
-            "screenshot": "./90s_Z32_Nissan_V2/cover.png",
-            "sourceType": "internal",
-            "sortName": "90s z32 nissan v2",
-            "searchText": "90s z32 nissan v2 skin themed after vintage car magazines, specifically the nissan 300zx tt (z32 tt)\n\nv2 fixes everything i didnt like. feel free to check out v1 aswell wherevtec 90s_z32_nissan_v2"
-        },
-        {
-            "name": "2000",
-            "folder": "2000",
-            "author": "metallic madness",
-            "description": "A Y2K older-bro-core aesthetic theme for the Innioasis Y1.",
-            "screenshot": "./2000/cover1.png",
-            "sourceType": "internal",
-            "sortName": "2000",
-            "searchText": "2000 a y2k older-bro-core aesthetic theme for the innioasis y1. metallic madness 2000"
-        },
-        {
-            "name": "2000s Blue Scene Kid",
-            "folder": "2000s_Blue_Scene_Kid",
-            "author": "MannyReads14",
-            "authorUrl": "https://www.tiktok.com/@candybrobuds7?is_from_webapp=1&sender_device=pc",
-            "description": "(UPDATE 9/14/26) I've noticed a severe lack of blue themes so this is my contribution. I think this is pretty good for my first time.",
-            "screenshot": "./2000s_Blue_Scene_Kid/cover.png",
-            "sourceType": "internal",
-            "sortName": "2000s blue scene kid",
-            "searchText": "2000s blue scene kid (update 9/14/26) i've noticed a severe lack of blue themes so this is my contribution. i think this is pretty good for my first time. mannyreads14 2000s_blue_scene_kid"
-        },
-        {
-            "name": "2000s cool older sister",
-            "folder": "200s_cool_older_sister",
-            "author": "Twixx",
-            "description": "So this one is slightly inspired by CityStar-Asmrtist!! who made a male one and I thought why not a female one! so this is 200s popular teen girl.",
-            "screenshot": "./200s_cool_older_sister/cover.png",
-            "sourceType": "internal",
-            "sortName": "2000s cool older sister",
-            "searchText": "2000s cool older sister so this one is slightly inspired by citystar-asmrtist!! who made a male one and i thought why not a female one! so this is 200s popular teen girl. twixx 200s_cool_older_sister"
-        },
-        {
-            "name": "2000s fall cozy mall/hotel",
-            "folder": "2000s_fall_cozy_mall_hotel",
-            "author": "CityStar-Asmrtist!!",
-            "description": "tuscan early 2000s fall mall or hotel style",
-            "screenshot": "./2000s_fall_cozy_mall_hotel/@Cup_cover.png",
-            "sourceType": "internal",
-            "sortName": "2000s fall cozy mall/hotel",
-            "searchText": "2000s fall cozy mall/hotel tuscan early 2000s fall mall or hotel style citystar-asmrtist!! 2000s_fall_cozy_mall_hotel"
-        },
-        {
-            "name": "2000’s Teal",
-            "folder": "2000_s_Teal",
-            "author": "Anaya",
-            "description": "The 2000s but make it teal",
-            "screenshot": "./2000_s_Teal/gregcover.png",
-            "sourceType": "internal",
-            "sortName": "2000’s teal",
-            "searchText": "2000’s teal the 2000s but make it teal anaya 2000_s_teal"
-        },
-        {
-            "name": "2000s Teal McBling Baddie",
-            "folder": "2000s_Teal_McBling_Baddie",
-            "author": "MannyReads14",
-            "authorUrl": "https://www.tiktok.com/@candybrobuds7?is_from_webapp=1&sender_device=pc",
-            "description": "A 2000s McBling theme for the girls who like blue <3 No file manager icon due to the limits of the mp3 editor sawry (credit to Aisha Shanaya Wasi's teal y3k for the settings icons)",
-            "screenshot": "./2000s_Teal_McBling_Baddie/cover.png",
-            "sourceType": "internal",
-            "sortName": "2000s teal mcbling baddie",
-            "searchText": "2000s teal mcbling baddie a 2000s mcbling theme for the girls who like blue <3 no file manager icon due to the limits of the mp3 editor sawry (credit to aisha shanaya wasi's teal y3k for the settings icons) mannyreads14 2000s_teal_mcbling_baddie"
-        },
-        {
-            "name": "2016 Ipod",
-            "folder": "2016_Ipod",
-            "author": "Mari M",
-            "description": "giving 2016 feels and nostaliga with iconic symbols! feel free to download!",
-            "screenshot": "./2016_Ipod/cover.png",
-            "sourceType": "internal",
-            "sortName": "2016 ipod",
-            "searchText": "2016 ipod giving 2016 feels and nostaliga with iconic symbols! feel free to download! mari m 2016_ipod"
-        },
-        {
-            "name": "2016 lake house",
-            "folder": "2016_lake_house",
-            "author": "Ricklover187",
-            "description": "its hard to read the letters but i like the sunlight very pretty",
-            "screenshot": "./2016_lake_house/cover.png",
-            "sourceType": "internal",
-            "sortName": "2016 lake house",
-            "searchText": "2016 lake house its hard to read the letters but i like the sunlight very pretty ricklover187 2016_lake_house",
-            "authorUrl": "https://www.innioasis.com"
-        },
-        {
-            "name": "66666",
-            "folder": "66666",
-            "author": "taiye",
-            "description": "Blank template theme with full config coverage for easy customization.",
-            "screenshot": "./66666/cover.png",
-            "sourceType": "internal",
-            "sortName": "66666",
-            "searchText": "66666 blank template theme with full config coverage for easy customization. taiye 66666"
         }
     ]
 }
