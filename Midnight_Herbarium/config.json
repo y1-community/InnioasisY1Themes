@@ -1,0 +1,49 @@
+{
+  "theme_info": {
+    "title": "Midnight Herbarium",
+    "author": "Rekydox",
+    "authorUrl": "",
+    "description": "A dark botanical Y1 theme",
+    "externalDownloadUrl": ""
+  },
+  "themeCover": "cover.png",
+  "desktopWallpaper": "desk_bg001.png",
+  "globalWallpaper": "global_bg001.png",
+  "desktopMask": "mask.png",
+  "itemConfig": {
+    "itemTextColor": "#D7D9E7",
+    "itemSelectedTextColor": "#FFFFFF"
+  },
+  "menuConfig": {
+    "menuBackgroundColor": "#080A12",
+    "menuItemTextColor": "#D7D9E7"
+  },
+  "homePageConfig": {
+    "selectedColor": "#A7A9C4",
+    "unselectedColor": "#62657C",
+    "ebook": "transparent.png",
+    "calendar": "transparent.png",
+    "calculator": "transparent.png",
+    "fileManager": "transparent.png"
+  },
+  "fileConfig": {
+    "selectedColor": "#A7A9C4",
+    "unselectedColor": "#62657C"
+  },
+  "settingConfig": {
+    "selectedColor": "#A7A9C4",
+    "unselectedColor": "#62657C",
+    "launcher": "transparent.png"
+  },
+  "statusConfig": {
+    "textColor": "#E2E3ED"
+  },
+  "playerConfig": {
+    "textColor": "#E2E3ED",
+    "backgroundColor": "#080A12"
+  },
+  "desktopWallpaperMode": "fill",
+  "gallery": {
+    "compatibilityMedal": "none"
+  }
+}
