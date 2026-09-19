@@ -3,13 +3,12 @@
     "title": "Sploon",
     "author": "Jyoji",
     "authorUrl": "",
-    "description": "Just Sploon Stuff\n(UPDATE: Battery Icon revised, text sizer revised)",
+    "description": "Just Sploon Stuff",
     "externalDownloadUrl": ""
   },
   "themeCover": "cover.png",
   "desktopWallpaper": "desk-2.png",
   "globalWallpaper": "desk.png",
-  "desktopMask": "",
   "fontFamily": "font.ttf",
   "itemConfig": {
     "itemTextColor": "#ffffff",
@@ -126,13 +125,14 @@
       "btc2.png",
       "btc3.png",
       "btc4.png"
-    ]
+    ],
+    "statusBarColor": "#00000000"
   },
   "playerConfig": {
     "progressColor": "#67eff4",
     "progressBackgroundColor": "#F7F3E7"
   },
   "gallery": {
-    "compatibilityMedal": "gold"
+    "compatibilityMedal": "none"
   }
 }
