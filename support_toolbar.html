@@ -2,6 +2,74 @@
 <style>
   /* Keep the injected donation modal self-contained when a cached page has an
      older site-toolbar.css. */
+    /* Resilient self-contained bottom dock layout */
+  #support-toolbar-container {
+    position: fixed !important;
+    bottom: 18px !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 10000 !important;
+    display: flex !important;
+    justify-content: center !important;
+    pointer-events: none !important;
+    box-sizing: border-box !important;
+  }
+  #support-toolbar-container .y1-site-dock-wrap {
+    pointer-events: auto !important;
+    margin: 0 auto !important;
+    max-width: min(96vw, 1040px) !important;
+    box-sizing: border-box !important;
+  }
+  #support-toolbar-container .y1-site-dock-bar {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: center !important;
+    gap: 2px !important;
+    padding: 8px 14px 6px !important;
+    border-radius: 999px !important;
+    background: var(--lumen-panel, var(--site-bg-elevated, #12141c)) !important;
+    border: 1px solid var(--lumen-line-strong, rgba(255, 255, 255, 0.22)) !important;
+    box-shadow: 0 4px 22px rgba(0, 0, 0, 0.5) !important;
+    box-sizing: border-box !important;
+  }
+  #support-toolbar-container .y1-dock-buttons-layer {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px 8px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  #support-toolbar-container .y1-dock-secondary-line {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    min-height: 30px !important;
+    box-sizing: border-box !important;
+    padding: 6px 18px 8px !important;
+    border-top: 1px solid color-mix(in oklab, var(--dock-line, rgba(255, 255, 255, 0.15)) 55%, transparent) !important;
+    overflow: hidden !important;
+    cursor: pointer !important;
+  }
+  #support-toolbar-container .y1-dock-secondary-goal-view:not([hidden]),
+  #support-toolbar-container .y1-dock-secondary-ticker-view:not([hidden]) {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  #support-toolbar-container .y1-dock-secondary-goal-view[hidden],
+  #support-toolbar-container .y1-dock-secondary-ticker-view[hidden] {
+    display: none !important;
+  }
+  /* Remove contributor stream box and goal bar on donation popup modal */
   #support-toolbar-container .y1-contributor-stream-box {
     display: none !important;
   }
@@ -978,12 +1046,24 @@
           setTimeout(function () {
             if (showingGoal) {
               if (secondaryText) secondaryText.textContent = state.html;
-              if (secondaryGoalView) secondaryGoalView.hidden = false;
-              if (secondaryTickerView) secondaryTickerView.hidden = true;
+              if (secondaryGoalView) {
+                secondaryGoalView.hidden = false;
+                secondaryGoalView.style.display = "";
+              }
+              if (secondaryTickerView) {
+                secondaryTickerView.hidden = true;
+                secondaryTickerView.style.display = "none";
+              }
             } else {
               if (secondaryTickerEl) secondaryTickerEl.innerHTML = state.html;
-              if (secondaryGoalView) secondaryGoalView.hidden = true;
-              if (secondaryTickerView) secondaryTickerView.hidden = false;
+              if (secondaryGoalView) {
+                secondaryGoalView.hidden = true;
+                secondaryGoalView.style.display = "none";
+              }
+              if (secondaryTickerView) {
+                secondaryTickerView.hidden = false;
+                secondaryTickerView.style.display = "";
+              }
             }
             if (secondaryText) secondaryText.style.opacity = "1";
             if (secondaryTickerEl) secondaryTickerEl.style.opacity = "1";
@@ -1246,6 +1326,37 @@
 
     /* Start rotating dock ticker (alternates between Twitch/Wiki-style Goal Bar and single/multi donor lines) */
     setupRotatingTicker(donations, currentMonthTotal, MONTHLY_TARGET, bySupporter, curMonthName, raisedPct, remainingAmount);
+
+    var rawDonorLines = [];
+    var topSupporterKeys = {};
+    getTopSupporterGroups(donations).forEach(function (group) {
+      topSupporterKeys[group.name.toLowerCase()] = true;
+      var items = group.items;
+      var lastItem = items[items.length - 1];
+      var methods = Array.from(new Set(items.map(function (item) { return item.method; })));
+      rawDonorLines.push(contributorLabel(lastItem.name, true) + " " + buildCreditHTML(lastItem, true, group.total, methods.length));
+    });
+
+    donations.slice().sort(function (a, b) { return (b.dt ? b.dt.getTime() : 0) - (a.dt ? a.dt.getTime() : 0); }).forEach(function (item) {
+      // Only received community donations belong in this stream. Outgoing
+      // project payments must never reach the credit formatter.
+      if (!isReceivedCommunityDonation(item)) return;
+      // Skip already summarised Top Supporters from the ticker.
+      var cleanItemName = cleanSupporterName(item.name);
+      var isAnon = isAnonymous(cleanItemName);
+      var key = cleanItemName.toLowerCase();
+      if (!isAnon && topSupporterKeys[key]) return;
+      rawDonorLines.push(buildCreditHTML(item, false, 0, 1, false));
+    });
+
+    // The ranked sponsor table is intentionally separate from the live ticker.
+    // Shuffle this sampler so the same Top Supporter does not always lead.
+    for (var rawShuffleI = rawDonorLines.length - 1; rawShuffleI > 0; rawShuffleI--) {
+      var rawShuffleJ = Math.floor(Math.random() * (rawShuffleI + 1));
+      var rawShuffleValue = rawDonorLines[rawShuffleI];
+      rawDonorLines[rawShuffleI] = rawDonorLines[rawShuffleJ];
+      rawDonorLines[rawShuffleJ] = rawShuffleValue;
+    }
 
     // Feed the permanent second line with a rotating mix of supporters and
     // the monthly goal, keeping the appeal readable without changing layout.
