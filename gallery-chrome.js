@@ -1,12 +1,10 @@
 /**
- * Shared gallery top bar: Y1 & Y2 Themes brand, search placeholder, backfill hint banner.
+ * Shared gallery top bar: Y1 & Y2 Themes brand, search placeholder, firmware compatibility banner.
  */
 (function () {
     "use strict";
 
     const GALLERY_HOME = "https://themes.innioasis.app/index.html";
-    const SOLAR_PAGE = "https://themes.innioasis.app/solar.html";
-    const SOLAR_BANNER_DISMISS_KEY = "y1ThemesSolarBannerDismissed";
 
     function isPlaceholderSlot(el) {
         if (!el) return false;
@@ -36,48 +34,6 @@
         });
     }
 
-    function isSolarBannerDismissed() {
-        try {
-            return localStorage.getItem(SOLAR_BANNER_DISMISS_KEY) === "1";
-        } catch (_) {
-            return false;
-        }
-    }
-
-    function dismissSolarBanner() {
-        try {
-            localStorage.setItem(SOLAR_BANNER_DISMISS_KEY, "1");
-        } catch (_) {
-            /* ignore quota / private mode */
-        }
-    }
-
-    function getThemeContext() {
-        const p = String(location.pathname || "");
-        const s = String(location.search || "");
-        if (/\/theme\.html(?:$|\?)/i.test(p)) {
-            try {
-                const params = new URLSearchParams(s);
-                const t = params.get("theme");
-                if (t && t.toLowerCase() !== "home") return decodeURIComponent(t).replace(/_/g, " ");
-            } catch (_) {}
-            return "This theme";
-        }
-        const clean = p.replace(/^\/+|\/+$/g, "");
-        if (!clean || ["index.html", "home", "home/index.html", "creators", "creators/index.html", "upload", "upload.html", "update", "update.html"].includes(clean.toLowerCase())) {
-            return null;
-        }
-        if (/\/index\.html(?:$|\?)/i.test(p) || p.endsWith("/")) {
-            const parts = clean.split("/");
-            const first = parts[0];
-            if (first && !["scripts", "creators", "assets", "home", "index.html", "upload", "update"].includes(first.toLowerCase())) {
-                const decoded = decodeURIComponent(first).replace(/_/g, " ");
-                if (!["home", "upload", "update", "creators"].includes(decoded.toLowerCase())) return decoded;
-            }
-        }
-        return null;
-    }
-
     function ensureCompatibilityBanner(topbar) {
         if (!topbar || !topbar.parentNode) return;
         if (document.getElementById("site-compat-banner")) return;
@@ -90,7 +46,7 @@
             '<div class="site-compat-banner__content">' +
             '<i class="fa-solid fa-circle-check site-compat-banner__icon" aria-hidden="true"></i>' +
             '<span class="site-compat-banner__text">' +
-            'Themes in this gallery are compatible with <strong>Original OS</strong>, <strong>Better-Y</strong>, <a href="' + SOLAR_PAGE + '" class="site-compat-banner__link"><strong>Solar</strong></a>, and <strong>Koensayr</strong> custom firmwares.' +
+            'Themes in this gallery are compatible with <strong>Original OS</strong>, <strong>Better-Y</strong>, <strong>Solar</strong>, and <strong>Koensayr</strong> custom firmwares.' +
             '</span>' +
             '</div>';
 
