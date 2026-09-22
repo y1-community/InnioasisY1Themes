@@ -206,6 +206,11 @@ body.y1-toolbar-thank-you-open { overflow: hidden; }
     overflow: hidden;
     background: #000;
     color: #fff;
+    pointer-events: auto !important;
+}
+
+.y1-toolbar-thank-you-overlay * {
+    pointer-events: auto !important;
 }
 
 .y1-toolbar-thank-you-stage {
@@ -1138,6 +1143,7 @@ body.y1-donate-panel-open .y1-dock-goal-layer {
     background: rgba(4, 7, 14, 0.55);
     -webkit-backdrop-filter: blur(2px);
     backdrop-filter: blur(2px);
+    pointer-events: auto !important;
 }
 
 .y1-dock-backdrop[hidden] {
@@ -1344,6 +1350,10 @@ body.site-dock-mode:has(#y1-site-dock-privacy-slot #y1-privacy-settings-btn) > #
         flex-direction: column;
         align-items: stretch;
         gap: 10px;
+    }
+
+    .y1-consent-banner-copy {
+        flex: 0 1 auto;
     }
 
     .y1-consent-banner-actions {

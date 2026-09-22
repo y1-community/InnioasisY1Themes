@@ -16,27 +16,73 @@
   }
   #support-toolbar-container .y1-site-dock-wrap {
     pointer-events: auto !important;
+    position: fixed !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
     margin: 0 auto !important;
     max-width: min(96vw, 1040px) !important;
+    width: min(96vw, 1040px) !important;
     box-sizing: border-box !important;
-    transition: bottom 0.25s ease, margin-bottom 0.25s ease !important;
+    z-index: 10001 !important;
   }
-  #support-toolbar-container .y1-consent-banner {
-    pointer-events: auto !important;
+  #support-toolbar-container #y1-consent-banner {
+    position: fixed !important;
+    left: 50% !important;
+    bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important;
+    transform: translateX(-50%) !important;
     z-index: 10005 !important;
+    pointer-events: auto !important;
+    width: min(96vw, 760px) !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px 18px !important;
+    padding: 14px 18px !important;
+    border-radius: 16px !important;
+    background: linear-gradient(145deg, var(--lumen-panel, #17243a), var(--lumen-panel-soft, #1a1e28)) !important;
+    border: 1px solid var(--lumen-line-strong, rgba(159, 193, 255, 0.35)) !important;
+    box-shadow: 0 18px 52px color-mix(in oklab, var(--lumen-ink, #000) 62%, transparent) !important;
+    color: var(--lumen-text, #d9e0ef) !important;
+    font-family: var(--site-font, "DM Sans", system-ui, sans-serif) !important;
+    font-size: 0.84rem !important;
+    line-height: 1.45 !important;
+    box-sizing: border-box !important;
+  }
+  #support-toolbar-container #y1-consent-banner[hidden] {
+    display: none !important;
   }
   #support-toolbar-container .y1-consent-banner * {
     pointer-events: auto !important;
   }
-  body.y1-consent-banner-open #support-toolbar-container .y1-site-dock-wrap {
-    bottom: calc(118px + env(safe-area-inset-bottom, 0px)) !important;
-    margin-bottom: calc(105px + env(safe-area-inset-bottom, 0px)) !important;
-    z-index: 10001 !important;
+  body.y1-toolbar-thank-you-open #support-toolbar-container {
+    z-index: 100000 !important;
+  }
+  #support-toolbar-container .y1-toolbar-thank-you-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 100000 !important;
+    pointer-events: auto !important;
+  }
+  #support-toolbar-container .y1-toolbar-thank-you-overlay * {
+    pointer-events: auto !important;
+  }
+  #support-toolbar-container .y1-dock-backdrop {
+    pointer-events: auto !important;
   }
   @media (max-width: 768px) {
-    body.y1-consent-banner-open #support-toolbar-container .y1-site-dock-wrap {
-      bottom: calc(185px + env(safe-area-inset-bottom, 0px)) !important;
-      margin-bottom: calc(170px + env(safe-area-inset-bottom, 0px)) !important;
+    #support-toolbar-container #y1-consent-banner {
+      bottom: calc(105px + env(safe-area-inset-bottom, 0px)) !important;
+      width: calc(100vw - 16px) !important;
+      padding: 12px 14px !important;
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 10px !important;
+      height: auto !important;
+    }
+    #support-toolbar-container .y1-consent-banner-copy {
+      flex: 0 1 auto !important;
     }
   }
   #support-toolbar-container .y1-site-dock-bar {
@@ -620,6 +666,11 @@
       if (thankYouClose) thankYouClose.focus();
     });
     if (thankYouClose) thankYouClose.addEventListener("click", closeToolbarThankYou);
+    thankYouOverlay.addEventListener("click", function (event) {
+      if (event.target.closest("[data-toolbar-thank-you-close]")) {
+        closeToolbarThankYou();
+      }
+    });
     document.addEventListener("keydown", function (event) {
       if (thankYouOverlay.hidden) return;
       if (event.key === "Escape") {
@@ -712,9 +763,10 @@
   function setBanner(value) {
     if (!banner) return;
     banner.hidden = !value;
+    banner.classList.toggle("y1-consent--visible", !!value);
     banner.setAttribute("aria-hidden", value ? "false" : "true");
     document.body.classList.toggle("y1-consent-banner-open", !!value);
-    if (backdrop) backdrop.hidden = !(value || !donatePanel.hidden || !privacyPanel.hidden);
+    syncBackdrop();
   }
 
   function prefillToggles() {
@@ -928,9 +980,6 @@
     }, 60);
   }
 
-  function hasDecided() {
-    return !!(consent && consent.hasDecided && consent.hasDecided());
-  }
 
   if (cryptoToggle && cryptoGrid) {
     cryptoToggle.addEventListener("click", function (event) {

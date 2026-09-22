@@ -78,61 +78,21 @@
         return null;
     }
 
-    function ensureSolarBanner(topbar) {
+    function ensureCompatibilityBanner(topbar) {
         if (!topbar || !topbar.parentNode) return;
-        if (isSolarBannerDismissed()) return;
-        if (document.getElementById("y1-solar-hint-banner")) return;
-        // Avoid nesting the hint on the explainer page itself.
-        try {
-            if (/\/solar\.html(?:$|\?)/i.test(String(location.pathname || ""))) return;
-        } catch (_) {
-            /* ignore */
-        }
-
-        const themeName = getThemeContext();
+        if (document.getElementById("site-compat-banner")) return;
         const banner = document.createElement("aside");
-        banner.id = "y1-solar-hint-banner";
-        banner.className = "y1-solar-hint-banner";
+        banner.id = "site-compat-banner";
+        banner.className = "site-compat-banner";
         banner.setAttribute("role", "note");
-
-        let contentHtml = "";
-        if (themeName) {
-            contentHtml =
-                '<div class="y1-solar-hint-banner__body">' +
-                '<p class="y1-solar-hint-banner__text">' +
-                "<strong>" + themeName + " works seamlessly with Solar!</strong><br>" +
-                'You can install and use <strong>' + themeName + '</strong> right now on Solar — a new custom firmware by <a href="https://github.com/thesolarproject/solar" target="_blank" rel="noopener noreferrer">@TheSolarProject</a> who are currently <a href="https://github.com/thesolarproject/solar/issues" target="_blank" rel="noopener noreferrer">Looking for testers</a> for their Y1 custom firmware. Solar unlocks Wi-Fi so you can download and apply themes straight to your device over the air without a PC, plus enjoy free Deezer music streaming &amp; downloads, ad-free YouTube videos, Cover Flow album browsing, and Navidrome, while keeping 100% full compatibility with every theme in this gallery. You do not need Solar to use these themes, they are compatible with the Y1/Y2 original firmware.' +
-                "</p>" +
-                '<a class="y1-solar-hint-banner__link" href="' +
-                SOLAR_PAGE +
-                '">Learn more &amp; install</a>' +
-                "</div>";
-        } else {
-            contentHtml =
-                '<div class="y1-solar-hint-banner__body">' +
-                '<p class="y1-solar-hint-banner__text">' +
-                "<strong>Get YouTube and Soulseek on your Y1</strong><br>" +
-                '<a href="https://github.com/thesolarproject/solar" target="_blank" rel="noopener noreferrer">TheSolarProject</a> are looking for testers to try their new Y1 firmware: Solar, with Wi-Fi features including ad-free YouTube music / video streaming and downloads, free Deezer streaming &amp; downloads, Cover Flow, Navidrome, full compatibility with our site themes, plus direct theme downloads straight from your device without needing a PC.' +
-                "</p>" +
-                '<a class="y1-solar-hint-banner__link" href="' +
-                SOLAR_PAGE +
-                '">Learn more &amp; install</a>' +
-                "</div>";
-        }
-
+        banner.setAttribute("aria-label", "Firmware compatibility notice");
         banner.innerHTML =
-            contentHtml +
-            '<button type="button" class="y1-solar-hint-banner__dismiss" aria-label="Dismiss Solar notice">' +
-            '<i class="fa-solid fa-xmark" aria-hidden="true"></i>' +
-            "</button>";
-
-        const dismissBtn = banner.querySelector(".y1-solar-hint-banner__dismiss");
-        if (dismissBtn) {
-            dismissBtn.addEventListener("click", function () {
-                dismissSolarBanner();
-                if (banner.parentNode) banner.parentNode.removeChild(banner);
-            });
-        }
+            '<div class="site-compat-banner__content">' +
+            '<i class="fa-solid fa-circle-check site-compat-banner__icon" aria-hidden="true"></i>' +
+            '<span class="site-compat-banner__text">' +
+            'Themes in this gallery are compatible with <strong>Original OS</strong>, <strong>Better-Y</strong>, <a href="' + SOLAR_PAGE + '" class="site-compat-banner__link"><strong>Solar</strong></a>, and <strong>Koensayr</strong> custom firmwares.' +
+            '</span>' +
+            '</div>';
 
         if (topbar.nextSibling) {
             topbar.parentNode.insertBefore(banner, topbar.nextSibling);
@@ -157,7 +117,7 @@
         }
         normalizeSearchInputs(topbar);
         topbar.dataset.galleryChromeReady = "1";
-        ensureSolarBanner(topbar);
+        ensureCompatibilityBanner(topbar);
     }
 
     function init() {

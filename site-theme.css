@@ -1035,3 +1035,61 @@ body.site-themes-app .bulk-update-panel {
         white-space: normal;
     }
 }
+
+/* Firmware Compatibility Banner */
+.site-compat-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 7px 16px;
+    background: linear-gradient(90deg, rgba(99, 102, 241, 0.12) 0%, rgba(34, 211, 238, 0.08) 50%, rgba(16, 185, 129, 0.1) 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+    color: var(--site-text, #f4f6fb);
+    font-family: var(--site-font, "DM Sans", system-ui, sans-serif);
+    font-size: 0.85rem;
+    line-height: 1.4;
+    text-align: center;
+}
+
+.site-compat-banner__content {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.site-compat-banner__icon {
+    color: #10b981;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+
+.site-compat-banner__text {
+    color: #cbd5e1;
+}
+
+.site-compat-banner__text strong {
+    color: #f1f5f9;
+    font-weight: 650;
+}
+
+.site-compat-banner__link {
+    color: #38bdf8;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.site-compat-banner__link:hover {
+    color: #7dd3fc;
+}
+
+@media (max-width: 640px) {
+    .site-compat-banner {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+    }
+}
+
