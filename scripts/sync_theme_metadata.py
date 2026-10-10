@@ -186,10 +186,22 @@ def _is_theme_config(path: Path) -> bool:
     return _has_theme_image_assets(_load_json_file(path))
 
 
+def retired_theme_folders() -> dict[str, str]:
+    """Folders removed as re-upload duplicates. Values are the folder that replaced them."""
+    path = Path(__file__).resolve().parent / "retired_theme_folders.json"
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    return {str(key): str(value) for key, value in data.items() if str(key).strip()}
+
+
 def _is_theme_dir(path: Path) -> bool:
     if not path.is_dir():
         return False
-    if path.name in EXCLUDED_DIRS or path.name.startswith("."):
+    if path.name in EXCLUDED_DIRS or path.name.startswith(".") or path.name in retired_theme_folders():
         return False
     config_path = path / "config.json"
     return config_path.is_file() and _is_theme_config(config_path)
