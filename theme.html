@@ -60,7 +60,7 @@
     <script src="theme-display-name.js?v=20260624"></script>
     <script src="y1-theme-preview.js?v=20260711"></script>
     <script src="theme-artwork-compat.js?v=20260524"></script>
-    <script src="gold-theme-detect.js?v=20260621"></script>
+    <script src="gold-theme-detect.js?v=20261010perf"></script>
     <script src="gallery-chrome.js?v=20260624"></script>
     <script src="author-links.js?v=20260622"></script>
     <script src="gallery-loaded-theme.js"></script>
@@ -308,7 +308,10 @@
             if (!path) return ''
             if (path === 'placeholder.png') return FALLBACK_PLACEHOLDER_URL
             if (path.startsWith('http')) return path
-            if (path.startsWith('./')) return 'https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/' + path.slice(2)
+            if (path.startsWith('./')) {
+                const encoded = path.slice(2).split('/').filter(Boolean).map(seg => encodeURIComponent(seg)).join('/');
+                return `./${encoded}`;
+            }
             return path
         }
 
@@ -424,7 +427,11 @@
                 authorUrl: (info && info.authorUrl) || cfg.authorUrl || (cachedTheme && cachedTheme.authorUrl) || '',
                 externalDownloadUrl: (info && info.externalDownloadUrl) || cfg.externalDownloadUrl || (cachedTheme && cachedTheme.externalDownloadUrl) || '',
                 authorCTA: (info && info.authorCTA) || (cachedTheme && cachedTheme.authorCTA) || '',
-                screenshot: prefixedCover || ((cachedTheme && cachedTheme.screenshot) || ''),
+                screenshot: (function () {
+                    const catalogShot = String((cachedTheme && cachedTheme.screenshot) || '').trim();
+                    if (/\.jpe?g(?:$|\?)/i.test(catalogShot)) return catalogShot;
+                    return prefixedCover || catalogShot;
+                })(),
                 folder: catalog,
                 rawConfig: cfg || null,
                 compatibilityMedal: medal === 'gold' ? 'gold' : ''
