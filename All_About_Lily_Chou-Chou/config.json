@@ -1,0 +1,139 @@
+{
+  "theme_info": {
+    "title": "All About Lily Chou-Chou",
+    "author": "cd",
+    "authorUrl": "",
+    "description": "Rice-field green and ether-white, inspired by the film All About Lily Chou-Chou (リリイ・シュシュのすべて). The aether exists only in Lily.",
+    "externalDownloadUrl": ""
+  },
+  "themeCover": "cover.png",
+  "desktopWallpaper": "desk_bg001.png",
+  "globalWallpaper": "global_bg001.png",
+  "desktopMask": "mask.png",
+  "itemConfig": {
+    "itemTextColor": "#ECF4E4",
+    "itemSelectedTextColor": "#0E1A0A",
+    "itemBackground": "",
+    "itemSelectedBackground": "item_selected.png",
+    "itemRightArrow": "arrow_right.png"
+  },
+  "dialogConfig": {
+    "dialogOptionBackground": "dialog_bg.png",
+    "dialogOptionTextColor": "#ECF4E4",
+    "dialogOptionSelectedBackground": "dialog_selected.png",
+    "dialogOptionSelectedTextColor": "#0E1A0A",
+    "dialogBackgroundColor": "#1E2034",
+    "dialogTextColor": "#ECF4E4"
+  },
+  "menuConfig": {
+    "menuBackgroundColor": "#12141F",
+    "menuItemBackground": "",
+    "menuItemTextColor": "#ECF4E4",
+    "menuItemSelectedBackground": "item_selected.png",
+    "menuItemSelectedTextColor": "#0E1A0A"
+  },
+  "homePageConfig": {
+    "nowPlaying": "Now Playing.png",
+    "music": "Music.png",
+    "video": "Videos.png",
+    "audiobooks": "Audiobooks.png",
+    "photos": "Photos.png",
+    "fm": "FM Radio.png",
+    "bluetooth": "Bluetooth.png",
+    "settings": "Settings.png",
+    "shuffleQuick": "Shuffle Quick.png",
+    "ebook": "ebook.png",
+    "calculator": "calculator.png",
+    "calendar": "calendar.png",
+    "fileManager": "transparent.png"
+  },
+  "fileConfig": {
+    "folderIcon": "folder.png",
+    "musicIcon": "music_file.png"
+  },
+  "settingConfig": {
+    "shutdown": "set_shutdown.png",
+    "timedShutdown_off": "set_ts_off.png",
+    "timedShutdown_10": "set_ts_10.png",
+    "timedShutdown_20": "set_ts_20.png",
+    "timedShutdown_30": "set_ts_30.png",
+    "timedShutdown_60": "set_ts_60.png",
+    "timedShutdown_90": "set_ts_90.png",
+    "timedShutdown_120": "set_ts_120.png",
+    "shuffleOn": "set_shuffle_on.png",
+    "shuffleOff": "set_shuffle_off.png",
+    "repeatOff": "set_rep_off.png",
+    "repeatAll": "set_rep_all.png",
+    "repeatOne": "set_rep_one.png",
+    "equalizer_normal": "set_eq_normal.png",
+    "equalizer_classical": "set_eq_classical.png",
+    "equalizer_dance": "set_eq_dance.png",
+    "equalizer_flat": "set_eq_flat.png",
+    "equalizer_folk": "set_eq_folk.png",
+    "equalizer_heavymetal": "set_eq_heavymetal.png",
+    "equalizer_hiphop": "set_eq_hiphop.png",
+    "equalizer_jazz": "set_eq_jazz.png",
+    "equalizer_pop": "set_eq_pop.png",
+    "equalizer_rock": "set_eq_rock.png",
+    "keyLockOn": "set_kl_on.png",
+    "keyLockOff": "set_kl_off.png",
+    "keyToneOn": "set_kt_on.png",
+    "keyToneOff": "set_kt_off.png",
+    "keyVibrationOn": "set_kv_on.png",
+    "keyVibrationOff": "set_kv_off.png",
+    "wallpaper": "set_wallpaper.png",
+    "backlight_10": "set_bl_10.png",
+    "backlight_15": "set_bl_15.png",
+    "backlight_30": "set_bl_30.png",
+    "backlight_45": "set_bl_45.png",
+    "backlight_60": "set_bl_60.png",
+    "backlight_120": "set_bl_120.png",
+    "backlight_300": "set_bl_300.png",
+    "backlight_always": "set_bl_always.png",
+    "brightness": "set_brightness.png",
+    "displayBatteryOn": "set_db_on.png",
+    "displayBatteryOff": "set_db_off.png",
+    "dateTime": "set_datetime.png",
+    "language": "set_language.png",
+    "launcher": "set_launcher.png",
+    "factoryReset": "set_factory.png",
+    "clearCache": "set_cache.png",
+    "theme": "set_theme.png",
+    "fileExtensionOn": "set_fe_on.png",
+    "fileExtensionOff": "set_fe_off.png",
+    "settingMask": "mask.png"
+  },
+  "statusConfig": {
+    "playing": "status_playing.png",
+    "audiobookPlaying": "status_audiobook.png",
+    "pause": "status_pause.png",
+    "fmPlaying": "status_fm.png",
+    "stop": "status_stop.png",
+    "blConnected": "status_bt_on.png",
+    "blConnecting": "status_bt_connecting.png",
+    "blDisconnected": "status_bt_off.png",
+    "headsetWithMic": "status_headset_mic.png",
+    "headsetWithoutMic": "status_headset.png",
+    "statusBarColor": "#12141F",
+    "battery": [
+      "battery_0.png",
+      "battery_1.png",
+      "battery_2.png",
+      "battery_3.png"
+    ],
+    "batteryCharging": [
+      "battery_charging_0.png",
+      "battery_charging_1.png",
+      "battery_charging_2.png",
+      "battery_charging_3.png"
+    ]
+  },
+  "playerConfig": {
+    "progressTextColor": "#ECF4E4",
+    "progressColor": "#7ABE56",
+    "progressBackgroundColor": "#2A2D45"
+  },
+  "gallery": {
+    "compatibilityMedal": "none"
+  }
+}
