@@ -36,12 +36,12 @@
     <link rel="stylesheet" href="y1-theme-preview.css?v=20260215">
     <link rel="stylesheet" href="theme-analytics.css?v=20260518">
     <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="theme-packaging.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script defer src="theme-packaging.js?v=20261010perf"></script>
     <script src="theme-display-name.js?v=20260624"></script>
-    <script src="y1-theme-preview.js?v=20260711b"></script>
+    <script src="y1-theme-preview.js?v=20261010perf"></script>
     <script src="theme-artwork-compat.js?v=20260711"></script>
-    <script src="gold-theme-detect.js?v=20260621"></script>
+    <script src="gold-theme-detect.js?v=20261010perf"></script>
     <script src="gallery-chrome.js?v=20260711"></script>
     <script src="author-links.js?v=20260622"></script>
     <script src="site-init.js?v=20260522privacy"></script>
@@ -477,9 +477,52 @@
             width: 100%;
             height: 100%;
             border-radius: 8px;
-            transition: all 0.2s ease;
+            transition: opacity 0.2s ease;
             object-fit: contain;
             object-position: center;
+        }
+
+        .theme-card-media-skeleton {
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            place-items: center;
+            background:
+                linear-gradient(100deg, rgba(255, 255, 255, 0.04) 20%, rgba(255, 255, 255, 0.14) 42%, rgba(255, 255, 255, 0.04) 64%);
+            background-size: 220% 100%;
+            animation: theme-card-shimmer 1.25s ease-in-out infinite;
+        }
+
+        .theme-card-media-skeleton::after {
+            content: "";
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.18);
+            border-top-color: #eaeef7;
+            animation: theme-card-spin 0.8s linear infinite;
+        }
+
+        .theme-preview-frame--cover-ready .theme-card-media-skeleton {
+            display: none;
+        }
+
+        .theme-card .theme-preview-frame img.theme-card-cover {
+            opacity: 0;
+        }
+
+        .theme-preview-frame--cover-ready img.theme-card-cover {
+            opacity: 1;
+        }
+
+        @keyframes theme-card-shimmer {
+            0% { background-position: 100% 0; }
+            100% { background-position: -100% 0; }
+        }
+
+        @keyframes theme-card-spin {
+            to { transform: rotate(360deg); }
         }
 
         .theme-card-variant-row {
@@ -1293,6 +1336,58 @@
         let goldOnlyFilter = false;
         const pagerEl = document.getElementById('theme-pager');
         let currentPage = 1;
+        const galleryGoldQueued = new Set();
+
+        function galleryConnectionSavesData() {
+            const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+            if (!conn) return false;
+            if (conn.saveData) return true;
+            const kind = String(conn.effectiveType || '');
+            return kind === 'slow-2g' || kind === '2g';
+        }
+
+        function armVisibleGalleryCards() {
+            const margin = 240;
+            const viewTop = -margin;
+            const viewBottom = (window.innerHeight || 800) + margin;
+            document.querySelectorAll('.theme-card').forEach((card) => {
+                if (card.style.display === 'none') return;
+                const rect = card.getBoundingClientRect();
+                if (rect.bottom < viewTop || rect.top > viewBottom) return;
+                const arm = card._armGalleryMedia;
+                if (typeof arm === 'function') arm();
+            });
+        }
+
+        function queueVisibleGoldChecks() {
+            if (galleryConnectionSavesData()) return;
+            if (!window.GoldThemeDetect || typeof window.GoldThemeDetect.annotateThemesProgressive !== 'function') return;
+            const pending = [];
+            document.querySelectorAll('.theme-card').forEach((card) => {
+                if (card.style.display === 'none') return;
+                const folder = String(card.getAttribute('data-catalog-folder') || '').trim();
+                if (!folder || galleryGoldQueued.has(folder)) return;
+                galleryGoldQueued.add(folder);
+                pending.push({ folder, sourceType: 'internal' });
+            });
+            if (pending.length) {
+                window.GoldThemeDetect.annotateThemesProgressive(pending, {
+                    batchSize: 2,
+                    buildFileUrl: (cf, rel) => buildThemeFileUrl(cf, rel),
+                });
+            }
+        }
+
+        const galleryMediaObserver = ('IntersectionObserver' in window)
+            ? new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (!entry.isIntersecting) return;
+                    galleryMediaObserver.unobserve(entry.target);
+                    const arm = entry.target._armGalleryMedia;
+                    if (typeof arm === 'function') arm();
+                });
+            }, { root: null, rootMargin: '240px 0px', threshold: 0.01 })
+            : null;
         try {
             const qp = new URLSearchParams(location.search);
             const initialQuery = qp.get('q');
@@ -1454,6 +1549,8 @@
             renderPager(matched.length, pageSize);
             const emptyEl = document.getElementById('theme-empty');
             if (emptyEl) emptyEl.style.display = matched.length === 0 ? 'block' : 'none';
+            queueVisibleGoldChecks();
+            armVisibleGalleryCards();
         }
 
         if (searchInput) searchInput.addEventListener('input', debounce(() => {
@@ -3979,6 +4076,10 @@
         }
 
         function mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, card, variantSeg, galleryThemeEntry) {
+            if (galleryConnectionSavesData()) {
+                if (simHost) simHost.style.display = 'none';
+                return;
+            }
             if (!folderPath || !window.Y1ThemePreview || typeof window.Y1ThemePreview.mountGalleryCardLazy !== 'function') {
                 if (simHost) simHost.style.display = 'none';
                 return;
@@ -4075,25 +4176,25 @@
             simHost.className = 'y1-theme-preview-host';
             previewFrame.append(previewGoldBadge, simHost);
 
+            const mediaSkeleton = document.createElement('div');
+            mediaSkeleton.className = 'theme-card-media-skeleton';
+            mediaSkeleton.setAttribute('aria-hidden', 'true');
             const img = document.createElement('img');
+            img.className = 'theme-card-cover';
+            img.alt = safeText(theme.name);
+            img.width = 360;
+            img.height = 270;
+            img.decoding = 'async';
             const metaScreenshot = String(theme.screenshot || '');
             const metaLooksLikeCover = /\.(png|jpe?g|gif|webp)$/i.test(metaScreenshot);
             const folderImageCandidates = folderPath ? [
-                `${folderPath}/cover.jpg`,
-                `${folderPath}/cover.jpeg`,
-                `${folderPath}/cover.JPG`,
-                `${folderPath}/cover.JPEG`,
                 `${folderPath}/cover.png`,
                 `${folderPath}/cover.PNG`,
-                `${folderPath}/cover_YS.jpg`,
-                `${folderPath}/cover_YS.jpeg`,
                 `${folderPath}/cover_YS.png`,
-                `${folderPath}/cover_ys.jpg`,
-                `${folderPath}/cover_ys.jpeg`,
                 `${folderPath}/cover_ys.png`
             ] : [];
             const screenshotCandidates = [
-                metaLooksLikeCover ? theme.screenshot : '',
+                metaLooksLikeCover && !/\.jpe?g$/i.test(metaScreenshot) ? theme.screenshot : '',
                 ...folderImageCandidates.map(p => `./${p}`),
                 folderPath ? `./${folderPath}/cover.webp` : '',
                 folderPath ? `./${folderPath}/cover.gif` : '',
@@ -4104,8 +4205,10 @@
             ].filter(Boolean);
             let screenshotIdx = 0;
             let triedConfigCoverFallback = false;
+            let usingGeneratedJpeg = false;
             const applyNextScreenshot = async() => {
                 if (screenshotIdx < screenshotCandidates.length) {
+                    img.removeAttribute('srcset');
                     img.src = resolveScreenshotPath(screenshotCandidates[screenshotIdx] || '');
                     return;
                 }
@@ -4123,13 +4226,38 @@
                 img.onerror = null;
                 img.src = 'placeholder.png';
             };
+            img.addEventListener('load', () => {
+                previewFrame.classList.add('theme-preview-frame--cover-ready');
+            });
             img.onerror = () => {
-                screenshotIdx += 1;
+                if (usingGeneratedJpeg) {
+                    usingGeneratedJpeg = false;
+                    img.removeAttribute('srcset');
+                    screenshotIdx = 0;
+                } else {
+                    screenshotIdx += 1;
+                }
                 void applyNextScreenshot();
             };
-            void applyNextScreenshot();
-            img.alt = safeText(theme.name);
-            previewFrame.appendChild(img);
+            const armCover = () => {
+                if (img.dataset.coverArmed === '1') return;
+                img.dataset.coverArmed = '1';
+                const saveData = galleryConnectionSavesData();
+                const top = previewFrame.getBoundingClientRect().top;
+                img.fetchPriority = (!saveData && top < (window.innerHeight || 800)) ? 'high' : 'low';
+                if (!folderPath) {
+                    void applyNextScreenshot();
+                    return;
+                }
+                const enc = folderPath.split('/').filter(Boolean).map(encodeURIComponent).join('/');
+                usingGeneratedJpeg = true;
+                img.src = `./${enc}/cover-thumb.jpg`;
+                if (!saveData) {
+                    img.srcset = `./${enc}/cover-thumb.jpg 320w, ./${enc}/cover.jpg 640w`;
+                    img.sizes = '(max-width: 700px) 92vw, 320px';
+                }
+            };
+            previewFrame.append(mediaSkeleton, img);
 
             const cardPreviewMeta = {
                 trackTitle: safeText(theme.name || '').trim(),
@@ -4167,38 +4295,44 @@
                 variantRow.style.display = 'flex';
             }
 
-            if (folderPath) {
-                void (async () => {
+            const loadCardVariants = async () => {
+                if (!folderPath || c.dataset.variantsArmed === '1') return;
+                c.dataset.variantsArmed = '1';
+                try {
+                    let defaultLabel = 'Default';
                     try {
-                        let defaultLabel = 'Default';
-                        try {
-                            const enc = folderPath.split('/').filter(Boolean).map(encodeURIComponent).join('/');
-                            const rc = await fetch(`./${enc}/config.json`, { cache: 'no-cache' });
-                            if (rc.ok) {
-                                const j = await rc.json();
-                                const gl = String((j.gallery && j.gallery.defaultVariantLabel) || '').trim();
-                                if (gl) defaultLabel = gl;
-                            }
-                        } catch (_) {}
-                        defOptV.textContent = defaultLabel;
-                        const names = await listThemeVariantFolderNames(folderPath, theme);
-                        for (const vn of names) {
-                            const s = String(vn || '').trim();
-                            if (!s || variantNameSeen.has(s.toLowerCase())) continue;
-                            variantNameSeen.add(s.toLowerCase());
-                            const o = document.createElement('option');
-                            o.value = s;
-                            o.textContent = formatVariantDisplayLabel(s);
-                            variantSelect.appendChild(o);
+                        const enc = folderPath.split('/').filter(Boolean).map(encodeURIComponent).join('/');
+                        const rc = await fetch(`./${enc}/config.json`, { cache: 'force-cache' });
+                        if (rc.ok) {
+                            const j = await rc.json();
+                            const gl = String((j.gallery && j.gallery.defaultVariantLabel) || '').trim();
+                            if (gl) defaultLabel = gl;
                         }
-                        if (variantSelect.options.length > 1) {
-                            variantRow.style.display = 'flex';
-                        }
-                    } catch (e) {
-                        console.warn('variant list failed', e);
+                    } catch (_) {}
+                    defOptV.textContent = defaultLabel;
+                    const names = await listThemeVariantFolderNames(folderPath, theme);
+                    for (const vn of names) {
+                        const s = String(vn || '').trim();
+                        if (!s || variantNameSeen.has(s.toLowerCase())) continue;
+                        variantNameSeen.add(s.toLowerCase());
+                        const o = document.createElement('option');
+                        o.value = s;
+                        o.textContent = formatVariantDisplayLabel(s);
+                        variantSelect.appendChild(o);
                     }
-                })();
-            }
+                    if (variantSelect.options.length > 1) {
+                        variantRow.style.display = 'flex';
+                    }
+                } catch (e) {
+                    console.warn('variant list failed', e);
+                }
+            };
+            c._armGalleryMedia = () => {
+                armCover();
+                void loadCardVariants();
+            };
+            if (galleryMediaObserver) galleryMediaObserver.observe(c);
+            else c._armGalleryMedia();
 
             const goToThemePreviewPage = () => {
                 const href = buildCardPreviewHref(String(variantSelect.value || '').trim());
@@ -4472,16 +4606,6 @@
         }
 
 
-        function startProgressiveGoldEnrichment(themes) {
-            if (!window.GoldThemeDetect || typeof window.GoldThemeDetect.annotateThemesProgressive !== 'function') {
-                return;
-            }
-            window.GoldThemeDetect.annotateThemesProgressive(themes, {
-                batchSize: 4,
-                buildFileUrl: (cf, rel) => buildThemeFileUrl(cf, rel),
-            });
-        }
-
         async function load() {
             const grid = document.getElementById('theme-grid');
             if (!grid) return;
@@ -4543,7 +4667,6 @@
             if (authorFilter && String(authorFilter.value || 'all') !== 'all') {
                 syncAuthorFilterUi(authorFilter.value);
             }
-            startProgressiveGoldEnrichment(filteredThemes);
 
             void (async () => {
                 if (!window.ThemeAnalytics) return;

@@ -326,4 +326,4 @@
         buildThemeFileUrl,
         fetchThemeConfig,
     };
-})();
+})(typeof window !== "undefined" ? window : globalThis);

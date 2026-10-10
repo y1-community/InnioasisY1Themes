@@ -861,6 +861,23 @@ def _process_zip(
                         logs.append(f"Legacy OS config backfill applied in {dest_name}/.")
                 except Exception as exc:
                     logs.append(f"WARNING: Legacy OS backfill failed for {dest_name}/: {exc}")
+                try:
+                    import optimize_theme_images as theme_images
+
+                    image_result = theme_images.optimize_theme_folder(
+                        REPO_ROOT / dest_name,
+                        optimize_png=True,
+                    )
+                    logs.append(
+                        f"Image optimize {dest_name}/: covers={image_result.get('covers')} "
+                        f"pngs={image_result.get('pngs')}."
+                    )
+                    if image_result.get("error"):
+                        logs.append(
+                            f"WARNING: image optimize for {dest_name}/: {image_result.get('error')}"
+                        )
+                except Exception as exc:
+                    logs.append(f"WARNING: image optimize failed for {dest_name}/: {exc}")
 
         if extracted_any:
             path.unlink()
