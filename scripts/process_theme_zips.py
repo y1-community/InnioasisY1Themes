@@ -11,7 +11,14 @@ skipped on extract. Allowed ``index.html`` shells (theme root or under
 ``Variants/<look>/...`` including ``Variants/<look>/index.html``) are written; other markup is dropped.
 If an incoming zip identity matches an existing catalog/config identity (author +
 title), extraction overwrites that existing theme folder in place; otherwise new
-destination folders must still be unique. Successfully processed zip files are removed.
+destination folders must still be unique. Finder-style duplicate copies of the
+same author and title inside one archive (a second folder named like
+``Theme 2`` / ``Theme copy``) are skipped so the archive still ingests.
+Successfully processed zip files are removed.
+
+Rejected archives are deleted from the working tree. The process still exits 0
+after that deletion so Theme ingest can commit the removal. Exiting non-zero
+before the commit left the bad zip on ``main`` and blocked every later upload.
 """
 
 from __future__ import annotations
@@ -116,6 +123,57 @@ def _apply_author_slug_suffix(folder_name: str, slug: str) -> str:
         return folder
     with_slug = f"{base}_{token}"
     return f"{with_slug}_dark-mode" if _is_dark_mode_folder_name(folder) else with_slug
+
+
+_FINDER_DUPLICATE_SUFFIX_RE = re.compile(
+    r"^(?P<base>.*?)(?:\s+copy(?:\s+\d+)?|\s*\(\d+\)|\s+\d+)$",
+    re.IGNORECASE,
+)
+
+
+def _theme_key_basename(key: str) -> str:
+    if key in {"", "."}:
+        return ""
+    return PurePosixPath(key).name
+
+
+def _finder_duplicate_base(name: str) -> str | None:
+    """Return the original folder name when ``name`` is a Finder/Explorer copy."""
+    match = _FINDER_DUPLICATE_SUFFIX_RE.match(str(name or "").strip())
+    if not match:
+        return None
+    base = match.group("base").rstrip()
+    return base or None
+
+
+def _prefer_theme_key(current: str, candidate: str) -> str:
+    """Choose which same-identity theme key to keep.
+
+    When one folder name is the other plus a duplicate suffix (`` 2``, `` copy``,
+    `` (1)``), keep the unsuffixed folder. Otherwise keep the key already planned.
+    """
+    current_base = _theme_key_basename(current)
+    candidate_base = _theme_key_basename(candidate)
+    current_dup = _finder_duplicate_base(current_base)
+    candidate_dup = _finder_duplicate_base(candidate_base)
+    if current_dup and current_dup.lower() == candidate_base.lower():
+        return candidate
+    if candidate_dup and candidate_dup.lower() == current_base.lower():
+        return current
+    return current
+
+
+def ingest_exit_code(*, rejected_remaining: int) -> int:
+    """Status code for ``main``.
+
+    A rejected archive that is still on disk must fail the run so it is not
+    silently retried as a success. A rejected archive that was removed must
+    *not* fail the run: Theme ingest commits only after this process exits 0.
+    Failing first left the poison zip on ``main`` and blocked every later theme.
+    """
+    if rejected_remaining:
+        return 1
+    return 0
 
 
 def _normalize_dark_mode_folder_suffix(value: str) -> str:
@@ -486,23 +544,53 @@ def _process_zip(path: Path, *, folder_stem_override: str | None = None) -> tupl
                     )
             if not resolved_dest or resolved_dest in EXCLUDED_SCAN_DIRS or resolved_dest.startswith("."):
                 return False, logs + [f"ERROR: Destination folder name {resolved_dest!r} is not allowed."]
+            incoming_author, incoming_titles = _extract_theme_identity_from_config(cfg)
+            identity_titles = frozenset(incoming_titles)
             resolved_key = resolved_dest.lower()
             if resolved_key in resolved_names_seen:
-                return (
-                    False,
-                    logs
-                    + [
-                        f"ERROR: Multiple themes in {path.name} resolve to destination folder "
-                        f"{resolved_dest!r}; archive retained to avoid mixed overwrite."
-                    ],
+                prev_idx = next(
+                    i
+                    for i, planned in enumerate(extraction_plan)
+                    if planned["dest"].lower() == resolved_key
                 )
-            resolved_names_seen.add(resolved_key)
+                prev = extraction_plan[prev_idx]
+                same_identity = bool(
+                    incoming_author
+                    and identity_titles
+                    and prev.get("author") == incoming_author
+                    and prev.get("titles") == identity_titles
+                )
+                if not same_identity:
+                    return (
+                        False,
+                        logs
+                        + [
+                            f"ERROR: Multiple themes in {path.name} resolve to destination folder "
+                            f"{resolved_dest!r}; skipping archive to avoid mixed overwrite."
+                        ],
+                    )
+                keeper = _prefer_theme_key(str(prev["key"]), key)
+                if keeper == prev["key"]:
+                    logs.append(
+                        f"WARNING: skipping duplicate copy {key!r}; keeping {prev['key']!r} "
+                        f"for destination {resolved_dest}/ (same author and title)."
+                    )
+                    continue
+                logs.append(
+                    f"WARNING: replacing duplicate copy {prev['key']!r} with {key!r} "
+                    f"for destination {resolved_dest}/ (same author and title)."
+                )
+                extraction_plan.pop(prev_idx)
+            else:
+                resolved_names_seen.add(resolved_key)
             extraction_plan.append(
                 {
                     "key": key,
                     "dest": resolved_dest,
                     "overwrite": overwrite_existing,
                     "reason": reason,
+                    "author": incoming_author,
+                    "titles": identity_titles,
                 }
             )
 
@@ -586,10 +674,13 @@ def main() -> int:
         "on",
     }
     failed = 0
+    rejected_remaining = 0
     for path in zip_paths:
         ok, logs = _process_zip(path)
         if not ok:
             logs = _discard_zip(path, logs, reason="failed ingest validation/extraction")
+            if path.is_file():
+                rejected_remaining += 1
         for line in logs:
             print(line)
         if not ok:
@@ -600,10 +691,21 @@ def main() -> int:
             f"WARNING: {failed} zip archive(s) failed ingest validation/extraction. "
             "Valid archives (if any) were still processed."
         )
-    if strict and failed:
-        print("PROCESS_THEME_ZIPS_STRICT is enabled: failing due to ingest errors.")
-        return 1
-    return 0
+        print(
+            "::warning::Theme ingest rejected "
+            f"{failed} archive(s). Removed archives will be committed so they cannot "
+            "block later uploads. See the log for filenames."
+        )
+        if strict:
+            print(
+                "PROCESS_THEME_ZIPS_STRICT: rejected archives were removed; "
+                "continuing so successful extracts can be committed."
+            )
+    if rejected_remaining:
+        print(
+            f"ERROR: {rejected_remaining} rejected archive(s) could not be removed and would block later ingests."
+        )
+    return ingest_exit_code(rejected_remaining=rejected_remaining)
 
 
 if __name__ == "__main__":
