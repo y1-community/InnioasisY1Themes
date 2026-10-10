@@ -42,6 +42,18 @@ _GIT_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = _GIT_ROOT
 ZIP_EXTENSION = ".zip"
 EXCLUDED_SCAN_DIRS = {".git", ".github", "scripts", "assets", "functions", ".vscode", "themes"}
+
+
+def retired_theme_folders() -> dict[str, str]:
+    """Folders removed as re-upload duplicates. Values are the folder that replaced them."""
+    path = Path(__file__).resolve().parent / "retired_theme_folders.json"
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    return {str(key): str(value) for key, value in data.items() if str(key).strip()}
 BLOCKED_EXTENSIONS = {
     ".exe",
     ".msi",
@@ -822,6 +834,14 @@ def _process_zip(
             key = planned["key"]
             dest_name = planned["dest"]
             dest_path = REPO_ROOT / dest_name
+            kept = retired_theme_folders().get(dest_name)
+            if kept:
+                logs.append(
+                    f"Skipping retired duplicate {dest_name}/ "
+                    f"(already represented by {kept}/)."
+                )
+                extracted_any = True
+                continue
             if planned["overwrite"] and dest_path.exists():
                 try:
                     if dest_path.is_dir():
