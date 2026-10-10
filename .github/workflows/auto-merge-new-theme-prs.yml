@@ -1,11 +1,11 @@
 # Merges only when validate_theme_pr.py exits 0 and prints THEME_PR_AUTO_MERGE_ALLOWED=1.
-# Hard failures (exit 1): unsafe zips, mixed add/edit PRs, different-author reuse without
-# a suffixed folder, pending root ZIP claiming the same logical name, title impersonation, etc.
-# Validation passes (exit 0) but auto-merge is skipped (THEME_PR_AUTO_MERGE_ALLOWED=0) when
-# the submission updates an existing theme (folder already on main with matching catalog author),
-# matches gallery identity as an edit/replacement/variant pack (same author), or adds files
-# under an existing theme folder — those PRs need maintainer merge for correct placement.
-# Only brand-new theme identities get THEME_PR_AUTO_MERGE_ALLOWED=1.
+# Hard failures (exit 1): unsafe zips, mixed add/edit PRs, pending root ZIP claiming the
+# same logical name, etc.
+# An author/title clash with someone else's theme is not a failure. Ingest keeps the
+# existing theme and publishes the upload in its own suffixed folder, credited to the
+# uploader name from the sidecar (or "Unknown" when that name is missing).
+# Same-author updates of an existing theme also pass and auto-merge. Ingest overwrites
+# that uploader's folder only. It never replaces a folder owned by a different author.
 # Gallery upload PRs may add a paired *.zip.meta.json next to the same PR's root *.zip.
 #
 # After a successful merge, theme extraction + themes.json sync run on main via

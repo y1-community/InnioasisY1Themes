@@ -146,6 +146,102 @@ def _finder_duplicate_base(name: str) -> str | None:
     return base or None
 
 
+def _authors_equivalent(left: str, right: str) -> bool:
+    """True when both names are present and normalize to the same author."""
+    a = _normalize_author(left)
+    b = _normalize_author(right)
+    return bool(a) and a == b
+
+
+def _raw_config_author(config: dict[str, Any] | None) -> str:
+    if not isinstance(config, dict):
+        return ""
+    for key in ("theme_info", "source_info"):
+        block = config.get(key)
+        if isinstance(block, dict):
+            author = str(block.get("author") or "").strip()
+            if author:
+                return author
+    return ""
+
+
+def _uploader_credit(meta: dict[str, Any] | None) -> tuple[str, str]:
+    """Return (display name, folder slug) from an upload sidecar. Name may be empty."""
+    data = meta if isinstance(meta, dict) else {}
+    name = str(data.get("uploaderName") or "").strip()
+    slug = str(data.get("uploaderSlug") or "").strip()
+    if not slug and name:
+        slug = _slug_token(name)
+    return name, slug
+
+
+def separate_foreign_owner_folder(
+    dest: str,
+    *,
+    overwrite: bool,
+    owner: str,
+    uploader: str,
+    uploader_slug: str,
+    config_author: str,
+    existing_owners: dict[str, str],
+    impersonates_other_author: bool = False,
+) -> tuple[str, bool, bool, str, str]:
+    """Keep another creator's folder and publish this upload beside it.
+
+    Returns ``(dest, overwrite, rewrite_author, credit, reason)``.
+    ``overwrite`` is true only when ``dest`` already belongs to the uploader
+    (or, when the sidecar has no name, to ``config_author``).
+    When the config still names the other creator, ``rewrite_author`` is true
+    and ``credit`` is the uploader name, or ``Unknown`` if that name is missing.
+    """
+    def _owner_of(folder: str) -> str:
+        if folder in existing_owners:
+            return existing_owners[folder]
+        for key, value in existing_owners.items():
+            if key.lower() == folder.lower():
+                return value
+        return ""
+
+    def _matches_steward(author: str) -> bool:
+        if uploader:
+            return _authors_equivalent(author, uploader)
+        return _authors_equivalent(author, config_author)
+
+    owner_name = owner or _owner_of(dest)
+    if owner_name and not _matches_steward(owner_name):
+        slug = (uploader_slug or _slug_token(uploader) or "unknown").strip("-") or "unknown"
+        credit = uploader or "Unknown"
+        rewrite = not _authors_equivalent(config_author, credit)
+        base = dest
+        candidate = dest
+        base_name = _base_folder_name(dest)
+        if not re.search(rf"[_-]{re.escape(slug)}$", base_name, flags=re.I):
+            candidate = _apply_author_slug_suffix(dest, slug)
+        n = 2
+        while _owner_of(candidate) and not _matches_steward(_owner_of(candidate)):
+            candidate = _apply_author_slug_suffix(base, f"{slug}-{n}")
+            n += 1
+            if n > 30:
+                break
+        final_owner = _owner_of(candidate)
+        final_overwrite = bool(final_owner) and _matches_steward(final_owner)
+        reason = (
+            f"Keeping existing {dest}/ ({owner_name}) and publishing this upload at {candidate}/."
+        )
+        if rewrite:
+            reason += f" Crediting {credit}."
+        return candidate, final_overwrite, rewrite, credit, reason
+
+    credit = uploader or config_author or "Unknown"
+    rewrite = False
+    reason = ""
+    if impersonates_other_author and not _authors_equivalent(config_author, uploader or ""):
+        credit = uploader or "Unknown"
+        rewrite = True
+        reason = f"Config author matched a different creator; crediting {credit}."
+    return dest, overwrite, rewrite, credit, reason
+
+
 def _prefer_theme_key(current: str, candidate: str) -> str:
     """Choose which same-identity theme key to keep.
 
@@ -413,11 +509,84 @@ def _zip_processing_label(path: Path) -> str:
         return path.name
 
 
+def _load_sidecar_meta(path: Path) -> dict[str, Any]:
+    meta_path = Path(str(path) + ".meta.json")
+    if not meta_path.is_file():
+        return {}
+    data = _read_json(meta_path)
+    return data or {}
+
+
+def _disk_folder_author(folder: str) -> str:
+    return _raw_config_author(_read_json(REPO_ROOT / folder / "config.json"))
+
+
+def _config_impersonates_other_author(
+    config: dict[str, Any],
+    *,
+    uploader: str,
+    catalog_rows: list[dict[str, Any]],
+) -> bool:
+    """True when config author+title match a catalog theme the uploader does not own."""
+    if not uploader:
+        return False
+    config_author = _raw_config_author(config)
+    if not config_author or _authors_equivalent(config_author, uploader):
+        return False
+    _author, titles = _extract_theme_identity_from_config(config)
+    if not titles:
+        return False
+    for row in catalog_rows:
+        row_author = str(row.get("author") or "")
+        row_titles = set(row.get("title_candidates") or [])
+        if not row_titles or not (titles & row_titles):
+            continue
+        if _authors_equivalent(row_author, config_author) and not _authors_equivalent(row_author, uploader):
+            return True
+    return False
+
+
+def _rewrite_theme_author(dest: Path, credit: str) -> bool:
+    """Set theme_info/source_info author to ``credit`` on the theme and its variants."""
+    if not credit:
+        return False
+    paths = [dest / "config.json"]
+    variants = dest / "Variants"
+    if variants.is_dir():
+        paths.extend(sorted(variants.glob("*/config.json")))
+    changed = False
+    for cfg_path in paths:
+        if not cfg_path.is_file():
+            continue
+        try:
+            data = json.loads(cfg_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(data, dict):
+            continue
+        touched = False
+        for key in ("theme_info", "source_info"):
+            block = data.get(key)
+            if not isinstance(block, dict):
+                continue
+            if str(block.get("author") or "").strip() == credit:
+                continue
+            block["author"] = credit
+            touched = True
+        if not touched:
+            continue
+        cfg_path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        changed = True
+    return changed
+
+
 def _process_root_zip_bundle(
     path: Path,
     outer: zipfile.ZipFile,
     inner_names: list[str],
     logs: list[str],
+    *,
+    upload_meta: dict[str, Any] | None = None,
 ) -> tuple[bool, list[str]]:
     logs = logs + [
         f"Detected uploader batch archive ({len(inner_names)} inner theme zip(s)); extracting each."
@@ -435,7 +604,11 @@ def _process_root_zip_bundle(
         try:
             tmp.write_bytes(buf)
             inner_stem = PurePosixPath(inner).stem
-            inner_ok, inner_logs = _process_zip(tmp, folder_stem_override=inner_stem)
+            inner_ok, inner_logs = _process_zip(
+                tmp,
+                folder_stem_override=inner_stem,
+                upload_meta=upload_meta,
+            )
             logs.extend(inner_logs)
             if not inner_ok:
                 return False, logs + [f"ERROR: Inner archive failed: {inner!r}"]
@@ -460,7 +633,14 @@ def _process_root_zip_bundle(
     return True, logs
 
 
-def _process_zip(path: Path, *, folder_stem_override: str | None = None) -> tuple[bool, list[str]]:
+def _process_zip(
+    path: Path,
+    *,
+    folder_stem_override: str | None = None,
+    upload_meta: dict[str, Any] | None = None,
+) -> tuple[bool, list[str]]:
+    if upload_meta is None:
+        upload_meta = _load_sidecar_meta(path)
     logs: list[str] = [f"Processing {_zip_processing_label(path)}"]
     try:
         blob = path.read_bytes()
@@ -488,7 +668,13 @@ def _process_zip(path: Path, *, folder_stem_override: str | None = None) -> tupl
         names_t = ztu.filter_zip_names_for_theme_logic(names)
         bundle_inner = ztu.root_theme_bundle_zip_entries(names_t)
         if bundle_inner is not None:
-            return _process_root_zip_bundle(path, archive, bundle_inner, logs)
+            return _process_root_zip_bundle(
+                path,
+                archive,
+                bundle_inner,
+                logs,
+                upload_meta=upload_meta,
+            )
 
         keys = ztu.zip_theme_keys(names_t)
         keys = ztu.collapse_redundant_root_theme_key(names_t, keys, stem_for_identity)
@@ -530,9 +716,44 @@ def _process_zip(path: Path, *, folder_stem_override: str | None = None) -> tupl
                 incoming_config=cfg,
                 catalog_rows=catalog_rows,
             )
+            uploader_name, uploader_slug = _uploader_credit(upload_meta)
+            owner = _disk_folder_author(resolved_dest) if (REPO_ROOT / resolved_dest).is_dir() else ""
+            existing_owners = {resolved_dest: owner} if owner else {}
+            # Include sibling folders that already use an uploader suffix so a repeat
+            # upload updates that remix instead of nesting another suffix.
+            if owner and not (
+                _authors_equivalent(owner, uploader_name)
+                or (not uploader_name and _authors_equivalent(owner, _raw_config_author(cfg)))
+            ):
+                slug_for_scan = (uploader_slug or _slug_token(uploader_name) or "unknown").strip("-") or "unknown"
+                for sibling in REPO_ROOT.iterdir():
+                    if not sibling.is_dir():
+                        continue
+                    if sibling.name == resolved_dest:
+                        continue
+                    if re.search(rf"[_-]{re.escape(slug_for_scan)}(?:-\d+)?$", sibling.name, flags=re.I):
+                        existing_owners[sibling.name] = _disk_folder_author(sibling.name)
+            resolved_dest, overwrite_existing, rewrite_author, credit, protect_reason = (
+                separate_foreign_owner_folder(
+                    resolved_dest,
+                    overwrite=overwrite_existing,
+                    owner=owner,
+                    uploader=uploader_name,
+                    uploader_slug=uploader_slug,
+                    config_author=_raw_config_author(cfg),
+                    existing_owners=existing_owners,
+                    impersonates_other_author=_config_impersonates_other_author(
+                        cfg,
+                        uploader=uploader_name,
+                        catalog_rows=catalog_rows,
+                    ),
+                )
+            )
+            if protect_reason:
+                reason = protect_reason
             resolved_base = _base_folder_name(resolved_dest).lower()
             if not overwrite_existing and (REPO_ROOT / resolved_dest).exists():
-                incoming_author_slug = _extract_theme_author_for_slug(cfg)
+                incoming_author_slug = uploader_slug or _slug_token(_extract_theme_author_for_slug(cfg))
                 adjusted_dest = _apply_author_slug_suffix(resolved_dest, incoming_author_slug)
                 if adjusted_dest and adjusted_dest != resolved_dest:
                     forced_slug_by_base[resolved_base] = _slug_token(incoming_author_slug)
@@ -591,6 +812,8 @@ def _process_zip(path: Path, *, folder_stem_override: str | None = None) -> tupl
                     "reason": reason,
                     "author": incoming_author,
                     "titles": identity_titles,
+                    "rewrite_author": rewrite_author,
+                    "credit": credit,
                 }
             )
 
@@ -624,6 +847,15 @@ def _process_zip(path: Path, *, folder_stem_override: str | None = None) -> tupl
             logs.append(msg)
             if ok:
                 extracted_any = True
+                if planned.get("rewrite_author") and planned.get("credit"):
+                    try:
+                        if _rewrite_theme_author(REPO_ROOT / dest_name, str(planned["credit"])):
+                            logs.append(
+                                f"Credited {dest_name}/ to {planned['credit']} "
+                                "(uploader, replacing a different creator's name in config)."
+                            )
+                    except Exception as exc:
+                        logs.append(f"WARNING: Could not rewrite author for {dest_name}/: {exc}")
                 try:
                     if fill_theme_folder(REPO_ROOT / dest_name):
                         logs.append(f"Legacy OS config backfill applied in {dest_name}/.")
