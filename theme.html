@@ -222,7 +222,7 @@
                         </label>
                     </div>
                     <div id="theme-y1-sim-wrap" style="width:100%;min-height:300px;display:flex;align-items:center;justify-content:center;" title="Click the device, then use arrow keys, Enter, and Escape like the Y1 Theme Maker simulator"></div>
-                    <img id="main-screenshot" src="placeholder.png" alt="Screenshot" style="width:min(400px,100%);height:auto;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,.5)">
+                    <img id="main-screenshot" src="placeholder.png" alt="Screenshot" width="360" height="270" decoding="async" fetchpriority="high" style="width:min(400px,100%);height:auto;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,.5)">
                 </div>
 
                 <div id="right" style="width:100%;display:flex;flex-direction:column;gap:12px;">
@@ -1135,8 +1135,12 @@
                 out.push(v);
             };
 
+            const metaShot = String(metadataScreenshot || '');
+            const metaIsJpeg = /\.jpe?g$/i.test(metaShot) && hasImageExt(metaShot);
+            if (metaIsJpeg) pushCandidate(resolveScreenshotPath(metaShot));
+
             if (!list.length) {
-                if (metadataScreenshot && hasImageExt(metadataScreenshot)) {
+                if (!metaIsJpeg && metadataScreenshot && hasImageExt(metadataScreenshot)) {
                     pushCandidate(resolveScreenshotPath(metadataScreenshot));
                 }
                 pushCandidate('placeholder.png');
@@ -1216,6 +1220,11 @@
                             if (abs.toLowerCase().startsWith(pre.toLowerCase())) zipKey = abs.slice(pre.length);
                             else zipKey = abs.split('/').pop() || zipKey;
                         }
+                    }
+                    const baseName = String(zipKey.split('/').pop() || '').toLowerCase();
+                    if (['cover.jpg', 'cover.jpeg', 'cover-thumb.jpg', 'cover-thumb.jpeg'].includes(baseName)) {
+                        const cfgText = sourceConfigForNormalize ? JSON.stringify(sourceConfigForNormalize).toLowerCase() : '';
+                        if (!cfgText.includes(baseName)) continue;
                     }
                     zipRows.push({ devicePath: zipKey, download_url: file.download_url, path: file.path });
                 }

@@ -252,11 +252,44 @@
         return { items, logicalToDevice, contentRoot, catalog, mode: 'structured' };
     }
 
+    const WEBSITE_ONLY_COVERS = new Set([
+        "cover.jpg",
+        "cover.jpeg",
+        "cover-thumb.jpg",
+        "cover-thumb.jpeg",
+    ]);
+
+    function configReferencedBasenames(cfg) {
+        const names = new Set();
+        walkConfigAssetStrings(cfg, (val) => {
+            const text = String(val || "")
+                .trim()
+                .replace(/\\/g, "/");
+            if (!text || /^https?:/i.test(text)) return;
+            const base = text.split("/").filter(Boolean).pop();
+            if (base) names.add(base.toLowerCase());
+        });
+        return names;
+    }
+
+    /** Gallery JPEG covers are not part of the downloadable theme unless config already uses them. */
+    function withoutWebsiteOnlyCovers(fileEntries, cfg) {
+        const referenced = configReferencedBasenames(cfg);
+        return (Array.isArray(fileEntries) ? fileEntries : []).filter((entry) => {
+            const logical = entryLogicalPath(entry).replace(/\\/g, "/");
+            const base = logical.split("/").filter(Boolean).pop() || "";
+            const low = base.toLowerCase();
+            if (!WEBSITE_ONLY_COVERS.has(low)) return true;
+            return referenced.has(low);
+        });
+    }
+
     function buildPackManifest(fileEntries, contentFolder, catalogFolder, cfg) {
+        const files = withoutWebsiteOnlyCovers(fileEntries, cfg);
         if (configUsesStructuredAssetPaths(cfg)) {
-            return buildStructuredPackManifest(fileEntries, contentFolder, catalogFolder);
+            return buildStructuredPackManifest(files, contentFolder, catalogFolder);
         }
-        return buildFlattenPackManifest(fileEntries, contentFolder, catalogFolder);
+        return buildFlattenPackManifest(files, contentFolder, catalogFolder);
     }
 
     function rewriteConfigForDeviceFlatPack(cfg, contentFolder, logicalToDevice) {

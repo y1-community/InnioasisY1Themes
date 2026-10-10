@@ -43,6 +43,9 @@ PROTECTED_UPLOADERS = {
     "itsryanspecter@gmail.com",
     "y1-community",
     "github-actions[bot]",
+    "cursor agent",
+    "cursoragent@cursor.com",
+    "cursor-agent",
 }
 EXCLUDED_DIRS = {
     ".git",
@@ -438,6 +441,26 @@ def _infer_folder_uploader(folder: str) -> dict[str, str]:
     }
 
 
+def _gallery_screenshot(folder: str, config: dict[str, Any] | None) -> str:
+    """Image the gallery should load. Website JPEG wins; ``themeCover`` stays the device PNG."""
+    if (REPO_ROOT / folder / "cover.jpg").is_file():
+        return f"./{folder}/cover.jpg"
+    if not isinstance(config, dict):
+        return ""
+    cover = str(config.get("themeCover") or "").strip()
+    if not cover or cover.lower().startswith(("http://", "https://")):
+        return ""
+    cover_clean = cover.replace("\\", "/").lstrip("./").lstrip("/")
+    if not cover_clean:
+        return ""
+    folder_low = folder.lower()
+    if cover_clean.lower().startswith(folder_low + "/"):
+        cover_clean = cover_clean[len(folder) + 1 :]
+    if not cover_clean:
+        return ""
+    return f"./{folder}/{cover_clean}"
+
+
 def _theme_entry_from_folder(folder: str, config: dict[str, Any] | None) -> dict[str, Any]:
     theme_info = _theme_info_for_folder(folder, config)
     raw_name = str(theme_info.get("title") or "").strip()
@@ -463,16 +486,9 @@ def _theme_entry_from_folder(folder: str, config: dict[str, Any] | None) -> dict
         entry["description"] = description
     if external_download_url:
         entry["externalDownloadUrl"] = external_download_url
-    if isinstance(config, dict):
-        cover = str(config.get("themeCover") or "").strip()
-        if cover and not cover.lower().startswith(("http://", "https://")):
-            cover_clean = cover.replace("\\", "/").lstrip("./").lstrip("/")
-            if cover_clean:
-                folder_low = folder.lower()
-                if cover_clean.lower().startswith(folder_low + "/"):
-                    cover_clean = cover_clean[len(folder) + 1 :]
-                if cover_clean:
-                    entry["screenshot"] = f"./{folder}/{cover_clean}"
+    shot = _gallery_screenshot(folder, config if isinstance(config, dict) else None)
+    if shot:
+        entry["screenshot"] = shot
     folder_path = REPO_ROOT / folder
     if folder_path.is_dir():
         variants = sorted(
@@ -542,15 +558,9 @@ def _refresh_existing_theme_entry(entry: dict[str, Any], folder: str, config: di
         refreshed["description"] = str(info["description"]).strip()
     if info.get("externalDownloadUrl"):
         refreshed["externalDownloadUrl"] = str(info["externalDownloadUrl"]).strip()
-    cover = str(config.get("themeCover") or "").strip()
-    if cover and not cover.lower().startswith(("http://", "https://")):
-        cover_clean = cover.replace("\\", "/").lstrip("./").lstrip("/")
-        if cover_clean:
-            folder_low = folder.lower()
-            if cover_clean.lower().startswith(folder_low + "/"):
-                cover_clean = cover_clean[len(folder) + 1 :]
-            if cover_clean:
-                refreshed["screenshot"] = f"./{folder}/{cover_clean}"
+    shot = _gallery_screenshot(folder, config)
+    if shot:
+        refreshed["screenshot"] = shot
 
     title = strip_redundant_theme_word(str(info.get("title") or "").strip())
     current_name = str(refreshed.get("name") or "").strip()

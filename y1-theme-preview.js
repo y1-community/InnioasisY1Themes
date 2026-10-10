@@ -2459,7 +2459,7 @@
                     }
                 }
             },
-            { rootMargin: '140px', threshold: 0.04 }
+            { rootMargin: '0px', threshold: 0.01 }
         );
         io.observe(container);
     }

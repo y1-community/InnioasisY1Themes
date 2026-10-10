@@ -1,0 +1,40 @@
+# Cloudflare Pages cache rules. Image URLs are stable paths that can be
+# replaced in place, so they are cached for a week but not marked immutable.
+/themes.json
+  Cache-Control: public, max-age=300
+
+/*.html
+  Cache-Control: public, max-age=300
+
+/*.js
+  Cache-Control: public, max-age=3600
+
+/*.css
+  Cache-Control: public, max-age=3600
+
+/*.jpg
+  Cache-Control: public, max-age=604800
+
+/*.jpeg
+  Cache-Control: public, max-age=604800
+
+/*.png
+  Cache-Control: public, max-age=604800
+
+/*.webp
+  Cache-Control: public, max-age=604800
+
+/*.gif
+  Cache-Control: public, max-age=604800
+
+/*.ttf
+  Cache-Control: public, max-age=604800
+
+/*.otf
+  Cache-Control: public, max-age=604800
+
+/*.woff
+  Cache-Control: public, max-age=604800
+
+/*.woff2
+  Cache-Control: public, max-age=604800

@@ -21,9 +21,17 @@ on:
       - completed
   workflow_dispatch:
 
+# workflow_run fires for every completed upstream run, including skipped ones.
+# A skipped run used to join this group with cancel-in-progress and abort a real
+# deploy, then skip its own job (runs 38050208949 cancelled by 38050214548).
+# No-op conclusions get a private group so they cannot cancel or queue behind a
+# real deploy. Real deploys queue instead of cancelling each other.
 concurrency:
-  group: deploy-cloudflare-pages
-  cancel-in-progress: true
+  group: >-
+    ${{ (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion != 'success')
+        && format('deploy-cloudflare-pages-noop-{0}', github.run_id)
+        || 'deploy-cloudflare-pages' }}
+  cancel-in-progress: false
 
 permissions:
   contents: read
