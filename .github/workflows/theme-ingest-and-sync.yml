@@ -62,6 +62,10 @@ jobs:
       - name: Install ingest dependencies
         run: python -m pip install --upgrade pip
 
+      # Do not fail this step when a zip is rejected. process_theme_zips.py removes
+      # the bad archive and exits 0 so this job can commit that removal plus every
+      # zip that did extract. Exiting 1 here used to skip the commit, leave the
+      # poison zip on main, and block every later theme (see aqua_y2k_v2.zip).
       - name: Extract root theme zip submissions (legacy fallback)
         run: python scripts/process_theme_zips.py
         env:
