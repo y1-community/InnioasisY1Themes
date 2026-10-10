@@ -36,14 +36,13 @@ Rules:
   - If a zip on the default branch is still waiting to be extracted and claims the
     same logical name, validation **fails** (avoid duplicate listings before extraction).
   - If the submission targets an existing catalog theme (same logical folder / identity)
-    with the **same author** (or both authors unknown), it is an **update, replacement,
-    or variant pack** — validation **passes** but the script prints
-    ``THEME_PR_AUTO_MERGE_ALLOWED=0`` so the auto-merge workflow opens a normal PR
-    for maintainers (correct placement in the existing folder, ``themes.json``, etc.).
-  - If authors differ, the incoming folder must end with ``-<slug>`` where slug
-    comes from upload metadata or theme author; otherwise validation **fails**.
-  - **Only brand-new** theme identities (no matching catalog row, folder not on base)
-    print ``THEME_PR_AUTO_MERGE_ALLOWED=1`` for automatic squash-merge.
+    with the **same author**, it is an **update** and validation **passes**.
+  - If the credited config author does not match the existing theme's author, validation
+    still **passes** and auto-merge stays allowed. Ingest must not overwrite or rename
+    that existing theme. It publishes the upload in its own suffixed folder and credits
+    the uploader from the PR / sidecar / upload form, or ``Unknown`` when no uploader
+    name is available (including when the config still names the other creator).
+  - **Brand-new** theme identities print ``THEME_PR_AUTO_MERGE_ALLOWED=1``.
 - Catalog display title (theme_info.title) collisions still block validation (fail).
 """
 
@@ -509,13 +508,15 @@ def _identity_policy_assess(
             if _authors_equivalent(exist_author_norm, incoming_auth):
                 # Valid theme update / variant pack: allowed automatically on a trust basis
                 return errors, manual
-            else:
-                errors.append(
-                    f"{context}: Theme folder {inner_folder!r} already exists on the default branch "
-                    f"and matches gallery identity in themes.json, but the credited author differs from "
-                    f"this submission. Use a suffixed folder name for your remix or coordinate with the "
-                    f"listed author."
-                )
+            # A different creator already owns this folder. Do not block the upload.
+            # Ingest keeps their theme and publishes this one in a suffixed folder,
+            # credited to the uploader (or "Unknown" when the sidecar has no name).
+            print(
+                f"THEME_PR_AUTHOR_SEPARATED: {context}: folder {inner_folder!r} belongs to a "
+                "different author. Auto-merge will continue; ingest keeps the existing theme and "
+                "publishes this upload under its own folder, credited to the uploader or Unknown."
+            )
+            return errors, manual
         else:
             # Existing folder on base: allowed on a trust basis
             return errors, manual
@@ -543,15 +544,10 @@ def _identity_policy_assess(
     if _folder_has_disambiguator(inner_folder, slug_cands):
         return errors, manual
 
-    hint = slug_cands[0] if slug_cands else "your-handle"
-    sample_base = re.sub(r"_dark[_-]?mode$", "", inner_folder, flags=re.I)
-    sample = f"{sample_base}_{hint}"
-    if re.search(r"_dark[_-]?mode$", inner_folder, flags=re.I):
-        sample = f"{sample}_dark-mode"
-    errors.append(
-        f"{context}: Folder {inner_folder!r} matches an existing theme credited to a different author. "
-        f"Rename the theme root folder to include your suffix, e.g. {sample}, "
-        "then re-upload — validation failed."
+    print(
+        f"THEME_PR_AUTHOR_SEPARATED: {context}: folder {inner_folder!r} matches an existing theme "
+        "credited to a different author. Auto-merge will continue; ingest will give this upload its "
+        "own suffixed folder and credit the uploader, or Unknown when no uploader name is available."
     )
     return errors, manual
 
@@ -597,7 +593,7 @@ def _title_impersonation_errors(
     catalog_title_rows: list[dict[str, Any]],
     context: str,
 ) -> list[str]:
-    """Block auto-merge when a config title matches another theme's catalog name but author/suffix suggest impersonation."""
+    """Note a title clash with another author's theme. Auto-merge stays allowed; ingest separates the folder."""
     if not config:
         return []
     tnorm = _config_title_norm(config)
@@ -627,11 +623,12 @@ def _title_impersonation_errors(
             continue
         if _folder_has_disambiguator(inner_folder, slug_cands):
             continue
-        return [
-            f"{context}: Theme title matches catalog name '{tnorm}' for folder {row['folder']!r}, "
-            "but author does not match that listing and the folder name is not suffixed to show a remix/variation. "
-            "Auto-merge disabled for manual review (possible impersonation or mistaken reuse)."
-        ]
+        print(
+            f"THEME_PR_AUTHOR_SEPARATED: {context}: title matches catalog name '{tnorm}' for folder "
+            f"{row['folder']!r} under a different author. Auto-merge will continue; ingest keeps that "
+            "theme and credits this upload to the uploader, or Unknown when no uploader name is available."
+        )
+        return []
     return []
 
 
