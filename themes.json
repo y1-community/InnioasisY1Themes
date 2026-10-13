@@ -7510,6 +7510,16 @@
             "searchText": "win98 based on win95 theme. changed background, colors and fonts to reflect windows 95 start menu as much as possible (within the theme engine capabilites) u/moralesnery win98"
         },
         {
+            "name": "Win98 (clone)",
+            "folder": "Win98__clone",
+            "author": "(modified win95)",
+            "description": "Based on Win95 theme. Changed background, colors and fonts to better reflect Windows 98",
+            "screenshot": "./Win98__clone/cover.jpg",
+            "sourceType": "internal",
+            "sortName": "win98 (clone)",
+            "searchText": "win98 (clone) based on win95 theme. changed background, colors and fonts to better reflect windows 98 (modified win95) win98__clone"
+        },
+        {
             "name": "Win98 Refix",
             "folder": "Win98_Refix",
             "author": "Robertpuggle",
