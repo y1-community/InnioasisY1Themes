@@ -1,0 +1,140 @@
+{
+  "theme_info": {
+    "title": "Starlight Pop Club",
+    "author": "Custom fan theme",
+    "authorUrl": "",
+    "description": "A bright candy-pop fan theme inspired by KATSEYE, Wicked, Olivia Rodrigo, Ariana Grande, ADÉLA, ILLIT and DARA. Original decorative artwork.",
+    "externalDownloadUrl": ""
+  },
+  "themeCover": "cover.png",
+  "desktopWallpaper": "desk_bg001.png",
+  "globalWallpaper": "global_bg001.png",
+  "desktopMask": "mask.png",
+  "itemConfig": {
+    "itemTextColor": "#FFF8FF",
+    "itemSelectedTextColor": "#351E4E",
+    "itemBackground": "",
+    "itemSelectedBackground": "1.png",
+    "itemRightArrow": "2.png"
+  },
+  "dialogConfig": {
+    "dialogOptionBackground": "3.png",
+    "dialogOptionTextColor": "#FFF8FF",
+    "dialogOptionSelectedBackground": "4.png",
+    "dialogOptionSelectedTextColor": "#351E4E",
+    "dialogBackgroundColor": "#2B1B42",
+    "dialogTextColor": "#FFF8FF"
+  },
+  "menuConfig": {
+    "menuBackgroundColor": "#39234F",
+    "menuItemBackground": "",
+    "menuItemTextColor": "#FFF8FF",
+    "menuItemSelectedBackground": "1.png",
+    "menuItemSelectedTextColor": "#351E4E"
+  },
+  "homePageConfig": {
+    "nowPlaying": "Now Playing.png",
+    "music": "Music.png",
+    "video": "Videos.png",
+    "audiobooks": "Audiobooks.png",
+    "photos": "Photos.png",
+    "fm": "FM Radio.png",
+    "bluetooth": "Bluetooth.png",
+    "settings": "Settings.png",
+    "shuffleQuick": "Shuffle Quick.png",
+    "ebook": "ebook.png",
+    "calculator": "calculator.png",
+    "calendar": "calendar.png",
+    "fileManager": "transparent.png"
+  },
+  "fileConfig": {
+    "folderIcon": "folder.png",
+    "musicIcon": "music_file.png"
+  },
+  "settingConfig": {
+    "selectedColor": "#FF82C9",
+    "unselectedColor": "#FFFFFF",
+    "shutdown": "Power.png",
+    "timedShutdown_off": "Power.png",
+    "timedShutdown_10": "Power_selected.png",
+    "timedShutdown_20": "Power_selected.png",
+    "timedShutdown_30": "Power_selected.png",
+    "timedShutdown_60": "Power_selected.png",
+    "timedShutdown_90": "Power_selected.png",
+    "timedShutdown_120": "Power_selected.png",
+    "shuffleOn": "Audio_selected.png",
+    "shuffleOff": "Audio.png",
+    "repeatOff": "Audio.png",
+    "repeatAll": "Audio_selected.png",
+    "repeatOne": "Audio_selected.png",
+    "equalizer_normal": "Audio.png",
+    "equalizer_classical": "Audio.png",
+    "equalizer_dance": "Audio_selected.png",
+    "equalizer_flat": "Audio.png",
+    "equalizer_folk": "Audio.png",
+    "equalizer_heavymetal": "Audio_selected.png",
+    "equalizer_hiphop": "Audio_selected.png",
+    "equalizer_jazz": "Audio.png",
+    "equalizer_pop": "Audio_selected.png",
+    "equalizer_rock": "Audio_selected.png",
+    "keyLockOn": "System_selected.png",
+    "keyLockOff": "System.png",
+    "keyToneOn": "System_selected.png",
+    "keyToneOff": "System.png",
+    "keyVibrationOn": "System_selected.png",
+    "keyVibrationOff": "System.png",
+    "wallpaper": "Display.png",
+    "backlight_10": "Display.png",
+    "backlight_15": "Display.png",
+    "backlight_30": "Display_selected.png",
+    "backlight_45": "Display_selected.png",
+    "backlight_60": "Display_selected.png",
+    "backlight_120": "Display_selected.png",
+    "backlight_300": "Display_selected.png",
+    "backlight_always": "Display_selected.png",
+    "brightness": "Display.png",
+    "displayBatteryOn": "Display_selected.png",
+    "displayBatteryOff": "Display.png",
+    "dateTime": "Time.png",
+    "language": "Language.png",
+    "launcher": "System.png",
+    "factoryReset": "System.png",
+    "clearCache": "Storage.png",
+    "theme": "Display_selected.png",
+    "fileExtensionOn": "Storage_selected.png",
+    "fileExtensionOff": "Storage.png"
+  },
+  "statusConfig": {
+    "playing": "playing.png",
+    "audiobookPlaying": "audiobook_play.png",
+    "pause": "pause.png",
+    "fmPlaying": "fm_play.png",
+    "stop": "stop.png",
+    "blConnected": "bl_connected.png",
+    "blConnecting": "bl_connecting.png",
+    "blDisconnected": "bl_disconnected.png",
+    "headsetWithMic": "headset_mic.png",
+    "headsetWithoutMic": "headset_no_mic.png",
+    "statusBarColor": "#2B1B42",
+    "battery": [
+      "battery.001.png",
+      "battery.002.png",
+      "battery.003.png",
+      "battery.004.png"
+    ],
+    "batteryCharging": [
+      "batterycharge.001.png",
+      "batterycharge.002.png",
+      "batterycharge.003.png",
+      "batterycharge.004.png"
+    ]
+  },
+  "playerConfig": {
+    "progressTextColor": "#FFF8FF",
+    "progressColor": "#FF82C9",
+    "progressBackgroundColor": "#5B3971"
+  },
+  "gallery": {
+    "compatibilityMedal": "gold"
+  }
+}
