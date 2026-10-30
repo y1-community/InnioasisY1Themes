@@ -334,7 +334,10 @@
         },
         {
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 5870151e2 (Theme ingest: extract zips, sync themes.json, cleanup upload artifacts)
             "name": "aesthetic grunge",
             "folder": "aesthetic_grunge",
             "author": "Noorie!",
@@ -345,7 +348,10 @@
             "searchText": "aesthetic grunge grunge aesthetic theme! noorie! aesthetic_grunge"
         },
         {
+<<<<<<< HEAD
 >>>>>>> 4f084bcba (Theme ingest: extract zips, sync themes.json, cleanup upload artifacts)
+=======
+>>>>>>> 5870151e2 (Theme ingest: extract zips, sync themes.json, cleanup upload artifacts)
             "name": "Aesthetic japan <3",
             "folder": "Aesthetic_japan__3",
             "author": "noorie!",
@@ -1549,6 +1555,16 @@
             "sourceType": "internal",
             "sortName": "code vein 1 v3",
             "searchText": "code vein 1 v3 theme inspired by video game code vein featuring io. \ni do not own any of the images or intellectual property presented.\nfor personal use only. not for commercial use.\ncopyright © bandai namco holdings inc. all rights reserved. superjay code_vein_1_v3"
+        },
+        {
+            "name": "coquette aesthetic",
+            "folder": "coquette_aesthetic",
+            "author": "noorie!",
+            "description": "coquette aesthetic template!",
+            "screenshot": "./coquette_aesthetic/cover.jpg",
+            "sourceType": "internal",
+            "sortName": "coquette aesthetic",
+            "searchText": "coquette aesthetic coquette aesthetic template! noorie! coquette_aesthetic"
         },
         {
             "name": "Cortis",
