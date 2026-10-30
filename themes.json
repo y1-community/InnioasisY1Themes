@@ -333,6 +333,19 @@
             "externalDownloadUrl": ""
         },
         {
+<<<<<<< HEAD
+=======
+            "name": "aesthetic grunge",
+            "folder": "aesthetic_grunge",
+            "author": "Noorie!",
+            "description": "grunge aesthetic theme!",
+            "screenshot": "./aesthetic_grunge/cover.jpg",
+            "sourceType": "internal",
+            "sortName": "aesthetic grunge",
+            "searchText": "aesthetic grunge grunge aesthetic theme! noorie! aesthetic_grunge"
+        },
+        {
+>>>>>>> 4f084bcba (Theme ingest: extract zips, sync themes.json, cleanup upload artifacts)
             "name": "Aesthetic japan <3",
             "folder": "Aesthetic_japan__3",
             "author": "noorie!",
