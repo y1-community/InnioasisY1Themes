@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Innioasis Donations</title>
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #0b1019;
+            color: #111827;
+            -webkit-tap-highlight-color: transparent;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+        }
+        /* Utility classes for full self-containment (no external CSS/CDN required) */
+        .w-full { width: 100%; }
+        .max-w-md { max-width: 28rem; }
+        .min-h-screen { min-height: 100vh; }
+        .bg-\[\#0f1724\] { background-color: #0f1724; }
+        .bg-white { background-color: #ffffff; }
+        .bg-slate-200 { background-color: #e2e8f0; }
+        .bg-emerald-50 { background-color: #ecfdf5; }
+        .bg-rose-50 { background-color: #fff1f2; }
+        .text-white { color: #ffffff; }
+        .text-slate-900 { color: #0f172a; }
+        .text-slate-500 { color: #64748b; }
+        .text-slate-400 { color: #94a3b8; }
+        .text-emerald-600 { color: #059669; }
+        .text-emerald-700 { color: #047857; }
+        .text-rose-600 { color: #e11d48; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .flex-1 { flex: 1 1 0%; }
+        .items-center { align-items: center; }
+        .items-start { align-items: flex-start; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .gap-3 { gap: 0.75rem; }
+        .shrink-0 { flex-shrink: 0; }
+        .min-w-0 { min-width: 0; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .pt-6 { padding-top: 1.5rem; }
+        .pb-5 { padding-bottom: 1.25rem; }
+        .pt-3 { padding-top: 0.75rem; }
+        .pb-10 { padding-bottom: 2.5rem; }
+        .p-5 { padding: 1.25rem; }
+        .py-12 { padding-top: 3rem; padding-bottom: 3rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mt-1 { margin-top: 0.25rem; }
+        .mt-0\.5 { margin-top: 0.125rem; }
+        .mb-3 { margin-bottom: 0.75rem; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .w-9 { width: 2.25rem; }
+        .h-9 { height: 2.25rem; }
+        .h-1 { height: 0.25rem; }
+        .rounded-2xl { border-radius: 1rem; }
+        .rounded-t-3xl { border-top-left-radius: 1.5rem; border-top-right-radius: 1.5rem; }
+        .rounded-full { border-radius: 9999px; }
+        .text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
+        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+        .text-xs { font-size: 0.75rem; line-height: 1rem; }
+        .text-\[11px\] { font-size: 11px; line-height: 1rem; }
+        .font-bold { font-weight: 700; }
+        .font-semibold { font-weight: 600; }
+        .font-medium { font-weight: 500; }
+        .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+        .tracking-tight { letter-spacing: -0.025em; }
+        .tracking-wider { letter-spacing: 0.05em; }
+        .uppercase { text-transform: uppercase; }
+        .tabular-nums { font-variant-numeric: tabular-nums; }
+        .text-center { text-align: center; }
+        .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .break-words { overflow-wrap: break-word; word-break: break-word; }
+        .leading-relaxed { line-height: 1.625; }
+        .opacity-90 { opacity: 0.9; }
+        .opacity-80 { opacity: 0.8; }
+        .relative { position: relative; }
+        .overflow-hidden { overflow: hidden; }
+        .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+        .divide-y > * + * { border-top: 1px solid #f1f5f9; }
+        /* Monzo Hot Coral card surface */
+        .monzo-card {
+            background: linear-gradient(155deg, #ff4f40 0%, #f03d30 100%);
+            box-shadow: 0 12px 28px -8px rgba(255, 79, 64, 0.45);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Mobile App Shell -->
+    <div class="w-full max-w-md min-h-screen bg-[#0f1724] text-white flex flex-col">
+
+        <!-- Top Monzo-style Account & Card Area -->
+        <div class="px-4 pt-6 pb-5">
+            <!-- Coral Card -->
+            <div class="monzo-card rounded-2xl p-5 text-white relative overflow-hidden">
+                <div class="flex items-center justify-between text-xs font-medium opacity-90">
+                    <span>Raised by projects</span>
+                </div>
+
+                <!-- Large Balance Display -->
+                <div class="mt-4">
+                    <div id="heroAmount" class="text-4xl font-bold tracking-tight tabular-nums">
+                        £0.00
+                    </div>
+                    <div id="innioasisSubtitle" class="text-xs opacity-90 mt-1 font-medium tabular-nums">
+                        From Innioasis: £0.00
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- White / Dark Monzo Pull-up Sheet Feed -->
+        <div class="flex-1 bg-white text-slate-900 rounded-t-3xl px-4 pt-3 pb-10 shadow-2xl">
+            <!-- Grab Handle -->
+            <div class="w-9 h-1 bg-slate-200 rounded-full mx-auto mb-3"></div>
+
+            <!-- Scrollable Feed Container -->
+            <div id="feedContainer" class="divide-y divide-slate-100">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        /**
+         * Fallback CSV mirror of https://innioasis.app/donors.csv
+         * Positive amounts = donations received.
+         * Negative amounts = donations made / paid out to creators & projects.
+         */
+        const FALLBACK_CSV = `name,platform,amount,date,message
+Tanya,Ko-Fi,10.00,27/10/2026,"Thanx for your work"
+Jasneil S,Ko-Fi,20.00,26/10/2026,"Keep up the great work! You've helped us turn a pretty basic UI into something much more fun to use and customisable :)"
+Independent web developer Sipped,PayPal,-30.00,18/10/2026,"Independent firmware research and open software development"
+Tom & Liu,Patreon,12.00,17/10/2026,"4 contributions"
+Shelby H,Ko-Fi,10.00,15/10/2026,"making an effort to give monetary thanks when i can to developers doing cool stuff largely for free. Appreciate your work."
+Kate B,Ko-Fi,15.00,14/10/2026,""
+The JJ Launcher Project,Ko-Fi,-15.00,12/10/2026,"Independent firmware research and open software development"
+Vincent L,Ko-Fi,5.00,08/10/2026,"Hey! I've been using the Y2 since last week & also used your updater a few times by now. Even though I may not be the most tech savvy guy. your updater really makes it very easy to update/customize the Y2. Makes the device more fun to use. Thank you for your work & effort!"
+Chaeli I,Ko-Fi,5.00,05/10/2026,""
+The Solar Project,Ko-Fi,-15.00,04/10/2026,"Independent firmware research and open software development"
+Jaro,Ko-Fi,5.00,30/09/2026,"Thank you for your efforts!"
+Nathan P,Ko-Fi,20.00,27/09/2026,"I like having a dedicate music player and having good software for it was made accessible by the work you're doing. Thank you."
+Berit H,Ko-Fi,20.00,26/09/2026,""
+SPYCEMAGIC's Y2 Rockbox project,Ko-Fi,-15.00,25/09/2026,"Independent firmware research and open software development"
+Seniu K,Patreon,3.00,24/09/2026,""
+Mike (Kojoe),Ko-Fi,5.00,22/09/2026,""
+Sergey B,Ko-Fi,5.00,22/09/2026,""
+Victor,Ko-Fi,1.00,22/09/2026,"Thank you for such beautiful Themes. I give you my coffee as a matter of thankfulness!!!!"
+Karou C,Ko-Fi,1.00,21/09/2026,""
+Bernhard T,Ko-Fi,5.00,21/09/2026,"keep going lads"
+Clea C,Ko-Fi,10.00,20/09/2026,"amazing work! thank u"
+Jeff R,Ko-Fi,20.00,18/09/2026,"Thanks for the updater!"
+Bryon,Ko-Fi,5.00,15/09/2026,""
+Theme Creator Panda,Ko-Fi,-9.73,14/09/2026,"Independent firmware research and open software development"
+Pedro,Ko-Fi,3.00,13/09/2026,"Thank you so much for developing this!!"
+Emerson,Ko-Fi,10.00,08/09/2026,"Thanks for helping me on my journey separating from my smartphone. I missed the fun parts of having music in my life. :)"
+Melanie C,Ko-Fi,5.00,05/09/2026,""
+Itzel,Ko-Fi,10.00,05/09/2026,""
+Theme creator Arthur_Moss,Boosty,-4.65,01/09/2026,"Independent firmware research and open software development"
+Mick T,Ko-Fi,50.00,30/08/2026,"Thank you for helping the DAP with the coolist design also have functionality."
+Anu,Ko-Fi,20.00,28/08/2026,"for the future"
+Miles S,Ko-Fi,8.00,24/08/2026,""
+Zangu,Ko-Fi,50.00,23/08/2026,"Invaluable support for a community I just recently joined! Thank you for your work."
+Xavien D,Ko-Fi,5.00,22/08/2026,""
+Joseph B,Ko-Fi,5.00,21/08/2026,""
+Jimmy G,Ko-Fi,1.00,17/08/2026,""
+Someone,Bitcoin,50.25,11/08/2026,""
+J G,Ko-Fi,5.00,08/08/2026,""
+Kirill M (EasyCode),Ko-Fi,5.00,04/08/2026,"ThanX"
+Starr H,Ko-Fi,13.55,01/08/2026,""
+thalassarche,Ko-Fi,13.55,29/07/2026,""
+Maddy,Ko-Fi,20.31,28/07/2026,"Thank you for doing the work! Much love from Michigan"
+Morgan L,Ko-Fi,6.77,27/07/2026,""
+Camicool,Ko-Fi,13.54,24/07/2026,"This software really helped! Thanks a lot!"
+Ronikka K,PayPal,8.99,17/07/2026,"2 contributions"
+Lawrence I,PayPal,19.93,12/07/2026,""
+Michael W,PayPal,9.70,07/07/2026,""
+Mason M,Revolut Pay,5.79,05/07/2026,""
+Amanda S,PayPal,9.78,02/07/2026,""
+Evan M,Ko-Fi,13.54,27/06/2026,"Such great software. Cheers for the effort you put into this!"
+Fletcher A,PayPal,9.81,21/06/2026,""
+Jennifer A,PayPal,4.20,17/06/2026,""
+Someone,Bitcoin,13.20,12/06/2026,""
+Lang C,PayPal,9.07,07/06/2026,""
+Tony,Ko-Fi,6.77,31/05/2026,""
+Zach B (ROBO),Ko-Fi,33.84,28/05/2026,"Thank you guys so much for your work!!!"
+Elissa E (Skee),Ko-Fi,20.30,24/05/2026,"Thanks for all the work you've put in! A serious help for me getting my kiddo music on the go."
+Kuristian (Grimmy),Ko-Fi,27.07,22/05/2026,"Super easy to use"
+Someone,Bitcoin,4.85,21/05/2026,""
+Daniel O,Revolut Pay,20.09,19/05/2026,""
+Adrian H,Ko-Fi,1.35,15/05/2026,""
+Someone,Ko-Fi,6.77,15/05/2026,"Thank you for your work."
+Freidrich B,Revolut Pay,5.79,14/05/2026,""
+Jonathan F,Ko-Fi,47.37,11/05/2026,"Thank you for the Y1 Rockbox support!"
+Sara P,Ko-Fi,5.41,10/05/2026,""
+Niklas R,PayPal,5.00,06/05/2026,""
+Kacper C,Ko-Fi,6.77,23/03/2026,"thank you <3"
+Luis C,Patreon,19.44,27/02/2026,"6 contributions"
+Laichi,Ko-Fi,10.00,29/01/2026,""
+Joshua M,Revolut Pay,6.77,05/01/2026,""
+Aaron R,Patreon & Ko-Fi,13.14,29/09/2025,"cheese is awesome and so is the y1 development scene 🔥"
+Alexis P,Ko-Fi,90.00,02/09/2025,"Thanks for all the efforts and time spent getting this device as far as you have. It has helped improve my travel edc and just wanted to give back and say thanks."
+Hans W,Ko-Fi,5.00,01/09/2025,"Thank you very much for your great work."
+Valentine O,Ko-Fi,8.71,31/08/2025,"Love the Y1 Updater. I really appreciate all you've done to make the Y1 a usable player :)"
+Eric G,Ko-Fi,4.21,25/08/2025,""
+Layla C,Patreon,5.00,02/08/2025,""
+Innioasis,Sponsorship,671.40,10/07/2026,""
+Innioasis,Sponsorship,432.53,19/12/2025,""
+Innioasis,Sponsorship,946.00,19/09/2025,""`;
+
+        let entries = [];
+        let innioasisTotal = 0;
+        let innioasisEntries = [];
+
+        let userCurrency = 'GBP';
+        let userLocale = navigator.language || 'en-GB';
+        let exchangeRate = 0.75; // Default fallback rate (GBP)
+        let historicalRates = {}; // YYYY-MM-DD -> rate
+
+        const FALLBACK_RATES = {
+            USD: 1, GBP: 0.75, EUR: 0.92, AED: 3.6725, CAD: 1.38, AUD: 1.52,
+            JPY: 152, CHF: 0.87, CNY: 7.12, INR: 84.0, SAR: 3.75, QAR: 3.64,
+            KWD: 0.31, BHD: 0.376, OMR: 0.385, SGD: 1.32, HKD: 7.78, NZD: 1.66,
+            SEK: 10.6, NOK: 10.9, DKK: 6.86, PLN: 3.98, CZK: 23.3, HUF: 372,
+            TRY: 34.2, ZAR: 17.6, BRL: 5.75, MXN: 20.1, KRW: 1380, THB: 33.8,
+            MYR: 4.38, IDR: 15700, PHP: 58.2, VND: 25300, ILS: 3.74, EGP: 48.7
+        };
+
+        const COUNTRY_TO_CURRENCY = {
+            GB: 'GBP', UK: 'GBP', US: 'USD', AE: 'AED', FR: 'EUR', DE: 'EUR',
+            ES: 'EUR', IT: 'EUR', NL: 'EUR', BE: 'EUR', AT: 'EUR', IE: 'EUR',
+            PT: 'EUR', FI: 'EUR', GR: 'EUR', LU: 'EUR',EE: 'EUR', LV: 'EUR',
+            LT: 'EUR', SK: 'EUR', SI: 'EUR', MT: 'EUR', CY: 'EUR', HR: 'EUR',
+            CA: 'CAD', AU: 'AUD', NZ: 'NZD', JP: 'JPY', CH: 'CHF', CN: 'CNY',
+            IN: 'INR', SA: 'SAR', QA: 'QAR', KW: 'KWD', BH: 'BHD', OM: 'OMR',
+            SG: 'SGD', HK: 'HKD', SE: 'SEK', NO: 'NOK', DK: 'DKK', PL: 'PLN',
+            CZ: 'CZK', HU: 'HUF', TR: 'TRY', ZA: 'ZAR', BR: 'BRL', MX: 'MXN',
+            KR: 'KRW', TH: 'THB', MY: 'MYR', ID: 'IDR', PH: 'PHP', VN: 'VND',
+            IL: 'ILS', EG: 'EGP'
+        };
+
+        const TZ_TO_COUNTRY = {
+            'Europe/London': 'GB', 'Europe/Belfast': 'GB', 'Asia/Dubai': 'AE',
+            'Asia/Muscat': 'OM', 'Asia/Riyadh': 'SA', 'Asia/Qatar': 'QA',
+            'Asia/Kuwait': 'KW', 'Asia/Bahrain': 'BH', 'Europe/Paris': 'FR',
+            'Europe/Berlin': 'DE', 'Europe/Madrid': 'ES', 'Europe/Rome': 'IT',
+            'Europe/Amsterdam': 'NL', 'Europe/Brussels': 'BE', 'Europe/Vienna': 'AT',
+            'Europe/Dublin': 'IE', 'Europe/Lisbon': 'PT', 'Europe/Helsinki': 'FI',
+            'Europe/Athens': 'GR', 'Europe/Zurich': 'CH', 'Europe/Stockholm': 'SE',
+            'Europe/Oslo': 'NO', 'Europe/Copenhagen': 'DK', 'Europe/Warsaw': 'PL',
+            'Europe/Prague': 'CZ', 'Europe/Budapest': 'HU', 'Europe/Istanbul': 'TR',
+            'Asia/Tokyo': 'JP', 'Asia/Shanghai': 'CN', 'Asia/Hong_Kong': 'HK',
+            'Asia/Singapore': 'SG', 'Asia/Seoul': 'KR', 'Asia/Kolkata': 'IN',
+            'Asia/Calcutta': 'IN', 'Asia/Bangkok': 'TH', 'Asia/Kuala_Lumpur': 'MY',
+            'Asia/Jakarta': 'ID', 'Asia/Manila': 'PH', 'Asia/Ho_Chi_Minh': 'VN',
+            'Australia/Sydney': 'AU', 'Australia/Melbourne': 'AU', 'Australia/Perth': 'AU',
+            'Pacific/Auckland': 'NZ', 'America/Toronto': 'CA', 'America/Vancouver': 'CA',
+            'America/Sao_Paulo': 'BR', 'America/Mexico_City': 'MX', 'Africa/Johannesburg': 'ZA'
+        };
+
+        function detectLocalCurrency() {
+            try {
+                const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                if (tz && TZ_TO_COUNTRY[tz] && COUNTRY_TO_CURRENCY[TZ_TO_COUNTRY[tz]]) {
+                    return COUNTRY_TO_CURRENCY[TZ_TO_COUNTRY[tz]];
+                }
+                if (tz && tz.startsWith('America/')) {
+                    const lang = (navigator.language || '');
+                    const region = lang.includes('-') ? lang.split('-')[1].toUpperCase() : 'US';
+                    if (COUNTRY_TO_CURRENCY[region]) return COUNTRY_TO_CURRENCY[region];
+                }
+            } catch (e) {}
+
+            const langs = navigator.languages || [navigator.language || 'en-GB'];
+            for (const l of langs) {
+                const parts = l.split('-');
+                if (parts.length > 1) {
+                    const region = parts[parts.length - 1].toUpperCase();
+                    if (COUNTRY_TO_CURRENCY[region]) {
+                        return COUNTRY_TO_CURRENCY[region];
+                    }
+                }
+            }
+            return 'GBP';
+        }
+
+        async function detectCurrencyAndRate() {
+            userCurrency = detectLocalCurrency();
+
+            // Attempt lightweight geo-IP currency detection for accurate visitor country (e.g. UAE, France, UK)
+            try {
+                const geoRes = await fetch('https://ipapi.co/json/');
+                if (geoRes.ok) {
+                    const geo = await geoRes.json();
+                    if (geo && typeof geo.currency === 'string' && geo.currency.length === 3) {
+                        userCurrency = geo.currency.toUpperCase();
+                    } else if (geo && geo.country_code && COUNTRY_TO_CURRENCY[geo.country_code]) {
+                        userCurrency = COUNTRY_TO_CURRENCY[geo.country_code];
+                    }
+                }
+            } catch (e) {
+                // Keep timezone/locale detected currency
+            }
+
+            exchangeRate = FALLBACK_RATES[userCurrency] || 0.75;
+
+            if (userCurrency === 'USD') {
+                exchangeRate = 1;
+                return;
+            }
+
+            const endpoints = [
+                'https://open.er-api.com/v6/latest/USD',
+                `https://api.frankfurter.dev/v1/latest?base=USD&symbols=${encodeURIComponent(userCurrency)}`
+            ];
+            for (const url of endpoints) {
+                try {
+                    const res = await fetch(url);
+                    if (res.ok) {
+                        const data = await res.json();
+                        const rate = data?.rates?.[userCurrency];
+                        if (typeof rate === 'number' && rate > 0) {
+                            exchangeRate = rate;
+                            return;
+                        }
+                    }
+                } catch (e) {
+                    // Use next endpoint or fallback rate
+                }
+            }
+        }
+
+        function parseCSVLine(line) {
+            const cols = [];
+            let cur = '';
+            let inQuotes = false;
+            for (let i = 0; i < line.length; i++) {
+                const c = line[i];
+                if (c === '"') {
+                    if (inQuotes && line[i + 1] === '"') {
+                        cur += '"';
+                        i++;
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                } else if (c === ',' && !inQuotes) {
+                    cols.push(cur.trim());
+                    cur = '';
+                } else {
+                    cur += c;
+                }
+            }
+            cols.push(cur.trim());
+            return cols;
+        }
+
+        function toISODate(dateStr) {
+            if (!dateStr) return null;
+            const s = dateStr.trim();
+            const dmy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+            if (dmy) {
+                const d = String(parseInt(dmy[1], 10)).padStart(2, '0');
+                const m = String(parseInt(dmy[2], 10)).padStart(2, '0');
+                let y = parseInt(dmy[3], 10);
+                if (y < 100) y += 2000;
+                return `${y}-${m}-${d}`;
+            }
+            const ymd = s.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+            if (ymd) {
+                return `${ymd[1]}-${String(parseInt(ymd[2], 10)).padStart(2, '0')}-${String(parseInt(ymd[3], 10)).padStart(2, '0')}`;
+            }
+            return null;
+        }
+
+        async function loadHistoricalRates(allDateStrings) {
+            historicalRates = {};
+            if (userCurrency === 'USD') return;
+
+            const isoDates = allDateStrings.map(toISODate).filter(Boolean).sort();
+            if (!isoDates.length) return;
+
+            const todayISO = new Date().toISOString().slice(0, 10);
+            const minDate = isoDates[0];
+            const maxDate = isoDates[isoDates.length - 1] > todayISO ? todayISO : isoDates[isoDates.length - 1];
+
+            if (minDate > todayISO) return;
+
+            try {
+                const url = `https://api.frankfurter.dev/v1/${minDate}..${maxDate}?base=USD&symbols=${encodeURIComponent(userCurrency)}`;
+                const res = await fetch(url);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.rates) {
+                        for (const [dt, obj] of Object.entries(data.rates)) {
+                            if (obj && typeof obj[userCurrency] === 'number') {
+                                historicalRates[dt] = obj[userCurrency];
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                // Fallback to current/fallback exchangeRate if historical range unavailable
+            }
+        }
+
+        function getRateForDate(dateStr) {
+            if (userCurrency === 'USD') return 1;
+            const iso = toISODate(dateStr);
+            if (!iso) return exchangeRate;
+            if (historicalRates[iso]) return historicalRates[iso];
+
+            // Find closest preceding business day rate in historicalRates
+            const availableDates = Object.keys(historicalRates).sort();
+            if (!availableDates.length) return exchangeRate;
+
+            let chosen = availableDates[0];
+            for (const d of availableDates) {
+                if (d <= iso) chosen = d;
+                else break;
+            }
+            return historicalRates[chosen] || exchangeRate;
+        }
+
+        function parseDonorsCSV(text) {
+            const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(l => l.trim().length > 0);
+            if (!lines.length) return { list: [], innioasisList: [], innioasisSum: 0 };
+
+            const first = parseCSVLine(lines[0]).map(h => h.toLowerCase().trim());
+            const isDateStr = (s) => /^\d{1,4}[\/\-]\d{1,2}[\/\-]\d{1,4}$/.test((s || '').trim());
+            const isAmountStr = (s) => /^[-+]?[$£€]?\s*\d+(\.\d+)?$/.test((s || '').trim());
+
+            const hasHeader = first.some(h =>
+                h.includes('name') || h.includes('donor') || h.includes('supporter') ||
+                h.includes('amount') || h.includes('contribution') || h.includes('date') ||
+                h.includes('platform') || h.includes('method')
+            );
+
+            // Detect column indices dynamically from header or first data row
+            let nameIdx = -1, amountIdx = -1, dateIdx = -1, platformIdx = -1, messageIdx = -1;
+
+            if (hasHeader) {
+                first.forEach((h, idx) => {
+                    if (nameIdx === -1 && (h.includes('name') || h.includes('donor') || h.includes('supporter') || h.includes('who') || h.includes('person'))) nameIdx = idx;
+                    else if (amountIdx === -1 && (h.includes('amount') || h.includes('contribution') || h.includes('usd') || h.includes('value') || h.includes('total') || h.includes('sum') || h.includes('price') || h.includes('money') || h.includes('donat'))) amountIdx = idx;
+                    else if (dateIdx === -1 && (h.includes('date') || h.includes('time') || h.includes('when'))) dateIdx = idx;
+                    else if (platformIdx === -1 && (h.includes('platform') || h.includes('method') || h.includes('source') || h.includes('via') || h.includes('service') || h.includes('type'))) platformIdx = idx;
+                    else if (messageIdx === -1 && (h.includes('message') || h.includes('note') || h.includes('comment') || h.includes('reason') || h.includes('description'))) messageIdx = idx;
+                });
+            }
+
+            const start = hasHeader ? 1 : 0;
+            const list = [];
+            const innioasisList = [];
+            let innioasisSum = 0;
+
+            for (let i = start; i < lines.length; i++) {
+                const cols = parseCSVLine(lines[i]);
+                if (cols.length < 2) continue;
+
+                // Find date column for this row if not explicitly matched or if value looks like a date
+                let rowDateIdx = (dateIdx !== -1 && isDateStr(cols[dateIdx])) ? dateIdx : cols.findIndex(c => isDateStr(c));
+
+                // Find amount column strictly (never a date string)
+                let rowAmountIdx = (amountIdx !== -1 && !isDateStr(cols[amountIdx]) && isAmountStr(cols[amountIdx]))
+                    ? amountIdx
+                    : cols.findIndex((c, idx) => idx !== rowDateIdx && isAmountStr(c));
+
+                if (rowAmountIdx === -1) continue;
+
+                const rawAmt = cols[rowAmountIdx].trim();
+                const amount = parseFloat(rawAmt.replace(/[^0-9.-]/g, ''));
+                if (isNaN(amount) || amount === 0) continue;
+
+                const date = rowDateIdx !== -1 ? cols[rowDateIdx].trim() : '';
+
+                // Identify name column (first non-amount, non-date column, or header-matched)
+                let rowNameIdx = (nameIdx !== -1 && nameIdx !== rowAmountIdx && nameIdx !== rowDateIdx)
+                    ? nameIdx
+                    : cols.findIndex((_, idx) => idx !== rowAmountIdx && idx !== rowDateIdx);
+
+                const name = (rowNameIdx !== -1 ? cols[rowNameIdx] : 'Someone').trim() || 'Someone';
+
+                // Remaining columns: platform (short label) & message (longer text)
+                const remainingIdxs = cols
+                    .map((_, idx) => idx)
+                    .filter(idx => idx !== rowNameIdx && idx !== rowAmountIdx && idx !== rowDateIdx);
+
+                let platform = '';
+                let message = '';
+
+                if (platformIdx !== -1 && remainingIdxs.includes(platformIdx)) {
+                    platform = cols[platformIdx].trim();
+                }
+                if (messageIdx !== -1 && remainingIdxs.includes(messageIdx)) {
+                    message = cols[messageIdx].trim();
+                }
+
+                if (!platform && !message) {
+                    const nonEmpty = remainingIdxs.map(idx => cols[idx].trim()).filter(Boolean);
+                    const knownPlatforms = ['ko-fi', 'kofi', 'paypal', 'patreon', 'revolut', 'bitcoin', 'btc', 'eth', 'boosty', 'sponsorship', 'crypto'];
+                    nonEmpty.forEach(val => {
+                        if (!platform && (knownPlatforms.some(p => val.toLowerCase().includes(p)) || val.length <= 18)) {
+                            platform = val;
+                        } else if (!message) {
+                            message = val;
+                        } else {
+                            message += ' ' + val;
+                        }
+                    });
+                }
+
+                // Separate entries where the name is Innioasis
+                if (name.toLowerCase() === 'innioasis' || name.toLowerCase().startsWith('innioasis ')) {
+                    innioasisSum += amount;
+                    innioasisList.push({ amount, date });
+                    continue;
+                }
+
+                list.push({
+                    id: i,
+                    name,
+                    platform,
+                    amount,
+                    date,
+                    timestamp: parseDateValue(date, i),
+                    message
+                });
+            }
+
+            return {
+                list: list.sort((a, b) => b.timestamp - a.timestamp),
+                innioasisList,
+                innioasisSum
+            };
+        }
+
+        function parseDateValue(str, orderFallback) {
+            if (!str) return 0 - orderFallback;
+            const s = str.trim();
+            const dmy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+            if (dmy) {
+                const d = parseInt(dmy[1], 10);
+                const m = parseInt(dmy[2], 10) - 1;
+                let y = parseInt(dmy[3], 10);
+                if (y < 100) y += 2000;
+                return new Date(y, m, d).getTime() - orderFallback;
+            }
+            const t = Date.parse(s);
+            return !isNaN(t) ? (t - orderFallback) : (0 - orderFallback);
+        }
+
+        function formatConvertedAmount(converted, showPlus = false) {
+            const abs = Math.abs(converted);
+            let formatted;
+            try {
+                formatted = new Intl.NumberFormat(userLocale, {
+                    style: 'currency',
+                    currency: userCurrency,
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }).format(abs);
+            } catch (e) {
+                formatted = `£${abs.toFixed(2)}`;
+            }
+            if (converted < 0) return `-${formatted}`;
+            if (showPlus && converted > 0) return `+${formatted}`;
+            return formatted;
+        }
+
+        function formatMoney(val, showPlus = false, dateStr = null) {
+            const rate = dateStr ? getRateForDate(dateStr) : exchangeRate;
+            return formatConvertedAmount(val * rate, showPlus);
+        }
+
+        function formatDateHeading(dateStr) {
+            if (!dateStr) return 'Earlier';
+            const dmy = dateStr.trim().match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+            if (dmy) {
+                const d = parseInt(dmy[1], 10);
+                const m = parseInt(dmy[2], 10) - 1;
+                let y = parseInt(dmy[3], 10);
+                if (y < 100) y += 2000;
+                const dt = new Date(y, m, d);
+                return dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+            }
+            return dateStr;
+        }
+
+        function getInitials(name) {
+            const clean = (name || '?').replace(/[^a-zA-Z0-9 ]/g, '').trim();
+            if (!clean) return '?';
+            const parts = clean.split(/\s+/);
+            if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+            return clean.slice(0, 2).toUpperCase();
+        }
+
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.textContent = str || '';
+            return div.innerHTML;
+        }
+
+        function updateTotals() {
+            const netConverted = entries.reduce((sum, e) => sum + (e.amount * getRateForDate(e.date)), 0);
+            const innioasisConverted = innioasisEntries.length
+                ? innioasisEntries.reduce((sum, e) => sum + (e.amount * getRateForDate(e.date)), 0)
+                : innioasisTotal * exchangeRate;
+
+            // Large number always displays total donations received minus total donations paid out (at historical transaction rates)
+            document.getElementById('heroAmount').textContent = formatConvertedAmount(netConverted, false);
+
+            document.getElementById('innioasisSubtitle').textContent = `From Innioasis: ${formatConvertedAmount(innioasisConverted, false)}`;
+        }
+
+        function renderFeed() {
+            updateTotals();
+
+            const container = document.getElementById('feedContainer');
+            if (!entries.length) {
+                container.innerHTML = `
+                    <div class="py-12 text-center text-sm text-slate-400">
+                        No transactions found
+                    </div>
+                `;
+                return;
+            }
+
+            // Group by date like Monzo transaction feed
+            const groups = [];
+            const seen = new Map();
+            entries.forEach(item => {
+                const key = item.date || 'Earlier';
+                if (!seen.has(key)) {
+                    const g = { date: key, items: [] };
+                    seen.set(key, g);
+                    groups.push(g);
+                }
+                seen.get(key).items.push(item);
+            });
+
+            container.innerHTML = groups.map(group => `
+                <div class="py-2">
+                    <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 py-1.5">
+                        ${escapeHTML(formatDateHeading(group.date))}
+                    </div>
+                    <div class="divide-y divide-slate-100">
+                        ${group.items.map(item => {
+                            const isReceived = item.amount > 0;
+                            const amtClass = isReceived ? 'text-emerald-600 font-semibold' : 'text-slate-900 font-medium';
+                            const avatarClass = isReceived
+                                ? 'bg-emerald-50 text-emerald-700'
+                                : 'bg-rose-50 text-rose-600';
+
+                            return `
+                                <div class="py-3 flex items-start justify-between gap-3">
+                                    <div class="flex items-start gap-3 min-w-0">
+                                        <div class="w-9 h-9 rounded-full ${avatarClass} flex items-center justify-center text-xs font-semibold shrink-0 mt-0.5">
+                                            ${escapeHTML(getInitials(item.name))}
+                                        </div>
+                                        <div class="min-w-0">
+                                            <div class="text-sm font-medium text-slate-900 truncate">
+                                                ${escapeHTML(item.name)}
+                                            </div>
+                                            ${item.platform ? `
+                                                <div class="text-xs text-slate-400">
+                                                    ${escapeHTML(item.platform)}
+                                                </div>
+                                            ` : ''}
+                                            ${item.message ? `
+                                                <div class="text-xs text-slate-500 mt-1 break-words leading-relaxed">
+                                                    ${escapeHTML(item.message)}
+                                                </div>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                    <div class="text-sm tabular-nums shrink-0 ${amtClass}">
+                                        ${formatMoney(item.amount, true, item.date)}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadDonorsCSV() {
+            const targetUrl = 'https://innioasis.app/donors.csv?t=' + Date.now();
+            const urls = [
+                targetUrl,
+                'https://innioasis.app/donors.csv',
+                'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl),
+                'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent('https://innioasis.app/donors.csv'),
+                'https://corsproxy.io/?' + encodeURIComponent(targetUrl)
+            ];
+
+            async function fetchLiveCSV() {
+                for (const url of urls) {
+                    try {
+                        const controller = new AbortController();
+                        const timer = setTimeout(() => controller.abort(), 6000);
+                        const res = await fetch(url, { cache: 'no-store', signal: controller.signal });
+                        clearTimeout(timer);
+                        if (res.ok) {
+                            const text = await res.text();
+                            const candidate = parseDonorsCSV(text);
+                            if (candidate.list.length > 0) {
+                                return candidate;
+                            }
+                        }
+                    } catch (e) {
+                        // Try next endpoint
+                    }
+                }
+                return null;
+            }
+
+            // Fetch live CSV and visitor's currency rate in parallel
+            const [liveParsed] = await Promise.all([
+                fetchLiveCSV(),
+                detectCurrencyAndRate()
+            ]);
+
+            const parsed = liveParsed || parseDonorsCSV(FALLBACK_CSV);
+
+            entries = parsed.list;
+            innioasisEntries = parsed.innioasisList || [];
+            innioasisTotal = parsed.innioasisSum;
+
+            // Render immediately with current exchange rate, then refine with exact historical transaction-date rates
+            renderFeed();
+
+            const allDates = [
+                ...entries.map(e => e.date),
+                ...innioasisEntries.map(e => e.date)
+            ].filter(Boolean);
+
+            await loadHistoricalRates(allDates);
+            renderFeed();
+        }
+
+        window.addEventListener('DOMContentLoaded', loadDonorsCSV);
+    </script>
+</body>
+</html>
