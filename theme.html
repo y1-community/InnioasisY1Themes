@@ -30,7 +30,7 @@
     <meta name="keywords" content="Innioasis Y1 themes, Innioasis Y2 themes, Y1 customization, Y2 customization, MP3 player theme, community themes, theme gallery, Luci web hosting, themes.innioasis.app">
     <meta name="author" content="Innioasis Community">
     <meta name="publisher" content="Luci Ltd">
-    <link rel="author" href="https://www.luci.ltd" title="Luci Ltd — web hosting for Innioasis Y1 & Y2 Themes">
+    <link rel="author" href="https://www.luci.ltd" title="Luci Ltd - web hosting for Innioasis Y1 & Y2 Themes">
 
     <link rel="canonical" href="https://themes.innioasis.app/theme.html">
 
@@ -50,6 +50,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
     <link rel="stylesheet" href="site-theme.css?v=20260521footer">
+    <link rel="stylesheet" href="lumen.css?v=20261019d">
     <link rel="stylesheet" href="site-toolbar.css?v=20260622">
     <link rel="stylesheet" href="site-pages.css?v=20260622">
     <link rel="stylesheet" href="y1-theme-preview.css?v=20260215">
@@ -201,7 +202,6 @@
             <span class="gallery-brand-text">Y1 & Y2 Themes</span>
         </a>
         <div class="gallery-tabs" aria-label="Site sections">
-            <a class="gallery-tab" href="https://y1-themes.vercel.app">Editor</a>
             <a class="gallery-tab active" href="https://themes.innioasis.app/index.html">Gallery</a>
             <a class="gallery-tab" href="https://themes.innioasis.app/upload.html">Upload</a>
         </div>
@@ -233,7 +233,7 @@
                         <div id="theme-author" style="margin-bottom:8px;color:var(--text-secondary)"></div>
                         <div id="theme-desc" style="color:var(--text-secondary);margin-bottom:12px"></div>
                         <a id="theme-compatibility-medal" class="theme-gold-medal-banner" href="gold-badge.html" style="display:none;margin:0 0 12px 0;text-decoration:none;color:inherit;" role="status">
-                            <span aria-hidden="true">🏅</span><strong>Gold — launcher, calendar, eBook, and calculator artwork are present (no transparent placeholders)</strong>
+                            <span aria-hidden="true">🏅</span><strong>Gold - launcher, calendar, eBook, and calculator artwork are present (no transparent placeholders)</strong>
                             <span style="display:block;margin-top:4px;font-weight:500;opacity:0.92;font-size:0.86rem;">Tap to learn what this means for your Y1.</span>
                         </a>
                         <div id="artwork-check-message" style="display:none;border:1px solid rgba(255,180,80,0.45);background:rgba(255,180,80,0.11);border-radius:10px;padding:10px 12px;margin:0 0 12px 0;color:#fdecc8;">
@@ -2025,7 +2025,7 @@
                 if (artworkMessageWrap && artworkSummaryEl && artworkListEl) {
                     if (artworkWarnings.length) {
                         artworkSummaryEl.textContent =
-                            'Some optional screens in this theme are missing or look incomplete. Everything still works today — this is just a heads-up if you update firmware later.';
+                            'Some optional screens in this theme are missing or look incomplete. Everything still works today - this is just a heads-up if you update firmware later.';
                         artworkListEl.innerHTML = '';
                         for (const warning of artworkWarnings) {
                             const li = document.createElement('li');
@@ -2097,7 +2097,7 @@
 
                     function formatSize(size) {
                         const n = Number(size);
-                        if (!Number.isFinite(n) || n <= 0) return '—';
+                        if (!Number.isFinite(n) || n <= 0) return ' - ';
                         if (n >= 1_000_000) return (n / 1_000_000).toFixed(2) + ' MB';
                         if (n >= 1_000) return (n / 1_000).toFixed(2) + ' KB';
                         return n + ' bytes';

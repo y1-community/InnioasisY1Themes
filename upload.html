@@ -4,17 +4,17 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title id="upload-doc-title">Upload your theme — Innioasis Y1 & Y2 Themes</title>
+    <title id="upload-doc-title">Upload your theme - Innioasis Y1 & Y2 Themes</title>
     <meta name="description" content="Upload an Innioasis Y1 or Y2 theme in a few steps. We package it in your browser and give you a link to follow until it is live." />
     <meta name="keywords" content="Innioasis Y1 theme upload, Innioasis Y2 theme upload, Y1 Rockbox theme, Y2 Rockbox theme, theme gallery, Luci web hosting, themes.innioasis.app" />
     <meta name="author" content="Innioasis Community" />
     <meta name="publisher" content="Luci Ltd" />
-    <link rel="author" href="https://www.luci.ltd" title="Luci Ltd — web hosting for Innioasis Y1 & Y2 Themes" />
+    <link rel="author" href="https://www.luci.ltd" title="Luci Ltd - web hosting for Innioasis Y1 & Y2 Themes" />
     <link rel="canonical" href="https://themes.innioasis.app/upload.html">
 
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Upload your theme — Innioasis Y1 & Y2 Themes">
-    <meta property="og:description" content="Upload a theme in a few steps—we package it in your browser and you get a link to follow until it is live.">
+    <meta property="og:title" content="Upload your theme - Innioasis Y1 & Y2 Themes">
+    <meta property="og:description" content="Upload a theme in a few steps - we package it in your browser and you get a link to follow until it is live.">
     <meta property="og:url" content="https://themes.innioasis.app/upload.html">
     <meta property="og:image" content="https://innioasis.app/y1_illustration.png">
 
@@ -23,6 +23,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
     <link rel="stylesheet" href="site-theme.css?v=20260711backfill">
+    <link rel="stylesheet" href="lumen.css?v=20261019d">
     <link rel="stylesheet" href="site-toolbar.css?v=20260622">
     <link rel="stylesheet" href="site-pages.css?v=20260622">
     <!-- Same origin as upload; POST {origin}/api/upload-theme and /api/removal-request -->
@@ -91,13 +92,15 @@
             position: sticky;
             top: 0;
             z-index: 1200;
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
+            display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 8px 14px;
-            background: #17191f;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            justify-content: space-between;
+            gap: 12px;
+            padding: 8px 16px;
+            background: color-mix(in oklab, var(--lumen-ink, #0c0e14) 92%, transparent);
+            border-bottom: 1px solid var(--lumen-line, rgba(255, 255, 255, 0.12));
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
         }
 
         .gallery-tabs {
@@ -725,7 +728,6 @@
             <span class="gallery-brand-text">Y1 & Y2 Themes</span>
         </a>
         <div class="gallery-tabs" aria-label="Site sections">
-            <a class="gallery-tab" href="https://y1-themes.vercel.app">Editor</a>
             <a class="gallery-tab" href="https://themes.innioasis.app/index.html">Gallery</a>
             <a class="gallery-tab active" href="upload.html">Upload</a>
         </div>
@@ -739,7 +741,7 @@
         <header>
             <h1 id="upload-page-title" class="site-display">Upload your theme</h1>
             <p class="lead" id="upload-lead">
-                One package is all we need—we prepare everything privately in your browser, then you get a simple link to watch it land.
+                One package is all we need - we prepare everything privately in your browser, then you get a simple link to watch it land.
             </p>
             <p class="hint" id="upload-hint">You’ll get a link to follow along. <strong>New theme submissions</strong> that pass our checks usually appear within about <strong>20 minutes to an hour</strong>. Updates and removals are always reviewed by hand first.</p>
         </header>
@@ -779,9 +781,9 @@
 
                 <div id="edit-notice" class="callout-info" hidden>
                     <p><strong>This looks like an update</strong></p>
-                    <p>Your <strong>Author</strong> matches the listing for <strong data-edit-folder></strong>. We’ll treat this as an update to that theme—someone on the team will review before it goes live.</p>
+                    <p>Your <strong>Author</strong> matches the listing for <strong data-edit-folder></strong>. We’ll treat this as an update to that theme - someone on the team will review before it goes live.</p>
                     <p class="hint" style="margin-top: 0.65rem;">If this is actually a different theme, change <strong>Author</strong> so it clearly represents you.</p>
-                    <p class="hint" style="margin-top: 0.35rem;">Gallery title: <span data-edit-catalog-title>—</span></p>
+                    <p class="hint" style="margin-top: 0.35rem;">Gallery title: <span data-edit-catalog-title> - </span></p>
                     <label class="variation-row" style="margin-top:0.75rem;">
                         <input type="checkbox" id="edit-ack" />
                         <span>I confirm I’m submitting an update to this existing listing, not a different theme.</span>
@@ -812,11 +814,11 @@
                             <a href="https://github.com/y1-community/InnioasisY1Themes" target="_blank" rel="noopener" style="color:#93c5fd;">y1-community/InnioasisY1Themes</a>
                             GitHub repo.</li>
                         <li><strong>Not on this site:</strong> opted-out themes will not appear in the gallery or as downloads here.</li>
-                        <li><strong>Where creators usually host:</strong> their own shop, Ko-fi, Patreon, or personal pages — often with a Pay What You Feel model.</li>
+                        <li><strong>Where creators usually host:</strong> their own shop, Ko-fi, Patreon, or personal pages - often with a Pay What You Feel model.</li>
                     </ul>
                     <p id="author-opt-out-modal-note" class="hint" style="margin-bottom:0;color:#9eb0d0;"></p>
                     <div class="author-policy-modal-actions">
-                        <button type="button" class="btn btn-primary" data-opt-out-dismiss>I understand — archival only</button>
+                        <button type="button" class="btn btn-primary" data-opt-out-dismiss>I understand - archival only</button>
                         <a class="btn" href="https://themes.innioasis.app/opted-out-blocked-users.html" style="text-decoration:none;">Opted out &amp; blocked list</a>
                     </div>
                 </div>
@@ -834,8 +836,8 @@
                 </div>
                 <div id="removal-catalog-readout" class="callout-info" style="margin-bottom:1rem;" hidden>
                     <p style="margin:0 0 0.5rem 0;"><strong>Listed in the gallery as</strong> (from the link you used)</p>
-                    <p style="margin:0.25rem 0;"><strong>Title:</strong> <span id="removal-catalog-name">—</span></p>
-                    <p style="margin:0.25rem 0;"><strong>Author:</strong> <span id="removal-catalog-author">—</span></p>
+                    <p style="margin:0.25rem 0;"><strong>Title:</strong> <span id="removal-catalog-name"> - </span></p>
+                    <p style="margin:0.25rem 0;"><strong>Author:</strong> <span id="removal-catalog-author"> - </span></p>
                     <p class="hint" style="margin:0.65rem 0 0 0;">Type the title and author below to match these lines (extra spaces are ignored; letter case can differ).</p>
                     <p class="hint" style="margin:0.65rem 0 0 0;">If content appears illegal/harmful instead, <a id="removal-report-link" href="report-theme.html" style="color:lightblue;">report the theme for review</a>.</p>
                 </div>
@@ -879,7 +881,7 @@
             <h3>Submission received</h3>
             <p id="submitted-lead" class="lead" style="margin-top:0.5rem;"></p>
             <div id="submitted-auto-callout" class="callout-info" style="display:none;" role="status">
-                <p style="margin:0;">This submission can move quickly—after our checks, it often appears on the gallery within about <strong>20 minutes to an hour</strong>.</p>
+                <p style="margin:0;">This submission can move quickly - after our checks, it often appears on the gallery within about <strong>20 minutes to an hour</strong>.</p>
             </div>
             <p class="hint" id="submitted-hint"></p>
             <div class="row" style="margin-top:1rem;">
@@ -1066,7 +1068,7 @@
             return themeInfoEntries[0];
         }
 
-        /** Title for ZIP naming / worker slug — always the overall theme, not the first variant row. */
+        /** Title for ZIP naming / worker slug - always the overall theme, not the first variant row. */
         function overallThemeTitleForPackaging() {
             const e = primaryRootThemeEntry();
             return e ? String(e.themeInfo.title || "").trim() : "";
@@ -1154,7 +1156,7 @@
                         const addAnchor = idx === lastIdx ? `<span data-extra-var-add-anchor></span>` : "";
                         return `
 <div class="extra-variation-card extra-variation-card--primary" data-variation-id="${escapeHtml(row.id)}" data-variation-primary="1">
-  <h4>Look 1 — main package</h4>
+  <h4>Look 1 - main package</h4>
   <div class="extra-variation-meta">Your main package from above. Add another row only if that look ships as its own upload.</div>
   <div class="row">
     <label>Title</label>
@@ -1184,7 +1186,7 @@
   <div class="row" data-primary-external-wrap style="display:${String(ti.externalDownloadUrl || "").trim() ? "block" : "none"};">
     <label>External download URL (optional)</label>
     <input type="text" data-primary-field="externalDownloadUrl" value="${escapeHtml(ti.externalDownloadUrl || "")}" placeholder="https://" />
-    <p class="hint">Optional — send people to your own download page.</p>
+    <p class="hint">Optional - send people to your own download page.</p>
   </div>
   <div style="display:flex;justify-content:flex-end;align-items:center;gap:0.5rem;margin-top:0.35rem;flex-wrap:wrap;">
     ${addAnchor}
@@ -1198,7 +1200,7 @@
                     return `
 <div class="extra-variation-card" data-variation-id="${escapeHtml(row.id)}">
   <h4>Variation: ${safe}</h4>
-  <div class="extra-variation-meta">Optional — another package for this look.</div>
+  <div class="extra-variation-meta">Optional - another package for this look.</div>
   <div class="row">
     <label>Variation name</label>
     <input type="text" data-var-field="displayName" value="${safe}" />
@@ -1222,7 +1224,7 @@
   <div class="row">
     <label>Folder (optional)</label>
     <input type="file" webkitdirectory multiple data-var-field="folder" />
-    <div class="hint">One package per row — not both.</div>
+    <div class="hint">One package per row - not both.</div>
   </div>
   <div style="display:flex;justify-content:flex-end;align-items:center;gap:0.5rem;margin-top:0.35rem;flex-wrap:wrap;">
     ${addAnchor}
@@ -1450,7 +1452,7 @@
                     throw new Error("Each extra look row that includes files needs a variation name.");
                 }
                 if (hasZip && hasFolder) {
-                    throw new Error(`Extra look “${seg}”: pick a ZIP or a folder — not both.`);
+                    throw new Error(`Extra look “${seg}”: pick a ZIP or a folder - not both.`);
                 }
                 const prefix = `${catalog}/${THEME_VARIANTS_SEGMENT}/${seg}`;
 
@@ -1702,7 +1704,7 @@
                 panelRemove.hidden = true;
                 if (afterCard) afterCard.hidden = true;
                 panelSubmitted.hidden = false;
-                if (docTitle) docTitle.textContent = "Submission received — Innioasis Y1 & Y2 Themes";
+                if (docTitle) docTitle.textContent = "Submission received - Innioasis Y1 & Y2 Themes";
                 h1.textContent = "Submission received";
                 const leadEl = document.getElementById("submitted-lead");
                 const hintEl = document.getElementById("submitted-hint");
@@ -1722,7 +1724,7 @@
                 }
                 if (hintEl) {
                     hintEl.textContent = dec
-                        ? "Save this link—you can use it until your theme is live in the gallery."
+                        ? "Save this link - you can use it until your theme is live in the gallery."
                         : "We couldn't return a tracking link just now. Check your email or try again shortly.";
                 }
                 if (prInput) prInput.value = dec || "";
@@ -1755,7 +1757,7 @@
                             await navigator.clipboard.writeText(dec);
                             if (copyStatus) copyStatus.textContent = "Copied to clipboard.";
                         } catch {
-                            if (copyStatus) copyStatus.textContent = "Copy failed — select the field and copy manually.";
+                            if (copyStatus) copyStatus.textContent = "Copy failed - select the field and copy manually.";
                         }
                     };
                 }
@@ -1771,7 +1773,7 @@
             if (pageMode === "remove") {
                 panelUpload.hidden = true;
                 panelRemove.hidden = false;
-                if (docTitle) docTitle.textContent = "Request theme removal — Innioasis Y1 & Y2 Themes";
+                if (docTitle) docTitle.textContent = "Request theme removal - Innioasis Y1 & Y2 Themes";
                 h1.textContent = "Request theme removal";
                 lead.textContent =
                     "You can opt your theme out of the Innioasis Y1 & Y2 gallery. We verify listed metadata and contact details before maintainers remove it.";
@@ -1784,7 +1786,7 @@
                 const hiddenFolder = document.getElementById("removal-folder-value");
                 if (disp && hiddenFolder) {
                     hiddenFolder.value = themeFolderParam;
-                    disp.value = themeFolderParam || "(no folder selected — add <code>?folder=YourFolder</code> to the URL)";
+                    disp.value = themeFolderParam || "(no folder selected - add <code>?folder=YourFolder</code> to the URL)";
                 }
                 afterTitle.textContent = "What happens next";
                 afterList.innerHTML = [
@@ -1800,10 +1802,10 @@
             panelRemove.hidden = true;
 
             if (pageMode === "edit-metadata") {
-                if (docTitle) docTitle.textContent = "Update theme details — Innioasis Y1 & Y2 Themes";
+                if (docTitle) docTitle.textContent = "Update theme details - Innioasis Y1 & Y2 Themes";
                 h1.textContent = "Update theme details";
                 lead.textContent =
-                    "Adjust how your listing reads on the gallery — no files required.";
+                    "Adjust how your listing reads on the gallery - no files required.";
                 if (hint) {
                     const pre = themeFolderParam ? `Theme: ${themeFolderParam}. ` : "";
                     hint.textContent = pre + "We send a small update for the team to approve. " + commonHint;
@@ -1833,13 +1835,13 @@
             }
 
             if (pageMode === "edit") {
-                if (docTitle) docTitle.textContent = "Submit a theme update — Innioasis Y1 & Y2 Themes";
+                if (docTitle) docTitle.textContent = "Submit a theme update - Innioasis Y1 & Y2 Themes";
                 h1.textContent = "Submit a theme update";
                 lead.textContent =
                     "Ship new artwork or refresh details. Use the same theme name as the live listing when you’re updating.";
                 if (hint) {
                     const pre = themeFolderParam ? `Theme: ${themeFolderParam}. ` : "";
-                    hint.textContent = pre + "You can attach files or send text-only tweaks—either way we queue an update for the team. " + commonHint;
+                    hint.textContent = pre + "You can attach files or send text-only tweaks - either way we queue an update for the team. " + commonHint;
                 }
                 afterTitle.textContent = "What happens after you send";
                 afterList.innerHTML = [
@@ -1851,10 +1853,10 @@
                 return;
             }
 
-            if (docTitle) docTitle.textContent = "Upload your theme — Innioasis Y1 & Y2 Themes";
+            if (docTitle) docTitle.textContent = "Upload your theme - Innioasis Y1 & Y2 Themes";
             h1.textContent = "Upload your theme";
             lead.textContent =
-                "One package is all we need—we prepare everything privately in your browser, then you get a simple link to watch it land.";
+                "One package is all we need - we prepare everything privately in your browser, then you get a simple link to watch it land.";
             if (hint) hint.textContent = "You'll get a link to follow along. " + commonHint;
             afterTitle.textContent = "What happens after you send";
             afterList.innerHTML = [
@@ -2009,8 +2011,8 @@
             const nameInput = document.getElementById("removal-confirm-name");
             if (!nameEl || !authorEl) return;
             if (!themeFolderParam) {
-                nameEl.textContent = "—";
-                authorEl.textContent = "—";
+                nameEl.textContent = " - ";
+                authorEl.textContent = " - ";
                 if (readout) readout.hidden = true;
                 if (authorRow) authorRow.hidden = true;
                 if (authorInput) {
@@ -2025,7 +2027,7 @@
                 const row = list.find((t) => t && String(t.folder || "").trim() === themeFolderParam);
                 if (!row) {
                     nameEl.textContent = "(folder not in catalog)";
-                    authorEl.textContent = "—";
+                    authorEl.textContent = " - ";
                     if (readout) readout.hidden = false;
                     if (authorRow) authorRow.hidden = true;
                     if (authorInput) {
@@ -2049,7 +2051,7 @@
                         `&ref=${encodeURIComponent(ref)}`;
                 }
                 nameEl.textContent = n;
-                authorEl.textContent = a || "— (none listed; title only)";
+                authorEl.textContent = a || " -  (none listed; title only)";
                 if (readout) readout.hidden = false;
                 if (authorRow) {
                     authorRow.hidden = !a;
@@ -2065,7 +2067,7 @@
                 }
             } catch (_) {
                 nameEl.textContent = "(could not load catalog)";
-                authorEl.textContent = "—";
+                authorEl.textContent = " - ";
                 if (readout) readout.hidden = false;
             }
         }
@@ -2292,7 +2294,7 @@
                 return;
             }
             panel.hidden = false;
-            lead.textContent = `We found ${themeInfoEntries.length} themes in this package. Each row shows how it will be listed — you still send everything in one go.`;
+            lead.textContent = `We found ${themeInfoEntries.length} themes in this package. Each row shows how it will be listed - you still send everything in one go.`;
             const roots = collectThemeRootFolders();
             list.innerHTML = roots
                 .map((root) => {
@@ -2878,7 +2880,7 @@
                         ? `
                 <div class="meta-card" data-entry-idx="${idx}" data-entry-kind="variant">
                     ${head}
-                    <p class="hint" style="margin:0 0 0.65rem 0;">Extra look — title and credits stay with your main theme.</p>
+                    <p class="hint" style="margin:0 0 0.65rem 0;">Extra look - title and credits stay with your main theme.</p>
                     <div class="row">
                         <label>Title (locked)</label>
                         <input type="text" data-field="title" readonly style="opacity:0.9;" value="${escapeHtml(entry.themeInfo.title)}" />
@@ -2902,14 +2904,14 @@
                     <div class="row">
                         <label>External download URL for this look (optional)</label>
                         <input type="text" data-field="externalDownloadUrl" value="${escapeHtml(entry.themeInfo.externalDownloadUrl)}" placeholder="https://" />
-                        <p class="hint">Only when the box above is checked — link to your shop or download page.</p>
+                        <p class="hint">Only when the box above is checked - link to your shop or download page.</p>
                     </div>
                 </div>`
                         : skipRootFields
                           ? `
                 <div class="meta-card" data-entry-idx="${idx}" data-entry-kind="root-skipped">
                     ${head}
-                    <p class="hint" style="margin:0;">Use <strong>Look 1 — main package</strong> above for title, author, description, and the main download link.</p>
+                    <p class="hint" style="margin:0;">Use <strong>Look 1 - main package</strong> above for title, author, description, and the main download link.</p>
                 </div>`
                           : `
                 <div class="meta-card" data-entry-idx="${idx}" data-entry-kind="root">
@@ -4136,7 +4138,7 @@
             if (hasCollision && isEdit) {
                 if (!editAck || !editAck.checked) {
                     setStatus(
-                        "Confirm the checkbox under “Update to an existing listing” — you’re submitting an update to that catalog entry.",
+                        "Confirm the checkbox under “Update to an existing listing” - you’re submitting an update to that catalog entry.",
                         false
                     );
                     if (editNotice) editNotice.hidden = false;

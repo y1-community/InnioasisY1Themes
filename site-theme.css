@@ -18,6 +18,58 @@
     --site-radius-md: 10px;
     --site-radius-pill: 999px;
     --site-footer-luci-max-width: 165px;
+    --bg-dark: #13141d;
+    --bg-card: rgba(255, 255, 255, 0.04);
+    --text-primary: #f5f6fa;
+    --text-secondary: #9aa0b8;
+}
+
+/* Light Appearance */
+:root[data-lumen-theme="light"] {
+    --site-bg: #f8fafc;
+    --site-bg-elevated: #ffffff;
+    --site-bg-card: #ffffff;
+    --site-text: #0f172a;
+    --site-muted: #475569;
+    --site-accent: #d97706;
+    --site-border: rgba(0, 0, 0, 0.1);
+    --site-border-hover: rgba(0, 0, 0, 0.22);
+    --bg-dark: #f8fafc;
+    --bg-card: #ffffff;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+}
+
+/* Cyberpunk 2077 Appearance */
+:root[data-lumen-theme="2077"] {
+    --site-bg: #06060b;
+    --site-bg-elevated: #0c0d14;
+    --site-bg-card: #11131d;
+    --site-text: #e9f0f5;
+    --site-muted: #aab8c8;
+    --site-accent: #ff1e3c;
+    --site-border: rgba(35, 230, 224, 0.25);
+    --site-border-hover: rgba(35, 230, 224, 0.55);
+    --bg-dark: #06060b;
+    --bg-card: #11131d;
+    --text-primary: #e9f0f5;
+    --text-secondary: #aab8c8;
+}
+
+/* High-Contrast Appearance */
+:root[data-lumen-theme="high-contrast"] {
+    --site-bg: #000000;
+    --site-bg-elevated: #080808;
+    --site-bg-card: #000000;
+    --site-text: #ffffff;
+    --site-muted: #f3f3f3;
+    --site-accent: #73d7ff;
+    --site-border: #ffffff;
+    --site-border-hover: #ffffff;
+    --bg-dark: #000000;
+    --bg-card: #000000;
+    --text-primary: #ffffff;
+    --text-secondary: #f3f3f3;
 }
 
 html {
@@ -195,7 +247,7 @@ h2.section-display,
     line-height: 0;
     width: fit-content;
     max-width: 100%;
-    background: var(--site-bg, #0a0b0f);
+    background: transparent !important;
     border: none;
     flex-shrink: 0;
 }
@@ -208,8 +260,18 @@ h2.section-display,
     max-height: clamp(120px, 32vw, 155px);
     object-fit: contain;
     object-position: bottom center;
-    background: var(--site-bg, #0a0b0f);
+    background: transparent !important;
     vertical-align: bottom;
+}
+
+@media (max-width: 620px), (max-height: 720px) {
+    .y1-hero {
+        margin: 0.4rem auto 0;
+    }
+    .y1-hero img {
+        max-width: min(100%, 130px);
+        max-height: 120px;
+    }
 }
 
 body.site-themes-app .gallery-home-hero .hero-actions.cast-div {
@@ -308,8 +370,8 @@ body.site-themes-app .gallery-home-hero .y1-hero {
     box-sizing: border-box;
     padding: 0 12px 0 10px;
     border-radius: 10px;
-    background: #1a1e28;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--site-bg-elevated);
+    border: 1px solid var(--site-border);
 }
 
 .topbar-search-icon {
@@ -417,8 +479,8 @@ body.site-themes-app .gallery-home-hero .y1-hero {
     color: var(--site-text);
     font-size: 0.86rem;
     font-family: var(--site-font);
-    background: #1a1e28;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--site-bg-elevated);
+    border: 1px solid var(--site-border);
     border-radius: 10px;
 }
 
@@ -473,16 +535,16 @@ body.site-themes-app .gallery-home-hero .y1-hero {
 
 /* —— Theme cards —— */
 .theme-card {
-    background: var(--site-bg-card) !important;
+    background: var(--site-bg-elevated) !important;
     border: 1px solid var(--site-border) !important;
     border-radius: var(--site-radius-lg) !important;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.1);
     transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .theme-card:hover {
     border-color: var(--site-border-hover) !important;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35), 0 0 14px rgba(255, 177, 51, 0.08);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.14);
     transform: translateY(-2px);
 }
 
@@ -491,12 +553,13 @@ body.site-themes-app .gallery-home-hero .y1-hero {
     font-weight: 600;
     font-size: 1.02rem;
     letter-spacing: -0.01em;
+    color: var(--site-text) !important;
 }
 
 .theme-card .theme-desc,
 .theme-card .theme-author {
     font-size: 0.88rem;
-    color: var(--site-muted);
+    color: var(--site-muted) !important;
 }
 
 .theme-card-title-row + .theme-author {
@@ -590,34 +653,36 @@ a.theme-preview-gold-badge[hidden] {
     display: none !important;
 }
 
-/* —— Primary actions (gallery hero) —— */
+/* —— Primary actions (gallery hero) & Buttons —— */
 .cast-div .btn,
-.wrap .cast-div a.btn {
+.wrap .cast-div a.btn,
+body.site-themes-app .btn,
+body.site-themes-app .btn.btn-secondary,
+body.site-themes-app .rckbox-btn {
     font-family: var(--site-font) !important;
     border-radius: var(--site-radius-pill) !important;
     font-weight: 600 !important;
+    background: var(--site-bg-elevated) !important;
+    color: var(--site-text) !important;
+    border: 1px solid var(--site-border) !important;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
 }
 
-/* —— Pager —— */
-.pager button {
-    font-family: var(--site-font);
-    border-radius: 10px;
+.cast-div .btn:hover,
+.wrap .cast-div a.btn:hover,
+body.site-themes-app .btn:hover:not(:disabled),
+body.site-themes-app .btn.btn-secondary:hover:not(:disabled),
+body.site-themes-app .rckbox-btn:hover {
+    background: var(--site-border-hover) !important;
+    border-color: var(--site-accent) !important;
+    color: var(--site-text) !important;
+    transform: translateY(-1px);
 }
 
-/* —— Upload / report cards —— */
-.card,
-.upload-card,
-.report-card {
-    border-radius: var(--site-radius-lg);
-    border: 1px solid var(--site-border);
-    background: var(--site-bg-card);
-}
-
-.card h2,
-.upload-card h2 {
-    font-family: var(--site-font-display);
-    font-weight: 400;
-    letter-spacing: -0.02em;
+body.site-themes-app .btn.btn-primary {
+    background: var(--site-accent, #6366f1) !important;
+    border-color: var(--site-accent, #6366f1) !important;
+    color: #ffffff !important;
 }
 
 /* —— Site footer (nav.js) —— */
@@ -627,10 +692,34 @@ body.site-themes-app #footer-root {
     flex: 1 0 auto;
     display: flex;
     flex-direction: column;
-    background: var(--site-bg-elevated);
-    border-top: 1px solid var(--site-border);
+    background: var(--site-bg-elevated) !important;
+    border-top: 1px solid var(--site-border) !important;
     padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
     box-sizing: border-box;
+}
+
+body.site-themes-app .site-footer {
+    color: var(--site-muted) !important;
+}
+
+body.site-themes-app .site-footer h4 {
+    color: var(--site-text) !important;
+    font-weight: 700;
+}
+
+body.site-themes-app .site-footer .footer-col a {
+    color: var(--site-muted) !important;
+    text-decoration: none;
+}
+
+body.site-themes-app .site-footer .footer-col a:hover {
+    color: var(--site-text) !important;
+    text-decoration: underline;
+}
+
+body.site-themes-app .site-footer .footer-bottom {
+    border-top: 1px solid var(--site-border) !important;
+    color: var(--site-muted) !important;
 }
 
 body.site-themes-app #footer-root .site-footer.site-footer--themes,
@@ -1042,9 +1131,9 @@ body.site-themes-app .bulk-update-panel {
     align-items: center;
     justify-content: center;
     padding: 7px 16px;
-    background: linear-gradient(90deg, rgba(99, 102, 241, 0.12) 0%, rgba(34, 211, 238, 0.08) 50%, rgba(16, 185, 129, 0.1) 100%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.09);
-    color: var(--site-text, #f4f6fb);
+    background: var(--site-bg-elevated);
+    border-bottom: 1px solid var(--site-border);
+    color: var(--site-text);
     font-family: var(--site-font, "DM Sans", system-ui, sans-serif);
     font-size: 0.85rem;
     line-height: 1.4;
@@ -1068,22 +1157,43 @@ body.site-themes-app .bulk-update-panel {
 }
 
 .site-compat-banner__text {
-    color: #cbd5e1;
+    color: var(--site-muted);
 }
 
 .site-compat-banner__text strong {
-    color: #f1f5f9;
-    font-weight: 650;
+    color: var(--site-text);
+    font-weight: 700;
 }
 
 .site-compat-banner__link {
-    color: #38bdf8;
+    color: var(--site-accent);
     text-decoration: underline;
     text-underline-offset: 2px;
 }
 
 .site-compat-banner__link:hover {
-    color: #7dd3fc;
+    filter: brightness(1.2);
+}
+
+.site-compat-banner__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 700;
+    color: var(--site-text);
+    text-decoration: none;
+    margin-left: 6px;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: var(--site-border-hover);
+    border: 1px solid var(--site-border);
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.site-compat-banner__cta:hover {
+    background: var(--site-accent);
+    color: #ffffff;
+    border-color: var(--site-accent);
 }
 
 @media (max-width: 640px) {

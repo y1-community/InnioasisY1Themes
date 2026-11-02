@@ -2,22 +2,29 @@
 
 #y1-consent-banner {
     position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 10000;
-    display: none;
-    padding: 12px 14px calc(12px + env(safe-area-inset-bottom, 0px));
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(52px + env(safe-area-inset-bottom, 0px));
+    z-index: 10005;
+    padding: 12px 14px;
     background: rgba(18, 20, 28, 0.97);
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 12px;
+    box-shadow: 0 4px 32px rgba(0, 0, 0, 0.45);
     font-family: Inter, system-ui, Segoe UI, sans-serif;
     font-size: 0.88rem;
     color: #d9e0ef;
+    width: min(760px, calc(100vw - 20px));
+    box-sizing: border-box;
 }
 
+#y1-consent-banner[hidden] {
+    display: none !important;
+}
+
+#y1-consent-banner:not([hidden]),
 #y1-consent-banner.y1-consent--visible {
-    display: block;
+    display: flex !important;
 }
 
 #y1-consent-banner .y1-consent-inner {
