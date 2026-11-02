@@ -441,11 +441,11 @@
         <span class="y1-font-live" id="y1-font-live" aria-live="polite"></span>
       </div>
       <!-- The donation appeal is always a calm, readable second line below the shortcuts. -->
-      <div class="y1-dock-secondary-line" id="y1-dock-secondary-line" aria-label="Monthly support goal and community contributions - click to support" role="button" tabindex="0">
+      <div class="y1-dock-secondary-line" id="y1-dock-secondary-line" aria-label="Monthly running costs and community contributions - click to support" role="button" tabindex="0">
         <div class="y1-dock-secondary-goal-view" id="y1-dock-secondary-goal-view">
           <span class="y1-dock-secondary-text" id="y1-dock-secondary-text">
-            <span class="y1-dock-text-desktop">You've helped us raise $0 of our $200 goal this month.</span>
-            <span class="y1-dock-text-mobile">$0 of $200 raised this month</span>
+            <span class="y1-dock-text-desktop">You've helped us cover $0 of our $200 costs this month.</span>
+            <span class="y1-dock-text-mobile">$0 of $200 in costs covered this month</span>
           </span>
           <div class="y1-dock-secondary-bar-wrap" id="y1-dock-secondary-bar-wrap" aria-hidden="true"><div class="y1-dock-secondary-bar-fill" id="y1-dock-secondary-bar-fill"></div></div>
         </div>
@@ -457,11 +457,11 @@
            second-line appeal above is the only visible donation display. -->
       <div class="y1-dock-goal-layer is-goal-view" id="y1-dock-goal-layer" aria-hidden="true" hidden tabindex="-1">
         <div class="y1-dock-idle-goal-view" id="y1-dock-idle-goal-view">
-          <span class="y1-dock-idle-heart" id="y1-dock-idle-goal-heading">Help us raise our running costs for the month</span>
+          <span class="y1-dock-idle-heart" id="y1-dock-idle-goal-heading">Help cover our running costs for the month</span>
           <div class="y1-dock-goal-bar-wrap" aria-hidden="true">
             <div class="y1-dock-goal-bar-fill" id="y1-dock-idle-bar-fill"></div>
           </div>
-          <span class="y1-dock-goal-text" id="y1-dock-idle-goal-text">You've helped us raise $0 of $200 for this month.</span>
+          <span class="y1-dock-goal-text" id="y1-dock-idle-goal-text">You've helped us cover $0 of $200 in costs this month.</span>
         </div>
         <div class="y1-dock-idle-ticker-view" id="y1-dock-idle-ticker-view" aria-live="polite" hidden>
           <span class="y1-dock-idle-ticker" id="y1-dock-idle-ticker-text">Loading...</span>
@@ -973,13 +973,13 @@
 
       var targetPhrase = (raised >= target)
         ? {
-            desktop: "Monthly target reached ($" + raisedLabel + " of $" + target.toFixed(0) + ")! Thank you!",
-            mobile: "Monthly target reached ($" + raisedLabel + " raised)!",
+            desktop: "Monthly costs covered ($" + raisedLabel + " of $" + target.toFixed(0) + ")! Thank you!",
+            mobile: "Monthly costs covered ($" + raisedLabel + " of $" + target.toFixed(0) + ")!",
             isTarget: true
           }
         : {
-            desktop: "You've helped us raise $" + raisedLabel + " of our $" + target.toFixed(0) + " goal this month",
-            mobile: "$" + raisedLabel + " of $" + target.toFixed(0) + " raised this month",
+            desktop: "You've helped us cover $" + raisedLabel + " of our $" + target.toFixed(0) + " costs this month",
+            mobile: "$" + raisedLabel + " of $" + target.toFixed(0) + " in costs covered this month",
             isTarget: true
           };
 
@@ -1000,8 +1000,8 @@
         : [
             targetPhrase,
             {
-              desktop: "Only $" + remLabel + " more needed to reach our $" + target.toFixed(0) + " monthly goal.",
-              mobile: "Only $" + remLabel + " needed to reach $" + target.toFixed(0) + " goal",
+              desktop: "Only $" + remLabel + " more needed to cover our $" + target.toFixed(0) + " monthly costs.",
+              mobile: "Only $" + remLabel + " needed to cover $" + target.toFixed(0) + " in costs",
               isTarget: true
             },
             {
@@ -1358,7 +1358,7 @@
     var isGoalMet = (currentMonthTotal >= MONTHLY_TARGET);
     var goalMsg = isGoalMet
       ? "We rely on your donations to keep running. Donate now"
-      : "You've helped us raise $" + curAmtStr + " of our $" + MONTHLY_TARGET.toFixed(0) + " goal this month. All donations are appreciated.";
+      : "You've helped us cover $" + curAmtStr + " of our $" + MONTHLY_TARGET.toFixed(0) + " costs this month. All donations are appreciated.";
     if (titleEl) titleEl.textContent = "Monthly Running Costs";
     if (statsEl) statsEl.textContent = goalMsg;
     if (raisedBar) raisedBar.style.width = raisedPct + "%";
@@ -1450,9 +1450,9 @@
     var isTickerGoalMet = (currentMonthTotal >= target);
     var tickerGoalMsg = isTickerGoalMet
       ? "We rely on your donations to keep running. Donate now"
-      : "You've helped us raise $" + curAmtStr + " of our $" + target.toFixed(0) + " goal this month.";
+      : "You've helped us cover $" + curAmtStr + " of our $" + target.toFixed(0) + " costs this month.";
     var goalItem = {
-      html: '<span class="y1-dock-ticker-badge y1-dock-ticker-badge--goal">Goal</span>' +
+      html: '<span class="y1-dock-ticker-badge y1-dock-ticker-badge--goal">Costs</span>' +
             '<div class="y1-dock-mini-bar" title="' + Math.round(raisedPct) + '% covered" style="display: inline-block; width: 50px; height: 6px; background: rgba(156,163,175,0.2); border: 1px solid rgba(156,163,175,0.35); border-radius: 4px; overflow: hidden; vertical-align: middle; margin-right: 6px;">' +
               '<div class="y1-dock-mini-raised" data-target-width="' + raisedPct + '%" style="width: 0%; height: 100%; background: #10b981; border-radius: 3px; transition: width 0.85s cubic-bezier(0.16, 1, 0.3, 1);"></div>' +
             '</div>' +
@@ -1508,7 +1508,7 @@
     }
 
     var annualItem = {
-      html: '<span class="y1-dock-ticker-badge y1-dock-ticker-badge--goal">Goal</span>' +
+      html: '<span class="y1-dock-ticker-badge y1-dock-ticker-badge--goal">Costs</span>' +
             '<span>If everyone visiting today donated, we\'d be able to run for a year</span>'
     };
 
