@@ -30,9 +30,10 @@
     return href;
   }
 
+  var isThemesSite = (window.location.hostname === "themes.innioasis.app") || (window.location.port === "8081");
+
   function decorateMainSiteHref(path) {
     if (!path) return path;
-    var isThemesSite = (window.location.hostname === "themes.innioasis.app") || (window.location.port === "8081");
     if (isThemesSite) {
       var base = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
         ? (window.location.protocol + "//" + window.location.hostname + ":8080")
@@ -574,12 +575,15 @@
       ) +
       '<a href="' + escapeHtml(decorateMainSiteHref("/rockbox-benefits.html")) + '">Rockbox on Innioasis</a>' +
       '<a href="' + escapeHtml(decorateMainSiteHref("/reborn-y2linux-benefits.html")) + '">Reborn (Y2Linux) for Y2</a>' +
+      '<a href="' + escapeHtml(decorateMainSiteHref("/rondo-benefits.html")) + '">Rondo for Y1</a>' +
       '<a href="' + escapeHtml(decorateMainSiteHref("/updater-comparison.html")) + '">Universal Flash Tool vs Updater CE</a>' +
       '<a href="' + escapeHtml(decorateMainSiteHref("/troubleshooting.html")) + '">Troubleshooting</a>' +
       '</div>' +
       '<div class="footer-col">' +
       '<h4>Developers &amp; Community</h4>' +
       '<a href="' + escapeHtml(decorateMainSiteHref("/developers.html")) + '">Developer Guide &amp; Tooling</a>' +
+      '<a href="' + escapeHtml(decorateCrossDomainHref("https://innioasis.app/")) + '">Updater CE</a>' +
+      '<a href="' + escapeHtml(decorateMainSiteHref("/firmware.html")) + '">Firmware Archive</a>' +
       '<a href="' + escapeHtml(decorateCrossDomainHref("https://themes.innioasis.app/")) + '" data-cross-site-link="1">Themes Gallery</a>' +
       '<a href="https://discord.gg/zHrT2zrcek" target="_blank" rel="noopener noreferrer">Discord Server</a>' +
       '<a href="https://reddit.com/r/innioasis" target="_blank" rel="noopener noreferrer">r/innioasis on Reddit</a>' +
