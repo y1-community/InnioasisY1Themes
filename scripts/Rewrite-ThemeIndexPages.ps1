@@ -275,7 +275,7 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
   </main>
   <div id="footer-root"></div>
   <div id="support-toolbar-slot"></div>
-  <script src="/nav.js?v=20261102footer"></script>
+  <script src="/nav.js?v=20261102notices"></script>
   <script>
 (function () {
   var btn = document.getElementById('theme-seo-copy');

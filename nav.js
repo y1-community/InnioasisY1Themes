@@ -299,6 +299,23 @@
   var noticesBadge = document.getElementById("lumen-notices-badge");
   var noticesBody = document.getElementById("lumen-notices-tray-body");
 
+  /* The themes site hides #nav-root and renders its own gallery topbar. Move the
+     notices control into that visible header instead of duplicating its markup. */
+  function mountThemesNoticesInTopbar() {
+    if (!isThemesSite) return;
+    var wrap = document.getElementById("lumen-notices-wrap");
+    var topbar = document.querySelector(".gallery-topbar");
+    if (!wrap || !topbar) return;
+    var social = topbar.querySelector(".gallery-social-tools");
+    if (social) {
+      if (wrap.parentNode !== social) social.appendChild(wrap);
+      return;
+    }
+    var themeSelect = topbar.querySelector("#lumen-theme-select");
+    var themeLabel = themeSelect ? themeSelect.closest("label") : null;
+    if (wrap.parentNode !== topbar) topbar.insertBefore(wrap, themeLabel || null);
+  }
+
   function adjustNoticesTrayPosition() {
     if (!noticesTray || !noticesBtn) return;
     var rect = noticesBtn.getBoundingClientRect();
@@ -594,6 +611,13 @@
       '</div>' +
       '<div class="footer-bottom">Copyleft - Innioasis users and contributors, for the community.</div>' +
       '</footer>';
+  }
+
+  mountThemesNoticesInTopbar();
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", mountThemesNoticesInTopbar);
+  } else {
+    window.setTimeout(mountThemesNoticesInTopbar, 0);
   }
 
   function escapeHtml(text) {
