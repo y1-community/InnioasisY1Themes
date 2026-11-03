@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title id="page-title">Themes for your Innioasis Y1 & Y2</title>
+    <title id="page-title">Theme preview - Innioasis Y1 and Y2 Themes Gallery</title>
     <script>
         // Keep the hardcoded title as fallback, but prefer local theme config title when available.
         (function autoTitleFromLocalConfig() {
@@ -17,7 +17,7 @@
                     const info = cfg.theme_info || cfg.source_info;
                     const title = info && info.title ? String(info.title).trim() : '';
                     if (title) {
-                        document.title = `${title} - Innioasis Y1`;
+                        document.title = `${title} - Innioasis Y1 and Y2 Themes Gallery`;
                     }
                 })
                 .catch(() => {
@@ -51,7 +51,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
     <link rel="stylesheet" href="site-theme.css?v=20261102header">
-    <link rel="stylesheet" href="lumen.css?v=20261019d">
+    <link rel="stylesheet" href="lumen.css?v=20261105hero">
     <link rel="stylesheet" href="site-toolbar.css?v=20261105dockclose">
     <link rel="stylesheet" href="site-pages.css?v=20260622">
     <link rel="stylesheet" href="y1-theme-preview.css?v=20260215">
@@ -71,7 +71,7 @@
     <link rel="stylesheet" href="theme-frozen.css?v=20260526">
     <script src="theme-frozen.js?v=20260526"></script>
     <script src="theme-analytics.js?v=20260524"></script>
-</head>
+<meta property="og:site_name" content="Innioasis Themes Gallery"></head>
 <style>
     html {
         font-size: clamp(15px, 2.8vw, 17px);
@@ -287,7 +287,7 @@
     <div id="support-toolbar-slot"></div>
 
     <script src="site-init.js?v=20260522privacy"></script>
-    <script src="nav.js?v=20261105noticecards"></script>
+    <script src="nav.js?v=20261105copyleft"></script>
     <script>
 
         const FALLBACK_PLACEHOLDER_URL = 'https://themes.innioasis.app/placeholder.png';
@@ -339,10 +339,7 @@
             const cleanName = (window.ThemeDisplayName && typeof window.ThemeDisplayName.publicDisplayName === 'function')
                 ? (window.ThemeDisplayName.publicDisplayName(rawName) || rawName)
                 : rawName;
-            const cleanAuthor = String(author || '').trim();
-            return cleanAuthor
-                ? `${cleanName} for Innioasis Y1 & Y2 by ${cleanAuthor}`
-                : `${cleanName} for Innioasis Y1 & Y2`;
+            return `${cleanName} - Innioasis Y1 and Y2 Themes Gallery`;
         }
 
         function applySeoMetadata(name, author, description) {

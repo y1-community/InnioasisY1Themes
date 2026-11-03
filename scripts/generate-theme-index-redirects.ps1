@@ -81,7 +81,7 @@ Get-ChildItem -LiteralPath $root -Recurse -Filter 'index.html' | ForEach-Object 
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>$titleEsc – Innioasis Y1 theme</title>
+  <title>$titleEsc - Innioasis Y1 and Y2 Themes Gallery</title>
   <meta name="description" content="$descEsc" />
   <link rel="canonical" href="$canonical" />
   <meta property="og:type" content="website" />

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Normalize theme SEO titles to: {name} for Innioasis Y1 by {author}."""
+"""Normalize theme SEO titles to: {name} - Innioasis Y1 and Y2 Themes Gallery."""
 
 from __future__ import annotations
 
@@ -22,10 +22,7 @@ def build_theme_seo_title(name: str, author: str = "", variant: str = "") -> str
     v = str(variant or "").strip()
     if v:
         display = f"{display} ({v})"
-    author_clean = str(author or "").strip()
-    if author_clean:
-        return f"{display} for Innioasis Y1 & Y2 by {author_clean}"
-    return f"{display} for Innioasis Y1 & Y2"
+    return f"{display} - Innioasis Y1 and Y2 Themes Gallery"
 
 
 def _read_author_from_index(text: str) -> str:

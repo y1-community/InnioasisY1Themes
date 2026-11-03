@@ -127,12 +127,19 @@
 
   var persona = detectPersona();
   var isFirmwarePersona = persona === "firmware";
-  var activeTitle = isFirmwarePersona ? "Firmware Archive" : "Updater CE";
+  var activeTitle = isThemesSite ? "Themes Gallery" : (isFirmwarePersona ? "Firmware Archive" : "Updater CE");
   var activeHomeHref = isFirmwarePersona ? "/firmware.html" : "/";
 
   (function updateDocumentTitle() {
     var path = (window.location.pathname || "").toLowerCase();
     var t = document.title || "";
+    if (isThemesSite) {
+      if (t.indexOf("Themes Gallery") === -1) {
+        var themeBase = t.split(/\s+[|\u00b7-]\s+Innioasis/)[0].trim();
+        document.title = (themeBase || t) + " - Innioasis Themes Gallery";
+      }
+      return;
+    }
     if (path.endsWith("/firmware.html")) {
       document.title = "Innioasis and Timmkoo Software Updates and Custom Firmware - Innioasis Firmware Archive";
       return;
@@ -887,8 +894,7 @@
       '<a href="' + escapeHtml(decorateMainSiteHref("/credits.html")) + '">Community Credits</a>' +
       '</div>' +
       '</div>' +
-      '<div class="footer-credit">Site created by <a href="https://ko-fi.com/teamslide" target="_blank" rel="noopener noreferrer">Ryan Specter</a> with the <a href="' + escapeHtml(decorateMainSiteHref("/credits.html")) + '">Innioasis Community</a>.</div>' +
-      '<div class="footer-bottom">Copyleft - Innioasis users and contributors, for the community.</div>' +
+      '<div class="footer-bottom">Copyleft - Ryan Specter and the Innioasis Community</div>' +
       '</footer>';
   }
 

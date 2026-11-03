@@ -143,8 +143,8 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
     # Meta refresh content= must escape & as &amp; in HTML attributes.
     $previewUrlRefreshAttr = ($previewUrl -replace '&', '&amp;')
     $sharePageUrl = Build-SharePageUrl $catalogFolder $variant
-    # Document title / social: "ThemeName for Innioasis Y1 & Y2 by Author" (variant in the theme name slot when present).
-    $title = if ($variant) { "$displayName ($variant) for Innioasis Y1 & Y2 by $author" } else { "$displayName for Innioasis Y1 & Y2 by $author" }
+    # Document title / social: "ThemeName - Innioasis Y1 and Y2 Themes Gallery" (variant in the theme name slot when present).
+    $title = if ($variant) { "$displayName ($variant) - Innioasis Y1 and Y2 Themes Gallery" } else { "$displayName - Innioasis Y1 and Y2 Themes Gallery" }
 
     $kwSet = New-Object 'System.Collections.Generic.HashSet[string]'
     foreach ($x in @($displayName, $catalogFolder, $variant, 'Innioasis Y1', 'Y1 theme', 'Rockbox', 'MP3 player theme', $author, 'Luci web hosting', 'themes.innioasis.app hosting', 'luci.ltd')) {
