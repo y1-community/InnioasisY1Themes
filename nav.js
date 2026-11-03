@@ -112,7 +112,7 @@
     return href;
   }
 
-  var isThemesSite = (window.location.hostname === "themes.innioasis.app") || (window.location.port === "8081");
+  var isThemesSite = true;
 
   function decorateMainSiteHref(path) {
     if (!path) return path;
@@ -134,6 +134,10 @@
     var path = (window.location.pathname || "").toLowerCase();
     var t = document.title || "";
     if (isThemesSite) {
+      if (path === "" || path === "/" || path.endsWith("/index.html")) {
+        document.title = "Y1 and Y2 themes - Innioasis Themes Gallery";
+        return;
+      }
       if (t.indexOf("Themes Gallery") === -1) {
         var themeBase = t.split(/\s+[|\u00b7-]\s+Innioasis/)[0].trim();
         document.title = (themeBase || t) + " - Innioasis Themes Gallery";
@@ -389,7 +393,7 @@
       '</div>' +
       '</div>' +
       '</div>' +
-      '<label class="lumen-theme-control"><span>Theme</span><select id="lumen-theme-select" aria-label="Choose site colour theme"><option value="dark">Dark</option><option value="high-contrast">High contrast</option><option value="2077">2077</option></select></label>' +
+      '<label class="lumen-theme-control"><span>Theme</span><select id="lumen-theme-select" aria-label="Choose site colour theme"><option value="auto">Auto</option><option value="dark">Dark</option><option value="high-contrast">High contrast</option><option value="2077">2077</option></select></label>' +
       '<button class="hamburger" id="hamburger" type="button" aria-label="Open navigation menu" aria-controls="navLinks" aria-expanded="false"><span></span><span></span><span></span></button>' +
       '</div>' +
       '<ul class="nav-links" id="navLinks">' +
@@ -786,23 +790,25 @@
     }
   });
 
-  /* Theme Switcher Logic - dark is the default; light appearance is disabled for now. */
+  /* Theme Switcher Logic - dark is the automatic appearance; light is temporarily disabled. */
   var themeSelect = document.getElementById("lumen-theme-select");
-  var SITE_THEMES = ["dark", "high-contrast", "2077"];
-  var storedTheme = "dark";
+  var SITE_THEMES = ["auto", "dark", "high-contrast", "2077"];
+  function resolveEffectiveTheme(theme) {
+    if (theme === "auto" || theme === "light" || !theme) return "dark";
+    return (theme === "high-contrast" || theme === "2077") ? theme : "dark";
+  }
+  var storedTheme = "auto";
   try {
-    storedTheme = localStorage.getItem("lumen-theme") || "dark";
+    storedTheme = localStorage.getItem("lumen-theme") || "auto";
   } catch (_) {}
-  storedTheme = SITE_THEMES.indexOf(storedTheme) >= 0 ? storedTheme : "dark";
-  document.documentElement.setAttribute("data-lumen-theme", storedTheme);
-  try {
-    localStorage.setItem("lumen-theme", storedTheme);
-  } catch (_) {}
+  if (SITE_THEMES.indexOf(storedTheme) < 0) storedTheme = "auto";
+  var effectiveTheme = resolveEffectiveTheme(storedTheme);
+  document.documentElement.setAttribute("data-lumen-theme", effectiveTheme);
   if (themeSelect) {
     themeSelect.value = storedTheme;
     themeSelect.addEventListener("change", function () {
       var value = themeSelect.value;
-      document.documentElement.setAttribute("data-lumen-theme", value);
+      document.documentElement.setAttribute("data-lumen-theme", resolveEffectiveTheme(value));
       try {
         localStorage.setItem("lumen-theme", value);
       } catch (_) {}

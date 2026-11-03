@@ -284,8 +284,8 @@ def _default_description(name: str) -> str:
 
 def _download_description(name: str, author: str = "") -> str:
     if author:
-        return f"Download the {name} theme for Innioasis Y1 & Y2 by {author} and personalize your player's look with curated UI assets."
-    return f"Download the {name} theme for Innioasis Y1 & Y2 and personalize your player's look with curated UI assets."
+        return f"Download the {name} theme for Innioasis Y1 & Y2 by {author} and give your player a new look."
+    return f"Download the {name} theme for Innioasis Y1 & Y2 and give your player a new look."
 
 
 def _is_default_description(value: str, name: str) -> bool:

@@ -6,17 +6,19 @@
     "use strict";
 
     /* Dark is the site default; light appearance is disabled until it is properly supported. */
-    var SITE_THEMES = ["dark", "high-contrast", "2077"];
+    var SITE_THEMES = ["auto", "dark", "high-contrast", "2077"];
+    function resolveEffectiveTheme(theme) {
+        if (theme === "auto" || theme === "light" || !theme) return "dark";
+        return (theme === "high-contrast" || theme === "2077") ? theme : "dark";
+    }
     (function applyStoredSiteTheme() {
-        var stored = "dark";
+        var stored = "auto";
         try {
-            stored = localStorage.getItem("lumen-theme") || "dark";
+            stored = localStorage.getItem("lumen-theme") || "auto";
         } catch (_) {}
-        if (SITE_THEMES.indexOf(stored) < 0) stored = "dark";
-        document.documentElement.setAttribute("data-lumen-theme", stored);
-        try {
-            localStorage.setItem("lumen-theme", stored);
-        } catch (_) {}
+        if (SITE_THEMES.indexOf(stored) < 0) stored = "auto";
+        var effective = resolveEffectiveTheme(stored);
+        document.documentElement.setAttribute("data-lumen-theme", effective);
     })();
 
     function decorateUrl(href) {
@@ -45,9 +47,6 @@
             '  background: var(--lumen-panel, #12141c) !important; border-bottom: 1px solid var(--lumen-line, rgba(255, 255, 255, 0.12)) !important;' +
             '  backdrop-filter: blur(14px) !important; -webkit-backdrop-filter: blur(14px) !important;' +
             '}' +
-            ':root[data-lumen-theme="light"] .gallery-topbar {' +
-            '  background: #ffffff !important; border-bottom: 1px solid rgba(0, 0, 0, 0.12) !important; color: #0f172a !important;' +
-            '}' +
             ':root[data-lumen-theme="dark"] .gallery-topbar {' +
             '  background: #12141c !important; border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important; color: #f8fafc !important;' +
             '}' +
@@ -59,8 +58,6 @@
             '}' +
             '.gallery-brand, .lumen-brand-home { display: inline-flex !important; align-items: center !important; text-decoration: none !important; color: var(--lumen-text, #f8fafc) !important; flex-shrink: 0 !important; white-space: nowrap !important; }' +
             '.gallery-brand-text, .lumen-brand-title { color: var(--lumen-text, #f8fafc) !important; font-size: 1.15rem !important; font-weight: 700 !important; letter-spacing: -0.02em !important; line-height: 1.2 !important; white-space: nowrap !important; word-break: keep-all !important; flex-shrink: 0 !important; }' +
-            ':root[data-lumen-theme="light"] .gallery-brand, :root[data-lumen-theme="light"] .gallery-brand-text,' +
-            ':root[data-lumen-theme="light"] .lumen-brand-home, :root[data-lumen-theme="light"] .lumen-brand-title { color: #0f172a !important; }' +
             ':root[data-lumen-theme="dark"] .gallery-brand, :root[data-lumen-theme="dark"] .gallery-brand-text,' +
             ':root[data-lumen-theme="dark"] .lumen-brand-home, :root[data-lumen-theme="dark"] .lumen-brand-title { color: #f8fafc !important; }' +
             ':root[data-lumen-theme="2077"] .gallery-brand, :root[data-lumen-theme="2077"] .gallery-brand-text,' +
@@ -71,26 +68,19 @@
             '.lumen-brand-bar { display: inline-flex; align-items: center; flex-shrink: 0 !important; white-space: nowrap !important; }' +
             '.lumen-site-switcher-toggle { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; margin-left: 6px; padding: 0; border-radius: 6px; border: 1px solid var(--lumen-line, rgba(255,255,255,0.14)); background: var(--lumen-panel-soft, rgba(255,255,255,0.06)); color: var(--lumen-muted, #94a3b8); cursor: pointer; transition: all 0.15s ease; flex-shrink: 0 !important; }' +
             '.lumen-site-switcher-toggle:hover { background: var(--lumen-accent-wash, rgba(99,102,241,0.15)); color: var(--lumen-paper, #fff); border-color: var(--lumen-accent, #6366f1); }' +
-            ':root[data-lumen-theme="light"] .lumen-site-switcher-toggle { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.12); color: #475569; }' +
-            ':root[data-lumen-theme="light"] .lumen-site-switcher-toggle:hover { background: rgba(0,0,0,0.08); color: #0f172a; }' +
             ':root[data-lumen-theme="2077"] .lumen-site-switcher-toggle { background: rgba(35,230,224,0.08); border-color: rgba(35,230,224,0.3); color: #23e6e0; }' +
             ':root[data-lumen-theme="2077"] .lumen-site-switcher-toggle:hover { background: rgba(255,30,60,0.18); border-color: #ff1e3c; color: #ff1e3c; }' +
             '.lumen-site-switcher-tray { position: absolute; top: calc(100% + 8px); left: 0; width: 360px; max-width: calc(100vw - 24px); white-space: normal; background: var(--lumen-panel, #12141c); border: 1px solid var(--lumen-line-strong, rgba(255,255,255,0.18)); border-radius: 14px; padding: 12px; box-shadow: 0 12px 36px rgba(0,0,0,0.45); z-index: 10002; box-sizing: border-box; }' +
-            ':root[data-lumen-theme="light"] .lumen-site-switcher-tray { background: #ffffff; border-color: rgba(0,0,0,0.12); box-shadow: 0 12px 36px rgba(0,0,0,0.15); }' +
             ':root[data-lumen-theme="2077"] .lumen-site-switcher-tray { background: #0c0d14; border-color: rgba(35,230,224,0.45); box-shadow: 0 12px 36px rgba(0,0,0,0.65), 0 0 16px rgba(35,230,224,0.2); }' +
             '.lumen-site-switcher-heading { margin: 0 0 8px 4px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--lumen-muted, #94a3b8); }' +
-            ':root[data-lumen-theme="light"] .lumen-site-switcher-heading { color: #64748b; }' +
             ':root[data-lumen-theme="2077"] .lumen-site-switcher-heading { color: #ff1e3c; }' +
             '.lumen-site-switcher-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }' +
             '.lumen-site-switcher-item { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 9px; text-decoration: none; background: transparent; border: 1px solid transparent; transition: all 0.15s ease; }' +
             '.lumen-site-switcher-item:hover { background: var(--lumen-accent-wash, rgba(99,102,241,0.1)); border-color: var(--lumen-line, rgba(255,255,255,0.1)); }' +
-            ':root[data-lumen-theme="light"] .lumen-site-switcher-item:hover { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.08); }' +
             '.lumen-site-switcher-item-icon { display: flex; align-items: center; justify-content: center; flex-shrink: 0; }' +
             '.lumen-site-switcher-item-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 auto; }' +
             '.lumen-site-switcher-item-copy strong { font-size: 0.92rem; font-weight: 700; color: var(--lumen-text, #f8fafc); line-height: 1.2; }' +
             '.lumen-site-switcher-item-copy small { display: block; font-size: 0.78rem; color: var(--lumen-muted, #94a3b8); line-height: 1.3; white-space: normal; overflow-wrap: break-word; }' +
-            ':root[data-lumen-theme="light"] .lumen-site-switcher-item-copy strong { color: #0f172a; }' +
-            ':root[data-lumen-theme="light"] .lumen-site-switcher-item-copy small { color: #64748b; }' +
             ':root[data-lumen-theme="2077"] .lumen-site-switcher-item-copy strong { color: #e9f0f5; }' +
             ':root[data-lumen-theme="2077"] .lumen-site-switcher-item-copy small { color: #aab8c8; }' +
             '.lumen-nav-social-btn { display: inline-flex !important; align-items: center !important; justify-content: center !important; width: auto !important; height: auto !important; min-width: 0 !important; min-height: 0 !important; padding: 4px 6px !important; background: transparent !important; border: none !important; box-shadow: none !important; border-radius: 0 !important; text-decoration: none !important; transition: transform 0.15s ease, opacity 0.15s ease, color 0.15s ease !important; flex-shrink: 0 !important; cursor: pointer !important; opacity: 0.88 !important; }' +
@@ -102,16 +92,10 @@
             '.lumen-nav-social-btn svg { display: block !important; width: 22px !important; height: 22px !important; }' +
             '.gallery-topbar .gallery-tabs, .gallery-topbar .gallery-social-tools, .gallery-topbar .gallery-social-links, .gallery-topbar .lumen-theme-control, .gallery-topbar .topbar-search-wrap { order: 0 !important; }' +
             '.lumen-theme-control select:hover, .lumen-theme-control select:focus { background: var(--lumen-panel-soft, rgba(255, 255, 255, 0.06)) !important; border-color: var(--lumen-line, rgba(255, 255, 255, 0.15)) !important; color: var(--lumen-text, #f8fafc) !important; }' +
-            ':root[data-lumen-theme="light"] .lumen-theme-control select { color: #475569 !important; }' +
-            ':root[data-lumen-theme="light"] .lumen-theme-control select:hover, :root[data-lumen-theme="light"] .lumen-theme-control select:focus { background: rgba(0, 0, 0, 0.04) !important; border-color: rgba(0, 0, 0, 0.12) !important; color: #0f172a !important; }' +
             '.gallery-tabs { display: inline-flex !important; align-items: center !important; gap: 6px !important; padding: 0 !important; margin-left: auto !important; background: transparent !important; border: none !important; flex-wrap: wrap !important; }' +
             '.gallery-tab { display: inline-flex !important; align-items: center !important; padding: 0.4rem 0.65rem !important; border-radius: 8px !important; color: var(--lumen-muted, #94a3b8) !important; text-decoration: none !important; font-size: 0.88rem !important; font-weight: 500 !important; border: 1px solid transparent !important; transition: all 0.15s ease !important; white-space: nowrap !important; line-height: 1.2 !important; }' +
             '.gallery-tab:hover { color: var(--lumen-text, #f8fafc) !important; background: var(--lumen-panel-soft, rgba(255, 255, 255, 0.06)) !important; }' +
             '.gallery-tab.active { color: var(--lumen-text, #f8fafc) !important; background: var(--lumen-panel-soft, rgba(255, 255, 255, 0.08)) !important; font-weight: 600 !important; }' +
-            ':root[data-lumen-theme="light"] .gallery-tabs { background: transparent !important; border: none !important; }' +
-            ':root[data-lumen-theme="light"] .gallery-tab { color: #475569 !important; }' +
-            ':root[data-lumen-theme="light"] .gallery-tab:hover { color: #0f172a !important; background: rgba(0,0,0,0.04) !important; }' +
-            ':root[data-lumen-theme="light"] .gallery-tab.active { color: #0f172a !important; background: rgba(0,0,0,0.06) !important; font-weight: 700 !important; }' +
             ':root[data-lumen-theme="2077"] .gallery-tabs { background: transparent !important; border: none !important; }' +
             ':root[data-lumen-theme="2077"] .gallery-tab { color: #23e6e0 !important; }' +
             ':root[data-lumen-theme="2077"] .gallery-tab:hover { color: #ff1e3c !important; background: rgba(255,30,60,0.1) !important; }' +
@@ -215,22 +199,23 @@
         label.style.cssText = "display:inline-flex;align-items:center;gap:6px;font-size:0.84rem;color:var(--lumen-muted,#94a3b8);flex-shrink:0;";
         label.innerHTML =
             '<select id="lumen-theme-select" aria-label="Choose site colour theme" title="Site theme" style="min-height:32px;padding:2px 8px;border-radius:6px;border:1px solid transparent;background:transparent;color:var(--lumen-muted,#94a3b8);font:inherit;cursor:pointer;">' +
+            '<option value="auto">Auto</option>' +
             '<option value="dark">Dark</option>' +
             '<option value="high-contrast">High contrast</option>' +
             '<option value="2077">2077</option>' +
             '</select>';
 
         var sel = label.querySelector("select");
-        var storedTheme = "dark";
+        var storedTheme = "auto";
         try {
-            storedTheme = localStorage.getItem("lumen-theme") || "dark";
+            storedTheme = localStorage.getItem("lumen-theme") || "auto";
         } catch (_) {}
         if (sel) {
-            sel.value = SITE_THEMES.indexOf(storedTheme) >= 0 ? storedTheme : "dark";
-            document.documentElement.setAttribute("data-lumen-theme", sel.value);
+            sel.value = SITE_THEMES.indexOf(storedTheme) >= 0 ? storedTheme : "auto";
+            document.documentElement.setAttribute("data-lumen-theme", resolveEffectiveTheme(sel.value));
             sel.addEventListener("change", function () {
                 var value = sel.value;
-                document.documentElement.setAttribute("data-lumen-theme", value);
+                document.documentElement.setAttribute("data-lumen-theme", resolveEffectiveTheme(value));
                 try {
                     localStorage.setItem("lumen-theme", value);
                 } catch (_) {}

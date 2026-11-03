@@ -24,20 +24,20 @@
     --text-secondary: #9aa0b8;
 }
 
-/* Light Appearance */
+/* Light Appearance (temporarily aliases Dark mode) */
 :root[data-lumen-theme="light"] {
-    --site-bg: #f8fafc;
-    --site-bg-elevated: #ffffff;
-    --site-bg-card: #ffffff;
-    --site-text: #0f172a;
-    --site-muted: #475569;
-    --site-accent: #d97706;
-    --site-border: rgba(0, 0, 0, 0.1);
-    --site-border-hover: rgba(0, 0, 0, 0.22);
-    --bg-dark: #f8fafc;
-    --bg-card: #ffffff;
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
+    --site-bg: #13141d;
+    --site-bg-elevated: #1b1c28;
+    --site-bg-card: rgba(255, 255, 255, 0.04);
+    --site-text: #f5f6fa;
+    --site-muted: #9aa0b8;
+    --site-accent: #ffb133;
+    --site-border: rgba(180, 185, 220, 0.12);
+    --site-border-hover: rgba(180, 185, 220, 0.24);
+    --bg-dark: #13141d;
+    --bg-card: rgba(255, 255, 255, 0.04);
+    --text-primary: #f5f6fa;
+    --text-secondary: #9aa0b8;
 }
 
 /* Cyberpunk 2077 Appearance */

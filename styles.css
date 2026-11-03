@@ -13,17 +13,17 @@
 }
 
 :root[data-lumen-theme="light"] {
-    --primary: #2563eb;
-    --primary-dark: #1d4ed8;
-    --bg-dark: #f8fafc;
-    --bg-card: #ffffff;
-    --section-bg-1: rgba(0, 0, 0, 0.02);
-    --section-bg-2: rgba(0, 0, 0, 0.04);
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
-    --accent: #0284c7;
-    --success: #059669;
-    --warning: #d97706;
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --bg-dark: #13141d;
+    --bg-card: rgba(255, 255, 255, 0.04);
+    --section-bg-1: rgba(255, 255, 255, 0.01);
+    --section-bg-2: rgba(255, 255, 255, 0.02);
+    --text-primary: #f5f6fa;
+    --text-secondary: #9aa0b8;
+    --accent: #22d3ee;
+    --success: #10b981;
+    --warning: #f59e0b;
 }
 
 :root[data-lumen-theme="2077"] {
