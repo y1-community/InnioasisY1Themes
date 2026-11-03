@@ -8,7 +8,8 @@
 
     <meta name="description" content="Browse and download Rockbox themes for the Innioasis Y1 and Y2. Customize your player with community-made themes for 240p and 360p models.">
     <meta name="keywords" content="Innioasis Y1 themes, Innioasis Y2 themes, Rockbox themes Y1, Y2 UI themes, Rockbox customization, Innioasis theme gallery, Luci web hosting, themes.innioasis.app hosting">
-    <meta name="author" content="Innioasis Community">
+    <meta name="author" content="Ryan Specter &amp; Innioasis Community">
+  <meta name="creator" content="Ryan Specter &amp; Innioasis Community">
     <meta name="publisher" content="Luci Ltd">
     <link rel="author" href="https://www.luci.ltd" title="Luci Ltd - web hosting for Innioasis Y1 & Y2 Themes">
 
@@ -737,24 +738,25 @@
             </div>
         </section>
 
-        <div id="direct-install-banner" style="margin-top: 2rem; padding: 16px; background: rgba(100, 200, 255, 0.1); border: 1px solid rgba(100, 200, 255, 0.3); border-radius: 8px; display: none;">
-            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-                <div style="flex: 1; min-width: 300px;">
-                    <div style="margin-bottom: 4px;">Direct Install</div>
-                    <div style="font-size: 0.9rem; color: var(--text-secondary);">Connect your Y1 or Y2 and select its themes folder to install themes directly without downloading zip files.</div>
-                    <div id="browser-support-warning" style="font-family: Inter; font-size: 0.85rem; color: #ff9800; margin-top: 6px; display: none;"><i class="fas fa-exclamation-triangle" style="margin-right: 4px;"></i>Your browser doesn't support Direct Install. Use Chrome, Edge, or Opera.</div>
+        <div id="direct-install-banner" style="margin-top: 1.25rem; padding: 10px 14px; background: rgba(100, 200, 255, 0.08); border: 1px solid rgba(100, 200, 255, 0.22); border-radius: 10px; display: none;">
+            <div style="display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap;">
+                <div style="flex: 1 1 240px; min-width: 0;">
+                    <strong style="display: block; font-size: 0.92rem; line-height: 1.3;">Direct Install</strong>
+                    <span style="font-size: 0.8rem; line-height: 1.35; color: var(--text-secondary);">Install straight to your Y1 or Y2 - pick the player's themes folder, no zip downloads.</span>
                 </div>
-                <button id="choose-folder-btn" class="btn" style="font-family: Inter; padding: .875rem 1.5rem; font-weight: normal; white-space: nowrap;">
-                    <i class="fas fa-folder" style="margin-right: 8px;"></i>Choose Y1 & Y2 Themes Folder
-                </button>
-                <div id="folder-selected-indicator" style="font-size: 0.85rem; color: #4caf50; display: none;"><i class="fas fa-check-circle" style="margin-right: 4px;"></i>Folder selected</div>
-                <button id="bulk-update-all-btn" class="btn" type="button" disabled style="font-family: Inter; padding: .875rem 1.5rem; font-weight: normal; white-space: nowrap; opacity: 0.5; cursor: not-allowed;">
-                    <i class="fas fa-arrows-rotate" style="margin-right: 8px;"></i>Update all themes on Y1
-                </button>
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <button id="choose-folder-btn" class="btn" style="font-family: Inter; padding: .45rem .8rem; font-size: 0.82rem; font-weight: normal; white-space: nowrap;">
+                        <i class="fas fa-folder" style="margin-right: 6px;"></i>Choose themes folder
+                    </button>
+                    <div id="folder-selected-indicator" style="font-size: 0.78rem; color: #4caf50; display: none;"><i class="fas fa-check-circle" style="margin-right: 4px;"></i>Folder selected</div>
+                    <button id="bulk-update-all-btn" class="btn" type="button" disabled style="font-family: Inter; padding: .45rem .8rem; font-size: 0.82rem; font-weight: normal; white-space: nowrap; opacity: 0.5; cursor: not-allowed;">
+                        <i class="fas fa-arrows-rotate" style="margin-right: 6px;"></i>Update all on Y1
+                    </button>
+                </div>
             </div>
-            <div id="filter-on-device" style="margin-top:8px; display:none;">
-                <label style="font-size:0.95rem;color:var(--text-secondary);">
-                    <input type="checkbox" id="only-on-device-checkbox" style="margin-right:8px;" /> Only show themes already on Y1
+            <div id="filter-on-device" style="margin-top:6px; display:none;">
+                <label style="font-size:0.78rem;color:var(--text-secondary);display:inline-flex;align-items:center;gap:6px;">
+                    <input type="checkbox" id="only-on-device-checkbox" style="margin:0;" /> Only show themes already on Y1
                 </label>
             </div>
         </div>
@@ -832,7 +834,7 @@
     <div id="footer-root"></div>
     <div id="support-toolbar-slot"></div>
 
-    <script src="nav.js?v=20261102notices"></script>
+    <script src="nav.js?v=20261105noticemarkdown"></script>
     <script>
         const rbBtn = document.getElementById('rockbox-btn')
         const ROCKBOX_THEMES_URL = 'https://github.com/rockbox-y1/themes/releases/tag/for_the_gays_and_the_theys'
@@ -845,7 +847,6 @@
         let bulkUpdateAbortRequested = false;
 
         const bannerEl = document.getElementById('direct-install-banner');
-        const browserWarning = document.getElementById('browser-support-warning');
         const chooseFolderBtn = document.getElementById('choose-folder-btn');
         const folderIndicator = document.getElementById('folder-selected-indicator');
         const bulkUpdateAllBtn = document.getElementById('bulk-update-all-btn');
@@ -1691,11 +1692,9 @@
             if (bulkUpdateCancelBtn) bulkUpdateCancelBtn.onclick = onBulkUpdateCancelClick;
             if (bulkUpdateStartBtn) bulkUpdateStartBtn.onclick = () => void runBulkUpdateAllThemes();
         } else {
-            bannerEl.style.display = 'block';
-            browserWarning.style.display = 'block';
-            chooseFolderBtn.disabled = true;
-            chooseFolderBtn.style.opacity = '0.5';
-            chooseFolderBtn.style.cursor = 'not-allowed';
+            /* Without the File System Access API there is nothing this card can
+               do, so browsers that lack it never see it at all. */
+            bannerEl.style.display = 'none';
             if (filterDiv) filterDiv.style.display = 'none';
         }
 

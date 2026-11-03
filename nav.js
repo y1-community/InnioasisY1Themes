@@ -1,6 +1,88 @@
 (function () {
   "use strict";
 
+  /* Donation appeals. A link can turn every request for support off with
+     ?donations=false, and the donation panel's "Don't show donation appeals
+     again" box stores the same choice. The choice is remembered per site, so
+     the site switcher and footer links pass the flag on to the other
+     Innioasis sites (different origins keep their own copy). ?donations=true
+     turns the appeals back on. */
+  var DONATIONS_KEY = "innioasis-donations-off";
+
+  function donationsParam() {
+    try {
+      var raw = new URLSearchParams(window.location.search).get("donations");
+      if (raw === null) return null;
+      var value = String(raw).trim().toLowerCase();
+      if (value === "false" || value === "0" || value === "no" || value === "off") return false;
+      if (value === "true" || value === "1" || value === "yes" || value === "on") return true;
+    } catch (_) {}
+    return null;
+  }
+
+  function donationsStored() {
+    try { return window.localStorage.getItem(DONATIONS_KEY) === "1"; } catch (_) {}
+    return false;
+  }
+
+  function isY1DonationsDisabled() {
+    if (donationsParam() === false) return true;
+    return donationsStored();
+  }
+
+  var DONATIONS_CSS =
+    "html.y1-donations-off [data-donations-appeal]," +
+    "html.y1-donations-off .y1-contributor-stream-box { display: none !important; }";
+
+  function applyDonationsState() {
+    var root = document.documentElement;
+    if (!root) return;
+    root.classList.toggle("y1-donations-off", isY1DonationsDisabled());
+    if (document.getElementById("y1-donations-css")) return;
+    var style = document.createElement("style");
+    style.id = "y1-donations-css";
+    style.textContent = DONATIONS_CSS;
+    (document.head || root).appendChild(style);
+  }
+
+  window.isY1DonationsDisabled = isY1DonationsDisabled;
+  window.setY1DonationsDisabled = function (disabled) {
+    try {
+      if (disabled) window.localStorage.setItem(DONATIONS_KEY, "1");
+      else window.localStorage.removeItem(DONATIONS_KEY);
+    } catch (_) {}
+    applyDonationsState();
+    try {
+      window.dispatchEvent(new CustomEvent("y1-donations-change", { detail: { disabled: !!disabled } }));
+    } catch (_) {}
+  };
+
+  (function rememberDonationChoiceFromUrl() {
+    var fromUrl = donationsParam();
+    if (fromUrl === null) return;
+    try {
+      if (fromUrl) window.localStorage.removeItem(DONATIONS_KEY);
+      else window.localStorage.setItem(DONATIONS_KEY, "1");
+    } catch (_) {}
+  })();
+
+  applyDonationsState();
+  /* The other Innioasis site is a different origin and cannot read this
+     site's remembered choice, so links to it carry the flag along. This
+     covers menu, footer, and in-page links, including ones added later. */
+  document.addEventListener("click", function (event) {
+    if (!isY1DonationsDisabled()) return;
+    var link = event.target && event.target.closest ? event.target.closest("a[href]") : null;
+    if (!link) return;
+    var url;
+    try { url = new URL(link.getAttribute("href"), window.location.origin); } catch (_) { return; }
+    if (url.origin === window.location.origin) return;
+    if (!/(^|\.)innioasis\.app$/i.test(url.hostname)) return;
+    url.searchParams.set("donations", "false");
+    link.href = url.toString();
+  }, true);
+
+
   function detectPersona() {
     var path = (window.location.pathname || "").toLowerCase();
     if (
@@ -52,13 +134,13 @@
     var path = (window.location.pathname || "").toLowerCase();
     var t = document.title || "";
     if (path.endsWith("/firmware.html")) {
-      document.title = "Innioasis and Timmkoo Software Updates and Custom Firmware - Community Firmware Archive";
+      document.title = "Innioasis and Timmkoo Software Updates and Custom Firmware - Innioasis Firmware Archive";
       return;
     }
     if (isFirmwarePersona) {
       if (t.indexOf("Firmware Archive") === -1) {
         var base = t.split(/\s+[|·-]\s+(?:Innioasis|Community)/)[0].trim();
-        document.title = (base || t) + " - Firmware Archive";
+        document.title = (base || t) + " - Innioasis Firmware Archive";
       }
     } else {
       if (t.indexOf("Updater CE") === -1) {
@@ -221,7 +303,26 @@
       '.lumen-nav-social-btn--discord { color: #5865f2 !important; }' +
       '.lumen-nav-social-btn--discord:hover { color: #7289da !important; filter: drop-shadow(0 0 6px rgba(88, 101, 242, 0.5)) !important; }' +
       '.lumen-nav-social-btn svg { display: block !important; width: 22px !important; height: 22px !important; }' +
-      '@media (max-width: 1040px) { body.site-themes-app .nav-links a { padding: 0.4rem 0.45rem; font-size: 0.82rem; } .nav-container { padding: 0.5rem 1rem; gap: 0.35rem; } }';
+      '@media (max-width: 1040px) { body.site-themes-app .nav-links a { padding: 0.4rem 0.45rem; font-size: 0.82rem; } .nav-container { padding: 0.5rem 1rem; gap: 0.35rem; } }' +
+      /* The collapsed menu: compact rows that share a width, scroll inside
+         the viewport instead of running off it, and put the two social
+         icons on one row. */
+      '@media (max-width: 900px) {' +
+      '  body.site-themes-app .nav-links { flex-flow: row wrap; gap: .15rem; max-height: calc(100dvh - 92px); overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }' +
+      '  body.site-themes-app .nav-links li { flex: 1 0 100%; width: 100%; margin: 0; }' +
+      '  body.site-themes-app .nav-links li:has(> .lumen-nav-social-btn) { flex: 0 0 auto; width: auto; }' +
+      '  body.site-themes-app .nav-links a { min-height: 0; padding: .7rem .8rem; }' +
+      '  body.site-themes-app .nav-links a.lumen-nav-social-btn { width: 44px; justify-content: center; padding: 0; }' +
+      '  body.site-themes-app .nav-links .lumen-nav-install-cta { justify-content: center; width: 100%; }' +
+      '}' +
+      '@media (max-width: 640px) {' +
+      '  #nav-root .nav-container { padding: .5rem .7rem !important; gap: .45rem !important; }' +
+      '  #nav-root .nav-container .lumen-brand-switcher-wrap { flex: 1 1 auto !important; min-width: 0 !important; }' +
+      '  #nav-root .nav-container .lumen-brand-title { font-size: .95rem !important; min-width: 0 !important; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap !important; }' +
+      '  #nav-root .nav-container .nav-tools { gap: .3rem !important; flex: 0 0 auto !important; }' +
+      '  #nav-root .nav-container .lumen-theme-control select { max-width: 84px !important; }' +
+      '}';
+
     document.head.appendChild(style);
   })();
 
@@ -254,7 +355,7 @@
       '<div class="lumen-notices-tray" id="lumen-notices-tray" hidden role="region" aria-label="Community notices">' +
       '<div class="lumen-notices-tray-header">' +
       '<strong>Community Notices</strong>' +
-      '<a href="/notices.html" class="lumen-notices-all-link">All notices &rarr;</a>' +
+      '<a href="' + escapeHtml(decorateMainSiteHref("/notices.html")) + '" class="lumen-notices-all-link">All notices &rarr;</a>' +
       '</div>' +
       '<div class="lumen-notices-tray-body" id="lumen-notices-tray-body">' +
       '<p class="lumen-notices-empty">Loading notices...</p>' +
@@ -402,6 +503,112 @@
     });
   }
 
+  /* Minimal, safe Markdown for a notice's <full_content>: images, headings, lists,
+     quotes, fenced code, rules, bold, italic, inline code and https links/images.
+     The text is escaped before anything is added, so a notice can never
+     inject markup or script into the page. */
+  function renderNoticeMarkdown(source) {
+    var text = String(source == null ? "" : source).replace(/\r\n?/g, "\n").trim();
+    if (!text) return "";
+    function esc(s) {
+      return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+    function inline(s) {
+      var out = esc(s);
+      out = out.replace(/`([^`]+)`/g, "<code>$1</code>");
+      out = out.replace(/!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)/g, function (m, alt, src) {
+      return '<img src="' + src + '" alt="' + alt + '" loading="lazy" decoding="async" class="notice-image">';
+    });
+    out = out.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+      out = out.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+      out = out.replace(/__([^_]+)__/g, "<strong>$1</strong>");
+      out = out.replace(/(^|[\s(])\*([^*\n]+)\*/g, "$1<em>$2</em>");
+      out = out.replace(/(^|[\s(])_([^_\n]+)_/g, "$1<em>$2</em>");
+      return out;
+    }
+    var lines = text.split("\n");
+    var html = [];
+    var para = [];
+    var i = 0;
+    function flush() {
+      if (!para.length) return;
+      html.push("<p>" + para.map(inline).join("<br>") + "</p>");
+      para = [];
+    }
+    while (i < lines.length) {
+      var line = lines[i];
+      if (/^\s*```/.test(line)) {
+        flush();
+        var code = [];
+        i += 1;
+        while (i < lines.length && !/^\s*```/.test(lines[i])) { code.push(lines[i]); i += 1; }
+        i += 1;
+        html.push("<pre><code>" + esc(code.join("\n")) + "</code></pre>");
+        continue;
+      }
+      if (!line.trim()) { flush(); i += 1; continue; }
+      var heading = line.match(/^(#{1,6})\s+(.*)$/);
+      if (heading) {
+        flush();
+        var level = Math.min(6, heading[1].length + 1);
+        html.push("<h" + level + ">" + inline(heading[2]) + "</h" + level + ">");
+        i += 1;
+        continue;
+      }
+      if (/^\s*(-{3,}|\*{3,}|_{3,})\s*$/.test(line)) { flush(); html.push("<hr>"); i += 1; continue; }
+      if (/^\s*>\s?/.test(line)) {
+        flush();
+        var quote = [];
+        while (i < lines.length && /^\s*>\s?/.test(lines[i])) { quote.push(lines[i].replace(/^\s*>\s?/, "")); i += 1; }
+        html.push("<blockquote>" + quote.map(inline).join("<br>") + "</blockquote>");
+        continue;
+      }
+      if (/^\s*([-*+]|\d+[.)])\s+/.test(line)) {
+        flush();
+        var ordered = /^\s*\d+[.)]\s+/.test(line);
+        var items = [];
+        while (i < lines.length && /^\s*([-*+]|\d+[.)])\s+/.test(lines[i])) {
+          items.push(lines[i].replace(/^\s*([-*+]|\d+[.)])\s+/, ""));
+          i += 1;
+        }
+        var tag = ordered ? "ol" : "ul";
+        html.push("<" + tag + ">" + items.map(function (item) { return "<li>" + inline(item) + "</li>"; }).join("") + "</" + tag + ">");
+        continue;
+      }
+      para.push(line);
+      i += 1;
+    }
+    flush();
+    return html.join("\n");
+  }
+
+  /* Every notice has its own page, so "read more" never dumps the visitor on
+     the site root. A notice whose <url>/<link> is just the bare site is
+     treated as having no destination. */
+  function noticeIsBareSiteUrl(raw) {
+    if (!raw) return true;
+    try {
+      var url = new URL(raw, window.location.origin);
+      if (!/(^|\.)innioasis\.app$/i.test(url.hostname)) return false;
+      return !url.pathname.replace(/\//g, "") && !url.search && !url.hash;
+    } catch (_) {
+      return true;
+    }
+  }
+
+  function noticeDetailHref(id) {
+    var path = "/notices.html?notice=" + encodeURIComponent(String(id || ""));
+    try {
+      if (typeof decorateMainSiteHref === "function") return decorateMainSiteHref(path);
+    } catch (_) {}
+    return path;
+  }
+
+  window.y1NoticeMarkdown = renderNoticeMarkdown;
+  window.y1NoticeIsBareUrl = noticeIsBareSiteUrl;
+  window.y1NoticeDetailHref = noticeDetailHref;
+
   function parseNoticesXml(xmlText) {
     if (!xmlText || !xmlText.trim()) return [];
     try {
@@ -412,14 +619,19 @@
       var nodes = doc.querySelectorAll("notice");
       var list = [];
       nodes.forEach(function (n) {
+        var textOf = function (tag) {
+          var el = n.querySelector(tag);
+          return el && el.textContent ? el.textContent.trim() : "";
+        };
         list.push({
           id: n.getAttribute("id") || "",
-          type: n.getAttribute("type") || "info",
-          date: n.getAttribute("date") || "",
+          type: n.getAttribute("type") || n.getAttribute("severity") || "info",
+          date: n.getAttribute("date") || n.getAttribute("from") || "",
           models: n.getAttribute("models") || "",
-          title: (n.querySelector("title") && n.querySelector("title").textContent) || "",
-          summary: (n.querySelector("summary") && n.querySelector("summary").textContent) || "",
-          link: (n.querySelector("link") && n.querySelector("link").textContent) || ""
+          title: textOf("title"),
+          summary: textOf("summary") || textOf("content") || textOf("body"),
+          link: textOf("url") || textOf("link"),
+          fullContent: textOf("full_content") || textOf("content") || textOf("body")
         });
       });
       return list;
@@ -431,11 +643,11 @@
   var noticesLoaded = false;
   function loadCommunityNotices() {
     if (noticesLoaded || !noticesBody) return;
+    /* One feed only: /notice.xml. The plural spelling used to sit in this
+       list as a fallback, so a stray plural feed could silently win. */
     var candidates = [
       "/notice.xml",
-      "/notices.xml",
       "notice.xml",
-      "notices.xml",
       "https://innioasis.app/notice.xml"
     ];
     var idx = 0;
@@ -477,8 +689,11 @@
             var modelsBadge = (!isAllModels && rawModels)
               ? '<span class="lumen-notice-models">' + escapeHtml(rawModels) + '</span>'
               : '';
-            var linkHtml = item.link
-              ? '<a class="lumen-notice-link" href="' + escapeHtml(item.link) + '">Learn more &rarr;</a>'
+            /* The tray opens the notice itself. A notice that only points at
+               the bare site has no page of its own to send anyone to. */
+            var detailHref = item.id ? noticeDetailHref(item.id) : "";
+            var linkHtml = detailHref
+              ? '<a class="lumen-notice-link" href="' + escapeHtml(detailHref) + '">Read more &rarr;</a>'
               : '';
             return (
               '<article class="lumen-notice-card lumen-notice-card--' + escapeHtml(item.type) + '">' +
@@ -570,10 +785,21 @@
     hamburger.setAttribute("aria-label", open ? "Close navigation menu" : "Open navigation menu");
   }
   if (hamburger) {
-    hamburger.addEventListener("click", function () {
+    hamburger.addEventListener("click", function (event) {
+      event.stopPropagation();
       setMenuOpen(!menu.classList.contains("active"));
     });
   }
+  document.addEventListener("click", function (event) {
+    if (!menu || !menu.classList.contains("active")) return;
+    var target = event.target;
+    if (target && target.closest && (target.closest("#navLinks") || target.closest("#hamburger"))) return;
+    setMenuOpen(false);
+  });
+  document.addEventListener("keydown", function (event) {
+    if (event.key !== "Escape") return;
+    if (menu && menu.classList.contains("active")) setMenuOpen(false);
+  });
   if (menu) {
     menu.querySelectorAll("a").forEach(function (link) {
       link.addEventListener("click", function () {
@@ -591,6 +817,17 @@
 
   /* Footer Injection */
   var footerRoot = document.getElementById("footer-root");
+  if (!footerRoot && document.body && !document.querySelector("footer")) {
+    /* Pages that forget the mount point still get a footer. */
+    footerRoot = document.createElement("div");
+    footerRoot.id = "footer-root";
+    var toolbarSlot = document.getElementById("support-toolbar-slot");
+    if (toolbarSlot && toolbarSlot.parentNode === document.body) {
+      document.body.insertBefore(footerRoot, toolbarSlot);
+    } else {
+      document.body.appendChild(footerRoot);
+    }
+  }
   if (footerRoot) {
     footerRoot.innerHTML =
       '<footer class="site-footer ' + (isFirmwarePersona ? "site-footer--firmware" : "site-footer--updater") + '">' +
@@ -618,10 +855,11 @@
       '<a href="https://discord.gg/zHrT2zrcek" target="_blank" rel="noopener noreferrer">Discord Server</a>' +
       '<a href="https://reddit.com/r/innioasis" target="_blank" rel="noopener noreferrer">r/innioasis on Reddit</a>' +
       '<a href="https://github.com/y1-community/Innioasis-Updater" target="_blank" rel="noopener noreferrer">Updater CE Source Code</a>' +
-      '<a href="' + escapeHtml(decorateMainSiteHref("/credits.html#donate")) + '">Support Independent Community Projects</a>' +
+      '<a href="' + escapeHtml(decorateMainSiteHref("/credits.html#donate")) + '" data-donations-appeal>Support Independent Community Projects</a>' +
       '<a href="' + escapeHtml(decorateMainSiteHref("/credits.html")) + '">Community Credits</a>' +
       '</div>' +
       '</div>' +
+      '<div class="footer-credit">Site created by <a href="https://ko-fi.com/teamslide" target="_blank" rel="noopener noreferrer">Ryan Specter</a> with the <a href="' + escapeHtml(decorateMainSiteHref("/credits.html")) + '">Innioasis Community</a>.</div>' +
       '<div class="footer-bottom">Copyleft - Innioasis users and contributors, for the community.</div>' +
       '</footer>';
   }

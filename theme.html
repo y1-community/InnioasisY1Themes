@@ -28,7 +28,8 @@
 
     <meta name="description" content="Browse and download community-made themes for your Innioasis Y1 or Y2 with curated UI assets and easy personalization options.">
     <meta name="keywords" content="Innioasis Y1 themes, Innioasis Y2 themes, Y1 customization, Y2 customization, MP3 player theme, community themes, theme gallery, Luci web hosting, themes.innioasis.app">
-    <meta name="author" content="Innioasis Community">
+    <meta name="author" content="Ryan Specter &amp; Innioasis Community">
+  <meta name="creator" content="Ryan Specter &amp; Innioasis Community">
     <meta name="publisher" content="Luci Ltd">
     <link rel="author" href="https://www.luci.ltd" title="Luci Ltd - web hosting for Innioasis Y1 & Y2 Themes">
 
@@ -286,7 +287,7 @@
     <div id="support-toolbar-slot"></div>
 
     <script src="site-init.js?v=20260522privacy"></script>
-    <script src="nav.js?v=20261102notices"></script>
+    <script src="nav.js?v=20261105noticemarkdown"></script>
     <script>
 
         const FALLBACK_PLACEHOLDER_URL = 'https://themes.innioasis.app/placeholder.png';
@@ -2141,6 +2142,15 @@
                 setThemePageLoading(false);
             }
         })()
+    </script>
+    <script>
+        /* Quick Install deep-links to the Direct Install card on the gallery.
+           Browsers without the File System Access API have no such card, so
+           the panel is removed instead of leading to a dead anchor. */
+        if (typeof window.showDirectoryPicker !== 'function') {
+            var promoPanel = document.getElementById('direct-install-promo');
+            if (promoPanel) promoPanel.remove();
+        }
     </script>
 </body>
 
