@@ -363,8 +363,9 @@ body.site-themes-app .gallery-home-hero .y1-hero {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    width: 100%;
-    max-width: 360px;
+    width: 7.25rem;
+    max-width: 7.25rem;
+    flex: 0 1 auto;
     justify-self: end;
     grid-column: 3;
     box-sizing: border-box;
@@ -372,6 +373,14 @@ body.site-themes-app .gallery-home-hero .y1-hero {
     border-radius: 10px;
     background: var(--site-bg-elevated);
     border: 1px solid var(--site-border);
+    cursor: text;
+    transition: width 180ms ease, max-width 180ms ease, border-color 180ms ease;
+}
+
+.topbar-search-wrap.is-expanded,
+.topbar-search-wrap:focus-within {
+    width: 14.5rem;
+    max-width: 14.5rem;
 }
 
 .topbar-search-icon {
@@ -435,9 +444,16 @@ body.site-themes-app .gallery-home-hero .y1-hero {
 
     .topbar-search-wrap {
         order: 2;
-        max-width: 360px;
+        width: 7rem;
+        max-width: 7rem;
         justify-self: center;
         grid-column: auto;
+    }
+
+    .topbar-search-wrap.is-expanded,
+    .topbar-search-wrap:focus-within {
+        width: min(14.5rem, calc(100vw - 2rem));
+        max-width: min(14.5rem, calc(100vw - 2rem));
     }
 }
 

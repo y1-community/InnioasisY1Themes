@@ -41,7 +41,7 @@
         style.id = "gallery-chrome-styles";
         style.textContent =
             '.gallery-topbar {' +
-            '  position: sticky !important; top: 0 !important; z-index: 1200 !important; display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 12px !important; padding: 8px 16px !important;' +
+            '  position: sticky !important; top: 0 !important; z-index: 1200 !important; display: flex !important; align-items: center !important; justify-content: flex-start !important; gap: 12px !important; padding: 8px 16px !important;' +
             '  background: var(--lumen-panel, #12141c) !important; border-bottom: 1px solid var(--lumen-line, rgba(255, 255, 255, 0.12)) !important;' +
             '  backdrop-filter: blur(14px) !important; -webkit-backdrop-filter: blur(14px) !important;' +
             '}' +
@@ -75,7 +75,7 @@
             ':root[data-lumen-theme="light"] .lumen-site-switcher-toggle:hover { background: rgba(0,0,0,0.08); color: #0f172a; }' +
             ':root[data-lumen-theme="2077"] .lumen-site-switcher-toggle { background: rgba(35,230,224,0.08); border-color: rgba(35,230,224,0.3); color: #23e6e0; }' +
             ':root[data-lumen-theme="2077"] .lumen-site-switcher-toggle:hover { background: rgba(255,30,60,0.18); border-color: #ff1e3c; color: #ff1e3c; }' +
-            '.lumen-site-switcher-tray { position: absolute; top: calc(100% + 8px); left: 0; width: 320px; max-width: 90vw; background: var(--lumen-panel, #12141c); border: 1px solid var(--lumen-line-strong, rgba(255,255,255,0.18)); border-radius: 14px; padding: 12px; box-shadow: 0 12px 36px rgba(0,0,0,0.45); z-index: 10002; box-sizing: border-box; }' +
+            '.lumen-site-switcher-tray { position: absolute; top: calc(100% + 8px); left: 0; width: 360px; max-width: calc(100vw - 24px); white-space: normal; background: var(--lumen-panel, #12141c); border: 1px solid var(--lumen-line-strong, rgba(255,255,255,0.18)); border-radius: 14px; padding: 12px; box-shadow: 0 12px 36px rgba(0,0,0,0.45); z-index: 10002; box-sizing: border-box; }' +
             ':root[data-lumen-theme="light"] .lumen-site-switcher-tray { background: #ffffff; border-color: rgba(0,0,0,0.12); box-shadow: 0 12px 36px rgba(0,0,0,0.15); }' +
             ':root[data-lumen-theme="2077"] .lumen-site-switcher-tray { background: #0c0d14; border-color: rgba(35,230,224,0.45); box-shadow: 0 12px 36px rgba(0,0,0,0.65), 0 0 16px rgba(35,230,224,0.2); }' +
             '.lumen-site-switcher-heading { margin: 0 0 8px 4px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--lumen-muted, #94a3b8); }' +
@@ -86,9 +86,9 @@
             '.lumen-site-switcher-item:hover { background: var(--lumen-accent-wash, rgba(99,102,241,0.1)); border-color: var(--lumen-line, rgba(255,255,255,0.1)); }' +
             ':root[data-lumen-theme="light"] .lumen-site-switcher-item:hover { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.08); }' +
             '.lumen-site-switcher-item-icon { display: flex; align-items: center; justify-content: center; flex-shrink: 0; }' +
-            '.lumen-site-switcher-item-copy { display: flex; flex-direction: column; gap: 2px; }' +
+            '.lumen-site-switcher-item-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 auto; }' +
             '.lumen-site-switcher-item-copy strong { font-size: 0.92rem; font-weight: 700; color: var(--lumen-text, #f8fafc); line-height: 1.2; }' +
-            '.lumen-site-switcher-item-copy small { font-size: 0.78rem; color: var(--lumen-muted, #94a3b8); line-height: 1.25; }' +
+            '.lumen-site-switcher-item-copy small { display: block; font-size: 0.78rem; color: var(--lumen-muted, #94a3b8); line-height: 1.3; white-space: normal; overflow-wrap: break-word; }' +
             ':root[data-lumen-theme="light"] .lumen-site-switcher-item-copy strong { color: #0f172a; }' +
             ':root[data-lumen-theme="light"] .lumen-site-switcher-item-copy small { color: #64748b; }' +
             ':root[data-lumen-theme="2077"] .lumen-site-switcher-item-copy strong { color: #e9f0f5; }' +
@@ -100,10 +100,14 @@
             '.lumen-nav-social-btn--discord { color: #5865f2 !important; }' +
             '.lumen-nav-social-btn--discord:hover { color: #7289da !important; filter: drop-shadow(0 0 6px rgba(88, 101, 242, 0.5)) !important; }' +
             '.lumen-nav-social-btn svg { display: block !important; width: 22px !important; height: 22px !important; }' +
-            '.gallery-tabs { display: inline-flex !important; align-items: center !important; gap: 6px !important; padding: 0 !important; background: transparent !important; border: none !important; flex-wrap: wrap !important; }' +
-            '.gallery-tab { display: inline-flex !important; align-items: center !important; padding: 0.4rem 0.65rem !important; border-radius: 8px !important; color: var(--lumen-muted, #94a3b8) !important; text-decoration: none !important; font-size: 0.88rem !important; font-weight: 600 !important; border: 1px solid transparent !important; transition: all 0.15s ease !important; white-space: nowrap !important; line-height: 1.2 !important; }' +
+            '.gallery-topbar .gallery-tabs, .gallery-topbar .gallery-social-tools, .gallery-topbar .gallery-social-links, .gallery-topbar .lumen-theme-control, .gallery-topbar .topbar-search-wrap { order: 0 !important; }' +
+            '.lumen-theme-control select:hover, .lumen-theme-control select:focus { background: var(--lumen-panel-soft, rgba(255, 255, 255, 0.06)) !important; border-color: var(--lumen-line, rgba(255, 255, 255, 0.15)) !important; color: var(--lumen-text, #f8fafc) !important; }' +
+            ':root[data-lumen-theme="light"] .lumen-theme-control select { color: #475569 !important; }' +
+            ':root[data-lumen-theme="light"] .lumen-theme-control select:hover, :root[data-lumen-theme="light"] .lumen-theme-control select:focus { background: rgba(0, 0, 0, 0.04) !important; border-color: rgba(0, 0, 0, 0.12) !important; color: #0f172a !important; }' +
+            '.gallery-tabs { display: inline-flex !important; align-items: center !important; gap: 6px !important; padding: 0 !important; margin-left: auto !important; background: transparent !important; border: none !important; flex-wrap: wrap !important; }' +
+            '.gallery-tab { display: inline-flex !important; align-items: center !important; padding: 0.4rem 0.65rem !important; border-radius: 8px !important; color: var(--lumen-muted, #94a3b8) !important; text-decoration: none !important; font-size: 0.88rem !important; font-weight: 500 !important; border: 1px solid transparent !important; transition: all 0.15s ease !important; white-space: nowrap !important; line-height: 1.2 !important; }' +
             '.gallery-tab:hover { color: var(--lumen-text, #f8fafc) !important; background: var(--lumen-panel-soft, rgba(255, 255, 255, 0.06)) !important; }' +
-            '.gallery-tab.active { color: var(--lumen-text, #f8fafc) !important; background: var(--lumen-panel-soft, rgba(255, 255, 255, 0.08)) !important; font-weight: 700 !important; }' +
+            '.gallery-tab.active { color: var(--lumen-text, #f8fafc) !important; background: var(--lumen-panel-soft, rgba(255, 255, 255, 0.08)) !important; font-weight: 600 !important; }' +
             ':root[data-lumen-theme="light"] .gallery-tabs { background: transparent !important; border: none !important; }' +
             ':root[data-lumen-theme="light"] .gallery-tab { color: #475569 !important; }' +
             ':root[data-lumen-theme="light"] .gallery-tab:hover { color: #0f172a !important; background: rgba(0,0,0,0.04) !important; }' +
@@ -150,32 +154,49 @@
         var toggle = wrap.querySelector("#lumen-site-switcher-toggle");
         var tray = wrap.querySelector("#lumen-site-switcher-tray");
         if (toggle && tray) {
+            function setSwitcherOpen(open) {
+                if (open) closeNotices();
+                tray.hidden = !open;
+                toggle.setAttribute("aria-expanded", open ? "true" : "false");
+            }
+
+            function closeNotices() {
+                var noticesTray = document.getElementById("lumen-notices-tray");
+                var noticesBtn = document.getElementById("lumen-notices-btn");
+                if (!noticesTray || noticesTray.hidden) return;
+                noticesTray.hidden = true;
+                if (noticesBtn) noticesBtn.setAttribute("aria-expanded", "false");
+            }
+
             toggle.addEventListener("click", function (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 var open = tray.hidden;
-                tray.hidden = !open;
-                toggle.setAttribute("aria-expanded", open ? "true" : "false");
+                if (open) closeNotices();
+                setSwitcherOpen(open);
             });
             document.addEventListener("click", function (e) {
                 if (!tray.hidden && !tray.contains(e.target) && !toggle.contains(e.target)) {
-                    tray.hidden = true;
-                    toggle.setAttribute("aria-expanded", "false");
+                    setSwitcherOpen(false);
                 }
             });
             document.addEventListener("keydown", function (e) {
                 if (e.key === "Escape" && !tray.hidden) {
-                    tray.hidden = true;
-                    toggle.setAttribute("aria-expanded", "false");
+                    setSwitcherOpen(false);
                 }
             });
+            document.addEventListener("click", function (e) {
+                var target = e.target;
+                var noticesBtn = target && target.closest ? target.closest("#lumen-notices-btn") : null;
+                if (noticesBtn && !tray.hidden) setSwitcherOpen(false);
+            }, true);
         }
         return wrap;
     }
 
     function buildSocialButtons() {
         var div = document.createElement("div");
-        div.className = "gallery-social-tools";
+        div.className = "gallery-social-links";
         div.style.cssText = "display:inline-flex;align-items:center;gap:6px;flex-shrink:0;";
         div.innerHTML =
             '<a href="https://reddit.com/r/innioasis" target="_blank" rel="noopener noreferrer" class="lumen-nav-social-btn lumen-nav-social-btn--reddit" aria-label="r/innioasis on Reddit" title="Reddit r/innioasis">' +
@@ -193,8 +214,7 @@
         label.className = "lumen-theme-control";
         label.style.cssText = "display:inline-flex;align-items:center;gap:6px;font-size:0.84rem;color:var(--lumen-muted,#94a3b8);flex-shrink:0;";
         label.innerHTML =
-            '<span>Theme</span>' +
-            '<select id="lumen-theme-select" aria-label="Choose site colour theme" style="min-height:32px;padding:2px 8px;border-radius:6px;border:1px solid var(--lumen-line,rgba(255,255,255,0.15));background:var(--lumen-panel-soft,rgba(255,255,255,0.06));color:var(--lumen-paper,#fff);font:inherit;cursor:pointer;">' +
+            '<select id="lumen-theme-select" aria-label="Choose site colour theme" title="Site theme" style="min-height:32px;padding:2px 8px;border-radius:6px;border:1px solid transparent;background:transparent;color:var(--lumen-muted,#94a3b8);font:inherit;cursor:pointer;">' +
             '<option value="dark">Dark</option>' +
             '<option value="high-contrast">High contrast</option>' +
             '<option value="2077">2077</option>' +
@@ -221,10 +241,35 @@
 
     function normalizeSearchInputs(root) {
         root.querySelectorAll(".topbar-search, #theme-search, #global-theme-search").forEach(function (input) {
-            var ph = String(input.getAttribute("placeholder") || "");
-            if (!ph || ph === "\uD83D\uDD0D" || ph === "🔍" || /[\u{1F300}-\u{1FAFF}]/u.test(ph)) {
-                input.setAttribute("placeholder", "Search themes");
+            input.setAttribute("placeholder", "Search");
+        });
+    }
+
+    function enhanceSearch(root) {
+        root.querySelectorAll(".topbar-search-wrap").forEach(function (wrap) {
+            if (wrap.dataset.compactSearchReady === "1") return;
+            var input = wrap.querySelector(".topbar-search, #theme-search, #global-theme-search");
+            if (!input) return;
+            wrap.dataset.compactSearchReady = "1";
+
+            function hasQuery() {
+                return String(input.value || "").trim() !== "";
             }
+
+            function syncExpanded() {
+                wrap.classList.toggle("is-expanded", document.activeElement === input || hasQuery());
+            }
+
+            input.addEventListener("focus", function () {
+                wrap.classList.add("is-expanded");
+            });
+            input.addEventListener("blur", syncExpanded);
+            input.addEventListener("input", syncExpanded);
+            wrap.addEventListener("click", function (event) {
+                if (event.target !== input) input.focus();
+            });
+
+            if (hasQuery()) wrap.classList.add("is-expanded");
         });
     }
 
@@ -240,7 +285,7 @@
             '<div class="site-compat-banner__content">' +
             '<i class="fa-solid fa-circle-check site-compat-banner__icon" aria-hidden="true"></i>' +
             '<span class="site-compat-banner__text">' +
-            'Themes in this gallery are compatible with <a class="site-compat-banner__link" href="https://innioasis.app/original-software-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Original OS</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/better-y-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Better-Y</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/solar-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Solar</strong></a>, and <a class="site-compat-banner__link" href="https://innioasis.app/koensayr-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Koensayr</strong></a> custom firmwares, plus <a class="site-compat-banner__link" href="https://innioasis.app/reborn-y2linux-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Reborn (Y2Linux)</strong></a> on Y2 - <a class="site-compat-banner__cta" href="https://innioasis.app/guide.html#platform" target="_blank" rel="noopener noreferrer">Available in Updater CE &rarr;</a>' +
+            'Themes in this gallery are compatible with <a class="site-compat-banner__link" href="https://innioasis.app/original-software-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Original OS</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/better-y-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Better-Y</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/solar-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Solar</strong></a>, and <a class="site-compat-banner__link" href="https://innioasis.app/koensayr-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Koensayr</strong></a> custom firmwares - <a class="site-compat-banner__cta" href="https://innioasis.app/guide.html#platform" target="_blank" rel="noopener noreferrer">Available in Updater CE &rarr;</a>' +
             '</span>' +
             '</div>';
 
@@ -267,38 +312,33 @@
             topbar.insertBefore(brandSwitcher, topbar.firstChild);
         }
 
-        // 2. Clean up header tabs: keep only Gallery and Upload; firmware/software links live in the footer
+        // 2. Remove redundant header tabs; the brand links back to the gallery.
         topbar.querySelectorAll(".gallery-tab").forEach(function (t) {
             var txt = (t.textContent || "").trim().toLowerCase();
-            if (txt === "editor" || txt === "software updates" || txt === "firmware downloads") {
+            if (txt === "gallery" || txt === "editor" || txt === "software updates" || txt === "firmware downloads") {
                 t.remove();
             }
         });
 
-        // 3. Social Buttons & Theme Select
-        if (!topbar.querySelector(".gallery-social-tools")) {
-            var social = buildSocialButtons();
-            var searchWrap = topbar.querySelector(".topbar-search-wrap");
-            if (searchWrap) {
-                topbar.insertBefore(social, searchWrap);
-            } else {
-                topbar.appendChild(social);
-            }
+        // 3. Notices and theme control on the left; social links at the far right.
+        var noticesMount = topbar.querySelector(".gallery-social-tools");
+        if (!noticesMount) {
+            noticesMount = document.createElement("div");
+            noticesMount.className = "gallery-social-tools";
+            noticesMount.style.cssText = "display:inline-flex;align-items:center;gap:6px;flex-shrink:0;";
         }
+        topbar.insertBefore(noticesMount, brandSwitcher.nextSibling);
 
-        if (!topbar.querySelector("#lumen-theme-select")) {
-            var themeCtrl = ensureThemeSelect(topbar);
-            if (themeCtrl) {
-                var searchWrap2 = topbar.querySelector(".topbar-search-wrap");
-                if (searchWrap2) {
-                    topbar.insertBefore(themeCtrl, searchWrap2);
-                } else {
-                    topbar.appendChild(themeCtrl);
-                }
-            }
+        var existingTheme = topbar.querySelector("#lumen-theme-select");
+        var themeCtrl = existingTheme ? existingTheme.closest("label") : ensureThemeSelect(topbar);
+        if (themeCtrl) topbar.insertBefore(themeCtrl, noticesMount.nextSibling);
+
+        if (!topbar.querySelector(".gallery-social-links")) {
+            topbar.appendChild(buildSocialButtons());
         }
 
         normalizeSearchInputs(topbar);
+        enhanceSearch(topbar);
         topbar.dataset.galleryChromeReady = "1";
         ensureCompatibilityBanner(topbar);
     }

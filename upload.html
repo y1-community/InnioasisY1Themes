@@ -22,7 +22,7 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
-    <link rel="stylesheet" href="site-theme.css?v=20260711backfill">
+    <link rel="stylesheet" href="site-theme.css?v=20261102header">
     <link rel="stylesheet" href="lumen.css?v=20261019d">
     <link rel="stylesheet" href="site-toolbar.css?v=20260622">
     <link rel="stylesheet" href="site-pages.css?v=20260622">
@@ -136,7 +136,7 @@
             box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.12);
         }
 
-        /* Search bar layout: see site-theme.css (flex icon + input) */
+        /* Search bar layout: see site-theme.css?v=20261102header (flex icon + input) */
 
         @media (max-width: 900px) {
             .gallery-topbar {
@@ -632,7 +632,7 @@
             pointer-events: none;
         }
     </style>
-    <script src="gallery-chrome.js?v=20260711backfill"></script>
+    <script src="gallery-chrome.js?v=20261102header"></script>
     <script src="site-init.js?v=20260522privacy"></script>
 </head>
 
@@ -728,12 +728,11 @@
             <span class="gallery-brand-text">Y1 & Y2 Themes</span>
         </a>
         <div class="gallery-tabs" aria-label="Site sections">
-            <a class="gallery-tab" href="https://themes.innioasis.app/index.html">Gallery</a>
             <a class="gallery-tab active" href="upload.html">Upload</a>
         </div>
         <form class="topbar-search-wrap" action="https://themes.innioasis.app/index.html" method="get">
             <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
-            <input id="global-theme-search" name="q" class="topbar-search" type="search" placeholder="Search themes" aria-label="Search themes">
+            <input id="global-theme-search" name="q" class="topbar-search" type="search" placeholder="Search" aria-label="Search themes">
         </form>
     </div>
 

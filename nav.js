@@ -147,7 +147,7 @@
       ':root[data-lumen-theme="light"] .lumen-site-switcher-toggle:hover { background: rgba(0,0,0,0.08); color: #0f172a; }' +
       ':root[data-lumen-theme="2077"] .lumen-site-switcher-toggle { background: rgba(35,230,224,0.08); border-color: rgba(35,230,224,0.3); color: #23e6e0; }' +
       ':root[data-lumen-theme="2077"] .lumen-site-switcher-toggle:hover { background: rgba(255,30,60,0.18); border-color: #ff1e3c; color: #ff1e3c; }' +
-      '.lumen-site-switcher-tray { position: absolute; top: calc(100% + 8px); left: 0; width: 320px; max-width: 90vw; background: var(--lumen-panel, #12141c); border: 1px solid var(--lumen-line-strong, rgba(255,255,255,0.18)); border-radius: 14px; padding: 12px; box-shadow: 0 12px 36px rgba(0,0,0,0.45); z-index: 10002; box-sizing: border-box; }' +
+      '.lumen-site-switcher-tray { position: absolute; top: calc(100% + 8px); left: 0; width: 360px; max-width: calc(100vw - 24px); white-space: normal; background: var(--lumen-panel, #12141c); border: 1px solid var(--lumen-line-strong, rgba(255,255,255,0.18)); border-radius: 14px; padding: 12px; box-shadow: 0 12px 36px rgba(0,0,0,0.45); z-index: 10002; box-sizing: border-box; }' +
       ':root[data-lumen-theme="light"] .lumen-site-switcher-tray { background: #ffffff; border-color: rgba(0,0,0,0.12); box-shadow: 0 12px 36px rgba(0,0,0,0.15); }' +
       ':root[data-lumen-theme="2077"] .lumen-site-switcher-tray { background: #0c0d14; border-color: rgba(35,230,224,0.45); box-shadow: 0 12px 36px rgba(0,0,0,0.65), 0 0 16px rgba(35,230,224,0.2); }' +
       '.lumen-site-switcher-heading { margin: 0 0 8px 4px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--lumen-muted, #94a3b8); }' +
@@ -158,9 +158,9 @@
       '.lumen-site-switcher-item:hover { background: var(--lumen-accent-wash, rgba(99,102,241,0.1)); border-color: var(--lumen-line, rgba(255,255,255,0.1)); }' +
       ':root[data-lumen-theme="light"] .lumen-site-switcher-item:hover { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.08); }' +
       '.lumen-site-switcher-item-icon { display: flex; align-items: center; justify-content: center; flex-shrink: 0; }' +
-      '.lumen-site-switcher-item-copy { display: flex; flex-direction: column; gap: 2px; }' +
+      '.lumen-site-switcher-item-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 auto; }' +
       '.lumen-site-switcher-item-copy strong { font-size: 0.92rem; font-weight: 700; color: var(--lumen-text, #f8fafc); line-height: 1.2; }' +
-      '.lumen-site-switcher-item-copy small { font-size: 0.78rem; color: var(--lumen-muted, #94a3b8); line-height: 1.25; }' +
+      '.lumen-site-switcher-item-copy small { display: block; font-size: 0.78rem; color: var(--lumen-muted, #94a3b8); line-height: 1.3; white-space: normal; overflow-wrap: break-word; }' +
       ':root[data-lumen-theme="light"] .lumen-site-switcher-item-copy strong { color: #0f172a; }' +
       ':root[data-lumen-theme="light"] .lumen-site-switcher-item-copy small { color: #64748b; }' +
       ':root[data-lumen-theme="2077"] .lumen-site-switcher-item-copy strong { color: #e9f0f5; }' +
@@ -281,8 +281,20 @@
   var switcherTray = document.getElementById("lumen-site-switcher-tray");
   function setSwitcherOpen(open) {
     if (!switcherToggle || !switcherTray) return;
+    if (open) setNoticesOpen(false);
     switcherTray.hidden = !open;
     switcherToggle.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  /* The gallery renders its own topbar switcher next to this script's one, so
+     close every switcher tray in the page when the notices open. */
+  function closeSwitcherTrays() {
+    setSwitcherOpen(false);
+    document.querySelectorAll("#lumen-site-switcher-tray").forEach(function (tray) {
+      tray.hidden = true;
+    });
+    document.querySelectorAll("#lumen-site-switcher-toggle").forEach(function (btn) {
+      btn.setAttribute("aria-expanded", "false");
+    });
   }
   if (switcherToggle && switcherTray) {
     switcherToggle.addEventListener("click", function (e) {
@@ -356,6 +368,7 @@
 
   function setNoticesOpen(open) {
     if (!noticesBtn || !noticesTray) return;
+    if (open) closeSwitcherTrays();
     noticesTray.hidden = !open;
     noticesBtn.setAttribute("aria-expanded", open ? "true" : "false");
     if (open) {
