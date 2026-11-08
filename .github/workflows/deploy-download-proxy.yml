@@ -1,0 +1,51 @@
+name: Deploy download proxy
+
+# Portable bundles are named rom-macos.zip in the mirror, but the reader
+# clicked rom.zip. A browser ignores the download attribute on a cross-origin
+# asset, so this same-origin Worker is what keeps the clicked filename.
+#
+# Uses the same CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID secrets as the
+# Pages deploy. The token needs Workers Scripts:Edit and Zone:Edit on
+# innioasis.app.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "download-proxy-worker.js"
+      - "wrangler.toml"
+      - ".github/workflows/deploy-download-proxy.yml"
+
+concurrency:
+  group: deploy-download-proxy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy the Worker and its route
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --config wrangler.toml
+
+      - name: Verify the proxy answers with the ROM filename
+        run: |
+          set -euo pipefail
+          URL="https://innioasis.app/download-proxy?url=https%3A%2F%2Fgithub.com%2Fy1-community%2Fy1_launcher-mirror%2Freleases%2Fdownload%2Flauncher-v0.9%2From-macos.zip&filename=rom-macos.zip"
+          HEADERS=""
+          for attempt in 1 2 3 4 5; do
+            HEADERS=$(curl -sS -o /dev/null -D - -m 30 "$URL" || true)
+            if printf '%s' "$HEADERS" | grep -qi 'content-disposition'; then break; fi
+            sleep 6
+          done
+          printf '%s\n' "$HEADERS" | grep -i 'content-disposition'
+          printf '%s\n' "$HEADERS" | grep -qi 'filename="rom.zip"'
