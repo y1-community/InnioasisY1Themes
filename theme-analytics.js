@@ -119,11 +119,19 @@
         try {
             let raw = localStorage.getItem(CONSENT_KEY);
             if (!raw) {
-                const legacyRaw = localStorage.getItem(LEGACY_CONSENT_KEY);
+                const legacyRaw = localStorage.getItem(LEGACY_CONSENT_KEY) || localStorage.getItem("innioasis-consent");
                 if (legacyRaw) {
-                    const migrated = migrateLegacyConsent(JSON.parse(legacyRaw));
-                    localStorage.setItem(CONSENT_KEY, JSON.stringify(migrated));
-                    return migrated;
+                    const parsed = JSON.parse(legacyRaw);
+                    if (parsed && typeof parsed === "object" && (parsed.decided || typeof parsed.feedback === "boolean")) {
+                        const migrated = normalizeConsentObject({
+                            decided: true,
+                            analytics: typeof parsed.analytics === "boolean" ? parsed.analytics : parsed.feedback !== false,
+                            ratingsView: typeof parsed.ratingsView === "boolean" ? parsed.ratingsView : true,
+                            ratingsSubmit: typeof parsed.ratingsSubmit === "boolean" ? parsed.ratingsSubmit : parsed.feedback !== false,
+                        });
+                        localStorage.setItem(CONSENT_KEY, JSON.stringify(migrated));
+                        return migrated;
+                    }
                 }
                 return { ...DEFAULT_CONSENT };
             }
@@ -560,9 +568,8 @@
             banner.setAttribute("aria-label", "Privacy preferences");
             banner.innerHTML =
                 '<div class="y1-consent-inner">' +
-                "<p>Theme view, download, and rating <strong>totals are public</strong> for everyone. " +
-                "By default we <strong>do</strong> include your visits, downloads, and ratings in those totals. " +
-                "Use <strong>Privacy</strong> in the bottom dock to opt out anytime.</p>" +
+                "<p><strong>Analytics and privacy.</strong> Themes.innioasis.app uses Google Analytics and Cloudflare to measure and optimise how the gallery performs and to protect it from attacks. " +
+                "Theme view, download, and rating totals are public; use <strong>Privacy</strong> in the bottom dock to manage your preferences anytime.</p>" +
                 '<div class="y1-consent-actions">' +
                 '<button type="button" class="y1-consent-customize">Customize</button>' +
                 '<button type="button" class="y1-consent-accept">Continue</button>' +
@@ -574,8 +581,8 @@
             panel = document.createElement("div");
             panel.id = "y1-privacy-panel";
             panel.innerHTML =
-                "<h3>Privacy &amp; ratings</h3>" +
-                '<p class="y1-privacy-hint">Public totals are always visible. Uncheck a box to stop contributing that data.</p>' +
+                "<h3>Analytics &amp; privacy</h3>" +
+                '<p class="y1-privacy-hint">Themes.innioasis.app uses Google Tag Manager with Google Analytics, and Cloudflare, to measure and optimise performance and protect the gallery from attacks. Public theme totals are always visible; uncheck a box below to stop contributing that data.</p>' +
                 '<label><input type="checkbox" id="y1-opt-analytics" checked /> Contribute my page views &amp; download counts</label>' +
                 '<label><input type="checkbox" id="y1-opt-ratings-view" checked /> Show star ratings from other visitors</label>' +
                 '<label><input type="checkbox" id="y1-opt-ratings-submit" checked /> Contribute my theme ratings</label>' +

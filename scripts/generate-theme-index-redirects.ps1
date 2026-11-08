@@ -79,6 +79,12 @@ Get-ChildItem -LiteralPath $root -Recurse -Filter 'index.html' | ForEach-Object 
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script async src="https://www.googletagmanager.com/gtm.js?id=GTM-TNDGC37L"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+</script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>$titleEsc - Innioasis Y1 and Y2 Themes Gallery</title>

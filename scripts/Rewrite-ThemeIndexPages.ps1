@@ -109,8 +109,13 @@ foreach ($folder in ($folderSet | Sort-Object)) {
     $rootIndex = Join-Path (Join-Path $Root $folder) 'index.html'
     $targets[$rootIndex] = @{ CatalogFolder = $folder; Variant = '' }
     foreach ($v in (Get-VariantSubfolders $folder $tm)) {
-        $vp = Join-Path (Join-Path (Join-Path (Join-Path $Root $folder) 'Variants') $v) '_share'
+        $vDir = Join-Path (Join-Path (Join-Path $Root $folder) 'Variants') $v
+        $vp = Join-Path $vDir '_share'
         $targets[(Join-Path $vp 'index.html')] = @{ CatalogFolder = $folder; Variant = $v }
+        $vDirectIndex = Join-Path $vDir 'index.html'
+        if (Test-Path -LiteralPath $vDirectIndex) {
+            $targets[$vDirectIndex] = @{ CatalogFolder = $folder; Variant = $v }
+        }
     }
 }
 
@@ -307,6 +312,8 @@ function Test-IndexShellNeedsWrite([string]$abs) {
     if (-not $MissingOnly) { return $true }
     try {
         $c = Get-Content -LiteralPath $abs -Raw -Encoding UTF8
+        if ($c -notmatch '<!DOCTYPE html>') { return $true }
+        if ($c -notmatch 'GTM-TNDGC37L') { return $true }
         if ($c -notmatch 'theme-seo-shell-analytics\.js') { return $true }
         if ($c -notmatch 'cf-theme-analytics-origin') { return $true }
         if ($c -notmatch 'gallery-topbar') { return $true }

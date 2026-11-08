@@ -4,8 +4,89 @@
 (function (global) {
     "use strict";
 
-    var THEME_ANALYTICS_VERSION = "20260524b";
+    var THEME_ANALYTICS_VERSION = "20261108";
     var THEME_ANALYTICS_CSS_VERSION = "20260518";
+    var CONSENT_KEY = "innioasis-consent";
+    var THEME_CONSENT_KEY = "y1-theme-consent-v2";
+
+    /* Privacy consent. The gallery uses Google Analytics (via Google Tag
+       Manager) and Cloudflare to measure and optimise performance and protect
+       the website from attacks. Local storage remembers the visitor's theme,
+       text size, and privacy/rating choices so the consent banner does not
+       reopen on every page load. */
+    function readConsent() {
+        try {
+            var themeRaw = global.localStorage.getItem(THEME_CONSENT_KEY);
+            var themeData = themeRaw ? JSON.parse(themeRaw) : null;
+            var raw = global.localStorage.getItem(CONSENT_KEY);
+            var data = raw ? JSON.parse(raw) : null;
+            if ((themeData && themeData.decided === true) || (data && typeof data === "object" && (typeof data.feedback === "boolean" || data.decided === true))) {
+                return {
+                    decided: true,
+                    analytics: themeData && typeof themeData.analytics === "boolean" ? themeData.analytics : (data && typeof data.analytics === "boolean" ? data.analytics : true),
+                    ratingsView: themeData && typeof themeData.ratingsView === "boolean" ? themeData.ratingsView : (data && typeof data.ratingsView === "boolean" ? data.ratingsView : true),
+                    ratingsSubmit: themeData && typeof themeData.ratingsSubmit === "boolean" ? themeData.ratingsSubmit : (data && typeof data.ratingsSubmit === "boolean" ? data.ratingsSubmit : true),
+                    feedback: data && typeof data.feedback === "boolean" ? data.feedback : true,
+                    nightly: data && typeof data.nightly === "boolean" ? data.nightly : true
+                };
+            }
+        } catch (_) {}
+        return null;
+    }
+
+    function writeConsent(prefs) {
+        prefs = prefs || {};
+        var prev = readConsent() || {};
+        var next = {
+            decided: true,
+            analytics: typeof prefs.analytics === "boolean" ? prefs.analytics : (typeof prev.analytics === "boolean" ? prev.analytics : prefs.feedback !== false),
+            ratingsView: typeof prefs.ratingsView === "boolean" ? prefs.ratingsView : (typeof prev.ratingsView === "boolean" ? prev.ratingsView : true),
+            ratingsSubmit: typeof prefs.ratingsSubmit === "boolean" ? prefs.ratingsSubmit : (typeof prev.ratingsSubmit === "boolean" ? prev.ratingsSubmit : prefs.feedback !== false),
+            feedback: typeof prefs.feedback === "boolean" ? prefs.feedback : (typeof prev.feedback === "boolean" ? prev.feedback : true),
+            nightly: typeof prefs.nightly === "boolean" ? prefs.nightly : (typeof prev.nightly === "boolean" ? prev.nightly : true)
+        };
+        try {
+            global.localStorage.setItem(CONSENT_KEY, JSON.stringify({
+                decided: true,
+                feedback: next.feedback,
+                nightly: next.nightly,
+                analytics: next.analytics,
+                ratingsView: next.ratingsView,
+                ratingsSubmit: next.ratingsSubmit
+            }));
+            global.localStorage.setItem(THEME_CONSENT_KEY, JSON.stringify({
+                decided: true,
+                analytics: next.analytics,
+                ratingsView: next.ratingsView,
+                ratingsSubmit: next.ratingsSubmit
+            }));
+        } catch (_) {}
+        if (global.ThemeAnalytics && typeof global.ThemeAnalytics.saveConsent === "function") {
+            try {
+                void global.ThemeAnalytics.saveConsent({
+                    analytics: next.analytics,
+                    ratingsView: next.ratingsView,
+                    ratingsSubmit: next.ratingsSubmit
+                });
+            } catch (_) {}
+        }
+        try {
+            global.dispatchEvent(new CustomEvent("innioasis-privacy-change", { detail: next }));
+            global.dispatchEvent(new CustomEvent("y1-consent-changed", { detail: next }));
+        } catch (_) {}
+        return next;
+    }
+
+    global.INNIOASIS_PRIVACY = {
+        read: readConsent,
+        save: writeConsent,
+        hasDecided: function () { return readConsent() !== null; },
+        allows: function (feature) {
+            if (feature === "theme") return true;
+            var prefs = readConsent();
+            return !!prefs && prefs[feature] !== false;
+        }
+    };
 
     function executeInlineScripts(container) {
         if (!container) return;

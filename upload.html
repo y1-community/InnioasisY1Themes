@@ -650,6 +650,12 @@
 <!DOCTYPE html>
 <html lang="en" data-themes-preview-redirect="__Y1_DATA_REDIRECT__">
 <head>
+<script async src="https://www.googletagmanager.com/gtm.js?id=GTM-TNDGC37L"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+</script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#17191f" />
@@ -3738,6 +3744,25 @@
             let html = raw;
             for (const token of Object.keys(reps)) {
                 html = html.split(token).join(reps[token]);
+            }
+            if (!/<!doctype\s+html>/i.test(html)) {
+                const mainIdx = html.indexOf("<main");
+                const headInner = (mainIdx >= 0 ? html.slice(0, mainIdx) : html).trim();
+                const bodyInner = (mainIdx >= 0 ? html.slice(mainIdx) : "").trim();
+                const gtmSnippet = html.includes("GTM-TNDGC37L")
+                    ? ""
+                    : '<script async src="https://www.googletagmanager.com/gtm.js?id=GTM-TNDGC37L"><\/script>\n<script>\n  window.dataLayer = window.dataLayer || [];\n  function gtag(){dataLayer.push(arguments);}\n  gtag(\'js\', new Date());\n<\/script>\n';
+                html =
+                    "<!DOCTYPE html>\n" +
+                    `<html lang="en" data-themes-preview-redirect="${v.previewE}">\n` +
+                    "<head>\n" +
+                    gtmSnippet +
+                    headInner +
+                    "\n</head>\n" +
+                    "<body>\n" +
+                    bodyInner +
+                    "\n</body>\n" +
+                    "</html>\n";
             }
             return html;
         }

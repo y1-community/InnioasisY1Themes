@@ -397,7 +397,7 @@
   <div class="y1-consent-banner" id="y1-consent-banner" role="region" aria-live="polite" aria-label="Privacy choices" hidden>
     <div class="y1-consent-banner-copy">
       <p class="y1-consent-banner-title"><strong>Analytics and privacy.</strong></p>
-      <p class="y1-consent-banner-text">Themes.innioasis.app uses Google Analytics and Cloudflare analytics to measure how the gallery performs and to protect it from attacks. We remember your theme and text size, and only the preferences you allow.</p>
+      <p class="y1-consent-banner-text">Themes.innioasis.app uses Google Analytics and Cloudflare to measure and optimise how the gallery performs and to protect it from attacks. We remember your theme and text size, and only the preferences you allow.</p>
     </div>
     <div class="y1-consent-banner-actions">
       <button type="button" class="y1-consent-btn y1-consent-btn--accept" data-consent-accept>Accept all</button>
@@ -485,26 +485,34 @@
     <div class="y1-privacy-panel" id="y1-privacy-panel" role="dialog" aria-modal="false" aria-labelledby="y1-privacy-title" hidden>
       <div class="y1-donate-panel-header">
         <div>
-          <p class="y1-donate-panel-title">Your privacy on Innioasis.app</p>
+          <p class="y1-donate-panel-title">Your privacy on Themes.innioasis.app</p>
           <h2 class="y1-donate-panel-hook" id="y1-privacy-title">Analytics and privacy</h2>
         </div>
         <button class="y1-donate-close" type="button" data-privacy-close aria-label="Close privacy notice">×</button>
       </div>
       <div class="y1-privacy-body">
-        <p><strong data-i18n-skip>Themes.innioasis.app uses Google Tag Manager with Google Analytics, and Cloudflare analytics, to measure how the gallery performs and to protect it from attacks.</strong> Google Analytics may set first-party cookies that tell one browser apart from another; Cloudflare's analytics are cookieless. There are no advertising trackers and we do not sell your data.</p>
-        <p data-i18n-skip>Cloudflare also processes request data, including IP addresses, to keep the gallery online, absorb traffic spikes, and block abusive or automated attacks. Google receives measurement data under its own privacy terms.</p>
+        <p><strong data-i18n-skip>Themes.innioasis.app uses Google Tag Manager with Google Analytics, and Cloudflare, to measure and optimise how the gallery performs and to protect it from attacks.</strong> Google Analytics may set first-party cookies that tell one browser apart from another; Cloudflare's analytics are cookieless. We do not sell your data, and this project is solely self- and donations-funded.</p>
+        <p data-i18n-skip>Cloudflare also processes request data, including IP addresses, to optimise delivery, keep the gallery online, absorb traffic spikes, and block abusive or automated attacks. Google receives measurement data under its own privacy terms.</p>
         <div class="y1-privacy-options" aria-label="What the site may remember">
           <label class="y1-privacy-option">
-            <span class="y1-privacy-option-label"><strong>Remember my "was this useful?" answers</strong><small>Asked on the guide pages.</small></span>
-            <input type="checkbox" class="y1-privacy-toggle" data-privacy-feedback>
+            <span class="y1-privacy-option-label"><strong>Contribute my theme views &amp; download counts</strong><small>Public totals on theme cards are always visible; untick to stop adding your visits and downloads.</small></span>
+            <input type="checkbox" class="y1-privacy-toggle" id="y1-opt-analytics" data-privacy-analytics checked>
           </label>
           <label class="y1-privacy-option">
-            <span class="y1-privacy-option-label"><strong>Remember my nightly-builds choice</strong><small>Used on the software directory.</small></span>
-            <input type="checkbox" class="y1-privacy-toggle" data-privacy-nightly>
+            <span class="y1-privacy-option-label"><strong>Show community ratings on themes</strong><small>Displays reaction scores from other visitors on theme cards.</small></span>
+            <input type="checkbox" class="y1-privacy-toggle" id="y1-opt-ratings-view" data-privacy-ratings-view checked>
+          </label>
+          <label class="y1-privacy-option">
+            <span class="y1-privacy-option-label"><strong>Contribute my theme ratings</strong><small>Lets you rate themes and include your rating in community totals.</small></span>
+            <input type="checkbox" class="y1-privacy-toggle" id="y1-opt-ratings-submit" data-privacy-ratings-submit checked>
+          </label>
+          <label class="y1-privacy-option">
+            <span class="y1-privacy-option-label"><strong>Remember my guide &amp; directory preferences</strong><small>Saves "was this useful?" answers and release filter choices.</small></span>
+            <input type="checkbox" class="y1-privacy-toggle" data-privacy-feedback checked>
           </label>
           <label class="y1-privacy-option">
             <span class="y1-privacy-option-label"><strong>Show donation appeals and running costs</strong><small>Turn this off to hide every request for support.</small></span>
-            <input type="checkbox" class="y1-privacy-toggle" data-privacy-donations>
+            <input type="checkbox" class="y1-privacy-toggle" data-privacy-donations checked>
           </label>
         </div>
         <p class="y1-privacy-note">Your site theme and text size are always remembered  -  they are the look and readability you chose. Links to YouTube, Discord, Ko-fi, Buy Me a Coffee, PayPal, Revolut, Patreon, and Boosty open those sites' own pages, which have their own policies.</p>
@@ -871,6 +879,9 @@
   var privacyClose = document.querySelector("[data-privacy-close]");
   var backdrop = document.querySelector("[data-dock-backdrop]");
   var banner = document.getElementById("y1-consent-banner");
+  var analyticsToggle = document.querySelector("[data-privacy-analytics]");
+  var ratingsViewToggle = document.querySelector("[data-privacy-ratings-view]");
+  var ratingsSubmitToggle = document.querySelector("[data-privacy-ratings-submit]");
   var feedbackToggle = document.querySelector("[data-privacy-feedback]");
   var nightlyToggle = document.querySelector("[data-privacy-nightly]");
   var donationsToggle = document.querySelector("[data-privacy-donations]");
@@ -1044,7 +1055,14 @@
   if (!donatePanel || !privacyPanel || !donateOpen || !privacyOpen) return;
 
   function hasDecided() {
-    return !!(consent && consent.hasDecided && consent.hasDecided());
+    if (consent && consent.hasDecided && consent.hasDecided()) return true;
+    try {
+      var tc = JSON.parse(localStorage.getItem("y1-theme-consent-v2") || "null");
+      if (tc && tc.decided) return true;
+      var ic = JSON.parse(localStorage.getItem("innioasis-consent") || "null");
+      if (ic && (ic.decided || typeof ic.feedback === "boolean")) return true;
+    } catch (_) {}
+    return false;
   }
 
   function syncBackdrop() {
@@ -1056,7 +1074,7 @@
     "<b>Donations directly help me support my family and fund the test devices</b> that make this free service possible for everyone. If this tool saved you time or rescued your player today, please consider a small donation, it truly means the world to us.",
     "<b>Servers, storage and domains are paid for out of pocket.</b> A coffee keeps the downloads online for the next owner.",
     "<b>Every release here is built in evenings and weekends.</b> A small donation buys more of that time.",
-    "<b>No ads, no tracking and no paid tier.</b> Independence is funded by people this helped.",
+    "<b>Solely self- and donations-funded, with no paid tier.</b> Independence is funded out of pocket and by people this helped.",
     "<b>Donations buy the test players and cables</b> used to check each release before anyone flashes it.",
     "<b>The firmware archive moves terabytes every month.</b> Donations pay for the bandwidth that delivers it.",
     "<b>Running costs come to about $200 a month.</b> Whatever you can add closes the gap.",
@@ -1168,21 +1186,60 @@
 
   function prefillToggles() {
     var prefs = (consent && consent.read) ? consent.read() : null;
-    if (feedbackToggle) feedbackToggle.checked = prefs ? prefs.feedback : false;
-    if (nightlyToggle) nightlyToggle.checked = prefs ? prefs.nightly : false;
+    if (!prefs && window.ThemeAnalytics && typeof window.ThemeAnalytics.loadConsent === "function") {
+      prefs = window.ThemeAnalytics.loadConsent();
+    }
+    if (analyticsToggle) analyticsToggle.checked = prefs ? prefs.analytics !== false : true;
+    if (ratingsViewToggle) ratingsViewToggle.checked = prefs ? prefs.ratingsView !== false : true;
+    if (ratingsSubmitToggle) ratingsSubmitToggle.checked = prefs ? prefs.ratingsSubmit !== false : true;
+    if (feedbackToggle) feedbackToggle.checked = prefs ? prefs.feedback !== false : true;
+    if (nightlyToggle) nightlyToggle.checked = prefs ? prefs.nightly !== false : true;
     if (donationsToggle) donationsToggle.checked = !donationsOff();
+  }
+
+  function persistConsentChoices(choices) {
+    if (consent && consent.save) {
+      consent.save(choices);
+      return;
+    }
+    try {
+      localStorage.setItem("innioasis-consent", JSON.stringify({
+        decided: true,
+        feedback: choices.feedback !== false,
+        nightly: choices.nightly !== false,
+        analytics: choices.analytics !== false,
+        ratingsView: choices.ratingsView !== false,
+        ratingsSubmit: choices.ratingsSubmit !== false
+      }));
+      localStorage.setItem("y1-theme-consent-v2", JSON.stringify({
+        decided: true,
+        analytics: choices.analytics !== false,
+        ratingsView: choices.ratingsView !== false,
+        ratingsSubmit: choices.ratingsSubmit !== false
+      }));
+    } catch (_) {}
+    if (window.ThemeAnalytics && typeof window.ThemeAnalytics.saveConsent === "function") {
+      try {
+        void window.ThemeAnalytics.saveConsent({
+          analytics: choices.analytics !== false,
+          ratingsView: choices.ratingsView !== false,
+          ratingsSubmit: choices.ratingsSubmit !== false
+        });
+      } catch (_) {}
+    }
   }
 
   function saveFromPanel() {
     if (donationsToggle && typeof window.setY1DonationsDisabled === "function") {
       window.setY1DonationsDisabled(!donationsToggle.checked);
     }
-    if (consent && consent.save) {
-      consent.save({
-        feedback: feedbackToggle ? feedbackToggle.checked : true,
-        nightly: nightlyToggle ? nightlyToggle.checked : true
-      });
-    }
+    persistConsentChoices({
+      analytics: analyticsToggle ? analyticsToggle.checked : true,
+      ratingsView: ratingsViewToggle ? ratingsViewToggle.checked : true,
+      ratingsSubmit: ratingsSubmitToggle ? ratingsSubmitToggle.checked : true,
+      feedback: feedbackToggle ? feedbackToggle.checked : true,
+      nightly: nightlyToggle ? nightlyToggle.checked : (feedbackToggle ? feedbackToggle.checked : true)
+    });
     setPanel(privacyPanel, privacyOpen, false, null);
     if (banner && !banner.hidden) setBanner(false);
     if (privacyOpen) privacyOpen.focus();
@@ -1344,13 +1401,13 @@
   if (acceptAll) acceptAll.addEventListener("click", function (e) {
     if (e) { e.preventDefault(); e.stopPropagation(); }
     if (typeof closeToolbarThankYou === "function") closeToolbarThankYou();
-    if (consent && consent.save) consent.save({ feedback: true, nightly: true });
+    persistConsentChoices({ analytics: true, ratingsView: true, ratingsSubmit: true, feedback: true, nightly: true });
     setBanner(false);
   });
   if (essentialOnly) essentialOnly.addEventListener("click", function (e) {
     if (e) { e.preventDefault(); e.stopPropagation(); }
     if (typeof closeToolbarThankYou === "function") closeToolbarThankYou();
-    if (consent && consent.save) consent.save({ feedback: false, nightly: false });
+    persistConsentChoices({ analytics: false, ratingsView: true, ratingsSubmit: false, feedback: false, nightly: false });
     setBanner(false);
   });
   if (manage) manage.addEventListener("click", function (e) {
@@ -1468,8 +1525,8 @@
       var generalPhrases = goal.met
         ? [
             {
-              desktop: "100% supporter funded with zero ads or tracking  -  thank you to our supporters!",
-              mobile: "100% supporter funded with zero ads  -  thank you!",
+              desktop: "Solely self- and donations-funded, with no paywalls  -  thank you to our supporters!",
+              mobile: "Solely self- and donations-funded  -  thank you!",
               isTarget: false
             },
             {
@@ -1501,8 +1558,8 @@
               isTarget: false
             },
             {
-              desktop: "100% supporter funded with zero ads, tracking, or paywalls  -  chip in $3 to support development.",
-              mobile: "Zero ads or paywalls  -  chip in $3 to support us",
+              desktop: "Solely self- and donations-funded, with no paywalls  -  chip in $3 to support development.",
+              mobile: "Self- and donations-funded  -  chip in $3 to support us",
               isTarget: false
             },
             {
