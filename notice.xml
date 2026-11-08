@@ -1,66 +1,18 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
-  Innioasis Updater CE Notice Feed Markup Specification
-  Hosted at: https://innioasis.app/notice.xml
+<?xml version='1.0' encoding='UTF-8'?>
+<notices updated="2026-11-08">
 
-  Displays on-screen hint toast announcements to users of the app and website.
-
-  Fields:
-  - id: required, unique string identifier for the notice.
-  - persistent: boolean ("true" | "false", default: "false").
-      * "false" (or omitted): Non-persistent notice. When dismissed by the user,
-        it is permanently dismissed and will not return on the next app run.
-      * "true": Persistent notice. It will return on every app launch, even if
-        dismissed during a prior run.
-      * CACHE INVALIDATION: If the remote notice.xml contents change from the
-        locally cached file on the user's computer, the new file is automatically
-        loaded and the updated notice is shown, even if previously dismissed.
-  - severity: "info" | "warning" | "critical" (default: "info").
-  - type: optional "player_update" | "app_update" for release category filtering.
-  - from: optional ISO date YYYY-MM-DD (or timestamp). Shown on or after this date.
-  - until: optional ISO date YYYY-MM-DD. Shown on or before this date.
-  - models: optional comma-separated list of target models (e.g. "Y1,Y2"). Omit for all models.
-  - platform: optional comma-separated list of target platforms ("windows,mac,linux"). Omit for all.
-
-  Child elements:
-  - <title>: required, headline of the notice.
-  - <content>: required, short banner description/body text (also supports <body>).
-  - <full_content>: optional extended body, written in Markdown (headings, lists,
-      **bold**, *italic*, `code`, fenced blocks, quotes and horizontal rules,
-      [links](https://example.com) and images such as
-      ![a screenshot](https://example.com/screenshot.png)). Shown on the notice's own page
-      (notices.html?notice=<id>) and in the app's notices list. Falls back to
-      <content> when omitted.
-  - <url>: optional page for the notice. A URL that is only the bare site root
-      (https://innioasis.app with no page) is ignored, and the notice links to
-      its own page instead.
-  - <link>: optional URL alias for backwards compatibility with earlier Updater CE builds.
--->
-<notices updated="2026-11-02">
-
-  <notice id="2026-10-31-firmware-advisory" persistent="false" severity="info" from="2026-10-31" until="2026-12-31" models="Y1">
-    <title>Bricking issue fixed for Rockbox-Y1.</title>
-    <content>Rockbox-Y1 0.5 is now compatible with Y1s sold after April 2026.</content>
-    <full_content>**Type B hardware** (Y1 players shipped after April 2026, with pre-installed software 3.0.7 or newer) is now supported by Rockbox-Y1 0.5 and newer builds.
-
-- Updater CE filters incompatible older packages automatically.
-- The Firmware Archive asks for the device type before listing Y1 packages, so you can pick Type A or Type B directly.
-
-More detail is in the [Rockbox Y1 notes](https://innioasis.app/rockbox-y1-software.html).</full_content>
-    <url>https://innioasis.app/rockbox-y1-software.html</url>
-    <link>https://innioasis.app/rockbox-y1-software.html</link>
-  </notice>
-
-  <notice id="2026-10-25-firmware-advisory" persistent="false" severity="info" from="2026-10-25" until="2026-12-31">
-    <title>About Notices in Updater CE</title>
-    <content>You'll get important alerts about device safety issues reported by the community here, such as when devices are being bricked by certain firmware.</content>
-    <full_content>The Notices feed delivers community-verified hardware advisories, firmware compatibility warnings for Type A and Type B players, and new software announcements across Updater CE, Firmware Archive, and Themes Gallery.
-
-1. **Safety first** - bricking reports and hardware revisions appear here before anything else.
-2. **No account needed** - every notice has a permanent page you can link to.
-3. **Read in full** - open a notice to see the whole write-up, not just the headline.</full_content>
-    <url>https://innioasis.app/notices.html</url>
-    <link>https://innioasis.app/notices.html</link>
+  <notice id="2026-11-07-codesigning" persistent="false" severity="info" from="2026-10-25" until="2026-12-31" models="Y1,Y2">
+    <title>Windows 10/11 app launch issues fixed</title>
+    <content>We've resolved the issues some users were having launching the windows app.</content>
+    <full_content>Users had reported issues launching the application around 7PM UTC on Windows systems, where neither new installs or existing would run on Windows 11/10 with Smart App Control enabled. This has now been resolved and apps should run as normal.
+      False-positive reports were submitted to Microsoft and have now been actioned. 
+      
+      [see the installer.exe report to Microsoft](https://www.microsoft.com/en-us/wdsi/submission/45d25b9c-0dd6-4d01-afd2-f0ea6b224dfd)
+      [see the InnioasisUpdater.exe (main app) report to Microsoft](https://www.microsoft.com/en-us/wdsi/submission/1aef842b-3fda-44e7-bcfb-1a64af3ea661)
+    
+    </full_content>
+    
+    <link>https://www.microsoft.com/en-us/wdsi/submission/45d25b9c-0dd6-4d01-afd2-f0ea6b224dfd</link>
   </notice>
 
   <notice id="notice-y1-rockbox-legacy" persistent="true" severity="warning" models="Y1" firmware_repo="rockbox-y1/rockbox" max_version="0.5" firmware_version="v0.4.*,0.4.*,v0.3.*,0.3.*,v0.2.*,0.2.*,v0.1.*,0.1.*">

@@ -9,6 +9,7 @@ on:
       - 'support_toolbar.html'
       - 'i18n/**'
       - 'scripts/i18n/**'
+      - 'notice.xml'
   workflow_dispatch:
 
 permissions:

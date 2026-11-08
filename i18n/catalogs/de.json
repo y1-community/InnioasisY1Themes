@@ -1,5 +1,5 @@
 {
- "count": 11634,
+ "count": 11638,
  "dir": "ltr",
  "generated": "2026-11-08T15:03:25+00:00",
  "keep": [
@@ -12369,6 +12369,10 @@
   "🚀 Slidia": "🚀 Slideia",
   "🛠️ Developer Friendly": "🛠️ Entwicklerfreundlich",
   "🪓✧˖°🫀⋆｡𖦹🔪 80's camp/mystery/horror theme": "🪓✧˖°🫀⋆｡𖦹🔪 80er-Jahre-Camp-/Mystery-/Horror-Thema",
-  "🪟 Windows Installation": "🪟 Windows-Installation"
+  "🪟 Windows Installation": "🪟 Windows-Installation",
+  "Rockbox Y1 Compatibility Warning": "Rockbox Y1-Kompatibilitätswarnung",
+  "This Rockbox-Y1 release predates 0.5 and is not compatible with Y1 units shipped with firmware 3.0.7 or later. Flashing will prevent booting.": "Diese Rockbox-Y1-Version ist älter als 0.5 und ist nicht mit Y1-Geräten kompatibel, die mit Firmware 3.0.7 oder höher geliefert werden. Durch das Flashen wird das Booten verhindert.",
+  "Original Software Y1 Compatibility Warning": "Warnung zur Kompatibilität der Originalsoftware Y1",
+  "This Original Software release predates 3.0.7 and will prevent booting on newer Y1 hardware until a compatible build is installed.": "Diese Originalsoftwareversion ist älter als 3.0.7 und verhindert das Booten auf neuerer Y1-Hardware, bis ein kompatibler Build installiert ist."
  }
 }

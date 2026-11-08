@@ -19,6 +19,7 @@ on:
       - "nav.js"
       - "gallery-chrome.js"
       - "support_toolbar.html"
+      - "notice.xml"
       - "i18n/**"
       - "scripts/i18n/**"
       - ".github/workflows/update-translations.yml"
