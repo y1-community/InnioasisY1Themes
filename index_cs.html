@@ -23,7 +23,8 @@
 </script>
 
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <script>try{if(localStorage.getItem('y1-compat-banner-dismissed')==='1'){document.documentElement.classList.add('y1-compat-banner-closed');}}catch(_){}</script>
     <title>Rockbox motivy pro Innioasis Y1 a Y2 - Innioasis Galerie motivů</title>
 
     <meta name="description" content="Procházejte Rockbox témata pro Innioasis Y1 a Y2, všechna vytvořená komunitou. Před instalací si zobrazte náhled motivu a poté si stáhněte ty, které se vám líbí.">
@@ -637,6 +638,23 @@
             }
         }
 
+        /* Below ~380px the three hero buttons only fit on separate rows; they
+           used to start on one row and wrap after the webfont landed, which
+           grew .gallery-home-hero by 54px and pushed the controls, the grid and
+           everything below it down. Wrap them from first paint instead. */
+        @media (max-width: 379px) {
+            .cast-div.hero-actions {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+
+            .cast-div.hero-actions .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
         .os-switch {
             display: flex;
             gap: 12px;
@@ -728,7 +746,17 @@
         }
 
         .pager[hidden] {
-            display: none !important;
+            /* The pagers are filled after the catalogue loads. They used to be
+               display:none and then appear at 51px, pushing the grid down by
+               that much; keep the footprint reserved from first paint. */
+            display: flex;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .pager--top,
+        .pager--bottom {
+            min-height: 51px;
         }
 
         .pager--top {
@@ -821,10 +849,15 @@
   <link rel="alternate" hreflang="it" href="https://themes.innioasis.app/index_it.html">
   <link rel="alternate" hreflang="pt-BR" href="https://themes.innioasis.app/index_pt-BR.html">
   <link rel="alternate" hreflang="pt" href="https://themes.innioasis.app/index_pt.html">
+  <link rel="alternate" hreflang="pt-br" href="https://themes.innioasis.app/index_pt-br.html">
+  <link rel="alternate" hreflang="pt-PT" href="https://themes.innioasis.app/index_pt-PT.html">
+  <link rel="alternate" hreflang="pt-pt" href="https://themes.innioasis.app/index_pt-pt.html">
   <link rel="alternate" hreflang="ru" href="https://themes.innioasis.app/index_ru.html">
   <link rel="alternate" hreflang="zh-CN" href="https://themes.innioasis.app/index_zh-CN.html">
   <link rel="alternate" hreflang="zh" href="https://themes.innioasis.app/index_zh.html">
+  <link rel="alternate" hreflang="zh-cn" href="https://themes.innioasis.app/index_zh-cn.html">
   <link rel="alternate" hreflang="zh-TW" href="https://themes.innioasis.app/index_zh-TW.html">
+  <link rel="alternate" hreflang="zh-tw" href="https://themes.innioasis.app/index_zh-tw.html">
   <link rel="alternate" hreflang="ko" href="https://themes.innioasis.app/index_ko.html">
   <link rel="alternate" hreflang="kr" href="https://themes.innioasis.app/index_kr.html">
   <link rel="alternate" hreflang="ar" href="https://themes.innioasis.app/index_ar.html">
@@ -868,9 +901,12 @@
         <div class="site-compat-banner__content">
             <i class="fa-solid fa-circle-check site-compat-banner__icon" aria-hidden="true"></i>
             <span class="site-compat-banner__text">
-                Motivy v této galerii jsou kompatibilní s <a class="site-compat-banner__link" href="https://innioasis.app/original-software-benefits.html?lang=cs" target="_blank" rel="noopener noreferrer"><strong>Původní OS</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/better-y-benefits.html?lang=cs" target="_blank" rel="noopener noreferrer"><strong>Better-Y</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/solar-benefits.html?lang=cs" target="_blank" rel="noopener noreferrer"><strong>Solar</strong></a>a <a class="site-compat-banner__link" href="https://innioasis.app/koensayr-benefits.html?lang=cs" target="_blank" rel="noopener noreferrer"><strong>Koensayr</strong></a> vlastní firmware - <a class="site-compat-banner__cta" href="https://innioasis.app/guide.html#platform?lang=cs" target="_blank" rel="noopener noreferrer">Dostupné v Updater CE →</a>
+                <span class="site-compat-banner__text-desktop">Motivy v této galerii jsou kompatibilní s <a class="site-compat-banner__link" href="https://innioasis.app/original-software-benefits.html?lang=cs" target="_blank" rel="noopener noreferrer"><strong>Původní OS</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/better-y-benefits.html?lang=cs" target="_blank" rel="noopener noreferrer"><strong>Better-Y</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/solar-benefits.html?lang=cs" target="_blank" rel="noopener noreferrer"><strong>Solar</strong></a>a <a class="site-compat-banner__link" href="https://innioasis.app/koensayr-benefits.html?lang=cs" target="_blank" rel="noopener noreferrer"><strong>Koensayr</strong></a> vlastní firmware - </span>
+                <span class="site-compat-banner__text-mobile">Compatible with <a class="site-compat-banner__link" href="https://innioasis.app/original-software-benefits.html?lang=cs" target="_blank" rel="noopener noreferrer"><strong>Původní OS</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/better-y-benefits.html?lang=cs" target="_blank" rel="noopener noreferrer"><strong>Better-Y</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/solar-benefits.html?lang=cs" target="_blank" rel="noopener noreferrer"><strong>Solar</strong></a> &amp; <a class="site-compat-banner__link" href="https://innioasis.app/koensayr-benefits.html?lang=cs" target="_blank" rel="noopener noreferrer"><strong>Koensayr</strong></a> - </span>
+                <a class="site-compat-banner__cta" href="https://innioasis.app/guide.html#platform?lang=cs" target="_blank" rel="noopener noreferrer">Dostupné v Updater CE →</a>
             </span>
         </div>
+        <button type="button" class="site-compat-banner__close" id="site-compat-banner-close" aria-label="Dismiss compatibility notice" title="Dismiss notice">&times;</button>
     </aside>
     <div class="wrap">
         <section class="gallery-home-hero" aria-label="Úvod do galerie témat">

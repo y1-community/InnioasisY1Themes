@@ -270,9 +270,59 @@
         });
     }
 
+    function setupCompatBanner(banner) {
+        if (!banner || banner.dataset.compatBannerSetup) return;
+        banner.dataset.compatBannerSetup = "1";
+        var isDismissed = false;
+        try {
+            isDismissed = localStorage.getItem("y1-compat-banner-dismissed") === "1";
+        } catch (_) {}
+        if (isDismissed) {
+            banner.remove();
+            document.documentElement.classList.add("y1-compat-banner-closed");
+            return;
+        }
+
+        var closeBtn = banner.querySelector(".site-compat-banner__close") || banner.querySelector("#site-compat-banner-close");
+        if (!closeBtn) {
+            closeBtn = document.createElement("button");
+            closeBtn.type = "button";
+            closeBtn.id = "site-compat-banner-close";
+            closeBtn.className = "site-compat-banner__close";
+            closeBtn.setAttribute("aria-label", "Dismiss compatibility notice");
+            closeBtn.setAttribute("title", "Dismiss notice");
+            closeBtn.innerHTML = "&times;";
+            banner.appendChild(closeBtn);
+        }
+        closeBtn.addEventListener("click", function (e) {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            banner.classList.add("is-dismissing");
+            setTimeout(function () {
+                banner.remove();
+                document.documentElement.classList.add("y1-compat-banner-closed");
+            }, 180);
+            try {
+                localStorage.setItem("y1-compat-banner-dismissed", "1");
+            } catch (_) {}
+        });
+    }
+
     function ensureCompatibilityBanner(topbar) {
         if (!topbar || !topbar.parentNode) return;
-        if (document.getElementById("site-compat-banner")) return;
+        var isDismissed = false;
+        try {
+            isDismissed = localStorage.getItem("y1-compat-banner-dismissed") === "1";
+        } catch (_) {}
+        var existing = document.getElementById("site-compat-banner");
+        if (isDismissed) {
+            if (existing) existing.remove();
+            document.documentElement.classList.add("y1-compat-banner-closed");
+            return;
+        }
+        if (existing) {
+            setupCompatBanner(existing);
+            return;
+        }
         var banner = document.createElement("aside");
         banner.id = "site-compat-banner";
         banner.className = "site-compat-banner";
@@ -282,15 +332,19 @@
             '<div class="site-compat-banner__content">' +
             '<i class="fa-solid fa-circle-check site-compat-banner__icon" aria-hidden="true"></i>' +
             '<span class="site-compat-banner__text">' +
-            'Themes in this gallery are compatible with <a class="site-compat-banner__link" href="https://innioasis.app/original-software-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Original OS</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/better-y-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Better-Y</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/solar-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Solar</strong></a>, and <a class="site-compat-banner__link" href="https://innioasis.app/koensayr-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Koensayr</strong></a> custom firmwares - <a class="site-compat-banner__cta" href="https://innioasis.app/guide.html#platform" target="_blank" rel="noopener noreferrer">Available in Updater CE &rarr;</a>' +
+            '<span class="site-compat-banner__text-desktop">Themes in this gallery are compatible with <a class="site-compat-banner__link" href="https://innioasis.app/original-software-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Original OS</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/better-y-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Better-Y</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/solar-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Solar</strong></a>, and <a class="site-compat-banner__link" href="https://innioasis.app/koensayr-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Koensayr</strong></a> custom firmwares - </span>' +
+            '<span class="site-compat-banner__text-mobile">Compatible with <a class="site-compat-banner__link" href="https://innioasis.app/original-software-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Original OS</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/better-y-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Better-Y</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/solar-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Solar</strong></a> &amp; <a class="site-compat-banner__link" href="https://innioasis.app/koensayr-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Koensayr</strong></a> - </span>' +
+            '<a class="site-compat-banner__cta" href="https://innioasis.app/guide.html#platform" target="_blank" rel="noopener noreferrer">Available in Updater CE &rarr;</a>' +
             '</span>' +
-            '</div>';
+            '</div>' +
+            '<button type="button" class="site-compat-banner__close" id="site-compat-banner-close" aria-label="Dismiss compatibility notice" title="Dismiss notice">&times;</button>';
 
         if (topbar.nextSibling) {
             topbar.parentNode.insertBefore(banner, topbar.nextSibling);
         } else {
             topbar.parentNode.appendChild(banner);
         }
+        setupCompatBanner(banner);
     }
 
     function syncTopbarMetrics(topbar) {
