@@ -55,6 +55,10 @@ EXCLUDED_DIRS = {
     "assets",
     "scripts",
     "functions",
+    "i18n",
+    "dist",
+    "_site",
+    "node_modules",
 }
 
 

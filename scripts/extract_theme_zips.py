@@ -24,7 +24,7 @@ import zip_theme_utils as ztu
 
 _GIT_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = _GIT_ROOT
-EXCLUDED_DIRS = {".git", ".github", ".vscode", "__pycache__", "assets", "scripts", "functions", "themes"}
+EXCLUDED_DIRS = {".git", ".github", ".vscode", "__pycache__", "assets", "scripts", "functions", "themes", "i18n", "dist", "_site", "node_modules"}
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"}
 BLOCKED_EXTENSIONS = {
     ".exe",

@@ -29,6 +29,9 @@ EXCLUDED_DIRS = {
     "functions",
     "workers",
     "themes",
+    "i18n",
+    "dist",
+    "_site",
     "node_modules",
 }
 IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}

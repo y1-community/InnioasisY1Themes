@@ -41,7 +41,7 @@ from backfill_legacy_os_keys import fill_theme_folder
 _GIT_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = _GIT_ROOT
 ZIP_EXTENSION = ".zip"
-EXCLUDED_SCAN_DIRS = {".git", ".github", "scripts", "assets", "functions", ".vscode", "themes"}
+EXCLUDED_SCAN_DIRS = {".git", ".github", "scripts", "assets", "functions", ".vscode", "themes", "i18n", "dist", "_site", "node_modules"}
 
 
 def retired_theme_folders() -> dict[str, str]:
