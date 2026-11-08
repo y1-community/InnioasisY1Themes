@@ -1,0 +1,32 @@
+{
+ "locale": "zh-HK",
+ "name": "Chinese (Hong Kong)",
+ "native": "繁體中文（香港）",
+ "dir": "ltr",
+ "base": "zh-TW",
+ "source": "en",
+ "provider": "derived-from-zh-TW",
+ "count": 20,
+ "strings": {
+  "All languages": "所有語言",
+  "Browse firmware": "瀏覽韌體",
+  "Close": "關閉",
+  "Device Model": "裝置型號",
+  "Donate": "捐款",
+  "Download": "下載",
+  "FAQs": "常見問題",
+  "Get Updater CE": "取得 Updater CE",
+  "Help me choose": "幫我選擇",
+  "Install / Restore": "安裝 / 還原",
+  "Language": "語言",
+  "Original Software": "原廠軟體",
+  "Privacy": "隱私",
+  "Release notes": "版本資訊",
+  "Search languages": "搜尋語言",
+  "Skip to content": "跳至主要內容",
+  "Software": "軟體",
+  "Thank You": "謝謝",
+  "Theme": "主題",
+  "Troubleshooting": "疑難排解"
+ }
+}
