@@ -4138,6 +4138,15 @@
             return { ...theme, name };
         }
 
+        function _t(str) {
+            if (!str) return '';
+            if (window.InnioasisLocale && typeof window.InnioasisLocale.translate === 'function') {
+                var tr = window.InnioasisLocale.translate(str);
+                if (tr && tr !== str) return tr;
+            }
+            return str;
+        }
+
         function createCard(theme) {
             const c = document.createElement('article');
             c.className = 'theme-card';
@@ -4165,7 +4174,7 @@
 
             const statusBadge = document.createElement('div');
             statusBadge.className = 'theme-status';
-            statusBadge.textContent = 'Already on your Y1';
+            statusBadge.textContent = _t('Already on your Y1');
             statusBadge.hidden = true;
             cardTop.appendChild(statusBadge);
 
@@ -4297,13 +4306,13 @@
             variantRow.className = 'theme-card-variant-row';
             const variantLbl = document.createElement('label');
             const variantSpan = document.createElement('span');
-            variantSpan.textContent = 'Variant';
+            variantSpan.textContent = _t('Variant');
             const variantSelect = document.createElement('select');
             variantSelect.className = 'theme-card-variant-select';
-            variantSelect.setAttribute('aria-label', 'Theme variant for preview and download');
+            variantSelect.setAttribute('aria-label', _t('Theme variant for preview and download') || 'Theme variant for preview and download');
             const defOptV = document.createElement('option');
             defOptV.value = '';
-            defOptV.textContent = 'Default';
+            defOptV.textContent = _t('Default');
             variantSelect.appendChild(defOptV);
             variantLbl.append(variantSpan, variantSelect);
             variantRow.appendChild(variantLbl);
@@ -4396,9 +4405,15 @@
             const titleRow = document.createElement('div');
             titleRow.className = 'theme-card-title-row';
 
+            c.dataset.origDesc = safeText(theme.description).trim();
+            c.dataset.origName = safeText(theme.name);
+            var themeTrans = (window.Y1ThemesI18n && typeof window.Y1ThemesI18n.get === 'function')
+                ? window.Y1ThemesI18n.get(folderPath, theme.name, safeText(theme.description).trim())
+                : null;
+
             const n = document.createElement('a');
             n.className = 'theme-name';
-            n.textContent = safeText(theme.name);
+            n.textContent = (themeTrans && themeTrans.name) ? themeTrans.name : safeText(theme.name);
             if (theme.sourceType === 'external' && theme.authorUrl) {
                 n.href = theme.authorUrl;
                 n.target = '_blank';
@@ -4440,7 +4455,9 @@
             const d = document.createElement('div');
             d.className = 'theme-desc';
             const descText = safeText(theme.description).trim();
-            if (isUnknownish(descText)) {
+            if (themeTrans && themeTrans.description) {
+                d.textContent = themeTrans.description;
+            } else if (isUnknownish(descText)) {
                 d.style.display = 'none';
             } else {
                 d.textContent = descText;
@@ -4559,8 +4576,8 @@
                 const editA = document.createElement('a');
                 editA.className = 'theme-card-corner-btn';
                 editA.href = `upload.html?mode=edit&folder=${encodeURIComponent(folderPath)}`;
-                editA.title = 'Change Details';
-                editA.setAttribute('aria-label', 'Change Details');
+                editA.title = _t('Change Details');
+                editA.setAttribute('aria-label', _t('Change Details'));
                 editA.innerHTML = '<i class="fa-solid fa-pencil" aria-hidden="true"></i>';
 
                 const repA = document.createElement('a');
@@ -4570,22 +4587,22 @@
                 const repRefRaw = `${location.origin}/theme.html?theme=${encodeURIComponent(folderPath || safeText(theme.name) || '')}`;
                 const repRef = encodeURIComponent(repRefRaw);
                 repA.href = `https://themes.innioasis.app/report-theme.html?folder=${encodeURIComponent(folderPath)}&title=${repTitle}&author=${repAuthor}&ref=${repRef}`;
-                repA.title = 'Report issue with this theme';
-                repA.setAttribute('aria-label', 'Report issue');
+                repA.title = _t('Report issue with this theme');
+                repA.setAttribute('aria-label', _t('Report issue'));
                 repA.innerHTML = '<i class="fa-solid fa-flag" aria-hidden="true"></i>';
 
                 const remA = document.createElement('a');
                 remA.className = 'theme-card-corner-btn theme-card-corner-btn--danger';
                 remA.href = `upload.html?mode=remove&folder=${encodeURIComponent(folderPath)}`;
-                remA.title = 'Request removal';
-                remA.setAttribute('aria-label', 'Request removal');
+                remA.title = _t('Request removal');
+                remA.setAttribute('aria-label', _t('Request removal'));
                 remA.innerHTML = '<i class="fa-solid fa-xmark" aria-hidden="true"></i>';
 
                 const shareBtn = document.createElement('button');
                 shareBtn.type = 'button';
                 shareBtn.className = 'theme-card-corner-btn';
-                shareBtn.title = 'Share theme link';
-                shareBtn.setAttribute('aria-label', 'Share theme link');
+                shareBtn.title = _t('Share theme link');
+                shareBtn.setAttribute('aria-label', _t('Share theme link'));
                 shareBtn.innerHTML = '<i class="fa-solid fa-share-nodes" aria-hidden="true"></i>';
                 shareBtn.addEventListener('click', async (ev) => {
                     ev.stopPropagation();
@@ -4598,9 +4615,9 @@
                         text: safeText(theme.name)
                     });
                     if (res.ok && res.method === 'clipboard') {
-                        shareBtn.title = 'Link copied';
+                        shareBtn.title = _t('Link copied to clipboard') || 'Link copied';
                         setTimeout(() => {
-                            shareBtn.title = 'Share theme link';
+                            shareBtn.title = _t('Share theme link');
                         }, 2000);
                     }
                 });
@@ -4608,8 +4625,8 @@
                 const copyBtn = document.createElement('button');
                 copyBtn.type = 'button';
                 copyBtn.className = 'theme-card-corner-btn';
-                copyBtn.title = 'Copy theme link';
-                copyBtn.setAttribute('aria-label', 'Copy theme link');
+                copyBtn.title = _t('Copy theme link');
+                copyBtn.setAttribute('aria-label', _t('Copy theme link'));
                 copyBtn.innerHTML = '<i class="fa-solid fa-link" aria-hidden="true"></i>';
                 copyBtn.addEventListener('click', async (ev) => {
                     ev.stopPropagation();

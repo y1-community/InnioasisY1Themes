@@ -1,4 +1,4 @@
-﻿.DS_Store
+.DS_Store
 *.code-workspace
 node_modules/
 
@@ -18,3 +18,12 @@ scripts/write_theme_index_shells.py
 scripts/generate-theme-index-redirects.ps1
 scripts/deploy-upload-worker.sh
 _bulk_update_theme_pages.py
+
+# Locale build output and translation scratch
+dist/
+.i18nlogs/
+i18n/logs/
+i18n/cache/
+i18n/translate.log
+i18n/http.log
+scripts/i18n/.themes_desc_cache.json

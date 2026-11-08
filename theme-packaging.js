@@ -45,10 +45,18 @@
         return stack.join('/');
     }
 
+    function isI18nMetadataFile(nameOrPath) {
+        const s = String(nameOrPath || '').trim().replace(/\\/g, '/');
+        const base = s.split('/').filter(Boolean).pop() || '';
+        const low = base.toLowerCase();
+        return low === 'config_i18n.json' || low === 'themes_i18n.json' || /(^|_|\.)i18n\.json$/i.test(low);
+    }
+
     function isLikelyAssetPathString(s) {
         const t = String(s || '').trim();
         if (!t || t.includes('://')) return false;
         if (/^#|^rgba?\(/i.test(t)) return false;
+        if (isI18nMetadataFile(t)) return false;
         return /\.(png|jpe?g|gif|webp|bmp|svg|ttf|otf|woff2?|json|txt|md|ini)$/i.test(t);
     }
 
@@ -272,13 +280,14 @@
         return names;
     }
 
-    /** Gallery JPEG covers are not part of the downloadable theme unless config already uses them. */
+    /** Gallery JPEG covers and i18n metadata files are not part of the downloadable theme. */
     function withoutWebsiteOnlyCovers(fileEntries, cfg) {
         const referenced = configReferencedBasenames(cfg);
         return (Array.isArray(fileEntries) ? fileEntries : []).filter((entry) => {
             const logical = entryLogicalPath(entry).replace(/\\/g, "/");
             const base = logical.split("/").filter(Boolean).pop() || "";
             const low = base.toLowerCase();
+            if (isI18nMetadataFile(low) || isI18nMetadataFile(logical)) return false;
             if (!WEBSITE_ONLY_COVERS.has(low)) return true;
             return referenced.has(low);
         });
@@ -355,6 +364,7 @@
         assetFolderPrefixesFromConfig,
         isDeclaredAssetSubfolderName,
         isDriveGoogleFolderExternalUrl,
-        effectiveExternalDownloadUrl
+        effectiveExternalDownloadUrl,
+        isI18nMetadataFile
     };
 })(typeof window !== 'undefined' ? window : this);
