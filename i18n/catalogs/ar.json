@@ -1,12 +1,13 @@
 {
- "count": 1780,
- "dir": "rtl",
- "generated": "2026-11-08T11:13:50+00:00",
  "locale": "ar",
  "name": "Arabic",
  "native": "العربية",
- "provider": "google-web",
+ "dir": "rtl",
  "source": "en",
+ "provider": "google-web",
+ "reviewed": true,
+ "generated": "2026-11-08T11:42:10+00:00",
+ "count": 1773,
  "strings": {
   "(earn $3 by sharing 100MB of bandwidth)": "(اربح 3 دولارات من خلال مشاركة 100 ميجابايت من النطاق الترددي)",
   "(or launch with": "(أو إطلاق مع",

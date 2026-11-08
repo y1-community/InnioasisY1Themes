@@ -1,12 +1,13 @@
 {
- "count": 746,
- "dir": "ltr",
- "generated": "2026-11-08T11:13:49+00:00",
  "locale": "nl",
  "name": "Dutch",
  "native": "Nederlands",
- "provider": "google-web",
+ "dir": "ltr",
  "source": "en",
+ "provider": "google-web",
+ "reviewed": true,
+ "generated": "2026-11-08T11:42:10+00:00",
+ "count": 738,
  "strings": {
   "(earn $3 by sharing 100MB of bandwidth)": "(verdien $ 3 door 100 MB bandbreedte te delen)",
   "(or launch with": "(of start met",

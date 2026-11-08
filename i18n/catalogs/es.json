@@ -1,12 +1,13 @@
 {
- "count": 1758,
- "dir": "ltr",
- "generated": "2026-11-08T11:13:48+00:00",
  "locale": "es",
  "name": "Spanish",
  "native": "Español",
- "provider": "google-web",
+ "dir": "ltr",
  "source": "en",
+ "provider": "google-web",
+ "reviewed": true,
+ "generated": "2026-11-08T11:42:10+00:00",
+ "count": 1754,
  "strings": {
   "(earn $3 by sharing 100MB of bandwidth)": "(gana $3 compartiendo 100 MB de ancho de banda)",
   "(or launch with": "(o iniciar con",

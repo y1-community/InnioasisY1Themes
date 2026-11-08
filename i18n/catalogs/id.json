@@ -1,12 +1,13 @@
 {
- "count": 1724,
- "dir": "ltr",
- "generated": "2026-11-08T11:13:53+00:00",
  "locale": "id",
  "name": "Indonesian",
  "native": "Bahasa Indonesia",
- "provider": "google-web",
+ "dir": "ltr",
  "source": "en",
+ "provider": "google-web",
+ "reviewed": true,
+ "generated": "2026-11-08T11:42:10+00:00",
+ "count": 1719,
  "strings": {
   "(earn $3 by sharing 100MB of bandwidth)": "(dapatkan $3 dengan berbagi bandwidth 100MB)",
   "(or launch with": "(atau luncurkan dengan",

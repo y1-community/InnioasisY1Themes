@@ -1,12 +1,13 @@
 {
- "count": 1767,
- "dir": "ltr",
- "generated": "2026-11-08T11:14:02+00:00",
  "locale": "zh-CN",
  "name": "Chinese (Simplified)",
  "native": "简体中文",
- "provider": "google-web",
+ "dir": "ltr",
  "source": "en",
+ "provider": "google-web",
+ "reviewed": true,
+ "generated": "2026-11-08T11:42:11+00:00",
+ "count": 1762,
  "strings": {
   "(earn $3 by sharing 100MB of bandwidth)": "（共享 100MB 带宽赚取 3 美元）",
   "(or launch with": "（或启动",

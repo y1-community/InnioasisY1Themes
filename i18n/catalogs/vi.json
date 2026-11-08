@@ -1,12 +1,13 @@
 {
- "count": 674,
- "dir": "ltr",
- "generated": "2026-11-08T11:08:36+00:00",
  "locale": "vi",
  "name": "Vietnamese",
  "native": "Tiếng Việt",
- "provider": "google-web",
+ "dir": "ltr",
  "source": "en",
+ "provider": "google-web",
+ "reviewed": true,
+ "generated": "2026-11-08T11:42:11+00:00",
+ "count": 671,
  "strings": {
   "(or launch with": "(hoặc khởi chạy với",
   "). Select": "). chọn",

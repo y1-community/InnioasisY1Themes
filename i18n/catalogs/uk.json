@@ -1,12 +1,13 @@
 {
- "count": 760,
- "dir": "ltr",
- "generated": "2026-11-08T11:11:47+00:00",
  "locale": "uk",
  "name": "Ukrainian",
  "native": "Українська",
- "provider": "google-web",
+ "dir": "ltr",
  "source": "en",
+ "provider": "google-web",
+ "reviewed": true,
+ "generated": "2026-11-08T11:42:11+00:00",
+ "count": 753,
  "strings": {
   "(earn $3 by sharing 100MB of bandwidth)": "(заробіть 3 долари, поділившись 100 МБ пропускної здатності)",
   "(or launch with": "(або запустити за допомогою",

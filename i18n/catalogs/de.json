@@ -1,12 +1,13 @@
 {
- "count": 1687,
- "dir": "ltr",
- "generated": "2026-11-08T11:13:48+00:00",
  "locale": "de",
  "name": "German",
  "native": "Deutsch",
- "provider": "google-web",
+ "dir": "ltr",
  "source": "en",
+ "provider": "google-web",
+ "reviewed": true,
+ "generated": "2026-11-08T11:42:10+00:00",
+ "count": 1687,
  "strings": {
   "(earn $3 by sharing 100MB of bandwidth)": "(Verdienen Sie 3 US-Dollar, indem Sie 100 MB Bandbreite teilen)",
   "(or launch with": "(oder starten Sie mit",

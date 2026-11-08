@@ -1,12 +1,13 @@
 {
- "count": 670,
- "dir": "ltr",
- "generated": "2026-11-08T11:14:05+00:00",
  "locale": "sv",
  "name": "Swedish",
  "native": "Svenska",
- "provider": "google-web",
+ "dir": "ltr",
  "source": "en",
+ "provider": "google-web",
+ "reviewed": true,
+ "generated": "2026-11-08T11:42:11+00:00",
+ "count": 669,
  "strings": {
   "(earn $3 by sharing 100MB of bandwidth)": "(tjäna $3 genom att dela 100 MB bandbredd)",
   "(or launch with": "(eller starta med",

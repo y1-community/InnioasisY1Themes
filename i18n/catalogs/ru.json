@@ -1,12 +1,13 @@
 {
- "count": 1638,
- "dir": "ltr",
- "generated": "2026-11-08T11:13:49+00:00",
  "locale": "ru",
  "name": "Russian",
  "native": "Русский",
- "provider": "google-web",
+ "dir": "ltr",
  "source": "en",
+ "provider": "google-web",
+ "reviewed": true,
+ "generated": "2026-11-08T11:42:11+00:00",
+ "count": 1629,
  "strings": {
   "(earn $3 by sharing 100MB of bandwidth)": "(заработайте 3 доллара, поделившись 100 МБ трафика)",
   "(or launch with": "(или запустить с помощью",

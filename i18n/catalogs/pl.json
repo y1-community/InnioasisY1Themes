@@ -1,12 +1,13 @@
 {
- "count": 686,
- "dir": "ltr",
- "generated": "2026-11-08T11:13:49+00:00",
  "locale": "pl",
  "name": "Polish",
  "native": "Polski",
- "provider": "google-web",
+ "dir": "ltr",
  "source": "en",
+ "provider": "google-web",
+ "reviewed": true,
+ "generated": "2026-11-08T11:42:11+00:00",
+ "count": 681,
  "strings": {
   "(earn $3 by sharing 100MB of bandwidth)": "(zarób 3 USD, dzieląc 100 MB przepustowości)",
   "(or launch with": "(lub uruchom za pomocą",

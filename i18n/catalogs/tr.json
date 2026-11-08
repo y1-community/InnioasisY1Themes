@@ -1,12 +1,13 @@
 {
- "count": 596,
- "dir": "ltr",
- "generated": "2026-11-08T11:13:49+00:00",
  "locale": "tr",
  "name": "Turkish",
  "native": "Türkçe",
- "provider": "google-web",
+ "dir": "ltr",
  "source": "en",
+ "provider": "google-web",
+ "reviewed": true,
+ "generated": "2026-11-08T11:42:11+00:00",
+ "count": 591,
  "strings": {
   "(earn $3 by sharing 100MB of bandwidth)": "(100MB bant genişliğini paylaşarak 3$ kazanın)",
   "(or launch with": "(veya şununla başlat:",

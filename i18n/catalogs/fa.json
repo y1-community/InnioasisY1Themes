@@ -1,12 +1,13 @@
 {
- "count": 1788,
- "dir": "rtl",
- "generated": "2026-11-08T11:13:51+00:00",
  "locale": "fa",
  "name": "Persian",
  "native": "فارسی",
- "provider": "google-web",
+ "dir": "rtl",
  "source": "en",
+ "provider": "google-web",
+ "reviewed": true,
+ "generated": "2026-11-08T11:42:10+00:00",
+ "count": 1781,
  "strings": {
   "(earn $3 by sharing 100MB of bandwidth)": "(با به اشتراک گذاری 100 مگابایت پهنای باند 3 دلار کسب کنید)",
   "(or launch with": "(یا راه اندازی با",

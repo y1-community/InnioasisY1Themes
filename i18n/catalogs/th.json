@@ -1,12 +1,13 @@
 {
- "count": 774,
- "dir": "ltr",
- "generated": "2026-11-08T11:13:59+00:00",
  "locale": "th",
  "name": "Thai",
  "native": "ไทย",
- "provider": "google-web",
+ "dir": "ltr",
  "source": "en",
+ "provider": "google-web",
+ "reviewed": true,
+ "generated": "2026-11-08T11:42:11+00:00",
+ "count": 772,
  "strings": {
   "(earn $3 by sharing 100MB of bandwidth)": "(รับรายได้ $3 จากการแบ่งปันแบนด์วิธ 100MB)",
   "(or launch with": "(หรือเปิดตัวด้วย",

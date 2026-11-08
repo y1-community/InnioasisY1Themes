@@ -1,12 +1,13 @@
 {
- "count": 1787,
- "dir": "ltr",
- "generated": "2026-11-08T11:14:00+00:00",
  "locale": "ja",
  "name": "Japanese",
  "native": "日本語",
- "provider": "google-web",
+ "dir": "ltr",
  "source": "en",
+ "provider": "google-web",
+ "reviewed": true,
+ "generated": "2026-11-08T11:42:10+00:00",
+ "count": 1785,
  "strings": {
   "(earn $3 by sharing 100MB of bandwidth)": "(100MB の帯域幅を共有すると 3 ドルを獲得)",
   "(or launch with": "(または次のように起動します)",
