@@ -7,7 +7,7 @@
  "provider": "google-web",
  "reviewed": true,
  "generated": "2026-11-08T14:20:22+00:00",
- "count": 813,
+ "count": 815,
  "strings": {
   "'s costs.": ".",
   "(earn $3 by sharing 100MB of bandwidth)": "(zarób 3 USD, dzieląc 100 MB przepustowości)",
@@ -821,6 +821,8 @@
   "— the same checks for the Y2": "— te same kontrole dla Y2",
   "— what a failed flash looks like": "— jak wygląda nieudany flash",
   "← All notices": "← Wszystkie powiadomienia",
-  "← Firmware Downloads": "← Pobieranie oprogramowania sprzętowego"
+  "← Firmware Downloads": "← Pobieranie oprogramowania sprzętowego",
+  "Windows 10/11 app launch issues & Smart App Control workaround": "Problemy z uruchamianiem aplikacji w systemie Windows 10/11 i obejście Smart App Control",
+  "If Windows 10/11 or Smart App Control stops you from launching the app, follow the workaround here.": "Jeśli system Windows 10/11 lub funkcja Smart App Control uniemożliwia uruchomienie aplikacji, skorzystaj z rozwiązania opisanego tutaj."
  }
 }

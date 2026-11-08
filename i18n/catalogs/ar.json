@@ -7,7 +7,7 @@
  "provider": "google-web",
  "reviewed": true,
  "generated": "2026-11-08T14:20:22+00:00",
- "count": 1898,
+ "count": 1900,
  "strings": {
   "'s costs.": ".",
   "(earn $3 by sharing 100MB of bandwidth)": "(اربح 3 دولارات من خلال مشاركة 100 ميجابايت من النطاق الترددي)",
@@ -1906,6 +1906,8 @@
   "— the same checks for the Y2": "— نفس الشيكات لY2",
   "— what a failed flash looks like": "- كيف يبدو الفلاش الفاشل",
   "← All notices": "← جميع الإشعارات",
-  "← Firmware Downloads": "← تنزيلات البرامج الثابتة"
+  "← Firmware Downloads": "← تنزيلات البرامج الثابتة",
+  "Windows 10/11 app launch issues & Smart App Control workaround": "مشكلات تشغيل تطبيق Windows 10/11 والحل البديل للتحكم في التطبيقات الذكية",
+  "If Windows 10/11 or Smart App Control stops you from launching the app, follow the workaround here.": "إذا منعك Windows 10/11 أو Smart App Control من تشغيل التطبيق، فاتبع الحل البديل هنا."
  }
 }

@@ -7,7 +7,7 @@
  "provider": "google-web",
  "reviewed": true,
  "generated": "2026-11-08T14:20:22+00:00",
- "count": 725,
+ "count": 727,
  "strings": {
   "'s costs.": ".",
   "(earn $3 by sharing 100MB of bandwidth)": "(100MB bant genişliğini paylaşarak 3$ kazanın)",
@@ -733,6 +733,8 @@
   "— manual flashing on Windows and Linux": "— Windows ve Linux'ta manuel yanıp sönme",
   "— the same checks for the Y2": "— Y2 için aynı kontroller",
   "— what a failed flash looks like": "— başarısız bir flaş neye benziyor",
-  "← Firmware Downloads": "← Ürün Yazılımı İndirmeleri"
+  "← Firmware Downloads": "← Ürün Yazılımı İndirmeleri",
+  "Windows 10/11 app launch issues & Smart App Control workaround": "Windows 10/11 uygulama başlatma sorunları ve Akıllı Uygulama Denetimi geçici çözümü",
+  "If Windows 10/11 or Smart App Control stops you from launching the app, follow the workaround here.": "Windows 10/11 veya Akıllı Uygulama Kontrolü uygulamayı başlatmanızı engelliyorsa buradaki geçici çözümü izleyin."
  }
 }

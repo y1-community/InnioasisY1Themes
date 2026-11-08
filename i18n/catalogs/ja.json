@@ -7,7 +7,7 @@
  "provider": "clients5",
  "reviewed": true,
  "generated": "2026-11-08T14:20:22+00:00",
- "count": 7031,
+ "count": 7033,
  "strings": {
   "$99 each year.": "毎年99ドル。",
   "& the Innioasis Community.": "と Innioasis コミュニティ。",
@@ -7039,6 +7039,8 @@
   "Rockbox Y1 Compatibility Warning": "Rockbox Y1 互換性に関する警告",
   "This Rockbox-Y1 release predates 0.5 and is not compatible with Y1 units shipped with firmware 3.0.7 or later. Flashing will prevent booting.": "この Rockbox-Y1 リリースは 0.5 より前のものであり、ファームウェア 3.0.7 以降が搭載された Y1 ユニットとは互換性がありません。点滅すると起動できなくなります。",
   "Original Software Y1 Compatibility Warning": "オリジナル ソフトウェア Y1 互換性に関する警告",
-  "This Original Software release predates 3.0.7 and will prevent booting on newer Y1 hardware until a compatible build is installed.": "このオリジナル ソフトウェア リリースは 3.0.7 より前のものであり、互換性のあるビルドがインストールされるまで、新しい Y1 ハードウェアでは起動できません。"
+  "This Original Software release predates 3.0.7 and will prevent booting on newer Y1 hardware until a compatible build is installed.": "このオリジナル ソフトウェア リリースは 3.0.7 より前のものであり、互換性のあるビルドがインストールされるまで、新しい Y1 ハードウェアでは起動できません。",
+  "Windows 10/11 app launch issues & Smart App Control workaround": "Windows 10/11 アプリの起動の問題と Smart App Control の回避策",
+  "If Windows 10/11 or Smart App Control stops you from launching the app, follow the workaround here.": "Windows 10/11 または Smart App Control によってアプリの起動が停止された場合は、こちらの回避策に従ってください。"
  }
 }

@@ -7,7 +7,7 @@
  "provider": "google-web",
  "reviewed": true,
  "generated": "2026-11-08T14:20:22+00:00",
- "count": 1825,
+ "count": 1827,
  "strings": {
   "'s costs.": ".",
   "(earn $3 by sharing 100MB of bandwidth)": "(vydělejte 3 $ sdílením 100 MB šířky pásma)",
@@ -1833,6 +1833,8 @@
   "— the same checks for the Y2": "— stejné kontroly pro Y2",
   "— what a failed flash looks like": "— jak vypadá neúspěšný blesk",
   "← All notices": "← Všechna upozornění",
-  "← Firmware Downloads": "← Stažení firmwaru"
+  "← Firmware Downloads": "← Stažení firmwaru",
+  "Windows 10/11 app launch issues & Smart App Control workaround": "Problémy se spouštěním aplikace Windows 10/11 a řešení Smart App Control",
+  "If Windows 10/11 or Smart App Control stops you from launching the app, follow the workaround here.": "Pokud vám Windows 10/11 nebo Smart App Control brání ve spuštění aplikace, postupujte podle tohoto řešení."
  }
 }

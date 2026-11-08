@@ -7,7 +7,7 @@
  "provider": "google-web",
  "reviewed": true,
  "generated": "2026-11-08T14:20:22+00:00",
- "count": 854,
+ "count": 856,
  "strings": {
   "'s costs.": ".",
   "(earn $3 by sharing 100MB of bandwidth)": "(kiếm 3 USD bằng cách chia sẻ 100 MB băng thông)",
@@ -862,6 +862,8 @@
   "— the same checks for the Y2": "- các kiểm tra tương tự cho Y2",
   "— what a failed flash looks like": "— đèn flash bị hỏng trông như thế nào",
   "← All notices": "← Tất cả thông báo",
-  "← Firmware Downloads": "← Tải xuống chương trình cơ sở"
+  "← Firmware Downloads": "← Tải xuống chương trình cơ sở",
+  "Windows 10/11 app launch issues & Smart App Control workaround": "Sự cố khởi chạy ứng dụng Windows 10/11 và cách giải quyết Kiểm soát ứng dụng thông minh",
+  "If Windows 10/11 or Smart App Control stops you from launching the app, follow the workaround here.": "Nếu Windows 10/11 hoặc Kiểm soát ứng dụng thông minh ngăn bạn khởi chạy ứng dụng, hãy làm theo giải pháp thay thế tại đây."
  }
 }

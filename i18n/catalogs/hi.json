@@ -7,7 +7,7 @@
  "provider": "google-web",
  "reviewed": true,
  "generated": "2026-11-08T14:20:22+00:00",
- "count": 1904,
+ "count": 1906,
  "strings": {
   "'s costs.": ".",
   "(earn $3 by sharing 100MB of bandwidth)": "(100एमबी बैंडविड्थ साझा करके $3 कमाएं)",
@@ -1912,6 +1912,8 @@
   "← All notices": "← सभी सूचनाएं",
   "← Firmware Downloads": "← फ़र्मवेयर डाउनलोड",
   "Rockbox Y1 Compatibility Warning": "रॉकबॉक्स Y1 संगतता चेतावनी",
-  "This Rockbox-Y1 release predates 0.5 and is not compatible with Y1 units shipped with firmware 3.0.7 or later. Flashing will prevent booting.": "यह रॉकबॉक्स-Y1 रिलीज़ 0.5 से पहले का है और फ़र्मवेयर 3.0.7 या बाद के संस्करण के साथ भेजी गई Y1 इकाइयों के साथ संगत नहीं है। फ्लैशिंग से बूटिंग रुक जाएगी।"
+  "This Rockbox-Y1 release predates 0.5 and is not compatible with Y1 units shipped with firmware 3.0.7 or later. Flashing will prevent booting.": "यह रॉकबॉक्स-Y1 रिलीज़ 0.5 से पहले का है और फ़र्मवेयर 3.0.7 या बाद के संस्करण के साथ भेजी गई Y1 इकाइयों के साथ संगत नहीं है। फ्लैशिंग से बूटिंग रुक जाएगी।",
+  "Windows 10/11 app launch issues & Smart App Control workaround": "विंडोज़ 10/11 ऐप लॉन्च समस्याएँ और स्मार्ट ऐप नियंत्रण समाधान",
+  "If Windows 10/11 or Smart App Control stops you from launching the app, follow the workaround here.": "यदि विंडोज़ 10/11 या स्मार्ट ऐप कंट्रोल आपको ऐप लॉन्च करने से रोकता है, तो यहां समाधान का पालन करें।"
  }
 }

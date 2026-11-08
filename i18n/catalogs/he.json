@@ -7,7 +7,7 @@
  "provider": "google-web",
  "reviewed": true,
  "generated": "2026-11-08T14:20:22+00:00",
- "count": 887,
+ "count": 889,
  "strings": {
   "'s costs.": ".",
   "(earn $3 by sharing 100MB of bandwidth)": "(להרוויח $3 על ידי שיתוף של 100MB של רוחב פס)",
@@ -895,6 +895,8 @@
   "— the same checks for the Y2": "- אותם המחאות עבור ה-Y2",
   "— what a failed flash looks like": "- איך נראה הבזק כושל",
   "← All notices": "← כל ההודעות",
-  "← Firmware Downloads": "← הורדות קושחה"
+  "← Firmware Downloads": "← הורדות קושחה",
+  "Windows 10/11 app launch issues & Smart App Control workaround": "בעיות בהשקת אפליקציית Windows 10/11 ופתרון עקיפה של בקרת אפליקציות חכמה",
+  "If Windows 10/11 or Smart App Control stops you from launching the app, follow the workaround here.": "אם Windows 10/11 או Smart App Control עוצרים אותך מלהפעיל את האפליקציה, עקוב אחר העקרון כאן."
  }
 }

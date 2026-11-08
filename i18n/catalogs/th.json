@@ -7,7 +7,7 @@
  "provider": "clients5",
  "reviewed": true,
  "generated": "2026-11-08T14:20:22+00:00",
- "count": 5998,
+ "count": 6000,
  "strings": {
   "$99 each year.": "$ 99 ในแต่ละปี",
   "& the Innioasis Community.": "และชุมชน Innioasis",
@@ -6006,6 +6006,8 @@
   "Rockbox Y1 Compatibility Warning": "คำเตือนความเข้ากันได้ของ Rockbox Y1",
   "This Rockbox-Y1 release predates 0.5 and is not compatible with Y1 units shipped with firmware 3.0.7 or later. Flashing will prevent booting.": "Rockbox-Y1 รีลีสนี้มาก่อนเวอร์ชัน 0.5 และเข้ากันไม่ได้กับยูนิต Y1 ที่มาพร้อมกับเฟิร์มแวร์ 3.0.7 หรือใหม่กว่า การกระพริบจะป้องกันการบูต",
   "Original Software Y1 Compatibility Warning": "คำเตือนความเข้ากันได้ของซอฟต์แวร์ Y1 ดั้งเดิม",
-  "This Original Software release predates 3.0.7 and will prevent booting on newer Y1 hardware until a compatible build is installed.": "ซอฟต์แวร์ต้นฉบับนี้ออกก่อนเวอร์ชัน 3.0.7 และจะป้องกันการบูตบนฮาร์ดแวร์ Y1 รุ่นใหม่จนกว่าจะมีการติดตั้งบิลด์ที่เข้ากันได้"
+  "This Original Software release predates 3.0.7 and will prevent booting on newer Y1 hardware until a compatible build is installed.": "ซอฟต์แวร์ต้นฉบับนี้ออกก่อนเวอร์ชัน 3.0.7 และจะป้องกันการบูตบนฮาร์ดแวร์ Y1 รุ่นใหม่จนกว่าจะมีการติดตั้งบิลด์ที่เข้ากันได้",
+  "Windows 10/11 app launch issues & Smart App Control workaround": "ปัญหาการเปิดแอป Windows 10/11 และวิธีแก้ปัญหาการควบคุมแอปอัจฉริยะ",
+  "If Windows 10/11 or Smart App Control stops you from launching the app, follow the workaround here.": "หาก Windows 10/11 หรือ Smart App Control ทำให้คุณไม่สามารถเปิดแอปได้ ให้ปฏิบัติตามวิธีแก้ปัญหาชั่วคราวที่นี่"
  }
 }

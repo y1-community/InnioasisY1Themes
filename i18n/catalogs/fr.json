@@ -1,5 +1,5 @@
 {
- "count": 11900,
+ "count": 11902,
  "dir": "ltr",
  "generated": "2026-11-08T14:45:47+00:00",
  "keep": [
@@ -12407,6 +12407,8 @@
   "Rockbox Y1 Compatibility Warning": "Avertissement de compatibilité Rockbox Y1",
   "This Rockbox-Y1 release predates 0.5 and is not compatible with Y1 units shipped with firmware 3.0.7 or later. Flashing will prevent booting.": "Cette version Rockbox-Y1 est antérieure à la version 0.5 et n'est pas compatible avec les unités Y1 livrées avec le firmware 3.0.7 ou version ultérieure. Le clignotement empêchera le démarrage.",
   "Original Software Y1 Compatibility Warning": "Avertissement de compatibilité du logiciel d'origine Y1",
-  "This Original Software release predates 3.0.7 and will prevent booting on newer Y1 hardware until a compatible build is installed.": "Cette version du logiciel d'origine est antérieure à la version 3.0.7 et empêchera le démarrage sur du matériel Y1 plus récent jusqu'à ce qu'une version compatible soit installée."
+  "This Original Software release predates 3.0.7 and will prevent booting on newer Y1 hardware until a compatible build is installed.": "Cette version du logiciel d'origine est antérieure à la version 3.0.7 et empêchera le démarrage sur du matériel Y1 plus récent jusqu'à ce qu'une version compatible soit installée.",
+  "Windows 10/11 app launch issues & Smart App Control workaround": "Problèmes de lancement d'application Windows 10/11 et solution de contournement Smart App Control",
+  "If Windows 10/11 or Smart App Control stops you from launching the app, follow the workaround here.": "Si Windows 10/11 ou Smart App Control vous empêche de lancer l'application, suivez la solution de contournement ici."
  }
 }

@@ -1,5 +1,5 @@
 {
- "count": 1453,
+ "count": 1455,
  "dir": "ltr",
  "generated": "2026-11-08T11:15:33+00:00",
  "locale": "el",
@@ -1460,6 +1460,8 @@
   "{supporter} donated {amount}": "{supporter} δώρισε {amount}",
   "{supporter} donated {amount} by {method}{time}": "{supporter} δωρεά {amount} από {method}{time}",
   "{supporter} has donated {amount}{time}": "Ο {supporter} έχει δωρίσει {amount}{time}",
-  "← Firmware Downloads": "← Λήψεις υλικολογισμικού"
+  "← Firmware Downloads": "← Λήψεις υλικολογισμικού",
+  "Windows 10/11 app launch issues & Smart App Control workaround": "Ζητήματα εκκίνησης εφαρμογών Windows 10/11 και λύση Έλεγχου Smart App",
+  "If Windows 10/11 or Smart App Control stops you from launching the app, follow the workaround here.": "Εάν τα Windows 10/11 ή το Smart App Control σας εμποδίσουν να εκκινήσετε την εφαρμογή, ακολουθήστε τη λύση εδώ."
  }
 }

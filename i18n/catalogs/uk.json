@@ -7,7 +7,7 @@
  "provider": "google-web",
  "reviewed": true,
  "generated": "2026-11-08T14:20:22+00:00",
- "count": 904,
+ "count": 906,
  "strings": {
   "'s costs.": ".",
   "(earn $3 by sharing 100MB of bandwidth)": "(заробіть 3 долари, поділившись 100 МБ пропускної здатності)",
@@ -912,6 +912,8 @@
   "— the same checks for the Y2": "— такі ж перевірки для Y2",
   "— what a failed flash looks like": "— як виглядає невдалий спалах",
   "← All notices": "← Усі повідомлення",
-  "← Firmware Downloads": "← Завантаження прошивки"
+  "← Firmware Downloads": "← Завантаження прошивки",
+  "Windows 10/11 app launch issues & Smart App Control workaround": "Проблеми із запуском програми Windows 10/11 і обхідний шлях Smart App Control",
+  "If Windows 10/11 or Smart App Control stops you from launching the app, follow the workaround here.": "Якщо Windows 10/11 або Smart App Control не дозволяє вам запустити програму, виконайте обхідний шлях тут."
  }
 }

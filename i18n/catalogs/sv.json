@@ -7,7 +7,7 @@
  "provider": "google-web",
  "reviewed": true,
  "generated": "2026-11-08T14:20:22+00:00",
- "count": 798,
+ "count": 800,
  "strings": {
   "'s costs.": ".",
   "(earn $3 by sharing 100MB of bandwidth)": "(tjäna $3 genom att dela 100 MB bandbredd)",
@@ -806,6 +806,8 @@
   "— the same checks for the Y2": "— samma kontroller för Y2",
   "— what a failed flash looks like": "— hur en misslyckad blixt ser ut",
   "← All notices": "← Alla notiser",
-  "← Firmware Downloads": "← Nedladdning av fast programvara"
+  "← Firmware Downloads": "← Nedladdning av fast programvara",
+  "Windows 10/11 app launch issues & Smart App Control workaround": "Windows 10/11-appstartsproblem och lösning för smart appkontroll",
+  "If Windows 10/11 or Smart App Control stops you from launching the app, follow the workaround here.": "Om Windows 10/11 eller Smart App Control hindrar dig från att starta appen, följ lösningen här."
  }
 }
