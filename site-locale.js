@@ -825,6 +825,8 @@
     }
 
     function renderEditions(container) {
+        container.hidden = true;
+        return;
         var regions = state.regions && state.regions.regions ? state.regions.regions : {};
         var codes = Object.keys(regions);
         if (codes.length < 2) {
