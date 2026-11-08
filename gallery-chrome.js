@@ -43,11 +43,20 @@
         style.id = "gallery-chrome-styles";
         style.textContent =
             '.gallery-topbar {' +
-            '  position: sticky !important; top: 0 !important; z-index: 1200 !important; display: flex !important; align-items: center !important; justify-content: flex-start !important; gap: 12px !important; padding: 8px 16px !important;' +
+            '  position: sticky !important; top: 0 !important; z-index: 1200 !important; display: flex !important; flex-wrap: wrap !important; align-items: center !important; justify-content: flex-start !important; gap: 6px 12px !important; padding: 8px 16px !important;' +
             '  background: var(--lumen-panel, #12141c) !important; border-bottom: 1px solid var(--lumen-line, rgba(255, 255, 255, 0.12)) !important;' +
             '  backdrop-filter: blur(14px) !important; -webkit-backdrop-filter: blur(14px) !important;' +
             '}' +
-            ':root[data-lumen-theme="dark"] .gallery-topbar {' +
+            '@media (max-width: 900px) {' +
+'  .gallery-topbar { justify-content: center !important; padding: 8px 10px !important; gap: 6px 10px !important; }' +
+'  .gallery-topbar .gallery-brand { order: 1 !important; }' +
+'  .gallery-topbar .gallery-social-tools { order: 2 !important; }' +
+'  .gallery-topbar .gallery-social-links { order: 3 !important; }' +
+'  .gallery-topbar .lumen-theme-control { order: 4 !important; }' +
+'  .gallery-topbar .gallery-tabs { order: 5 !important; width: 100% !important; margin-left: 0 !important; justify-content: center !important; }' +
+'  .gallery-topbar .topbar-search-wrap { order: 6 !important; width: min(100%, 16rem) !important; max-width: min(100%, 16rem) !important; }' +
+'}' +
+':root[data-lumen-theme="dark"] .gallery-topbar {' +
             '  background: #12141c !important; border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important; color: #f8fafc !important;' +
             '}' +
             ':root[data-lumen-theme="2077"] .gallery-topbar {' +
@@ -181,7 +190,7 @@
     function buildSocialButtons() {
         var div = document.createElement("div");
         div.className = "gallery-social-links";
-        div.style.cssText = "display:inline-flex;align-items:center;gap:6px;flex-shrink:0;";
+        div.style.cssText = "display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0;max-width:100%;";
         div.innerHTML =
             '<a href="https://reddit.com/r/innioasis" target="_blank" rel="noopener noreferrer" class="lumen-nav-social-btn lumen-nav-social-btn--reddit" aria-label="r/innioasis on Reddit" title="Reddit r/innioasis">' +
             '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg>' +
@@ -196,7 +205,7 @@
         if (!topbar || topbar.querySelector("#lumen-theme-select")) return;
         var label = document.createElement("label");
         label.className = "lumen-theme-control";
-        label.style.cssText = "display:inline-flex;align-items:center;gap:6px;font-size:0.84rem;color:var(--lumen-muted,#94a3b8);flex-shrink:0;";
+        label.style.cssText = "display:inline-flex;align-items:center;gap:6px;font-size:0.84rem;color:var(--lumen-muted,#94a3b8);flex-shrink:1;min-width:0;";
         label.innerHTML =
             '<select id="lumen-theme-select" aria-label="Choose site colour theme" title="Site theme" style="min-height:32px;padding:2px 8px;border-radius:6px;border:1px solid transparent;background:transparent;color:var(--lumen-muted,#94a3b8);font:inherit;cursor:pointer;">' +
             '<option value="auto">Auto</option>' +
@@ -310,7 +319,7 @@
         if (!noticesMount) {
             noticesMount = document.createElement("div");
             noticesMount.className = "gallery-social-tools";
-            noticesMount.style.cssText = "display:inline-flex;align-items:center;gap:6px;flex-shrink:0;";
+            noticesMount.style.cssText = "display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0;";
         }
         topbar.insertBefore(noticesMount, brandSwitcher.nextSibling);
 
