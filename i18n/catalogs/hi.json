@@ -7,7 +7,7 @@
  "provider": "google-web",
  "reviewed": true,
  "generated": "2026-11-08T14:20:22+00:00",
- "count": 1902,
+ "count": 1904,
  "strings": {
   "'s costs.": ".",
   "(earn $3 by sharing 100MB of bandwidth)": "(100एमबी बैंडविड्थ साझा करके $3 कमाएं)",
@@ -1910,6 +1910,8 @@
   "— the same checks for the Y2": "— Y2 के लिए भी वही जाँच",
   "— what a failed flash looks like": "- एक असफल फ्लैश कैसा दिखता है",
   "← All notices": "← सभी सूचनाएं",
-  "← Firmware Downloads": "← फ़र्मवेयर डाउनलोड"
+  "← Firmware Downloads": "← फ़र्मवेयर डाउनलोड",
+  "Rockbox Y1 Compatibility Warning": "रॉकबॉक्स Y1 संगतता चेतावनी",
+  "This Rockbox-Y1 release predates 0.5 and is not compatible with Y1 units shipped with firmware 3.0.7 or later. Flashing will prevent booting.": "यह रॉकबॉक्स-Y1 रिलीज़ 0.5 से पहले का है और फ़र्मवेयर 3.0.7 या बाद के संस्करण के साथ भेजी गई Y1 इकाइयों के साथ संगत नहीं है। फ्लैशिंग से बूटिंग रुक जाएगी।"
  }
 }

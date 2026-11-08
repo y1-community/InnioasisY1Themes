@@ -105,6 +105,43 @@ def load_ui_strings() -> Dict[str, str]:
 EXTRA_UI_STRINGS = ["views", "downloads"]
 
 
+SHELL_MARKUP_FILES = ["nav.js", "gallery-chrome.js", "site-init.js"]
+LITERAL_RE = re.compile(r"""(['"])((?:\\.|(?!\1)[^\\\n]){4,400}?)\1""")
+TAG_RE = re.compile(r"<[^>]*>")
+ENTITY_MAP = {"&amp;": "&", "&rarr;": "\u2192", "&larr;": "\u2190", "&mdash;": "\u2014", "&ndash;": "\u2013", "&nbsp;": " ", "&quot;": '"', "&#39;": "'", "&lt;": "<", "&gt;": ">"}
+
+
+def load_shell_markup_strings() -> Dict[str, str]:
+    """Visible text inside the HTML fragments nav.js builds its chrome from.
+
+    Those literals contain tags, so the plain literal harvester drops them and
+    the dock/notices labels never reached a catalog; every page load then asked
+    a translation API for "Auto" or "All notices " again.
+    """
+    out: Dict[str, str] = {}
+    for name in SHELL_MARKUP_FILES:
+        path = os.path.join(ROOT, name)
+        if not os.path.exists(path):
+            continue
+        with open(path, "r", encoding="utf-8", errors="replace") as handle:
+            source = handle.read()
+        for match in LITERAL_RE.finditer(source):
+            literal = match.group(2)
+            if "<" not in literal or ">" not in literal:
+                continue
+            text = TAG_RE.sub("\n", literal)
+            for key, value in ENTITY_MAP.items():
+                text = text.replace(key, value)
+            for segment in text.split("\n"):
+                line = " ".join(segment.split())
+                if len(line) < 3 or not re.search(r"[A-Za-z]{2}", line):
+                    continue
+                if any(token in line for token in ("=", "{", "}", "//", "\\")):
+                    continue
+                out[line] = name
+    return out
+
+
 def load_theme_strings() -> Dict[str, str]:
     """Theme names and descriptions live in themes.json, not in page markup,
     so extraction never saw them and no catalog could cover a card."""
@@ -118,7 +155,7 @@ def load_theme_strings() -> Dict[str, str]:
     for theme in themes or []:
         if not isinstance(theme, dict):
             continue
-        for field in ("name", "description"):
+        for field in ("name", "description", "author"):
             value = " ".join(str(theme.get(field) or "").split())
             if value:
                 out[value] = field
@@ -187,6 +224,13 @@ def main() -> int:
             entry["script"] = True
 
     for text in EXTRA_UI_STRINGS:
+        entry = ordered.get(text)
+        if entry is None:
+            ordered[text] = {"n": 1, "pages": 1, "script": True}
+        else:
+            entry["script"] = True
+
+    for text in load_shell_markup_strings():
         entry = ordered.get(text)
         if entry is None:
             ordered[text] = {"n": 1, "pages": 1, "script": True}
