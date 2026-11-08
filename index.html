@@ -728,7 +728,17 @@
         }
 
         .pager[hidden] {
-            display: none !important;
+            /* The pagers are filled after the catalogue loads. They used to be
+               display:none and then appear at 51px, pushing the grid down by
+               that much; keep the footprint reserved from first paint. */
+            display: flex;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .pager--top,
+        .pager--bottom {
+            min-height: 51px;
         }
 
         .pager--top {
