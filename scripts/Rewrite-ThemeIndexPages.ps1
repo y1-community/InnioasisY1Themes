@@ -181,6 +181,12 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
 <!DOCTYPE html>
 <html lang="en" data-themes-preview-redirect="$previewE">
 <head>
+<script async src="https://www.googletagmanager.com/gtm.js?id=GTM-TNDGC37L"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+</script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="themes-preview-base-path" content="" />
