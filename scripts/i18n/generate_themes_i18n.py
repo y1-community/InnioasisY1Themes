@@ -24,7 +24,11 @@ except ImportError:
     sys.path.insert(0, os.path.join(THEMES_REPO, "scripts/i18n"))
     from multi_provider_translate import translate_single
 
-TARGET_LANGS = ["es", "fr", "de", "zh-CN", "ja", "pt", "it", "ru"]
+TARGET_LANGS = [
+    "de", "ja", "es", "fr", "it", "pt", "ru", "zh-CN", "zh-TW", "ko",
+    "ar", "nl", "pl", "tr", "uk", "vi", "th", "id", "he", "hi",
+    "cs", "el", "sv", "fa", "da", "fi", "hu", "no", "ro",
+]
 
 GALLERY_UI_STRINGS = [
     "views",
@@ -86,7 +90,9 @@ def translate_task(text, lang, cache):
     tr = translate_single(text, lang)
     if tr:
         return text, lang, tr
-    return text, lang, text
+    # Do not cache the English source as if it were a translation; a later run
+    # must retry the string instead of publishing an untranslated description.
+    return text, lang, ""
 
 def update_ui_catalogs():
     """Add gallery UI strings to all catalogs in both repositories."""
@@ -218,8 +224,8 @@ def main():
     cache = load_cache(cache_file)
     print(f"Loaded {len(cache)} existing cached translations")
 
-    # Update catalogs with UI strings
-    update_ui_catalogs()
+    # Gallery UI strings are owned by extract/translate + i18n/reviewed. Do not
+    # overwrite reviewed copy with a second machine pass here.
 
     # Collect unique descriptions
     unique_desc = set()
@@ -242,7 +248,7 @@ def main():
     if tasks:
         done_count = 0
         total_tasks = len(tasks)
-        with ThreadPoolExecutor(max_workers=16) as executor:
+        with ThreadPoolExecutor(max_workers=8) as executor:
             future_to_task = {
                 executor.submit(translate_task, d, lang, cache): (d, lang)
                 for d, lang in tasks

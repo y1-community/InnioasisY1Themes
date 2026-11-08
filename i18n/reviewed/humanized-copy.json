@@ -1,0 +1,108 @@
+{
+  "note": "Hand-written natural copy for hero, metadata, donation and gallery UI strings. These override machine translations so the page does not read like translated English. Merged into i18n/catalogs/<locale>.json by scripts/i18n/seed_catalogs.py. Theme descriptions are not included: those belong to their authors. RULE: when an English key changes, update every language here in the same commit.",
+  "source": "en",
+  "strings": {
+    "A gallery of themes for the Innioasis Y1 and Y2, made by the community. Preview a theme before you install it, or upload one you made.": {
+      "zh-CN": "这是社区维护的主题库，适用于 Innioasis Y1 和 Y2。安装前可以先预览，也可以把自己做的主题传上来。",
+      "zh-TW": "這是社群維護的主題庫，適用於 Innioasis Y1 和 Y2。安裝前可以先預覽，也可以把自己做的主題上傳上來。",
+      "fi": "Tämä on yhteisön ylläpitämä teemagalleria Innioasis Y1- ja Y2-soittimille. Esikatsele teemaa ennen asennusta tai lataa oma teoksesi muiden käyttöön.",
+      "ko": "Innioasis Y1과 Y2용 테마를 모아 둔 곳입니다. 설치 전에 미리 보고, 직접 만든 테마도 올릴 수 있습니다."
+    },
+    "Browse Rockbox themes for the Innioasis Y1 and Y2, all made by the community. Preview a theme before you install it, then download the ones you like.": {
+      "zh-CN": "社区制作的 Innioasis Y1 和 Y2 Rockbox 主题。浏览 240p 和 360p 主题，先预览，再下载喜欢的。",
+      "zh-TW": "社群製作的 Innioasis Y1 和 Y2 Rockbox 主題。瀏覽 240p 和 360p 主題，先預覽，再下載喜歡的。",
+      "fi": "Yhteisön tekemiä Rockbox-teemoja Innioasis Y1- ja Y2-soittimille. Selaa 240p- ja 360p-teemoja, esikatsele ja lataa ne, jotka haluat.",
+      "ko": "커뮤니티가 만든 Innioasis Y1·Y2 Rockbox 테마. 240p와 360p 테마를 둘러보고 미리 본 뒤 원하는 테마를 내려받으세요."
+    },
+    "Rockbox themes for the Innioasis Y1 and Y2, made by the community.": {
+      "zh-CN": "社区制作的 Innioasis Y1 和 Y2 Rockbox 主题。",
+      "zh-TW": "社群製作的 Innioasis Y1 和 Y2 Rockbox 主題。",
+      "fi": "Yhteisön tekemiä Rockbox-teemoja Innioasis Y1- ja Y2-soittimille.",
+      "ko": "커뮤니티가 만든 Innioasis Y1·Y2 Rockbox 테마."
+    },
+    "Browse community-made Rockbox themes for the Innioasis Y1 and Y2.": {
+      "zh-CN": "浏览社区制作的 Innioasis Y1 和 Y2 Rockbox 主题。",
+      "zh-TW": "瀏覽社群製作的 Innioasis Y1 和 Y2 Rockbox 主題。",
+      "fi": "Selaa yhteisön tekemiä Rockbox-teemoja Innioasis Y1- ja Y2-soittimille.",
+      "ko": "커뮤니티가 만든 Innioasis Y1·Y2 Rockbox 테마를 둘러보세요."
+    },
+    "Upload theme": {
+      "zh-CN": "上传主题",
+      "zh-TW": "上傳主題",
+      "fi": "Lataa teema",
+      "ko": "테마 올리기"
+    },
+    "Upload your theme": {
+      "zh-CN": "上传你的主题",
+      "zh-TW": "上傳你的主題",
+      "fi": "Lataa oma teema",
+      "ko": "내 테마 올리기"
+    },
+    "Running Costs": {
+      "zh-CN": "运营开支",
+      "zh-TW": "營運開支",
+      "fi": "Käyttökulut",
+      "ko": "운영비"
+    },
+    "Help us cover today's running costs": {
+      "zh-CN": "帮我们付掉今天的运营开支",
+      "zh-TW": "幫我們付掉今天的營運開支",
+      "fi": "Auta kattamaan tämän päivän kulut",
+      "ko": "오늘 운영비를 함께 채워 주세요"
+    },
+    "All donations are appreciated.": {
+      "zh-CN": "每一笔捐助，我们都记着。",
+      "zh-TW": "每一筆捐助，我們都記著。",
+      "fi": "Jokainen lahjoitus auttaa.",
+      "ko": "후원해 주시는 분들 덕분에 사이트가 돌아갑니다."
+    },
+    "No one has donated today, will you be the first?": {
+      "zh-CN": "今天还没人捐助，你要做第一个吗？",
+      "zh-TW": "今天還沒有人捐助，你要當第一位嗎？",
+      "fi": "Tänään kukaan ei ole vielä lahjoittanut. Aloitatko?",
+      "ko": "오늘은 아직 후원이 없어요. 첫 번째 후원자가 되어 주시겠어요?"
+    },
+    "Donate on Ko-fi": {
+      "zh-CN": "在 Ko-fi 上支持我们",
+      "zh-TW": "在 Ko-fi 上支持我們",
+      "fi": "Lahjoita Ko-fissa",
+      "ko": "Ko-fi에서 후원하기"
+    },
+    "Search themes...": {
+      "zh-CN": "搜索主题",
+      "zh-TW": "搜尋主題",
+      "fi": "Hae teemoja",
+      "ko": "테마 검색"
+    },
+    "All authors": {
+      "zh-CN": "全部作者",
+      "zh-TW": "所有作者",
+      "fi": "Kaikki tekijät",
+      "ko": "모든 제작자"
+    },
+    "Gold only": {
+      "zh-CN": "只看 Gold 主题",
+      "zh-TW": "只看 Gold 主題",
+      "fi": "Vain Gold-teemat",
+      "ko": "Gold 테마만"
+    },
+    "No themes match your current filters.": {
+      "zh-CN": "没有符合当前筛选条件的主题。",
+      "zh-TW": "沒有符合目前篩選條件的主題。",
+      "fi": "Nykyisillä suodattimilla ei löytynyt teemoja.",
+      "ko": "지금 고른 조건에 맞는 테마가 없습니다."
+    },
+    "Themes Gallery": {
+      "zh-CN": "主题画廊",
+      "zh-TW": "主題畫廊",
+      "fi": "Teemagalleria",
+      "ko": "테마 갤러리"
+    },
+    "Firmware Archive": {
+      "zh-CN": "固件存档",
+      "zh-TW": "韌體存檔",
+      "fi": "Laiteohjelmistoarkisto",
+      "ko": "펌웨어 아카이브"
+    }
+  }
+}

@@ -672,6 +672,12 @@ def main() -> int:
         cache: Dict[str, str] = {}
         if os.path.exists(cache_path) and not args.force:
             cache = load_json(cache_path).get("strings", {})
+            # The catalog can be ahead of the cache: reviewed bundles are
+            # seeded into catalogs, and a catalog written by an older run may
+            # hold strings this cache never saw. Merge them in so publishing
+            # a cache never drops an existing or hand-reviewed translation.
+            if os.path.exists(catalog_path):
+                cache = {**load_json(catalog_path).get("strings", {}), **cache}
         elif os.path.exists(catalog_path) and not args.force:
             cache = load_json(catalog_path).get("strings", {})
 

@@ -2,6 +2,19 @@
 <html lang="en">
 
 <head>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('consent', 'default', {
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+    analytics_storage: 'granted',
+    functionality_storage: 'granted',
+    security_storage: 'granted',
+    wait_for_update: 500
+  });
+</script>
 <script async src="https://www.googletagmanager.com/gtm.js?id=GTM-TNDGC37L"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -13,12 +26,12 @@
   <meta name="author" content="Ryan Specter &amp; Innioasis Community">
   <meta name="creator" content="Ryan Specter &amp; Innioasis Community">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Theme backfill — Innioasis Y1 & Y2 Themes</title>
+    <title>Theme backfill - Innioasis Y1 & Y2 Themes</title>
     <meta name="description"
-        content="How automatic icon backfill works on themes.innioasis.app — transparent placeholders for new firmware features, and optional backfill.png for a custom generic icon." />
+        content="How automatic icon backfill works on themes.innioasis.app - transparent placeholders for new firmware features, and optional backfill.png for a custom generic icon." />
     <meta name="keywords" content="Innioasis Y1 theme backfill, Y2 theme placeholders, transparent.png, backfill.png, theme upload, Luci web hosting" />
     <meta name="publisher" content="Luci Ltd" />
-    <link rel="author" href="https://www.luci.ltd" title="Luci Ltd — web hosting for Innioasis Y1 & Y2 Themes" />
+    <link rel="author" href="https://www.luci.ltd" title="Luci Ltd - web hosting for Innioasis Y1 & Y2 Themes" />
     <link rel="canonical" href="https://themes.innioasis.app/backfill.html" />
     <link rel="icon" href="y1_illustration.png" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -123,7 +136,7 @@
             <h1 class="site-display">Automatic theme backfill</h1>
             <p class="site-lead">
                 When a theme is uploaded to themes.innioasis.app, we fill in blank placeholders for newer Y1 and Y2
-                features the package did not include — so your player does not fall back to stock OS icons for those slots.
+                features the package did not include - so your player does not fall back to stock OS icons for those slots.
             </p>
         </header>
 
@@ -136,7 +149,7 @@
             </p>
             <p>
                 After you submit a theme, ingest and housekeeping automatically add any missing keys and point them at a
-                blank placeholder image. You do not have to change your package for this default behaviour — it is applied
+                blank placeholder image. You do not have to change your package for this default behaviour - it is applied
                 for you.
             </p>
         </section>
@@ -152,7 +165,7 @@
             <ul>
                 <li>If <code>backfill.png</code> is present, new and transparent placeholders use that file instead.</li>
                 <li>Dedicated icons you already set in <code>config.json</code> are never overwritten.</li>
-                <li>Gold themes still need real, dedicated artwork for eBook, calendar, calculator, and the launcher — a shared backfill image does not count as Gold art.</li>
+                <li>Gold themes still need real, dedicated artwork for eBook, calendar, calculator, and the launcher - a shared backfill image does not count as Gold art.</li>
             </ul>
         </section>
 

@@ -29,8 +29,8 @@
     height: 100%;
     object-fit: cover;
     pointer-events: none;
-    opacity: 0.88;
-    mix-blend-mode: screen;
+    opacity: 0.94;
+    mix-blend-mode: normal;
 }
 
 .theme-frozen-hover {

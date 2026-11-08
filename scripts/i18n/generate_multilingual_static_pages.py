@@ -40,6 +40,7 @@ REGIONS_PATH = os.path.join(ROOT, "i18n", "regions.json")
 # Target core pages to generate static language versions for (if present in repo)
 CORE_PAGE_STEMS = [
     "index",
+    "privacy",
     "firmware",
     "guide",
     "firmware-guide",
@@ -97,6 +98,10 @@ CORE_PAGE_STEMS = [
     "y2-themes",
     "report-theme",
     "theme",
+    "banned-users",
+    "opted-out-blocked-users",
+    "gold-badge",
+    "pen-e",
     "404",
 ]
 

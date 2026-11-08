@@ -2,6 +2,19 @@
 <html lang="cs" dir="ltr" data-locale="cs">
 
 <head>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('consent', 'default', {
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+    analytics_storage: 'granted',
+    functionality_storage: 'granted',
+    security_storage: 'granted',
+    wait_for_update: 500
+  });
+</script>
 <script async src="https://www.googletagmanager.com/gtm.js?id=GTM-TNDGC37L"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -11,26 +24,26 @@
 
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Y1 and Y2 themes - Innioasis Themes Gallery</title>
+    <title>Rockbox motivy pro Innioasis Y1 a Y2 - Innioasis Galerie motivů</title>
 
-    <meta name="description" content="Browse and download Rockbox themes for the Innioasis Y1 and Y2. Customize your player with community-made themes for 240p and 360p models.">
-    <meta name="keywords" content="Innioasis Y1 themes, Innioasis Y2 themes, Rockbox themes Y1, Y2 UI themes, Rockbox customization, Innioasis theme gallery, Luci web hosting, themes.innioasis.app hosting">
+    <meta name="description" content="Procházejte Rockbox témata pro Innioasis Y1 a Y2, všechna vytvořená komunitou. Před instalací si zobrazte náhled motivu a poté si stáhněte ty, které se vám líbí.">
+    <meta name="keywords" content="Innioasis Y1 motivy, Innioasis Y2 motivy, Rockbox motivy Y1, Y2 motivy uživatelského rozhraní, Rockbox přizpůsobení, Innioasis galerie motivů, web hosting Luci, hosting themes.innioasis.app">
     <meta name="author" content="Ryan Specter &amp; Innioasis Community">
   <meta name="creator" content="Ryan Specter &amp; Innioasis Community">
     <meta name="publisher" content="Luci Ltd">
-    <link rel="author" href="https://www.luci.ltd" title="Luci Ltd - web hosting for Innioasis Y1 & Y2 Themes">
+    <link rel="author" href="https://www.luci.ltd" title="Luci Ltd - webhosting pro témata Innioasis Y1 a Y2">
 
     <link rel="preload" href="themes.json" as="fetch" crossorigin="anonymous" />
 
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Y1 and Y2 themes - Innioasis Themes Gallery">
-    <meta property="og:description" content="Customize your Innioasis Y1 or Y2 with Rockbox themes made by the community.">
+    <meta property="og:title" content="Rockbox motivy pro Innioasis Y1 a Y2 - Innioasis Galerie motivů">
+    <meta property="og:description" content="Rockbox témata pro Innioasis Y1 a Y2 vytvořená komunitou.">
     <meta property="og:url" content="https://themes.innioasis.app/index_cs.html">
     <meta property="og:image" content="https://innioasis.app/y1_illustration.png">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Y1 and Y2 themes - Innioasis Themes Gallery">
-    <meta name="twitter:description" content="Download and customize Rockbox themes for the Innioasis Y1 and Y2.">
+    <meta name="twitter:title" content="Rockbox motivy pro Innioasis Y1 a Y2 - Innioasis Galerie motivů">
+    <meta name="twitter:description" content="Procházejte témata Rockbox vytvořená komunitou pro Innioasis Y1 a Y2.">
     <meta name="twitter:image" content="https://innioasis.app/y1_illustration.png">
 
     <link rel="icon" href="y1_illustration.png">
@@ -167,11 +180,30 @@
             max-width: 36rem;
         }
 
+        /* The filter bar and compatibility banner are built by JS just after
+           first paint. Reserving their height keeps the grid and the cards
+           below them from jumping (CLS). Values match the rendered heights. */
+        .gallery-controls { min-height: 87px; }
+        .site-compat-banner { min-height: 41px; }
+
         .theme-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
             gap: 16px;
-            margin-top: 18px
+            margin-top: 18px;
+            /* One row of cards is a fixed height, so replacing a skeleton row
+               with real cards does not resize the page (CLS). */
+            grid-auto-rows: minmax(392px, auto);
+        }
+
+        .theme-card,
+        .theme-card--skeleton {
+            min-height: 392px;
+        }
+
+        @media (max-width: 640px) {
+            .theme-grid { grid-auto-rows: minmax(360px, auto); }
+            .theme-card, .theme-card--skeleton { min-height: 360px; }
         }
 
         .theme-card {
@@ -321,7 +353,7 @@
         body.bulk-install-active .gallery-controls,
         body.bulk-install-active .cast-div,
         body.bulk-install-active #theme-grid,
-        body.bulk-install-active #theme-pager,
+        body.bulk-install-active .pager,
         body.bulk-install-active #direct-install-banner .btn:not(#bulk-update-cancel-btn):not(#bulk-update-start-btn) {
             pointer-events: none;
             user-select: none;
@@ -676,177 +708,246 @@
             max-width: 16rem;
         }
 
+
         .pager {
-            margin-top: 1rem;
             display: flex;
             flex-wrap: wrap;
             align-items: center;
-            gap: 0.5rem;
+            justify-content: center;
+            gap: 0.25rem;
+            width: fit-content;
+            max-width: 100%;
+            margin: 1rem auto 1.35rem;
+            padding: 0.35rem;
+            border: 1px solid var(--site-border, rgba(255, 255, 255, 0.14));
+            border-radius: 999px;
+            background: color-mix(in oklab, var(--site-bg-elevated, #1b1c28) 88%, transparent);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+            box-sizing: border-box;
+            direction: ltr;
         }
 
-        .pager button {
-            background: var(--bg-card, #222733);
-            color: var(--text-primary, #eaf0ff);
-            border: 1px solid var(--site-border, rgba(255, 255, 255, 0.14));
-            border-radius: 8px;
-            padding: 0.35rem 0.65rem;
-            cursor: pointer;
+        .pager[hidden] {
+            display: none !important;
+        }
+
+        .pager--top {
+            margin-top: 1.1rem;
+            margin-bottom: 1.4rem;
+            scroll-margin-top: 0;
+        }
+
+        .pager--bottom {
+            margin-top: 1.6rem;
+        }
+
+        .pager button,
+        .pager .pager-ellipsis {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2.2rem;
+            min-height: 2.2rem;
+            padding: 0 0.55rem;
+            border: 1px solid transparent;
+            border-radius: 999px;
+            background: transparent;
+            color: var(--site-text, #f5f6fa);
             font: inherit;
+            font-variant-numeric: tabular-nums;
+            line-height: 1;
+            cursor: pointer;
         }
 
         .pager button:hover:not(:disabled) {
-            background: var(--primary, #6366f1);
-            color: #ffffff;
+            background: color-mix(in oklab, var(--site-accent, #ffb133) 18%, transparent);
+            border-color: color-mix(in oklab, var(--site-accent, #ffb133) 45%, transparent);
+            color: var(--site-text, #ffffff);
+        }
+
+        .pager button:focus-visible {
+            outline: 2px solid var(--site-accent, #ffb133);
+            outline-offset: 2px;
+        }
+
+        .pager button[aria-current="page"] {
+            background: var(--site-accent, #ffb133);
+            border-color: var(--site-accent, #ffb133);
+            color: var(--site-bg, #13141d);
+            font-weight: 700;
+            cursor: default;
         }
 
         .pager button[disabled] {
-            opacity: 0.45;
+            opacity: 0.35;
             cursor: not-allowed;
         }
+
+        .pager .pager-step {
+            font-size: 1.2rem;
+        }
+
+        .pager .pager-ellipsis {
+            min-width: 1.4rem;
+            padding: 0;
+            color: var(--site-muted, #9aa0b8);
+            cursor: default;
+        }
+
+        @media (max-width: 480px) {
+            .pager {
+                gap: 0.15rem;
+                padding: 0.3rem;
+            }
+
+            .pager button,
+            .pager .pager-ellipsis {
+                min-width: 1.95rem;
+                min-height: 1.95rem;
+                padding: 0 0.35rem;
+            }
+        }
+
     </style>
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebSite", "@id": "https://themes.innioasis.app/#website", "url": "https://themes.innioasis.app/", "name": "Innioasis Themes Gallery", "alternateName": ["Innioasis Y1 and Y2 Themes Gallery", "Innioasis Themes"]}</script><meta property="og:site_name" content="Innioasis Themes Gallery">  <link rel="canonical" href="https://themes.innioasis.app/index_cs.html">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebSite", "@id": "https://themes.innioasis.app/#website", "url": "https://themes.innioasis.app/", "name": "Innioasis Themes Gallery", "alternateName": ["Innioasis Y1 and Y2 Themes Gallery", "Innioasis Themes"]}</script><meta property="og:site_name" content="Innioasis Galerie motivů">  <link rel="canonical" href="https://themes.innioasis.app/index_cs.html">
   <!-- i18n-hreflang-start -->
   <link rel="alternate" hreflang="x-default" href="https://themes.innioasis.app/index.html">
   <link rel="alternate" hreflang="en" href="https://themes.innioasis.app/index.html">
-  <link rel="alternate" hreflang="ar" href="https://themes.innioasis.app/index_ar.html">
-  <link rel="alternate" hreflang="bn" href="https://themes.innioasis.app/index_bn.html">
-  <link rel="alternate" hreflang="cs" href="https://themes.innioasis.app/index_cs.html">
-  <link rel="alternate" hreflang="da" href="https://themes.innioasis.app/index_da.html">
   <link rel="alternate" hreflang="de" href="https://themes.innioasis.app/index_de.html">
-  <link rel="alternate" hreflang="el" href="https://themes.innioasis.app/index_el.html">
-  <link rel="alternate" hreflang="es" href="https://themes.innioasis.app/index_es.html">
-  <link rel="alternate" hreflang="es-419" href="https://themes.innioasis.app/index_es-419.html">
-  <link rel="alternate" hreflang="fa" href="https://themes.innioasis.app/index_fa.html">
-  <link rel="alternate" hreflang="fi" href="https://themes.innioasis.app/index_fi.html">
-  <link rel="alternate" hreflang="fr" href="https://themes.innioasis.app/index_fr.html">
-  <link rel="alternate" hreflang="he" href="https://themes.innioasis.app/index_he.html">
-  <link rel="alternate" hreflang="hi" href="https://themes.innioasis.app/index_hi.html">
-  <link rel="alternate" hreflang="hu" href="https://themes.innioasis.app/index_hu.html">
-  <link rel="alternate" hreflang="id" href="https://themes.innioasis.app/index_id.html">
-  <link rel="alternate" hreflang="it" href="https://themes.innioasis.app/index_it.html">
   <link rel="alternate" hreflang="ja" href="https://themes.innioasis.app/index_ja.html">
   <link rel="alternate" hreflang="jp" href="https://themes.innioasis.app/index_jp.html">
-  <link rel="alternate" hreflang="ko" href="https://themes.innioasis.app/index_ko.html">
-  <link rel="alternate" hreflang="kr" href="https://themes.innioasis.app/index_kr.html">
-  <link rel="alternate" hreflang="ms" href="https://themes.innioasis.app/index_ms.html">
-  <link rel="alternate" hreflang="nl" href="https://themes.innioasis.app/index_nl.html">
-  <link rel="alternate" hreflang="no" href="https://themes.innioasis.app/index_no.html">
-  <link rel="alternate" hreflang="pl" href="https://themes.innioasis.app/index_pl.html">
+  <link rel="alternate" hreflang="es" href="https://themes.innioasis.app/index_es.html">
+  <link rel="alternate" hreflang="fr" href="https://themes.innioasis.app/index_fr.html">
+  <link rel="alternate" hreflang="it" href="https://themes.innioasis.app/index_it.html">
   <link rel="alternate" hreflang="pt-BR" href="https://themes.innioasis.app/index_pt-BR.html">
   <link rel="alternate" hreflang="pt" href="https://themes.innioasis.app/index_pt.html">
-  <link rel="alternate" hreflang="ro" href="https://themes.innioasis.app/index_ro.html">
   <link rel="alternate" hreflang="ru" href="https://themes.innioasis.app/index_ru.html">
-  <link rel="alternate" hreflang="sv" href="https://themes.innioasis.app/index_sv.html">
-  <link rel="alternate" hreflang="th" href="https://themes.innioasis.app/index_th.html">
-  <link rel="alternate" hreflang="tr" href="https://themes.innioasis.app/index_tr.html">
-  <link rel="alternate" hreflang="uk" href="https://themes.innioasis.app/index_uk.html">
-  <link rel="alternate" hreflang="vi" href="https://themes.innioasis.app/index_vi.html">
   <link rel="alternate" hreflang="zh-CN" href="https://themes.innioasis.app/index_zh-CN.html">
   <link rel="alternate" hreflang="zh" href="https://themes.innioasis.app/index_zh.html">
   <link rel="alternate" hreflang="zh-TW" href="https://themes.innioasis.app/index_zh-TW.html">
+  <link rel="alternate" hreflang="ko" href="https://themes.innioasis.app/index_ko.html">
+  <link rel="alternate" hreflang="kr" href="https://themes.innioasis.app/index_kr.html">
+  <link rel="alternate" hreflang="ar" href="https://themes.innioasis.app/index_ar.html">
+  <link rel="alternate" hreflang="nl" href="https://themes.innioasis.app/index_nl.html">
+  <link rel="alternate" hreflang="pl" href="https://themes.innioasis.app/index_pl.html">
+  <link rel="alternate" hreflang="tr" href="https://themes.innioasis.app/index_tr.html">
+  <link rel="alternate" hreflang="uk" href="https://themes.innioasis.app/index_uk.html">
+  <link rel="alternate" hreflang="vi" href="https://themes.innioasis.app/index_vi.html">
+  <link rel="alternate" hreflang="th" href="https://themes.innioasis.app/index_th.html">
+  <link rel="alternate" hreflang="id" href="https://themes.innioasis.app/index_id.html">
+  <link rel="alternate" hreflang="he" href="https://themes.innioasis.app/index_he.html">
+  <link rel="alternate" hreflang="hi" href="https://themes.innioasis.app/index_hi.html">
+  <link rel="alternate" hreflang="cs" href="https://themes.innioasis.app/index_cs.html">
+  <link rel="alternate" hreflang="el" href="https://themes.innioasis.app/index_el.html">
+  <link rel="alternate" hreflang="sv" href="https://themes.innioasis.app/index_sv.html">
+  <link rel="alternate" hreflang="fa" href="https://themes.innioasis.app/index_fa.html">
+  <link rel="alternate" hreflang="da" href="https://themes.innioasis.app/index_da.html">
+  <link rel="alternate" hreflang="fi" href="https://themes.innioasis.app/index_fi.html">
+  <link rel="alternate" hreflang="hu" href="https://themes.innioasis.app/index_hu.html">
+  <link rel="alternate" hreflang="no" href="https://themes.innioasis.app/index_no.html">
+  <link rel="alternate" hreflang="ro" href="https://themes.innioasis.app/index_ro.html">
   <!-- i18n-hreflang-end -->
 </head>
 
 <body class="site-themes-app site-dock-mode">
     <div id="nav-root"></div>
     <div class="gallery-topbar">
-        <a class="gallery-brand" href="index_cs.html" title="Innioasis Y1 & Y2 Themes gallery">
+        <a class="gallery-brand" href="index_cs.html" title="Innioasis Y1 &amp; Y2 Galerie motivů">
             <span class="gallery-brand-icon" aria-hidden="true"><i class="fa-solid fa-palette"></i></span>
-            <span class="gallery-brand-text">Innioasis Y1 & Y2 Themes</span>
+            <span class="gallery-brand-text">Innioasis Y1 &amp; Y2 Témata</span>
         </a>
-        <div class="gallery-tabs" aria-label="Site sections">
-            <a class="gallery-tab" href="upload_cs.html">Upload</a>
+        <div class="gallery-tabs" aria-label="Sekce webu">
+            <a class="gallery-tab" href="upload_cs.html">Nahrát</a>
         </div>
         <div class="topbar-search-wrap">
             <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
-            <input id="theme-search" class="topbar-search" type="search" placeholder="Search" aria-label="Search themes">
+            <input id="theme-search" class="topbar-search" type="search" placeholder="Vyhledávání" aria-label="Hledat témata">
         </div>
     </div>
-    <aside class="site-compat-banner" id="site-compat-banner" role="note" aria-label="Firmware compatibility notice">
+    <aside class="site-compat-banner" id="site-compat-banner" role="note" aria-label="Upozornění na kompatibilitu firmwaru">
         <div class="site-compat-banner__content">
             <i class="fa-solid fa-circle-check site-compat-banner__icon" aria-hidden="true"></i>
             <span class="site-compat-banner__text">
-                Themes in this gallery are compatible with <a class="site-compat-banner__link" href="https://innioasis.app/original-software-benefits.html?lang=cs" target="_blank" rel="noopener noreferrer"><strong>Original OS</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/better-y-benefits.html?lang=cs" target="_blank" rel="noopener noreferrer"><strong>Better-Y</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/solar-benefits.html?lang=cs" target="_blank" rel="noopener noreferrer"><strong>Solar</strong></a>a <a class="site-compat-banner__link" href="https://innioasis.app/koensayr-benefits.html?lang=cs" target="_blank" rel="noopener noreferrer"><strong>Koensayr</strong></a> custom firmwares - <a class="site-compat-banner__cta" href="https://innioasis.app/guide.html#platform?lang=cs" target="_blank" rel="noopener noreferrer">Available in Updater CE &rarr;</a>
+                Motivy v této galerii jsou kompatibilní s <a class="site-compat-banner__link" href="https://innioasis.app/original-software-benefits.html?lang=cs" target="_blank" rel="noopener noreferrer"><strong>Původní OS</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/better-y-benefits.html?lang=cs" target="_blank" rel="noopener noreferrer"><strong>Better-Y</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/solar-benefits.html?lang=cs" target="_blank" rel="noopener noreferrer"><strong>Solar</strong></a>a <a class="site-compat-banner__link" href="https://innioasis.app/koensayr-benefits.html?lang=cs" target="_blank" rel="noopener noreferrer"><strong>Koensayr</strong></a> vlastní firmware - <a class="site-compat-banner__cta" href="https://innioasis.app/guide.html#platform?lang=cs" target="_blank" rel="noopener noreferrer">Dostupné v Updater CE →</a>
             </span>
         </div>
     </aside>
     <div class="wrap">
-        <section class="gallery-home-hero" aria-label="Themes gallery introduction">
+        <section class="gallery-home-hero" aria-label="Úvod do galerie témat">
             <div class="gallery-home-hero__row">
                 <header class="gallery-home-intro">
-                    <h1 class="site-display">Themes</h1>
-                    <p class="site-lead gallery-home-lead">Here is a community-led gallery of themes to customise your Innioasis Y1 or Y2 audio player - find a new look for your screens, try previews before you install, and share your own looks with other Innioasis users.</p>
+                    <h1 class="site-display">Témata</h1>
+                    <p class="site-lead gallery-home-lead">Galerie témat pro Innioasis Y1 a Y2 vytvořená komunitou. Před instalací si zobrazte náhled motivu nebo nahrajte ten, který jste vytvořili.</p>
                 </header>
                 <figure class="y1-hero" aria-hidden="true">
                     <img src="y1-hero.png" alt="" width="640" height="640" decoding="async" />
                 </figure>
             </div>
             <div class="cast-div hero-actions">
-                <a href="upload_cs.html" class="btn"><i class="fa-solid fa-upload" aria-hidden="true"></i> Upload theme</a>
-                <a id="rockbox-btn" class="btn" href="#"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Rockbox themes</a>
+                <a href="upload_cs.html" class="btn"><i class="fa-solid fa-upload" aria-hidden="true"></i> Nahrajte motiv</a>
+                <a id="rockbox-btn" class="btn" href="#"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Rockbox témat</a>
             </div>
         </section>
 
         <div id="direct-install-banner" style="margin-top: 1.25rem; padding: 10px 14px; background: rgba(100, 200, 255, 0.08); border: 1px solid rgba(100, 200, 255, 0.22); border-radius: 10px; display: none;">
             <div style="display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap;">
                 <div style="flex: 1 1 240px; min-width: 0;">
-                    <strong style="display: block; font-size: 0.92rem; line-height: 1.3;">Direct Install</strong>
-                    <span style="font-size: 0.8rem; line-height: 1.35; color: var(--text-secondary);">Install straight to your Y1 or Y2 - pick the player's themes folder, no zip downloads.</span>
+                    <strong style="display: block; font-size: 0.92rem; line-height: 1.3;">Přímá instalace</strong>
+                    <span style="font-size: 0.8rem; line-height: 1.35; color: var(--text-secondary);">Nainstalujte přímo do svého Y1 nebo Y2 – vyberte složku s motivy přehrávače, žádné stahování zip.</span>
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                     <button id="choose-folder-btn" class="btn" style="font-family: Inter; padding: .45rem .8rem; font-size: 0.82rem; font-weight: normal; white-space: nowrap;">
-                        <i class="fas fa-folder" style="margin-right: 6px;"></i>Choose themes folder
+                        <i class="fas fa-folder" style="margin-right: 6px;"></i>Vyberte složku motivů
                     </button>
-                    <div id="folder-selected-indicator" style="font-size: 0.78rem; color: #4caf50; display: none;"><i class="fas fa-check-circle" style="margin-right: 4px;"></i>Folder selected</div>
+                    <div id="folder-selected-indicator" style="font-size: 0.78rem; color: #4caf50; display: none;"><i class="fas fa-check-circle" style="margin-right: 4px;"></i>Složka vybrána</div>
                     <button id="bulk-update-all-btn" class="btn" type="button" disabled style="font-family: Inter; padding: .45rem .8rem; font-size: 0.82rem; font-weight: normal; white-space: nowrap; opacity: 0.5; cursor: not-allowed;">
-                        <i class="fas fa-arrows-rotate" style="margin-right: 6px;"></i>Update all on Y1
+                        <i class="fas fa-arrows-rotate" style="margin-right: 6px;"></i>Aktualizovat vše na Y1
                     </button>
                 </div>
             </div>
             <div id="filter-on-device" style="margin-top:6px; display:none;">
                 <label style="font-size:0.78rem;color:var(--text-secondary);display:inline-flex;align-items:center;gap:6px;">
-                    <input type="checkbox" id="only-on-device-checkbox" style="margin:0;" /> Only show themes already on Y1
+                    <input type="checkbox" id="only-on-device-checkbox" style="margin:0;" /> Zobrazit pouze motivy již na Y1
                 </label>
             </div>
         </div>
 
-        <!-- Ad slot: gallery-top (AdSense / Raptive compatible, zero CLS when empty) -->
-        <div class="gallery-ad-container gallery-ad-top gallery-ad--top" id="gallery-ad-top" aria-label="Sponsored" data-ad-slot="gallery-top"></div>
+        <div class="gallery-ad-container gallery-ad-top gallery-ad--top" id="gallery-ad-top" aria-label="Sponzorováno" data-ad-slot="gallery-top"></div>
 
-        <div class="gallery-controls" aria-label="Gallery controls">
+        <div class="gallery-controls" aria-label="Ovládání galerie">
             <label class="gallery-control" for="source-filter">
-                Source
+                Zdroj
                 <select id="source-filter">
-                    <option value="all">All themes</option>
-                    <option value="internal">Gallery packages</option>
-                    <option value="external">External links</option>
+                    <option value="all">Všechna témata</option>
+                    <option value="internal">Galerijní balíčky</option>
+                    <option value="external">Externí odkazy</option>
                 </select>
             </label>
             <label class="gallery-control gallery-control--author" for="author-filter">
-                Author
+                Autor
                 <span class="gallery-control-author-field">
                     <select id="author-filter">
-                        <option value="all">All authors</option>
+                        <option value="all">Všichni autoři</option>
                     </select>
-                    <button type="button" id="gallery-author-clear" class="gallery-author-clear" hidden>clear</button>
+                    <button type="button" id="gallery-author-clear" class="gallery-author-clear" hidden>jasný</button>
                 </span>
             </label>
             <label class="gallery-control" for="sort-filter">
-                Sort
+                Seřadit
                 <select id="sort-filter">
-                    <option value="name_asc">Name (A-Z)</option>
-                    <option value="name_desc">Name (Z-A)</option>
-                    <option value="author_asc">Author (A-Z)</option>
-                    <option value="views_desc">Most views</option>
-                    <option value="views_asc">Fewest views</option>
-                    <option value="downloads_desc">Most downloads</option>
-                    <option value="downloads_asc">Fewest downloads</option>
-                    <option value="rating_desc">Highest rating</option>
-                    <option value="rating_asc">Lowest rating</option>
+                    <option value="name_asc">Jméno (A–Z)</option>
+                    <option value="name_desc">Jméno (Z-A)</option>
+                    <option value="author_asc">Autor (A-Z)</option>
+                    <option value="views_desc">Nejvíce zobrazení</option>
+                    <option value="views_asc">Nejméně pohledů</option>
+                    <option value="downloads_desc">Většina stahování</option>
+                    <option value="downloads_asc">Nejméně stažení</option>
+                    <option value="rating_desc">Nejvyšší hodnocení</option>
+                    <option value="rating_asc">Nejnižší hodnocení</option>
                 </select>
             </label>
             <label class="gallery-control" for="page-size">
-                Per page
+                Na stránku
                 <select id="page-size">
                     <option value="12">12</option>
                     <option value="24" selected>24</option>
@@ -855,31 +956,57 @@
             </label>
             <label class="gallery-control gallery-control--gold" for="gold-only-filter">
                 <input type="checkbox" id="gold-only-filter" />
-                Gold only
+                Pouze zlato
             </label>
         </div>
 
-        <div id="theme-grid" class="theme-grid"></div>
-        <div id="theme-empty" style="display:none; margin-top:1rem; text-align:center; color:#94a3b8;">No themes match your current filters.</div>
-        <div id="theme-pager" class="pager" hidden></div>
-        <!-- Ad slot: gallery-bottom (AdSense / Raptive compatible, zero CLS when empty) -->
-        <div class="gallery-ad-container gallery-ad-bottom gallery-ad--bottom" id="gallery-ad-bottom" aria-label="Sponsored" data-ad-slot="gallery-bottom"></div>
+        <nav id="theme-pager-top" class="pager pager--top" aria-label="Theme pages" hidden></nav>
+
+        <div id="theme-grid" class="theme-grid theme-grid--loading" aria-busy="true">
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+        </div>
+        <div id="theme-empty" style="display:none; margin-top:1rem; text-align:center; color:#94a3b8;">Vašim aktuálním filtrům neodpovídají žádná témata.</div>
+        <nav id="theme-pager-bottom" class="pager pager--bottom" aria-label="Theme pages" hidden></nav>
+        <div class="gallery-ad-container gallery-ad-bottom gallery-ad--bottom" id="gallery-ad-bottom" aria-label="Sponzorováno" data-ad-slot="gallery-bottom"></div>
 
     </div>
 
     <div id="bulk-update-backdrop" role="dialog" aria-modal="true" aria-labelledby="bulk-update-title" hidden>
         <div class="bulk-update-panel">
-            <h2 id="bulk-update-title">Update all themes on Y1</h2>
-            <p class="bulk-update-lead" id="bulk-update-lead">Refresh every theme already on your Y1 with the latest files from this gallery. New themes are not installed - use Direct Install on each card first.</p>
+            <h2 id="bulk-update-title">Aktualizovat všechna témata na Y1</h2>
+            <p class="bulk-update-lead" id="bulk-update-lead">Obnovte každý motiv, který již máte ve svém Y1, nejnovějšími soubory z této galerie. Nová témata se neinstalují – použijte nejprve Přímou instalaci na každou kartu.</p>
             <div class="bulk-update-overall-bar" aria-hidden="true">
                 <div class="bulk-update-overall-bar-inner" id="bulk-update-overall-bar"></div>
             </div>
-            <div class="bulk-update-status" id="bulk-update-status" aria-live="polite">Ready to start.</div>
+            <div class="bulk-update-status" id="bulk-update-status" aria-live="polite">Připraveno ke spuštění.</div>
             <div class="bulk-update-count" id="bulk-update-count"></div>
             <div class="bulk-update-actions">
-                <button type="button" class="btn" id="bulk-update-cancel-btn" style="font-family: Inter; font-weight: normal; background: #2a2f3a;">Cancel</button>
+                <button type="button" class="btn" id="bulk-update-cancel-btn" style="font-family: Inter; font-weight: normal; background: #2a2f3a;">Zrušit</button>
                 <button type="button" class="btn" id="bulk-update-start-btn" style="font-family: Inter; font-weight: normal;">
-                    <i class="fas fa-play" style="margin-right: 6px;"></i>Start update
+                    <i class="fas fa-play" style="margin-right: 6px;"></i>Spusťte aktualizaci
                 </button>
             </div>
         </div>
@@ -1399,8 +1526,6 @@
         const pageSizeSelect = document.getElementById('page-size');
         const goldOnlyCheckbox = document.getElementById('gold-only-filter');
         let goldOnlyFilter = false;
-        const pagerEl = document.getElementById('theme-pager');
-        let currentPage = 1;
         const galleryGoldQueued = new Set();
 
         function galleryConnectionSavesData() {
@@ -1502,36 +1627,113 @@
             } catch (e) {}
         }
 
-        function renderPager(totalItems, pageSize) {
-            if (!pagerEl) return;
+        const pagerTopEl = document.getElementById('theme-pager-top');
+        const pagerBottomEl = document.getElementById('theme-pager-bottom');
+        let currentPage = 1;
+
+        const pagerNumberFormat = (() => {
+            try {
+                return new Intl.NumberFormat(document.documentElement.lang || undefined);
+            } catch (_) {
+                return null;
+            }
+        })();
+
+        function formatPagerNumber(value) {
+            return pagerNumberFormat ? pagerNumberFormat.format(value) : String(value);
+        }
+
+        function pagerPages(current, total) {
+            const wanted = new Set([1, total, current - 2, current - 1, current, current + 1, current + 2]);
+            return [...wanted]
+                .filter((page) => page >= 1 && page <= total)
+                .sort((a, b) => a - b);
+        }
+
+        function scrollToGalleryStart() {
+            const target = document.getElementById('gallery-ad-top')
+                || pagerTopEl
+                || document.getElementById('theme-grid');
+            if (!target) return;
+
+            const reduceMotion = window.matchMedia
+                && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            target.scrollIntoView({
+                behavior: reduceMotion ? 'auto' : 'smooth',
+                block: 'start'
+            });
+
+            const focusTopPage = () => {
+                const active = pagerTopEl && pagerTopEl.querySelector('[aria-current="page"]');
+                if (!active) return;
+                try {
+                    active.focus({ preventScroll: true });
+                } catch (_) {
+                    active.focus();
+                }
+            };
+            focusTopPage();
+            setTimeout(focusTopPage, 450);
+        }
+
+        function renderPagerInto(el, totalItems, pageSize, position) {
+            if (!el) return;
+
             const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
             if (currentPage > totalPages) currentPage = totalPages;
-            pagerEl.hidden = totalItems <= pageSize;
-            if (pagerEl.hidden) {
-                pagerEl.innerHTML = '';
-                syncQueryState(totalPages);
+            el.hidden = totalItems <= pageSize;
+
+            if (el.hidden) {
+                el.innerHTML = '';
                 return;
             }
-            const start = (currentPage - 1) * pageSize + 1;
-            const end = Math.min(totalItems, currentPage * pageSize);
-            pagerEl.innerHTML = `
-                <button type="button" id="pager-prev" ${currentPage <= 1 ? 'disabled' : ''}>Prev</button>
-                <span style="color:var(--text-secondary);font-size:0.88rem;">Showing ${start}-${end} of ${totalItems} (page ${currentPage}/${totalPages})</span>
-                <button type="button" id="pager-next" ${currentPage >= totalPages ? 'disabled' : ''}>Next</button>
-            `;
-            const prev = document.getElementById('pager-prev');
-            const next = document.getElementById('pager-next');
-            if (prev) prev.onclick = () => {
-                if (currentPage <= 1) return;
-                currentPage -= 1;
-                applyFilters();
-            };
-            if (next) next.onclick = () => {
-                if (currentPage >= totalPages) return;
-                currentPage += 1;
-                applyFilters();
-            };
-            syncQueryState(totalPages);
+
+            const pages = pagerPages(currentPage, totalPages);
+            const controls = [];
+            controls.push(
+                '<button type="button" class="pager-step" data-pager-page="' + (currentPage - 1) + '"' +
+                (currentPage <= 1 ? ' disabled' : '') +
+                ' aria-label="Previous page" title="Previous page">&lsaquo;</button>'
+            );
+
+            let previous = 0;
+            for (const page of pages) {
+                if (previous && page - previous > 1) {
+                    controls.push('<span class="pager-ellipsis" aria-hidden="true">&hellip;</span>');
+                }
+                const isCurrent = page === currentPage;
+                controls.push(
+                    '<button type="button" data-pager-page="' + page + '"' +
+                    (isCurrent ? ' class="is-current" aria-current="page"' : '') +
+                    ' aria-label="Page ' + page + '" title="Page ' + page + '">' +
+                    formatPagerNumber(page) +
+                    '</button>'
+                );
+                previous = page;
+            }
+
+            controls.push(
+                '<button type="button" class="pager-step" data-pager-page="' + (currentPage + 1) + '"' +
+                (currentPage >= totalPages ? ' disabled' : '') +
+                ' aria-label="Next page" title="Next page">&rsaquo;</button>'
+            );
+
+            el.innerHTML = controls.join('');
+            el.querySelectorAll('button[data-pager-page]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    const page = Number(button.getAttribute('data-pager-page'));
+                    if (!Number.isFinite(page) || page < 1 || page > totalPages || page === currentPage) return;
+                    currentPage = page;
+                    applyFilters();
+                    if (position === 'bottom') scrollToGalleryStart();
+                });
+            });
+        }
+
+        function renderPager(totalItems, pageSize) {
+            renderPagerInto(pagerTopEl, totalItems, pageSize, 'top');
+            renderPagerInto(pagerBottomEl, totalItems, pageSize, 'bottom');
+            syncQueryState(Math.max(1, Math.ceil(totalItems / pageSize)));
         }
 
         function cardMetric(card, attr) {

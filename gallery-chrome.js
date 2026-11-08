@@ -43,38 +43,41 @@
         style.id = "gallery-chrome-styles";
         style.textContent =
             '.gallery-topbar {' +
-            '  position: sticky !important; top: 0 !important; z-index: 1200 !important; display: flex !important; flex-wrap: wrap !important; align-items: center !important; justify-content: flex-start !important; gap: 6px 12px !important; padding: 8px 16px !important;' +
-            '  background: var(--lumen-panel, #12141c) !important; border-bottom: 1px solid var(--lumen-line, rgba(255, 255, 255, 0.12)) !important;' +
+            '  position: sticky !important; top: 0 !important; z-index: 1200 !important; display: flex !important; flex-wrap: wrap !important; align-items: center !important; justify-content: flex-start !important; gap: 6px 12px !important; padding: 8px clamp(8px, 2.2vw, 16px) !important; min-width: 0 !important; max-width: 100% !important; box-sizing: border-box !important;' +
+            '  background: color-mix(in oklab, var(--lumen-ink, #12141c) 90%, transparent) !important; border-bottom: 1px solid var(--lumen-line, rgba(255, 255, 255, 0.12)) !important; color: var(--lumen-text, #f8fafc) !important;' +
             '  backdrop-filter: blur(14px) !important; -webkit-backdrop-filter: blur(14px) !important;' +
             '}' +
             '@media (max-width: 900px) {' +
 '  .gallery-topbar { justify-content: center !important; padding: 8px 10px !important; gap: 6px 10px !important; }' +
-'  .gallery-topbar .gallery-brand { order: 1 !important; }' +
+'  .gallery-topbar .gallery-brand { order: 1 !important; max-width: 100% !important; }' +
 '  .gallery-topbar .gallery-social-tools { order: 2 !important; }' +
-'  .gallery-topbar .gallery-social-links { order: 3 !important; }' +
-'  .gallery-topbar .lumen-theme-control { order: 4 !important; }' +
+'  .gallery-topbar .lumen-theme-control { order: 3 !important; }' +
+'  .gallery-topbar .gallery-social-links { order: 4 !important; }' +
 '  .gallery-topbar .gallery-tabs { order: 5 !important; width: 100% !important; margin-left: 0 !important; justify-content: center !important; }' +
 '  .gallery-topbar .topbar-search-wrap { order: 6 !important; width: min(100%, 16rem) !important; max-width: min(100%, 16rem) !important; }' +
 '}' +
-':root[data-lumen-theme="dark"] .gallery-topbar {' +
-            '  background: #12141c !important; border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important; color: #f8fafc !important;' +
-            '}' +
+'@media (max-width: 520px) {' +
+'  .gallery-topbar { gap: 5px 8px !important; padding: 6px 8px !important; }' +
+'  .gallery-topbar .gallery-brand-text { font-size: 1rem !important; }' +
+'  .gallery-topbar .gallery-tabs { width: 100% !important; }' +
+'  .gallery-topbar .topbar-search-wrap, .gallery-topbar .topbar-search-wrap.is-expanded, .gallery-topbar .topbar-search-wrap:focus-within { width: 100% !important; max-width: 100% !important; }' +
+'}' +
             ':root[data-lumen-theme="2077"] .gallery-topbar {' +
-            '  background: #0d0f1a !important; border-bottom: 2px solid #00f0ff !important; box-shadow: 0 0 15px rgba(0, 240, 255, 0.25) !important; color: #00f0ff !important;' +
+            '  border-bottom: 2px solid var(--lumen-accent, #23e6e0) !important; box-shadow: 0 0 15px color-mix(in oklab, var(--lumen-accent, #23e6e0) 25%, transparent) !important; color: var(--lumen-text, #00f0ff) !important;' +
             '}' +
             ':root[data-lumen-theme="high-contrast"] .gallery-topbar {' +
-            '  background: #000000 !important; border-bottom: 2px solid #ffffff !important; color: #ffffff !important;' +
+            '  border-bottom: 2px solid var(--lumen-line-strong, #ffffff) !important; color: var(--lumen-text, #ffffff) !important;' +
             '}' +
-            '.gallery-brand, .lumen-brand-home { display: inline-flex !important; align-items: center !important; text-decoration: none !important; color: var(--lumen-text, #f8fafc) !important; flex-shrink: 0 !important; white-space: nowrap !important; }' +
-            '.gallery-brand-text, .lumen-brand-title { color: var(--lumen-text, #f8fafc) !important; font-size: 1.15rem !important; font-weight: 700 !important; letter-spacing: -0.02em !important; line-height: 1.2 !important; white-space: nowrap !important; word-break: keep-all !important; flex-shrink: 0 !important; }' +
+            '.gallery-brand, .lumen-brand-home { display: inline-flex !important; align-items: center !important; min-width: 0 !important; max-width: 100% !important; text-decoration: none !important; color: var(--lumen-text, #f8fafc) !important; flex-shrink: 1 !important; white-space: normal !important; }' +
+            '.gallery-brand-text, .lumen-brand-title { color: var(--lumen-text, #f8fafc) !important; font-size: 1.15rem !important; font-weight: 700 !important; letter-spacing: -0.02em !important; line-height: 1.15 !important; white-space: normal !important; overflow-wrap: anywhere !important; word-break: normal !important; min-width: 0 !important; flex-shrink: 1 !important; }' +
             ':root[data-lumen-theme="dark"] .gallery-brand, :root[data-lumen-theme="dark"] .gallery-brand-text,' +
             ':root[data-lumen-theme="dark"] .lumen-brand-home, :root[data-lumen-theme="dark"] .lumen-brand-title { color: #f8fafc !important; }' +
             ':root[data-lumen-theme="2077"] .gallery-brand, :root[data-lumen-theme="2077"] .gallery-brand-text,' +
             ':root[data-lumen-theme="2077"] .lumen-brand-home, :root[data-lumen-theme="2077"] .lumen-brand-title { color: #00f0ff !important; }' +
             ':root[data-lumen-theme="high-contrast"] .gallery-brand, :root[data-lumen-theme="high-contrast"] .gallery-brand-text,' +
             ':root[data-lumen-theme="high-contrast"] .lumen-brand-home, :root[data-lumen-theme="high-contrast"] .lumen-brand-title { color: #ffffff !important; }' +
-            '.lumen-brand-switcher-wrap { position: relative; display: inline-flex; align-items: center; flex-shrink: 0 !important; white-space: nowrap !important; }' +
-            '.lumen-brand-bar { display: inline-flex; align-items: center; flex-shrink: 0 !important; white-space: nowrap !important; }' +
+            '.lumen-brand-switcher-wrap { position: relative; display: inline-flex; align-items: center; min-width: 0; max-width: 100%; flex-shrink: 1 !important; white-space: normal !important; }' +
+            '.lumen-brand-bar { display: inline-flex; align-items: center; min-width: 0; max-width: 100%; flex-shrink: 1 !important; white-space: normal !important; }' +
             '.lumen-site-switcher-toggle { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; margin-left: 6px; padding: 0; border-radius: 6px; border: 1px solid var(--lumen-line, rgba(255,255,255,0.14)); background: var(--lumen-panel-soft, rgba(255,255,255,0.06)); color: var(--lumen-muted, #94a3b8); cursor: pointer; transition: all 0.15s ease; flex-shrink: 0 !important; }' +
             '.lumen-site-switcher-toggle:hover { background: var(--lumen-accent-wash, rgba(99,102,241,0.15)); color: var(--lumen-paper, #fff); border-color: var(--lumen-accent, #6366f1); }' +
             ':root[data-lumen-theme="2077"] .lumen-site-switcher-toggle { background: rgba(35,230,224,0.08); border-color: rgba(35,230,224,0.3); color: #23e6e0; }' +
@@ -290,6 +293,20 @@
         }
     }
 
+    function syncTopbarMetrics(topbar) {
+        if (!topbar) return;
+        var apply = function () {
+            var height = Math.ceil(topbar.getBoundingClientRect().height || 0);
+            document.documentElement.style.setProperty("--gallery-topbar-height", height + "px");
+            document.documentElement.style.setProperty("--gallery-sticky-offset", (height + 10) + "px");
+        };
+        apply();
+        if (typeof ResizeObserver === "function") {
+            new ResizeObserver(apply).observe(topbar);
+        }
+        window.addEventListener("resize", apply, { passive: true });
+    }
+
     function upgradeTopbar(topbar) {
         if (!topbar || topbar.dataset.galleryChromeReady === "1") return;
         ensureChromeStyles();
@@ -335,6 +352,7 @@
         enhanceSearch(topbar);
         topbar.dataset.galleryChromeReady = "1";
         ensureCompatibilityBanner(topbar);
+        syncTopbarMetrics(topbar);
     }
 
     function init() {

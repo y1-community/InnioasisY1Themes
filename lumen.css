@@ -37,7 +37,7 @@
     --lumen-ease: cubic-bezier(.2, .8, .2, 1);
 }
 
-html { overflow-x: clip; scroll-behavior: smooth; scroll-padding-top: 74px; }
+html { overflow-x: clip; scroll-behavior: smooth; scroll-padding-top: var(--gallery-sticky-offset, 74px); }
 html, body { min-width: 0; }
 body.site-themes-app { overflow-x: clip; background: var(--lumen-ink); color: var(--lumen-text); font-family: var(--lumen-body); }
 

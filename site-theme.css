@@ -80,6 +80,8 @@ html {
 
 html,
 body {
+    margin: 0;
+    padding: 0;
     background: var(--site-bg);
     color: var(--site-text);
 }
@@ -1295,7 +1297,7 @@ body.site-themes-app .bulk-update-panel {
     text-align: center;
     box-sizing: border-box;
     transition: min-height 0.2s ease;
-    scroll-margin-top: calc(var(--gallery-sticky-offset, 84px) + 8px);
+    scroll-margin-top: 0;
 }
 
 .gallery-ad-container:empty {
@@ -1495,5 +1497,26 @@ html, body {
 
     .site-footer .footer-bottom {
         padding-inline: 0.25rem;
+    }
+}
+
+/* The top bar settles 8px shorter after the body gains site-dock-mode and the
+   chrome script finishes, which moved the banner and the whole grid. Pinning its
+   first-paint height removes that shift. */
+.gallery-topbar {
+    min-height: 69px;
+}
+
+@media (max-width: 900px) {
+    .gallery-topbar {
+        min-height: 153px;
+    }
+
+    /* The search box starts inline and then takes a full row, which pushed the
+       banner and everything below it down. Give it the full row at first
+       paint so the wrap happens before anything is painted. */
+    .gallery-topbar .topbar-search-wrap {
+        flex: 1 1 100%;
+        width: 100%;
     }
 }
