@@ -59,6 +59,53 @@ def glob_to_regex(pattern: str) -> "re.Pattern[str]":
     return re.compile("^" + "".join(out) + "$")
 
 
+def locale_codes() -> Set[str]:
+    """Every locale code the site ships, including aliases.
+
+    Pre-rendered copies of a page are stored beside the source as
+    ``<page>_<locale>.html`` (``index_de.html``, ``404_ar.html``). They are
+    output, not source: extracting them treated German, Portuguese and Japanese
+    prose as English and inflated the work list by an order of magnitude, so
+    the catalogs were never able to cover the real English pages.
+    """
+    codes: Set[str] = {"en"}
+    for relative in ("i18n/locales.json", "i18n/site-locales.json"):
+        path = os.path.join(ROOT, relative)
+        if not os.path.exists(path):
+            continue
+        try:
+            with open(path, "r", encoding="utf-8") as handle:
+                data = json.load(handle)
+        except (OSError, ValueError):
+            continue
+        for key in ("locales", "variants"):
+            for entry in data.get(key) or []:
+                if not isinstance(entry, dict):
+                    continue
+                for field in ("code", "base"):
+                    value = str(entry.get(field) or "").strip().lower()
+                    if value:
+                        codes.add(value)
+                for alias in entry.get("aliases") or []:
+                    alias = str(alias or "").strip().lower()
+                    if alias:
+                        codes.add(alias)
+    return codes
+
+
+LOCALE_COPY_RE = re.compile(r"_([a-z]{2,3}(?:-[a-z0-9]{2,4})?)\.html?$", re.IGNORECASE)
+
+
+def is_locale_copy(relative: str, codes: Set[str]) -> bool:
+    match = LOCALE_COPY_RE.search(relative)
+    if not match:
+        return False
+    tag = match.group(1).lower()
+    if tag in codes:
+        return True
+    return tag.split("-")[0] in codes
+
+
 def candidate_pages(config: dict) -> List[str]:
     """Return repo-relative HTML paths for every configured page."""
     tiers = config["tiers"]
@@ -71,6 +118,7 @@ def candidate_pages(config: dict) -> List[str]:
     include_re = [glob_to_regex(pattern) for pattern in include]
     exclude_re = [glob_to_regex(pattern) for pattern in exclude]
 
+    codes = locale_codes()
     selected: Set[str] = set()
     for directory, dirnames, filenames in os.walk(ROOT):
         dirnames[:] = [
@@ -83,6 +131,8 @@ def candidate_pages(config: dict) -> List[str]:
                 continue
             absolute = os.path.join(directory, filename)
             relative = os.path.relpath(absolute, ROOT).replace(os.sep, "/")
+            if is_locale_copy(relative, codes):
+                continue
             if any(pattern.match(relative) for pattern in exclude_re):
                 continue
             if any(pattern.match(relative) for pattern in include_re):

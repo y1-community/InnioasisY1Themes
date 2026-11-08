@@ -31,12 +31,12 @@
     "use strict";
 
     var DEFAULT_LOCALE = "en";
-    var RUNTIME_VERSION = "20261108shell3";
+    var RUNTIME_VERSION = "20261109i18n";
 
     /* Catalogs are fetched from a fixed path, so a browser that cached an
        older, thinner catalog keeps serving it after the catalogs are rebuilt.
        Versioning the request makes the new translation actually reach the page. */
-    var CATALOG_VERSION = "20261108shell3";
+    var CATALOG_VERSION = "20261109i18n";
     var STORAGE_LOCALE = "innioasis-locale";
     var STORAGE_REGION = "innioasis-region";
     var STORAGE_COUNTRY = "innioasis-country";
