@@ -1290,7 +1290,7 @@ body.site-themes-app .bulk-update-panel {
 
 /* Footer credit line: site creator + community */
 
-/* —— Gallery placement containers, sized so the page does not jump —— */
+/* Gallery placement containers keep their height before any content arrives, so the page does not jump. */
 .gallery-ad-container {
     width: 100%;
     margin: 0 auto;
