@@ -89,20 +89,30 @@ def _variant_names_for_theme(folder: str, item: dict) -> list[str]:
 
 def generate() -> str:
     now = _iso_utc()
+    existing_lastmod: dict[str, str] = {}
+    if SITEMAP_PATH.exists():
+        import re
+        for block in re.findall(r"<url>.*?</url>", SITEMAP_PATH.read_text(encoding="utf-8"), re.S):
+            lm = re.search(r"<lastmod>([^<]+)</lastmod>", block)
+            lc = re.search(r"<loc>([^<]+)</loc>", block)
+            if lm and lc:
+                existing_lastmod[lc.group(1)] = lm.group(1)
+
     static_entries: list[tuple[str, str, str, str]] = [
         # loc, changefreq, priority, lastmod
-        (f"{SITE_BASE}/", "daily", "1.0", now),
+        (f"{SITE_BASE}/", "daily", "1.0", existing_lastmod.get(f"{SITE_BASE}/", now)),
     ]
 
     # Dynamically include all published static HTML pages (including foreign language variants)
     skip_files = {"404.html", "support_toolbar.html", "backfill.html", "fabform-email-templates.html"}
     for p in sorted(REPO_ROOT.glob("*.html"), key=lambda x: x.name):
         name = p.name
-        if name in skip_files or "(" in name or name.startswith("."):
+        if name in skip_files or name.startswith("404") or "(" in name or name.startswith("."):
             continue
         priority = "0.9" if name.startswith("index") else "0.7"
         changefreq = "daily" if name.startswith("index") else "weekly"
-        static_entries.append((f"{SITE_BASE}/{name}", changefreq, priority, now))
+        url = f"{SITE_BASE}/{name}"
+        static_entries.append((url, changefreq, priority, existing_lastmod.get(url, now)))
 
     themes = _load_themes()
     # loc -> (lastmod, priority)
@@ -117,8 +127,10 @@ def generate() -> str:
             continue
         root_index = REPO_ROOT / folder / "index.html"
         root_cfg = REPO_ROOT / folder / "config.json"
-        theme_entries[_url_for_folder(folder)] = (
-            _lastmod_for_paths([root_index, root_cfg]),
+        calc_lastmod = _lastmod_for_paths([root_index, root_cfg])
+        u_folder = _url_for_folder(folder)
+        theme_entries[u_folder] = (
+            existing_lastmod.get(u_folder, calc_lastmod),
             "0.8",
         )
         for v in _variant_names_for_theme(folder, item):
@@ -127,8 +139,9 @@ def generate() -> str:
                 continue
             share_index = REPO_ROOT / folder / "Variants" / v / "_share" / "index.html"
             var_cfg = REPO_ROOT / folder / "Variants" / v / "config.json"
+            calc_v_lastmod = _lastmod_for_paths([share_index, var_cfg, root_cfg])
             theme_entries[u] = (
-                _lastmod_for_paths([share_index, var_cfg, root_cfg]),
+                existing_lastmod.get(u, calc_v_lastmod),
                 "0.7",
             )
 
@@ -164,7 +177,20 @@ def generate() -> str:
 
 
 def main() -> int:
+    import argparse
+    parser = argparse.ArgumentParser(description="Generate sitemap.xml for themes.innioasis.app")
+    parser.add_argument("--check", action="store_true", help="Check if sitemap.xml is up to date")
+    args = parser.parse_args()
+
     xml = generate()
+    if args.check:
+        current = SITEMAP_PATH.read_text(encoding="utf-8") if SITEMAP_PATH.exists() else ""
+        if current == xml:
+            print("sitemap: up to date")
+            return 0
+        print("sitemap: out of date", file=sys.stderr)
+        return 1
+
     SITEMAP_PATH.write_text(xml, encoding="utf-8")
     loc_count = xml.count("<loc>")
     print(f"Wrote sitemap: {SITEMAP_PATH} ({loc_count} URLs)")
