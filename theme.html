@@ -78,6 +78,7 @@
     <link rel="stylesheet" href="theme-frozen.css?v=20260526">
     <script src="theme-frozen.js?v=20260526"></script>
     <script src="theme-analytics.js?v=20260524"></script>
+    <script src="themes-i18n.js?v=20261108c"></script>
 <meta property="og:site_name" content="Innioasis Themes Gallery"></head>
 <style>
     html {
@@ -1228,7 +1229,10 @@
                     );
                     normalizedConfigJson = JSON.stringify(rewritten, null, 2);
                 }
-                zipRows = (man.items || []).filter((it) => String(it.devicePath || '').toLowerCase() !== 'config.json');
+                zipRows = (man.items || []).filter((it) => {
+                    const dev = String(it.devicePath || '').toLowerCase();
+                    return dev !== 'config.json' && !(TP && TP.isI18nMetadataFile && TP.isI18nMetadataFile(dev)) && !/(^|_|\.)i18n\.json$/i.test(dev);
+                });
             } else {
                 for (const file of fileEntries) {
                     let zipKey = String(file.path || '').replace(/\\/g, '/');
@@ -1241,6 +1245,9 @@
                         }
                     }
                     const baseName = String(zipKey.split('/').pop() || '').toLowerCase();
+                    if (baseName === 'config_i18n.json' || baseName === 'themes_i18n.json' || /(^|_|\.)i18n\.json$/i.test(baseName)) {
+                        continue;
+                    }
                     if (['cover.jpg', 'cover.jpeg', 'cover-thumb.jpg', 'cover-thumb.jpeg'].includes(baseName)) {
                         const cfgText = sourceConfigForNormalize ? JSON.stringify(sourceConfigForNormalize).toLowerCase() : '';
                         if (!cfgText.includes(baseName)) continue;
@@ -1784,6 +1791,50 @@
                 maskVariantWrap.style.display = 'none';
             }
 
+            async function applyThemeTranslations(meta, folderStr, activeVar) {
+                if (!window.Y1ThemesI18n) return;
+                await window.Y1ThemesI18n.load();
+                var loc = window.Y1ThemesI18n.getActiveLocale();
+                var lang = window.Y1ThemesI18n.baseLang(loc);
+                var baseName = (meta && meta.name) || folderStr || 'Theme';
+                var baseDesc = (meta && meta.description) || '';
+                if (lang === 'en') {
+                    if (descEl) descEl.textContent = baseDesc || 'No description available.';
+                    return;
+                }
+
+                // 1. Try theme folder's config_i18n.json if present
+                var custom = null;
+                try {
+                    var r = await fetch(`${encodeURIComponent(folderStr)}/config_i18n.json`);
+                    if (r.ok) custom = await r.json();
+                } catch (_) {}
+
+                if (custom && (custom[lang] || custom[loc])) {
+                    var cEntry = custom[lang] || custom[loc];
+                    if (cEntry.description && descEl) descEl.textContent = cEntry.description;
+                    if (cEntry.name && nameEl) {
+                        nameEl.textContent = zipThemeDisplayName(cEntry.name, folderStr, activeVar) || cEntry.name;
+                    }
+                    return;
+                }
+
+                // 2. Global themes_i18n.json
+                var trans = window.Y1ThemesI18n.get(folderStr, baseName, baseDesc);
+                if (trans.description && descEl) {
+                    descEl.textContent = trans.description;
+                }
+                if (trans.name && nameEl && trans.name !== baseName) {
+                    nameEl.textContent = zipThemeDisplayName(trans.name, folderStr, activeVar) || trans.name;
+                }
+            }
+
+            ["site-locale-ready", "site-locale-change", "y1-locale-change"].forEach(function (evName) {
+                window.addEventListener(evName, function () {
+                    void applyThemeTranslations(themeMeta, folder, activeVariant);
+                });
+            });
+
             const nameEl = document.getElementById('theme-name')
             const descEl = document.getElementById('theme-desc')
             const authorEl = document.getElementById('theme-author')
@@ -1814,7 +1865,10 @@
                     subEl.textContent = '';
                 }
             }
-            descEl.textContent = (themeMeta && themeMeta.description) ? themeMeta.description : 'No description available.'
+            descEl.textContent = (themeMeta && themeMeta.description) ? themeMeta.description : 'No description available.';
+            if (window.Y1ThemesI18n) {
+                void applyThemeTranslations(themeMeta, folder, activeVariant);
+            }
             const medalEl = document.getElementById('theme-compatibility-medal');
             const seoAuthor = themeMeta && themeMeta.author ? String(themeMeta.author).trim() : '';
             applySeoMetadata(displayName, seoAuthor, themeMeta && themeMeta.description);
@@ -2156,6 +2210,6 @@
             if (promoPanel) promoPanel.remove();
         }
     </script>
-<script src="site-locale.js?v=20261108c" defer></script></body>
+<script src="site-locale.js?v=20261108d" defer></script></body>
 
 </html>

@@ -99,6 +99,32 @@ def load_ui_strings() -> Dict[str, str]:
         return json.load(handle).get("strings", {})
 
 
+# Units rendered as their own text node beside a live number (theme cards and
+# theme pages). They are shorter than the harvester's literal floor, so they
+# would otherwise never reach a catalog and every card would cost an API call.
+EXTRA_UI_STRINGS = ["views", "downloads"]
+
+
+def load_theme_strings() -> Dict[str, str]:
+    """Theme names and descriptions live in themes.json, not in page markup,
+    so extraction never saw them and no catalog could cover a card."""
+    path = os.path.join(ROOT, "themes.json")
+    if not os.path.exists(path):
+        return {}
+    with open(path, "r", encoding="utf-8") as handle:
+        data = json.load(handle)
+    themes = data.get("themes") if isinstance(data, dict) else data
+    out: Dict[str, str] = {}
+    for theme in themes or []:
+        if not isinstance(theme, dict):
+            continue
+        for field in ("name", "description"):
+            value = " ".join(str(theme.get(field) or "").split())
+            if value:
+                out[value] = field
+    return out
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -159,6 +185,21 @@ def main() -> int:
             ordered[text] = {"n": 1, "pages": max(1, len(files)), "script": True}
         else:
             entry["script"] = True
+
+    for text in EXTRA_UI_STRINGS:
+        entry = ordered.get(text)
+        if entry is None:
+            ordered[text] = {"n": 1, "pages": 1, "script": True}
+        else:
+            entry["script"] = True
+
+    # Theme names and descriptions are rendered by the gallery from themes.json.
+    for text in load_theme_strings():
+        entry = ordered.get(text)
+        if entry is None:
+            ordered[text] = {"n": 1, "pages": 1, "theme": True}
+        else:
+            entry["theme"] = True
 
     output = {
         "generated": datetime.now(timezone.utc).isoformat(timespec="seconds"),

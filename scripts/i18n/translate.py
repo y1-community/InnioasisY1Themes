@@ -369,6 +369,12 @@ def translate_texts(
     brand_only = [text for text in texts if masker.is_brand_only(text)]
     if brand_only:
         texts = [text for text in texts if text not in brand_only]
+    # Record the decision as an identity entry. Without it the string is absent
+    # from the catalog, so the runtime cannot tell "we chose to keep this name"
+    # from "not translated yet" and re-translates every theme name through the
+    # API on every page load.
+    for text in brand_only:
+        result[text] = text
 
     for batch in chunk(texts, provider.max_chars):
         total_batches += 1
@@ -430,7 +436,15 @@ def translate_texts(
             if not target_language_text:
                 continue
             restored = masker.restore(target_language_text, found)
-            if restored.strip() and restored.strip() != source:
+            if not restored.strip():
+                continue
+            if restored.strip() == source:
+                # The provider kept the word as written (a theme name, a handle,
+                # a word that is identical in both languages). Record that
+                # decision; otherwise the key stays absent and every render
+                # re-sends it to the translation API.
+                result[source] = source
+            else:
                 result[source] = restored.strip()
         if provider.sleep:
             time.sleep(provider.sleep)
@@ -490,35 +504,70 @@ def coverage(strings_file: str, catalog_dir: str, bases: List[dict]) -> int:
     return 0
 
 
+SUGGESTED_CODES = [
+    "en-US", "en-GB", "en",
+    "de", "fr", "es", "it", "nl", "pl",
+    "pt-PT", "pt", "ru", "uk", "sv", "no", "da", "fi", "cs", "el", "hu", "ro", "tr"
+]
+
+AMERICAS_APAC_CODES = [
+    "es-419", "es-MX", "pt-BR",
+    "ja", "ko", "zh-CN", "zh-TW", "zh-HK",
+    "vi", "th", "id", "hi", "ar", "he"
+]
+
+
 def write_locale_index(locales: List[dict], variants: List[dict], catalog_dir: str) -> None:
     """A small file the browser shell fetches to build its language picker."""
     available = []
+    seen_codes = set()
     for entry in locales:
-        path = os.path.join(catalog_dir, entry["code"] + ".json")
+        code = entry["code"]
+        if code in seen_codes:
+            continue
+        path = os.path.join(catalog_dir, code + ".json")
         if not os.path.exists(path):
             continue
+        seen_codes.add(code)
         available.append(
             {
-                "code": entry["code"],
-                "name": entry.get("name", entry["code"]),
-                "native": entry.get("native", entry.get("name", entry["code"])),
+                "code": code,
+                "name": entry.get("name", code),
+                "native": entry.get("native", entry.get("name", code)),
                 "dir": entry.get("dir", "ltr"),
             }
         )
     for entry in variants:
-        base = entry.get("base", "")
-        if not any(available_entry["code"] == base for available_entry in available):
+        code = entry["code"]
+        if code in seen_codes:
             continue
+        base = entry.get("base", "")
+        base_path = os.path.join(catalog_dir, base + ".json")
+        if base != "en" and not os.path.exists(base_path) and not any(a["code"] == base for a in available):
+            continue
+        seen_codes.add(code)
         available.append(
             {
-                "code": entry["code"],
-                "name": entry.get("name", entry["code"]),
-                "native": entry.get("native", entry.get("name", entry["code"])),
+                "code": code,
+                "name": entry.get("name", code),
+                "native": entry.get("native", entry.get("name", code)),
                 "dir": entry.get("dir", "ltr"),
                 "base": base,
             }
         )
-    available.sort(key=lambda item: item["code"])
+
+    suggested_map = {c.lower(): idx for idx, c in enumerate(SUGGESTED_CODES)}
+    americas_apac_map = {c.lower(): idx for idx, c in enumerate(AMERICAS_APAC_CODES)}
+
+    def sort_key(item: dict):
+        c = item["code"].lower()
+        if c in suggested_map:
+            return (0, suggested_map[c], item.get("name", ""))
+        if c in americas_apac_map:
+            return (1, americas_apac_map[c], item.get("name", ""))
+        return (2, 0, item.get("name", ""))
+
+    available.sort(key=sort_key)
     save_json(
         os.path.join(ROOT, "i18n", "site-locales.json"),
         {"generated": datetime.now(timezone.utc).isoformat(timespec="seconds"), "locales": available},
@@ -655,6 +704,10 @@ def main() -> int:
                 "provider": provider.name,
                 "generated": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                 "count": len(cache),
+                # Strings kept in English on purpose (theme names, handles,
+                # technical tokens). The runtime skips these instead of asking
+                # a translation API for them on every render.
+                "keep": sorted(key for key, value in cache.items() if key == value),
                 "strings": dict(sorted(cache.items())),
             },
         )

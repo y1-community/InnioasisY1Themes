@@ -368,6 +368,16 @@
         refreshMetricsHosts(key);
     }
 
+    function metricLabel(text) {
+        const label = document.createElement("span");
+        label.className = "y1-metric-label";
+        const translated = (window.InnioasisLocale && typeof window.InnioasisLocale.translate === "function")
+            ? window.InnioasisLocale.translate(text)
+            : text;
+        label.textContent = translated || text;
+        return label;
+    }
+
     function renderMetricsInto(el, stats, themeKey) {
         if (!el) return;
         const c = loadConsent();
@@ -378,10 +388,13 @@
             const views = document.createElement("span");
             views.className = "y1-metric";
             views.title = "Page views (gallery + theme page + preview)";
+            /* Number and unit are separate text nodes: the catalog can only
+               translate a whole node, and "1,234 views" never matches. */
             views.innerHTML =
                 '<i class="fa-regular fa-eye" aria-hidden="true"></i> ' +
                 formatCount(stats.pageViews) +
-                " views";
+                " ";
+            views.append(metricLabel("views"));
 
             const dls = document.createElement("span");
             dls.className = "y1-metric";
@@ -389,7 +402,8 @@
             dls.innerHTML =
                 '<i class="fa-solid fa-download" aria-hidden="true"></i> ' +
                 formatCount(stats.downloads) +
-                " downloads";
+                " ";
+            dls.append(metricLabel("downloads"));
 
             if (el.dataset.cardMetrics === "1") {
                 const countsRow = document.createElement("div");
@@ -739,7 +753,9 @@
         hasApi: () => !!readMetaOrigin(),
     };
 
-    global.addEventListener("y1-consent-changed", () => {
-        for (const key of metricsHosts.keys()) refreshMetricsHosts(key);
+    ["y1-consent-changed", "site-locale-ready", "site-locale-change", "y1-locale-change"].forEach((evName) => {
+        global.addEventListener(evName, () => {
+            for (const key of metricsHosts.keys()) refreshMetricsHosts(key);
+        });
     });
 })(typeof window !== "undefined" ? window : globalThis);

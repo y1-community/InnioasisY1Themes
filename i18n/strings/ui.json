@@ -1,6 +1,18 @@
 {
  "note": "Strings rendered by the JS shell. Merged into the source catalog by extract_strings.py.",
  "strings": {
+  "'s costs.": [
+   "support_toolbar.html"
+  ],
+  "1 month ago": [
+   "support_toolbar.html"
+  ],
+  "1 week ago": [
+   "support_toolbar.html"
+  ],
+  "1 year ago": [
+   "support_toolbar.html"
+  ],
   "A Chibi-Robo! theme for your Y1": [
    "Chibi-Robo/index.html"
   ],
@@ -72,6 +84,9 @@
   "A dreamy pastel-space Kirby theme filled with soft nebula colors, glowing Warp Stars, and a cohesive cosmic UI design.": [
    "Kirby_Pastel_Space/index.html"
   ],
+  "A few dollars goes a long way here: it covers hundreds of downloads.": [
+   "support_toolbar.html"
+  ],
   "A grey Pusheen cat theme with pink accents": [
    "Pusheen/index.html"
   ],
@@ -128,6 +143,9 @@
   ],
   "A summer UI for you Y1 it has cute little snoopy": [
    "Summer_Snoopy/index.html"
+  ],
+  "A supporter": [
+   "support_toolbar.html"
   ],
   "A theme based on Freedom Planet by GalaxyTrail. Lowercase font made by AndrewIdot!": [
    "Freedom_Planet/index.html"
@@ -252,6 +270,9 @@
   "Alucard Hellsing ult for Innioasis Y1 & Y2 by goodsoup45": [
    "Alucard_Hellsing_ult/index.html"
   ],
+  "Americas & Asia-Pacific": [
+   "site-locale.js"
+  ],
   "Amy Rose tema for Innioasis Y1 & Y2 by Dimoti": [
    "Amy_Rose_tema/index.html"
   ],
@@ -273,6 +294,9 @@
   "An LCD-inspired theme": [
    "ElsieD/index.html",
    "y2k_white/index.html"
+  ],
+  "Analytics and privacy": [
+   "support_toolbar.html"
   ],
   "Android for Innioasis Y1 & Y2 by Robertpuggle": [
    "Android_robertpuggle/index.html"
@@ -341,8 +365,7 @@
    "BAKUGO_mila-wolf/index.html"
   ],
   "BAPE for Innioasis Y1 & Y2 by tyliya": [
-   "BAPE/index.html",
-   "Bape/index.html"
+   "BAPE/index.html"
   ],
   "BEEP GLORP for Innioasis Y1 & Y2 by Inbredbread": [
    "BEEP_GLORP/index.html"
@@ -395,6 +418,9 @@
   "Billie Eilish Edition - Innioasis Y1 and Y2 Themes Gallery": [
    "Billie_Eilish_Edition/index.html"
   ],
+  "Bitcoin (BTC)": [
+   "support_toolbar.html"
+  ],
   "Black Widow for Innioasis Y1 & Y2 by Michelle534": [
    "Black_Widow/index.html"
   ],
@@ -409,7 +435,6 @@
    "66666/index.html",
    "Alone/index.html",
    "BAPE/index.html",
-   "Bape/index.html",
    "Black_Widow/index.html",
    "Blank_Slate/index.html",
    "Blue_Whales/index.html",
@@ -447,7 +472,6 @@
    "punishing_gray_raven/index.html",
    "purple_neon/index.html",
    "tuscen_orange/index.html",
-   "twilight/index.html",
    "vampire/index.html",
    "wishi-fying_1/index.html",
    "wiz_khalifa/index.html",
@@ -507,11 +531,17 @@
   "Breath of the Wild for Innioasis Y1 & Y2 by purplecray0ns": [
    "Breath_of_the_Wild/index.html"
   ],
+  "Brings back toolbar goals and donation links.": [
+   "support_toolbar.html"
+  ],
   "British TV cult classic sitcom The Inbetweeners inspired theme featuring the lads Simon, Neil, 'Football Friend' Jay & 'Ooh Briefcase' Will. Including original font used for the title.": [
    "The_Inbetweeners/index.html"
   ],
   "Browse and download custom themes to personalize your Innioasis Y1 or Y2 MP3 player, with community-made styles and easy install options.": [
    "theme.html"
+  ],
+  "Bugs get fixed because someone stayed up testing your exact model. A donation keeps that going.": [
+   "support_toolbar.html"
   ],
   "Bulk update failed for": [
    "index.html"
@@ -677,8 +707,14 @@
   "Contact email fields do not match.": [
    "upload.html"
   ],
+  "Contribution of": [
+   "support_toolbar.html"
+  ],
   "Copied to clipboard.": [
    "upload.html"
+  ],
+  "Copy": [
+   "support_toolbar.html"
   ],
   "Copy failed": [
    "index (4).html"
@@ -692,8 +728,14 @@
   "Copy theme link": [
    "index.html"
   ],
+  "Corporate Sponsorship": [
+   "support_toolbar.html"
+  ],
   "Cortis for Innioasis Y1 & Y2 by dddd": [
    "Cortis_dddd/index.html"
+  ],
+  "Costs": [
+   "support_toolbar.html"
   ],
   "Cotton Candy for Innioasis Y1 & Y2 by bluebubblegum51": [
    "Cotton_Candy/index.html"
@@ -819,6 +861,9 @@
   "DONUTS for Innioasis Y1 & Y2 by caileb girault": [
    "DONUTS/index.html"
   ],
+  "Daily Running Costs": [
+   "support_toolbar.html"
+  ],
   "Dark Academia for Innioasis Y1 & Y2 by purplecray0ns": [
    "Dark_Academia/index.html"
   ],
@@ -874,7 +919,31 @@
   "Discord community": [
    "nav.js"
   ],
+  "Don't show donation appeals again": [
+   "support_toolbar.html"
+  ],
+  "Donate by Patreon": [
+   "support_toolbar.html"
+  ],
+  "Donate by PayPal": [
+   "support_toolbar.html"
+  ],
+  "Donate by Revolut": [
+   "support_toolbar.html"
+  ],
+  "Donate on Boosty": [
+   "support_toolbar.html"
+  ],
+  "Donate on Ko-fi": [
+   "support_toolbar.html"
+  ],
   "Donations are processed through Boosty": [
+   "support_toolbar.html"
+  ],
+  "Donations buy the test players and cables used to check each release before anyone installs it.": [
+   "support_toolbar.html"
+  ],
+  "Donations pay the running costs of Updater CE, the Themes Gallery and the community firmware archive. Whatever you can add helps.": [
    "support_toolbar.html"
   ],
   "DotDash for Innioasis Y1 & Y2 by Urva": [
@@ -1057,13 +1126,22 @@
   "Ethereal Princess for Innioasis Y1 & Y2 by Serene Oasis": [
    "Ethereal_Princess/index.html"
   ],
+  "Ethereum (ETH)": [
+   "support_toolbar.html"
+  ],
   "Everglades National Park for Innioasis Y1 & Y2 by mp3li": [
    "Everglades_National_Park/index.html"
   ],
   "Evergreen for Innioasis Y1 & Y2 by kuroochr": [
    "Evergreen/index.html"
   ],
+  "Every contribution, big or small, matters.": [
+   "support_toolbar.html"
+  ],
   "Every extra coffee funds future tool mirrors and development.": [
+   "support_toolbar.html"
+  ],
+  "Every release here is built in evenings and weekends. A small donation buys more of that time.": [
    "support_toolbar.html"
   ],
   "Evie Alley": [
@@ -1124,6 +1202,9 @@
   "Featuring some really cool sharks, and a fixed timed shutoff option. Built off of the aquarium theme. Sharks are from Zerosvalmont in Zoo Tycoon 2": [
    "Sharks/index.html"
   ],
+  "Files vanish when a hosting company shuts down. Donations keep the copies that rescued your player online.": [
+   "support_toolbar.html"
+  ],
   "FinKL theme for Innioasis Y1 & Y2.": [
    "FinKL/index.html"
   ],
@@ -1179,6 +1260,9 @@
   ],
   "Frutiger Aqua theme with main colors of teal, blue and yellow. Lots of fish!": [
    "Frutiger_Aqua/index.html"
+  ],
+  "Full Credits & Ledger →": [
+   "support_toolbar.html"
   ],
   "Furina i love furina and you can have a furina too": [
    "Furina/index.html"
@@ -1325,7 +1409,13 @@
   "Hellsing Ult for Innioasis Y1 & Y2 by Swagtastical the attractive": [
    "Hellsing_Ult/index.html"
   ],
-  "Help us cover": [
+  "Help us cover this month's running costs": [
+   "support_toolbar.html"
+  ],
+  "Help us cover this week's running costs": [
+   "support_toolbar.html"
+  ],
+  "Help us cover today's running costs": [
    "support_toolbar.html"
   ],
   "Hide crypto options · BTC, ETH, SHIB": [
@@ -1398,6 +1488,12 @@
   "If 1 in 50 visitors bought us a coffee, we'd cover most of a test player this month.": [
    "support_toolbar.html"
   ],
+  "If everyone visiting today donated, we'd be able to run for a year": [
+   "support_toolbar.html"
+  ],
+  "If this worked for you, pass the kindness on. It keeps the project free for whoever comes next.": [
+   "support_toolbar.html"
+  ],
   "Iminix Sonc": [
    "Isaiah/index.html",
    "It_s_Isaiah/index.html"
@@ -1422,7 +1518,7 @@
   "Innioasis Themes Gallery": [
    "index.html"
   ],
-  "Innioasis Updater": [
+  "Innioasis Universal Flash Tool": [
    "site-locale.js"
   ],
   "Innioasis Y1 and Y2 Themes Gallery": [
@@ -1624,6 +1720,12 @@
   "Littlest Pet Shop for Innioasis Y1 & Y2 by andreiaroomao": [
    "Littlest_Pet_Shop/index.html"
   ],
+  "Loading supporters...": [
+   "support_toolbar.html"
+  ],
+  "Loading supporters…": [
+   "support_toolbar.html"
+  ],
   "Lord X for Innioasis Y1 & Y2 by noob": [
    "Lord_X/index.html"
   ],
@@ -1763,6 +1865,9 @@
   "MonstaX theme for Innioasis Y1 & Y2.": [
    "MonstaX/index.html"
   ],
+  "Monthly Running Costs": [
+   "support_toolbar.html"
+  ],
   "Moonlight for Innioasis Y1 & Y2 by tai": [
    "Moonlight/index.html"
   ],
@@ -1877,6 +1982,9 @@
   "No authors are currently opted out.": [
    "opted-out-blocked-users.html"
   ],
+  "No company behind this, just one developer, a workbench and a donation page. Everything goes to running costs.": [
+   "support_toolbar.html"
+  ],
   "No description available.": [
    "theme.html"
   ],
@@ -1893,7 +2001,13 @@
   "No installable gallery themes are loaded yet. Try refreshing the page.": [
    "index.html"
   ],
+  "No matching languages found": [
+   "site-locale.js"
+  ],
   "No one has donated today, will you be the first?": [
+   "support_toolbar.html"
+  ],
+  "No subscription, no deadline, just a page like this one. Give only if it helped.": [
    "support_toolbar.html"
   ],
   "No theme files could be downloaded. Please verify file paths in config.json.": [
@@ -1939,14 +2053,23 @@
   "Omori Last Resort inspired theme. Made with Y2 structure in mind. Lots of sharks!": [
    "OMORI-LAST_RESORT/index.html"
   ],
+  "One coffee roughly covers the cost of a download. It keeps the next fix within reach.": [
+   "support_toolbar.html"
+  ],
   "One package is all we need - we prepare everything privately in your browser, then you get a simple link to watch it land.": [
    "upload.html"
+  ],
+  "One person answers the questions, writes the guides and pays the bills. Donations make that sustainable.": [
+   "support_toolbar.html"
   ],
   "One piece for Innioasis Y1 & Y2 by Shahzad": [
    "One_piece/index.html"
   ],
   "One-click installer for Windows, macOS & Linux": [
    "nav.js"
+  ],
+  "Only": [
+   "support_toolbar.html"
   ],
   "Open download page": [
    "index.html",
@@ -1964,6 +2087,9 @@
   "Opening the removal request for this theme now...": [
    "report-theme.html"
   ],
+  "Or help for free with Honeygain (earn $3 by sharing 100MB of bandwidth)": [
+   "support_toolbar.html"
+  ],
   "Orange Side for Innioasis Y1 & Y2 by Robertpuggle": [
    "Orange_Side/index.html"
   ],
@@ -1978,6 +2104,9 @@
   ],
   "Original Software, custom ROMs & guides": [
    "nav.js"
+  ],
+  "Our projects rely on donations": [
+   "support_toolbar.html"
   ],
   "Ouran Highschool Hostclub for Innioasis Y1 & Y2 by Hadja": [
    "Ouran_Highschool_Hostclub/index.html"
@@ -2219,6 +2348,12 @@
   "Relaxations for Innioasis Y1 & Y2 by Manneuqin": [
    "Relaxations/index.html"
   ],
+  "Remember guide feedback answers": [
+   "support_toolbar.html"
+  ],
+  "Remember nightly builds selection": [
+   "support_toolbar.html"
+  ],
   "Report form endpoint is not configured.": [
    "report-theme.html"
   ],
@@ -2278,6 +2413,12 @@
   ],
   "Ryan and his partner are expecting a baby in December — thank you for any support. Donations also help keep the gallery and related tools online: hosting, the domain, and running costs.": [
    "index (4).html"
+  ],
+  "Ryan and his partner are expecting a baby. Donations towards the project's running costs and our new family are massively appreciated.": [
+   "support_toolbar.html"
+  ],
+  "Ryan and his partner are getting ready for their child. If this tool has been useful, a donation for the running costs and our growing family would help more than you know.": [
+   "support_toolbar.html"
   ],
   "SAILOR MOON Hope you like it!!!!": [
    "Sailor_Moon/index.html"
@@ -2351,6 +2492,9 @@
   "Satoru Gojo for Innioasis Y1 & Y2 by Asyathegoat!!": [
    "Satoru_Gojo/index.html"
   ],
+  "Save choices": [
+   "support_toolbar.html"
+  ],
   "Save this link - you can use it until your theme is live in the gallery.": [
    "upload.html"
   ],
@@ -2361,6 +2505,9 @@
    "support_toolbar.html"
   ],
   "Saved. Your choices apply from now on.": [
+   "support_toolbar.html"
+  ],
+  "Saves your \"was this useful?\" feedback on guides.": [
    "support_toolbar.html"
   ],
   "Scanning device folder…": [
@@ -2416,6 +2563,12 @@
   "Share theme link": [
    "index.html"
   ],
+  "Shiba Inu": [
+   "site-locale.js"
+  ],
+  "Shiba Inu (SHIB)": [
+   "support_toolbar.html"
+  ],
   "Shine for Innioasis Y1 & Y2 by purplecray0ns": [
    "Shine/index.html"
   ],
@@ -2431,7 +2584,13 @@
   "Shojo cute girls for Innioasis Y1 & Y2 by Bella Cal": [
    "Shojo_cute_girls/index.html"
   ],
+  "Show community support & running costs": [
+   "support_toolbar.html"
+  ],
   "Show crypto options · BTC, ETH, SHIB": [
+   "support_toolbar.html"
+  ],
+  "Shows pre-release and nightly builds in the firmware list.": [
    "support_toolbar.html"
   ],
   "Silence Of The Lambs for Innioasis Y1 & Y2 by Rando": [
@@ -2510,6 +2669,12 @@
   "Skyrim for Innioasis Y1 & Y2 by prettyboythings-blog": [
    "Skyrim_Theme/index.html"
   ],
+  "Small $3–$5 gifts cover about 15% of real costs": [
+   "support_toolbar.html"
+  ],
+  "Small gifts of $3 to $5 cover about 15% of what this project really costs; most of the rest goes on players bought to test.": [
+   "support_toolbar.html"
+  ],
   "Smaller text": [
    "support_toolbar.html"
   ],
@@ -2543,11 +2708,17 @@
   "Solely self- and donations-funded, and still mostly paid for out of pocket  -  thank you to everyone who chipped in!": [
    "support_toolbar.html"
   ],
+  "Solely self- and donations-funded, with no paid tier. Mostly paid for out of pocket, with help from people this helped.": [
+   "support_toolbar.html"
+  ],
   "Solely self- and donations-funded, with no paywalls  -  chip in $3 towards test players and servers.": [
    "support_toolbar.html"
   ],
   "Sombie mp3 for Innioasis Y1 & Y2 by Solana Castro": [
    "Sombie_mp3/index.html"
+  ],
+  "Some of the players this supports were written off as broken. A donation keeps the rescue service running.": [
+   "support_toolbar.html"
   ],
   "Some optional screens in this theme are missing or look incomplete. Everything still works today - this is just a heads-up if you update firmware later.": [
    "theme.html"
@@ -2695,6 +2866,15 @@
   "Supernatural for Innioasis Y1 & Y2 by Rin": [
    "Supernatural/index.html"
   ],
+  "Support Updater and the Themes Gallery through Ko-fi, Buy Me a Coffee, PayPal, Revolut, or Patreon.": [
+   "support_toolbar.html"
+  ],
+  "Supporter": [
+   "support_toolbar.html"
+  ],
+  "Supporters": [
+   "support_toolbar.html"
+  ],
   "Swagtastical the Attractive": [
    "Meiko/index.html"
   ],
@@ -2786,6 +2966,9 @@
   "Thank you very much for your great work.": [
    "pen-e.html"
   ],
+  "Thank you.": [
+   "support_toolbar.html"
+  ],
   "Thanks for all the efforts and time spent getting this device as far as you have. It has helped improve my travel edc and just wanted to give back and say thanks.": [
    "pen-e.html"
   ],
@@ -2854,6 +3037,12 @@
    "The_garden/index.html"
   ],
   "The price of a coffee or two keeps our download servers online this month.": [
+   "support_toolbar.html"
+  ],
+  "The servers behind the downloads are paid for out of pocket. A coffee keeps them online for the next owner.": [
+   "support_toolbar.html"
+  ],
+  "The tools, the guides and the archive are all free. A tip funds the next feature.": [
    "support_toolbar.html"
   ],
   "Theme actions": [
@@ -2975,6 +3164,9 @@
   "Themes for Innioasis Y1 & Y2 players": [
    "nav.js"
   ],
+  "There's a new arrival on the way in Ryan's house. Every donation towards the servers and our growing family means a great deal.": [
+   "support_toolbar.html"
+  ],
   "Theweeknd Edition - Innioasis Y1 and Y2 Themes Gallery": [
    "Theweeknd_Edition/index.html"
   ],
@@ -2990,7 +3182,10 @@
   "This is one ive had in mind for a while I thought it was really pretty!!": [
    "FLOWERS/index.html"
   ],
-  "This month's": [
+  "This month's costs are covered - thank you!": [
+   "support_toolbar.html"
+  ],
+  "This project is here because people chose to help. Thank you for keeping the archive, the tools, and the community moving.": [
    "support_toolbar.html"
   ],
   "This software really helped! Thanks a lot!": [
@@ -3102,7 +3297,10 @@
   "This topic is specifically for fans of Jinx from Arcane.": [
    "ARCANE_JINX/index.html"
   ],
-  "This week's": [
+  "This week's costs are covered - thank you!": [
+   "support_toolbar.html"
+  ],
+  "Thousands of downloads go out every month. Donations pay for the servers that deliver them.": [
    "support_toolbar.html"
   ],
   "Tinkerbell for Innioasis Y1 & Y2 by mp3li": [
@@ -3113,6 +3311,9 @@
   ],
   "Toast for Innioasis Y1 & Y2 by mp3li": [
    "Toast/index.html"
+  ],
+  "Today's costs are covered - thank you!": [
+   "support_toolbar.html"
   ],
   "Tokidoki for Innioasis Y1 & Y2 by Y2Kittty": [
    "Tokidoki/index.html"
@@ -3130,6 +3331,9 @@
    "Toon_Link/index.html"
   ],
   "Top Supporter": [
+   "support_toolbar.html"
+  ],
+  "Top Supporters": [
    "support_toolbar.html"
   ],
   "Tord Eddsworld Theme! Made for my friend but F2U": [
@@ -3186,6 +3390,9 @@
   "Ultimate Muscle for Innioasis Y1 & Y2 by Robertpuggle": [
    "Ultimate_Muscle/index.html"
   ],
+  "Universal Flash Tool": [
+   "site-locale.js"
+  ],
   "Unusable FX payload": [
    "support_toolbar.html"
   ],
@@ -3234,6 +3441,9 @@
   "Very Modern, very cool, idk i just had fun desining i hope you like it ^^": [
    "Die_Drei_Frageichen___-_Fanart/index.html"
   ],
+  "View our full public donor ledger & money raised →": [
+   "support_toolbar.html"
+  ],
   "Vinland Saga for Innioasis Y1 & Y2 by Custom": [
    "Vinland_Saga/index.html"
   ],
@@ -3258,6 +3468,9 @@
   "WARM CHEETAH for Innioasis Y1 & Y2 by saasjester": [
    "WARM_CHEETAH/index.html"
   ],
+  "Waiting for supporters to appear.": [
+   "support_toolbar.html"
+  ],
   "Water chill for Innioasis Y1 & Y2 by Albina": [
    "Water_chill/index.html"
   ],
@@ -3267,6 +3480,9 @@
   "We couldn't return a tracking link just now. Check your email or try again shortly.": [
    "upload.html"
   ],
+  "We donated": [
+   "support_toolbar.html"
+  ],
   "We lost this page": [
    "404.html"
   ],
@@ -3275,6 +3491,9 @@
   ],
   "We send a small update for the team to approve.": [
    "upload.html"
+  ],
+  "Weekly Running Costs": [
+   "support_toolbar.html"
   ],
   "Weird stuff idk": [
    "BEEP_GLORP/index.html"
@@ -3440,6 +3659,9 @@
   "Your listing details were sent for review. A teammate approves them before they go live.": [
    "upload.html"
   ],
+  "Your privacy on Innioasis.app": [
+   "support_toolbar.html"
+  ],
   "Your removal request was created. A maintainer will review it and may contact you at the email you provided to verify you represent the original author.": [
    "upload.html"
   ],
@@ -3469,6 +3691,126 @@
   ],
   "ZuneY for Innioasis Y1 & Y2 by Neither-Classic2058": [
    "ZuneY/index.html"
+  ],
+  "a coffee": [
+   "support_toolbar.html"
+  ],
+  "bought us": [
+   "support_toolbar.html"
+  ],
+  "coffees": [
+   "support_toolbar.html"
+  ],
+  "contributed": [
+   "support_toolbar.html"
+  ],
+  "contributions": [
+   "support_toolbar.html"
+  ],
+  "costs": [
+   "support_toolbar.html"
+  ],
+  "covered": [
+   "support_toolbar.html"
+  ],
+  "daily": [
+   "support_toolbar.html"
+  ],
+  "day": [
+   "support_toolbar.html"
+  ],
+  "day ago": [
+   "support_toolbar.html"
+  ],
+  "days ago": [
+   "support_toolbar.html"
+  ],
+  "donated": [
+   "support_toolbar.html"
+  ],
+  "for free by sharing 100MB on": [
+   "support_toolbar.html"
+  ],
+  "for this month": [
+   "support_toolbar.html"
+  ],
+  "for this week": [
+   "support_toolbar.html"
+  ],
+  "for today": [
+   "support_toolbar.html"
+  ],
+  "has donated": [
+   "support_toolbar.html"
+  ],
+  "join them": [
+   "support_toolbar.html"
+  ],
+  "join them to keep downloads free for everyone.": [
+   "support_toolbar.html"
+  ],
+  "left to raise for": [
+   "support_toolbar.html"
+  ],
+  "month": [
+   "support_toolbar.html"
+  ],
+  "month ago": [
+   "support_toolbar.html"
+  ],
+  "monthly": [
+   "support_toolbar.html"
+  ],
+  "months ago": [
+   "support_toolbar.html"
+  ],
+  "of our": [
+   "support_toolbar.html"
+  ],
+  "on Ko-Fi": [
+   "support_toolbar.html"
+  ],
+  "supporter has helped us this week": [
+   "support_toolbar.html"
+  ],
+  "supporter helped us this week": [
+   "support_toolbar.html"
+  ],
+  "supporters have helped us this week": [
+   "support_toolbar.html"
+  ],
+  "supporters helped us this week": [
+   "support_toolbar.html"
+  ],
+  "this month": [
+   "support_toolbar.html"
+  ],
+  "this week": [
+   "support_toolbar.html"
+  ],
+  "today": [
+   "support_toolbar.html"
+  ],
+  "week": [
+   "support_toolbar.html"
+  ],
+  "week ago": [
+   "support_toolbar.html"
+  ],
+  "weekly": [
+   "support_toolbar.html"
+  ],
+  "weeks ago": [
+   "support_toolbar.html"
+  ],
+  "year ago": [
+   "support_toolbar.html"
+  ],
+  "years ago": [
+   "support_toolbar.html"
+  ],
+  "yesterday": [
+   "support_toolbar.html"
   ]
  }
 }

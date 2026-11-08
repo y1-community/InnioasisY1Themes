@@ -60,6 +60,7 @@
     <link rel="stylesheet" href="theme-frozen.css?v=20260526">
     <script src="theme-frozen.js?v=20260526"></script>
     <script src="theme-analytics.js?v=20260524b"></script>
+    <script src="themes-i18n.js?v=20261108c"></script>
 
     <style>
         html {
@@ -1071,7 +1072,10 @@
                         ? config
                         : TP.rewriteConfigForDeviceFlatPack(config, selectedFolder, man.logicalToDevice);
                 installRows = (man.items || []).filter(
-                    (it) => String(it.devicePath || '').toLowerCase() !== 'config.json'
+                    (it) => {
+                        const dev = String(it.devicePath || '').toLowerCase();
+                        return dev !== 'config.json' && !isI18nMetadataFile(dev);
+                    }
                 );
             } else {
                 installRows = fileEntries.map((fe) => ({
@@ -2125,6 +2129,13 @@
             return p;
         }
 
+        function isI18nMetadataFile(nameOrPath) {
+            const s = String(nameOrPath || '').trim().replace(/\\/g, '/');
+            const base = s.split('/').filter(Boolean).pop() || '';
+            const low = base.toLowerCase();
+            return low === 'config_i18n.json' || low === 'themes_i18n.json' || /(^|_|\.)i18n\.json$/i.test(low);
+        }
+
         function extractFilesFromConfig(configObj, folderPath) {
             const files = new Set();
             files.add('config.json'); // Always include the root config
@@ -2136,6 +2147,7 @@
                         traverse(obj[key]);
                     } else if (typeof obj[key] === 'string') {
                         const val = normalizeConfigAssetPath(obj[key], folderPath);
+                        if (isI18nMetadataFile(val)) continue;
                         const looksAsset = TP
                             ? TP.isLikelyAssetPathString(val)
                             : /\.(png|jpe?g|gif|webp|bmp|ttf|otf|woff|json|txt|md)$/i.test(val);
@@ -3841,10 +3853,13 @@
                         normalizedConfigJson = JSON.stringify(rewritten, null, 2);
                     }
                     zipRows = (man.items || []).filter(
-                        (it) => String(it.devicePath || '').toLowerCase() !== 'config.json'
+                        (it) => {
+                            const dev = String(it.devicePath || '').toLowerCase();
+                            return dev !== 'config.json' && !isI18nMetadataFile(dev);
+                        }
                     );
                 } else {
-                    zipRows = fileEntries.map((fe) => ({
+                    zipRows = fileEntries.filter((fe) => !isI18nMetadataFile(fe.path)).map((fe) => ({
                         devicePath: String(fe.path || '').replace(/\\/g, '/').split('/').pop() || 'file',
                         download_url: fe.download_url,
                         path: fe.path
@@ -4726,6 +4741,6 @@
 
         load()
     </script>
-<script src="site-locale.js?v=20261108c" defer></script></body>
+<script src="site-locale.js?v=20261108d" defer></script></body>
 
 </html>
