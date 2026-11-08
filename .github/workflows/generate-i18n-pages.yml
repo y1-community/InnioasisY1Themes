@@ -74,6 +74,7 @@ jobs:
       - name: Build static multilingual page trees & sitemap
         run: |
           python3 scripts/i18n/generate_multilingual_static_pages.py
+          python3 scripts/i18n/generate_multilingual_theme_shells.py --missing-only
           python3 scripts/generate_sitemap.py
           python3 scripts/i18n/prerender.py --locales all --tiers core --out dist
 
