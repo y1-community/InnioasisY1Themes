@@ -71,7 +71,7 @@
   <!-- i18n-hreflang-end -->
 </head>
 <body class="site-themes-app">
-  <a class="lumen-skip-link" href="#main">Ir para o conteúdo</a>
+  <a class="lumen-skip-link" href="#main">Pular para o conteúdo</a>
   <div id="nav-root"></div>
   <main id="main" class="lumen-guide">
     <header>
@@ -86,7 +86,7 @@
       <ul class="lumen-benefits-list">
         <li>USB latência de handshake ou tempos limite de porta no macOS podem interromper a injeção de carga útil do DA no meio da transferência.</li>
         <li>Cabeçalhos de partição ausentes ou incompletos deixam o bootloader (pré-carregador/lk) em um estado sem resposta.</li>
-        <li>The player appears completely dead-no LED, no charging icon, no screen backlight.</li>
+        <li>O player parece completamente morto - sem LED, sem ícone de carregamento, sem luz de fundo da tela.</li>
       </ul>
       <p>Mesmo neste estado, o chipset MediaTek volta para <strong>Modo BROM</strong> (USB VID 0e8d, PID 0003), pronto para recuperação oficial de baixo nível.</p>
     </section>
@@ -126,7 +126,7 @@
       <ol class="lumen-steps">
         <li><strong>Desconecte o reprodutor:</strong> Desconecte completamente o cabo USB do player e do PC.</li>
         <li><strong>Desligamento total:</strong> Segure o botão Power (ou Power + Volume Down) por 15 segundos para garantir que o chipset esteja totalmente desligado e não preso em um loop de baixa potência USB.</li>
-        <li><strong>Inicie Updater CE com o modo SP Flash Tool:</strong> Selecione o modelo do seu dispositivo (por exemplo, <em>Innioasis Y1</em> ou <em>Innioasis Y2</em>) e escolha <em>Software original</em> para restaurar partições de estoque.</li>
+        <li><strong>Inicie Updater CE com o modo SP Flash Tool:</strong> Selecione o modelo do seu dispositivo (por exemplo, <em>Innioasis Y1</em> ou <em>Innioasis Y2</em>) e escolha <em>Software Original</em> para restaurar partições de estoque.</li>
         <li><strong>Iniciar instalação/restauração:</strong> Clique <em>Instalar / Restaurar</em> em Updater CE. Aguarde até que o prompt de status diga <em>Esperando pelo jogador...</em></li>
         <li><strong>Insira o cabo USB para disparar o BROM:</strong> Enquanto o dispositivo estiver desligado, conecte o cabo USB diretamente a uma porta USB da placa-mãe de alta velocidade (evite hubs USB sem alimentação).</li>
         <li>O sistema detectará a porta MediaTek VCOM, enviará o Agente de Download (DA), reescreverá as tabelas de partição e restaurará todas as imagens de firmware de forma limpa.</li>
