@@ -1,0 +1,118 @@
+name: Update site translations
+
+# Keeps the Themes Gallery's chrome and hand-written pages translated in every
+# language, on the same catalog format as innioasis.app so the two sites can
+# share reviewed copy.
+#
+# Theme submissions themselves are not translated: a theme's name and its
+# creator's description are the creator's words, and running them through a
+# translator would misrepresent them. The gallery around them — navigation,
+# filters, install instructions, safety copy, dock and language picker — is.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "*.html"
+      - "site-locale.js"
+      - "site-init.js"
+      - "nav.js"
+      - "gallery-chrome.js"
+      - "support_toolbar.html"
+      - "i18n/**"
+      - "scripts/i18n/**"
+      - ".github/workflows/update-translations.yml"
+  schedule:
+    - cron: "37 2 * * *"
+  workflow_dispatch:
+    inputs:
+      locales:
+        description: "'all', 'core', or a comma-separated list (de,fr,ja)"
+        default: "all"
+      top:
+        description: "Only the N most-used strings (0 = every missing string)"
+        default: "0"
+  repository_dispatch:
+    types: [theme-published]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-translations
+  cancel-in-progress: false
+
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Harvest strings rendered by the gallery shell
+        run: python3 scripts/i18n/harvest_ui_strings.py
+
+      - name: Extract the gallery pages
+        run: python3 scripts/i18n/extract_strings.py --tiers core
+
+      - name: Merge hand-reviewed copy
+        run: python3 scripts/i18n/seed_catalogs.py
+
+      - name: Translate strings that are still missing
+        continue-on-error: true
+        env:
+          LOCALES: ${{ github.event.inputs.locales || 'all' }}
+          TOP: ${{ github.event.inputs.top || '0' }}
+        run: |
+          ARGS=""
+          if [ "$TOP" != "0" ]; then ARGS="--top $TOP"; fi
+          python3 scripts/i18n/translate.py --provider google-web --locales "$LOCALES" $ARGS
+
+      - name: Rebuild the language picker index
+        run: python3 scripts/i18n/translate.py --index-only
+
+      - name: Report coverage
+        continue-on-error: true
+        run: |
+          python3 scripts/i18n/translate.py --check > coverage.txt || true
+          {
+            echo "### Translation coverage"
+            echo
+            echo '```'
+            head -1 coverage.txt
+            tail -3 coverage.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Pre-render static locale copies
+        continue-on-error: true
+        run: python3 scripts/i18n/prerender.py --locales all --tiers core --out dist
+
+      - name: Upload the pre-rendered gallery
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: themes-i18n-site
+          path: |
+            dist/
+            coverage.txt
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Commit updated catalogs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add i18n/catalogs i18n/strings i18n/site-locales.json i18n/reviewed
+          if git diff --cached --quiet; then
+            echo "No translation changes."
+          else
+            git commit -m "Update gallery translations across supported languages"
+            git push
+          fi

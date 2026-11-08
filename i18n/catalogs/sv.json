@@ -1,0 +1,33 @@
+{
+ "locale": "sv",
+ "name": "Swedish",
+ "native": "Svenska",
+ "dir": "ltr",
+ "source": "en",
+ "provider": "initial-stub",
+ "reviewed": true,
+ "generated": "2026-11-08T11:05:02+00:00",
+ "count": 20,
+ "strings": {
+  "All languages": "Alla språk",
+  "Browse firmware": "Bläddra bland firmware",
+  "Close": "Stäng",
+  "Device Model": "Enhetsmodell",
+  "Donate": "Stöd",
+  "Download": "Ladda ner",
+  "FAQs": "Vanliga frågor",
+  "Get Updater CE": "Hämta Updater CE",
+  "Help me choose": "Hjälp mig välja",
+  "Install / Restore": "Installera / Återställ",
+  "Language": "Språk",
+  "Original Software": "Originalprogramvara",
+  "Privacy": "Integritet",
+  "Release notes": "Versionsinformation",
+  "Search languages": "Sök språk",
+  "Skip to content": "Gå till innehåll",
+  "Software": "Programvara",
+  "Thank You": "Tack",
+  "Theme": "Tema",
+  "Troubleshooting": "Felsökning"
+ }
+}

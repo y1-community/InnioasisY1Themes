@@ -1,0 +1,61 @@
+name: Sync donors.csv from Innioasis-Updater
+
+# donors.csv is owned by the Updater repository (innioasis.app). This workflow
+# only pulls the canonical list and never pushes back, so the pair of sync
+# workflows cannot fight over line endings or loop through commit triggers.
+#
+# It runs on a schedule and on demand rather than on push: a push trigger here
+# would fire for the very commit this job makes.
+
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: donors-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Themes
+        uses: actions/checkout@v4
+
+      - name: Fetch the canonical list
+        run: |
+          set -euo pipefail
+          URL="https://raw.githubusercontent.com/y1-community/Innioasis-Updater/main/donors.csv"
+          if ! curl -fsSL "$URL" -o /tmp/donors.csv; then
+            echo "::warning::Could not read the canonical donors.csv (is the repo public?). Leaving this copy unchanged."
+            exit 0
+          fi
+          python3 - <<'PY'
+          from pathlib import Path
+          incoming = Path("/tmp/donors.csv").read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+          if incoming and not incoming.endswith(b"\n"):
+              incoming += b"\n"
+          current = Path("donors.csv")
+          existing = current.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n") if current.exists() else b""
+          if existing != incoming:
+              current.write_bytes(incoming)
+              print("Updated donors.csv from the canonical list.")
+          else:
+              print("donors.csv is already in sync.")
+          PY
+
+      - name: Commit if it changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add donors.csv
+          if git diff --cached --quiet; then
+            echo "Nothing to commit."
+          else
+            git commit -m "Sync donors.csv from Innioasis-Updater"
+            git push
+          fi

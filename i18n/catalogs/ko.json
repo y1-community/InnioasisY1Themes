@@ -1,0 +1,33 @@
+{
+ "locale": "ko",
+ "name": "Korean",
+ "native": "한국어",
+ "dir": "ltr",
+ "source": "en",
+ "provider": "initial-stub",
+ "reviewed": true,
+ "generated": "2026-11-08T11:05:02+00:00",
+ "count": 20,
+ "strings": {
+  "All languages": "모든 언어",
+  "Browse firmware": "펌웨어 둘러보기",
+  "Close": "닫기",
+  "Device Model": "기기 모델",
+  "Donate": "후원하기",
+  "Download": "다운로드",
+  "FAQs": "자주 묻는 질문",
+  "Get Updater CE": "Updater CE 받기",
+  "Help me choose": "선택 도움말",
+  "Install / Restore": "설치 / 복원",
+  "Language": "언어",
+  "Original Software": "원본 소프트웨어",
+  "Privacy": "개인정보",
+  "Release notes": "릴리스 노트",
+  "Search languages": "언어 검색",
+  "Skip to content": "본문으로 건너뛰기",
+  "Software": "소프트웨어",
+  "Thank You": "감사합니다",
+  "Theme": "테마",
+  "Troubleshooting": "문제 해결"
+ }
+}

@@ -1,0 +1,33 @@
+{
+ "locale": "th",
+ "name": "Thai",
+ "native": "ไทย",
+ "dir": "ltr",
+ "source": "en",
+ "provider": "initial-stub",
+ "reviewed": true,
+ "generated": "2026-11-08T11:05:02+00:00",
+ "count": 20,
+ "strings": {
+  "All languages": "ทุกภาษา",
+  "Browse firmware": "เรียกดูเฟิร์มแวร์",
+  "Close": "ปิด",
+  "Device Model": "รุ่นอุปกรณ์",
+  "Donate": "บริจาค",
+  "Download": "ดาวน์โหลด",
+  "FAQs": "คำถามที่พบบ่อย",
+  "Get Updater CE": "รับ Updater CE",
+  "Help me choose": "ช่วยฉันเลือก",
+  "Install / Restore": "ติดตั้ง / คืนค่า",
+  "Language": "ภาษา",
+  "Original Software": "ซอฟต์แวร์ดั้งเดิม",
+  "Privacy": "ความเป็นส่วนตัว",
+  "Release notes": "บันทึกการเผยแพร่",
+  "Search languages": "ค้นหาภาษา",
+  "Skip to content": "ไปที่เนื้อหา",
+  "Software": "ซอฟต์แวร์",
+  "Thank You": "ขอบคุณ",
+  "Theme": "ธีม",
+  "Troubleshooting": "การแก้ไขปัญหา"
+ }
+}
