@@ -57,6 +57,7 @@
         if (!t || t.includes('://')) return false;
         if (/^#|^rgba?\(/i.test(t)) return false;
         if (isI18nMetadataFile(t)) return false;
+        if (isPreviewOrWebsiteOnlyAsset(t)) return false;
         return /\.(png|jpe?g|gif|webp|bmp|svg|ttf|otf|woff2?|json|txt|md|ini)$/i.test(t);
     }
 
@@ -267,6 +268,16 @@
         "cover-thumb.jpeg",
     ]);
 
+    function isPreviewOrWebsiteOnlyAsset(nameOrPath) {
+        const s = String(nameOrPath || '').trim().replace(/\\/g, '/');
+        const base = s.split('/').filter(Boolean).pop() || '';
+        const low = base.toLowerCase();
+        if (low.includes('.preview.') || low.endsWith('.preview.jpg') || low.endsWith('.preview.png')) return true;
+        if (WEBSITE_ONLY_COVERS.has(low)) return true;
+        if (low === 'index.html' || low.endsWith('.html') || low.endsWith('.md') || low === 'license') return true;
+        return false;
+    }
+
     function configReferencedBasenames(cfg) {
         const names = new Set();
         walkConfigAssetStrings(cfg, (val) => {
@@ -280,7 +291,10 @@
         return names;
     }
 
-    /** Gallery JPEG covers and i18n metadata files are not part of the downloadable theme. */
+    /**
+     * Gallery JPEG covers, preview assets, and non-theme files are excluded.
+     * Strictly ensures only files specified in the theme's config.json and config.json itself get packed.
+     */
     function withoutWebsiteOnlyCovers(fileEntries, cfg) {
         const referenced = configReferencedBasenames(cfg);
         return (Array.isArray(fileEntries) ? fileEntries : []).filter((entry) => {
@@ -288,7 +302,8 @@
             const base = logical.split("/").filter(Boolean).pop() || "";
             const low = base.toLowerCase();
             if (isI18nMetadataFile(low) || isI18nMetadataFile(logical)) return false;
-            if (!WEBSITE_ONLY_COVERS.has(low)) return true;
+            if (isPreviewOrWebsiteOnlyAsset(low) || isPreviewOrWebsiteOnlyAsset(logical)) return false;
+            if (low === 'config.json') return true;
             return referenced.has(low);
         });
     }
@@ -365,6 +380,7 @@
         isDeclaredAssetSubfolderName,
         isDriveGoogleFolderExternalUrl,
         effectiveExternalDownloadUrl,
-        isI18nMetadataFile
+        isI18nMetadataFile,
+        isPreviewOrWebsiteOnlyAsset
     };
 })(typeof window !== 'undefined' ? window : this);

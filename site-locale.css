@@ -387,3 +387,97 @@ html:not([lang]) .site-i18n-badge,
 @media (prefers-reduced-motion: reduce) {
   .site-locale-throbber { animation: none; opacity: .6; }
 }
+
+/* Language switch suggestion banner */
+.site-locale-offer {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 18px;
+  background: rgba(24, 28, 36, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.2);
+  border-radius: 999px;
+  color: #f1f5f9;
+  font-family: inherit;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  max-width: min(92vw, 680px);
+}
+.site-locale-offer.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+.site-locale-offer-icon {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  color: #38bdf8;
+  display: flex;
+  align-items: center;
+}
+.site-locale-offer-text {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.site-locale-offer-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+.site-locale-offer-btn {
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border-radius: 999px;
+  padding: 5px 12px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.site-locale-offer-btn--switch {
+  background: #38bdf8;
+  color: #0f172a;
+}
+.site-locale-offer-btn--switch:hover {
+  background: #7dd3fc;
+}
+.site-locale-offer-btn--dismiss {
+  background: transparent;
+  color: #94a3b8;
+  font-size: 1.2rem;
+  padding: 2px 8px;
+  line-height: 1;
+}
+.site-locale-offer-btn--dismiss:hover {
+  color: #f1f5f9;
+}
+@media (max-width: 600px) {
+  .site-locale-offer {
+    border-radius: 14px;
+    top: auto;
+    bottom: 72px;
+    flex-wrap: wrap;
+    transform: translateX(-50%) translateY(20px);
+  }
+  .site-locale-offer.is-visible {
+    transform: translateX(-50%) translateY(0);
+  }
+  .site-locale-offer-text {
+    white-space: normal;
+  }
+}

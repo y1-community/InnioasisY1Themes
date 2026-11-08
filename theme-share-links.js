@@ -51,7 +51,14 @@
         const theme = cleanFolder(catalogFolder);
         if (!theme) return String(baseHref || './theme.html');
         const v = String(variantSegment || '').trim();
-        const base = String(baseHref || './theme.html').replace(/\?.*$/, '');
+        let base = String(baseHref || './theme.html').replace(/\?.*$/, '');
+        // Preserve current localized page if on a localized index or theme page (e.g. index_de.html -> theme_de.html)
+        if (typeof location !== 'undefined' && location.pathname) {
+            const locMatch = location.pathname.match(/(?:index|theme)_([a-zA-Z0-9_-]+)\.html$/i);
+            if (locMatch && (base === './theme.html' || base === 'theme.html')) {
+                base = `./theme_${locMatch[1]}.html`;
+            }
+        }
         let href = `${base}?theme=${encodeURIComponent(theme)}`;
         if (v) href += `&variant=${encodeURIComponent(v)}`;
         return href;
@@ -59,6 +66,7 @@
 
     /**
      * Parse /Theme_Name/ or /Theme_Name/Variant_Name (also /Theme/Variants/Variant) from pathname.
+     * Correctly ignores root HTML files including localized variants (theme_de.html, theme_jp.html, etc.).
      * @returns {{ folder: string, variant: string } | null}
      */
     function parseThemePathFromLocation(loc) {
@@ -75,7 +83,7 @@
             });
         if (!parts.length) return null;
         const lastLow = parts[parts.length - 1].toLowerCase();
-        if (lastLow === 'theme.html' || lastLow === 'index.html') {
+        if (/^(theme|index)(_[a-z0-9-]+)?\.html$/i.test(lastLow) || lastLow.endsWith('.html')) {
             parts.pop();
         }
         if (!parts.length) return null;

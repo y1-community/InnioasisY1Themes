@@ -1220,3 +1220,101 @@ body.site-themes-app .bulk-update-panel {
 }
 
 /* Footer credit line: site creator + community */
+
+/* —— AdSense / Raptive Layout Containers (CLS-protected) —— */
+.gallery-ad-container {
+    width: 100%;
+    margin: 0 auto;
+    text-align: center;
+    box-sizing: border-box;
+    transition: min-height 0.2s ease;
+}
+
+.gallery-ad-container:empty {
+    display: none !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.gallery-ad-container:not(:empty) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 90px;
+    padding: 12px 0;
+}
+
+.gallery-ad-top {
+    margin-bottom: 12px;
+}
+
+.gallery-ad-mid {
+    grid-column: 1 / -1;
+    margin: 16px 0;
+    border-radius: var(--site-radius-md, 12px);
+}
+
+.gallery-ad-bottom {
+    margin-top: 16px;
+    margin-bottom: 24px;
+}
+
+/* —— Theme Progress & Download Status Bar —— */
+.theme-progress {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px 12px;
+    background: color-mix(in oklab, var(--site-bg-elevated) 90%, var(--site-accent, #6366f1) 10%);
+    border: 1px solid color-mix(in oklab, var(--site-border) 80%, var(--site-accent, #6366f1) 30%);
+    border-radius: var(--site-radius-pill, 999px);
+    box-sizing: border-box;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.theme-progress .progress-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.theme-progress .progress-bar {
+    flex: 1;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.theme-progress .progress-bar-inner {
+    width: 0%;
+    height: 100%;
+    background: var(--site-accent, #6366f1);
+    border-radius: 999px;
+    transition: width 0.18s ease-out;
+}
+
+.theme-progress .progress-percent {
+    font-size: 0.78rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--site-text);
+    min-width: 36px;
+    text-align: right;
+}
+
+.theme-progress .progress-text {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--site-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+    line-height: 1.2;
+}
+

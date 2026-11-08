@@ -630,47 +630,101 @@ select {
     flex-direction: column;
     gap: 8px;
     align-items: stretch;
-    padding: 6px;
+    padding: 10px 12px;
     box-sizing: border-box;
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: 8px;
+    background: rgba(15, 23, 42, 0.88);
+    border: 1px solid rgba(56, 189, 248, 0.32);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), inset 0 0 12px rgba(56, 189, 248, 0.08);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 10px;
     min-width: 180px;
     max-width: 100%;
+    transition: all 0.2s ease;
 }
 
 .theme-progress .progress-row {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 
 .theme-progress .progress-bar {
     flex: 1;
-    height: 10px;
-    background: rgba(255, 255, 255, 0.06);
-    border-radius: 6px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
     overflow: hidden;
+    position: relative;
 }
 
 .theme-progress .progress-bar-inner {
     width: 0%;
     height: 100%;
-    background: var(--primary);
-    transition: width 0.18s linear;
-}
-
-.theme-progress .progress-text {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    text-align: left;
-    word-break: break-word;
+    background: linear-gradient(90deg, #0ea5e9, #38bdf8, #818cf8);
+    border-radius: 999px;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+    transition: width 0.18s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .theme-progress .progress-percent {
-    min-width: 48px;
+    min-width: 44px;
     text-align: right;
-    color: var(--text-primary);
-    font-size: 0.95rem;
+    color: var(--primary, #38bdf8);
+    font-size: 0.88rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.theme-progress .progress-text {
+    font-size: 0.82rem;
+    color: var(--text-secondary, #94a3b8);
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+}
+
+/* AdSense / Raptive Gallery Slots */
+.gallery-ad-container {
+    width: 100%;
+    max-width: 1200px;
+    box-sizing: border-box;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    contain: layout style;
+    transition: min-height 0.2s ease;
+}
+
+.gallery-ad--top {
+    min-height: 90px;
+    margin: 16px auto;
+}
+
+.gallery-ad--infeed {
+    grid-column: 1 / -1;
+    min-height: 250px;
+    margin: 14px 0;
+}
+
+.gallery-ad--bottom {
+    min-height: 90px;
+    margin: 20px auto;
+}
+
+@media (max-width: 768px) {
+    .gallery-ad--top, .gallery-ad--bottom {
+        min-height: 50px;
+    }
+    .gallery-ad--infeed {
+        min-height: 250px;
+    }
 }
 
 .theme-card .btn[disabled] {

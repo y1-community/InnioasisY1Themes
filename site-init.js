@@ -93,12 +93,32 @@
         return null;
     }
 
+    function applyAnalyticsConsent(mode) {
+        var isOff = mode === false || mode === "off";
+        global["ga-disable-GTM-TNDGC37L"] = isOff;
+        if (typeof global.gtag === "function") {
+            try {
+                global.gtag("consent", "update", {
+                    analytics_storage: isOff ? "denied" : "granted",
+                    ad_storage: "denied"
+                });
+            } catch (_) {}
+        }
+        if (global.ThemeAnalytics && typeof global.ThemeAnalytics.saveConsent === "function") {
+            try {
+                void global.ThemeAnalytics.saveConsent({ analytics: !isOff });
+            } catch (_) {}
+        }
+    }
+
     function writeConsent(prefs) {
         prefs = prefs || {};
         var prev = readConsent() || {};
+        var anPref = typeof prefs.analytics !== "undefined" ? prefs.analytics : prev.analytics;
+        var anActive = anPref !== false && anPref !== "off";
         var next = {
             decided: true,
-            analytics: typeof prefs.analytics === "boolean" ? prefs.analytics : (typeof prev.analytics === "boolean" ? prev.analytics : prefs.feedback !== false),
+            analytics: anActive ? "essential" : "off",
             ratingsView: typeof prefs.ratingsView === "boolean" ? prefs.ratingsView : (typeof prev.ratingsView === "boolean" ? prev.ratingsView : true),
             ratingsSubmit: typeof prefs.ratingsSubmit === "boolean" ? prefs.ratingsSubmit : (typeof prev.ratingsSubmit === "boolean" ? prev.ratingsSubmit : prefs.feedback !== false),
             feedback: typeof prefs.feedback === "boolean" ? prefs.feedback : (typeof prev.feedback === "boolean" ? prev.feedback : true),
@@ -115,14 +135,16 @@
             });
             global.localStorage.setItem(CONSENT_KEY, consentStr);
             setSharedCookie(CONSENT_KEY, consentStr);
-            setSharedCookie("innioasis-privacy", next.feedback && next.nightly ? "all" : (!next.feedback && !next.nightly ? "none" : (next.feedback ? "feedback" : "nightly")));
+            setSharedCookie("innioasis-privacy", next.analytics === "off" ? "none" : (next.feedback && next.nightly ? "all" : (next.feedback ? "feedback" : "nightly")));
+            setSharedCookie("innioasis-privacy-analytics", next.analytics);
             global.localStorage.setItem(THEME_CONSENT_KEY, JSON.stringify({
                 decided: true,
-                analytics: next.analytics,
+                analytics: anActive,
                 ratingsView: next.ratingsView,
                 ratingsSubmit: next.ratingsSubmit
             }));
         } catch (_) {}
+        applyAnalyticsConsent(next.analytics);
         if (typeof global.y1DecorateLinks === "function") {
             try { global.y1DecorateLinks(); } catch (_) {}
         }
@@ -152,6 +174,18 @@
             return !!prefs && prefs[feature] !== false;
         }
     };
+
+    (function initPrivacyFromUrlOrCookie() {
+        var fromUrl = parsePrivacyParam();
+        if (fromUrl !== null) {
+            writeConsent(fromUrl);
+        } else {
+            var existing = readConsent();
+            if (existing !== null) {
+                applyAnalyticsConsent(existing.analytics);
+            }
+        }
+    })();
 
     function executeInlineScripts(container) {
         if (!container) return;

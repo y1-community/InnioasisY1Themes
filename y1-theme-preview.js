@@ -270,17 +270,27 @@
         return { itemBackgroundStyle: itemBg, itemSelectedBackgroundStyle: sel };
     }
 
-    function backgroundUrlForView(cfg, viewId, buildFileUrl, contentFolder) {
+    function previewAssetUrl(originalUrl, ext) {
+        if (!originalUrl || typeof originalUrl !== 'string') return '';
+        if (originalUrl.indexOf('.preview.') !== -1) return originalUrl;
+        var dot = originalUrl.lastIndexOf('.');
+        if (dot === -1) return originalUrl;
+        return originalUrl.slice(0, dot) + '.preview.' + ext;
+    }
+
+    function backgroundUrlForView(cfg, viewId, buildFileUrl, contentFolder, preferPreview) {
+        var raw = '';
         if (viewId === 'home') {
-            var d = cfg.desktopWallpaper;
-            if (d) return buildFileUrl(contentFolder, d);
-            return pickWallpaper(cfg) ? buildFileUrl(contentFolder, pickWallpaper(cfg)) : '';
+            raw = cfg.desktopWallpaper || pickWallpaper(cfg) || cfg.globalWallpaper || '';
+        } else {
+            raw = cfg.globalWallpaper || cfg.desktopWallpaper || pickWallpaper(cfg) || '';
         }
-        var g = cfg.globalWallpaper;
-        if (g) return buildFileUrl(contentFolder, g);
-        var d2 = cfg.desktopWallpaper;
-        if (d2) return buildFileUrl(contentFolder, d2);
-        return pickWallpaper(cfg) ? buildFileUrl(contentFolder, pickWallpaper(cfg)) : '';
+        if (!raw) return '';
+        var full = buildFileUrl(contentFolder, raw);
+        if (preferPreview && full) {
+            return previewAssetUrl(full, 'jpg');
+        }
+        return full;
     }
 
     function applyCssProps(el, props) {
@@ -1112,8 +1122,10 @@
 
                 var fontStyleId = themePreviewFontStyleId(catalogFolder, variantSegment);
                 var fontDisplay = mode === 'full' ? 'block' : 'swap';
-                injectThemeFonts(cfg, buildFileUrl, contentFolder, fontStyleId, fontDisplay);
-                var fontStack = defaultFontStack(cfg, fontStyleId);
+                if (mode !== 'gallery') {
+                    injectThemeFonts(cfg, buildFileUrl, contentFolder, fontStyleId, fontDisplay);
+                }
+                var fontStack = mode === 'gallery' ? 'system-ui, -apple-system, sans-serif' : defaultFontStack(cfg, fontStyleId);
 
                 var itemCfg = (cfg && cfg.itemConfig) || {};
                 var menuCfg = (cfg && cfg.menuConfig) || {};
@@ -1208,7 +1220,9 @@
 
                 function paint() {
                     canvas.innerHTML = '';
-                    var bgUrl = backgroundUrlForView(cfg, sim.themeViewId, buildFileUrl, contentFolder);
+                    var rawBgUrl = backgroundUrlForView(cfg, sim.themeViewId, buildFileUrl, contentFolder, false);
+                    var previewBgUrl = (mode === 'gallery' || mode === 'menu') ? backgroundUrlForView(cfg, sim.themeViewId, buildFileUrl, contentFolder, true) : rawBgUrl;
+                    var activeBg = previewBgUrl || rawBgUrl;
                     canvas.style.backgroundColor = 'transparent';
                     var wall = document.createElement('div');
                     wall.className = 'y1-tp-wallpaper';
@@ -1218,11 +1232,25 @@
                         'px;height:' +
                         H +
                         'px;z-index:0;pointer-events:none;background-color:#000;' +
-                        (bgUrl
+                        (activeBg
                             ? 'background-image:url("' +
-                              bgUrl.replace(/"/g, '%22') +
+                              activeBg.replace(/"/g, '%22') +
                               '");background-size:cover;background-position:center;background-repeat:no-repeat;'
                             : '');
+                    if (previewBgUrl) {
+                        try {
+                            var preWall = new Image();
+                            preWall.fetchPriority = 'high';
+                            preWall.src = previewBgUrl;
+                        } catch (_) {}
+                    }
+                    if (previewBgUrl && previewBgUrl !== rawBgUrl) {
+                        var bgFallback = new Image();
+                        bgFallback.onerror = function () {
+                            wall.style.backgroundImage = 'url("' + rawBgUrl.replace(/"/g, '%22') + '")';
+                        };
+                        bgFallback.src = previewBgUrl;
+                    }
                     canvas.appendChild(wall);
 
                     var status = document.createElement('div');
@@ -1254,9 +1282,17 @@
                                       : 'audiobookPlaying';
                         var pf = statusCfg[pk];
                         if (pf) {
+                            var rawPf = buildFileUrl(contentFolder, pf);
+                            var prevPf = (mode === 'gallery' || mode === 'menu') ? previewAssetUrl(rawPf, 'png') : rawPf;
                             var pi = document.createElement('img');
-                            pi.src = buildFileUrl(contentFolder, pf);
+                            pi.src = prevPf;
                             pi.alt = '';
+                            if (prevPf !== rawPf) {
+                                pi.onerror = function () {
+                                    pi.onerror = null;
+                                    pi.src = rawPf;
+                                };
+                            }
                             bindPreviewImgFallback(pi);
                             pi.style.cssText = 'height:25px;width:25px;object-fit:contain;display:block;';
                             right.appendChild(pi);
@@ -1277,19 +1313,32 @@
                         sim && sim.isCharging
                     );
                     if (battUrl) {
+                        var rawBatt = battUrl;
+                        var prevBatt = (mode === 'gallery' || mode === 'menu') ? previewAssetUrl(rawBatt, 'png') : rawBatt;
                         var bi = document.createElement('img');
-                        bi.src = battUrl;
+                        bi.src = prevBatt;
                         bi.alt = '';
                         bi.style.cssText = 'height:15px;width:auto;object-fit:contain;display:block;';
                         var pctSpan = document.createElement('span');
                         pctSpan.style.fontSize = '16px';
                         pctSpan.textContent = pct + '%';
-                        bi.onerror = function () {
-                            bi.onerror = null;
-                            bi.style.display = 'none';
-                            if (pctSpan.parentNode) pctSpan.parentNode.removeChild(pctSpan);
-                            appendBatteryFallback(right, pct, colors.text_primary);
-                        };
+                        if (prevBatt !== rawBatt) {
+                            bi.onerror = function () {
+                                bi.onerror = function () {
+                                    bi.style.display = 'none';
+                                    if (pctSpan.parentNode) pctSpan.parentNode.removeChild(pctSpan);
+                                    appendBatteryFallback(right, pct, colors.text_primary);
+                                };
+                                bi.src = rawBatt;
+                            };
+                        } else {
+                            bi.onerror = function () {
+                                bi.onerror = null;
+                                bi.style.display = 'none';
+                                if (pctSpan.parentNode) pctSpan.parentNode.removeChild(pctSpan);
+                                appendBatteryFallback(right, pct, colors.text_primary);
+                            };
+                        }
                         right.appendChild(bi);
                         right.appendChild(pctSpan);
                     } else {
@@ -1357,8 +1406,9 @@
 
                         var sel = homeItems[sim.themeSelectedIndex];
                         if (sel && sel.iconFile) {
-                            var iu = buildFileUrl(contentFolder, sel.iconFile);
-                            if (iu) {
+                            var rawIu = buildFileUrl(contentFolder, sel.iconFile);
+                            var previewIu = (mode === 'gallery' || mode === 'menu') ? previewAssetUrl(rawIu, 'png') : rawIu;
+                            if (previewIu) {
                                 var maxPrevH = Math.max(40, H - HOME_PREVIEW_TOP_MARGIN - 8);
                                 var tile = document.createElement('div');
                                 tile.style.cssText =
@@ -1372,8 +1422,15 @@
                                     maxPrevH +
                                     'px;height:auto;display:flex;align-items:center;justify-content:center;overflow:hidden;z-index:10;box-sizing:border-box;';
                                 var im = document.createElement('img');
-                                im.src = iu;
+                                im.fetchPriority = 'high';
+                                im.src = previewIu;
                                 im.alt = sel.label || '';
+                                if (previewIu !== rawIu) {
+                                    im.onerror = function () {
+                                        im.onerror = null;
+                                        im.src = rawIu;
+                                    };
+                                }
                                 bindPreviewImgFallback(im);
                                 im.style.cssText =
                                     'max-width:100%;width:auto;height:auto;max-height:' +
@@ -2441,11 +2498,18 @@
 
     function mountGalleryCardLazy(container, options) {
         if (!container) return;
-        if (typeof IntersectionObserver === 'undefined') {
-            runGalleryMountJob(container, options || {});
+        var opts = options || {};
+        var rect = container.getBoundingClientRect ? container.getBoundingClientRect() : null;
+        var isAboveTheFold = rect && rect.top < (window.innerHeight || 800) + 100;
+        if (opts.priority || isAboveTheFold || typeof IntersectionObserver === 'undefined') {
+            if (_galleryMountActive < _galleryMountMax) {
+                runGalleryMountJob(container, opts);
+            } else {
+                _galleryMountQueue.unshift({ container: container, opts: opts });
+                drainGalleryMountQueue();
+            }
             return;
         }
-        var opts = options || {};
         var io = new IntersectionObserver(
             function (entries) {
                 for (var i = 0; i < entries.length; i++) {
@@ -2459,7 +2523,7 @@
                     }
                 }
             },
-            { rootMargin: '0px', threshold: 0.01 }
+            { rootMargin: '180px 0px', threshold: 0.01 }
         );
         io.observe(container);
     }
