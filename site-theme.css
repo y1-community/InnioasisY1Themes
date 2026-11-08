@@ -1500,9 +1500,11 @@ html, body {
     }
 }
 
-/* The top bar settles 8px shorter after the body gains site-dock-mode and the
-   chrome script finishes, which moved the banner and the whole grid. Pinning its
-   first-paint height removes that shift. */
+/* The top bar settles shorter after the body gains site-dock-mode and the
+   chrome script finishes, which moved the banner and the whole grid below it.
+   These are the measured settled heights of the bar at each width, applied
+   from first paint so the rows never move: 69px at >=910, 153px at 530-900,
+   157px at 360-520, 194px at <=350. */
 .gallery-topbar {
     min-height: 69px;
 }
@@ -1513,10 +1515,22 @@ html, body {
     }
 
     /* The search box starts inline and then takes a full row, which pushed the
-       banner and everything below it down. Give it the full row at first
-       paint so the wrap happens before anything is painted. */
+       banner down. Give it the full row at first paint so the wrap happens
+       before anything is painted. */
     .gallery-topbar .topbar-search-wrap {
         flex: 1 1 100%;
         width: 100%;
+    }
+}
+
+@media (max-width: 520px) {
+    .gallery-topbar {
+        min-height: 157px;
+    }
+}
+
+@media (max-width: 350px) {
+    .gallery-topbar {
+        min-height: 194px;
     }
 }
