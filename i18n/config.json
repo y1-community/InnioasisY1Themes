@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "version": 1,
   "sourceLocale": "en",
   "catalogDir": "i18n/catalogs",
@@ -143,4 +144,142 @@
     "siteOrigin": "https://innioasis.app",
     "sitemap": "sitemap-i18n.xml"
   }
+=======
+    "theme_info": {
+        "title": "i18n",
+        "author": "",
+        "authorUrl": "",
+        "description": "Download the i18n theme for Innioasis Y1 & Y2 and give your player a new look.",
+        "externalDownloadUrl": ""
+    },
+    "version": 1,
+    "sourceLocale": "en",
+    "catalogDir": "i18n/catalogs",
+    "cacheDir": "i18n/cache",
+    "stringsFile": "i18n/strings/en.json",
+    "skipTags": [
+        "script",
+        "style",
+        "pre",
+        "code",
+        "kbd",
+        "samp",
+        "textarea"
+    ],
+    "skipAttributes": [
+        "data-i18n-skip",
+        "translate=\"no\""
+    ],
+    "attributeNames": [
+        "title",
+        "alt",
+        "placeholder",
+        "aria-label",
+        "aria-description"
+    ],
+    "metaAttributeNames": [
+        "content"
+    ],
+    "protectedTerms": [
+        "Innioasis",
+        "Timmkoo",
+        "Innioasis Updater",
+        "Updater CE",
+        "Rockbox",
+        "Y2Linux",
+        "Y2Player",
+        "Better-Y",
+        "Koensayr",
+        "Inniclassic",
+        "JJ Launcher",
+        "Rondo",
+        "Solar",
+        "SP Flash Tool",
+        "MTKClient",
+        "MediaTek",
+        "MicroSD",
+        "GitHub",
+        "Discord",
+        "Ko-fi",
+        "PayPal",
+        "Patreon",
+        "Revolut",
+        "Boosty",
+        "Bitcoin"
+    ],
+    "tiers": {
+        "core": {
+            "description": "The gallery shell and its hand-written pages: navigation, filters, install and safety copy, support, dock and error page. Theme submissions are deliberately excluded.",
+            "include": [
+                "*.html"
+            ],
+            "exclude": [
+                "i18n/**",
+                "dist/**",
+                "_site/**",
+                "node_modules/**",
+                ".cache/**",
+                "backfill.html",
+                "banned-users.html",
+                "opted-out-blocked-users.html",
+                "fabform-email-templates.html",
+                "pen-e.html",
+                "index (4).html"
+            ]
+        },
+        "full": {
+            "description": "Same scope as core. A theme folder holds creator-authored names and descriptions that must not be rewritten by a translator.",
+            "include": [
+                "*.html"
+            ],
+            "exclude": [
+                "i18n/**",
+                "dist/**",
+                "_site/**",
+                "node_modules/**",
+                ".cache/**"
+            ]
+        }
+    },
+    "providers": {
+        "google-web": {
+            "description": "Google Translate's public web endpoint. No key, rate limited, fine for the public site copy.",
+            "endpoint": "https://translate.googleapis.com/translate_a/single",
+            "maxCharsPerRequest": 4200,
+            "sleepSeconds": 0.12
+        },
+        "google-cloud": {
+            "description": "Official Cloud Translation API. Needs GOOGLE_TRANSLATE_API_KEY.",
+            "endpoint": "https://translation.googleapis.com/language/translate/v2",
+            "envKey": "GOOGLE_TRANSLATE_API_KEY",
+            "maxCharsPerRequest": 8000
+        },
+        "deepl": {
+            "description": "DeepL API. Needs DEEPL_API_KEY. Covers a subset of the Google languages.",
+            "endpoint": "https://api-free.deepl.com/v2/translate",
+            "envKey": "DEEPL_API_KEY",
+            "maxCharsPerRequest": 4000
+        },
+        "libre": {
+            "description": "Self-hosted LibreTranslate. Needs LIBRETRANSLATE_URL and optionally LIBRETRANSLATE_API_KEY.",
+            "envUrl": "LIBRETRANSLATE_URL",
+            "envKey": "LIBRETRANSLATE_API_KEY",
+            "maxCharsPerRequest": 3000
+        }
+    },
+    "prerender": {
+        "outputDir": "dist",
+        "siteOrigin": "https://innioasis.app",
+        "sitemap": "sitemap-i18n.xml"
+    },
+    "homePageConfig": {
+        "ebook": "transparent.png",
+        "calendar": "transparent.png",
+        "calculator": "transparent.png",
+        "fileManager": "transparent.png"
+    },
+    "settingConfig": {
+        "launcher": "transparent.png"
+    }
+>>>>>>> origin/main
 }
