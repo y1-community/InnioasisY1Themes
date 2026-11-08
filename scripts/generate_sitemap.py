@@ -92,16 +92,17 @@ def generate() -> str:
     static_entries: list[tuple[str, str, str, str]] = [
         # loc, changefreq, priority, lastmod
         (f"{SITE_BASE}/", "daily", "1.0", now),
-        (f"{SITE_BASE}/index.html", "daily", "0.9", now),
-        (f"{SITE_BASE}/upload.html", "weekly", "0.8", now),
-        (f"{SITE_BASE}/solar.html", "weekly", "0.8", now),
-        (f"{SITE_BASE}/backfill.html", "monthly", "0.6", now),
-        (f"{SITE_BASE}/gold-badge.html", "weekly", "0.7", now),
-        (f"{SITE_BASE}/report-theme.html", "monthly", "0.5", now),
-        (f"{SITE_BASE}/theme.html", "weekly", "0.5", now),
-        (f"{SITE_BASE}/opted-out-blocked-users.html", "monthly", "0.3", now),
-        (f"{SITE_BASE}/creators/", "monthly", "0.6", now),
     ]
+
+    # Dynamically include all published static HTML pages (including foreign language variants)
+    skip_files = {"404.html", "support_toolbar.html", "backfill.html", "fabform-email-templates.html"}
+    for p in sorted(REPO_ROOT.glob("*.html"), key=lambda x: x.name):
+        name = p.name
+        if name in skip_files or "(" in name or name.startswith("."):
+            continue
+        priority = "0.9" if name.startswith("index") else "0.7"
+        changefreq = "daily" if name.startswith("index") else "weekly"
+        static_entries.append((f"{SITE_BASE}/{name}", changefreq, priority, now))
 
     themes = _load_themes()
     # loc -> (lastmod, priority)

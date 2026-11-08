@@ -1,10 +1,62 @@
 {
- "generated": "2026-11-08T14:20:36+00:00",
- "locales": [
-  "de",
-  "es",
-  "fr",
-  "ja"
- ],
- "pages": 20
+  "generated": "2026-11-08T15:56:28+00:00",
+  "locales": [
+    "de",
+    "ja",
+    "es",
+    "fr",
+    "it",
+    "pt-BR",
+    "ru",
+    "zh-CN",
+    "zh-TW",
+    "ko",
+    "ar",
+    "nl",
+    "pl",
+    "tr",
+    "uk",
+    "vi",
+    "th",
+    "id",
+    "he",
+    "hi",
+    "cs",
+    "el",
+    "sv",
+    "fa",
+    "da",
+    "fi",
+    "hu",
+    "no",
+    "ro"
+  ],
+  "aliases": {
+    "ja": [
+      "jp"
+    ],
+    "zh-CN": [
+      "zh"
+    ],
+    "pt-BR": [
+      "pt"
+    ],
+    "ko": [
+      "kr"
+    ]
+  },
+  "pages": [
+    "404",
+    "credits",
+    "index",
+    "original-software-benefits",
+    "recover-non-booting-device",
+    "report-theme",
+    "solar",
+    "sp-flash-tool-mac",
+    "support_devs",
+    "theme",
+    "upload",
+    "y2-themes"
+  ]
 }

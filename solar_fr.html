@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr" data-locale="fr">
+
+<head>
+<script async src="https://www.googletagmanager.com/gtm.js?id=GTM-TNDGC37L"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+</script>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Testeurs nécessaires&nbsp;:&nbsp;Solar Firmware et lanceur personnalisés&nbsp;–&nbsp;Innioasis Y1</title>
+    <meta name="description"
+        content="Découvrez Solar : le firmware personnalisé et le lanceur pour Innioasis Y1 apportant des fonctionnalités Wi-Fi, YouTube, le streaming musical Deezer &amp; Soulseek, Cover Flow, le téléchargement direct de thèmes sans PC et une compatibilité totale des thèmes." />
+    <meta name="keywords" content="Innioasis Y1 Solar, Solar firmware, JJ Launcher fork, Innioasis firmware personnalisé, Innioasis téléchargement de thème via Wi-Fi, Cover Flow, Reach Deezer Soulseek" />
+    <meta name="author" content="TheSolarProject" />
+  <meta name="creator" content="Ryan Specter &amp; Innioasis Community">
+    <meta name="publisher" content="Luci Ltd" />
+    <link rel="author" href="https://github.com/thesolarproject" title="LeProjet Solaire sur GitHub" />
+    <link rel="canonical" href="https://themes.innioasis.app/solar_fr.html" />
+    <link rel="icon" href="y1_illustration.png" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://innioasis.app/styles.css" />
+    <link rel="stylesheet" href="site-theme.css?v=20261102header" />
+    <link rel="stylesheet" href="site-toolbar.css?v=20261105dockclose" />
+    <link rel="stylesheet" href="site-pages.css?v=20260622" />
+    <link rel="stylesheet" href="theme-analytics.css?v=20260521" />
+    <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
+    <script src="gallery-chrome.js?v=20261102header"></script>
+    <script src="site-init.js?v=20260522privacy"></script>
+    <script src="theme-analytics.js?v=20260521"></script>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: var(--site-bg, #13141d);
+            color: var(--site-text, #f5f6fa);
+        }
+
+        .solar-hero {
+            text-align: center;
+            padding: 1.5rem 0 3rem;
+        }
+
+        .solar-hero h1 {
+            font-family: var(--site-font-display, "Instrument Serif", Georgia, serif);
+            font-size: clamp(2.5rem, 6vw, 3.8rem);
+            margin: 0 0 0.85rem;
+            background: linear-gradient(135deg, #ffffff 0%, #ffd175 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 400;
+            letter-spacing: -0.032em;
+            line-height: 1.08;
+        }
+
+        .solar-hero .site-lead {
+            max-width: 44rem;
+            margin: 0 auto 1.5rem;
+            font-size: clamp(1.05rem, 2.5vw, 1.25rem);
+            line-height: 1.6;
+            color: #d1d8e8;
+        }
+
+        .solar-author-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border-radius: 99px;
+            background: rgba(255, 170, 40, 0.12);
+            border: 1px solid rgba(255, 170, 40, 0.3);
+            color: #ffbe3b;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-decoration: none;
+            margin-bottom: 2rem;
+            transition: all 0.2s ease;
+        }
+
+        .solar-author-pill:hover {
+            background: rgba(255, 170, 40, 0.22);
+            border-color: rgba(255, 170, 40, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .solar-cta-row {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-top: 0.5rem;
+        }
+
+        .solar-cta-row a.btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            text-decoration: none;
+            padding: 12px 22px;
+            font-size: 1rem;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .solar-cta-row a.btn-primary {
+            background: var(--site-accent, #ffb133);
+            color: #13141d;
+            border: 1px solid rgba(255, 230, 160, 0.6);
+            box-shadow: 0 4px 16px rgba(255, 177, 51, 0.3);
+            font-weight: 650;
+        }
+
+        .solar-cta-row a.btn-primary:hover {
+            background: #ffbe4d;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 177, 51, 0.42);
+        }
+
+        .solar-cta-row a.btn-secondary {
+            background: #1c2029;
+            color: #f4f6fb;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .solar-cta-row a.btn-secondary:hover {
+            background: #252a36;
+            border-color: rgba(255, 255, 255, 0.24);
+            transform: translateY(-2px);
+        }
+
+        .solar-section {
+            margin-bottom: 3.5rem;
+            max-width: 58rem;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .solar-section h2 {
+            font-size: clamp(1.5rem, 3.5vw, 2.1rem);
+            margin: 0 0 0.65rem;
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        .solar-section > p.section-intro {
+            color: var(--site-muted, #aeb6c5);
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin-bottom: 1.8rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .feature-card {
+            background: var(--site-bg-elevated, #1b1c28);
+            border: 1px solid rgba(180, 185, 220, 0.12);
+            border-radius: 14px;
+            padding: 1.5rem;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(255, 170, 40, 0.35);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+        }
+
+        .feature-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(255, 170, 40, 0.14);
+            color: #ffbe3b;
+            font-size: 1.3rem;
+            margin-bottom: 1.1rem;
+        }
+
+        .feature-card h3 {
+            margin: 0 0 0.6rem;
+            font-size: 1.15rem;
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        .feature-card p {
+            margin: 0;
+            font-size: 0.94rem;
+            line-height: 1.55;
+            color: #aeb6c5;
+        }
+
+        .screenshots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .screenshot-card {
+            background: var(--site-bg-elevated, #1b1c28);
+            border: 1px solid rgba(180, 185, 220, 0.12);
+            border-radius: 14px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.25s ease;
+        }
+
+        .screenshot-card:hover {
+            border-color: rgba(255, 255, 255, 0.22);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .screenshot-img-wrap {
+            position: relative;
+            background: #0a0b0f;
+            overflow: hidden;
+            aspect-ratio: 4 / 3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .screenshot-img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .screenshot-card:hover .screenshot-img-wrap img {
+            transform: scale(1.04);
+        }
+
+        .screenshot-caption {
+            padding: 0.9rem 1.1rem;
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: #d9e0ef;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: center;
+            background: #14161e;
+        }
+
+        .install-box {
+            background: var(--site-bg-elevated, #1b1c28);
+            border: 1px solid rgba(180, 185, 220, 0.12);
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .install-steps {
+            list-style: none;
+            padding: 0;
+            margin: 1.5rem 0 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .install-steps li {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .step-num {
+            flex: 0 0 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e59918, #ffb133 50%, #ffd175);
+            color: #13141d;
+            font-family: var(--site-font-mono, monospace);
+            font-variant-numeric: tabular-nums;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            box-shadow: 0 2px 8px rgba(255, 177, 51, 0.3);
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-content strong {
+            display: block;
+            font-size: 1.05rem;
+            color: #ffffff;
+            margin-bottom: 0.25rem;
+        }
+
+        .step-content p {
+            margin: 0;
+            font-size: 0.95rem;
+            color: #aeb6c5;
+            line-height: 1.55;
+        }
+
+        .note-box {
+            margin-top: 1.75rem;
+            padding: 1rem 1.25rem;
+            border-radius: 10px;
+            background: rgba(255, 177, 51, 0.1);
+            border-left: 4px solid #ffb133;
+            color: #d1d8e8;
+            font-size: 0.94rem;
+            line-height: 1.55;
+        }
+
+        .note-box strong {
+            color: #ffffff;
+        }
+
+        .manual-install {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .manual-install h3 {
+            font-size: 1.1rem;
+            color: #ffffff;
+            margin: 0 0 0.6rem;
+        }
+
+        .manual-install p {
+            color: #aeb6c5;
+            font-size: 0.94rem;
+            line-height: 1.55;
+            margin: 0 0 0.75rem;
+        }
+
+        .manual-install code {
+            color: #ffbe3b;
+            background: rgba(255, 255, 255, 0.06);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+    </style>
+<meta property="og:site_name" content="Innioasis Galerie de thèmes">
+  <!-- i18n-hreflang-start -->
+  <link rel="alternate" hreflang="x-default" href="https://themes.innioasis.app/solar.html">
+  <link rel="alternate" hreflang="en" href="https://themes.innioasis.app/solar.html">
+  <link rel="alternate" hreflang="de" href="https://themes.innioasis.app/solar_de.html">
+  <link rel="alternate" hreflang="ja" href="https://themes.innioasis.app/solar_ja.html">
+  <link rel="alternate" hreflang="jp" href="https://themes.innioasis.app/solar_jp.html">
+  <link rel="alternate" hreflang="es" href="https://themes.innioasis.app/solar_es.html">
+  <link rel="alternate" hreflang="fr" href="https://themes.innioasis.app/solar_fr.html">
+  <link rel="alternate" hreflang="it" href="https://themes.innioasis.app/solar_it.html">
+  <link rel="alternate" hreflang="pt-BR" href="https://themes.innioasis.app/solar_pt-BR.html">
+  <link rel="alternate" hreflang="pt" href="https://themes.innioasis.app/solar_pt.html">
+  <link rel="alternate" hreflang="ru" href="https://themes.innioasis.app/solar_ru.html">
+  <link rel="alternate" hreflang="zh-CN" href="https://themes.innioasis.app/solar_zh-CN.html">
+  <link rel="alternate" hreflang="zh" href="https://themes.innioasis.app/solar_zh.html">
+  <link rel="alternate" hreflang="zh-TW" href="https://themes.innioasis.app/solar_zh-TW.html">
+  <link rel="alternate" hreflang="ko" href="https://themes.innioasis.app/solar_ko.html">
+  <link rel="alternate" hreflang="kr" href="https://themes.innioasis.app/solar_kr.html">
+  <link rel="alternate" hreflang="ar" href="https://themes.innioasis.app/solar_ar.html">
+  <link rel="alternate" hreflang="nl" href="https://themes.innioasis.app/solar_nl.html">
+  <link rel="alternate" hreflang="pl" href="https://themes.innioasis.app/solar_pl.html">
+  <link rel="alternate" hreflang="tr" href="https://themes.innioasis.app/solar_tr.html">
+  <link rel="alternate" hreflang="uk" href="https://themes.innioasis.app/solar_uk.html">
+  <link rel="alternate" hreflang="vi" href="https://themes.innioasis.app/solar_vi.html">
+  <link rel="alternate" hreflang="th" href="https://themes.innioasis.app/solar_th.html">
+  <link rel="alternate" hreflang="id" href="https://themes.innioasis.app/solar_id.html">
+  <link rel="alternate" hreflang="he" href="https://themes.innioasis.app/solar_he.html">
+  <link rel="alternate" hreflang="hi" href="https://themes.innioasis.app/solar_hi.html">
+  <link rel="alternate" hreflang="cs" href="https://themes.innioasis.app/solar_cs.html">
+  <link rel="alternate" hreflang="el" href="https://themes.innioasis.app/solar_el.html">
+  <link rel="alternate" hreflang="sv" href="https://themes.innioasis.app/solar_sv.html">
+  <link rel="alternate" hreflang="fa" href="https://themes.innioasis.app/solar_fa.html">
+  <link rel="alternate" hreflang="da" href="https://themes.innioasis.app/solar_da.html">
+  <link rel="alternate" hreflang="fi" href="https://themes.innioasis.app/solar_fi.html">
+  <link rel="alternate" hreflang="hu" href="https://themes.innioasis.app/solar_hu.html">
+  <link rel="alternate" hreflang="no" href="https://themes.innioasis.app/solar_no.html">
+  <link rel="alternate" hreflang="ro" href="https://themes.innioasis.app/solar_ro.html">
+  <!-- i18n-hreflang-end -->
+</head>
+
+<body class="site-themes-app site-dock-mode">
+    <div id="nav-root"></div>
+    <div class="gallery-topbar">
+        <a class="gallery-brand" href="index_fr.html" title="Innioasis Y1 &amp; Y2 Galerie de thèmes">
+            <span class="gallery-brand-icon" aria-hidden="true"><i class="fa-solid fa-palette"></i></span>
+            <span class="gallery-brand-text">Innioasis Y1 et Y2 Thèmes</span>
+        </a>
+        <div class="gallery-tabs" aria-label="Rubriques du site">
+            <a class="gallery-tab" href="https://y1-themes.vercel.app">Éditeur</a>
+            <a class="gallery-tab" href="upload_fr.html">Télécharger</a>
+        </div>
+        <form class="topbar-search-wrap" action="index.html" method="get">
+            <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
+            <input class="topbar-search" type="search" name="q" placeholder="Recherche" aria-label="Thèmes de recherche" />
+        </form>
+    </div>
+
+    <div class="wrap">
+        <header class="solar-hero">
+            <h1 class="site-display">Testeurs nécessaires&nbsp;:&nbsp;Solar pour Y1</h1>
+            <p class="site-lead">
+                Solar Active le Wi-Fi sur votre Y1 et débloque un monde de fonctionnalités modernes sur votre Innioasis Y1, depuis les téléchargements de thèmes directs sur l'appareil et la diffusion en continu sans publicité jusqu'à la navigation visuelle Cover Flow.
+            </p>
+            <div>
+                <a class="solar-author-pill" href="https://github.com/thesolarproject" target="_blank" rel="noopener noreferrer">
+                    <i class="fa-brands fa-github" aria-hidden="true"></i> Créé par <strong>Le Projet Solaire</strong>
+                </a>
+            </div>
+            <div class="solar-cta-row">
+                <a class="btn btn-primary" href="https://github.com/thesolarproject/solar" target="_blank" rel="noopener noreferrer">
+                    <i class="fa-brands fa-github" aria-hidden="true"></i> Afficher Solar sur GitHub
+                </a>
+                <a class="btn btn-secondary" href="#install">
+                    <i class="fa-solid fa-download" aria-hidden="true"></i> Comment installer
+                </a>
+                <a class="btn btn-secondary" href="index_fr.html">
+                    <i class="fa-solid fa-palette" aria-hidden="true"></i> Parcourir les thèmes
+                </a>
+            </div>
+        </header>
+
+        <section class="solar-section" aria-labelledby="solar-benefits-heading">
+            <h2 id="solar-benefits-heading">Ce que Solar apporte au Y1</h2>
+            <p class="section-intro">
+                Solar est une interface de remplacement complète et un système d'exploitation moderne pour le Innioasis Y1 qui active le Wi-Fi et les outils réseau directs sur l'appareil.
+            </p>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-cloud-arrow-down" aria-hidden="true"></i></div>
+                    <h3>Téléchargements directs de thèmes</h3>
+                    <p>Téléchargez et appliquez les thèmes de cette galerie directement sur votre Y1 via Wi-Fi. Aucun PC, navigateur ou transfert USB requis.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-brands fa-youtube" aria-hidden="true"></i></div>
+                    <h3>Sans publicité YouTube</h3>
+                    <p>Diffusez ou téléchargez des vidéos YouTube hors ligne et des pistes audio de haute qualité directement sur votre lecteur, sans aucune publicité.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-music" aria-hidden="true"></i></div>
+                    <h3>Portée (Deezer et Soulseek)</h3>
+                    <p>Recherchez, écoutez et téléchargez de la musique directement via Wi-Fi en utilisant votre session Deezer (MP3/FLAC sans publicité) ou le partage Soulseek P2P.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-compact-disc" aria-hidden="true"></i></div>
+                    <h3>Navigation dans les albums Flow</h3>
+                    <p>Faites l'expérience d'une navigation fluide dans les albums visuels de style Cover Flow directement sur l'appareil pour une sensation musicale intuitive et rétro.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-podcast" aria-hidden="true"></i></div>
+                    <h3>Podcasts &amp; Navidrome</h3>
+                    <p>Recherchez et téléchargez vos épisodes de podcast préférés sur Internet ou connectez-vous à votre propre bibliothèque Navidrome personnelle auto-hébergée.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-wifi" aria-hidden="true"></i></div>
+                    <h3>Mises à jour en direct</h3>
+                    <p>Recevez et installez les futures mises à jour Solar directement via Wi-Fi, directement depuis les paramètres de l'appareil, sans vous connecter à un PC.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-sliders" aria-hidden="true"></i></div>
+                    <h3>Menu rapide global</h3>
+                    <p>Accédez à un menu contextuel global depuis n’importe quel écran pour contrôler instantanément les paramètres de lecture, de gestion des files d’attente, Wi-Fi et Bluetooth.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-check-double" aria-hidden="true"></i></div>
+                    <h3>Compatibilité complète des thèmes</h3>
+                    <p>100% compatible avec tous les thèmes communautaires de ce site. Conservez votre apparence personnalisée tout en déverrouillant les fonctionnalités modernes du système d’exploitation.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="solar-section" aria-labelledby="solar-screenshots-heading">
+            <h2 id="solar-screenshots-heading">Solar en action</h2>
+            <p class="section-intro">
+                Jetez un œil à l'interface épurée de Solar, aux outils de streaming musical et au visuel Cover Flow sur le Innioasis Y1.
+            </p>
+            <div class="screenshots-grid">
+                <div class="screenshot-card">
+                    <div class="screenshot-img-wrap">
+                        <img src="https://raw.githubusercontent.com/thesolarproject/solar/main/screenshots/About%20Solar.png" alt="À propos de l&#39;interface Solar" loading="lazy" />
+                    </div>
+                    <div class="screenshot-caption">À propos de l'écran système Solar</div>
+                </div>
+                <div class="screenshot-card">
+                    <div class="screenshot-img-wrap">
+                        <img src="https://raw.githubusercontent.com/thesolarproject/solar/main/screenshots/ACmp3%20theme%20%20on%20Solar.png" alt="Thème ACmp3 fonctionnant sur Solar" loading="lazy" />
+                    </div>
+                    <div class="screenshot-caption">Compatibilité des thèmes sur Solar</div>
+                </div>
+                <div class="screenshot-card">
+                    <div class="screenshot-img-wrap">
+                        <img src="https://raw.githubusercontent.com/thesolarproject/solar/main/screenshots/Reach.png" alt="Accédez à la recherche et au streaming de musique" loading="lazy" />
+                    </div>
+                    <div class="screenshot-caption">Accéder à la recherche et aux téléchargements de musique</div>
+                </div>
+                <div class="screenshot-card">
+                    <div class="screenshot-img-wrap">
+                        <img src="https://raw.githubusercontent.com/thesolarproject/solar/main/screenshots/Podcasts.png" alt="Répertoire de podcasts et téléchargeur" loading="lazy" />
+                    </div>
+                    <div class="screenshot-caption">Téléchargeur de podcasts sur l'appareil</div>
+                </div>
+                <div class="screenshot-card">
+                    <div class="screenshot-img-wrap">
+                        <img src="https://raw.githubusercontent.com/thesolarproject/solar/main/screenshots/Quick%20Controls.png" alt="Commandes de menu rapides globales" loading="lazy" />
+                    </div>
+                    <div class="screenshot-caption">Menu de contrôles rapides globaux</div>
+                </div>
+                <div class="screenshot-card">
+                    <div class="screenshot-img-wrap">
+                        <img src="https://raw.githubusercontent.com/thesolarproject/solar/main/screenshots/Artists%20View.png" alt="Navigation dans les artistes et Cover Flow" loading="lazy" />
+                    </div>
+                    <div class="screenshot-caption">Navigation dans les artistes et les albums</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="install" class="solar-section" aria-labelledby="solar-install-heading">
+            <h2 id="solar-install-heading">Comment installer Solar</h2>
+            <p class="section-intro">
+                L'installation de Solar sur votre Innioasis Y1 est simple et rapide, directement dans l'application officielle Innioasis Updater.
+            </p>
+            <div class="install-box">
+                <ul class="install-steps">
+                    <li>
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Ouvrir le programme de mise à jour Innioasis</strong>
+                            <p>Lancez l'outil officiel Innioasis Updater sur votre ordinateur</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Sélectionnez Solar dans la liste déroulante des logiciels</strong>
+                            <p>Prendre <strong>Solar</strong> directement du <strong>Logiciel</strong> liste déroulante dans Updater.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <strong>Cliquez sur Installer</strong>
+                            <p>Frappez le <strong>Installer</strong> bouton. Le programme de mise à jour téléchargera automatiquement le micrologiciel et flashera Solar sur votre appareil.</p>
+                        </div>
+                    </li>
+                </ul>
+
+                <div class="note-box">
+                    <strong>Note:</strong> Solar est actuellement en test alpha et <a href="https://github.com/thesolarproject/solar/issues" target="_blank" rel="noopener noreferrer">@TheSolarProject a besoin de vos commentaires</a>. Une fois installées, les futures mises à jour peuvent être téléchargées et appliquées directement via Wi-Fi sans avoir besoin de votre ordinateur. <em>Le support Y2 sera bientôt disponible.</em>
+                </div>
+
+                <div class="manual-install">
+                    <h3>Méthodes d'installation alternatives</h3>
+                    <p>
+                        <strong>Zip manuel via Updater&nbsp;:</strong> Téléchargez la dernière <code>rom.zip</code> de la <a href="https://github.com/thesolarproject/solar/releases/latest" target="_blank" rel="noopener noreferrer">Solar GitHub Sorties</a> page, cliquez sur <strong>Parcourir les fichiers</strong> dans Innioasis Updater, puis sélectionnez le fichier zip téléchargé pour commencer l'installation.
+                    </p>
+                    <p>
+                        Les utilisateurs avancés peuvent également flasher Solar en utilisant <strong>SP Flash Tool 5.1924</strong> ou <strong>MTKClient</strong>. Pour obtenir des instructions complètes sur le clignotement et la documentation du développeur, visitez le <a href="https://github.com/thesolarproject/solar#readme-ov-file" target="_blank" rel="noopener noreferrer">Solar documentation du projet</a>.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div id="footer-root"></div>
+    <div id="support-toolbar-slot"></div>
+    <script src="nav.js?v=20261105copyleft"></script>
+<script src="site-locale.js?v=20261108d" defer></script></body>
+
+</html>

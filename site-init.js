@@ -9,6 +9,46 @@
     var CONSENT_KEY = "innioasis-consent";
     var THEME_CONSENT_KEY = "y1-theme-consent-v2";
 
+    /* Shared cross-subdomain cookie helper (.innioasis.app) */
+    function setSharedCookie(name, value, days) {
+        try {
+            var d = new Date();
+            d.setTime(d.getTime() + ((days || 365) * 24 * 60 * 60 * 1000));
+            var expires = "; expires=" + d.toUTCString();
+            var host = (global.location && global.location.hostname) || "";
+            var domain = /(^|\.)innioasis\.app$/i.test(host) ? "; domain=.innioasis.app" : "";
+            document.cookie = name + "=" + encodeURIComponent(value) + expires + "; path=/" + domain + "; SameSite=Lax";
+        } catch (_) {}
+    }
+
+    function getSharedCookie(name) {
+        try {
+            var prefix = name + "=";
+            var parts = (document.cookie || "").split(";");
+            for (var i = 0; i < parts.length; i++) {
+                var item = parts[i].trim();
+                if (item.indexOf(prefix) === 0) return decodeURIComponent(item.substring(prefix.length));
+            }
+        } catch (_) {}
+        return null;
+    }
+
+    function parsePrivacyParam() {
+        try {
+            var search = (global.location && global.location.search) || "";
+            var params = new URLSearchParams(search);
+            var raw = params.get("privacy");
+            if (raw) {
+                var v = String(raw).trim().toLowerCase();
+                if (v === "all" || v === "1" || v === "true" || v === "yes") return { feedback: true, nightly: true, analytics: true };
+                if (v === "none" || v === "0" || v === "false" || v === "no") return { feedback: false, nightly: false, analytics: false };
+                if (v === "feedback") return { feedback: true, nightly: false, analytics: true };
+                if (v === "nightly") return { feedback: false, nightly: true, analytics: true };
+            }
+        } catch (_) {}
+        return null;
+    }
+
     /* Privacy consent. The gallery uses Google Analytics (via Google Tag
        Manager) and Cloudflare to measure and optimise performance and protect
        the website from attacks. Local storage remembers the visitor's theme,
@@ -31,6 +71,25 @@
                 };
             }
         } catch (_) {}
+
+        // Fallback to shared cross-subdomain cookie
+        try {
+            var cookieRaw = getSharedCookie(CONSENT_KEY);
+            if (cookieRaw) {
+                var cdata = JSON.parse(cookieRaw);
+                if (cdata && typeof cdata === "object") {
+                    return {
+                        decided: true,
+                        analytics: cdata.analytics !== false,
+                        ratingsView: cdata.ratingsView !== false,
+                        ratingsSubmit: cdata.ratingsSubmit !== false,
+                        feedback: cdata.feedback !== false,
+                        nightly: cdata.nightly !== false
+                    };
+                }
+            }
+        } catch (_) {}
+
         return null;
     }
 
@@ -46,14 +105,17 @@
             nightly: typeof prefs.nightly === "boolean" ? prefs.nightly : (typeof prev.nightly === "boolean" ? prev.nightly : true)
         };
         try {
-            global.localStorage.setItem(CONSENT_KEY, JSON.stringify({
+            var consentStr = JSON.stringify({
                 decided: true,
                 feedback: next.feedback,
                 nightly: next.nightly,
                 analytics: next.analytics,
                 ratingsView: next.ratingsView,
                 ratingsSubmit: next.ratingsSubmit
-            }));
+            });
+            global.localStorage.setItem(CONSENT_KEY, consentStr);
+            setSharedCookie(CONSENT_KEY, consentStr);
+            setSharedCookie("innioasis-privacy", next.feedback && next.nightly ? "all" : (!next.feedback && !next.nightly ? "none" : (next.feedback ? "feedback" : "nightly")));
             global.localStorage.setItem(THEME_CONSENT_KEY, JSON.stringify({
                 decided: true,
                 analytics: next.analytics,
@@ -61,6 +123,9 @@
                 ratingsSubmit: next.ratingsSubmit
             }));
         } catch (_) {}
+        if (typeof global.y1DecorateLinks === "function") {
+            try { global.y1DecorateLinks(); } catch (_) {}
+        }
         if (global.ThemeAnalytics && typeof global.ThemeAnalytics.saveConsent === "function") {
             try {
                 void global.ThemeAnalytics.saveConsent({

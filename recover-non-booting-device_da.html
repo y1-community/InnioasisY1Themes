@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="da" dir="ltr" data-locale="da">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Google Tag Manager (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtm.js?id=GTM-TNDGC37L"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+  </script>
+  <link rel="icon" href="y1_illustration.png">
+  <link rel="stylesheet" href="site-theme.css?v=20260803">
+  <link rel="stylesheet" href="lumen.css?v=20261114video">
+  <link rel="stylesheet" href="site-pages.css?v=20260818">
+  <link rel="stylesheet" href="site-toolbar.css?v=20261105dockclose">
+  <script src="site-init.js?v=20260803" defer></script>
+  <title>Sådan gendannes en ikke-opstartende MediaTek-afspiller efter MTK-klientfejl · Innioasis Fællesskab</title>
+  <meta name="description" content="Trin-for-trin guide til at fjerne mursten og gendanne ikke-opstartende Innioasis Y1, Y2, G1, Timmkoo og MediaTek spillere efter MTKclient afbrudte flash på Linux eller macOS.">
+  <link rel="canonical" href="https://themes.innioasis.app/recover-non-booting-device_da.html">
+  <!-- i18n-hreflang-start -->
+  <link rel="alternate" hreflang="x-default" href="https://themes.innioasis.app/recover-non-booting-device.html">
+  <link rel="alternate" hreflang="en" href="https://themes.innioasis.app/recover-non-booting-device.html">
+  <link rel="alternate" hreflang="de" href="https://themes.innioasis.app/recover-non-booting-device_de.html">
+  <link rel="alternate" hreflang="ja" href="https://themes.innioasis.app/recover-non-booting-device_ja.html">
+  <link rel="alternate" hreflang="jp" href="https://themes.innioasis.app/recover-non-booting-device_jp.html">
+  <link rel="alternate" hreflang="es" href="https://themes.innioasis.app/recover-non-booting-device_es.html">
+  <link rel="alternate" hreflang="fr" href="https://themes.innioasis.app/recover-non-booting-device_fr.html">
+  <link rel="alternate" hreflang="it" href="https://themes.innioasis.app/recover-non-booting-device_it.html">
+  <link rel="alternate" hreflang="pt-BR" href="https://themes.innioasis.app/recover-non-booting-device_pt-BR.html">
+  <link rel="alternate" hreflang="pt" href="https://themes.innioasis.app/recover-non-booting-device_pt.html">
+  <link rel="alternate" hreflang="ru" href="https://themes.innioasis.app/recover-non-booting-device_ru.html">
+  <link rel="alternate" hreflang="zh-CN" href="https://themes.innioasis.app/recover-non-booting-device_zh-CN.html">
+  <link rel="alternate" hreflang="zh" href="https://themes.innioasis.app/recover-non-booting-device_zh.html">
+  <link rel="alternate" hreflang="zh-TW" href="https://themes.innioasis.app/recover-non-booting-device_zh-TW.html">
+  <link rel="alternate" hreflang="ko" href="https://themes.innioasis.app/recover-non-booting-device_ko.html">
+  <link rel="alternate" hreflang="kr" href="https://themes.innioasis.app/recover-non-booting-device_kr.html">
+  <link rel="alternate" hreflang="ar" href="https://themes.innioasis.app/recover-non-booting-device_ar.html">
+  <link rel="alternate" hreflang="nl" href="https://themes.innioasis.app/recover-non-booting-device_nl.html">
+  <link rel="alternate" hreflang="pl" href="https://themes.innioasis.app/recover-non-booting-device_pl.html">
+  <link rel="alternate" hreflang="tr" href="https://themes.innioasis.app/recover-non-booting-device_tr.html">
+  <link rel="alternate" hreflang="uk" href="https://themes.innioasis.app/recover-non-booting-device_uk.html">
+  <link rel="alternate" hreflang="vi" href="https://themes.innioasis.app/recover-non-booting-device_vi.html">
+  <link rel="alternate" hreflang="th" href="https://themes.innioasis.app/recover-non-booting-device_th.html">
+  <link rel="alternate" hreflang="id" href="https://themes.innioasis.app/recover-non-booting-device_id.html">
+  <link rel="alternate" hreflang="he" href="https://themes.innioasis.app/recover-non-booting-device_he.html">
+  <link rel="alternate" hreflang="hi" href="https://themes.innioasis.app/recover-non-booting-device_hi.html">
+  <link rel="alternate" hreflang="cs" href="https://themes.innioasis.app/recover-non-booting-device_cs.html">
+  <link rel="alternate" hreflang="el" href="https://themes.innioasis.app/recover-non-booting-device_el.html">
+  <link rel="alternate" hreflang="sv" href="https://themes.innioasis.app/recover-non-booting-device_sv.html">
+  <link rel="alternate" hreflang="fa" href="https://themes.innioasis.app/recover-non-booting-device_fa.html">
+  <link rel="alternate" hreflang="da" href="https://themes.innioasis.app/recover-non-booting-device_da.html">
+  <link rel="alternate" hreflang="fi" href="https://themes.innioasis.app/recover-non-booting-device_fi.html">
+  <link rel="alternate" hreflang="hu" href="https://themes.innioasis.app/recover-non-booting-device_hu.html">
+  <link rel="alternate" hreflang="no" href="https://themes.innioasis.app/recover-non-booting-device_no.html">
+  <link rel="alternate" hreflang="ro" href="https://themes.innioasis.app/recover-non-booting-device_ro.html">
+  <!-- i18n-hreflang-end -->
+</head>
+<body class="site-themes-app">
+  <a class="lumen-skip-link" href="#main">Gå til indhold</a>
+  <div id="nav-root"></div>
+  <main id="main" class="lumen-guide">
+    <header>
+      <p class="lumen-kicker">Fejlfinding og enhedsgendannelse</p>
+      <h1>Gendannelse af en enhed, der ikke starter, efter at MTKclient blinker</h1>
+      <p class="lead">Hvis din Innioasis Y1, Y2 eller MediaTek enhed ikke kan tænde eller viser en sort skærm efter at have blinket med MTKclient på macOS eller Linux, skal du ikke gå i panik. Hardware BootROM (BROM) er permanent og kan ikke ødelægges.</p>
+    </header>
+
+    <section class="lumen-guide-section">
+      <h2>Hvorfor MTKclient muligvis går i stå eller efterlader en sort skærm</h2>
+      <p>MTKclient er afhængig af softwareudnyttelse (kamakiri / amonet) til at omgå DA-godkendelse og rå USB kommunikation via libusb. På macOS og Linux ARM64-systemer:</p>
+      <ul class="lumen-benefits-list">
+        <li>USB håndtryksforsinkelse eller porttimeout på macOS kan stoppe DA-nyttelastinjektion midt i overførslen.</li>
+        <li>Manglende eller ufuldstændige partitionsoverskrifter efterlader bootloaderen (preloader / lk) i en ikke-responsiv tilstand.</li>
+        <li>Afspilleren ser helt død ud - ingen LED, intet opladningsikon, ingen baggrundsbelysning på skærmen.</li>
+      </ul>
+      <p>Selv i denne tilstand falder MediaTek-chipsættet tilbage til <strong>BROM-tilstand</strong> (USB VID 0e8d, PID 0003), klar til officiel gendannelse på lavt niveau.</p>
+    </section>
+
+    <section class="lumen-guide-section">
+      <h2>Den endelige gendannelsesmetode: SP Flash Tool Engine i Updater CE</h2>
+      <p>Den sikreste og mest pålidelige måde at gendanne din murede afspiller på er at bruge <strong>Opdaterer CE</strong> konfigureret med embedsmanden <strong>SP Flash Tool</strong> backend.</p>
+      
+      <div class="lumen-callout" style="margin: 20px 0; padding: 20px; border-left: 4px solid #3b82f6; background: rgba(59,130,246,0.08);">
+        <h3>Præcise trin i Updater CE:</h3>
+        <ol class="lumen-steps" style="margin-top: 10px;">
+          <li>Åbn <strong>Opdaterer CE</strong>.</li>
+          <li>Klik <strong>Indstillinger</strong> i venstre navigationssidebjælke.</li>
+          <li>Rul ned til sektionen Avanceret og aktiver <strong>Vis avancerede indstillinger</strong>.</li>
+          <li>Under <strong>Installationsmetode</strong> (eller <em>Blinkende motor til MediaTek installatør</em>), find <strong>Flash metode</strong> dropdown.</li>
+          <li>Skift valget fra <em>Auto (anbefales)</em> eller <em>MTKClient</em> til <strong>SP Flash Tool</strong>.</li>
+          <li>Bekræft prompten og vend tilbage til hovedinstallationsflowet.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="lumen-guide-section">
+      <h2>Platformarkitektur og OS-krav til SP Flash Tool</h2>
+      <p>MediaTeks officielle <code>SP Flash Tool</code> binær er kompileret indbygget som en <strong>x86_64 ELF binær til Linux</strong> og en <strong>PE32+ eksekverbar til Windows x64</strong>.</p>
+      <div class="lumen-warning" style="padding: 16px; border: 1px solid rgba(239,68,68,0.4); border-radius: 8px; background: rgba(239,68,68,0.08); margin: 16px 0;">
+        <strong>Vigtig hardwarenote til macOS- og ARM64 Linux-brugere:</strong><br>
+        Fordi MediaTek ikke kompilerer SP Flash Tool til macOS (Darwin) eller Linux ARM64 (aarch64), skal macOS-brugere og ARM64 Linux-brugere (såsom Raspberry Pi eller Apple Silicon, der kører Asahi Linux), der oplever en klods, forbinde deres afspiller til:
+        <ul style="margin: 8px 0 0 20px;">
+          <li>An <strong>x64 Windows-pc</strong> (Windows 10/11 64-bit), eller</li>
+          <li>An <strong>x86_64 Linux-pc</strong> (Ubuntu, Debian, Fedora, Arch 64-bit).</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="lumen-guide-section">
+      <h2>Trin-for-trin proces til at fjerne mursten af ​​hardware</h2>
+      <ol class="lumen-steps">
+        <li><strong>Afbryd afspilleren:</strong> Tag USB-kablet helt ud af afspilleren og pc'en.</li>
+        <li><strong>Hard Power Off:</strong> Hold Power-knappen (eller Power + Volume Down) nede i 15 sekunder for at sikre, at chipsættet er helt slukket og ikke sidder fast i et lavt strømforbrug USB-løkke.</li>
+        <li><strong>Start Updater CE med SP Flash Tool tilstand:</strong> Vælg din enhedsmodel (f.eks. <em>Innioasis Y1</em> eller <em>Innioasis Y2</em>) og vælg <em>Original software</em> for at genoprette lagerpartitioner.</li>
+        <li><strong>Start installation/gendannelse:</strong> Klik <em>Installer / Gendan</em> i Updater CE. Vent, indtil statusprompten siger <em>Venter på spiller...</em></li>
+        <li><strong>Indsæt USB kabel for at udløse BROM:</strong> Mens enheden er slukket, skal du tilslutte USB-kablet direkte til en højhastighedsbundkort USB-port (undgå strømløse USB-hubs).</li>
+        <li>Systemet vil registrere MediaTek VCOM-porten, skubbe Download Agent (DA), omskrive partitionstabeller og gendanne alle firmwarebilleder rent.</li>
+      </ol>
+    </section>
+
+    <section class="lumen-guide-section">
+      <h2>Permutationer efter model og operativsystem</h2>
+      <div style="overflow-x: auto;">
+        <table class="lumen-release-table">
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Mislykket platform</th>
+              <th>Anbefalet genoprettelsesopsætning</th>
+              <th>Motor og tilstand</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Innioasis Y1</strong></td>
+              <td>macOS (Apple Silicon / Intel)</td>
+              <td>Windows x64 / Linux x86_64 pc</td>
+              <td>SP Flash Tool + Y1 Aktie ROM</td>
+            </tr>
+            <tr>
+              <td><strong>Innioasis Y1</strong></td>
+              <td>Linux ARM64 / x86_64</td>
+              <td>Linux x86_64 eller Windows x64 pc</td>
+              <td>SP Flash Tool + EF DA</td>
+            </tr>
+            <tr>
+              <td><strong>Innioasis Y2</strong></td>
+              <td>macOS (MTKclient stoppet)</td>
+              <td>Windows x64 / Linux x86_64 pc</td>
+              <td>SP Flash Tool + Y2 Scatter-gendannelse</td>
+            </tr>
+            <tr>
+              <td><strong>Innioasis G1 / G3 / G5</strong></td>
+              <td>macOS / Linux MTKclient</td>
+              <td>Windows x64 pc med VCOM-drivere</td>
+              <td>SP Flash Tool + Fabriksfirmware</td>
+            </tr>
+            <tr>
+              <td><strong>Mechen H1 / Timmkoo A5</strong></td>
+              <td>Enhver platform</td>
+              <td>Windows x64 eller Linux x86_64 pc</td>
+              <td>SP Flash Tool + Scatter-fil</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <div id="footer-root"></div>
+  <div id="support-toolbar-slot"></div>
+  <script src="nav.js?v=20261105copyleft" defer></script>
+  <script src="site-locale.js?v=20261108d" defer></script>
+</body>
+</html>
