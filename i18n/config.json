@@ -4,13 +4,29 @@
   "catalogDir": "i18n/catalogs",
   "cacheDir": "i18n/cache",
   "stringsFile": "i18n/strings/en.json",
-
-  "skipTags": ["script", "style", "pre", "code", "kbd", "samp", "textarea"],
-  "skipAttributes": ["data-i18n-skip", "translate=\"no\""],
-
-  "attributeNames": ["title", "alt", "placeholder", "aria-label", "aria-description"],
-  "metaAttributeNames": ["content"],
-
+  "skipTags": [
+    "script",
+    "style",
+    "pre",
+    "code",
+    "kbd",
+    "samp",
+    "textarea"
+  ],
+  "skipAttributes": [
+    "data-i18n-skip",
+    "translate=\"no\""
+  ],
+  "attributeNames": [
+    "title",
+    "alt",
+    "placeholder",
+    "aria-label",
+    "aria-description"
+  ],
+  "metaAttributeNames": [
+    "content"
+  ],
   "protectedTerms": [
     "Innioasis",
     "Timmkoo",
@@ -19,6 +35,7 @@
     "Rockbox",
     "Y2Linux",
     "Y2Player",
+    "Y2Reborn",
     "Better-Y",
     "Koensayr",
     "Inniclassic",
@@ -36,13 +53,40 @@
     "Patreon",
     "Revolut",
     "Boosty",
-    "Bitcoin"
+    "Bitcoin",
+    "Mechen",
+    "Mechen H1",
+    "Mechen H11",
+    "Innioasis Y1",
+    "Innioasis Y2",
+    "Y1",
+    "Y2",
+    "G1",
+    "G3",
+    "G5",
+    "PR1",
+    "R1",
+    "Q3",
+    "Q5",
+    "A5",
+    "Buy Me a Coffee",
+    "Honeygain",
+    "Cloudflare",
+    "Google Analytics",
+    "Google Tag Manager",
+    "YouTube",
+    "Reddit",
+    "TikTok",
+    "SP Flash",
+    "APK",
+    "ROM"
   ],
-
   "tiers": {
     "core": {
       "description": "The gallery shell and its hand-written pages: navigation, filters, install and safety copy, support, dock and error page. Theme submissions are deliberately excluded.",
-      "include": ["*.html"],
+      "include": [
+        "*.html"
+      ],
       "exclude": [
         "i18n/**",
         "dist/**",
@@ -59,11 +103,18 @@
     },
     "full": {
       "description": "Same scope as core. A theme folder holds creator-authored names and descriptions that must not be rewritten by a translator.",
-      "include": ["*.html"],
-      "exclude": ["i18n/**", "dist/**", "_site/**", "node_modules/**", ".cache/**"]
+      "include": [
+        "*.html"
+      ],
+      "exclude": [
+        "i18n/**",
+        "dist/**",
+        "_site/**",
+        "node_modules/**",
+        ".cache/**"
+      ]
     }
   },
-
   "providers": {
     "google-web": {
       "description": "Google Translate's public web endpoint. No key, rate limited, fine for the public site copy.",
@@ -90,7 +141,6 @@
       "maxCharsPerRequest": 3000
     }
   },
-
   "prerender": {
     "outputDir": "dist",
     "siteOrigin": "https://innioasis.app",
