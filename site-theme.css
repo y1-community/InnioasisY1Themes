@@ -22,6 +22,8 @@
     --bg-card: rgba(255, 255, 255, 0.04);
     --text-primary: #f5f6fa;
     --text-secondary: #9aa0b8;
+    --primary: var(--site-accent);
+    --primary-dark: color-mix(in oklab, var(--site-accent) 82%, #000);
 }
 
 /* Light Appearance (temporarily aliases Dark mode) */
@@ -163,22 +165,26 @@ h2.section-display,
     position: sticky;
     top: 0;
     z-index: 1200;
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 10px;
-    padding: 8px 14px;
-    background: rgba(19, 20, 29, 0.88);
+    gap: 6px 12px;
+    min-width: 0;
+    max-width: 100%;
+    padding: 8px clamp(8px, 2.2vw, 16px);
+    background: color-mix(in oklab, var(--site-bg) 90%, transparent);
     border-bottom: 1px solid var(--site-border);
     backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-sizing: border-box;
 }
 
 .gallery-brand {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    grid-column: 1;
-    justify-self: start;
+    min-width: 0;
+    max-width: 100%;
     text-decoration: none;
     color: var(--site-text);
     font-weight: 700;
@@ -187,12 +193,13 @@ h2.section-display,
     padding: 4px 6px;
     border-radius: 8px;
     font-family: var(--site-font);
+    white-space: normal;
 }
 
 .gallery-brand:hover {
     text-decoration: none;
-    color: #fff;
-    background: rgba(255, 255, 255, 0.06);
+    color: var(--site-text);
+    background: color-mix(in oklab, var(--site-accent) 12%, transparent);
 }
 
 .gallery-brand-icon {
@@ -202,15 +209,17 @@ h2.section-display,
     width: 32px;
     height: 32px;
     border-radius: 8px;
-    background: rgba(255, 177, 51, 0.14);
-    border: 1px solid rgba(255, 177, 51, 0.35);
-    color: #ffb133;
+    background: color-mix(in oklab, var(--site-accent) 16%, transparent);
+    border: 1px solid color-mix(in oklab, var(--site-accent) 42%, transparent);
+    color: var(--site-accent);
     font-size: 0.95rem;
     flex-shrink: 0;
 }
 
 .gallery-brand-text {
-    white-space: nowrap;
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
 }
 
 /* —— Gallery home hero (mockup: copy left, device right, flush on toolbar) —— */
@@ -324,37 +333,40 @@ body.site-themes-app .gallery-home-hero .y1-hero {
 
 .gallery-tabs {
     display: inline-flex;
+    flex-wrap: wrap;
     gap: 3px;
     padding: 3px;
+    margin-left: auto;
     border-radius: 9px;
-    justify-self: center;
-    grid-column: 2;
     background: var(--site-bg-elevated);
     border: 1px solid var(--site-border);
+    min-width: 0;
 }
 
 .gallery-tab {
     padding: 8px 14px;
     border-radius: 7px;
-    color: #aeb6c5;
+    color: var(--site-muted);
     text-decoration: none;
     font-size: clamp(0.82rem, 2.6vw, 0.95rem);
     font-weight: 600;
     font-family: var(--site-font);
     border: 1px solid transparent;
     line-height: 1.1;
+    overflow-wrap: anywhere;
 }
 
 .gallery-tab:hover {
-    color: #d9e0ef;
+    color: var(--site-text);
     text-decoration: none;
+    background: color-mix(in oklab, var(--site-accent) 10%, transparent);
 }
 
 .gallery-tab.active {
-    color: #ffffff;
-    background: #252736;
-    border-color: rgba(255, 177, 51, 0.35);
-    box-shadow: 0 0 12px rgba(255, 177, 51, 0.12);
+    color: var(--site-text);
+    background: color-mix(in oklab, var(--site-accent) 16%, var(--site-bg-elevated));
+    border-color: color-mix(in oklab, var(--site-accent) 45%, transparent);
+    box-shadow: 0 0 12px color-mix(in oklab, var(--site-accent) 14%, transparent);
 }
 
 /* Search: flex row so icon never overlaps placeholder text */
@@ -392,7 +404,7 @@ body.site-themes-app .gallery-home-hero .y1-hero {
     width: 1em;
     line-height: 1;
     text-align: center;
-    color: #8ea0bf;
+    color: var(--site-muted);
     font-size: 0.82rem;
     pointer-events: none;
 }
@@ -405,7 +417,7 @@ body.site-themes-app .gallery-home-hero .y1-hero {
     margin: 0;
     border: none !important;
     border-radius: 0;
-    color: #eaf0ff;
+    color: var(--site-text);
     outline: none;
     font-size: 0.82rem;
     font-family: var(--site-font);
@@ -416,7 +428,7 @@ body.site-themes-app .gallery-home-hero .y1-hero {
 }
 
 .topbar-search::placeholder {
-    color: #94a0b8;
+    color: var(--site-muted);
 }
 
 .topbar-search::-webkit-search-decoration,
@@ -476,7 +488,8 @@ body.site-themes-app .gallery-home-hero .y1-hero {
     padding: 14px 16px;
     border-radius: var(--site-radius-md);
     background: var(--site-bg-card);
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    border: 1px solid var(--site-border);
+    min-width: 0;
 }
 
 .gallery-control {
@@ -712,6 +725,7 @@ body.site-themes-app #footer-root {
     border-top: 1px solid var(--site-border) !important;
     padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
     box-sizing: border-box;
+    overflow-wrap: anywhere;
 }
 
 body.site-themes-app .site-footer {
@@ -873,6 +887,16 @@ body.site-themes-app .site-footer.site-footer--themes {
     align-items: start;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 2rem 2.5rem;
+    min-width: 0;
+}
+
+.site-footer--themes .footer-col {
+    min-width: 0;
+}
+
+.site-footer--themes .footer-col a {
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 @media (max-width: 640px) {
@@ -981,7 +1005,10 @@ body.site-themes-app .site-footer--themes .footer-logo.footer-logo-luci,
 .site-footer .footer-bottom .footer-legal {
     display: inline-flex;
     align-items: center;
-    gap: 0.9rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.4rem 0.9rem;
+    min-width: 0;
 }
 
 .site-footer .footer-bottom .footer-legal a,
@@ -1047,8 +1074,8 @@ body.site-themes-app .cast-div {
 }
 
 body.site-themes-app #direct-install-banner {
-    background: rgba(255, 177, 51, 0.08) !important;
-    border: 1px solid rgba(255, 177, 51, 0.22) !important;
+    background: color-mix(in oklab, var(--site-accent) 10%, transparent) !important;
+    border: 1px solid color-mix(in oklab, var(--site-accent) 28%, transparent) !important;
     border-radius: var(--site-radius-md) !important;
 }
 
@@ -1247,23 +1274,34 @@ body.site-themes-app .bulk-update-panel {
         padding: 8px 12px;
         font-size: 0.8rem;
     }
+
+    .site-compat-banner__content {
+        align-items: flex-start;
+        text-align: start;
+    }
+
+    .site-compat-banner__cta {
+        white-space: normal;
+        margin-left: 0;
+    }
 }
 
 /* Footer credit line: site creator + community */
 
-/* —— AdSense / Raptive Layout Containers (CLS-protected) —— */
+/* —— Gallery placement containers, sized so the page does not jump —— */
 .gallery-ad-container {
     width: 100%;
     margin: 0 auto;
     text-align: center;
     box-sizing: border-box;
     transition: min-height 0.2s ease;
+    scroll-margin-top: calc(var(--gallery-sticky-offset, 84px) + 8px);
 }
 
 .gallery-ad-container:empty {
-    display: none !important;
-    min-height: 0 !important;
-    margin: 0 !important;
+    display: block !important;
+    min-height: clamp(50px, 8vw, 90px);
+    margin: 14px auto !important;
     padding: 0 !important;
 }
 
@@ -1414,4 +1452,48 @@ html, body {
 .lumen-hero-art svg {
     max-width: 100%;
     height: auto;
+}
+
+
+/* Narrow screens: let long translations wrap instead of widening the page. */
+@media (max-width: 520px) {
+    .gallery-topbar {
+        justify-content: center;
+        padding-inline: 8px;
+    }
+
+    .gallery-brand {
+        max-width: 100%;
+    }
+
+    .gallery-brand-text {
+        font-size: 1rem;
+    }
+
+    .gallery-tabs {
+        width: 100%;
+        margin-left: 0;
+        justify-content: center;
+    }
+
+    .topbar-search-wrap,
+    .topbar-search-wrap.is-expanded,
+    .topbar-search-wrap:focus-within {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .gallery-control,
+    .gallery-control select {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .site-footer--themes {
+        padding-inline: 0.9rem;
+    }
+
+    .site-footer .footer-bottom {
+        padding-inline: 0.25rem;
+    }
 }

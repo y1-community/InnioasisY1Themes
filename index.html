@@ -2,6 +2,19 @@
 <html lang="en">
 
 <head>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('consent', 'default', {
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+    analytics_storage: 'granted',
+    functionality_storage: 'granted',
+    security_storage: 'granted',
+    wait_for_update: 500
+  });
+</script>
 <script async src="https://www.googletagmanager.com/gtm.js?id=GTM-TNDGC37L"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -11,9 +24,9 @@
 
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Y1 and Y2 themes - Innioasis Themes Gallery</title>
+    <title>Rockbox themes for the Innioasis Y1 and Y2 - Innioasis Themes Gallery</title>
 
-    <meta name="description" content="Browse and download Rockbox themes for the Innioasis Y1 and Y2. Customize your player with community-made themes for 240p and 360p models.">
+    <meta name="description" content="Browse Rockbox themes for the Innioasis Y1 and Y2, all made by the community. Preview a theme before you install it, then download the ones you like.">
     <meta name="keywords" content="Innioasis Y1 themes, Innioasis Y2 themes, Rockbox themes Y1, Y2 UI themes, Rockbox customization, Innioasis theme gallery, Luci web hosting, themes.innioasis.app hosting">
     <meta name="author" content="Ryan Specter &amp; Innioasis Community">
   <meta name="creator" content="Ryan Specter &amp; Innioasis Community">
@@ -23,14 +36,14 @@
     <link rel="preload" href="themes.json" as="fetch" crossorigin="anonymous" />
 
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Y1 and Y2 themes - Innioasis Themes Gallery">
-    <meta property="og:description" content="Customize your Innioasis Y1 or Y2 with Rockbox themes made by the community.">
+    <meta property="og:title" content="Rockbox themes for the Innioasis Y1 and Y2 - Innioasis Themes Gallery">
+    <meta property="og:description" content="Rockbox themes for the Innioasis Y1 and Y2, made by the community.">
     <meta property="og:url" content="https://themes.innioasis.app/index.html">
     <meta property="og:image" content="https://innioasis.app/y1_illustration.png">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Y1 and Y2 themes - Innioasis Themes Gallery">
-    <meta name="twitter:description" content="Download and customize Rockbox themes for the Innioasis Y1 and Y2.">
+    <meta name="twitter:title" content="Rockbox themes for the Innioasis Y1 and Y2 - Innioasis Themes Gallery">
+    <meta name="twitter:description" content="Browse community-made Rockbox themes for the Innioasis Y1 and Y2.">
     <meta name="twitter:image" content="https://innioasis.app/y1_illustration.png">
 
     <link rel="icon" href="y1_illustration.png">
@@ -167,11 +180,30 @@
             max-width: 36rem;
         }
 
+        /* The filter bar and compatibility banner are built by JS just after
+           first paint. Reserving their height keeps the grid and the cards
+           below them from jumping (CLS). Values match the rendered heights. */
+        .gallery-controls { min-height: 87px; }
+        .site-compat-banner { min-height: 41px; }
+
         .theme-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
             gap: 16px;
-            margin-top: 18px
+            margin-top: 18px;
+            /* One row of cards is a fixed height, so replacing a skeleton row
+               with real cards does not resize the page (CLS). */
+            grid-auto-rows: minmax(392px, auto);
+        }
+
+        .theme-card,
+        .theme-card--skeleton {
+            min-height: 392px;
+        }
+
+        @media (max-width: 640px) {
+            .theme-grid { grid-auto-rows: minmax(360px, auto); }
+            .theme-card, .theme-card--skeleton { min-height: 360px; }
         }
 
         .theme-card {
@@ -708,42 +740,39 @@
   <!-- i18n-hreflang-start -->
   <link rel="alternate" hreflang="x-default" href="https://themes.innioasis.app/index.html">
   <link rel="alternate" hreflang="en" href="https://themes.innioasis.app/index.html">
-  <link rel="alternate" hreflang="ar" href="https://themes.innioasis.app/index_ar.html">
-  <link rel="alternate" hreflang="bn" href="https://themes.innioasis.app/index_bn.html">
-  <link rel="alternate" hreflang="cs" href="https://themes.innioasis.app/index_cs.html">
-  <link rel="alternate" hreflang="da" href="https://themes.innioasis.app/index_da.html">
   <link rel="alternate" hreflang="de" href="https://themes.innioasis.app/index_de.html">
-  <link rel="alternate" hreflang="el" href="https://themes.innioasis.app/index_el.html">
-  <link rel="alternate" hreflang="es" href="https://themes.innioasis.app/index_es.html">
-  <link rel="alternate" hreflang="es-419" href="https://themes.innioasis.app/index_es-419.html">
-  <link rel="alternate" hreflang="fa" href="https://themes.innioasis.app/index_fa.html">
-  <link rel="alternate" hreflang="fi" href="https://themes.innioasis.app/index_fi.html">
-  <link rel="alternate" hreflang="fr" href="https://themes.innioasis.app/index_fr.html">
-  <link rel="alternate" hreflang="he" href="https://themes.innioasis.app/index_he.html">
-  <link rel="alternate" hreflang="hi" href="https://themes.innioasis.app/index_hi.html">
-  <link rel="alternate" hreflang="hu" href="https://themes.innioasis.app/index_hu.html">
-  <link rel="alternate" hreflang="id" href="https://themes.innioasis.app/index_id.html">
-  <link rel="alternate" hreflang="it" href="https://themes.innioasis.app/index_it.html">
   <link rel="alternate" hreflang="ja" href="https://themes.innioasis.app/index_ja.html">
   <link rel="alternate" hreflang="jp" href="https://themes.innioasis.app/index_jp.html">
-  <link rel="alternate" hreflang="ko" href="https://themes.innioasis.app/index_ko.html">
-  <link rel="alternate" hreflang="kr" href="https://themes.innioasis.app/index_kr.html">
-  <link rel="alternate" hreflang="ms" href="https://themes.innioasis.app/index_ms.html">
-  <link rel="alternate" hreflang="nl" href="https://themes.innioasis.app/index_nl.html">
-  <link rel="alternate" hreflang="no" href="https://themes.innioasis.app/index_no.html">
-  <link rel="alternate" hreflang="pl" href="https://themes.innioasis.app/index_pl.html">
+  <link rel="alternate" hreflang="es" href="https://themes.innioasis.app/index_es.html">
+  <link rel="alternate" hreflang="fr" href="https://themes.innioasis.app/index_fr.html">
+  <link rel="alternate" hreflang="it" href="https://themes.innioasis.app/index_it.html">
   <link rel="alternate" hreflang="pt-BR" href="https://themes.innioasis.app/index_pt-BR.html">
   <link rel="alternate" hreflang="pt" href="https://themes.innioasis.app/index_pt.html">
-  <link rel="alternate" hreflang="ro" href="https://themes.innioasis.app/index_ro.html">
   <link rel="alternate" hreflang="ru" href="https://themes.innioasis.app/index_ru.html">
-  <link rel="alternate" hreflang="sv" href="https://themes.innioasis.app/index_sv.html">
-  <link rel="alternate" hreflang="th" href="https://themes.innioasis.app/index_th.html">
-  <link rel="alternate" hreflang="tr" href="https://themes.innioasis.app/index_tr.html">
-  <link rel="alternate" hreflang="uk" href="https://themes.innioasis.app/index_uk.html">
-  <link rel="alternate" hreflang="vi" href="https://themes.innioasis.app/index_vi.html">
   <link rel="alternate" hreflang="zh-CN" href="https://themes.innioasis.app/index_zh-CN.html">
   <link rel="alternate" hreflang="zh" href="https://themes.innioasis.app/index_zh.html">
   <link rel="alternate" hreflang="zh-TW" href="https://themes.innioasis.app/index_zh-TW.html">
+  <link rel="alternate" hreflang="ko" href="https://themes.innioasis.app/index_ko.html">
+  <link rel="alternate" hreflang="kr" href="https://themes.innioasis.app/index_kr.html">
+  <link rel="alternate" hreflang="ar" href="https://themes.innioasis.app/index_ar.html">
+  <link rel="alternate" hreflang="nl" href="https://themes.innioasis.app/index_nl.html">
+  <link rel="alternate" hreflang="pl" href="https://themes.innioasis.app/index_pl.html">
+  <link rel="alternate" hreflang="tr" href="https://themes.innioasis.app/index_tr.html">
+  <link rel="alternate" hreflang="uk" href="https://themes.innioasis.app/index_uk.html">
+  <link rel="alternate" hreflang="vi" href="https://themes.innioasis.app/index_vi.html">
+  <link rel="alternate" hreflang="th" href="https://themes.innioasis.app/index_th.html">
+  <link rel="alternate" hreflang="id" href="https://themes.innioasis.app/index_id.html">
+  <link rel="alternate" hreflang="he" href="https://themes.innioasis.app/index_he.html">
+  <link rel="alternate" hreflang="hi" href="https://themes.innioasis.app/index_hi.html">
+  <link rel="alternate" hreflang="cs" href="https://themes.innioasis.app/index_cs.html">
+  <link rel="alternate" hreflang="el" href="https://themes.innioasis.app/index_el.html">
+  <link rel="alternate" hreflang="sv" href="https://themes.innioasis.app/index_sv.html">
+  <link rel="alternate" hreflang="fa" href="https://themes.innioasis.app/index_fa.html">
+  <link rel="alternate" hreflang="da" href="https://themes.innioasis.app/index_da.html">
+  <link rel="alternate" hreflang="fi" href="https://themes.innioasis.app/index_fi.html">
+  <link rel="alternate" hreflang="hu" href="https://themes.innioasis.app/index_hu.html">
+  <link rel="alternate" hreflang="no" href="https://themes.innioasis.app/index_no.html">
+  <link rel="alternate" hreflang="ro" href="https://themes.innioasis.app/index_ro.html">
   <!-- i18n-hreflang-end -->
 </head>
 
@@ -775,7 +804,7 @@
             <div class="gallery-home-hero__row">
                 <header class="gallery-home-intro">
                     <h1 class="site-display">Themes</h1>
-                    <p class="site-lead gallery-home-lead">Here is a community-led gallery of themes to customise your Innioasis Y1 or Y2 audio player - find a new look for your screens, try previews before you install, and share your own looks with other Innioasis users.</p>
+                    <p class="site-lead gallery-home-lead">A gallery of themes for the Innioasis Y1 and Y2, made by the community. Preview a theme before you install it, or upload one you made.</p>
                 </header>
                 <figure class="y1-hero" aria-hidden="true">
                     <img src="y1-hero.png" alt="" width="640" height="640" decoding="async" />
@@ -859,7 +888,32 @@
             </label>
         </div>
 
-        <div id="theme-grid" class="theme-grid"></div>
+        <div id="theme-grid" class="theme-grid theme-grid--loading" aria-busy="true">
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+            <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
+        </div>
         <div id="theme-empty" style="display:none; margin-top:1rem; text-align:center; color:#94a3b8;">No themes match your current filters.</div>
         <div id="theme-pager" class="pager" hidden></div>
         <!-- Ad slot: gallery-bottom (AdSense / Raptive compatible, zero CLS when empty) -->
