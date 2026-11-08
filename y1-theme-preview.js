@@ -270,12 +270,52 @@
         return { itemBackgroundStyle: itemBg, itemSelectedBackgroundStyle: sel };
     }
 
+    /* Most themes ship no .preview.* derivatives. Guessing the URL made every
+       card request a file that does not exist, wait for the 404 and only then
+       paint the original, which is why previews crawled in. preview-assets.json
+       lists the derivatives that do exist; until it arrives the original
+       artwork is used, which is always correct and never a wasted request. */
+    var previewAssetIndex = null;
+    var previewAssetBase = (function () {
+        var script = typeof document !== 'undefined' ? document.currentScript : null;
+        if (!script || !script.src) return './';
+        return script.src.replace(/[^/]*$/, '');
+    })();
+
+    function previewAssetKey(url) {
+        return String(url || '')
+            .split('?')[0]
+            .split('#')[0]
+            .replace(/^[a-z]+:\/\/[^/]+\//i, '')
+            .replace(/^\.?\//, '')
+            .toLowerCase();
+    }
+
+    (function loadPreviewAssetIndex() {
+        if (typeof fetch !== 'function') {
+            previewAssetIndex = {};
+            return;
+        }
+        fetch(previewAssetBase + 'preview-assets.json', { cache: 'default' })
+            .then(function (response) { return response.ok ? response.json() : null; })
+            .then(function (list) {
+                var index = {};
+                if (Array.isArray(list)) {
+                    for (var i = 0; i < list.length; i += 1) index[previewAssetKey(list[i])] = 1;
+                }
+                previewAssetIndex = index;
+            })
+            .catch(function () { previewAssetIndex = {}; });
+    })();
+
     function previewAssetUrl(originalUrl, ext) {
         if (!originalUrl || typeof originalUrl !== 'string') return '';
         if (originalUrl.indexOf('.preview.') !== -1) return originalUrl;
         var dot = originalUrl.lastIndexOf('.');
         if (dot === -1) return originalUrl;
-        return originalUrl.slice(0, dot) + '.preview.' + ext;
+        var candidate = originalUrl.slice(0, dot) + '.preview.' + ext;
+        if (!previewAssetIndex) return originalUrl;
+        return previewAssetIndex[previewAssetKey(candidate)] ? candidate : originalUrl;
     }
 
     function backgroundUrlForView(cfg, viewId, buildFileUrl, contentFolder, preferPreview) {
@@ -2533,6 +2573,7 @@
         unmount: unmount,
         effectiveContentPrefix: effectiveContentPrefix,
         mountGalleryCardLazy: mountGalleryCardLazy,
+        previewAssetUrl: previewAssetUrl,
         ensureCardPreviewFonts: ensureCardPreviewFonts
     };
 })(typeof window !== 'undefined' ? window : this);

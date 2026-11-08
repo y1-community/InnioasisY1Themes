@@ -31,7 +31,12 @@
     "use strict";
 
     var DEFAULT_LOCALE = "en";
-    var RUNTIME_VERSION = "20261108hero";
+    var RUNTIME_VERSION = "20261108shell3";
+
+    /* Catalogs are fetched from a fixed path, so a browser that cached an
+       older, thinner catalog keeps serving it after the catalogs are rebuilt.
+       Versioning the request makes the new translation actually reach the page. */
+    var CATALOG_VERSION = "20261108shell3";
     var STORAGE_LOCALE = "innioasis-locale";
     var STORAGE_REGION = "innioasis-region";
     var STORAGE_COUNTRY = "innioasis-country";
@@ -1649,7 +1654,7 @@
         var base = entry.base || (clean.indexOf("-") > 0 ? clean.split("-")[0] : code);
 
         function fetchOne(catName) {
-            return fetchJson("i18n/catalogs/" + catName + ".json", 6000).catch(function () { return null; });
+            return fetchJson("i18n/catalogs/" + catName + ".json?v=" + CATALOG_VERSION, 6000).catch(function () { return null; });
         }
 
         var isVariant = base && base.toLowerCase() !== specific.toLowerCase();
@@ -1696,9 +1701,9 @@
         injectStylesheet();
 
         Promise.all([
-            fetchJson("i18n/site-locales.json", 6000).catch(function () { return { locales: [] }; }),
-            fetchJson("i18n/regions.json", 6000).catch(function () { return null; }),
-            fetchJson("i18n/prerendered.json", 6000).catch(function () { return null; })
+            fetchJson("i18n/site-locales.json?v=" + CATALOG_VERSION, 6000).catch(function () { return { locales: [] }; }),
+            fetchJson("i18n/regions.json?v=" + CATALOG_VERSION, 6000).catch(function () { return null; }),
+            fetchJson("i18n/prerendered.json?v=" + CATALOG_VERSION, 6000).catch(function () { return null; })
         ]).then(function (results) {
             state.locales = (results[0] && results[0].locales) || [];
             state.regions = results[1];

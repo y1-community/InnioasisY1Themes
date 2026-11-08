@@ -17,6 +17,7 @@ that slips through is still visible in ui.json and can be dropped by hand.
 
 from __future__ import annotations
 
+import html
 import json
 import os
 import re
@@ -33,6 +34,7 @@ SHELL_FILES = [
     "tutorial-video.js",
     "portable-zip-links.js",
     "docs-viewer.js",
+    "theme-analytics.js",
     "site-locale.js",
     "support_toolbar.html",
 ]
@@ -44,6 +46,17 @@ INLINE_SCRIPT_RE = re.compile(
 )
 
 LITERAL_RE = re.compile(r"""(['"])((?:\\.|(?!\1)[^\\\n]){6,240}?)\1""")
+
+# Copy that is written straight into markup carries a tag around it, so the
+# literal filter above never sees it: "<span>Themes</span>". Harvest the run
+# between the tags as well, which is how nav and footer labels are built.
+MARKUP_RUN_RE = re.compile(r">([^<>]{2,240})<")
+
+# A single word is legitimate copy ("Themes", "Credits"), and it is often the
+# most visible word on the page, so allow capitalised single words that are not
+# a code identifier.
+SINGLE_WORD_RE = re.compile(r"^[A-Z][A-Za-z'\u2019-]{2,30}$")
+
 HAS_WORD_RE = re.compile(r"[A-Za-z]{2,}")
 REJECT_FRAGMENTS = (
     "http",
@@ -67,6 +80,18 @@ REJECT_FRAGMENTS = (
     "[",
     "]",
 )
+
+
+def looks_like_label(value: str) -> bool:
+    """A short capitalised label, which is copy even when it is one word."""
+    text = value.strip()
+    if not SINGLE_WORD_RE.match(text):
+        return False
+    if any(fragment in text for fragment in ("_", "/", "\\", "@", "#", "%")):
+        return False
+    if re.fullmatch(r"[A-Z0-9]{2,}", text):
+        return False
+    return True
 
 
 def looks_like_prose(value: str) -> bool:
@@ -222,9 +247,15 @@ KNOWN_TOOLBAR_STRINGS = [
 def collect(source: str, origin: str, found: dict[str, list[str]]) -> None:
     for match in LITERAL_RE.finditer(source):
         value = match.group(2)
-        if not looks_like_prose(value):
+        if looks_like_prose(value):
+            found.setdefault(value.strip(), []).append(origin)
             continue
-        found.setdefault(value.strip(), []).append(origin)
+        # Labels assembled in markup, and labels that arrived entity-encoded
+        # ("All notices &rarr;"), are copy too.
+        for run in MARKUP_RUN_RE.findall(value):
+            run = html.unescape(run).strip()
+            if looks_like_prose(run) or looks_like_label(run):
+                found.setdefault(run, []).append(origin)
 
 
 def main() -> int:

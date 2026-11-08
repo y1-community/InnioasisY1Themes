@@ -7,7 +7,9 @@
     "use strict";
 
     var i18nData = null;
+    var i18nLang = "";
     var loadPromise = null;
+    var indexPromise = null;
 
     function getActiveLocale() {
         if (global.InnioasisLocale && global.InnioasisLocale.locale) {
@@ -31,48 +33,56 @@
         return clean.split("-")[0];
     }
 
-    function loadThemesI18n() {
-        if (i18nData) return Promise.resolve(i18nData);
-        if (loadPromise) return loadPromise;
+    /* One file per language under themes-i18n/. The single themes_i18n.json
+       carries every language at once (3 MB), which delayed the gallery for
+       everyone and was downloaded even by English visitors. */
+    function loadI18nIndex() {
+        if (indexPromise) return indexPromise;
+        indexPromise = fetch("themes-i18n/index.json", { cache: "default" })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .catch(function () { return null; });
+        return indexPromise;
+    }
 
-        var candidates = [
-            "themes_i18n.json",
-            "./themes_i18n.json",
-            "/themes_i18n.json",
-            "https://themes.innioasis.app/themes_i18n.json"
-        ];
-
-        function tryNext(idx) {
-            if (idx >= candidates.length) {
-                i18nData = {};
-                return Promise.resolve(i18nData);
-            }
-            return fetch(candidates[idx], { cache: "default" })
+    function fetchLocaleDict(lang) {
+        return loadI18nIndex().then(function (index) {
+            var locales = (index && index.locales) || [];
+            if (!locales.length) return {};
+            var code = locales.indexOf(lang) >= 0 ? lang : "";
+            if (!code) return {};
+            var version = index.updated ? "?v=" + encodeURIComponent(index.updated) : "";
+            return fetch("themes-i18n/" + code + ".json" + version, { cache: "default" })
                 .then(function (r) {
                     if (!r.ok) throw new Error("HTTP " + r.status);
                     return r.json();
                 })
-                .then(function (json) {
-                    i18nData = (json && json.locales) ? json.locales : (json || {});
-                    return i18nData;
-                })
-                .catch(function () {
-                    return tryNext(idx + 1);
-                });
-        }
+                .then(function (dict) { return dict || {}; });
+        }).catch(function () { return {}; });
+    }
 
-        loadPromise = tryNext(0);
+    function loadThemesI18n() {
+        var lang = baseLang(getActiveLocale());
+        if (lang === "en") {
+            i18nData = {};
+            i18nLang = "en";
+            return Promise.resolve(i18nData);
+        }
+        if (i18nLang === lang && loadPromise) return loadPromise;
+        i18nLang = lang;
+        loadPromise = fetchLocaleDict(lang).then(function (dict) {
+            i18nData = dict;
+            return i18nData;
+        });
         return loadPromise;
     }
 
     function getThemeTranslation(folder, defaultName, defaultDesc) {
         var locale = getActiveLocale();
         var lang = baseLang(locale);
-        if (lang === "en" || !i18nData) {
+        if (lang === "en" || !i18nData || i18nLang !== lang) {
             return { name: defaultName, description: defaultDesc };
         }
-        var langDict = i18nData[lang] || i18nData[locale] || {};
-        var entry = langDict[folder] || {};
+        var entry = i18nData[folder] || {};
         return {
             name: entry.name || defaultName,
             description: entry.description || defaultDesc

@@ -1400,8 +1400,8 @@
   var devAvatar = document.getElementById("y1-developer-avatar-img");
   function rotateDeveloperAvatar() {
     if (!devAvatar) return;
-    var filename = Math.random() < 0.5 ? "developer.png" : "developer_2.png";
-    var fallbackFilename = filename === "developer.png" ? "developer_2.png" : "developer.png";
+    var filename = "developer.png";
+    var fallbackFilename = "developer.png";
     var candidates = [
       "/assets/" + filename + "?v=20260831",
       "/" + filename + "?v=20260831",
@@ -2751,3 +2751,4 @@
   window.addEventListener("load", schedule, { once: true });
 })();
 </script>
+<script src="site-locale.js?v=20261108shell3" defer></script>
