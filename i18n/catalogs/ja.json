@@ -1,7 +1,7 @@
 {
- "count": 13611,
+ "count": 13613,
  "dir": "ltr",
- "generated": "2026-11-08T18:24:59+00:00",
+ "generated": "2026-11-08T21:09:52+00:00",
  "keep": [
   "(1M)",
   "(1P)",
@@ -198,6 +198,7 @@
   "spycemagic/y2-rockbox",
   "st4rz!",
   "system.zip",
+  "temas.innioasis.app",
   "u/Acrobatic_Bar8183",
   "u/AkikoKumagara",
   "u/Angel-50000",
@@ -9964,6 +9965,7 @@
   "Téléchargez le thème fruitiger aqua pour Innioasis Y1 et Y2 par bee et personnalisez l'apparence de votre joueur avec des ressources d'interface utilisateur sélectionnées.": "Innioasis Y1 と Y2 のフルーツを使用して、蜂や個人の外観を表示し、インターフェースの利用方法を選択します。",
   "Téléchargez le thème iPod-ish pour Innioasis Y1 et Y2 par Reddit et personnalisez l'apparence de votre lecteur avec des ressources d'interface utilisateur sélectionnées.": "iPod っぽいテーマを Innioasis Y1 と Y2 の Reddit に表示して、インターフェイスの利用方法を選択したり、人物を検索したりできます。",
   "Téléchargez le thème mis à jour Pinkie Pop pour Innioasis Y1 par Vivi et personnalisez l'apparence de votre joueur avec des ressources d'interface utilisateur sélectionnées.": "ピンキー ポップのテーマは Innioasis Y1 で、Vivi と personnalise の外観を表示し、インターフェースの利用方法を選択できます。",
+  "Título:": "タイトル:",
   "UNDERTALE": "アンダーテール",
   "UNDERTALE - Innioasis Y1 and Y2 Themes Gallery": "UNDERTALE - Innioasis Y1 および Y2 テーマ ギャラリー",
   "UNDERTALE for Innioasis Y1 & Y2 by PartOfTheDream42": "Innioasis Y1 & Y2 の UNDERTALE by PartOfTheDream42",
@@ -13402,6 +13404,7 @@
   "task_writing_system": "メインシステムソフトウェアの作成",
   "task_writing_user_storage": "ユーザーストレージパーティションの書き込み",
   "techdec": "テクデック",
+  "temas.innioasis.app": "temas.innioasis.app",
   "terminal_hint_generic": "• ヒント: デバイスをファームウェア ダウンロード モードにします (モデルによって異なります。例: バッテリーを取り外して USB ケーブルを接続したままにするか、バッテリーを入れたまま電源を切るか、USB 接続中に音量を下げ/上げたままにします)。",
   "terminal_hint_innioasis": "• ヒント: デバイスが自動的に接続しない場合は、USB ケーブルを接続するときに、ピンホールのリセット ボタンをペーパークリップでそっと押します。",
   "terminal_install_failed": "ターミナル ウィンドウを開けませんでした。インストール コマンドは {path} に書き込まれました。",

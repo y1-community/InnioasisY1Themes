@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-tw" dir="ltr" data-locale="zh-tw">
+
+<head>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('consent', 'default', {
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+    analytics_storage: 'granted',
+    functionality_storage: 'granted',
+    security_storage: 'granted',
+    wait_for_update: 500
+  });
+</script>
+<script async src="https://www.googletagmanager.com/gtm.js?id=GTM-TNDGC37L"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+</script>
+
+    <meta charset="utf-8" />
+  <meta name="author" content="Ryan Specter &amp; Innioasis Community">
+  <meta name="creator" content="Ryan Specter &amp; Innioasis Community">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>金級 - Innioasis Y1 和 Y2 主題</title>
+    <meta name="description"
+        content="金色主題今天已為您的 Innioasis Y1 或 Y2 做好準備。查看徽章的含義、瀏覽清單並放心下載。" />
+    <meta name="keywords" content="Innioasis Y1 黃金主題、Innioasis Y2 黃金主題、Y1 主題品質徽章、Y2 主題品質徽章、Rockbox 主題、主題庫、Luci 虛擬主機、themes.innioasis.app" />
+    <meta name="publisher" content="Luci Ltd" />
+    <link rel="author" href="https://www.luci.ltd" title="Luci Ltd - Innioasis Y1 和 Y2 主題的網站寄存" />
+    <link rel="icon" href="y1_illustration.png" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://innioasis.app/styles.css" />
+    <link rel="stylesheet" href="site-theme.css?v=20261102header" />
+    <link rel="stylesheet" href="site-toolbar.css?v=20261105dockclose" />
+    <link rel="stylesheet" href="site-pages.css?v=20260622" />
+    <link rel="stylesheet" href="theme-analytics.css?v=20260521" />
+    <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
+    <script src="theme-artwork-compat.js?v=20260711"></script>
+    <script src="gold-theme-detect.js?v=20261010perf"></script>
+    <script src="gallery-chrome.js?v=20261102header"></script>
+    <script src="site-init.js?v=20260522privacy"></script>
+    <script src="theme-analytics.js?v=20260521"></script>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: var(--site-bg, #0a0b0f);
+            color: var(--site-text, #f4f6fb);
+        }
+
+        .gold-hero {
+            text-align: center;
+            padding: 0 0 2.5rem;
+        }
+
+        .gold-hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 18px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #3d2a08, #b8891e 45%, #f2d06a 55%, #8a6420);
+            border: 1px solid rgba(255, 230, 160, 0.5);
+            color: #1a1206;
+            font-weight: 800;
+            font-size: 0.82rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 8px 32px rgba(201, 162, 39, 0.25);
+        }
+
+        .gold-hero h1 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            margin: 0 0 0.75rem;
+        }
+
+        .gold-hero .site-lead {
+            max-width: 36rem;
+            margin: 0 auto 1.5rem;
+        }
+
+        .gold-hero-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 22px;
+            border-radius: 999px;
+            background: #fff;
+            color: #0a0b0f;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+
+        .gold-hero-cta:hover {
+            opacity: 0.92;
+            text-decoration: none;
+        }
+
+        .gold-section {
+            margin-bottom: 3rem;
+        }
+
+        .gold-section h2 {
+            font-size: clamp(1.5rem, 3.5vw, 2rem);
+            margin: 0 0 1rem;
+        }
+
+        .pill-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 14px;
+        }
+
+        .pill-card {
+            padding: 18px 20px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .pill-card h3 {
+            margin: 0 0 8px;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .pill-card p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--site-muted);
+            line-height: 1.5;
+        }
+
+        #gold-theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+            gap: 14px;
+            margin-top: 0.5rem;
+        }
+
+        .gold-theme-card {
+            display: flex;
+            flex-direction: column;
+            border-radius: 14px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            text-decoration: none;
+            color: inherit;
+            transition: border-color 0.15s, transform 0.15s;
+        }
+
+        .gold-theme-card:hover {
+            border-color: rgba(232, 197, 106, 0.45);
+            transform: translateY(-2px);
+            text-decoration: none;
+        }
+
+        .gold-theme-card img {
+            width: 100%;
+            aspect-ratio: 4/3;
+            object-fit: cover;
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .gold-theme-card span {
+            padding: 10px 12px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .gold-theme-card .gold-pill {
+            margin: 0 12px 10px;
+            align-self: flex-start;
+            font-size: 0.68rem;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #1a1206;
+            padding: 2px 7px;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #5c4014, #b8891e 42%, #f2d06a 52%, #b8891e 62%, #5c4014);
+        }
+
+        .gold-loading {
+            grid-column: 1 / -1;
+            color: var(--site-muted);
+            font-size: 0.92rem;
+        }
+
+        .gold-footnote {
+            font-size: 0.82rem;
+            color: var(--site-muted);
+            margin-top: 1.5rem;
+            line-height: 1.5;
+        }
+
+        .gold-gallery-intro {
+            margin: 0 0 0.25rem;
+            color: var(--site-muted);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .gold-gallery-count {
+            margin: 0 0 1rem;
+            font-size: 0.88rem;
+            color: var(--site-muted);
+        }
+
+        .gold-tech {
+            padding: 2rem 1.25rem;
+            border-radius: var(--site-radius-lg, 16px);
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--site-border);
+            margin-bottom: 2.5rem;
+        }
+
+        .gold-tech > p {
+            margin: 0 0 1rem;
+            color: var(--site-muted);
+            line-height: 1.55;
+            font-size: 0.95rem;
+        }
+
+        .gold-tech details {
+            margin-top: 1rem;
+        }
+
+        .gold-tech summary {
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--site-text);
+            font-size: 0.92rem;
+            list-style: none;
+        }
+
+        .gold-tech summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .gold-tech summary::after {
+            content: " +";
+            color: var(--site-muted);
+            font-weight: 400;
+        }
+
+        .gold-tech details[open] summary::after {
+            content: " −";
+        }
+
+        .gold-tech-body {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            color: var(--site-muted);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .gold-tech-body ul {
+            margin: 0.75rem 0 0;
+            padding-left: 1.2rem;
+        }
+
+        .gold-tech-body li {
+            margin-bottom: 0.5rem;
+        }
+
+        .gold-tech-body code {
+            font-size: 0.85em;
+            color: #c8d4ee;
+        }
+    </style>
+<meta property="og:site_name" content="Innioasis 主題畫廊">  <link rel="canonical" href="https://themes.innioasis.app/gold-badge_zh-tw.html">
+  <!-- i18n-hreflang-start -->
+  <link rel="alternate" hreflang="x-default" href="https://themes.innioasis.app/gold-badge.html">
+  <link rel="alternate" hreflang="en" href="https://themes.innioasis.app/gold-badge.html">
+  <link rel="alternate" hreflang="de" href="https://themes.innioasis.app/gold-badge_de.html">
+  <link rel="alternate" hreflang="ja" href="https://themes.innioasis.app/gold-badge_ja.html">
+  <link rel="alternate" hreflang="jp" href="https://themes.innioasis.app/gold-badge_jp.html">
+  <link rel="alternate" hreflang="es" href="https://themes.innioasis.app/gold-badge_es.html">
+  <link rel="alternate" hreflang="fr" href="https://themes.innioasis.app/gold-badge_fr.html">
+  <link rel="alternate" hreflang="it" href="https://themes.innioasis.app/gold-badge_it.html">
+  <link rel="alternate" hreflang="pt-BR" href="https://themes.innioasis.app/gold-badge_pt-BR.html">
+  <link rel="alternate" hreflang="pt" href="https://themes.innioasis.app/gold-badge_pt.html">
+  <link rel="alternate" hreflang="pt-br" href="https://themes.innioasis.app/gold-badge_pt-br.html">
+  <link rel="alternate" hreflang="pt-PT" href="https://themes.innioasis.app/gold-badge_pt-PT.html">
+  <link rel="alternate" hreflang="pt-pt" href="https://themes.innioasis.app/gold-badge_pt-pt.html">
+  <link rel="alternate" hreflang="ru" href="https://themes.innioasis.app/gold-badge_ru.html">
+  <link rel="alternate" hreflang="zh-CN" href="https://themes.innioasis.app/gold-badge_zh-CN.html">
+  <link rel="alternate" hreflang="zh" href="https://themes.innioasis.app/gold-badge_zh.html">
+  <link rel="alternate" hreflang="zh-cn" href="https://themes.innioasis.app/gold-badge_zh-cn.html">
+  <link rel="alternate" hreflang="zh-TW" href="https://themes.innioasis.app/gold-badge_zh-TW.html">
+  <link rel="alternate" hreflang="zh-tw" href="https://themes.innioasis.app/gold-badge_zh-tw.html">
+  <link rel="alternate" hreflang="ko" href="https://themes.innioasis.app/gold-badge_ko.html">
+  <link rel="alternate" hreflang="kr" href="https://themes.innioasis.app/gold-badge_kr.html">
+  <link rel="alternate" hreflang="ar" href="https://themes.innioasis.app/gold-badge_ar.html">
+  <link rel="alternate" hreflang="nl" href="https://themes.innioasis.app/gold-badge_nl.html">
+  <link rel="alternate" hreflang="pl" href="https://themes.innioasis.app/gold-badge_pl.html">
+  <link rel="alternate" hreflang="tr" href="https://themes.innioasis.app/gold-badge_tr.html">
+  <link rel="alternate" hreflang="uk" href="https://themes.innioasis.app/gold-badge_uk.html">
+  <link rel="alternate" hreflang="vi" href="https://themes.innioasis.app/gold-badge_vi.html">
+  <link rel="alternate" hreflang="th" href="https://themes.innioasis.app/gold-badge_th.html">
+  <link rel="alternate" hreflang="id" href="https://themes.innioasis.app/gold-badge_id.html">
+  <link rel="alternate" hreflang="he" href="https://themes.innioasis.app/gold-badge_he.html">
+  <link rel="alternate" hreflang="hi" href="https://themes.innioasis.app/gold-badge_hi.html">
+  <link rel="alternate" hreflang="cs" href="https://themes.innioasis.app/gold-badge_cs.html">
+  <link rel="alternate" hreflang="el" href="https://themes.innioasis.app/gold-badge_el.html">
+  <link rel="alternate" hreflang="sv" href="https://themes.innioasis.app/gold-badge_sv.html">
+  <link rel="alternate" hreflang="fa" href="https://themes.innioasis.app/gold-badge_fa.html">
+  <link rel="alternate" hreflang="da" href="https://themes.innioasis.app/gold-badge_da.html">
+  <link rel="alternate" hreflang="fi" href="https://themes.innioasis.app/gold-badge_fi.html">
+  <link rel="alternate" hreflang="hu" href="https://themes.innioasis.app/gold-badge_hu.html">
+  <link rel="alternate" hreflang="no" href="https://themes.innioasis.app/gold-badge_no.html">
+  <link rel="alternate" hreflang="ro" href="https://themes.innioasis.app/gold-badge_ro.html">
+  <!-- i18n-hreflang-end -->
+</head>
+
+<body class="site-themes-app site-dock-mode">
+    <div id="nav-root"></div>
+    <div class="gallery-topbar">
+        <a class="gallery-brand" href="index_zh-TW.html" title="Innioasis Y1 和 Y2 主題庫">
+            <span class="gallery-brand-icon" aria-hidden="true"><i class="fa-solid fa-palette"></i></span>
+            <span class="gallery-brand-text">Innioasis Y1 和 Y2 主題</span>
+        </a>
+        <div class="gallery-tabs" aria-label="網站部分">
+            <a class="gallery-tab" href="https://y1-themes.vercel.app">編輯</a>
+            <a class="gallery-tab" href="upload_zh-TW.html">上傳</a>
+        </div>
+        <form class="topbar-search-wrap" action="index.html" method="get">
+            <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
+            <input class="topbar-search" type="search" name="q" placeholder="搜尋" aria-label="搜尋主題" />
+        </form>
+    </div>
+
+    <div class="wrap">
+        <header class="gold-hero">
+            <div class="gold-hero-badge" aria-hidden="true"><span>🏅</span> 金子</div>
+            <h1 class="site-display">您可以在 Y1 和 Y2 上信賴的主題</h1>
+            <p class="site-lead">
+                當您在圖庫中看到 Gold 時，該主題已準備好適合您今天擁有的 Innioasis Y1 或 Y2。在點擊下載之前，減少猜測，更有信心。
+            </p>
+            <a class="gold-hero-cta" href="index_zh-TW.html?gold=1"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i> 瀏覽黃金主題</a>
+        </header>
+
+        <section class="gold-section" aria-labelledby="gold-means-heading">
+            <h2 id="gold-means-heading" class="section-display">黃金對您意味著什麼</h2>
+            <div class="pill-grid">
+                <article class="pill-card">
+                    <h3>現在準備好了</h3>
+                    <p>專為您今天播放器上的軟體而設計，因此一切都按照您的預期運行。</p>
+                </article>
+                <article class="pill-card">
+                    <h3>完整圖片</h3>
+                    <p>涵蓋我們關心的額外螢幕，而不僅僅是家庭壁紙。</p>
+                </article>
+                <article class="pill-card">
+                    <h3>一個簡單的訊號</h3>
+                    <p>畫廊和本頁上有相同的金徽章。易於發現，易於信任。</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="gold-section" aria-labelledby="gold-gallery-heading">
+            <h2 id="gold-gallery-heading" class="section-display">現在的金主題</h2>
+            <p class="gold-gallery-intro">點擊主題進行預覽並在準備好後下載。</p>
+            <p id="gold-gallery-count" class="gold-gallery-count" hidden></p>
+            <div id="gold-theme-grid" aria-live="polite">
+                <p class="gold-loading" id="gold-scan-status">尋找黃金主題...</p>
+            </div>
+        </section>
+
+        <section class="gold-tech" aria-labelledby="gold-tech-heading">
+            <h2 id="gold-tech-heading" class="section-display">我們如何決定</h2>
+            <p>
+                金牌是社區品質標誌，而不是保固。我們會自動檢查每個主題，以便徽章與包中的內容相符。如果未來的 Y1 或 Y2 更新破壞了某些內容，徽章可能會脫落，直到修復為止。
+            </p>
+            <details>
+                <summary>技術細節（針對主題製作者）</summary>
+                <div class="gold-tech-body">
+                    <p>當主題通過我們的藝術作品相容性檢查時即可獲得金牌（與畫廊徽章相同）：</p>
+                    <ul>
+                        <li><code>config.json</code> 列出 Rockbox 啟動器開關、電子書閱讀器、計算機和日曆的路徑。</li>
+                        <li>每個連結的文件都存在並且是真實的藝術品 - 不是 <code>transparent.png</code> 或 <code>backfill.png</code> 佔位符 <code>launcher.png</code>, <code>calendar.png</code>, <code>ebook.png</code>, 或 <code>calculator.png</code>.</li>
+                        <li>作者可以設定 <code>gallery.compatibilityMedal</code> 到 <code>gold</code> 或 <code>none</code> 強制開啟或關閉徽章。</li>
+                    </ul>
+                    <p style="margin-top:1rem;margin-bottom:0;">
+                        當您開啟此頁面或圖庫時，會批次檢查主題。全新上傳可能需要一段時間才會出現黃金級。
+                    </p>
+                </div>
+            </details>
+            <p class="gold-footnote" style="margin-top:1.25rem;margin-bottom:0;">
+                在安裝任何主題之前，請務必備份您的 Y1 或 Y2。
+            </p>
+        </section>
+    </div>
+
+    <div id="footer-root"></div>
+    <div id="support-toolbar-slot"></div>
+
+    <script src="nav.js?v=20261105copyleft"></script>
+    <script>
+        function escAttr(s) {
+            return String(s || "")
+                .replace(/&/g, "&amp;")
+                .replace(/"/g, "&quot;")
+                .replace(/</g, "&lt;");
+        }
+
+        function setGalleryCount(n) {
+            const el = document.getElementById("gold-gallery-count");
+            if (!el) return;
+            if (!n) {
+                el.hidden = true;
+                el.textContent = "";
+                return;
+            }
+            el.hidden = false;
+            el.textContent = n === 1 ? "1 theme with Gold" : n + " themes with Gold";
+        }
+
+        function goldCardHtml(t) {
+            const folder = String(t.folder || t.name || "").replace(/^\.\/+/, "");
+            const q = encodeURIComponent(folder);
+            const name = escAttr(t.name || folder || "Theme");
+            const cover = window.GoldThemeDetect.coverUrlForTheme(t);
+            return (
+                '<a class="gold-theme-card" href="./theme.html?theme=' +
+                q +
+                '" title="' +
+                name +
+                '">' +
+                '<img src="' +
+                escAttr(cover) +
+                '" alt="" loading="lazy" onerror="this.src=\'placeholder.png\'" />' +
+                '<span class="gold-pill">Gold</span>' +
+                "<span>" +
+                name +
+                "</span></a>"
+            );
+        }
+
+        async function loadGoldThemes() {
+            const grid = document.getElementById("gold-theme-grid");
+            const statusEl = document.getElementById("gold-scan-status");
+            if (!grid || !window.GoldThemeDetect) return;
+
+            const seen = new Set();
+            let goldCount = 0;
+
+            function appendGoldCard(theme) {
+                const folder = String(theme.folder || "").replace(/^\.\/+/, "");
+                if (!folder || seen.has(folder)) return;
+                seen.add(folder);
+                goldCount += 1;
+                const wrap = document.createElement("div");
+                wrap.innerHTML = goldCardHtml(theme);
+                const card = wrap.firstElementChild;
+                if (card && statusEl && statusEl.parentNode === grid) {
+                    grid.insertBefore(card, statusEl);
+                } else if (card) {
+                    grid.appendChild(card);
+                }
+                setGalleryCount(goldCount);
+            }
+
+            try {
+                const res = await fetch("themes.json", { cache: "no-store" });
+                if (!res.ok) throw new Error("themes.json");
+                const data = await res.json();
+                const catalog = (Array.isArray(data) ? data : data.themes || []).filter(
+                    (t) => t && String(t.sourceType || "internal").toLowerCase() !== "external",
+                );
+                const buildFileUrl = (cf, rel) => window.GoldThemeDetect.buildThemeFileUrl(cf, rel);
+
+                for (const t of catalog) {
+                    const folder = String(t.folder || "").replace(/^\.\/+/, "");
+                    if (!folder) continue;
+                    try {
+                        const cfg = await window.GoldThemeDetect.fetchThemeConfig(folder);
+                        const gallery =
+                            cfg && cfg.gallery && typeof cfg.gallery === "object" ? cfg.gallery : {};
+                        if (String(gallery.compatibilityMedal || "").trim().toLowerCase() === "gold") {
+                            t.compatibilityMedal = "gold";
+                            appendGoldCard(t);
+                        }
+                    } catch (_) {}
+                }
+
+                await window.GoldThemeDetect.annotateThemes(catalog, {
+                    batchSize: 4,
+                    buildFileUrl,
+                    emitEvents: false,
+                    onProgress: ({ done, total: scanTotal }) => {
+                        if (statusEl) {
+                            statusEl.textContent = "Checking theme " + done + " of " + scanTotal + "…";
+                        }
+                    },
+                });
+
+                for (const t of catalog) {
+                    if (String(t.compatibilityMedal || "").toLowerCase() === "gold") {
+                        appendGoldCard(t);
+                    }
+                }
+
+                if (statusEl) statusEl.remove();
+
+                if (!goldCount) {
+                    grid.innerHTML =
+                        '<p class="gold-loading">No Gold themes yet. <a href="index_zh-TW.html">Browse the full gallery</a> or check back soon.</p>';
+                    setGalleryCount(0);
+                    return;
+                }
+                setGalleryCount(goldCount);
+            } catch (err) {
+                console.error("Gold theme list failed", err);
+                setGalleryCount(0);
+                grid.innerHTML =
+                    '<p class="gold-loading">Could not load themes right now. <a href="index_zh-TW.html">Open the gallery</a>.</p>';
+            }
+        }
+
+        loadGoldThemes();
+    </script>
+<script src="site-locale.js?v=20261108d" defer></script></body>
+
+</html>
