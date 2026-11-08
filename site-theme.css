@@ -1318,3 +1318,75 @@ body.site-themes-app .bulk-update-panel {
     line-height: 1.2;
 }
 
+
+/* ==========================================================================
+   Responsive hardening, November 2026 viewport audit
+   Owned jointly with Antigravity; see docs/RESPONSIVE_AUDIT.md.
+
+   The gallery top bar used three fixed grid tracks (brand, section tabs,
+   search). Between 344px and 760px wide the tabs alone want 461px, so the
+   header pushed the document 33-251px past the viewport. Narrow screens now
+   stack the tracks and let the tab strip wrap instead of overflow.
+   ========================================================================== */
+@media (max-width: 900px) {
+    .gallery-topbar {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .gallery-tabs {
+        justify-self: stretch;
+        justify-content: center;
+        flex-wrap: wrap;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .topbar-search-wrap,
+    .topbar-search-wrap.is-expanded,
+    .topbar-search-wrap:focus-within {
+        width: min(100%, 15rem);
+        max-width: min(100%, 15rem);
+        box-sizing: border-box;
+    }
+
+    .gallery-social-links {
+        min-width: 0;
+        max-width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .lumen-nav,
+    .gallery-brand {
+        min-width: 0;
+    }
+}
+
+@media (max-width: 420px) {
+    .gallery-tab {
+        padding: 8px 10px;
+    }
+}
+
+/* Decoded images must not resize their container after paint. */
+.theme-card img,
+.theme-preview-frame img,
+.gallery-social-links img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* The social icon strip sits in the top bar's brand track and, on narrow
+   screens, kept its full intrinsic width (603px at a 393px viewport). It wraps
+   now that the bar is single-column. Scoped to the app body so it beats the
+   base rule without !important. */
+body.site-themes-app .gallery-topbar .gallery-social-links {
+    min-width: 0;
+    max-width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+    overflow: hidden;
+}
+
+body.site-themes-app .gallery-topbar .lumen-nav-social-btn {
+    flex: 0 0 auto;
+}
