@@ -43,6 +43,21 @@ sys.path.insert(0, HERE)
 from i18n_core import base_of, load_locales  # noqa: E402
 
 CONFIG_PATH = os.path.join(ROOT, "i18n", "config.json")
+
+# Strings that must never be translated: release tags (stable-v0.5), versions
+# (3.0.7), package names (rom.zip), repos (owner/repo) and model codes (Y1,
+# G5, PR1, A5). A sentence that contains one is still translated, with the
+# token masked, so "Install rom.zip" becomes "Installez rom.zip".
+TECHNICAL_TOKEN = re.compile(
+    r"^(?:"
+    r"v?\d+(?:\.\d+)*(?:[-._][A-Za-z0-9]+)*"
+    r"|[a-z]+-v?\d+(?:\.\d+)*"
+    r"|[\w.-]+\.(?:zip|apk|img|bin|tar|gz|md|txt|json)"
+    r"|[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+"
+    r"|[A-Z]{1,3}\d+[A-Za-z]?"
+    r")$",
+    re.IGNORECASE,
+)
 LOCALES_PATH = os.path.join(ROOT, "i18n", "locales.json")
 
 # A practical launch set: the audiences the firmware archive actually hears
@@ -82,8 +97,16 @@ class Masker:
     def __init__(self, terms: Sequence[str]):
         # Longest first so "Innioasis Updater" wins over "Innioasis".
         self.terms = sorted({term for term in terms if term}, key=len, reverse=True)
+        # Whole words only: "Solar" must not match inside "solarium", and
+        # "Y2" must not match inside "Y2Reborn" (longest term wins above).
         self.pattern = (
-            re.compile("|".join(re.escape(term) for term in self.terms)) if self.terms else None
+            re.compile(
+                r"(?<![A-Za-z0-9])(?:"
+                + "|".join(re.escape(term) for term in self.terms)
+                + r")(?![A-Za-z0-9])"
+            )
+            if self.terms
+            else None
         )
         self.token_re = re.compile(r"\[\[\s*(\d+)\s*\]\]")
 
@@ -104,6 +127,24 @@ class Masker:
             return found[index] if 0 <= index < len(found) else match.group(0)
 
         return self.token_re.sub(swap, text)
+
+    def survives(self, text: str, found: Sequence[str]) -> bool:
+        """Every masked brand must come back exactly as it went in. A service
+        that drops or rewrites a token would otherwise ship "Inniose Y2"."""
+        return all(term in text for term in found)
+
+    def is_brand_only(self, text: str) -> bool:
+        """True when nothing but brand names, punctuation and symbols is left.
+
+        A button labelled only "Discord" must never be sent: the dictionary
+        word for discord is "Zwietracht" in German, and "Solar" would become
+        the sun. Sentences that merely mention a brand are still translated."""
+        if TECHNICAL_TOKEN.match(str(text).strip()):
+            return True
+        if not self.pattern:
+            return False
+        stripped = self.pattern.sub(" ", text)
+        return not re.search(r"[^\W\d_]", stripped, re.UNICODE)
 
 
 def http_post(url: str, data: bytes, headers: Dict[str, str], timeout: int = 30) -> bytes:
@@ -283,6 +324,12 @@ def translate_texts(
     failed = 0
     consecutive_failures = 0
 
+    # Brand-only labels stay in the source language everywhere. Phrases that
+    # contain a brand are still translated, with the name masked above.
+    brand_only = [text for text in texts if masker.is_brand_only(text)]
+    if brand_only:
+        texts = [text for text in texts if text not in brand_only]
+
     for batch in chunk(texts, provider.max_chars):
         total_batches += 1
         masked: List[str] = []
@@ -443,6 +490,17 @@ def main() -> int:
     parser.add_argument("--provider", default="google-web", choices=sorted(PROVIDERS))
     parser.add_argument("--locales", default="core", help="'all', 'core', or a comma-separated list")
     parser.add_argument("--limit", type=int, default=0, help="Translate at most N strings per locale")
+    parser.add_argument(
+        "--top",
+        type=int,
+        default=0,
+        help="Only the N most frequently used source strings (best value per request)",
+    )
+    parser.add_argument(
+        "--strings-from",
+        default="",
+        help="JSON worklist (a list, or {\"strings\": [...]}) limiting what is translated",
+    )
     parser.add_argument("--check", action="store_true", help="Report coverage and exit")
     parser.add_argument(
         "--index-only",
@@ -473,8 +531,26 @@ def main() -> int:
         return 2
 
     source = load_json(strings_file)["strings"]
+    if args.top:
+        # The strings that appear on the most pages buy the most translated
+        # interface per request. Ties keep the shortest first so a batch is
+        # cheap, then batched longest-last below.
+        ranked = sorted(
+            source.keys(),
+            key=lambda text: (-source[text].get("n", 0), len(text)),
+        )
+        texts = ranked[: args.top]
+    else:
+        texts = list(source.keys())
+
+    if args.strings_from:
+        with open(args.strings_from, "r", encoding="utf-8") as handle:
+            worklist = json.load(handle)
+        wanted = set(worklist if isinstance(worklist, list) else worklist.get("strings", []))
+        texts = [text for text in texts if text in wanted]
+        print(f"Worklist : {len(texts)} of {len(wanted)} requested strings are in the source catalog")
     # Longest strings last so a batch fails small rather than with a huge tail.
-    texts = sorted(source.keys(), key=len)
+    texts = sorted(texts, key=len)
     if args.limit:
         texts = texts[: args.limit]
 

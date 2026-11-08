@@ -59,7 +59,7 @@ jobs:
         run: python3 scripts/i18n/harvest_ui_strings.py
 
       - name: Extract the gallery pages
-        run: python3 scripts/i18n/extract_strings.py --tiers core
+        run: python3 scripts/i18n/extract_strings.py --tiers core,full
 
       - name: Merge hand-reviewed copy
         run: python3 scripts/i18n/seed_catalogs.py
@@ -73,6 +73,9 @@ jobs:
           ARGS=""
           if [ "$TOP" != "0" ]; then ARGS="--top $TOP"; fi
           python3 scripts/i18n/translate.py --provider google-web --locales "$LOCALES" $ARGS
+
+      - name: Keep brand and model names as written
+        run: python3 scripts/i18n/repair_brands.py --write
 
       - name: Rebuild the language picker index
         run: python3 scripts/i18n/translate.py --index-only
@@ -90,9 +93,14 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Verify the analytics tag on every page
+        run: python3 scripts/i18n/check_ga.py --check
+
+      # Raptive / AdSense (future): set RAPTIVE_SITE_ID and the ad loader in
+      # site-ads.js reads it at runtime. No ad request is made until it is set.
       - name: Pre-render static locale copies
         continue-on-error: true
-        run: python3 scripts/i18n/prerender.py --locales all --tiers core --out dist
+        run: python3 scripts/i18n/prerender.py --locales all --tiers core,full --out dist
 
       - name: Upload the pre-rendered gallery
         if: always()
