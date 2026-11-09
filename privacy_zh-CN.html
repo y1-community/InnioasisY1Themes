@@ -15,6 +15,7 @@
     security_storage: 'granted',
     wait_for_update: 500
   });
+  dataLayer.push({'gtm.start': new Date().getTime(), event: 'gtm.js'});
 </script>
 <script async src="https://www.googletagmanager.com/gtm.js?id=GTM-TNDGC37L"></script>
 
@@ -40,9 +41,9 @@
   <link rel="icon" href="y1_illustration.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://innioasis.app/styles.css">
-  <link rel="stylesheet" href="site-theme.css?v=20261102header">
+  <link rel="stylesheet" href="site-theme.css?v=20261108headerfix">
   <link rel="stylesheet" href="lumen.css?v=20261105hero">
-  <link rel="stylesheet" href="site-toolbar.css?v=20261105dockclose">
+  <link rel="stylesheet" href="site-toolbar.css?v=20261108hero">
   <link rel="stylesheet" href="site-pages.css?v=20260622">
   <link rel="stylesheet" href="theme-analytics.css?v=20260518">
   <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
@@ -129,10 +130,6 @@
     <p>目前正在分析 <span class="privacy-state" id="privacy-state">于</span> 对于这个浏览器。</p>
     <p><button type="button" class="btn" id="privacy-open-settings">关闭分析</button></p>
 
-    <h2>广告</h2>
-    <p>今天画廊里有空的广告箱。我们正准备与广告合作伙伴 Raptive 合作，以便该网站能够承担其托管和开发成本。目前没有运行广告网络脚本，也没有设置广告 cookie。</p>
-    <p>当广告开始时，合作伙伴可能会根据自己的隐私政策设置 cookie 并收集数据。如果法律要求，我们将首先征求同意，并且此页面将在任何广告上线之前命名合作伙伴。</p>
-
     <h2>捐款</h2>
     <p>捐赠按钮链接到 Ko-fi、Buy Me a Coffee、PayPal、Revolut、Patreon 和 Boosty。这些服务处理付款和自己的数据。该网站永远不会看到您的银行卡详细信息。</p>
 
@@ -157,9 +154,9 @@
   <div id="footer-root"></div>
   <div id="support-toolbar-slot"></div>
 
-  <script src="nav.js?v=20261105copyleft"></script>
+  <script src="nav.js?v=20261109cta"></script>
   <script src="theme-analytics.js?v=20260524b"></script>
-  <script src="site-locale.js?v=20261108d" defer></script>
+  <script src="site-locale.js?v=20261109i18n" defer></script>
   <script>
     (function () {
       var button = document.getElementById('privacy-open-settings');

@@ -100,6 +100,10 @@
             justify-content: space-between;
             gap: 12px;
             padding: 8px 16px;
+            /* Safari before 16.2 has no color-mix(); without a solid fallback
+               the sticky header painted nothing and page content showed
+               through it. Browsers with color-mix use the line below. */
+            background: #0c0e14;
             background: color-mix(in oklab, var(--lumen-ink, #0c0e14) 92%, transparent);
             border-bottom: 1px solid var(--lumen-line, rgba(255, 255, 255, 0.12));
             backdrop-filter: blur(14px);
@@ -903,11 +907,11 @@
             <i class="fa-solid fa-circle-check site-compat-banner__icon" aria-hidden="true"></i>
             <span class="site-compat-banner__text">
                 <span class="site-compat-banner__text-desktop">Die Themen in dieser Galerie sind kompatibel mit <a class="site-compat-banner__link" href="https://innioasis.app/original-software-benefits.html?lang=de" target="_blank" rel="noopener noreferrer"><strong>Originales Betriebssystem</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/better-y-benefits.html?lang=de" target="_blank" rel="noopener noreferrer"><strong>Better-Y</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/solar-benefits.html?lang=de" target="_blank" rel="noopener noreferrer"><strong>Solar</strong></a>, und <a class="site-compat-banner__link" href="https://innioasis.app/koensayr-benefits.html?lang=de" target="_blank" rel="noopener noreferrer"><strong>Koensayr</strong></a> benutzerdefinierte Firmwares - </span>
-                <span class="site-compat-banner__text-mobile">Compatible with <a class="site-compat-banner__link" href="https://innioasis.app/original-software-benefits.html?lang=de" target="_blank" rel="noopener noreferrer"><strong>Originales Betriebssystem</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/better-y-benefits.html?lang=de" target="_blank" rel="noopener noreferrer"><strong>Better-Y</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/solar-benefits.html?lang=de" target="_blank" rel="noopener noreferrer"><strong>Solar</strong></a> &amp; <a class="site-compat-banner__link" href="https://innioasis.app/koensayr-benefits.html?lang=de" target="_blank" rel="noopener noreferrer"><strong>Koensayr</strong></a> - </span>
+                <span class="site-compat-banner__text-mobile">Kompatibel mit <a class="site-compat-banner__link" href="https://innioasis.app/original-software-benefits.html?lang=de" target="_blank" rel="noopener noreferrer"><strong>Originales Betriebssystem</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/better-y-benefits.html?lang=de" target="_blank" rel="noopener noreferrer"><strong>Better-Y</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/solar-benefits.html?lang=de" target="_blank" rel="noopener noreferrer"><strong>Solar</strong></a> &amp; <a class="site-compat-banner__link" href="https://innioasis.app/koensayr-benefits.html?lang=de" target="_blank" rel="noopener noreferrer"><strong>Koensayr</strong></a> - </span>
                 <a class="site-compat-banner__cta" href="https://innioasis.app/guide.html#platform?lang=de" target="_blank" rel="noopener noreferrer">Verfügbar im Updater CE →</a>
             </span>
         </div>
-        <button type="button" class="site-compat-banner__close" id="site-compat-banner-close" aria-label="Dismiss compatibility notice" title="Dismiss notice">&times;</button>
+        <button type="button" class="site-compat-banner__close" id="site-compat-banner-close" aria-label="Kompatibilitätshinweis ablehnen" title="Kündigung ablehnen">&times;</button>
     </aside>
     <div class="wrap">
         <section class="gallery-home-hero" aria-label="Einführung in die Themengalerie">
@@ -997,7 +1001,7 @@
             </label>
         </div>
 
-        <nav id="theme-pager-top" class="pager pager--top" aria-label="Theme pages" hidden></nav>
+        <nav id="theme-pager-top" class="pager pager--top" aria-label="Themenseiten" hidden></nav>
 
         <div id="theme-grid" class="theme-grid theme-grid--loading" aria-busy="true">
             <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
@@ -1026,7 +1030,7 @@
             <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
         </div>
         <div id="theme-empty" style="display:none; margin-top:1rem; text-align:center; color:#94a3b8;">Keine Themen entsprechen Ihren aktuellen Filtern.</div>
-        <nav id="theme-pager-bottom" class="pager pager--bottom" aria-label="Theme pages" hidden></nav>
+        <nav id="theme-pager-bottom" class="pager pager--bottom" aria-label="Themenseiten" hidden></nav>
         <div class="gallery-ad-container gallery-ad-bottom gallery-ad--bottom" id="gallery-ad-bottom" aria-label="Gesponsert" data-ad-slot="gallery-bottom"></div>
 
     </div>
@@ -2636,17 +2640,39 @@
             dl.style.fontFamily = pf;
         }
 
+        /* A single card asks for its config.json four times: the cover
+           fallback, the variant list, the download-button colours and the
+           preview simulator. Fetching it once per theme and sharing the
+           promise keeps a 717-card page from issuing thousands of duplicate
+           requests before anything can render. */
+        const themeConfigRequests = new Map();
+
+        function requestThemeConfig(cf) {
+            if (!cf) return Promise.resolve(null);
+            const cached = themeConfigRequests.get(cf);
+            if (cached) return cached;
+            const enc = cf.split('/').filter(Boolean).map(encodeURIComponent).join('/');
+            const request = fetch(`./${enc}/config.json`, { cache: 'force-cache' })
+                .then((rc) => (rc.ok ? rc.json() : null))
+                .catch(() => null)
+                .then((cfg) => {
+                    /* A transient failure must not pin the card to "no config"
+                       for the rest of the session. */
+                    if (!cfg) themeConfigRequests.delete(cf);
+                    return cfg;
+                });
+            themeConfigRequests.set(cf, request);
+            return request;
+        }
+
+        /* The preview simulator and the gold-badge detector read the same file
+
+           for the same theme. They go through this one cache too, so a mounted
+           card costs a single config.json request in total. */
+        window.Y1ThemeConfig = { request: requestThemeConfig };
+
         async function fetchThemeConfigForCard(folder, variantSegment) {
-            const cf = effectiveThemeContentFolder(folder, variantSegment);
-            if (!cf) return null;
-            try {
-                const enc = cf.split('/').filter(Boolean).map(encodeURIComponent).join('/');
-                const rc = await fetch(`./${enc}/config.json`, { cache: 'no-cache' });
-                if (!rc.ok) return null;
-                return await rc.json();
-            } catch {
-                return null;
-            }
+            return requestThemeConfig(effectiveThemeContentFolder(folder, variantSegment));
         }
 
         function titleCaseWords(value) {
@@ -2734,19 +2760,14 @@
             const root = String(catalogFolder || '').replace(/^\.\/+/, '').replace(/\/+$/, '').trim();
             const fromManifest = [];
             if (root) {
-                try {
-                    const rc = await fetch(buildThemeFileUrl(root, 'config.json'), { cache: 'no-cache' });
-                    if (rc.ok) {
-                        const j = await rc.json();
-                        const gv = j.gallery && Array.isArray(j.gallery.variantFolders) ? j.gallery.variantFolders : null;
-                        if (gv) {
-                            for (const n of gv) {
-                                const s = String(n || '').trim();
-                                if (s) fromManifest.push(s);
-                            }
-                        }
+                const j = await requestThemeConfig(root);
+                const gv = j && j.gallery && Array.isArray(j.gallery.variantFolders) ? j.gallery.variantFolders : null;
+                if (gv) {
+                    for (const n of gv) {
+                        const s = String(n || '').trim();
+                        if (s) fromManifest.push(s);
                     }
-                } catch (_) {}
+                }
             }
             const g = manifestSource && typeof manifestSource === 'object' ? manifestSource : null;
             const vfLists = [];
@@ -2760,15 +2781,19 @@
                 }
             }
             if (!root) return [...new Set(fromManifest)].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
-            const entries = await fetchGithubRepoContents(`${root}/${THEME_VARIANTS_SEGMENT}`);
-            const fromApi = Array.isArray(entries)
-                ? entries
-                      .filter((item) => item && item.type === 'dir')
-                      .map((item) => String(item.name || '').trim())
-                      .filter(Boolean)
-                : [];
-            const merged = new Set([...fromApi, ...fromManifest]);
-            return [...merged].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+            /* The manifest already names the variants. Listing the folder
+               through the GitHub API costs one unauthenticated request per card
+               against a 60/hour limit, so only ask when the config is silent. */
+            if (fromManifest.length) {
+                return [...new Set(fromManifest)].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+            }
+            /* Variants come from themes.json and the theme's own config.json.
+               Listing the folder through the GitHub API cost one unauthenticated
+               request per card against a 60/hour limit and answered 404 for
+               almost every theme, so it is not part of the page path. Every
+               theme with a Variants folder on disk already lists them in the
+               manifest, which sync_theme_metadata.py maintains. */
+            return [...new Set(fromManifest)].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
         }
 
         function resolveMaskTargetPath(folderPath, files, configuredMaskPath) {
@@ -3486,12 +3511,11 @@
             };
 
             try {
-                const configRes = await fetch(`./${encodedFolder}/config.json`, { cache: 'no-cache' });
-                if (!configRes.ok) {
+                const config = await requestThemeConfig(folder);
+                if (!config) {
                     coverCandidatesByFolder.set(folder, []);
                     return [];
                 }
-                const config = await configRes.json();
                 const themeCoverPaths = [];
                 const overPaths = [];
                 const fallbackCoverPaths = [];
@@ -4676,13 +4700,9 @@
                 try {
                     let defaultLabel = 'Default';
                     try {
-                        const enc = folderPath.split('/').filter(Boolean).map(encodeURIComponent).join('/');
-                        const rc = await fetch(`./${enc}/config.json`, { cache: 'force-cache' });
-                        if (rc.ok) {
-                            const j = await rc.json();
-                            const gl = String((j.gallery && j.gallery.defaultVariantLabel) || '').trim();
-                            if (gl) defaultLabel = gl;
-                        }
+                        const j = await requestThemeConfig(folderPath);
+                        const gl = String((j && j.gallery && j.gallery.defaultVariantLabel) || '').trim();
+                        if (gl) defaultLabel = gl;
                     } catch (_) {}
                     defOptV.textContent = defaultLabel;
                     const names = await listThemeVariantFolderNames(folderPath, theme);
@@ -4702,9 +4722,17 @@
                     console.warn('variant list failed', e);
                 }
             };
+            /* Mounting the simulator is the expensive part of a card: it loads
+               config.json plus every icon the preview draws. It must happen
+               when the card scrolls into view, never for the whole catalogue
+               at once. */
+            let previewMounted = false;
             c._armGalleryMedia = () => {
                 armCover();
                 void loadCardVariants();
+                if (previewMounted) return;
+                previewMounted = true;
+                mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, c, '', theme, isPriority);
             };
             if (galleryMediaObserver) galleryMediaObserver.observe(c);
             else c._armGalleryMedia();
@@ -4751,6 +4779,10 @@
 
             const n = document.createElement('a');
             n.className = 'theme-name';
+            /* Theme names are titles, not prose: the generic machine pass turned
+               "Cinnamon" into "Zimt". Curated names come from themes-i18n. */
+            n.setAttribute('data-i18n-skip', '');
+            n.setAttribute('translate', 'no');
             n.textContent = (themeTrans && themeTrans.name) ? themeTrans.name : safeText(theme.name);
             if (theme.sourceType === 'external' && theme.authorUrl) {
                 n.href = theme.authorUrl;
@@ -4792,6 +4824,8 @@
 
             const d = document.createElement('div');
             d.className = 'theme-desc';
+            d.setAttribute('data-i18n-skip', '');
+            d.setAttribute('translate', 'no');
             const descText = safeText(theme.description).trim();
             if (themeTrans && themeTrans.description) {
                 d.textContent = themeTrans.description;
@@ -4816,6 +4850,11 @@
                     fallback.textContent = theme.author ? `by ${theme.author}` : '';
                     return fallback;
                 })();
+            /* Author handles are names and stay as written. */
+            if (a && a.setAttribute) {
+                a.setAttribute('data-i18n-skip', '');
+                a.setAttribute('translate', 'no');
+            }
 
             const cardActions = document.createElement('div');
             cardActions.className = 'theme-card-actions';
@@ -4893,7 +4932,6 @@
                 } catch (e) {}
                 bd.append(dl, di);
             }
-            mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, c, '', theme, isPriority);
             if (window.ThemeFrozen && window.ThemeFrozen.isFrozen(theme)) {
                 window.ThemeFrozen.attachToGalleryPreview(c, theme, {
                     onViewAnyway: () => goToThemePreviewPage(),
@@ -5037,22 +5075,22 @@
                             .then((r) => (r.ok ? r.json() : null))
                             .then((cfg) => {
                                 if (!cfg) return;
-                                const wp = cfg.desktopWallpaper || cfg.globalWallpaper || '';
-                                if (wp) {
+                                const previewHelper = window.Y1ThemePreview && window.Y1ThemePreview.previewAssetUrl;
+                                const preloadIfDerivative = (file, ext) => {
+                                    if (!file || !previewHelper) return;
+                                    const raw = `./${encodePathSegments(f)}/${encodePathSegments(file)}`;
+                                    /* Only preload a derivative that exists; the helper falls back to the
+                                       original, which the card loads anyway. */
+                                    const preview = previewHelper(raw, ext);
+                                    if (!preview || preview === raw) return;
                                     const imgPreload = new Image();
-                                    const dot = wp.lastIndexOf('.');
-                                    const prevWp = dot !== -1 ? wp.slice(0, dot) + '.preview.jpg' : wp;
-                                    imgPreload.src = `./${encodePathSegments(f)}/${encodePathSegments(prevWp)}`;
-                                }
+                                    imgPreload.src = preview;
+                                };
+                                const wp = cfg.desktopWallpaper || cfg.globalWallpaper || '';
+                                preloadIfDerivative(wp, 'jpg');
                                 const items = (cfg.home && cfg.home.items) || [];
                                 const firstItem = items[0];
-                                if (firstItem && firstItem.iconFile) {
-                                    const iconPreload = new Image();
-                                    const ic = firstItem.iconFile;
-                                    const dot = ic.lastIndexOf('.');
-                                    const prevIc = dot !== -1 ? ic.slice(0, dot) + '.preview.png' : ic;
-                                    iconPreload.src = `./${encodePathSegments(f)}/${encodePathSegments(prevIc)}`;
-                                }
+                                if (firstItem && firstItem.iconFile) preloadIfDerivative(firstItem.iconFile, 'png');
                             })
                             .catch(() => {});
                     }
@@ -5078,6 +5116,11 @@
             if (!cardsAdded) {
                 grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#94a3b8">Unable to display themes. Try refreshing the page.</p>';
                 return;
+            }
+            /* The curated theme text is fetched after the cards exist, so apply
+               it here as well as on the locale-change event. */
+            if (window.Y1ThemesI18n && typeof window.Y1ThemesI18n.load === 'function') {
+                window.Y1ThemesI18n.load().then(() => window.Y1ThemesI18n.applyToCards());
             }
             applyFilters();
             if (authorFilter && String(authorFilter.value || 'all') !== 'all') {
