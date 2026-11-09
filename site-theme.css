@@ -1722,3 +1722,87 @@ html, body {
         gap: 1.75rem;
     }
 }
+
+/* —— Small screens: the hero still rests on the card, and Upload / pager /
+   Rockbox share one row under it, the way the desktop grid does. Labels give
+   way to circular icon buttons when the row gets tight. —— */
+@media (max-width: 859px) {
+    body.site-themes-app .wrap:has(.gallery-home-hero) {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        column-gap: .5rem;
+        row-gap: 0;
+        align-items: center;
+    }
+
+    body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-home-hero,
+    body.site-themes-app .wrap:has(.gallery-home-hero) .hero-actions.cast-div {
+        display: contents;
+    }
+
+    body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-home-hero__row {
+        grid-column: 1 / -1;
+        grid-row: 1;
+        margin: 0;
+    }
+
+    body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-controls {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        margin-top: 0 !important;
+    }
+
+    body.site-themes-app .wrap:has(.gallery-home-hero) > :where(
+        #direct-install-banner,
+        .gallery-ad-container,
+        #theme-grid,
+        #theme-empty,
+        #theme-pager-bottom
+    ) {
+        grid-column: 1 / -1;
+    }
+
+    body.site-themes-app .wrap:has(.gallery-home-hero) .hero-actions > a.btn:not(#rockbox-btn) {
+        grid-column: 1;
+        grid-row: 3;
+        justify-self: start;
+        margin: .75rem 0 0;
+    }
+
+    body.site-themes-app .wrap:has(.gallery-home-hero) #theme-pager-top {
+        grid-column: 2;
+        grid-row: 3;
+        justify-self: center;
+        margin: .75rem 0 0;
+        width: max-content;
+        max-width: 100%;
+        min-width: 0;
+        overflow-x: auto;
+    }
+
+    body.site-themes-app .wrap:has(.gallery-home-hero) #rockbox-btn {
+        grid-column: 3;
+        grid-row: 3;
+        justify-self: end;
+        margin: .75rem 0 0;
+    }
+}
+
+@media (max-width: 719px) {
+    body.site-themes-app .wrap:has(.gallery-home-hero) .hero-actions > a.btn {
+        width: 46px;
+        height: 46px;
+        min-width: 46px;
+        min-height: 46px;
+        padding: 0;
+        gap: 0;
+        border-radius: 50%;
+        justify-content: center;
+        font-size: 0;
+    }
+
+    body.site-themes-app .wrap:has(.gallery-home-hero) .hero-actions > a.btn i {
+        font-size: .95rem;
+        line-height: 1;
+    }
+}
