@@ -266,6 +266,32 @@
     return "dark";
   }
 
+  /* The accent the header picked (or the app handed over), read from the same
+     places the shell writes it, so cross-site links can carry it. */
+  function getActiveAccent() {
+    try {
+      if (typeof window.y1GetAccent === "function") {
+        var live = window.y1GetAccent();
+        if (live) return live;
+      }
+      var stored = window.localStorage.getItem("lumen-accent");
+      if (stored && /^#[0-9a-f]{6}$/i.test(stored)) return stored;
+      var cookie = getSharedCookie("innioasis-accent");
+      if (cookie && /^#[0-9a-f]{6}$/i.test(cookie)) return cookie;
+      var attr = document.documentElement && document.documentElement.getAttribute("data-accent");
+      if (attr && /^#[0-9a-f]{6}$/i.test(attr)) return attr;
+    } catch (_) {}
+    return null;
+  }
+
+  function hasCeAccent() {
+    try {
+      if (typeof window.y1HasPcAccent === "function") return Boolean(window.y1HasPcAccent());
+      return Boolean(window.localStorage.getItem("innioasis-pc-accent") || getSharedCookie("innioasis-pc-accent"));
+    } catch (_) {}
+    return false;
+  }
+
   function getActiveAccessibility() {
     try {
       var stored = window.localStorage.getItem("innioasis-accessibility");
@@ -313,6 +339,13 @@
     var isSameHost = url.hostname === window.location.hostname;
     var isSubdomain = /(^|\.)innioasis\.app$/i.test(url.hostname);
     if (!isSameHost && !isSubdomain) return raw;
+
+    // Accent and the CE handoff belong to the sibling site only: a link that
+    // stays here never needs them, so a shared address keeps its clean URL.
+    if (isSameHost) {
+      url.searchParams.delete("accent");
+      url.searchParams.delete("ce");
+    }
 
     // 1. Donations preference
     if (isY1DonationsDisabled()) {
@@ -374,19 +407,27 @@
 
     // 6. Accessibility font size preference
     var curFs = getActiveFontScale();
-    if (curFs && curFs !== 1) {
+    if (curFs && curFs !== 0.8) {
       url.searchParams.set("fontSize", String(curFs));
+    }
+
+    // 7. Accent colour, and the Updater CE handoff. Only for the sibling
+    // site: a link to another page here keeps the clean URL it has always had.
+    if (!isSameHost) {
+      var curAccent = getActiveAccent();
+      if (curAccent) {
+        url.searchParams.set("accent", curAccent);
+      }
+      if (hasCeAccent()) {
+        url.searchParams.set("ce", "true");
+      }
     }
 
     if (!isSameHost || /^[a-z]+:\/\//i.test(raw) || raw.indexOf("//") === 0) {
       return url.toString();
     }
     if (raw.charAt(0) === "/") {
-      var isAbsolute = /^[a-z]+:\/\//i.test(raw) || raw.indexOf("//") === 0;
-    if (isAbsolute || !isSameHost) {
-      return url.toString();
-    }
-    return url.pathname + url.search + url.hash;
+      return url.pathname + url.search + url.hash;
     }
     var rel = url.pathname.replace(/^\//, "");
     return (rel || ".") + url.search + url.hash;
