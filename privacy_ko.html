@@ -15,6 +15,7 @@
     security_storage: 'granted',
     wait_for_update: 500
   });
+  dataLayer.push({'gtm.start': new Date().getTime(), event: 'gtm.js'});
 </script>
 <script async src="https://www.googletagmanager.com/gtm.js?id=GTM-TNDGC37L"></script>
 
@@ -40,7 +41,7 @@
   <link rel="icon" href="y1_illustration.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://innioasis.app/styles.css">
-  <link rel="stylesheet" href="site-theme.css?v=20261102header">
+  <link rel="stylesheet" href="site-theme.css?v=20261108headerfix">
   <link rel="stylesheet" href="lumen.css?v=20261105hero">
   <link rel="stylesheet" href="site-toolbar.css?v=20261108hero">
   <link rel="stylesheet" href="site-pages.css?v=20260622">
@@ -129,10 +130,6 @@
     <p>현재 분석은 <span class="privacy-state" id="privacy-state">에</span> 이 브라우저의 경우.</p>
     <p><button type="button" class="btn" id="privacy-open-settings">분석 끄기</button></p>
 
-    <h2>광고</h2>
-    <p>오늘 갤러리에는 빈 광고 컨테이너가 있습니다. 우리는 사이트의 호스팅 및 개발 비용을 충당할 수 있도록 광고 파트너인 Raptive와 협력할 준비를 하고 있습니다. 현재 광고 네트워크 스크립트가 실행되지 않으며 광고 쿠키가 설정되어 있지 않습니다.</p>
-    <p>광고가 시작되면 파트너는 자체 개인정보 보호정책에 따라 쿠키를 설정하고 데이터를 수집할 수 있습니다. 법에서 요구하는 경우 먼저 동의를 구할 것이며, 광고가 게시되기 전에 이 페이지에서 파트너의 이름을 지정합니다.</p>
-
     <h2>기부</h2>
     <p>기부 버튼은 Ko-fi, Buy Me a Coffee, PayPal, Revolut, Patreon 및 Boosty에 연결됩니다. 해당 서비스는 결제 및 자체 데이터를 처리합니다. 이 사이트에서는 귀하의 카드 정보를 절대 볼 수 없습니다.</p>
 
@@ -157,7 +154,7 @@
   <div id="footer-root"></div>
   <div id="support-toolbar-slot"></div>
 
-  <script src="nav.js?v=20261105copyleft"></script>
+  <script src="nav.js?v=20261109cta"></script>
   <script src="theme-analytics.js?v=20260524b"></script>
   <script src="site-locale.js?v=20261109i18n" defer></script>
   <script>

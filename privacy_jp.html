@@ -15,6 +15,7 @@
     security_storage: 'granted',
     wait_for_update: 500
   });
+  dataLayer.push({'gtm.start': new Date().getTime(), event: 'gtm.js'});
 </script>
 <script async src="https://www.googletagmanager.com/gtm.js?id=GTM-TNDGC37L"></script>
 
@@ -40,7 +41,7 @@
   <link rel="icon" href="y1_illustration.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://innioasis.app/styles.css">
-  <link rel="stylesheet" href="site-theme.css?v=20261102header">
+  <link rel="stylesheet" href="site-theme.css?v=20261108headerfix">
   <link rel="stylesheet" href="lumen.css?v=20261105hero">
   <link rel="stylesheet" href="site-toolbar.css?v=20261108hero">
   <link rel="stylesheet" href="site-pages.css?v=20260622">
@@ -129,10 +130,6 @@
     <p>分析は現在、 <span class="privacy-state" id="privacy-state">プラットフォーム:</span> このブラウザの場合。</p>
     <p><button type="button" class="btn" id="privacy-open-settings">分析をオフにする</button></p>
 
-    <h2>広告</h2>
-    <p>現在、ギャラリーには空の広告コンテナがあります。サイトのホスティングと開発コストを賄えるよう、広告パートナーである Raptive と協力する準備を進めています。現時点では、広告ネットワーク スクリプトは実行されず、広告 Cookie も設定されません。</p>
-    <p>広告が開始されると、パートナーは独自のプライバシー ポリシーに基づいて Cookie を設定し、データを収集する場合があります。法律で義務付けられている場合はまず同意を求め、広告が公開される前にこのページでパートナーの名前が表示されます。</p>
-
     <h2>寄付</h2>
     <p>寄付ボタンは Ko-fi、Buy Me a Coffee、PayPal、Revolut、Patreon、Boosty にリンクしています。これらのサービスは、支払いと独自のデータを処理します。このサイトがあなたのカードの詳細を閲覧することはありません。</p>
 
@@ -157,7 +154,7 @@
   <div id="footer-root"></div>
   <div id="support-toolbar-slot"></div>
 
-  <script src="nav.js?v=20261105copyleft"></script>
+  <script src="nav.js?v=20261109cta"></script>
   <script src="theme-analytics.js?v=20260524b"></script>
   <script src="site-locale.js?v=20261109i18n" defer></script>
   <script>

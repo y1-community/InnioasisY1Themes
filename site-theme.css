@@ -174,10 +174,13 @@ h2.section-display,
     min-width: 0;
     max-width: 100%;
     padding: 8px clamp(8px, 2.2vw, 16px);
+    /* Safari before 16.2 drops color-mix() entirely, which left the sticky
+       top bar transparent; the solid value below is the fallback. */
+    background: var(--site-bg, #13141d);
     background: color-mix(in oklab, var(--site-bg) 90%, transparent);
     border-bottom: 1px solid var(--site-border);
-    backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
     box-sizing: border-box;
 }
 

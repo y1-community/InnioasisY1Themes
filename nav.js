@@ -415,13 +415,21 @@
   function detectUserPlatformLabel() {
     var ua = (typeof navigator !== "undefined" && (navigator.userAgentData && navigator.userAgentData.platform) || navigator.userAgent || "").toLowerCase();
     if (/android|iphone|ipad|ipod|ipados|mobile|tablet|cros|chrome os|chromeos|kindle|silk|iemobile/i.test(ua)) return "";
-    if (/mac/i.test(ua)) return "for macOS";
-    if (/win/i.test(ua)) return "for Windows";
-    if (/linux|x11/i.test(ua)) return "for Linux";
+    if (/mac/i.test(ua)) return "macOS";
+    if (/win/i.test(ua)) return "Windows";
+    if (/linux|x11/i.test(ua)) return "Linux";
     return "";
   }
-  var platformSuffix = detectUserPlatformLabel();
-  var ctaLabel = platformSuffix ? ("Get Updater " + platformSuffix) : "Get Updater CE";
+  /* The button is translated like every other label, but the product name in
+     it is not: "Get Updater for macOS" was one opaque string no catalog could
+     hold, so it stayed English on every non-English page. Keeping the wording
+     and the platform in separate nodes leaves "Get Updater" a catalog key and
+     the platform a proper noun. */
+  var platformLabel = detectUserPlatformLabel();
+  var ctaLabel = platformLabel ? "Get Updater" : "Get Updater CE";
+  var ctaPlatformHtml = platformLabel
+    ? '<span class="lumen-nav-install-cta-platform"> · ' + escapeHtml(platformLabel) + "</span>"
+    : "";
 
   var brandIconHtml = isFirmwarePersona
     ? '<span class="lumen-brand-icon lumen-brand-icon--firmware" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:#141721;border:1px solid rgba(255,255,255,0.14);box-shadow:0 1px 4px rgba(0,0,0,0.3);font-size:16px;line-height:1;margin-right:8px;flex-shrink:0;" aria-hidden="true">📚</span>'
@@ -650,7 +658,7 @@
       '<button class="hamburger" id="hamburger" type="button" aria-label="Open navigation menu" aria-controls="navLinks" aria-expanded="false"><span></span><span></span><span></span></button>' +
       '</div>' +
       '<ul class="nav-links" id="navLinks">' +
-      '<li><a class="lumen-nav-install-cta" id="lumen-nav-install-cta" href="' + escapeHtml(decorateMainSiteHref("/guide.html")) + '">' + escapeHtml(ctaLabel) + '</a></li>' +
+      '<li><a class="lumen-nav-install-cta" id="lumen-nav-install-cta" href="' + escapeHtml(decorateMainSiteHref("/guide.html")) + '"><span class="lumen-nav-install-cta-label">' + escapeHtml(ctaLabel) + '</span>' + ctaPlatformHtml + '</a></li>' +
       '<li><a href="' + escapeHtml(decorateMainSiteHref("/firmware.html?view=software")) + '">Software Updates</a></li>' +
       '<li><a href="' + escapeHtml(decorateMainSiteHref("/firmware.html?view=firmware")) + '">Firmware Downloads</a></li>' +
       '<li><a href="' + escapeHtml(decorateCrossDomainHref("https://themes.innioasis.app/")) + '" data-cross-site-link="1">Themes</a></li>' +

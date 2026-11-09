@@ -1142,11 +1142,22 @@
         if (typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function') {
             fetchOpts.signal = AbortSignal.timeout(12000);
         }
-        return fetch(configUrl, fetchOpts)
-            .then(function (res) {
-                if (!res.ok) throw new Error('config.json not found');
-                return res.json();
-            })
+        /* The gallery already asked for this theme's config; reuse that promise
+           instead of a second round trip for every mounted preview. */
+        var sharedConfig =
+            global.Y1ThemeConfig && typeof global.Y1ThemeConfig.request === 'function'
+                ? global.Y1ThemeConfig.request(contentFolder)
+                : null;
+        var configPromise = sharedConfig
+            ? sharedConfig.then(function (cfg) {
+                  if (!cfg) throw new Error('config.json not found');
+                  return cfg;
+              })
+            : fetch(configUrl, fetchOpts).then(function (res) {
+                  if (!res.ok) throw new Error('config.json not found');
+                  return res.json();
+              });
+        return configPromise
             .then(function (cfg) {
                 var sim = interactive
                     ? createSimulatorState()

@@ -15,6 +15,7 @@
     security_storage: 'granted',
     wait_for_update: 500
   });
+  dataLayer.push({'gtm.start': new Date().getTime(), event: 'gtm.js'});
 </script>
 <script async src="https://www.googletagmanager.com/gtm.js?id=GTM-TNDGC37L"></script>
 
@@ -40,7 +41,7 @@
   <link rel="icon" href="y1_illustration.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://innioasis.app/styles.css">
-  <link rel="stylesheet" href="site-theme.css?v=20261102header">
+  <link rel="stylesheet" href="site-theme.css?v=20261108headerfix">
   <link rel="stylesheet" href="lumen.css?v=20261105hero">
   <link rel="stylesheet" href="site-toolbar.css?v=20261108hero">
   <link rel="stylesheet" href="site-pages.css?v=20260622">
@@ -129,10 +130,6 @@
     <p>Analytics je v současné době <span class="privacy-state" id="privacy-state">na</span> pro tento prohlížeč.</p>
     <p><button type="button" class="btn" id="privacy-open-settings">Vypněte analýzu</button></p>
 
-    <h2>Reklama</h2>
-    <p>Galerie má dnes prázdné reklamní kontejnery. Připravujeme se na spolupráci s reklamním partnerem, společností Raptive, aby stránka mohla pokrýt náklady na hosting a vývoj. V tuto chvíli není spuštěn žádný skript reklamní sítě a nejsou nastaveny žádné reklamní soubory cookie.</p>
-    <p>Když se reklamy začnou zobrazovat, partner může nastavit soubory cookie a shromažďovat údaje podle svých vlastních zásad ochrany osobních údajů. Nejdříve požádáme o souhlas tam, kde to vyžaduje zákon, a tato stránka uvede jméno partnera, než se jakákoli reklama spustí.</p>
-
     <h2>Dary</h2>
     <p>Darovací tlačítka odkazují na Ko-fi, Buy Me a Coffee, PayPal, Revolut, Patreon a Boosty. Tyto služby zpracovávají platby a vlastní údaje. Tato stránka nikdy nevidí podrobnosti o vaší kartě.</p>
 
@@ -157,7 +154,7 @@
   <div id="footer-root"></div>
   <div id="support-toolbar-slot"></div>
 
-  <script src="nav.js?v=20261105copyleft"></script>
+  <script src="nav.js?v=20261109cta"></script>
   <script src="theme-analytics.js?v=20260524b"></script>
   <script src="site-locale.js?v=20261109i18n" defer></script>
   <script>

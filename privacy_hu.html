@@ -15,6 +15,7 @@
     security_storage: 'granted',
     wait_for_update: 500
   });
+  dataLayer.push({'gtm.start': new Date().getTime(), event: 'gtm.js'});
 </script>
 <script async src="https://www.googletagmanager.com/gtm.js?id=GTM-TNDGC37L"></script>
 
@@ -40,7 +41,7 @@
   <link rel="icon" href="y1_illustration.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://innioasis.app/styles.css">
-  <link rel="stylesheet" href="site-theme.css?v=20261102header">
+  <link rel="stylesheet" href="site-theme.css?v=20261108headerfix">
   <link rel="stylesheet" href="lumen.css?v=20261105hero">
   <link rel="stylesheet" href="site-toolbar.css?v=20261108hero">
   <link rel="stylesheet" href="site-pages.css?v=20260622">
@@ -129,10 +130,6 @@
     <p>Az Analytics jelenleg <span class="privacy-state" id="privacy-state">be</span> ehhez a böngészőhöz.</p>
     <p><button type="button" class="btn" id="privacy-open-settings">Kapcsolja ki az elemzést</button></p>
 
-    <h2>Reklámozás</h2>
-    <p>A galériában ma üres hirdetéstárolók vannak. Egy hirdetőpartnerrel, a Raptive-vel készülünk együttműködni, így az oldal fedezni tudja a tárhely-fejlesztési költségeit. Jelenleg nem fut a hirdetési hálózat szkriptje, és nincsenek beállítva hirdetési cookie-k.</p>
-    <p>Amikor a hirdetések megjelennek, a partner cookie-kat állíthat be és adatokat gyűjthet saját adatvédelmi szabályzata szerint. Először beleegyezést kérünk, ha azt a törvény előírja, és ezen az oldalon a partner neve jelenik meg, mielőtt bármilyen hirdetés megjelenne.</p>
-
     <h2>Adományok</h2>
     <p>Az adományozó gombok a következőhöz kapcsolódnak: Ko-fi, Buy Me a Coffee, PayPal, Revolut, Patreon és Boosty. Ezek a szolgáltatások kezelik a fizetést és a saját adataikat. Ez a webhely soha nem látja a kártyaadatait.</p>
 
@@ -157,7 +154,7 @@
   <div id="footer-root"></div>
   <div id="support-toolbar-slot"></div>
 
-  <script src="nav.js?v=20261105copyleft"></script>
+  <script src="nav.js?v=20261109cta"></script>
   <script src="theme-analytics.js?v=20260524b"></script>
   <script src="site-locale.js?v=20261109i18n" defer></script>
   <script>

@@ -133,6 +133,11 @@
     }
 
     async function fetchThemeConfig(folder) {
+        /* Share the page's config cache; the gallery has usually fetched this
+           theme already, so the gold check costs no extra request. */
+        if (global.Y1ThemeConfig && typeof global.Y1ThemeConfig.request === "function") {
+            return global.Y1ThemeConfig.request(folder);
+        }
         const enc = encodePathSegments(folder);
         const res = await fetch(`./${enc}/config.json`, { cache: "no-store" });
         if (!res.ok) return null;
