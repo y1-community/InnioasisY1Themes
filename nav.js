@@ -682,7 +682,7 @@
       noticesTray.style.left = "12px";
       noticesTray.style.right = "12px";
       noticesTray.style.width = "auto";
-      noticesTray.style.maxWidth = "calc(100vw - 24px)";
+      noticesTray.style.maxWidth = "calc(100% - 24px)";
       return;
     }
 
@@ -694,7 +694,7 @@
     noticesTray.style.left = desiredLeft + "px";
     noticesTray.style.right = "auto";
     noticesTray.style.width = trayWidth + "px";
-    noticesTray.style.maxWidth = "calc(100vw - 24px)";
+    noticesTray.style.maxWidth = "calc(100% - 24px)";
   }
 
   function setNoticesOpen(open) {
