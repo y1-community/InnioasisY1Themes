@@ -1,0 +1,26 @@
+---
+title: "Death Note - Innioasis Y1 &amp; Y2 テーマギャラリー"
+description: "2000 年代のデスノートの漫画とアニメに基づいたテーマ。"
+language: "jp"
+source: "https://innioasis.app/Death Note/index_jp.html"
+---
+
+# Death Note - Innioasis Y1 &amp; Y2 テーマギャラリー
+
+ライブプレビューを開いています…リンクをコピー
+
+# Death Note
+
+Angel_50000
+
+2000 年代のデスノートの漫画とアニメに基づいたテーマ。
+
+[プレビューを開く](https://themes.innioasis.app/theme_jp.html?theme=Death%20Note)Innioasis Y1 & Y2 Themes gallery hosted by Luci Ltd at luci.ltd — themes.innioasis.app
+
+## Community support
+
+This page is part of the Innioasis Community Projects.
+
+Support the development at https://www.ko-fi.com/teamslide
+
+Help from the developers of the community projects and the stock firmware for the players is at https://ko-fi.com/teamslide and on the Innioasis Community Discord: https://discord.gg/zHrT2zrcek

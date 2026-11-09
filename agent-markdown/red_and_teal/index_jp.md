@@ -1,0 +1,26 @@
+---
+title: "red and teal - Innioasis Y1 &amp; Y2 テーマギャラリー"
+description: "私が見つけた写真からインスピレーションを得たティールと赤のゴシックのテーマ"
+language: "jp"
+source: "https://innioasis.app/red_and_teal/index_jp.html"
+---
+
+# red and teal - Innioasis Y1 &amp; Y2 テーマギャラリー
+
+ライブプレビューを開いています…リンクをコピー
+
+# red and teal
+
+Ricklover187
+
+私が見つけた写真からインスピレーションを得たティールと赤のゴシックのテーマ
+
+[プレビューを開く](https://themes.innioasis.app/theme_jp.html?theme=red_and_teal)Innioasis Y1 & Y2 Themes gallery hosted by Luci Ltd at luci.ltd — themes.innioasis.app
+
+## Community support
+
+This page is part of the Innioasis Community Projects.
+
+Support the development at https://www.ko-fi.com/teamslide
+
+Help from the developers of the community projects and the stock firmware for the players is at https://ko-fi.com/teamslide and on the Innioasis Community Discord: https://discord.gg/zHrT2zrcek

@@ -1,0 +1,26 @@
+---
+title: "LOTR - Innioasis Y1 &amp; Y2 テーマギャラリー"
+description: "ここではミニ中世テーマをベースとして使用しましたが、フォント以外のすべてを Lotr に変更しました。"
+language: "jp"
+source: "https://innioasis.app/LOTR/index_jp.html"
+---
+
+# LOTR - Innioasis Y1 &amp; Y2 テーマギャラリー
+
+ライブプレビューを開いています…リンクをコピー
+
+# LOTR
+
+u/rokurokubi
+
+ここではミニ中世テーマをベースとして使用しましたが、フォント以外のすべてを Lotr に変更しました。
+
+[プレビューを開く](https://themes.innioasis.app/theme_jp.html?theme=LOTR)Innioasis Y1 & Y2 Themes gallery hosted by Luci Ltd at luci.ltd — themes.innioasis.app
+
+## Community support
+
+This page is part of the Innioasis Community Projects.
+
+Support the development at https://www.ko-fi.com/teamslide
+
+Help from the developers of the community projects and the stock firmware for the players is at https://ko-fi.com/teamslide and on the Innioasis Community Discord: https://discord.gg/zHrT2zrcek

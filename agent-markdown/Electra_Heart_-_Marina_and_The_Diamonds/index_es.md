@@ -1,0 +1,26 @@
+---
+title: "♡ ELECTRA HEART ♡ - Galería de temas Innioasis Y1 y Y2"
+description: "MARINA (Marina and The Diamonds): tema inspirado en Electra Heart, mezclado con un sistema de diseño de principios de la década de 2010. ♡"
+language: "es"
+source: "https://innioasis.app/Electra_Heart_-_Marina_and_The_Diamonds/index_es.html"
+---
+
+# ♡ ELECTRA HEART ♡ - Galería de temas Innioasis Y1 y Y2
+
+Abriendo la vista previa en vivo…Copiar enlace
+
+# ♡ ELECTRA HEART ♡
+
+ashotvmsi
+
+MARINA (Marina and The Diamonds): tema inspirado en Electra Heart, mezclado con un sistema de diseño de principios de la década de 2010. ♡
+
+[Abrir vista previa](https://themes.innioasis.app/theme_es.html?theme=Electra_Heart_-_Marina_and_The_Diamonds)Innioasis Y1 & Y2 Themes gallery hosted by Luci Ltd at luci.ltd — themes.innioasis.app
+
+## Community support
+
+This page is part of the Innioasis Community Projects.
+
+Support the development at https://www.ko-fi.com/teamslide
+
+Help from the developers of the community projects and the stock firmware for the players is at https://ko-fi.com/teamslide and on the Innioasis Community Discord: https://discord.gg/zHrT2zrcek

@@ -1,0 +1,26 @@
+---
+title: "Gothic aesthetic - Innioasis Y1 &amp; Y2 テーマギャラリー"
+description: "ゴシック美的 MP.3 テーマ。"
+language: "jp"
+source: "https://innioasis.app/Gothic_aesthetic_theme/index_jp.html"
+---
+
+# Gothic aesthetic - Innioasis Y1 &amp; Y2 テーマギャラリー
+
+ライブプレビューを開いています…リンクをコピー
+
+# Gothic aesthetic
+
+Weronika
+
+ゴシック美的 MP.3 テーマ。
+
+[プレビューを開く](https://themes.innioasis.app/theme_jp.html?theme=Gothic_aesthetic_theme)Innioasis Y1 & Y2 Themes gallery hosted by Luci Ltd at luci.ltd — themes.innioasis.app
+
+## Community support
+
+This page is part of the Innioasis Community Projects.
+
+Support the development at https://www.ko-fi.com/teamslide
+
+Help from the developers of the community projects and the stock firmware for the players is at https://ko-fi.com/teamslide and on the Innioasis Community Discord: https://discord.gg/zHrT2zrcek

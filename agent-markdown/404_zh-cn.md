@@ -1,0 +1,22 @@
+---
+title: "未找到页面 - Innioasis Y1 和 Y2 主题"
+description: "在 theme.innioasis.app 托管的 Innioasis Y1 和 Y2 主题库中找不到此页面。"
+language: "zh-cn"
+source: "https://innioasis.app/404_zh-cn.html"
+---
+
+# 未找到页面 - Innioasis Y1 和 Y2 主题
+
+[Innioasis Y1 和 Y2 主题](index_zh-CN.html)[编辑](https://y1-themes.vercel.app)[上传](upload_zh-CN.html)
+
+# 
+
+您要查找的页面不存在或已被移动。[ 返回首页 ](https://innioasis.app/index.html?lang=zh-CN)
+
+## Community support
+
+This page is part of the Innioasis Community Projects.
+
+Support the development at https://www.ko-fi.com/teamslide
+
+Help from the developers of the community projects and the stock firmware for the players is at https://ko-fi.com/teamslide and on the Innioasis Community Discord: https://discord.gg/zHrT2zrcek

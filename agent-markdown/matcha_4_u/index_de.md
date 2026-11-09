@@ -1,0 +1,26 @@
+---
+title: "matcha 4 u - Innioasis Y1 &amp; Y2 Theme-Galerie"
+description: "Schriftart hat einige Probleme? Aber ich liebe Matcha, also MUSSTE ich ein Matcha-Thema machen lassen :D"
+language: "de"
+source: "https://innioasis.app/matcha_4_u/index_de.html"
+---
+
+# matcha 4 u - Innioasis Y1 &amp; Y2 Theme-Galerie
+
+Live-Vorschau wird geladen…Seiten-Link kopieren
+
+# matcha 4 u
+
+jonathan
+
+Schriftart hat einige Probleme? Aber ich liebe Matcha, also MUSSTE ich ein Matcha-Thema machen lassen :D
+
+[Vorschau öffnen](https://themes.innioasis.app/theme_de.html?theme=matcha_4_u)Innioasis Y1 & Y2 Themes gallery hosted by Luci Ltd at luci.ltd — themes.innioasis.app
+
+## Community support
+
+This page is part of the Innioasis Community Projects.
+
+Support the development at https://www.ko-fi.com/teamslide
+
+Help from the developers of the community projects and the stock firmware for the players is at https://ko-fi.com/teamslide and on the Innioasis Community Discord: https://discord.gg/zHrT2zrcek
