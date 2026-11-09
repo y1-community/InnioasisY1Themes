@@ -293,3 +293,90 @@
     width: 58px;
     height: 58px;
 }
+
+/* ==========================================================================
+   Gallery preview loading
+   One layer, shared by every card: the preview stays dimmed under a centred
+   spinner until its font and the art it needs have decoded. The layer is
+   added by y1-theme-preview.js and is inert outside a gallery card.
+   ========================================================================== */
+.y1-preview-loading {
+    position: absolute;
+    inset: 0;
+    z-index: 6;
+    display: grid;
+    place-items: center;
+    background: var(--lumen-scrim);
+    transition: opacity 160ms ease;
+}
+
+.y1-preview-loading[hidden] {
+    display: none;
+}
+
+.y1-preview-loading__spinner {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 3px solid color-mix(in oklab, var(--lumen-text) 22%, transparent);
+    border-top-color: var(--lumen-accent);
+    animation: y1-preview-spin 800ms linear infinite;
+}
+
+@keyframes y1-preview-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .y1-preview-loading {
+        transition: none;
+    }
+
+    .y1-preview-loading__spinner {
+        animation: none;
+        opacity: 0.7;
+    }
+}
+
+/* Appearance tokens reach the gallery's own widgets too: the frame surface,
+   variant select and corner tools follow Dark, Light, High contrast and 2077,
+   so no appearance leaves a white-on-white control behind. */
+body.site-themes-app .theme-preview-frame {
+    background: var(--lumen-panel-soft);
+    border-color: var(--site-border);
+}
+
+body.site-themes-app .theme-card-variant-select {
+    background: var(--lumen-panel);
+    border-color: var(--site-border);
+    color: var(--lumen-text);
+}
+
+body.site-themes-app .theme-card-corner-btn {
+    background: var(--lumen-panel);
+    color: var(--lumen-text);
+    border-color: var(--site-border);
+}
+
+body.site-themes-app .theme-card-corner-btn:focus-visible,
+body.site-themes-app .theme-card-variant-select:focus-visible {
+    outline: 2px solid var(--lumen-accent);
+    outline-offset: 2px;
+}
+
+body.site-themes-app .theme-card-media-skeleton {
+    background: linear-gradient(
+        100deg,
+        color-mix(in oklab, var(--lumen-text) 6%, transparent) 20%,
+        color-mix(in oklab, var(--lumen-text) 14%, transparent) 42%,
+        color-mix(in oklab, var(--lumen-text) 6%, transparent) 64%
+    );
+    background-size: 220% 100%;
+}
+
+body.site-themes-app .theme-card-media-skeleton::after {
+    border-color: color-mix(in oklab, var(--lumen-text) 20%, transparent);
+    border-top-color: var(--lumen-accent);
+}

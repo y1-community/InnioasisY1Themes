@@ -1101,11 +1101,162 @@
         return [];
     }
 
+    /* ---- Preview loading --------------------------------------------------
+       One shared layer dims a gallery card and spins until its fonts and the
+       art the screen needs (wallpaper, battery, arrows, play state) decode, so
+       nothing paints in a fallback face or pops in after the fact. */
+    function previewFrameFor(container) {
+        var node = container;
+        while (node && node !== document.body) {
+            if (node.classList && node.classList.contains('theme-preview-frame')) return node;
+            node = node.parentElement;
+        }
+        return null;
+    }
+
+    function setPreviewLoading(frame, on) {
+        if (!frame) return null;
+        var layer = frame.querySelector('.y1-preview-loading');
+        if (on) {
+            if (!layer) {
+                layer = document.createElement('div');
+                layer.className = 'y1-preview-loading';
+                layer.innerHTML =
+                    '<span class="y1-preview-loading__spinner" role="status" aria-label="Loading preview"></span>';
+                frame.appendChild(layer);
+            }
+            layer.hidden = false;
+            frame.classList.add('is-preview-loading');
+            frame.setAttribute('aria-busy', 'true');
+            return layer;
+        }
+        if (layer) layer.hidden = true;
+        frame.classList.remove('is-preview-loading');
+        frame.removeAttribute('aria-busy');
+        return layer;
+    }
+
+    function waitForImageElement(img) {
+        return new Promise(function (resolve) {
+            if (!img) return resolve();
+            if (img.complete) {
+                if (img.decode) img.decode().catch(function () {}).then(resolve);
+                else resolve();
+                return;
+            }
+            function done() {
+                img.removeEventListener('load', done);
+                img.removeEventListener('error', done);
+                resolve();
+            }
+            img.addEventListener('load', done);
+            img.addEventListener('error', done);
+        });
+    }
+
+    function waitForImageUrl(url) {
+        return new Promise(function (resolve) {
+            if (!url) return resolve();
+            var im = new Image();
+            im.onload = function () {
+                resolve();
+            };
+            im.onerror = function () {
+                resolve();
+            };
+            im.src = url;
+        });
+    }
+
+    function waitForFontFamily(fontStack) {
+        if (typeof document === 'undefined' || !document.fonts || typeof document.fonts.load !== 'function') {
+            return Promise.resolve();
+        }
+        var fam = String(fontStack || '')
+            .split(',')[0]
+            .trim()
+            .replace(/^["']|["']$/g, '');
+        if (!fam) return Promise.resolve();
+        return document.fonts
+            .load('22px "' + fam.replace(/"/g, '') + '"')
+            .then(function () {
+                return document.fonts.ready;
+            })
+            .catch(function () {});
+    }
+
+    function waitForPreviewAssets(container, urls, fontStack) {
+        var waits = [waitForFontFamily(fontStack)];
+        var imgs = container ? container.querySelectorAll('img') : [];
+        for (var i = 0; i < imgs.length; i++) waits.push(waitForImageElement(imgs[i]));
+        for (var u = 0; u < urls.length; u++) waits.push(waitForImageUrl(urls[u]));
+        return Promise.race([
+            Promise.all(waits),
+            new Promise(function (resolve) {
+                global.setTimeout(resolve, 3200);
+            })
+        ]);
+    }
+
+    /** Start the font and preview-art requests the moment a card is near the
+        viewport, instead of waiting for its place in the mount queue. */
+    function primeGalleryPreview(opts) {
+        opts = opts || {};
+        if (typeof document === 'undefined') return;
+        var catalogFolder = String(opts.catalogFolder || '')
+            .replace(/^\.\/+/, '')
+            .trim();
+        if (!catalogFolder) return;
+        var buildFileUrl =
+            typeof opts.buildFileUrl === 'function' ? opts.buildFileUrl : defaultBuildFileUrl;
+        var contentFolder = effectiveContentPrefix(catalogFolder, opts.variantSegment);
+        var styleId = themePreviewFontStyleId(catalogFolder, opts.variantSegment);
+        var request =
+            global.Y1ThemeConfig && typeof global.Y1ThemeConfig.request === 'function'
+                ? global.Y1ThemeConfig.request(contentFolder)
+                : typeof fetch === 'function'
+                  ? fetch('./' + encodePathSegments(contentFolder) + '/config.json', { cache: 'force-cache' }).then(
+                        function (res) {
+                            return res.ok ? res.json() : null;
+                        }
+                    )
+                  : Promise.resolve(null);
+        request
+            .then(function (cfg) {
+                if (!cfg) return;
+                if (!document.getElementById(styleId)) {
+                    injectThemeFonts(cfg, buildFileUrl, contentFolder, styleId, 'block');
+                }
+                var urls = [];
+                var bg = backgroundUrlForView(cfg, 'home', buildFileUrl, contentFolder, true);
+                if (bg) urls.push(bg);
+                var statusCfg = cfg.statusConfig || {};
+                var batt = getBatteryIconUrl(statusCfg, buildFileUrl, contentFolder, 3, false);
+                if (batt) urls.push(previewAssetUrl(batt, 'png'));
+                var states = ['playing', 'pause', 'stop', 'fmPlaying', 'audiobookPlaying'];
+                for (var s = 0; s < states.length; s++) {
+                    var file = statusCfg[states[s]];
+                    if (!file) continue;
+                    urls.push(previewAssetUrl(buildFileUrl(contentFolder, file), 'png'));
+                }
+                var arrow = cfg.itemConfig && cfg.itemConfig.itemRightArrow;
+                if (arrow) urls.push(previewAssetUrl(buildFileUrl(contentFolder, arrow), 'png'));
+                for (var u = 0; u < urls.length; u++) {
+                    if (!urls[u]) continue;
+                    var im = new Image();
+                    im.fetchPriority = 'high';
+                    im.src = urls[u];
+                }
+            })
+            .catch(function () {});
+    }
+
     function mount(container, options) {
         if (!container) return Promise.reject(new Error('Missing container'));
         var opts = options || {};
         var mode = String(opts.mode || 'menu').toLowerCase();
         var useFullDevice = mode === 'full';
+        var isPreviewMode = mode === 'gallery' || mode === 'menu';
         var suppressDeviceInput = opts.suppressDeviceInput === true;
         var interactive = mode === 'full' && !suppressDeviceInput;
         var catalogFolder = String(opts.catalogFolder || '')
@@ -1125,6 +1276,8 @@
 
         container.innerHTML = '';
         container.classList.add('y1-tp-mounted');
+        var previewFrame = isPreviewMode ? previewFrameFor(container) : null;
+        if (previewFrame) setPreviewLoading(previewFrame, true);
 
         var encoded = contentFolder.split('/').filter(Boolean).map(encodeURIComponent).join('/');
         var configUrl = '';
@@ -1172,8 +1325,12 @@
                 var previewMeta = opts.previewMeta || {};
 
                 var fontStyleId = themePreviewFontStyleId(catalogFolder, variantSegment);
-                var fontDisplay = 'swap';
-                injectThemeFonts(cfg, buildFileUrl, contentFolder, fontStyleId, fontDisplay);
+                var fontDisplay = isPreviewMode ? 'block' : 'swap';
+                /* Prime and mount share one style id; re-injecting it restarts the
+                   font request and flashes the fallback face. */
+                if (!document.getElementById(fontStyleId)) {
+                    injectThemeFonts(cfg, buildFileUrl, contentFolder, fontStyleId, fontDisplay);
+                }
                 var fontStack = defaultFontStack(cfg, fontStyleId);
 
                 var itemCfg = (cfg && cfg.itemConfig) || {};
@@ -1190,6 +1347,9 @@
                 var itemRightArrowUrl = itemCfg.itemRightArrow
                     ? buildFileUrl(contentFolder, itemCfg.itemRightArrow)
                     : '';
+                if (itemRightArrowUrl && isPreviewMode) {
+                    itemRightArrowUrl = previewAssetUrl(itemRightArrowUrl, 'png');
+                }
 
                 var statusH = statusBarHeightPx(cfg);
                 var desktopMaskUrl = cfg.desktopMask ? buildFileUrl(contentFolder, cfg.desktopMask) : '';
@@ -2472,17 +2632,40 @@
                     container._y1TpCleanup = null;
                 };
 
-                if (typeof opts.onReady === 'function') {
-                    try {
-                        opts.onReady(cfg, {
-                            previewFontFamily: fontStack,
-                            contentFolder: contentFolder,
-                            fontStyleId: fontStyleId
-                        });
-                    } catch (e) {}
+                function deliverReady() {
+                    if (previewFrame) setPreviewLoading(previewFrame, false);
+                    if (typeof opts.onReady === 'function') {
+                        try {
+                            opts.onReady(cfg, {
+                                previewFontFamily: fontStack,
+                                contentFolder: contentFolder,
+                                fontStyleId: fontStyleId
+                            });
+                        } catch (e) {}
+                    }
+                }
+
+                /* A gallery card is only "ready" once its own face, wallpaper
+                   and status art have decoded; otherwise the first frame shows
+                   the fallback font and then reflows. */
+                if (isPreviewMode) {
+                    var readyBg = backgroundUrlForView(
+                        cfg,
+                        sim.themeViewId,
+                        buildFileUrl,
+                        contentFolder,
+                        true
+                    );
+                    waitForPreviewAssets(container, readyBg ? [readyBg] : [], fontStack).then(
+                        deliverReady,
+                        deliverReady
+                    );
+                } else {
+                    deliverReady();
                 }
             })
             .catch(function (err) {
+                if (previewFrame) setPreviewLoading(previewFrame, false);
                 if (typeof opts.onError === 'function') {
                     try {
                         opts.onError(err);
@@ -2494,6 +2677,7 @@
 
     function unmount(container) {
         if (!container) return;
+        setPreviewLoading(previewFrameFor(container), false);
         if (typeof container._y1TpCleanup === 'function') {
             try {
                 container._y1TpCleanup();
@@ -2520,7 +2704,9 @@
             typeof opts.buildFileUrl === 'function' ? opts.buildFileUrl : defaultBuildFileUrl;
         var contentFolder = effectiveContentPrefix(catalogFolder, variantSegment);
         var fontStyleId = themePreviewFontStyleId(catalogFolder, variantSegment);
-        injectThemeFonts(cfg, buildFileUrl, contentFolder, fontStyleId, 'swap');
+        if (!document.getElementById(fontStyleId)) {
+            injectThemeFonts(cfg, buildFileUrl, contentFolder, fontStyleId, 'block');
+        }
         return defaultFontStack(cfg, fontStyleId);
     }
 
@@ -2548,13 +2734,47 @@
     function mountGalleryCardLazy(container, options) {
         if (!container) return;
         var opts = options || {};
+        var frame = previewFrameFor(container);
+        setPreviewLoading(frame, true);
+        primeGalleryPreview(opts);
+
+        var settled = false;
+        function finishPreviewLoading() {
+            if (settled) return;
+            settled = true;
+            global.clearTimeout(failSafe);
+            setPreviewLoading(frame, false);
+        }
+        var failSafe = global.setTimeout(finishPreviewLoading, 12000);
+
+        var jobOpts = {};
+        for (var k in opts) {
+            if (Object.prototype.hasOwnProperty.call(opts, k)) jobOpts[k] = opts[k];
+        }
+        jobOpts.onReady = function (cfg, meta) {
+            finishPreviewLoading();
+            if (typeof opts.onReady === 'function') {
+                try {
+                    opts.onReady(cfg, meta);
+                } catch (e) {}
+            }
+        };
+        jobOpts.onError = function (err) {
+            finishPreviewLoading();
+            if (typeof opts.onError === 'function') {
+                try {
+                    opts.onError(err);
+                } catch (e) {}
+            }
+        };
+
         var rect = container.getBoundingClientRect ? container.getBoundingClientRect() : null;
         var isAboveTheFold = rect && rect.top < (window.innerHeight || 800) + 100;
         if (opts.priority || isAboveTheFold || typeof IntersectionObserver === 'undefined') {
             if (_galleryMountActive < _galleryMountMax) {
-                runGalleryMountJob(container, opts);
+                runGalleryMountJob(container, jobOpts);
             } else {
-                _galleryMountQueue.unshift({ container: container, opts: opts });
+                _galleryMountQueue.unshift({ container: container, opts: jobOpts });
                 drainGalleryMountQueue();
             }
             return;
@@ -2566,9 +2786,9 @@
                     if (!ent.isIntersecting) continue;
                     io.unobserve(ent.target);
                     if (_galleryMountActive < _galleryMountMax) {
-                        runGalleryMountJob(ent.target, opts);
+                        runGalleryMountJob(ent.target, jobOpts);
                     } else {
-                        _galleryMountQueue.push({ container: ent.target, opts: opts });
+                        _galleryMountQueue.push({ container: ent.target, opts: jobOpts });
                     }
                 }
             },
