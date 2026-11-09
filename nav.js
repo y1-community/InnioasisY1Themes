@@ -167,21 +167,25 @@
     return null;
   }
 
+  /* Only a decision the visitor actually made travels. The shell fills in
+     permissive defaults for a first visit (feedback and nightly on), and
+     handing those to the other site asserted consent nobody gave — a reader
+     who declined on innioasis.app was told "all" by this site. */
   function getPrivacyParam() {
     try {
       var raw = new URLSearchParams(window.location.search).get("privacy");
       if (raw) return raw;
-      if (window.INNIOASIS_PRIVACY && window.INNIOASIS_PRIVACY.hasDecided()) {
-        var prefs = window.INNIOASIS_PRIVACY.read();
-        if (prefs) {
-          if (prefs.feedback && prefs.nightly) return "all";
-          if (!prefs.feedback && !prefs.nightly) return "none";
-          if (prefs.feedback && !prefs.nightly) return "feedback";
-          if (!prefs.feedback && prefs.nightly) return "nightly";
-        }
-      }
       var cookie = getSharedCookie("innioasis-privacy");
       if (cookie) return cookie;
+      var stored = window.localStorage.getItem("innioasis-consent");
+      if (!stored) return null;
+      var data = JSON.parse(stored);
+      if (!data || typeof data !== "object" || typeof data.feedback !== "boolean") return null;
+      var feedback = data.feedback !== false;
+      var nightly = data.nightly !== false;
+      if (feedback && nightly) return "all";
+      if (!feedback && !nightly) return "none";
+      return feedback ? "feedback" : "nightly";
     } catch (_) {}
     return null;
   }
@@ -376,8 +380,10 @@
       }
     }
 
+    /* Only this host has its own _de.html copies. The archive's path stays
+       as written, and lang tells that site which language to paint. */
     var loc = getActiveLocale();
-    if (loc && loc !== "en") {
+    if (isSameHost && loc && loc !== "en") {
       var path = url.pathname;
       var dir = "";
       var name = "";
@@ -400,7 +406,7 @@
     }
 
     if (!isSameHost && isSubdomain) {
-      if (loc && loc !== "en") url.searchParams.set("lang", loc);
+      url.searchParams.set("lang", loc || "en");
       url.searchParams.set("donations", isY1DonationsDisabled() ? "false" : "true");
       var priv = getPrivacyParam();
       if (priv) url.searchParams.set("privacy", priv);
@@ -411,7 +417,7 @@
       var curA11y = getActiveAccessibility();
       if (curA11y) url.searchParams.set("accessibility", curA11y);
       var curFs = getActiveFontScale();
-      if (curFs && curFs !== 0.8) url.searchParams.set("fontSize", String(curFs));
+      if (curFs) url.searchParams.set("fontSize", String(curFs));
       var curAccent = getActiveAccent();
       if (curAccent) url.searchParams.set("accent", curAccent);
       if (hasCeAccent()) url.searchParams.set("ce", "true");

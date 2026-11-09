@@ -347,6 +347,14 @@
             });
             global.localStorage.setItem(CONSENT_KEY, consentStr);
             setSharedCookie(CONSENT_KEY, consentStr);
+            /* The hop reads this one: it is the value both shells write, so a
+               reader who declined on the main site is not handed "all" back. */
+            setSharedCookie(
+                "innioasis-privacy",
+                next.feedback && next.nightly
+                    ? "all"
+                    : (!next.feedback && !next.nightly ? "none" : (next.feedback ? "feedback" : "nightly"))
+            );
             setSharedCookie("innioasis-privacy", next.analytics === "off" ? "none" : (next.feedback && next.nightly ? "all" : (next.feedback ? "feedback" : "nightly")));
             setSharedCookie("innioasis-privacy-analytics", next.analytics);
             global.localStorage.setItem(THEME_CONSENT_KEY, JSON.stringify({
@@ -856,6 +864,10 @@
     }
 
     global.y1ClearPreferencesFromUrl = clearPreferenceParamsFromUrl;
+    /* Consent first: the scrub below deletes the parameters it reads. Running
+       it afterwards left the gallery on its permissive default and told the
+       main site privacy=all on the next hop. */
+    initPrivacyFromUrlOrCookie();
     /* Run once now, not only after DOMContentLoaded: the address bar must be
        clean before the first paint, the way the main site does it. */
     clearPreferenceParamsFromUrl();
@@ -871,7 +883,11 @@
     }
     window.addEventListener("load", clearPreferenceParamsFromUrl);
 
-    (function initPrivacyFromUrlOrCookie() {
+    /* Reads the handoff before the address bar is scrubbed. This used to run
+       after clearPreferenceParamsFromUrl, so ?privacy=none had already been
+       removed, the gallery kept its permissive default, and the next hop told
+       the main site privacy=all. */
+    function initPrivacyFromUrlOrCookie() {
         var fromUrl = parsePrivacyParam();
         if (fromUrl !== null) {
             writeConsent(fromUrl);
@@ -881,7 +897,7 @@
                 applyAnalyticsConsent(existing.analytics);
             }
         }
-    })();
+    }
 
     function executeInlineScripts(container) {
         if (!container) return;
