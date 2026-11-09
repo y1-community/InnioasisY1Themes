@@ -240,7 +240,13 @@ KNOWN_TOOLBAR_STRINGS = [
     "Saves your \"was this useful?\" feedback on guides.",
     "Remember nightly builds selection",
     "Shows pre-release and nightly builds in the firmware list.",
-    "Save choices"
+    "Save choices",
+    # Short labels that sit below the literal-length floor but are still
+    # copy: the 404 heading and the gallery pager.
+    "Uh oh",
+    "Previous page",
+    "Next page",
+    "Original theme"
 ]
 
 
