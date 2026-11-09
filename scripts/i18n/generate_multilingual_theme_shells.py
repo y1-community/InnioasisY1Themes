@@ -287,7 +287,7 @@ def generate_localized_shell(
   }}
 }})();
   </script>
-<script src="../site-locale.js?v=20261108d" defer></script>
+<script src="../site-locale.js?v=20261115lang" defer></script>
 </body>
 </html>
 """
