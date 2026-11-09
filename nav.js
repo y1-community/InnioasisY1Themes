@@ -43,10 +43,12 @@
 
   function donationsStored() {
     try {
-      if (window.localStorage.getItem(DONATIONS_KEY) === "1") return true;
+      var cookie = getSharedCookie(DONATIONS_KEY);
+      if (cookie === "1") return true;
+      if (cookie === "0") return false;
     } catch (_) {}
     try {
-      if (getSharedCookie(DONATIONS_KEY) === "1") return true;
+      if (window.localStorage.getItem(DONATIONS_KEY) === "1") return true;
     } catch (_) {}
     return false;
   }
@@ -288,18 +290,26 @@
 
   /* The accent the header picked (or the app handed over), read from the same
      places the shell writes it, so cross-site links can carry it. */
+  function readAccentValue(value) {
+    return value && /^#[0-9a-f]{6}$/i.test(value) ? value : null;
+  }
+
   function getActiveAccent() {
     try {
+      /* The colour on this page, then the cookie the other Innioasis site can
+         read. This origin's own storage is last: it can still hold a colour
+         from before the shared accent was updated. */
       if (typeof window.y1GetAccent === "function") {
-        var live = window.y1GetAccent();
+        var live = readAccentValue(window.y1GetAccent());
         if (live) return live;
       }
-      var stored = window.localStorage.getItem("lumen-accent");
-      if (stored && /^#[0-9a-f]{6}$/i.test(stored)) return stored;
-      var cookie = getSharedCookie("innioasis-accent");
-      if (cookie && /^#[0-9a-f]{6}$/i.test(cookie)) return cookie;
-      var attr = document.documentElement && document.documentElement.getAttribute("data-accent");
-      if (attr && /^#[0-9a-f]{6}$/i.test(attr)) return attr;
+      var painted = document.documentElement && document.documentElement.getAttribute("data-accent");
+      painted = readAccentValue(painted);
+      if (painted) return painted;
+      var cookie = readAccentValue(getSharedCookie("innioasis-accent"));
+      if (cookie) return cookie;
+      var stored = readAccentValue(window.localStorage.getItem("lumen-accent"));
+      if (stored) return stored;
     } catch (_) {}
     return null;
   }
@@ -616,9 +626,11 @@
     ? '<span class="lumen-nav-install-cta-platform"> · ' + escapeHtml(platformLabel) + "</span>"
     : "";
 
-  var brandIconHtml = isFirmwarePersona
+  var brandIconHtml = isThemesSite
+    ? '<span class="lumen-brand-icon lumen-brand-icon--themes" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 3a9 9 0 1 0 0 18c1.2 0 2-.8 2-2 0-.5-.2-1-.5-1.3-.4-.4-.6-.9-.6-1.4 0-1.2 1-2.1 2.1-2.1H17a4 4 0 0 0 4-4C21 6.4 17 3 12 3zm-4.5 9a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3-4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg></span>'
+    : (isFirmwarePersona
     ? '<span class="lumen-brand-icon lumen-brand-icon--firmware" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/></svg></span>'
-    : '<span class="lumen-brand-icon lumen-brand-icon--updater" aria-hidden="true"><img src="/assets/icon.ico" width="38" height="38" alt="" aria-hidden="true"></span>';
+    : '<span class="lumen-brand-icon lumen-brand-icon--updater" aria-hidden="true"><img src="/assets/icon.ico" width="38" height="38" alt="" aria-hidden="true"></span>');
 
 
   var root = document.getElementById("nav-root");
@@ -632,7 +644,7 @@
       brandIconHtml +
       '<span class="lumen-brand-title" id="lumen-brand-title">' + escapeHtml(activeTitle) + '</span>' +
       '</a>' +
-      '<button type="button" class="lumen-site-switcher-toggle" id="lumen-site-switcher-toggle" aria-expanded="false" aria-controls="lumen-site-switcher-tray" aria-label="Switch Innioasis site persona" title="Switch site">' +
+      '<button type="button" class="lumen-site-switcher-toggle" id="lumen-site-switcher-toggle" aria-expanded="false" aria-controls="lumen-site-switcher-tray" aria-label="Switch site" title="Switch site">' +
       '<svg class="lumen-site-switcher-glyph" viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden="true"><path d="M4.2 6.2a.75.75 0 0 1 1.06 0L8 8.94l2.74-2.74a.75.75 0 1 1 1.06 1.06l-3.27 3.27a.75.75 0 0 1-1.06 0L4.2 7.26a.75.75 0 0 1 0-1.06z"/></svg>' +
       '</button>' +
       '</div>' +
@@ -653,7 +665,7 @@
       '<a href="' + escapeHtml(decorateMainSiteHref("/notices.html")) + '" class="lumen-notices-all-link">All notices &rarr;</a>' +
       '</div>' +
       '<div class="lumen-notices-tray-body" id="lumen-notices-tray-body">' +
-      '<p class="lumen-notices-empty">Loading notices...</p>' +
+      '<p class="lumen-notices-empty">Loading notices</p>' +
       '</div>' +
       '</div>' +
       '</div>' +
@@ -672,7 +684,7 @@
 
   /* One sticky header per page: the gallery bar wins where it exists. */
   var stickyNav = root ? root.querySelector("nav") : null;
-  if (stickyNav && !document.querySelector(".gallery-topbar")) stickyNav.classList.add("site-sticky");
+  if (stickyNav) stickyNav.classList.add("site-sticky");
 
   /* Site Switcher Dropdown Logic */
   var switcherToggle = document.getElementById("lumen-site-switcher-toggle");
@@ -1592,7 +1604,7 @@
   }
   if (footerRoot) {
     footerRoot.innerHTML =
-      '<footer class="site-footer ' + (isFirmwarePersona ? "site-footer--firmware" : "site-footer--updater") + '">' +
+      '<footer class="site-footer ' + (isThemesSite ? "site-footer--themes" : (isFirmwarePersona ? "site-footer--firmware" : "site-footer--updater")) + '">' +
       '<div class="footer-grid">' +
       '<div class="footer-col">' +
       '<h4>Software &amp; Guides</h4>' +
