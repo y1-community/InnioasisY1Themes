@@ -155,7 +155,7 @@ def load_ui_strings() -> Dict[str, str]:
 EXTRA_UI_STRINGS = ["views", "downloads"]
 
 
-SHELL_MARKUP_FILES = ["nav.js", "gallery-chrome.js", "site-init.js"]
+SHELL_MARKUP_FILES = ["nav.js?v=20261115shared", "gallery-chrome.js?v=20261115shared", "site-init.js"]
 LITERAL_RE = re.compile(r"""(['"])((?:\\.|(?!\1)[^\\\n]){4,400}?)\1""")
 TAG_RE = re.compile(r"<[^>]*>")
 ENTITY_MAP = {"&amp;": "&", "&rarr;": "\u2192", "&larr;": "\u2190", "&mdash;": "\u2014", "&ndash;": "\u2013", "&nbsp;": " ", "&quot;": '"', "&#39;": "'", "&lt;": "<", "&gt;": ">"}

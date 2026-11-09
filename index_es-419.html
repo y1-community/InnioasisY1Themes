@@ -52,10 +52,10 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
-    <link rel="stylesheet" href="site-theme.css?v=20261108headerfix">
-    <link rel="stylesheet" href="lumen.css?v=20261108headerfix">
+    <link rel="stylesheet" href="site-theme.css?v=20261115shared">
+    <link rel="stylesheet" href="lumen.css?v=20261115shared">
     <link rel="stylesheet" href="site-toolbar.css?v=20261105dockclose">
-    <link rel="stylesheet" href="site-pages.css?v=20260622">
+    <link rel="stylesheet" href="site-pages.css?v=20261115shared">
     <link rel="stylesheet" href="y1-theme-preview.css?v=20260215">
     <link rel="stylesheet" href="theme-analytics.css?v=20260518">
     <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
@@ -65,7 +65,7 @@
     <script src="y1-theme-preview.js?v=20261109perf"></script>
     <script src="theme-artwork-compat.js?v=20260711"></script>
     <script src="gold-theme-detect.js?v=20261109perf"></script>
-    <script src="gallery-chrome.js?v=20261102header"></script>
+    <script src="gallery-chrome.js?v=20261115shared"></script>
     <script src="author-links.js?v=20260622"></script>
     <script src="site-init.js?v=20260522privacy"></script>
     <script src="gallery-loaded-theme.js?v=20261109perf"></script>
@@ -73,7 +73,7 @@
     <script src="author-submission-policy.js?v=20260523"></script>
     <link rel="stylesheet" href="theme-frozen.css?v=20260526">
     <script src="theme-frozen.js?v=20260526"></script>
-    <script src="theme-analytics.js?v=20260524b"></script>
+    <script src="theme-analytics.js?v=20261115shared"></script>
     <script src="themes-i18n.js?v=20261109lazy"></script>
 
     <style>
@@ -870,7 +870,7 @@
             </div>
             <div class="cast-div hero-actions">
                 <a href="upload_es-419.html" class="btn"><i class="fa-solid fa-upload" aria-hidden="true"></i> Upload theme</a>
-                <a id="rockbox-btn" class="btn" href="#"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Rockbox themes</a>
+                <a id="rockbox-btn" class="btn" href="https://innioasis.app/rockbox-y1-themes.html?utm_source=themes.innioasis.app&amp;utm_medium=referral&amp;utm_campaign=rockbox_themes&amp;ref=themes_gallery&amp;what=theme&amp;resolution=360p" data-cross-site-link="1"><i class="fa-solid fa-compact-disc" aria-hidden="true"></i> Rockbox themes</a>
             </div>
         </section>
 
@@ -925,7 +925,7 @@
                     <option value="author_asc">Author (A-Z)</option>
                     <option value="views_desc">Most views</option>
                     <option value="views_asc">Fewest views</option>
-                    <option value="downloads_desc">Most downloads</option>
+                    <option value="downloads_desc" selected>Most downloads</option>
                     <option value="downloads_asc">Fewest downloads</option>
                     <option value="rating_desc">Highest rating</option>
                     <option value="rating_asc">Lowest rating</option>
@@ -975,10 +975,8 @@
     <div id="footer-root"></div>
     <div id="support-toolbar-slot"></div>
 
-    <script src="nav.js?v=20261109cta"></script>
+    <script src="nav.js?v=20261115shared"></script>
     <script>
-        const rbBtn = document.getElementById('rockbox-btn')
-        const ROCKBOX_THEMES_URL = 'https://github.com/rockbox-y1/themes/releases/tag/for_the_gays_and_the_theys'
 
         const supportDirectInstall = typeof window.showDirectoryPicker === 'function';
         let selectedThemesFolder = null;
@@ -1567,8 +1565,8 @@
                 const sourceV = sourceFilter ? String(sourceFilter.value || 'all') : 'all';
                 if (sourceV !== 'all') params.set('source', sourceV);
                 else params.delete('source');
-                const sortV = sortFilter ? String(sortFilter.value || 'name_asc') : 'name_asc';
-                if (sortV !== 'name_asc') params.set('sort', sortV);
+                const sortV = sortFilter ? String(sortFilter.value || 'downloads_desc') : 'downloads_desc';
+                if (sortV !== 'downloads_desc') params.set('sort', sortV);
                 else params.delete('sort');
                 const authorV = authorFilter ? String(authorFilter.value || 'all') : 'all';
                 if (authorV !== 'all') params.set('author', authorV);
@@ -1729,7 +1727,7 @@
             const onlyOn = onlyOnDeviceCheckbox && onlyOnDeviceCheckbox.checked;
             const sourceV = sourceFilter ? String(sourceFilter.value || 'all') : 'all';
             const authorV = authorFilter ? String(authorFilter.value || 'all') : 'all';
-            const sortV = sortFilter ? String(sortFilter.value || 'name_asc') : 'name_asc';
+            const sortV = sortFilter ? String(sortFilter.value || 'downloads_desc') : 'downloads_desc';
             const pageSize = Number(pageSizeSelect && pageSizeSelect.value || '24') || 24;
             const cards = document.querySelectorAll('.theme-card');
             const matched = [];
@@ -1933,16 +1931,6 @@
                do, so browsers that lack it never see it at all. */
             bannerEl.style.display = 'none';
             if (filterDiv) filterDiv.style.display = 'none';
-        }
-
-        if (rbBtn) {
-            rbBtn.href = ROCKBOX_THEMES_URL;
-            rbBtn.target = '_blank';
-            rbBtn.rel = 'noopener noreferrer';
-            rbBtn.onclick = (e) => {
-                e.preventDefault();
-                window.open(ROCKBOX_THEMES_URL, '_blank', 'noopener,noreferrer');
-            };
         }
 
         function extractThemesArrayFromText(text) {

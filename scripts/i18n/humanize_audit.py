@@ -42,7 +42,7 @@ LOCALE_SUFFIX = re.compile(r"_[a-z]{2,3}(?:-[A-Za-z0-9]{2,4})?\.html?$", re.I)
 SKIP_DIRS = {".git", "node_modules", "dist", "_site", ".cache", ".coord", ".github", "i18n", "__pycache__"}
 NO_TEXT_RE = re.compile(r"<(script|style|pre|code|kbd|samp|textarea)\b[^>]*>.*?</\1>", re.S | re.I)
 TAG_RE = re.compile(r"<[^>]+>")
-SHELL_FILES = ["nav.js", "gallery-chrome.js", "support_toolbar.html", "site-init.js", "theme-analytics.js"]
+SHELL_FILES = ["nav.js?v=20261115shared", "gallery-chrome.js?v=20261115shared", "support_toolbar.html", "site-init.js", "theme-analytics.js?v=20261115shared"]
 
 # (label, pattern, severity). Severity "high" blocks --check in English source.
 ENGLISH: List[Tuple[str, re.Pattern[str], str]] = [
