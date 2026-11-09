@@ -690,13 +690,20 @@
                 setOpen(tray ? tray.hidden : false);
             });
         }
+        /* A colour the visitor picks is their own, so it turns the PC match off:
+           otherwise the next page Updater CE opens sees the match still ticked
+           and puts the desktop colour back over the one they just chose. */
         if (input) {
             input.addEventListener("input", function () { applyAccent(input.value, false); });
-            input.addEventListener("change", function () { applyAccent(input.value, true); });
+            input.addEventListener("change", function () {
+                setMatchPcTheme(false);
+                applyAccent(input.value, true);
+            });
         }
         picker.addEventListener("click", function (event) {
             var swatch = event.target && event.target.closest ? event.target.closest(".lumen-accent-swatch") : null;
             if (!swatch) return;
+            setMatchPcTheme(false);
             applyAccent(swatch.getAttribute("data-accent-value"), true);
         });
         if (matchInput) {

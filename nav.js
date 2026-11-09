@@ -207,6 +207,22 @@
     }).catch(function () {});
   } catch (_) {}
 
+  /* A visitor whose browser reports de-AT, fr-CA or nl-BE still reads German,
+     French or Dutch, and those pages exist as _de/_fr/_nl.html. Matching the
+     raw tag against the core list missed every regional variant, so links fell
+     back to the English page and only the runtime translated it. Chinese is the
+     one family where the base alone is wrong: zh-HK and zh-TW read the
+     traditional pages, everything else zh the simplified ones. */
+  function baseLocaleCode(code) {
+    var clean = String(code || "").toLowerCase().trim();
+    if (!clean) return "";
+    var base = clean.split("-")[0];
+    if (base === "zh") {
+      return /-(tw|hk|mo)$/.test(clean) ? "zh-TW" : "zh-CN";
+    }
+    return base;
+  }
+
   function resolveStaticLocaleCode(loc, data) {
     if (!loc || loc === "en") return null;
     var clean = String(loc).toLowerCase().trim().replace(/_/g, "-");
@@ -223,7 +239,7 @@
         if (list[j].toLowerCase() === clean) return primary;
       }
     }
-    var base = clean.split("-")[0];
+    var base = baseLocaleCode(loc);
     if (base && base.toLowerCase() !== clean) {
       for (var k = 0; k < locales.length; k++) {
         if (locales[k].toLowerCase() === base.toLowerCase()) return locales[k];
@@ -336,38 +352,32 @@
       return raw;
     }
 
-    var isSameHost = url.hostname === window.location.hostname;
-    var isSubdomain = /(^|\.)innioasis\.app$/i.test(url.hostname);
+    /* Origin, not hostname: a dev server on port 8081 and the main site on
+       8080 are two sites, and the handoff has to reach the other one there
+       too. On the real domains the two tests are the same. */
+    var isSameHost = url.origin === window.location.origin;
+    var isSubdomain = /(^|\.)innioasis\.app$/i.test(url.hostname) || url.hostname === "localhost" || url.hostname === "127.0.0.1";
     if (!isSameHost && !isSubdomain) return raw;
 
-    // Accent and the CE handoff belong to the sibling site only: a link that
-    // stays here never needs them, so a shared address keeps its clean URL.
-    if (isSameHost) {
-      url.searchParams.delete("accent");
-      url.searchParams.delete("ce");
+    /* Same-origin links stay free of language, accent, privacy and donation
+       choices so a copied address does not carry this visitor's settings.
+       Those values are added only on the hop to the other Innioasis site. */
+    var prefKeys = [
+      "donations", "privacy", "privacy_analytics", "privacy_feedback", "privacy_nightly",
+      "site_theme", "accent", "accent_color", "accent-color", "accentColor", "accentColour",
+      "ce", "accessibility", "a11y", "fontSize", "fontScale", "font-scale", "fs",
+      "lumen-font-scale", "lang", "analytics", "telemetry", "reduce-motion", "reduce_motion"
+    ];
+    prefKeys.forEach(function (k) { url.searchParams.delete(k); });
+    if (url.searchParams.has("theme")) {
+      var appearance = (url.searchParams.get("theme") || "").toLowerCase().trim();
+      if (["auto", "dark", "light", "high-contrast", "2077"].indexOf(appearance) >= 0) {
+        url.searchParams.delete("theme");
+      }
     }
 
-    // 1. Donations preference
-    if (isY1DonationsDisabled()) {
-      url.searchParams.set("donations", "false");
-    } else if (donationsParam() === true) {
-      url.searchParams.set("donations", "true");
-    }
-
-    // 2. Privacy preference
-    var priv = getPrivacyParam();
-    if (priv) {
-      url.searchParams.set("privacy", priv);
-    }
-    var privAn = getPrivacyAnalyticsParam();
-    if (privAn) {
-      url.searchParams.set("privacy_analytics", privAn);
-    }
-
-    // 3. Language preference
     var loc = getActiveLocale();
     if (loc && loc !== "en") {
-      url.searchParams.set("lang", loc);
       var path = url.pathname;
       var dir = "";
       var name = "";
@@ -389,38 +399,22 @@
       }
     }
 
-    // 4. Theme preference
-    var curTheme = getActiveTheme();
-    if (curTheme) {
-      if (url.searchParams.has("theme") && /theme(?:_[a-zA-Z0-9_-]+)?\.html$/i.test(url.pathname)) {
-        url.searchParams.set("site_theme", curTheme);
-      } else {
-        url.searchParams.set("theme", curTheme);
-      }
-    }
-
-    // 5. Accessibility preference
-    var curA11y = getActiveAccessibility();
-    if (curA11y) {
-      url.searchParams.set("accessibility", curA11y);
-    }
-
-    // 6. Accessibility font size preference
-    var curFs = getActiveFontScale();
-    if (curFs && curFs !== 0.8) {
-      url.searchParams.set("fontSize", String(curFs));
-    }
-
-    // 7. Accent colour, and the Updater CE handoff. Only for the sibling
-    // site: a link to another page here keeps the clean URL it has always had.
-    if (!isSameHost) {
+    if (!isSameHost && isSubdomain) {
+      if (loc && loc !== "en") url.searchParams.set("lang", loc);
+      url.searchParams.set("donations", isY1DonationsDisabled() ? "false" : "true");
+      var priv = getPrivacyParam();
+      if (priv) url.searchParams.set("privacy", priv);
+      var privAn = getPrivacyAnalyticsParam();
+      if (privAn) url.searchParams.set("privacy_analytics", privAn);
+      var curTheme = getActiveTheme();
+      if (curTheme) url.searchParams.set("site_theme", curTheme);
+      var curA11y = getActiveAccessibility();
+      if (curA11y) url.searchParams.set("accessibility", curA11y);
+      var curFs = getActiveFontScale();
+      if (curFs && curFs !== 0.8) url.searchParams.set("fontSize", String(curFs));
       var curAccent = getActiveAccent();
-      if (curAccent) {
-        url.searchParams.set("accent", curAccent);
-      }
-      if (hasCeAccent()) {
-        url.searchParams.set("ce", "true");
-      }
+      if (curAccent) url.searchParams.set("accent", curAccent);
+      if (hasCeAccent()) url.searchParams.set("ce", "true");
     }
 
     if (!isSameHost || /^[a-z]+:\/\//i.test(raw) || raw.indexOf("//") === 0) {
