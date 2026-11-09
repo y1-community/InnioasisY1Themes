@@ -37,7 +37,7 @@ html.site-themes-html body.site-themes-app {
 }
 
 body.site-themes-app > .gallery-topbar {
-    flex-shrink: 0;
+    display: none !important;
 }
 
 body.site-themes-app > .wrap,
@@ -165,7 +165,7 @@ h2.section-display,
     display: flex;
     flex-direction: column;
     gap: 0;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0;
     background: transparent !important;
 }
 
@@ -254,7 +254,7 @@ body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-ad-top:empty {
         display: grid;
         grid-template-columns: max-content minmax(0, 1fr) max-content;
         column-gap: 1rem;
-        row-gap: 0.85rem;
+        row-gap: 0;
         align-items: center;
     }
 
@@ -291,7 +291,7 @@ body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-ad-top:empty {
     body.site-themes-app .wrap:has(.gallery-home-hero) .y1-hero {
         position: absolute;
         right: 1.15rem;
-        bottom: calc(-0.85rem - 10px);
+        bottom: 0;
         z-index: 3;
         margin: 0;
         pointer-events: none;
@@ -485,6 +485,10 @@ body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-ad-top:empty {
 }
 
 /* —— Gallery filters —— */
+body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-controls {
+    margin-top: 0 !important;
+}
+
 .gallery-controls {
     display: flex;
     flex-wrap: wrap;
@@ -1113,10 +1117,29 @@ body.site-themes-app .cast-div {
     border: 0;
 }
 
-body.site-themes-app #direct-install-banner {
-    background: color-mix(in oklab, var(--site-accent) 10%, transparent) !important;
-    border: 1px solid color-mix(in oklab, var(--site-accent) 28%, transparent) !important;
-    border-radius: var(--site-radius-md) !important;
+body.site-themes-app #direct-install-banner,
+body.site-themes-app #direct-install-promo,
+html.no-direct-usb [data-direct-install-btn] {
+    display: none !important;
+}
+
+.gallery-control-search,
+.page-search {
+    width: min(100%, 16rem);
+    margin: 0;
+}
+
+.theme-usb-link {
+    display: inline;
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: 0;
+    color: var(--lumen-accent, var(--site-accent));
+    font: 600 0.78rem var(--site-font, inherit);
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+    cursor: pointer;
 }
 
 body.site-themes-app .bulk-update-panel {
