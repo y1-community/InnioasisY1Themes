@@ -23,6 +23,9 @@
 
     function decorateUrl(href) {
         if (!href) return href;
+        if (typeof window.y1DecorateUrl === "function") {
+            try { return window.y1DecorateUrl(href); } catch (_) {}
+        }
         try {
             var u = new URL(href, window.location.origin);
             if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {

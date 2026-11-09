@@ -9,6 +9,70 @@
     var CONSENT_KEY = "innioasis-consent";
     var THEME_CONSENT_KEY = "y1-theme-consent-v2";
 
+    function resolveEffectiveTheme(theme) {
+        if (theme === "auto" || theme === "light" || !theme) return "dark";
+        return (theme === "high-contrast" || theme === "2077") ? theme : "dark";
+    }
+
+    function applyStoredTheme() {
+        var allowed = ["auto", "dark", "high-contrast", "2077"];
+        var stored = null;
+        try { stored = global.localStorage.getItem("lumen-theme"); } catch (_) {}
+        var urlTheme = null;
+        try {
+            var search = (global.location && global.location.search) || "";
+            var p = new URLSearchParams(search);
+            urlTheme = p.get("site_theme") || p.get("theme");
+            if (urlTheme) {
+                urlTheme = urlTheme.toLowerCase().trim();
+                if (allowed.indexOf(urlTheme) < 0) urlTheme = null;
+            }
+        } catch (_) {}
+        var theme = urlTheme || (allowed.indexOf(stored) >= 0 ? stored : "auto");
+        if (urlTheme) {
+            try { global.localStorage.setItem("lumen-theme", urlTheme); } catch (_) {}
+            setSharedCookie("innioasis-theme", urlTheme);
+        }
+        if (document.documentElement) document.documentElement.setAttribute("data-lumen-theme", resolveEffectiveTheme(theme));
+        return theme;
+    }
+
+    /* Accessibility preference (e.g. reduce-motion) */
+    function applyAccessibility() {
+        var raw = null;
+        try {
+            var p = new URLSearchParams(global.location.search);
+            raw = p.get("accessibility") || p.get("a11y");
+        } catch (_) {}
+        if (!raw) {
+            try { raw = global.localStorage.getItem("innioasis-accessibility"); } catch (_) {}
+        }
+        if (!raw) {
+            raw = getSharedCookie("innioasis-accessibility");
+        }
+        if (!raw && global.matchMedia && global.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            raw = "reduce-motion";
+        }
+        if (raw) {
+            var v = String(raw).toLowerCase().trim();
+            if (v === "reduce-motion" || v === "reduced-motion" || v === "no-motion" || v === "1" || v === "true") {
+                if (document.documentElement) {
+                    document.documentElement.classList.add("reduce-motion");
+                    document.documentElement.setAttribute("data-reduced-motion", "true");
+                }
+                try { global.localStorage.setItem("innioasis-accessibility", "reduce-motion"); } catch (_) {}
+                setSharedCookie("innioasis-accessibility", "reduce-motion");
+            } else if (v === "none" || v === "0" || v === "false" || v === "default") {
+                if (document.documentElement) {
+                    document.documentElement.classList.remove("reduce-motion");
+                    document.documentElement.removeAttribute("data-reduced-motion");
+                }
+                try { global.localStorage.removeItem("innioasis-accessibility"); } catch (_) {}
+                setSharedCookie("innioasis-accessibility", "default");
+            }
+        }
+    }
+
     /* Shared cross-subdomain cookie helper (.innioasis.app) */
     function setSharedCookie(name, value, days) {
         try {
@@ -32,6 +96,35 @@
         } catch (_) {}
         return null;
     }
+
+    (function rememberDonationsAndLangFromUrl() {
+        try {
+            var search = (global.location && global.location.search) || "";
+            var p = new URLSearchParams(search);
+            var d = p.get("donations");
+            if (d !== null) {
+                var dv = String(d).trim().toLowerCase();
+                if (dv === "false" || dv === "0" || dv === "no" || dv === "off") {
+                    try { global.localStorage.setItem("innioasis-donations-off", "1"); } catch (_) {}
+                    setSharedCookie("innioasis-donations-off", "1");
+                } else if (dv === "true" || dv === "1" || dv === "yes" || dv === "on") {
+                    try { global.localStorage.removeItem("innioasis-donations-off"); } catch (_) {}
+                    setSharedCookie("innioasis-donations-off", "0");
+                }
+            }
+            var l = p.get("lang");
+            if (l) {
+                var lv = String(l).trim();
+                if (lv) {
+                    try { global.localStorage.setItem("innioasis-locale", lv); } catch (_) {}
+                    setSharedCookie("innioasis-locale", lv);
+                }
+            }
+        } catch (_) {}
+    })();
+
+    applyStoredTheme();
+    applyAccessibility();
 
     function parsePrivacyParam() {
         try {
@@ -90,7 +183,14 @@
             }
         } catch (_) {}
 
-        return null;
+        return {
+            decided: true,
+            analytics: true,
+            ratingsView: true,
+            ratingsSubmit: true,
+            feedback: true,
+            nightly: true
+        };
     }
 
     function applyAnalyticsConsent(mode) {
@@ -167,13 +267,76 @@
     global.INNIOASIS_PRIVACY = {
         read: readConsent,
         save: writeConsent,
-        hasDecided: function () { return readConsent() !== null; },
+        hasDecided: function () { return true; },
         allows: function (feature) {
             if (feature === "theme") return true;
             var prefs = readConsent();
-            return !!prefs && prefs[feature] !== false;
+            if (!prefs) return true;
+            if (feature === "analytics") return prefs.analytics !== "off" && prefs.analytics !== false;
+            if (feature === "feedback") return prefs.feedback !== false;
+            if (feature === "nightly") return prefs.nightly !== false;
+            return prefs[feature] !== false;
         }
     };
+
+    function clearPreferenceParamsFromUrl() {
+        if (!global.location || !global.history || !global.history.replaceState) return;
+        try {
+            var url = new URL(global.location.href);
+            var params = url.searchParams;
+            var modified = false;
+
+            var prefKeys = [
+                "privacy",
+                "privacy_analytics",
+                "privacy_feedback",
+                "privacy_nightly",
+                "donations",
+                "site_theme",
+                "accessibility",
+                "a11y",
+                "reduce-motion",
+                "reduce_motion",
+                "lang"
+            ];
+
+            if (params.has("theme")) {
+                var tVal = (params.get("theme") || "").toLowerCase().trim();
+                var isSiteTheme = ["auto", "dark", "high-contrast", "2077", "light"].indexOf(tVal) >= 0;
+                var isThemeGalleryDetail = /theme(?:_[a-zA-Z0-9_-]+)?\.html$/i.test(url.pathname);
+                if (isSiteTheme || !isThemeGalleryDetail) {
+                    params.delete("theme");
+                    modified = true;
+                }
+            }
+
+            prefKeys.forEach(function (k) {
+                if (params.has(k)) {
+                    params.delete(k);
+                    modified = true;
+                }
+            });
+
+            if (modified) {
+                var searchStr = params.toString();
+                var newUrl = url.pathname + (searchStr ? ("?" + searchStr) : "") + url.hash;
+                global.history.replaceState(global.history.state, document.title, newUrl);
+            }
+        } catch (_) {}
+    }
+
+    global.y1ClearPreferencesFromUrl = clearPreferenceParamsFromUrl;
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", clearPreferenceParamsFromUrl);
+    } else {
+        if (typeof setTimeout === "function") {
+            setTimeout(clearPreferenceParamsFromUrl, 0);
+        } else {
+            clearPreferenceParamsFromUrl();
+        }
+    }
+    window.addEventListener("load", clearPreferenceParamsFromUrl);
 
     (function initPrivacyFromUrlOrCookie() {
         var fromUrl = parsePrivacyParam();

@@ -11,10 +11,12 @@
 
     /** Visitors contribute by default; they may opt out via Privacy settings. Public stats stay visible. */
     const DEFAULT_CONSENT = {
-        decided: false,
+        decided: true,
         analytics: true,
         ratingsView: true,
         ratingsSubmit: true,
+        feedback: true,
+        nightly: true,
     };
 
     const DEFAULT_ACCEPT_CONSENT = {
@@ -22,6 +24,8 @@
         analytics: true,
         ratingsView: true,
         ratingsSubmit: true,
+        feedback: true,
+        nightly: true,
     };
 
     const statsCache = new Map();
@@ -617,16 +621,10 @@
         const applyBannerVisibility = () => {
             const b = document.getElementById("y1-consent-banner");
             if (!b) return;
-            const c = loadConsent();
-            if (!c.decided) {
-                b.classList.add("y1-consent--visible");
-                b.hidden = false;
-                document.body.classList.add("y1-consent-banner-open");
-            } else {
-                b.classList.remove("y1-consent--visible");
-                b.hidden = true;
-                document.body.classList.remove("y1-consent-banner-open");
-            }
+            // Never bother users with the first-visit preferences screen
+            b.classList.remove("y1-consent--visible");
+            b.hidden = true;
+            document.body.classList.remove("y1-consent-banner-open");
         };
 
         if (banner) {
