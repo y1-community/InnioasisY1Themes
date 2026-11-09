@@ -314,7 +314,7 @@
                             <a id="theme-action-remove" class="btn btn-secondary" style="text-decoration:none;padding:.45rem .75rem;font-size:0.82rem;font-weight:normal;" href="__THEME_UPLOAD_REMOVE_HREF__">Request removal</a>
                         </div>
                         <div id="download-area" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-                            <button id="download-btn" class="btn btn-primary" style="font-weight: normal"><i class="fa-solid fa-download" style="margin-right: 4px;"></i> Download</button>
+                            <button id="download-btn" class="btn btn-primary" style="font-weight: normal"><i class="fa-solid fa-download" style="margin-right: 4px;"></i> Descarregar</button>
                             <label id="mask-variant-wrap" style="display:none;align-items:center;gap:6px;color:var(--text-secondary);font-size:0.86rem;">
                                 <img id="mask-variant-preview" alt="Mask preview" style="display:none;width:46px;height:46px;object-fit:contain;border-radius:6px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.04);" />
                                 Mask variation
@@ -444,9 +444,7 @@
         };
 
         async function tryFetchThemes() {
-            const urls = useGithubMainAssets()
-                ? ['themes.json', GITHUB_MAIN_RAW_BASE + 'themes.json']
-                : ['https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/themes.json', 'themes.json'];
+            const urls = ['themes.json', GITHUB_MAIN_RAW_BASE + 'themes.json'];
             for (const u of urls) {
                 try {
                     const r = await fetchWithTimeout(u, { cache: 'no-cache' });
@@ -1863,39 +1861,57 @@
 
             async function applyThemeTranslations(meta, folderStr, activeVar) {
                 if (!window.Y1ThemesI18n) return;
-                await window.Y1ThemesI18n.load();
                 var loc = window.Y1ThemesI18n.getActiveLocale();
                 var lang = window.Y1ThemesI18n.baseLang(loc);
                 var baseName = (meta && meta.name) || folderStr || 'Theme';
                 var baseDesc = (meta && meta.description) || '';
                 if (lang === 'en') {
+                    if (window.Y1ThemesI18n.hideBadge) {
+                        if (nameEl) window.Y1ThemesI18n.hideBadge(nameEl);
+                        if (descEl) window.Y1ThemesI18n.hideBadge(descEl);
+                    }
                     if (descEl) descEl.textContent = baseDesc || 'No description available.';
                     return;
                 }
 
-                // 1. Try theme folder's config_i18n.json if present
-                var custom = null;
+                // Show globe and loading throbber while translations are loading
+                if (window.Y1ThemesI18n.showBadge) {
+                    if (nameEl) window.Y1ThemesI18n.showBadge(nameEl);
+                    if (descEl && baseDesc) window.Y1ThemesI18n.showBadge(descEl);
+                }
+
                 try {
-                    var r = await fetch(`${encodeURIComponent(folderStr)}/config_i18n.json`);
-                    if (r.ok) custom = await r.json();
-                } catch (_) {}
+                    await window.Y1ThemesI18n.load();
 
-                if (custom && (custom[lang] || custom[loc])) {
-                    var cEntry = custom[lang] || custom[loc];
-                    if (cEntry.description && descEl) descEl.textContent = cEntry.description;
-                    if (cEntry.name && nameEl) {
-                        nameEl.textContent = zipThemeDisplayName(cEntry.name, folderStr, activeVar) || cEntry.name;
+                    // 1. Try theme folder's config_i18n.json if present
+                    var custom = null;
+                    try {
+                        var r = await fetch(`${encodeURIComponent(folderStr)}/config_i18n.json`);
+                        if (r.ok) custom = await r.json();
+                    } catch (_) {}
+
+                    if (custom && (custom[lang] || custom[loc])) {
+                        var cEntry = custom[lang] || custom[loc];
+                        if (cEntry.description && descEl) descEl.textContent = cEntry.description;
+                        if (cEntry.name && nameEl) {
+                            nameEl.textContent = zipThemeDisplayName(cEntry.name, folderStr, activeVar) || cEntry.name;
+                        }
+                        return;
                     }
-                    return;
-                }
 
-                // 2. Global themes_i18n.json
-                var trans = window.Y1ThemesI18n.get(folderStr, baseName, baseDesc);
-                if (trans.description && descEl) {
-                    descEl.textContent = trans.description;
-                }
-                if (trans.name && nameEl && trans.name !== baseName) {
-                    nameEl.textContent = zipThemeDisplayName(trans.name, folderStr, activeVar) || trans.name;
+                    // 2. Global themes_i18n.json
+                    var trans = window.Y1ThemesI18n.get(folderStr, baseName, baseDesc);
+                    if (trans.description && descEl) {
+                        descEl.textContent = trans.description;
+                    }
+                    if (trans.name && nameEl && trans.name !== baseName) {
+                        nameEl.textContent = zipThemeDisplayName(trans.name, folderStr, activeVar) || trans.name;
+                    }
+                } finally {
+                    if (window.Y1ThemesI18n.hideBadge) {
+                        if (nameEl) window.Y1ThemesI18n.hideBadge(nameEl);
+                        if (descEl) window.Y1ThemesI18n.hideBadge(descEl);
+                    }
                 }
             }
 

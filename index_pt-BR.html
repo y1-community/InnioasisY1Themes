@@ -54,7 +54,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
     <link rel="stylesheet" href="site-theme.css?v=20261108headerfix">
-    <link rel="stylesheet" href="lumen.css?v=20261105hero">
+    <link rel="stylesheet" href="lumen.css?v=20261108headerfix">
     <link rel="stylesheet" href="site-toolbar.css?v=20261108hero">
     <link rel="stylesheet" href="site-pages.css?v=20260622">
     <link rel="stylesheet" href="y1-theme-preview.css?v=20260215">
@@ -69,13 +69,13 @@
     <script src="gallery-chrome.js?v=20261102header"></script>
     <script src="author-links.js?v=20260622"></script>
     <script src="site-init.js?v=20260522privacy"></script>
-    <script src="gallery-loaded-theme.js"></script>
+    <script src="gallery-loaded-theme.js?v=20261109perf"></script>
     <script src="theme-share-links.js"></script>
     <script src="author-submission-policy.js?v=20260523"></script>
     <link rel="stylesheet" href="theme-frozen.css?v=20260526">
     <script src="theme-frozen.js?v=20260526"></script>
     <script src="theme-analytics.js?v=20260524b"></script>
-    <script src="themes-i18n.js?v=20261108perf"></script>
+    <script src="themes-i18n.js?v=20261109lazy"></script>
 
     <style>
         html {
@@ -2091,15 +2091,25 @@
         }
 
         async function tryFetchThemeCache() {
-            const [local, remote] = await Promise.all([
-                fetchThemesFromUrl('themes.json'),
-                fetchThemesFromUrl(GITHUB_MAIN_THEMES_JSON),
-            ]);
-            const stale = catalogLooksStale(local);
-            const useRemote = remote.length > local.length || stale;
-            window.__y1UseGithubMainAssets = !!useRemote;
-            const themes = useRemote && remote.length ? remote : (local.length ? local : remote);
-            return themes;
+            try {
+                const local = await fetchThemesFromUrl('themes.json');
+                if (Array.isArray(local) && local.length > 0) {
+                    window.__y1UseGithubMainAssets = false;
+                    return local;
+                }
+            } catch (e) {
+                console.warn('Local themes.json fetch failed', e);
+            }
+            try {
+                const remote = await fetchThemesFromUrl(GITHUB_MAIN_THEMES_JSON);
+                if (Array.isArray(remote) && remote.length > 0) {
+                    window.__y1UseGithubMainAssets = true;
+                    return remote;
+                }
+            } catch (e) {
+                console.warn('Remote themes.json fetch failed', e);
+            }
+            return [];
         }
 
         function resolveScreenshotPath(path) {
@@ -4584,16 +4594,25 @@
             img.width = 360;
             img.height = 270;
             img.decoding = 'async';
+            if (isPriority) {
+                img.loading = 'eager';
+                img.fetchPriority = 'high';
+            } else {
+                img.loading = 'lazy';
+                img.fetchPriority = 'low';
+            }
             const metaScreenshot = String(theme.screenshot || '');
             const metaLooksLikeCover = /\.(png|jpe?g|gif|webp)$/i.test(metaScreenshot);
             const folderImageCandidates = folderPath ? [
+                `${folderPath}/cover-thumb.jpg`,
+                `${folderPath}/cover.jpg`,
                 `${folderPath}/cover.png`,
                 `${folderPath}/cover.PNG`,
                 `${folderPath}/cover_YS.png`,
                 `${folderPath}/cover_ys.png`
             ] : [];
             const screenshotCandidates = [
-                metaLooksLikeCover && !/\.jpe?g$/i.test(metaScreenshot) ? theme.screenshot : '',
+                metaLooksLikeCover ? theme.screenshot : '',
                 ...folderImageCandidates.map(p => `./${p}`),
                 folderPath ? `./${folderPath}/cover.webp` : '',
                 folderPath ? `./${folderPath}/cover.gif` : '',
@@ -4642,8 +4661,7 @@
                 if (img.dataset.coverArmed === '1') return;
                 img.dataset.coverArmed = '1';
                 const saveData = galleryConnectionSavesData();
-                const top = previewFrame.getBoundingClientRect().top;
-                img.fetchPriority = (!saveData && top < (window.innerHeight || 800)) ? 'high' : 'low';
+                img.fetchPriority = isPriority ? 'high' : 'low';
                 if (!folderPath) {
                     void applyNextScreenshot();
                     return;
@@ -4656,6 +4674,9 @@
                     img.sizes = '(max-width: 700px) 92vw, 320px';
                 }
             };
+            if (isPriority) {
+                armCover();
+            }
             previewFrame.append(mediaSkeleton, img);
 
             const cardPreviewMeta = {
@@ -4730,6 +4751,9 @@
             c._armGalleryMedia = () => {
                 armCover();
                 void loadCardVariants();
+                if (window.Y1ThemesI18n && typeof window.Y1ThemesI18n.lazyTranslateCard === 'function') {
+                    window.Y1ThemesI18n.lazyTranslateCard(c);
+                }
                 if (previewMounted) return;
                 previewMounted = true;
                 mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, c, '', theme, isPriority);
@@ -4773,6 +4797,7 @@
 
             c.dataset.origDesc = safeText(theme.description).trim();
             c.dataset.origName = safeText(theme.name);
+            var isEnLocale = !window.Y1ThemesI18n || window.Y1ThemesI18n.baseLang(window.Y1ThemesI18n.getActiveLocale()) === 'en';
             var themeTrans = (window.Y1ThemesI18n && typeof window.Y1ThemesI18n.get === 'function')
                 ? window.Y1ThemesI18n.get(folderPath, theme.name, safeText(theme.description).trim())
                 : null;
@@ -4784,6 +4809,11 @@
             n.setAttribute('data-i18n-skip', '');
             n.setAttribute('translate', 'no');
             n.textContent = (themeTrans && themeTrans.name) ? themeTrans.name : safeText(theme.name);
+            if (!isEnLocale && (!themeTrans || !themeTrans.name || themeTrans.name === theme.name)) {
+                if (window.Y1ThemesI18n && window.Y1ThemesI18n.showBadge) {
+                    window.Y1ThemesI18n.showBadge(n);
+                }
+            }
             if (theme.sourceType === 'external' && theme.authorUrl) {
                 n.href = theme.authorUrl;
                 n.target = '_blank';
@@ -4827,12 +4857,15 @@
             d.setAttribute('data-i18n-skip', '');
             d.setAttribute('translate', 'no');
             const descText = safeText(theme.description).trim();
-            if (themeTrans && themeTrans.description) {
+            if (themeTrans && themeTrans.description && themeTrans.description !== descText) {
                 d.textContent = themeTrans.description;
             } else if (isUnknownish(descText)) {
                 d.style.display = 'none';
             } else {
                 d.textContent = descText;
+                if (!isEnLocale && window.Y1ThemesI18n && window.Y1ThemesI18n.showBadge) {
+                    window.Y1ThemesI18n.showBadge(d);
+                }
             }
 
             const metricsHost = document.createElement('div');
@@ -5169,6 +5202,41 @@
                 void load();
             });
         })();
+
+        function updateAllCardTexts() {
+            document.querySelectorAll('.theme-card').forEach((card) => {
+                const statusBadge = card.querySelector('.theme-status');
+                if (statusBadge) statusBadge.textContent = _t('Already on your Y1');
+                const vSpan = card.querySelector('.theme-card-variant-row span');
+                if (vSpan) vSpan.textContent = _t('Variant');
+                const defOpt = card.querySelector('.theme-card-variant-select option[value=""]');
+                if (defOpt && (!defOpt.dataset.custom || defOpt.dataset.custom === '0')) {
+                    defOpt.textContent = _t('Default');
+                }
+                const dlBtn = card.querySelector('[data-card-download]');
+                if (dlBtn && dlBtn.dataset.originalLabel === undefined) {
+                    dlBtn.textContent = _t('Download');
+                }
+                const diBtn = card.querySelector('[data-direct-install-btn]');
+                if (diBtn) {
+                    diBtn.textContent = _t('Install to Y1') || _t('Direct Install');
+                }
+                const goldBadge = card.querySelector('.theme-gold-title-badge');
+                if (goldBadge) goldBadge.textContent = _t('Gold');
+            });
+            if (searchInput) {
+                searchInput.placeholder = _t('Search');
+                searchInput.setAttribute('aria-label', _t('Search themes'));
+            }
+        }
+        ['site-locale-ready', 'site-locale-change', 'y1-locale-change'].forEach((ev) => {
+            window.addEventListener(ev, () => {
+                updateAllCardTexts();
+                if (window.Y1ThemesI18n && typeof window.Y1ThemesI18n.applyToCards === 'function') {
+                    window.Y1ThemesI18n.applyToCards();
+                }
+            });
+        });
 
         load()
     </script>

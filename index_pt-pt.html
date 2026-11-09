@@ -100,6 +100,10 @@
             justify-content: space-between;
             gap: 12px;
             padding: 8px 16px;
+            /* Safari before 16.2 has no color-mix(); without a solid fallback
+               the sticky header painted nothing and page content showed
+               through it. Browsers with color-mix use the line below. */
+            background: #0c0e14;
             background: color-mix(in oklab, var(--lumen-ink, #0c0e14) 92%, transparent);
             border-bottom: 1px solid var(--lumen-line, rgba(255, 255, 255, 0.12));
             backdrop-filter: blur(14px);
@@ -929,7 +933,7 @@
         <div id="direct-install-banner" style="margin-top: 1.25rem; padding: 10px 14px; background: rgba(100, 200, 255, 0.08); border: 1px solid rgba(100, 200, 255, 0.22); border-radius: 10px; display: none;">
             <div style="display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap;">
                 <div style="flex: 1 1 240px; min-width: 0;">
-                    <strong style="display: block; font-size: 0.92rem; line-height: 1.3;">Direct Install</strong>
+                    <strong style="display: block; font-size: 0.92rem; line-height: 1.3;">Instalação direta</strong>
                     <span style="font-size: 0.8rem; line-height: 1.35; color: var(--text-secondary);">Install straight to your Y1 or Y2 - pick the player's themes folder, no zip downloads.</span>
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
@@ -2646,17 +2650,39 @@
             dl.style.fontFamily = pf;
         }
 
+        /* A single card asks for its config.json four times: the cover
+           fallback, the variant list, the download-button colours and the
+           preview simulator. Fetching it once per theme and sharing the
+           promise keeps a 717-card page from issuing thousands of duplicate
+           requests before anything can render. */
+        const themeConfigRequests = new Map();
+
+        function requestThemeConfig(cf) {
+            if (!cf) return Promise.resolve(null);
+            const cached = themeConfigRequests.get(cf);
+            if (cached) return cached;
+            const enc = cf.split('/').filter(Boolean).map(encodeURIComponent).join('/');
+            const request = fetch(`./${enc}/config.json`, { cache: 'force-cache' })
+                .then((rc) => (rc.ok ? rc.json() : null))
+                .catch(() => null)
+                .then((cfg) => {
+                    /* A transient failure must not pin the card to "no config"
+                       for the rest of the session. */
+                    if (!cfg) themeConfigRequests.delete(cf);
+                    return cfg;
+                });
+            themeConfigRequests.set(cf, request);
+            return request;
+        }
+
+        /* The preview simulator and the gold-badge detector read the same file
+
+           for the same theme. They go through this one cache too, so a mounted
+           card costs a single config.json request in total. */
+        window.Y1ThemeConfig = { request: requestThemeConfig };
+
         async function fetchThemeConfigForCard(folder, variantSegment) {
-            const cf = effectiveThemeContentFolder(folder, variantSegment);
-            if (!cf) return null;
-            try {
-                const enc = cf.split('/').filter(Boolean).map(encodeURIComponent).join('/');
-                const rc = await fetch(`./${enc}/config.json`, { cache: 'no-cache' });
-                if (!rc.ok) return null;
-                return await rc.json();
-            } catch {
-                return null;
-            }
+            return requestThemeConfig(effectiveThemeContentFolder(folder, variantSegment));
         }
 
         function titleCaseWords(value) {
@@ -2744,19 +2770,14 @@
             const root = String(catalogFolder || '').replace(/^\.\/+/, '').replace(/\/+$/, '').trim();
             const fromManifest = [];
             if (root) {
-                try {
-                    const rc = await fetch(buildThemeFileUrl(root, 'config.json'), { cache: 'no-cache' });
-                    if (rc.ok) {
-                        const j = await rc.json();
-                        const gv = j.gallery && Array.isArray(j.gallery.variantFolders) ? j.gallery.variantFolders : null;
-                        if (gv) {
-                            for (const n of gv) {
-                                const s = String(n || '').trim();
-                                if (s) fromManifest.push(s);
-                            }
-                        }
+                const j = await requestThemeConfig(root);
+                const gv = j && j.gallery && Array.isArray(j.gallery.variantFolders) ? j.gallery.variantFolders : null;
+                if (gv) {
+                    for (const n of gv) {
+                        const s = String(n || '').trim();
+                        if (s) fromManifest.push(s);
                     }
-                } catch (_) {}
+                }
             }
             const g = manifestSource && typeof manifestSource === 'object' ? manifestSource : null;
             const vfLists = [];
@@ -2770,15 +2791,19 @@
                 }
             }
             if (!root) return [...new Set(fromManifest)].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
-            const entries = await fetchGithubRepoContents(`${root}/${THEME_VARIANTS_SEGMENT}`);
-            const fromApi = Array.isArray(entries)
-                ? entries
-                      .filter((item) => item && item.type === 'dir')
-                      .map((item) => String(item.name || '').trim())
-                      .filter(Boolean)
-                : [];
-            const merged = new Set([...fromApi, ...fromManifest]);
-            return [...merged].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+            /* The manifest already names the variants. Listing the folder
+               through the GitHub API costs one unauthenticated request per card
+               against a 60/hour limit, so only ask when the config is silent. */
+            if (fromManifest.length) {
+                return [...new Set(fromManifest)].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+            }
+            /* Variants come from themes.json and the theme's own config.json.
+               Listing the folder through the GitHub API cost one unauthenticated
+               request per card against a 60/hour limit and answered 404 for
+               almost every theme, so it is not part of the page path. Every
+               theme with a Variants folder on disk already lists them in the
+               manifest, which sync_theme_metadata.py maintains. */
+            return [...new Set(fromManifest)].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
         }
 
         function resolveMaskTargetPath(folderPath, files, configuredMaskPath) {
@@ -3496,12 +3521,11 @@
             };
 
             try {
-                const configRes = await fetch(`./${encodedFolder}/config.json`, { cache: 'no-cache' });
-                if (!configRes.ok) {
+                const config = await requestThemeConfig(folder);
+                if (!config) {
                     coverCandidatesByFolder.set(folder, []);
                     return [];
                 }
-                const config = await configRes.json();
                 const themeCoverPaths = [];
                 const overPaths = [];
                 const fallbackCoverPaths = [];
@@ -4570,16 +4594,25 @@
             img.width = 360;
             img.height = 270;
             img.decoding = 'async';
+            if (isPriority) {
+                img.loading = 'eager';
+                img.fetchPriority = 'high';
+            } else {
+                img.loading = 'lazy';
+                img.fetchPriority = 'low';
+            }
             const metaScreenshot = String(theme.screenshot || '');
             const metaLooksLikeCover = /\.(png|jpe?g|gif|webp)$/i.test(metaScreenshot);
             const folderImageCandidates = folderPath ? [
+                `${folderPath}/cover-thumb.jpg`,
+                `${folderPath}/cover.jpg`,
                 `${folderPath}/cover.png`,
                 `${folderPath}/cover.PNG`,
                 `${folderPath}/cover_YS.png`,
                 `${folderPath}/cover_ys.png`
             ] : [];
             const screenshotCandidates = [
-                metaLooksLikeCover && !/\.jpe?g$/i.test(metaScreenshot) ? theme.screenshot : '',
+                metaLooksLikeCover ? theme.screenshot : '',
                 ...folderImageCandidates.map(p => `./${p}`),
                 folderPath ? `./${folderPath}/cover.webp` : '',
                 folderPath ? `./${folderPath}/cover.gif` : '',
@@ -4628,8 +4661,7 @@
                 if (img.dataset.coverArmed === '1') return;
                 img.dataset.coverArmed = '1';
                 const saveData = galleryConnectionSavesData();
-                const top = previewFrame.getBoundingClientRect().top;
-                img.fetchPriority = (!saveData && top < (window.innerHeight || 800)) ? 'high' : 'low';
+                img.fetchPriority = isPriority ? 'high' : 'low';
                 if (!folderPath) {
                     void applyNextScreenshot();
                     return;
@@ -4642,6 +4674,9 @@
                     img.sizes = '(max-width: 700px) 92vw, 320px';
                 }
             };
+            if (isPriority) {
+                armCover();
+            }
             previewFrame.append(mediaSkeleton, img);
 
             const cardPreviewMeta = {
@@ -4686,13 +4721,9 @@
                 try {
                     let defaultLabel = 'Default';
                     try {
-                        const enc = folderPath.split('/').filter(Boolean).map(encodeURIComponent).join('/');
-                        const rc = await fetch(`./${enc}/config.json`, { cache: 'force-cache' });
-                        if (rc.ok) {
-                            const j = await rc.json();
-                            const gl = String((j.gallery && j.gallery.defaultVariantLabel) || '').trim();
-                            if (gl) defaultLabel = gl;
-                        }
+                        const j = await requestThemeConfig(folderPath);
+                        const gl = String((j && j.gallery && j.gallery.defaultVariantLabel) || '').trim();
+                        if (gl) defaultLabel = gl;
                     } catch (_) {}
                     defOptV.textContent = defaultLabel;
                     const names = await listThemeVariantFolderNames(folderPath, theme);
@@ -4712,9 +4743,20 @@
                     console.warn('variant list failed', e);
                 }
             };
+            /* Mounting the simulator is the expensive part of a card: it loads
+               config.json plus every icon the preview draws. It must happen
+               when the card scrolls into view, never for the whole catalogue
+               at once. */
+            let previewMounted = false;
             c._armGalleryMedia = () => {
                 armCover();
                 void loadCardVariants();
+                if (window.Y1ThemesI18n && typeof window.Y1ThemesI18n.lazyTranslateCard === 'function') {
+                    window.Y1ThemesI18n.lazyTranslateCard(c);
+                }
+                if (previewMounted) return;
+                previewMounted = true;
+                mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, c, '', theme, isPriority);
             };
             if (galleryMediaObserver) galleryMediaObserver.observe(c);
             else c._armGalleryMedia();
@@ -4755,13 +4797,23 @@
 
             c.dataset.origDesc = safeText(theme.description).trim();
             c.dataset.origName = safeText(theme.name);
+            var isEnLocale = !window.Y1ThemesI18n || window.Y1ThemesI18n.baseLang(window.Y1ThemesI18n.getActiveLocale()) === 'en';
             var themeTrans = (window.Y1ThemesI18n && typeof window.Y1ThemesI18n.get === 'function')
                 ? window.Y1ThemesI18n.get(folderPath, theme.name, safeText(theme.description).trim())
                 : null;
 
             const n = document.createElement('a');
             n.className = 'theme-name';
+            /* Theme names are titles, not prose: the generic machine pass turned
+               "Cinnamon" into "Zimt". Curated names come from themes-i18n. */
+            n.setAttribute('data-i18n-skip', '');
+            n.setAttribute('translate', 'no');
             n.textContent = (themeTrans && themeTrans.name) ? themeTrans.name : safeText(theme.name);
+            if (!isEnLocale && (!themeTrans || !themeTrans.name || themeTrans.name === theme.name)) {
+                if (window.Y1ThemesI18n && window.Y1ThemesI18n.showBadge) {
+                    window.Y1ThemesI18n.showBadge(n);
+                }
+            }
             if (theme.sourceType === 'external' && theme.authorUrl) {
                 n.href = theme.authorUrl;
                 n.target = '_blank';
@@ -4802,13 +4854,18 @@
 
             const d = document.createElement('div');
             d.className = 'theme-desc';
+            d.setAttribute('data-i18n-skip', '');
+            d.setAttribute('translate', 'no');
             const descText = safeText(theme.description).trim();
-            if (themeTrans && themeTrans.description) {
+            if (themeTrans && themeTrans.description && themeTrans.description !== descText) {
                 d.textContent = themeTrans.description;
             } else if (isUnknownish(descText)) {
                 d.style.display = 'none';
             } else {
                 d.textContent = descText;
+                if (!isEnLocale && window.Y1ThemesI18n && window.Y1ThemesI18n.showBadge) {
+                    window.Y1ThemesI18n.showBadge(d);
+                }
             }
 
             const metricsHost = document.createElement('div');
@@ -4826,6 +4883,11 @@
                     fallback.textContent = theme.author ? `by ${theme.author}` : '';
                     return fallback;
                 })();
+            /* Author handles are names and stay as written. */
+            if (a && a.setAttribute) {
+                a.setAttribute('data-i18n-skip', '');
+                a.setAttribute('translate', 'no');
+            }
 
             const cardActions = document.createElement('div');
             cardActions.className = 'theme-card-actions';
@@ -4903,7 +4965,6 @@
                 } catch (e) {}
                 bd.append(dl, di);
             }
-            mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, c, '', theme, isPriority);
             if (window.ThemeFrozen && window.ThemeFrozen.isFrozen(theme)) {
                 window.ThemeFrozen.attachToGalleryPreview(c, theme, {
                     onViewAnyway: () => goToThemePreviewPage(),
@@ -5047,22 +5108,22 @@
                             .then((r) => (r.ok ? r.json() : null))
                             .then((cfg) => {
                                 if (!cfg) return;
-                                const wp = cfg.desktopWallpaper || cfg.globalWallpaper || '';
-                                if (wp) {
+                                const previewHelper = window.Y1ThemePreview && window.Y1ThemePreview.previewAssetUrl;
+                                const preloadIfDerivative = (file, ext) => {
+                                    if (!file || !previewHelper) return;
+                                    const raw = `./${encodePathSegments(f)}/${encodePathSegments(file)}`;
+                                    /* Only preload a derivative that exists; the helper falls back to the
+                                       original, which the card loads anyway. */
+                                    const preview = previewHelper(raw, ext);
+                                    if (!preview || preview === raw) return;
                                     const imgPreload = new Image();
-                                    const dot = wp.lastIndexOf('.');
-                                    const prevWp = dot !== -1 ? wp.slice(0, dot) + '.preview.jpg' : wp;
-                                    imgPreload.src = `./${encodePathSegments(f)}/${encodePathSegments(prevWp)}`;
-                                }
+                                    imgPreload.src = preview;
+                                };
+                                const wp = cfg.desktopWallpaper || cfg.globalWallpaper || '';
+                                preloadIfDerivative(wp, 'jpg');
                                 const items = (cfg.home && cfg.home.items) || [];
                                 const firstItem = items[0];
-                                if (firstItem && firstItem.iconFile) {
-                                    const iconPreload = new Image();
-                                    const ic = firstItem.iconFile;
-                                    const dot = ic.lastIndexOf('.');
-                                    const prevIc = dot !== -1 ? ic.slice(0, dot) + '.preview.png' : ic;
-                                    iconPreload.src = `./${encodePathSegments(f)}/${encodePathSegments(prevIc)}`;
-                                }
+                                if (firstItem && firstItem.iconFile) preloadIfDerivative(firstItem.iconFile, 'png');
                             })
                             .catch(() => {});
                     }
@@ -5088,6 +5149,11 @@
             if (!cardsAdded) {
                 grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#94a3b8">Unable to display themes. Try refreshing the page.</p>';
                 return;
+            }
+            /* The curated theme text is fetched after the cards exist, so apply
+               it here as well as on the locale-change event. */
+            if (window.Y1ThemesI18n && typeof window.Y1ThemesI18n.load === 'function') {
+                window.Y1ThemesI18n.load().then(() => window.Y1ThemesI18n.applyToCards());
             }
             applyFilters();
             if (authorFilter && String(authorFilter.value || 'all') !== 'all') {
@@ -5136,6 +5202,41 @@
                 void load();
             });
         })();
+
+        function updateAllCardTexts() {
+            document.querySelectorAll('.theme-card').forEach((card) => {
+                const statusBadge = card.querySelector('.theme-status');
+                if (statusBadge) statusBadge.textContent = _t('Already on your Y1');
+                const vSpan = card.querySelector('.theme-card-variant-row span');
+                if (vSpan) vSpan.textContent = _t('Variant');
+                const defOpt = card.querySelector('.theme-card-variant-select option[value=""]');
+                if (defOpt && (!defOpt.dataset.custom || defOpt.dataset.custom === '0')) {
+                    defOpt.textContent = _t('Default');
+                }
+                const dlBtn = card.querySelector('[data-card-download]');
+                if (dlBtn && dlBtn.dataset.originalLabel === undefined) {
+                    dlBtn.textContent = _t('Download');
+                }
+                const diBtn = card.querySelector('[data-direct-install-btn]');
+                if (diBtn) {
+                    diBtn.textContent = _t('Install to Y1') || _t('Direct Install');
+                }
+                const goldBadge = card.querySelector('.theme-gold-title-badge');
+                if (goldBadge) goldBadge.textContent = _t('Gold');
+            });
+            if (searchInput) {
+                searchInput.placeholder = _t('Search');
+                searchInput.setAttribute('aria-label', _t('Search themes'));
+            }
+        }
+        ['site-locale-ready', 'site-locale-change', 'y1-locale-change'].forEach((ev) => {
+            window.addEventListener(ev, () => {
+                updateAllCardTexts();
+                if (window.Y1ThemesI18n && typeof window.Y1ThemesI18n.applyToCards === 'function') {
+                    window.Y1ThemesI18n.applyToCards();
+                }
+            });
+        });
 
         load()
     </script>
