@@ -4806,6 +4806,10 @@
                 dl.innerHTML = `<i class="fa-solid fa-arrow-up-right-from-square"></i> ${safeText(theme.authorCTA || (hasExternalDownload ? 'Open download page' : 'Visit author'))}`;
                 dl.onclick = () => {
                     if (outboundUrl) {
+                        const statKey = folderPath || String(theme.name || '');
+                        if (statKey && window.ThemeAnalytics && typeof window.ThemeAnalytics.trackExternalDownload === 'function') {
+                            window.ThemeAnalytics.trackExternalDownload(statKey);
+                        }
                         window.open(outboundUrl, '_blank', 'noopener');
                     }
                 };
