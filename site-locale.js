@@ -32,10 +32,9 @@
 
     var DEFAULT_LOCALE = "en";
     var RUNTIME_VERSION = "20261109i18n";
-
-    /* Catalogs are fetched from a fixed path, so a browser that cached an
-       older, thinner catalog keeps serving it after the catalogs are rebuilt.
-       Versioning the request makes the new translation actually reach the page. */
+    /* Catalogs are re-fetched under a new URL when their content changes.
+       Without this a returning visitor keeps the copy they cached, so a
+       language whose catalog was just completed still reads as English. */
     var CATALOG_VERSION = "20261109i18n";
     var STORAGE_LOCALE = "innioasis-locale";
     var STORAGE_REGION = "innioasis-region";
@@ -323,14 +322,30 @@
         var core = normalise(parts[2]);
         if (!core) return value;
 
+        /* OS proper nouns must never be translated into dictionary words */
+        if (/^(Windows|macOS|Linux|Android|iOS|Windows on ARM|Linux on ARM)$/i.test(core)) {
+            if (/^windows$/i.test(core)) return parts[1] + "Windows" + parts[3];
+            if (/^macos$/i.test(core)) return parts[1] + "macOS" + parts[3];
+            if (/^linux$/i.test(core)) return parts[1] + "Linux" + parts[3];
+            if (/^android$/i.test(core)) return parts[1] + "Android" + parts[3];
+            if (/^ios$/i.test(core)) return parts[1] + "iOS" + parts[3];
+            if (/^windows on arm$/i.test(core)) return parts[1] + "Windows on ARM" + parts[3];
+            if (/^linux on arm$/i.test(core)) return parts[1] + "Linux on ARM" + parts[3];
+        }
+
         var regional = regionValue(core);
         if (regional) return parts[1] + regional + parts[3];
 
         if (!state.strings) return value;
         var translated = state.strings[core];
         if (translated === undefined) return value;
-        if (typeof translated === "string" && translated.indexOf("Spectre") !== -1) {
-            translated = translated.replace(/\bRyan Spectre\b/g, "Ryan Specter").replace(/\bSpectre\b/g, "Specter");
+        if (typeof translated === "string") {
+            if (translated.indexOf("Spectre") !== -1) {
+                translated = translated.replace(/\bRyan Spectre\b/g, "Ryan Specter").replace(/\bSpectre\b/g, "Specter");
+            }
+            if (/\bWindows\b/.test(core) && !/\b(window|finder window|terminal window)\b/i.test(core)) {
+                translated = translated.replace(/\b(jendela|ventanas|fenêtres|finestre|fenster|okna)\b/gi, "Windows");
+            }
         }
         return parts[1] + translated + parts[3];
     }
@@ -1669,7 +1684,8 @@
         var base = entry.base || (clean.indexOf("-") > 0 ? clean.split("-")[0] : code);
 
         function fetchOne(catName) {
-            return fetchJson("i18n/catalogs/" + catName + ".json?v=" + CATALOG_VERSION, 6000).catch(function () { return null; });
+            return fetchJson("i18n/catalogs/" + catName + ".json?v=" + CATALOG_VERSION, 6000)
+                .catch(function () { return null; });
         }
 
         var isVariant = base && base.toLowerCase() !== specific.toLowerCase();
