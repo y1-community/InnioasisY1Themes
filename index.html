@@ -91,83 +91,7 @@
             display: none;
         }
 
-        .gallery-topbar {
-            position: sticky;
-            top: 0;
-            z-index: 1200;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            padding: 8px 16px;
-            /* Safari before 16.2 has no color-mix(); without a solid fallback
-               the sticky header painted nothing and page content showed
-               through it. Browsers with color-mix use the line below. */
-            background: #0c0e14;
-            background: color-mix(in oklab, var(--lumen-ink, #0c0e14) 92%, transparent);
-            border-bottom: 1px solid var(--lumen-line, rgba(255, 255, 255, 0.12));
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-        }
-
-        .gallery-tabs {
-            display: inline-flex;
-            gap: 3px;
-            padding: 3px;
-            border-radius: 9px;
-            background: var(--bg-card, #101217);
-            border: 1px solid var(--site-border, rgba(255, 255, 255, 0.08));
-        }
-
-        .gallery-tab {
-            padding: 8px 14px;
-            border-radius: 7px;
-            color: var(--text-secondary, #aeb6c5);
-            text-decoration: none;
-            font-size: clamp(0.82rem, 2.6vw, 0.95rem);
-            font-weight: 600;
-            border: 1px solid transparent;
-            line-height: 1.1;
-        }
-
-        .gallery-tab:hover {
-            color: var(--text-primary, #d9e0ef);
-        }
-
-        .gallery-tab.active {
-            color: var(--text-primary, #ffffff);
-            background: var(--site-bg-elevated, #2a2f3a);
-            border-color: var(--site-border, rgba(255, 255, 255, 0.18));
-            box-shadow: inset 0 -1px 0 var(--site-border, rgba(255, 255, 255, 0.12));
-        }
-
-        /* Search bar layout: see site-theme.css?v=20261108headerfix (flex icon + input) */
-
-        .gallery-tabs {
-            justify-self: center;
-            grid-column: 2;
-        }
-
-        @media (max-width: 900px) {
-            .gallery-topbar {
-                grid-template-columns: 1fr;
-                gap: 10px;
-            }
-
-            .gallery-tabs {
-                order: 1;
-                justify-self: center;
-                grid-column: auto;
-            }
-
-            .topbar-search-wrap {
-                order: 2;
-                max-width: 360px;
-                justify-self: center;
-                grid-column: auto;
-            }
-        }
-
+        /* Top bar and tab chrome live in lumen.css. */
         .wrap {
             max-width: 1200px;
             margin: 0 auto;
@@ -250,23 +174,23 @@
             width: 32px;
             height: 32px;
             border-radius: 8px;
-            background: rgba(15, 18, 28, 0.72);
-            color: #e8eeff;
+            background: var(--lumen-panel-soft);
+            color: var(--lumen-text);
             text-decoration: none;
-            border: 1px solid rgba(255, 255, 255, 0.14);
+            border: 1px solid var(--lumen-line);
             font-size: 0.88rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
         }
 
         .theme-card-corner-btn:hover {
-            background: rgba(88, 166, 255, 0.35);
-            border-color: rgba(88, 166, 255, 0.55);
-            color: #fff;
+            background: var(--lumen-accent-wash);
+            border-color: var(--lumen-accent);
+            color: var(--lumen-paper);
         }
 
         .theme-card-corner-btn--danger:hover {
-            background: rgba(248, 81, 73, 0.35);
-            border-color: rgba(248, 81, 73, 0.55);
+            background: var(--lumen-accent-wash);
+            border-color: var(--lumen-red);
+            color: var(--lumen-red);
         }
 
         @media (hover: none) and (pointer: coarse) {
@@ -327,8 +251,7 @@
             height: 100%;
             width: 0%;
             border-radius: inherit;
-            background: linear-gradient(90deg, #4a9eff, #64c8ff);
-            transition: width 0.2s ease;
+            background: linear-gradient(90deg, var(--lumen-accent), var(--lumen-accent-strong));
         }
 
         .bulk-update-status {
@@ -690,7 +613,7 @@
 
         .btn {
             background: var(--primary);
-            color: #fff;
+            color: var(--lumen-ink);
             padding: 8px 12px;
             border-radius: 8px;
             text-decoration: none;
