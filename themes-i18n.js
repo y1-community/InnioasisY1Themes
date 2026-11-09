@@ -3,10 +3,11 @@
  * Fetches themes_i18n.json (and optional config_i18n.json) to render
  * descriptions and titles in the visitor's preferred language.
  *
- * Implements lazy loading for theme translations with a globe icon and
- * loading throbber displayed next to names and descriptions while pending.
- * Essential page content loads immediately with English descriptions and names.
- * Remote translations are batched together and cached in localStorage.
+ * Curated names and descriptions come from the per-language files. Anything
+ * still missing is translated remotely, but only for cards near the viewport,
+ * and those strings share one request instead of one request each. The gallery
+ * paints immediately in English (or from the local cache) and never inserts a
+ * spinner into every card.
  */
 (function (global) {
     "use strict";
@@ -22,8 +23,12 @@
     var batchQueue = [];
     var batchInFlight = false;
     var batchTimer = null;
-    var BATCH_SIZE = 16;
-    var BATCH_DELIMITER = "\n---\n";
+    var cardObserver = null;
+    var remoteObserved = typeof WeakSet === "function" ? new WeakSet() : null;
+    /* One GET carries many short strings. Stay under typical URL limits and
+       keep a single request in flight so the gallery stays responsive. */
+    var BATCH_MAX = 24;
+    var BATCH_URL = 6000;
 
     var BADGE_HTML = '<svg class="site-i18n-globe" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.7 5.7 3.7 9s-1.2 6.4-3.7 9c-2.5-2.6-3.7-5.7-3.7-9S9.5 5.6 12 3z"/></svg><span class="site-i18n-spinner" aria-hidden="true"></span>';
 
@@ -47,20 +52,10 @@
         (document.head || document.documentElement).appendChild(style);
     }
 
-    function showBadge(el) {
-        if (!el || !el.appendChild) return;
-        var lang = baseLang(getActiveLocale());
-        if (lang === "en") return;
-        ensureBadgeStyles();
-        if (el.querySelector(".site-i18n-badge")) return;
-        var badge = document.createElement("span");
-        badge.className = "site-i18n-badge";
-        badge.setAttribute("data-i18n-skip", "");
-        badge.setAttribute("translate", "no");
-        badge.setAttribute("role", "status");
-        badge.setAttribute("aria-label", "Translating");
-        badge.innerHTML = BADGE_HTML;
-        el.appendChild(badge);
+    function showBadge() {
+        /* A spinner on every card forces layout for the whole catalogue.
+           English (or the cached translation) shows immediately; the toolbar
+           is the only translating indicator. */
     }
 
     function hideBadge(el) {
@@ -187,60 +182,177 @@
         };
     }
 
-    /* Fast batched translation with multi-provider fallbacks */
+    /* clients5 returns one entry per repeated `q`. A joined blob with a
+       delimiter cannot be split reliably once the provider translates the
+       delimiter, so a batch is only accepted when the result lines up. */
+    function parseClients5List(data, count) {
+        if (count === 1) {
+            if (typeof data === "string" && data.trim()) return [data.trim()];
+            if (Array.isArray(data) && typeof data[0] === "string") return [String(data[0]).trim()];
+            if (Array.isArray(data) && Array.isArray(data[0]) && data[0][0]) return [String(data[0][0]).trim()];
+        }
+        if (!Array.isArray(data) || data.length !== count) return null;
+        var out = [];
+        if (typeof data[0] === "string") {
+            for (var i = 0; i < data.length; i += 1) out.push(String(data[i] || "").trim());
+            return out;
+        }
+        if (Array.isArray(data[0])) {
+            for (var j = 0; j < data.length; j += 1) {
+                var row = data[j];
+                var cell = Array.isArray(row) ? row[0] : "";
+                out.push(cell ? String(cell).trim() : "");
+            }
+            return out;
+        }
+        return null;
+    }
+
+    function parseGtxList(data, count) {
+        var segments = data && data[0];
+        if (!Array.isArray(segments) || segments.length !== count) return null;
+        var out = [];
+        for (var i = 0; i < segments.length; i += 1) {
+            out.push(segments[i] && segments[i][0] ? String(segments[i][0]).trim() : "");
+        }
+        return out;
+    }
+
+    function fetchJson(url, timeoutMs) {
+        var ctrl = typeof AbortController === "function" ? new AbortController() : null;
+        var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, timeoutMs || 8000) : null;
+        return fetch(url, { method: "GET", mode: "cors", signal: ctrl ? ctrl.signal : undefined })
+            .then(function (response) {
+                if (timer) clearTimeout(timer);
+                if (!response.ok) throw new Error("HTTP " + response.status);
+                return response.json();
+            })
+            .catch(function (error) {
+                if (timer) clearTimeout(timer);
+                throw error;
+            });
+    }
+
+    /* Several missing names and descriptions travel as repeated `q` parameters
+       on one GET. The URL budget keeps long descriptions from blowing the
+       request; they go out in the next batch instead of alone-by-default. */
     function requestRemoteBatch(texts, targetLang) {
         if (!texts || !texts.length) return Promise.resolve([]);
-        var joined = texts.join(BATCH_DELIMITER);
-        var enc = encodeURIComponent(joined);
-        var clients5Url = "https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl=en&tl=" + encodeURIComponent(targetLang) + "&q=" + enc;
-        var gtxUrl = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=" + encodeURIComponent(targetLang) + "&dt=t&q=" + enc;
-
-        function tryClients5() {
-            var ctrl = typeof AbortController === "function" ? new AbortController() : null;
-            var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 4500) : null;
-            return fetch(clients5Url, { mode: "cors", signal: ctrl ? ctrl.signal : undefined })
-                .then(function (r) { if (timer) clearTimeout(timer); if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-                .then(function (data) {
-                    if (Array.isArray(data) && data.length) {
-                        var first = data[0];
-                        if (Array.isArray(first) && first.length) return String(first[0]);
-                        if (typeof first === "string") return first;
-                    }
-                    throw new Error("Invalid clients5 payload");
-                })
-                .catch(function (err) {
-                    if (timer) clearTimeout(timer);
-                    throw err;
-                });
+        var query = texts.map(function (text) {
+            return "q=" + encodeURIComponent(text);
+        }).join("&");
+        var clients5Url = "https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl=en&tl=" +
+            encodeURIComponent(targetLang) + "&" + query;
+        var gtxUrl = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=" +
+            encodeURIComponent(targetLang) + "&dt=t&" + query;
+        function aligned(list) {
+            return list && list.length === texts.length;
         }
-
-        function tryGTX() {
-            var ctrl = typeof AbortController === "function" ? new AbortController() : null;
-            var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 4500) : null;
-            return fetch(gtxUrl, { mode: "cors", signal: ctrl ? ctrl.signal : undefined })
-                .then(function (r) { if (timer) clearTimeout(timer); if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-                .then(function (data) {
-                    var segments = (data && data[0]) || [];
-                    var out = "";
-                    for (var i = 0; i < segments.length; i++) {
-                        if (segments[i] && segments[i][0]) out += segments[i][0];
-                    }
-                    if (!out) throw new Error("Empty GTX response");
-                    return out;
-                })
-                .catch(function (err) {
-                    if (timer) clearTimeout(timer);
-                    throw err;
-                });
-        }
-
-        return tryClients5().catch(tryGTX).then(function (translatedBlob) {
-            if (!translatedBlob) return [];
-            var parts = translatedBlob.split(/\s*---\s*/);
-            return parts.map(function (p) { return p.trim(); });
+        return fetchJson(clients5Url, 8000).then(function (data) {
+            var list = parseClients5List(data, texts.length);
+            if (aligned(list)) return list;
+            var missed = new Error("unaligned");
+            missed.align = true;
+            throw missed;
         }).catch(function () {
-            return [];
+            return fetchJson(gtxUrl, 8000).then(function (data) {
+                var list = parseGtxList(data, texts.length);
+                if (aligned(list)) return list;
+                var missed = new Error("unaligned");
+                missed.align = true;
+                throw missed;
+            });
         });
+    }
+
+    function takeThemeBatch() {
+        var batch = [];
+        var itemMap = [];
+        var texts = [];
+        var urlLen = 96;
+        while (batchQueue.length && batch.length < BATCH_MAX) {
+            var item = batchQueue[0];
+            var pending = [];
+            if (item.needName && item.origName) pending.push({ type: "name", text: item.origName });
+            if (item.needDesc && item.origDesc) pending.push({ type: "desc", text: item.origDesc });
+            var add = 0;
+            for (var i = 0; i < pending.length; i += 1) add += encodeURIComponent(pending[i].text).length + 3;
+            if (batch.length && (texts.length + pending.length > BATCH_MAX || urlLen + add > BATCH_URL)) break;
+            batchQueue.shift();
+            batch.push(item);
+            urlLen += add;
+            for (var j = 0; j < pending.length; j += 1) {
+                texts.push(pending[j].text);
+                itemMap.push({ item: item, type: pending[j].type });
+            }
+            if (!batch.length) break;
+            if (urlLen > BATCH_URL) break;
+        }
+        return { batch: batch, texts: texts, itemMap: itemMap };
+    }
+
+    function applyThemeBatch(itemMap, results, lang) {
+        var cache = getLocalCache(lang);
+        var updatedCache = false;
+        for (var i = 0; i < itemMap.length; i += 1) {
+            var mapping = itemMap[i];
+            var trans = (results && results[i]) || "";
+            var it = mapping.item;
+            if (!cache[it.folder]) cache[it.folder] = {};
+            if (mapping.type === "name") {
+                hideBadge(it.nameEl);
+                if (trans && trans !== it.origName && it.nameEl) {
+                    it.nameEl.textContent = trans;
+                    cache[it.folder].name = trans;
+                    updatedCache = true;
+                }
+            } else if (mapping.type === "desc") {
+                hideBadge(it.descEl);
+                if (trans && trans !== it.origDesc && it.descEl) {
+                    it.descEl.textContent = trans;
+                    cache[it.folder].description = trans;
+                    updatedCache = true;
+                }
+            }
+        }
+        if (updatedCache) saveLocalCache(lang);
+    }
+
+    function finishThemeCards(batch) {
+        batch.forEach(function (it) {
+            if (it.nameEl) hideBadge(it.nameEl);
+            if (it.descEl) hideBadge(it.descEl);
+            if (!it.needName && !it.needDesc) it.card.dataset.i18nTranslated = "1";
+        });
+    }
+
+    function requeueThemeHalves(itemMap) {
+        var seen = [];
+        itemMap.forEach(function (mapping) {
+            if (seen.indexOf(mapping.item) < 0) seen.push(mapping.item);
+        });
+        if (seen.length < 2) {
+            finishThemeCards(seen);
+            return;
+        }
+        var mid = Math.ceil(seen.length / 2);
+        var right = seen.slice(mid);
+        var left = seen.slice(0, mid);
+        for (var i = right.length - 1; i >= 0; i -= 1) batchQueue.unshift(right[i]);
+        for (var j = left.length - 1; j >= 0; j -= 1) batchQueue.unshift(left[j]);
+    }
+
+    function scheduleThemeDrain() {
+        if (batchInFlight || batchTimer || !batchQueue.length) return;
+        var run = function () {
+            batchTimer = null;
+            drainBatchQueue();
+        };
+        if (typeof global.requestIdleCallback === "function") {
+            batchTimer = global.requestIdleCallback(run, { timeout: 180 });
+        } else {
+            batchTimer = setTimeout(run, 32);
+        }
     }
 
     function drainBatchQueue() {
@@ -251,95 +363,92 @@
             return;
         }
 
-        var batch = batchQueue.splice(0, BATCH_SIZE);
-        batchInFlight = true;
-
-        var textsToTranslate = [];
-        var itemMap = [];
-
-        batch.forEach(function (item) {
-            if (item.needName && item.origName) {
-                textsToTranslate.push(item.origName);
-                itemMap.push({ item: item, type: "name" });
-            }
-            if (item.needDesc && item.origDesc) {
-                textsToTranslate.push(item.origDesc);
-                itemMap.push({ item: item, type: "desc" });
-            }
-        });
-
-        if (!textsToTranslate.length) {
-            batchInFlight = false;
-            drainBatchQueue();
+        var taken = takeThemeBatch();
+        if (!taken.texts.length) {
+            finishThemeCards(taken.batch);
+            if (batchQueue.length) scheduleThemeDrain();
             return;
         }
+        batchInFlight = true;
 
-        requestRemoteBatch(textsToTranslate, lang).then(function (results) {
-            var cache = getLocalCache(lang);
-            var updatedCache = false;
-
-            for (var i = 0; i < itemMap.length; i++) {
-                var mapping = itemMap[i];
-                var trans = (results && results[i]) || "";
-                var it = mapping.item;
-                if (!cache[it.folder]) cache[it.folder] = {};
-
-                if (mapping.type === "name") {
-                    hideBadge(it.nameEl);
-                    if (trans && trans !== it.origName) {
-                        it.nameEl.textContent = trans;
-                        cache[it.folder].name = trans;
-                        updatedCache = true;
-                    }
-                } else if (mapping.type === "desc") {
-                    hideBadge(it.descEl);
-                    if (trans && trans !== it.origDesc) {
-                        it.descEl.textContent = trans;
-                        cache[it.folder].description = trans;
-                        updatedCache = true;
-                    }
-                }
-            }
-            if (updatedCache) saveLocalCache(lang);
-        }).finally(function () {
-            batch.forEach(function (it) {
-                if (it.nameEl) hideBadge(it.nameEl);
-                if (it.descEl) hideBadge(it.descEl);
-                it.card.dataset.i18nTranslated = "1";
+        requestRemoteBatch(taken.texts, lang).then(function (results) {
+            applyThemeBatch(taken.itemMap, results, lang);
+            taken.batch.forEach(function (it) {
+                it.needName = false;
+                it.needDesc = false;
             });
+            finishThemeCards(taken.batch);
+        }).catch(function (error) {
+            if (error && error.align) requeueThemeHalves(taken.itemMap);
+            else finishThemeCards(taken.batch);
+        }).then(function () {
             batchInFlight = false;
-            if (batchQueue.length) {
-                setTimeout(drainBatchQueue, 60);
-            }
+            if (batchQueue.length) scheduleThemeDrain();
         });
     }
 
     function scheduleBatchDrain() {
-        if (batchTimer) return;
-        batchTimer = setTimeout(function () {
-            batchTimer = null;
-            drainBatchQueue();
-        }, 120);
+        scheduleThemeDrain();
     }
 
-    function lazyTranslateCard(card) {
+    function ensureCardObserver() {
+        if (cardObserver || typeof IntersectionObserver !== "function") return;
+        cardObserver = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (!entry.isIntersecting) return;
+                cardObserver.unobserve(entry.target);
+                if (!isReady()) {
+                    if (pendingCards.indexOf(entry.target) < 0) pendingCards.push(entry.target);
+                    return;
+                }
+                var job = paintCard(entry.target);
+                if (job) queueCard(job);
+            });
+        }, { root: null, rootMargin: "240px 0px", threshold: 0 });
+    }
+
+    function watchCard(card) {
         if (!card) return;
+        if (remoteObserved && remoteObserved.has(card)) return;
+        if (remoteObserved) remoteObserved.add(card);
+        ensureCardObserver();
+        if (cardObserver) cardObserver.observe(card);
+        else {
+            var job = paintCard(card);
+            if (job) queueCard(job);
+        }
+    }
+
+    function queueCard(job) {
+        if (!job) return;
+        if (!isReady()) {
+            if (pendingCards.indexOf(job.card) < 0) pendingCards.push(job.card);
+            return;
+        }
+        var alreadyQueued = batchQueue.some(function (queued) { return queued.card === job.card; });
+        if (alreadyQueued) return;
+        batchQueue.push(job);
+        scheduleThemeDrain();
+    }
+
+    function paintCard(card) {
+        if (!card) return null;
         var folder = card.getAttribute("data-catalog-folder");
-        if (!folder) return;
+        if (!folder) return null;
 
         var descEl = card.querySelector(".theme-desc");
         var nameEl = card.querySelector(".theme-name");
 
         if (!card.dataset.origDesc && descEl) {
             var dClone = descEl.cloneNode(true);
-            var b = dClone.querySelector(".site-i18n-badge");
-            if (b) b.remove();
+            var badge = dClone.querySelector(".site-i18n-badge");
+            if (badge) badge.remove();
             card.dataset.origDesc = dClone.textContent.trim();
         }
         if (!card.dataset.origName && nameEl) {
             var nClone = nameEl.cloneNode(true);
-            var b2 = nClone.querySelector(".site-i18n-badge");
-            if (b2) b2.remove();
+            var nameBadge = nClone.querySelector(".site-i18n-badge");
+            if (nameBadge) nameBadge.remove();
             card.dataset.origName = nClone.textContent.trim();
         }
 
@@ -356,79 +465,54 @@
                 hideBadge(descEl);
                 if (origDesc) descEl.textContent = origDesc;
             }
-            return;
+            return null;
         }
 
         var cache = getLocalCache(lang);
         var cached = cache[folder] || {};
         var dict = (i18nData && i18nLang === lang) ? i18nData[folder] : null;
-
         var translatedName = cached.name || (dict && dict.name) || "";
         var translatedDesc = cached.description || (dict && dict.description) || "";
 
-        // If both name and description are already known
-        if (translatedName && translatedDesc) {
-            if (nameEl) {
-                hideBadge(nameEl);
-                nameEl.textContent = translatedName;
-            }
-            if (descEl) {
-                hideBadge(descEl);
-                descEl.textContent = translatedDesc;
-            }
-            card.dataset.i18nTranslated = "1";
-            return;
+        if (translatedName && nameEl) {
+            hideBadge(nameEl);
+            nameEl.textContent = translatedName;
         }
-
-        // Description known
         if (translatedDesc && descEl) {
             hideBadge(descEl);
             descEl.textContent = translatedDesc;
         }
 
-        // Name known
-        if (translatedName && nameEl) {
-            hideBadge(nameEl);
-            nameEl.textContent = translatedName;
-        }
-
         var needName = !translatedName && !!origName;
         var needDesc = !translatedDesc && !!origDesc && descEl && descEl.style.display !== "none";
-
         if (!needName && !needDesc) {
             if (nameEl) hideBadge(nameEl);
             if (descEl) hideBadge(descEl);
             card.dataset.i18nTranslated = "1";
-            return;
+            return null;
         }
+        return {
+            card: card,
+            folder: folder,
+            nameEl: nameEl,
+            descEl: descEl,
+            origName: origName,
+            origDesc: origDesc,
+            needName: needName,
+            needDesc: needDesc
+        };
+    }
 
-        // Display loading throbber next to pending fields
-        if (needName && nameEl) showBadge(nameEl);
-        if (needDesc && descEl) showBadge(descEl);
-
-        // If dictionary is still loading in background, keep card in pending list
+    function lazyTranslateCard(card) {
+        /* The gallery calls this when a card scrolls into view, so the remote
+           request is for that card, not for the rest of the catalogue. */
+        var job = paintCard(card);
+        if (!job) return;
         if (!isReady()) {
-            if (pendingCards.indexOf(card) < 0) {
-                pendingCards.push(card);
-            }
+            if (pendingCards.indexOf(card) < 0) pendingCards.push(card);
             return;
         }
-
-        // Queue for batched remote translation
-        var alreadyQueued = batchQueue.some(function (q) { return q.card === card; });
-        if (!alreadyQueued) {
-            batchQueue.push({
-                card: card,
-                folder: folder,
-                nameEl: nameEl,
-                descEl: descEl,
-                origName: origName,
-                origDesc: origDesc,
-                needName: needName,
-                needDesc: needDesc
-            });
-            scheduleBatchDrain();
-        }
+        queueCard(job);
     }
 
     function flushPendingCards() {
@@ -441,9 +525,13 @@
     }
 
     function applyTranslationsToCards() {
+        /* Paint every card from the curated file and the local cache. Remote
+           translation waits until a card is near the viewport, so opening the
+           gallery in another language does not fire one request per theme. */
         var cards = document.querySelectorAll(".theme-card[data-catalog-folder]");
-        cards.forEach(function (card) {
-            lazyTranslateCard(card);
+        Array.prototype.forEach.call(cards, function (card) {
+            var job = paintCard(card);
+            if (job) watchCard(card);
         });
     }
 
@@ -485,6 +573,7 @@
         hideBadge: hideBadge,
         lazyTranslateCard: lazyTranslateCard,
         applyToCards: applyTranslationsToCards,
+        parseBatch: parseClients5List,
         getActiveLocale: getActiveLocale,
         baseLang: baseLang
     };
