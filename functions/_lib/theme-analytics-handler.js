@@ -106,6 +106,38 @@ async function migrateRatingSchemaToReactions(db) {
     .run();
 }
 
+/**
+ * BoxOffice's counters were wiped by mistake before the public reset. Restore
+ * its recorded totals once: 3,432 views and 3,919 downloads. Counts already
+ * above those totals are kept, so nothing recorded since is lost.
+ */
+const BOXOFFICE_KEY = "8oxOffice";
+const BOXOFFICE_VIEWS = 3432;
+const BOXOFFICE_DOWNLOADS = 3919;
+
+async function restoreBoxOfficeTotals(db) {
+  const done = await db
+    .prepare(`SELECT 1 AS ok FROM _y1_migrations WHERE id = ?`)
+    .bind("boxoffice_restore_v1")
+    .first();
+  if (done) return;
+  await ensureMetricsRow(db, BOXOFFICE_KEY);
+  await db
+    .prepare(
+      `UPDATE theme_metrics
+       SET page_views = MAX(page_views, ?),
+           zip_downloads = MAX(zip_downloads, ? - direct_installs),
+           updated_at = datetime('now')
+       WHERE theme_key = ?`,
+    )
+    .bind(BOXOFFICE_VIEWS, BOXOFFICE_DOWNLOADS, BOXOFFICE_KEY)
+    .run();
+  await db
+    .prepare(`INSERT OR IGNORE INTO _y1_migrations (id) VALUES (?)`)
+    .bind("boxoffice_restore_v1")
+    .run();
+}
+
 /** Create D1 tables on first use (Git deploy does not run schema.sql automatically). */
 export async function ensureAnalyticsSchema(db) {
   if (!db) return;
@@ -117,6 +149,7 @@ export async function ensureAnalyticsSchema(db) {
       }
       await migrateDirectInstallsColumn(db);
       await migrateRatingSchemaToReactions(db);
+      await restoreBoxOfficeTotals(db);
       schemaReady = true;
     })().catch((err) => {
       schemaInitPromise = null;
