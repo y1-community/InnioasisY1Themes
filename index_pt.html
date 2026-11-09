@@ -930,7 +930,7 @@
             </div>
         </section>
 
-        <div id="direct-install-banner" style="margin-top: 1.25rem; padding: 10px 14px; background: rgba(100, 200, 255, 0.08); border: 1px solid rgba(100, 200, 255, 0.22); border-radius: 10px; display: none;">
+        <div id="direct-install-banner" class="direct-install-note" style="margin-top: 1rem; display: none;">
             <div style="display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap;">
                 <div style="flex: 1 1 240px; min-width: 0;">
                     <strong style="display: block; font-size: 0.92rem; line-height: 1.3;">Instalação direta</strong>
@@ -1061,7 +1061,7 @@
         const rbBtn = document.getElementById('rockbox-btn')
         const ROCKBOX_THEMES_URL = 'https://github.com/rockbox-y1/themes/releases/tag/for_the_gays_and_the_theys'
 
-        const supportDirectInstall = typeof window.showDirectoryPicker === 'function';
+        const supportDirectInstall = typeof window.showDirectoryPicker === 'function' && window.isSecureContext !== false;
         let selectedThemesFolder = null;
         let galleryCatalogThemes = [];
         let bulkUpdateQueue = [];
@@ -1401,7 +1401,7 @@
                     di.disabled = false;
                     di.style.opacity = '1';
                     di.style.cursor = 'pointer';
-                    di.innerHTML = '<i class="fa-solid fa-bolt"></i> Direct Install';
+                    di.innerHTML = 'Direct Install via USB';
                 }
                 return;
             }
@@ -1462,7 +1462,7 @@
         function configureBulkUpdateModalEmpty() {
             if (bulkUpdateLeadEl) {
                 bulkUpdateLeadEl.textContent =
-                    'No themes from this gallery were found on your Y1. Use Direct Install on individual themes first, then return here to refresh them all.';
+                    'No themes from this gallery were found on your Y1. Use Direct Install via USB on individual themes first, then return here to refresh them all.';
             }
             if (bulkUpdateCountEl) bulkUpdateCountEl.textContent = '0 themes on device';
             if (bulkUpdateStatusEl) bulkUpdateStatusEl.textContent = 'Nothing to update.';
@@ -4944,7 +4944,7 @@
                 di.style.opacity = '0.5';
                 di.style.cursor = 'not-allowed';
                 di.disabled = true;
-                di.innerHTML = '<i class="fa-solid fa-bolt"></i> Direct Install';
+                di.innerHTML = 'Direct Install via USB';
                 di.type = 'button';
                 di.onclick = () => directInstallTheme(theme, di, readCardVariantInstallHints(c));
                 di.setAttribute('data-direct-install-btn', 'true');
@@ -5219,7 +5219,7 @@
                 }
                 const diBtn = card.querySelector('[data-direct-install-btn]');
                 if (diBtn) {
-                    diBtn.textContent = _t('Install to Y1') || _t('Direct Install');
+                    diBtn.textContent = _t('Direct Install via USB') || 'Direct Install via USB';
                 }
                 const goldBadge = card.querySelector('.theme-gold-title-badge');
                 if (goldBadge) goldBadge.textContent = _t('Gold');

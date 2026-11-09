@@ -1104,3 +1104,44 @@ body.site-themes-app .nav-tools, #nav-root nav, #nav-root .nav-container { overf
 .lumen-accent-reset[disabled] { opacity: .55; cursor: default; }
 @media (max-width: 640px) { .lumen-accent-tray { right: auto; left: 0; } }
 @media (prefers-reduced-motion: reduce) { .lumen-accent-toggle { transition: none; } }
+
+/* One header for the whole family. The gallery used to hide nav.js's toolbar
+   and draw a second bar of its own; it now renders the shared one, and
+   gallery-chrome.js moves the theme search into it. The class is added by that
+   script only when the shared nav actually mounted, so a failed nav.js leaves
+   the old bar in place rather than an empty strip. */
+#nav-root { display: block !important; }
+html.shared-nav-active body.site-themes-app > .gallery-topbar { display: none !important; }
+#nav-root .topbar-search-wrap {
+    position: relative; display: inline-flex; align-items: center;
+    flex: 1 1 8rem; min-width: 0; max-width: 13rem;
+}
+#nav-root .topbar-search {
+    width: 100%; box-sizing: border-box; padding: .38rem .55rem .38rem 1.9rem;
+    border: 1px solid var(--lumen-line-strong, rgba(255, 255, 255, .18));
+    border-radius: 999px;
+    background: var(--lumen-panel-soft, rgba(255, 255, 255, .06));
+    color: var(--lumen-text, #f3f5f9);
+    font: inherit; font-size: .8rem;
+}
+#nav-root .topbar-search::placeholder { color: var(--lumen-muted, #a8b0bf); }
+#nav-root .topbar-search-icon {
+    position: absolute; left: .6rem; top: 50%; transform: translateY(-50%);
+    color: var(--lumen-muted, #a8b0bf); font-size: .78rem; pointer-events: none;
+}
+
+/* Direct install: a quiet link under Download, not a second button in a box. */
+.theme-card-buttons { display: flex; flex-direction: column; align-items: stretch; gap: .45rem; }
+.theme-card-buttons [data-direct-install-btn] {
+    align-self: center; width: auto; min-width: 0; min-height: 0;
+    margin: 0; padding: .1rem 0;
+    border: 0 !important; border-radius: 0;
+    background: none !important; box-shadow: none;
+    color: var(--lumen-muted, #a8b0bf) !important;
+    font: 600 .76rem/1.35 var(--lumen-body, system-ui, sans-serif);
+    text-decoration: underline; text-underline-offset: .18em; cursor: pointer;
+}
+.theme-card-buttons [data-direct-install-btn]:hover:not(:disabled) { color: var(--lumen-accent, #4f8cff) !important; }
+.theme-card-buttons [data-direct-install-btn]:disabled { opacity: .55; }
+/* The folder chooser reads as a line of text, not another panel. */
+#direct-install-banner { background: none !important; border: 0 !important; padding: 0 !important; }

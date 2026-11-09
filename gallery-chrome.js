@@ -333,8 +333,184 @@
         syncTopbarMetrics(topbar);
     }
 
+    /* Directory writing (showDirectoryPicker) is desktop Chromium only.
+       Chrome on Android does not implement it, and iOS browsers are WebKit,
+       so a phone cannot hand a theme to a player over USB from this page. */
+    function usbDirectInstallAvailable() {
+        if (typeof window.showDirectoryPicker !== "function") return false;
+        var ua = navigator.userAgent || "";
+        if (/Android|iPhone|iPad|iPod|Mobile/i.test(ua)) return false;
+        try {
+            if (navigator.userAgentData && navigator.userAgentData.mobile) return false;
+        } catch (_) {}
+        if ((navigator.platform || "") === "MacIntel" && navigator.maxTouchPoints > 1) return false;
+        return true;
+    }
+
+    function restyleUsbLink(button) {
+        if (!button) return;
+        button.classList.add("theme-usb-link");
+        button.textContent = "Direct Install via USB";
+        button.disabled = false;
+        button.removeAttribute("aria-hidden");
+        button.style.setProperty("display", "inline", "important");
+        button.style.setProperty("background", "none", "important");
+        button.style.setProperty("border", "0", "important");
+        button.style.setProperty("padding", "0", "important");
+        button.style.setProperty("box-shadow", "none", "important");
+        button.style.setProperty("color", "var(--lumen-accent, var(--site-accent, #4f8cff))", "important");
+        button.style.setProperty("font", "600 0.78rem var(--site-font, inherit)", "important");
+        button.style.setProperty("text-decoration", "underline", "important");
+        button.style.setProperty("text-underline-offset", "0.15em", "important");
+        button.style.setProperty("cursor", "pointer", "important");
+        button.style.setProperty("opacity", "1", "important");
+        button.style.setProperty("width", "auto", "important");
+        button.style.setProperty("min-height", "0", "important");
+    }
+
+    function suppressInstallCard() {
+        var banner = document.getElementById("direct-install-banner");
+        if (!banner) return;
+        var controls = document.querySelector(".gallery-controls");
+        var filter = document.getElementById("filter-on-device");
+        var bulk = document.getElementById("bulk-update-all-btn");
+        if (controls && filter && filter.parentNode !== controls) controls.appendChild(filter);
+        if (controls && bulk && bulk.parentNode !== controls) {
+            bulk.classList.add("theme-usb-link");
+            bulk.textContent = "Update themes already on the player";
+            bulk.hidden = true;
+            controls.appendChild(bulk);
+            var indicator = document.getElementById("folder-selected-indicator");
+            var reveal = function () {
+                if (indicator && indicator.style.display && indicator.style.display !== "none") bulk.hidden = false;
+            };
+            if (indicator && typeof MutationObserver === "function") {
+                new MutationObserver(reveal).observe(indicator, { attributes: true, attributeFilter: ["style"] });
+            }
+        }
+        var hide = function () {
+            banner.style.setProperty("display", "none", "important");
+        };
+        hide();
+        if (typeof MutationObserver === "function") {
+            new MutationObserver(hide).observe(banner, { attributes: true, attributeFilter: ["style"] });
+        }
+    }
+
+    function setupDirectUsb() {
+        if (!usbDirectInstallAvailable()) {
+            document.documentElement.classList.add("no-direct-usb");
+            var banner = document.getElementById("direct-install-banner");
+            if (banner) banner.style.setProperty("display", "none", "important");
+            var promo = document.getElementById("direct-install-promo");
+            if (promo) promo.style.setProperty("display", "none", "important");
+            document.querySelectorAll("[data-direct-install-btn]").forEach(function (button) {
+                button.style.setProperty("display", "none", "important");
+            });
+            return;
+        }
+        suppressInstallCard();
+        var promo = document.getElementById("direct-install-promo");
+        var download = document.getElementById("download-btn");
+        if (promo) promo.style.setProperty("display", "none", "important");
+        if (download && download.parentNode && !download.parentNode.querySelector(".theme-usb-link")) {
+            var link = document.createElement("a");
+            link.className = "theme-usb-link";
+            link.href = "index.html";
+            link.textContent = "Direct Install via USB";
+            link.style.setProperty("display", "block", "important");
+            link.style.setProperty("margin-top", "0.35rem", "important");
+            link.style.setProperty("color", "var(--lumen-accent, var(--site-accent, #4f8cff))", "important");
+            link.style.setProperty("font", "600 0.78rem var(--site-font, inherit)", "important");
+            link.style.setProperty("text-decoration", "underline", "important");
+            download.insertAdjacentElement("afterend", link);
+        }
+        document.querySelectorAll("[data-direct-install-btn]").forEach(restyleUsbLink);
+        var grid = document.getElementById("theme-grid");
+        if (grid && typeof MutationObserver === "function") {
+            new MutationObserver(function () {
+                grid.querySelectorAll("[data-direct-install-btn]").forEach(restyleUsbLink);
+            }).observe(grid, { childList: true, subtree: true });
+        }
+        var folderReady = false;
+        document.addEventListener("click", function (event) {
+            var button = event.target && event.target.closest ? event.target.closest("[data-direct-install-btn]") : null;
+            if (!button) return;
+            var mark = document.getElementById("folder-selected-indicator");
+            if (folderReady || (mark && mark.style.display && mark.style.display !== "none")) {
+                folderReady = true;
+                return;
+            }
+            var choose = document.getElementById("choose-folder-btn");
+            if (!choose) return;
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            choose.click();
+            var pending = button;
+            var started = Date.now();
+            var timer = setInterval(function () {
+                var indicator = document.getElementById("folder-selected-indicator");
+                if (indicator && indicator.style.display && indicator.style.display !== "none") {
+                    clearInterval(timer);
+                    folderReady = true;
+                    pending.click();
+                    return;
+                }
+                if (Date.now() - started > 120000) clearInterval(timer);
+            }, 150);
+        }, true);
+    }
+
+    function useSharedHeader(topbar) {
+        var search = topbar.querySelector(".topbar-search-wrap");
+        if (search) {
+            normalizeSearchInputs(topbar);
+            enhanceSearch(topbar);
+            var controls = document.querySelector(".gallery-controls");
+            if (controls) {
+                search.classList.add("gallery-control-search");
+                controls.insertBefore(search, controls.firstChild);
+            } else {
+                var page = document.querySelector(".wrap, main, .gold-page-wrap, .site-page-main");
+                if (page) {
+                    search.classList.add("page-search");
+                    page.insertBefore(search, page.firstChild);
+                }
+            }
+        }
+        ensureCompatibilityBanner(topbar);
+        topbar.remove();
+        document.documentElement.style.setProperty("--gallery-topbar-height", "0px");
+        document.documentElement.style.setProperty("--gallery-sticky-offset", "0px");
+    }
+
+
+    /* One header for the whole family. nav.js renders the toolbar into
+       #nav-root; the gallery's own topbar existed only because that toolbar
+       used to be hidden here. When the shared nav is present, move the theme
+       search (and the social links, if this page has them) into its tools and
+       let lumen.css hide the old bar. When it is absent, nothing changes. */
+    function adoptSharedNav() {
+        var nav = document.querySelector("#nav-root nav");
+        if (!nav) return false;
+        var tools = nav.querySelector(".nav-tools");
+        if (tools) {
+            var search = document.querySelector(".gallery-topbar .topbar-search-wrap");
+            if (search && search.parentNode !== tools) tools.insertBefore(search, tools.firstChild);
+            var social = document.querySelector(".gallery-topbar .gallery-social-links");
+            if (social && social.parentNode !== tools) tools.appendChild(social);
+        }
+        document.documentElement.classList.add("shared-nav-active");
+        return true;
+    }
+
     function init() {
-        document.querySelectorAll(".gallery-topbar").forEach(upgradeTopbar);
+        var hasSharedNav = !!document.getElementById("nav-root");
+        document.querySelectorAll(".gallery-topbar").forEach(function (topbar) {
+            if (hasSharedNav) useSharedHeader(topbar);
+            else upgradeTopbar(topbar);
+        });
+        setupDirectUsb();
     }
 
     if (document.readyState === "loading") {
