@@ -283,12 +283,17 @@
     })();
 
     function previewAssetKey(url) {
-        return String(url || '')
+        var key = String(url || '')
             .split('?')[0]
             .split('#')[0]
             .replace(/^[a-z]+:\/\/[^/]+\//i, '')
-            .replace(/^\.?\//, '')
-            .toLowerCase();
+            .replace(/^\.?\//, '');
+        /* buildFileUrl percent-encodes each segment; the index stores the
+           literal path, so "Theme/My Art/bg.png" only matches once decoded. */
+        try {
+            key = decodeURIComponent(key);
+        } catch (e) {}
+        return key.toLowerCase();
     }
 
     (function loadPreviewAssetIndex() {
