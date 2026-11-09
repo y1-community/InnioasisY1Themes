@@ -1172,11 +1172,9 @@
                 var previewMeta = opts.previewMeta || {};
 
                 var fontStyleId = themePreviewFontStyleId(catalogFolder, variantSegment);
-                var fontDisplay = mode === 'full' ? 'block' : 'swap';
-                if (mode !== 'gallery') {
-                    injectThemeFonts(cfg, buildFileUrl, contentFolder, fontStyleId, fontDisplay);
-                }
-                var fontStack = mode === 'gallery' ? 'system-ui, -apple-system, sans-serif' : defaultFontStack(cfg, fontStyleId);
+                var fontDisplay = 'swap';
+                injectThemeFonts(cfg, buildFileUrl, contentFolder, fontStyleId, fontDisplay);
+                var fontStack = defaultFontStack(cfg, fontStyleId);
 
                 var itemCfg = (cfg && cfg.itemConfig) || {};
                 var menuCfg = (cfg && cfg.menuConfig) || {};
@@ -2527,7 +2525,7 @@
     }
 
     var _galleryMountActive = 0;
-    var _galleryMountMax = 3;
+    var _galleryMountMax = 8;
     var _galleryMountQueue = [];
 
     function drainGalleryMountQueue() {
@@ -2574,7 +2572,7 @@
                     }
                 }
             },
-            { rootMargin: '180px 0px', threshold: 0.01 }
+            { rootMargin: '350px 0px', threshold: 0.01 }
         );
         io.observe(container);
     }

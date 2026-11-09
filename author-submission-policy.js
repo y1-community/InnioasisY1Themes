@@ -148,7 +148,10 @@
         readyPromise = (async () => {
             const fetchJson = async (url) => {
                 try {
-                    const res = await fetch(url, { cache: 'no-cache' });
+                    const ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+                    const timer = ctrl ? setTimeout(() => ctrl.abort(), 1800) : null;
+                    const res = await fetch(url, { cache: 'no-cache', signal: ctrl ? ctrl.signal : undefined });
+                    if (timer) clearTimeout(timer);
                     if (!res.ok) return {};
                     const data = await res.json();
                     return data && typeof data === 'object' ? data : {};

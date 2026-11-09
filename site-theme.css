@@ -1,5 +1,7 @@
 /* Innioasis Y1 Themes — fintech-grade typography & chrome (Gold Badge aesthetic) */
 @import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap");
+@import url("tokens.css");
+@import url("lumen.css");
 
 :root {
     /* Lumen (Night Foundry) — apparatus, not orb · three-register type */
@@ -26,23 +28,27 @@
     --primary-dark: color-mix(in oklab, var(--site-accent) 82%, #000);
 }
 
-/* Light Appearance (temporarily aliases Dark mode) */
+/* Light Appearance */
+:root[data-theme="light"],
 :root[data-lumen-theme="light"] {
-    --site-bg: #13141d;
-    --site-bg-elevated: #1b1c28;
-    --site-bg-card: rgba(255, 255, 255, 0.04);
-    --site-text: #f5f6fa;
-    --site-muted: #9aa0b8;
-    --site-accent: #ffb133;
-    --site-border: rgba(180, 185, 220, 0.12);
-    --site-border-hover: rgba(180, 185, 220, 0.24);
-    --bg-dark: #13141d;
-    --bg-card: rgba(255, 255, 255, 0.04);
-    --text-primary: #f5f6fa;
-    --text-secondary: #9aa0b8;
+    --site-bg: #f8fafc;
+    --site-bg-elevated: #ffffff;
+    --site-bg-card: rgba(15, 23, 42, 0.04);
+    --site-text: #0f172a;
+    --site-muted: #475569;
+    --site-accent: #2563eb;
+    --site-border: rgba(15, 23, 42, 0.12);
+    --site-border-hover: rgba(15, 23, 42, 0.28);
+    --bg-dark: #f1f5f9;
+    --bg-card: #ffffff;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
 }
 
 /* Cyberpunk 2077 Appearance */
+:root[data-theme="2077"],
 :root[data-lumen-theme="2077"] {
     --site-bg: #06060b;
     --site-bg-elevated: #0c0d14;
@@ -56,9 +62,12 @@
     --bg-card: #11131d;
     --text-primary: #e9f0f5;
     --text-secondary: #aab8c8;
+    --primary: #ff1e3c;
+    --primary-dark: #ff3352;
 }
 
 /* High-Contrast Appearance */
+:root[data-theme="high-contrast"],
 :root[data-lumen-theme="high-contrast"] {
     --site-bg: #000000;
     --site-bg-elevated: #080808;
@@ -72,6 +81,8 @@
     --bg-card: #000000;
     --text-primary: #ffffff;
     --text-secondary: #f3f3f3;
+    --primary: #73d7ff;
+    --primary-dark: #9ee6ff;
 }
 
 html {

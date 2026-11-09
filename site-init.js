@@ -10,12 +10,19 @@
     var THEME_CONSENT_KEY = "y1-theme-consent-v2";
 
     function resolveEffectiveTheme(theme) {
-        if (theme === "auto" || theme === "light" || !theme) return "dark";
-        return (theme === "high-contrast" || theme === "2077") ? theme : "dark";
+        if (!theme || theme === "auto") {
+            try {
+                if (global.matchMedia && global.matchMedia("(prefers-color-scheme: light)").matches) {
+                    return "light";
+                }
+            } catch (_) {}
+            return "dark";
+        }
+        return (theme === "light" || theme === "high-contrast" || theme === "2077" || theme === "dark") ? theme : "dark";
     }
 
     function applyStoredTheme() {
-        var allowed = ["auto", "dark", "high-contrast", "2077"];
+        var allowed = ["auto", "dark", "light", "high-contrast", "2077"];
         var stored = null;
         try { stored = global.localStorage.getItem("lumen-theme"); } catch (_) {}
         var urlTheme = null;
@@ -33,9 +40,15 @@
             try { global.localStorage.setItem("lumen-theme", urlTheme); } catch (_) {}
             setSharedCookie("innioasis-theme", urlTheme);
         }
-        if (document.documentElement) document.documentElement.setAttribute("data-lumen-theme", resolveEffectiveTheme(theme));
+        var effective = resolveEffectiveTheme(theme);
+        if (document.documentElement) {
+            document.documentElement.setAttribute("data-lumen-theme", effective);
+            document.documentElement.setAttribute("data-theme", effective);
+        }
         return theme;
     }
+
+    applyStoredTheme();
 
     /* Accessibility preference (e.g. reduce-motion) */
     function applyAccessibility() {
@@ -125,6 +138,46 @@
 
     applyStoredTheme();
     applyAccessibility();
+
+    /* Accessibility font size adjustment with URL variables & cross-site persistence */
+    function applyFontScale() {
+        var raw = null;
+        try {
+            var search = (global.location && global.location.search) || "";
+            var p = new URLSearchParams(search);
+            raw = p.get("fontSize") || p.get("fontScale") || p.get("font-scale") || p.get("fs") || p.get("lumen-font-scale");
+        } catch (_) {}
+        var fontScale = 1;
+        var hasUrlScale = false;
+        if (raw) {
+            var cleaned = String(raw).trim().replace("%", "");
+            var val = parseFloat(cleaned);
+            if (val > 10) val = val / 100;
+            if (val >= 0.7 && val <= 1.6) {
+                fontScale = +(val.toFixed(2));
+                hasUrlScale = true;
+            }
+        }
+        if (!hasUrlScale) {
+            try {
+                var storedScale = parseFloat(global.localStorage.getItem("lumen-font-scale") || "");
+                if (storedScale >= 0.7 && storedScale <= 1.6) fontScale = +(storedScale.toFixed(2));
+            } catch (_) {}
+            if (fontScale === 1) {
+                var cookieScale = parseFloat(getSharedCookie("lumen-font-scale") || "");
+                if (cookieScale >= 0.7 && cookieScale <= 1.6) fontScale = +(cookieScale.toFixed(2));
+            }
+        }
+        if (document.documentElement) {
+            document.documentElement.style.setProperty("--lumen-font-scale", String(fontScale));
+            document.documentElement.setAttribute("data-font-scale", String(fontScale));
+        }
+        try { global.localStorage.setItem("lumen-font-scale", String(fontScale)); } catch (_) {}
+        setSharedCookie("lumen-font-scale", String(fontScale), 365);
+        return fontScale;
+    }
+    applyFontScale();
+    global.y1ApplyFontScale = applyFontScale;
 
     function parsePrivacyParam() {
         try {

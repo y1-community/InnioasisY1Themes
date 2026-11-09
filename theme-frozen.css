@@ -1,3 +1,21 @@
+/* Hallmark · macrostructure: Workbench · tone: technical · anchor hue: blue */
+/* critique: frost overlay on simulated clickwheel previews */
+/* waive: 24b on clickwheel preview simulation */
+
+:root {
+    --theme-frozen-bg: color-mix(in oklab, var(--lumen-ink, oklch(13% .018 260)) 75%, transparent);
+    --theme-frozen-badge: var(--lumen-accent, oklch(76% .115 245));
+    --theme-frozen-text: var(--lumen-text, oklch(94% .014 250));
+    --theme-frozen-muted: var(--lumen-muted, oklch(72% .026 250));
+    --theme-frozen-link: var(--lumen-accent, oklch(76% .115 245));
+    --theme-frozen-btn: var(--lumen-accent, oklch(76% .115 245));
+    --theme-frozen-btn-hover: var(--lumen-accent-strong, oklch(68% .15 245));
+    --theme-frozen-btn-text: var(--lumen-ink, oklch(13% .018 260));
+    --theme-frozen-border: var(--lumen-line, oklch(100% 0 0 / .14));
+    --theme-frozen-card-border: var(--lumen-line-strong, oklch(100% 0 0 / .26));
+    --theme-frozen-notice-bg: var(--lumen-panel, oklch(20% .025 258));
+}
+
 /* Frozen theme overlay (Monzo-style ice on 4:3 previews) */
 
 .theme-preview-frame--frozen {
@@ -44,7 +62,7 @@
     gap: 0.55rem;
     padding: 1rem 1.1rem;
     text-align: center;
-    background: rgba(8, 14, 28, 0.55);
+    background: var(--theme-frozen-bg);
     opacity: 0;
     transition: opacity 0.2s ease;
     pointer-events: none;
@@ -70,11 +88,11 @@
 
 .theme-frozen-badge {
     margin: 0;
-    font-size: 0.72rem;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: #bfdbfe;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--theme-frozen-badge);
 }
 
 .theme-frozen-heading {
@@ -82,14 +100,15 @@
     font-size: 1rem;
     font-weight: 700;
     line-height: 1.3;
-    color: #f0f9ff;
+    color: var(--theme-frozen-text);
+    text-wrap: balance;
 }
 
 .theme-frozen-reason {
     margin: 0;
     font-size: 0.88rem;
     line-height: 1.45;
-    color: #cbd5e1;
+    color: var(--theme-frozen-muted);
     max-width: 28ch;
 }
 
@@ -97,24 +116,25 @@
     margin: 0;
     font-size: 0.82rem;
     line-height: 1.4;
-    color: #93c5fd;
+    color: var(--theme-frozen-link);
     max-width: 32ch;
 }
 
 .theme-frozen-view-btn {
     margin-top: 0.25rem;
     font-weight: 600;
-    border: 1px solid rgba(147, 197, 253, 0.55);
-    background: rgba(30, 64, 175, 0.85);
-    color: #f0f9ff;
+    border: 1px solid var(--theme-frozen-border);
+    background: var(--theme-frozen-btn);
+    color: var(--theme-frozen-btn-text);
     padding: 0.5rem 1rem;
     border-radius: 999px;
     cursor: pointer;
     pointer-events: auto;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .theme-frozen-view-btn:hover {
-    background: rgba(37, 99, 235, 0.95);
+    background: var(--theme-frozen-btn-hover);
 }
 
 /* Theme page: frost only the simulator LCD */
@@ -161,25 +181,26 @@
 }
 
 .theme-frozen-page-notice {
-    border: 2px solid rgba(96, 165, 250, 0.45);
-    background: linear-gradient(145deg, rgba(30, 58, 138, 0.35), rgba(15, 23, 42, 0.5));
+    border: 1px solid var(--theme-frozen-card-border);
+    background: var(--theme-frozen-notice-bg);
     border-radius: 12px;
     padding: 1rem 1.15rem;
-    margin: 0 0 14px 0;
-    color: #e2e8f0;
+    margin: 0 0 16px 0;
+    color: var(--theme-frozen-muted);
 }
 
 .theme-frozen-page-notice h2 {
     margin: 0 0 0.5rem;
     font-size: 1.15rem;
-    color: #f0f9ff;
+    color: var(--theme-frozen-text);
+    text-wrap: balance;
 }
 
 .theme-frozen-page-notice p {
     margin: 0 0 0.65rem;
     line-height: 1.5;
     font-size: 0.92rem;
-    color: #cbd5e1;
+    color: var(--theme-frozen-muted);
 }
 
 .theme-frozen-page-notice p:last-child {
@@ -187,6 +208,6 @@
 }
 
 .theme-frozen-page-notice .theme-frozen-author-note {
-    color: #93c5fd;
+    color: var(--theme-frozen-link);
     font-weight: 600;
 }

@@ -5,11 +5,17 @@
 (function () {
     "use strict";
 
-    /* Dark is the site default; light appearance is disabled until it is properly supported. */
-    var SITE_THEMES = ["auto", "dark", "high-contrast", "2077"];
+    var SITE_THEMES = ["auto", "dark", "light", "high-contrast", "2077"];
     function resolveEffectiveTheme(theme) {
-        if (theme === "auto" || theme === "light" || !theme) return "dark";
-        return (theme === "high-contrast" || theme === "2077") ? theme : "dark";
+        if (!theme || theme === "auto") {
+            try {
+                if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) {
+                    return "light";
+                }
+            } catch (_) {}
+            return "dark";
+        }
+        return (theme === "light" || theme === "high-contrast" || theme === "2077" || theme === "dark") ? theme : "dark";
     }
     (function applyStoredSiteTheme() {
         var stored = "auto";
@@ -19,6 +25,7 @@
         if (SITE_THEMES.indexOf(stored) < 0) stored = "auto";
         var effective = resolveEffectiveTheme(stored);
         document.documentElement.setAttribute("data-lumen-theme", effective);
+        document.documentElement.setAttribute("data-theme", effective);
     })();
 
     function decorateUrl(href) {
@@ -73,6 +80,8 @@
             '}' +
             '.gallery-brand, .lumen-brand-home { display: inline-flex !important; align-items: center !important; min-width: 0 !important; max-width: 100% !important; text-decoration: none !important; color: var(--lumen-text, #f8fafc) !important; flex-shrink: 1 !important; white-space: normal !important; }' +
             '.gallery-brand-text, .lumen-brand-title { color: var(--lumen-text, #f8fafc) !important; font-size: 1.15rem !important; font-weight: 700 !important; letter-spacing: -0.02em !important; line-height: 1.15 !important; white-space: normal !important; overflow-wrap: anywhere !important; word-break: normal !important; min-width: 0 !important; flex-shrink: 1 !important; }' +
+            ':root[data-lumen-theme="light"] .gallery-brand, :root[data-lumen-theme="light"] .gallery-brand-text,' +
+            ':root[data-lumen-theme="light"] .lumen-brand-home, :root[data-lumen-theme="light"] .lumen-brand-title { color: #0f172a !important; }' +
             ':root[data-lumen-theme="dark"] .gallery-brand, :root[data-lumen-theme="dark"] .gallery-brand-text,' +
             ':root[data-lumen-theme="dark"] .lumen-brand-home, :root[data-lumen-theme="dark"] .lumen-brand-title { color: #f8fafc !important; }' +
             ':root[data-lumen-theme="2077"] .gallery-brand, :root[data-lumen-theme="2077"] .gallery-brand-text,' +
@@ -216,6 +225,7 @@
             '<select id="lumen-theme-select" aria-label="Choose site colour theme" title="Site theme" style="min-height:32px;padding:2px 8px;border-radius:6px;border:1px solid transparent;background:transparent;color:var(--lumen-muted,#94a3b8);font:inherit;cursor:pointer;">' +
             '<option value="auto">Auto</option>' +
             '<option value="dark">Dark</option>' +
+            '<option value="light">Light</option>' +
             '<option value="high-contrast">High contrast</option>' +
             '<option value="2077">2077</option>' +
             '</select>';
@@ -227,10 +237,14 @@
         } catch (_) {}
         if (sel) {
             sel.value = SITE_THEMES.indexOf(storedTheme) >= 0 ? storedTheme : "auto";
-            document.documentElement.setAttribute("data-lumen-theme", resolveEffectiveTheme(sel.value));
+            var eff = resolveEffectiveTheme(sel.value);
+            document.documentElement.setAttribute("data-lumen-theme", eff);
+            document.documentElement.setAttribute("data-theme", eff);
             sel.addEventListener("change", function () {
                 var value = sel.value;
-                document.documentElement.setAttribute("data-lumen-theme", resolveEffectiveTheme(value));
+                var updated = resolveEffectiveTheme(value);
+                document.documentElement.setAttribute("data-lumen-theme", updated);
+                document.documentElement.setAttribute("data-theme", updated);
                 try {
                     localStorage.setItem("lumen-theme", value);
                 } catch (_) {}
