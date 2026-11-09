@@ -175,23 +175,40 @@ def process_theme_dir(theme_dir: Path) -> int:
                 if optimize_icon_png(src_icon, dest_icon, max_size=180):
                     count += 1
 
-    # 3. Status bar battery & playing icons -> .preview.png
+    # 3. Status bar battery / play state and item arrow icons -> .preview.png
     status_cfg = cfg.get("statusConfig") or {}
-    status_icons_to_check = [
-        status_cfg.get("battery_003"),
-        status_cfg.get("battery_004"),
-        status_cfg.get("playing"),
-        status_cfg.get("pause")
-    ]
-    for s_icon in status_icons_to_check:
-        if not s_icon or not isinstance(s_icon, str):
-            continue
-        src_status = resolve_case_insensitive_file(theme_dir, s_icon)
-        if src_status and src_status.is_file() and not src_status.name.endswith(".preview.png"):
-            dest_status = src_status.parent / f"{src_status.stem}.preview.png"
-            if not dest_status.exists() or dest_status.stat().st_mtime < src_status.stat().st_mtime:
-                if optimize_icon_png(src_status, dest_status, max_size=36):
-                    count += 1
+
+    def optimize_status_icon(rel_path: Any, max_size: int) -> int:
+        if not rel_path or not isinstance(rel_path, str):
+            return 0
+        src_status = resolve_case_insensitive_file(theme_dir, rel_path)
+        if not src_status or not src_status.is_file() or src_status.name.endswith(".preview.png"):
+            return 0
+        dest_status = src_status.parent / f"{src_status.stem}.preview.png"
+        if dest_status.exists() and dest_status.stat().st_mtime >= src_status.stat().st_mtime:
+            return 0
+        return 1 if optimize_icon_png(src_status, dest_status, max_size=max_size) else 0
+
+    battery_rels: List[str] = []
+    for key in ("battery", "batteryCharging"):
+        value = status_cfg.get(key)
+        if isinstance(value, str):
+            battery_rels.append(value)
+        elif isinstance(value, list):
+            battery_rels.extend(v for v in value if isinstance(v, str))
+        elif isinstance(value, dict):
+            battery_rels.extend(v for v in value.values() if isinstance(v, str))
+    for key in ("playing", "pause", "stop", "fmPlaying", "audiobookPlaying"):
+        value = status_cfg.get(key)
+        if isinstance(value, str):
+            battery_rels.append(value)
+
+    for rel in dict.fromkeys(battery_rels):
+        count += optimize_status_icon(rel, 36)
+
+    # Selection / item arrow decoration is drawn at up to 64px in the preview.
+    arrow_rel = (cfg.get("itemConfig") or {}).get("itemRightArrow")
+    count += optimize_status_icon(arrow_rel, 72)
 
     # 4. Check Variants subfolder
     variants_dir = theme_dir / "Variants"
