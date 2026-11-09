@@ -363,6 +363,19 @@
         } else if (event === "direct_install") {
             bumpLocalStat(key, "directInstalls", 1);
         }
+        if ((event === "zip_download" || event === "direct_install") && typeof window.y1TrackDownload === "function") {
+            try {
+                window.y1TrackDownload({
+                    what: "theme",
+                    id: key,
+                    model: /y2-themes/i.test(location.pathname) ? "Y2" : "Y1",
+                    brand: "Innioasis",
+                    action: event === "direct_install" ? "install" : "open",
+                    download_method: event,
+                    ref: "themes:" + (source || "other")
+                });
+            } catch (_) {}
+        }
         void postJson("/api/theme-event", {
             theme: key,
             event,
