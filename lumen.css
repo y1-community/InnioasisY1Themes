@@ -1003,6 +1003,7 @@ body.site-themes-app .nav-tools, #nav-root nav, #nav-root .nav-container { overf
 /* Exactly one header sticks: the shell gives the class to whichever header a
    page actually shows, so a nav and a gallery bar never stack. */
 .site-sticky { position: sticky; top: var(--site-sticky-top, 0); z-index: 1200; }
+body.site-themes-app #nav-root nav { position: sticky; top: 0; width: 100%; }
 
 /* Accent colour picker. One swatch in the header shows the accent in use; the
    tray holds the picker, a few presets and -- only after Updater CE has handed

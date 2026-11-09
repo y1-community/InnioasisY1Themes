@@ -485,25 +485,6 @@
     }
 
 
-    /* One header for the whole family. nav.js renders the toolbar into
-       #nav-root; the gallery's own topbar existed only because that toolbar
-       used to be hidden here. When the shared nav is present, move the theme
-       search (and the social links, if this page has them) into its tools and
-       let lumen.css hide the old bar. When it is absent, nothing changes. */
-    function adoptSharedNav() {
-        var nav = document.querySelector("#nav-root nav");
-        if (!nav) return false;
-        var tools = nav.querySelector(".nav-tools");
-        if (tools) {
-            var search = document.querySelector(".gallery-topbar .topbar-search-wrap");
-            if (search && search.parentNode !== tools) tools.insertBefore(search, tools.firstChild);
-            var social = document.querySelector(".gallery-topbar .gallery-social-links");
-            if (social && social.parentNode !== tools) tools.appendChild(social);
-        }
-        document.documentElement.classList.add("shared-nav-active");
-        return true;
-    }
-
     function init() {
         var hasSharedNav = !!document.getElementById("nav-root");
         document.querySelectorAll(".gallery-topbar").forEach(function (topbar) {
