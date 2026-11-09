@@ -15,6 +15,7 @@
     security_storage: 'granted',
     wait_for_update: 500
   });
+  dataLayer.push({'gtm.start': new Date().getTime(), event: 'gtm.js'});
 </script>
 <script async src="https://www.googletagmanager.com/gtm.js?id=GTM-TNDGC37L"></script>
 
@@ -40,9 +41,9 @@
   <link rel="icon" href="y1_illustration.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://innioasis.app/styles.css">
-  <link rel="stylesheet" href="site-theme.css?v=20261102header">
+  <link rel="stylesheet" href="site-theme.css?v=20261108headerfix">
   <link rel="stylesheet" href="lumen.css?v=20261105hero">
-  <link rel="stylesheet" href="site-toolbar.css?v=20261105dockclose">
+  <link rel="stylesheet" href="site-toolbar.css?v=20261108hero">
   <link rel="stylesheet" href="site-pages.css?v=20260622">
   <link rel="stylesheet" href="theme-analytics.css?v=20260518">
   <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
@@ -129,10 +130,6 @@
     <p>A análise está atualmente <span class="privacy-state" id="privacy-state">no</span> para este navegador.</p>
     <p><button type="button" class="btn" id="privacy-open-settings">Desativar análises</button></p>
 
-    <h2>Publicidade</h2>
-    <p>A galeria tem contêineres de anúncios vazios hoje. Estamos nos preparando para trabalhar com um parceiro publicitário, a Raptive, para que o site possa cobrir seus custos de hospedagem e desenvolvimento. Nenhum script de rede de publicidade é executado e nenhum cookie de publicidade está definido no momento.</p>
-    <p>Quando os anúncios são iniciados, o parceiro pode definir cookies e coletar dados de acordo com sua própria política de privacidade. Pediremos consentimento primeiro quando a lei exigir, e esta página nomeará o parceiro antes de qualquer anúncio ser publicado.</p>
-
     <h2>Doações</h2>
     <p>Os botões de doação estão vinculados a Ko-fi, Buy Me a Coffee, PayPal, Revolut, Patreon e Boosty. Esses serviços tratam do pagamento e dos seus próprios dados. Este site nunca vê os detalhes do seu cartão.</p>
 
@@ -157,9 +154,9 @@
   <div id="footer-root"></div>
   <div id="support-toolbar-slot"></div>
 
-  <script src="nav.js?v=20261105copyleft"></script>
+  <script src="nav.js?v=20261109cta"></script>
   <script src="theme-analytics.js?v=20260524b"></script>
-  <script src="site-locale.js?v=20261108d" defer></script>
+  <script src="site-locale.js?v=20261109i18n" defer></script>
   <script>
     (function () {
       var button = document.getElementById('privacy-open-settings');
