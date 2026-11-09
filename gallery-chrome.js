@@ -72,7 +72,7 @@
             '</li>' +
             '<li>' +
             '<a class="lumen-site-switcher-item" href="' + decorateUrl("https://innioasis.app/firmware.html") + '" data-cross-site-link="1">' +
-            '<span class="lumen-site-switcher-item-icon"><span class="lumen-app-icon lumen-app-icon--firmware" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M5 3h10a3 3 0 0 1 3 3v15H7a3 3 0 0 1-3-3V3zm2 2v13c0 .6.4 1 1 1h8V6a1 1 0 0 0-1-1H7z"/></svg></span></span>' +
+            '<span class="lumen-site-switcher-item-icon"><span class="lumen-app-icon lumen-app-icon--firmware" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/></svg></span></span>' +
             '<span class="lumen-site-switcher-item-copy"><strong>Innioasis Firmware Archive</strong><small>Original Software, custom ROMs & guides</small></span>' +
             '</a>' +
             '</li>' +
