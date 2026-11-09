@@ -1,0 +1,26 @@
+---
+title: "A03 Blue Space Jellyfish - Innioasis Y1 &amp; Y2 テーマギャラリー"
+description: "(更新 10/2/26) 私のお気に入りの Ao3 スキン &lt;3 をベースにしたテーマ。空白のアイコンは意図的に表示されています ;-;"
+language: "jp"
+source: "https://innioasis.app/A03_Blue_Space_Jellyfish/index_jp.html"
+---
+
+# A03 Blue Space Jellyfish - Innioasis Y1 &amp; Y2 テーマギャラリー
+
+ライブプレビューを開いています…リンクをコピー
+
+# A03 Blue Space Jellyfish
+
+MannyReads14
+
+(更新 10/2/26) 私のお気に入りの Ao3 スキン <3 をベースにしたテーマ。空白のアイコンは意図的に表示されています ;-;
+
+[プレビューを開く](https://themes.innioasis.app/theme_jp.html?theme=A03_Blue_Space_Jellyfish)Innioasis Y1 & Y2 Themes gallery hosted by Luci Ltd at luci.ltd — themes.innioasis.app
+
+## Community support
+
+This page is part of the Innioasis Community Projects.
+
+Support the development at https://www.ko-fi.com/teamslide
+
+Help from the developers of the community projects and the stock firmware for the players is at https://ko-fi.com/teamslide and on the Innioasis Community Discord: https://discord.gg/zHrT2zrcek

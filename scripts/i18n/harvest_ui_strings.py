@@ -27,14 +27,14 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 
 SHELL_FILES = [
-    "nav.js",
+    "nav.js?v=20261115shared",
     "lumen-site.js",
     "site-init.js",
     "firmware-catalog.js",
     "tutorial-video.js",
     "portable-zip-links.js",
     "docs-viewer.js",
-    "theme-analytics.js",
+    "theme-analytics.js?v=20261115shared",
     "site-locale.js",
     "support_toolbar.html",
 ]

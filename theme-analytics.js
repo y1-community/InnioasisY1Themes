@@ -346,22 +346,37 @@
         statsCache.set(themeKey, next);
     }
 
-    function trackEvent(themeKey, event, source) {
+    function trackEvent(themeKey, event, source, options) {
         const key = normalizeThemeKey(themeKey);
         if (!key) return;
         const consent = loadConsent();
         if (!shouldTrackAnalytics(consent)) return;
         if (event === "page_view") {
-            try {
-                const sk = PV_SESSION_PREFIX + key;
-                if (sessionStorage.getItem(sk)) return;
-                sessionStorage.setItem(sk, "1");
-            } catch (_) {}
+            if (!(options && options.force)) {
+                try {
+                    const sk = PV_SESSION_PREFIX + key;
+                    if (sessionStorage.getItem(sk)) return;
+                    sessionStorage.setItem(sk, "1");
+                } catch (_) {}
+            }
             bumpLocalStat(key, "pageViews", 1);
         } else if (event === "zip_download") {
             bumpLocalStat(key, "zipDownloads", 1);
         } else if (event === "direct_install") {
             bumpLocalStat(key, "directInstalls", 1);
+        }
+        if ((event === "zip_download" || event === "direct_install") && typeof window.y1TrackDownload === "function") {
+            try {
+                window.y1TrackDownload({
+                    what: "theme",
+                    id: key,
+                    model: /y2-themes/i.test(location.pathname) ? "Y2" : "Y1",
+                    brand: "Innioasis",
+                    action: event === "direct_install" ? "install" : "open",
+                    download_method: source === "external_link" ? "external_link" : event,
+                    ref: "themes:" + (source || "other")
+                });
+            } catch (_) {}
         }
         void postJson("/api/theme-event", {
             theme: key,
@@ -715,6 +730,14 @@
         trackEvent(themeKey, "zip_download", source || "gallery");
     }
 
+    /* A theme hosted elsewhere has no file we can see being saved. Opening its
+       download page counts as one view and one download, the closest signal
+       there is, and always counts: it is a deliberate click, not a page load. */
+    function trackExternalDownload(themeKey) {
+        trackEvent(themeKey, "page_view", "external_link", { force: true });
+        trackEvent(themeKey, "zip_download", "external_link");
+    }
+
     function trackDirectInstall(themeKey, source) {
         trackEvent(themeKey, "direct_install", source || "gallery");
     }
@@ -737,6 +760,7 @@
         saveConsent,
         trackPageView,
         trackZipDownload,
+        trackExternalDownload,
         trackDirectInstall,
         registerMetricsHost,
         mountMetrics,

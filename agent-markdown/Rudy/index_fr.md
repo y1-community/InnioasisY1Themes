@@ -1,0 +1,26 @@
+---
+title: "Rudy - Galerie de thèmes Innioasis Y1 &amp; Y2"
+description: "Rankin-Bass Rudolph le renne au nez rouge et ses amis. Il s’agit d’un thème fantaisiste qui sert davantage de sujet de conversation que de thème sérieusement utilisable."
+language: "fr"
+source: "https://innioasis.app/Rudy/index_fr.html"
+---
+
+# Rudy - Galerie de thèmes Innioasis Y1 &amp; Y2
+
+Ouverture de l'aperçu en direct…Copier le lien
+
+# Rudy
+
+Neither-Classic2058
+
+Rankin-Bass Rudolph le renne au nez rouge et ses amis. Il s’agit d’un thème fantaisiste qui sert davantage de sujet de conversation que de thème sérieusement utilisable.
+
+[Ouvrir l'aperçu](https://themes.innioasis.app/theme_fr.html?theme=Rudy)Innioasis Y1 & Y2 Themes gallery hosted by Luci Ltd at luci.ltd — themes.innioasis.app
+
+## Community support
+
+This page is part of the Innioasis Community Projects.
+
+Support the development at https://www.ko-fi.com/teamslide
+
+Help from the developers of the community projects and the stock firmware for the players is at https://ko-fi.com/teamslide and on the Innioasis Community Discord: https://discord.gg/zHrT2zrcek

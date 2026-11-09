@@ -1,0 +1,26 @@
+---
+title: "Code Vein 1 v3 - Galería de temas Innioasis Y1 y Y2"
+description: "Tema inspirado en el videojuego Code Vein con Io. No soy propietario de ninguna de las imágenes ni de la propiedad intelectual presentada. Sólo para uso personal. No para uso comercial. Copyright © Bandai Namco Holdings Inc. Todos los derechos reservados."
+language: "es"
+source: "https://innioasis.app/Code_Vein_1_v3/index_es.html"
+---
+
+# Code Vein 1 v3 - Galería de temas Innioasis Y1 y Y2
+
+Abriendo la vista previa en vivo…Copiar enlace
+
+# Code Vein 1 v3
+
+superjay
+
+Tema inspirado en el videojuego Code Vein con Io. No soy propietario de ninguna de las imágenes ni de la propiedad intelectual presentada. Sólo para uso personal. No para uso comercial. Copyright © Bandai Namco Holdings Inc. Todos los derechos reservados.
+
+[Abrir vista previa](https://themes.innioasis.app/theme_es.html?theme=Code_Vein_1_v3)Innioasis Y1 & Y2 Themes gallery hosted by Luci Ltd at luci.ltd — themes.innioasis.app
+
+## Community support
+
+This page is part of the Innioasis Community Projects.
+
+Support the development at https://www.ko-fi.com/teamslide
+
+Help from the developers of the community projects and the stock firmware for the players is at https://ko-fi.com/teamslide and on the Innioasis Community Discord: https://discord.gg/zHrT2zrcek

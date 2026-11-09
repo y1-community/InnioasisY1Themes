@@ -115,7 +115,7 @@ def main() -> int:
     if not os.path.exists(os.path.join(ROOT, "robots.txt")):
         repo_errors.append("robots.txt is missing")
 
-    nav_path = os.path.join(ROOT, "nav.js")
+    nav_path = os.path.join(ROOT, "nav.js?v=20261115shared")
     if os.path.exists(nav_path):
         nav = read(nav_path)
         if "privacy.html" not in nav:
