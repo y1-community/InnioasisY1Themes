@@ -69,7 +69,7 @@
     <script src="gallery-chrome.js?v=20261102header"></script>
     <script src="author-links.js?v=20260622"></script>
     <script src="site-init.js?v=20260522privacy"></script>
-    <script src="gallery-loaded-theme.js"></script>
+    <script src="gallery-loaded-theme.js?v=20261109perf"></script>
     <script src="theme-share-links.js"></script>
     <script src="author-submission-policy.js?v=20260523"></script>
     <link rel="stylesheet" href="theme-frozen.css?v=20260526">
@@ -2087,15 +2087,25 @@
         }
 
         async function tryFetchThemeCache() {
-            const [local, remote] = await Promise.all([
-                fetchThemesFromUrl('themes.json'),
-                fetchThemesFromUrl(GITHUB_MAIN_THEMES_JSON),
-            ]);
-            const stale = catalogLooksStale(local);
-            const useRemote = remote.length > local.length || stale;
-            window.__y1UseGithubMainAssets = !!useRemote;
-            const themes = useRemote && remote.length ? remote : (local.length ? local : remote);
-            return themes;
+            try {
+                const local = await fetchThemesFromUrl('themes.json');
+                if (Array.isArray(local) && local.length > 0) {
+                    window.__y1UseGithubMainAssets = false;
+                    return local;
+                }
+            } catch (e) {
+                console.warn('Local themes.json fetch failed', e);
+            }
+            try {
+                const remote = await fetchThemesFromUrl(GITHUB_MAIN_THEMES_JSON);
+                if (Array.isArray(remote) && remote.length > 0) {
+                    window.__y1UseGithubMainAssets = true;
+                    return remote;
+                }
+            } catch (e) {
+                console.warn('Remote themes.json fetch failed', e);
+            }
+            return [];
         }
 
         function resolveScreenshotPath(path) {

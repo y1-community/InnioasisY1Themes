@@ -73,10 +73,25 @@
                       return '';
                   };
 
-        const enc = contentFolder.split('/').filter(Boolean).map(encodeURIComponent).join('/');
-        const res = await fetch(`./${enc}/config.json`, { cache: 'no-cache' });
-        if (!res.ok) throw new Error('Could not load theme config.json');
-        const spec = await res.json();
+        /* Share the gallery's config cache: the card already fetched this file,
+           so opening a loaded theme costs no second request. */
+        const sharedSpec =
+            typeof global.Y1ThemeConfig === 'object' &&
+            global.Y1ThemeConfig &&
+            typeof global.Y1ThemeConfig.request === 'function'
+                ? await global.Y1ThemeConfig.request(contentFolder)
+                : null;
+        let spec = sharedSpec;
+        if (!spec) {
+            const enc = contentFolder
+                .split('/')
+                .filter(Boolean)
+                .map(encodeURIComponent)
+                .join('/');
+            const res = await fetch(`./${enc}/config.json`, { cache: 'no-cache' });
+            if (!res.ok) throw new Error('Could not load theme config.json');
+            spec = await res.json();
+        }
         const id =
             String((opts && opts.displayName) || '').trim() ||
             (spec.theme_info && spec.theme_info.title) ||

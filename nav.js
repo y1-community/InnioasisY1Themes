@@ -186,6 +186,68 @@
     return null;
   }
 
+  var prerenderedData = null;
+  function getPrerenderedData() {
+    if (prerenderedData) return prerenderedData;
+    if (window.__y1Prerendered && window.__y1Prerendered.pages) {
+      prerenderedData = window.__y1Prerendered;
+      return prerenderedData;
+    }
+    return null;
+  }
+  try {
+    var pUrl = (window.location && window.location.origin ? window.location.origin : "") + "/i18n/prerendered.json";
+    fetch(pUrl).then(function (r) {
+      if (r.ok) return r.json();
+    }).then(function (data) {
+      if (data && data.pages) {
+        prerenderedData = data;
+        window.__y1Prerendered = data;
+      }
+    }).catch(function () {});
+  } catch (_) {}
+
+  function resolveStaticLocaleCode(loc, data) {
+    if (!loc || loc === "en") return null;
+    var clean = String(loc).toLowerCase().trim().replace(/_/g, "-");
+    var locales = (data && data.locales) || [];
+    var aliases = (data && data.aliases) || {};
+
+    for (var i = 0; i < locales.length; i++) {
+      if (locales[i].toLowerCase() === clean) return locales[i];
+    }
+    for (var primary in aliases) {
+      if (!Object.prototype.hasOwnProperty.call(aliases, primary)) continue;
+      var list = aliases[primary] || [];
+      for (var j = 0; j < list.length; j++) {
+        if (list[j].toLowerCase() === clean) return primary;
+      }
+    }
+    var base = clean.split("-")[0];
+    if (base && base.toLowerCase() !== clean) {
+      for (var k = 0; k < locales.length; k++) {
+        if (locales[k].toLowerCase() === base.toLowerCase()) return locales[k];
+      }
+    }
+    return null;
+  }
+
+  function getPrerenderedStaticPath(dir, name, loc) {
+    var data = getPrerenderedData();
+    var cleanDir = (dir || "").replace(/^\/+/, "").replace(/\/+$/, "");
+    var targetPage = cleanDir ? (cleanDir + "/" + name) : name;
+    if (data && data.pages) {
+      if (data.pages.indexOf(targetPage) === -1 && data.pages.indexOf(name) === -1) {
+        return null;
+      }
+    }
+    var matchedCode = resolveStaticLocaleCode(loc, data);
+    if (!matchedCode) return null;
+    var d = dir || "";
+    if (d && !d.endsWith("/")) d += "/";
+    return d + name + "_" + matchedCode + ".html";
+  }
+
   function decorateLinkUrl(rawHref) {
     if (!rawHref) return rawHref;
     var raw = String(rawHref).trim();
@@ -223,19 +285,22 @@
     if (loc && loc !== "en") {
       url.searchParams.set("lang", loc);
       var path = url.pathname;
-      var coreLocales = ["de", "es", "fr", "it", "ja", "ko", "nl", "pl", "pt", "ru", "tr", "uk", "zh-CN", "zh-TW", "ar"];
-      var isCore = coreLocales.some(function (c) { return c.toLowerCase() === loc.toLowerCase(); });
-      if (isCore) {
-        var baseCode = loc.toLowerCase() === "ja" ? "ja" : loc;
-        if (path === "/" || path === "") {
-          url.pathname = "/index_" + baseCode + ".html";
-        } else {
-          var htmlMatch = path.match(/^(.+?\/)?([a-zA-Z0-9_-]+)\.html$/i);
-          if (htmlMatch && !/_[a-zA-Z0-9_-]+$/i.test(htmlMatch[2])) {
-            var dir = htmlMatch[1] || "";
-            var name = htmlMatch[2];
-            url.pathname = dir + name + "_" + baseCode + ".html";
-          }
+      var dir = "";
+      var name = "";
+      if (path === "/" || path === "") {
+        dir = "/";
+        name = "index";
+      } else {
+        var htmlMatch = path.match(/^(.+?\/)?([a-zA-Z0-9_-]+)\.html$/i);
+        if (htmlMatch && !/_[a-zA-Z0-9_-]+$/i.test(htmlMatch[2])) {
+          dir = htmlMatch[1] || "";
+          name = htmlMatch[2];
+        }
+      }
+      if (name) {
+        var staticPath = getPrerenderedStaticPath(dir, name, loc);
+        if (staticPath) {
+          url.pathname = staticPath.charAt(0) === "/" ? staticPath : ("/" + staticPath);
         }
       }
     }

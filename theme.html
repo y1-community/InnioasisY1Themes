@@ -86,7 +86,7 @@
     <script src="gold-theme-detect.js?v=20261109perf"></script>
     <script src="gallery-chrome.js?v=20261102header"></script>
     <script src="author-links.js?v=20260622"></script>
-    <script src="gallery-loaded-theme.js"></script>
+    <script src="gallery-loaded-theme.js?v=20261109perf"></script>
     <script src="theme-share-links.js"></script>
     <script src="author-submission-policy.js?v=20260523"></script>
     <link rel="stylesheet" href="theme-frozen.css?v=20260526">
@@ -444,9 +444,7 @@
         };
 
         async function tryFetchThemes() {
-            const urls = useGithubMainAssets()
-                ? ['themes.json', GITHUB_MAIN_RAW_BASE + 'themes.json']
-                : ['https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/themes.json', 'themes.json'];
+            const urls = ['themes.json', GITHUB_MAIN_RAW_BASE + 'themes.json'];
             for (const u of urls) {
                 try {
                     const r = await fetchWithTimeout(u, { cache: 'no-cache' });
