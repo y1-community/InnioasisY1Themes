@@ -80,6 +80,8 @@
     }
 
     applyStoredTheme();
+    global.y1ApplyAppearance = applyAppearance;
+    global.y1GetAppearance = storedAppearance;
 
     /* Follow the OS while the visitor is on Auto, without a reload. */
     (function watchSystemAppearance() {

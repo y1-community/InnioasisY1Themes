@@ -881,4 +881,6 @@ body.site-themes-app .lumen-theme-control,
   }
 }
 
-
+/* Exactly one header sticks: the shell gives the class to whichever header a
+   page actually shows, so a nav and a gallery bar never stack. */
+.site-sticky { position: sticky; top: var(--site-sticky-top, 0); z-index: 1200; }
