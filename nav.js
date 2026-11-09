@@ -536,10 +536,13 @@
       return item.id !== persona;
     })
     .map(function (item) {
-      var href = item.external ? decorateCrossDomainHref(item.href) : item.href;
+      var crossSite = !!item.external || isThemesSite;
+      var href = item.external
+        ? decorateCrossDomainHref(item.href)
+        : (isThemesSite ? decorateMainSiteHref(item.href) : item.href);
       return (
         '<li>' +
-        '<a class="lumen-site-switcher-item" href="' + escapeHtml(href) + '"' + (item.external ? ' data-cross-site-link="1"' : '') + '>' +
+        '<a class="lumen-site-switcher-item" href="' + escapeHtml(href) + '"' + (crossSite ? ' data-cross-site-link="1"' : '') + '>' +
         '<span class="lumen-site-switcher-item-icon">' + item.icon + '</span>' +
         '<span class="lumen-site-switcher-item-copy">' +
         '<strong>' + escapeHtml(item.title) + '</strong>' +
@@ -643,6 +646,31 @@
     }
     switcherTray.hidden = !open;
     switcherToggle.setAttribute("aria-expanded", open ? "true" : "false");
+    if (open) adjustSwitcherTrayPosition();
+  }
+
+  /* The switcher tray is absolutely positioned inside the sticky nav. Place
+     it from the toggle's real rectangle so a long translated brand name can
+     never push the tray past the viewport edge. */
+  function adjustSwitcherTrayPosition() {
+    if (!switcherTray || !switcherToggle) return;
+    var navEl = switcherToggle.closest("nav");
+    if (!navEl) return;
+    var navRect = navEl.getBoundingClientRect();
+    var rect = switcherToggle.getBoundingClientRect();
+    var viewportW = window.innerWidth || document.documentElement.clientWidth || 320;
+    var width = Math.min(352, viewportW - 24);
+    var left = Math.round(rect.left - navRect.left - 12);
+    left = Math.max(8, Math.min(left, navEl.clientWidth - width - 8));
+    var top = Math.round(rect.bottom - navRect.top + 8);
+    switcherTray.style.position = "absolute";
+    switcherTray.style.top = top + "px";
+    switcherTray.style.left = left + "px";
+    switcherTray.style.right = "auto";
+    switcherTray.style.width = width + "px";
+    switcherTray.style.maxWidth = "calc(100vw - 24px)";
+    switcherTray.style.maxHeight = Math.max(160, window.innerHeight - rect.bottom - 24) + "px";
+    switcherTray.style.overflowY = "auto";
   }
   if (switcherToggle && switcherTray) {
     switcherToggle.addEventListener("click", function (e) {
@@ -658,6 +686,13 @@
   var noticesTray = document.getElementById("lumen-notices-tray");
   var noticesBadge = document.getElementById("lumen-notices-badge");
   var noticesBody = document.getElementById("lumen-notices-tray-body");
+
+  /* The nav uses backdrop-filter, which makes it the containing block for
+     position: fixed descendants. Move the notices tray to the body so its
+     viewport coordinates (set below) mean what they say. */
+  if (noticesTray && noticesTray.parentNode !== document.body) {
+    document.body.appendChild(noticesTray);
+  }
 
   function adjustNoticesTrayPosition() {
     if (!noticesTray || !noticesBtn) return;
@@ -722,9 +757,11 @@
 
   window.addEventListener("resize", function () {
     if (noticesTray && !noticesTray.hidden) adjustNoticesTrayPosition();
+    if (switcherTray && !switcherTray.hidden) adjustSwitcherTrayPosition();
   });
   window.addEventListener("scroll", function () {
     if (noticesTray && !noticesTray.hidden) adjustNoticesTrayPosition();
+    if (switcherTray && !switcherTray.hidden) adjustSwitcherTrayPosition();
   }, { passive: true });
 
   if (noticesBtn && noticesTray) {
@@ -1431,7 +1468,10 @@
     var styles = window.getComputedStyle(shell);
     var space = shell.clientWidth - (parseFloat(styles.paddingLeft) || 0) - (parseFloat(styles.paddingRight) || 0);
     var gaps = (parseFloat(styles.columnGap) || 0) * 2;
-    var needed = brand.getBoundingClientRect().width + tools.getBoundingClientRect().width + links.scrollWidth + gaps;
+    /* scrollWidth measures the intrinsic label widths even while the flex
+       row is squeezing the anchors, so translated strings that no longer fit
+       are caught instead of wrapping silently. */
+    var needed = brand.scrollWidth + tools.scrollWidth + links.scrollWidth + gaps;
     return needed <= space + 1;
   }
   function syncNavCompact() {
@@ -1455,6 +1495,18 @@
   window.addEventListener("resize", queueNavSync);
   window.addEventListener("orientationchange", queueNavSync);
   window.addEventListener("load", queueNavSync);
+  window.addEventListener("site-locale-ready", queueNavSync);
+  window.addEventListener("site-locale-change", queueNavSync);
+  window.addEventListener("y1-locale-change", queueNavSync);
+  /* Translations replace text nodes in place, which does not resize the
+     shell. Watch the header text too, so a longer locale still collapses. */
+  if (typeof window.MutationObserver === "function" && navShell) {
+    new window.MutationObserver(queueNavSync).observe(navShell, {
+      childList: true,
+      subtree: true,
+      characterData: true
+    });
+  }
   if (document.fonts && document.fonts.ready && typeof document.fonts.ready.then === "function") {
     document.fonts.ready.then(queueNavSync, function () {});
   }
