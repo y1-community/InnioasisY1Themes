@@ -682,9 +682,14 @@
       '</nav>';
   }
 
-  /* One sticky header per page: the gallery bar wins where it exists. */
+  /* One sticky header, the same bar the archive and the updater use. */
   var stickyNav = root ? root.querySelector("nav") : null;
-  if (stickyNav) stickyNav.classList.add("site-sticky");
+  if (stickyNav) {
+    stickyNav.classList.add("site-sticky");
+    stickyNav.style.position = "sticky";
+    stickyNav.style.top = "0";
+    stickyNav.style.width = "100%";
+  }
 
   /* Site Switcher Dropdown Logic */
   var switcherToggle = document.getElementById("lumen-site-switcher-toggle");
@@ -1645,4 +1650,19 @@
     div.textContent = text == null ? "" : String(text);
     return div.innerHTML;
   }
+})();
+
+/* Outbound links go through leaving.html (or donate.html for a donation
+   host) so preferences travel and the visitor sees where they are going.
+   interstitial.js is loaded here rather than in every page's markup. */
+(function () {
+  try {
+    if (document.body && document.body.hasAttribute("data-interstitial")) return;
+    var me = document.querySelector('script[src*="nav.js"]');
+    var base = me && me.src ? me.src.replace(/[^\/]*$/, "") : "";
+    var s = document.createElement("script");
+    s.src = base + "interstitial.js?v=20261110a";
+    s.defer = true;
+    document.head.appendChild(s);
+  } catch (_) {}
 })();
