@@ -766,7 +766,19 @@
         }
 
         .pager .pager-step {
+            gap: 0.4rem;
+            padding: 0 0.9rem;
+        }
+
+        .pager .pager-step-icon {
             font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        .pager .pager-step-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            white-space: nowrap;
         }
 
         .pager .pager-ellipsis {
@@ -780,6 +792,14 @@
             .pager {
                 gap: 0.15rem;
                 padding: 0.3rem;
+            }
+
+            .pager .pager-step-label {
+                display: none;
+            }
+
+            .pager .pager-step {
+                padding: 0 0.35rem;
             }
 
             .pager button,
@@ -1651,7 +1671,9 @@
             controls.push(
                 '<button type="button" class="pager-step" data-pager-page="' + (currentPage - 1) + '"' +
                 (currentPage <= 1 ? ' disabled' : '') +
-                ' aria-label="Previous page" title="Previous page">&lsaquo;</button>'
+                ' aria-label="' + _t('Previous page') + '" title="' + _t('Previous page') + '">' +
+                '<span class="pager-step-icon" aria-hidden="true">&lsaquo;</span>' +
+                '<span class="pager-step-label">' + _t('Previous page') + '</span></button>'
             );
 
             let previous = 0;
@@ -1673,7 +1695,9 @@
             controls.push(
                 '<button type="button" class="pager-step" data-pager-page="' + (currentPage + 1) + '"' +
                 (currentPage >= totalPages ? ' disabled' : '') +
-                ' aria-label="Next page" title="Next page">&rsaquo;</button>'
+                ' aria-label="' + _t('Next page') + '" title="' + _t('Next page') + '">' +
+                '<span class="pager-step-label">' + _t('Next page') + '</span>' +
+                '<span class="pager-step-icon" aria-hidden="true">&rsaquo;</span></button>'
             );
 
             el.innerHTML = controls.join('');
