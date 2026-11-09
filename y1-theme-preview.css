@@ -360,6 +360,17 @@ body.site-themes-app .theme-card-corner-btn {
     border-color: var(--site-border);
 }
 
+body.site-themes-app .theme-card-corner-btn:hover {
+    background: color-mix(in oklab, var(--lumen-accent) 22%, transparent);
+    border-color: var(--lumen-accent);
+    color: var(--lumen-text);
+}
+
+body.site-themes-app .theme-card-corner-btn--danger:hover {
+    background: color-mix(in oklab, var(--lumen-red) 22%, transparent);
+    border-color: var(--lumen-red);
+}
+
 body.site-themes-app .theme-card-corner-btn:focus-visible,
 body.site-themes-app .theme-card-variant-select:focus-visible {
     outline: 2px solid var(--lumen-accent);
