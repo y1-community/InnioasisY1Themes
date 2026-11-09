@@ -75,7 +75,7 @@
     <link rel="stylesheet" href="theme-frozen.css?v=20260526">
     <script src="theme-frozen.js?v=20260526"></script>
     <script src="theme-analytics.js?v=20260524b"></script>
-    <script src="themes-i18n.js?v=20261108perf"></script>
+    <script src="themes-i18n.js?v=20261109lazy"></script>
 
     <style>
         html {
@@ -4751,6 +4751,9 @@
             c._armGalleryMedia = () => {
                 armCover();
                 void loadCardVariants();
+                if (window.Y1ThemesI18n && typeof window.Y1ThemesI18n.lazyTranslateCard === 'function') {
+                    window.Y1ThemesI18n.lazyTranslateCard(c);
+                }
                 if (previewMounted) return;
                 previewMounted = true;
                 mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, c, '', theme, isPriority);
@@ -4794,6 +4797,7 @@
 
             c.dataset.origDesc = safeText(theme.description).trim();
             c.dataset.origName = safeText(theme.name);
+            var isEnLocale = !window.Y1ThemesI18n || window.Y1ThemesI18n.baseLang(window.Y1ThemesI18n.getActiveLocale()) === 'en';
             var themeTrans = (window.Y1ThemesI18n && typeof window.Y1ThemesI18n.get === 'function')
                 ? window.Y1ThemesI18n.get(folderPath, theme.name, safeText(theme.description).trim())
                 : null;
@@ -4805,6 +4809,11 @@
             n.setAttribute('data-i18n-skip', '');
             n.setAttribute('translate', 'no');
             n.textContent = (themeTrans && themeTrans.name) ? themeTrans.name : safeText(theme.name);
+            if (!isEnLocale && (!themeTrans || !themeTrans.name || themeTrans.name === theme.name)) {
+                if (window.Y1ThemesI18n && window.Y1ThemesI18n.showBadge) {
+                    window.Y1ThemesI18n.showBadge(n);
+                }
+            }
             if (theme.sourceType === 'external' && theme.authorUrl) {
                 n.href = theme.authorUrl;
                 n.target = '_blank';
@@ -4848,12 +4857,15 @@
             d.setAttribute('data-i18n-skip', '');
             d.setAttribute('translate', 'no');
             const descText = safeText(theme.description).trim();
-            if (themeTrans && themeTrans.description) {
+            if (themeTrans && themeTrans.description && themeTrans.description !== descText) {
                 d.textContent = themeTrans.description;
             } else if (isUnknownish(descText)) {
                 d.style.display = 'none';
             } else {
                 d.textContent = descText;
+                if (!isEnLocale && window.Y1ThemesI18n && window.Y1ThemesI18n.showBadge) {
+                    window.Y1ThemesI18n.showBadge(d);
+                }
             }
 
             const metricsHost = document.createElement('div');
