@@ -41,7 +41,7 @@ CANONICAL_SCRIPT = """<link rel="canonical" id="theme-canonical" href="{href}">
         if (!theme || /[\\\\/]/.test(theme) || theme.indexOf("..") !== -1) return;
         if (variant && (/[\\\\/]/.test(variant) || variant.indexOf("..") !== -1)) variant = "";
         var file = (location.pathname.split("/").pop() || "theme.html");
-        var localeMatch = file.match(/^theme_([A-Za-z0-9-]+)\\.html$/);
+        var localeMatch = file.match(/^theme_(de|es|fr|ja|jp)\\.html$/);
         var href = "https://themes.innioasis.app/" + encodeURIComponent(theme) + "/";
         if (variant) href += "Variants/" + encodeURIComponent(variant) + "/_share/";
         else if (localeMatch) href += "index_" + localeMatch[1] + ".html";
