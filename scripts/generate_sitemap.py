@@ -29,6 +29,7 @@ import datetime as dt
 import json
 import pathlib
 import re
+import subprocess
 import sys
 from urllib.parse import quote
 
@@ -116,16 +117,59 @@ def _lastmod(known: dict[str, str], loc: str, *, bumped: bool) -> str:
     return prev
 
 
+def _tracked_root_html() -> list[str]:
+    """Root HTML paths from git, so ``page_pt-BR.html`` and ``page_pt-br.html`` both count.
+
+    A glob on a case-insensitive disk returns only one of that pair, and the
+    sitemap then omits a URL the site actually serves.
+    """
+    raw = subprocess.check_output(["git", "ls-files", "-z"], cwd=REPO_ROOT)
+    names = [
+        path for path in raw.decode("utf-8", "surrogateescape").split("\0")
+        if path.endswith(".html") and "/" not in path
+    ]
+    return sorted(names, key=str.casefold)
+
+
+def _blob_prefixes(names: list[str], limit: int = 6000) -> dict[str, str]:
+    if not names:
+        return {}
+    proc = subprocess.Popen(
+        ["git", "cat-file", "--batch"],
+        cwd=REPO_ROOT,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+    )
+    assert proc.stdin is not None and proc.stdout is not None
+    found: dict[str, str] = {}
+    for name in names:
+        proc.stdin.write(f"HEAD:{name}\n".encode())
+        proc.stdin.flush()
+        header = proc.stdout.readline()
+        if b" missing" in header:
+            found[name] = ""
+            continue
+        size = int(header.split()[-1])
+        data = proc.stdout.read(size)
+        proc.stdout.read(1)
+        found[name] = data[:limit].decode("utf-8", "ignore")
+    proc.stdin.close()
+    proc.wait()
+    return found
+
+
 def _static_entries(known: dict[str, str]) -> tuple[list[tuple[str, str, str, str]], list[tuple[str, str, str, str]]]:
     main: list[tuple[str, str, str, str]] = []
     localized: list[tuple[str, str, str, str]] = []
-    for path in sorted(REPO_ROOT.glob("*.html"), key=lambda item: item.name):
-        name = path.name
+    names = _tracked_root_html()
+    prefixes = _blob_prefixes(names)
+    for name in names:
         if name in SKIP_FILES or name.startswith("404") or "(" in name or name.startswith("."):
             continue
         if name.startswith("theme_") or name.startswith("theme."):
             continue
-        if _noindex(path):
+        text = prefixes.get(name, "")
+        if NOINDEX_RE.search(text) or REFRESH_RE.search(text):
             continue
         loc = f"{SITE}/" if name == "index.html" else f"{SITE}/{name}"
         priority = "1.0" if name == "index.html" else ("0.9" if name.startswith("index") else "0.7")
