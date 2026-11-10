@@ -4992,7 +4992,13 @@
                 });
             }
 
-            let cardsAdded = 0;
+            /* Building every card in one task keeps the main thread busy
+               before the first paint, which is why the header and footer
+               chrome can take seconds to appear on older hardware. The first
+               screenful renders straight away; the rest arrives in idle
+               slices, and every slice re-applies the active filters so a
+               search started mid-render still ends on the right results. */
+            const pendingCards = [];
             filteredThemes.forEach(t => {
                 const merged = {
                     ...t,
@@ -5000,38 +5006,80 @@
                     hasIndexPage: t.sourceType === 'external' ? false : t.hasIndexPage !== false
                 };
                 if (merged.sourceType !== 'external' && merged.hasConfigFile === false) return;
-                try {
-                    const isPriority = cardsAdded < 12;
-                    grid.appendChild(createCard(merged, isPriority));
-                    cardsAdded += 1;
-                } catch (cardErr) {
-                    console.error('Failed to render theme card', merged.folder || merged.name, cardErr);
-                }
+                pendingCards.push(merged);
             });
-            if (!cardsAdded) {
+            if (!pendingCards.length) {
                 grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#94a3b8">Unable to display themes. Try refreshing the page.</p>';
                 return;
             }
+
+            let cardsAdded = 0;
+            let cardCursor = 0;
+            let cardSliceHandle = 0;
+            const FIRST_CARD_SLICE = 24;
+            const CARD_SLICE = 24;
+
+            function renderCardSlice(count) {
+                const end = Math.min(cardCursor + count, pendingCards.length);
+                for (; cardCursor < end; cardCursor += 1) {
+                    const merged = pendingCards[cardCursor];
+                    try {
+                        grid.appendChild(createCard(merged, cardCursor < 12));
+                        cardsAdded += 1;
+                    } catch (cardErr) {
+                        console.error('Failed to render theme card', merged.folder || merged.name, cardErr);
+                    }
+                }
+                return cardCursor >= pendingCards.length;
+            }
+
+            function finishCardRender() {
+                /* The curated theme text is fetched after the cards exist, so
+                   apply it here as well as on the locale-change event. */
+                if (window.Y1ThemesI18n && typeof window.Y1ThemesI18n.load === 'function') {
+                    window.Y1ThemesI18n.load().then(() => window.Y1ThemesI18n.applyToCards());
+                }
+                applyFilters();
+                if (authorFilter && String(authorFilter.value || 'all') !== 'all') {
+                    syncAuthorFilterUi(authorFilter.value);
+                }
+
+                void (async () => {
+                    if (!window.ThemeAnalytics) return;
+                    const entries = [...grid.querySelectorAll('.theme-card')].map((card) => {
+                        const folder = card.getAttribute('data-catalog-folder');
+                        const el = card.querySelector('.y1-theme-metrics');
+                        return folder && el ? { themeKey: folder, el } : null;
+                    }).filter(Boolean);
+                    if (entries.length) {
+                        await window.ThemeAnalytics.mountMetricsBatch(entries);
+                        window.ThemeAnalytics.syncAllCardStats();
+                        applyFilters();
+                    }
+                })();
+
+                handleHashAutoDownload();
+            }
+
+            function scheduleCardSlice() {
+                const run = () => {
+                    cardSliceHandle = 0;
+                    const done = renderCardSlice(CARD_SLICE);
+                    applyFilters();
+                    if (done) finishCardRender();
+                    else scheduleCardSlice();
+                };
+                cardSliceHandle = (typeof window.requestIdleCallback === 'function')
+                    ? window.requestIdleCallback(run, { timeout: 250 })
+                    : window.setTimeout(run, 16);
+            }
+
+            renderCardSlice(FIRST_CARD_SLICE);
             applyFilters();
             if (authorFilter && String(authorFilter.value || 'all') !== 'all') {
                 syncAuthorFilterUi(authorFilter.value);
             }
-
-            void (async () => {
-                if (!window.ThemeAnalytics) return;
-                const entries = [...grid.querySelectorAll('.theme-card')].map((card) => {
-                    const folder = card.getAttribute('data-catalog-folder');
-                    const el = card.querySelector('.y1-theme-metrics');
-                    return folder && el ? { themeKey: folder, el } : null;
-                }).filter(Boolean);
-                if (entries.length) {
-                    await window.ThemeAnalytics.mountMetricsBatch(entries);
-                    window.ThemeAnalytics.syncAllCardStats();
-                    applyFilters();
-                }
-            })();
-
-            handleHashAutoDownload();
+            scheduleCardSlice();
             } catch (err) {
                 console.error('Gallery load failed', err);
                 clearThemeGridLoadingState(grid);
