@@ -910,7 +910,7 @@
                     <option value="author_asc">लेखक (ए-जेड)</option>
                     <option value="views_desc">सर्वाधिक बार देखा गया</option>
                     <option value="views_asc">सबसे कम दृश्य</option>
-                    <option value="downloads_desc">सर्वाधिक डाउनलोड</option>
+                    <option value="downloads_desc" selected>सर्वाधिक डाउनलोड</option>
                     <option value="downloads_asc">सबसे कम डाउनलोड</option>
                     <option value="rating_desc">उच्चतम रेटिंग</option>
                     <option value="rating_asc">सबसे कम रेटिंग</option>
@@ -1577,8 +1577,8 @@
                 const sourceV = sourceFilter ? String(sourceFilter.value || 'all') : 'all';
                 if (sourceV !== 'all') params.set('source', sourceV);
                 else params.delete('source');
-                const sortV = sortFilter ? String(sortFilter.value || 'name_asc') : 'name_asc';
-                if (sortV !== 'name_asc') params.set('sort', sortV);
+                const sortV = sortFilter ? String(sortFilter.value || 'downloads_desc') : 'downloads_desc';
+                if (sortV !== 'downloads_desc') params.set('sort', sortV);
                 else params.delete('sort');
                 const authorV = authorFilter ? String(authorFilter.value || 'all') : 'all';
                 if (authorV !== 'all') params.set('author', authorV);
@@ -1739,7 +1739,7 @@
             const onlyOn = onlyOnDeviceCheckbox && onlyOnDeviceCheckbox.checked;
             const sourceV = sourceFilter ? String(sourceFilter.value || 'all') : 'all';
             const authorV = authorFilter ? String(authorFilter.value || 'all') : 'all';
-            const sortV = sortFilter ? String(sortFilter.value || 'name_asc') : 'name_asc';
+            const sortV = sortFilter ? String(sortFilter.value || 'downloads_desc') : 'downloads_desc';
             const pageSize = Number(pageSizeSelect && pageSizeSelect.value || '24') || 24;
             const cards = document.querySelectorAll('.theme-card');
             const matched = [];
