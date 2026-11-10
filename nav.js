@@ -535,7 +535,7 @@
 
   var persona = detectPersona();
   var isFirmwarePersona = persona === "firmware";
-  var activeTitle = isThemesSite ? "Themes Gallery" : (isFirmwarePersona ? "Downloads" : "Updater CE");
+  var activeTitle = isThemesSite ? "Themes Gallery" : (isFirmwarePersona ? "Firmware archive" : "Updater CE");
   var activeHomeHref = isFirmwarePersona ? "/firmware.html" : "/";
 
   (function updateDocumentTitle() {
@@ -566,7 +566,7 @@
   var allSwitcherItems = [
     {
       id: "firmware",
-      title: "Downloads",
+      title: "Firmware archive",
       subtitle: "Software and updates for your player",
       href: "/firmware.html",
       icon: '<span class="lumen-app-icon lumen-app-icon--firmware" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/></svg></span>'
