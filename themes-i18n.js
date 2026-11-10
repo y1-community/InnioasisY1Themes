@@ -21,14 +21,20 @@
     var CACHE_PREFIX = "y1-theme-i18n-v2-";
     var memoryCache = {};
     var batchQueue = [];
-    var batchInFlight = false;
+    var batchInFlight = 0;
     var batchTimer = null;
     var cardObserver = null;
     var remoteObserved = typeof WeakSet === "function" ? new WeakSet() : null;
     /* One GET carries many short strings. Stay under typical URL limits and
        keep a single request in flight so the gallery stays responsive. */
-    var BATCH_MAX = 24;
+    var BATCH_MAX = 40;
     var BATCH_URL = 6000;
+    var BATCH_CONCURRENCY = (function () {
+        var cores = (navigator.hardwareConcurrency || 8);
+        var mobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || "");
+        try { if (navigator.userAgentData && navigator.userAgentData.mobile) mobile = true; } catch (_) {}
+        return (mobile || cores <= 4) ? 1 : 2;
+    })();
 
     var BADGE_HTML = '<svg class="site-i18n-globe" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.7 5.7 3.7 9s-1.2 6.4-3.7 9c-2.5-2.6-3.7-5.7-3.7-9S9.5 5.6 12 3z"/></svg><span class="site-i18n-spinner" aria-hidden="true"></span>';
 
@@ -52,10 +58,17 @@
         (document.head || document.documentElement).appendChild(style);
     }
 
-    function showBadge() {
-        /* A spinner on every card forces layout for the whole catalogue.
-           English (or the cached translation) shows immediately; the toolbar
-           is the only translating indicator. */
+    function showBadge(el) {
+        /* A spinner on every card name forces a layout pass per string.
+           The footer language control already shows that a batch is running. */
+        return;
+        if (!el || (el.querySelector && el.querySelector(".site-i18n-badge"))) return;
+        ensureBadgeStyles();
+        var badge = document.createElement("span");
+        badge.className = "site-i18n-badge";
+        badge.setAttribute("aria-hidden", "true");
+        badge.innerHTML = '<span class="site-i18n-spinner" aria-hidden="true"></span>';
+        el.appendChild(badge);
     }
 
     function hideBadge(el) {
@@ -343,20 +356,19 @@
     }
 
     function scheduleThemeDrain() {
-        if (batchInFlight || batchTimer || !batchQueue.length) return;
-        var run = function () {
+        if (batchTimer || !batchQueue.length) return;
+        batchTimer = setTimeout(function () {
             batchTimer = null;
-            drainBatchQueue();
-        };
-        if (typeof global.requestIdleCallback === "function") {
-            batchTimer = global.requestIdleCallback(run, { timeout: 180 });
-        } else {
-            batchTimer = setTimeout(run, 32);
-        }
+            var guard = 0;
+            while (batchInFlight < BATCH_CONCURRENCY && batchQueue.length && guard < BATCH_CONCURRENCY) {
+                drainBatchQueue();
+                guard += 1;
+            }
+        }, 160);
     }
 
     function drainBatchQueue() {
-        if (batchInFlight || !batchQueue.length) return;
+        if (batchInFlight >= BATCH_CONCURRENCY || !batchQueue.length) return;
         var lang = baseLang(getActiveLocale());
         if (lang === "en") {
             batchQueue = [];
@@ -369,7 +381,7 @@
             if (batchQueue.length) scheduleThemeDrain();
             return;
         }
-        batchInFlight = true;
+        batchInFlight += 1;
 
         requestRemoteBatch(taken.texts, lang).then(function (results) {
             applyThemeBatch(taken.itemMap, results, lang);
@@ -382,7 +394,7 @@
             if (error && error.align) requeueThemeHalves(taken.itemMap);
             else finishThemeCards(taken.batch);
         }).then(function () {
-            batchInFlight = false;
+            batchInFlight -= 1;
             if (batchQueue.length) scheduleThemeDrain();
         });
     }
@@ -427,6 +439,8 @@
         }
         var alreadyQueued = batchQueue.some(function (queued) { return queued.card === job.card; });
         if (alreadyQueued) return;
+        if (job.needName && job.nameEl) showBadge(job.nameEl);
+        if (job.needDesc && job.descEl) showBadge(job.descEl);
         batchQueue.push(job);
         scheduleThemeDrain();
     }

@@ -76,5 +76,5 @@ body.site-themes-app.site-dock-mode section {
 }
 
 body.site-themes-app #nav-root {
-    display: none;
+    display: block;
 }

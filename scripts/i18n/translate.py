@@ -562,6 +562,10 @@ def page_strings() -> List[str]:
     try:
         with open(manifest_path, "r", encoding="utf-8") as handle:
             names = json.load(handle).get("pages", [])
+        # The manifest ships a page count once the build has pruned the
+        # list; walk the catalogue instead of iterating an int.
+        if not isinstance(names, list):
+            names = []
         with open(source_path, "r", encoding="utf-8") as handle:
             known = json.load(handle).get("strings", {})
     except (OSError, ValueError):

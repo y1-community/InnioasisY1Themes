@@ -470,78 +470,134 @@
         document.documentElement.style.setProperty("--gallery-sticky-offset", "0px");
     }
 
-    /* Upload and Rockbox stay on either side of the page numbers. The
-       magnifying glass turns those numbers into the existing search field. */
+    /* Upload sits left of the page numbers. Rockbox and the one large search
+       button sit on the right. The same large button opens the field and,
+       while it is open, becomes the X that clears it. */
     function placeGalleryActionRow() {
         var hero = document.querySelector(".gallery-home-hero");
-        var pager = document.getElementById("theme-pager-top");
+        var topPager = document.getElementById("theme-pager-top");
+        var bottomPager = document.getElementById("theme-pager-bottom");
         var controls = document.querySelector(".gallery-controls");
-        if (!hero || !pager || !controls || document.querySelector(".gallery-action-row")) return;
+        if (!hero || !topPager || !controls || document.querySelector(".gallery-action-row")) return;
 
         var upload = hero.querySelector(".hero-actions > a.btn:not(#rockbox-btn)");
         var rockbox = document.getElementById("rockbox-btn");
         var search = document.getElementById("theme-search");
-
-        var row = document.createElement("div");
-        row.className = "gallery-action-row";
-
-        var cluster = document.createElement("div");
-        cluster.className = "gallery-pager-cluster";
-
-        var searchWrap = document.createElement("div");
-        searchWrap.className = "gallery-pager-search";
-        searchWrap.hidden = true;
-        if (search) {
-            search.classList.add("gallery-pager-search-input");
-            search.setAttribute("placeholder", "Search themes");
-            searchWrap.appendChild(search);
-        }
-
-        var toggle = document.createElement("button");
-        toggle.type = "button";
-        toggle.className = "gallery-search-toggle";
-        toggle.setAttribute("aria-label", "Search themes");
-        toggle.innerHTML = '<i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>';
-
+        var rows = [];
         var searching = false;
-        function glyph(name) {
-            toggle.innerHTML = '<i class="fa-solid fa-' + name + '" aria-hidden="true"></i>';
+
+        function glyph(button, name) {
+            button.innerHTML = '<i class="fa-solid fa-' + name + '" aria-hidden="true"></i>';
         }
-        function setSearching(on) {
-            searching = on;
-            searchWrap.hidden = !on;
-            row.classList.toggle("is-searching", on);
-            if (on) {
-                pager.dataset.pagerWasHidden = pager.hidden ? "1" : "0";
-                pager.hidden = true;
-                toggle.setAttribute("aria-label", "Close search");
-                glyph("xmark");
-                if (search) search.focus();
-            } else {
-                if (search) {
-                    search.value = "";
-                    search.dispatchEvent(new Event("input", { bubbles: true }));
-                }
-                pager.hidden = pager.dataset.pagerWasHidden === "1" || !pager.querySelector("button");
-                toggle.setAttribute("aria-label", "Search themes");
-                glyph("magnifying-glass");
+
+        function mirrorInput(real) {
+            var input = document.createElement("input");
+            input.type = "search";
+            input.className = "gallery-pager-search-input";
+            input.setAttribute("placeholder", "Search themes");
+            input.setAttribute("aria-label", "Search themes");
+            input.autocomplete = "off";
+            input.addEventListener("input", function () {
+                if (!real || real.value === input.value) return;
+                real.value = input.value;
+                real.dispatchEvent(new Event("input", { bubbles: true }));
+            });
+            if (real) {
+                real.addEventListener("input", function () {
+                    if (input.value !== real.value) input.value = real.value;
+                });
             }
-        }
-        toggle.addEventListener("click", function () { setSearching(!searching); });
-
-        if (typeof MutationObserver === "function") {
-            new MutationObserver(function () {
-                if (searching && !pager.hidden) pager.hidden = true;
-            }).observe(pager, { attributes: true, attributeFilter: ["hidden"] });
+            return input;
         }
 
-        cluster.appendChild(pager);
-        cluster.appendChild(searchWrap);
-        cluster.appendChild(toggle);
-        if (upload) row.appendChild(upload);
-        row.appendChild(cluster);
-        if (rockbox) row.appendChild(rockbox);
-        controls.insertAdjacentElement("afterend", row);
+        function buildRow(pager, kind) {
+            var parent = pager.parentNode;
+            var next = pager.nextSibling;
+            var row = document.createElement("div");
+            row.className = "gallery-action-row gallery-action-row--" + kind;
+
+            var cluster = document.createElement("div");
+            cluster.className = "gallery-pager-cluster";
+
+            var searchWrap = document.createElement("div");
+            searchWrap.className = "gallery-pager-search";
+            searchWrap.hidden = true;
+            var field = kind === "top" && search ? search : mirrorInput(search);
+            if (kind === "top" && search) {
+                search.classList.add("gallery-pager-search-input");
+                search.setAttribute("placeholder", "Search themes");
+            }
+            searchWrap.appendChild(field);
+
+            var toggle = document.createElement("button");
+            toggle.type = "button";
+            toggle.className = "gallery-search-toggle";
+            toggle.setAttribute("aria-label", "Search themes");
+            glyph(toggle, "magnifying-glass");
+
+            var side = document.createElement("span");
+            side.className = "gallery-row-side";
+            if (kind === "top" && rockbox) side.appendChild(rockbox);
+            else if (rockbox) {
+                var copy = rockbox.cloneNode(true);
+                copy.removeAttribute("id");
+                copy.classList.add("gallery-rockbox");
+                side.appendChild(copy);
+            }
+            side.appendChild(toggle);
+
+            cluster.appendChild(pager);
+            cluster.appendChild(searchWrap);
+            if (kind === "top" && upload) row.appendChild(upload);
+            else if (upload) row.appendChild(upload.cloneNode(true));
+            row.appendChild(cluster);
+            row.appendChild(side);
+
+            function stripInnerSearch() {
+                pager.querySelectorAll(".pager-search-box, .pager-search-toggle, .pager-search-close").forEach(function (node) {
+                    node.remove();
+                });
+                pager.classList.remove("is-searching");
+            }
+            stripInnerSearch();
+            if (typeof MutationObserver === "function") {
+                new MutationObserver(function () {
+                    stripInnerSearch();
+                    if (searching && !pager.hidden) pager.hidden = true;
+                }).observe(pager, { childList: true, attributes: true, attributeFilter: ["hidden"] });
+            }
+
+            rows.push({ row: row, pager: pager, wrap: searchWrap, toggle: toggle, field: field });
+            toggle.addEventListener("click", function () { setSearching(!searching, field); });
+            if (parent) parent.insertBefore(row, next);
+            return row;
+        }
+
+        function setSearching(on, focusField) {
+            searching = on;
+            rows.forEach(function (entry) {
+                entry.wrap.hidden = !on;
+                entry.row.classList.toggle("is-searching", on);
+                if (on) {
+                    entry.pager.dataset.pagerWasHidden = entry.pager.hidden ? "1" : "0";
+                    entry.pager.hidden = true;
+                    entry.toggle.setAttribute("aria-label", "Close search");
+                    glyph(entry.toggle, "xmark");
+                } else {
+                    entry.pager.hidden = entry.pager.dataset.pagerWasHidden === "1" || !entry.pager.querySelector("button");
+                    entry.toggle.setAttribute("aria-label", "Search themes");
+                    glyph(entry.toggle, "magnifying-glass");
+                }
+            });
+            if (!on && search) {
+                search.value = "";
+                search.dispatchEvent(new Event("input", { bubbles: true }));
+            }
+            if (on && focusField) focusField.focus();
+        }
+
+        buildRow(topPager, "top");
+        if (bottomPager) buildRow(bottomPager, "bottom");
 
         var actions = hero.querySelector(".hero-actions");
         if (actions && !actions.querySelector("a, button")) actions.remove();

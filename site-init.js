@@ -192,6 +192,24 @@
         } catch (_) {}
     })();
 
+    (function rememberDock() {
+        try {
+            var search = (global.location && global.location.search) || "";
+            var raw = String(new URLSearchParams(search).get("dock") || new URLSearchParams(search).get("footer") || "").trim().toLowerCase();
+            var closed = null;
+            if (raw === "closed" || raw === "0" || raw === "off" || raw === "hidden") closed = true;
+            else if (raw === "open" || raw === "1" || raw === "on") closed = false;
+            else {
+                var stored = getSharedCookie("innioasis-dock");
+                if (stored === "closed") closed = true;
+                else if (stored === "open") closed = false;
+            }
+            if (closed === null) return;
+            try { global.sessionStorage.setItem("y1-dock-dismissed", closed ? "1" : "0"); } catch (_) {}
+            setSharedCookie("innioasis-dock", closed ? "closed" : "open", 365);
+        } catch (_) {}
+    })();
+
     applyAccessibility();
 
     /* Accessibility font size adjustment with URL variables & cross-site persistence */
@@ -598,9 +616,24 @@
         return Boolean(accentRead(ACCENT_CE_KEY, ACCENT_CE_COOKIE));
     }
 
+    function ensureAccentDecorStyles() {
+        if (!document || document.getElementById("innioasis-accent-decor-styles")) return;
+        var style = document.createElement("style");
+        style.id = "innioasis-accent-decor-styles";
+        style.textContent = [
+            "a.btn,button.btn,.lumen-button--primary,.btn-primary,.gallery-action-row>.btn{",
+            "color:var(--lumen-on-accent,#fff)!important;}",
+            "h1,.site-display,.lumen-brand-title,.lumen-site-switcher-item-copy strong{color:var(--lumen-accent,#2563eb);}",
+            "h2,h3,h4{color:var(--lumen-text,CanvasText);}",
+            ".y1-dock-icon,.y1-dock-reopen-icon{color:var(--lumen-accent,#2563eb)!important;}"
+        ].join("");
+        (document.head || document.documentElement).appendChild(style);
+    }
+
     function applyAccent(value, persist) {
         var root = document.documentElement;
         var hex = value ? normalizeAccent(value) : null;
+        ensureAccentDecorStyles();
         if (root) {
             if (hex) {
                 root.style.setProperty("--lumen-accent", hex);
@@ -1010,6 +1043,8 @@
                 "fs",
                 "lumen-font-scale",
                 "lang",
+                "dock",
+                "footer",
                 "utm_source",
                 "utm_medium",
                 "utm_campaign",

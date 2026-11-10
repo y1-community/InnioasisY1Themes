@@ -40,6 +40,40 @@
         { id: '5', title: 'Remember the time', artist: 'Michael Jackson', album: 'Dangerous', duration: 238 }
     ];
 
+    var PREVIEW_MENU = {
+        de: { "Now Playing": "Wiedergabe", "Music": "Musik", "Videos": "Videos", "Audiobook": "Hörbuch", "FM Radio": "UKW-Radio", "E-Book": "E-Book", "Photos": "Fotos", "File manager": "Dateimanager", "Settings": "Einstellungen", "Bluetooth": "Bluetooth", "Calculator": "Rechner", "Calendar": "Kalender", "Home": "Start", "Folders": "Ordner" },
+        es: { "Now Playing": "Reproduciendo", "Music": "Música", "Videos": "Vídeos", "Audiobook": "Audiolibro", "FM Radio": "Radio FM", "E-Book": "E-Book", "Photos": "Fotos", "File manager": "Archivos", "Settings": "Ajustes", "Bluetooth": "Bluetooth", "Calculator": "Calculadora", "Calendar": "Calendario", "Home": "Inicio", "Folders": "Carpetas" },
+        fr: { "Now Playing": "Lecture", "Music": "Musique", "Videos": "Vidéos", "Audiobook": "Livre audio", "FM Radio": "Radio FM", "E-Book": "E-Book", "Photos": "Photos", "File manager": "Fichiers", "Settings": "Réglages", "Bluetooth": "Bluetooth", "Calculator": "Calculatrice", "Calendar": "Calendrier", "Home": "Accueil", "Folders": "Dossiers" },
+        it: { "Now Playing": "In riproduzione", "Music": "Musica", "Videos": "Video", "Audiobook": "Audiolibro", "FM Radio": "Radio FM", "E-Book": "E-Book", "Photos": "Foto", "File manager": "File", "Settings": "Impostazioni", "Bluetooth": "Bluetooth", "Calculator": "Calcolatrice", "Calendar": "Calendario", "Home": "Home", "Folders": "Cartelle" },
+        pt: { "Now Playing": "A reproduzir", "Music": "Música", "Videos": "Vídeos", "Audiobook": "Audiolivro", "FM Radio": "Rádio FM", "E-Book": "E-Book", "Photos": "Fotos", "File manager": "Ficheiros", "Settings": "Definições", "Bluetooth": "Bluetooth", "Calculator": "Calculadora", "Calendar": "Calendário", "Home": "Início", "Folders": "Pastas" },
+        nl: { "Now Playing": "Wordt afgespeeld", "Music": "Muziek", "Videos": "Video's", "Audiobook": "Luisterboek", "FM Radio": "FM-radio", "E-Book": "E-book", "Photos": "Foto's", "File manager": "Bestanden", "Settings": "Instellingen", "Bluetooth": "Bluetooth", "Calculator": "Rekenmachine", "Calendar": "Agenda", "Home": "Start", "Folders": "Mappen" },
+        pl: { "Now Playing": "Teraz odtwarzane", "Music": "Muzyka", "Videos": "Wideo", "Audiobook": "Audiobook", "FM Radio": "Radio FM", "E-Book": "E-book", "Photos": "Zdjęcia", "File manager": "Pliki", "Settings": "Ustawienia", "Bluetooth": "Bluetooth", "Calculator": "Kalkulator", "Calendar": "Kalendarz", "Home": "Start", "Folders": "Foldery" },
+        ru: { "Now Playing": "Сейчас играет", "Music": "Музыка", "Videos": "Видео", "Audiobook": "Аудиокнига", "FM Radio": "FM-радио", "E-Book": "Эл. книга", "Photos": "Фото", "File manager": "Файлы", "Settings": "Настройки", "Bluetooth": "Bluetooth", "Calculator": "Калькулятор", "Calendar": "Календарь", "Home": "Главная", "Folders": "Папки" },
+        ja: { "Now Playing": "再生中", "Music": "ミュージック", "Videos": "ビデオ", "Audiobook": "オーディオブック", "FM Radio": "FMラジオ", "E-Book": "電子書籍", "Photos": "写真", "File manager": "ファイル", "Settings": "設定", "Bluetooth": "Bluetooth", "Calculator": "電卓", "Calendar": "カレンダー", "Home": "ホーム", "Folders": "フォルダ" },
+        ko: { "Now Playing": "재생 중", "Music": "음악", "Videos": "동영상", "Audiobook": "오디오북", "FM Radio": "FM 라디오", "E-Book": "전자책", "Photos": "사진", "File manager": "파일", "Settings": "설정", "Bluetooth": "Bluetooth", "Calculator": "계산기", "Calendar": "캘린더", "Home": "홈", "Folders": "폴더" },
+        "zh-cn": { "Now Playing": "正在播放", "Music": "音乐", "Videos": "视频", "Audiobook": "有声书", "FM Radio": "FM 收音机", "E-Book": "电子书", "Photos": "照片", "File manager": "文件", "Settings": "设置", "Bluetooth": "蓝牙", "Calculator": "计算器", "Calendar": "日历", "Home": "主页", "Folders": "文件夹" },
+        "zh-tw": { "Now Playing": "正在播放", "Music": "音樂", "Videos": "影片", "Audiobook": "有聲書", "FM Radio": "FM 收音機", "E-Book": "電子書", "Photos": "相片", "File manager": "檔案", "Settings": "設定", "Bluetooth": "藍牙", "Calculator": "計算機", "Calendar": "日曆", "Home": "主頁", "Folders": "資料夾" }
+    };
+
+    function previewLocale() {
+        try {
+            if (global.InnioasisLocale && global.InnioasisLocale.locale) return String(global.InnioasisLocale.locale).toLowerCase();
+            var node = document.documentElement;
+            var fromDoc = node && (node.getAttribute("data-locale") || node.lang);
+            if (fromDoc) return String(fromDoc).toLowerCase();
+        } catch (e) {}
+        return "en";
+    }
+
+    function previewText(english) {
+        var loc = previewLocale();
+        var table = PREVIEW_MENU[loc] || PREVIEW_MENU[loc.split("-")[0]];
+        if (loc.indexOf("zh") === 0 && !PREVIEW_MENU[loc]) {
+            table = /tw|hk|hant/.test(loc) ? PREVIEW_MENU["zh-tw"] : PREVIEW_MENU["zh-cn"];
+        }
+        return (table && table[english]) || english;
+    }
+
     var VIEW_TITLES = {
         home: 'Home',
         music: 'Music',
@@ -217,7 +251,7 @@
                 var file = homePageIconFromCfg(homeCfg, key);
                 return {
                     id: key,
-                    label: labelMap[key] || key,
+                    label: previewText(labelMap[key] || key),
                     iconFile: typeof file === 'string' ? file : undefined
                 };
             });
@@ -726,7 +760,7 @@
                 url.replace(/"/g, '%22') +
                 '") format("' +
                 format +
-                '");font-weight:400;font-style:normal;font-display:' +
+                '");font-weight:100 900;font-style:normal;font-display:' +
                 display +
                 ';}';
         }
@@ -1429,7 +1463,7 @@
                 else updateScale();
 
                 function getViewTitle() {
-                    return VIEW_TITLES[sim.themeViewId] || 'Home';
+                    return previewText(VIEW_TITLES[sim.themeViewId] || 'Home');
                 }
 
                 function paint() {

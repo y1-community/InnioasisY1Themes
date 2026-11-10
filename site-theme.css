@@ -1835,13 +1835,41 @@ html, body {
 .gallery-action-row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: nowrap;
+    gap: 0.65rem;
     width: 100%;
     min-width: 0;
     margin: 0.75rem 0 0;
     grid-column: 1 / -1;
+    grid-row: auto;
+    position: relative;
+    z-index: 2;
+}
+
+.gallery-action-row--top {
     grid-row: 3;
+    scroll-margin-top: 5.5rem;
+}
+
+.gallery-row-side {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 0 0 auto;
+}
+
+/* Once the buttons live in this row, the wrap grid must not pull them
+   back out to the page edges. */
+body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-action-row > .btn,
+body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-action-row #rockbox-btn,
+body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-action-row #theme-pager-top {
+    position: static;
+    grid-column: auto;
+    grid-row: auto;
+    width: auto;
+    margin: 0;
+    justify-self: auto;
 }
 
 .gallery-pager-cluster {
@@ -1850,7 +1878,7 @@ html, body {
     justify-content: center;
     gap: 0.4rem;
     min-width: 0;
-    flex: 1 1 auto;
+    flex: 0 1 auto;
 }
 
 .gallery-pager-cluster .pager {
@@ -1909,6 +1937,11 @@ html, body {
 }
 
 @media (max-width: 719px) {
+    .gallery-action-row #rockbox-btn,
+    .gallery-action-row .gallery-rockbox {
+        display: none !important;
+    }
+
     .gallery-action-row > .btn,
     .gallery-search-toggle {
         width: 46px !important;
@@ -1940,11 +1973,18 @@ html, body {
     }
 }
 
-/* —— Pager search: magnifier beside the pages, × where the magnifier was. —— */
+/* The page numbers end at previous and next. Search is the large circle
+   beside the pager, not a second glyph inside it. */
+#theme-pager-top .pager-search-toggle,
+#theme-pager-top .pager-search-box,
+#theme-pager-top .pager-search-close {
+    display: none !important;
+}
+
 #theme-pager-top { align-items: center; }
 
 #theme-pager-top .pager-search-toggle {
-    display: inline-flex;
+    display: none !important;
     align-items: center;
     justify-content: center;
     flex: 0 0 auto;

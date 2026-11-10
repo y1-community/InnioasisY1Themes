@@ -1279,6 +1279,7 @@
       .map(function (notice) { return notice.id; });
     if (!noticeCard) mountNoticeCard();
     renderNoticeCard(fresh);
+    applyNoticeTrayFilter();
     return { eligible: eligible, fresh: fresh };
   }
 
@@ -1298,6 +1299,48 @@
       else renderNoticeCard([]);
     }
   };
+
+  /* ---- The bell follows the reader -----------------------------------------
+     A compatibility notice earns a place in the tray only while the reader's
+     own selection is covered by it: the model, hardware type, project or
+     release it names. Without that, every visitor carries every warning about
+     every release. Untargeted announcements are for everyone and always
+     appear; the Notices page keeps the complete record either way. */
+  var noticeTrayAll = [];
+
+  function noticeTrayVisible(notice) {
+    return !noticeHasTargeting(notice) || noticeMatches(notice, noticeContext);
+  }
+
+  function applyNoticeTrayFilter() {
+    if (!noticesBody || !noticeTrayAll || !noticeTrayAll.length) return;
+    var onNoticesPage = /\/notices(\.html)?\/?$/.test(window.location.pathname);
+    var seenIds = (localStorage.getItem("y1_seen_notices") || "").split(",").filter(Boolean);
+    var visible = 0;
+    var unread = 0;
+    Array.prototype.forEach.call(noticesBody.querySelectorAll("[data-notice-id]"), function (node) {
+      var id = node.getAttribute("data-notice-id");
+      var notice = noticeTrayAll.filter(function (n) { return n.id === id; })[0];
+      var show = onNoticesPage || !notice || noticeTrayVisible(notice);
+      node.hidden = !show;
+      if (!show) return;
+      visible++;
+      if (id && seenIds.indexOf(id) === -1) unread++;
+    });
+    var empty = noticesBody.querySelector("[data-notice-empty]");
+    if (empty) empty.hidden = visible > 0;
+    noticesBody.setAttribute("data-visible-count", String(visible));
+    if (!noticesBadge) return;
+    if (unread > 0) {
+      noticesBadge.textContent = String(unread);
+      noticesBadge.hidden = false;
+      noticesBadge.style.display = "flex";
+    } else {
+      noticesBadge.textContent = "";
+      noticesBadge.hidden = true;
+      noticesBadge.style.display = "none";
+    }
+  }
 
   var noticesLoaded = false;
   function loadCommunityNotices() {
@@ -1347,12 +1390,9 @@
             }
             var typeTag = (item.type || "INFO").toUpperCase();
             /* The tray is the unfiltered view: every current notice is listed
-               whatever its targeting, with its targets named so a reader can
-               tell who it was written for. */
+               whatever its targeting; the card no longer lists the models or
+               firmware it was written for. */
             var targetLabel = noticeTargetLabel(item);
-            var modelsBadge = targetLabel
-              ? '<span class="lumen-notice-models">' + escapeHtml(targetLabel) + '</span>'
-              : '';
             /* The tray opens the notice itself. A notice that only points at
                the bare site has no page of its own to send anyone to. */
             var detailHref = item.id ? noticeDetailHref(item.id) : "";
@@ -1368,10 +1408,9 @@
                 '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18"></path><path d="M12 3c2.5 2.4 3.9 5.5 3.9 9S14.5 18.6 12 21c-2.5-2.4-3.9-5.5-3.9-9S9.5 5.4 12 3Z"></path></svg></a>'
               : "";
             return (
-              '<article class="lumen-notice-card lumen-notice-card--' + escapeHtml(item.type) + '">' +
+              '<article class="lumen-notice-card lumen-notice-card--' + escapeHtml(item.type) + '" data-notice-id="' + escapeHtml(item.id || "") + '">' +
               '<div class="lumen-notice-meta">' +
               '<span class="lumen-notice-type">' + escapeHtml(typeTag) + '</span>' +
-              modelsBadge +
               (item.date ? '<time class="lumen-notice-date">' + escapeHtml(item.date) + '</time>' : '') +
               '</div>' +
               '<h4 class="lumen-notice-title">' + escapeHtml(item.title) + '</h4>' +
@@ -1389,23 +1428,15 @@
           }
 
           noticeFeed = items;
+          noticeTrayAll = items;
           mountNoticeCard();
           try {
             document.dispatchEvent(new CustomEvent("innioasis:notices", { detail: items }));
           } catch (_) {}
-          noticesBody.innerHTML = html;
+          noticesBody.innerHTML = html +
+            '<p class="lumen-notices-empty" data-notice-empty hidden>Nothing to report for what you have selected right now.</p>';
           noticesTray.setAttribute("data-notice-ids", allIds.join(","));
-          if (noticesBadge) {
-            if (unreadCount > 0) {
-              noticesBadge.textContent = String(unreadCount);
-              noticesBadge.hidden = false;
-              noticesBadge.style.display = "flex";
-            } else {
-              noticesBadge.textContent = "";
-              noticesBadge.hidden = true;
-              noticesBadge.style.display = "none";
-            }
-          }
+          applyNoticeTrayFilter();
         })
         .catch(function () {
           tryFetch();
@@ -1674,15 +1705,5 @@
   } catch (_) {}
 })();
 
-/* The gallery's pager search control; a no-op elsewhere. */
-(function () {
-  try {
-    if (!document.getElementById("theme-pager-top") && !document.querySelector(".gallery-controls")) return;
-    var me = document.querySelector('script[src*="nav.js"]');
-    var base = me && me.src ? me.src.replace(/[^\/]*$/, "") : "";
-    var s = document.createElement("script");
-    s.src = base + "pager-search.js?v=20261110a";
-    s.defer = true;
-    document.head.appendChild(s);
-  } catch (_) {}
-})();
+/* The large circle beside the pager is the only search control. Do not load
+   a second magnifier into the page numbers. */
