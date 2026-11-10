@@ -8,7 +8,7 @@
    its own, so Dark, Light, High contrast and 2077 stay in step everywhere. */
 
 html {
-    font-size: clamp(15px, 2.8vw, 17px);
+    font-size: calc(clamp(15px, 2.8vw, 17px) * var(--lumen-font-scale, 1));
 }
 
 html,
@@ -188,6 +188,21 @@ h2.section-display,
     margin: 0;
 }
 
+.gallery-software-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.9rem;
+    margin: 0.75rem 0 0;
+}
+
+.gallery-software-links a {
+    color: var(--site-text);
+    font-size: 0.92rem;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+}
+
 .y1-hero {
     margin: 0.65rem auto 0;
     padding: 0;
@@ -241,7 +256,38 @@ body.site-themes-app .gallery-home-hero .y1-hero {
 }
 
 /* Home gallery: the player rests on the filter card, and Upload / Rockbox
-   share the row with the page controls instead of opening a gap above it. */
+   share the row with the page controls instead of opening a gap above it.
+   The picture is 805 by 529. --hero-player-crop is how much of that height
+   stays visible; the rest is clipped at the card's top edge. */
+body.site-themes-app .wrap:has(.gallery-home-hero) {
+    --hero-player-w: 210px;
+    --hero-player-ratio: 0.657;
+    --hero-player-crop: 1;
+    --hero-player-h: calc(var(--hero-player-w) * var(--hero-player-ratio) * var(--hero-player-crop));
+}
+
+body.site-themes-app .wrap:has(.gallery-home-hero) .y1-hero {
+    position: absolute;
+    right: 1.15rem;
+    bottom: 0;
+    left: auto;
+    width: var(--hero-player-w);
+    height: var(--hero-player-h);
+    margin: 0;
+    overflow: hidden;
+    z-index: 3;
+    pointer-events: none;
+}
+
+body.site-themes-app .wrap:has(.gallery-home-hero) .y1-hero img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    object-fit: cover;
+    object-position: top center;
+}
 body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-ad-top:empty {
     display: none !important;
     min-height: 0 !important;
@@ -275,42 +321,24 @@ body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-ad-top:empty {
         grid-column: 1 / -1;
     }
 
+    body.site-themes-app .wrap:has(.gallery-home-hero) {
+        --hero-player-w: 210px;
+        --hero-player-crop: 1;
+    }
+
     body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-home-hero__row {
         grid-row: 1;
         position: relative;
         display: block;
-        min-height: 9.5rem;
-        padding-right: 15.5rem;
+        min-height: max(9.5rem, var(--hero-player-h));
+        padding-right: calc(var(--hero-player-w) + 2.4rem);
         padding-bottom: 0;
         margin: 0;
         overflow: visible;
-        transition: padding .55s cubic-bezier(.22, .7, .2, 1);
     }
 
     body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-home-intro {
         padding-bottom: 0;
-    }
-
-    body.site-themes-app .wrap:has(.gallery-home-hero) .y1-hero {
-        position: absolute;
-        left: calc(100% - 1.15rem - 210px);
-        right: auto;
-        bottom: -0.7rem;
-        width: 210px;
-        z-index: 3;
-        margin: 0;
-        pointer-events: none;
-        transition: left .55s cubic-bezier(.22, .7, .2, 1), width .55s cubic-bezier(.22, .7, .2, 1), bottom .55s cubic-bezier(.22, .7, .2, 1);
-    }
-
-    body.site-themes-app .wrap:has(.gallery-home-hero) .y1-hero img {
-        display: block;
-        width: 100%;
-        height: auto;
-        max-width: none;
-        max-height: none;
-        object-fit: contain;
-        object-position: bottom center;
     }
 
     body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-controls {
@@ -1749,45 +1777,26 @@ html, body {
         display: contents;
     }
 
+    body.site-themes-app .wrap:has(.gallery-home-hero) {
+        --hero-player-w: clamp(168px, 24vw, 200px);
+        --hero-player-crop: 0.72;
+    }
+
     body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-home-hero__row {
         grid-column: 1 / -1;
         grid-row: 1;
         position: relative;
         display: block;
-        min-height: 8.5rem;
-        padding-right: clamp(10.5rem, 30vw, 14rem);
+        min-height: max(7.5rem, var(--hero-player-h));
+        padding-right: calc(var(--hero-player-w) + 1.6rem);
         padding-bottom: 0;
         margin: 0;
         overflow: visible;
-        transition: padding .55s cubic-bezier(.22, .7, .2, 1);
-    }
-
-    body.site-themes-app .wrap:has(.gallery-home-hero) .y1-hero {
-        position: absolute;
-        left: calc(100% - 0.85rem - clamp(176px, 26vw, 210px));
-        right: auto;
-        bottom: -0.75rem;
-        width: clamp(176px, 26vw, 210px);
-        z-index: 3;
-        margin: 0;
-        pointer-events: none;
-        transition: left .55s cubic-bezier(.22, .7, .2, 1), width .55s cubic-bezier(.22, .7, .2, 1), bottom .55s cubic-bezier(.22, .7, .2, 1);
-    }
-
-    body.site-themes-app .wrap:has(.gallery-home-hero) .y1-hero img {
-        display: block;
-        width: 100%;
-        height: auto;
-        max-width: none;
-        max-height: none;
-        object-fit: contain;
-        object-position: bottom center;
     }
 
     body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-controls {
         position: relative;
         z-index: 1;
-        padding-top: 0.85rem;
     }
 
     body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-controls {
@@ -1832,15 +1841,21 @@ html, body {
     }
 }
 
-/* Phone: the introduction moves above the player, and the player slides
-   toward the middle and grows. Its foot stays on the filter card, so it
-   still looks as if it is coming out of that rectangle. left and width are
-   lengths in both states, so the move eases instead of jumping. */
+/* Phone: the introduction sits above a shorter crop of the player. The
+   figure's bottom edge is the card's top edge, and the rest of the picture
+   is clipped there, so the player still comes out of the card. The height
+   is a fraction of the picture, not a rem offset, so a larger text size
+   cannot push it down over the filters. */
 @media (max-width: 720px) {
+    body.site-themes-app .wrap:has(.gallery-home-hero) {
+        --hero-player-w: min(72vw, 300px);
+        --hero-player-crop: 0.58;
+    }
+
     body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-home-hero__row {
         min-height: 0;
         padding-right: 0;
-        padding-bottom: clamp(11rem, 56vw, 17.5rem);
+        padding-bottom: var(--hero-player-h);
     }
 
     body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-home-lead {
@@ -1848,13 +1863,8 @@ html, body {
     }
 
     body.site-themes-app .wrap:has(.gallery-home-hero) .y1-hero {
-        left: max(0px, calc(50% - min(44vw, 220px)));
-        width: min(88vw, 440px);
-        bottom: -1.05rem;
-    }
-
-    body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-controls {
-        padding-top: 0.35rem;
+        right: 50%;
+        transform: translateX(50%);
     }
 }
 

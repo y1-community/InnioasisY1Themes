@@ -1,0 +1,71 @@
+/* Styles for the firmware-specific theme landing pages and the SEO
+   explainers. Everything is scoped to classes those pages use, so the
+   gallery itself is untouched. */
+
+.theme-seo-crumbs ol {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin: 0 0 1rem;
+    padding: 0;
+    font-size: 0.85rem;
+    opacity: 0.85;
+}
+
+.theme-seo-crumbs li {
+    display: inline-flex;
+    align-items: center;
+}
+
+.theme-seo-crumbs li + li::before {
+    content: "/";
+    margin-right: 0.35rem;
+    opacity: 0.5;
+}
+
+.theme-seo-table-wrap {
+    overflow-x: auto;
+    margin: 1rem 0;
+}
+
+.theme-seo-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.theme-seo-table th,
+.theme-seo-table td {
+    border: 1px solid var(--lumen-line, #3a3a3a);
+    padding: 0.55rem 0.7rem;
+    text-align: left;
+    vertical-align: top;
+}
+
+.theme-seo-table th {
+    background: var(--lumen-panel-soft, #1c1c1c);
+}
+
+.theme-seo-note {
+    border-left: 3px solid var(--lumen-accent, #e0b15c);
+    background: var(--lumen-accent-wash, rgba(224, 177, 92, 0.08));
+    margin: 1rem 0;
+    padding: 0.6rem 0.9rem;
+}
+
+.theme-seo-steps li {
+    margin: 0.4rem 0;
+}
+
+.theme-seo-faq h3 {
+    margin-bottom: 0.25rem;
+}
+
+.theme-seo-faq p {
+    margin-top: 0;
+}
+
+.theme-seo-faq {
+    margin-bottom: 1.5rem;
+}
