@@ -260,7 +260,7 @@
             '<div class="site-compat-banner__content">' +
             '<i class="fa-solid fa-circle-check site-compat-banner__icon" aria-hidden="true"></i>' +
             '<span class="site-compat-banner__text">' +
-            '<span class="site-compat-banner__text-desktop">Themes in this gallery are compatible with <a class="site-compat-banner__link" href="https://innioasis.app/original-software-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Original OS</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/better-y-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Better-Y</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/solar-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Solar</strong></a>, and <a class="site-compat-banner__link" href="https://innioasis.app/koensayr-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Koensayr</strong></a> custom firmwares - </span>' +
+            '<span class="site-compat-banner__text-desktop">Themes in this gallery are compatible with <a class="site-compat-banner__link" href="https://innioasis.app/original-software-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Original OS</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/better-y-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Better-Y</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/solar-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Solar</strong></a>, and <a class="site-compat-banner__link" href="https://innioasis.app/koensayr-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Koensayr</strong></a> software - </span>' +
             '<span class="site-compat-banner__text-mobile">Compatible with <a class="site-compat-banner__link" href="https://innioasis.app/original-software-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Original OS</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/better-y-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Better-Y</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/solar-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Solar</strong></a> &amp; <a class="site-compat-banner__link" href="https://innioasis.app/koensayr-benefits.html" target="_blank" rel="noopener noreferrer"><strong>Koensayr</strong></a> - </span>' +
             '<a class="site-compat-banner__cta" href="https://innioasis.app/guide.html#platform" target="_blank" rel="noopener noreferrer">Available in Updater CE &rarr;</a>' +
             '</span>' +
@@ -462,28 +462,90 @@
     }
 
     function useSharedHeader(topbar) {
-        var search = topbar.querySelector(".topbar-search-wrap");
-        if (search) {
-            normalizeSearchInputs(topbar);
-            enhanceSearch(topbar);
-            var controls = document.querySelector(".gallery-controls");
-            if (controls) {
-                search.classList.add("gallery-control-search");
-                controls.insertBefore(search, controls.firstChild);
-            } else {
-                var page = document.querySelector(".wrap, main, .gold-page-wrap, .site-page-main");
-                if (page) {
-                    search.classList.add("page-search");
-                    page.insertBefore(search, page.firstChild);
-                }
-            }
-        }
+        var search = topbar.querySelector("#theme-search, #global-theme-search, .topbar-search");
+        if (search) document.body.appendChild(search);
         ensureCompatibilityBanner(topbar);
         topbar.remove();
         document.documentElement.style.setProperty("--gallery-topbar-height", "0px");
         document.documentElement.style.setProperty("--gallery-sticky-offset", "0px");
     }
 
+    /* Upload and Rockbox stay on either side of the page numbers. The
+       magnifying glass turns those numbers into the existing search field. */
+    function placeGalleryActionRow() {
+        var hero = document.querySelector(".gallery-home-hero");
+        var pager = document.getElementById("theme-pager-top");
+        var controls = document.querySelector(".gallery-controls");
+        if (!hero || !pager || !controls || document.querySelector(".gallery-action-row")) return;
+
+        var upload = hero.querySelector(".hero-actions > a.btn:not(#rockbox-btn)");
+        var rockbox = document.getElementById("rockbox-btn");
+        var search = document.getElementById("theme-search");
+
+        var row = document.createElement("div");
+        row.className = "gallery-action-row";
+
+        var cluster = document.createElement("div");
+        cluster.className = "gallery-pager-cluster";
+
+        var searchWrap = document.createElement("div");
+        searchWrap.className = "gallery-pager-search";
+        searchWrap.hidden = true;
+        if (search) {
+            search.classList.add("gallery-pager-search-input");
+            search.setAttribute("placeholder", "Search themes");
+            searchWrap.appendChild(search);
+        }
+
+        var toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.className = "gallery-search-toggle";
+        toggle.setAttribute("aria-label", "Search themes");
+        toggle.innerHTML = '<i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>';
+
+        var searching = false;
+        function glyph(name) {
+            toggle.innerHTML = '<i class="fa-solid fa-' + name + '" aria-hidden="true"></i>';
+        }
+        function setSearching(on) {
+            searching = on;
+            searchWrap.hidden = !on;
+            row.classList.toggle("is-searching", on);
+            if (on) {
+                pager.dataset.pagerWasHidden = pager.hidden ? "1" : "0";
+                pager.hidden = true;
+                toggle.setAttribute("aria-label", "Close search");
+                glyph("xmark");
+                if (search) search.focus();
+            } else {
+                if (search) {
+                    search.value = "";
+                    search.dispatchEvent(new Event("input", { bubbles: true }));
+                }
+                pager.hidden = pager.dataset.pagerWasHidden === "1" || !pager.querySelector("button");
+                toggle.setAttribute("aria-label", "Search themes");
+                glyph("magnifying-glass");
+            }
+        }
+        toggle.addEventListener("click", function () { setSearching(!searching); });
+
+        if (typeof MutationObserver === "function") {
+            new MutationObserver(function () {
+                if (searching && !pager.hidden) pager.hidden = true;
+            }).observe(pager, { attributes: true, attributeFilter: ["hidden"] });
+        }
+
+        cluster.appendChild(pager);
+        cluster.appendChild(searchWrap);
+        cluster.appendChild(toggle);
+        if (upload) row.appendChild(upload);
+        row.appendChild(cluster);
+        if (rockbox) row.appendChild(rockbox);
+        controls.insertAdjacentElement("afterend", row);
+
+        var actions = hero.querySelector(".hero-actions");
+        if (actions && !actions.querySelector("a, button")) actions.remove();
+    }
 
     function init() {
         var hasSharedNav = !!document.getElementById("nav-root");
@@ -491,6 +553,7 @@
             if (hasSharedNav) useSharedHeader(topbar);
             else upgradeTopbar(topbar);
         });
+        placeGalleryActionRow();
         setupDirectUsb();
     }
 

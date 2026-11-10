@@ -1,11 +1,11 @@
 {
- "generated": "2026-11-10T00:10:04+00:00",
+ "generated": "2026-11-10T00:19:54+00:00",
  "tiers": [
   "core"
  ],
  "pages": 57,
  "occurrences": 876,
- "count": 4874,
+ "count": 4873,
  "strings": {
   "Innioasis Themes Gallery": {
    "n": 18,
@@ -15679,7 +15679,7 @@
    "pages": 1,
    "script": true
   },
-  "\">Firmware Downloads": {
+  "\">Downloads": {
    "n": 1,
    "pages": 1,
    "script": true
@@ -15709,12 +15709,12 @@
    "pages": 1,
    "script": true
   },
-  "\">Player Updates and Firmware": {
+  "\">Player updates": {
    "n": 1,
    "pages": 1,
    "script": true
   },
-  "\">Custom Firmware Downloads": {
+  "\">Custom software": {
    "n": 1,
    "pages": 1,
    "script": true
@@ -15750,11 +15750,6 @@
    "script": true
   },
   "\">Updater CE": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "\">Firmware Archive": {
    "n": 1,
    "pages": 1,
    "script": true

@@ -1,7 +1,7 @@
 {
- "count": 13218,
+ "count": 13219,
  "dir": "ltr",
- "generated": "2026-11-10T00:10:18+00:00",
+ "generated": "2026-11-10T00:19:56+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "\">Credits",
@@ -1200,6 +1200,8 @@
   "\" + _t(\"A supporter\") + \"": "\" + _t(\"Ein Unterstützer\") + \"",
   "\" + _t(\"Waiting for supporters to appear.\") + \"": "\" + _t(\"Warten auf das Erscheinen von Unterstützern.\") + \"",
   "\" + lines + \"": "\" + Zeilen + \"",
+  "\" data-donations-appeal>Support Independent Community Projects": "\" data-donations-appeal>Unterstützen Sie unabhängige Gemeinschaftsprojekte",
+  "\" data-donations-appeal>Support Independent Projects": "\" data-donations-appeal>Unterstützen Sie unabhängige Projekte",
   "\"); if (idx === -1) { previewOutput.textContent = latestManifestText; setValidation(\"The fetched manifest has no closing": "\"); if (idx === -1) { VorschauOutput.textContent = LatestManifestText; setValidation(\"Das abgerufene Manifest hat keinen Abschluss",
   "\">All notices →": "\">Alle Mitteilungen →",
   "\">Community Credits": "\">Community-Credits",

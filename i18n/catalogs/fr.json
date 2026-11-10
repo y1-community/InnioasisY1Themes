@@ -1,7 +1,7 @@
 {
- "count": 13585,
+ "count": 13586,
  "dir": "ltr",
- "generated": "2026-11-10T00:10:19+00:00",
+ "generated": "2026-11-10T00:19:56+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "(1M)",
@@ -928,6 +928,8 @@
   "\" + lines + \"": "\" + lignes + \"",
   "\" + pageLink + \"": "\" + pageLien + \"",
   "\" : \"\"; html += '": "\" : \"\";html += '",
+  "\" data-donations-appeal>Support Independent Community Projects": "\" data-donations-appeal>Soutenez des projets communautaires indépendants",
+  "\" data-donations-appeal>Support Independent Projects": "\" data-donations-appeal>Soutenir les projets indépendants",
   "\"); if (idx === -1) { previewOutput.textContent = latestManifestText; setValidation(\"The fetched manifest has no closing": "\"); if (idx === -1) { previewOutput.textContent = lastManifestText; setValidation(\"Le manifeste récupéré n'a pas de fermeture",
   "\">All notices →": "\">Tous les avis →",
   "\">Community Credits": "\">Crédits communautaires",
