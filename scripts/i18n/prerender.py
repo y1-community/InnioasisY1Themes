@@ -277,9 +277,9 @@ def main() -> int:
 
         print(f"[{position}/{len(shipping)}] {code:<8} {len(pages):>4} pages, {replaced_total:>6} strings, region {region_id}")
 
+    # Keep this sitemap beside the copies this run wrote. Publishing it at the
+    # site root listed /de/page addresses that are not deployed there.
     write_sitemap(output_root, pages, codes, origin, config)
-    if os.path.abspath(output_root) != os.path.abspath(ROOT):
-        write_sitemap(ROOT, pages, codes, origin, config)
 
     # The browser runtime reads this to decide whether a language change can
     # navigate to a real /<locale>/ copy or must fall back to ?lang=. It is

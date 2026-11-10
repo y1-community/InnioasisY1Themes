@@ -5,7 +5,7 @@ for search engines, RAG systems, and international visitors.
 
 Each static shell:
 - Contains pre-translated descriptions from themes_i18n.json
-- Redirects immediately to https://themes.innioasis.app/theme_<locale>.html?theme=<folder>
+- Is the indexable address for that theme. The live preview stays a link, not a redirect
 - Includes bidirectional hreflang links, OpenGraph, Twitter cards, and Schema.org JSON-LD
 """
 
@@ -102,11 +102,19 @@ def get_theme_folders() -> List[str]:
 
 
 def build_hreflang_tags(folder: str, target_locales: List[str]) -> str:
+    folder_url = f"{CANONICAL_HOST}/{urllib.parse.quote(folder)}/"
     lines = [
-        f'  <link rel="alternate" hreflang="x-default" href="{CANONICAL_HOST}/{urllib.parse.quote(folder)}/index.html" />',
-        f'  <link rel="alternate" hreflang="en" href="{CANONICAL_HOST}/{urllib.parse.quote(folder)}/index.html" />',
+        f'  <link rel="alternate" hreflang="x-default" href="{folder_url}" />',
+        f'  <link rel="alternate" hreflang="en" href="{folder_url}" />',
     ]
+    seen = {"en", "x-default"}
     for loc in target_locales:
+        key = loc.lower()
+        # jp and kr are not language codes. Case variants of a code already
+        # listed (zh-cn beside zh-CN) make Google drop the whole cluster.
+        if key in {"jp", "kr"} or key in seen:
+            continue
+        seen.add(key)
         lines.append(f'  <link rel="alternate" hreflang="{loc}" href="{CANONICAL_HOST}/{urllib.parse.quote(folder)}/index_{loc}.html" />')
     return "\n".join(lines)
 
@@ -138,7 +146,6 @@ def generate_localized_shell(
     desc = str(desc).strip()
 
     site_title = SHELL_STRINGS["site_title"].get(locale, SHELL_STRINGS["site_title"]["en"])
-    opening = SHELL_STRINGS["opening_preview"].get(locale, SHELL_STRINGS["opening_preview"]["en"])
     copy_text = SHELL_STRINGS["copy_link"].get(locale, SHELL_STRINGS["copy_link"]["en"])
     open_btn = SHELL_STRINGS["open_preview"].get(locale, SHELL_STRINGS["open_preview"]["en"])
 
@@ -158,7 +165,7 @@ def generate_localized_shell(
         "@context": "https://schema.org",
         "@type": "SoftwareApplication",
         "name": f"{title} for Innioasis Y1 & Y2 by {author}",
-        "url": target_theme_page,
+        "url": shell_page_url,
         "description": desc,
         "image": cover_url,
         "author": {"@type": "Person", "name": author},
@@ -168,7 +175,7 @@ def generate_localized_shell(
     }, ensure_ascii=False)
 
     return f"""<!DOCTYPE html>
-<html lang="{locale}" data-themes-preview-redirect="{target_theme_page}">
+<html lang="{locale}">
 <head>
 <script async src="https://www.googletagmanager.com/gtm.js?id=GTM-TNDGC37L"></script>
 <script>
@@ -186,9 +193,8 @@ def generate_localized_shell(
   <meta name="publisher" content="Luci Ltd" />
   <link rel="author" href="https://www.luci.ltd" title="Luci Ltd — web hosting for Innioasis Y1 &amp; Y2 Themes" />
   <meta name="robots" content="index,follow" />
-  <link rel="canonical" href="{target_theme_page}" />
+  <link rel="canonical" href="{shell_page_url}" />
 {hreflang_tags}
-  <meta http-equiv="refresh" content="0;url={target_theme_page}" />
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link rel="stylesheet" href="/site-theme.css?v=20261102header" />
@@ -210,30 +216,11 @@ def generate_localized_shell(
   }}
 }})();
   </script>
-  <script>
-(function () {{
-  function destFromEmbed() {{
-    try {{
-      var h = document.documentElement;
-      var a = h && h.getAttribute('data-themes-preview-redirect');
-      if (a) return String(a).trim();
-      var c = document.querySelector('link[rel="canonical"]');
-      if (c && c.href) return String(c.href).trim();
-    }} catch (e) {{}}
-    return '';
-  }}
-  var dest = destFromEmbed();
-  if (dest) {{
-    try {{ location.replace(dest); }} catch (e) {{}}
-  }}
-}})();
-  </script>
-
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="{escaped_site_title}" />
   <meta property="og:title" content="{escaped_title} - {escaped_site_title}" />
   <meta property="og:description" content="{escaped_desc}" />
-  <meta property="og:url" content="{target_theme_page}" />
+  <meta property="og:url" content="{shell_page_url}" />
   <meta property="og:image" content="{cover_url}" />
 
   <meta name="twitter:card" content="summary_large_image" />
@@ -260,7 +247,6 @@ def generate_localized_shell(
     </form>
   </div>
   <main class="theme-seo-shell-main">
-    <p class="theme-seo-shell-lead">{html.escape(opening)}</p>
     <button type="button" class="btn" id="theme-seo-copy" data-copy-url="{shell_page_url}">{html.escape(copy_text)}</button>
     <h1 class="site-display">{escaped_title}</h1>
     <p class="theme-seo-shell-author">{escaped_author}</p>

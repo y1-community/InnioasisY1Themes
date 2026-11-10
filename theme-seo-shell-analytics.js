@@ -53,10 +53,21 @@
             var h = document.documentElement;
             var a = h && h.getAttribute("data-themes-preview-redirect");
             if (a) return String(a).trim();
+            var preview = document.querySelector("a.btn-primary[href*='theme=']");
+            if (preview && preview.href) return String(preview.href).trim();
             var c = document.querySelector('link[rel="canonical"]');
             if (c && c.href) return String(c.href).trim();
         } catch (e) {}
         return "";
+    }
+
+    function themeFromPath() {
+        var parts = (location.pathname || "").split("/").filter(Boolean);
+        if (!parts.length) return "";
+        try {
+            parts = parts.map(function (part) { return decodeURIComponent(part); });
+        } catch (e) {}
+        return normalizeThemeKey(parts[0]);
     }
 
     function parseThemeFromDest(dest) {
@@ -79,7 +90,7 @@
         var consent = loadConsent();
         if (consent.analytics === false) return;
         var dest = destUrl();
-        var key = parseThemeFromDest(dest);
+        var key = parseThemeFromDest(dest) || themeFromPath();
         if (!key) return;
         try {
             var sk = PV_SESSION_PREFIX + key;

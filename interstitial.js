@@ -139,6 +139,21 @@
     }
   }
 
+  /* "auth", "login" and "payment" anywhere in the address. A word like
+     "author" contains "auth"; that is the innocent case we still refuse,
+     because the same letters are how a lookalike login page would be written. */
+  function isBlockedRedirect(url) {
+    return /payment|login|auth/i.test(url.href);
+  }
+
+  function currentFrom() {
+    var host = (window.location.hostname || "").toLowerCase();
+    if (/^themes\./.test(host)) return "themes-gallery";
+    var path = (window.location.pathname || "").toLowerCase();
+    if (/firmware|release_view|release-notes|releases/.test(path)) return "firmware-archive";
+    return "updater-ce";
+  }
+
   function isInternal(url) {
     if (url.origin === window.location.origin) return true;
     return /(^|\.)innioasis\.app$/i.test(url.hostname) || url.hostname === "localhost" || url.hostname === "127.0.0.1";
@@ -167,7 +182,7 @@
       if (/\.(zip|7z|tar|gz|theme|rbtheme|apk|dmg|exe|msi)$/i.test(url.pathname)) return;
 
       var page = DONATION_HOSTS.test(url.hostname) ? "donate.html" : "leaving.html";
-      var target = cleanBase() + page + "?to=" + encodeURIComponent(url.href);
+      var target = cleanBase() + page + "?from=" + encodeURIComponent(currentFrom()) + "&to=" + encodeURIComponent(url.href);
       event.preventDefault();
       if (link.target === "_blank") window.open(target, "_blank", "noopener");
       else window.location.href = target;
@@ -227,7 +242,29 @@
       return;
     }
 
-    if (hostEl) hostEl.textContent = destination.hostname.replace(/^www\./, "");
+    var hostName = destination.hostname.replace(/^www\./, "");
+    var heading = document.querySelector(".interstitial-main h1");
+    if (isBlockedRedirect(destination)) {
+      var blocked = "To prevent abuse of our redirect interstitial pages for phishing attacks, we've stopped this redirect from happening. This could be for innocent reasons such as \"auth\", \"login\" or \"payment\" appearing in the URL but as these could likely be used as a vector for phishing or social engineering attempts, we will not allow it here.";
+      if (heading) heading.textContent = "Redirect stopped";
+      document.title = "Redirect stopped - Innioasis";
+      var blockedPara = document.querySelector(".interstitial-main p");
+      if (blockedPara) blockedPara.textContent = blocked;
+      if (hostEl) hostEl.textContent = "";
+      if (goEl) goEl.hidden = true;
+      if (statusEl) statusEl.hidden = true;
+      if (progressEl) progressEl.hidden = true;
+      stripInterstitialParams();
+      if (cancelEl) {
+        cancelEl.addEventListener("click", function () {
+          if (window.history.length > 1) window.history.back();
+          else window.location.assign("index.html");
+        });
+      }
+      return;
+    }
+
+    if (hostEl) hostEl.textContent = hostName;
     if (goEl) goEl.setAttribute("href", destination.href);
 
     var lang = languageFrom(params);
@@ -241,7 +278,6 @@
       }
     }
 
-    var heading = document.querySelector(".interstitial-main h1");
     if (kind === "donate") {
       if (heading) heading.textContent = THANKS[lang] || THANKS[lang.split("-")[0]] || THANKS.en;
     } else if (heading) {

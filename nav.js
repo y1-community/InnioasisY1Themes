@@ -1699,7 +1699,7 @@
     var me = document.querySelector('script[src*="nav.js"]');
     var base = me && me.src ? me.src.replace(/[^\/]*$/, "") : "";
     var s = document.createElement("script");
-    s.src = base + "interstitial.js?v=20261110fast";
+    s.src = base + "interstitial.js?v=20261110host";
     s.defer = true;
     document.head.appendChild(s);
   } catch (_) {}

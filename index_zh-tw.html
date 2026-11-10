@@ -53,8 +53,8 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
-    <link rel="stylesheet" href="site-theme.css?v=20261110footer">
-    <link rel="stylesheet" href="lumen.css?v=20261110accent">
+    <link rel="stylesheet" href="site-theme.css?v=20261108headerfix">
+    <link rel="stylesheet" href="lumen.css?v=20261108headerfix">
     <link rel="stylesheet" href="site-toolbar.css?v=20261108hero">
     <link rel="stylesheet" href="site-pages.css?v=20260622">
     <link rel="stylesheet" href="y1-theme-preview.css?v=20260215">
@@ -66,9 +66,9 @@
     <script src="y1-theme-preview.js?v=20261109perf"></script>
     <script src="theme-artwork-compat.js?v=20260711"></script>
     <script src="gold-theme-detect.js?v=20261109perf"></script>
-    <script src="gallery-chrome.js?v=20261110header"></script>
+    <script src="gallery-chrome.js?v=20261102header"></script>
     <script src="author-links.js?v=20260622"></script>
-    <script src="site-init.js?v=20261109accent"></script>
+    <script src="site-init.js?v=20260522privacy"></script>
     <script src="gallery-loaded-theme.js?v=20261109perf"></script>
     <script src="theme-share-links.js"></script>
     <script src="author-submission-policy.js?v=20260523"></script>
@@ -141,7 +141,7 @@
             box-shadow: inset 0 -1px 0 var(--site-border, rgba(255, 255, 255, 0.12));
         }
 
-        /* Search bar layout: see site-theme.css?v=20261110footer (flex icon + input) */
+        /* Search bar layout: see site-theme.css?v=20261108headerfix (flex icon + input) */
 
         .gallery-tabs {
             justify-self: center;
@@ -930,7 +930,7 @@
             </div>
         </section>
 
-        <div id="direct-install-banner" class="direct-install-note" style="margin-top: 1rem; display: none;">
+        <div id="direct-install-banner" style="margin-top: 1.25rem; padding: 10px 14px; background: rgba(100, 200, 255, 0.08); border: 1px solid rgba(100, 200, 255, 0.22); border-radius: 10px; display: none;">
             <div style="display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap;">
                 <div style="flex: 1 1 240px; min-width: 0;">
                     <strong style="display: block; font-size: 0.92rem; line-height: 1.3;">直接安裝</strong>
@@ -1056,12 +1056,12 @@
     <div id="footer-root"></div>
     <div id="support-toolbar-slot"></div>
 
-    <script src="nav.js?v=20261110notices"></script>
+    <script src="nav.js?v=20261109cta"></script>
     <script>
         const rbBtn = document.getElementById('rockbox-btn')
         const ROCKBOX_THEMES_URL = 'https://github.com/rockbox-y1/themes/releases/tag/for_the_gays_and_the_theys'
 
-        const supportDirectInstall = typeof window.showDirectoryPicker === 'function' && window.isSecureContext !== false;
+        const supportDirectInstall = typeof window.showDirectoryPicker === 'function';
         let selectedThemesFolder = null;
         let galleryCatalogThemes = [];
         let bulkUpdateQueue = [];
@@ -1401,7 +1401,7 @@
                     di.disabled = false;
                     di.style.opacity = '1';
                     di.style.cursor = 'pointer';
-                    di.innerHTML = 'Direct Install via USB';
+                    di.innerHTML = '<i class="fa-solid fa-bolt"></i> Direct Install';
                 }
                 return;
             }
@@ -1462,7 +1462,7 @@
         function configureBulkUpdateModalEmpty() {
             if (bulkUpdateLeadEl) {
                 bulkUpdateLeadEl.textContent =
-                    'No themes from this gallery were found on your Y1. Use Direct Install via USB on individual themes first, then return here to refresh them all.';
+                    'No themes from this gallery were found on your Y1. Use Direct Install on individual themes first, then return here to refresh them all.';
             }
             if (bulkUpdateCountEl) bulkUpdateCountEl.textContent = '0 themes on device';
             if (bulkUpdateStatusEl) bulkUpdateStatusEl.textContent = 'Nothing to update.';
@@ -4944,7 +4944,7 @@
                 di.style.opacity = '0.5';
                 di.style.cursor = 'not-allowed';
                 di.disabled = true;
-                di.innerHTML = 'Direct Install via USB';
+                di.innerHTML = '<i class="fa-solid fa-bolt"></i> Direct Install';
                 di.type = 'button';
                 di.onclick = () => directInstallTheme(theme, di, readCardVariantInstallHints(c));
                 di.setAttribute('data-direct-install-btn', 'true');
@@ -5219,7 +5219,7 @@
                 }
                 const diBtn = card.querySelector('[data-direct-install-btn]');
                 if (diBtn) {
-                    diBtn.textContent = _t('Direct Install via USB') || 'Direct Install via USB';
+                    diBtn.textContent = _t('Install to Y1') || _t('Direct Install');
                 }
                 const goldBadge = card.querySelector('.theme-gold-title-badge');
                 if (goldBadge) goldBadge.textContent = _t('Gold');

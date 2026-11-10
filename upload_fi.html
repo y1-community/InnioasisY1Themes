@@ -704,7 +704,7 @@
     <!-- Filled serverlessly in injectThemeSeoShellsIntoZip; mirrors theme.html SEO head + crawler-friendly redirect shells. -->
     <template id="y1-theme-seo-index-shell">
 <!DOCTYPE html>
-<html lang="en" data-themes-preview-redirect="__Y1_DATA_REDIRECT__">
+<html lang="en">
 <head>
 <script async src="https://www.googletagmanager.com/gtm.js?id=GTM-TNDGC37L"></script>
 <script>
@@ -727,27 +727,6 @@
 
     <link rel="canonical" href="__Y1_CANONICAL__" />
     <link rel="icon" href="https://themes.innioasis.app/y1_illustration.png" />
-
-    <script>
-        (function () {
-            function destFromEmbed() {
-                try {
-                    var h = document.documentElement;
-                    var a = h && h.getAttribute("data-themes-preview-redirect");
-                    if (a) return String(a).trim();
-                    var c = document.querySelector('link[rel="canonical"]');
-                    if (c && c.href) return String(c.href).trim();
-                } catch (e) {}
-                return "";
-            }
-            var dest = destFromEmbed();
-            if (dest) {
-                try { location.replace(dest); } catch (e) {}
-            }
-        })();
-    </script>
-
-    <meta http-equiv="refresh" content="0;url=__Y1_REFRESH_URL__" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Innioasis Teemagalleria" />
@@ -3787,7 +3766,7 @@
                 __Y1_KEYWORDS__: v.keywords,
                 __Y1_AUTHOR__: v.authorE,
                 __Y1_META_ROBOTS__: "index,follow",
-                __Y1_CANONICAL__: v.previewE,
+                __Y1_CANONICAL__: v.shareE,
                 __Y1_REFRESH_URL__: v.refreshAttr,
                 __Y1_OG_IMAGE__: v.ogImageE,
                 __Y1_SHARE_URL_DATA__: v.shareE,
@@ -3809,7 +3788,7 @@
                     : '<script async src="https://www.googletagmanager.com/gtm.js?id=GTM-TNDGC37L"><\/script>\n<script>\n  window.dataLayer = window.dataLayer || [];\n  function gtag(){dataLayer.push(arguments);}\n  gtag(\'js\', new Date());\n<\/script>\n';
                 html =
                     "<!DOCTYPE html>\n" +
-                    `<html lang="en" data-themes-preview-redirect="${v.previewE}">\n` +
+                    `<html lang="en">\n` +
                     "<head>\n" +
                     gtmSnippet +
                     headInner +
@@ -3925,7 +3904,7 @@
                     const refreshAttr = previewUrl.replace(/&/g, "&amp;");
                     const shareSegs = [catalogFolder];
                     if (variant) shareSegs.push("Variants", variant, VARIANT_SEO_SUBDIR);
-                    const sharePageUrl = `${SITE}/${shareSegs.map((s) => encodeURIComponent(s)).join("/")}`;
+                    const sharePageUrl = `${SITE}/${shareSegs.map((s) => encodeURIComponent(s)).join("/")}/`;
                     const ogImageUrl = await absoluteOgImageUrl(outputZip, catalogFolder, variant);
 
                     const title = variant
@@ -3957,7 +3936,7 @@
                                 applicationCategory: "MultimediaApplication",
                                 operatingSystem: "Innioasis Y1",
                                 offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-                                url: previewUrl,
+                                url: sharePageUrl,
                                 image: ogImageUrl,
                                 author: { "@type": "Person", name: author },
                                 publisher: {

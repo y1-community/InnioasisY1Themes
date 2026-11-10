@@ -12,7 +12,7 @@ Features:
     - Sets <html lang="..." dir="..." data-locale="...">.
     - Rewrites internal page links from foo.html -> foo_<locale>.html.
     - Injects bidirectional hreflang alternate links into both translated pages and source English pages.
-    - Updates sitemap.xml and sitemap-i18n.xml with all static multilingual URLs.
+    - Does not write sitemaps. scripts/generate_sitemap.py owns those.
 """
 
 from __future__ import annotations
@@ -418,8 +418,9 @@ def main() -> int:
 
         print(f"[{idx}/{len(available_codes)}] {code:<6} generated {len(valid_stems)} pages (+ {len(aliases)} aliases)")
 
-    # Write unified sitemaps
-    write_sitemaps(ROOT, pages_generated, available_codes, origin)
+    # scripts/generate_sitemap.py is the only writer. This used to replace
+    # sitemap.xml with just these static pages and drop every theme URL.
+    print("sitemap: owned by scripts/generate_sitemap.py")
 
     # Write manifest for client-side router
     manifest = {

@@ -75,8 +75,8 @@ jobs:
         run: |
           python3 scripts/i18n/generate_multilingual_static_pages.py
           python3 scripts/i18n/generate_multilingual_theme_shells.py --missing-only
-          python3 scripts/generate_sitemap.py
           python3 scripts/i18n/prerender.py --locales all --tiers core --out dist
+          python3 scripts/generate_sitemap.py
 
       - name: Upload static page artifact
         if: always()
@@ -94,7 +94,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add i18n/catalogs/ i18n/strings/ i18n/site-locales.json i18n/reviewed/ i18n/prerendered.json sitemap.xml sitemap-i18n.xml *.html || true
+          git add i18n/catalogs/ i18n/strings/ i18n/site-locales.json i18n/reviewed/ i18n/prerendered.json sitemap.xml sitemap-index.xml sitemap-i18n*.xml *.html || true
           if git diff --cached --quiet; then
             echo "No translation or catalog changes to commit."
           else

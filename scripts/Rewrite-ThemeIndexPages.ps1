@@ -86,7 +86,7 @@ function Build-SharePageUrl([string]$catalogFolder, [string]$variant) {
         [void]$segs.Add($v)
         [void]$segs.Add('_share')
     }
-    return $Site + '/' + (($segs | ForEach-Object { [Uri]::EscapeDataString($_) }) -join '/')
+    return $Site + '/' + (($segs | ForEach-Object { [Uri]::EscapeDataString($_) }) -join '/') + '/'
 }
 
 $themesDoc = Read-JsonObject $ThemesPath
@@ -145,8 +145,6 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
     else { To-Absolute-AssetUrl '' }
 
     $previewUrl = Build-PreviewUrl $catalogFolder $variant
-    # Meta refresh content= must escape & as &amp; in HTML attributes.
-    $previewUrlRefreshAttr = ($previewUrl -replace '&', '&amp;')
     $sharePageUrl = Build-SharePageUrl $catalogFolder $variant
     # Document title / social: "ThemeName - Innioasis Y1 and Y2 Themes Gallery" (variant in the theme name slot when present).
     $title = if ($variant) { "$displayName ($variant) - Innioasis Y1 and Y2 Themes Gallery" } else { "$displayName - Innioasis Y1 and Y2 Themes Gallery" }
@@ -165,7 +163,7 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
         applicationCategory = 'MultimediaApplication'
         operatingSystem = 'Innioasis Y1 & Y2'
         offers        = @{ '@type' = 'Offer'; price = '0'; priceCurrency = 'USD' }
-        url           = $previewUrl
+        url           = $sharePageUrl
         image         = $ogImage
         author        = @{ '@type' = 'Person'; name = $author }
     } | ConvertTo-Json -Compress -Depth 6
@@ -211,7 +209,7 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
   <script src="/author-submission-policy.js?v=20260522"></script>
   <script src="/gallery-chrome.js?v=20261102header"></script>
   <script src="/site-init.js?v=20260522privacy"></script>
-  <link rel="canonical" href="$previewE" />
+  <link rel="canonical" href="$shareE" />
   <script>
 (function () {
   var shellAuthor = $authorJs;
@@ -224,31 +222,11 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
   }
 })();
   </script>
-  <script>
-(function () {
-  function destFromEmbed() {
-    try {
-      var h = document.documentElement;
-      var a = h && h.getAttribute('data-themes-preview-redirect');
-      if (a) return String(a).trim();
-      var c = document.querySelector('link[rel="canonical"]');
-      if (c && c.href) return String(c.href).trim();
-    } catch (e) {}
-    return '';
-  }
-  var dest = destFromEmbed();
-  if (dest) {
-    try { location.replace(dest); } catch (e) {}
-  }
-})();
-  </script>
-  <meta http-equiv="refresh" content="0;url=$previewUrlRefreshAttr" />
-
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Innioasis Y1 & Y2 Themes" />
   <meta property="og:title" content="$titleE" />
   <meta property="og:description" content="$description" />
-  <meta property="og:url" content="$previewE" />
+  <meta property="og:url" content="$shareE" />
   <meta property="og:image" content="$ogImageE" />
 
   <meta name="twitter:card" content="summary_large_image" />
@@ -275,7 +253,7 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
     </form>
   </div>
   <main class="theme-seo-shell-main">
-    <p class="theme-seo-shell-lead">Opening the live preview…</p>
+    <p class="theme-seo-shell-lead">Preview and download this theme.</p>
     <button type="button" class="btn" id="theme-seo-copy" data-copy-url="$shareE">Copy page link</button>
     <h1 class="site-display">$dispE$variantHeading</h1>
     <p class="theme-seo-shell-author">$authorE</p>

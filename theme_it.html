@@ -54,7 +54,26 @@
     <meta name="publisher" content="Luci Ltd">
     <link rel="author" href="https://www.luci.ltd" title="Luci Ltd - web hosting per temi Innioasis Y1 e Y2.">
 
-    <link rel="canonical" href="https://themes.innioasis.app/theme_it.html">
+    <link rel="canonical" id="theme-canonical" href="https://themes.innioasis.app/theme_it.html">
+    <script>
+      (function () {
+        var params;
+        try { params = new URLSearchParams(location.search); } catch (e) { return; }
+        var theme = params.get("theme") || "";
+        var variant = params.get("variant") || "";
+        if (!theme || /[\/]/.test(theme) || theme.indexOf("..") !== -1) return;
+        if (variant && (/[\/]/.test(variant) || variant.indexOf("..") !== -1)) variant = "";
+        var file = (location.pathname.split("/").pop() || "theme.html");
+        var localeMatch = file.match(/^theme_([A-Za-z0-9-]+)\.html$/);
+        var href = "https://themes.innioasis.app/" + encodeURIComponent(theme) + "/";
+        if (variant) href += "Variants/" + encodeURIComponent(variant) + "/_share/";
+        else if (localeMatch) href += "index_" + localeMatch[1] + ".html";
+        var link = document.getElementById("theme-canonical");
+        if (link) link.setAttribute("href", href);
+        var og = document.querySelector('meta[property="og:url"]');
+        if (og) og.setAttribute("content", href);
+      })();
+    </script>
 
     <meta property="og:type" content="website">
     <meta property="og:title" content="Innioasis Y1 e Y2 Temi">

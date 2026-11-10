@@ -1,6 +1,7 @@
-# Overwrites each theme folder's index.html (not repo root) with a small SEO page
-# that redirects to theme.html?theme=...&variant=... on the main gallery.
+# Retired. These pages are the indexable theme URLs. Redirecting them to
+# theme.html collapsed every theme into one Google result.
 $ErrorActionPreference = 'Stop'
+throw "generate-theme-index-redirects.ps1 is retired. Theme shells must stay on their own URL. Use Rewrite-ThemeIndexPages.ps1."
 # This script lives in <repo>/scripts/
 $root = Split-Path -Parent $PSScriptRoot
 if (-not (Test-Path (Join-Path $root 'themes.json'))) {

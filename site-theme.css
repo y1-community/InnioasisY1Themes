@@ -281,7 +281,10 @@ body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-ad-top:empty {
         display: block;
         min-height: 9.5rem;
         padding-right: 15.5rem;
+        padding-bottom: 0;
         margin: 0;
+        overflow: visible;
+        transition: padding .55s cubic-bezier(.22, .7, .2, 1);
     }
 
     body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-home-intro {
@@ -290,17 +293,24 @@ body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-ad-top:empty {
 
     body.site-themes-app .wrap:has(.gallery-home-hero) .y1-hero {
         position: absolute;
-        right: 1.15rem;
-        bottom: 0;
+        left: calc(100% - 1.15rem - 210px);
+        right: auto;
+        bottom: -0.7rem;
+        width: 210px;
         z-index: 3;
         margin: 0;
         pointer-events: none;
+        transition: left .55s cubic-bezier(.22, .7, .2, 1), width .55s cubic-bezier(.22, .7, .2, 1), bottom .55s cubic-bezier(.22, .7, .2, 1);
     }
 
     body.site-themes-app .wrap:has(.gallery-home-hero) .y1-hero img {
-        max-width: 210px;
-        max-height: 168px;
-        object-position: bottom right;
+        display: block;
+        width: 100%;
+        height: auto;
+        max-width: none;
+        max-height: none;
+        object-fit: contain;
+        object-position: bottom center;
     }
 
     body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-controls {
@@ -1743,30 +1753,41 @@ html, body {
         grid-column: 1 / -1;
         grid-row: 1;
         position: relative;
-        min-height: 7.25rem;
-        padding-right: 7.25rem;
+        display: block;
+        min-height: 8.5rem;
+        padding-right: clamp(10.5rem, 30vw, 14rem);
+        padding-bottom: 0;
         margin: 0;
+        overflow: visible;
+        transition: padding .55s cubic-bezier(.22, .7, .2, 1);
     }
 
     body.site-themes-app .wrap:has(.gallery-home-hero) .y1-hero {
         position: absolute;
-        right: 0.15rem;
-        bottom: -1.35rem;
+        left: calc(100% - 0.85rem - clamp(176px, 26vw, 210px));
+        right: auto;
+        bottom: -0.75rem;
+        width: clamp(176px, 26vw, 210px);
         z-index: 3;
         margin: 0;
         pointer-events: none;
+        transition: left .55s cubic-bezier(.22, .7, .2, 1), width .55s cubic-bezier(.22, .7, .2, 1), bottom .55s cubic-bezier(.22, .7, .2, 1);
     }
 
     body.site-themes-app .wrap:has(.gallery-home-hero) .y1-hero img {
-        max-width: 132px;
-        max-height: 148px;
-        object-position: bottom right;
+        display: block;
+        width: 100%;
+        height: auto;
+        max-width: none;
+        max-height: none;
+        object-fit: contain;
+        object-position: bottom center;
     }
 
     body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-controls {
         position: relative;
         z-index: 1;
-        padding-top: 1.35rem;
+        padding-top: 0.85rem;
     }
 
     body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-controls {
@@ -1808,6 +1829,32 @@ html, body {
         grid-row: 3;
         justify-self: end;
         margin: .75rem 0 0;
+    }
+}
+
+/* Phone: the introduction moves above the player, and the player slides
+   toward the middle and grows. Its foot stays on the filter card, so it
+   still looks as if it is coming out of that rectangle. left and width are
+   lengths in both states, so the move eases instead of jumping. */
+@media (max-width: 720px) {
+    body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-home-hero__row {
+        min-height: 0;
+        padding-right: 0;
+        padding-bottom: clamp(11rem, 56vw, 17.5rem);
+    }
+
+    body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-home-lead {
+        max-width: none;
+    }
+
+    body.site-themes-app .wrap:has(.gallery-home-hero) .y1-hero {
+        left: max(0px, calc(50% - min(44vw, 220px)));
+        width: min(88vw, 440px);
+        bottom: -1.05rem;
+    }
+
+    body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-controls {
+        padding-top: 0.35rem;
     }
 }
 
@@ -2055,6 +2102,7 @@ body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-action-row #theme-pa
 @media (prefers-reduced-motion: reduce) {
     .gallery-home-hero,
     .gallery-home-hero__row,
+    .y1-hero,
     #theme-pager-top,
     #theme-pager-top * {
         transition: none !important;
