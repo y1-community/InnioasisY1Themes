@@ -292,6 +292,9 @@
    "FLOWERS/index_es.html",
    "FLOWERZ/index_es.html"
   ],
+  "Accent colour": [
+   "site-init.js"
+  ],
   "Ace Attorney Theme for Y1": [
    "Ace_Attorney/index.html"
   ],
@@ -2860,9 +2863,6 @@
    "Cupertino/index_ja.html",
    "Cupertino/index_jp.html"
   ],
-  "Custom Firmware Downloads": [
-   "nav.js"
-  ],
   "Custom Theme I revamped from Tori's Sailor Moon for my y2. I hope Y'all enjoy!": [
    "Purple_Lo-fi/index.html"
   ],
@@ -2873,6 +2873,9 @@
    "Starlight_Pop_Club/index_fr.html",
    "Starlight_Pop_Club/index_ja.html",
    "Starlight_Pop_Club/index_jp.html"
+  ],
+  "Custom software": [
+   "nav.js"
   ],
   "Customize": [
    "theme-analytics.js"
@@ -3487,7 +3490,50 @@
    "Dior/index_jp.html"
   ],
   "Direct Install": [
-   "index.html"
+   "index_pt-BR.html",
+   "index_pt-PT.html",
+   "index_zh-CN.html",
+   "index_zh-TW.html"
+  ],
+  "Direct Install via USB": [
+   "index.html",
+   "index_ar.html",
+   "index_bn.html",
+   "index_cs.html",
+   "index_da.html",
+   "index_de.html",
+   "index_el.html",
+   "index_es-419.html",
+   "index_es.html",
+   "index_fa.html",
+   "index_fi.html",
+   "index_fr.html",
+   "index_he.html",
+   "index_hi.html",
+   "index_hu.html",
+   "index_id.html",
+   "index_it.html",
+   "index_ja.html",
+   "index_jp.html",
+   "index_ko.html",
+   "index_kr.html",
+   "index_ms.html",
+   "index_nl.html",
+   "index_no.html",
+   "index_pl.html",
+   "index_pt-br.html",
+   "index_pt-pt.html",
+   "index_pt.html",
+   "index_ro.html",
+   "index_ru.html",
+   "index_sv.html",
+   "index_th.html",
+   "index_tr.html",
+   "index_uk.html",
+   "index_vi.html",
+   "index_zh-cn.html",
+   "index_zh-tw.html",
+   "index_zh.html"
   ],
   "Direct install failed": [
    "index.html",
@@ -3534,9 +3580,6 @@
    "index_zh.html"
   ],
   "Discord Server": [
-   "nav.js"
-  ],
-  "Discord community": [
    "nav.js"
   ],
   "Diseñado para Y1, estuve jugando para ver cómo hacer temas, ¡pero resultó bien!": [
@@ -3787,6 +3830,9 @@
   ],
   "Download the test theme for Innioasis Y1 & Y2 by me and give your player a new look.": [
    "test_me/index.html"
+  ],
+  "Downloads": [
+   "nav.js"
   ],
   "Dr. Iain campbell": [
    "Circuitry/index.html",
@@ -4772,12 +4818,6 @@
   "Finden Sie das Marker-Thema. Basierend auf dem Roblox-Spiel.": [
    "Find_the_markers/index_de.html",
    "Find_the_markers__fixed/index_de.html"
-  ],
-  "Firmware Archive": [
-   "nav.js"
-  ],
-  "Firmware Downloads": [
-   "nav.js"
   ],
   "First time doing this, super bad but its a WIP": [
    "Spongebob_WIP/index.html"
@@ -5856,9 +5896,6 @@
    "upload_zh.html",
    "yourTheme/index.html"
   ],
-  "Innioasis Firmware Archive": [
-   "nav.js"
-  ],
   "Innioasis Firmware Downloads": [
    "nav.js"
   ],
@@ -6406,9 +6443,6 @@
   "Jinx ou wtvs": [
    "Jinx_From_Arcane/index_fr.html"
   ],
-  "Join our Discord": [
-   "nav.js"
-  ],
   "Jojo doppio for Innioasis Y1 & Y2 by Jojokar": [
    "Jojo_doppio/index.html",
    "Jojo_doppio/index_de.html",
@@ -6947,6 +6981,9 @@
    "Life_is_Strange_v2/index_ja.html",
    "Life_is_Strange_v2/index_jp.html"
   ],
+  "Light": [
+   "nav.js"
+  ],
   "Light green metallic for Innioasis Y1 & Y2 by albini": [
    "Light_green_metallic/index.html",
    "Light_green_metallic/index_de.html",
@@ -7162,6 +7199,9 @@
    "Linkin_Park_Hybrid_Theory/index_ja.html",
    "Linkin_Park_Hybrid_Theory/index_jp.html"
   ],
+  "Linux on ARM": [
+   "site-locale.js"
+  ],
   "Lisa Frank for Innioasis Y1 & Y2 by mp3li": [
    "Lisa_Frank/index.html"
   ],
@@ -7179,7 +7219,7 @@
    "Littlest_Pet_Shop/index_ja.html",
    "Littlest_Pet_Shop/index_jp.html"
   ],
-  "Loading notices...": [
+  "Loading notices": [
    "nav.js"
   ],
   "Loading supporters...": [
@@ -7214,6 +7254,8 @@
    "index_nl.html",
    "index_no.html",
    "index_pl.html",
+   "index_pt-BR.html",
+   "index_pt-PT.html",
    "index_pt-br.html",
    "index_pt-pt.html",
    "index_pt.html",
@@ -7224,6 +7266,8 @@
    "index_tr.html",
    "index_uk.html",
    "index_vi.html",
+   "index_zh-CN.html",
+   "index_zh-TW.html",
    "index_zh-cn.html",
    "index_zh-tw.html",
    "index_zh.html"
@@ -7574,6 +7618,9 @@
    "index_zh-cn.html",
    "index_zh-tw.html",
    "index_zh.html"
+  ],
+  "Match my PC's theme colours": [
+   "site-init.js"
   ],
   "Matrix’s for Innioasis Y1 & Y2 by Yas": [
    "Matrix_s/index.html",
@@ -8902,6 +8949,12 @@
    "index_zh.html"
   ],
   "No themes from this gallery were found on your Y1. Use Direct Install on individual themes first, then return here to refresh them all.": [
+   "index_pt-BR.html",
+   "index_pt-PT.html",
+   "index_zh-CN.html",
+   "index_zh-TW.html"
+  ],
+  "No themes from this gallery were found on your Y1. Use Direct Install via USB on individual themes first, then return here to refresh them all.": [
    "index.html",
    "index_ar.html",
    "index_bn.html",
@@ -8927,8 +8980,6 @@
    "index_nl.html",
    "index_no.html",
    "index_pl.html",
-   "index_pt-BR.html",
-   "index_pt-PT.html",
    "index_pt-br.html",
    "index_pt-pt.html",
    "index_pt.html",
@@ -8939,8 +8990,6 @@
    "index_tr.html",
    "index_uk.html",
    "index_vi.html",
-   "index_zh-CN.html",
-   "index_zh-TW.html",
    "index_zh-cn.html",
    "index_zh-tw.html",
    "index_zh.html"
@@ -9007,6 +9056,9 @@
    "404_zh-cn.html",
    "404_zh-tw.html",
    "404_zh.html"
+  ],
+  "Nothing to report for what you have selected right now.": [
+   "nav.js"
   ],
   "Nothing to update.": [
    "index.html",
@@ -9547,9 +9599,6 @@
   ],
   "Organs with a blody kind of vibe": [
    "Creepy_bloody_vibe_idk/index.html"
-  ],
-  "Original Software, custom ROMs & guides": [
-   "nav.js"
   ],
   "Original theme": [
    "support_toolbar.html"
@@ -10239,10 +10288,10 @@
    "Plave/index_ja.html",
    "Plave/index_jp.html"
   ],
-  "Player Updates and Firmware": [
+  "Player manuals": [
    "nav.js"
   ],
-  "Player manuals": [
+  "Player updates": [
    "nav.js"
   ],
   "Please provide clear details so maintainers can review quickly.": [
@@ -10819,6 +10868,8 @@
    "index_nl.html",
    "index_no.html",
    "index_pl.html",
+   "index_pt-BR.html",
+   "index_pt-PT.html",
    "index_pt-br.html",
    "index_pt-pt.html",
    "index_pt.html",
@@ -10829,6 +10880,8 @@
    "index_tr.html",
    "index_uk.html",
    "index_vi.html",
+   "index_zh-CN.html",
+   "index_zh-TW.html",
    "index_zh-cn.html",
    "index_zh-tw.html",
    "index_zh.html"
@@ -11620,7 +11673,45 @@
    "site-locale.js"
   ],
   "Search themes": [
-   "index.html"
+   "index.html",
+   "index_ar.html",
+   "index_cs.html",
+   "index_da.html",
+   "index_de.html",
+   "index_el.html",
+   "index_es.html",
+   "index_fa.html",
+   "index_fi.html",
+   "index_fr.html",
+   "index_he.html",
+   "index_hi.html",
+   "index_hu.html",
+   "index_id.html",
+   "index_it.html",
+   "index_ja.html",
+   "index_jp.html",
+   "index_ko.html",
+   "index_kr.html",
+   "index_nl.html",
+   "index_no.html",
+   "index_pl.html",
+   "index_pt-BR.html",
+   "index_pt-PT.html",
+   "index_pt-br.html",
+   "index_pt-pt.html",
+   "index_pt.html",
+   "index_ro.html",
+   "index_ru.html",
+   "index_sv.html",
+   "index_th.html",
+   "index_tr.html",
+   "index_uk.html",
+   "index_vi.html",
+   "index_zh-CN.html",
+   "index_zh-TW.html",
+   "index_zh-cn.html",
+   "index_zh-tw.html",
+   "index_zh.html"
   ],
   "Seattle Kraken for Innioasis Y1 & Y2 by locker-room-kitty": [
    "Seattle_Kraken/index.html",
@@ -12160,6 +12251,9 @@
    "nav.js"
   ],
   "Software Updates": [
+   "nav.js"
+  ],
+  "Software and updates for your player": [
    "nav.js"
   ],
   "Sohn, ich bin traurig, sie machen mich so glücklich": [
@@ -16613,6 +16707,9 @@
    "DotDash_urva/index_ja.html",
    "DotDash_urva/index_jp.html"
   ],
+  "Use the site default": [
+   "site-init.js"
+  ],
   "Use variation": [
    "theme.html",
    "theme_ar.html",
@@ -17472,6 +17569,9 @@
    "Windows_7/index_fr.html",
    "Windows_7/index_ja.html",
    "Windows_7/index_jp.html"
+  ],
+  "Windows on ARM": [
+   "site-locale.js"
   ],
   "Wings of Fire for Innioasis Y1 & Y2 by rainy": [
    "Wings_of_Fire/index.html",

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-cn" dir="ltr" data-locale="zh-cn">
+<html lang="zh-CN" dir="ltr" data-locale="zh-CN">
 
 <head>
 <script>
@@ -40,7 +40,7 @@
     <meta property="og:type" content="website">
     <meta property="og:title" content="Innioasis Y1 和 Y2 的 Rockbox 主题 - Innioasis 主题库">
     <meta property="og:description" content="社区制作的 Innioasis Y1 和 Y2 Rockbox 主题。">
-    <meta property="og:url" content="https://themes.innioasis.app/index_zh-cn.html">
+    <meta property="og:url" content="https://themes.innioasis.app/index_zh-CN.html">
     <meta property="og:image" content="https://innioasis.app/y1_illustration.png">
 
     <meta name="twitter:card" content="summary_large_image">
@@ -53,29 +53,29 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
-    <link rel="stylesheet" href="site-theme.css?v=20261108headerfix">
-    <link rel="stylesheet" href="lumen.css?v=20261108headerfix">
+    <link rel="stylesheet" href="site-theme.css?v=20261110rows">
+    <link rel="stylesheet" href="lumen.css?v=20261110strip">
     <link rel="stylesheet" href="site-toolbar.css?v=20261108hero">
     <link rel="stylesheet" href="site-pages.css?v=20260622">
-    <link rel="stylesheet" href="y1-theme-preview.css?v=20260215">
+    <link rel="stylesheet" href="y1-theme-preview.css?v=20261109preview2">
     <link rel="stylesheet" href="theme-analytics.css?v=20260518">
     <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script defer src="theme-packaging.js?v=20261010perf"></script>
     <script src="theme-display-name.js?v=20260624"></script>
-    <script src="y1-theme-preview.js?v=20261109perf"></script>
+    <script src="y1-theme-preview.js?v=20261109preview2"></script>
     <script src="theme-artwork-compat.js?v=20260711"></script>
     <script src="gold-theme-detect.js?v=20261109perf"></script>
-    <script src="gallery-chrome.js?v=20261102header"></script>
+    <script src="gallery-chrome.js?v=20261110rows"></script>
     <script src="author-links.js?v=20260622"></script>
-    <script src="site-init.js?v=20260522privacy"></script>
+    <script src="site-init.js?v=20261110ink"></script>
     <script src="gallery-loaded-theme.js?v=20261109perf"></script>
     <script src="theme-share-links.js"></script>
     <script src="author-submission-policy.js?v=20260523"></script>
     <link rel="stylesheet" href="theme-frozen.css?v=20260526">
     <script src="theme-frozen.js?v=20260526"></script>
     <script src="theme-analytics.js?v=20260524b"></script>
-    <script src="themes-i18n.js?v=20261109lazy"></script>
+    <script src="themes-i18n.js?v=20261109live"></script>
 
     <style>
         html {
@@ -91,83 +91,7 @@
             display: none;
         }
 
-        .gallery-topbar {
-            position: sticky;
-            top: 0;
-            z-index: 1200;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            padding: 8px 16px;
-            /* Safari before 16.2 has no color-mix(); without a solid fallback
-               the sticky header painted nothing and page content showed
-               through it. Browsers with color-mix use the line below. */
-            background: #0c0e14;
-            background: color-mix(in oklab, var(--lumen-ink, #0c0e14) 92%, transparent);
-            border-bottom: 1px solid var(--lumen-line, rgba(255, 255, 255, 0.12));
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-        }
-
-        .gallery-tabs {
-            display: inline-flex;
-            gap: 3px;
-            padding: 3px;
-            border-radius: 9px;
-            background: var(--bg-card, #101217);
-            border: 1px solid var(--site-border, rgba(255, 255, 255, 0.08));
-        }
-
-        .gallery-tab {
-            padding: 8px 14px;
-            border-radius: 7px;
-            color: var(--text-secondary, #aeb6c5);
-            text-decoration: none;
-            font-size: clamp(0.82rem, 2.6vw, 0.95rem);
-            font-weight: 600;
-            border: 1px solid transparent;
-            line-height: 1.1;
-        }
-
-        .gallery-tab:hover {
-            color: var(--text-primary, #d9e0ef);
-        }
-
-        .gallery-tab.active {
-            color: var(--text-primary, #ffffff);
-            background: var(--site-bg-elevated, #2a2f3a);
-            border-color: var(--site-border, rgba(255, 255, 255, 0.18));
-            box-shadow: inset 0 -1px 0 var(--site-border, rgba(255, 255, 255, 0.12));
-        }
-
-        /* Search bar layout: see site-theme.css?v=20261108headerfix (flex icon + input) */
-
-        .gallery-tabs {
-            justify-self: center;
-            grid-column: 2;
-        }
-
-        @media (max-width: 900px) {
-            .gallery-topbar {
-                grid-template-columns: 1fr;
-                gap: 10px;
-            }
-
-            .gallery-tabs {
-                order: 1;
-                justify-self: center;
-                grid-column: auto;
-            }
-
-            .topbar-search-wrap {
-                order: 2;
-                max-width: 360px;
-                justify-self: center;
-                grid-column: auto;
-            }
-        }
-
+        /* Top bar and tab chrome live in lumen.css. */
         .wrap {
             max-width: 1200px;
             margin: 0 auto;
@@ -250,23 +174,23 @@
             width: 32px;
             height: 32px;
             border-radius: 8px;
-            background: rgba(15, 18, 28, 0.72);
-            color: #e8eeff;
+            background: var(--lumen-panel-soft);
+            color: var(--lumen-text);
             text-decoration: none;
-            border: 1px solid rgba(255, 255, 255, 0.14);
+            border: 1px solid var(--lumen-line);
             font-size: 0.88rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
         }
 
         .theme-card-corner-btn:hover {
-            background: rgba(88, 166, 255, 0.35);
-            border-color: rgba(88, 166, 255, 0.55);
-            color: #fff;
+            background: var(--lumen-accent-wash);
+            border-color: var(--lumen-accent);
+            color: var(--lumen-paper);
         }
 
         .theme-card-corner-btn--danger:hover {
-            background: rgba(248, 81, 73, 0.35);
-            border-color: rgba(248, 81, 73, 0.55);
+            background: var(--lumen-accent-wash);
+            border-color: var(--lumen-red);
+            color: var(--lumen-red);
         }
 
         @media (hover: none) and (pointer: coarse) {
@@ -327,8 +251,7 @@
             height: 100%;
             width: 0%;
             border-radius: inherit;
-            background: linear-gradient(90deg, #4a9eff, #64c8ff);
-            transition: width 0.2s ease;
+            background: linear-gradient(90deg, var(--lumen-accent), var(--lumen-accent-strong));
         }
 
         .bulk-update-status {
@@ -690,7 +613,7 @@
 
         .btn {
             background: var(--primary);
-            color: #fff;
+            color: var(--lumen-ink);
             padding: 8px 12px;
             border-radius: 8px;
             text-decoration: none;
@@ -842,7 +765,7 @@
         }
 
     </style>
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebSite", "@id": "https://themes.innioasis.app/#website", "url": "https://themes.innioasis.app/", "name": "Innioasis Themes Gallery", "alternateName": ["Innioasis Y1 and Y2 Themes Gallery", "Innioasis Themes"]}</script><meta property="og:site_name" content="Innioasis 主题画廊">  <link rel="canonical" href="https://themes.innioasis.app/index_zh-cn.html">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebSite", "@id": "https://themes.innioasis.app/#website", "url": "https://themes.innioasis.app/", "name": "Innioasis Themes Gallery", "alternateName": ["Innioasis Y1 and Y2 Themes Gallery", "Innioasis Themes"]}</script><meta property="og:site_name" content="Innioasis 主题画廊">  <link rel="canonical" href="https://themes.innioasis.app/index_zh-CN.html">
   <!-- i18n-hreflang-start -->
   <link rel="alternate" hreflang="x-default" href="https://themes.innioasis.app/index.html">
   <link rel="alternate" hreflang="en" href="https://themes.innioasis.app/index.html">
@@ -930,10 +853,10 @@
             </div>
         </section>
 
-        <div id="direct-install-banner" style="margin-top: 1.25rem; padding: 10px 14px; background: rgba(100, 200, 255, 0.08); border: 1px solid rgba(100, 200, 255, 0.22); border-radius: 10px; display: none;">
+        <div id="direct-install-banner" class="direct-install-note" style="margin-top: 1rem; display: none;">
             <div style="display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap;">
                 <div style="flex: 1 1 240px; min-width: 0;">
-                    <strong style="display: block; font-size: 0.92rem; line-height: 1.3;">直接安装</strong>
+                    <strong style="display: block; font-size: 0.92rem; line-height: 1.3;">Direct install via USB</strong>
                     <span style="font-size: 0.8rem; line-height: 1.35; color: var(--text-secondary);">直接安装到您的 Y1 或 Y2 - 选择播放器的主题文件夹，无需下载 zip。</span>
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
@@ -1038,7 +961,7 @@
     <div id="bulk-update-backdrop" role="dialog" aria-modal="true" aria-labelledby="bulk-update-title" hidden>
         <div class="bulk-update-panel">
             <h2 id="bulk-update-title">更新 Y1 上的所有主题</h2>
-            <p class="bulk-update-lead" id="bulk-update-lead">使用此库中的最新文件刷新 Y1 上已有的每个主题。未安装新主题 - 首先在每张卡上使用“直接安装”。</p>
+            <p class="bulk-update-lead" id="bulk-update-lead">Refresh every theme already on your Y1 with the latest files from this gallery. New themes are not installed - use Direct Install via USB on each card first.</p>
             <div class="bulk-update-overall-bar" aria-hidden="true">
                 <div class="bulk-update-overall-bar-inner" id="bulk-update-overall-bar"></div>
             </div>
@@ -1056,12 +979,12 @@
     <div id="footer-root"></div>
     <div id="support-toolbar-slot"></div>
 
-    <script src="nav.js?v=20261109cta"></script>
+    <script src="nav.js?v=20261110notices"></script>
     <script>
         const rbBtn = document.getElementById('rockbox-btn')
         const ROCKBOX_THEMES_URL = 'https://github.com/rockbox-y1/themes/releases/tag/for_the_gays_and_the_theys'
 
-        const supportDirectInstall = typeof window.showDirectoryPicker === 'function';
+        const supportDirectInstall = typeof window.showDirectoryPicker === 'function' && window.isSecureContext !== false;
         let selectedThemesFolder = null;
         let galleryCatalogThemes = [];
         let bulkUpdateQueue = [];
@@ -1401,7 +1324,7 @@
                     di.disabled = false;
                     di.style.opacity = '1';
                     di.style.cursor = 'pointer';
-                    di.innerHTML = '<i class="fa-solid fa-bolt"></i> Direct Install';
+                    di.innerHTML = 'Direct Install via USB';
                 }
                 return;
             }
@@ -1462,7 +1385,7 @@
         function configureBulkUpdateModalEmpty() {
             if (bulkUpdateLeadEl) {
                 bulkUpdateLeadEl.textContent =
-                    'No themes from this gallery were found on your Y1. Use Direct Install on individual themes first, then return here to refresh them all.';
+                    'No themes from this gallery were found on your Y1. Use Direct Install via USB on individual themes first, then return here to refresh them all.';
             }
             if (bulkUpdateCountEl) bulkUpdateCountEl.textContent = '0 themes on device';
             if (bulkUpdateStatusEl) bulkUpdateStatusEl.textContent = 'Nothing to update.';
@@ -1692,7 +1615,7 @@
         }
 
         function scrollToGalleryStart() {
-            const target = document.getElementById('gallery-ad-top')
+            const target = document.querySelector('.gallery-action-row--top')
                 || pagerTopEl
                 || document.getElementById('theme-grid');
             if (!target) return;
@@ -4944,7 +4867,7 @@
                 di.style.opacity = '0.5';
                 di.style.cursor = 'not-allowed';
                 di.disabled = true;
-                di.innerHTML = '<i class="fa-solid fa-bolt"></i> Direct Install';
+                di.innerHTML = 'Direct Install via USB';
                 di.type = 'button';
                 di.onclick = () => directInstallTheme(theme, di, readCardVariantInstallHints(c));
                 di.setAttribute('data-direct-install-btn', 'true');
@@ -5219,7 +5142,7 @@
                 }
                 const diBtn = card.querySelector('[data-direct-install-btn]');
                 if (diBtn) {
-                    diBtn.textContent = _t('Install to Y1') || _t('Direct Install');
+                    diBtn.textContent = _t('Direct Install via USB') || 'Direct Install via USB';
                 }
                 const goldBadge = card.querySelector('.theme-gold-title-badge');
                 if (goldBadge) goldBadge.textContent = _t('Gold');
@@ -5240,6 +5163,6 @@
 
         load()
     </script>
-<script src="site-locale.js?v=20261109i18n" defer></script></body>
+<script src="site-locale.js?v=20261109live" defer></script></body>
 
 </html>
