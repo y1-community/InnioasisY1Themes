@@ -31,6 +31,7 @@ import pathlib
 import re
 import subprocess
 import sys
+from pathlib import Path
 from urllib.parse import quote
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -274,11 +275,70 @@ def build() -> dict[pathlib.Path, str]:
         children.append((f"{SITE}/{name}", max((e[1] for e in chunk), default="")))
     if len(chunks) > 1:
         outputs[REPO_ROOT / "sitemap-i18n.xml"] = _render_index(children)
+    images = _image_sitemap()
+    outputs[REPO_ROOT / "sitemap-images.xml"] = images
     outputs[REPO_ROOT / "sitemap-index.xml"] = _render_index(
         [(f"{SITE}/sitemap.xml", max((e[1] for e in main), default="")),
-         (f"{SITE}/sitemap-i18n.xml", max((item[1] for item in children), default=""))]
+         (f"{SITE}/sitemap-i18n.xml", max((item[1] for item in children), default="")),
+         (f"{SITE}/sitemap-images.xml", _today())]
     )
     return outputs
+
+
+def _image_sitemap() -> str:
+    hidden, _ = _listed_folders()
+    try:
+        catalog = json.loads((REPO_ROOT / "themes.json").read_text(encoding="utf-8")).get("themes", [])
+    except (OSError, ValueError):
+        catalog = []
+    names = {}
+    shots = {}
+    for item in catalog:
+        folder = str(item.get("folder") or "").strip().strip("/")
+        if folder:
+            names[folder] = str(item.get("name") or folder)
+            shots[folder] = str(item.get("screenshot") or "")
+    lines = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">',
+    ]
+    for folder in sorted(names, key=str.casefold):
+        if folder in hidden or "/" in folder or folder.startswith("."):
+            continue
+        directory = REPO_ROOT / folder
+        if not (directory / "index.html").is_file():
+            continue
+        image = _cover_url(directory, shots.get(folder, ""))
+        if not image:
+            continue
+        title = names[folder].replace("&", "&amp;").replace("<", "&lt;")
+        loc = _encode([folder])
+        lines += [
+            "  <url>",
+            f"    <loc>{loc}</loc>",
+            "    <image:image>",
+            f"    <image:loc>{image}</image:loc>",
+            f"    <image:title>{title}</image:title>",
+            "    </image:image>",
+            "  </url>",
+        ]
+    lines.append("</urlset>")
+    return "\n".join(lines) + "\n"
+
+
+def _cover_url(directory: pathlib.Path, screenshot: str) -> str:
+    candidates = []
+    shot = screenshot.replace("\\", "/").split("?")[0]
+    if shot:
+        candidates.append(shot.lstrip("./"))
+    for name in ("cover.jpg", "cover.png", "cover.webp", "cover-thumb.jpg"):
+        candidates.append(f"{directory.name}/{name}")
+    for rel in candidates:
+        path = REPO_ROOT / rel
+        if path.is_file() and path.suffix.lower() in {".jpg", ".jpeg", ".png", ".gif", ".webp"}:
+            parts = [quote(part, safe="") for part in Path(rel).parts]
+            return SITE + "/" + "/".join(parts)
+    return ""
 
 
 def main() -> int:
