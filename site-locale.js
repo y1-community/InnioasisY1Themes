@@ -35,7 +35,7 @@
     /* Catalogs are re-fetched under a new URL when their content changes.
        Without this a returning visitor keeps the copy they cached, so a
        language whose catalog was just completed still reads as English. */
-    var CATALOG_VERSION = "20261109i18n";
+    var CATALOG_VERSION = "20261110i18n";
     var STORAGE_LOCALE = "innioasis-locale";
     var STORAGE_REGION = "innioasis-region";
     var STORAGE_COUNTRY = "innioasis-country";
@@ -529,9 +529,16 @@
     ].join(", ");
     var DYNAMIC_CACHE_KEY = "innioasis-dynamic-translations";
     var DYNAMIC_MAX_REQUESTS = 800;
-    /* Missing strings share a request. One batch is in flight at a time so a
-       page in another language does not open hundreds of connections. */
-    var DYNAMIC_BATCH_MAX = 32;
+    /* Missing strings share a request. A few batches run together so the
+       visible page finishes without opening a connection per string. */
+    var DYNAMIC_BATCH_MAX = 48;
+    var DYNAMIC_CONCURRENCY = (function () {
+        var cores = (typeof navigator !== "undefined" && navigator.hardwareConcurrency) || 8;
+        var ua = (typeof navigator !== "undefined" && navigator.userAgent) || "";
+        var mobile = /Android|iPhone|iPad|iPod|Mobile/i.test(ua);
+        try { if (navigator.userAgentData && navigator.userAgentData.mobile) mobile = true; } catch (_) {}
+        return (mobile || cores <= 4) ? 1 : 2;
+    })();
     var DYNAMIC_BATCH_URL = 6000;
     /* gtx answers without CORS headers once it rate limits, which is a failed
        fetch rather than a status. Remember it and go straight to the endpoint
@@ -767,20 +774,19 @@
     }
 
     function scheduleDynamicDrain() {
-        if (dynamicInFlight || dynamicDrainTimer || !dynamicQueue.length) return;
-        var run = function () {
+        if (dynamicDrainTimer || !dynamicQueue.length) return;
+        dynamicDrainTimer = setTimeout(function () {
             dynamicDrainTimer = null;
-            drainDynamic();
-        };
-        if (typeof global.requestIdleCallback === "function") {
-            dynamicDrainTimer = global.requestIdleCallback(run, { timeout: 200 });
-        } else {
-            dynamicDrainTimer = setTimeout(run, 40);
-        }
+            var guard = 0;
+            while (dynamicInFlight < DYNAMIC_CONCURRENCY && dynamicQueue.length && guard < DYNAMIC_CONCURRENCY) {
+                drainDynamic();
+                guard += 1;
+            }
+        }, 0);
     }
 
     function drainDynamic() {
-        if (dynamicInFlight || !dynamicQueue.length) {
+        if (dynamicInFlight >= DYNAMIC_CONCURRENCY || !dynamicQueue.length) {
             updateToolbarTranslatingState();
             return;
         }
@@ -795,7 +801,7 @@
             var masked = maskBrands(item.text);
             return { key: item.key, text: item.text, hidden: masked.text, found: masked.found };
         });
-        dynamicInFlight = 1;
+        dynamicInFlight += 1;
         dynamicRequests += prepared.length;
         updateToolbarTranslatingState();
         requestDynamicBatch(prepared).then(function (list) {
@@ -816,7 +822,7 @@
             }
             prepared.forEach(function (item) { settleDynamic(item, ""); });
         }).then(function () {
-            dynamicInFlight = 0;
+            dynamicInFlight -= 1;
             updateToolbarTranslatingState();
             if (dynamicQueue.length) scheduleDynamicDrain();
         });
