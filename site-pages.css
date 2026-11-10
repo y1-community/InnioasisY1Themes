@@ -51,6 +51,33 @@ body.site-themes-app #assets-list {
     overflow: auto;
 }
 
+.software-themes-page h1 {
+    margin: 0 0 0.6rem;
+}
+
+.software-themes-page h2 {
+    margin: 1.6rem 0 0.4rem;
+    font-size: 1.35rem;
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+.software-themes-page .site-lead,
+.software-themes-page p {
+    max-width: 40rem;
+}
+
+.software-themes-related {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem 1rem;
+    margin-top: 1.75rem;
+}
+
+.software-themes-related a {
+    font-weight: 600;
+}
+
 /* —— Report / upload prose —— */
 body.site-themes-app .wrap {
     color: var(--site-text);

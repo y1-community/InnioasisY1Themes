@@ -124,10 +124,15 @@ def _tracked_root_html() -> list[str]:
     sitemap then omits a URL the site actually serves.
     """
     raw = subprocess.check_output(["git", "ls-files", "-z"], cwd=REPO_ROOT)
-    names = [
+    names = {
         path for path in raw.decode("utf-8", "surrogateescape").split("\0")
         if path.endswith(".html") and "/" not in path
-    ]
+    }
+    # New pages are worth listing before they are committed, so a local
+    # refresh and the GitHub Action both see the file on disk.
+    for path in REPO_ROOT.glob("*.html"):
+        if path.is_file():
+            names.add(path.name)
     return sorted(names, key=str.casefold)
 
 
@@ -147,7 +152,8 @@ def _blob_prefixes(names: list[str], limit: int = 6000) -> dict[str, str]:
         proc.stdin.flush()
         header = proc.stdout.readline()
         if b" missing" in header:
-            found[name] = ""
+            disk = REPO_ROOT / name
+            found[name] = disk.read_text(encoding="utf-8", errors="ignore")[:limit] if disk.is_file() else ""
             continue
         size = int(header.split()[-1])
         data = proc.stdout.read(size)

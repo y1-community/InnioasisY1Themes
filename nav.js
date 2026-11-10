@@ -543,7 +543,6 @@
     var t = document.title || "";
     if (isThemesSite) {
       if (path === "" || path === "/" || path.endsWith("/index.html")) {
-        document.title = "Innioasis Themes Gallery - Y1 and Y2 Rockbox themes";
         return;
       }
       if (t.indexOf("Themes Gallery") === -1) {
@@ -1658,6 +1657,12 @@
         : '<a href="' + escapeHtml(decorateMainSiteHref("/firmware.html?view=software")) + '">Software Updates</a>' +
           '<a href="' + escapeHtml(decorateMainSiteHref("/firmware.html?view=firmware")) + '">Custom software</a>'
       ) +
+      (isThemesSite
+        ? '<a href="/better-y-themes.html">Better-Y themes</a>' +
+          '<a href="/rockbox-themes.html">Rockbox themes</a>' +
+          '<a href="/koensayr-themes.html">Koensayr themes</a>' +
+          '<a href="/solar-themes.html">Solar themes</a>'
+        : '') +
       '<a href="' + escapeHtml(decorateMainSiteHref("/rockbox-benefits.html")) + '">Rockbox on Innioasis</a>' +
       '<a href="' + escapeHtml(decorateMainSiteHref("/reborn-y2linux-benefits.html")) + '">Reborn (Y2Linux) for Y2</a>' +
       '<a href="' + escapeHtml(decorateMainSiteHref("/rondo-benefits.html")) + '">Rondo for Y1</a>' +
