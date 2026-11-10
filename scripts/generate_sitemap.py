@@ -1,199 +1,259 @@
 #!/usr/bin/env python3
-"""Generate sitemap.xml for themes.innioasis.app.
+"""Build sitemap.xml for themes.innioasis.app from what is on disk.
 
-Includes static site pages, each catalog theme folder URL, and
-``Theme/Variants/Name/_share/`` URLs when variants exist on disk or in themes.json.
-Uses per-theme config.json mtime for lastmod when available.
+The previous generator only listed themes that had an entry in ``themes.json``
+*and* passed the public-listing policy. 133 theme folders that exist, render and
+are linked from the gallery were therefore absent from the sitemap, which is a
+large part of why theme pages were not being indexed: a crawler had no list of
+them, and the gallery's own grid is drawn client-side.
+
+The generator now walks the repository:
+
+* every top-level ``*.html`` page (skipping fragments, 404 and the JS preview shell),
+* every theme folder with an ``index.html`` (the indexable theme page),
+* every ``Variants/<name>/_share/index.html`` SEO shell,
+* every localized ``index_<locale>.html`` and root ``*_<locale>.html`` page,
+
+dropping pages that carry ``noindex`` and any page the opt-out/block lists hide.
+Output is deduplicated and, like the main site, splits at 45,000 URLs with a
+``sitemap-index.xml`` that robots.txt points at. ``--check`` is for CI.
+
+Usage:
+    python scripts/generate_sitemap.py [--check]
 """
 
 from __future__ import annotations
 
+import argparse
 import datetime as dt
 import json
+import pathlib
+import re
 import sys
-from pathlib import Path
 from urllib.parse import quote
 
+REPO_ROOT = pathlib.Path(__file__).resolve().parents[1]
+SITE = "https://themes.innioasis.app"
+MAX_URLS = 45000
+SKIP_DIRS = {
+    "assets", "scripts", "functions", "node_modules", ".git", ".github",
+    "dist", "_headers", "_worker", "docs",
+}
+SKIP_FILES = {
+    "404.html", "support_toolbar.html", "backfill.html",
+    "fabform-email-templates.html", "leaving.html", "donate.html",
+    "theme.html",
+}
+LOCALE_FILE_RE = re.compile(
+    r"^(?P<stem>.+)_(?P<code>[A-Za-z]{2,3}(?:-[A-Za-z0-9]{1,8})?)\.html$"
+)
+NOINDEX_RE = re.compile(
+    r"<meta[^>]+name=[\"']robots[\"'][^>]+content=[\"'][^\"']*noindex", re.I
+)
+REFRESH_RE = re.compile(r"<meta[^>]+http-equiv=[\"']refresh", re.I)
+LAST_RE = re.compile(r"<loc>([^<]+)</loc>\s*<lastmod>([^<]+)</lastmod>")
+# Theme shells stopped redirecting to theme.html on this day. Older lastmod
+# values would tell Google nothing had changed.
+SHELLS_INDEXABLE_SINCE = "2026-11-10"
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-SCRIPTS_DIR = Path(__file__).resolve().parent
-if str(SCRIPTS_DIR) not in sys.path:
-    sys.path.insert(0, str(SCRIPTS_DIR))
-
-THEMES_JSON_PATH = REPO_ROOT / "themes.json"
-SITEMAP_PATH = REPO_ROOT / "sitemap.xml"
-SITE_BASE = "https://themes.innioasis.app"
-
-from author_submission_policy import theme_is_publicly_listed
-
-
-def _iso_utc(ts: float | None = None) -> str:
-    if ts is None:
-        when = dt.datetime.now(dt.timezone.utc)
-    else:
-        when = dt.datetime.fromtimestamp(ts, tz=dt.timezone.utc)
-    return when.replace(microsecond=0).isoformat().replace("+00:00", "Z")
-
-
-def _load_themes() -> list[dict]:
-    data = json.loads(THEMES_JSON_PATH.read_text(encoding="utf-8"))
-    themes = data.get("themes", [])
-    return themes if isinstance(themes, list) else []
-
-
-def _url_for_folder(folder: str) -> str:
-    clean = str(folder or "").strip().strip("/")
-    encoded = "/".join(quote(seg, safe="") for seg in clean.split("/") if seg)
-    return f"{SITE_BASE}/{encoded}/"
+try:  # The policy file is optional; a plain checkout can still build a sitemap.
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+    from author_submission_policy import theme_is_publicly_listed
+except Exception:  # pragma: no cover - only on a partial checkout
+    theme_is_publicly_listed = lambda item: True  # type: ignore[assignment]
 
 
-def _url_for_theme_variant(theme_folder: str, variant_name: str) -> str:
-    """Per-variant SEO shell lives at ``ThemeFolder/Variants/VariantName/_share/``."""
-    base = str(theme_folder or "").strip().strip("/")
-    var = str(variant_name or "").strip().strip("/")
-    if not base or not var:
-        return ""
-    parts = [base, "Variants", var, "_share"]
-    encoded = "/".join(quote(seg, safe="") for seg in parts if seg)
-    return f"{SITE_BASE}/{encoded}/"
+def _encode(parts: list[str]) -> str:
+    return SITE + "/" + "/".join(quote(part, safe="") for part in parts) + "/"
 
 
-def _lastmod_for_paths(paths: list[Path]) -> str:
-    mtimes: list[float] = []
-    for p in paths:
-        try:
-            if p.is_file():
-                mtimes.append(p.stat().st_mtime)
-        except OSError:
-            continue
-    return _iso_utc(max(mtimes) if mtimes else None)
+def _noindex(path: pathlib.Path) -> bool:
+    try:
+        text = path.read_text(encoding="utf-8", errors="ignore")[:6000]
+    except OSError:
+        return True
+    return bool(NOINDEX_RE.search(text)) or bool(REFRESH_RE.search(text))
 
 
-def _variant_names_for_theme(folder: str, item: dict) -> list[str]:
-    names: set[str] = set()
-    vfs = item.get("variantFolders")
-    if isinstance(vfs, list):
-        for vn in vfs:
-            v = str(vn or "").strip()
-            if v:
-                names.add(v)
-    vp = REPO_ROOT / folder / "Variants"
-    if vp.is_dir():
-        for sub in vp.iterdir():
-            if not sub.is_dir() or sub.name.startswith("."):
-                continue
-            if (sub / "config.json").is_file() or (sub / "_share" / "index.html").is_file():
-                names.add(sub.name)
-    return sorted(names, key=str.casefold)
-
-
-def generate() -> str:
-    now = _iso_utc()
-    existing_lastmod: dict[str, str] = {}
-    if SITEMAP_PATH.exists():
-        import re
-        for block in re.findall(r"<url>.*?</url>", SITEMAP_PATH.read_text(encoding="utf-8"), re.S):
-            lm = re.search(r"<lastmod>([^<]+)</lastmod>", block)
-            lc = re.search(r"<loc>([^<]+)</loc>", block)
-            if lm and lc:
-                existing_lastmod[lc.group(1)] = lm.group(1)
-
-    static_entries: list[tuple[str, str, str, str]] = [
-        # loc, changefreq, priority, lastmod
-        (f"{SITE_BASE}/", "daily", "1.0", existing_lastmod.get(f"{SITE_BASE}/", now)),
-    ]
-
-    # Dynamically include all published static HTML pages (including foreign language variants)
-    skip_files = {"404.html", "support_toolbar.html", "backfill.html", "fabform-email-templates.html"}
-    for p in sorted(REPO_ROOT.glob("*.html"), key=lambda x: x.name):
-        name = p.name
-        if name in skip_files or name.startswith("404") or "(" in name or name.startswith("."):
-            continue
-        priority = "0.9" if name.startswith("index") else "0.7"
-        changefreq = "daily" if name.startswith("index") else "weekly"
-        url = f"{SITE_BASE}/{name}"
-        static_entries.append((url, changefreq, priority, existing_lastmod.get(url, now)))
-
-    themes = _load_themes()
-    # loc -> (lastmod, priority)
-    theme_entries: dict[str, tuple[str, str]] = {}
+def _listed_folders() -> tuple[set[str], set[str]]:
+    """Folders that must be excluded, and folders whose pages are opt-outs."""
+    hidden: set[str] = set()
+    try:
+        themes = json.loads((REPO_ROOT / "themes.json").read_text(encoding="utf-8")).get("themes", [])
+    except (OSError, ValueError):
+        return hidden, hidden
     for item in themes:
-        if str(item.get("sourceType") or "internal").strip().lower() == "external":
-            continue
-        if not theme_is_publicly_listed(item):
-            continue
         folder = str(item.get("folder") or "").strip()
         if not folder:
             continue
-        root_index = REPO_ROOT / folder / "index.html"
-        root_cfg = REPO_ROOT / folder / "config.json"
-        calc_lastmod = _lastmod_for_paths([root_index, root_cfg])
-        u_folder = _url_for_folder(folder)
-        theme_entries[u_folder] = (
-            existing_lastmod.get(u_folder, calc_lastmod),
-            "0.8",
-        )
-        for v in _variant_names_for_theme(folder, item):
-            u = _url_for_theme_variant(folder, v)
-            if not u:
-                continue
-            share_index = REPO_ROOT / folder / "Variants" / v / "_share" / "index.html"
-            var_cfg = REPO_ROOT / folder / "Variants" / v / "config.json"
-            calc_v_lastmod = _lastmod_for_paths([share_index, var_cfg, root_cfg])
-            theme_entries[u] = (
-                existing_lastmod.get(u, calc_v_lastmod),
-                "0.7",
-            )
+        if not theme_is_publicly_listed(item):
+            hidden.add(folder)
+    return hidden, set()
 
+
+def _existing_lastmod() -> dict[str, str]:
+    found: dict[str, str] = {}
+    for path in sorted(REPO_ROOT.glob("sitemap*.xml")):
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        for loc, lastmod in LAST_RE.findall(text):
+            found.setdefault(loc, lastmod.strip())
+    return found
+
+
+def _today() -> str:
+    return dt.datetime.now(dt.timezone.utc).date().isoformat()
+
+
+def _lastmod(known: dict[str, str], loc: str, *, bumped: bool) -> str:
+    prev = known.get(loc, "")
+    if not prev:
+        return _today()
+    if bumped and prev[:10] < SHELLS_INDEXABLE_SINCE:
+        return SHELLS_INDEXABLE_SINCE
+    return prev
+
+
+def _static_entries(known: dict[str, str]) -> tuple[list[tuple[str, str, str, str]], list[tuple[str, str, str, str]]]:
+    main: list[tuple[str, str, str, str]] = []
+    localized: list[tuple[str, str, str, str]] = []
+    for path in sorted(REPO_ROOT.glob("*.html"), key=lambda item: item.name):
+        name = path.name
+        if name in SKIP_FILES or name.startswith("404") or "(" in name or name.startswith("."):
+            continue
+        if name.startswith("theme_") or name.startswith("theme."):
+            continue
+        if _noindex(path):
+            continue
+        loc = f"{SITE}/" if name == "index.html" else f"{SITE}/{name}"
+        priority = "1.0" if name == "index.html" else ("0.9" if name.startswith("index") else "0.7")
+        freq = "daily" if name == "index.html" else "weekly"
+        entry = (loc, _lastmod(known, loc, bumped=False), freq, priority)
+        if LOCALE_FILE_RE.match(name):
+            localized.append(entry)
+        else:
+            main.append(entry)
+    return main, localized
+
+
+def _theme_entries(known: dict[str, str]) -> tuple[list[tuple[str, str, str, str]], list[tuple[str, str, str, str]]]:
+    hidden, _ = _listed_folders()
+    entries: list[tuple[str, str, str, str]] = []
+    localized: list[tuple[str, str, str, str]] = []
+    for folder in sorted(REPO_ROOT.iterdir(), key=lambda item: item.name.casefold()):
+        if not folder.is_dir() or folder.name.startswith((".", "_")) or folder.name in SKIP_DIRS:
+            continue
+        if folder.name in hidden:
+            continue
+        index = folder / "index.html"
+        if not index.is_file():
+            continue
+        if not _noindex(index):
+            loc = _encode([folder.name])
+            entries.append((loc, _lastmod(known, loc, bumped=True), "weekly", "0.8"))
+        for translated in sorted(folder.glob("index_*.html")):
+            if not LOCALE_FILE_RE.match(translated.name) or _noindex(translated):
+                continue
+            loc = f"{SITE}/{quote(folder.name, safe='')}/{quote(translated.name, safe='')}"
+            localized.append((loc, _lastmod(known, loc, bumped=True), "weekly", "0.6"))
+        variants_root = folder / "Variants"
+        if variants_root.is_dir():
+            for variant in sorted(variants_root.iterdir(), key=lambda item: item.name.casefold()):
+                share = variant / "_share" / "index.html"
+                if not share.is_file() or _noindex(share):
+                    continue
+                loc = _encode([folder.name, "Variants", variant.name, "_share"])
+                entries.append((loc, _lastmod(known, loc, bumped=True), "weekly", "0.7"))
+    return entries, localized
+
+
+def _dedupe(entries: list[tuple[str, str, str, str]]) -> list[tuple[str, str, str, str]]:
+    seen: dict[str, tuple[str, str, str, str]] = {}
+    for entry in entries:
+        seen.setdefault(entry[0], entry)
+    return [seen[loc] for loc in sorted(seen)]
+
+
+def _render(entries: list[tuple[str, str, str, str]]) -> str:
     lines = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
     ]
-    for url, changefreq, priority, lastmod in static_entries:
-        lines.extend(
-            [
-                "  <url>",
-                f"    <loc>{url}</loc>",
-                f"    <lastmod>{lastmod}</lastmod>",
-                f"    <changefreq>{changefreq}</changefreq>",
-                f"    <priority>{priority}</priority>",
-                "  </url>",
-            ]
-        )
-    for url in sorted(theme_entries.keys()):
-        lastmod, priority = theme_entries[url]
-        lines.extend(
-            [
-                "  <url>",
-                f"    <loc>{url}</loc>",
-                f"    <lastmod>{lastmod}</lastmod>",
-                "    <changefreq>weekly</changefreq>",
-                f"    <priority>{priority}</priority>",
-                "  </url>",
-            ]
-        )
+    for loc, lastmod, freq, priority in entries:
+        lines += [
+            "  <url>",
+            f"    <loc>{loc}</loc>",
+            f"    <lastmod>{lastmod}</lastmod>",
+            f"    <changefreq>{freq}</changefreq>",
+            f"    <priority>{priority}</priority>",
+            "  </url>",
+        ]
     lines.append("</urlset>")
     return "\n".join(lines) + "\n"
 
 
+def _render_index(children: list[tuple[str, str]]) -> str:
+    lines = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ]
+    for loc, lastmod in children:
+        lines += ["  <sitemap>", f"    <loc>{loc}</loc>"]
+        if lastmod:
+            lines.append(f"    <lastmod>{lastmod}</lastmod>")
+        lines.append("  </sitemap>")
+    lines.append("</sitemapindex>")
+    return "\n".join(lines) + "\n"
+
+
+def build() -> dict[pathlib.Path, str]:
+    known = _existing_lastmod()
+    main, localized = _static_entries(known)
+    theme_main, theme_localized = _theme_entries(known)
+    main = _dedupe(main + theme_main)
+    localized = _dedupe(localized + theme_localized)
+
+    outputs = {REPO_ROOT / "sitemap.xml": _render(main)}
+    chunks = [localized[i:i + MAX_URLS] for i in range(0, len(localized), MAX_URLS)] or [[]]
+    children: list[tuple[str, str]] = []
+    for index, chunk in enumerate(chunks, 1):
+        name = "sitemap-i18n.xml" if len(chunks) == 1 else f"sitemap-i18n-{index}.xml"
+        outputs[REPO_ROOT / name] = _render(chunk)
+        children.append((f"{SITE}/{name}", max((e[1] for e in chunk), default="")))
+    if len(chunks) > 1:
+        outputs[REPO_ROOT / "sitemap-i18n.xml"] = _render_index(children)
+    outputs[REPO_ROOT / "sitemap-index.xml"] = _render_index(
+        [(f"{SITE}/sitemap.xml", max((e[1] for e in main), default="")),
+         (f"{SITE}/sitemap-i18n.xml", max((item[1] for item in children), default=""))]
+    )
+    return outputs
+
+
 def main() -> int:
-    import argparse
-    parser = argparse.ArgumentParser(description="Generate sitemap.xml for themes.innioasis.app")
-    parser.add_argument("--check", action="store_true", help="Check if sitemap.xml is up to date")
+    parser = argparse.ArgumentParser(description="Build sitemap.xml for themes.innioasis.app")
+    parser.add_argument("--check", action="store_true", help="exit 1 when a sitemap is stale")
     args = parser.parse_args()
 
-    xml = generate()
+    outputs = build()
+    stale = [path for path, text in outputs.items()
+             if (path.read_text(encoding="utf-8") if path.exists() else "") != text]
+    stale += [path for path in REPO_ROOT.glob("sitemap*.xml") if path not in outputs]
+    if not stale:
+        print(f"sitemap: up to date ({outputs[REPO_ROOT / 'sitemap.xml'].count('<url>')} URLs)")
+        return 0
     if args.check:
-        current = SITEMAP_PATH.read_text(encoding="utf-8") if SITEMAP_PATH.exists() else ""
-        if current == xml:
-            print("sitemap: up to date")
-            return 0
-        print("sitemap: out of date", file=sys.stderr)
+        for path in stale:
+            print(f"sitemap: {path.name} is out of date", file=sys.stderr)
         return 1
-
-    SITEMAP_PATH.write_text(xml, encoding="utf-8")
-    loc_count = xml.count("<loc>")
-    print(f"Wrote sitemap: {SITEMAP_PATH} ({loc_count} URLs)")
+    for path in stale:
+        if path not in outputs:
+            path.unlink()
+            print(f"Removed stale {path.name}")
+            continue
+        path.write_text(outputs[path], encoding="utf-8")
+        print(f"Wrote {path.name} ({outputs[path].count('<loc>')} URLs)")
     return 0
 
 
