@@ -54,6 +54,9 @@
   "A coffee or two keeps our servers online this month": [
    "support_toolbar.html"
   ],
+  "A computer with a USB cable, or a Solar player with Wi-Fi": [
+   "how-to-install-y1-y2-themes.html"
+  ],
   "A custom theme for the Y1 inspired by the album cover for “Speak For Yourself” by Imogen Heap.": [
    "SFYtheme/index.html"
   ],
@@ -347,6 +350,9 @@
    "upload_zh-cn.html",
    "upload_zh-tw.html",
    "upload_zh.html"
+  ],
+  "Add the theme with Updater CE, copy it to the player's theme folder over USB, or download it on the player when running Solar.": [
+   "how-to-install-y1-y2-themes.html"
   ],
   "Adjust how your listing reads on the gallery - no files required.": [
    "upload.html",
@@ -751,6 +757,18 @@
    "AppleMusic/index_ja.html",
    "AppleMusic/index_jp.html"
   ],
+  "Are Koensayr themes different from other Innioasis Y1 and Y2 themes?": [
+   "koensayr-themes.html"
+  ],
+  "Are Rockbox themes compatible with Better-Y, Koensayr, Solar or the Original Software?": [
+   "rockbox-themes.html"
+  ],
+  "Are Solar themes the same as Rockbox themes?": [
+   "solar-themes.html"
+  ],
+  "Are all Innioasis Y1 and Y2 themes compatible with every firmware?": [
+   "y1-y2-theme-compatibility.html"
+  ],
   "Arial, \"Helvetica Neue\", Helvetica, sans-serif": [
    "index.html",
    "index_ar.html",
@@ -1125,6 +1143,9 @@
   "Bebop-Theme, ich habe dafür die Credits anderer Leute verwendet": [
    "cowboy_bebop/index_de.html"
   ],
+  "Because they are a different file format with different installation rules. Keeping them in their own collection stops people installing a theme on software that cannot read it.": [
+   "rockbox-themes.html"
+  ],
   "Beetle for Innioasis Y1 & Y2 by Zhepha": [
    "Beetle/index.html",
    "Beetle/index_de.html",
@@ -1151,6 +1172,26 @@
   ],
   "Benutzerdefiniertes Theme, das ich für mein Y2 von Toris Sailor Moon überarbeitet habe. Ich hoffe, es gefällt euch allen!": [
    "Purple_Lo-fi/index_de.html"
+  ],
+  "Better-Y themes": [
+   "better-y-themes.html",
+   "index.html",
+   "nav.js"
+  ],
+  "Better-Y themes for Innioasis Y1": [
+   "index.html"
+  ],
+  "Better-Y themes for Innioasis Y2": [
+   "index.html"
+  ],
+  "Better-Y themes for the Innioasis Y1 and Y2": [
+   "better-y-themes.html"
+  ],
+  "Better-Y themes for the Innioasis Y1 and Y2. The same theme format is used by Koensayr, Solar and the Original Software, so one gallery theme works across all four.": [
+   "better-y-themes.html"
+  ],
+  "Better-Y, Koensayr, Solar and the Original Software share one theme format. Rockbox themes use their own format and are not interchangeable.": [
+   "y1-y2-theme-compatibility.html"
   ],
   "Billie Eilish Edition - Innioasis Y1 and Y2 Themes Gallery": [
    "Billie_Eilish_Edition/index.html"
@@ -1603,6 +1644,9 @@
   ],
   "Cambiar a español": [
    "site-locale.js"
+  ],
+  "Can I use a Koensayr theme if I switch to Better-Y or Solar?": [
+   "koensayr-themes.html"
   ],
   "Cancel update": [
    "index.html",
@@ -3489,12 +3533,6 @@
    "Dior/index_ja.html",
    "Dior/index_jp.html"
   ],
-  "Direct Install": [
-   "index_pt-br.html",
-   "index_pt-pt.html",
-   "index_zh-cn.html",
-   "index_zh-tw.html"
-  ],
   "Direct Install via USB": [
    "index.html",
    "index_ar.html",
@@ -3523,6 +3561,8 @@
    "index_pl.html",
    "index_pt-BR.html",
    "index_pt-PT.html",
+   "index_pt-br.html",
+   "index_pt-pt.html",
    "index_pt.html",
    "index_ro.html",
    "index_ru.html",
@@ -3533,6 +3573,8 @@
    "index_vi.html",
    "index_zh-CN.html",
    "index_zh-TW.html",
+   "index_zh-cn.html",
+   "index_zh-tw.html",
    "index_zh.html"
   ],
   "Direct install failed": [
@@ -3588,6 +3630,33 @@
   ],
   "Diseño negro sencillo.": [
    "Simple_Black/index_es.html"
+  ],
+  "Do Better-Y themes for the Y1 work on the Y2?": [
+   "better-y-themes.html"
+  ],
+  "Do Better-Y themes work with Koensayr, Solar and the Original Software?": [
+   "better-y-themes.html"
+  ],
+  "Do I need Updater CE to install a theme?": [
+   "how-to-install-y1-y2-themes.html"
+  ],
+  "Do Rockbox themes work on Koensayr?": [
+   "koensayr-themes.html"
+  ],
+  "Do Rockbox themes work on both the Y1 and Y2?": [
+   "rockbox-themes.html"
+  ],
+  "Do Solar themes work on Better-Y, Koensayr or the Original Software?": [
+   "solar-themes.html"
+  ],
+  "Do the same themes work on the Innioasis Y1 and Y2?": [
+   "y1-y2-theme-compatibility.html"
+  ],
+  "Does installing a theme change my Better-Y firmware?": [
+   "better-y-themes.html"
+  ],
+  "Does installing a theme erase my music?": [
+   "how-to-install-y1-y2-themes.html"
   ],
   "Don't show donation appeals again": [
    "support_toolbar.html"
@@ -5563,6 +5632,9 @@
    "House_of_Puso/index_ja.html",
    "House_of_Puso/index_jp.html"
   ],
+  "How do I download a Solar theme without a computer?": [
+   "solar-themes.html"
+  ],
   "How to Train Your Dragon for Innioasis Y1 & Y2 by CaycaysStudio": [
    "How_to_Train_Your_Dragon/index.html",
    "How_to_Train_Your_Dragon/index_de.html",
@@ -5570,6 +5642,12 @@
    "How_to_Train_Your_Dragon/index_fr.html",
    "How_to_Train_Your_Dragon/index_ja.html",
    "How_to_Train_Your_Dragon/index_jp.html"
+  ],
+  "How to install themes": [
+   "how-to-install-y1-y2-themes.html"
+  ],
+  "How to install themes on the Innioasis Y1 and Y2": [
+   "how-to-install-y1-y2-themes.html"
   ],
   "Hunter x Hunter V1 for Innioasis Y1 & Y2 by Sersei": [
    "Hunter_x_Hunter_V1/index.html",
@@ -5906,7 +5984,6 @@
    "nav.js"
   ],
   "Innioasis Themes": [
-   "index.html",
    "index_ar.html",
    "index_bn.html",
    "index_cs.html",
@@ -5993,9 +6070,6 @@
    "index_zh-tw.html",
    "index_zh.html"
   ],
-  "Innioasis Themes Gallery - Y1 and Y2 Rockbox themes": [
-   "nav.js"
-  ],
   "Innioasis Universal Flash Tool": [
    "site-locale.js"
   ],
@@ -6006,8 +6080,19 @@
   "Innioasis Updater CE": [
    "site-locale.js"
   ],
+  "Innioasis Y1 Better-Y themes": [
+   "index.html"
+  ],
+  "Innioasis Y1 Koensayr themes": [
+   "index.html"
+  ],
+  "Innioasis Y1 Rockbox themes": [
+   "index.html"
+  ],
+  "Innioasis Y1 Solar themes": [
+   "index.html"
+  ],
   "Innioasis Y1 and Y2 Themes Gallery": [
-   "index.html",
    "index_ar.html",
    "index_bn.html",
    "index_cs.html",
@@ -6050,8 +6135,23 @@
    "index_zh-tw.html",
    "index_zh.html"
   ],
+  "Innioasis Y1 and Y2 theme compatibility": [
+   "y1-y2-theme-compatibility.html"
+  ],
   "Innioasis Y1. Des arrière-plans en nomex en fibre de carbone et en combinaison de course, des boutons d": [
    "Grand_Prix/index_fr.html"
+  ],
+  "Innioasis Y2 Better-Y themes": [
+   "index.html"
+  ],
+  "Innioasis Y2 Koensayr themes": [
+   "index.html"
+  ],
+  "Innioasis Y2 Rockbox themes": [
+   "index.html"
+  ],
+  "Innioasis Y2 Solar themes": [
+   "index.html"
   ],
   "Innioasis community": [
    "Simple_Spider-man/index.html",
@@ -6104,6 +6204,9 @@
   ],
   "Inspiré par toutes les conneries que j'aime ouais": [
    "PK_s/index_fr.html"
+  ],
+  "Install a theme with Updater CE, copy it over USB, or download it on a Solar player over Wi-Fi.": [
+   "how-to-install-y1-y2-themes.html"
   ],
   "Install incomplete in \"": [
    "index.html",
@@ -6558,6 +6661,23 @@
   ],
   "Kleiner Junge.": [
    "Saiki_K/index_de.html"
+  ],
+  "Koensayr themes": [
+   "index.html",
+   "koensayr-themes.html",
+   "nav.js"
+  ],
+  "Koensayr themes for Innioasis Y1": [
+   "index.html"
+  ],
+  "Koensayr themes for Innioasis Y2": [
+   "index.html"
+  ],
+  "Koensayr themes for the Innioasis Y1 and Y2": [
+   "koensayr-themes.html"
+  ],
+  "Koensayr themes for the Innioasis Y1 and Y2. One shared theme format also covers Better-Y, Solar and the Original Software.": [
+   "koensayr-themes.html"
   ],
   "Komm mit mir": [
    "ADVENTURE_TIME/index_de.html"
@@ -8951,12 +9071,6 @@
    "index_zh-tw.html",
    "index_zh.html"
   ],
-  "No themes from this gallery were found on your Y1. Use Direct Install on individual themes first, then return here to refresh them all.": [
-   "index_pt-br.html",
-   "index_pt-pt.html",
-   "index_zh-cn.html",
-   "index_zh-tw.html"
-  ],
   "No themes from this gallery were found on your Y1. Use Direct Install via USB on individual themes first, then return here to refresh them all.": [
    "index.html",
    "index_ar.html",
@@ -8985,6 +9099,8 @@
    "index_pl.html",
    "index_pt-BR.html",
    "index_pt-PT.html",
+   "index_pt-br.html",
+   "index_pt-pt.html",
    "index_pt.html",
    "index_ro.html",
    "index_ru.html",
@@ -8995,6 +9111,8 @@
    "index_vi.html",
    "index_zh-CN.html",
    "index_zh-TW.html",
+   "index_zh-cn.html",
+   "index_zh-tw.html",
    "index_zh.html"
   ],
   "No vi muchos temas de My Little Pony y solo tuve que crear uno de mis personajes favoritos para ayudar a expandir esa categoría.": [
@@ -9002,6 +9120,27 @@
   ],
   "No vi ningún tema de mi marido así que hice uno.": [
    "Gilgamesh_Fate/index_es.html"
+  ],
+  "No. A theme can be copied over USB by hand, and a Solar player can download themes over Wi-Fi. Updater CE is the simplest option on Windows, macOS and Linux.": [
+   "how-to-install-y1-y2-themes.html"
+  ],
+  "No. A theme changes the look of the player's interface. The Better-Y software, its settings and your music library stay as they are.": [
+   "better-y-themes.html"
+  ],
+  "No. A theme is a separate file. Installing or changing a theme does not touch your music library or the player's firmware.": [
+   "how-to-install-y1-y2-themes.html"
+  ],
+  "No. Koensayr reads the same theme files as Better-Y, Solar and the Original Software, so the gallery keeps one collection instead of a separate Koensayr-only set.": [
+   "koensayr-themes.html"
+  ],
+  "No. Rockbox has its own theme format. A Rockbox theme only works in Rockbox, and a Better-Y, Koensayr, Solar or Original Software theme does not load in Rockbox.": [
+   "rockbox-themes.html"
+  ],
+  "No. Rockbox has its own theme format. Use the separate Rockbox collection if your player runs Rockbox.": [
+   "koensayr-themes.html"
+  ],
+  "No. Rockbox uses its own theme format and is listed separately.": [
+   "solar-themes.html"
   ],
   "Noch eines meiner persönlichen. Tut mir leid, wenn es kaputt ist, lol": [
    "baja_blast_ocean/index_de.html"
@@ -9435,6 +9574,9 @@
   "Open navigation menu": [
    "nav.js"
   ],
+  "Open the Themes Gallery, preview a theme and download it.": [
+   "how-to-install-y1-y2-themes.html"
+  ],
   "Open the gallery": [
    "gold-badge.html",
    "gold-badge_ar.html",
@@ -9481,6 +9623,9 @@
   ],
   "Open the site toolbar": [
    "support_toolbar.html"
+  ],
+  "Open the theme picker on the player and choose the new theme.": [
+   "how-to-install-y1-y2-themes.html"
   ],
   "Open theme preview": [
    "index.html",
@@ -9602,6 +9747,12 @@
   ],
   "Organs with a blody kind of vibe": [
    "Creepy_bloody_vibe_idk/index.html"
+  ],
+  "Original Software": [
+   "better-y-themes.html",
+   "koensayr-themes.html",
+   "solar-themes.html",
+   "y1-y2-theme-compatibility.html"
   ],
   "Original theme": [
    "support_toolbar.html"
@@ -10154,6 +10305,9 @@
    "Phasmophobia/index_fr.html",
    "Phasmophobia/index_ja.html",
    "Phasmophobia/index_jp.html"
+  ],
+  "Pick a theme": [
+   "how-to-install-y1-y2-themes.html"
   ],
   "Pink Adela theme.": [
    "Pink_Adela/index.html"
@@ -11225,6 +11379,23 @@
   "Rockbox on Innioasis": [
    "nav.js"
   ],
+  "Rockbox themes": [
+   "index.html",
+   "nav.js",
+   "rockbox-themes.html"
+  ],
+  "Rockbox themes for Innioasis Y1": [
+   "index.html"
+  ],
+  "Rockbox themes for Innioasis Y2": [
+   "index.html"
+  ],
+  "Rockbox themes for the Innioasis Y1 and Y2": [
+   "rockbox-themes.html"
+  ],
+  "Rockbox themes in this collection are listed for the Innioasis Y1 and Y2. Check the theme page for any device-specific notes before installing.": [
+   "rockbox-themes.html"
+  ],
   "Rojo y espalda, diseño de inspiración gótica. Texto más brillante para una mejor visibilidad.": [
    "Gothic__updated/index_es.html"
   ],
@@ -11743,6 +11914,9 @@
   ],
   "Sebastián del legado de Hogwarts": [
    "Sebastian_from_Hogwarts_Legacy/index_es.html"
+  ],
+  "Select the theme": [
+   "how-to-install-y1-y2-themes.html"
   ],
   "Self- and donations-funded  -  chip in $3 to support us": [
    "support_toolbar.html"
@@ -12269,6 +12443,23 @@
    "Sombie_mp3/index_fr.html",
    "Sombie_mp3/index_ja.html",
    "Sombie_mp3/index_jp.html"
+  ],
+  "Solar themes": [
+   "index.html",
+   "nav.js",
+   "solar-themes.html"
+  ],
+  "Solar themes for Innioasis Y1": [
+   "index.html"
+  ],
+  "Solar themes for Innioasis Y2": [
+   "index.html"
+  ],
+  "Solar themes for the Innioasis Y1 and Y2": [
+   "solar-themes.html"
+  ],
+  "Solar themes for the Innioasis Y1 and Y2, with on-device Wi-Fi downloads and the same theme format used by Better-Y, Koensayr and the Original Software.": [
+   "solar-themes.html"
   ],
   "Solely self- and donations-funded  -  thank you!": [
    "support_toolbar.html"
@@ -14200,6 +14391,9 @@
    "The_Owl_House/index_ja.html",
    "The_Owl_House/index_jp.html"
   ],
+  "The Rockbox theme collection for the Innioasis Y1 and Y2. Rockbox themes use their own format and are not interchangeable with Better-Y, Koensayr, Solar or Original Software themes.": [
+   "rockbox-themes.html"
+  ],
   "The Summer Hikaru Died for Innioasis Y1 & Y2 by ieatcopiousamountsofuranium": [
    "The_Summer_Hikaru_Died/index.html",
    "The_Summer_Hikaru_Died/index_de.html",
@@ -14417,6 +14611,9 @@
   ],
   "Theme based on the video game Team Fortress 2.": [
    "Team_Fortress_2/index.html"
+  ],
+  "Theme compatibility": [
+   "y1-y2-theme-compatibility.html"
   ],
   "Theme folder was not prefilled. Open a theme card and use its removal link for a prefilled request.": [
    "report-theme.html",
@@ -14661,7 +14858,13 @@
    "nav.js"
   ],
   "Themes Gallery": [
-   "nav.js"
+   "better-y-themes.html",
+   "how-to-install-y1-y2-themes.html",
+   "koensayr-themes.html",
+   "nav.js",
+   "rockbox-themes.html",
+   "solar-themes.html",
+   "y1-y2-theme-compatibility.html"
   ],
   "Themes for Innioasis Y1 & Y2 players": [
    "nav.js"
@@ -17521,6 +17724,9 @@
   "What the site may remember": [
    "support_toolbar.html"
   ],
+  "Where do themes go on an Innioasis Y1 or Y2?": [
+   "how-to-install-y1-y2-themes.html"
+  ],
   "Which tool should I use?": [
    "nav.js"
   ],
@@ -17556,6 +17762,12 @@
   ],
   "Whimsygoth violet, la plupart des trucs ont été trouvés sur tumblr ou pinterest.": [
    "Whimsygoth_Purple/index_fr.html"
+  ],
+  "Why are Rockbox themes listed separately?": [
+   "rockbox-themes.html"
+  ],
+  "Will a theme from another Innioasis or Timmkoo player work?": [
+   "y1-y2-theme-compatibility.html"
   ],
   "Win98 Refix for Innioasis Y1 & Y2 by Robertpuggle": [
    "Win98_Refix/index.html",
@@ -17951,6 +18163,24 @@
   ],
   "Yellowstone National Park for Innioasis Y1 & Y2 by mp3li": [
    "Yellowstone_National_Park/index.html"
+  ],
+  "Yes for Better-Y, Koensayr, Solar and the Original Software: they share one theme format, so any theme in the gallery works on all four. Rockbox is the exception and uses a separate theme format.": [
+   "y1-y2-theme-compatibility.html"
+  ],
+  "Yes. Better-Y, Koensayr, Solar and the Original Software use the same theme format, so every theme in this gallery works on all four. Rockbox is the exception and has its own separate theme collection.": [
+   "better-y-themes.html"
+  ],
+  "Yes. Solar uses the same theme format as the other three, so a theme downloaded for Solar also works if you change software.": [
+   "solar-themes.html"
+  ],
+  "Yes. The gallery keeps one collection for both players. A theme page notes any device-specific artwork or layout.": [
+   "y1-y2-theme-compatibility.html"
+  ],
+  "Yes. The theme stays installed and keeps working when you change software, because the theme format is shared across all four.": [
+   "koensayr-themes.html"
+  ],
+  "Yes. Themes are shared between the Innioasis Y1 and Y2, so a theme you pick for one player is the same download on the other.": [
+   "better-y-themes.html"
   ],
   "Yoongi for Innioasis Y1 & Y2 by Yoongi lover": [
    "Yoongi/index.html",
