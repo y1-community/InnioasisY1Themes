@@ -1324,20 +1324,19 @@ html.y1-compat-banner-closed .site-compat-banner {
     align-items: center;
     gap: 4px;
     font-weight: 700;
-    color: var(--site-text);
+    color: var(--lumen-on-accent, #fff) !important;
     text-decoration: none;
     margin-left: 6px;
     padding: 2px 10px;
     border-radius: 999px;
-    background: var(--site-border-hover);
-    border: 1px solid var(--site-border);
-    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    background: var(--lumen-accent, var(--site-accent));
+    border: 1px solid var(--lumen-accent, var(--site-accent));
 }
 
 .site-compat-banner__cta:hover {
-    background: var(--site-accent);
-    color: var(--lumen-paper);
-    border-color: var(--site-accent);
+    background: var(--lumen-accent-strong, var(--site-accent));
+    color: var(--lumen-on-accent, #fff) !important;
+    border-color: var(--lumen-accent-strong, var(--site-accent));
 }
 
 .site-compat-banner__close {
@@ -2061,4 +2060,13 @@ html, body {
     border-color: var(--lumen-accent-strong, var(--lumen-accent));
     color: var(--lumen-on-accent, var(--lumen-ink));
     text-decoration: none;
+}
+
+/* Keep the fill winning over the old important text colour. */
+.site-compat-banner .site-compat-banner__cta,
+.site-compat-banner .site-compat-banner__cta:hover,
+.site-compat-banner .site-compat-banner__cta:focus-visible {
+    background: var(--lumen-accent) !important;
+    border-color: var(--lumen-accent) !important;
+    color: var(--lumen-on-accent, var(--lumen-ink)) !important;
 }
