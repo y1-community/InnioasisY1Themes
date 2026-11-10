@@ -94,10 +94,17 @@ body.site-themes-app { overflow-x: clip; background: var(--lumen-ink); color: va
     }
 }
 body.site-themes-app *, body.site-themes-app *::before, body.site-themes-app *::after { box-sizing: border-box; }
-body.site-themes-app a { color: var(--lumen-accent); text-underline-offset: .18em; }
-body.site-themes-app a:hover { color: var(--lumen-paper); }
+body.site-themes-app a:not(.btn):not(.lumen-button):not(.guide-action-btn) { color: var(--lumen-accent); text-underline-offset: .18em; }
+body.site-themes-app a:not(.btn):not(.lumen-button):not(.guide-action-btn):hover { color: var(--lumen-paper); }
+body.site-themes-app a.btn,
+body.site-themes-app button.btn,
+body.site-themes-app .lumen-button--primary,
+body.site-themes-app .btn-primary { color: var(--lumen-on-accent, var(--lumen-ink)) !important; }
 body.site-themes-app :where(button, a, select, summary, input, textarea):focus-visible { outline: 3px solid var(--lumen-accent); outline-offset: 3px; }
-body.site-themes-app :where(h1, h2, h3, h4) { min-width: 0; overflow-wrap: break-word; font-style: normal; text-wrap: balance; }
+body.site-themes-app :where(h1, h2, h3, .site-display, .section-display) { min-width: 0; overflow-wrap: break-word; font-style: normal; text-wrap: balance; color: var(--lumen-accent); }
+body.site-themes-app :where(h4) { min-width: 0; overflow-wrap: break-word; font-style: normal; text-wrap: balance; }
+#support-toolbar-container .y1-dock-icon,
+.y1-dock-reopen-icon { color: var(--lumen-accent) !important; }
 
 body.site-themes-app #footer-root {
     position: relative;
@@ -131,7 +138,7 @@ body.site-themes-app .logo > a:first-child,
 body.site-themes-app .lumen-brand-home,
 .lumen-brand-home { display: flex; align-items: center; color: var(--lumen-text) !important; font-weight: 700; text-decoration: none; letter-spacing: -.02em; white-space: nowrap !important; }
 body.site-themes-app .lumen-brand-title,
-.lumen-brand-title { color: var(--lumen-text) !important; font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; white-space: nowrap !important; word-break: keep-all !important; flex-shrink: 0 !important; }
+.lumen-brand-title { color: var(--lumen-accent) !important; font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; white-space: nowrap !important; word-break: keep-all !important; flex-shrink: 0 !important; }
 :root[data-theme="light"] body.site-themes-app .lumen-brand-title,
 :root[data-theme="light"] body.site-themes-app .lumen-brand-home,
 :root[data-theme="light"] .lumen-brand-title,
@@ -139,7 +146,7 @@ body.site-themes-app .lumen-brand-title,
 :root[data-lumen-theme="light"] body.site-themes-app .lumen-brand-title,
 :root[data-lumen-theme="light"] body.site-themes-app .lumen-brand-home,
 :root[data-lumen-theme="light"] .lumen-brand-title,
-:root[data-lumen-theme="light"] .lumen-brand-home { color: var(--lumen-text) !important; }
+:root[data-lumen-theme="light"] .lumen-brand-home { color: var(--lumen-accent) !important; }
 :root[data-theme="2077"] body.site-themes-app .lumen-brand-title,
 :root[data-theme="2077"] body.site-themes-app .lumen-brand-home,
 :root[data-theme="2077"] .lumen-brand-title,
@@ -1146,3 +1153,24 @@ html.shared-nav-active body.site-themes-app > .gallery-topbar { display: none !i
 .theme-card-buttons [data-direct-install-btn]:disabled { opacity: .55; }
 /* The folder chooser reads as a line of text, not another panel. */
 #direct-install-banner { background: none !important; border: 0 !important; padding: 0 !important; }
+
+/* —— Accent is a surface, not a text colour, when it sits on a control. —— */
+body.site-themes-app .lumen-button:hover:not(.lumen-button--primary),
+body.site-themes-app .lumen-button--secondary:hover,
+body.site-themes-app .lumen-secondary-action:hover,
+.btn:hover:not(.btn-primary),
+.guide-action-btn:hover {
+    background: var(--lumen-accent) !important;
+    border-color: var(--lumen-accent) !important;
+    color: var(--lumen-on-accent, var(--lumen-ink)) !important;
+}
+
+.lumen-download-progress-bar-fill { background: var(--lumen-accent); }
+
+.lumen-spinner,
+.lumen-loading-spinner,
+.lumen-throbber,
+.spinner {
+    border-color: var(--lumen-line-strong);
+    border-top-color: var(--lumen-accent);
+}

@@ -2045,3 +2045,20 @@ html, body {
 @media (max-width: 640px) {
     .gallery-ad-container:not(:empty) { min-height: 66px; }
 }
+
+/* The compatibility banner's call to action is a button, so the accent is its
+   fill and the measured ink its label, not accent-coloured text. */
+.site-compat-banner .site-compat-banner__cta {
+    background: var(--lumen-accent);
+    border: 1px solid var(--lumen-accent);
+    color: var(--lumen-on-accent, var(--lumen-ink));
+    text-decoration: none;
+}
+
+.site-compat-banner .site-compat-banner__cta:hover,
+.site-compat-banner .site-compat-banner__cta:focus-visible {
+    background: var(--lumen-accent-strong, var(--lumen-accent));
+    border-color: var(--lumen-accent-strong, var(--lumen-accent));
+    color: var(--lumen-on-accent, var(--lumen-ink));
+    text-decoration: none;
+}
