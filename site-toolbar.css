@@ -24,7 +24,10 @@ body.site-themes-app .site-footer a {
     color: var(--site-muted, #9aa3b5);
 }
 
-/* Standard buttons  -  no per-theme skinning */
+/* Standard buttons  -  no per-theme skinning, but the skin follows the accent
+   the reader picked. site-init.js writes --lumen-accent, --lumen-accent-strong,
+   --lumen-on-accent and --site-accent together, so every colour below is the
+   accent and the ink measured for it; no palette literals live here. */
 body.site-themes-app .btn,
 body.site-themes-app .btn.btn-secondary,
 body.site-themes-app .rckbox-btn {
@@ -39,8 +42,8 @@ body.site-themes-app .rckbox-btn {
     font-size: 0.88rem !important;
     line-height: 1.2 !important;
     color: var(--dock-ink) !important;
-    background: color-mix(in oklab, var(--dock-panel) 88%, var(--dock-ink) 12%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    background: var(--lumen-panel-soft, color-mix(in oklab, var(--dock-panel) 88%, var(--dock-ink) 12%)) !important;
+    border: 1px solid var(--lumen-line-strong, rgba(255, 255, 255, 0.16)) !important;
     background-image: none !important;
     box-shadow: none !important;
     text-decoration: none;
@@ -48,10 +51,14 @@ body.site-themes-app .rckbox-btn {
     transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
-body.site-themes-app .btn:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.14) !important;
-    border-color: rgba(255, 255, 255, 0.24) !important;
-    color: #fff !important;
+/* A hovered neutral button takes the accent as a wash and as its border. The
+   old white values washed out on the light appearance. */
+body.site-themes-app .btn:hover:not(:disabled),
+body.site-themes-app .btn:focus-visible:not(:disabled),
+body.site-themes-app .rckbox-btn:hover {
+    background: var(--lumen-accent-wash) !important;
+    border-color: var(--lumen-accent) !important;
+    color: var(--lumen-text, var(--dock-ink)) !important;
 }
 
 body.site-themes-app .btn:disabled {
@@ -59,14 +66,26 @@ body.site-themes-app .btn:disabled {
     cursor: not-allowed;
 }
 
-body.site-themes-app .btn.btn-primary {
-    background: rgba(107, 159, 255, 0.22) !important;
-    border-color: rgba(107, 159, 255, 0.45) !important;
-    color: var(--dock-ink) !important;
+/* Download buttons are the accent: the gallery card's control carries
+   data-card-download rather than .btn-primary, so it is named here as well.
+   Both the fill and its pressed state come from the accent pair. */
+body.site-themes-app .btn.btn-primary,
+body.site-themes-app .theme-card-buttons .btn[data-card-download],
+body.site-themes-app #download-btn {
+    background: var(--lumen-accent, var(--site-accent, #6b9fff)) !important;
+    border-color: var(--lumen-accent, var(--site-accent, #6b9fff)) !important;
+    color: var(--lumen-on-accent, var(--lumen-paper, #0a0b0f)) !important;
 }
 
-body.site-themes-app .btn.btn-primary:hover:not(:disabled) {
-    background: rgba(107, 159, 255, 0.32) !important;
+body.site-themes-app .btn.btn-primary:hover:not(:disabled),
+body.site-themes-app .btn.btn-primary:focus-visible:not(:disabled),
+body.site-themes-app .theme-card-buttons .btn[data-card-download]:hover:not(:disabled),
+body.site-themes-app .theme-card-buttons .btn[data-card-download]:focus-visible:not(:disabled),
+body.site-themes-app #download-btn:hover:not(:disabled),
+body.site-themes-app #download-btn:focus-visible:not(:disabled) {
+    background: var(--lumen-accent-strong, var(--lumen-accent, var(--site-accent, #6b9fff))) !important;
+    border-color: var(--lumen-accent-strong, var(--lumen-accent, var(--site-accent, #6b9fff))) !important;
+    color: var(--lumen-on-accent-strong, var(--lumen-on-accent, var(--lumen-paper, #0a0b0f))) !important;
 }
 
 body.site-themes-app .theme-card .btn {
