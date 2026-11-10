@@ -380,7 +380,8 @@
       "donations", "privacy", "privacy_analytics", "privacy_feedback", "privacy_nightly",
       "site_theme", "accent", "accent_color", "accent-color", "accentColor", "accentColour",
       "ce", "accessibility", "a11y", "fontSize", "fontScale", "font-scale", "fs",
-      "lumen-font-scale", "lang", "analytics", "telemetry", "reduce-motion", "reduce_motion"
+      "lumen-font-scale", "lang", "analytics", "telemetry", "reduce-motion", "reduce_motion",
+      "dock", "footer"
     ];
     prefKeys.forEach(function (k) { url.searchParams.delete(k); });
     if (url.searchParams.has("theme")) {
@@ -431,6 +432,12 @@
       var curAccent = getActiveAccent();
       if (curAccent) url.searchParams.set("accent", curAccent);
       if (hasCeAccent()) url.searchParams.set("ce", "true");
+      var dockClosed = false;
+      try {
+        dockClosed = sessionStorage.getItem("y1-dock-dismissed") === "1" ||
+          (typeof getSharedCookie === "function" && getSharedCookie("innioasis-dock") === "closed");
+      } catch (_) {}
+      url.searchParams.set("dock", dockClosed ? "closed" : "open");
     }
 
     if (!isSameHost || /^[a-z]+:\/\//i.test(raw) || raw.indexOf("//") === 0) {
@@ -1661,7 +1668,20 @@
     var me = document.querySelector('script[src*="nav.js"]');
     var base = me && me.src ? me.src.replace(/[^\/]*$/, "") : "";
     var s = document.createElement("script");
-    s.src = base + "interstitial.js?v=20261110a";
+    s.src = base + "interstitial.js?v=20261110b";
+    s.defer = true;
+    document.head.appendChild(s);
+  } catch (_) {}
+})();
+
+/* The gallery's pager search control; a no-op elsewhere. */
+(function () {
+  try {
+    if (!document.getElementById("theme-pager-top") && !document.querySelector(".gallery-controls")) return;
+    var me = document.querySelector('script[src*="nav.js"]');
+    var base = me && me.src ? me.src.replace(/[^\/]*$/, "") : "";
+    var s = document.createElement("script");
+    s.src = base + "pager-search.js?v=20261110a";
     s.defer = true;
     document.head.appendChild(s);
   } catch (_) {}

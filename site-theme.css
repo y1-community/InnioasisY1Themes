@@ -1743,7 +1743,31 @@ html, body {
     body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-home-hero__row {
         grid-column: 1 / -1;
         grid-row: 1;
+        position: relative;
+        min-height: 7.25rem;
+        padding-right: 7.25rem;
         margin: 0;
+    }
+
+    body.site-themes-app .wrap:has(.gallery-home-hero) .y1-hero {
+        position: absolute;
+        right: 0.15rem;
+        bottom: -1.35rem;
+        z-index: 3;
+        margin: 0;
+        pointer-events: none;
+    }
+
+    body.site-themes-app .wrap:has(.gallery-home-hero) .y1-hero img {
+        max-width: 132px;
+        max-height: 148px;
+        object-position: bottom right;
+    }
+
+    body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-controls {
+        position: relative;
+        z-index: 1;
+        padding-top: 1.35rem;
     }
 
     body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-controls {
@@ -1806,3 +1830,175 @@ html, body {
         line-height: 1;
     }
 }
+
+/* Upload, page numbers and Rockbox share one row at every width. The search
+   glyph sits with the numbers and the field takes their place. */
+.gallery-action-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: 100%;
+    min-width: 0;
+    margin: 0.75rem 0 0;
+    grid-column: 1 / -1;
+    grid-row: 3;
+}
+
+.gallery-pager-cluster {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.gallery-pager-cluster .pager {
+    margin: 0;
+    min-width: 0;
+}
+
+.gallery-pager-search {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.gallery-pager-search-input {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 0.4rem 0.75rem;
+    border: 1px solid var(--lumen-line-strong, var(--site-border));
+    border-radius: 999px;
+    background: var(--lumen-panel-soft, var(--site-bg-elevated));
+    color: var(--lumen-text, var(--site-text));
+    font: 600 0.9rem var(--lumen-body, var(--site-font));
+}
+
+.gallery-search-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 auto;
+    padding: 0;
+    border: 1px solid var(--lumen-line-strong, var(--site-border));
+    border-radius: 50%;
+    background: var(--lumen-accent, var(--site-accent));
+    color: var(--lumen-on-accent, #fff);
+    cursor: pointer;
+}
+
+.gallery-search-toggle:focus-visible {
+    outline: 3px solid var(--lumen-accent, var(--site-accent));
+    outline-offset: 3px;
+}
+
+.gallery-action-row > .btn {
+    background: var(--lumen-accent, var(--site-accent));
+    border-color: var(--lumen-accent, var(--site-accent));
+    color: var(--lumen-on-accent, #fff) !important;
+    flex: 0 1 auto;
+}
+
+.gallery-action-row > .btn:hover,
+.gallery-action-row > .btn:focus-visible {
+    background: var(--lumen-accent-strong, var(--lumen-accent));
+    color: var(--lumen-on-accent, #fff) !important;
+}
+
+@media (max-width: 719px) {
+    .gallery-action-row > .btn,
+    .gallery-search-toggle {
+        width: 46px !important;
+        height: 46px;
+        min-width: 46px;
+        min-height: 46px;
+        padding: 0 !important;
+        border-radius: 50%;
+        font-size: 0;
+        gap: 0;
+        justify-content: center;
+    }
+
+    .gallery-action-row > .btn i,
+    .gallery-search-toggle i {
+        font-size: 0.95rem;
+        line-height: 1;
+    }
+
+    .gallery-controls {
+        overflow-x: clip;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gallery-action-row .btn,
+    .gallery-search-toggle {
+        transition: none;
+    }
+}
+
+/* —— Pager search: magnifier beside the pages, × where the magnifier was. —— */
+#theme-pager-top { align-items: center; }
+
+#theme-pager-top .pager-search-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--site-border, rgba(255, 255, 255, .16));
+    border-radius: 50%;
+    background: transparent;
+    color: var(--site-text, inherit);
+    cursor: pointer;
+}
+
+#theme-pager-top .pager-search-toggle:hover { border-color: var(--lumen-accent, #4f8cff); color: var(--lumen-accent, #4f8cff); }
+
+#theme-pager-top .pager-search-box {
+    display: none;
+    align-items: center;
+    gap: .3rem;
+    min-width: 0;
+}
+
+#theme-pager-top.is-searching > *:not(.pager-search-box) { display: none !important; }
+#theme-pager-top.is-searching .pager-search-box { display: inline-flex; }
+
+#theme-pager-top .pager-search-input {
+    box-sizing: border-box;
+    width: clamp(9rem, 40vw, 16rem);
+    min-width: 0;
+    padding: .38rem .6rem;
+    border: 1px solid var(--lumen-accent, #4f8cff);
+    border-radius: 999px;
+    background: var(--site-bg-card, transparent);
+    color: var(--site-text, inherit);
+    font: inherit;
+    font-size: .86rem;
+}
+
+#theme-pager-top .pager-search-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--site-border, rgba(255, 255, 255, .16));
+    border-radius: 50%;
+    background: transparent;
+    color: var(--site-text, inherit);
+    font-size: 1.05rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+#theme-pager-top .pager-search-close:hover { border-color: var(--lumen-accent, #4f8cff); color: var(--lumen-accent, #4f8cff); }
