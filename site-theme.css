@@ -2002,3 +2002,46 @@ html, body {
 }
 
 #theme-pager-top .pager-search-close:hover { border-color: var(--lumen-accent, #4f8cff); color: var(--lumen-accent, #4f8cff); }
+
+/* —— Shared interaction polish for the rebuilt hero row and pager. —— */
+#theme-pager-top button:focus-visible,
+#theme-pager-top input:focus-visible,
+.gallery-home-hero .hero-actions > a.btn:focus-visible,
+#theme-search:focus-visible {
+    outline: 2px solid var(--lumen-accent, #4f8cff);
+    outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gallery-home-hero,
+    .gallery-home-hero__row,
+    #theme-pager-top,
+    #theme-pager-top * {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+/* Ad slots keep their place only while they hold something. An unfilled slot
+   collapses completely, so the hero-to-card seam and the mobile row stay
+   exact until a campaign is dropped in. */
+.gallery-ad-container:empty {
+    display: none !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+}
+
+.gallery-ad-container:not(:empty) {
+    display: block;
+    width: 100%;
+    min-height: 90px;
+    margin: 1rem 0;
+    border-radius: var(--site-radius-md, 14px);
+    overflow: hidden;
+}
+
+@media (max-width: 640px) {
+    .gallery-ad-container:not(:empty) { min-height: 66px; }
+}
