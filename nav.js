@@ -578,7 +578,7 @@
       title: "Updater CE",
       subtitle: "One-click installer for Windows, macOS & Linux",
       href: "/",
-      icon: '<span class="lumen-app-icon lumen-app-icon--updater" aria-hidden="true"><img src="/assets/icon.ico" width="34" height="34" alt="" aria-hidden="true"></span>'
+      icon: '<span class="lumen-app-icon lumen-app-icon--updater" aria-hidden="true"><img src="' + decorateMainSiteHref("/assets/icon.ico") + '" width="34" height="34" alt="" aria-hidden="true"></span>'
     },
     {
       id: "themes",
