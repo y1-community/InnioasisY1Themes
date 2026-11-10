@@ -533,7 +533,10 @@
     return decorateLinkUrl(path);
   }
 
-  var persona = detectPersona();
+  /* The gallery is a site of its own. detectPersona() reads the path, and the
+     gallery lives at "/", which is the Updater CE path, so the tray used to
+     drop Updater CE and offer Themes Gallery back to the reader already on it. */
+  var persona = isThemesSite ? "themes" : detectPersona();
   var isFirmwarePersona = persona === "firmware";
   var activeTitle = isThemesSite ? "Themes Gallery" : (isFirmwarePersona ? "Firmware archive" : "Updater CE");
   var activeHomeHref = isFirmwarePersona ? "/firmware.html" : "/";
@@ -632,6 +635,12 @@
     ? '<span class="lumen-nav-install-cta-platform"> · ' + escapeHtml(platformLabel) + "</span>"
     : "";
 
+  /* The Themes link is for the other two sites; on the gallery itself it would
+     point at the page the reader is already on. */
+  var themesNavLinkHtml = isThemesSite
+    ? ""
+    : '<li><a href="' + escapeHtml(decorateCrossDomainHref("https://themes.innioasis.app/")) + '" data-cross-site-link="1">Themes</a></li>';
+
   var brandIconHtml = isThemesSite
     ? '<span class="lumen-brand-icon lumen-brand-icon--themes" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 3a9 9 0 1 0 0 18c1.2 0 2-.8 2-2 0-.5-.2-1-.5-1.3-.4-.4-.6-.9-.6-1.4 0-1.2 1-2.1 2.1-2.1H17a4 4 0 0 0 4-4C21 6.4 17 3 12 3zm-4.5 9a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3-4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg></span>'
     : (isFirmwarePersona
@@ -654,8 +663,8 @@
       '<svg class="lumen-site-switcher-glyph" viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden="true"><path d="M4.2 6.2a.75.75 0 0 1 1.06 0L8 8.94l2.74-2.74a.75.75 0 1 1 1.06 1.06l-3.27 3.27a.75.75 0 0 1-1.06 0L4.2 7.26a.75.75 0 0 1 0-1.06z"/></svg>' +
       '</button>' +
       '</div>' +
-      '<div class="lumen-site-switcher-tray" id="lumen-site-switcher-tray" hidden role="menu" aria-label="Switch between Themes Gallery, Updater CE, and Downloads">' +
-      '<p class="lumen-site-switcher-heading">Innioasis Sites</p>' +
+      '<div class="lumen-site-switcher-tray" id="lumen-site-switcher-tray" hidden role="menu" aria-label="Switch between Updater CE, Firmware Archive and Themes Gallery">' +
+      '<p class="lumen-site-switcher-heading">Innioasis Community Sites</p>' +
       '<ul class="lumen-site-switcher-list">' + switcherListHtml + '</ul>' +
       '</div>' +
       '</div>' +
@@ -682,7 +691,7 @@
       '<li><a class="lumen-nav-install-cta" id="lumen-nav-install-cta" href="' + escapeHtml(decorateMainSiteHref("/guide.html")) + '"><span class="lumen-nav-install-cta-label">' + escapeHtml(ctaLabel) + '</span>' + ctaPlatformHtml + '</a></li>' +
       '<li><a href="' + escapeHtml(decorateMainSiteHref("/firmware.html?view=software")) + '">Software Updates</a></li>' +
       '<li><a href="' + escapeHtml(decorateMainSiteHref("/firmware.html?view=firmware")) + '">Downloads</a></li>' +
-      '<li><a href="' + escapeHtml(decorateCrossDomainHref("https://themes.innioasis.app/")) + '" data-cross-site-link="1">Themes</a></li>' +
+      themesNavLinkHtml +
       '</ul>' +
       '</div>' +
       '</nav>';
@@ -1657,12 +1666,6 @@
         : '<a href="' + escapeHtml(decorateMainSiteHref("/firmware.html?view=software")) + '">Software Updates</a>' +
           '<a href="' + escapeHtml(decorateMainSiteHref("/firmware.html?view=firmware")) + '">Custom software</a>'
       ) +
-      (isThemesSite
-        ? '<a href="/better-y-themes.html">Better-Y themes</a>' +
-          '<a href="/rockbox-themes.html">Rockbox themes</a>' +
-          '<a href="/koensayr-themes.html">Koensayr themes</a>' +
-          '<a href="/solar-themes.html">Solar themes</a>'
-        : '') +
       '<a href="' + escapeHtml(decorateMainSiteHref("/rockbox-benefits.html")) + '">Rockbox on Innioasis</a>' +
       '<a href="' + escapeHtml(decorateMainSiteHref("/reborn-y2linux-benefits.html")) + '">Reborn (Y2Linux) for Y2</a>' +
       '<a href="' + escapeHtml(decorateMainSiteHref("/rondo-benefits.html")) + '">Rondo for Y1</a>' +
@@ -1682,7 +1685,11 @@
       '<a href="' + escapeHtml(decorateMainSiteHref("/credits.html")) + '">Credits</a>' +
       '</div>' +
       '</div>' +
-      '<div class="footer-bottom"><span class="footer-copyleft">Copyleft - Innioasis and <span translate="no" data-i18n-skip>Ryan Specter</span></span>' +
+      '<div class="footer-bottom">' +
+      (isThemesSite
+        ? '<p class="footer-works-with">Works with <a href="/better-y-themes.html">Better-Y themes</a>, <a href="/koensayr-themes.html">Koensayr themes</a>, <a href="/solar-themes.html">Solar themes</a> and the Original Software. <a href="/y1-skins.html">Y1 skins</a>, <a href="/y2-themes.html">Y2 themes</a>, <a href="/install-themes.html">How to install a theme</a>, <a href="/rockbox-themes.html">Rockbox themes</a>, <a href="/other-players.html">Timmkoo and other players</a>.</p>'
+        : '') +
+      '<span class="footer-copyleft">Copyleft - Innioasis and <span translate="no" data-i18n-skip>Ryan Specter</span></span>' +
       '<span class="footer-legal"><a href="/privacy.html">Privacy</a>' +
       '<a class="footer-privacy-button" href="/privacy.html#choices">Privacy settings</a></span></div>' +
       '</footer>';
