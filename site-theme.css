@@ -1933,7 +1933,8 @@ body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-action-row #theme-pa
 .gallery-action-row > .btn:hover,
 .gallery-action-row > .btn:focus-visible {
     background: var(--lumen-accent-strong, var(--lumen-accent));
-    color: var(--lumen-on-accent, #fff) !important;
+    border-color: var(--lumen-accent-strong, var(--lumen-accent));
+    color: var(--lumen-on-accent-strong, var(--lumen-on-accent, #fff)) !important;
 }
 
 @media (max-width: 719px) {
