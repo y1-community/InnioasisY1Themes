@@ -1,12 +1,12 @@
 {
- "generated": "2026-11-10T17:12:58+00:00",
+ "generated": "2026-11-10T17:40:21+00:00",
  "tiers": [
   "core",
   "full"
  ],
  "pages": 1749,
  "occurrences": 19775,
- "count": 7019,
+ "count": 7020,
  "strings": {
   "Innioasis Themes Gallery": {
    "n": 869,
@@ -26772,6 +26772,11 @@
    "pages": 6,
    "script": true
   },
+  "Pick a colour from the screen": {
+   "n": 1,
+   "pages": 1,
+   "script": true
+  },
   "Pick a theme": {
    "n": 1,
    "pages": 1,
@@ -31638,12 +31643,12 @@
    "pages": 1,
    "script": true
   },
-  "Hue": {
+  "Hex": {
    "n": 1,
    "pages": 1,
    "script": true
   },
-  "Hex": {
+  "Hue": {
    "n": 1,
    "pages": 1,
    "script": true
