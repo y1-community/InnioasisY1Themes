@@ -1,9 +1,16 @@
 /*
  * Outbound interstitials.
  *
- * Every link that leaves Innioasis passes through leaving.html, except a
- * donation host, which passes through donate.html so the visitor is thanked
- * first. Theme cards' external downloads are buttons that call window.open
+ * A normal website click follows the href in the page. That href is the
+ * cross-link Google records, so it is never rewritten to leaving.html or
+ * donate.html. Reddit, Discord and donation hosts stay on that direct path:
+ * an interstitial in front of them is a noindex hop, and that hop is what
+ * drops the outbound link.
+ *
+ * The app is the exception. It opens the site with ce=true, which the site
+ * stores as innioasis-referred-by-ce. Those visits still pass through
+ * leaving.html, or donate.html for a donation host, so the visitor is told
+ * where they are going. Theme cards' external downloads call window.open
  * directly and are excluded here as well. Site preferences (accent, language,
  * appearance, donation and analytics choices) are read from the query by the
  * normal site shell on the interstitial page, then cleared from the address
@@ -12,7 +19,10 @@
 (function () {
   "use strict";
 
-  var DONATION_HOSTS = /(^|\.)(ko-fi\.com|buymeacoffee\.com|boosty\.to|paypal\.me|patreon\.com|revolut\.me)$/i;
+  var DONATION_HOSTS = /(^|\.)(ko-fi\.com|buymeacoffee\.com|boosty\.to|paypal\.me|paypal\.com|patreon\.com|revolut\.me|revolut\.com)$/i;
+  /* Community profiles the public site links out to. The href on the page is
+     the link Google should follow, so a website click is not intercepted. */
+  var COMMUNITY_HOSTS = /(^|\.)(reddit\.com|redd\.it|discord\.gg|discord\.com|discordapp\.com)$/i;
   var THANKS = {
     en: "Thank you for supporting us",
     de: "Danke, dass du uns unterstützt",
@@ -159,6 +169,43 @@
     return /(^|\.)innioasis\.app$/i.test(url.hostname) || url.hostname === "localhost" || url.hostname === "127.0.0.1";
   }
 
+  /* Updater CE opens innioasis.app with ce=true. site-init keeps that as
+     innioasis-referred-by-ce. Read the same places it writes, because this
+     script can run before or after that module. */
+  function referredByApp() {
+    try {
+      if (window.y1Accent && typeof window.y1Accent.referredByCe === "function" && window.y1Accent.referredByCe()) {
+        return true;
+      }
+    } catch (_) {}
+    try {
+      var params = new URLSearchParams(window.location.search);
+      var ce = params.get("ce");
+      if (ce !== null && /^(|1|true|yes|on)$/i.test(String(ce).trim())) return true;
+      var from = String(params.get("from") || "").toLowerCase();
+      if (from === "updater-ce" || from === "app") return true;
+    } catch (_) {}
+    try {
+      var parts = String(document.cookie || "").split(";");
+      for (var i = 0; i < parts.length; i++) {
+        var part = parts[i].trim();
+        if (part.indexOf("innioasis-referred-by-ce=") !== 0) continue;
+        var value = decodeURIComponent(part.slice("innioasis-referred-by-ce=".length));
+        if (value && value !== "0" && value !== "false") return true;
+      }
+    } catch (_) {}
+    try {
+      var stored = window.localStorage.getItem("innioasis-referred-by-ce");
+      if (stored && stored !== "0" && stored !== "false") return true;
+    } catch (_) {}
+    return false;
+  }
+
+  function staysDirect(url) {
+    if (referredByApp()) return false;
+    return DONATION_HOSTS.test(url.hostname) || COMMUNITY_HOSTS.test(url.hostname);
+  }
+
   function stripInterstitialParams() {
     try {
       var url = new URL(window.location.href);
@@ -180,6 +227,9 @@
       var url = safeUrl(link.getAttribute("href"));
       if (!url || isInternal(url)) return;
       if (/\.(zip|7z|tar|gz|theme|rbtheme|apk|dmg|exe|msi)$/i.test(url.pathname)) return;
+      /* Leave the href alone. A direct click is how the cross-link stays a
+         cross-link. App-referred visits still take the interstitial below. */
+      if (staysDirect(url)) return;
 
       var page = DONATION_HOSTS.test(url.hostname) ? "donate.html" : "leaving.html";
       var target = cleanBase() + page + "?from=" + encodeURIComponent(currentFrom()) + "&to=" + encodeURIComponent(url.href);
