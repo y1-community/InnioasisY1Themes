@@ -478,14 +478,21 @@
     var ACCENT_MATCH_COOKIE = "innioasis-accent-match-pc";
     var ACCENT_CE_KEY = "innioasis-referred-by-ce";
     var ACCENT_CE_COOKIE = "innioasis-referred-by-ce";
+    /* Presets are quick picks, not the whole gamut: the pad and the hex field
+       still reach every colour. Black and white are not accents - a black
+       swatch vanishes on a dark surface and a white one leaves nothing
+       readable on paper - so neither is ever offered as a preset. */
+    var ACCENT_POLAR = ["#000000", "#ffffff"];
     var ACCENT_SWATCHES = [
         "#4f8cff", "#7c5cff", "#12b5a5", "#2fb344", "#f0a01a",
         "#ff6b35", "#e5484d", "#e93d82", "#8d6e63", "#6b7280"
-    ];
+    ].filter(function (hex) {
+        return ACCENT_POLAR.indexOf(String(hex).toLowerCase()) === -1;
+    });
     var ACCENT_TOKENS = [
         "--lumen-accent", "--lumen-accent-strong", "--lumen-accent-wash",
         "--lumen-on-accent", "--lumen-on-accent-strong", "--lumen-accent-ink",
-        "--lumen-accent-glow", "--site-accent", "--primary", "--primary-dark"
+        "--lumen-accent-glow", "--site-accent", "--accent", "--primary", "--primary-dark"
     ];
 
     function accentRead(key, cookie) {
@@ -587,6 +594,43 @@
             out += ("0" + Math.max(0, Math.min(255, mixed)).toString(16)).slice(-2);
         }
         return out;
+    }
+
+    /* The hue of a stored accent, so the hue slider starts where the colour
+       already is instead of snapping the page to blue when the tray opens. */
+    function accentHue(hex) {
+        var value = normalizeAccent(hex);
+        if (!value) return 212;
+        var r = parseInt(value.slice(1, 3), 16) / 255;
+        var g = parseInt(value.slice(3, 5), 16) / 255;
+        var b = parseInt(value.slice(5, 7), 16) / 255;
+        var max = Math.max(r, g, b), min = Math.min(r, g, b), delta = max - min;
+        if (!delta) return 0;
+        var hue;
+        if (max === r) hue = ((g - b) / delta) % 6;
+        else if (max === g) hue = (b - r) / delta + 2;
+        else hue = (r - g) / delta + 4;
+        hue *= 60;
+        return Math.round(hue < 0 ? hue + 360 : hue);
+    }
+
+    /* Pages carry their own legacy palette variables, and a page-level
+       `--accent` on <body> beats the one set on <html>. Mirroring the accent
+       onto the body keeps those older declarations from painting a different
+       colour than the rest of the page. */
+    function mirrorAccentOnBody(hex) {
+        var body = document.body;
+        if (!body || !body.style) return;
+        if (hex) {
+            body.style.setProperty("--accent", hex);
+            body.style.setProperty("--primary", hex);
+            body.style.setProperty("--primary-dark", "color-mix(in oklab, " + hex + " 84%, black)");
+            body.style.setProperty("--lumen-on-accent", accentInk(hex));
+        } else {
+            body.style.removeProperty("--accent");
+            body.style.removeProperty("--primary");
+            body.style.removeProperty("--primary-dark");
+        }
     }
 
     function accentThemeIsLight() {
@@ -713,6 +757,7 @@
                 root.removeAttribute("data-accent");
             }
         }
+        mirrorAccentOnBody(hex);
         if (persist) accentWrite(ACCENT_KEY, ACCENT_COOKIE, hex);
         syncAccentPicker();
         try {
@@ -841,13 +886,12 @@
             '<p class="lumen-accent-heading">Accent colour</p>' +
             '<div class="lumen-accent-pad" id="lumen-accent-pad" role="slider" aria-label="Saturation and brightness" aria-valuemin="0" aria-valuemax="100">' +
             '<span class="lumen-accent-pad-thumb" id="lumen-accent-pad-thumb"></span></div>' +
-            '<label class="lumen-accent-row">Hue' +
-            '<input type="range" id="lumen-accent-hue" class="lumen-accent-hue" min="0" max="360" step="1" value="220" aria-label="Hue"></label>' +
             '<label class="lumen-accent-row">Hex' +
             '<input type="text" id="lumen-accent-hex" class="lumen-accent-hex" value="" placeholder="#4f8cff" spellcheck="false" autocapitalize="off" maxlength="9" aria-label="Accent hex code" inputmode="text"></label>' +
-            '<label class="lumen-accent-row">' +
-            '<input type="color" id="lumen-accent-input" value="#4f8cff" aria-label="Accent colour"></label>' +
-            '<div class="lumen-accent-swatches">' + swatches + '</div>' +
+            '<div class="lumen-accent-swatches" role="group" aria-label="Preset accents">' + swatches + '</div>' +
+            '<label class="lumen-accent-row lumen-accent-range-row" for="lumen-accent-hue">Hue' +
+            '<input type="range" id="lumen-accent-hue" class="lumen-accent-hue" min="0" max="359" step="1" value="212" aria-label="Accent hue"></label>' +
+            '<button type="button" class="lumen-accent-eyedrop" id="lumen-accent-eyedrop" hidden aria-label="Pick a colour from the screen">Pick a colour from the screen</button>' +
             '<label class="lumen-accent-match" id="lumen-accent-match-row" hidden>' +
             '<input type="checkbox" id="lumen-accent-match"><span>Match my PC\'s theme colours</span></label>' +
             '<button type="button" class="lumen-accent-reset" id="lumen-accent-reset">Use the site default</button>' +
@@ -866,15 +910,19 @@
         var accent = currentAccent();
         var dot = document.getElementById("lumen-accent-dot");
         if (dot) dot.style.background = accent || "";
-        var input = document.getElementById("lumen-accent-input");
-        if (input) input.value = accent || "#4f8cff";
         var hexField = document.getElementById("lumen-accent-hex");
         if (hexField && document.activeElement !== hexField) hexField.value = accent || "";
-        var swatches = picker.querySelectorAll(".lumen-accent-swatch");
+        /* The tray moves into <body> once it opens, so the presets are not
+           always inside the wrapper. */
+        var swatches = document.querySelectorAll(".lumen-accent-swatch");
         for (var i = 0; i < swatches.length; i++) {
             swatches[i].setAttribute("aria-pressed",
                 swatches[i].getAttribute("data-accent-value") === accent ? "true" : "false");
         }
+        var hueField = document.getElementById("lumen-accent-hue");
+        if (hueField) hueField.value = String(accentHue(accent));
+        var eyedropButton = document.getElementById("lumen-accent-eyedrop");
+        if (eyedropButton) eyedropButton.hidden = typeof global.EyeDropper !== "function";
         var pc = pcAccent();
         var matchRow = document.getElementById("lumen-accent-match-row");
         var matchInput = document.getElementById("lumen-accent-match");
@@ -893,10 +941,25 @@
         if (!picker) return;
         var toggle = document.getElementById("lumen-accent-toggle");
         var tray = document.getElementById("lumen-accent-tray");
-        var input = document.getElementById("lumen-accent-input");
         var hexField = document.getElementById("lumen-accent-hex");
         var matchInput = document.getElementById("lumen-accent-match");
         var reset = document.getElementById("lumen-accent-reset");
+        var eyedrop = document.getElementById("lumen-accent-eyedrop");
+
+        /* One picker on every platform: Chromium can sample any pixel on
+           screen, so the tray offers the eyedropper instead of the browser's
+           own colour dialog, which looks different on every system and
+           carries black and white in its preset row. */
+        if (eyedrop && typeof global.EyeDropper === "function") {
+            eyedrop.addEventListener("click", function () {
+                new global.EyeDropper().open().then(function (result) {
+                    var picked = normalizeAccent(result && result.sRGBHex);
+                    if (!picked) return;
+                    setMatchPcTheme(false);
+                    applyAccent(picked, true);
+                }).catch(function () {});
+            });
+        }
 
         function placeTray() {
             if (!tray || !toggle || tray.hidden) return;
@@ -931,13 +994,6 @@
         /* A colour the visitor picks is their own, so it turns the PC match off:
            otherwise the next page Updater CE opens sees the match still ticked
            and puts the desktop colour back over the one they just chose. */
-        if (input) {
-            input.addEventListener("input", function () { applyAccent(input.value, false); });
-            input.addEventListener("change", function () {
-                setMatchPcTheme(false);
-                applyAccent(input.value, true);
-            });
-        }
         function commitHex() {
             if (!hexField) return;
             var next = normalizeAccent(hexField.value);
@@ -985,12 +1041,17 @@
                 applyAccent(hsvToHex(pickerHsv.h, pickerHsv.s, pickerHsv.v), true);
             });
         }
-        picker.addEventListener("click", function (event) {
+        /* The tray is reparented into <body> when it opens, so a listener on
+           the wrapper never sees a preset click. Delegate on the tray itself
+           and, for the moment before it is moved, on the wrapper too. */
+        function useSwatch(event) {
             var swatch = event.target && event.target.closest ? event.target.closest(".lumen-accent-swatch") : null;
             if (!swatch) return;
             setMatchPcTheme(false);
             applyAccent(swatch.getAttribute("data-accent-value"), true);
-        });
+        }
+        if (tray) tray.addEventListener("click", useSwatch);
+        picker.addEventListener("click", useSwatch);
         if (matchInput) {
             matchInput.addEventListener("change", function () {
                 setMatchPcTheme(Boolean(matchInput.checked));
