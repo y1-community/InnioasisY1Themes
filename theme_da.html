@@ -61,8 +61,8 @@
         try { params = new URLSearchParams(location.search); } catch (e) { return; }
         var theme = params.get("theme") || "";
         var variant = params.get("variant") || "";
-        if (!theme || /[\/]/.test(theme) || theme.indexOf("..") !== -1) return;
-        if (variant && (/[\/]/.test(variant) || variant.indexOf("..") !== -1)) variant = "";
+        if (!theme || /[\\/]/.test(theme) || theme.indexOf("..") !== -1) return;
+        if (variant && (/[\\/]/.test(variant) || variant.indexOf("..") !== -1)) variant = "";
         var file = (location.pathname.split("/").pop() || "theme.html");
         var localeMatch = file.match(/^theme_(de|es|fr|ja|jp)\.html$/);
         var href = "https://themes.innioasis.app/" + encodeURIComponent(theme) + "/";

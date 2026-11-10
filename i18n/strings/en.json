@@ -1,12 +1,12 @@
 {
- "generated": "2026-11-10T00:43:33+00:00",
+ "generated": "2026-11-10T02:14:09+00:00",
  "tiers": [
   "core",
   "full"
  ],
  "pages": 1743,
- "occurrences": 20248,
- "count": 6716,
+ "occurrences": 19421,
+ "count": 6715,
  "strings": {
   "Innioasis Themes Gallery": {
    "n": 869,
@@ -58,19 +58,11 @@
    "n": 710,
    "pages": 710
   },
-  "Opening the live preview…": {
-   "n": 710,
-   "pages": 710
-  },
   "Innioasis Y1 & Y2 Themes gallery hosted by Luci Ltd at luci.ltd â€” themes.innioasis.app": {
    "n": 117,
    "pages": 117
   },
   "Luci Ltd â€” web hosting for Innioasis Y1 & Y2 Themes": {
-   "n": 117,
-   "pages": 117
-  },
-  "Opening the live previewâ€¦": {
    "n": 117,
    "pages": 117
   },
@@ -15167,10 +15159,6 @@
    "n": 1,
    "pages": 1
   },
-  "Opening the live preview...": {
-   "n": 1,
-   "pages": 1
-  },
   "Opted out & blocked list": {
    "n": 1,
    "pages": 1
@@ -15578,6 +15566,10 @@
    "n": 1,
    "pages": 1,
    "theme": true
+  },
+  "Preview and download this theme.": {
+   "n": 1,
+   "pages": 1
   },
   "Prisoner": {
    "n": 1,
@@ -17610,15 +17602,15 @@
    "pages": 1,
    "theme": true
   },
-  "You are leaving Innioasis": {
-   "n": 1,
-   "pages": 1
-  },
-  "You are leaving Innioasis - Innioasis": {
-   "n": 1,
-   "pages": 1
-  },
   "You can turn off analytics and rating contributions without losing access to the gallery. The setting is remembered on this device and shared with the firmware archive and Updater CE through a cookie on innioasis.app.": {
+   "n": 1,
+   "pages": 1
+  },
+  "You're leaving the Themes Gallery": {
+   "n": 1,
+   "pages": 1
+  },
+  "You're leaving the Themes Gallery - Innioasis": {
    "n": 1,
    "pages": 1
   },
@@ -22687,6 +22679,11 @@
   "Finden Sie das Marker-Thema. Basierend auf dem Roblox-Spiel.": {
    "n": 1,
    "pages": 2,
+   "script": true
+  },
+  "Firmware archive": {
+   "n": 1,
+   "pages": 1,
    "script": true
   },
   "Flyff for Innioasis Y1 & Y2 by Robertpuggle": {

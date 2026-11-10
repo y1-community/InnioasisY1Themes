@@ -54,15 +54,15 @@
     <meta name="publisher" content="Luci Ltd">
     <link rel="author" href="https://www.luci.ltd" title="Luci Ltd - Innioasis Y1 和 Y2 主题的网络托管">
 
-    <link rel="canonical" id="theme-canonical" href="https://themes.innioasis.app/theme_zh-CN.html">
+    <link rel="canonical" id="theme-canonical" href="https://themes.innioasis.app/theme_zh-cn.html">
     <script>
       (function () {
         var params;
         try { params = new URLSearchParams(location.search); } catch (e) { return; }
         var theme = params.get("theme") || "";
         var variant = params.get("variant") || "";
-        if (!theme || /[\/]/.test(theme) || theme.indexOf("..") !== -1) return;
-        if (variant && (/[\/]/.test(variant) || variant.indexOf("..") !== -1)) variant = "";
+        if (!theme || /[\\/]/.test(theme) || theme.indexOf("..") !== -1) return;
+        if (variant && (/[\\/]/.test(variant) || variant.indexOf("..") !== -1)) variant = "";
         var file = (location.pathname.split("/").pop() || "theme.html");
         var localeMatch = file.match(/^theme_(de|es|fr|ja|jp)\.html$/);
         var href = "https://themes.innioasis.app/" + encodeURIComponent(theme) + "/";
@@ -103,7 +103,7 @@
     <script src="y1-theme-preview.js?v=20261109preview2"></script>
     <script src="theme-artwork-compat.js?v=20260524"></script>
     <script src="gold-theme-detect.js?v=20261109perf"></script>
-    <script src="gallery-chrome.js?v=20261102header"></script>
+    <script src="gallery-chrome.js?v=20261110header"></script>
     <script src="author-links.js?v=20260622"></script>
     <script src="gallery-loaded-theme.js?v=20261109perf"></script>
     <script src="theme-share-links.js"></script>
@@ -371,7 +371,7 @@
     <div id="support-toolbar-slot"></div>
 
     <script src="site-init.js?v=20261109accent"></script>
-    <script src="nav.js?v=20261110notices"></script>
+    <script src="nav.js?v=20261110sites"></script>
     <script>
 
         const FALLBACK_PLACEHOLDER_URL = 'https://themes.innioasis.app/placeholder.png';
