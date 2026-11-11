@@ -1340,15 +1340,21 @@
             global.Y1ThemeConfig && typeof global.Y1ThemeConfig.request === 'function'
                 ? global.Y1ThemeConfig.request(contentFolder)
                 : null;
-        var configPromise = sharedConfig
-            ? sharedConfig.then(function (cfg) {
-                  if (!cfg) throw new Error('config.json not found');
-                  return cfg;
-              })
-            : fetch(configUrl, fetchOpts).then(function (res) {
-                  if (!res.ok) throw new Error('config.json not found');
-                  return res.json();
-              });
+        /* Studio can pass an imported config.json straight in (local ZIP or
+           folder), so the preview never has to fetch a path that is not on
+           the server. Gallery mounts keep the original fetch path. */
+        var configPromise =
+            opts.spec && typeof opts.spec === 'object'
+                ? Promise.resolve(opts.spec)
+                : sharedConfig
+                  ? sharedConfig.then(function (cfg) {
+                        if (!cfg) throw new Error('config.json not found');
+                        return cfg;
+                    })
+                  : fetch(configUrl, fetchOpts).then(function (res) {
+                        if (!res.ok) throw new Error('config.json not found');
+                        return res.json();
+                    });
         return configPromise
             .then(function (cfg) {
                 var sim = interactive
@@ -1423,7 +1429,45 @@
                 dev.appendChild(viewport);
 
                 var wheel = null;
+                var compactControls = opts.compactControls === true;
+                var controlStrip = null;
                 var wheelScrollOpts = { passive: false };
+                if (useFullDevice && compactControls) {
+                    dev.classList.add('y1-tp-controls-collapsed');
+                    controlStrip = document.createElement('div');
+                    controlStrip.className = 'y1-tp-control-strip';
+                    controlStrip.setAttribute('role', 'group');
+                    controlStrip.setAttribute('aria-label', 'Player controls');
+                    controlStrip.innerHTML =
+                        '<button type="button" class="y1-tp-strip-btn" data-strip-act="prev" aria-label="Previous" title="Previous">\u2191</button>' +
+                        '<button type="button" class="y1-tp-strip-btn" data-strip-act="next" aria-label="Next" title="Next">\u2193</button>' +
+                        '<button type="button" class="y1-tp-strip-btn y1-tp-strip-btn--wide" data-strip-act="center" aria-label="Select" title="Select">Select</button>' +
+                        '<button type="button" class="y1-tp-strip-btn" data-strip-act="menu" aria-label="Back" title="Back">\u21A9</button>' +
+                        '<button type="button" class="y1-tp-strip-toggle" data-strip-toggle aria-label="Show scroll wheel" aria-expanded="false" title="Show scroll wheel">\u2304</button>';
+                    dev.appendChild(controlStrip);
+                    var stripActions = { prev: 'ArrowUp', next: 'ArrowDown', center: 'Enter', menu: 'Escape' };
+                    controlStrip.addEventListener('keydown', function (event) {
+                        event.stopPropagation();
+                    });
+                    controlStrip.addEventListener('click', function (event) {
+                        var action = event.target && event.target.closest && event.target.closest('[data-strip-act]');
+                        var toggle = event.target && event.target.closest && event.target.closest('[data-strip-toggle]');
+                        if (toggle) {
+                            var expanded = dev.classList.toggle('is-expanded');
+                            toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+                            toggle.setAttribute('aria-label', expanded ? 'Hide scroll wheel' : 'Show scroll wheel');
+                            toggle.setAttribute('title', expanded ? 'Hide scroll wheel' : 'Show scroll wheel');
+                            toggle.textContent = expanded ? '\u2303' : '\u2304';
+                            return;
+                        }
+                        if (!action) return;
+                        var key = stripActions[action.getAttribute('data-strip-act')];
+                        if (!key) return;
+                        event.preventDefault();
+                        dev.dispatchEvent(new KeyboardEvent('keydown', { key: key, bubbles: true }));
+                    });
+                    if (suppressDeviceInput) controlStrip.style.pointerEvents = 'none';
+                }
                 if (useFullDevice) {
                     wheel = document.createElement('div');
                     wheel.className = 'y1-tp-wheel y1-tp-clickwheel';

@@ -1,0 +1,51 @@
+{
+  "id": "./",
+  "name": "Innioasis Theme Studio",
+  "short_name": "Theme Studio",
+  "description": "Preview, remix, save and submit Innioasis Y1 and Y2 themes.",
+  "start_url": "./index.html?mode=preview",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#0a0b0f",
+  "theme_color": "#2f80ed",
+  "categories": ["design", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Preview a theme",
+      "short_name": "Preview",
+      "url": "./index.html?mode=preview"
+    },
+    {
+      "name": "Edit theme assets",
+      "short_name": "Edit",
+      "url": "./index.html?mode=edit"
+    },
+    {
+      "name": "Submit a theme",
+      "short_name": "Submit",
+      "url": "./index.html?mode=submit"
+    }
+  ]
+}

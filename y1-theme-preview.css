@@ -391,3 +391,81 @@ body.site-themes-app .theme-card-media-skeleton::after {
     border-color: color-mix(in oklab, var(--lumen-text) 20%, transparent);
     border-top-color: var(--lumen-accent);
 }
+
+/* Compact player controls: a strip by default, with the full wheel behind one
+   disclosure button. Studio opts in; the gallery keeps its normal chrome. */
+.y1-tp-control-strip {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.y1-tp-strip-btn,
+.y1-tp-strip-toggle {
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(55, 62, 72, 0.4);
+    border-radius: 9px;
+    background: linear-gradient(180deg, #f7f8fa, #dfe3e8);
+    color: #242932;
+    font: 700 0.9rem/1 system-ui, -apple-system, 'Segoe UI', sans-serif;
+    cursor: pointer;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 2px 5px rgba(0, 0, 0, 0.14);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.y1-tp-strip-btn {
+    flex: 1 1 0;
+    min-width: 38px;
+}
+
+.y1-tp-strip-btn--wide {
+    flex: 1.7 1 0;
+    font-size: 0.72rem;
+    letter-spacing: 0.02em;
+}
+
+.y1-tp-strip-toggle {
+    flex: 0 0 38px;
+    color: #5b6470;
+    font-size: 1rem;
+}
+
+.y1-tp-strip-btn:hover,
+.y1-tp-strip-toggle:hover {
+    background: linear-gradient(180deg, #fff, #e7eaee);
+}
+
+.y1-tp-strip-btn:active,
+.y1-tp-strip-toggle:active {
+    transform: translateY(1px);
+}
+
+.y1-tp-strip-btn:focus-visible,
+.y1-tp-strip-toggle:focus-visible {
+    outline: 2px solid #4b93e6;
+    outline-offset: 2px;
+}
+
+.y1-tp-controls-collapsed:not(.is-expanded) .y1-tp-clickwheel {
+    display: none;
+}
+
+.y1-tp-controls-collapsed.is-expanded .y1-tp-control-strip {
+    margin-top: 2px;
+}
+
+@media (max-width: 420px) {
+    .y1-tp-strip-btn,
+    .y1-tp-strip-toggle {
+        min-height: 36px;
+    }
+
+    .y1-tp-strip-btn--wide {
+        font-size: 0.66rem;
+    }
+}
