@@ -252,7 +252,8 @@
                 return {
                     id: key,
                     label: previewText(labelMap[key] || key),
-                    iconFile: typeof file === 'string' ? file : undefined
+                    iconFile: typeof file === 'string' ? file : undefined,
+                    assetPath: 'homePageConfig.' + key
                 };
             });
     }
@@ -462,6 +463,7 @@
             var selected = idx === selectedIndex;
             var row = document.createElement('div');
             row.className = 'y1-tp-row' + (selected ? ' is-selected' : '');
+            if (item.assetPath) row.setAttribute('data-theme-asset-path', item.assetPath);
             var bg = selected ? itemSel : itemBg || { backgroundColor: 'transparent' };
             applyCssProps(row, bg);
             row.style.cssText +=
@@ -483,6 +485,7 @@
                     bindPreviewImgFallback(fi);
                     fi.style.cssText =
                         'width:24px;height:24px;margin-left:10px;margin-right:8px;object-fit:contain;flex-shrink:0;';
+                    fi.setAttribute('data-theme-asset-path', 'fileConfig.folderIcon');
                     row.appendChild(fi);
                 } else {
                     var sp = document.createElement('span');
@@ -531,6 +534,7 @@
                     bindPreviewImgFallback(im);
                     im.style.cssText =
                         'height:100%;width:auto;object-fit:contain;max-width:64px;max-height:64px;opacity:0.9;';
+                    im.setAttribute('data-theme-asset-path', 'itemConfig.itemRightArrow');
                     ar.appendChild(im);
                 } else {
                     var ch = document.createElement('span');
@@ -573,6 +577,7 @@
             var selected = idx === selectedIndex;
             var row = document.createElement('div');
             var bg = selected ? itemSel : itemBg || { backgroundColor: 'transparent' };
+            if (item.assetPath) row.setAttribute('data-theme-asset-path', item.assetPath);
             applyCssProps(row, bg);
             row.style.cssText +=
                 'position:absolute;left:0;top:' +
@@ -612,6 +617,7 @@
                     bindPreviewImgFallback(im);
                     im.style.cssText =
                         'height:100%;width:auto;object-fit:contain;max-width:64px;max-height:64px;opacity:0.9;';
+                    im.setAttribute('data-theme-asset-path', 'itemConfig.itemRightArrow');
                     ar.appendChild(im);
                 } else {
                     var ch = document.createElement('span');
@@ -894,7 +900,8 @@
             return {
                 id: it.id,
                 label: it.label,
-                iconUrl: it.iconFile ? buildFileUrl(contentFolder, it.iconFile) : ''
+                iconUrl: it.iconFile ? buildFileUrl(contentFolder, it.iconFile) : '',
+                assetPath: 'settingConfig.' + it.id
             };
         });
     }
@@ -959,57 +966,71 @@
         var displayBatteryIcon = displayBatteryEnabled
             ? settingConfig.displayBatteryOn
             : settingConfig.displayBatteryOff;
+        var repeatAssetKey =
+            repeatMode === 'off' ? 'repeatOff' : repeatMode === 'all' ? 'repeatAll' : 'repeatOne';
+        var shuffleAssetKey = shuffleEnabled ? 'shuffleOn' : 'shuffleOff';
+        var fileExtensionAssetKey = fileExtensionsEnabled ? 'fileExtensionOn' : 'fileExtensionOff';
+        var keyLockAssetKey = keyLockEnabled ? 'keyLockOn' : 'keyLockOff';
+        var keyToneAssetKey = keyToneEnabled ? 'keyToneOn' : 'keyToneOff';
+        var keyVibrationAssetKey = keyVibrationEnabled ? 'keyVibrationOn' : 'keyVibrationOff';
+        var displayBatteryAssetKey = displayBatteryEnabled ? 'displayBatteryOn' : 'displayBatteryOff';
 
         var base = [
-            { id: 'shutdown', label: 'Shutdown', iconFile: settingConfig.shutdown },
+            { id: 'shutdown', label: 'Shutdown', iconFile: settingConfig.shutdown, assetPath: 'settingConfig.shutdown' },
             {
                 id: 'timed_shutdown',
                 label: 'Timed shutdown',
                 iconFile: timedShutdownIcon,
+                assetPath: 'settingConfig.timedShutdown_' + timedShutdownValue,
                 valueText: gt('timed_shutdown')
             },
-            { id: 'shuffle', label: 'Shuffle', iconFile: shuffleIcon, valueText: gt('shuffle') },
-            { id: 'repeat', label: 'Repeat', iconFile: repeatIcon, valueText: gt('repeat') },
-            { id: 'equalizer', label: 'Equalizer', iconFile: settingConfig.equalizer_normal },
+            { id: 'shuffle', label: 'Shuffle', iconFile: shuffleIcon, assetPath: 'settingConfig.' + shuffleAssetKey, valueText: gt('shuffle') },
+            { id: 'repeat', label: 'Repeat', iconFile: repeatIcon, assetPath: 'settingConfig.' + repeatAssetKey, valueText: gt('repeat') },
+            { id: 'equalizer', label: 'Equalizer', iconFile: settingConfig.equalizer_normal, assetPath: 'settingConfig.equalizer_normal' },
             {
                 id: 'file_extension',
                 label: 'File extensions',
                 iconFile: fileExtensionIcon,
+                assetPath: 'settingConfig.' + fileExtensionAssetKey,
                 valueText: gt('file_extension')
             },
-            { id: 'key_lock', label: 'Key lock', iconFile: keyLockIcon, valueText: gt('key_lock') },
-            { id: 'key_tone', label: 'Key tone', iconFile: keyToneIcon, valueText: gt('key_tone') },
+            { id: 'key_lock', label: 'Key lock', iconFile: keyLockIcon, assetPath: 'settingConfig.' + keyLockAssetKey, valueText: gt('key_lock') },
+            { id: 'key_tone', label: 'Key tone', iconFile: keyToneIcon, assetPath: 'settingConfig.' + keyToneAssetKey, valueText: gt('key_tone') },
             {
                 id: 'key_vibration',
                 label: 'Key vibration',
                 iconFile: keyVibrationIcon,
+                assetPath: 'settingConfig.' + keyVibrationAssetKey,
                 valueText: gt('key_vibration')
             },
-            { id: 'wallpaper', label: 'Wallpaper', iconFile: settingConfig.wallpaper },
+            { id: 'wallpaper', label: 'Wallpaper', iconFile: settingConfig.wallpaper, assetPath: 'settingConfig.wallpaper' },
             {
                 id: 'backlight',
                 label: 'Backlight',
                 iconFile: backlightIcon,
+                assetPath: 'settingConfig.backlight_' + backlightValue,
                 valueText: gt('backlight')
             },
-            { id: 'brightness', label: 'Brightness', iconFile: settingConfig.brightness },
+            { id: 'brightness', label: 'Brightness', iconFile: settingConfig.brightness, assetPath: 'settingConfig.brightness' },
             {
                 id: 'display_battery',
                 label: 'Display battery',
                 iconFile: displayBatteryIcon,
+                assetPath: 'settingConfig.' + displayBatteryAssetKey,
                 valueText: gt('display_battery')
             },
-            { id: 'date_time', label: 'Date & Time', iconFile: settingConfig.dateTime },
-            { id: 'theme', label: 'Theme', iconFile: settingConfig.theme },
-            { id: 'language', label: 'Language', iconFile: settingConfig.language },
-            { id: 'factory_reset', label: 'Factory reset', iconFile: settingConfig.factoryReset },
-            { id: 'clear_cache', label: 'Clear cache', iconFile: settingConfig.clearCache }
+            { id: 'date_time', label: 'Date & Time', iconFile: settingConfig.dateTime, assetPath: 'settingConfig.dateTime' },
+            { id: 'theme', label: 'Theme', iconFile: settingConfig.theme, assetPath: 'settingConfig.theme' },
+            { id: 'language', label: 'Language', iconFile: settingConfig.language, assetPath: 'settingConfig.language' },
+            { id: 'factory_reset', label: 'Factory reset', iconFile: settingConfig.factoryReset, assetPath: 'settingConfig.factoryReset' },
+            { id: 'clear_cache', label: 'Clear cache', iconFile: settingConfig.clearCache, assetPath: 'settingConfig.clearCache' }
         ];
         if (settingConfig.launcher && String(settingConfig.launcher).trim()) {
             base.push({
                 id: 'rockbox',
                 label: 'Rockbox',
                 iconFile: settingConfig.launcher,
+                assetPath: 'settingConfig.launcher',
                 valueText: undefined
             });
         }
@@ -1019,7 +1040,8 @@
                 id: item.id,
                 label: item.label,
                 valueText: item.valueText,
-                iconUrl: item.iconFile ? buildFileUrl(contentFolder, item.iconFile) : ''
+                iconUrl: item.iconFile ? buildFileUrl(contentFolder, item.iconFile) : '',
+                assetPath: item.assetPath
             };
         });
     }
@@ -1316,7 +1338,8 @@
         container.innerHTML = '';
         container.classList.add('y1-tp-mounted');
         var previewFrame = isPreviewMode ? previewFrameFor(container) : null;
-        if (previewFrame) setPreviewLoading(previewFrame, true);
+        var showLoadingOverlay = opts.loadingOverlay !== false;
+        if (previewFrame && showLoadingOverlay) setPreviewLoading(previewFrame, true);
 
         var encoded = contentFolder.split('/').filter(Boolean).map(encodeURIComponent).join('/');
         var configUrl = '';
@@ -1429,11 +1452,14 @@
                 dev.appendChild(viewport);
 
                 var wheel = null;
+                var wheelCollapse = null;
                 var compactControls = opts.compactControls === true;
+                var compactExpanded = compactControls && opts.compactExpanded === true;
                 var controlStrip = null;
                 var wheelScrollOpts = { passive: false };
                 if (useFullDevice && compactControls) {
                     dev.classList.add('y1-tp-controls-collapsed');
+                    if (compactExpanded) dev.classList.add('is-expanded');
                     controlStrip = document.createElement('div');
                     controlStrip.className = 'y1-tp-control-strip';
                     controlStrip.setAttribute('role', 'group');
@@ -1445,28 +1471,6 @@
                         '<button type="button" class="y1-tp-strip-btn" data-strip-act="menu" aria-label="Back" title="Back">\u21A9</button>' +
                         '<button type="button" class="y1-tp-strip-toggle" data-strip-toggle aria-label="Show scroll wheel" aria-expanded="false" title="Show scroll wheel">\u2304</button>';
                     dev.appendChild(controlStrip);
-                    var stripActions = { prev: 'ArrowUp', next: 'ArrowDown', center: 'Enter', menu: 'Escape' };
-                    controlStrip.addEventListener('keydown', function (event) {
-                        event.stopPropagation();
-                    });
-                    controlStrip.addEventListener('click', function (event) {
-                        var action = event.target && event.target.closest && event.target.closest('[data-strip-act]');
-                        var toggle = event.target && event.target.closest && event.target.closest('[data-strip-toggle]');
-                        if (toggle) {
-                            var expanded = dev.classList.toggle('is-expanded');
-                            toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-                            toggle.setAttribute('aria-label', expanded ? 'Hide scroll wheel' : 'Show scroll wheel');
-                            toggle.setAttribute('title', expanded ? 'Hide scroll wheel' : 'Show scroll wheel');
-                            toggle.textContent = expanded ? '\u2303' : '\u2304';
-                            return;
-                        }
-                        if (!action) return;
-                        var key = stripActions[action.getAttribute('data-strip-act')];
-                        if (!key) return;
-                        event.preventDefault();
-                        dev.dispatchEvent(new KeyboardEvent('keydown', { key: key, bubbles: true }));
-                    });
-                    if (suppressDeviceInput) controlStrip.style.pointerEvents = 'none';
                 }
                 if (useFullDevice) {
                     wheel = document.createElement('div');
@@ -1483,6 +1487,70 @@
                     }
                     if (suppressDeviceInput && wheel) {
                         wheel.style.pointerEvents = 'none';
+                    }
+                }
+                if (useFullDevice && compactControls) {
+                    wheelCollapse = document.createElement('button');
+                    wheelCollapse.type = 'button';
+                    wheelCollapse.className = 'y1-tp-wheel-collapse';
+                    wheelCollapse.setAttribute('aria-label', 'Collapse scroll wheel');
+                    wheelCollapse.setAttribute('title', 'Collapse scroll wheel');
+                    wheelCollapse.innerHTML = '<span aria-hidden="true">\u2303</span><span>Hide wheel</span>';
+                    wheelCollapse.hidden = !compactExpanded;
+                    dev.appendChild(wheelCollapse);
+
+                    var stripToggle = controlStrip.querySelector('[data-strip-toggle]');
+                    var setCompactExpanded = function (expanded, moveFocus) {
+                        compactExpanded = expanded === true;
+                        dev.classList.toggle('is-expanded', compactExpanded);
+                        dev.setAttribute('data-compact-mode', compactExpanded ? 'wheel' : 'strip');
+                        controlStrip.hidden = compactExpanded;
+                        controlStrip.setAttribute('aria-hidden', compactExpanded ? 'true' : 'false');
+                        if (wheel) {
+                            wheel.hidden = !compactExpanded;
+                            wheel.setAttribute('aria-hidden', compactExpanded ? 'false' : 'true');
+                        }
+                        stripToggle.setAttribute('aria-expanded', compactExpanded ? 'true' : 'false');
+                        stripToggle.setAttribute('aria-label', compactExpanded ? 'Hide scroll wheel' : 'Show scroll wheel');
+                        stripToggle.setAttribute('title', compactExpanded ? 'Hide scroll wheel' : 'Show scroll wheel');
+                        stripToggle.textContent = compactExpanded ? '\u2303' : '\u2304';
+                        wheelCollapse.hidden = !compactExpanded;
+                        if (typeof opts.onCompactChange === 'function') {
+                            try {
+                                opts.onCompactChange(compactExpanded);
+                            } catch (e) {}
+                        }
+                        if (moveFocus) {
+                            try {
+                                (compactExpanded ? wheelCollapse : stripToggle).focus({ preventScroll: true });
+                            } catch (e) {}
+                        }
+                    };
+                    setCompactExpanded(compactExpanded, false);
+
+                    var stripActions = { prev: 'ArrowUp', next: 'ArrowDown', center: 'Enter', menu: 'Escape' };
+                    controlStrip.addEventListener('keydown', function (event) {
+                        event.stopPropagation();
+                    });
+                    controlStrip.addEventListener('click', function (event) {
+                        var action = event.target && event.target.closest && event.target.closest('[data-strip-act]');
+                        var toggle = event.target && event.target.closest && event.target.closest('[data-strip-toggle]');
+                        if (toggle) {
+                            setCompactExpanded(!compactExpanded, true);
+                            return;
+                        }
+                        if (!action) return;
+                        var key = stripActions[action.getAttribute('data-strip-act')];
+                        if (!key) return;
+                        event.preventDefault();
+                        dev.dispatchEvent(new KeyboardEvent('keydown', { key: key, bubbles: true }));
+                    });
+                    wheelCollapse.addEventListener('click', function () {
+                        setCompactExpanded(false, true);
+                    });
+                    if (suppressDeviceInput) {
+                        controlStrip.style.pointerEvents = 'none';
+                        wheelCollapse.style.pointerEvents = 'none';
                     }
                 }
 
@@ -1518,6 +1586,15 @@
                     canvas.style.backgroundColor = 'transparent';
                     var wall = document.createElement('div');
                     wall.className = 'y1-tp-wallpaper';
+                    var wallAssetPath =
+                        sim.themeViewId === 'home'
+                            ? cfg.desktopWallpaper
+                                ? 'desktopWallpaper'
+                                : cfg.globalWallpaper
+                                  ? 'globalWallpaper'
+                                  : ''
+                            : '';
+                    if (wallAssetPath) wall.setAttribute('data-theme-asset-path', wallAssetPath);
                     wall.style.cssText =
                         'position:absolute;left:0;top:0;width:' +
                         W +
@@ -1587,6 +1664,7 @@
                             }
                             bindPreviewImgFallback(pi);
                             pi.style.cssText = 'height:25px;width:25px;object-fit:contain;display:block;';
+                            pi.setAttribute('data-theme-asset-path', 'statusConfig.' + pk);
                             right.appendChild(pi);
                         }
                     }
@@ -1604,6 +1682,16 @@
                         battLvl,
                         sim && sim.isCharging
                     );
+                    var battKey = sim && sim.isCharging ? 'batteryCharging' : 'battery';
+                    var battConfig = statusCfg[battKey];
+                    var battPath = '';
+                    if (Array.isArray(battConfig)) {
+                        battPath = 'statusConfig.' + battKey + '.' + normalizedBatteryLevel(battLvl);
+                    } else if (battConfig && typeof battConfig === 'object') {
+                        battPath = 'statusConfig.' + battKey + '.' + normalizedBatteryLevel(battLvl);
+                    } else if (battConfig) {
+                        battPath = 'statusConfig.' + battKey;
+                    }
                     if (battUrl) {
                         var rawBatt = battUrl;
                         var prevBatt = (mode === 'gallery' || mode === 'menu') ? previewAssetUrl(rawBatt, 'png') : rawBatt;
@@ -1611,6 +1699,7 @@
                         bi.src = prevBatt;
                         bi.alt = '';
                         bi.style.cssText = 'height:15px;width:auto;object-fit:contain;display:block;';
+                        if (battPath) bi.setAttribute('data-theme-asset-path', battPath);
                         var pctSpan = document.createElement('span');
                         pctSpan.style.fontSize = '16px';
                         pctSpan.textContent = pct + '%';
@@ -1649,6 +1738,10 @@
                         mk.className = 'y1-tp-desktop-mask';
                         mk.src = maskUrl;
                         mk.alt = '';
+                        mk.setAttribute(
+                            'data-theme-asset-path',
+                            sim.themeViewId === 'home' ? 'desktopMask' : 'settingConfig.settingMask'
+                        );
                         mk.addEventListener(
                             'error',
                             function () {
@@ -1717,6 +1810,7 @@
                                 im.fetchPriority = 'high';
                                 im.src = previewIu;
                                 im.alt = sel.label || '';
+                                if (sel.assetPath) im.setAttribute('data-theme-asset-path', sel.assetPath);
                                 if (previewIu !== rawIu) {
                                     im.onerror = function () {
                                         im.onerror = null;
@@ -1838,6 +1932,7 @@
                             var simg = document.createElement('img');
                             simg.src = selS.iconUrl;
                             simg.alt = selS.label || '';
+                            if (selS.assetPath) simg.setAttribute('data-theme-asset-path', selS.assetPath);
                             bindPreviewImgFallback(simg);
                             simg.style.cssText =
                                 'max-width:146px;max-height:146px;width:auto;height:auto;object-fit:contain;display:block;';
@@ -1872,7 +1967,7 @@
                             'px;overflow:hidden;z-index:10;';
                         appendSettingsMenuRows(eqMenu, {
                             items: eqItems.map(function (e) {
-                                return { id: e.id, label: e.label };
+                                return { id: e.id, label: e.label, assetPath: e.assetPath };
                             }),
                             selectedIndex: sim.themeSelectedIndex,
                             visibleHeight: SETTINGS_MENU_HEIGHT,
@@ -1901,6 +1996,7 @@
                             var eim = document.createElement('img');
                             eim.src = eqSel.iconUrl;
                             eim.alt = eqSel.label || '';
+                            if (eqSel.assetPath) eim.setAttribute('data-theme-asset-path', eqSel.assetPath);
                             bindPreviewImgFallback(eim);
                             eim.style.cssText =
                                 'max-width:146px;max-height:146px;width:auto;height:auto;object-fit:contain;display:block;';
@@ -2818,7 +2914,8 @@
         if (!container) return;
         var opts = options || {};
         var frame = previewFrameFor(container);
-        setPreviewLoading(frame, true);
+        var showLoadingOverlay = opts.loadingOverlay !== false;
+        if (showLoadingOverlay) setPreviewLoading(frame, true);
         primeGalleryPreview(opts);
 
         var settled = false;
@@ -2826,7 +2923,7 @@
             if (settled) return;
             settled = true;
             global.clearTimeout(failSafe);
-            setPreviewLoading(frame, false);
+            if (showLoadingOverlay) setPreviewLoading(frame, false);
         }
         var failSafe = global.setTimeout(finishPreviewLoading, 12000);
 

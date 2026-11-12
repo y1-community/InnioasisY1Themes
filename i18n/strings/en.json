@@ -1,12 +1,12 @@
 {
- "generated": "2026-11-11T17:51:02+00:00",
+ "generated": "2026-11-10T00:43:33+00:00",
  "tiers": [
   "core",
   "full"
  ],
- "pages": 1750,
- "occurrences": 19875,
- "count": 7106,
+ "pages": 1743,
+ "occurrences": 20248,
+ "count": 6716,
  "strings": {
   "Innioasis Themes Gallery": {
    "n": 869,
@@ -58,11 +58,19 @@
    "n": 710,
    "pages": 710
   },
+  "Opening the live preview…": {
+   "n": 710,
+   "pages": 710
+  },
   "Innioasis Y1 & Y2 Themes gallery hosted by Luci Ltd at luci.ltd â€” themes.innioasis.app": {
    "n": 117,
    "pages": 117
   },
   "Luci Ltd â€” web hosting for Innioasis Y1 & Y2 Themes": {
+   "n": 117,
+   "pages": 117
+  },
+  "Opening the live previewâ€¦": {
    "n": 117,
    "pages": 117
   },
@@ -171,35 +179,10 @@
    "pages": 9,
    "theme": true
   },
-  "Themes Gallery": {
-   "n": 11,
-   "pages": 8,
-   "script": true
-  },
   "Noorie!": {
    "n": 8,
    "pages": 8,
    "theme": true
-  },
-  "Rockbox themes": {
-   "n": 10,
-   "pages": 7,
-   "script": true
-  },
-  "Better-Y themes": {
-   "n": 8,
-   "pages": 7,
-   "script": true
-  },
-  "Koensayr themes": {
-   "n": 8,
-   "pages": 7,
-   "script": true
-  },
-  "Solar themes": {
-   "n": 8,
-   "pages": 7,
-   "script": true
   },
   "1G Pip-Boy": {
    "n": 7,
@@ -209,24 +192,6 @@
    "n": 7,
    "pages": 7,
    "theme": true
-  },
-  "Updater CE": {
-   "n": 8,
-   "pages": 6,
-   "script": true
-  },
-  "Breadcrumb": {
-   "n": 6,
-   "pages": 6
-  },
-  "Related theme pages": {
-   "n": 6,
-   "pages": 6
-  },
-  "Theme compatibility": {
-   "n": 6,
-   "pages": 6,
-   "script": true
   },
   "noorie!": {
    "n": 6,
@@ -304,14 +269,6 @@
    "script": true,
    "theme": true
   },
-  "Solar": {
-   "n": 5,
-   "pages": 4
-  },
-  "The": {
-   "n": 5,
-   "pages": 4
-  },
   "Aisha Shanaya Wasi": {
    "n": 4,
    "pages": 4,
@@ -322,10 +279,6 @@
    "n": 4,
    "pages": 4,
    "theme": true
-  },
-  "Browse the theme gallery": {
-   "n": 4,
-   "pages": 4
   },
   "CityStar-Asmrtist!!": {
    "n": 4,
@@ -406,18 +359,6 @@
   },
   "The Owl House - Innioasis Y1 and Y2 Themes Gallery": {
    "n": 9,
-   "pages": 3
-  },
-  "Better-Y": {
-   "n": 4,
-   "pages": 3
-  },
-  "Koensayr": {
-   "n": 4,
-   "pages": 3
-  },
-  "Rockbox collection": {
-   "n": 4,
    "pages": 3
   },
   "(Dark)": {
@@ -540,10 +481,6 @@
    "n": 3,
    "pages": 3,
    "theme": true
-  },
-  "firmware archive": {
-   "n": 3,
-   "pages": 3
   },
   "iPod Community": {
    "n": 3,
@@ -819,6 +756,11 @@
    "n": 4,
    "pages": 2
   },
+  "Updater CE": {
+   "n": 4,
+   "pages": 2,
+   "script": true
+  },
   "Author": {
    "n": 3,
    "pages": 2
@@ -829,9 +771,14 @@
    "script": true,
    "theme": true
   },
-  "Theme assets": {
+  "Solar": {
    "n": 3,
    "pages": 2
+  },
+  "Themes Gallery": {
+   "n": 3,
+   "pages": 2,
+   "script": true
   },
   "(Whimsygoth Purple (No Overlay))": {
    "n": 2,
@@ -919,11 +866,6 @@
    "pages": 2,
    "theme": true
   },
-  "How to install themes": {
-   "n": 2,
-   "pages": 2,
-   "script": true
-  },
   "Iminix Sonc": {
    "n": 2,
    "pages": 2,
@@ -931,10 +873,6 @@
    "theme": true
   },
   "Innioasis Y1, Luci web hosting, luci.ltd, Mimi, MP3 player theme, Rockbox, themes.innioasis.app hosting, Whimsygoth Purple, Whimsygoth Purple (No Overlay), Whimsygoth_Purple, Y1 theme": {
-   "n": 2,
-   "pages": 2
-  },
-  "Innioasis firmware archive": {
    "n": 2,
    "pages": 2
   },
@@ -977,18 +915,9 @@
    "pages": 2,
    "theme": true
   },
-  "Open": {
-   "n": 2,
-   "pages": 2
-  },
-  "Open the": {
-   "n": 2,
-   "pages": 2
-  },
   "Original Software": {
    "n": 2,
-   "pages": 2,
-   "script": true
+   "pages": 2
   },
   "PTCROWZ": {
    "n": 2,
@@ -1019,14 +948,6 @@
    "pages": 2
   },
   "Redirecting to Community Support & Credits...": {
-   "n": 2,
-   "pages": 2
-  },
-  "Rockbox": {
-   "n": 2,
-   "pages": 2
-  },
-  "Send my theme": {
    "n": 2,
    "pages": 2
   },
@@ -1061,10 +982,6 @@
    "theme": true
   },
   "TateMcrae": {
-   "n": 2,
-   "pages": 2
-  },
-  "This looks like an update": {
    "n": 2,
    "pages": 2
   },
@@ -1135,14 +1052,6 @@
    "n": 2,
    "pages": 2,
    "theme": true
-  },
-  "installation guide": {
-   "n": 2,
-   "pages": 2
-  },
-  "instead.": {
-   "n": 2,
-   "pages": 2
   },
   "jonathan": {
    "n": 2,
@@ -3392,10 +3301,6 @@
    "script": true,
    "theme": true
   },
-  "Shared gallery themes": {
-   "n": 4,
-   "pages": 1
-  },
   "Shishiro Botan from Hololive, edited from DELTARUNE preset": {
    "n": 4,
    "pages": 1,
@@ -5390,11 +5295,6 @@
    "n": 3,
    "pages": 1
   },
-  "Better-Y themes for the Innioasis Y1 and Y2": {
-   "n": 3,
-   "pages": 1,
-   "script": true
-  },
   "Bill Kaulitz - Innioasis Y1 and Y2 Themes Gallery": {
    "n": 3,
    "pages": 1
@@ -6153,15 +6053,6 @@
    "n": 3,
    "pages": 1
   },
-  "Innioasis Y1 and Y2 theme compatibility": {
-   "n": 3,
-   "pages": 1,
-   "script": true
-  },
-  "Innioasis Y1 and Y2 themes: Better-Y, Rockbox, Koensayr and Solar": {
-   "n": 3,
-   "pages": 1
-  },
   "InnoPod Rev.2 - Innioasis Y1 and Y2 Themes Gallery": {
    "n": 3,
    "pages": 1
@@ -6253,11 +6144,6 @@
   "Kirby Pastel Space - Innioasis Y1 and Y2 Themes Gallery": {
    "n": 3,
    "pages": 1
-  },
-  "Koensayr themes for the Innioasis Y1 and Y2": {
-   "n": 3,
-   "pages": 1,
-   "script": true
   },
   "Kratcy cfmot ! - Innioasis Y1 and Y2 Themes Gallery": {
    "n": 3,
@@ -6866,10 +6752,6 @@
    "n": 3,
    "pages": 1
   },
-  "Preview": {
-   "n": 3,
-   "pages": 1
-  },
   "Prisoner - Innioasis Y1 and Y2 Themes Gallery": {
    "n": 3,
    "pages": 1
@@ -6967,6 +6849,10 @@
    "pages": 1
   },
   "Rock II - Innioasis Y1 and Y2 Themes Gallery": {
+   "n": 3,
+   "pages": 1
+  },
+  "Rockbox themes for the Innioasis Y1 and Y2 - Innioasis Themes Gallery": {
    "n": 3,
    "pages": 1
   },
@@ -7150,11 +7036,6 @@
    "n": 3,
    "pages": 1
   },
-  "Solar themes for the Innioasis Y1 and Y2": {
-   "n": 3,
-   "pages": 1,
-   "script": true
-  },
   "Sombie mp3 - Innioasis Y1 and Y2 Themes Gallery": {
    "n": 3,
    "pages": 1
@@ -7316,10 +7197,6 @@
    "pages": 1
   },
   "Stylized - Innioasis Y1 and Y2 Themes Gallery": {
-   "n": 3,
-   "pages": 1
-  },
-  "Submit": {
    "n": 3,
    "pages": 1
   },
@@ -7743,10 +7620,6 @@
    "pages": 1
   },
   "Yellowstone National Park - Innioasis Y1 and Y2 Themes Gallery": {
-   "n": 3,
-   "pages": 1
-  },
-  "Yes": {
    "n": 3,
    "pages": 1
   },
@@ -8376,6 +8249,10 @@
    "n": 2,
    "pages": 1
   },
+  "Better-Y": {
+   "n": 2,
+   "pages": 1
+  },
   "Cas spn theme - Innioasis Y1 and Y2 Themes Gallery": {
    "n": 2,
    "pages": 1
@@ -8384,28 +8261,19 @@
    "n": 2,
    "pages": 1
   },
-  "Edit": {
-   "n": 2,
-   "pages": 1
-  },
-  "Gallery theme": {
-   "n": 2,
-   "pages": 1
-  },
   "Gothic aesthetic theme - Innioasis Y1 and Y2 Themes Gallery": {
    "n": 2,
    "pages": 1
-  },
-  "How to install themes on the Innioasis Y1 and Y2": {
-   "n": 2,
-   "pages": 1,
-   "script": true
   },
   "Innioasis Y1 Updater": {
    "n": 2,
    "pages": 1
   },
   "Innioasis Y2": {
+   "n": 2,
+   "pages": 1
+  },
+  "Koensayr": {
    "n": 2,
    "pages": 1
   },
@@ -8424,23 +8292,7 @@
    "pages": 1,
    "script": true
   },
-  "Optional": {
-   "n": 2,
-   "pages": 1
-  },
   "Original OS": {
-   "n": 2,
-   "pages": 1
-  },
-  "Required": {
-   "n": 2,
-   "pages": 1
-  },
-  "Reset": {
-   "n": 2,
-   "pages": 1
-  },
-  "Rockbox themes and Rockbox-Themes for the Innioasis Y1 and Y2": {
    "n": 2,
    "pages": 1
   },
@@ -8479,10 +8331,6 @@
    "pages": 1
   },
   "ghost hunting theme - Innioasis Y1 and Y2 Themes Gallery": {
-   "n": 2,
-   "pages": 1
-  },
-  "https://": {
    "n": 2,
    "pages": 1
   },
@@ -8557,10 +8405,6 @@
    "pages": 1
   },
   "(Kikis Delivery Service)": {
-   "n": 1,
-   "pages": 1
-  },
-  "(Ko-fi, Patreon, shop or portfolio)": {
    "n": 1,
    "pages": 1
   },
@@ -8665,10 +8509,6 @@
    "n": 1,
    "pages": 1
   },
-  "(this page)": {
-   "n": 1,
-   "pages": 1
-  },
   ") and choose": {
    "n": 1,
    "pages": 1
@@ -8705,23 +8545,7 @@
    "n": 1,
    "pages": 1
   },
-  ", choose a theme and download it.": {
-   "n": 1,
-   "pages": 1
-  },
   ", or": {
-   "n": 1,
-   "pages": 1
-  },
-  ", or copy it to the player's themes folder over USB.": {
-   "n": 1,
-   "pages": 1
-  },
-  ", or copy the theme into the player's theme folder over USB.": {
-   "n": 1,
-   "pages": 1
-  },
-  ", which covers the Rockbox build and its requirements.": {
    "n": 1,
    "pages": 1
   },
@@ -8737,10 +8561,6 @@
    "n": 1,
    "pages": 1
   },
-  ". More about Solar itself is on the": {
-   "n": 1,
-   "pages": 1
-  },
   ". Once installed, future updates can be downloaded and applied right over Wi-Fi without needing your computer.": {
    "n": 1,
    "pages": 1
@@ -8750,10 +8570,6 @@
    "pages": 1
   },
   ". Updates and removals are always reviewed by hand first.": {
-   "n": 1,
-   "pages": 1
-  },
-  ". We will treat this as an update to that theme.": {
    "n": 1,
    "pages": 1
   },
@@ -8969,10 +8785,6 @@
    "n": 1,
    "pages": 1
   },
-  "A Rockbox player cannot load Solar, Better-Y, Koensayr or Original Software themes. The": {
-   "n": 1,
-   "pages": 1
-  },
   "A few screens may need attention": {
    "n": 1,
    "pages": 1
@@ -8981,23 +8793,7 @@
    "n": 1,
    "pages": 1
   },
-  "A sentence about the look, palette or what it works best with.": {
-   "n": 1,
-   "pages": 1
-  },
-  "A short line for the gallery": {
-   "n": 1,
-   "pages": 1
-  },
-  "A theme can change colours, icons, backgrounds, fonts and the arrangement of the interface. It cannot change the software version, add features, alter the firmware or touch your music library. If a theme looks wrong after a software update, re-select it on the player; if it still looks wrong, check the theme page for an updated file.": {
-   "n": 1,
-   "pages": 1
-  },
   "A theme earns Gold when it passes our artwork compatibility check (same as the gallery badge):": {
-   "n": 1,
-   "pages": 1
-  },
-  "A theme is a skin, not firmware. On the Innioasis Y1 and Y2, one theme format is shared by Better-Y, Koensayr, Solar and the Original Software, so a theme from this gallery works on any of them. Rockbox is the one exception.": {
    "n": 1,
    "pages": 1
   },
@@ -9118,14 +8914,6 @@
    "n": 1,
    "pages": 1
   },
-  "Add a title and author": {
-   "n": 1,
-   "pages": 1
-  },
-  "Add it to the player with": {
-   "n": 1,
-   "pages": 1
-  },
   "Addie.mp3": {
    "n": 1,
    "pages": 1,
@@ -9199,10 +8987,6 @@
    "n": 1,
    "pages": 1
   },
-  "After installing": {
-   "n": 1,
-   "pages": 1
-  },
   "After you submit a theme, ingest and housekeeping automatically add any missing keys and point them at a blank placeholder image. You do not have to change your package for this default behaviour - it is applied for you.": {
    "n": 1,
    "pages": 1
@@ -9271,10 +9055,6 @@
    "n": 1,
    "pages": 1
   },
-  "All": {
-   "n": 1,
-   "pages": 1
-  },
   "All About Lily Chou-Chou": {
    "n": 1,
    "pages": 1,
@@ -9288,19 +9068,7 @@
    "n": 1,
    "pages": 1
   },
-  "All four software options read the same theme files. If you find a theme on this page and later switch from Better-Y to Koensayr, Solar or the stock Original Software, that theme still works. You do not need to download a different copy or convert anything.": {
-   "n": 1,
-   "pages": 1
-  },
-  "All gallery themes": {
-   "n": 1,
-   "pages": 1
-  },
   "All themes": {
-   "n": 1,
-   "pages": 1
-  },
-  "All three are described in the": {
    "n": 1,
    "pages": 1
   },
@@ -9689,24 +9457,6 @@
    "n": 1,
    "pages": 1
   },
-  "Are Koensayr themes different from other Y1 and Y2 themes?": {
-   "n": 1,
-   "pages": 1
-  },
-  "Are Rockbox themes compatible with Better-Y, Koensayr, Solar or the Original Software?": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "Are Solar themes the same as Rockbox themes?": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "Are all Y1 and Y2 themes compatible with every firmware?": {
-   "n": 1,
-   "pages": 1
-  },
   "Ariana Grande": {
    "n": 1,
    "pages": 1,
@@ -9796,10 +9546,6 @@
    "n": 1,
    "pages": 1
   },
-  "Asset": {
-   "n": 1,
-   "pages": 1
-  },
   "Astro's Theme (dandy's world), Astros_Theme_dandys_world, Innioasis Y1, Luci web hosting, luci.ltd, MP3 player theme, Rockbox, Sa! ^w*, themes.innioasis.app hosting, Y1 theme": {
    "n": 1,
    "pages": 1
@@ -9834,14 +9580,6 @@
    "pages": 1
   },
   "Author / credit line": {
-   "n": 1,
-   "pages": 1
-  },
-  "Author / username": {
-   "n": 1,
-   "pages": 1
-  },
-  "Author link": {
    "n": 1,
    "pages": 1
   },
@@ -10089,20 +9827,12 @@
    "n": 1,
    "pages": 1
   },
-  "Because the theme format is shared, there is no such thing as a theme that only exists for Better-Y. The gallery keeps one collection and the Better-Y name is simply how many people find it.": {
-   "n": 1,
-   "pages": 1
-  },
   "Beetle": {
    "n": 1,
    "pages": 1,
    "theme": true
   },
   "Beetle, Innioasis Y1, Luci web hosting, luci.ltd, MP3 player theme, Rockbox, themes.innioasis.app hosting, Y1 theme, Zhepha": {
-   "n": 1,
-   "pages": 1
-  },
-  "Before you start": {
    "n": 1,
    "pages": 1
   },
@@ -10123,54 +9853,6 @@
    "theme": true
   },
   "Benjamin Hoeft, Innioasis Y1, Luci web hosting, luci.ltd, MP3 player theme, No I Am Not Human, No_I_Am_Not_Human, Rockbox, themes.innioasis.app hosting, Y1 theme": {
-   "n": 1,
-   "pages": 1
-  },
-  "Better-Y is a community software build for the Innioasis Y1 and Y2. It changes how the player behaves. A theme is separate from that: it changes the colours, icons, backgrounds and layout you see while you browse your music. Installing one does not replace Better-Y, downgrade it or touch your files.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Better-Y theme questions": {
-   "n": 1,
-   "pages": 1
-  },
-  "Better-Y themes for the Innioasis Y1": {
-   "n": 1,
-   "pages": 1
-  },
-  "Better-Y themes for the Innioasis Y1 and Y2 - Themes Gallery": {
-   "n": 1,
-   "pages": 1
-  },
-  "Better-Y themes for the Innioasis Y1 and Y2, plus how they work on Koensayr, Solar and the Original Software.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Better-Y themes for the Innioasis Y1 and Y2. Every theme in this gallery also works with Koensayr, Solar and the Original Software, because they share one theme format.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Better-Y themes for the Innioasis Y2": {
-   "n": 1,
-   "pages": 1
-  },
-  "Better-Y themes on Koensayr, Solar and the Original Software": {
-   "n": 1,
-   "pages": 1
-  },
-  "Better-Y themes, Better-Y themes for Innioasis Y1, Better-Y themes for Innioasis Y2, Innioasis Y1 Better-Y themes, Innioasis Y2 Better-Y themes, Better-Y Y1 themes, Better-Y Y2 themes, Better-Y themes Y1, Better-Y themes Y2, Innioasis Y1 themes, Innioasis Y2 themes": {
-   "n": 1,
-   "pages": 1
-  },
-  "Better-Y themes, Better-Y themes for Innioasis Y1, Better-Y themes for Innioasis Y2, Innioasis Y1 Better-Y themes, Innioasis Y2 Better-Y themes, Rockbox themes, Rockbox-Themes, Rockbox themes for Innioasis Y1, Rockbox themes for Innioasis Y2, Innioasis Y1 Rockbox themes, Innioasis Y2 Rockbox themes, Koensayr themes, Koensayr themes for Innioasis Y1, Koensayr themes for Innioasis Y2, Innioasis Y1 Koensayr themes, Innioasis Y2 Koensayr themes, Solar themes, Solar themes for Innioasis Y1, Solar themes for Innioasis Y2, Innioasis Y1 Solar themes, Innioasis Y2 Solar themes": {
-   "n": 1,
-   "pages": 1
-  },
-  "Better-Y themes, Rockbox themes, Koensayr themes and Solar themes for the Innioasis Y1 and Y2.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Better-Y, Rockbox, Koensayr and Solar themes for the Innioasis Y1 and Y2.": {
    "n": 1,
    "pages": 1
   },
@@ -10427,10 +10109,6 @@
    "n": 1,
    "pages": 1
   },
-  "Browse .zip": {
-   "n": 1,
-   "pages": 1
-  },
   "Browse All Models": {
    "n": 1,
    "pages": 1
@@ -10444,6 +10122,10 @@
    "pages": 1
   },
   "Browse Gold themes": {
+   "n": 1,
+   "pages": 1
+  },
+  "Browse Rockbox themes for the Innioasis Y1 and Y2, all made by the community. Preview a theme before you install it, then download the ones you like.": {
    "n": 1,
    "pages": 1
   },
@@ -10463,11 +10145,7 @@
    "n": 1,
    "pages": 1
   },
-  "Browse folder": {
-   "n": 1,
-   "pages": 1
-  },
-  "Browse for a font file": {
+  "Browse community-made Rockbox themes for the Innioasis Y1 and Y2.": {
    "n": 1,
    "pages": 1
   },
@@ -10486,10 +10164,6 @@
    "script": true
   },
   "By default we use a fully transparent": {
-   "n": 1,
-   "pages": 1
-  },
-  "By hand:": {
    "n": 1,
    "pages": 1
   },
@@ -10578,26 +10252,6 @@
    "n": 1,
    "pages": 1
   },
-  "Can I download Solar themes without a computer?": {
-   "n": 1,
-   "pages": 1
-  },
-  "Can I install a theme on a player running Rockbox?": {
-   "n": 1,
-   "pages": 1
-  },
-  "Can I keep a Koensayr theme if I switch software?": {
-   "n": 1,
-   "pages": 1
-  },
-  "Can I switch software without losing my theme?": {
-   "n": 1,
-   "pages": 1
-  },
-  "Can I use a Rockbox theme on a player that is not running Rockbox?": {
-   "n": 1,
-   "pages": 1
-  },
   "Cancel": {
    "n": 1,
    "pages": 1
@@ -10658,10 +10312,6 @@
    "n": 1,
    "pages": 1
   },
-  "Changed": {
-   "n": 1,
-   "pages": 1
-  },
   "Changes": {
    "n": 1,
    "pages": 1
@@ -10696,15 +10346,7 @@
    "n": 1,
    "pages": 1
   },
-  "Check the Wi-Fi connection, then retry. A computer download and USB copy is the fallback.": {
-   "n": 1,
-   "pages": 1
-  },
   "Check the console for log messages.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Checking package assets": {
    "n": 1,
    "pages": 1
   },
@@ -10748,10 +10390,6 @@
    "pages": 1
   },
   "Choose a donation method": {
-   "n": 1,
-   "pages": 1
-  },
-  "Choose another theme or open a local package.": {
    "n": 1,
    "pages": 1
   },
@@ -10869,10 +10507,6 @@
    "n": 1,
    "pages": 1
   },
-  "Click the wheel or use arrow keys to explore": {
-   "n": 1,
-   "pages": 1
-  },
   "Clickwheel MP3 players with 240p and 360p displays. Original Software provides factory sound profiles and theme support.": {
    "n": 1,
    "pages": 1
@@ -10946,18 +10580,6 @@
    "n": 1,
    "pages": 1
   },
-  "Colours or icons look wrong": {
-   "n": 1,
-   "pages": 1
-  },
-  "Compatibility at a glance": {
-   "n": 1,
-   "pages": 1
-  },
-  "Compatibility questions": {
-   "n": 1,
-   "pages": 1
-  },
   "Compatible with": {
    "n": 1,
    "pages": 1
@@ -10967,18 +10589,6 @@
    "pages": 1
   },
   "Confirm the prompt and return to the main install flow.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Connect the player over USB when Updater CE asks for it.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Connect the player to Wi-Fi.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Connect the player. It appears as a removable drive on Windows, macOS and Linux.": {
    "n": 1,
    "pages": 1
   },
@@ -11012,14 +10622,6 @@
    "pages": 1
   },
   "Copy link": {
-   "n": 1,
-   "pages": 1
-  },
-  "Copy the folder as it was packaged. Renaming its internal files or flattening its subfolders is the usual reason a copied theme does not appear in the picker.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Copy the theme folder into the player's theme folder, keeping the folder structure the theme came with.": {
    "n": 1,
    "pages": 1
   },
@@ -11122,10 +10724,6 @@
    "pages": 1
   },
   "Cupertino, Innioasis Y1, Luci web hosting, luci.ltd, MP3 player theme, Neither-Classic2058, Rockbox, themes.innioasis.app hosting, Y1 & Y2 theme": {
-   "n": 1,
-   "pages": 1
-  },
-  "Current theme": {
    "n": 1,
    "pages": 1
   },
@@ -11386,10 +10984,6 @@
    "n": 1,
    "pages": 1
   },
-  "Description": {
-   "n": 1,
-   "pages": 1
-  },
   "Designer-Front2870, Innioasis Y1, Luci web hosting, luci.ltd, MP3 player theme, Pusheen, pusheentheme, Rockbox, themes.innioasis.app hosting, Y1 & Y2 theme": {
    "n": 1,
    "pages": 1
@@ -11464,10 +11058,6 @@
    "n": 1,
    "pages": 1
   },
-  "Disconnect the player and select the theme in the player's theme picker.": {
-   "n": 1,
-   "pages": 1
-  },
   "Discord": {
    "n": 1,
    "pages": 1
@@ -11492,53 +11082,12 @@
    "n": 1,
    "pages": 1
   },
-  "Do Better-Y themes for the Y1 work on the Y2?": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "Do Better-Y themes work with Koensayr, Solar and the Original Software?": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "Do I need Updater CE?": {
-   "n": 1,
-   "pages": 1
-  },
-  "Do Rockbox themes work on Koensayr?": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "Do Rockbox themes work on both the Y1 and Y2?": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "Do Solar themes work on Better-Y, Koensayr or the Original Software?": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "Do the same themes work on the Y1 and Y2?": {
-   "n": 1,
-   "pages": 1
-  },
   "Dody": {
    "n": 1,
    "pages": 1,
    "theme": true
   },
   "Dody, Innioasis Y1, Luci web hosting, luci.ltd, MP3 player theme, Rockbox, suzuya juuzou ~, suzuya_juuzou, themes.innioasis.app hosting, Y1 theme": {
-   "n": 1,
-   "pages": 1
-  },
-  "Does a theme erase my music?": {
-   "n": 1,
-   "pages": 1
-  },
-  "Does installing a theme change my firmware?": {
    "n": 1,
    "pages": 1
   },
@@ -11622,14 +11171,6 @@
    "n": 1,
    "pages": 1
   },
-  "Download the theme and unzip it if your download is an archive.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Download the theme file from its page.": {
-   "n": 1,
-   "pages": 1
-  },
   "Dr. Iain campbell": {
    "n": 1,
    "pages": 1,
@@ -11651,22 +11192,6 @@
    "theme": true
   },
   "Dragon Ball Z Budokai 2, Dragon_Ball_Z_Budokai_2, Innioasis Y1, Luci web hosting, luci.ltd, MP3 player theme, Robertpuggle, Rockbox, themes.innioasis.app hosting, Y1 & Y2 theme": {
-   "n": 1,
-   "pages": 1
-  },
-  "Drop a theme folder or ZIP anywhere": {
-   "n": 1,
-   "pages": 1
-  },
-  "Drop a theme package here, or browse for the ZIP or folder. It opens in the simulator before anything is saved or sent.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Drop an image on the selected slot, or copy one and press Ctrl+V / Cmd+V.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Drop to open in Studio": {
    "n": 1,
    "pages": 1
   },
@@ -11713,10 +11238,6 @@
    "n": 1,
    "pages": 1
   },
-  "Edit assets": {
-   "n": 1,
-   "pages": 1
-  },
   "Eggroles456": {
    "n": 1,
    "pages": 1,
@@ -11733,10 +11254,6 @@
    "theme": true
   },
   "Eighth Wonder, Innioasis Y1, Luci web hosting, luci.ltd, MP3 player theme, Pathologic HD, Pathologic_HD, Rockbox, themes.innioasis.app hosting, Y1 theme": {
-   "n": 1,
-   "pages": 1
-  },
-  "Eject the player safely, disconnect it and select the theme on the device.": {
    "n": 1,
    "pages": 1
   },
@@ -11877,10 +11394,6 @@
    "pages": 1,
    "script": true
   },
-  "Every theme in this gallery installs the same way, whichever software the player runs. Pick the method that matches what you have: Updater CE on a computer, a USB cable, or a Solar player with Wi-Fi.": {
-   "n": 1,
-   "pages": 1
-  },
   "Everything Works Out of the Box": {
    "n": 1,
    "pages": 1
@@ -11914,10 +11427,6 @@
    "theme": true
   },
   "Expicty, Hatsune Miku (FIXED DONT USE OTHERS), Hatsune_Miku__FIXED_DONT_USE_OTHERS, Innioasis Y1, Luci web hosting, luci.ltd, MP3 player theme, Rockbox, themes.innioasis.app hosting, Y1 theme": {
-   "n": 1,
-   "pages": 1
-  },
-  "External download URL": {
    "n": 1,
    "pages": 1
   },
@@ -12042,14 +11551,6 @@
    "n": 1,
    "pages": 1
   },
-  "Filter assets": {
-   "n": 1,
-   "pages": 1
-  },
-  "Filter by name or author": {
-   "n": 1,
-   "pages": 1
-  },
   "FinKL": {
    "n": 1,
    "pages": 1,
@@ -12122,19 +11623,7 @@
    "n": 1,
    "pages": 1
   },
-  "Font": {
-   "n": 1,
-   "pages": 1
-  },
   "Food is Life, Innioasis Y1, Luci web hosting, luci.ltd, MP3 player theme, Rockbox, Steven Universe v1-v3, Steven_Universe_v1-v3, themes.innioasis.app hosting, Y1 theme": {
-   "n": 1,
-   "pages": 1
-  },
-  "For Rockbox, use the": {
-   "n": 1,
-   "pages": 1
-  },
-  "For Updater CE or a USB copy, you need a computer and a data-capable USB cable.": {
    "n": 1,
    "pages": 1
   },
@@ -12268,10 +11757,6 @@
    "n": 1,
    "pages": 1
   },
-  "Gallery": {
-   "n": 1,
-   "pages": 1
-  },
   "Gallery controls": {
    "n": 1,
    "pages": 1
@@ -12281,14 +11766,6 @@
    "pages": 1
   },
   "Gallery packages": {
-   "n": 1,
-   "pages": 1
-  },
-  "Gallery submission": {
-   "n": 1,
-   "pages": 1
-  },
-  "Gallery title": {
    "n": 1,
    "pages": 1
   },
@@ -12776,10 +12253,6 @@
    "pages": 1,
    "theme": true
   },
-  "Host the download on my own page": {
-   "n": 1,
-   "pages": 1
-  },
   "HotWheels": {
    "n": 1,
    "pages": 1,
@@ -12823,30 +12296,6 @@
    "pages": 1,
    "theme": true
   },
-  "How to install a Better-Y theme": {
-   "n": 1,
-   "pages": 1
-  },
-  "How to install a Koensayr theme": {
-   "n": 1,
-   "pages": 1
-  },
-  "How to install a theme on the Innioasis Y1 and Y2": {
-   "n": 1,
-   "pages": 1
-  },
-  "How to install a theme on the Innioasis Y1 and Y2: with Updater CE, by copying the theme over USB, or directly on a Solar player over Wi-Fi. Includes troubleshooting.": {
-   "n": 1,
-   "pages": 1
-  },
-  "How to install themes on the Innioasis Y1 and Y2 - Themes Gallery": {
-   "n": 1,
-   "pages": 1
-  },
-  "How to tell which software your player runs": {
-   "n": 1,
-   "pages": 1
-  },
   "How to use SP Flash Tool on Mac using Updater CE and browse scatter files to flash MediaTek devices like Mechen H1, Innioasis Y1/Y2, Timmkoo, and MT6580/MT6572 MP3 players and phones.": {
    "n": 1,
    "pages": 1
@@ -12878,10 +12327,6 @@
    "pages": 1
   },
   "I confirm I’m submitting an update to this existing listing, not a different theme.": {
-   "n": 1,
-   "pages": 1
-  },
-  "I confirm this is an update to that existing listing.": {
    "n": 1,
    "pages": 1
   },
@@ -12969,10 +12414,6 @@
    "pages": 1
   },
   "If your Innioasis Y1, Y2, or MediaTek device fails to power on or shows a black screen after flashing with MTKclient on macOS or Linux, do not panic. The hardware BootROM (BROM) is permanent and cannot be destroyed.": {
-   "n": 1,
-   "pages": 1
-  },
-  "If your player runs": {
    "n": 1,
    "pages": 1
   },
@@ -13135,31 +12576,7 @@
    "n": 1,
    "pages": 1
   },
-  "Innioasis Y1 and Y2 Better-Y themes, compatible with Koensayr, Solar and the Original Software.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Innioasis Y1 and Y2 Koensayr themes, compatible with Better-Y, Solar and the Original Software.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Innioasis Y1 and Y2 Solar themes, with on-device downloads and shared compatibility.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Innioasis Y1 and Y2 theme compatibility: Better-Y, Koensayr, Solar, Original Software and Rockbox": {
-   "n": 1,
-   "pages": 1
-  },
-  "Innioasis Y1 and Y2: the same collection": {
-   "n": 1,
-   "pages": 1
-  },
   "Innioasis Y1 theme backfill, Y2 theme placeholders, transparent.png, backfill.png, theme upload, Luci web hosting": {
-   "n": 1,
-   "pages": 1
-  },
-  "Innioasis Y1 theme compatibility, Innioasis Y2 theme compatibility, Better-Y themes, Koensayr themes, Solar themes, Original Software themes, Rockbox themes, Innioasis themes, Timmkoo themes": {
    "n": 1,
    "pages": 1
   },
@@ -13168,6 +12585,10 @@
    "pages": 1
   },
   "Innioasis Y1 theme upload, Innioasis Y2 theme upload, Y1 Rockbox theme, Y2 Rockbox theme, theme gallery, Luci web hosting, themes.innioasis.app": {
+   "n": 1,
+   "pages": 1
+  },
+  "Innioasis Y1 themes, Innioasis Y2 themes, Rockbox themes Y1, Y2 UI themes, Rockbox customization, Innioasis theme gallery, Luci web hosting, themes.innioasis.app hosting": {
    "n": 1,
    "pages": 1
   },
@@ -14598,27 +14019,11 @@
    "n": 1,
    "pages": 1
   },
-  "Install app": {
-   "n": 1,
-   "pages": 1
-  },
-  "Install it with": {
-   "n": 1,
-   "pages": 1
-  },
   "Install straight to your Y1 or Y2 - pick the player's themes folder, no zip downloads.": {
    "n": 1,
    "pages": 1
   },
-  "Installation questions": {
-   "n": 1,
-   "pages": 1
-  },
   "Installing Solar on your Innioasis Y1 is quick and easy right inside the official Innioasis Updater application.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Installing a Rockbox theme": {
    "n": 1,
    "pages": 1
   },
@@ -14646,10 +14051,6 @@
    "n": 1,
    "pages": 1,
    "theme": true
-  },
-  "It can, if that player runs the same software family and format. Screen size and layout still matter, so preview before installing.": {
-   "n": 1,
-   "pages": 1
   },
   "It takes you.": {
    "n": 1,
@@ -14811,43 +14212,7 @@
    "pages": 1,
    "theme": true
   },
-  "Know which software the player runs: Original Software, Better-Y, Koensayr, Solar or Rockbox.": {
-   "n": 1,
-   "pages": 1
-  },
   "Ko-fi": {
-   "n": 1,
-   "pages": 1
-  },
-  "Koensayr on the Innioasis Y1": {
-   "n": 1,
-   "pages": 1
-  },
-  "Koensayr on the Innioasis Y2": {
-   "n": 1,
-   "pages": 1
-  },
-  "Koensayr theme questions": {
-   "n": 1,
-   "pages": 1
-  },
-  "Koensayr themes are not a separate collection": {
-   "n": 1,
-   "pages": 1
-  },
-  "Koensayr themes for the Innioasis Y1 and Y2 - Themes Gallery": {
-   "n": 1,
-   "pages": 1
-  },
-  "Koensayr themes for the Innioasis Y1 and Y2, and how they also work with Better-Y, Solar and the Original Software.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Koensayr themes for the Innioasis Y1 and Y2. The gallery's themes also run on Better-Y, Solar and the Original Software, because all four share one theme format.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Koensayr themes, Koensayr themes for Innioasis Y1, Koensayr themes for Innioasis Y2, Innioasis Y1 Koensayr themes, Innioasis Y2 Koensayr themes, Koensayr Y1 themes, Koensayr Y2 themes, Koensayr themes Y1, Koensayr themes Y2, Innioasis Y1 themes, Innioasis Y2 themes": {
    "n": 1,
    "pages": 1
   },
@@ -15058,24 +14423,12 @@
    "n": 1,
    "pages": 1
   },
-  "Listing details": {
-   "n": 1,
-   "pages": 1
-  },
   "Littlest Pet Shop": {
    "n": 1,
    "pages": 1,
    "theme": true
   },
-  "Loading preview...": {
-   "n": 1,
-   "pages": 1
-  },
   "Loading theme preview…": {
-   "n": 1,
-   "pages": 1
-  },
-  "Loading theme...": {
    "n": 1,
    "pages": 1
   },
@@ -15347,18 +14700,6 @@
    "pages": 1,
    "theme": true
   },
-  "Method 1: install with Updater CE": {
-   "n": 1,
-   "pages": 1
-  },
-  "Method 2: copy the theme over USB": {
-   "n": 1,
-   "pages": 1
-  },
-  "Method 3: download on a Solar player": {
-   "n": 1,
-   "pages": 1
-  },
   "Mewgenics": {
    "n": 1,
    "pages": 1,
@@ -15473,10 +14814,6 @@
    "n": 1,
    "pages": 1,
    "theme": true
-  },
-  "Missing": {
-   "n": 1,
-   "pages": 1
   },
   "Missing or incomplete partition headers leave the bootloader (preloader / lk) in a non-responsive state.": {
    "n": 1,
@@ -15707,10 +15044,6 @@
    "pages": 1,
    "theme": true
   },
-  "No assets match this filter.": {
-   "n": 1,
-   "pages": 1
-  },
   "No authors are currently blocked.": {
    "n": 1,
    "pages": 1,
@@ -15730,42 +15063,6 @@
    "pages": 1
   },
   "No themes match your current filters.": {
-   "n": 1,
-   "pages": 1
-  },
-  "No, separate format": {
-   "n": 1,
-   "pages": 1
-  },
-  "No. Install Rockbox first, then use the Rockbox theme collection.": {
-   "n": 1,
-   "pages": 1
-  },
-  "No. Koensayr reads the same files as Better-Y, Solar and the Original Software, so there is one gallery collection rather than a Koensayr-only set.": {
-   "n": 1,
-   "pages": 1
-  },
-  "No. Rockbox has its own format and collection.": {
-   "n": 1,
-   "pages": 1
-  },
-  "No. Rockbox has its own theme format, and the shared themes do not load in Rockbox either.": {
-   "n": 1,
-   "pages": 1
-  },
-  "No. Rockbox uses a different theme format and has its own collection.": {
-   "n": 1,
-   "pages": 1
-  },
-  "No. Themes are separate files and do not touch the music library or firmware.": {
-   "n": 1,
-   "pages": 1
-  },
-  "No. Themes only change the interface. Your Better-Y version, settings and music library are untouched.": {
-   "n": 1,
-   "pages": 1
-  },
-  "No. USB copy and Solar's Wi-Fi download both work without it. Updater CE is simply the least error-prone option on a computer.": {
    "n": 1,
    "pages": 1
   },
@@ -15815,14 +15112,6 @@
    "n": 1,
    "pages": 1
   },
-  "On Solar you can also browse and download themes over Wi-Fi directly on the player, without a computer.": {
-   "n": 1,
-   "pages": 1
-  },
-  "On the player:": {
-   "n": 1,
-   "pages": 1
-  },
   "On-Device Podcast Downloader": {
    "n": 1,
    "pages": 1
@@ -15846,19 +15135,15 @@
    "n": 1,
    "pages": 1
   },
-  "One theme format covers Better-Y, Koensayr, Solar and the Original Software. Rockbox themes are separate.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Only a Rockbox theme. The shared gallery themes are for Better-Y, Koensayr, Solar and the Original Software.": {
-   "n": 1,
-   "pages": 1
-  },
   "Only show themes already on Y1": {
    "n": 1,
    "pages": 1
   },
   "Only when you have more than one variation of the same theme.": {
+   "n": 1,
+   "pages": 1
+  },
+  "Open": {
    "n": 1,
    "pages": 1
   },
@@ -15874,31 +15159,7 @@
    "n": 1,
    "pages": 1
   },
-  "Open Solar's theme browser.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Open a gallery theme": {
-   "n": 1,
-   "pages": 1
-  },
-  "Open another .zip": {
-   "n": 1,
-   "pages": 1
-  },
-  "Open another folder": {
-   "n": 1,
-   "pages": 1
-  },
-  "Open another theme": {
-   "n": 1,
-   "pages": 1
-  },
   "Open folder": {
-   "n": 1,
-   "pages": 1
-  },
-  "Open from this device": {
    "n": 1,
    "pages": 1
   },
@@ -15906,7 +15167,7 @@
    "n": 1,
    "pages": 1
   },
-  "Open the player's theme picker and select the new theme. If the theme has colour variants, they appear as separate choices. Your music, settings and firmware stay as they were; switching back to the previous theme is just another selection in the same picker.": {
+  "Opening the live preview...": {
    "n": 1,
    "pages": 1
   },
@@ -15953,10 +15214,6 @@
    "pages": 1,
    "theme": true
   },
-  "Original Software (stock Innioasis)": {
-   "n": 1,
-   "pages": 1
-  },
   "Original Software Benefits & Factory Stock ROM Downloads - Innioasis Firmware Archive": {
    "n": 1,
    "pages": 1
@@ -15975,10 +15232,6 @@
    "theme": true
   },
   "Other (explain below)": {
-   "n": 1,
-   "pages": 1
-  },
-  "Other Innioasis and Timmkoo players": {
    "n": 1,
    "pages": 1
   },
@@ -16035,10 +15288,6 @@
    "pages": 1,
    "theme": true
   },
-  "Package found": {
-   "n": 1,
-   "pages": 1
-  },
   "Page Not Found - Innioasis Y1 & Y2 Themes": {
    "n": 1,
    "pages": 1
@@ -16057,10 +15306,6 @@
    "n": 1,
    "pages": 1,
    "theme": true
-  },
-  "Paste": {
-   "n": 1,
-   "pages": 1
   },
   "Pastel Bunny": {
    "n": 1,
@@ -16099,10 +15344,6 @@
    "n": 1,
    "pages": 1,
    "theme": true
-  },
-  "People search for Koensayr themes as if Koensayr needed its own set of files. It does not. The player's software decides how the device works; the theme decides what it looks like. Both the Y1 and Y2 read the same theme format whichever of the four software builds is installed, so a theme made for the gallery is a Koensayr theme, a Better-Y theme, a Solar theme and an Original Software theme at the same time.": {
-   "n": 1,
-   "pages": 1
   },
   "Per page": {
    "n": 1,
@@ -16159,10 +15400,6 @@
    "theme": true
   },
   "Pick": {
-   "n": 1,
-   "pages": 1
-  },
-  "Pick the theme on the player. If you use Solar, you can also download themes over Wi-Fi on the device itself.": {
    "n": 1,
    "pages": 1
   },
@@ -16271,10 +15508,6 @@
    "n": 1,
    "pages": 1
   },
-  "Player software": {
-   "n": 1,
-   "pages": 1
-  },
   "Please explain": {
    "n": 1,
    "pages": 1
@@ -16346,34 +15579,6 @@
    "pages": 1,
    "theme": true
   },
-  "Preview a theme and download it. Solar installs it on the player without a computer.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Preview a theme in the": {
-   "n": 1,
-   "pages": 1
-  },
-  "Preview and download this theme.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Preview has not rendered yet": {
-   "n": 1,
-   "pages": 1
-  },
-  "Preview rendered": {
-   "n": 1,
-   "pages": 1
-  },
-  "Preview unavailable": {
-   "n": 1,
-   "pages": 1
-  },
-  "Preview, edit and publish a player theme": {
-   "n": 1,
-   "pages": 1
-  },
   "Prisoner": {
    "n": 1,
    "pages": 1,
@@ -16383,10 +15588,6 @@
    "n": 1,
    "pages": 1,
    "script": true
-  },
-  "Problem": {
-   "n": 1,
-   "pages": 1
   },
   "Project Hail Mary": {
    "n": 1,
@@ -16487,14 +15688,6 @@
    "n": 1,
    "pages": 1
   },
-  "Reading the package...": {
-   "n": 1,
-   "pages": 1
-  },
-  "Ready": {
-   "n": 1,
-   "pages": 1
-  },
   "Ready now": {
    "n": 1,
    "pages": 1
@@ -16538,10 +15731,6 @@
    "n": 1,
    "pages": 1
   },
-  "Referenced files": {
-   "n": 1,
-   "pages": 1
-  },
   "Refresh every theme already on your Y1 with the latest files from this gallery. New themes are not installed - use Direct Install via USB on each card first.": {
    "n": 1,
    "pages": 1
@@ -16574,14 +15763,6 @@
    "n": 1,
    "pages": 1
   },
-  "Replace any file by picking it, pasting an image, or dropping it straight onto a slot.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Replace file": {
-   "n": 1,
-   "pages": 1
-  },
   "Report Auto-response (to reporter)": {
    "n": 1,
    "pages": 1
@@ -16611,10 +15792,6 @@
    "n": 1,
    "pages": 1,
    "script": true
-  },
-  "Reset every replacement": {
-   "n": 1,
-   "pages": 1
   },
   "Reset text size": {
    "n": 1,
@@ -16687,88 +15864,11 @@
    "pages": 1,
    "theme": true
   },
-  "Rockbox does not list the theme": {
+  "Rockbox themes": {
    "n": 1,
    "pages": 1
   },
-  "Rockbox has a distinctly different interface and its own settings menu. If you see Rockbox, use the Rockbox collection.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Rockbox is not part of that group.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Rockbox is the exception.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Rockbox theme collection": {
-   "n": 1,
-   "pages": 1
-  },
-  "Rockbox theme questions": {
-   "n": 1,
-   "pages": 1
-  },
-  "Rockbox themes and Rockbox-Themes for the Innioasis Y1 and Y2 - Themes Gallery": {
-   "n": 1,
-   "pages": 1
-  },
-  "Rockbox themes are a separate format": {
-   "n": 1,
-   "pages": 1
-  },
-  "Rockbox themes are installed through Rockbox's own theme directory, not through the shared theme installer used for the other four software options. The theme page for the one you pick includes the file and any notes from its author. If you are switching a player to Rockbox for the first time, start from the": {
-   "n": 1,
-   "pages": 1
-  },
-  "Rockbox themes are separate.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Rockbox themes are their own format and are not interchangeable with Koensayr, Better-Y, Solar or Original Software themes. Use the": {
-   "n": 1,
-   "pages": 1
-  },
-  "Rockbox themes for the Innioasis Y1 and Y2": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "Rockbox themes for the Innioasis Y1 and Y2, also searched as Rockbox-Themes. Rockbox uses its own theme format, separate from Better-Y, Koensayr, Solar and Original Software themes.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Rockbox themes have their own file layout and installation path. A Rockbox theme will not appear in the shared theme picker, and a shared gallery theme will not load in Rockbox.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Rockbox themes in this collection are also listed for the Y2. If a theme has a note about a particular device or screen, the theme page says so.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Rockbox themes on the Innioasis Y1": {
-   "n": 1,
-   "pages": 1
-  },
-  "Rockbox themes on the Innioasis Y2": {
-   "n": 1,
-   "pages": 1
-  },
-  "Rockbox themes, Rockbox-Themes, Rockbox themes for Innioasis Y1, Rockbox themes for Innioasis Y2, Innioasis Y1 Rockbox themes, Innioasis Y2 Rockbox themes, Rockbox Y1 themes, Rockbox Y2 themes, Rockbox themes Y1, Rockbox themes Y2": {
-   "n": 1,
-   "pages": 1
-  },
-  "Rockbox themes, also called Rockbox-Themes, for the Innioasis Y1 and Y2.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Rockbox uses its own format. Use the": {
-   "n": 1,
-   "pages": 1
-  },
-  "Rockbox uses its own theme format and cannot load the themes on this page. If your player runs Rockbox, use the": {
+  "Rockbox themes for the Innioasis Y1 and Y2, made by the community.": {
    "n": 1,
    "pages": 1
   },
@@ -16781,10 +15881,6 @@
    "n": 1,
    "pages": 1,
    "theme": true
-  },
-  "Running Rockbox?": {
-   "n": 1,
-   "pages": 1
   },
   "Running costs and community contributions - click to support": {
    "n": 1,
@@ -16988,18 +16084,10 @@
    "pages": 1,
    "theme": true
   },
-  "Save": {
-   "n": 1,
-   "pages": 1
-  },
   "Save choices": {
    "n": 1,
    "pages": 1,
    "script": true
-  },
-  "Save to PC / Mac / Device": {
-   "n": 1,
-   "pages": 1
   },
   "Saves your \"was this useful?\" feedback on guides.": {
    "n": 1,
@@ -17062,11 +16150,11 @@
    "n": 1,
    "pages": 1
   },
-  "Select the theme in the player's theme picker.": {
+  "Select your device model (e.g.": {
    "n": 1,
    "pages": 1
   },
-  "Select your device model (e.g.": {
+  "Send my theme": {
    "n": 1,
    "pages": 1
   },
@@ -17300,19 +16388,7 @@
    "n": 1,
    "pages": 1
   },
-  "Solar adds its own theme browser and Wi-Fi features, so its menus look different from the stock player.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Solar firmware page": {
-   "n": 1,
-   "pages": 1
-  },
   "Solar in Action": {
-   "n": 1,
-   "pages": 1
-  },
-  "Solar is a custom firmware and launcher for the Innioasis Y1 built around on-device features. For themes, the useful difference is that Solar can browse and download them without a computer: connect the player to Wi-Fi, open the theme browser, preview a theme and install it from there. The same theme is also available here in the gallery if you prefer to download on a computer and transfer it.": {
    "n": 1,
    "pages": 1
   },
@@ -17324,59 +16400,7 @@
    "n": 1,
    "pages": 1
   },
-  "Solar page": {
-   "n": 1,
-   "pages": 1
-  },
   "Solar project documentation": {
-   "n": 1,
-   "pages": 1
-  },
-  "Solar theme questions": {
-   "n": 1,
-   "pages": 1
-  },
-  "Solar themes and the other software": {
-   "n": 1,
-   "pages": 1
-  },
-  "Solar themes are the themes in this gallery. Solar runs the same theme format as Better-Y, Koensayr and the Original Software, so the collection is shared, and Solar can also download a theme directly on the player over Wi-Fi.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Solar themes for the Innioasis Y1 and Y2 - Themes Gallery": {
-   "n": 1,
-   "pages": 1
-  },
-  "Solar themes for the Innioasis Y1 and Y2, including on-device Wi-Fi downloads and compatibility with Better-Y, Koensayr and the Original Software.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Solar themes for the Innioasis Y1 and Y2. Browse the same themes Better-Y, Koensayr and the Original Software use, download over Wi-Fi on the player, or install from a computer.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Solar themes on the Innioasis Y1": {
-   "n": 1,
-   "pages": 1
-  },
-  "Solar themes on the Innioasis Y2": {
-   "n": 1,
-   "pages": 1
-  },
-  "Solar themes, Solar themes for Innioasis Y1, Solar themes for Innioasis Y2, Innioasis Y1 Solar themes, Innioasis Y2 Solar themes, Solar Y1 themes, Solar Y2 themes, Solar themes Y1, Solar themes Y2, Solar firmware themes, Innioasis Y1 themes, Innioasis Y2 themes": {
-   "n": 1,
-   "pages": 1
-  },
-  "Solar's Wi-Fi download is the fastest route when you do not have a computer nearby. The same themes are in this gallery, so you can also download on a computer and copy them across later.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Solar's theme browser cannot download": {
-   "n": 1,
-   "pages": 1
-  },
-  "Solar, Better-Y, Koensayr and the Original Software all read the same theme files. A theme you install while running Solar does not stop working if you move to another one of the four, and a theme downloaded from this page works on Solar even though the page is not Solar-specific. There is no conversion step and no Solar-only theme pack.": {
    "n": 1,
    "pages": 1
   },
@@ -17386,10 +16410,6 @@
    "theme": true
   },
   "Some creators do not want their work listed on themes.innioasis.app. Others are banned for abuse or low-quality submissions. Lists are maintained in": {
-   "n": 1,
-   "pages": 1
-  },
-  "Some other Innioasis and Timmkoo players run software from the same family and can read the same theme format. Compatibility there depends on the player's software and screen, not on the gallery: a theme made for the Y1's screen may look stretched or cropped on a player with a different display, even when the format loads. Check the software name on the device first, then preview the theme at its listed size.": {
    "n": 1,
    "pages": 1
   },
@@ -17504,10 +16524,6 @@
    "n": 1,
    "pages": 1
   },
-  "Step-by-step instructions for every method are on the": {
-   "n": 1,
-   "pages": 1
-  },
   "Steven Universe": {
    "n": 1,
    "pages": 1,
@@ -17542,14 +16558,6 @@
    "n": 1,
    "pages": 1
   },
-  "Studio inspector": {
-   "n": 1,
-   "pages": 1
-  },
-  "Studio mode": {
-   "n": 1,
-   "pages": 1
-  },
   "StyleSavvy": {
    "n": 1,
    "pages": 1,
@@ -17566,14 +16574,6 @@
    "script": true
   },
   "Submit removal request": {
-   "n": 1,
-   "pages": 1
-  },
-  "Submit theme": {
-   "n": 1,
-   "pages": 1
-  },
-  "Submitting opens a pull request for review. You can save the theme to this device first.": {
    "n": 1,
    "pages": 1
   },
@@ -17760,14 +16760,6 @@
    "n": 1,
    "pages": 1
   },
-  "That is why this page exists as its own collection instead of being mixed into the main grid. It is the same gallery, with a separate shelf for a separate format.": {
-   "n": 1,
-   "pages": 1
-  },
-  "That means the gallery does not need four copies of every theme, and you do not need to re-download your favourites when you change software. A theme you installed under Better-Y is still selectable after installing Koensayr, and the other way around.": {
-   "n": 1,
-   "pages": 1
-  },
   "The Amazing Digital Circus! (TADC)": {
    "n": 1,
    "pages": 1,
@@ -17820,14 +16812,6 @@
    "pages": 1,
    "theme": true
   },
-  "The Original Software": {
-   "n": 1,
-   "pages": 1
-  },
-  "The Rockbox theme collection for the Innioasis Y1 and Y2. A separate format from Better-Y, Koensayr, Solar and Original Software themes.": {
-   "n": 1,
-   "pages": 1
-  },
   "The Solution:": {
    "n": 1,
    "pages": 1
@@ -17846,43 +16830,7 @@
    "pages": 1,
    "theme": true
   },
-  "The Y1 and Y2 are both covered by the same gallery catalogue. Theme pages list the players a theme is intended for and call out device-specific artwork. If you are moving a theme between a Y1 and a Y2, start from the theme's own page rather than an old download, so you get the current file and any notes from the author.": {
-   "n": 1,
-   "pages": 1
-  },
-  "The Y1 has the widest choice in the gallery. Each theme page shows a preview at the player's screen size and lists any colour variants, so you can see the result before downloading. Themes are submitted by the community and the page credits the author.": {
-   "n": 1,
-   "pages": 1
-  },
-  "The Y1 is the main Solar device and has the largest theme selection. Theme pages show a preview and the available colour variants, and credit the community member who made the theme.": {
-   "n": 1,
-   "pages": 1
-  },
-  "The Y1 is the player most Rockbox users have, and it has the larger Rockbox theme selection. Open a theme page to preview it and see the author's notes before downloading.": {
-   "n": 1,
-   "pages": 1
-  },
-  "The Y1 is where most of the gallery started, and it has the largest choice of themes. Open any theme page to preview it at the player's screen size, look at the colour variants, and download the version you want. Themes are community submissions, so the page also credits the person who made it.": {
-   "n": 1,
-   "pages": 1
-  },
   "The Y2 software includes a dedicated": {
-   "n": 1,
-   "pages": 1
-  },
-  "The Y2 uses the same collection. A theme you like on the Y1 is the same download on the Y2, which is why you will see the same theme pages listed for both players. If a theme has device-specific artwork, the theme page says so before you download.": {
-   "n": 1,
-   "pages": 1
-  },
-  "The Y2 uses the same collection. If you use Solar on a Y2, pick a theme exactly as you would on the Y1; the gallery does not keep a separate Y2 catalogue.": {
-   "n": 1,
-   "pages": 1
-  },
-  "The Y2 uses the same theme collection. A theme that looks right on your Y1 is the same download on the Y2, and the gallery does not split the two players into separate catalogues.": {
-   "n": 1,
-   "pages": 1
-  },
-  "The boot screen or About screen usually names the build; look for Better-Y, Koensayr, Solar or the stock Innioasis name.": {
    "n": 1,
    "pages": 1
   },
@@ -17891,10 +16839,6 @@
    "pages": 1
   },
   "The easiest way to install Rockbox and manage Innioasis Y1 firmware.": {
-   "n": 1,
-   "pages": 1
-  },
-  "The folder is in the player's theme folder and keeps the structure from the download. Re-select or restart the player.": {
    "n": 1,
    "pages": 1
   },
@@ -17910,23 +16854,11 @@
    "n": 1,
    "pages": 1
   },
-  "The other four software options for the Innioasis Y1 and Y2 share one theme format, so a theme can move between them. Rockbox is different. Its themes are built for Rockbox itself, with Rockbox's own file layout, and a Rockbox player cannot load a theme from the shared gallery collection. The reverse is also true: a Better-Y, Koensayr, Solar or Original Software player cannot load a Rockbox theme.": {
-   "n": 1,
-   "pages": 1
-  },
   "The page you're looking for doesn't exist or has been moved.": {
    "n": 1,
    "pages": 1
   },
   "The player appears completely dead-no LED, no charging icon, no screen backlight.": {
-   "n": 1,
-   "pages": 1
-  },
-  "The player is not detected over USB": {
-   "n": 1,
-   "pages": 1
-  },
-  "The player's theme folder. Updater CE places the file there for you; a manual copy uses the same folder the theme picker reads.": {
    "n": 1,
    "pages": 1
   },
@@ -17938,19 +16870,7 @@
    "n": 1,
    "pages": 1
   },
-  "The software controls how the player behaves: how it boots, how it reads files, what features it has. The theme controls how the interface looks. Innioasis and the community builds kept the same theme format across the Original Software, Better-Y, Koensayr and Solar, so the theme layer is interchangeable even though the software underneath is not.": {
-   "n": 1,
-   "pages": 1
-  },
   "The system will detect the MediaTek VCOM port, push the Download Agent (DA), rewrite partition tables, and restore all firmware images cleanly.": {
-   "n": 1,
-   "pages": 1
-  },
-  "The theme does not appear in the picker": {
-   "n": 1,
-   "pages": 1
-  },
-  "The theme may be for a different screen size. Check the theme page's device notes and re-download the current file.": {
    "n": 1,
    "pages": 1
   },
@@ -17981,15 +16901,7 @@
    "n": 1,
    "pages": 1
   },
-  "Theme Studio": {
-   "n": 1,
-   "pages": 1
-  },
-  "Theme Studio - Innioasis Y1 & Y2 Themes": {
-   "n": 1,
-   "pages": 1
-  },
-  "Theme art": {
+  "Theme assets": {
    "n": 1,
    "pages": 1
   },
@@ -18005,19 +16917,11 @@
    "n": 1,
    "pages": 1
   },
-  "Theme folder or ZIP - previewed locally": {
-   "n": 1,
-   "pages": 1
-  },
   "Theme pages link to authors' own sites, and the footer links to Discord, Reddit and GitHub. Those sites have their own privacy policies. We do not control what they collect.": {
    "n": 1,
    "pages": 1
   },
   "Theme preview - Innioasis Y1 and Y2 Themes Gallery": {
-   "n": 1,
-   "pages": 1
-  },
-  "Theme title": {
    "n": 1,
    "pages": 1
   },
@@ -18047,14 +16951,6 @@
    "n": 1,
    "pages": 1
   },
-  "Themes by software": {
-   "n": 1,
-   "pages": 1
-  },
-  "Themes change the colours, icons, backgrounds, fonts and layout of the interface. They do not change the software version, the player's settings or your music. If you later update or reinstall Koensayr, the theme remains a separate file and can be selected again.": {
-   "n": 1,
-   "pages": 1
-  },
   "Themes for Innioasis Y2": {
    "n": 1,
    "pages": 1
@@ -18067,15 +16963,7 @@
    "n": 1,
    "pages": 1
   },
-  "Themes for the Innioasis Y1 and Y2, including Better-Y themes, Rockbox themes, Rockbox-Themes, Koensayr themes and Solar themes. Preview one, then download it.": {
-   "n": 1,
-   "pages": 1
-  },
   "Themes gallery introduction": {
-   "n": 1,
-   "pages": 1
-  },
-  "Themes in this collection are listed for the Y1 and Y2. Check the theme page for device-specific notes.": {
    "n": 1,
    "pages": 1
   },
@@ -18084,10 +16972,6 @@
    "pages": 1
   },
   "Themes you can trust on your Y1 & Y2": {
-   "n": 1,
-   "pages": 1
-  },
-  "These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting.": {
    "n": 1,
    "pages": 1
   },
@@ -18104,31 +16988,15 @@
    "pages": 1,
    "theme": true
   },
-  "They are a different format with different installation rules. A separate collection prevents a theme being installed on software that cannot read it.": {
-   "n": 1,
-   "pages": 1
-  },
   "This author has opted out of gallery submissions": {
    "n": 1,
    "pages": 1
   },
-  "This gallery hosts the Better-Y themes people use on the Innioasis Y1 and Y2. Every theme here is built for the shared Innioasis theme format, so the same download also works when the player runs Koensayr, Solar or the Original Software.": {
-   "n": 1,
-   "pages": 1
-  },
-  "This gallery hosts the themes Koensayr users install on the Innioasis Y1 and Y2. Koensayr shares its theme format with Better-Y, Solar and the Original Software, so every theme here also works if you run one of those instead.": {
-   "n": 1,
-   "pages": 1
-  },
-  "This is the Rockbox collection in the Themes Gallery. Rockbox themes, sometimes written Rockbox-Themes, use their own format and are not interchangeable with the Better-Y, Koensayr, Solar and Original Software themes on the rest of the site.": {
-   "n": 1,
-   "pages": 1
-  },
-  "This is the real player view. Changes stay on this device until you save or submit them.": {
-   "n": 1,
-   "pages": 1
-  },
   "This link opens": {
+   "n": 1,
+   "pages": 1
+  },
+  "This looks like an update": {
    "n": 1,
    "pages": 1
   },
@@ -18146,14 +17014,6 @@
    "pages": 1
   },
   "This submission can move quickly - after our checks, it often appears on the gallery within about": {
-   "n": 1,
-   "pages": 1
-  },
-  "Three ways to install a Solar theme": {
-   "n": 1,
-   "pages": 1
-  },
-  "Three ways to install a theme: Updater CE, USB copy, or Solar's on-device Wi-Fi download.": {
    "n": 1,
    "pages": 1
   },
@@ -18215,11 +17075,6 @@
   "Track your submission": {
    "n": 1,
    "pages": 1
-  },
-  "Troubleshooting": {
-   "n": 1,
-   "pages": 1,
-   "script": true
   },
   "Troubleshooting & Device Recovery": {
    "n": 1,
@@ -18308,10 +17163,6 @@
    "n": 1,
    "pages": 1
   },
-  "Unsaved": {
-   "n": 1,
-   "pages": 1
-  },
   "Update all on Y1": {
    "n": 1,
    "pages": 1
@@ -18324,15 +17175,7 @@
    "n": 1,
    "pages": 1
   },
-  "Updater CE is the option that avoids hunting for the correct folder, and it also handles firmware updates and player checks.": {
-   "n": 1,
-   "pages": 1
-  },
   "Updater CE parses memory offsets, partition addresses (preloader, boot, recovery, system, userdata), and verifies scatter integrity.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Updater CE, USB copy, or Solar's Wi-Fi theme download.": {
    "n": 1,
    "pages": 1
   },
@@ -18361,27 +17204,7 @@
    "n": 1,
    "pages": 1
   },
-  "Use a data cable, not a charge-only one, and try another port. On Linux, check that the player mounted.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Use its theme option to add the downloaded theme to the player.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Use the handle you want credited. Pick an existing one to update that listing.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Use this collection": {
-   "n": 1,
-   "pages": 1
-  },
   "Use this form for concerns about a specific gallery theme (for example inappropriate imagery, copyright, harmful files, or misleading credits). If you are the author and want your own theme removed, choose the opt-out reason and we will route you to the removal request flow.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Uses the gallery theme format?": {
    "n": 1,
    "pages": 1
   },
@@ -18433,10 +17256,6 @@
    "n": 1,
    "pages": 1,
    "theme": true
-  },
-  "Waiting for a theme": {
-   "n": 1,
-   "pages": 1
   },
   "Waiting for player...": {
    "n": 1,
@@ -18503,18 +17322,6 @@
    "n": 1,
    "pages": 1
   },
-  "What Solar adds to themes": {
-   "n": 1,
-   "pages": 1
-  },
-  "What a Better-Y theme is": {
-   "n": 1,
-   "pages": 1
-  },
-  "What a theme can and cannot change": {
-   "n": 1,
-   "pages": 1
-  },
   "What happens after you send": {
    "n": 1,
    "pages": 1,
@@ -18537,15 +17344,7 @@
    "pages": 1,
    "script": true
   },
-  "What to check": {
-   "n": 1,
-   "pages": 1
-  },
   "What we measure": {
-   "n": 1,
-   "pages": 1
-  },
-  "What you can change with a Koensayr theme": {
    "n": 1,
    "pages": 1
   },
@@ -18562,38 +17361,6 @@
    "pages": 1
   },
   "Where creators usually host:": {
-   "n": 1,
-   "pages": 1
-  },
-  "Where do I download Koensayr itself?": {
-   "n": 1,
-   "pages": 1
-  },
-  "Where do I get Better-Y itself?": {
-   "n": 1,
-   "pages": 1
-  },
-  "Where do I get Solar?": {
-   "n": 1,
-   "pages": 1
-  },
-  "Where do themes go on a Y1 or Y2?": {
-   "n": 1,
-   "pages": 1
-  },
-  "Where to browse": {
-   "n": 1,
-   "pages": 1
-  },
-  "Which Innioasis Y1 and Y2 themes work with which software. Better-Y, Koensayr, Solar and the Original Software share one theme format; Rockbox themes are separate.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Which themes should I use?": {
-   "n": 1,
-   "pages": 1
-  },
-  "Which themes work on which Innioasis software, and why Rockbox is different.": {
    "n": 1,
    "pages": 1
   },
@@ -18629,15 +17396,6 @@
    "n": 1,
    "pages": 1
   },
-  "Why are Rockbox themes listed separately?": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "Why one theme works on four different software builds": {
-   "n": 1,
-   "pages": 1
-  },
   "Why should this theme be removed?": {
    "n": 1,
    "pages": 1
@@ -18645,11 +17403,6 @@
   "Why use or restore Original Software?": {
    "n": 1,
    "pages": 1
-  },
-  "Will a theme from another Innioasis or Timmkoo player work?": {
-   "n": 1,
-   "pages": 1,
-   "script": true
   },
   "William Jakrapatr": {
    "n": 1,
@@ -18704,14 +17457,6 @@
    "pages": 1,
    "theme": true
   },
-  "With Better-Y, Koensayr, Solar and the Original Software, yes: they share the format. Rockbox is the exception.": {
-   "n": 1,
-   "pages": 1
-  },
-  "With Updater CE:": {
-   "n": 1,
-   "pages": 1
-  },
   "Wolfboy": {
    "n": 1,
    "pages": 1,
@@ -18751,10 +17496,6 @@
    "n": 1,
    "pages": 1,
    "theme": true
-  },
-  "Y1 / Y2": {
-   "n": 1,
-   "pages": 1
   },
   "Y1 Restore Guide": {
    "n": 1,
@@ -18844,38 +17585,6 @@
    "n": 1,
    "pages": 1
   },
-  "Yes, plus on-device Wi-Fi downloads": {
-   "n": 1,
-   "pages": 1
-  },
-  "Yes. All four share the theme format, so the same theme works after a software change.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Yes. All four use the same theme format. A theme downloaded from this gallery works on any of them, and switching software does not break the theme.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Yes. Solar's on-device theme browser downloads themes over Wi-Fi. A computer is only needed if you prefer to transfer files by USB.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Yes. The gallery keeps one collection for both players, so the Y1 and Y2 entries point at the same themes.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Yes. The gallery keeps one collection, with notes where a theme is tailored to one device.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Yes. The theme is a separate file and stays available when you change between Better-Y, Koensayr, Solar and the Original Software.": {
-   "n": 1,
-   "pages": 1
-  },
-  "Yes. The theme keeps working when you move between Koensayr, Better-Y, Solar and the Original Software.": {
-   "n": 1,
-   "pages": 1
-  },
   "Yoongi": {
    "n": 1,
    "pages": 1,
@@ -18901,15 +17610,15 @@
    "pages": 1,
    "theme": true
   },
+  "You are leaving Innioasis": {
+   "n": 1,
+   "pages": 1
+  },
+  "You are leaving Innioasis - Innioasis": {
+   "n": 1,
+   "pages": 1
+  },
   "You can turn off analytics and rating contributions without losing access to the gallery. The setting is remembered on this device and shared with the firmware archive and Updater CE through a cookie on innioasis.app.": {
-   "n": 1,
-   "pages": 1
-  },
-  "You're leaving the Themes Gallery": {
-   "n": 1,
-   "pages": 1
-  },
-  "You're leaving the Themes Gallery - Innioasis": {
    "n": 1,
    "pages": 1
   },
@@ -18921,15 +17630,7 @@
    "n": 1,
    "pages": 1
   },
-  "Your author matches the existing listing": {
-   "n": 1,
-   "pages": 1
-  },
   "Your choices": {
-   "n": 1,
-   "pages": 1
-  },
-  "Your creator handle": {
    "n": 1,
    "pages": 1
   },
@@ -18938,10 +17639,6 @@
    "pages": 1
   },
   "Your name or handle (optional)": {
-   "n": 1,
-   "pages": 1
-  },
-  "Your package is read in your browser. Nothing is uploaded until you choose Submit.": {
    "n": 1,
    "pages": 1
   },
@@ -18983,10 +17680,6 @@
    "theme": true
   },
   "ZIP": {
-   "n": 1,
-   "pages": 1
-  },
-  "ZIP or folder": {
    "n": 1,
    "pages": 1
   },
@@ -19085,10 +17778,6 @@
    "theme": true
   },
   "actualimagination, Innioasis Y1, Luci web hosting, luci.ltd, MP3 player theme, Rockbox, Shinku, themes.innioasis.app hosting, Y1 & Y2 theme": {
-   "n": 1,
-   "pages": 1
-  },
-  "add it to the player.": {
    "n": 1,
    "pages": 1
   },
@@ -19219,14 +17908,6 @@
    "pages": 1
   },
   "and a": {
-   "n": 1,
-   "pages": 1
-  },
-  "and download it.": {
-   "n": 1,
-   "pages": 1
-  },
-  "and preview a theme.": {
    "n": 1,
    "pages": 1
   },
@@ -19651,14 +18332,6 @@
    "n": 1,
    "pages": 1
   },
-  "connect Wi-Fi, open Solar's theme browser, choose a theme and download it.": {
-   "n": 1,
-   "pages": 1
-  },
-  "copy the theme into the player's theme folder over USB.": {
-   "n": 1,
-   "pages": 1
-  },
   "coquette aesthetic": {
    "n": 1,
    "pages": 1,
@@ -19681,10 +18354,6 @@
    "n": 1,
    "pages": 1,
    "theme": true
-  },
-  "covers each method step by step.": {
-   "n": 1,
-   "pages": 1
   },
   "cowboy bebop": {
    "n": 1,
@@ -19816,10 +18485,6 @@
    "n": 1,
    "pages": 1
   },
-  "download the theme on a computer and let": {
-   "n": 1,
-   "pages": 1
-  },
   "dropdown list within Updater.": {
    "n": 1,
    "pages": 1
@@ -19858,10 +18523,6 @@
    "pages": 1
   },
   "esteldnwm, girly pink design hehe <3, girly_pink_design_hehe__3, Innioasis Y1, Luci web hosting, luci.ltd, MP3 player theme, Rockbox, themes.innioasis.app hosting, Y1 theme": {
-   "n": 1,
-   "pages": 1
-  },
-  "explains the firmware, and the": {
    "n": 1,
    "pages": 1
   },
@@ -19975,10 +18636,6 @@
    "theme": true
   },
   "gabrielle delis, Innioasis Y1, Luci web hosting, luci.ltd, MP3 player theme, Rockbox, themes.innioasis.app hosting, Y1 theme, zennnnn": {
-   "n": 1,
-   "pages": 1
-  },
-  "gallery": {
    "n": 1,
    "pages": 1
   },
@@ -20139,10 +18796,6 @@
    "n": 1,
    "pages": 1
   },
-  "how to install Innioasis Y1 themes, how to install Innioasis Y2 themes, Innioasis theme install, Y1 theme folder, Y2 theme folder, Updater CE themes, Solar theme download, Better-Y themes, Koensayr themes": {
-   "n": 1,
-   "pages": 1
-  },
   "hydroxyzined": {
    "n": 1,
    "pages": 1,
@@ -20223,10 +18876,6 @@
    "pages": 1,
    "theme": true
   },
-  "instead; its themes install through Rockbox.": {
-   "n": 1,
-   "pages": 1
-  },
   "is already listed under your author, we treat it as an update and a teammate reviews it before anything changes.": {
    "n": 1,
    "pages": 1
@@ -20236,14 +18885,6 @@
    "pages": 1
   },
   "is the official factory operating system shipped on Innioasis and Timmkoo portable players. It provides rock-solid hardware stability, full support for custom skins from the": {
-   "n": 1,
-   "pages": 1
-  },
-  "is the one to use there.": {
-   "n": 1,
-   "pages": 1
-  },
-  "is the place to confirm which software a model runs and which build is current.": {
    "n": 1,
    "pages": 1
   },
@@ -20357,19 +18998,7 @@
    "pages": 1,
    "theme": true
   },
-  "lists Koensayr alongside the stock software and the other community builds.": {
-   "n": 1,
-   "pages": 1
-  },
   "lists paths for the Rockbox launcher switch, eBook reader, calculator, and calendar.": {
-   "n": 1,
-   "pages": 1
-  },
-  "lists the builds you can install.": {
-   "n": 1,
-   "pages": 1
-  },
-  "lists the community builds and stock software, including Better-Y, with installation notes.": {
    "n": 1,
    "pages": 1
   },
@@ -20382,10 +19011,6 @@
    "n": 1,
    "pages": 1,
    "theme": true
-  },
-  "loading": {
-   "n": 1,
-   "pages": 1
   },
   "locker-room-kitty": {
    "n": 1,
@@ -20583,10 +19208,6 @@
    "theme": true
   },
   "on": {
-   "n": 1,
-   "pages": 1
-  },
-  "on Windows, macOS or Linux.": {
    "n": 1,
    "pages": 1
   },
@@ -21037,14 +19658,6 @@
    "n": 1,
    "pages": 1
   },
-  "theme installation guide": {
-   "n": 1,
-   "pages": 1
-  },
-  "themes gallery": {
-   "n": 1,
-   "pages": 1
-  },
   "themes.innioasis.app": {
    "n": 1,
    "pages": 1
@@ -21405,11 +20018,6 @@
    "pages": 1,
    "script": true
   },
-  "A computer with a USB cable, or a Solar player with Wi-Fi": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
   "A few dollars goes a long way here: it covers hundreds of downloads.": {
    "n": 1,
    "pages": 1,
@@ -21493,11 +20101,6 @@
   "Add another": {
    "n": 1,
    "pages": 42,
-   "script": true
-  },
-  "Add the theme with Updater CE, copy it to the player's theme folder over USB, or download it on the player when running Solar.": {
-   "n": 1,
-   "pages": 1,
    "script": true
   },
   "Adjust how your listing reads on the gallery - no files required.": {
@@ -21663,16 +20266,6 @@
   "Apple Music for Innioasis Y1 & Y2 by sipped": {
    "n": 1,
    "pages": 6,
-   "script": true
-  },
-  "Are Koensayr themes different from other Innioasis Y1 and Y2 themes?": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "Are all Innioasis Y1 and Y2 themes compatible with every firmware?": {
-   "n": 1,
-   "pages": 1,
    "script": true
   },
   "Arial, \"Helvetica Neue\", Helvetica, sans-serif": {
@@ -21875,37 +20468,12 @@
    "pages": 1,
    "script": true
   },
-  "Because they are a different file format with different installation rules. Keeping them in their own collection stops people installing a theme on software that cannot read it.": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
   "Beetle for Innioasis Y1 & Y2 by Zhepha": {
    "n": 1,
    "pages": 6,
    "script": true
   },
   "Benutzerdefiniertes Theme, das ich für mein Y2 von Toris Sailor Moon überarbeitet habe. Ich hoffe, es gefällt euch allen!": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "Better-Y themes for Innioasis Y1": {
-   "n": 1,
-   "pages": 39,
-   "script": true
-  },
-  "Better-Y themes for Innioasis Y2": {
-   "n": 1,
-   "pages": 39,
-   "script": true
-  },
-  "Better-Y themes for the Innioasis Y1 and Y2. The same theme format is used by Koensayr, Solar and the Original Software, so one gallery theme works across all four.": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "Better-Y, Koensayr, Solar and the Original Software share one theme format. Rockbox themes use their own format and are not interchangeable.": {
    "n": 1,
    "pages": 1,
    "script": true
@@ -22101,11 +20669,6 @@
    "script": true
   },
   "Cambiar a español": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "Can I use a Koensayr theme if I switch to Better-Y or Solar?": {
    "n": 1,
    "pages": 1,
    "script": true
@@ -23201,9 +21764,14 @@
    "pages": 6,
    "script": true
   },
+  "Direct Install": {
+   "n": 1,
+   "pages": 4,
+   "script": true
+  },
   "Direct Install via USB": {
    "n": 1,
-   "pages": 42,
+   "pages": 38,
    "script": true
   },
   "Direct install failed": {
@@ -23222,26 +21790,6 @@
    "script": true
   },
   "Diseño negro sencillo.": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "Do I need Updater CE to install a theme?": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "Do the same themes work on the Innioasis Y1 and Y2?": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "Does installing a theme change my Better-Y firmware?": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "Does installing a theme erase my music?": {
    "n": 1,
    "pages": 1,
    "script": true
@@ -24141,11 +22689,6 @@
    "pages": 2,
    "script": true
   },
-  "Firmware archive": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
   "Flyff for Innioasis Y1 & Y2 by Robertpuggle": {
    "n": 1,
    "pages": 6,
@@ -24606,11 +23149,6 @@
    "pages": 6,
    "script": true
   },
-  "How do I download a Solar theme without a computer?": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
   "How to Train Your Dragon for Innioasis Y1 & Y2 by CaycaysStudio": {
    "n": 1,
    "pages": 6,
@@ -24806,19 +23344,24 @@
    "pages": 42,
    "script": true
   },
-  "Innioasis Community Sites": {
+  "Innioasis Firmware Downloads": {
    "n": 1,
    "pages": 1,
    "script": true
   },
-  "Innioasis Firmware Downloads": {
+  "Innioasis Sites": {
    "n": 1,
    "pages": 1,
    "script": true
   },
   "Innioasis Themes": {
    "n": 1,
-   "pages": 3,
+   "pages": 42,
+   "script": true
+  },
+  "Innioasis Themes Gallery - Y1 and Y2 Rockbox themes": {
+   "n": 1,
+   "pages": 1,
    "script": true
   },
   "Innioasis Universal Flash Tool": {
@@ -24831,54 +23374,14 @@
    "pages": 1,
    "script": true
   },
-  "Innioasis Y1 Better-Y themes": {
-   "n": 1,
-   "pages": 39,
-   "script": true
-  },
-  "Innioasis Y1 Koensayr themes": {
-   "n": 1,
-   "pages": 39,
-   "script": true
-  },
-  "Innioasis Y1 Rockbox themes": {
-   "n": 1,
-   "pages": 39,
-   "script": true
-  },
-  "Innioasis Y1 Solar themes": {
-   "n": 1,
-   "pages": 39,
-   "script": true
-  },
   "Innioasis Y1 and Y2 Themes Gallery": {
    "n": 1,
-   "pages": 3,
+   "pages": 42,
    "script": true
   },
   "Innioasis Y1. Des arrière-plans en nomex en fibre de carbone et en combinaison de course, des boutons d": {
    "n": 1,
    "pages": 1,
-   "script": true
-  },
-  "Innioasis Y2 Better-Y themes": {
-   "n": 1,
-   "pages": 39,
-   "script": true
-  },
-  "Innioasis Y2 Koensayr themes": {
-   "n": 1,
-   "pages": 39,
-   "script": true
-  },
-  "Innioasis Y2 Rockbox themes": {
-   "n": 1,
-   "pages": 39,
-   "script": true
-  },
-  "Innioasis Y2 Solar themes": {
-   "n": 1,
-   "pages": 39,
    "script": true
   },
   "InnoPod Rev.2 for Innioasis Y1 & Y2 by Kyoukopilled": {
@@ -24932,11 +23435,6 @@
    "script": true
   },
   "Inspiré par toutes les conneries que j'aime ouais": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "Install a theme with Updater CE, copy it over USB, or download it on a Solar player over Wi-Fi.": {
    "n": 1,
    "pages": 1,
    "script": true
@@ -25247,21 +23745,6 @@
    "script": true
   },
   "Kleiner Junge.": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "Koensayr themes for Innioasis Y1": {
-   "n": 1,
-   "pages": 39,
-   "script": true
-  },
-  "Koensayr themes for Innioasis Y2": {
-   "n": 1,
-   "pages": 39,
-   "script": true
-  },
-  "Koensayr themes for the Innioasis Y1 and Y2. One shared theme format also covers Better-Y, Solar and the Original Software.": {
    "n": 1,
    "pages": 1,
    "script": true
@@ -26436,9 +24919,14 @@
    "pages": 42,
    "script": true
   },
+  "No themes from this gallery were found on your Y1. Use Direct Install on individual themes first, then return here to refresh them all.": {
+   "n": 1,
+   "pages": 4,
+   "script": true
+  },
   "No themes from this gallery were found on your Y1. Use Direct Install via USB on individual themes first, then return here to refresh them all.": {
    "n": 1,
-   "pages": 42,
+   "pages": 38,
    "script": true
   },
   "No vi muchos temas de My Little Pony y solo tuve que crear uno de mis personajes favoritos para ayudar a expandir esa categoría.": {
@@ -26447,41 +24935,6 @@
    "script": true
   },
   "No vi ningún tema de mi marido así que hice uno.": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "No. A theme can be copied over USB by hand, and a Solar player can download themes over Wi-Fi. Updater CE is the simplest option on Windows, macOS and Linux.": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "No. A theme changes the look of the player's interface. The Better-Y software, its settings and your music library stay as they are.": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "No. A theme is a separate file. Installing or changing a theme does not touch your music library or the player's firmware.": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "No. Koensayr reads the same theme files as Better-Y, Solar and the Original Software, so the gallery keeps one collection instead of a separate Koensayr-only set.": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "No. Rockbox has its own theme format. A Rockbox theme only works in Rockbox, and a Better-Y, Koensayr, Solar or Original Software theme does not load in Rockbox.": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "No. Rockbox has its own theme format. Use the separate Rockbox collection if your player runs Rockbox.": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "No. Rockbox uses its own theme format and is listed separately.": {
    "n": 1,
    "pages": 1,
    "script": true
@@ -26636,19 +25089,9 @@
    "pages": 1,
    "script": true
   },
-  "Open the Themes Gallery, preview a theme and download it.": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
   "Open the gallery": {
    "n": 1,
    "pages": 42,
-   "script": true
-  },
-  "Open the theme picker on the player and choose the new theme.": {
-   "n": 1,
-   "pages": 1,
    "script": true
   },
   "Open theme preview": {
@@ -27116,16 +25559,6 @@
    "pages": 6,
    "script": true
   },
-  "Pick a colour from the screen": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "Pick a theme": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
   "Pink Ethereal Princess for Innioasis Y1 & Y2 by Serene Oasis": {
    "n": 1,
    "pages": 6,
@@ -27581,21 +26014,6 @@
    "pages": 1,
    "script": true
   },
-  "Rockbox themes for Innioasis Y1": {
-   "n": 1,
-   "pages": 39,
-   "script": true
-  },
-  "Rockbox themes for Innioasis Y2": {
-   "n": 1,
-   "pages": 39,
-   "script": true
-  },
-  "Rockbox themes in this collection are listed for the Innioasis Y1 and Y2. Check the theme page for any device-specific notes before installing.": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
   "Rojo y espalda, diseño de inspiración gótica. Texto más brillante para una mejor visibilidad.": {
    "n": 1,
    "pages": 1,
@@ -27866,11 +26284,6 @@
    "pages": 1,
    "script": true
   },
-  "Select the theme": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
   "Self- and donations-funded  -  chip in $3 to support us": {
    "n": 1,
    "pages": 1,
@@ -28112,21 +26525,6 @@
    "script": true
   },
   "Sohn, ich bin traurig, sie machen mich so glücklich": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "Solar themes for Innioasis Y1": {
-   "n": 1,
-   "pages": 39,
-   "script": true
-  },
-  "Solar themes for Innioasis Y2": {
-   "n": 1,
-   "pages": 39,
-   "script": true
-  },
-  "Solar themes for the Innioasis Y1 and Y2, with on-device Wi-Fi downloads and the same theme format used by Better-Y, Koensayr and the Original Software.": {
    "n": 1,
    "pages": 1,
    "script": true
@@ -29251,11 +27649,6 @@
    "pages": 6,
    "script": true
   },
-  "The Rockbox theme collection for the Innioasis Y1 and Y2. Rockbox themes use their own format and are not interchangeable with Better-Y, Koensayr, Solar or Original Software themes.": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
   "The Summer Hikaru Died for Innioasis Y1 & Y2 by ieatcopiousamountsofuranium": {
    "n": 1,
    "pages": 6,
@@ -30167,6 +28560,11 @@
    "script": true
   },
   "Tour à pizza Le thème inspiré de la mise à jour Orange Side": {
+   "n": 1,
+   "pages": 1,
+   "script": true
+  },
+  "Troubleshooting": {
    "n": 1,
    "pages": 1,
    "script": true
@@ -31332,11 +29730,6 @@
    "pages": 42,
    "script": true
   },
-  "Where do themes go on an Innioasis Y1 or Y2?": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
   "Which tool should I use?": {
    "n": 1,
    "pages": 1,
@@ -31503,36 +29896,6 @@
    "script": true
   },
   "Yellowstone National Park for Innioasis Y1 & Y2 by mp3li": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "Yes for Better-Y, Koensayr, Solar and the Original Software: they share one theme format, so any theme in the gallery works on all four. Rockbox is the exception and uses a separate theme format.": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "Yes. Better-Y, Koensayr, Solar and the Original Software use the same theme format, so every theme in this gallery works on all four. Rockbox is the exception and has its own separate theme collection.": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "Yes. Solar uses the same theme format as the other three, so a theme downloaded for Solar also works if you change software.": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "Yes. The gallery keeps one collection for both players. A theme page notes any device-specific artwork or layout.": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "Yes. The theme stays installed and keeps working when you change software, because the theme format is shared across all four.": {
-   "n": 1,
-   "pages": 1,
-   "script": true
-  },
-  "Yes. Themes are shared between the Innioasis Y1 and Y2, so a theme you pick for one player is the same download on the other.": {
    "n": 1,
    "pages": 1,
    "script": true
@@ -31972,6 +30335,11 @@
    "pages": 1,
    "script": true
   },
+  "Innioasis Community Sites": {
+   "n": 1,
+   "pages": 1,
+   "script": true
+  },
   "Innioasis Firmware Archive": {
    "n": 1,
    "pages": 1,
@@ -31987,12 +30355,12 @@
    "pages": 1,
    "script": true
   },
-  "Hex": {
+  "Hue": {
    "n": 1,
    "pages": 1,
    "script": true
   },
-  "Hue": {
+  "Hex": {
    "n": 1,
    "pages": 1,
    "script": true

@@ -193,6 +193,9 @@
     })();
 
     (function rememberDock() {
+        /* Studio mounts the same dock but keeps it closed by default without
+           changing the reader's site-wide dock preference. */
+        if (global.STUDIO_DOCK_ISOLATED) return;
         try {
             var search = (global.location && global.location.search) || "";
             var raw = String(new URLSearchParams(search).get("dock") || new URLSearchParams(search).get("footer") || "").trim().toLowerCase();

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en" data-screenshot-harness="1">
+<head>
+<meta charset="utf-8" />
+<meta name="robots" content="noindex, nofollow" />
+<meta name="viewport" content="width=480,initial-scale=1" />
+<title>Theme screenshot harness</title>
+<link rel="stylesheet" href="y1-theme-preview.css" />
+<style>
+    html, body { margin: 0; padding: 0; background: #050608; }
+    /* The device screen, at its native logical size: 480x360, exactly what the
+       gallery card's simulator paints before CSS scaling. */
+    #shot {
+        width: 480px;
+        height: 360px;
+        overflow: hidden;
+        position: relative;
+    }
+    #shot .y1-tp-root,
+    #shot .y1-tp-device,
+    #shot .y1-tp-viewport { width: 100%; height: 100%; }
+    #shot .y1-tp-device { max-width: none; gap: 0; }
+    #shot .y1-tp-viewport { border-radius: 0; box-shadow: none; aspect-ratio: auto; }
+    #shot .theme-card-media-skeleton,
+    #shot .theme-preview-loading { display: none !important; }
+</style>
+</head>
+<body>
+<div id="shot" class="theme-preview-frame theme-preview-frame--screenshot-harness"></div>
+<script src="y1-theme-preview.js"></script>
+<script>
+/**
+ * Renders one theme with the same renderer the gallery cards use, at 480×360,
+ * so a headless browser can capture it once and the gallery can serve that JPEG
+ * instead of mounting the simulator per card.
+ *
+ * The capture is only declared ready once the theme's own font files have
+ * actually loaded, every image the screen needs has decoded, and two frames
+ * have been painted. A screenshot with a fallback face in it would be a lie
+ * about the theme, so fonts are forced and then verified rather than assumed.
+ *
+ * Usage: screenshot.html?theme=Folder_Name&variant=Optional_Variant
+ * Signals on documentElement[data-screenshot-ready] and window.__screenshotState.
+ */
+(function () {
+    'use strict';
+    var params = new URLSearchParams(location.search);
+    var folder = String(params.get('theme') || '').replace(/^\.?\/+/, '').trim();
+    var variant = String(params.get('variant') || '').trim();
+
+    var state = {
+        ready: false,
+        error: '',
+        theme: folder,
+        variant: variant,
+        fontsLoaded: false,
+        fontFamilies: [],
+        imageCount: 0,
+        warnings: []
+    };
+    window.__screenshotState = state;
+
+    function finish(ok, message) {
+        if (state.ready) return;
+        if (!ok) state.error = String(message || 'preview failed');
+        state.ready = true;
+        document.documentElement.setAttribute('data-screenshot-ready', ok ? '1' : 'error');
+        if (!ok) document.documentElement.setAttribute('data-screenshot-error', state.error);
+    }
+
+    function buildFileUrl(contentFolder, relativePath) {
+        var rel = String(relativePath || '').trim().replace(/\\/g, '/').replace(/^\.?\/+/, '');
+        if (!rel) return '';
+        var folderParts = String(contentFolder || '').split('/').filter(Boolean);
+        var stack = folderParts.slice();
+        rel.split('/').forEach(function (seg) {
+            if (!seg || seg === '.') return;
+            if (seg === '..') { if (stack.length) stack.pop(); return; }
+            stack.push(seg);
+        });
+        return './' + stack.map(encodeURIComponent).join('/');
+    }
+
+    function nextFrame() {
+        return new Promise(function (resolve) {
+            requestAnimationFrame(function () { requestAnimationFrame(resolve); });
+        });
+    }
+
+    function unquoteFamily(value) {
+        return String(value || '').trim().replace(/^["']|["']$/g, '').trim();
+    }
+
+    /** Distinct font families actually used by the painted screen. */
+    function paintedFamilies(root) {
+        var out = [];
+        var seen = {};
+        var nodes = [root].concat(Array.prototype.slice.call(root.querySelectorAll('*')));
+        for (var i = 0; i < nodes.length; i++) {
+            var stack = '';
+            try {
+                stack = getComputedStyle(nodes[i]).fontFamily || '';
+            } catch (e) {
+                stack = '';
+            }
+            // A stack is a list; load each real family, not the generic fallbacks.
+            stack.split(',').forEach(function (part) {
+                var fam = unquoteFamily(part);
+                if (!fam || /^(serif|sans-serif|monospace|cursive|fantasy|system-ui|ui-[a-z-]+)$/i.test(fam)) return;
+                var key = fam.toLowerCase();
+                if (seen[key]) return;
+                seen[key] = 1;
+                out.push(fam);
+            });
+        }
+        return out;
+    }
+
+    /**
+     * Force every font the screen uses to load, then confirm the browser has no
+     * font work left. `document.fonts.ready` alone resolves even when nothing
+     * requested the theme face yet.
+     */
+    function settleFonts(root) {
+        state.fontFamilies = paintedFamilies(root);
+        if (!document.fonts || typeof document.fonts.load !== 'function') {
+            state.warnings.push('FontFaceSet unavailable');
+            return Promise.resolve();
+        }
+        var jobs = [];
+        state.fontFamilies.forEach(function (family) {
+            var css = '"' + family.replace(/"/g, '\\"') + '"';
+            // A theme can reference a font file it never shipped. That rejects with
+            // a NetworkError; the live card falls back to the same face, so the
+            // capture is still truthful. Record it instead of failing the theme.
+            function safeLoad(spec) {
+                return document.fonts.load(spec, 'AaBb0123').catch(function (err) {
+                    state.warnings.push((family || 'font') + ': ' + ((err && err.message) || 'load failed'));
+                    return null;
+                });
+            }
+            jobs.push(safeLoad('700 22px ' + css));
+            jobs.push(safeLoad('400 16px ' + css));
+        });
+        return Promise.all(jobs)
+            .then(function () { return document.fonts.ready; })
+            .then(function () { return nextFrame(); })
+            .then(function () {
+                var unresolved = state.fontFamilies.filter(function (family) {
+                    try {
+                        return !document.fonts.check('16px "' + family.replace(/"/g, '\\"') + '"', 'Aa');
+                    } catch (e) {
+                        return false;
+                    }
+                });
+                state.fontsLoaded = document.fonts.status === 'loaded' && unresolved.length === 0;
+                if (!state.fontsLoaded) {
+                    state.warnings.push(
+                        (document.fonts.status !== 'loaded' ? 'fonts still loading' : 'unresolved face: ' + unresolved.join(', '))
+                    );
+                }
+            });
+    }
+
+    function waitForImages(root) {
+        var images = root.querySelectorAll('img');
+        var pending = [];
+        state.imageCount = images.length;
+        for (var i = 0; i < images.length; i++) {
+            (function (img) {
+                if (!img.getAttribute('src')) return;
+                pending.push(
+                    new Promise(function (resolve) {
+                        if (img.complete) return resolve();
+                        img.addEventListener('load', resolve, { once: true });
+                        img.addEventListener('error', resolve, { once: true });
+                    })
+                );
+            })(images[i]);
+        }
+        return Promise.all(pending);
+    }
+
+    function settlePixels(root) {
+        return waitForImages(root)
+            .then(function () { return settleFonts(root); })
+            // Fonts can substitute a different face after a late decode; decode
+            // images once more and repaint so the capture is the final frame.
+            .then(function () { return waitForImages(root); })
+            .then(nextFrame);
+    }
+
+    if (!folder) {
+        finish(false, 'missing ?theme=');
+        return;
+    }
+    if (!window.Y1ThemePreview || typeof window.Y1ThemePreview.mount !== 'function') {
+        finish(false, 'y1-theme-preview.js did not load');
+        return;
+    }
+
+    var host = document.getElementById('shot');
+    // Gallery mode paints the same home screen the cards paint, and attaches no
+    // device input handlers (a capture has no user).
+    window.Y1ThemePreview.mount(host, {
+        catalogFolder: folder,
+        variantSegment: variant,
+        mode: 'gallery',
+        suppressDeviceInput: true,
+        buildFileUrl: buildFileUrl,
+        onReady: function () {
+            settlePixels(host)
+                .then(function () { finish(true); })
+                .catch(function (err) { finish(false, (err && err.message) || 'settle failed'); });
+        }
+    }).catch(function (err) {
+        finish(false, (err && err.message) || 'mount rejected');
+    });
+
+    setTimeout(function () { finish(false, 'timeout'); }, 25000);
+})();
+</script>
+</body>
+</html>

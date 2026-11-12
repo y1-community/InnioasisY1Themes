@@ -78,6 +78,39 @@ body.site-themes-app #assets-list {
     font-weight: 600;
 }
 
+.software-explainer {
+    margin: 1.5rem 0 0;
+    max-width: 42rem;
+}
+
+.software-explainer h2 {
+    margin: 1.25rem 0 0.35rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.gallery-folder-index {
+    margin: 1.25rem 0 0;
+}
+
+.gallery-folder-index summary {
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.gallery-folder-index nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.85rem;
+    margin-top: 0.75rem;
+}
+
+.footer-works-with {
+    flex: 1 1 100%;
+    margin: 0 0 0.6rem;
+    font-size: 0.92rem;
+}
+
 /* —— Report / upload prose —— */
 body.site-themes-app .wrap {
     color: var(--site-text);

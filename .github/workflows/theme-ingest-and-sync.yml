@@ -92,6 +92,12 @@ jobs:
       - name: Write missing theme SEO index shells
         run: pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/Rewrite-ThemeIndexPages.ps1 -MissingOnly
 
+      - name: Show the rendered capture on theme pages
+        run: python3 scripts/theme_screenshot_seo.py
+
+      - name: Add the download button to theme pages
+        run: python3 scripts/theme_page_download.py
+
       - name: Cleanup stale upload zip/meta artifacts
         run: python scripts/cleanup_upload_artifacts.py
         env:

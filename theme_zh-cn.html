@@ -54,15 +54,15 @@
     <meta name="publisher" content="Luci Ltd">
     <link rel="author" href="https://www.luci.ltd" title="Luci Ltd - Innioasis Y1 和 Y2 主题的网络托管">
 
-    <link rel="canonical" id="theme-canonical" href="https://themes.innioasis.app/theme_zh-cn.html">
+    <link rel="canonical" id="theme-canonical" href="https://themes.innioasis.app/theme_zh-CN.html">
     <script>
       (function () {
         var params;
         try { params = new URLSearchParams(location.search); } catch (e) { return; }
         var theme = params.get("theme") || "";
         var variant = params.get("variant") || "";
-        if (!theme || /[\\/]/.test(theme) || theme.indexOf("..") !== -1) return;
-        if (variant && (/[\\/]/.test(variant) || variant.indexOf("..") !== -1)) variant = "";
+        if (!theme || /[\/]/.test(theme) || theme.indexOf("..") !== -1) return;
+        if (variant && (/[\/]/.test(variant) || variant.indexOf("..") !== -1)) variant = "";
         var file = (location.pathname.split("/").pop() || "theme.html");
         var localeMatch = file.match(/^theme_(de|es|fr|ja|jp)\.html$/);
         var href = "https://themes.innioasis.app/" + encodeURIComponent(theme) + "/";
@@ -90,20 +90,20 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
-    <link rel="stylesheet" href="site-theme.css?v=20261110footer">
+    <link rel="stylesheet" href="site-theme.css?v=20261111dl2">
     <link rel="stylesheet" href="lumen.css?v=20261110picker">
     <link rel="stylesheet" href="site-toolbar.css?v=20261110accent2">
     <link rel="stylesheet" href="site-pages.css?v=20260622">
-    <link rel="stylesheet" href="y1-theme-preview.css?v=20261109preview2">
+    <link rel="stylesheet" href="y1-theme-preview.css?v=20261111hq1">
     <link rel="stylesheet" href="theme-analytics.css?v=20260518">
     <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="theme-packaging.js"></script>
     <script src="theme-display-name.js?v=20260624"></script>
-    <script src="y1-theme-preview.js?v=20261109preview2"></script>
+    <script src="y1-theme-preview.js?v=20261111hq1"></script>
     <script src="theme-artwork-compat.js?v=20260524"></script>
     <script src="gold-theme-detect.js?v=20261109perf"></script>
-    <script src="gallery-chrome.js?v=20261110header"></script>
+    <script src="gallery-chrome.js?v=20261102header"></script>
     <script src="author-links.js?v=20260622"></script>
     <script src="gallery-loaded-theme.js?v=20261109perf"></script>
     <script src="theme-share-links.js"></script>
@@ -371,7 +371,7 @@
     <div id="support-toolbar-slot"></div>
 
     <script src="site-init.js?v=20261110picker"></script>
-    <script src="nav.js?v=20261110switcher2"></script>
+    <script src="nav.js?v=20261111nav"></script>
     <script>
 
         const FALLBACK_PLACEHOLDER_URL = 'https://themes.innioasis.app/placeholder.png';

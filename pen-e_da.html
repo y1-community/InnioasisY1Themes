@@ -116,6 +116,29 @@
             background: linear-gradient(155deg, #ff4f40 0%, #f03d30 100%);
             box-shadow: 0 12px 28px -8px rgba(255, 79, 64, 0.45);
         }
+        /* Supporters ledger, matching the credits table on innioasis.app */
+        .supporters-section { margin: 4px 0 18px; }
+        .supporters-section h2 { font-size: 1.02rem; font-weight: 700; color: #0f172a; margin: 6px 0 4px; }
+        .supporters-section > p { font-size: 0.78rem; color: #64748b; margin-bottom: 10px; line-height: 1.45; }
+        .supporter-key { display: flex; align-items: center; gap: 7px; margin: 6px 0 10px; font-size: 0.72rem; color: #64748b; }
+        .supporter-star { color: #d99a12; font-size: 0.95rem; line-height: 1; }
+        .supporters-table-wrap { overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 12px; }
+        .supporters-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; text-align: left; }
+        .supporters-table th { background: #f1f5f9; color: #475569; font-weight: 700; padding: 9px 10px; border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
+        .supporters-table td { padding: 9px 10px; border-bottom: 1px solid #f1f5f9; color: #0f172a; vertical-align: top; }
+        .supporters-table tr:last-child td { border-bottom: none; }
+        .supporter-name-line { display: flex; align-items: baseline; flex-wrap: wrap; gap: 5px; }
+        .supporter-name-line a { color: inherit; font-weight: 700; text-decoration: underline; }
+        .supporter-count { color: #64748b; font-weight: 400; }
+        .supporter-message { margin-top: 4px; max-width: 420px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 4px 8px; font-size: 0.74rem; color: #334155; line-height: 1.35; word-break: break-word; }
+        .supporter-message-text { display: block; max-height: 2.7em; overflow: hidden; }
+        .supporter-amount { font-weight: 700; white-space: nowrap; }
+        .supporter-method { white-space: nowrap; }
+        .method-icon { width: 18px; height: 18px; display: inline-block; vertical-align: middle; margin-right: 5px; }
+        .method-icon:last-child { margin-right: 0; }
+        .supporter-date { display: flex; flex-direction: column; gap: 2px; color: #64748b; font-size: 0.74rem; white-space: nowrap; }
+        .supporter-date-since { opacity: 0.8; }
+        .supporters-empty { text-align: center; color: #64748b; padding: 14px 8px; }
     </style>
 <meta property="og:site_name" content="Innioasis Temagalleri">  <link rel="canonical" href="https://themes.innioasis.app/pen-e_da.html">
   <!-- i18n-hreflang-start -->
@@ -190,6 +213,31 @@
         <div class="flex-1 bg-white text-slate-900 rounded-t-3xl px-4 pt-3 pb-10 shadow-2xl">
             <!-- Grab Handle -->
             <div class="w-9 h-1 bg-slate-200 rounded-full mx-auto mb-3"></div>
+
+            <!-- Supporters ledger: the same table the main site shows on its credits page -->
+            <section class="supporters-section" aria-labelledby="supporters-heading">
+                <h2 id="supporters-heading">A Thank You to all of our supporters</h2>
+                <p>A proper thank-you to everyone who has helped. Whether you bought one coffee or kept coming back, you are part of the reason this is still here.</p>
+                <div class="supporter-key" aria-label="Contributor legend">
+                    <span class="supporter-star" aria-hidden="true">★</span>
+                    <span>Top Supporter - more than one contribution or a gift at least twice the average</span>
+                </div>
+                <div class="supporters-table-wrap">
+                    <table class="supporters-table" aria-label="Støtte- og donationsbog">
+                        <thead>
+                            <tr>
+                                <th>Supporter</th>
+                                <th>Bidrag</th>
+                                <th>Metode</th>
+                                <th>Dato</th>
+                            </tr>
+                        </thead>
+                        <tbody id="supportersTableBody">
+                            <tr><td colspan="4" class="supporters-empty">Loading ledger...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
 
             <!-- Scrollable Feed Container -->
             <div id="feedContainer" class="divide-y divide-slate-100">
@@ -600,6 +648,7 @@ Innioasis,Sponsorship,946.00,19/09/2025,""`;
                     platform,
                     amount,
                     date,
+                    dt: parseDonorDate(date),
                     timestamp: parseDateValue(date, i),
                     message
                 });
@@ -610,6 +659,26 @@ Innioasis,Sponsorship,946.00,19/09/2025,""`;
                 innioasisList,
                 innioasisSum
             };
+        }
+
+        /* A real Date for the wording layer; donors.csv is day-first. */
+        function parseDonorDate(str) {
+            if (!str) return null;
+            const s = String(str).trim();
+            const dmy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})(?:[\s,T]+(\d{1,2}):(\d{2}))?/);
+            if (dmy) {
+                let y = parseInt(dmy[3], 10);
+                if (y < 100) y += y >= 70 ? 1900 : 2000;
+                const dt = new Date(y, parseInt(dmy[2], 10) - 1, parseInt(dmy[1], 10),
+                    dmy[4] ? parseInt(dmy[4], 10) : 0, dmy[5] ? parseInt(dmy[5], 10) : 0);
+                try { dt.hasTime = Boolean(dmy[4]); } catch (e) {}
+                return isNaN(dt.getTime()) ? null : dt;
+            }
+            const t = Date.parse(s);
+            if (isNaN(t)) return null;
+            const dt = new Date(t);
+            try { dt.hasTime = /:\d{2}/.test(s); } catch (e) {}
+            return dt;
         }
 
         function parseDateValue(str, orderFallback) {
@@ -678,6 +747,241 @@ Innioasis,Sponsorship,946.00,19/09/2025,""`;
             return div.innerHTML;
         }
 
+        /* ---- Supporters ledger: wording, grouping and icons ----------------
+           Times are words in the reader's language ("just now", "3 hours ago",
+           "yesterday", "last week", "2 weeks ago", "2nd June", "a year ago",
+           "1st January 2024"), with the exact timestamp kept in the tooltip.
+           Messages are marked data-i18n-dynamic so site-locale.js can put them
+           in the visitor's language from the shared catalogs. */
+        function t(str, params) {
+            let out = str;
+            try {
+                if (window.InnioasisLocale && typeof window.InnioasisLocale.translate === 'function') {
+                    const translated = window.InnioasisLocale.translate(str);
+                    if (translated) out = translated;
+                }
+            } catch (e) {}
+            if (!params) return out;
+            return String(out).replace(/\{([A-Za-z0-9_]+)\}/g, (match, key) =>
+                Object.prototype.hasOwnProperty.call(params, key) ? params[key] : match);
+        }
+
+        function supporterLocale() {
+            try {
+                if (window.InnioasisLocale && window.InnioasisLocale.locale) return String(window.InnioasisLocale.locale);
+            } catch (e) {}
+            return document.documentElement.getAttribute('lang') || userLocale || 'en';
+        }
+
+        const ENGLISH_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+        function englishDayOrdinal(day) {
+            const rem100 = day % 100;
+            if (rem100 >= 11 && rem100 <= 13) return day + 'th';
+            if (day % 10 === 1) return day + 'st';
+            if (day % 10 === 2) return day + 'nd';
+            if (day % 10 === 3) return day + 'rd';
+            return day + 'th';
+        }
+
+        function formatSupporterDate(dt, withYear) {
+            if (!dt) return '';
+            const locale = supporterLocale();
+            try {
+                if (/^en\b/i.test(locale)) {
+                    let month = ENGLISH_MONTHS[dt.getMonth()];
+                    try { month = new Intl.DateTimeFormat('en-GB', { month: 'long' }).format(dt); } catch (e) {}
+                    return englishDayOrdinal(dt.getDate()) + ' ' + month + (withYear ? ' ' + dt.getFullYear() : '');
+                }
+                return new Intl.DateTimeFormat(locale, withYear
+                    ? { day: 'numeric', month: 'long', year: 'numeric' }
+                    : { day: 'numeric', month: 'long' }).format(dt);
+            } catch (e) {}
+            return englishDayOrdinal(dt.getDate()) + ' ' + ENGLISH_MONTHS[dt.getMonth()] + (withYear ? ' ' + dt.getFullYear() : '');
+        }
+
+        function relativePhrase(value, unit) {
+            try {
+                if (typeof Intl !== 'undefined' && Intl.RelativeTimeFormat) {
+                    return new Intl.RelativeTimeFormat(supporterLocale(), { numeric: 'auto' }).format(value, unit);
+                }
+            } catch (e) {}
+            return '';
+        }
+
+        function relativeDonationTime(dt) {
+            if (!dt) return '';
+            const now = new Date();
+            const diffMs = Math.max(0, now.getTime() - dt.getTime());
+            if (dt.hasTime) {
+                const mins = Math.floor(diffMs / 60000);
+                if (mins < 1) return t('just now');
+                if (mins < 60) return relativePhrase(-mins, 'minute') || (mins === 1 ? t('1 minute ago') : t('{count} minutes ago', { count: mins }));
+                const hrs = Math.floor(diffMs / 3600000);
+                const sameDay = dt.getFullYear() === now.getFullYear() && dt.getMonth() === now.getMonth() && dt.getDate() === now.getDate();
+                if (hrs < 24 && sameDay) return relativePhrase(-hrs, 'hour') || (hrs === 1 ? t('1 hour ago') : t('{count} hours ago', { count: hrs }));
+            }
+            const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const startThat = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+            const d = Math.round((startToday.getTime() - startThat.getTime()) / 86400000);
+            if (d <= 0) return relativePhrase(0, 'day') || t('today');
+            if (d === 1) return relativePhrase(-1, 'day') || t('yesterday');
+            if (d < 7) return relativePhrase(-d, 'day') || t('{count} days ago', { count: d });
+            if (d < 14) return relativePhrase(-1, 'week') || t('last week');
+            if (d < 30) {
+                const w = Math.floor(d / 7);
+                return relativePhrase(-w, 'week') || t('{count} weeks ago', { count: w });
+            }
+            if (dt.getFullYear() === now.getFullYear()) return formatSupporterDate(dt, false);
+            if (now.getFullYear() - dt.getFullYear() === 1) return t('a year ago');
+            return formatSupporterDate(dt, true);
+        }
+
+        function exactDonationStamp(dt) {
+            if (!dt) return '';
+            try {
+                return dt.toLocaleString(supporterLocale(), dt.hasTime
+                    ? { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }
+                    : { year: 'numeric', month: 'short', day: 'numeric' });
+            } catch (e) {}
+            return '';
+        }
+
+        const ANONYMOUS_SUPPORTER_NAMES = { '': true, supporter: true, supporters: true, 'a supporter': true, 'top supporter': true, 'a top supporter': true, someone: true, anonymous: true, anon: true, none: true, 'n/a': true, unknown: true, null: true };
+
+        function isAnonymousSupporter(name) {
+            const low = String(name || '').toLowerCase().replace(/\s+/g, ' ').trim();
+            if (ANONYMOUS_SUPPORTER_NAMES[low]) return true;
+            return low.indexOf('supporter') === 0 || low.indexOf('anonymous') === 0 || low.indexOf('someone') === 0;
+        }
+
+        function isCorporateSupporter(name) {
+            const low = String(name || '').toLowerCase().trim();
+            return Boolean(low) && low.indexOf('innioasis') === 0;
+        }
+
+        function methodIconFile(method) {
+            const low = String(method || '').toLowerCase();
+            if (low.indexOf('paypal') >= 0) return 'icon_paypal.png';
+            if (low.indexOf('revolut') >= 0) return 'icon_revolut.png';
+            if (low.indexOf('patreon') >= 0) return 'icon_patreon.png';
+            if (low.indexOf('boosty') >= 0) return 'icon_boosty.png';
+            if (low.indexOf('honeygain') >= 0) return 'icon_honeygain.svg';
+            if (low.indexOf('btc') >= 0 || low.indexOf('bitcoin') >= 0) return 'icon_bitcoin.png';
+            if (low.indexOf('sponsor') >= 0 || low.indexOf('corporate') >= 0) return 'icon_corporate.svg';
+            return 'icon_kofi.png';
+        }
+
+        function methodIconHTML(method) {
+            const file = methodIconFile(method);
+            const label = escapeHTML(method || '');
+            return `<img class="method-icon" src="./assets/${file}" alt="${label}" title="${label}">`;
+        }
+
+        function groupSupporters(list) {
+            const groups = new Map();
+            const amounts = [];
+            list.forEach(item => {
+                if (!(item.amount > 0) || isCorporateSupporter(item.name)) return;
+                /* Anonymous givers stay separate rows, exactly as on the credits
+                   page; only a named supporter is grouped with themselves. */
+                const key = isAnonymousSupporter(item.name)
+                    ? '__anonymous_' + item.id
+                    : String(item.name || '').toLowerCase();
+                if (!groups.has(key)) {
+                    groups.set(key, {
+                        name: String(item.name || '').trim(), total: 0, count: 0, items: [],
+                        first: null, latest: null, methods: [], methodKeys: {}, messages: []
+                    });
+                }
+                const g = groups.get(key);
+                g.total += item.amount;
+                g.count += 1;
+                g.items.push(item);
+                amounts.push(item.amount);
+                const method = (item.platform || '').trim();
+                if (method && !g.methodKeys[method.toLowerCase()]) {
+                    g.methodKeys[method.toLowerCase()] = true;
+                    g.methods.push(method);
+                }
+                if (item.dt) {
+                    if (!g.first || item.dt.getTime() < g.first.getTime()) g.first = item.dt;
+                    if (!g.latest || item.dt.getTime() > g.latest.getTime()) g.latest = item.dt;
+                }
+                if (item.message && item.message.trim() && g.messages.indexOf(item.message.trim()) === -1) {
+                    g.messages.push(item.message.trim());
+                }
+            });
+            const average = amounts.length ? amounts.reduce((sum, a) => sum + a, 0) / amounts.length : 0;
+            const grouped = [...groups.values()];
+            grouped.forEach(g => {
+                g.isTop = g.count >= 2 || g.items.some(item => item.amount >= average * 2);
+            });
+            return grouped;
+        }
+
+        function renderSupportersTable() {
+            const body = document.getElementById('supportersTableBody');
+            if (!body) return;
+            const supporters = groupSupporters(entries.filter(item => item.amount > 0));
+            const tops = supporters.filter(g => g.isTop).sort((a, b) => b.total - a.total ||
+                (b.latest ? b.latest.getTime() : 0) - (a.latest ? a.latest.getTime() : 0));
+            const others = supporters.filter(g => !g.isTop).sort((a, b) =>
+                (b.latest ? b.latest.getTime() : 0) - (a.latest ? a.latest.getTime() : 0) || a.name.localeCompare(b.name));
+            const ordered = tops.concat(others);
+
+            if (!ordered.length) {
+                body.innerHTML = `<tr><td colspan="4" class="supporters-empty">${escapeHTML(t('No contributions recorded yet.'))}</td></tr>`;
+                return;
+            }
+
+            body.innerHTML = ordered.map(g => {
+                const anonymous = isAnonymousSupporter(g.name);
+                const displayName = anonymous ? t('A supporter') : g.name;
+                const latestItem = g.items[g.items.length - 1] || {};
+                const targetUrl = (latestItem.url && latestItem.url.indexOf('http') === 0) ? latestItem.url : 'https://ko-fi.com/teamslide';
+                const roleLabel = g.isTop ? t('Top Supporter') : t('Supporter');
+                const star = g.isTop
+                    ? `<span class="supporter-star" role="img" aria-label="${escapeHTML(roleLabel)}" title="${escapeHTML(roleLabel)}">★</span>`
+                    : '';
+                const countLabel = g.count > 1
+                    ? ` <span class="supporter-count">${escapeHTML(t('{count} contributions', { count: g.count }))}</span>`
+                    : '';
+                const nameHTML = anonymous
+                    ? `<span>${escapeHTML(displayName)}</span>`
+                    : `<a href="${escapeHTML(targetUrl)}" target="_blank" rel="noopener noreferrer">${escapeHTML(displayName)}</a>`;
+                const message = g.messages.length ? g.messages[g.messages.length - 1] : '';
+                const messageHTML = message
+                    ? `<div class="supporter-message" data-i18n-dynamic><span class="supporter-message-text" data-i18n-dynamic>${escapeHTML(message)}</span></div>`
+                    : '';
+                const amountHTML = formatMoney(g.total, false, latestItem.date);
+                const methodsHTML = g.methods.length ? g.methods.map(methodIconHTML).join('') : '—';
+                const relTime = relativeDonationTime(g.latest);
+                const stamp = exactDonationStamp(g.latest);
+                const since = (g.count > 1 && g.first && g.latest && g.first.getTime() !== g.latest.getTime())
+                    ? `<span class="supporter-date-since">${escapeHTML(t('since {date}', { date: formatSupporterDate(g.first, g.first.getFullYear() !== new Date().getFullYear()) }))}</span>`
+                    : '';
+                return `<tr>
+                    <td>
+                        <div class="supporter-name-line">${star}${nameHTML}${countLabel}</div>
+                        ${messageHTML}
+                    </td>
+                    <td class="supporter-amount" data-i18n-skip>${escapeHTML(amountHTML)}</td>
+                    <td class="supporter-method" data-i18n-skip>${methodsHTML}</td>
+                    <td><div class="supporter-date" data-i18n-skip><span title="${escapeHTML(stamp)}">${escapeHTML(relTime)}</span>${since}</div></td>
+                </tr>`;
+            }).join('');
+
+            /* Messages carry data-i18n-dynamic. Ask the locale layer to take
+               them now when its catalog is already loaded; when the catalog is
+               still in flight the layer picks them up on its own next pass. */
+            try {
+                if (window.InnioasisLocale && typeof window.InnioasisLocale.translateDynamic === 'function') {
+                    window.InnioasisLocale.translateDynamic(body);
+                }
+            } catch (e) {}
+        }
+
         function updateTotals() {
             const netConverted = entries.reduce((sum, e) => sum + (e.amount * getRateForDate(e.date)), 0);
             const innioasisConverted = innioasisEntries.length
@@ -692,6 +996,7 @@ Innioasis,Sponsorship,946.00,19/09/2025,""`;
 
         function renderFeed() {
             updateTotals();
+            renderSupportersTable();
 
             const container = document.getElementById('feedContainer');
             if (!entries.length) {
@@ -818,6 +1123,14 @@ Innioasis,Sponsorship,946.00,19/09/2025,""`;
         }
 
         window.addEventListener('DOMContentLoaded', loadDonorsCSV);
+
+        /* A language switch after the ledger was painted: redraw so dates,
+           verbs and supporter messages come from the new catalog. */
+        ['site-locale-ready', 'site-locale-change', 'y1-locale-change'].forEach(eventName => {
+            window.addEventListener(eventName, () => {
+                if (entries.length) renderFeed();
+            });
+        });
     </script>
 <script src="site-locale.js?v=20261109i18n" defer></script></body>
 </html>

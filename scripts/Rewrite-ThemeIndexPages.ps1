@@ -178,6 +178,7 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
     $jsonLdSafe = $jsonLd -replace '</', '<\/'
 
     $variantHeading = if ($variant) { " <span style=`"opacity:.85;font-weight:500`">($varE)</span>" } else { '' }
+    $downloadVariantAttr = if ($variant) { " data-variant=`"$varE`"" } else { '' }
     $authorJs = if ($author) { ($author | ConvertTo-Json -Compress) } else { '""' }
 
     return @"
@@ -258,12 +259,15 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
     <h1 class="site-display">$dispE$variantHeading</h1>
     <p class="theme-seo-shell-author">$authorE</p>
     <p class="theme-seo-shell-desc">$description</p>
-    <p class="theme-seo-shell-actions"><a class="btn btn-primary" href="$previewE">Open preview</a></p>
+    <p class="theme-seo-shell-actions"><a class="btn btn-primary" href="$previewE">Open preview</a><button type="button" class="btn" data-theme-download data-folder="$catalogFolder" data-name="$dispE"$downloadVariantAttr>Download theme</button></p>
     <img src="/luci-alt.svg" alt="Innioasis Y1 & Y2 Themes gallery hosted by Luci Ltd at luci.ltd — themes.innioasis.app" width="1" height="1" decoding="async" class="theme-seo-hosting-mark" aria-hidden="true" />
   </main>
   <div id="footer-root"></div>
   <div id="support-toolbar-slot"></div>
   <script src="/nav.js?v=20261102notices"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="/theme-packaging.js?v=20261111dl"></script>
+  <script src="/theme-download.js?v=20261111dl"></script>
   <script>
 (function () {
   var btn = document.getElementById('theme-seo-copy');

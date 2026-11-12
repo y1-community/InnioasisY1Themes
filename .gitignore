@@ -30,3 +30,6 @@ scripts/i18n/.themes_desc_cache.json
 
 # Local agent coordination notes (never commit)
 .coord/
+
+# Reference copy of the legacy theme creator (parity audit only)
+legacythemecreator-for-parity/

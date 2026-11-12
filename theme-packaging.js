@@ -261,11 +261,15 @@
         return { items, logicalToDevice, contentRoot, catalog, mode: 'structured' };
     }
 
+    /* Files that exist for the website only. Never shipped in a theme ZIP, so a
+       player never receives a 480x360 screenshot it cannot use. */
     const WEBSITE_ONLY_COVERS = new Set([
         "cover.jpg",
         "cover.jpeg",
         "cover-thumb.jpg",
         "cover-thumb.jpeg",
+        "screenshot_preview.jpg",
+        "screenshot_preview.jpeg",
     ]);
 
     function isPreviewOrWebsiteOnlyAsset(nameOrPath) {

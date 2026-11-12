@@ -477,6 +477,30 @@ def _gallery_screenshot(folder: str, config: dict[str, Any] | None) -> str:
     return f"./{folder}/{cover_clean}"
 
 
+SCREENSHOT_PREVIEW_NAME = "screenshot_preview.jpg"
+
+
+def _screenshot_preview_path(folder: str) -> str:
+    """Website-only pre-rendered 480x360 capture, when the folder has one."""
+    if (REPO_ROOT / folder / SCREENSHOT_PREVIEW_NAME).is_file():
+        return f"./{folder}/{SCREENSHOT_PREVIEW_NAME}"
+    return ""
+
+
+def _variant_screenshot_previews(folder: str) -> dict[str, str]:
+    """Per-variant captures under ``Variants/<name>/screenshot_preview.jpg``."""
+    out: dict[str, str] = {}
+    variants_root = REPO_ROOT / folder / "Variants"
+    if not variants_root.is_dir():
+        return out
+    for child in sorted(variants_root.iterdir(), key=lambda p: p.name.lower()):
+        if not child.is_dir():
+            continue
+        if (child / SCREENSHOT_PREVIEW_NAME).is_file():
+            out[child.name] = f"./{folder}/Variants/{child.name}/{SCREENSHOT_PREVIEW_NAME}"
+    return out
+
+
 def _theme_entry_from_folder(folder: str, config: dict[str, Any] | None) -> dict[str, Any]:
     theme_info = _theme_info_for_folder(folder, config)
     raw_name = str(theme_info.get("title") or "").strip()
@@ -505,6 +529,14 @@ def _theme_entry_from_folder(folder: str, config: dict[str, Any] | None) -> dict
     shot = _gallery_screenshot(folder, config if isinstance(config, dict) else None)
     if shot:
         entry["screenshot"] = shot
+    # Pre-rendered screen capture: the gallery shows it instead of mounting the
+    # simulator, so the path only appears when the file is really there.
+    preview_shot = _screenshot_preview_path(folder)
+    if preview_shot:
+        entry["screenshotPreview"] = preview_shot
+    variant_shots = _variant_screenshot_previews(folder)
+    if variant_shots:
+        entry["variantScreenshots"] = variant_shots
     folder_path = REPO_ROOT / folder
     if folder_path.is_dir():
         variants = sorted(
@@ -577,6 +609,17 @@ def _refresh_existing_theme_entry(entry: dict[str, Any], folder: str, config: di
     shot = _gallery_screenshot(folder, config)
     if shot:
         refreshed["screenshot"] = shot
+
+    preview_shot = _screenshot_preview_path(folder)
+    if preview_shot:
+        refreshed["screenshotPreview"] = preview_shot
+    else:
+        refreshed.pop("screenshotPreview", None)
+    variant_shots = _variant_screenshot_previews(folder)
+    if variant_shots:
+        refreshed["variantScreenshots"] = variant_shots
+    else:
+        refreshed.pop("variantScreenshots", None)
 
     title = strip_redundant_theme_word(str(info.get("title") or "").strip())
     current_name = str(refreshed.get("name") or "").strip()

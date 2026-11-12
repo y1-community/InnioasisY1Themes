@@ -144,6 +144,9 @@ def generate_localized_shell(
     folder_i18n = loc_dict.get(folder, {})
     desc = folder_i18n.get("description") or info.get("description") or f"Preview and download {title} for Innioasis Y1 and Y2."
     desc = str(desc).strip()
+    compat = " Works on the Innioasis Y1 and Y2 with the Original Software, Better-Y, Koensayr and Solar."
+    if compat.strip() not in desc:
+        desc = (desc + compat).strip()
 
     site_title = SHELL_STRINGS["site_title"].get(locale, SHELL_STRINGS["site_title"]["en"])
     copy_text = SHELL_STRINGS["copy_link"].get(locale, SHELL_STRINGS["copy_link"]["en"])
@@ -153,6 +156,7 @@ def generate_localized_shell(
     escaped_site_title = html.escape(site_title)
     escaped_desc = html.escape(desc)
     escaped_author = html.escape(author)
+    escaped_folder = html.escape(folder, quote=True)
 
     folder_encoded = urllib.parse.quote(folder)
     target_theme_page = f"{CANONICAL_HOST}/theme_{locale}.html?theme={folder_encoded}"
@@ -186,7 +190,7 @@ def generate_localized_shell(
 
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>{escaped_title} - {escaped_site_title}</title>
+  <title>{escaped_title} by {escaped_author} for Innioasis Y1 and Y2</title>
   <meta name="description" content="{escaped_desc}" />
   <meta name="author" content="{escaped_author}" />
   <meta name="creator" content="Ryan Specter &amp; Innioasis Community" />
@@ -251,12 +255,15 @@ def generate_localized_shell(
     <h1 class="site-display">{escaped_title}</h1>
     <p class="theme-seo-shell-author">{escaped_author}</p>
     <p class="theme-seo-shell-desc">{escaped_desc}</p>
-    <p class="theme-seo-shell-actions"><a class="btn btn-primary" href="{target_theme_page}">{html.escape(open_btn)}</a></p>
+    <p class="theme-seo-shell-actions"><a class="btn btn-primary" href="{target_theme_page}">{html.escape(open_btn)}</a><button type="button" class="btn" data-theme-download data-folder="{escaped_folder}" data-name="{escaped_title}">Download theme</button></p>
     <img src="/luci-alt.svg" alt="Innioasis Y1 &amp; Y2 Themes gallery hosted by Luci Ltd at luci.ltd — themes.innioasis.app" width="1" height="1" decoding="async" class="theme-seo-hosting-mark" aria-hidden="true" />
   </main>
   <div id="footer-root"></div>
   <div id="support-toolbar-slot"></div>
   <script src="/nav.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="/theme-packaging.js?v=20261111dl"></script>
+  <script src="/theme-download.js?v=20261111dl"></script>
   <script>
 (function () {{
   var btn = document.getElementById('theme-seo-copy');

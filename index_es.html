@@ -26,10 +26,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
     <script>try{if(localStorage.getItem('y1-compat-banner-dismissed')==='1'){document.documentElement.classList.add('y1-compat-banner-closed');}}catch(_){}</script>
-    <title>Innioasis Y1 and Y2 themes: Better-Y, Rockbox, Koensayr and Solar</title>
+    <title>Rockbox temas para la galería de temas Innioasis Y1 y Y2 - Innioasis</title>
 
-    <meta name="description" content="Themes for the Innioasis Y1 and Y2, including Better-Y themes, Rockbox themes, Rockbox-Themes, Koensayr themes and Solar themes. Preview one, then download it.">
-    <meta name="keywords" content="Better-Y themes, Better-Y themes for Innioasis Y1, Better-Y themes for Innioasis Y2, Innioasis Y1 Better-Y themes, Innioasis Y2 Better-Y themes, Rockbox themes, Rockbox-Themes, Rockbox themes for Innioasis Y1, Rockbox themes for Innioasis Y2, Innioasis Y1 Rockbox themes, Innioasis Y2 Rockbox themes, Koensayr themes, Koensayr themes for Innioasis Y1, Koensayr themes for Innioasis Y2, Innioasis Y1 Koensayr themes, Innioasis Y2 Koensayr themes, Solar themes, Solar themes for Innioasis Y1, Solar themes for Innioasis Y2, Innioasis Y1 Solar themes, Innioasis Y2 Solar themes">
+    <meta name="description" content="Explore Rockbox temas para Innioasis Y1 y Y2, todos creados por la comunidad. Obtenga una vista previa de un tema antes de instalarlo y luego descargue los que desee.">
+    <meta name="keywords" content="Innioasis Y1 temas, Innioasis Y2 temas, Rockbox temas Y1, Y2 temas de interfaz de usuario, Rockbox personalización, Innioasis galería de temas, alojamiento web Luci, alojamiento de temas.innioasis.app">
     <meta name="author" content="Ryan Specter &amp; Innioasis Community">
   <meta name="creator" content="Ryan Specter &amp; Innioasis Community">
     <meta name="publisher" content="Luci Ltd">
@@ -38,14 +38,14 @@
     <link rel="preload" href="themes.json" as="fetch" crossorigin="anonymous" />
 
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Innioasis Y1 and Y2 themes: Better-Y, Rockbox, Koensayr and Solar">
-    <meta property="og:description" content="Better-Y themes, Rockbox themes, Koensayr themes and Solar themes for the Innioasis Y1 and Y2.">
+    <meta property="og:title" content="Rockbox temas para la galería de temas Innioasis Y1 y Y2 - Innioasis">
+    <meta property="og:description" content="Rockbox temas para el Innioasis Y1 y el Y2, hechos por la comunidad.">
     <meta property="og:url" content="https://themes.innioasis.app/index_es.html">
     <meta property="og:image" content="https://innioasis.app/y1_illustration.png">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Innioasis Y1 and Y2 themes: Better-Y, Rockbox, Koensayr and Solar">
-    <meta name="twitter:description" content="Better-Y, Rockbox, Koensayr and Solar themes for the Innioasis Y1 and Y2.">
+    <meta name="twitter:title" content="Rockbox temas para la galería de temas Innioasis Y1 y Y2 - Innioasis">
+    <meta name="twitter:description" content="Explora temas Rockbox creados por la comunidad para Innioasis Y1 y Y2.">
     <meta name="twitter:image" content="https://innioasis.app/y1_illustration.png">
 
     <link rel="icon" href="y1_illustration.png">
@@ -53,20 +53,20 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
-    <link rel="stylesheet" href="site-theme.css?v=20261110seo">
+    <link rel="stylesheet" href="site-theme.css?v=20261111dl2">
     <link rel="stylesheet" href="lumen.css?v=20261110picker">
     <link rel="stylesheet" href="site-toolbar.css?v=20261110accent2">
     <link rel="stylesheet" href="site-pages.css?v=20260622">
-    <link rel="stylesheet" href="y1-theme-preview.css?v=20261109preview2">
+    <link rel="stylesheet" href="y1-theme-preview.css?v=20261111hq2">
     <link rel="stylesheet" href="theme-analytics.css?v=20260518">
     <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script defer src="theme-packaging.js?v=20261010perf"></script>
     <script src="theme-display-name.js?v=20260624"></script>
-    <script src="y1-theme-preview.js?v=20261109preview2"></script>
+    <script src="y1-theme-preview.js?v=20261111hq2"></script>
     <script src="theme-artwork-compat.js?v=20260711"></script>
     <script src="gold-theme-detect.js?v=20261109perf"></script>
-    <script src="gallery-chrome.js?v=20261110rows"></script>
+    <script src="gallery-chrome.js?v=20261111hqfix"></script>
     <script src="author-links.js?v=20260622"></script>
     <script src="site-init.js?v=20261110picker"></script>
     <script src="gallery-loaded-theme.js?v=20261109perf"></script>
@@ -489,6 +489,17 @@
             opacity: 1;
         }
 
+        /* A pre-rendered capture is the whole preview: reveal it without a
+           simulator mount. The rule above loses to the base `opacity: 0`
+           on specificity, so this needs the extra class. */
+        .theme-card .theme-preview-frame.theme-preview-frame--screenshot img.theme-card-cover {
+            opacity: 1;
+        }
+
+        .theme-card .theme-preview-frame.theme-preview-frame--screenshot .theme-card-media-skeleton {
+            display: none;
+        }
+
         @keyframes theme-card-shimmer {
             0% { background-position: 100% 0; }
             100% { background-position: -100% 0; }
@@ -496,6 +507,37 @@
 
         @keyframes theme-card-spin {
             to { transform: rotate(360deg); }
+        }
+
+        .theme-preview-hq {
+            position: absolute;
+            right: 8px;
+            bottom: 8px;
+            z-index: 6;
+            padding: 0.18rem 0.5rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            background: rgba(10, 12, 18, 0.62);
+            color: #f4f7ff;
+            font: 700 0.66rem/1.2 var(--site-font, inherit);
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
+            opacity: 0.92;
+            transition: opacity 0.15s ease, background 0.15s ease;
+        }
+
+        .theme-preview-hq:hover,
+        .theme-preview-hq:focus-visible,
+        .theme-preview-hq[aria-pressed="true"] {
+            opacity: 1;
+            background: var(--lumen-accent, var(--site-accent, #4f8cff));
+            border-color: transparent;
+        }
+
+        .theme-preview-frame--live-hover .theme-preview-hq {
+            opacity: 1;
         }
 
         .theme-card-variant-row {
@@ -765,7 +807,7 @@
         }
 
     </style>
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebSite", "@id": "https://themes.innioasis.app/#website", "url": "https://themes.innioasis.app/", "name": "Innioasis Themes Gallery", "alternateName": ["Better-Y themes", "Better-Y themes for Innioasis Y1", "Better-Y themes for Innioasis Y2", "Innioasis Y1 Better-Y themes", "Innioasis Y2 Better-Y themes", "Rockbox themes", "Rockbox-Themes", "Rockbox themes for Innioasis Y1", "Rockbox themes for Innioasis Y2", "Innioasis Y1 Rockbox themes", "Innioasis Y2 Rockbox themes", "Koensayr themes", "Koensayr themes for Innioasis Y1", "Koensayr themes for Innioasis Y2", "Innioasis Y1 Koensayr themes", "Innioasis Y2 Koensayr themes", "Solar themes", "Solar themes for Innioasis Y1", "Solar themes for Innioasis Y2", "Innioasis Y1 Solar themes", "Innioasis Y2 Solar themes"]}</script><meta property="og:site_name" content="Innioasis Galería de temas">  <link rel="canonical" href="https://themes.innioasis.app/index_es.html">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebSite", "@id": "https://themes.innioasis.app/#website", "url": "https://themes.innioasis.app/", "name": "Innioasis Themes Gallery", "alternateName": ["Innioasis Y1 and Y2 Themes Gallery", "Innioasis Themes"]}</script><meta property="og:site_name" content="Innioasis Galería de temas">  <link rel="canonical" href="https://themes.innioasis.app/index_es.html">
   <!-- i18n-hreflang-start -->
   <link rel="alternate" hreflang="x-default" href="https://themes.innioasis.app/index.html">
   <link rel="alternate" hreflang="en" href="https://themes.innioasis.app/index.html">
@@ -842,12 +884,6 @@
                 <header class="gallery-home-intro">
                     <h1 class="site-display">Temas</h1>
                     <p class="site-lead gallery-home-lead">Una galería de temas para el Innioasis Y1 y el Y2, hechos por la comunidad. Obtenga una vista previa de un tema antes de instalarlo o cargue uno que haya creado.</p>
-                    <nav class="gallery-software-links" aria-label="Themes by software">
-                        <a href="better-y-themes.html">Better-Y temas</a>
-                        <a href="rockbox-themes.html">Rockbox temas</a>
-                        <a href="koensayr-themes.html">Koensayr temas</a>
-                        <a href="solar-themes.html">Solar temas</a>
-                    </nav>
                 </header>
                 <figure class="y1-hero" aria-hidden="true">
                     <img src="y1-hero.png" alt="" width="640" height="640" decoding="async" />
@@ -985,7 +1021,7 @@
     <div id="footer-root"></div>
     <div id="support-toolbar-slot"></div>
 
-    <script src="nav.js?v=20261110switcher2"></script>
+    <script src="nav.js?v=20261111nav"></script>
     <script>
         const rbBtn = document.getElementById('rockbox-btn')
         const ROCKBOX_THEMES_URL = 'https://github.com/rockbox-y1/themes/releases/tag/for_the_gays_and_the_theys'
@@ -4532,6 +4568,20 @@
             }
             const metaScreenshot = String(theme.screenshot || '');
             const metaLooksLikeCover = /\.(png|jpe?g|gif|webp)$/i.test(metaScreenshot);
+            /* A pre-rendered capture (screenshot_preview.jpg) is the exact 480x360
+               screen the simulator would paint, already compressed. themes.json
+               only carries the path when the file exists, so a card with one can
+               skip mounting the device entirely. */
+            const staticShotFor = (variantSeg) => {
+                if (theme.sourceType === 'external') return '';
+                const seg = String(variantSeg || '').trim();
+                const map = theme.variantScreenshots;
+                const variantShot = seg && map && typeof map === 'object' ? String(map[seg] || '') : '';
+                const raw = String(variantShot || theme.screenshotPreview || '').trim();
+                return raw ? resolveScreenshotPath(raw) : '';
+            };
+            let staticScreenshotActive = false;
+            let staticPreviewActive = false;
             const folderImageCandidates = folderPath ? [
                 `${folderPath}/cover-thumb.jpg`,
                 `${folderPath}/cover.jpg`,
@@ -4577,6 +4627,18 @@
                 previewFrame.classList.add('theme-preview-frame--cover-ready');
             });
             img.onerror = () => {
+                if (staticScreenshotActive) {
+                    /* Stale themes.json: the capture is gone. Keep the card static
+                       and try the generated cover set instead of mounting the
+                       simulator, so a missing capture cannot cost every card a
+                       theme config, font and icon download. */
+                    staticScreenshotActive = false;
+                    usingGeneratedJpeg = false;
+                    img.removeAttribute('srcset');
+                    screenshotIdx = 0;
+                    void applyNextScreenshot();
+                    return;
+                }
                 if (usingGeneratedJpeg) {
                     usingGeneratedJpeg = false;
                     img.removeAttribute('srcset');
@@ -4596,6 +4658,7 @@
                     return;
                 }
                 const enc = folderPath.split('/').filter(Boolean).map(encodeURIComponent).join('/');
+                staticPreviewActive = true;
                 usingGeneratedJpeg = true;
                 img.src = `./${enc}/cover-thumb.jpg`;
                 if (!saveData) {
@@ -4603,10 +4666,149 @@
                     img.sizes = '(max-width: 700px) 92vw, 320px';
                 }
             };
-            if (isPriority) {
-                armCover();
+            const applyStaticScreenshot = (variantSeg) => {
+                const src = staticShotFor(variantSeg);
+                if (!src) return false;
+                staticScreenshotActive = true;
+                staticPreviewActive = true;
+                usingGeneratedJpeg = false;
+                img.dataset.coverArmed = '1';
+                img.removeAttribute('srcset');
+                img.removeAttribute('sizes');
+                img.fetchPriority = isPriority ? 'high' : 'low';
+                previewFrame.classList.add('theme-preview-frame--screenshot');
+                if (simHost) simHost.style.display = 'none';
+                if (img.getAttribute('src') !== src) img.src = src;
+                return true;
+            };
+            if (!applyStaticScreenshot('')) {
+                if (isPriority) {
+                    armCover();
+                }
             }
             previewFrame.append(mediaSkeleton, img);
+
+            /* Hover / HQ: keep the static capture on screen until the live
+               rendered assets are ready. Only a real hover (or an explicit HQ
+               press) starts the expensive simulator mount, keeping translation
+               and asset work off the initial gallery paint. */
+            const hqToggle = document.createElement('button');
+            hqToggle.type = 'button';
+            hqToggle.className = 'theme-preview-hq';
+            hqToggle.textContent = 'HQ';
+            hqToggle.title = 'Show the live rendered preview';
+            hqToggle.setAttribute('aria-label', 'Show the live rendered preview');
+            hqToggle.setAttribute('aria-pressed', 'false');
+            hqToggle.hidden = !staticPreviewActive;
+            previewFrame.appendChild(hqToggle);
+
+            let hoverMountTimer = 0;
+            let livePreviewMounted = false;
+            let livePreviewReady = false;
+            let hqPinned = false;
+            const setHqPillState = (state) => {
+                hqToggle.classList.toggle('is-loading', state === 'loading');
+                hqToggle.classList.toggle('is-loaded', state === 'ready');
+                if (state === 'loading') {
+                    hqToggle.textContent = 'HQ';
+                    hqToggle.title = 'Loading HD preview…';
+                    hqToggle.setAttribute('aria-label', 'Loading HD preview');
+                    hqToggle.setAttribute('aria-busy', 'true');
+                } else if (state === 'ready') {
+                    hqToggle.textContent = 'HQ ✓';
+                    hqToggle.title = 'HD live preview ready';
+                    hqToggle.setAttribute('aria-label', 'HD live preview ready');
+                    hqToggle.removeAttribute('aria-busy');
+                } else {
+                    hqToggle.textContent = 'HQ';
+                    hqToggle.title = 'Show the live rendered preview';
+                    hqToggle.setAttribute('aria-label', 'Show the live rendered preview');
+                    hqToggle.removeAttribute('aria-busy');
+                }
+            };
+            const livePreviewAllowed = () =>
+                staticPreviewActive &&
+                !!folderPath &&
+                !!window.Y1ThemePreview &&
+                typeof window.Y1ThemePreview.mountGalleryCardLazy === 'function' &&
+                !(typeof galleryConnectionSavesData === 'function' && galleryConnectionSavesData()) &&
+                !(window.ThemeFrozen && window.ThemeFrozen.isFrozen(theme));
+            const restoreStaticScreenshot = (force) => {
+                clearTimeout(hoverMountTimer);
+                if (hqPinned && !force) return;
+                if (!livePreviewMounted && !livePreviewReady) return;
+                livePreviewMounted = false;
+                livePreviewReady = false;
+                try {
+                    if (window.Y1ThemePreview && typeof window.Y1ThemePreview.unmount === 'function') {
+                        window.Y1ThemePreview.unmount(simHost);
+                    }
+                } catch (_) {}
+                if (simHost) {
+                    simHost.innerHTML = '';
+                    simHost.style.display = 'none';
+                }
+                previewFrame.classList.remove('theme-preview-frame--live-hover');
+                if (img) img.style.opacity = '';
+                hqToggle.setAttribute('aria-pressed', 'false');
+                setHqPillState('idle');
+            };
+            const mountLivePreview = () => {
+                if (livePreviewMounted || livePreviewReady || !livePreviewAllowed()) return;
+                livePreviewMounted = true;
+                setHqPillState('loading');
+                const seg = String(variantSelect.value || '').trim();
+                try {
+                    window.Y1ThemePreview.mountGalleryCardLazy(simHost, {
+                        catalogFolder: folderPath,
+                        variantSegment: seg,
+                        mode: 'gallery',
+                        priority: true,
+                        loadingOverlay: false,
+                        buildFileUrl: (cf, rel) => buildThemeFileUrl(cf, rel),
+                        previewMeta: cardPreviewMeta,
+                        onReady: (cfg, meta) => {
+                            if (!livePreviewMounted) return;
+                            livePreviewReady = true;
+                            hqPinned = true;
+                            if (simHost) simHost.style.display = '';
+                            previewFrame.classList.add('theme-preview-frame--live-hover');
+                            if (img) img.style.opacity = '0';
+                            hqToggle.setAttribute('aria-pressed', 'true');
+                            setHqPillState('ready');
+                            applyGalleryCardPreviewReady(c, cfg, meta, folderPath, seg, theme);
+                        },
+                        onError: () => {
+                            hqPinned = false;
+                            hqToggle.setAttribute('aria-pressed', 'false');
+                            setHqPillState('idle');
+                            restoreStaticScreenshot(true);
+                        },
+                    });
+                } catch (_) {
+                    setHqPillState('idle');
+                    restoreStaticScreenshot(true);
+                }
+            };
+            const resetLivePreview = () => {
+                hqPinned = false;
+                hqToggle.setAttribute('aria-pressed', 'false');
+                setHqPillState('idle');
+                restoreStaticScreenshot(true);
+            };
+            hqToggle.addEventListener('click', (ev) => {
+                ev.preventDefault();
+                ev.stopPropagation();
+                if (!staticPreviewActive) return;
+                if (hqPinned && livePreviewMounted) {
+                    resetLivePreview();
+                    return;
+                }
+                hqPinned = true;
+                hqToggle.setAttribute('aria-pressed', 'true');
+                mountLivePreview();
+            });
+
 
             const cardPreviewMeta = {
                 trackTitle: safeText(theme.name || '').trim(),
@@ -4677,15 +4879,36 @@
                when the card scrolls into view, never for the whole catalogue
                at once. */
             let previewMounted = false;
+            const hydrateStaticPreviewCard = async (variantSeg) => {
+                if (!folderPath) return;
+                try {
+                    const cfg = await fetchThemeConfigForCard(folderPath, variantSeg);
+                    if (!cfg) return;
+                    /* Badge and download-button styling still come from config.json,
+                       but no font, wallpaper or icon is requested for the card. */
+                    applyGalleryCardPreviewReady(
+                        c,
+                        cfg,
+                        { previewFontFamily: '' },
+                        folderPath,
+                        variantSeg,
+                        theme
+                    );
+                } catch (_) {}
+            };
             c._armGalleryMedia = () => {
-                armCover();
+                if (!staticPreviewActive) armCover();
                 void loadCardVariants();
                 if (window.Y1ThemesI18n && typeof window.Y1ThemesI18n.lazyTranslateCard === 'function') {
                     window.Y1ThemesI18n.lazyTranslateCard(c);
                 }
                 if (previewMounted) return;
                 previewMounted = true;
-                mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, c, '', theme, isPriority);
+                hqToggle.hidden = !staticPreviewActive;
+                /* The card always paints a static capture or cover first. The
+                   simulator only runs when someone presses HQ, so scrolling the
+                   gallery never downloads theme configs, fonts or icon art. */
+                void hydrateStaticPreviewCard('');
             };
             if (galleryMediaObserver) galleryMediaObserver.observe(c);
             else c._armGalleryMedia();
@@ -4763,7 +4986,18 @@
                 if (typeof window.Y1ThemePreview.unmount === 'function') {
                     window.Y1ThemePreview.unmount(simHost);
                 }
-                mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, c, seg, theme);
+                resetLivePreview();
+                if (applyStaticScreenshot(seg)) {
+                    hqToggle.hidden = false;
+                    void hydrateStaticPreviewCard(seg);
+                } else {
+                    staticScreenshotActive = false;
+                    hqToggle.hidden = true;
+                    previewFrame.classList.remove('theme-preview-frame--screenshot');
+                    if (simHost) simHost.style.display = '';
+                    img.style.visibility = '';
+                    mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, c, seg, theme);
+                }
                 void syncDownloadButtonToThemeConfig(seg);
                 if (window.ThemeFrozen && ThemeFrozen.isFrozen(theme)) {
                     ThemeFrozen.attachToGalleryPreview(c, theme, {

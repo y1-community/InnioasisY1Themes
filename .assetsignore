@@ -2,3 +2,6 @@
 # Cloudflare Pages (Git) does not use this file the same way; use an empty
 # build command in the Pages dashboard — do not use `wrangler deploy` for this site.
 .git
+
+# Local-only Studio prototype; not part of the deployed gallery yet.
+_studio

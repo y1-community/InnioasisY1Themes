@@ -309,19 +309,33 @@ def _image_sitemap() -> str:
         if not (directory / "index.html").is_file():
             continue
         image = _cover_url(directory, shots.get(folder, ""))
-        if not image:
+        capture = directory / "screenshot_preview.jpg"
+        if not image and not capture.is_file():
             continue
         title = names[folder].replace("&", "&amp;").replace("<", "&lt;")
         loc = _encode([folder])
-        lines += [
-            "  <url>",
-            f"    <loc>{loc}</loc>",
-            "    <image:image>",
-            f"    <image:loc>{image}</image:loc>",
-            f"    <image:title>{title}</image:title>",
-            "    </image:image>",
-            "  </url>",
-        ]
+        lines += ["  <url>", f"    <loc>{loc}</loc>"]
+        if image:
+            lines += [
+                "    <image:image>",
+                f"    <image:loc>{image}</image:loc>",
+                f"    <image:title>{title}</image:title>",
+                "    </image:image>",
+            ]
+        if capture.is_file():
+            # The rendered screen is what people search for ("Y1 theme home
+            # screen"); the cover is often just a wallpaper crop.
+            shot_url = SITE + "/" + "/".join(
+                quote(part, safe="") for part in (folder, "screenshot_preview.jpg")
+            )
+            lines += [
+                "    <image:image>",
+                f"    <image:loc>{shot_url}</image:loc>",
+                f"    <image:title>{title} home screen</image:title>",
+                f"    <image:caption>{title} on an Innioasis Y1 &amp; Y2 player</image:caption>",
+                "    </image:image>",
+            ]
+        lines.append("  </url>")
     lines.append("</urlset>")
     return "\n".join(lines) + "\n"
 

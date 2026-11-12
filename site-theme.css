@@ -203,6 +203,12 @@ h2.section-display,
     text-underline-offset: 0.15em;
 }
 
+/* The Theme Editor is a separate app, not a gallery action, so it sits with
+   the introduction instead of competing with Upload and the page controls. */
+.gallery-editor-cta {
+    margin-top: 0.9rem;
+}
+
 .y1-hero {
     margin: 0.65rem auto 0;
     padding: 0;
@@ -1139,8 +1145,55 @@ body.site-themes-app .cast-div {
     color: var(--site-muted);
 }
 
+/* The pre-rendered screen capture: the page's primary image, visible to
+   readers and to image search. */
+.theme-seo-shell-shot {
+    margin: 1.1rem 0 1.25rem;
+    display: flex;
+    justify-content: center;
+}
+
+.theme-seo-shell-shot img {
+    display: block;
+    width: 100%;
+    max-width: 480px;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    border-radius: 12px;
+    border: 1px solid var(--site-border);
+    background: #0c0f16;
+}
+
 .theme-seo-shell-actions {
     margin-top: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    align-items: center;
+}
+
+/* Inline download progress inside the button the reader clicked, so the page
+   never jumps while a theme ZIP is assembled. */
+.theme-seo-shell-actions .btn.theme-dl-busy {
+    position: relative;
+    overflow: hidden;
+    cursor: progress;
+}
+
+.theme-dl-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    background: rgba(255, 255, 255, 0.22);
+    transition: width 0.15s ease;
+}
+
+.theme-dl-label {
+    position: relative;
+    z-index: 1;
+    font-variant-numeric: tabular-nums;
 }
 
 .theme-seo-hosting-mark {

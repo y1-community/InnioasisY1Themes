@@ -350,7 +350,16 @@
     function restyleUsbLink(button) {
         if (!button) return;
         button.classList.add("theme-usb-link");
-        button.textContent = "Direct Install via USB";
+        /* The grid observer listens for childList mutations. Replacing the
+           label unconditionally creates a fresh text node every callback and
+           re-triggers the observer forever; label it once and leave later
+           locale translations alone. */
+        if (!button.hasAttribute("data-gallery-usb-labeled")) {
+            if (button.textContent !== "Direct Install via USB") {
+                button.textContent = "Direct Install via USB";
+            }
+            button.setAttribute("data-gallery-usb-labeled", "1");
+        }
         button.disabled = false;
         button.removeAttribute("aria-hidden");
         button.style.setProperty("display", "inline", "important");

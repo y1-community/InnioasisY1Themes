@@ -397,17 +397,20 @@ body.site-themes-app .theme-card-media-skeleton::after {
 .y1-tp-control-strip {
     width: 100%;
     display: flex;
-    align-items: center;
+    align-items: stretch;
     justify-content: center;
     gap: 5px;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .y1-tp-strip-btn,
-.y1-tp-strip-toggle {
-    min-height: 38px;
+.y1-tp-strip-toggle,
+.y1-tp-wheel-collapse {
+    min-height: 44px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 5px;
     border: 1px solid rgba(55, 62, 72, 0.4);
     border-radius: 9px;
     background: linear-gradient(180deg, #f7f8fa, #dfe3e8);
@@ -420,7 +423,7 @@ body.site-themes-app .theme-card-media-skeleton::after {
 
 .y1-tp-strip-btn {
     flex: 1 1 0;
-    min-width: 38px;
+    min-width: 40px;
 }
 
 .y1-tp-strip-btn--wide {
@@ -430,42 +433,106 @@ body.site-themes-app .theme-card-media-skeleton::after {
 }
 
 .y1-tp-strip-toggle {
-    flex: 0 0 38px;
+    flex: 0 0 44px;
+    min-width: 44px;
+    padding: 0;
     color: #5b6470;
-    font-size: 1rem;
+    font-size: 1.1rem;
+}
+
+.y1-tp-wheel-collapse {
+    flex: 0 0 auto;
+    align-self: center;
+    min-width: 44px;
+    padding: 0 12px;
+    color: #4b5562;
+    font-size: 0.75rem;
 }
 
 .y1-tp-strip-btn:hover,
-.y1-tp-strip-toggle:hover {
+.y1-tp-strip-toggle:hover,
+.y1-tp-wheel-collapse:hover {
     background: linear-gradient(180deg, #fff, #e7eaee);
 }
 
 .y1-tp-strip-btn:active,
-.y1-tp-strip-toggle:active {
+.y1-tp-strip-toggle:active,
+.y1-tp-wheel-collapse:active {
     transform: translateY(1px);
 }
 
 .y1-tp-strip-btn:focus-visible,
-.y1-tp-strip-toggle:focus-visible {
+.y1-tp-strip-toggle:focus-visible,
+.y1-tp-wheel-collapse:focus-visible {
     outline: 2px solid #4b93e6;
     outline-offset: 2px;
 }
 
-.y1-tp-controls-collapsed:not(.is-expanded) .y1-tp-clickwheel {
-    display: none;
-}
-
-.y1-tp-controls-collapsed.is-expanded .y1-tp-control-strip {
-    margin-top: 2px;
+/* Collapsed shows only the strip. Expanded shows only the wheel, plus one
+   explicit way back to the strip. The data-state selector is intentionally
+   paired with the hidden attributes so a missed class update can never paint
+   both control surfaces, or neither of them. */
+.y1-tp-controls-collapsed[data-compact-mode="strip"] > .y1-tp-clickwheel,
+.y1-tp-controls-collapsed[data-compact-mode="wheel"] > .y1-tp-control-strip,
+.y1-tp-controls-collapsed:not(.is-expanded) .y1-tp-clickwheel,
+.y1-tp-controls-collapsed.is-expanded .y1-tp-control-strip,
+.y1-tp-control-strip[hidden],
+.y1-tp-clickwheel[hidden],
+.y1-tp-wheel-collapse[hidden] {
+    display: none !important;
 }
 
 @media (max-width: 420px) {
-    .y1-tp-strip-btn,
-    .y1-tp-strip-toggle {
-        min-height: 36px;
-    }
-
     .y1-tp-strip-btn--wide {
         font-size: 0.66rem;
+    }
+
+    .y1-tp-wheel-collapse {
+        padding: 0 10px;
+        font-size: 0.7rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .y1-tp-strip-btn,
+    .y1-tp-strip-toggle,
+    .y1-tp-wheel-collapse {
+        transition: none;
+    }
+}
+
+/* Gallery cards: the HQ pill owns the loading affordance while the static
+   capture stays visible. Once the live render is ready, the pill keeps a
+   checkmark and the card remains on the client-side preview. */
+.theme-preview-frame .theme-preview-hq {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+.theme-preview-frame .theme-preview-hq.is-loading {
+    cursor: progress;
+}
+
+.theme-preview-frame .theme-preview-hq.is-loading::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    flex: 0 0 auto;
+    border: 1.5px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: theme-preview-hq-spin 0.7s linear infinite;
+}
+
+@keyframes theme-preview-hq-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .theme-preview-frame .theme-preview-hq.is-loading::before {
+        animation: none;
     }
 }
