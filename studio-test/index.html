@@ -26,10 +26,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/studio-test/icons/apple-touch-icon.png" />
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link rel="stylesheet" href="../site-theme.css?v=20261110footer" />
+    <link rel="stylesheet" href="../site-theme.css?v=20261111dl2" />
     <link rel="stylesheet" href="../site-toolbar.css?v=20261110accent2" />
-    <link rel="stylesheet" href="../y1-theme-preview.css" />
-    <link rel="stylesheet" href="/studio-test/studio.css?v=20261111studio" />
+    <link rel="stylesheet" href="../y1-theme-preview.css?v=20261111hq1" />
+    <link rel="stylesheet" href="/studio-test/studio.css?v=20261111studio8" />
 </head>
 
 <body class="site-themes-app site-dock-mode studio-app" data-mode="preview">
@@ -56,11 +56,8 @@
 
             <div class="studio-command-actions">
                 <span class="studio-unsaved" id="studio-unsaved" hidden><i class="fa-solid fa-circle" aria-hidden="true"></i>Unsaved</span>
-                <button class="studio-btn studio-btn--install" id="studio-install" type="button" hidden>
-                    <i class="fa-solid fa-arrow-down-to-bracket" aria-hidden="true"></i><span>Install app</span>
-                </button>
                 <button class="studio-btn studio-btn--save" id="studio-save" type="button">
-                    <i class="fa-solid fa-download" aria-hidden="true"></i><span>Save to PC / Mac / Device</span>
+                    <i class="fa-solid fa-download" aria-hidden="true"></i><span>Save to device</span>
                 </button>
             </div>
         </div>
@@ -162,12 +159,9 @@
                             </div>
                         </div>
 
-                        <div class="studio-action-grid">
+                        <div class="studio-action-grid studio-action-grid--single">
                             <button class="studio-btn studio-btn--primary" id="studio-start-edit" type="button">
-                                <i class="fa-solid fa-pen-ruler" aria-hidden="true"></i>Edit assets
-                            </button>
-                            <button class="studio-btn" id="studio-start-submit" type="button">
-                                <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>Submit theme
+                                <i class="fa-solid fa-pen-ruler" aria-hidden="true"></i>Use this in Studio
                             </button>
                         </div>
                     </section>
@@ -211,6 +205,8 @@
                             </div>
                             <p class="studio-hint" id="studio-asset-hint">Drop an image on the selected slot, or copy one and press Ctrl+V / Cmd+V.</p>
                         </div>
+
+                        <div class="studio-color-editor" id="studio-color-editor"></div>
 
                         <div class="studio-pane-actions studio-pane-actions--three">
                             <button class="studio-btn" id="studio-edit-back" type="button"><i class="fa-solid fa-eye" aria-hidden="true"></i>Preview</button>
@@ -332,6 +328,14 @@
 
     <div class="studio-toast" id="studio-toast" role="status" aria-live="polite"></div>
 
+    <div class="studio-save-progress" id="studio-save-progress" role="status" aria-live="polite" aria-atomic="true" hidden>
+        <div class="studio-save-progress-head">
+            <span id="studio-save-progress-label">Preparing theme…</span>
+            <strong id="studio-save-progress-value" aria-hidden="true">0%</strong>
+        </div>
+        <progress id="studio-save-progress-bar" max="100" value="0" aria-labelledby="studio-save-progress-label">0%</progress>
+    </div>
+
     <input type="file" id="studio-zip-input" accept=".zip,application/zip" hidden />
     <input type="file" id="studio-folder-input" webkitdirectory multiple hidden />
     <input type="file" id="studio-asset-input" hidden />
@@ -340,11 +344,11 @@
     <div id="support-toolbar-slot"></div>
 
     <script src="../nav.js?v=20261111nav"></script>
-    <script src="../y1-theme-preview.js"></script>
+    <script src="../y1-theme-preview.js?v=20261111hq1"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="../theme-packaging.js"></script>
     <script src="../author-submission-policy.js?v=20260523"></script>
-    <script src="/studio-test/studio.js?v=20261111studio"></script>
+    <script src="/studio-test/studio.js?v=20261111studio9"></script>
     <script src="../site-locale.js?v=20261109live" defer></script>
 </body>
 
