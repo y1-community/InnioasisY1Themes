@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-tw" dir="ltr" data-locale="zh-tw">
+<html lang="zh-TW" dir="ltr" data-locale="zh-TW">
 
 <head>
 <script>
@@ -61,8 +61,8 @@
         try { params = new URLSearchParams(location.search); } catch (e) { return; }
         var theme = params.get("theme") || "";
         var variant = params.get("variant") || "";
-        if (!theme || /[\/]/.test(theme) || theme.indexOf("..") !== -1) return;
-        if (variant && (/[\/]/.test(variant) || variant.indexOf("..") !== -1)) variant = "";
+        if (!theme || /[\\/]/.test(theme) || theme.indexOf("..") !== -1) return;
+        if (variant && (/[\\/]/.test(variant) || variant.indexOf("..") !== -1)) variant = "";
         var file = (location.pathname.split("/").pop() || "theme.html");
         var localeMatch = file.match(/^theme_(de|es|fr|ja|jp)\.html$/);
         var href = "https://themes.innioasis.app/" + encodeURIComponent(theme) + "/";
@@ -78,7 +78,7 @@
     <meta property="og:type" content="website">
     <meta property="og:title" content="Innioasis Y1 和 Y2 主題">
     <meta property="og:description" content="瀏覽並下載社群為您的 Innioasis Y1 或 Y2 製作的主題，讓您的播放器看起來像您的一樣。">
-    <meta property="og:url" content="https://themes.innioasis.app/theme_zh-tw.html">
+    <meta property="og:url" content="https://themes.innioasis.app/theme_zh-TW.html">
     <meta property="og:image" content="https://innioasis.app/y1_illustration.png">
 
     <meta name="twitter:card" content="summary_large_image">
@@ -103,7 +103,7 @@
     <script src="y1-theme-preview.js?v=20261111hq1"></script>
     <script src="theme-artwork-compat.js?v=20260524"></script>
     <script src="gold-theme-detect.js?v=20261109perf"></script>
-    <script src="gallery-chrome.js?v=20261102header"></script>
+    <script src="gallery-chrome.js?v=20261110header"></script>
     <script src="author-links.js?v=20260622"></script>
     <script src="gallery-loaded-theme.js?v=20261109perf"></script>
     <script src="theme-share-links.js"></script>
