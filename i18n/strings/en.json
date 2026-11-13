@@ -1,12 +1,12 @@
 {
- "generated": "2026-11-13T14:01:21+00:00",
+ "generated": "2026-11-13T14:28:52+00:00",
  "tiers": [
   "core",
   "full"
  ],
  "pages": 1754,
- "occurrences": 24719,
- "count": 9221,
+ "occurrences": 24731,
+ "count": 9231,
  "strings": {
   "Innioasis Themes Gallery": {
    "n": 871,
@@ -4480,6 +4480,10 @@
    "pages": 2,
    "script": true,
    "theme": true
+  },
+  "Close": {
+   "n": 2,
+   "pages": 2
   },
   "Community support & credits": {
    "n": 2,
@@ -11558,6 +11562,10 @@
    "n": 2,
    "pages": 1
   },
+  "Asset": {
+   "n": 2,
+   "pages": 1
+  },
   "Click": {
    "n": 2,
    "pages": 1
@@ -13352,10 +13360,6 @@
    "n": 1,
    "pages": 1
   },
-  "Asset": {
-   "n": 1,
-   "pages": 1
-  },
   "Astro's Theme (dandy's world), Astros_Theme_dandys_world, Innioasis Y1, Luci web hosting, luci.ltd, MP3 player theme, Rockbox, Sa! ^w*, themes.innioasis.app hosting, Y1 theme": {
    "n": 1,
    "pages": 1
@@ -13796,6 +13800,10 @@
    "pages": 1,
    "theme": true
   },
+  "Bin this file and use a fully transparent placeholder": {
+   "n": 1,
+   "pages": 1
+  },
   "Bitcoin": {
    "n": 1,
    "pages": 1
@@ -13838,6 +13846,10 @@
    "pages": 1
   },
   "Black☆Star - Soul Eater theme home screen on an Innioasis Y1 and Y2 player, by Arou_TW": {
+   "n": 1,
+   "pages": 1
+  },
+  "Blank": {
    "n": 1,
    "pages": 1
   },
@@ -14570,10 +14582,6 @@
    "pages": 1,
    "script": true,
    "theme": true
-  },
-  "Close": {
-   "n": 1,
-   "pages": 1
   },
   "Close bottom toolbar": {
    "n": 1,
@@ -16305,6 +16313,10 @@
    "n": 1,
    "pages": 1
   },
+  "From theme": {
+   "n": 1,
+   "pages": 1
+  },
   "Frutiger Aero (Reupload)": {
    "n": 1,
    "pages": 1
@@ -16450,6 +16462,10 @@
    "pages": 1
   },
   "Gallery submission": {
+   "n": 1,
+   "pages": 1
+  },
+  "Gallery themes": {
    "n": 1,
    "pages": 1
   },
@@ -20356,6 +20372,10 @@
    "n": 1,
    "pages": 1
   },
+  "No theme matches that search.": {
+   "n": 1,
+   "pages": 1
+  },
   "No, separate format": {
    "n": 1,
    "pages": 1
@@ -20789,6 +20809,10 @@
    "pages": 1
   },
   "Pick one from the gallery": {
+   "n": 1,
+   "pages": 1
+  },
+  "Pick the same asset from any gallery theme to swap it into this one.": {
    "n": 1,
    "pages": 1
   },
@@ -21678,6 +21702,10 @@
    "pages": 1,
    "script": true
   },
+  "Save the theme to this device": {
+   "n": 1,
+   "pages": 1
+  },
   "Save to device": {
    "n": 1,
    "pages": 1
@@ -21715,6 +21743,10 @@
    "pages": 1
   },
   "Search and download favorite podcast episodes over the internet, or connect to your own personal self-hosted Navidrome library.": {
+   "n": 1,
+   "pages": 1
+  },
+  "Search themes by name or author": {
    "n": 1,
    "pages": 1
   },
@@ -22540,6 +22572,14 @@
    "pages": 1,
    "script": true,
    "theme": true
+  },
+  "Swap from another theme": {
+   "n": 1,
+   "pages": 1
+  },
+  "Swap in the same asset from another gallery theme": {
+   "n": 1,
+   "pages": 1
   },
   "Sylus lads theme home screen on an Innioasis Y1 and Y2 player, by Ash": {
    "n": 1,
