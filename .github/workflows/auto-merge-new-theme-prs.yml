@@ -4,8 +4,10 @@
 # An author/title clash with someone else's theme is not a failure. Ingest keeps the
 # existing theme and publishes the upload in its own suffixed folder, credited to the
 # uploader name from the sidecar (or "Unknown" when that name is missing).
-# Same-author updates of an existing theme also pass and auto-merge. Ingest overwrites
-# that uploader's folder only. It never replaces a folder owned by a different author.
+# A package that targets an existing theme folder passes validation but is never
+# auto-merged: an update to a live listing always waits for a maintainer to approve it.
+# Ingest overwrites that uploader's folder only. It never replaces a folder owned by a
+# different author.
 # Gallery upload PRs may add a paired *.zip.meta.json next to the same PR's root *.zip.
 #
 # After a successful merge, theme extraction + themes.json sync run on main via

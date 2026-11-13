@@ -36,13 +36,16 @@ Rules:
   - If a zip on the default branch is still waiting to be extracted and claims the
     same logical name, validation **fails** (avoid duplicate listings before extraction).
   - If the submission targets an existing catalog theme (same logical folder / identity)
-    with the **same author**, it is an **update** and validation **passes**.
+    with the **same author**, it is an **update**: validation **passes**, but the PR is
+    marked for maintainer review and never auto-merges.
   - If the credited config author does not match the existing theme's author, validation
     still **passes** and auto-merge stays allowed. Ingest must not overwrite or rename
     that existing theme. It publishes the upload in its own suffixed folder and credits
     the uploader from the PR / sidecar / upload form, or ``Unknown`` when no uploader
     name is available (including when the config still names the other creator).
-  - **Brand-new** theme identities print ``THEME_PR_AUTO_MERGE_ALLOWED=1``.
+  - Only **brand-new** theme identities print ``THEME_PR_AUTO_MERGE_ALLOWED=1``. A package
+    that touches an existing folder prints ``THEME_PR_AUTO_MERGE_ALLOWED=0`` with a
+    ``THEME_PR_MANUAL_REVIEW`` reason, so updates always wait for a human.
 - Catalog display title (theme_info.title) collisions still block validation (fail).
 """
 
@@ -470,6 +473,13 @@ def _pending_logical_slugs_from_root_zips(base_sha: str) -> set[str]:
     return slugs
 
 
+def _update_review_note(context: str, folder: str) -> str:
+    return (
+        f"{context}: {folder!r} is already in the gallery, so this package is an update. "
+        "Updates always wait for a maintainer to approve them; only brand-new themes merge automatically."
+    )
+
+
 def _identity_policy_assess(
     *,
     base_sha: str,
@@ -506,7 +516,8 @@ def _identity_policy_assess(
         if matches_existing:
             exist_author_norm = str(matches_existing[0].get("author_norm") or "")
             if _authors_equivalent(exist_author_norm, incoming_auth):
-                # Valid theme update / variant pack: allowed automatically on a trust basis
+                # Valid update of the author's own theme: it still needs a human.
+                manual.append(_update_review_note(context, inner_folder))
                 return errors, manual
             # A different creator already owns this folder. Do not block the upload.
             # Ingest keeps their theme and publishes this one in a suffixed folder,
@@ -516,10 +527,10 @@ def _identity_policy_assess(
                 "different author. Auto-merge will continue; ingest keeps the existing theme and "
                 "publishes this upload under its own folder, credited to the uploader or Unknown."
             )
+            manual.append(_update_review_note(context, inner_folder))
             return errors, manual
-        else:
-            # Existing folder on base: allowed on a trust basis
-            return errors, manual
+        # Folder is already on the default branch: replacing it is an update.
+        manual.append(_update_review_note(context, inner_folder))
         return errors, manual
 
     if logical in pending_logical_slugs:
@@ -537,7 +548,8 @@ def _identity_policy_assess(
     exist_author_norm = matches[0].get("author_norm") or ""
 
     if _authors_equivalent(exist_author_norm, incoming_auth):
-        # Valid theme update / replacement: allowed automatically on a trust basis
+        # Valid update / replacement of a listed theme: reviewed, never auto-merged.
+        manual.append(_update_review_note(context, inner_folder))
         return errors, manual
 
     slug_cands = _collect_slug_candidates(meta, config)
