@@ -181,6 +181,8 @@
         assetById: Object.create(null),
         selectedAssetId: null,
         assetFilter: 'all',
+        relatedAnchor: '',
+        relatedIds: [],
         assetOverrides: Object.create(null),
         assetUrls: [],
         pendingAssetId: null,
@@ -1290,6 +1292,85 @@
         return row;
     }
 
+    /* An asset rarely stands alone: a menu row is its icon plus the item
+       background, the selected background and the right arrow. Editing an icon
+       from the preview should surface that group next to the row it belongs to,
+       which is the difference between a usable tray and a search exercise on a
+       phone. */
+    function toggleStem(id) {
+        var match = String(id || '').match(/^(.*?)(on|off)$/i);
+        return match ? match[1].toLowerCase() : '';
+    }
+
+    function relatedIdsFor(id) {
+        var out = [];
+        function add(candidate) {
+            if (!candidate || candidate === id) return;
+            if (!state.assetById[candidate] || out.indexOf(candidate) !== -1) return;
+            out.push(candidate);
+        }
+        var itemChrome = ['itemConfig.itemBackground', 'itemConfig.itemSelectedBackground', 'itemConfig.itemRightArrow'];
+        var stem = toggleStem(id);
+        if (stem) {
+            state.assets.forEach(function (asset) {
+                if (asset.id !== id && toggleStem(asset.id) === stem) add(asset.id);
+            });
+        }
+        if (/^homePageConfig\./.test(id)) {
+            itemChrome.forEach(add);
+            ['menuConfig.menuItemBackground', 'menuConfig.menuItemSelectedBackground'].forEach(add);
+        } else if (/^(setting|item|file)Config\./.test(id)) {
+            itemChrome.forEach(add);
+        } else if (/^menuConfig\./.test(id)) {
+            ['menuConfig.menuItemBackground', 'menuConfig.menuItemSelectedBackground'].forEach(add);
+        } else if (/^dialogConfig\./.test(id)) {
+            ['dialogConfig.dialogOptionBackground', 'dialogConfig.dialogOptionSelectedBackground'].forEach(add);
+        }
+        return out;
+    }
+
+    function setRelatedAssets(id) {
+        state.relatedAnchor = id || '';
+        state.relatedIds = id ? relatedIdsFor(id) : [];
+        renderAssets();
+    }
+
+    function clearRelatedAssets() {
+        if (!state.relatedAnchor && !state.relatedIds.length) return false;
+        state.relatedAnchor = '';
+        state.relatedIds = [];
+        renderAssets();
+        return true;
+    }
+
+    function createRelatedBlock(anchorId) {
+        if (!state.relatedIds.length || anchorId !== state.relatedAnchor) return null;
+        var wrap = document.createElement('div');
+        wrap.className = 'studio-related';
+        var head = document.createElement('div');
+        head.className = 'studio-related-head';
+        var title = document.createElement('span');
+        title.textContent = 'Also used by this item';
+        var count = document.createElement('span');
+        count.className = 'studio-related-count';
+        count.textContent = state.relatedIds.length + ' related';
+        var close = document.createElement('button');
+        close.type = 'button';
+        close.className = 'studio-related-close';
+        close.setAttribute('data-related-close', '');
+        close.setAttribute('aria-label', 'Hide the related assets');
+        close.innerHTML = '<i class="fa-solid fa-xmark" aria-hidden="true"></i>';
+        head.appendChild(title);
+        head.appendChild(count);
+        head.appendChild(close);
+        wrap.appendChild(head);
+        state.relatedIds.forEach(function (id) {
+            var asset = state.assetById[id];
+            if (asset) wrap.appendChild(createAssetRow(asset));
+        });
+        return wrap;
+    }
+
     function assetMatchesFilter(asset, filter) {
         if (filter === 'missing') return !!asset.localMissing;
         if (filter === 'changed') return !!asset.changed;
@@ -1350,6 +1431,10 @@
             body.className = 'studio-asset-group-body';
             groups[sectionName].forEach(function (asset) {
                 body.appendChild(createAssetRow(asset));
+                if (asset.id === state.relatedAnchor) {
+                    var related = createRelatedBlock(asset.id);
+                    if (related) body.appendChild(related);
+                }
             });
             group.appendChild(body);
             el.assetList.appendChild(group);
@@ -1367,11 +1452,38 @@
         updateAssetDetail();
     }
 
-    function selectAsset(id) {
+    /* Ask the simulator to show the screen that draws this asset, so picking a
+       row in the tray lands on the right menu screen instead of requiring the
+       reader to find it themselves. */
+    function revealAssetContext(id) {
+        var api = el.preview ? el.preview._y1TpApi : null;
+        if (!api || typeof api.revealAsset !== 'function') return false;
+        var moved = false;
+        try {
+            moved = api.revealAsset(id);
+        } catch (e) {
+            moved = false;
+        }
+        if (!moved) return false;
+        window.setTimeout(function () {
+            highlightPreviewAsset(id);
+            var nodes = previewAssetNodes(id);
+            if (!nodes.length) return;
+            if (window.matchMedia('(max-width: 940px)').matches) {
+                try {
+                    nodes[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } catch (e) {}
+            }
+        }, 90);
+        return true;
+    }
+
+    function selectAsset(id, options) {
         if (!id || !state.assetById[id]) return;
         state.selectedAssetId = id;
         paintAssetSelection();
-        highlightPreviewAsset(id);
+        if (options && options.reveal) revealAssetContext(id);
+        else highlightPreviewAsset(id);
         if (window.matchMedia('(max-width: 940px)').matches && el.assetDetail) {
             el.assetDetail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
@@ -1415,6 +1527,7 @@
             state.assetFilter = 'all';
             renderAssets();
         }
+        setRelatedAssets(id);
         selectAsset(id);
         window.setTimeout(function () {
             var row = null;
@@ -1731,6 +1844,11 @@
     function setupAssetListEvents() {
         if (!el.assetList) return;
         el.assetList.addEventListener('click', function (event) {
+            if (event.target.closest('[data-related-close]')) {
+                event.preventDefault();
+                clearRelatedAssets();
+                return;
+            }
             var action = event.target.closest('[data-asset-action]');
             var row = event.target.closest('[data-asset-id]');
             if (action && row) {
@@ -1741,14 +1859,30 @@
                 else pasteIntoAsset(id);
                 return;
             }
-            if (row) selectAsset(row.getAttribute('data-asset-id'));
+            if (row) {
+                var rowId = row.getAttribute('data-asset-id');
+                /* A tray click is a direct choice, so it drops the related block;
+                   a click inside that block keeps it open. */
+                if (!row.closest('.studio-related') && state.relatedAnchor) {
+                    state.relatedAnchor = '';
+                    state.relatedIds = [];
+                    renderAssets();
+                }
+                selectAsset(rowId, { reveal: true });
+            }
         });
         el.assetList.addEventListener('keydown', function (event) {
             var row = event.target.closest('[data-asset-id]');
             if (!row || event.target.closest('button')) return;
             if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
-                selectAsset(row.getAttribute('data-asset-id'));
+                var keyId = row.getAttribute('data-asset-id');
+                if (!row.closest('.studio-related') && state.relatedAnchor) {
+                    state.relatedAnchor = '';
+                    state.relatedIds = [];
+                    renderAssets();
+                }
+                selectAsset(keyId, { reveal: true });
             }
         });
         el.assetList.addEventListener('pointerover', function (event) {

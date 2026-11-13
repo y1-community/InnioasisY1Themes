@@ -1821,6 +1821,65 @@ body.studio-app {
     background: color-mix(in oklab, var(--site-accent) 13%, transparent);
 }
 
+/* Assets that belong to the row the reader just picked in the preview. */
+
+.studio-related {
+    margin: 6px 4px 10px;
+    padding: 6px;
+    border: 1px solid var(--studio-accent-line);
+    border-radius: 12px;
+    background: color-mix(in oklab, var(--site-accent) 7%, transparent);
+}
+
+.studio-related-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 2px 4px;
+    color: var(--site-muted);
+    font-family: var(--site-font-mono);
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.studio-related-count {
+    margin-left: auto;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+}
+
+.studio-related-close {
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 1px solid var(--studio-line);
+    border-radius: 7px;
+    background: transparent;
+    color: var(--site-muted);
+    font-size: 0.7rem;
+    cursor: pointer;
+}
+
+.studio-related-close:hover {
+    color: var(--site-text);
+    border-color: var(--studio-line-strong);
+}
+
+.studio-related .studio-asset-row {
+    min-height: 52px;
+    padding-inline: 6px;
+    border-bottom: 0;
+    border-radius: 9px;
+}
+
+.studio-related .studio-asset-row.is-selected {
+    box-shadow: inset 3px 0 0 var(--site-accent);
+}
+
 .studio-preview [data-theme-asset-path] {
     cursor: pointer;
     transition: box-shadow 0.14s ease, filter 0.14s ease;

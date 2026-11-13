@@ -2790,7 +2790,57 @@
                     wheel.addEventListener('pointercancel', onWheelPointerEnd);
                 }
 
+                /* The Studio can focus one asset. Jumping to the screen that draws
+                   it is what makes a tray row meaningful on a phone: the edit and
+                   the result sit a thumb apart instead of a scroll apart. */
+                function assetContextView(assetPath) {
+                    var path = String(assetPath || '');
+                    if (/^homePageConfig\./.test(path)) return 'home';
+                    if (/^settingConfig\./.test(path)) return 'settings';
+                    if (/^fileConfig\./.test(path)) return 'music_folders';
+                    if (/^itemConfig\.|^menuConfig\.|^dialogConfig\./.test(path)) return 'settings';
+                    if (/^statusConfig\.|^themeCover$/.test(path)) return 'home';
+                    if (/wallpaper/i.test(path) || /desktopMask$/.test(path)) return 'home';
+                    return '';
+                }
+
+                container._y1TpApi = {
+                    revealAsset: function (assetPath) {
+                        if (!interactive || !assetPath) return false;
+                        var view = assetContextView(assetPath);
+                        if (!view) return false;
+                        sim.dialogVisible = false;
+                        sim.themeHistory = [];
+                        sim.themeViewId = view;
+                        sim.themeSelectedIndex = 0;
+                        try {
+                            var items = view === 'settings' ? buildSettingsItems(cfg, buildFileUrl, contentFolder, sim) : view === 'home' ? homeItems : [];
+                            for (var i = 0; i < items.length; i++) {
+                                if (items[i] && items[i].assetPath === assetPath) {
+                                    sim.themeSelectedIndex = i;
+                                    break;
+                                }
+                            }
+                        } catch (e) {}
+                        paint();
+                        return true;
+                    },
+                    showView: function (viewId) {
+                        if (!interactive || !viewId) return false;
+                        sim.dialogVisible = false;
+                        sim.themeHistory = [];
+                        sim.themeViewId = String(viewId);
+                        sim.themeSelectedIndex = 0;
+                        paint();
+                        return true;
+                    },
+                    currentView: function () {
+                        return sim.themeViewId;
+                    }
+                };
+
                 container._y1TpCleanup = function () {
+                    container._y1TpApi = null;
                     if (ro) ro.disconnect();
                     if (interactive) {
                         dev.removeEventListener('keydown', onKeyDown);
