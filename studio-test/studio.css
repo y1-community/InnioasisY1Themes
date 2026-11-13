@@ -26,6 +26,72 @@
     display: none !important;
 }
 
+/* —— Own-update confirmation —— */
+
+.studio-own-check {
+    margin: 6px 0 4px;
+}
+
+.studio-own-note {
+    margin: 0 0 18px;
+}
+
+.studio-own-note.is-update {
+    color: var(--site-accent);
+}
+
+.studio-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 400;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: rgba(6, 7, 11, 0.68);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+}
+
+.studio-modal-card {
+    width: min(100%, 520px);
+    max-height: min(86dvh, 640px);
+    overflow: auto;
+    padding: 26px 26px 22px;
+    border: 1px solid var(--studio-line-strong);
+    border-radius: 18px;
+    background: color-mix(in oklab, var(--site-bg-elevated) 94%, var(--site-bg));
+    box-shadow: var(--lumen-shadow);
+    color: var(--site-text);
+}
+
+.studio-modal-card h2 {
+    margin: 6px 0 10px;
+    font-family: var(--site-font-display);
+    font-size: 1.5rem;
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+}
+
+.studio-modal-card p {
+    margin: 0 0 14px;
+    color: var(--site-muted);
+    font-size: 0.9rem;
+    line-height: 1.55;
+}
+
+.studio-modal-card .studio-inline-check {
+    margin-top: 6px;
+}
+
+.studio-modal-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
 /* Reachable only by typing its URL: no locality gate and no in-site link,
    so every feature stays available to whoever opens it. */
 

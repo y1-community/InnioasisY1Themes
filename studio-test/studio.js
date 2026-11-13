@@ -143,6 +143,14 @@
         updateNotice: byId('studio-update-notice'),
         updateFolder: byId('studio-update-folder'),
         editAck: byId('studio-edit-ack'),
+        submitOwn: byId('studio-submit-own'),
+        ownCheckTarget: byId('studio-own-check-target'),
+        ownNote: byId('studio-own-update-note'),
+        ownModal: byId('studio-own-modal'),
+        ownModalAck: byId('studio-own-modal-ack'),
+        ownModalConfirm: byId('studio-own-modal-confirm'),
+        ownModalCancel: byId('studio-own-modal-cancel'),
+        ownModalTheme: byId('studio-own-modal-theme'),
         policyBanner: byId('studio-policy-banner'),
         authorOptions: byId('studio-author-options'),
         submitOpenZip: byId('studio-submit-open-zip'),
@@ -179,6 +187,7 @@
         busy: false,
         baseCover: '',
         pendingPolicy: null,
+        ownUpdate: false,
         dirty: false,
         hoverAssetId: null,
         assetDragY: 0,
@@ -2198,10 +2207,31 @@
         var title = el.submitTitle.value.trim();
         var author = el.submitAuthor.value.trim();
         if (!title || !author) {
-            toast('Add a title and author first.');
+            toast('Enter your own title and author — the suggested text in the fields does not count.');
             if (!title) el.submitTitle.focus();
             else el.submitAuthor.focus();
             return;
+        }
+        if (!state.ownUpdate) {
+            /* Someone typing a title and author that already belong to a listing is
+               about to file an update, not a new theme. Make them say so on purpose. */
+            var clash = matchingListing();
+            if (clash) {
+                var clashIsLoaded = state.sourceType === 'gallery' && state.folder && clash.folder === state.folder;
+                if (clashIsLoaded) {
+                    toast('Those are the open theme\u2019s details. Tick the author update box if it is your theme.');
+                    openOwnModal();
+                } else {
+                    toast(
+                        '\u201c' +
+                            (clash.name || title) +
+                            '\u201d is already listed for ' +
+                            (clash.author || 'another author') +
+                            '. Use your own title and author, or open that theme to update it.'
+                    );
+                }
+                return;
+            }
         }
         syncPolicy();
         if (state.pendingPolicy && state.pendingPolicy.level === 'block') {
@@ -2243,6 +2273,7 @@
             form.set('zip', batch, batch.name);
             form.set('themeTitle', title);
             form.set('themeAuthor', author);
+            form.set('submissionIntent', state.ownUpdate ? 'update' : 'new');
             form.set('shareFolderHints', JSON.stringify([stem]));
             var response = await fetch(UPLOAD_ORIGIN + '/api/upload-theme', { method: 'POST', body: form });
             var payload = await response.json().catch(function () {
@@ -2251,9 +2282,11 @@
             if (!response.ok) throw new Error(payload.error || payload.message || 'Upload failed (' + response.status + ').');
             var prUrl = payload.prUrl ? String(payload.prUrl) : '';
             setSubmitStatus(
-                prUrl
-                    ? 'Received. Your theme is waiting for review in a pull request.'
-                    : 'Received. A maintainer will review your theme before it goes live.',
+                state.ownUpdate
+                    ? 'Received. Your update waits for a maintainer: updates are reviewed and never published automatically.'
+                    : prUrl
+                      ? 'Received. Your theme is waiting for review in a pull request.'
+                      : 'Received. A maintainer will review your theme before it goes live.',
                 true,
                 prUrl
             );
@@ -2293,18 +2326,99 @@
         document.addEventListener('innioasis-accent-change', paintThemeColor);
     }
 
+    /* —— Submit details: suggestions stay in placeholders —— */
+
+    function setPlaceholder(field, value) {
+        if (!field) return;
+        var text = String(value || '').trim();
+        if (!text) return;
+        field.placeholder = text;
+        field.title = 'From the open theme: ' + text;
+    }
+
+    function clearSubmitFields() {
+        [el.submitTitle, el.submitAuthor, el.submitDesc, el.submitAuthorUrl, el.submitExternalUrl].forEach(function (field) {
+            if (field) field.value = '';
+        });
+        if (el.submitExternal) el.submitExternal.checked = false;
+        if (el.submitExternalWrap) el.submitExternalWrap.hidden = true;
+    }
+
+    function applyOwnDetails() {
+        if (!state.meta) return;
+        var meta = state.meta;
+        if (el.submitTitle) el.submitTitle.value = meta.name || '';
+        if (el.submitAuthor) el.submitAuthor.value = meta.author || '';
+        if (el.submitDesc) el.submitDesc.value = meta.desc || '';
+        if (el.submitAuthorUrl) el.submitAuthorUrl.value = meta.authorUrl || '';
+        if (meta.externalDownloadUrl) {
+            el.submitExternal.checked = true;
+            el.submitExternalWrap.hidden = false;
+            el.submitExternalUrl.value = meta.externalDownloadUrl;
+        }
+        state.formDirty = true;
+    }
+
+    function syncOwnUpdateUi() {
+        var on = !!state.ownUpdate;
+        if (el.submitOwn) {
+            el.submitOwn.checked = on;
+            var canUpdate = state.sourceType === 'gallery' && !!state.meta;
+            el.submitOwn.disabled = !canUpdate;
+            var row = el.submitOwn.closest('.studio-own-check');
+            if (row) row.hidden = !canUpdate;
+        }
+        if (el.ownCheckTarget) {
+            var name = state.meta && state.meta.name ? '\u201c' + state.meta.name + '\u201d' : '';
+            el.ownCheckTarget.textContent = name;
+            el.ownCheckTarget.hidden = !name;
+        }
+        if (el.ownNote) el.ownNote.hidden = !on;
+    }
+
+    function openOwnModal() {
+        if (!el.ownModal) return false;
+        var name = state.meta && state.meta.name ? '\u201c' + state.meta.name + '\u201d' : 'the existing listing';
+        if (el.ownModalTheme) el.ownModalTheme.textContent = name;
+        if (el.ownModalAck) el.ownModalAck.checked = false;
+        if (el.ownModalConfirm) el.ownModalConfirm.disabled = true;
+        el.ownModal.hidden = false;
+        if (el.ownModalAck) el.ownModalAck.focus();
+        return true;
+    }
+
+    function closeOwnModal() {
+        if (el.ownModal) el.ownModal.hidden = true;
+    }
+
+    function setOwnUpdate(on) {
+        state.ownUpdate = !!on;
+        if (on) applyOwnDetails();
+        else clearSubmitFields();
+        syncOwnUpdateUi();
+        updateUpdateNotice();
+        updateChecklist();
+        markDirty();
+    }
+
     function fillSubmitForm() {
         if (!state.meta) return;
         state.formDirty = false;
-        el.submitTitle.value = state.meta.name || '';
-        el.submitAuthor.value = state.meta.author || '';
-        el.submitDesc.value = state.meta.desc || '';
-        el.submitAuthorUrl.value = state.meta.authorUrl || '';
-        el.submitExternalUrl.value = state.meta.externalDownloadUrl || '';
-        el.submitExternal.checked = !!state.meta.externalDownloadUrl;
-        el.submitExternalWrap.hidden = !el.submitExternal.checked;
+        state.ownUpdate = false;
+        /* The open theme's details are only ever suggestions: they show as
+           placeholder text and vanish the moment someone types, so a new upload
+           cannot inherit another listing's title, author or description. They
+           become real values only after the author-update box is confirmed. */
+        setPlaceholder(el.submitTitle, state.meta.name);
+        setPlaceholder(el.submitAuthor, state.meta.author);
+        setPlaceholder(el.submitDesc, state.meta.desc);
+        setPlaceholder(el.submitAuthorUrl, state.meta.authorUrl);
+        setPlaceholder(el.submitExternalUrl, state.meta.externalDownloadUrl);
+        clearSubmitFields();
         if (el.editAck) el.editAck.checked = false;
+        closeOwnModal();
         populateAuthorOptions();
+        syncOwnUpdateUi();
         updateUpdateNotice();
         syncPolicy();
         updateChecklist();
@@ -2883,6 +2997,47 @@
             markDirty();
             if (el.submitExternal.checked) el.submitExternalUrl.focus();
         });
+
+        if (el.submitOwn) {
+            el.submitOwn.addEventListener('change', function () {
+                if (el.submitOwn.checked) {
+                    /* Ask before turning a submission into an update: the box on its
+                       own is too easy to tick by accident. */
+                    el.submitOwn.checked = false;
+                    openOwnModal();
+                    return;
+                }
+                setOwnUpdate(false);
+            });
+        }
+
+        if (el.ownModalAck) {
+            el.ownModalAck.addEventListener('change', function () {
+                if (el.ownModalConfirm) el.ownModalConfirm.disabled = !el.ownModalAck.checked;
+            });
+        }
+        if (el.ownModalConfirm) {
+            el.ownModalConfirm.addEventListener('click', function () {
+                if (!el.ownModalAck || !el.ownModalAck.checked) return;
+                closeOwnModal();
+                setOwnUpdate(true);
+                toast('Your own details are filled in for this update.');
+            });
+        }
+        if (el.ownModalCancel) {
+            el.ownModalCancel.addEventListener('click', function () {
+                closeOwnModal();
+                syncOwnUpdateUi();
+            });
+        }
+        if (el.ownModal) {
+            el.ownModal.addEventListener('click', function (event) {
+                if (event.target === el.ownModal) closeOwnModal();
+            });
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape' && !el.ownModal.hidden) closeOwnModal();
+            });
+        }
 
         el.submitBtn.addEventListener('click', function () {
             submitTheme();

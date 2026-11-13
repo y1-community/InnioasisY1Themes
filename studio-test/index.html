@@ -33,7 +33,7 @@
     <link rel="stylesheet" href="../site-theme.css?v=20261111dl2" />
     <link rel="stylesheet" href="../site-toolbar.css?v=20261110accent2" />
     <link rel="stylesheet" href="../y1-theme-preview.css?v=20261111hq1" />
-    <link rel="stylesheet" href="/studio-test/studio.css?v=20261112urlonly" />
+    <link rel="stylesheet" href="/studio-test/studio.css?v=20261113ownupdate" />
 </head>
 
 <body class="site-themes-app site-dock-mode studio-app" data-mode="preview">
@@ -253,13 +253,19 @@
                                     <label for="studio-submit-author">Author / username <span class="studio-required">Required</span></label>
                                     <input id="studio-submit-author" type="text" autocomplete="name" autocapitalize="words" spellcheck="false" maxlength="80" placeholder="Your creator handle" list="studio-author-options" />
                                     <datalist id="studio-author-options"></datalist>
-                                    <p class="studio-hint">Use the handle you want credited. Pick an existing one to update that listing.</p>
+                                    <p class="studio-hint">Use the handle you want credited. The open theme's details are only suggested as placeholder text.</p>
                                 </div>
                                 <div class="studio-field">
                                     <label for="studio-submit-author-url">Author link <span class="studio-optional">Optional</span></label>
                                     <input id="studio-submit-author-url" type="url" inputmode="url" autocomplete="url" placeholder="https://" />
                                 </div>
                             </div>
+
+                            <label class="studio-inline-check studio-own-check">
+                                <input id="studio-submit-own" type="checkbox" />
+                                <span><strong>I am the original author updating my own theme</strong> <span id="studio-own-check-target"></span></span>
+                            </label>
+                            <p class="studio-hint studio-own-note" id="studio-own-update-note" hidden>This will be sent as an update to the existing listing. A maintainer reviews updates before they go live; they are never published automatically.</p>
 
                             <div class="studio-field">
                                 <label for="studio-submit-desc">Description <span class="studio-optional">Optional</span></label>
@@ -332,6 +338,26 @@
 
     <div class="studio-toast" id="studio-toast" role="status" aria-live="polite"></div>
 
+    <div class="studio-modal" id="studio-own-modal" hidden>
+        <div class="studio-modal-card" role="dialog" aria-modal="true" aria-labelledby="studio-own-modal-title" aria-describedby="studio-own-modal-text">
+            <span class="studio-eyebrow"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Update an existing theme</span>
+            <h2 id="studio-own-modal-title">Did you create this theme originally?</h2>
+            <p id="studio-own-modal-text">
+                This sends your package as an update to <strong id="studio-own-modal-theme">the existing listing</strong>, credited to the same author.
+                Updates wait for a maintainer's approval, unlike a new upload, which can be published automatically.
+            </p>
+            <p class="studio-hint" id="studio-own-modal-warn">If this is not your theme, cancel and give your own title and author instead.</p>
+            <label class="studio-inline-check">
+                <input id="studio-own-modal-ack" type="checkbox" />
+                <span>I created this theme, and I want to update my existing listing.</span>
+            </label>
+            <div class="studio-modal-actions">
+                <button class="studio-btn" id="studio-own-modal-cancel" type="button">Cancel</button>
+                <button class="studio-btn studio-btn--primary" id="studio-own-modal-confirm" type="button" disabled>Continue as my update</button>
+            </div>
+        </div>
+    </div>
+
     <div class="studio-save-progress" id="studio-save-progress" role="status" aria-live="polite" aria-atomic="true" hidden>
         <div class="studio-save-progress-head">
             <span id="studio-save-progress-label">Preparing theme…</span>
@@ -352,7 +378,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="../theme-packaging.js"></script>
     <script src="../author-submission-policy.js?v=20260523"></script>
-    <script src="/studio-test/studio.js?v=20261111studio9"></script>
+    <script src="/studio-test/studio.js?v=20261113ownupdate2"></script>
     <script src="../site-locale.js?v=20261109live" defer></script>
 </body>
 
