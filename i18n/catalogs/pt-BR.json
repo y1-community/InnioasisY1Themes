@@ -6,7 +6,7 @@
  "source": "en",
  "provider": "reviewed",
  "reviewed": true,
- "generated": "2026-11-12T00:12:58+00:00",
+ "generated": "2026-11-13T14:01:22+00:00",
  "count": 12412,
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -5041,6 +5041,7 @@
   "Install Linux on a Y1.": "Instale o Linux em um Y1.",
   "Install Linux on the Y1.": "Instale o Linux no Y1.",
   "Install Method": "Método de instalação",
+  "Install Original Software 3.2.0 or later before installing Reborn": "Instale o software original 3.2.0 ou posterior antes de instalar o Reborn",
   "Install Reborn (Y2Linux) custom firmware on an Innioasis Y2 with Innioasis Updater CE. Choose Y2, select Reborn (Y2Linux), pick a release, and connect only when prompted.": "Instale o firmware personalizado Reborn (Y2Linux) em um Innioasis Y2 com Innioasis Updater CE. Escolha Y2, selecione Reborn (Y2Linux), escolha uma versão e conecte-se somente quando solicitado.",
   "Install Reborn (Y2Linux) on Y2": "Instale Reborn (Y2Linux) em Y2",
   "Install Reborn (Y2Linux) on your Innioasis Y2.": "Instale Reborn (Y2Linux) em seu Innioasis Y2.",
@@ -6521,6 +6522,7 @@
   "Original Software (Factory Restore)": "Software original (restauração de fábrica)",
   "Original Software (Stock Restore)": "Software original (restauração de estoque)",
   "Original Software + Rockbox, Better-Y, Solar, Reborn, Rondo": "Software Original + Rockbox, Better-Y, Solar, Reborn, Rondo",
+  "Original Software 3.2.0 or later is needed on your Y2 to install Reborn. Install it first, then choose Reborn, select Refresh to see whether any new Reborn versions have become available, and select Install to be guided through the install.": "O software original 3.2.0 ou posterior é necessário em seu Y2 para instalar o Reborn. Instale-o primeiro, depois escolha Reborn, selecione Atualizar para ver se alguma nova versão do Reborn está disponível e selecione Instalar para ser guiado pela instalação.",
   "Original Software Benefits & Factory Stock ROM Downloads - Innioasis Firmware Archive": "Benefícios do software original e estoque de fábrica ROM Downloads - Innioasis Arquivo de firmware",
   "Original Software Benefits & Factory Stock ROM Downloads - Innioasis Firmware Downloads": "Benefícios do software original e estoque de fábrica ROM Downloads - Innioasis Downloads de firmware",
   "Original Software Compatibility Warning": "Aviso de compatibilidade de software original",
@@ -12418,8 +12420,6 @@
   "🛠️ Developer Friendly": "🛠️ Amigável ao desenvolvedor",
   "🪓✧˖°🫀⋆｡𖦹🔪 80's camp/mystery/horror theme": "🪓✧˖°🫀⋆｡𖦹🔪 Tema acampamento/mistério/terror dos anos 80",
   "🪟 Windows ARM64": "🪟Windows ARM64",
-  "🪟 Windows Installation": "🪟 Instalação do Windows",
-  "Install Original Software 3.2.0 or later before installing Reborn": "Instale o software original 3.2.0 ou posterior antes de instalar o Reborn",
-  "Original Software 3.2.0 or later is needed on your Y2 to install Reborn. Install it first, then choose Reborn, select Refresh to see whether any new Reborn versions have become available, and select Install to be guided through the install.": "O software original 3.2.0 ou posterior é necessário em seu Y2 para instalar o Reborn. Instale-o primeiro, depois escolha Reborn, selecione Atualizar para ver se alguma nova versão do Reborn está disponível e selecione Instalar para ser guiado pela instalação."
+  "🪟 Windows Installation": "🪟 Instalação do Windows"
  }
 }
