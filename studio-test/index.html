@@ -33,7 +33,7 @@
     <link rel="stylesheet" href="../site-theme.css?v=20261111dl2" />
     <link rel="stylesheet" href="../site-toolbar.css?v=20261110accent2" />
     <link rel="stylesheet" href="../y1-theme-preview.css?v=20261111hq1" />
-    <link rel="stylesheet" href="/studio-test/studio.css?v=20261113ownupdate" />
+    <link rel="stylesheet" href="/studio-test/studio.css?v=20261113empty" />
 </head>
 
 <body class="site-themes-app site-dock-mode studio-app" data-mode="preview">
@@ -92,9 +92,22 @@
                     <div class="studio-preview" id="studio-preview"></div>
                     <div class="studio-empty" id="studio-empty" hidden>
                         <div class="studio-empty-card">
-                            <span class="studio-empty-icon"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></span>
+                            <span class="studio-empty-icon"><i class="fa-solid fa-palette" aria-hidden="true"></i></span>
+                            <span class="studio-eyebrow" id="studio-empty-eyebrow" hidden>Nothing open yet</span>
                             <strong id="studio-empty-title">Preview unavailable</strong>
                             <p id="studio-empty-text">Choose another theme or open a local package.</p>
+                            <div class="studio-empty-actions" id="studio-empty-actions" hidden>
+                                <a class="studio-btn studio-btn--primary" id="studio-empty-gallery" href="../">
+                                    <i class="fa-solid fa-images" aria-hidden="true"></i>Pick one from the gallery
+                                </a>
+                                <button class="studio-btn" id="studio-empty-zip" type="button">
+                                    <i class="fa-solid fa-file-zipper" aria-hidden="true"></i>Upload a .zip
+                                </button>
+                                <button class="studio-btn" id="studio-empty-folder" type="button">
+                                    <i class="fa-solid fa-folder-open" aria-hidden="true"></i>Upload a folder
+                                </button>
+                            </div>
+                            <p class="studio-hint" id="studio-empty-hint" hidden>Dragging a folder or ZIP anywhere on this page works too. A gallery theme can also be picked from the list in the sidebar.</p>
                         </div>
                     </div>
                 </div>
@@ -378,7 +391,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="../theme-packaging.js"></script>
     <script src="../author-submission-policy.js?v=20260523"></script>
-    <script src="/studio-test/studio.js?v=20261113ownupdate2"></script>
+    <script src="/studio-test/studio.js?v=20261113empty"></script>
     <script src="../site-locale.js?v=20261109live" defer></script>
 </body>
 

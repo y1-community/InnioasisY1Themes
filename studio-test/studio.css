@@ -515,6 +515,38 @@
     overflow-wrap: anywhere;
 }
 
+.studio-empty-card .studio-eyebrow {
+    display: block;
+    margin-bottom: 6px;
+}
+
+.studio-empty[data-kind='start'] .studio-empty-card {
+    width: min(100%, 440px);
+    border-style: solid;
+    background: color-mix(in oklab, var(--site-bg-elevated) 88%, transparent);
+}
+
+.studio-empty[data-kind='start'] .studio-empty-icon {
+    color: var(--site-accent);
+    border-color: var(--studio-accent-line);
+}
+
+.studio-empty-actions {
+    display: grid;
+    gap: 8px;
+    margin-top: 18px;
+}
+
+.studio-empty-actions .studio-btn {
+    justify-content: center;
+    width: 100%;
+}
+
+.studio-empty-hint,
+.studio-empty-card .studio-empty-hint {
+    margin-top: 12px;
+}
+
 .studio-stage-foot {
     flex: 0 0 auto;
     display: flex;

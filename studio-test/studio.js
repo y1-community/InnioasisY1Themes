@@ -74,6 +74,11 @@
         empty: byId('studio-empty'),
         emptyTitle: byId('studio-empty-title'),
         emptyText: byId('studio-empty-text'),
+        emptyEyebrow: byId('studio-empty-eyebrow'),
+        emptyActions: byId('studio-empty-actions'),
+        emptyHint: byId('studio-empty-hint'),
+        emptyZip: byId('studio-empty-zip'),
+        emptyFolder: byId('studio-empty-folder'),
         title: byId('studio-title'),
         byline: byId('studio-byline'),
         sourceLabel: byId('studio-source-label'),
@@ -309,10 +314,11 @@
             updateChrome();
             setLoading(false);
             showEmpty(
-                state.gallery.length ? 'Open a theme to begin' : 'No gallery themes found',
+                state.gallery.length ? 'Pick a theme, or bring your own' : 'Open your own theme package',
                 state.gallery.length
-                    ? 'Choose a gallery theme below, or open a theme ZIP or folder from this device.'
-                    : 'Open a local package, or check that themes.json is available.'
+                    ? 'No theme is open yet. Choose one from the gallery, upload your own theme folder or ZIP, or pick a gallery theme from the list in the sidebar.'
+                    : 'The gallery list is unavailable, so start from a theme folder or ZIP on this device.',
+                'start'
             );
         });
         if (window.ThemeAuthorPolicy && typeof window.ThemeAuthorPolicy.ready === 'function') {
@@ -2483,9 +2489,16 @@
         el.preview.hidden = false;
     }
 
-    function showEmpty(title, text) {
+    function showEmpty(title, text, kind) {
+        var start = kind === 'start';
+        if (el.empty) el.empty.dataset.kind = start ? 'start' : 'error';
+        if (el.emptyEyebrow) el.emptyEyebrow.hidden = !start;
         el.emptyTitle.textContent = title;
         el.emptyText.textContent = text;
+        /* The three ways in are only offered when nothing is open; an error keeps
+           the card focused on what went wrong. */
+        if (el.emptyActions) el.emptyActions.hidden = !start;
+        if (el.emptyHint) el.emptyHint.hidden = !start;
         el.empty.hidden = false;
         el.preview.hidden = true;
     }
@@ -3054,6 +3067,14 @@
                 if (state.swapOpen && el.themeFilter) el.themeFilter.focus();
             });
         }
+        [el.emptyZip, el.emptyFolder].forEach(function (button) {
+            if (!button) return;
+            button.addEventListener('click', function () {
+                if (button === el.emptyZip) el.zipInput.click();
+                else el.folderInput.click();
+            });
+        });
+
         [el.submitOpenZip, el.submitOpenFolder].forEach(function (button) {
             if (!button) return;
             button.addEventListener('click', function () {
