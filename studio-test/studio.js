@@ -1172,6 +1172,30 @@
                 kind: 'image'
             });
         });
+        /* Item chrome the theme declares but leaves blank: without these, a
+           theme with empty itemBackground / itemRightArrow has no slot to edit,
+           so focusing one of its menu rows could not offer the item's related
+           assets at all. Only slots the config actually mentions are added. */
+        [
+            ['itemConfig.itemBackground', 'Item background'],
+            ['itemConfig.itemSelectedBackground', 'Selected item background'],
+            ['itemConfig.itemRightArrow', 'Item right arrow'],
+            ['menuConfig.menuItemBackground', 'Menu item background'],
+            ['menuConfig.menuItemSelectedBackground', 'Selected menu item background'],
+            ['dialogConfig.dialogOptionBackground', 'Dialog option background'],
+            ['dialogConfig.dialogOptionSelectedBackground', 'Selected dialog option background']
+        ].forEach(function (optional) {
+            if (known[optional[0]]) return;
+            var declared = readPath(config || {}, optional[0]);
+            if (typeof declared !== 'string') return;
+            defs.push({
+                path: optional[0],
+                value: String(declared || '').trim(),
+                section: assetSection(optional[0].split('.')[0]),
+                label: optional[1],
+                kind: 'image'
+            });
+        });
         return defs;
     }
 
