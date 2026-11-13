@@ -33,7 +33,7 @@
     <link rel="stylesheet" href="../site-theme.css?v=20261111dl2" />
     <link rel="stylesheet" href="../site-toolbar.css?v=20261110accent2" />
     <link rel="stylesheet" href="../y1-theme-preview.css?v=20261111hq1" />
-    <link rel="stylesheet" href="/studio-test/studio.css?v=20261113related" />
+    <link rel="stylesheet" href="/studio-test/studio.css?v=20261114rowonly" />
 </head>
 
 <body class="site-themes-app site-dock-mode studio-app" data-mode="preview">
@@ -60,7 +60,7 @@
 
             <div class="studio-command-actions">
                 <span class="studio-unsaved" id="studio-unsaved" hidden><i class="fa-solid fa-circle" aria-hidden="true"></i>Unsaved</span>
-                <button class="studio-btn studio-btn--save" id="studio-save" type="button">
+                <button class="studio-btn studio-btn--save" id="studio-save" type="button" aria-label="Save the theme to this device">
                     <i class="fa-solid fa-download" aria-hidden="true"></i><span>Save to device</span>
                 </button>
             </div>
@@ -217,7 +217,9 @@
                             <div class="studio-asset-detail-preview" id="studio-asset-detail-preview"></div>
                             <div class="studio-asset-detail-actions">
                                 <button class="studio-btn studio-btn--primary" id="studio-asset-replace" type="button"><i class="fa-solid fa-folder-open" aria-hidden="true"></i>Replace file</button>
+                                <button class="studio-btn" id="studio-asset-theme" type="button" title="Swap in the same asset from another gallery theme"><i class="fa-solid fa-images" aria-hidden="true"></i>From theme</button>
                                 <button class="studio-btn" id="studio-asset-paste" type="button"><i class="fa-solid fa-paste" aria-hidden="true"></i>Paste</button>
+                                <button class="studio-btn" id="studio-asset-blank" type="button" title="Bin this file and use a fully transparent placeholder"><i class="fa-solid fa-trash-can" aria-hidden="true"></i>Blank</button>
                                 <button class="studio-btn" id="studio-asset-reset" type="button"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Reset</button>
                             </div>
                             <p class="studio-hint" id="studio-asset-hint">Drop an image on the selected slot, or copy one and press Ctrl+V / Cmd+V.</p>
@@ -371,6 +373,23 @@
         </div>
     </div>
 
+    <div class="studio-modal studio-theme-picker" id="studio-theme-picker" hidden>
+        <div class="studio-modal-card studio-theme-picker-card" role="dialog" aria-modal="true" aria-labelledby="studio-theme-picker-title">
+            <span class="studio-eyebrow"><i class="fa-solid fa-images" aria-hidden="true"></i> Swap from another theme</span>
+            <h2 id="studio-theme-picker-title">Asset</h2>
+            <p id="studio-theme-picker-text">Pick the same asset from any gallery theme to swap it into this one.</p>
+            <label class="studio-theme-picker-search">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                <input id="studio-theme-picker-query" type="search" placeholder="Search themes by name or author" autocomplete="off" />
+            </label>
+            <div class="studio-theme-picker-list" id="studio-theme-picker-list" role="list" aria-label="Gallery themes"></div>
+            <p class="studio-theme-picker-empty" id="studio-theme-picker-empty" hidden>No theme matches that search.</p>
+            <div class="studio-modal-actions">
+                <button class="studio-btn" id="studio-theme-picker-close" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+
     <div class="studio-save-progress" id="studio-save-progress" role="status" aria-live="polite" aria-atomic="true" hidden>
         <div class="studio-save-progress-head">
             <span id="studio-save-progress-label">Preparing theme…</span>
@@ -391,7 +410,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="../theme-packaging.js"></script>
     <script src="../author-submission-policy.js?v=20260523"></script>
-    <script src="/studio-test/studio.js?v=20261113related"></script>
+    <script src="/studio-test/studio.js?v=20261114rowonly"></script>
     <script src="../site-locale.js?v=20261109live" defer></script>
 </body>
 

@@ -128,9 +128,18 @@
         assetStatus: byId('studio-asset-status'),
         assetPreview: byId('studio-asset-detail-preview'),
         assetReplace: byId('studio-asset-replace'),
+        assetTheme: byId('studio-asset-theme'),
         assetPaste: byId('studio-asset-paste'),
+        assetBlank: byId('studio-asset-blank'),
         assetReset: byId('studio-asset-reset'),
         assetHint: byId('studio-asset-hint'),
+        themePicker: byId('studio-theme-picker'),
+        themePickerList: byId('studio-theme-picker-list'),
+        themePickerQuery: byId('studio-theme-picker-query'),
+        themePickerTitle: byId('studio-theme-picker-title'),
+        themePickerText: byId('studio-theme-picker-text'),
+        themePickerEmpty: byId('studio-theme-picker-empty'),
+        themePickerClose: byId('studio-theme-picker-close'),
         colorEditor: byId('studio-color-editor'),
         browseFont: byId('studio-browse-font'),
         resetAssets: byId('studio-reset-assets'),
@@ -188,6 +197,7 @@
         pendingAssetId: null,
         gallery: [],
         byFolder: Object.create(null),
+        galleryConfigs: Object.create(null),
         previewOk: false,
         loading: false,
         formDirty: false,
@@ -1268,10 +1278,14 @@
 
         var actions = document.createElement('span');
         actions.className = 'studio-asset-row-actions';
-        [
+        var rowActions = [
             ['import', 'fa-folder-open', 'Import or replace ' + asset.label],
             ['paste', 'fa-paste', 'Paste into ' + asset.label]
-        ].forEach(function (action) {
+        ];
+        if (asset.kind !== 'font') {
+            rowActions.push(['blank', 'fa-trash-can', 'Bin ' + asset.label + ' and use a transparent placeholder']);
+        }
+        rowActions.forEach(function (action) {
             var btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'studio-asset-row-action';
@@ -1333,6 +1347,17 @@
         state.relatedAnchor = id || '';
         state.relatedIds = id ? relatedIdsFor(id) : [];
         renderAssets();
+        if (!state.relatedIds.length) return;
+        /* On a phone the tray is its own surface: bring the row and its related
+           block into view so the tap in the preview lands on something visible. */
+        window.setTimeout(function () {
+            var block = el.assetList ? el.assetList.querySelector('.studio-related') : null;
+            if (!block) return;
+            var target = block.previousElementSibling || block;
+            try {
+                target.scrollIntoView({ block: 'center', behavior: 'auto' });
+            } catch (e) {}
+        }, 60);
     }
 
     function clearRelatedAssets() {
@@ -1519,7 +1544,7 @@
         });
     }
 
-    function revealAssetInEdit(id) {
+    function revealAssetInEdit(id, options) {
         var asset = state.assetById[id];
         if (!asset) return false;
         setMode('edit');
@@ -1527,7 +1552,11 @@
             state.assetFilter = 'all';
             renderAssets();
         }
-        setRelatedAssets(id);
+        /* Only a menu row in the preview describes a whole item (icon, selection,
+           background, arrow), so only there does the tray show the related group.
+           Picking the large icon art on the right is a single-asset edit. */
+        if (options && options.related === false) clearRelatedAssets();
+        else setRelatedAssets(id);
         selectAsset(id);
         window.setTimeout(function () {
             var row = null;
@@ -1551,6 +1580,19 @@
         return node.getAttribute('data-theme-asset-path') || '';
     }
 
+    /* True when the tapped asset sits inside a menu row of the simulated screen
+       (the item list on the left), false for the artwork drawn beside it. */
+    function previewEventInMenuRow(event) {
+        var target = event && event.target;
+        if (!target || !target.closest || !el.preview || !el.preview.contains(target)) return false;
+        var node = target.closest('[data-theme-asset-path]');
+        if (!node) return false;
+        if (node.closest('.y1-tp-row')) return true;
+        /* Menu and settings lists are plain divs; the artwork beside them is an
+           image, and the wallpaper is a div that owns no item assets. */
+        return node.tagName !== 'IMG' && !node.classList.contains('y1-tp-wallpaper');
+    }
+
     function setupPreviewAssetFocus() {
         if (!el.preview) return;
         el.preview.addEventListener('pointerover', function (event) {
@@ -1572,14 +1614,14 @@
             if (!path || !state.assetById[path]) return;
             event.preventDefault();
             event.stopPropagation();
-            revealAssetInEdit(path);
+            revealAssetInEdit(path, { related: previewEventInMenuRow(event) });
         });
         el.preview.addEventListener('contextmenu', function (event) {
             var path = previewAssetPathFromEvent(event);
             if (!path || !state.assetById[path]) return;
             event.preventDefault();
             event.stopPropagation();
-            revealAssetInEdit(path);
+            revealAssetInEdit(path, { related: previewEventInMenuRow(event) });
         });
     }
 
@@ -1609,6 +1651,19 @@
         el.assetReset.disabled = !asset.changed;
         el.assetReplace.disabled = false;
         el.assetPaste.disabled = asset.kind !== 'image';
+        if (el.assetBlank) {
+            el.assetBlank.disabled = asset.kind === 'font';
+            el.assetBlank.title =
+                asset.kind === 'font'
+                    ? 'Fonts cannot be blanked'
+                    : 'Bin this file and use a fully transparent placeholder';
+        }
+        if (el.assetTheme) {
+            el.assetTheme.disabled = !state.gallery.length;
+            el.assetTheme.title = state.gallery.length
+                ? 'Swap in the same asset from another gallery theme'
+                : 'The gallery list is unavailable, so there is nothing to swap from';
+        }
         var sizeHint = asset.kind === 'font' ? 'Fonts keep their source file.' : 'Ideal size: ' + assetSizeLabel(asset) + '.';
         el.assetHint.textContent =
             (asset.localMissing
@@ -1617,7 +1672,10 @@
                   ? 'This optional slot has no file yet. Import an image to add it to the theme. '
                   : '') +
             sizeHint +
-            (asset.kind === 'font' ? ' Fonts cannot be pasted.' : ' Drop an image on this row, or copy one and press Ctrl+V / Cmd+V while the row is hovered.');
+            (asset.kind === 'font'
+                ? ' Fonts cannot be pasted or blanked, but you can swap in a font from another theme.'
+                : ' Drop an image on this row, or copy one and press Ctrl+V / Cmd+V while the row is hovered.') +
+            (asset.kind === 'font' ? '' : ' Blank fills the slot with a transparent placeholder so the device keeps the gap instead of drawing its default icon.');
     }
 
     function setAssetFilter(filter) {
@@ -1806,6 +1864,266 @@
             });
     }
 
+    /* —— Bin (transparent placeholder) —— */
+
+    /* Theme creators leave slots blank by shipping a fully transparent PNG: the
+       config keeps pointing at the file, so the device draws nothing instead of
+       falling back to its own default icon. Match the slot's expected size so
+       the layout on the device does not shift. */
+    function transparentPlaceholderFile(asset) {
+        var target = assetTargetSize(asset.path) || { width: 64, height: 64 };
+        var canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, target.width);
+        canvas.height = Math.max(1, target.height);
+        var name = fileName(asset.value) || 'transparent.png';
+        if (!/\.png$/i.test(name)) name = name.replace(/\.[^.]+$/, '') + '.png';
+        return new Promise(function (resolve) {
+            canvas.toBlob(function (blob) {
+                resolve(new File([blob || new Blob([], { type: 'image/png' })], name, { type: 'image/png' }));
+            }, 'image/png');
+        });
+    }
+
+    function blankAsset(assetId) {
+        var asset = state.assetById[assetId];
+        if (!asset) return;
+        if (asset.kind === 'font') {
+            toast('Fonts cannot be blanked. Replace the font file, or reset it to the theme original.');
+            return;
+        }
+        transparentPlaceholderFile(asset).then(function (file) {
+            return replaceAssetFromFile(asset.id, file);
+        }).then(function () {
+            toast('Binned ' + asset.label + ': the slot now holds a transparent placeholder.');
+        }).catch(function (err) {
+            toast('Could not blank that asset: ' + ((err && err.message) || 'unknown error'));
+        });
+    }
+
+    /* —— Swap from another theme —— */
+
+    var themePickerState = { assetId: '', limit: 40, observer: null };
+
+    /* A plain catalogue URL for another theme's file: galleryFileUrl applies this
+       theme's overrides, which must not leak into someone else's package. */
+    function catalogAssetUrl(folder, relativePath) {
+        var text = String(relativePath || '').trim();
+        if (!text) return '';
+        if (/^(https?:|data:|blob:)/i.test(text)) return text;
+        var stack = String(folder || '')
+            .replace(/^\.\/+/, '')
+            .replace(/\/+$/, '')
+            .split('/')
+            .filter(Boolean);
+        text.replace(/\\/g, '/')
+            .replace(/^\.\/+/, '')
+            .replace(/^\/+/, '')
+            .split('/')
+            .forEach(function (segment) {
+                if (!segment || segment === '.') return;
+                if (segment === '..') {
+                    if (stack.length) stack.pop();
+                    return;
+                }
+                stack.push(segment);
+            });
+        return '../' + stack.map(encodeURIComponent).join('/');
+    }
+
+    function themeConfig(folder) {
+        if (!state.galleryConfigs[folder]) {
+            state.galleryConfigs[folder] = fetch('../' + encodePath(folder) + '/config.json', { cache: 'no-cache' })
+                .then(function (res) {
+                    if (!res.ok) return null;
+                    return res.json();
+                })
+                .catch(function () {
+                    return null;
+                });
+        }
+        return state.galleryConfigs[folder];
+    }
+
+    function themePickerRow(theme, asset) {
+        var row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'studio-theme-row';
+        row.setAttribute('role', 'listitem');
+        row.setAttribute('data-theme-folder', theme.folder);
+        row.setAttribute('aria-label', (theme.name || theme.folder) + ': checking for ' + asset.label.toLowerCase());
+
+        var thumb = document.createElement('span');
+        thumb.className = 'studio-theme-row-thumb';
+        thumb.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i>';
+
+        var copy = document.createElement('span');
+        copy.className = 'studio-theme-row-copy';
+        var name = document.createElement('strong');
+        name.textContent = theme.name || theme.folder;
+        var byline = document.createElement('span');
+        byline.textContent = theme.author ? 'by ' + theme.author : theme.folder;
+        copy.appendChild(name);
+        copy.appendChild(byline);
+
+        var badge = document.createElement('span');
+        badge.className = 'studio-theme-row-badge';
+        badge.textContent = 'Checking';
+
+        row.appendChild(thumb);
+        row.appendChild(copy);
+        row.appendChild(badge);
+        return row;
+    }
+
+    function fillThemePickerRow(row) {
+        if (row.getAttribute('data-filled')) return;
+        row.setAttribute('data-filled', '1');
+        var asset = state.assetById[themePickerState.assetId];
+        var folder = row.getAttribute('data-theme-folder');
+        if (!asset || !folder) return;
+        themeConfig(folder).then(function (config) {
+            if (themePickerState.assetId !== asset.id) return;
+            var value = config ? String(readPath(config, asset.path) || '').trim() : '';
+            var thumb = row.querySelector('.studio-theme-row-thumb');
+            var badge = row.querySelector('.studio-theme-row-badge');
+            if (!value) {
+                row.classList.add('is-empty');
+                row.setAttribute('aria-disabled', 'true');
+                if (badge) badge.textContent = 'Not used';
+                if (thumb) thumb.innerHTML = '<i class="fa-solid fa-minus" aria-hidden="true"></i>';
+                return;
+            }
+            row.setAttribute('data-theme-value', value);
+            row.classList.add('has-asset');
+            row.setAttribute('aria-label', 'Use ' + asset.label.toLowerCase() + ' from ' + (state.byFolder[folder] ? state.byFolder[folder].name : folder));
+            if (badge) {
+                badge.textContent = fileName(value) || 'Included';
+                badge.title = value;
+            }
+            if (thumb) {
+                thumb.innerHTML = '';
+                var img = document.createElement('img');
+                img.alt = '';
+                img.loading = 'lazy';
+                img.src = catalogAssetUrl(folder, value);
+                img.onerror = function () {
+                    thumb.innerHTML = '<i class="fa-regular fa-image" aria-hidden="true"></i>';
+                };
+                thumb.appendChild(img);
+            }
+        });
+    }
+
+    function ensureThemePickerObserver() {
+        if (themePickerState.observer || typeof IntersectionObserver !== 'function') return themePickerState.observer;
+        themePickerState.observer = new IntersectionObserver(
+            function (entries) {
+                entries.forEach(function (entry) {
+                    if (!entry.isIntersecting) return;
+                    themePickerState.observer.unobserve(entry.target);
+                    fillThemePickerRow(entry.target);
+                });
+            },
+            { root: el.themePickerList, rootMargin: '180px 0px' }
+        );
+        return themePickerState.observer;
+    }
+
+    function renderThemePickerRows(query) {
+        if (!el.themePickerList) return;
+        var asset = state.assetById[themePickerState.assetId];
+        if (!asset) return;
+        var q = String(query || '').trim().toLowerCase();
+        var themes = state.gallery.filter(function (theme) {
+            if (!theme || !theme.folder) return false;
+            if (state.sourceType === 'gallery' && theme.folder === state.folder) return false;
+            if (!q) return true;
+            return [theme.name, theme.folder, theme.author].join(' ').toLowerCase().indexOf(q) !== -1;
+        });
+        el.themePickerList.innerHTML = '';
+        var observer = ensureThemePickerObserver();
+        var shown = themes.slice(0, themePickerState.limit);
+        shown.forEach(function (theme) {
+            var row = themePickerRow(theme, asset);
+            el.themePickerList.appendChild(row);
+            if (observer) observer.observe(row);
+            else fillThemePickerRow(row);
+        });
+        if (themes.length > shown.length) {
+            var more = document.createElement('button');
+            more.type = 'button';
+            more.className = 'studio-btn studio-theme-more';
+            more.setAttribute('data-theme-more', '');
+            more.textContent = 'Show ' + Math.min(40, themes.length - shown.length) + ' more themes';
+            el.themePickerList.appendChild(more);
+        }
+        if (el.themePickerEmpty) el.themePickerEmpty.hidden = themes.length > 0;
+    }
+
+    function openThemePicker(assetId) {
+        var asset = state.assetById[assetId];
+        if (!asset || !el.themePicker) return;
+        if (!state.gallery.length) {
+            toast('The gallery list is unavailable right now, so there are no themes to swap from.');
+            return;
+        }
+        themePickerState.assetId = assetId;
+        themePickerState.limit = 40;
+        if (el.themePickerTitle) el.themePickerTitle.textContent = asset.label;
+        if (el.themePickerText) {
+            el.themePickerText.textContent =
+                'Pick ' +
+                asset.label.toLowerCase() +
+                ' from any gallery theme. Themes that never used this slot are dimmed, and swapping never touches the other theme.';
+        }
+        if (el.themePickerQuery) el.themePickerQuery.value = '';
+        el.themePicker.hidden = false;
+        renderThemePickerRows('');
+        if (el.themePickerQuery) el.themePickerQuery.focus();
+    }
+
+    function closeThemePicker() {
+        if (el.themePicker) el.themePicker.hidden = true;
+        if (el.themePickerList) el.themePickerList.innerHTML = '';
+        themePickerState.assetId = '';
+    }
+
+    function swapAssetFromTheme(folder, value) {
+        var asset = state.assetById[themePickerState.assetId];
+        if (!asset || !folder || !value) return;
+        var theme = state.byFolder[folder];
+        var label = (theme && theme.name) || folder;
+        var url = catalogAssetUrl(folder, value);
+        toast('Loading ' + (fileName(value) || asset.label) + ' from ' + label + '…');
+        fetch(url)
+            .then(function (res) {
+                if (!res.ok) throw new Error('that file is missing from the theme (' + res.status + ')');
+                return res.blob();
+            })
+            .then(function (blob) {
+                var ext = (fileName(value).split('.').pop() || 'png').toLowerCase();
+                var type = blob.type && blob.type !== 'application/octet-stream'
+                    ? blob.type
+                    : ext === 'ttf'
+                      ? 'font/ttf'
+                      : ext === 'otf'
+                        ? 'font/otf'
+                        : ext === 'woff'
+                          ? 'font/woff'
+                          : ext === 'woff2'
+                            ? 'font/woff2'
+                            : 'image/png';
+                var file = new File([blob], fileName(value) || 'asset.' + ext, { type: type });
+                closeThemePicker();
+                return replaceAssetFromFile(asset.id, file).then(function () {
+                    toast('Swapped ' + asset.label + ' in from ' + label + '.');
+                });
+            })
+            .catch(function (err) {
+                toast('Could not load that asset: ' + ((err && err.message) || 'unknown error'));
+            });
+    }
+
     function clearHoveredAsset() {
         state.hoverAssetId = null;
         each(el.assetList ? el.assetList.querySelectorAll('.is-hovered') : [], function (row) {
@@ -1855,7 +2173,9 @@
                 event.preventDefault();
                 event.stopPropagation();
                 var id = row.getAttribute('data-asset-id');
-                if (action.getAttribute('data-asset-action') === 'import') openAssetPicker(id);
+                var kind = action.getAttribute('data-asset-action');
+                if (kind === 'import') openAssetPicker(id);
+                else if (kind === 'blank') blankAsset(id);
                 else pasteIntoAsset(id);
                 return;
             }
@@ -1940,6 +2260,54 @@
         if (el.assetPaste) {
             el.assetPaste.addEventListener('click', function () {
                 if (state.selectedAssetId) pasteIntoAsset(state.selectedAssetId);
+            });
+        }
+        if (el.assetTheme) {
+            el.assetTheme.addEventListener('click', function () {
+                if (state.selectedAssetId) openThemePicker(state.selectedAssetId);
+            });
+        }
+        if (el.assetBlank) {
+            el.assetBlank.addEventListener('click', function () {
+                if (state.selectedAssetId) blankAsset(state.selectedAssetId);
+            });
+        }
+        if (el.themePickerClose) {
+            el.themePickerClose.addEventListener('click', closeThemePicker);
+        }
+        if (el.themePicker) {
+            el.themePicker.addEventListener('click', function (event) {
+                if (event.target === el.themePicker) closeThemePicker();
+            });
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape' && !el.themePicker.hidden) closeThemePicker();
+            });
+        }
+        if (el.themePickerQuery) {
+            var pickerFilterTimer = null;
+            el.themePickerQuery.addEventListener('input', function () {
+                clearTimeout(pickerFilterTimer);
+                pickerFilterTimer = setTimeout(function () {
+                    themePickerState.limit = 40;
+                    renderThemePickerRows(el.themePickerQuery.value);
+                }, 160);
+            });
+        }
+        if (el.themePickerList) {
+            el.themePickerList.addEventListener('click', function (event) {
+                if (event.target.closest('[data-theme-more]')) {
+                    themePickerState.limit += 40;
+                    renderThemePickerRows(el.themePickerQuery ? el.themePickerQuery.value : '');
+                    return;
+                }
+                var row = event.target.closest('[data-theme-folder]');
+                if (!row) return;
+                var value = row.getAttribute('data-theme-value');
+                if (!value) {
+                    toast('That theme never used this asset, so there is nothing to take from it.');
+                    return;
+                }
+                swapAssetFromTheme(row.getAttribute('data-theme-folder'), value);
             });
         }
         if (el.assetReset) {
