@@ -141,6 +141,7 @@
         themePickerEmpty: byId('studio-theme-picker-empty'),
         themePickerClose: byId('studio-theme-picker-close'),
         colorEditor: byId('studio-color-editor'),
+        maskEditor: byId('studio-mask-editor'),
         browseFont: byId('studio-browse-font'),
         resetAssets: byId('studio-reset-assets'),
         save: byId('studio-save'),
@@ -1222,6 +1223,111 @@
         if (!state.selectedAssetId && state.assets[0]) state.selectedAssetId = state.assets[0].id;
         renderAssets();
         renderColorEditor();
+        renderMaskEditor();
+    }
+
+    /* —— Masks —— */
+
+    /* Two overlays decide how the menus sit on the wallpaper: one for the home
+       list, one for the settings list. They are ordinary image slots, but they
+       are easy to lose among eighty other assets, so they get their own panel
+       with the same replace / blank / swap-from-theme actions. */
+    var MASK_SLOTS = [
+        { id: 'desktopMask', label: 'Home menu mask', screen: 'Home screen' },
+        { id: 'settingConfig.settingMask', label: 'Settings mask', screen: 'Settings list' }
+    ];
+
+    function maskActionButton(id, action, icon, label, primary) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.setAttribute('data-mask-action', action);
+        btn.setAttribute('data-mask-id', id);
+        if (primary) btn.className = 'is-primary';
+        btn.title = label;
+        var glyph = document.createElement('i');
+        glyph.className = 'fa-solid ' + icon;
+        glyph.setAttribute('aria-hidden', 'true');
+        var text = document.createElement('span');
+        text.textContent = label;
+        btn.appendChild(glyph);
+        btn.appendChild(text);
+        return btn;
+    }
+
+    function renderMaskEditor() {
+        if (!el.maskEditor) return;
+        var slots = MASK_SLOTS.filter(function (slot) {
+            return !!state.assetById[slot.id];
+        });
+        el.maskEditor.innerHTML = '';
+        el.maskEditor.hidden = slots.length === 0;
+        if (!slots.length) return;
+
+        var head = document.createElement('div');
+        head.className = 'studio-mask-head';
+        var title = document.createElement('p');
+        title.className = 'studio-eyebrow';
+        title.textContent = 'Masks';
+        var hint = document.createElement('span');
+        hint.textContent = slots.length + (slots.length === 1 ? ' overlay' : ' overlays');
+        head.appendChild(title);
+        head.appendChild(hint);
+        el.maskEditor.appendChild(head);
+
+        var grid = document.createElement('div');
+        grid.className = 'studio-mask-grid';
+        slots.forEach(function (slot) {
+            var asset = state.assetById[slot.id];
+            var status = assetStatus(asset);
+            var card = document.createElement('article');
+            card.className = 'studio-mask-card';
+            card.setAttribute('data-mask-slot', slot.id);
+
+            var top = document.createElement('div');
+            top.className = 'studio-mask-top';
+            var art = document.createElement('span');
+            art.className = 'studio-mask-art';
+            if (asset.url && asset.kind === 'image') {
+                var img = document.createElement('img');
+                img.alt = '';
+                img.src = asset.url;
+                art.appendChild(img);
+            } else {
+                art.innerHTML = '<i class="fa-regular fa-image" aria-hidden="true"></i>';
+            }
+            var copy = document.createElement('span');
+            copy.className = 'studio-mask-copy';
+            var name = document.createElement('strong');
+            name.textContent = slot.label;
+            var file = document.createElement('span');
+            file.textContent = (fileName(asset.value) || 'No file') + ' · ' + slot.screen;
+            file.title = asset.value || 'No file assigned';
+            var badge = document.createElement('span');
+            badge.className = 'studio-mask-badge is-' + status.key;
+            badge.textContent = status.label;
+            copy.appendChild(name);
+            copy.appendChild(file);
+            copy.appendChild(badge);
+            top.appendChild(art);
+            top.appendChild(copy);
+
+            var actions = document.createElement('div');
+            actions.className = 'studio-mask-actions';
+            actions.appendChild(maskActionButton(slot.id, 'preview', 'fa-eye', 'Show', false));
+            actions.appendChild(maskActionButton(slot.id, 'replace', 'fa-folder-open', 'Replace', true));
+            actions.appendChild(maskActionButton(slot.id, 'blank', 'fa-trash-can', 'Blank', false));
+            actions.appendChild(maskActionButton(slot.id, 'theme', 'fa-images', 'Theme', false));
+
+            card.appendChild(top);
+            card.appendChild(actions);
+            grid.appendChild(card);
+        });
+        el.maskEditor.appendChild(grid);
+
+        var foot = document.createElement('p');
+        foot.className = 'studio-mask-hint';
+        foot.textContent = 'Blank swaps in a fully transparent PNG, so the device keeps the gap instead of drawing its own overlay.';
+        el.maskEditor.appendChild(foot);
     }
 
     function assetStatus(asset) {
@@ -2308,6 +2414,23 @@
                     return;
                 }
                 swapAssetFromTheme(row.getAttribute('data-theme-folder'), value);
+            });
+        }
+        if (el.maskEditor) {
+            el.maskEditor.addEventListener('click', function (event) {
+                var button = event.target.closest('[data-mask-action]');
+                if (!button) return;
+                var id = button.getAttribute('data-mask-id');
+                var action = button.getAttribute('data-mask-action');
+                if (!state.assetById[id]) return;
+                if (action === 'replace') openAssetPicker(id);
+                else if (action === 'blank') blankAsset(id);
+                else if (action === 'theme') openThemePicker(id);
+                else {
+                    setMode('preview');
+                    selectAsset(id);
+                    revealAssetContext(id);
+                }
             });
         }
         if (el.assetReset) {

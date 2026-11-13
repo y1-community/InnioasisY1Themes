@@ -92,6 +92,109 @@
     margin-top: 20px;
 }
 
+/* —— Masks —— */
+
+.studio-mask-editor {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--studio-line);
+}
+
+.studio-mask-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.studio-mask-head .studio-eyebrow { margin: 0; }
+.studio-mask-head > span { color: var(--site-muted); font-size: 0.68rem; }
+
+.studio-mask-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 8px;
+}
+
+.studio-mask-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid var(--studio-line);
+    border-radius: 10px;
+    background: var(--studio-card);
+}
+
+.studio-mask-top { display: flex; align-items: center; gap: 8px; min-width: 0; }
+
+.studio-mask-art {
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    border: 1px solid var(--studio-line);
+    border-radius: 8px;
+    background: color-mix(in oklab, var(--site-bg) 60%, #000);
+    color: var(--site-muted);
+}
+
+.studio-mask-art img { width: 100%; height: 100%; object-fit: contain; }
+
+.studio-mask-copy { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.studio-mask-copy strong { font-size: 0.76rem; line-height: 1.2; }
+.studio-mask-copy > span { overflow: hidden; color: var(--site-muted); font: 500 0.62rem var(--site-font-mono); text-overflow: ellipsis; white-space: nowrap; }
+
+.studio-mask-badge {
+    color: var(--site-muted);
+    font: 600 0.56rem var(--site-font-mono);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.studio-mask-badge.is-changed { color: var(--site-accent); }
+.studio-mask-badge.is-missing { color: var(--studio-danger, #e2564f); }
+
+.studio-mask-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+
+.studio-mask-actions button {
+    min-height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 4px 6px;
+    border: 1px solid var(--studio-line);
+    border-radius: 7px;
+    background: var(--site-bg);
+    color: var(--site-text);
+    font: 600 0.64rem var(--site-font);
+    cursor: pointer;
+}
+
+.studio-mask-actions button:hover { border-color: var(--site-accent); color: var(--site-accent); }
+.studio-mask-actions button:focus-visible { outline: 2px solid var(--site-accent); outline-offset: 1px; }
+.studio-mask-actions button:disabled { opacity: 0.45; cursor: not-allowed; }
+.studio-mask-actions button.is-primary { border-color: var(--site-accent); color: var(--site-accent); }
+
+.studio-mask-hint {
+    margin: 8px 0 0;
+    color: var(--site-muted);
+    font-size: 0.68rem;
+    line-height: 1.45;
+}
+
+/* Watch-sized trays: keep the two buttons per mask, drop their labels so the
+   actions stay inside a 200px column. */
+@media (max-width: 300px) {
+    body.studio-app .studio-mask-actions button span { display: none; }
+    body.studio-app .studio-mask-actions button { min-height: 30px; }
+    body.studio-app .studio-mask-copy > span { display: none; }
+}
+
 /* —— Swap an asset in from another theme —— */
 
 .studio-theme-picker-card {
