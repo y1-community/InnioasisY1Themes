@@ -18,7 +18,11 @@
         /* The dock is a convenience here, never a preference the rest of the
            site should inherit. support_toolbar.html reads this flag. */
         window.STUDIO_DOCK_ISOLATED = true;
-        window.Y1_THEME_EDITOR_URL_OVERRIDE = location.pathname;
+        /* This page is reachable only by typing its URL: nothing on the site
+           links to it, and no editor override points the header here. The nav's
+           Editor item keeps resolving to the community editor, so following it
+           from Studio leaves for that editor instead of reloading this page and
+           discarding unsaved work. */
     </script>
     <script src="../site-init.js?v=20261110picker"></script>
     <link rel="manifest" href="/studio-test/manifest.webmanifest" />
@@ -29,7 +33,7 @@
     <link rel="stylesheet" href="../site-theme.css?v=20261111dl2" />
     <link rel="stylesheet" href="../site-toolbar.css?v=20261110accent2" />
     <link rel="stylesheet" href="../y1-theme-preview.css?v=20261111hq1" />
-    <link rel="stylesheet" href="/studio-test/studio.css?v=20261111studio8" />
+    <link rel="stylesheet" href="/studio-test/studio.css?v=20261112urlonly" />
 </head>
 
 <body class="site-themes-app site-dock-mode studio-app" data-mode="preview">

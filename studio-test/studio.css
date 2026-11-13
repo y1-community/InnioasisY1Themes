@@ -26,66 +26,8 @@
     display: none !important;
 }
 
-/* —— Local-only gate —— */
-
-.studio-gate {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 300;
-    place-items: center;
-    padding: 24px;
-    background:
-        radial-gradient(circle at 30% 18%, var(--studio-accent-soft), transparent 55%),
-        var(--site-bg);
-}
-
-html.studio-not-local .studio-gate {
-    display: grid;
-}
-
-html.studio-not-local .studio-shell,
-html.studio-not-local .studio-drop,
-html.studio-not-local .studio-toast {
-    display: none !important;
-}
-
-.studio-gate-card {
-    width: min(100%, 460px);
-    padding: 28px;
-    border: 1px solid var(--site-border);
-    border-radius: 18px;
-    background: color-mix(in oklab, var(--site-bg-elevated) 88%, transparent);
-    box-shadow: var(--lumen-shadow);
-}
-
-.studio-gate-icon {
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    margin-bottom: 16px;
-    border: 1px solid var(--studio-accent-line);
-    border-radius: 12px;
-    background: var(--studio-accent-soft);
-    color: var(--site-accent);
-}
-
-.studio-gate-card h1 {
-    margin: 4px 0 8px;
-    font-family: var(--site-font-display);
-    font-size: 1.9rem;
-    font-weight: 400;
-    line-height: 1.05;
-    letter-spacing: -0.03em;
-}
-
-.studio-gate-card > p:not(.studio-eyebrow) {
-    margin: 0 0 20px;
-    color: var(--site-muted);
-    font-size: 0.9rem;
-    line-height: 1.55;
-}
+/* Reachable only by typing its URL: no locality gate and no in-site link,
+   so every feature stays available to whoever opens it. */
 
 /* —— Top bar —— */
 
