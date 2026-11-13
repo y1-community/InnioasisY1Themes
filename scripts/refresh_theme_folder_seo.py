@@ -30,8 +30,16 @@ def esc(value: str) -> str:
     )
 
 
-def set_attr(text: str, pattern: str, value: str) -> str:
-    updated, count = re.subn(pattern, lambda _m: _m.group(1) + value + _m.group(2), text, count=1)
+def rewrite_tag(text: str, pattern: str, tag: str) -> str:
+    """Replace one head tag outright, through to the end of its line.
+
+    Splicing a value between capture groups drops the closing delimiter unless
+    every pattern is written for exactly that many groups. That is how the title
+    lost its ``</title>`` and each ``content="`` its closing quote, which swallows
+    the rest of the head and with it the page's stylesheets. Rewriting the whole
+    line keeps the tag well formed and repairs a page that was damaged that way.
+    """
+    updated, count = re.subn(pattern, lambda _m: tag, text, count=1)
     return updated if count else text
 
 
@@ -47,12 +55,12 @@ def refresh(path: Path, title: str, description: str) -> bool:
     title_e = esc(title)
     desc_e = esc(description)
     original = text
-    text = set_attr(text, r"(<title>)(.*?)(</title>)", title_e)
-    text = set_attr(text, r'(<meta name="description" content=")(.*?)(")', desc_e)
-    text = set_attr(text, r'(<meta property="og:title" content=")(.*?)(")', title_e)
-    text = set_attr(text, r'(<meta property="og:description" content=")(.*?)(")', desc_e)
-    text = set_attr(text, r'(<meta name="twitter:title" content=")(.*?)(")', title_e)
-    text = set_attr(text, r'(<meta name="twitter:description" content=")(.*?)(")', desc_e)
+    text = rewrite_tag(text, r"<title>[^\n]*", f"<title>{title_e}</title>")
+    text = rewrite_tag(text, r'<meta name="description" content="[^\n]*', f'<meta name="description" content="{desc_e}" />')
+    text = rewrite_tag(text, r'<meta property="og:title" content="[^\n]*', f'<meta property="og:title" content="{title_e}" />')
+    text = rewrite_tag(text, r'<meta property="og:description" content="[^\n]*', f'<meta property="og:description" content="{desc_e}" />')
+    text = rewrite_tag(text, r'<meta name="twitter:title" content="[^\n]*', f'<meta name="twitter:title" content="{title_e}" />')
+    text = rewrite_tag(text, r'<meta name="twitter:description" content="[^\n]*', f'<meta name="twitter:description" content="{desc_e}" />')
     if text == original:
         return False
     path.write_text(text, encoding="utf-8")
