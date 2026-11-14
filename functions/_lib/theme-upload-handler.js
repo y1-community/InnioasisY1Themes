@@ -379,6 +379,25 @@ export async function handleUploadPost(request, env) {
     }
     const uploaderName = themeAuthor;
 
+    /* The Studio asks whether a package is an update to an existing listing or
+       a new theme before it submits; the answer names the pull request and
+       decides whether it may ever merge without a maintainer. */
+    const submissionIntent =
+      String(form.get("submissionIntent") || "").trim().toLowerCase() === "update"
+        ? "update"
+        : "new";
+    const isUpdateIntent = submissionIntent === "update";
+    const targetFolder = (
+      String(form.get("targetFolder") || "")
+        .replace(/\\/g, "/")
+        .split("/")
+        .filter(Boolean)
+        .pop() || ""
+    )
+      .replace(/[\u0000-\u001f<>:"|?*]/g, "")
+      .trim()
+      .slice(0, 120);
+
     let directFiles = [];
     if (typeof directFilesRaw === "string" && directFilesRaw.trim()) {
       try {
@@ -498,7 +517,10 @@ export async function handleUploadPost(request, env) {
       const zipPrefix = zipDir ? `${zipDir.replace(/^\/+|\/+$/g, "")}/` : "";
       const unique = `${now.toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
       const slugTitle = slugify(themeTitle);
-      const zipName = slugTitle ? `${slugTitle}.zip` : `gallery-upload-${unique}.zip`;
+      /* An update is stored under the existing folder's name so the archive and
+         the listing it targets cannot drift apart. */
+      const zipStem = isUpdateIntent && targetFolder ? slugify(targetFolder) : slugTitle;
+      const zipName = zipStem ? `${zipStem}.zip` : `gallery-upload-${unique}.zip`;
       zipPath = zipPrefix ? `${zipPrefix}${zipName}` : zipName;
       await ghPutContentsCreateOrUpdate(
         apiBase,
@@ -516,6 +538,8 @@ export async function handleUploadPost(request, env) {
           uploaderSlug: uploaderSlug || "",
           shareFolderHints,
           themeTitle: themeTitle || "",
+          submissionIntent,
+          targetFolder: targetFolder || "",
         },
         null,
         2
@@ -553,9 +577,14 @@ export async function handleUploadPost(request, env) {
     if (themeTitle && themeAuthor) prTitle = `${themeTitle} — ${themeAuthor}`;
     else if (themeTitle) prTitle = themeTitle;
     else if (themeAuthor) prTitle = `Theme submission — ${themeAuthor}`;
+    /* The `[Update]` prefix keeps the auto-merge workflow away from updates for
+       good: only brand-new themes may land without a human. */
+    if (isUpdateIntent) prTitle = `[Update] ${prTitle}`;
 
     const prBody = [
-      "## New theme from the gallery uploader",
+      isUpdateIntent
+        ? "## Gallery theme update from the Studio"
+        : "## New theme from the gallery uploader",
       "",
       hasDirectFiles
         ? `- Upload mode: direct file commit (${directCommitted.length} file(s) attached; ${directOmittedForSecurity > 0 ? `${directOmittedForSecurity} path(s) withheld for security` : "no paths withheld"})`
@@ -565,6 +594,9 @@ export async function handleUploadPost(request, env) {
         : null,
       themeTitle ? `- Title (from config): ${themeTitle}` : null,
       themeAuthor ? `- Author (from config): ${themeAuthor}` : null,
+      isUpdateIntent
+        ? `- **Submission intent:** update${targetFolder ? ` of the existing folder \`${targetFolder}\`` : ""} — this PR stays open for a maintainer and is never auto-merged.`
+        : "- **Submission intent:** new theme — eligible for automatic merge once validation passes.",
       "",
       "**Automatic submission policy:**",
       "- Automatic submission only when `scripts/validate_theme_pr.py` passes.",
@@ -593,6 +625,8 @@ export async function handleUploadPost(request, env) {
     return jsonResponse(
       {
         ok: true,
+        intent: submissionIntent,
+        targetFolder: targetFolder || null,
         prUrl: pr.html_url || null,
         branch: branchName,
       },

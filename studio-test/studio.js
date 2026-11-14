@@ -2839,7 +2839,7 @@
         else delete info.externalDownloadUrl;
     }
 
-    async function buildThemePackage(reportProgress) {
+    async function buildThemePackage(reportProgress, folderOverride) {
         if (!state.config) throw new Error('Open a theme first.');
         if (!window.JSZip) throw new Error('The ZIP builder did not load.');
         if (!window.ThemePackaging) throw new Error('The theme packager did not load.');
@@ -2849,7 +2849,9 @@
         }
         var title = el.submitTitle.value.trim() || state.meta.name || 'Untitled theme';
         var author = el.submitAuthor.value.trim();
-        var stem = safeStem(title);
+        /* Updates pack into the listing's own folder so the gallery reads them
+           as that listing's update; new themes use their own title. */
+        var stem = safeStem(folderOverride || title);
         var config = cloneJson(state.config);
         syncConfigMetadata(config, title, author);
         reportPercent(2, 'Preparing theme…');
@@ -3110,16 +3112,20 @@
         setBusy(true, 'submit');
         setSubmitStatus('Building your package…', true);
         try {
-            var file = await buildThemePackage();
             var stem = safeStem(title);
-            var batch = await wrapUploadBatch(file, stem);
+            var listing = state.identity.listing;
+            var updateFolder = state.ownUpdate && listing && listing.folder ? safeStem(listing.folder) : '';
+            var packFolder = updateFolder || stem;
+            var file = await buildThemePackage(undefined, packFolder);
+            var batch = await wrapUploadBatch(file, packFolder);
             setSubmitStatus('Sending your theme for review…', true);
             var form = new FormData();
             form.set('zip', batch, batch.name);
             form.set('themeTitle', title);
             form.set('themeAuthor', author);
             form.set('submissionIntent', state.ownUpdate ? 'update' : 'new');
-            form.set('shareFolderHints', JSON.stringify([stem]));
+            if (updateFolder) form.set('targetFolder', updateFolder);
+            form.set('shareFolderHints', JSON.stringify([packFolder]));
             var response = await fetch(UPLOAD_ORIGIN + '/api/upload-theme', { method: 'POST', body: form });
             var payload = await response.json().catch(function () {
                 return {};
