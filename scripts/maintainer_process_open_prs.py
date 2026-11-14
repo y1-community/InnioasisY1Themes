@@ -98,6 +98,11 @@ def main() -> int:
         title = str(pr.get("title") or "")
         body = str(pr.get("body") or "")
 
+        if title.startswith("[Update]"):
+            results.append(f"#{num} UPDATE skip: left open for a maintainer to review")
+            skipped += 1
+            continue
+
         if title.startswith("[Removal]"):
             req = classify_removal_pr(title=title, body=body)
             if not req:
