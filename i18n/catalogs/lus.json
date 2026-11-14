@@ -1,7 +1,7 @@
 {
- "count": 1220,
+ "count": 1223,
  "dir": "ltr",
- "generated": "2026-11-14T00:19:29+00:00",
+ "generated": "2026-11-14T01:04:39+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "20 minutos a uma hora",
@@ -78,7 +78,7 @@
  "locale": "lus",
  "name": "Mizo",
  "native": "Mizo ṭawng",
- "provider": "google-web",
+ "provider": "clients5",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -142,6 +142,7 @@
   "A light iPod inspired theme Works on the Innioasis Y1 and Y2 with the Original Software, Better-Y, Koensayr and Solar.": "iPod inspired theme light tak chuan Original Software, Better-Y, Koensayr leh Solar te hmangin Innioasis Y1 leh Y2-ah hna a thawk a ni.",
   "A mashup of Microsoft Zune on an iPod-like device.": "iPod ang chi device-a Microsoft Zune mashup a ni.",
   "A really simple minimal theme": "A simple tak zet a ni minimal theme",
+  "A sentence about the look, palette or what it works best with. Write it in English so the gallery can translate it for every visitor.": "Look, palette emaw a hnathawh that ber chungchang sentence. English-in ziak la, chutiang chuan gallery-in tlawhtu zawng zawng tan a letling thei ang.",
   "A simple theme based on the free game SHTDN": "Free game SHTDN atanga siam theme awlsam tak",
   "A simple theme made just for Carats :D": "Carats tan chauh siam theme awlsam tak :D",
   "A soft matcha-green aesthetic minimalistic theme.": "A soft matcha-green aesthetic minimalistic theme a ni a, a thupui chu a hlimthla a ni.",
@@ -924,6 +925,7 @@
   "Theme pages": "Thupui phek hrang hrang",
   "Themes Gallery": "Thupui hrang hrang Gallery a awm",
   "There's a new arrival on the way in Ryan's house. Every donation towards the servers and our growing family means a great deal.": "Ryan te inah hian kalkawngah hian mi thar a awm a. Server-te leh kan chhungkaw lo pung zel lam hawia thawhlawm thawh apiang hian thil ropui tak a kawk a ni.",
+  "These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting. Titles and descriptions stay in English here: the gallery translates them for each visitor.": "Hengte hi gallery upload form-a listing details inang vek a ni. Simulator chhunga theme chu i package submit tur kha a ni. Hetah hian thupui leh sawifiahnate chu English-in a awm reng a: gallery chuan tlawhtu pakhat zel tan a letling a ni.",
   "This author has opted out of gallery submissions": "He ziaktu hian gallery submission a opt out a ni",
   "This looks like an update": "Hei hi update ang mai a ni",
   "This month's": "Tun thla chhung hian...",
@@ -1029,6 +1031,7 @@
   "Witchy": "Witchy a ni",
   "Wolverine": "Wolverine chuan a rawn ti a",
   "Wolverine theme for Innioasis Y1 & Y2.": "Wolverine thupui chu Innioasis Y1 & Y2 tan a ni.",
+  "Write the title in English so the gallery can translate it for every visitor.": "Gallery-in tlawhtu zawng zawng tan a letling theih nan a thupui chu English-in ziak rawh.",
   "Y1 & Y2 Themes": "Y1 & Y2 Thupui hrang hrang",
   "Y1 theme inspired by Tomodachi Life": "Y1 thupui chu Tomodachi Life atanga infuih a ni",
   "Y2 Default": "Y2 A hmasa berin",

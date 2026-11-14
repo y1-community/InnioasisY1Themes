@@ -26,18 +26,68 @@
     display: none !important;
 }
 
-/* —— Own-update confirmation —— */
+/* —— Submit identity question ——
+   Asked in the panel, not in a modal: the answer decides whether the package
+   is sent as a listing update or as the submitter's own new theme. */
 
-.studio-own-check {
-    margin: 6px 0 4px;
+.studio-identity {
+    margin: 0 0 16px;
+    padding: 14px;
+    border: 1px solid var(--studio-accent-line);
+    border-radius: 12px;
+    background: var(--studio-accent-soft);
 }
 
-.studio-own-note {
-    margin: 0 0 18px;
+.studio-identity-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
 }
 
-.studio-own-note.is-update {
+.studio-identity-head .studio-eyebrow {
+    margin: 0;
+}
+
+.studio-identity-lead {
+    margin: 0 0 12px;
+    color: var(--site-text);
+    font-size: 0.8rem;
+    line-height: 1.45;
+}
+
+.studio-identity-lead strong {
     color: var(--site-accent);
+}
+
+.studio-identity-q {
+    margin: 0 0 8px;
+    color: var(--site-text);
+    font-size: 0.82rem;
+    font-weight: 650;
+}
+
+.studio-identity-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.studio-identity-actions .studio-btn {
+    flex: 1 1 138px;
+    min-height: 38px;
+    justify-content: center;
+}
+
+.studio-identity-result {
+    display: grid;
+    gap: 7px;
+    justify-items: start;
+}
+
+.studio-identity-result .studio-hint {
+    margin: 0;
 }
 
 .studio-modal {

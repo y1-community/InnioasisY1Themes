@@ -1,7 +1,7 @@
 {
- "count": 2240,
+ "count": 2243,
  "dir": "ltr",
- "generated": "2026-11-14T00:19:29+00:00",
+ "generated": "2026-11-14T01:04:35+00:00",
  "keep": [
   "1 day ago",
   "1 month ago",
@@ -57,7 +57,7 @@
  "locale": "bo",
  "name": "Tibetan",
  "native": "བོད་མི",
- "provider": "google-web",
+ "provider": "clients5",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!གྲོང་ཁྱེར་གྱི་སྐར་མ་!!",
@@ -121,6 +121,7 @@
   "A light iPod inspired theme Works on the Innioasis Y1 and Y2 with the Original Software, Better-Y, Koensayr and Solar.": "མཉེན་ཆས་ཐོག་མ་ Better-Y དང་། ​​Koensayr དང་ Solar དང་མཉམ་དུ་ Innioasis Y1 དང་ Y2 ལ་ལས་ཀ་བྱེད་ཀྱི་ཡོད།",
   "A mashup of Microsoft Zune on an iPod-like device.": "མའི་ཀོ་རོ་སོཕཊ་ཟུན་གྱི་མཉམ་བསྲེས་དེ་ཨའི་པོ་ཌི་ལྟ་བུའི་ཡོ་ཆས་ཤིག་གི་སྟེང་ལ་བཟོས་ཡོད།",
   "A really simple minimal theme": "དངོས་གནས་ཆེས་ཆུང་བའི་བརྗོད་གཞི་སྟབས་བདེ་ཞིག",
+  "A sentence about the look, palette or what it works best with. Write it in English so the gallery can translate it for every visitor.": "མཐོང་སྣང་དང་། ཚོན་མདོག ཡང་ན་དེས་གང་དང་མཉམ་དུ་ལས་ཀ་ཡག་ཤོས་བྱེད་པའི་སྐོར་གྱི་བརྗོད་ཚིག་ཅིག དབྱིན་ཡིག་ཐོག་བྲིས་ནས་འགྲེམས་སྟོན་ཁང་གིས་མགྲོན་པོ་ཚང་མར་སྐད་སྒྱུར་བྱེད་ཐུབ།",
   "A simple theme based on the free game SHTDN": "རིན་མེད་རྩེད་མོ་SHTDNལ་གཞི་བཅོལ་བའི་བརྗོད་གཞི་སྟབས་བདེ་ཞིག",
   "A simple theme made just for Carats :D": "བརྗོད་གཞི་སྟབས་བདེ་ཞིག ཀ་རེཊ་ཁོ་ནའི་ཆེད་དུ་བཟོས་ཡོད། :D",
   "A soft matcha-green aesthetic minimalistic theme.": "མཐེ་ཅ་ལྗང་ཁུའི་མཛེས་སྡུག་ལྡན་པའི་བརྗོད་གཞི་འཇམ་པོ་ཞིག",
@@ -903,6 +904,7 @@
   "Theme pages": "བརྗོད་དོན་ཤོག་ངོས།",
   "Themes Gallery": "བརྗོད་དོན་འགྲེམས་སྟོན་ཁང་།",
   "There's a new arrival on the way in Ryan's house. Every donation towards the servers and our growing family means a great deal.": "རྱེན་གྱི་ཁྱིམ་དུ་ལམ་བར་དུ་མི་གསར་བ་ཞིག་སླེབས་བྱུང་། ཞབས་ཞུ་བ་དང་ང་ཚོའི་འཕེལ་རྒྱས་འགྲོ་བཞིན་པའི་ཁྱིམ་ཚང་ལ་ཞལ་འདེབས་རྒྱག་པ་རེ་རེ་ལ་དོན་སྙིང་ཆེན་པོ་ཡོད།",
+  "These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting. Titles and descriptions stay in English here: the gallery translates them for each visitor.": "འདི་དག་ནི་འགྲེམས་སྟོན་ཁང་གི་ཡར་བསྐུར་ཡིག་ཆ་དང་འདྲ་བའི་ཐོ་འགོད་ཞིབ་ཕྲ་ཡིན། ཚོད་ལྟ་བྱེད་མཁན་གྱི་བརྗོད་གཞི་ནི་ཁྱེད་ཀྱིས་འབུལ་བཞིན་པའི་ཐུམ་བུ་དེ་རེད། མིང་དང་འགྲེལ་བཤད་འདིར་དབྱིན་ཡིག་ཐོག་གནས་ཡོད། འགྲེམས་སྟོན་ཁང་གིས་མགྲོན་པོ་རེ་རེར་སྐད་སྒྱུར་བྱེད་ཀྱི་ཡོད།",
   "This author has opted out of gallery submissions": "རྩོམ་པ་པོ་འདིས་འགྲེམས་སྟོན་ཁང་གི་ཕུལ་བའི་ཡིག་ཆ་ལས་ཕྱིར་འཐེན་བྱས།",
   "This looks like an update": "འདི་གསར་བརྗེ་ལྟ་བུ་རེད།",
   "This month's": "ཟླ་འདིའི་ནང་།",
@@ -1008,6 +1010,7 @@
   "Witchy": "སྨྱོན་པ།",
   "Wolverine": "ཝོལ་ཝེ་རིན།",
   "Wolverine theme for Innioasis Y1 & Y2.": "ཝོལ་ཝེ་རིན་གྱི་བརྗོད་གཞི་ Innioasis Y1 དང་ Y2 ཡིན།",
+  "Write the title in English so the gallery can translate it for every visitor.": "མིང་དེ་དབྱིན་ཡིག་ཐོག་བྲིས་ནས་འགྲེམས་སྟོན་ཁང་གིས་མགྲོན་པོ་ཚང་མར་སྐད་སྒྱུར་བྱེད་ཐུབ།",
   "Y1 & Y2 Themes": "Y1 & Y2 བརྗོད་གཞི།",
   "Y1 theme inspired by Tomodachi Life": "Y1 བརྗོད་གཞི་དེ་ཊོ་མོ་ཌ་ཆི་མི་ཚེའི་སེམས་འགུལ་ཐེབས་ཡོད།",
   "Y2 Default": "Y2 སྔོན་སྒྲིག",

@@ -1,7 +1,7 @@
 {
- "count": 1220,
+ "count": 1223,
  "dir": "ltr",
- "generated": "2026-11-14T00:19:29+00:00",
+ "generated": "2026-11-14T01:04:39+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "1G Pip-Boy",
@@ -113,7 +113,7 @@
  "locale": "mk",
  "name": "Macedonian",
  "native": "Македонски",
- "provider": "google-web",
+ "provider": "clients5",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -177,6 +177,7 @@
   "A light iPod inspired theme Works on the Innioasis Y1 and Y2 with the Original Software, Better-Y, Koensayr and Solar.": "Лесна тема инспирирана од iPod Работи на Innioasis Y1 и Y2 со оригиналниот софтвер, Better-Y, Koensayr и Solar.",
   "A mashup of Microsoft Zune on an iPod-like device.": "Комбинација на Microsoft Zune на уред сличен на iPod.",
   "A really simple minimal theme": "Навистина едноставна минимална тема",
+  "A sentence about the look, palette or what it works best with. Write it in English so the gallery can translate it for every visitor.": "Реченица за изгледот, палетата или со што најдобро функционира. Напишете го на англиски за да може галеријата да го преведе за секој посетител.",
   "A simple theme based on the free game SHTDN": "Едноставна тема базирана на бесплатната игра SHTDN",
   "A simple theme made just for Carats :D": "Едноставна тема направена само за карати :D",
   "A soft matcha-green aesthetic minimalistic theme.": "Мека меча-зелена естетска минималистичка тема.",
@@ -959,6 +960,7 @@
   "Theme pages": "Страници со теми",
   "Themes Gallery": "Галерија на теми",
   "There's a new arrival on the way in Ryan's house. Every donation towards the servers and our growing family means a great deal.": "На пат доаѓа ново пристигнување во куќата на Рајан. Секоја донација кон серверите и нашето растечко семејство значи многу.",
+  "These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting. Titles and descriptions stay in English here: the gallery translates them for each visitor.": "Ова се истите детали за списокот како и формуларот за прикачување на галеријата. Темата во симулаторот е пакетот што го поднесувате. Насловите и описите остануваат на англиски овде: галеријата ги преведува за секој посетител.",
   "This author has opted out of gallery submissions": "Овој автор се откажа од поднесоците на галеријата",
   "This looks like an update": "Ова изгледа како ажурирање",
   "This month's": "Овој месец",
@@ -1064,6 +1066,7 @@
   "Witchy": "Вештерски",
   "Wolverine": "Вулверин",
   "Wolverine theme for Innioasis Y1 & Y2.": "Тема Wolverine за Innioasis Y1 и Y2.",
+  "Write the title in English so the gallery can translate it for every visitor.": "Напишете го насловот на англиски за да може галеријата да го преведе за секој посетител.",
   "Y1 & Y2 Themes": "Y1 и Y2 Теми",
   "Y1 theme inspired by Tomodachi Life": "Y1 тема инспирирана од животот на Томодачи",
   "Y2 Default": "Y2 Стандардно",

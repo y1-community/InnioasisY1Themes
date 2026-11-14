@@ -1,7 +1,7 @@
 {
- "count": 7158,
+ "count": 7161,
  "dir": "ltr",
- "generated": "2026-11-14T00:19:28+00:00",
+ "generated": "2026-11-14T01:04:35+00:00",
  "keep": [
   "(1M)",
   "(1P)",
@@ -313,7 +313,7 @@
  "locale": "bn",
  "name": "Bengali",
  "native": "বাংলা",
- "provider": "google-web",
+ "provider": "clients5",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!সিটিস্টার!!",
@@ -668,6 +668,7 @@
   "A really simple minimal theme": "একটি সত্যিই সহজ ন্যূনতম থিম",
   "A remake of the original Life is Strange theme. I changed it a bit :)": "আসল লাইফ ইজ স্ট্রেঞ্জ থিমের রিমেক। আমি এটি কিছুটা পরিবর্তন করেছি :)",
   "A reset cannot run on a player that never reaches the home screen. That is a software problem, not a settings problem. Use": "একটি রিসেট এমন প্লেয়ারে চলতে পারে না যা কখনই হোম স্ক্রিনে পৌঁছায় না। এটি একটি সফ্টওয়্যার সমস্যা, সেটিংস সমস্যা নয়। ব্যবহার করুন",
+  "A sentence about the look, palette or what it works best with. Write it in English so the gallery can translate it for every visitor.": "চেহারা, প্যালেট বা এটি কী দিয়ে সবচেয়ে ভাল কাজ করে সে সম্পর্কে একটি বাক্য। এটি ইংরেজিতে লিখুন যাতে গ্যালারি প্রতিটি দর্শকের জন্য এটি অনুবাদ করতে পারে।",
   "A simple theme based on the free game SHTDN": "বিনামূল্যে গেম SHTDN এর উপর ভিত্তি করে একটি সাধারণ থিম",
   "A simple theme for simple Carats who don't really seem to find any themes that would suit their music tastes :)": "সাধারণ ক্যারেটদের জন্য একটি সাধারণ থিম যারা সত্যিই তাদের সঙ্গীতের স্বাদ অনুসারে এমন কোনো থিম খুঁজে পাচ্ছেন বলে মনে হয় না :)",
   "A simple theme made just for Carats :D": "ক্যারেটের জন্য তৈরি একটি সাধারণ থিম :D",
@@ -4904,6 +4905,7 @@
   "Themes in this gallery are compatible with": "এই গ্যালারির থিমগুলির সাথে সামঞ্জস্যপূর্ণ৷",
   "Themes you can trust on your Y1 & Y2": "আপনি আপনার Y1 এবং Y2 থিমগুলিতে বিশ্বাস করতে পারেন",
   "There's a new arrival on the way in Ryan's house. Every donation towards the servers and our growing family means a great deal.": "রায়ানের বাড়িতে একটি নতুন আগমনের পথে। সার্ভার এবং আমাদের ক্রমবর্ধমান পরিবারের প্রতি প্রতিটি অনুদান একটি মহান চুক্তি মানে.",
+  "These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting. Titles and descriptions stay in English here: the gallery translates them for each visitor.": "এইগুলি গ্যালারি আপলোড ফর্ম হিসাবে একই তালিকা বিবরণ. সিমুলেটরের থিম হল আপনি যে প্যাকেজটি জমা দিচ্ছেন। শিরোনাম এবং বিবরণ এখানে ইংরেজিতে থাকে: গ্যালারি প্রতিটি দর্শকের জন্য তাদের অনুবাদ করে।",
   "These authors are not allowed on the public gallery or through the upload form. Themes credited to them are hidden from visitors. Upload attempts may still reach GitHub in some cases, but they will not be listed for download on themes.innioasis.app.": "এই লেখকদের পাবলিক গ্যালারিতে বা আপলোড ফর্মের মাধ্যমে অনুমতি দেওয়া হয় না। তাদের জমাকৃত থিম দর্শকদের থেকে লুকানো হয়. আপলোড প্রচেষ্টা এখনও কিছু ক্ষেত্রে GitHub এ পৌঁছাতে পারে, কিন্তু সেগুলি themes.innioasis.app এ ডাউনলোডের জন্য তালিকাভুক্ত করা হবে না।",
   "These authors have asked not to have themes submitted or offered for download on the Themes Site. You can still upload packages credited to them for": "এই লেখকরা থিম সাইটে থিম জমা বা ডাউনলোডের জন্য প্রস্তাব না করতে বলেছেন। আপনি এখনও তাদের জন্য জমা করা প্যাকেজ আপলোড করতে পারেন",
   "Theweeknd Edition": "সপ্তাহান্তের সংস্করণ",
@@ -5269,6 +5271,7 @@
   "Woolium": "উলিয়াম",
   "WrathfulCaly": "ক্রুদ্ধ ক্যালি",
   "Write failed:": "লিখতে ব্যর্থ হয়েছে:",
+  "Write the title in English so the gallery can translate it for every visitor.": "শিরোনামটি ইংরেজিতে লিখুন যাতে গ্যালারি প্রতিটি দর্শকের জন্য এটি অনুবাদ করতে পারে।",
   "Wrong turn": "ভুল মোড়",
   "Wu-Tang": "উ-টাং",
   "Wu-Tang - Innioasis Y1 and Y2 Themes Gallery": "উ-টাং - Innioasis Y1 এবং Y2 থিম গ্যালারি",

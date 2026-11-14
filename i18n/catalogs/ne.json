@@ -1,7 +1,7 @@
 {
- "count": 1220,
+ "count": 1223,
  "dir": "ltr",
- "generated": "2026-11-14T00:19:29+00:00",
+ "generated": "2026-11-14T01:04:39+00:00",
  "keep": [
   "1G Pip-Boy",
   "1a Zelda",
@@ -139,7 +139,7 @@
  "locale": "ne",
  "name": "Nepali",
  "native": "नेपाली",
- "provider": "google-web",
+ "provider": "clients5",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!सिटीस्टार!!",
@@ -203,6 +203,7 @@
   "A light iPod inspired theme Works on the Innioasis Y1 and Y2 with the Original Software, Better-Y, Koensayr and Solar.": "एउटा हल्का आइपड प्रेरित विषयवस्तुले Innioasis Y1 र Y2 मा मूल सफ्टवेयर, Better-Y, Koensayr र Solar मा काम गर्छ।",
   "A mashup of Microsoft Zune on an iPod-like device.": "iPod-जस्तो उपकरणमा Microsoft Zune को म्यासअप।",
   "A really simple minimal theme": "साँच्चै सरल न्यूनतम विषयवस्तु",
+  "A sentence about the look, palette or what it works best with. Write it in English so the gallery can translate it for every visitor.": "लुक, प्यालेट वा यसले राम्रोसँग काम गर्ने बारे एउटा वाक्य। यसलाई अंग्रेजीमा लेख्नुहोस् ताकि ग्यालेरीले प्रत्येक आगन्तुकको लागि यसलाई अनुवाद गर्न सकोस्।",
   "A simple theme based on the free game SHTDN": "नि: शुल्क खेल SHTDN मा आधारित एक साधारण विषयवस्तु",
   "A simple theme made just for Carats :D": "क्यारेटका लागि बनाइएको साधारण विषयवस्तु : डी",
   "A soft matcha-green aesthetic minimalistic theme.": "एक नरम matcha-हरियो सौन्दर्य minimalistic विषयवस्तु।",
@@ -985,6 +986,7 @@
   "Theme pages": "विषयवस्तु पृष्ठहरू",
   "Themes Gallery": "थिम ग्यालेरी",
   "There's a new arrival on the way in Ryan's house. Every donation towards the servers and our growing family means a great deal.": "Ryan को घर मा बाटो मा एक नयाँ आगमन छ। सर्भरहरू र हाम्रो बढ्दो परिवार तर्फ हरेक दानको अर्थ ठूलो सम्झौता हो ।",
+  "These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting. Titles and descriptions stay in English here: the gallery translates them for each visitor.": "यी ग्यालेरी अपलोड फारम जस्तै सूची विवरणहरू हुन्। सिम्युलेटरमा विषयवस्तु तपाईंले पेश गरिरहनुभएको प्याकेज हो। शीर्षक र विवरणहरू यहाँ अंग्रेजीमा रहन्छन्: ग्यालेरीले तिनीहरूलाई प्रत्येक आगन्तुकको लागि अनुवाद गर्दछ।",
   "This author has opted out of gallery submissions": "यस लेखकले ग्यालेरी सबमिशनहरूबाट अप्ट आउट गर्नुभएको छ",
   "This looks like an update": "यो अपडेट जस्तो देखिन्छ",
   "This month's": "यो महिनाको",
@@ -1090,6 +1092,7 @@
   "Witchy": "बोक्सी",
   "Wolverine": "Wolverine",
   "Wolverine theme for Innioasis Y1 & Y2.": "Innioasis Y1 र Y2 को लागि Wolverine विषयवस्तु।",
+  "Write the title in English so the gallery can translate it for every visitor.": "अङ्ग्रेजीमा शीर्षक लेख्नुहोस् ताकि ग्यालेरीले प्रत्येक आगन्तुकको लागि यसलाई अनुवाद गर्न सकोस्।",
   "Y1 & Y2 Themes": "Y1 र Y2 विषयवस्तुहरू",
   "Y1 theme inspired by Tomodachi Life": "Y1 विषय Tomodachi जीवन द्वारा प्रेरित",
   "Y2 Default": "Y2 पूर्वनिर्धारित",

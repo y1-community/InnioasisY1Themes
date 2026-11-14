@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ru" dir="ltr" data-locale="ru">
+
+<head>
+    <meta charset="utf-8" />
+    <base href="/" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="theme-color" content="#2f80ed" />
+    <meta name="application-name" content="Theme Studio" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Theme Studio" />
+    <meta name="cf-pages-upload-api-origin" content="https://y1-theme-upload.itsryanspecter.workers.dev" />
+    <title>Theme Studio — Innioasis Y1 и Y2 темы</title>
+    <script>
+        /* The dock is a convenience here, never a preference the rest of the
+           site should inherit. support_toolbar.html reads this flag. */
+        window.STUDIO_DOCK_ISOLATED = true;
+        /* The simulator draws the theme's own menu labels. Pin its device UI to
+           English so a translated player never misreports what the author wrote. */
+        window.STUDIO_PREVIEW_LOCALE = 'en';
+        /* This page is reachable only by typing its URL: nothing on the site
+           links to it, and no editor override points the header here. The nav's
+           Editor item keeps resolving to the community editor, so following it
+           from Studio leaves for that editor instead of reloading this page and
+           discarding unsaved work. */
+    </script>
+    <script src="../site-init.js?v=20261110picker"></script>
+    <link rel="manifest" href="/studio-test/manifest.webmanifest" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/studio-test/icons/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/studio-test/icons/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="../site-theme.css?v=20261111dl2" />
+    <link rel="stylesheet" href="../site-toolbar.css?v=20261110accent2" />
+    <link rel="stylesheet" href="../y1-theme-preview.css?v=20261114rowfocus2" />
+    <link rel="stylesheet" href="/studio-test/studio.css?v=20261114identity" />
+</head>
+
+<body class="site-themes-app site-dock-mode studio-app" data-mode="preview">
+    <div id="nav-root"></div>
+
+    <div class="studio-shell">
+        <div class="studio-commandbar">
+            <div class="studio-command-copy">
+                <span class="studio-eyebrow"><i class="fa-solid fa-compact-disc" aria-hidden="true"></i> Тематическая студия</span>
+                <span class="studio-command-context" id="studio-command-context">Предварительный просмотр, редактирование и публикация темы плеера</span>
+            </div>
+
+            <nav class="studio-modes" role="tablist" aria-label="Режим студии">
+                <button class="studio-mode is-active" type="button" role="tab" aria-selected="true" aria-controls="pane-preview" data-mode-btn="preview">
+                    <i class="fa-solid fa-eye" aria-hidden="true"></i><span>Предварительный просмотр</span>
+                </button>
+                <button class="studio-mode" type="button" role="tab" aria-selected="false" aria-controls="pane-edit" data-mode-btn="edit">
+                    <i class="fa-solid fa-pen-ruler" aria-hidden="true"></i><span>Редактировать</span>
+                </button>
+                <button class="studio-mode" type="button" role="tab" aria-selected="false" aria-controls="pane-submit" data-mode-btn="submit">
+                    <i class="fa-solid fa-paper-plane" aria-hidden="true"></i><span>Представлять на рассмотрение</span>
+                </button>
+            </nav>
+
+            <div class="studio-command-actions">
+                <span class="studio-unsaved" id="studio-unsaved" hidden><i class="fa-solid fa-circle" aria-hidden="true"></i>несохраненный</span>
+                <button class="studio-btn studio-btn--themes" id="studio-open-theme" type="button" aria-label="Выберите тему галереи" aria-controls="studio-swap-panel" aria-expanded="false" title="Выберите тему галереи">
+                    <i class="fa-solid fa-images" aria-hidden="true"></i><span>Темы</span>
+                </button>
+                <button class="studio-btn studio-btn--save" id="studio-save" type="button" aria-label="Сохранить тему на это устройство">
+                    <i class="fa-solid fa-download" aria-hidden="true"></i><span>Сохранить на устройство</span>
+                </button>
+            </div>
+        </div>
+
+        <main class="studio-main">
+            <section class="studio-stage" aria-labelledby="studio-title">
+                <div class="studio-stage-head">
+                    <div class="studio-stage-copy">
+                        <div class="studio-eyebrow studio-breadcrumb">
+                            <span id="studio-source-label">Тема галереи</span>
+                            <span class="studio-sep" aria-hidden="true">/</span>
+                            <span id="studio-source-detail">загрузка</span>
+                        </div>
+                        <h1 id="studio-title" translate="no" data-i18n-skip>Loading theme...</h1>
+                        <p id="studio-byline" translate="no" data-i18n-skip>Reading the package...</p>
+                    </div>
+                    <div class="studio-stage-meta">
+                        <span class="studio-chip"><i class="fa-solid fa-mobile-screen" aria-hidden="true"></i>Y1 / Y2</span>
+                        <span class="studio-chip studio-chip--muted" id="studio-source-chip">Галерея</span>
+                    </div>
+                </div>
+
+                <div class="studio-preview-area" id="studio-preview-area">
+                    <div class="studio-preview-loading" id="studio-preview-loading">
+                        <span class="studio-spinner" aria-hidden="true"></span>
+                        <span id="studio-loading-label">Загрузка предварительного просмотра...</span>
+                    </div>
+                    <div class="studio-preview" id="studio-preview" translate="no" data-i18n-skip></div>
+                    <div class="studio-empty" id="studio-empty" hidden>
+                        <div class="studio-empty-card">
+                            <span class="studio-empty-icon"><i class="fa-solid fa-palette" aria-hidden="true"></i></span>
+                            <span class="studio-eyebrow" id="studio-empty-eyebrow" hidden>Пока ничего не открыто</span>
+                            <strong id="studio-empty-title">Предварительный просмотр недоступен</strong>
+                            <p id="studio-empty-text">Выберите другую тему или откройте локальный пакет.</p>
+                            <div class="studio-empty-actions" id="studio-empty-actions" hidden>
+                                <a class="studio-btn studio-btn--primary" id="studio-empty-gallery" href="../">
+                                    <i class="fa-solid fa-images" aria-hidden="true"></i>Выберите один из галереи
+                                </a>
+                                <button class="studio-btn" id="studio-empty-zip" type="button">
+                                    <i class="fa-solid fa-file-zipper" aria-hidden="true"></i>Загрузите ZIP-архив
+                                </button>
+                                <button class="studio-btn" id="studio-empty-folder" type="button">
+                                    <i class="fa-solid fa-folder-open" aria-hidden="true"></i>Загрузить папку
+                                </button>
+                            </div>
+                            <p class="studio-hint" id="studio-empty-hint" hidden>Перетаскивание папки или ZIP-архива в любое место на этой странице тоже работает. Тему галереи также можно выбрать из списка на боковой панели.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="studio-stage-foot">
+                    <span><i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i>Перетащите папку темы или ZIP куда угодно.</span>
+                    <span class="studio-foot-sep" aria-hidden="true"></span>
+                    <span>Нажмите на колесо или используйте клавиши со стрелками, чтобы исследовать</span>
+                </div>
+            </section>
+
+            <aside class="studio-panel" aria-label="Инспектор студии">
+                <div class="studio-panel-scroll" id="studio-panel-scroll">
+                    <section class="studio-pane" id="pane-preview" data-pane="preview" role="tabpanel">
+                        <div class="studio-pane-head">
+                            <p class="studio-eyebrow">Текущая тема</p>
+                            <h2>Предварительный просмотр</h2>
+                            <p>Это реальный взгляд игрока. Изменения остаются на этом устройстве, пока вы их не сохраните или не отправите.</p>
+                        </div>
+
+                        <div class="studio-source-card">
+                            <div class="studio-cover" id="studio-cover-wrap">
+                                <img id="studio-cover" alt="" />
+                                <span class="studio-cover-fallback"><i class="fa-solid fa-palette" aria-hidden="true"></i></span>
+                            </div>
+                            <div class="studio-source-copy">
+                                <strong id="studio-source-name" translate="no" data-i18n-skip>-</strong>
+                                <span id="studio-source-author" translate="no" data-i18n-skip>-</span>
+                                <span class="studio-source-desc" id="studio-source-desc" translate="no" data-i18n-skip></span>
+                            </div>
+                        </div>
+
+                        <button class="studio-swap-btn" id="studio-swap" type="button" hidden>
+                            <i class="fa-solid fa-arrow-right-arrow-left" aria-hidden="true"></i>Открыть другую тему
+                        </button>
+
+                        <div class="studio-swap-panel" id="studio-swap-panel">
+                            <div class="studio-field">
+                                <label for="studio-theme-filter">Открыть тему галереи</label>
+                                <input id="studio-theme-filter" type="search" placeholder="Фильтровать по имени или автору" autocomplete="off" />
+                                <select id="studio-theme-select" aria-label="Тема галереи"></select>
+                                <p class="studio-hint" id="studio-theme-count">Все темы галереи</p>
+                            </div>
+
+                            <div class="studio-divider"></div>
+
+                            <div class="studio-import">
+                                <div class="studio-import-head">
+                                    <span class="studio-eyebrow">Открыть с этого устройства</span>
+                                    <span class="studio-chip studio-chip--muted">ZIP или папка</span>
+                                </div>
+                                <p>Перетащите сюда пакет темы или найдите ZIP-архив или папку. Он открывается в симуляторе до того, как что-либо будет сохранено или отправлено.</p>
+                                <div class="studio-action-grid">
+                                    <button class="studio-btn" id="studio-open-zip" type="button">
+                                        <i class="fa-solid fa-file-zipper" aria-hidden="true"></i>Просмотр .zip
+                                    </button>
+                                    <button class="studio-btn" id="studio-open-folder" type="button">
+                                        <i class="fa-solid fa-folder-open" aria-hidden="true"></i>Просмотреть папку
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="studio-note">
+                                <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+                                <span>Ваш пакет читается в вашем браузере. Ничего не будет загружено, пока вы не выберете «Отправить».</span>
+                            </div>
+                        </div>
+
+                        <div class="studio-action-grid studio-action-grid--single">
+                            <button class="studio-btn studio-btn--primary" id="studio-start-edit" type="button">
+                                <i class="fa-solid fa-pen-ruler" aria-hidden="true"></i>Используйте это в Студии
+                            </button>
+                        </div>
+                    </section>
+
+                    <section class="studio-pane" id="pane-edit" data-pane="edit" role="tabpanel" hidden>
+                        <div class="studio-pane-head">
+                            <p class="studio-eyebrow">Ресурсы темы</p>
+                            <h2>Редактировать</h2>
+                            <p>Замените любой файл, выбрав его, вставив изображение или поместив прямо в слот.</p>
+                        </div>
+
+                        <div class="studio-asset-toolbar">
+                            <div class="studio-asset-filters" role="group" aria-label="Фильтровать активы">
+                                <button class="studio-asset-filter is-active" type="button" data-asset-filter="all">Все <span id="studio-asset-count-all">0</span></button>
+                                <button class="studio-asset-filter" type="button" data-asset-filter="missing">Отсутствующий <span id="studio-asset-count-missing">0</span></button>
+                                <button class="studio-asset-filter" type="button" data-asset-filter="changed">Измененный <span id="studio-asset-count-changed">0</span></button>
+                            </div>
+                            <div class="studio-asset-tools">
+                                <button class="studio-mini-btn" id="studio-browse-font" type="button" title="Найдите файл шрифта"><i class="fa-solid fa-font" aria-hidden="true"></i>Шрифт</button>
+                                <button class="studio-mini-btn" id="studio-reset-assets" type="button" title="Сброс каждой замены"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Перезагрузить</button>
+                            </div>
+                        </div>
+
+                        <div class="studio-asset-list" id="studio-asset-list" role="list" aria-label="Ресурсы темы"></div>
+                        <p class="studio-asset-empty" id="studio-asset-empty" hidden>Нет объектов, соответствующих этому фильтру.</p>
+
+                        <div class="studio-asset-detail" id="studio-asset-detail" hidden>
+                            <div class="studio-asset-detail-head">
+                                <div class="studio-asset-detail-copy">
+                                    <span class="studio-eyebrow" id="studio-asset-section">Тематическое искусство</span>
+                                    <strong id="studio-asset-name">Объект</strong>
+                                    <code id="studio-asset-path">-</code>
+                                </div>
+                                <span class="studio-asset-status" id="studio-asset-status">Готовый</span>
+                            </div>
+                            <div class="studio-asset-detail-preview" id="studio-asset-detail-preview"></div>
+                            <div class="studio-asset-detail-actions">
+                                <button class="studio-btn studio-btn--primary" id="studio-asset-replace" type="button"><i class="fa-solid fa-folder-open" aria-hidden="true"></i>Заменить файл</button>
+                                <button class="studio-btn" id="studio-asset-theme" type="button" title="Замените тот же ресурс из другой темы галереи."><i class="fa-solid fa-images" aria-hidden="true"></i>Из темы</button>
+                                <button class="studio-btn" id="studio-asset-paste" type="button"><i class="fa-solid fa-paste" aria-hidden="true"></i>Вставить</button>
+                                <button class="studio-btn" id="studio-asset-blank" type="button" title="Забинируйте этот файл и используйте полностью прозрачный заполнитель."><i class="fa-solid fa-trash-can" aria-hidden="true"></i>Пустой</button>
+                                <button class="studio-btn" id="studio-asset-reset" type="button"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Перезагрузить</button>
+                            </div>
+                            <p class="studio-hint" id="studio-asset-hint">Поместите изображение в выбранный слот или скопируйте его и нажмите Ctrl+V / Cmd+V.</p>
+                        </div>
+
+                        <div class="studio-mask-editor" id="studio-mask-editor" hidden></div>
+
+                        <div class="studio-color-editor" id="studio-color-editor"></div>
+
+                        <div class="studio-pane-actions studio-pane-actions--three">
+                            <button class="studio-btn" id="studio-edit-back" type="button"><i class="fa-solid fa-eye" aria-hidden="true"></i>Предварительный просмотр</button>
+                            <button class="studio-btn" data-studio-save type="button"><i class="fa-solid fa-download" aria-hidden="true"></i>Сохранять</button>
+                            <button class="studio-btn studio-btn--primary" id="studio-edit-submit" type="button">Представлять на рассмотрение<i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+                        </div>
+                    </section>
+
+                    <section class="studio-pane" id="pane-submit" data-pane="submit" role="tabpanel" hidden>
+                        <div class="studio-pane-head">
+                            <p class="studio-eyebrow">Представление галереи</p>
+                            <h2>Представлять на рассмотрение</h2>
+                            <p>Это те же данные о листинге, что и в форме загрузки галереи. Темой симулятора является пакет, который вы отправляете. Заголовки и описания здесь остаются на английском языке: галерея переводит их для каждого посетителя.</p>
+                        </div>
+
+                        <div class="studio-package">
+                            <div class="studio-cover" id="studio-submit-cover-wrap">
+                                <img id="studio-submit-cover" alt="" />
+                                <span class="studio-cover-fallback"><i class="fa-solid fa-palette" aria-hidden="true"></i></span>
+                            </div>
+                            <div class="studio-source-copy">
+                                <strong id="studio-package-name" translate="no" data-i18n-skip>-</strong>
+                                <span id="studio-package-source" translate="no" data-i18n-skip>-</span>
+                            </div>
+                        </div>
+
+                        <div class="studio-source-actions">
+                            <button class="studio-mini-btn" id="studio-submit-open-zip" type="button"><i class="fa-solid fa-file-zipper" aria-hidden="true"></i>Откройте еще один .zip</button>
+                            <button class="studio-mini-btn" id="studio-submit-open-folder" type="button"><i class="fa-solid fa-folder-open" aria-hidden="true"></i>Открыть другую папку</button>
+                        </div>
+
+                        <div class="studio-submit-form" id="studio-submit-form">
+                            <div class="studio-identity" id="studio-identity" hidden>
+                                <div class="studio-identity-head">
+                                    <span class="studio-eyebrow"><i class="fa-solid fa-code-compare" aria-hidden="true"></i> Сначала один вопрос</span>
+                                    <span class="studio-chip studio-chip--muted">Соответствует галерее</span>
+                                </div>
+                                <p class="studio-identity-lead">
+                                    Этот пакет содержит подробную информацию о <strong id="studio-identity-name" translate="no" data-i18n-skip>a gallery theme</strong><span id="studio-identity-author" translate="no" data-i18n-skip></span>, поэтому он может появиться только как обновление этого списка или как ваша собственная новая тема.
+                                </p>
+
+                                <div class="studio-identity-step" id="studio-identity-own">
+                                    <p class="studio-identity-q">Это твоя тема?</p>
+                                    <div class="studio-identity-actions">
+                                        <button class="studio-btn studio-btn--primary" type="button" data-identity-own="yes">Да, я сделал это</button>
+                                        <button class="studio-btn" type="button" data-identity-own="no">Нет, это не мое</button>
+                                    </div>
+                                </div>
+
+                                <div class="studio-identity-step" id="studio-identity-change" hidden>
+                                    <p class="studio-identity-q">Хотите изменить данные объявления?</p>
+                                    <div class="studio-identity-actions">
+                                        <button class="studio-btn studio-btn--primary" type="button" data-identity-change="yes">Да, изменить данные</button>
+                                        <button class="studio-btn" type="button" data-identity-change="no">Нет, отправьте как указано</button>
+                                    </div>
+                                </div>
+
+                                <div class="studio-identity-result" id="studio-identity-result" hidden>
+                                    <p class="studio-identity-q" id="studio-identity-result-title"></p>
+                                    <p class="studio-hint" id="studio-identity-result-text"></p>
+                                    <button class="studio-mini-btn" type="button" id="studio-identity-reset">
+                                        <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Изменить ответ
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="studio-submit-details" id="studio-submit-details">
+                            <div class="studio-field">
+                                <label for="studio-submit-title">Название галереи <span class="studio-required">Необходимый</span></label>
+                                <input id="studio-submit-title" type="text" autocomplete="off" maxlength="120" placeholder="Название темы" translate="no" data-i18n-skip />
+                                <p class="studio-hint">Напишите название на английском языке, чтобы галерея могла перевести его каждому посетителю.</p>
+                            </div>
+
+                            <div class="studio-form-grid">
+                                <div class="studio-field">
+                                    <label for="studio-submit-author">Автор/имя пользователя <span class="studio-required">Необходимый</span></label>
+                                    <input id="studio-submit-author" type="text" autocomplete="name" autocapitalize="words" spellcheck="false" maxlength="80" placeholder="Ваш идентификатор создателя" list="studio-author-options" translate="no" data-i18n-skip />
+                                    <datalist id="studio-author-options"></datalist>
+                                    <p class="studio-hint">Используйте дескриптор, который вы хотите зачислить. Сведения об открытой теме предлагаются только в виде текста-заполнителя.</p>
+                                </div>
+                                <div class="studio-field">
+                                    <label for="studio-submit-author-url">Ссылка автора <span class="studio-optional">Необязательный</span></label>
+                                    <input id="studio-submit-author-url" type="url" inputmode="url" autocomplete="url" placeholder="https://" translate="no" data-i18n-skip />
+                                </div>
+                            </div>
+
+                            <div class="studio-field">
+                                <label for="studio-submit-desc">Описание <span class="studio-optional">Необязательный</span></label>
+                                <textarea id="studio-submit-desc" rows="3" maxlength="600" placeholder="Короткая очередь в галерею" translate="no" data-i18n-skip></textarea>
+                                <p class="studio-hint">Предложение о внешнем виде, палитре или о том, с чем она лучше всего сочетается. Напишите его на английском языке, чтобы галерея могла перевести его для каждого посетителя.</p>
+                            </div>
+
+                            <label class="studio-inline-check">
+                                <input id="studio-submit-external" type="checkbox" />
+                                <span><strong>Разместить загрузку на моей странице</strong> (Ko-fi, Patreon, магазин или портфолио)</span>
+                            </label>
+                            <div class="studio-field" id="studio-submit-external-wrap" hidden>
+                                <label for="studio-submit-external-url">Внешний URL-адрес загрузки</label>
+                                                                    <input id="studio-submit-external-url" type="url" inputmode="url" placeholder="https://" translate="no" data-i18n-skip />
+                            </div>
+                            </div>
+
+                            <div class="studio-update-notice" id="studio-update-notice" hidden>
+                                <strong>Это похоже на обновление</strong>
+                                <p>Ваш автор соответствует существующему списку <span id="studio-update-folder"></span>. Мы будем рассматривать это как обновление этой темы.</p>
+                                <label class="studio-inline-check">
+                                    <input id="studio-edit-ack" type="checkbox" />
+                                    <span>Я подтверждаю, что это обновление существующего списка.</span>
+                                </label>
+                            </div>
+
+                            <div class="studio-policy-banner" id="studio-policy-banner" hidden></div>
+
+                            <ul class="studio-checklist" id="studio-checklist">
+                                <li data-check="config" data-state="pending">
+                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                                    <div><strong>Пакет найден</strong><span class="studio-check-detail">Жду тему</span></div>
+                                </li>
+                                <li data-check="preview" data-state="pending">
+                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                                    <div><strong>Предварительный просмотр</strong><span class="studio-check-detail">Предварительный просмотр еще не отрендерен</span></div>
+                                </li>
+                                <li data-check="assets" data-state="pending">
+                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                                    <div><strong>Ссылочные файлы</strong><span class="studio-check-detail">Проверка ресурсов пакета</span></div>
+                                </li>
+                                <li data-check="details" data-state="pending">
+                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                                    <div><strong>Детали листинга</strong><span class="studio-check-detail">Добавьте название и автора</span></div>
+                                </li>
+                            </ul>
+
+                            <button class="studio-btn studio-btn--primary studio-submit-btn" id="studio-submit-btn" type="button">
+                                <i class="fa-solid fa-paper-plane" aria-hidden="true"></i><span>Отправить мою тему</span>
+                            </button>
+                            <div class="studio-submit-status" id="studio-submit-status" role="status" aria-live="polite"></div>
+                        </div>
+
+                        <div class="studio-note">
+                            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                            <span>При отправке открывается запрос на включение для проверки. Сначала вы можете сохранить тему на это устройство.</span>
+                        </div>
+                    </section>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <div class="studio-drop" id="studio-drop" aria-hidden="true">
+        <div class="studio-drop-card">
+            <span class="studio-drop-icon"><i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i></span>
+            <strong>Перетащите, чтобы открыть в Studio</strong>
+            <span>Папка темы или ZIP-файл — предварительный просмотр локально</span>
+        </div>
+    </div>
+
+    <div class="studio-toast" id="studio-toast" role="status" aria-live="polite"></div>
+
+    <div class="studio-modal studio-theme-picker" id="studio-theme-picker" hidden>
+        <div class="studio-modal-card studio-theme-picker-card" role="dialog" aria-modal="true" aria-labelledby="studio-theme-picker-title">
+            <span class="studio-eyebrow"><i class="fa-solid fa-images" aria-hidden="true"></i> Замена из другой темы</span>
+            <h2 id="studio-theme-picker-title">Объект</h2>
+            <p id="studio-theme-picker-text">Выберите тот же ресурс из любой темы галереи, чтобы заменить его на эту.</p>
+            <label class="studio-theme-picker-search">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                <input id="studio-theme-picker-query" type="search" placeholder="Поиск тем по названию или автору" autocomplete="off" />
+            </label>
+            <div class="studio-theme-picker-list" id="studio-theme-picker-list" role="list" aria-label="Галерея тем"></div>
+            <p class="studio-theme-picker-empty" id="studio-theme-picker-empty" hidden>Ни одна тема не соответствует этому запросу.</p>
+            <div class="studio-modal-actions">
+                <button class="studio-btn" id="studio-theme-picker-close" type="button">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="studio-save-progress" id="studio-save-progress" role="status" aria-live="polite" aria-atomic="true" hidden>
+        <div class="studio-save-progress-head">
+            <span id="studio-save-progress-label">Готовим тему…</span>
+            <strong id="studio-save-progress-value" aria-hidden="true">0%</strong>
+        </div>
+        <progress id="studio-save-progress-bar" max="100" value="0" aria-labelledby="studio-save-progress-label">0%</progress>
+    </div>
+
+    <input type="file" id="studio-zip-input" accept=".zip,application/zip" hidden />
+    <input type="file" id="studio-folder-input" webkitdirectory multiple hidden />
+    <input type="file" id="studio-asset-input" hidden />
+
+    <div id="footer-root"></div>
+    <div id="support-toolbar-slot"></div>
+
+    <script src="../nav.js?v=20261111nav"></script>
+    <script src="../y1-theme-preview.js?v=20261115lock"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="../theme-packaging.js"></script>
+    <script src="../author-submission-policy.js?v=20260523"></script>
+    <script src="/studio-test/studio.js?v=20261115rowtheme"></script>
+    <script src="../site-locale.js?v=20261115skip2" defer></script>
+</body>
+
+</html>

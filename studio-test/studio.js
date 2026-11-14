@@ -159,14 +159,16 @@
         updateNotice: byId('studio-update-notice'),
         updateFolder: byId('studio-update-folder'),
         editAck: byId('studio-edit-ack'),
-        submitOwn: byId('studio-submit-own'),
-        ownCheckTarget: byId('studio-own-check-target'),
-        ownNote: byId('studio-own-update-note'),
-        ownModal: byId('studio-own-modal'),
-        ownModalAck: byId('studio-own-modal-ack'),
-        ownModalConfirm: byId('studio-own-modal-confirm'),
-        ownModalCancel: byId('studio-own-modal-cancel'),
-        ownModalTheme: byId('studio-own-modal-theme'),
+        submitDetails: byId('studio-submit-details'),
+        identity: byId('studio-identity'),
+        identityName: byId('studio-identity-name'),
+        identityAuthor: byId('studio-identity-author'),
+        identityOwnStep: byId('studio-identity-own'),
+        identityChangeStep: byId('studio-identity-change'),
+        identityResult: byId('studio-identity-result'),
+        identityResultTitle: byId('studio-identity-result-title'),
+        identityResultText: byId('studio-identity-result-text'),
+        identityReset: byId('studio-identity-reset'),
         policyBanner: byId('studio-policy-banner'),
         authorOptions: byId('studio-author-options'),
         submitOpenZip: byId('studio-submit-open-zip'),
@@ -196,6 +198,7 @@
         relatedIds: [],
         relatedTitle: '',
         assetOverrides: Object.create(null),
+        openTrays: Object.create(null),
         assetUrls: [],
         pendingAssetId: null,
         gallery: [],
@@ -208,6 +211,7 @@
         baseCover: '',
         pendingPolicy: null,
         ownUpdate: false,
+        identity: { listing: null, answer: '', changeDetails: '' },
         dirty: false,
         hoverAssetId: null,
         assetDragY: 0,
@@ -881,7 +885,14 @@
         Object.keys(groups).forEach(function (sectionName) {
             var group = document.createElement('details');
             group.className = 'studio-color-group';
-            group.open = true;
+            /* Trays open on demand only. What the reader expands is remembered
+               so a colour edit that re-renders the list does not snap the group
+               shut under their hands. */
+            var trayKey = 'color:' + sectionName;
+            group.open = !!state.openTrays[trayKey];
+            group.addEventListener('toggle', function () {
+                state.openTrays[trayKey] = group.open;
+            });
             var summary = document.createElement('summary');
             var groupTitle = document.createElement('span');
             groupTitle.textContent = sectionName;
@@ -1420,6 +1431,7 @@
         actions.className = 'studio-asset-row-actions';
         var rowActions = [
             ['import', 'fa-folder-open', 'Import or replace ' + asset.label],
+            ['theme', 'fa-images', 'Use ' + asset.label + ' from another gallery theme'],
             ['paste', 'fa-paste', 'Paste into ' + asset.label]
         ];
         if (asset.kind !== 'font') {
@@ -1572,7 +1584,11 @@
         Object.keys(groups).forEach(function (sectionName) {
             var group = document.createElement('details');
             group.className = 'studio-asset-group';
-            group.open = true;
+            var trayKey = 'asset:' + sectionName;
+            group.open = !!state.openTrays[trayKey];
+            group.addEventListener('toggle', function () {
+                state.openTrays[trayKey] = group.open;
+            });
             var summary = document.createElement('summary');
             summary.className = 'studio-asset-group-head';
             var title = document.createElement('span');
@@ -1682,6 +1698,10 @@
                 if (!row && candidate.getAttribute('data-asset-id') === id) row = candidate;
             });
             if (!row) return;
+            /* A collapsed tray hides its rows, so a jump into one has to open
+               it first or the scroll has nothing to land on. */
+            var tray = row.closest('details');
+            if (tray && !tray.open) tray.open = true;
             /* With a related group open, the group is the payload of the tap: pin
                the item row to the top of the tray so the related rows below it are
                on screen. Centering the row on a 240px watch pushed them a screen
@@ -2012,6 +2032,8 @@
         state.assetOverrides = Object.create(null);
         state.pendingAssetId = null;
         state.hoverAssetId = null;
+        /* A different theme starts from fully collapsed trays again. */
+        state.openTrays = Object.create(null);
     }
 
     function resetAllAssets() {
@@ -2379,6 +2401,7 @@
                 var id = row.getAttribute('data-asset-id');
                 var kind = action.getAttribute('data-asset-action');
                 if (kind === 'import') openAssetPicker(id);
+                else if (kind === 'theme') openThemePicker(id);
                 else if (kind === 'blank') blankAsset(id);
                 else pasteIntoAsset(id);
                 return;
@@ -2609,6 +2632,7 @@
             .replace(/[^a-z0-9]+/g, '');
     }
 
+
     function populateAuthorOptions() {
         if (!el.authorOptions) return;
         var seen = Object.create(null);
@@ -2638,6 +2662,85 @@
                 return normalizeAuthor(theme.author) === author && normalizeTitle(theme.name) === title;
             }) || null
         );
+    }
+
+    /* —— Submit identity ——
+       A package whose config details are exactly a gallery listing is either
+       that listing's author filing an update or someone building on top of it.
+       The studio cannot tell which from the files, so Submit asks before it
+       decides: an update is packed with the listing's own details and waits as
+       a pull request, a new theme goes up under the submitter's details and can
+       be merged automatically once the checks pass. */
+
+    function matchingGalleryListing() {
+        var meta = state.meta;
+        if (!meta) return null;
+        var title = normalizeTitle(meta.name);
+        var author = normalizeAuthor(meta.author);
+        if (!title) return null;
+        return (
+            state.gallery.find(function (theme) {
+                return normalizeTitle(theme.name) === title && normalizeAuthor(theme.author) === author;
+            }) || null
+        );
+    }
+
+    function resetIdentity(listing) {
+        state.identity = { listing: listing || null, answer: '', changeDetails: '' };
+        state.ownUpdate = false;
+    }
+
+    function identityDecided() {
+        var identity = state.identity;
+        if (!identity.listing) return true;
+        if (identity.answer === 'other') return true;
+        return identity.answer === 'own' && !!identity.changeDetails;
+    }
+
+    function submitActionLabel() {
+        return state.ownUpdate ? 'Send update' : 'Send my theme';
+    }
+
+    function syncIdentity() {
+        var identity = state.identity;
+        var listing = identity.listing;
+        var own = identity.answer === 'own';
+        var editing = own && identity.changeDetails === 'yes';
+        var listed = own && identity.changeDetails === 'no';
+        var ownTheme = identity.answer === 'other';
+        if (el.identity) el.identity.hidden = !listing;
+        if (listing) {
+            if (el.identityName) el.identityName.textContent = '\u201c' + (listing.name || listing.folder) + '\u201d';
+            if (el.identityAuthor) el.identityAuthor.textContent = listing.author ? ' by ' + listing.author : '';
+        }
+        if (el.identityOwnStep) el.identityOwnStep.hidden = !listing || identity.answer !== '';
+        if (el.identityChangeStep) el.identityChangeStep.hidden = !listing || !own || !!identity.changeDetails;
+        if (el.identityResult) el.identityResult.hidden = !listing || !identityDecided();
+        var resultTitle = '';
+        var resultText = '';
+        if (listed) {
+            resultTitle = 'Sending as an update';
+            resultText =
+                'The package goes up as an update to this listing with its own details, and nothing is published until a maintainer has checked the pull request.';
+        } else if (editing) {
+            resultTitle = 'Editing this listing';
+            resultText =
+                'The fields below hold the listing\u2019s own details, so you can edit them. Sending packs the result as an update, which waits for a maintainer.';
+        } else if (ownTheme) {
+            resultTitle = 'Sending as your own theme';
+            resultText =
+                'Give it your own title and author. The original details stay as placeholder text and disappear as you type, and the theme goes up as a new submission that can be merged automatically once the checks pass.';
+        }
+        if (el.identityResultTitle) el.identityResultTitle.textContent = resultTitle;
+        if (el.identityResultText) el.identityResultText.textContent = resultText;
+        /* The details fields only appear once the question has sent the
+           submitter down a path that edits them. */
+        if (el.submitDetails) el.submitDetails.hidden = !!listing && !editing && !ownTheme;
+        if (el.submitBtn && !state.busy) {
+            var label = el.submitBtn.querySelector('span');
+            if (label) label.textContent = submitActionLabel();
+        }
+        updateChecklist();
     }
 
     function updateUpdateNotice() {
@@ -2883,7 +2986,7 @@
         if (el.submitBtn) {
             el.submitBtn.disabled = !!on || !state.meta;
             var submitText = el.submitBtn.querySelector('span');
-            if (submitText) submitText.textContent = on && action === 'submit' ? 'Sending theme…' : 'Send my theme';
+            if (submitText) submitText.textContent = on && action === 'submit' ? 'Sending theme…' : submitActionLabel();
         }
     }
 
@@ -2935,6 +3038,18 @@
             toast('Wait for the theme preview to render first.');
             return;
         }
+        if (!identityDecided()) {
+            /* The package matches a gallery listing and the question in the
+               panel has not been answered: both the intent and the details
+               depend on that answer, so nothing is packed up yet. */
+            toast(
+                state.identity.answer
+                    ? 'Say whether the listing details should change before sending.'
+                    : 'Answer the question above before sending this theme.'
+            );
+            if (el.identity) el.identity.scrollIntoView({ block: 'nearest' });
+            return;
+        }
         var title = el.submitTitle.value.trim();
         var author = el.submitAuthor.value.trim();
         if (!title || !author) {
@@ -2950,8 +3065,7 @@
             if (clash) {
                 var clashIsLoaded = state.sourceType === 'gallery' && state.folder && clash.folder === state.folder;
                 if (clashIsLoaded) {
-                    toast('Those are the open theme\u2019s details. Tick the author update box if it is your theme.');
-                    openOwnModal();
+                    toast('Those are the open theme\u2019s details. Use your own title and author to send it as a new theme.');
                 } else {
                     toast(
                         '\u201c' +
@@ -3016,8 +3130,8 @@
                 state.ownUpdate
                     ? 'Received. Your update waits for a maintainer: updates are reviewed and never published automatically.'
                     : prUrl
-                      ? 'Received. Your theme is waiting for review in a pull request.'
-                      : 'Received. A maintainer will review your theme before it goes live.',
+                      ? 'Received. Your theme is in a pull request and can be merged automatically once the checks pass.'
+                      : 'Received. Your theme can go live automatically once the checks pass, with updates still waiting for a maintainer.',
                 true,
                 prUrl
             );
@@ -3090,56 +3204,18 @@
         state.formDirty = true;
     }
 
-    function syncOwnUpdateUi() {
-        var on = !!state.ownUpdate;
-        if (el.submitOwn) {
-            el.submitOwn.checked = on;
-            var canUpdate = state.sourceType === 'gallery' && !!state.meta;
-            el.submitOwn.disabled = !canUpdate;
-            var row = el.submitOwn.closest('.studio-own-check');
-            if (row) row.hidden = !canUpdate;
-        }
-        if (el.ownCheckTarget) {
-            var name = state.meta && state.meta.name ? '\u201c' + state.meta.name + '\u201d' : '';
-            el.ownCheckTarget.textContent = name;
-            el.ownCheckTarget.hidden = !name;
-        }
-        if (el.ownNote) el.ownNote.hidden = !on;
-    }
-
-    function openOwnModal() {
-        if (!el.ownModal) return false;
-        var name = state.meta && state.meta.name ? '\u201c' + state.meta.name + '\u201d' : 'the existing listing';
-        if (el.ownModalTheme) el.ownModalTheme.textContent = name;
-        if (el.ownModalAck) el.ownModalAck.checked = false;
-        if (el.ownModalConfirm) el.ownModalConfirm.disabled = true;
-        el.ownModal.hidden = false;
-        if (el.ownModalAck) el.ownModalAck.focus();
-        return true;
-    }
-
-    function closeOwnModal() {
-        if (el.ownModal) el.ownModal.hidden = true;
-    }
-
-    function setOwnUpdate(on) {
-        state.ownUpdate = !!on;
-        if (on) applyOwnDetails();
-        else clearSubmitFields();
-        syncOwnUpdateUi();
-        updateUpdateNotice();
-        updateChecklist();
-        markDirty();
-    }
-
     function fillSubmitForm() {
         if (!state.meta) return;
         state.formDirty = false;
-        state.ownUpdate = false;
+        /* A package whose config details exactly match a gallery listing has to
+           say whether it is that listing's update before it can be sent, so the
+           identity question is recomputed for every theme that opens. */
+        resetIdentity(matchingGalleryListing());
         /* The open theme's details are only ever suggestions: they show as
            placeholder text and vanish the moment someone types, so a new upload
            cannot inherit another listing's title, author or description. They
-           become real values only after the author-update box is confirmed. */
+           become real values once the identity question sends the submitter
+           down the update path. */
         setPlaceholder(el.submitTitle, state.meta.name);
         setPlaceholder(el.submitAuthor, state.meta.author);
         setPlaceholder(el.submitDesc, state.meta.desc);
@@ -3147,9 +3223,8 @@
         setPlaceholder(el.submitExternalUrl, state.meta.externalDownloadUrl);
         clearSubmitFields();
         if (el.editAck) el.editAck.checked = false;
-        closeOwnModal();
         populateAuthorOptions();
-        syncOwnUpdateUi();
+        syncIdentity();
         updateUpdateNotice();
         syncPolicy();
         updateChecklist();
@@ -3174,7 +3249,15 @@
         var title = el.submitTitle.value.trim();
         var author = el.submitAuthor.value.trim();
         var detailsOk = !!(title && author);
-        setCheck('details', detailsOk, detailsOk ? 'Title and author are ready' : 'Add a title and author');
+        setCheck(
+            'details',
+            detailsOk,
+            !identityDecided()
+                ? 'Answer the question above first'
+                : detailsOk
+                  ? 'Title and author are ready'
+                  : 'Add a title and author'
+        );
         var referenced = state.assets.filter(function (asset) {
             return !!asset.value;
         });
@@ -3759,44 +3842,51 @@
             if (el.submitExternal.checked) el.submitExternalUrl.focus();
         });
 
-        if (el.submitOwn) {
-            el.submitOwn.addEventListener('change', function () {
-                if (el.submitOwn.checked) {
-                    /* Ask before turning a submission into an update: the box on its
-                       own is too easy to tick by accident. */
-                    el.submitOwn.checked = false;
-                    openOwnModal();
-                    return;
-                }
-                setOwnUpdate(false);
-            });
-        }
+        /* —— Identity question ——
+           Answering it is what tells the studio which kind of submission this
+           is, so each answer sets the intent and the details in one step. */
 
-        if (el.ownModalAck) {
-            el.ownModalAck.addEventListener('change', function () {
-                if (el.ownModalConfirm) el.ownModalConfirm.disabled = !el.ownModalAck.checked;
+        each(document.querySelectorAll('[data-identity-own]'), function (button) {
+            button.addEventListener('click', function () {
+                var mine = button.getAttribute('data-identity-own') === 'yes';
+                state.identity.answer = mine ? 'own' : 'other';
+                state.identity.changeDetails = '';
+                state.ownUpdate = false;
+                clearSubmitFields();
+                syncIdentity();
+                if (!mine) {
+                    toast('Send it as your own theme: fill in your own title and author.');
+                    if (el.submitTitle) el.submitTitle.focus();
+                }
             });
-        }
-        if (el.ownModalConfirm) {
-            el.ownModalConfirm.addEventListener('click', function () {
-                if (!el.ownModalAck || !el.ownModalAck.checked) return;
-                closeOwnModal();
-                setOwnUpdate(true);
-                toast('Your own details are filled in for this update.');
+        });
+
+        each(document.querySelectorAll('[data-identity-change]'), function (button) {
+            button.addEventListener('click', function () {
+                var edit = button.getAttribute('data-identity-change') === 'yes';
+                state.identity.changeDetails = edit ? 'yes' : 'no';
+                /* An update goes up with the listing's own details: either as
+                   real values the submitter can edit, or as the values that are
+                   packed untouched. */
+                state.ownUpdate = true;
+                applyOwnDetails();
+                syncIdentity();
+                updateUpdateNotice();
+                markDirty();
+                if (edit) {
+                    if (el.submitTitle) el.submitTitle.focus();
+                } else {
+                    toast('Sending as an update. A maintainer reviews updates before they go live.');
+                }
             });
-        }
-        if (el.ownModalCancel) {
-            el.ownModalCancel.addEventListener('click', function () {
-                closeOwnModal();
-                syncOwnUpdateUi();
-            });
-        }
-        if (el.ownModal) {
-            el.ownModal.addEventListener('click', function (event) {
-                if (event.target === el.ownModal) closeOwnModal();
-            });
-            document.addEventListener('keydown', function (event) {
-                if (event.key === 'Escape' && !el.ownModal.hidden) closeOwnModal();
+        });
+
+        if (el.identityReset) {
+            el.identityReset.addEventListener('click', function () {
+                clearSubmitFields();
+                resetIdentity(state.identity.listing);
+                syncIdentity();
+                updateUpdateNotice();
             });
         }
 

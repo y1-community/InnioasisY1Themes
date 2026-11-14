@@ -1,7 +1,7 @@
 {
- "count": 1220,
+ "count": 1223,
  "dir": "ltr",
- "generated": "2026-11-14T00:19:29+00:00",
+ "generated": "2026-11-14T01:04:39+00:00",
  "keep": [
   "\"Alfred da buttler\"",
   "1a Zelda",
@@ -166,7 +166,7 @@
  "locale": "kl",
  "name": "Kalaallisut",
  "native": "Kalaallisut",
- "provider": "google-web",
+ "provider": "clients5",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!ILLOQARFIK!!",
@@ -230,6 +230,7 @@
   "A light iPod inspired theme Works on the Innioasis Y1 and Y2 with the Original Software, Better-Y, Koensayr and Solar.": "IPod-imik isumassarsiorfiusumik qulequtaq Innioasis Y1 aamma Y2-mik suliaqarpoq Software-imik aallaqqaasiut atorlugu, Better-Y, Koensayr aamma Solar.",
   "A mashup of Microsoft Zune on an iPod-like device.": "Microsoft Zune-mik iPod-imik atortumik mashup-imik suliaqarneq.",
   "A really simple minimal theme": "Minimal-tema-mik ilumut ajornanngitsumik",
+  "A sentence about the look, palette or what it works best with. Write it in English so the gallery can translate it for every visitor.": "Oqaaseqatigiit isikkoq, palette imaluunniit suut pitsaanerpaamik atorneqarnersut pillugit. Tuluit oqaasiini allaguk, taamaalilluni galleriip pulaartut tamarmik nutsersinnaaniassammagit.",
   "A simple theme based on the free game SHTDN": "Tema ajornanngitsoq tunngavigalugu gratis spil SHTDN",
   "A simple theme made just for Carats :D": "Tema ajornanngitsoq Carats-imut kisimi suliarineqarsimasoq :D",
   "A soft matcha-green aesthetic minimalistic theme.": "Matcha-mik qorsuk estetikkimik minimalistimik sammisaq.",
@@ -1012,6 +1013,7 @@
   "Theme pages": "Tema-quppernerit",
   "Themes Gallery": "Temat Galleri",
   "There's a new arrival on the way in Ryan's house. Every donation towards the servers and our growing family means a great deal.": "Ryanip illuani nutaamik tikittoqarpoq aqqusinermi. Serverinut aamma ilaqutariinnut annertusiartortunut aningaasanik tunniussisarneq tamaat annertuumik isumaqarpoq.",
+  "These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting. Titles and descriptions stay in English here: the gallery translates them for each visitor.": "Tamakku tassaapput allattorsimaffimmi kisitsisit gallerimi upload-imut immersugassaq. Simulatorimi tema tassaavoq pakke nassiussassatut. Qulequttat nassuiaatillu uani tuluttut inissisimapput: galleriip taakku pulaartut ataasiakkaat pillugit nutsertarpai.",
   "This author has opted out of gallery submissions": "Atuakkiortoq taanna galleriimi nassiussanik tunuarsimaarsimavoq",
   "This looks like an update": "Tamanna nutarterinertut isikkoqarpoq",
   "This month's": "Qaammat manna",
@@ -1117,6 +1119,7 @@
   "Witchy": "Troldmandi",
   "Wolverine": "Ulverin",
   "Wolverine theme for Innioasis Y1 & Y2.": "Innioasis Y1 & Y2-mut ullormut sammisaq.",
+  "Write the title in English so the gallery can translate it for every visitor.": "Qulequtaq tuluttut allaguk, taamaalilluni gallerimi pulaartut tamarmik nutserneqarsinnaassallutik.",
   "Y1 & Y2 Themes": "Y1 & Y2 Temat",
   "Y1 theme inspired by Tomodachi Life": "Y1 tema Tomodachip inuuneranit isumassarsiorfigineqartoq",
   "Y2 Default": "Y2 Nalinginnaasumik",

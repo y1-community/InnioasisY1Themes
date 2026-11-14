@@ -1,6 +1,6 @@
 {
   "base": "ar",
-  "count": 1914,
+  "count": 1931,
   "dir": "rtl",
   "locale": "ar-SA",
   "name": "Arabic (Saudi Arabia)",
@@ -1935,6 +1935,9 @@
     "Default": "افتراضي",
     "Already on your Y1": "موجود بالفعل على Y1 الخاص بك",
     "Search": "بحث",
-    "Firmware zip downloaded": "تم تنزيل ملف البرنامج الثابت المضغوط"
+    "Firmware zip downloaded": "تم تنزيل ملف البرنامج الثابت المضغوط",
+    "These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting. Titles and descriptions stay in English here: the gallery translates them for each visitor.": "هذه هي نفس تفاصيل القائمة الموجودة في نموذج تحميل المعرض. الموضوع الموجود في جهاز المحاكاة هو الحزمة التي ترسلها. تبقى العناوين والأوصاف باللغة الإنجليزية هنا: ويترجمها المعرض لكل زائر.",
+    "Write the title in English so the gallery can translate it for every visitor.": "اكتب العنوان باللغة الإنجليزية حتى يتمكن المعرض من ترجمته لكل زائر.",
+    "A sentence about the look, palette or what it works best with. Write it in English so the gallery can translate it for every visitor.": "جملة عن المظهر أو اللوحة أو ما يناسبها بشكل أفضل. اكتبه باللغة الإنجليزية حتى يتمكن المعرض من ترجمته لكل زائر."
   }
 }

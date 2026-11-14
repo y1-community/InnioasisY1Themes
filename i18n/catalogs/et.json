@@ -1,7 +1,7 @@
 {
- "count": 2242,
+ "count": 2245,
  "dir": "ltr",
- "generated": "2026-11-14T00:19:29+00:00",
+ "generated": "2026-11-14T01:04:37+00:00",
  "keep": [
   "1G Pip-Boy",
   "1a Zelda",
@@ -261,7 +261,7 @@
  "locale": "et",
  "name": "Estonian",
  "native": "Eesti",
- "provider": "google-web",
+ "provider": "clients5",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!LINNASTAAR!!",
@@ -325,6 +325,7 @@
   "A light iPod inspired theme Works on the Innioasis Y1 and Y2 with the Original Software, Better-Y, Koensayr and Solar.": "Kerge iPodist inspireeritud teema Töötab Innioasis Y1 ja Y2 originaaltarkvaraga Better-Y, Koensayr ja Solar.",
   "A mashup of Microsoft Zune on an iPod-like device.": "Microsoft Zune'i komplekt iPodi sarnases seadmes.",
   "A really simple minimal theme": "Tõesti lihtne minimaalne teema",
+  "A sentence about the look, palette or what it works best with. Write it in English so the gallery can translate it for every visitor.": "Lause välimuse, paleti või selle kohta, millega see kõige paremini sobib. Kirjutage see inglise keeles, et galerii saaks selle iga külastaja jaoks tõlkida.",
   "A simple theme based on the free game SHTDN": "Lihtne teema, mis põhineb tasuta mängul SHTDN",
   "A simple theme made just for Carats :D": "Lihtne teema, mis on tehtud just Caratsi jaoks :D",
   "A soft matcha-green aesthetic minimalistic theme.": "Pehme matcha-roheline esteetiline minimalistlik teema.",
@@ -1107,6 +1108,7 @@
   "Theme pages": "Teemalehed",
   "Themes Gallery": "Teemade galerii",
   "There's a new arrival on the way in Ryan's house. Every donation towards the servers and our growing family means a great deal.": "Ryani majja on teel uus tulija. Iga annetus serveritele ja meie kasvavale perekonnale tähendab väga palju.",
+  "These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting. Titles and descriptions stay in English here: the gallery translates them for each visitor.": "Need on samad kirje üksikasjad, mis galerii üleslaadimise vormil. Simulaatori teemaks on teie esitatav pakett. Pealkirjad ja kirjeldused jäävad siin inglise keelde: galerii tõlgib need iga külastaja jaoks.",
   "This author has opted out of gallery submissions": "See autor on galeriis esitamisest loobunud",
   "This looks like an update": "See näeb välja nagu värskendus",
   "This month's": "Selle kuu",
@@ -1212,6 +1214,7 @@
   "Witchy": "Nõialik",
   "Wolverine": "Wolverine",
   "Wolverine theme for Innioasis Y1 & Y2.": "Wolverine'i teema Innioasis Y1 ja Y2 jaoks.",
+  "Write the title in English so the gallery can translate it for every visitor.": "Kirjutage pealkiri inglise keeles, et galerii saaks selle iga külastaja jaoks tõlkida.",
   "Y1 & Y2 Themes": "Y1 ja Y2 Teemad",
   "Y1 theme inspired by Tomodachi Life": "Y1 teema, mis on inspireeritud Tomodachi Life'ist",
   "Y2 Default": "Y2 Vaikimisi",

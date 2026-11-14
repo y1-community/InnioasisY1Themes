@@ -1,6 +1,6 @@
 {
   "base": "zh-TW",
-  "count": 5937,
+  "count": 5946,
   "dir": "ltr",
   "locale": "zh-HK",
   "name": "Chinese (Hong Kong)",
@@ -5950,6 +5950,9 @@
     "You can also Control-click (or right-click) the app in Finder and choose Open.": "您也可以在访达中按住 Control 键点按（或右键点按）该应用程序并选择“打开”。",
     "If Windows Security or Smart App Control stops Updater CE from opening, open": "如果 Windows 安全中心或智能应用程序控制阻止 Updater CE 打开，请打开",
     ". Smart App Control is currently impacting popular applications like the Epic Overlay Service (used by Fortnite) — Updater CE is safe and verified to use. To re-enable later, set": "。智能应用程序控制目前正在影响流行的应用程序，例如 Epic Overlay Service（Fortnite 所用）——Updater CE 安全且经验证。如需日后重新启用，请将",
-    "in Registry Editor.": "（在注册表编辑器中）。"
+    "in Registry Editor.": "（在注册表编辑器中）。",
+    "These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting. Titles and descriptions stay in English here: the gallery translates them for each visitor.": "這些清單詳細資訊與圖庫上傳表單相同。模擬器中的主題是您提交的套件。此處的標題和描述仍為英文：畫廊為每位參觀者翻譯它們。",
+    "Write the title in English so the gallery can translate it for every visitor.": "用英文寫下標題，以便畫廊可以為每位參觀者翻譯。",
+    "A sentence about the look, palette or what it works best with. Write it in English so the gallery can translate it for every visitor.": "關於外觀、調色盤或最適合搭配的句子。用英語寫下來，以便畫廊可以為每位參觀者翻譯。"
   }
 }

@@ -7,7 +7,7 @@
  "provider": "reviewed",
  "reviewed": true,
  "generated": "2026-11-14T00:19:27+00:00",
- "count": 12412,
+ "count": 12415,
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
   "!!CITYSTAR!! - Innioasis Y1 and Y2 Themes Gallery": "!!CITYSTAR!! - Galeria de temas Innioasis Y1 e Y2",
@@ -12420,6 +12420,9 @@
   "🛠️ Developer Friendly": "🛠️ Amigável ao desenvolvedor",
   "🪓✧˖°🫀⋆｡𖦹🔪 80's camp/mystery/horror theme": "🪓✧˖°🫀⋆｡𖦹🔪 Tema acampamento/mistério/terror dos anos 80",
   "🪟 Windows ARM64": "🪟Windows ARM64",
-  "🪟 Windows Installation": "🪟 Instalação do Windows"
+  "🪟 Windows Installation": "🪟 Instalação do Windows",
+  "These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting. Titles and descriptions stay in English here: the gallery translates them for each visitor.": "Estes são os mesmos detalhes de listagem do formulário de upload da galeria. O tema no simulador é o pacote que você está enviando. Os títulos e descrições ficam em inglês aqui: a galeria os traduz para cada visitante.",
+  "Write the title in English so the gallery can translate it for every visitor.": "Escreva o título em inglês para que a galeria possa traduzi-lo para cada visitante.",
+  "A sentence about the look, palette or what it works best with. Write it in English so the gallery can translate it for every visitor.": "Uma frase sobre o visual, a paleta ou com o que funciona melhor. Escreva em inglês para que a galeria possa traduzi-lo para cada visitante."
  }
 }

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="tr" dir="ltr" data-locale="tr">
+
+<head>
+    <meta charset="utf-8" />
+    <base href="/" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="theme-color" content="#2f80ed" />
+    <meta name="application-name" content="Theme Studio" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Theme Studio" />
+    <meta name="cf-pages-upload-api-origin" content="https://y1-theme-upload.itsryanspecter.workers.dev" />
+    <title>Tema Stüdyosu - Innioasis Y1 ve Y2 Temalar</title>
+    <script>
+        /* The dock is a convenience here, never a preference the rest of the
+           site should inherit. support_toolbar.html reads this flag. */
+        window.STUDIO_DOCK_ISOLATED = true;
+        /* The simulator draws the theme's own menu labels. Pin its device UI to
+           English so a translated player never misreports what the author wrote. */
+        window.STUDIO_PREVIEW_LOCALE = 'en';
+        /* This page is reachable only by typing its URL: nothing on the site
+           links to it, and no editor override points the header here. The nav's
+           Editor item keeps resolving to the community editor, so following it
+           from Studio leaves for that editor instead of reloading this page and
+           discarding unsaved work. */
+    </script>
+    <script src="../site-init.js?v=20261110picker"></script>
+    <link rel="manifest" href="/studio-test/manifest.webmanifest" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/studio-test/icons/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/studio-test/icons/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="../site-theme.css?v=20261111dl2" />
+    <link rel="stylesheet" href="../site-toolbar.css?v=20261110accent2" />
+    <link rel="stylesheet" href="../y1-theme-preview.css?v=20261114rowfocus2" />
+    <link rel="stylesheet" href="/studio-test/studio.css?v=20261114identity" />
+</head>
+
+<body class="site-themes-app site-dock-mode studio-app" data-mode="preview">
+    <div id="nav-root"></div>
+
+    <div class="studio-shell">
+        <div class="studio-commandbar">
+            <div class="studio-command-copy">
+                <span class="studio-eyebrow"><i class="fa-solid fa-compact-disc" aria-hidden="true"></i> Tema Stüdyosu</span>
+                <span class="studio-command-context" id="studio-command-context">Bir oynatıcı temasını önizleyin, düzenleyin ve yayınlayın</span>
+            </div>
+
+            <nav class="studio-modes" role="tablist" aria-label="Stüdyo modu">
+                <button class="studio-mode is-active" type="button" role="tab" aria-selected="true" aria-controls="pane-preview" data-mode-btn="preview">
+                    <i class="fa-solid fa-eye" aria-hidden="true"></i><span>Önizleme</span>
+                </button>
+                <button class="studio-mode" type="button" role="tab" aria-selected="false" aria-controls="pane-edit" data-mode-btn="edit">
+                    <i class="fa-solid fa-pen-ruler" aria-hidden="true"></i><span>Düzenlemek</span>
+                </button>
+                <button class="studio-mode" type="button" role="tab" aria-selected="false" aria-controls="pane-submit" data-mode-btn="submit">
+                    <i class="fa-solid fa-paper-plane" aria-hidden="true"></i><span>Göndermek</span>
+                </button>
+            </nav>
+
+            <div class="studio-command-actions">
+                <span class="studio-unsaved" id="studio-unsaved" hidden><i class="fa-solid fa-circle" aria-hidden="true"></i>Kaydedilmemiş</span>
+                <button class="studio-btn studio-btn--themes" id="studio-open-theme" type="button" aria-label="Bir galeri teması seçin" aria-controls="studio-swap-panel" aria-expanded="false" title="Bir galeri teması seçin">
+                    <i class="fa-solid fa-images" aria-hidden="true"></i><span>Temalar</span>
+                </button>
+                <button class="studio-btn studio-btn--save" id="studio-save" type="button" aria-label="Temayı bu cihaza kaydet">
+                    <i class="fa-solid fa-download" aria-hidden="true"></i><span>Cihaza kaydet</span>
+                </button>
+            </div>
+        </div>
+
+        <main class="studio-main">
+            <section class="studio-stage" aria-labelledby="studio-title">
+                <div class="studio-stage-head">
+                    <div class="studio-stage-copy">
+                        <div class="studio-eyebrow studio-breadcrumb">
+                            <span id="studio-source-label">Galeri teması</span>
+                            <span class="studio-sep" aria-hidden="true">/</span>
+                            <span id="studio-source-detail">yükleniyor</span>
+                        </div>
+                        <h1 id="studio-title" translate="no" data-i18n-skip>Loading theme...</h1>
+                        <p id="studio-byline" translate="no" data-i18n-skip>Reading the package...</p>
+                    </div>
+                    <div class="studio-stage-meta">
+                        <span class="studio-chip"><i class="fa-solid fa-mobile-screen" aria-hidden="true"></i>Y1 / Y2</span>
+                        <span class="studio-chip studio-chip--muted" id="studio-source-chip">Galeri</span>
+                    </div>
+                </div>
+
+                <div class="studio-preview-area" id="studio-preview-area">
+                    <div class="studio-preview-loading" id="studio-preview-loading">
+                        <span class="studio-spinner" aria-hidden="true"></span>
+                        <span id="studio-loading-label">Önizleme yükleniyor...</span>
+                    </div>
+                    <div class="studio-preview" id="studio-preview" translate="no" data-i18n-skip></div>
+                    <div class="studio-empty" id="studio-empty" hidden>
+                        <div class="studio-empty-card">
+                            <span class="studio-empty-icon"><i class="fa-solid fa-palette" aria-hidden="true"></i></span>
+                            <span class="studio-eyebrow" id="studio-empty-eyebrow" hidden>Henüz açık bir şey yok</span>
+                            <strong id="studio-empty-title">Önizleme kullanılamıyor</strong>
+                            <p id="studio-empty-text">Başka bir tema seçin veya yerel bir paket açın.</p>
+                            <div class="studio-empty-actions" id="studio-empty-actions" hidden>
+                                <a class="studio-btn studio-btn--primary" id="studio-empty-gallery" href="../">
+                                    <i class="fa-solid fa-images" aria-hidden="true"></i>Galeriden birini seçin
+                                </a>
+                                <button class="studio-btn" id="studio-empty-zip" type="button">
+                                    <i class="fa-solid fa-file-zipper" aria-hidden="true"></i>Bir .zip yükleyin
+                                </button>
+                                <button class="studio-btn" id="studio-empty-folder" type="button">
+                                    <i class="fa-solid fa-folder-open" aria-hidden="true"></i>Bir klasör yükle
+                                </button>
+                            </div>
+                            <p class="studio-hint" id="studio-empty-hint" hidden>Bir klasörü veya ZIP'i bu sayfada herhangi bir yere sürüklemek de işe yarar. Kenar çubuğundaki listeden de bir galeri teması seçilebilir.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="studio-stage-foot">
+                    <span><i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i>Bir tema klasörünü veya ZIP'i herhangi bir yere bırakın</span>
+                    <span class="studio-foot-sep" aria-hidden="true"></span>
+                    <span>Keşfetmek için tekerleğe tıklayın veya ok tuşlarını kullanın</span>
+                </div>
+            </section>
+
+            <aside class="studio-panel" aria-label="Stüdyo müfettişi">
+                <div class="studio-panel-scroll" id="studio-panel-scroll">
+                    <section class="studio-pane" id="pane-preview" data-pane="preview" role="tabpanel">
+                        <div class="studio-pane-head">
+                            <p class="studio-eyebrow">Güncel tema</p>
+                            <h2>Önizleme</h2>
+                            <p>Bu gerçek oyuncu görünümüdür. Değişiklikler siz kaydedene veya gönderene kadar bu cihazda kalır.</p>
+                        </div>
+
+                        <div class="studio-source-card">
+                            <div class="studio-cover" id="studio-cover-wrap">
+                                <img id="studio-cover" alt="" />
+                                <span class="studio-cover-fallback"><i class="fa-solid fa-palette" aria-hidden="true"></i></span>
+                            </div>
+                            <div class="studio-source-copy">
+                                <strong id="studio-source-name" translate="no" data-i18n-skip>-</strong>
+                                <span id="studio-source-author" translate="no" data-i18n-skip>-</span>
+                                <span class="studio-source-desc" id="studio-source-desc" translate="no" data-i18n-skip></span>
+                            </div>
+                        </div>
+
+                        <button class="studio-swap-btn" id="studio-swap" type="button" hidden>
+                            <i class="fa-solid fa-arrow-right-arrow-left" aria-hidden="true"></i>Başka bir tema aç
+                        </button>
+
+                        <div class="studio-swap-panel" id="studio-swap-panel">
+                            <div class="studio-field">
+                                <label for="studio-theme-filter">Bir galeri teması açın</label>
+                                <input id="studio-theme-filter" type="search" placeholder="Ada veya yazara göre filtrele" autocomplete="off" />
+                                <select id="studio-theme-select" aria-label="Galeri teması"></select>
+                                <p class="studio-hint" id="studio-theme-count">Tüm galeri temaları</p>
+                            </div>
+
+                            <div class="studio-divider"></div>
+
+                            <div class="studio-import">
+                                <div class="studio-import-head">
+                                    <span class="studio-eyebrow">Bu cihazdan aç</span>
+                                    <span class="studio-chip studio-chip--muted">ZIP veya klasör</span>
+                                </div>
+                                <p>Buraya bir tema paketi bırakın veya ZIP'e veya klasöre göz atın. Herhangi bir şey kaydedilmeden veya gönderilmeden önce simülatörde açılır.</p>
+                                <div class="studio-action-grid">
+                                    <button class="studio-btn" id="studio-open-zip" type="button">
+                                        <i class="fa-solid fa-file-zipper" aria-hidden="true"></i>.zip'e göz atın
+                                    </button>
+                                    <button class="studio-btn" id="studio-open-folder" type="button">
+                                        <i class="fa-solid fa-folder-open" aria-hidden="true"></i>Klasöre göz at
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="studio-note">
+                                <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+                                <span>Paketiniz tarayıcınızda okunur. Siz Gönder'i seçene kadar hiçbir şey yüklenmez.</span>
+                            </div>
+                        </div>
+
+                        <div class="studio-action-grid studio-action-grid--single">
+                            <button class="studio-btn studio-btn--primary" id="studio-start-edit" type="button">
+                                <i class="fa-solid fa-pen-ruler" aria-hidden="true"></i>Bunu Studio'da kullanın
+                            </button>
+                        </div>
+                    </section>
+
+                    <section class="studio-pane" id="pane-edit" data-pane="edit" role="tabpanel" hidden>
+                        <div class="studio-pane-head">
+                            <p class="studio-eyebrow">Tema varlıkları</p>
+                            <h2>Düzenlemek</h2>
+                            <p>Herhangi bir dosyayı seçerek, bir görüntü yapıştırarak veya doğrudan bir yuvaya bırakarak değiştirin.</p>
+                        </div>
+
+                        <div class="studio-asset-toolbar">
+                            <div class="studio-asset-filters" role="group" aria-label="Varlıkları filtrele">
+                                <button class="studio-asset-filter is-active" type="button" data-asset-filter="all">Tüm <span id="studio-asset-count-all">0</span></button>
+                                <button class="studio-asset-filter" type="button" data-asset-filter="missing">Eksik <span id="studio-asset-count-missing">0</span></button>
+                                <button class="studio-asset-filter" type="button" data-asset-filter="changed">Değiştirildi <span id="studio-asset-count-changed">0</span></button>
+                            </div>
+                            <div class="studio-asset-tools">
+                                <button class="studio-mini-btn" id="studio-browse-font" type="button" title="Bir yazı tipi dosyasına göz atın"><i class="fa-solid fa-font" aria-hidden="true"></i>Yazı tipi</button>
+                                <button class="studio-mini-btn" id="studio-reset-assets" type="button" title="Her değiştirmeyi sıfırla"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Sıfırla</button>
+                            </div>
+                        </div>
+
+                        <div class="studio-asset-list" id="studio-asset-list" role="list" aria-label="Tema varlıkları"></div>
+                        <p class="studio-asset-empty" id="studio-asset-empty" hidden>Bu filtreyle eşleşen öğe yok.</p>
+
+                        <div class="studio-asset-detail" id="studio-asset-detail" hidden>
+                            <div class="studio-asset-detail-head">
+                                <div class="studio-asset-detail-copy">
+                                    <span class="studio-eyebrow" id="studio-asset-section">Tema sanatı</span>
+                                    <strong id="studio-asset-name">Varlık</strong>
+                                    <code id="studio-asset-path">-</code>
+                                </div>
+                                <span class="studio-asset-status" id="studio-asset-status">Hazır</span>
+                            </div>
+                            <div class="studio-asset-detail-preview" id="studio-asset-detail-preview"></div>
+                            <div class="studio-asset-detail-actions">
+                                <button class="studio-btn studio-btn--primary" id="studio-asset-replace" type="button"><i class="fa-solid fa-folder-open" aria-hidden="true"></i>Dosyayı değiştir</button>
+                                <button class="studio-btn" id="studio-asset-theme" type="button" title="Aynı varlığı başka bir galeri temasıyla değiştirin"><i class="fa-solid fa-images" aria-hidden="true"></i>Temadan</button>
+                                <button class="studio-btn" id="studio-asset-paste" type="button"><i class="fa-solid fa-paste" aria-hidden="true"></i>Yapıştır</button>
+                                <button class="studio-btn" id="studio-asset-blank" type="button" title="Bu dosyayı çöpe atın ve tamamen şeffaf bir yer tutucu kullanın"><i class="fa-solid fa-trash-can" aria-hidden="true"></i>Boşluk</button>
+                                <button class="studio-btn" id="studio-asset-reset" type="button"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Sıfırla</button>
+                            </div>
+                            <p class="studio-hint" id="studio-asset-hint">Seçilen yuvaya bir görüntü bırakın veya bir görüntüyü kopyalayıp Ctrl+V / Cmd+V tuşlarına basın.</p>
+                        </div>
+
+                        <div class="studio-mask-editor" id="studio-mask-editor" hidden></div>
+
+                        <div class="studio-color-editor" id="studio-color-editor"></div>
+
+                        <div class="studio-pane-actions studio-pane-actions--three">
+                            <button class="studio-btn" id="studio-edit-back" type="button"><i class="fa-solid fa-eye" aria-hidden="true"></i>Önizleme</button>
+                            <button class="studio-btn" data-studio-save type="button"><i class="fa-solid fa-download" aria-hidden="true"></i>Kaydetmek</button>
+                            <button class="studio-btn studio-btn--primary" id="studio-edit-submit" type="button">Göndermek<i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+                        </div>
+                    </section>
+
+                    <section class="studio-pane" id="pane-submit" data-pane="submit" role="tabpanel" hidden>
+                        <div class="studio-pane-head">
+                            <p class="studio-eyebrow">Galeri gönderimi</p>
+                            <h2>Göndermek</h2>
+                            <p>Bunlar galeri yükleme formuyla aynı listeleme ayrıntılarıdır. Simülatördeki tema gönderdiğiniz pakettir. Başlıklar ve açıklamalar burada İngilizce olarak kalır: galeri bunları her ziyaretçi için tercüme eder.</p>
+                        </div>
+
+                        <div class="studio-package">
+                            <div class="studio-cover" id="studio-submit-cover-wrap">
+                                <img id="studio-submit-cover" alt="" />
+                                <span class="studio-cover-fallback"><i class="fa-solid fa-palette" aria-hidden="true"></i></span>
+                            </div>
+                            <div class="studio-source-copy">
+                                <strong id="studio-package-name" translate="no" data-i18n-skip>-</strong>
+                                <span id="studio-package-source" translate="no" data-i18n-skip>-</span>
+                            </div>
+                        </div>
+
+                        <div class="studio-source-actions">
+                            <button class="studio-mini-btn" id="studio-submit-open-zip" type="button"><i class="fa-solid fa-file-zipper" aria-hidden="true"></i>Başka bir .zip açın</button>
+                            <button class="studio-mini-btn" id="studio-submit-open-folder" type="button"><i class="fa-solid fa-folder-open" aria-hidden="true"></i>Başka bir klasör aç</button>
+                        </div>
+
+                        <div class="studio-submit-form" id="studio-submit-form">
+                            <div class="studio-identity" id="studio-identity" hidden>
+                                <div class="studio-identity-head">
+                                    <span class="studio-eyebrow"><i class="fa-solid fa-code-compare" aria-hidden="true"></i> Önce bir soru</span>
+                                    <span class="studio-chip studio-chip--muted">Galeriyle eşleşir</span>
+                                </div>
+                                <p class="studio-identity-lead">
+                                    Bu paket aşağıdaki ayrıntıları içerir: <strong id="studio-identity-name" translate="no" data-i18n-skip>a gallery theme</strong><span id="studio-identity-author" translate="no" data-i18n-skip></span>, yani yalnızca söz konusu listenin güncellemesi veya kendi yeni temanız olarak yukarı çıkabilir.
+                                </p>
+
+                                <div class="studio-identity-step" id="studio-identity-own">
+                                    <p class="studio-identity-q">Bu senin teman mı?</p>
+                                    <div class="studio-identity-actions">
+                                        <button class="studio-btn studio-btn--primary" type="button" data-identity-own="yes">Evet başardım</button>
+                                        <button class="studio-btn" type="button" data-identity-own="no">Hayır, o benim değil</button>
+                                    </div>
+                                </div>
+
+                                <div class="studio-identity-step" id="studio-identity-change" hidden>
+                                    <p class="studio-identity-q">İlan detaylarını değiştirmek istiyor musunuz?</p>
+                                    <div class="studio-identity-actions">
+                                        <button class="studio-btn studio-btn--primary" type="button" data-identity-change="yes">Evet, ayrıntıları düzenleyin</button>
+                                        <button class="studio-btn" type="button" data-identity-change="no">Hayır, listelendiği şekilde gönder</button>
+                                    </div>
+                                </div>
+
+                                <div class="studio-identity-result" id="studio-identity-result" hidden>
+                                    <p class="studio-identity-q" id="studio-identity-result-title"></p>
+                                    <p class="studio-hint" id="studio-identity-result-text"></p>
+                                    <button class="studio-mini-btn" type="button" id="studio-identity-reset">
+                                        <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Cevabı değiştir
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="studio-submit-details" id="studio-submit-details">
+                            <div class="studio-field">
+                                <label for="studio-submit-title">Galeri başlığı <span class="studio-required">Gerekli</span></label>
+                                <input id="studio-submit-title" type="text" autocomplete="off" maxlength="120" placeholder="Tema başlığı" translate="no" data-i18n-skip />
+                                <p class="studio-hint">Galerinin her ziyaretçiye tercüme edebilmesi için başlığı İngilizce olarak yazın.</p>
+                            </div>
+
+                            <div class="studio-form-grid">
+                                <div class="studio-field">
+                                    <label for="studio-submit-author">Yazar / kullanıcı adı <span class="studio-required">Gerekli</span></label>
+                                    <input id="studio-submit-author" type="text" autocomplete="name" autocapitalize="words" spellcheck="false" maxlength="80" placeholder="Yaratıcınızın idaresi" list="studio-author-options" translate="no" data-i18n-skip />
+                                    <datalist id="studio-author-options"></datalist>
+                                    <p class="studio-hint">Almak istediğiniz tanıtıcıyı kullanın. Açık temanın ayrıntıları yalnızca yer tutucu metin olarak önerilir.</p>
+                                </div>
+                                <div class="studio-field">
+                                    <label for="studio-submit-author-url">Yazar bağlantısı <span class="studio-optional">İsteğe bağlı</span></label>
+                                    <input id="studio-submit-author-url" type="url" inputmode="url" autocomplete="url" placeholder="https://" translate="no" data-i18n-skip />
+                                </div>
+                            </div>
+
+                            <div class="studio-field">
+                                <label for="studio-submit-desc">Tanım <span class="studio-optional">İsteğe bağlı</span></label>
+                                <textarea id="studio-submit-desc" rows="3" maxlength="600" placeholder="Galeri için kısa bir çizgi" translate="no" data-i18n-skip></textarea>
+                                <p class="studio-hint">Görünüm, palet veya en iyi neyin işe yaradığı hakkında bir cümle. Galerinin her ziyaretçiye tercüme edebilmesi için İngilizce yazın.</p>
+                            </div>
+
+                            <label class="studio-inline-check">
+                                <input id="studio-submit-external" type="checkbox" />
+                                <span><strong>İndirme işlemini kendi sayfamda barındırın</strong> (Ko-fi, Patreon, mağaza veya portföy)</span>
+                            </label>
+                            <div class="studio-field" id="studio-submit-external-wrap" hidden>
+                                <label for="studio-submit-external-url">Harici indirme URL'si</label>
+                                                                    <input id="studio-submit-external-url" type="url" inputmode="url" placeholder="https://" translate="no" data-i18n-skip />
+                            </div>
+                            </div>
+
+                            <div class="studio-update-notice" id="studio-update-notice" hidden>
+                                <strong>Bu bir güncellemeye benziyor</strong>
+                                <p>Yazarınız mevcut listeyle eşleşiyor <span id="studio-update-folder"></span>. Bunu söz konusu temaya yönelik bir güncelleme olarak ele alacağız.</p>
+                                <label class="studio-inline-check">
+                                    <input id="studio-edit-ack" type="checkbox" />
+                                    <span>Bunun mevcut listeye yönelik bir güncelleme olduğunu onaylıyorum.</span>
+                                </label>
+                            </div>
+
+                            <div class="studio-policy-banner" id="studio-policy-banner" hidden></div>
+
+                            <ul class="studio-checklist" id="studio-checklist">
+                                <li data-check="config" data-state="pending">
+                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                                    <div><strong>Paket bulundu</strong><span class="studio-check-detail">Bir tema bekliyorum</span></div>
+                                </li>
+                                <li data-check="preview" data-state="pending">
+                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                                    <div><strong>Önizleme oluşturuldu</strong><span class="studio-check-detail">Önizleme henüz oluşturulmadı</span></div>
+                                </li>
+                                <li data-check="assets" data-state="pending">
+                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                                    <div><strong>Başvurulan dosyalar</strong><span class="studio-check-detail">Paket varlıklarını kontrol etme</span></div>
+                                </li>
+                                <li data-check="details" data-state="pending">
+                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                                    <div><strong>Listeleme ayrıntıları</strong><span class="studio-check-detail">Başlık ve yazar ekleyin</span></div>
+                                </li>
+                            </ul>
+
+                            <button class="studio-btn studio-btn--primary studio-submit-btn" id="studio-submit-btn" type="button">
+                                <i class="fa-solid fa-paper-plane" aria-hidden="true"></i><span>Temamı gönder</span>
+                            </button>
+                            <div class="studio-submit-status" id="studio-submit-status" role="status" aria-live="polite"></div>
+                        </div>
+
+                        <div class="studio-note">
+                            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                            <span>Göndermek, inceleme için bir çekme isteği açar. Temayı önce bu cihaza kaydedebilirsiniz.</span>
+                        </div>
+                    </section>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <div class="studio-drop" id="studio-drop" aria-hidden="true">
+        <div class="studio-drop-card">
+            <span class="studio-drop-icon"><i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i></span>
+            <strong>Studio'da açmak için bırakın</strong>
+            <span>Tema klasörü veya ZIP - yerel olarak önizlendi</span>
+        </div>
+    </div>
+
+    <div class="studio-toast" id="studio-toast" role="status" aria-live="polite"></div>
+
+    <div class="studio-modal studio-theme-picker" id="studio-theme-picker" hidden>
+        <div class="studio-modal-card studio-theme-picker-card" role="dialog" aria-modal="true" aria-labelledby="studio-theme-picker-title">
+            <span class="studio-eyebrow"><i class="fa-solid fa-images" aria-hidden="true"></i> Başka bir temadan değiştir</span>
+            <h2 id="studio-theme-picker-title">Varlık</h2>
+            <p id="studio-theme-picker-text">Herhangi bir galeri temasından aynı varlığı seçerek bu temayla değiştirin.</p>
+            <label class="studio-theme-picker-search">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                <input id="studio-theme-picker-query" type="search" placeholder="Temaları ada veya yazara göre arayın" autocomplete="off" />
+            </label>
+            <div class="studio-theme-picker-list" id="studio-theme-picker-list" role="list" aria-label="Galeri temaları"></div>
+            <p class="studio-theme-picker-empty" id="studio-theme-picker-empty" hidden>Bu aramayla eşleşen tema yok.</p>
+            <div class="studio-modal-actions">
+                <button class="studio-btn" id="studio-theme-picker-close" type="button">Kapat</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="studio-save-progress" id="studio-save-progress" role="status" aria-live="polite" aria-atomic="true" hidden>
+        <div class="studio-save-progress-head">
+            <span id="studio-save-progress-label">Tema hazırlanıyor…</span>
+            <strong id="studio-save-progress-value" aria-hidden="true">0%</strong>
+        </div>
+        <progress id="studio-save-progress-bar" max="100" value="0" aria-labelledby="studio-save-progress-label">0%</progress>
+    </div>
+
+    <input type="file" id="studio-zip-input" accept=".zip,application/zip" hidden />
+    <input type="file" id="studio-folder-input" webkitdirectory multiple hidden />
+    <input type="file" id="studio-asset-input" hidden />
+
+    <div id="footer-root"></div>
+    <div id="support-toolbar-slot"></div>
+
+    <script src="../nav.js?v=20261111nav"></script>
+    <script src="../y1-theme-preview.js?v=20261115lock"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="../theme-packaging.js"></script>
+    <script src="../author-submission-policy.js?v=20260523"></script>
+    <script src="/studio-test/studio.js?v=20261115rowtheme"></script>
+    <script src="../site-locale.js?v=20261115skip2" defer></script>
+</body>
+
+</html>

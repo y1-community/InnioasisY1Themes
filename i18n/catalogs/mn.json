@@ -1,7 +1,7 @@
 {
- "count": 1220,
+ "count": 1223,
  "dir": "ltr",
- "generated": "2026-11-14T00:19:29+00:00",
+ "generated": "2026-11-14T01:04:39+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "1G Pip-Boy",
@@ -139,7 +139,7 @@
  "locale": "mn",
  "name": "Mongolian",
  "native": "Монгол",
- "provider": "google-web",
+ "provider": "clients5",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -203,6 +203,7 @@
   "A light iPod inspired theme Works on the Innioasis Y1 and Y2 with the Original Software, Better-Y, Koensayr and Solar.": "Хөнгөн iPod-оос сэдэвлэсэн загвар нь Innioasis Y1 болон Y2 дээр анхны програм хангамж, Better-Y, Koensayr болон Solar дээр ажилладаг.",
   "A mashup of Microsoft Zune on an iPod-like device.": "iPod-той төстэй төхөөрөмж дээрх Microsoft Zune-ийн нэгдэл.",
   "A really simple minimal theme": "Үнэхээр энгийн хамгийн бага сэдэв",
+  "A sentence about the look, palette or what it works best with. Write it in English so the gallery can translate it for every visitor.": "Харагдах байдал, палитр эсвэл юунд хамгийн сайн тохирдог тухай өгүүлбэр. Үүнийг англи хэл дээр бичээрэй, ингэснээр галерей үүнийг зочин болгонд орчуулж өгөх болно.",
   "A simple theme based on the free game SHTDN": "SHTDN үнэгүй тоглоом дээр суурилсан энгийн сэдэв",
   "A simple theme made just for Carats :D": "Зөвхөн каратуудад зориулсан энгийн загвар :D",
   "A soft matcha-green aesthetic minimalistic theme.": "Зөөлөн matcha-ногоон гоо зүйн минималист сэдэв.",
@@ -985,6 +986,7 @@
   "Theme pages": "Сэдвийн хуудаснууд",
   "Themes Gallery": "Сэдвийн галерей",
   "There's a new arrival on the way in Ryan's house. Every donation towards the servers and our growing family means a great deal.": "Замд Райаны гэрт шинэ хүн ирлээ. Серверүүд болон бидний өсөн нэмэгдэж буй гэр бүлд зориулсан хандив бүр маш их зүйлийг хэлнэ.",
+  "These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting. Titles and descriptions stay in English here: the gallery translates them for each visitor.": "Эдгээр нь галерейг байршуулах маягттай ижил жагсаалтын дэлгэрэнгүй мэдээлэл юм. Симулятор дээрх сэдэв нь таны илгээж буй багц юм. Гарчиг, тайлбар нь энд англи хэл дээр үлдэнэ: галерей нь зочин бүрт зориулж орчуулдаг.",
   "This author has opted out of gallery submissions": "Энэ зохиогч галерейд оруулахаас татгалзсан байна",
   "This looks like an update": "Энэ шинэчлэлт шиг харагдаж байна",
   "This month's": "Энэ сарын",
@@ -1090,6 +1092,7 @@
   "Witchy": "Илбэчин",
   "Wolverine": "Волверин",
   "Wolverine theme for Innioasis Y1 & Y2.": "Innioasis Y1 & Y2-д зориулсан Wolverine загвар.",
+  "Write the title in English so the gallery can translate it for every visitor.": "Гарчгийг англиар бичээрэй, ингэснээр галерей үүнийг зочин болгонд орчуулж өгөх болно.",
   "Y1 & Y2 Themes": "Y1 & Y2 Загвар",
   "Y1 theme inspired by Tomodachi Life": "Y1 загвар Tomodachi Life-аас санаа авсан",
   "Y2 Default": "Y2 Өгөгдмөл",

@@ -1,6 +1,6 @@
 {
   "base": "fr",
-  "count": 6936,
+  "count": 6952,
   "dir": "ltr",
   "locale": "fr-CH",
   "name": "French (Switzerland)",
@@ -6956,6 +6956,9 @@
     "Default": "Défaut",
     "Already on your Y1": "Déjà sur votre Y1",
     "Search": "Recherche",
-    "Firmware zip downloaded": "Zip du micrologiciel téléchargé"
+    "Firmware zip downloaded": "Zip du micrologiciel téléchargé",
+    "These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting. Titles and descriptions stay in English here: the gallery translates them for each visitor.": "Ce sont les mêmes détails de liste que le formulaire de téléchargement de galerie. Le thème du simulateur est le package que vous soumettez. Les titres et descriptions restent ici en anglais : la galerie les traduit pour chaque visiteur.",
+    "Write the title in English so the gallery can translate it for every visitor.": "Écrivez le titre en anglais afin que la galerie puisse le traduire pour chaque visiteur.",
+    "A sentence about the look, palette or what it works best with. Write it in English so the gallery can translate it for every visitor.": "Une phrase sur le look, la palette ou ce avec quoi cela fonctionne le mieux. Écrivez-le en anglais afin que la galerie puisse le traduire pour chaque visiteur."
   }
 }

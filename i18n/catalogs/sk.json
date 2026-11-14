@@ -1,7 +1,7 @@
 {
- "count": 1220,
+ "count": 1223,
  "dir": "ltr",
- "generated": "2026-11-14T00:19:29+00:00",
+ "generated": "2026-11-14T01:04:40+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "1G Pip-Boy",
@@ -293,7 +293,7 @@
  "locale": "sk",
  "name": "Slovak",
  "native": "Slovenčina",
- "provider": "google-web",
+ "provider": "clients5",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -357,6 +357,7 @@
   "A light iPod inspired theme Works on the Innioasis Y1 and Y2 with the Original Software, Better-Y, Koensayr and Solar.": "Ľahký motív inšpirovaný iPodom Funguje na Innioasis Y1 a Y2 s originálnym softvérom, Better-Y, Koensayr a Solar.",
   "A mashup of Microsoft Zune on an iPod-like device.": "Mashup Microsoft Zune na zariadení podobnom iPodu.",
   "A really simple minimal theme": "Naozaj jednoduchý minimálny motív",
+  "A sentence about the look, palette or what it works best with. Write it in English so the gallery can translate it for every visitor.": "Veta o vzhľade, palete alebo o tom, s čím sa najlepšie pracuje. Napíšte ho v angličtine, aby ho galéria mohla preložiť každému návštevníkovi.",
   "A simple theme based on the free game SHTDN": "Jednoduchá téma založená na bezplatnej hre SHTDN",
   "A simple theme made just for Carats :D": "Jednoduchá téma ako stvorená len pre Carats :D",
   "A soft matcha-green aesthetic minimalistic theme.": "Jemná matcha-zelená estetická minimalistická téma.",
@@ -1139,6 +1140,7 @@
   "Theme pages": "Tématické stránky",
   "Themes Gallery": "Galéria motívov",
   "There's a new arrival on the way in Ryan's house. Every donation towards the servers and our growing family means a great deal.": "V Ryanovom dome je na ceste nový príchod. Každý dar pre servery a našu rozrastajúcu sa rodinu znamená veľa.",
+  "These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting. Titles and descriptions stay in English here: the gallery translates them for each visitor.": "Toto sú rovnaké podrobnosti o zozname ako formulár na odovzdanie galérie. Témou v simulátore je balík, ktorý odosielate. Názvy a popisy tu zostávajú v angličtine: galéria ich prekladá pre každého návštevníka.",
   "This author has opted out of gallery submissions": "Tento autor sa odhlásil z príspevkov do galérie",
   "This looks like an update": "Vyzerá to ako aktualizácia",
   "This month's": "Tento mesiac",
@@ -1244,6 +1246,7 @@
   "Witchy": "Čarodejnica",
   "Wolverine": "Wolverine",
   "Wolverine theme for Innioasis Y1 & Y2.": "Téma Wolverine pre Innioasis Y1 a Y2.",
+  "Write the title in English so the gallery can translate it for every visitor.": "Napíšte názov v angličtine, aby ho galéria mohla preložiť každému návštevníkovi.",
   "Y1 & Y2 Themes": "Y1 a Y2 motívy",
   "Y1 theme inspired by Tomodachi Life": "Y1 téma inšpirovaná Tomodachi Life",
   "Y2 Default": "Y2 Predvolené",

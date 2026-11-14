@@ -1,6 +1,6 @@
 {
   "base": "bn",
-  "count": 1864,
+  "count": 1874,
   "dir": "ltr",
   "locale": "bn-IN",
   "name": "Bengali (India)",
@@ -1878,6 +1878,9 @@
     "Default": "ডিফল্ট",
     "Already on your Y1": "ইতিমধ্যে আপনার Y1 এ রয়েছে",
     "Search": "অনুসন্ধান",
-    "Firmware zip downloaded": "ফার্মওয়্যার জিপ ডাউনলোড হয়েছে"
+    "Firmware zip downloaded": "ফার্মওয়্যার জিপ ডাউনলোড হয়েছে",
+    "These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting. Titles and descriptions stay in English here: the gallery translates them for each visitor.": "এইগুলি গ্যালারি আপলোড ফর্ম হিসাবে একই তালিকা বিবরণ. সিমুলেটরের থিম হল আপনি যে প্যাকেজটি জমা দিচ্ছেন। শিরোনাম এবং বিবরণ এখানে ইংরেজিতে থাকে: গ্যালারি প্রতিটি দর্শকের জন্য তাদের অনুবাদ করে।",
+    "Write the title in English so the gallery can translate it for every visitor.": "শিরোনামটি ইংরেজিতে লিখুন যাতে গ্যালারি প্রতিটি দর্শকের জন্য এটি অনুবাদ করতে পারে।",
+    "A sentence about the look, palette or what it works best with. Write it in English so the gallery can translate it for every visitor.": "চেহারা, প্যালেট বা এটি কী দিয়ে সবচেয়ে ভাল কাজ করে সে সম্পর্কে একটি বাক্য। এটি ইংরেজিতে লিখুন যাতে গ্যালারি প্রতিটি দর্শকের জন্য এটি অনুবাদ করতে পারে।"
   }
 }

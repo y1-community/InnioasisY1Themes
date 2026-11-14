@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ko" dir="ltr" data-locale="ko">
+
+<head>
+    <meta charset="utf-8" />
+    <base href="/" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="theme-color" content="#2f80ed" />
+    <meta name="application-name" content="Theme Studio" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Theme Studio" />
+    <meta name="cf-pages-upload-api-origin" content="https://y1-theme-upload.itsryanspecter.workers.dev" />
+    <title>테마 스튜디오 - Innioasis Y1 및 Y2 테마</title>
+    <script>
+        /* The dock is a convenience here, never a preference the rest of the
+           site should inherit. support_toolbar.html reads this flag. */
+        window.STUDIO_DOCK_ISOLATED = true;
+        /* The simulator draws the theme's own menu labels. Pin its device UI to
+           English so a translated player never misreports what the author wrote. */
+        window.STUDIO_PREVIEW_LOCALE = 'en';
+        /* This page is reachable only by typing its URL: nothing on the site
+           links to it, and no editor override points the header here. The nav's
+           Editor item keeps resolving to the community editor, so following it
+           from Studio leaves for that editor instead of reloading this page and
+           discarding unsaved work. */
+    </script>
+    <script src="../site-init.js?v=20261110picker"></script>
+    <link rel="manifest" href="/studio-test/manifest.webmanifest" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/studio-test/icons/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/studio-test/icons/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="../site-theme.css?v=20261111dl2" />
+    <link rel="stylesheet" href="../site-toolbar.css?v=20261110accent2" />
+    <link rel="stylesheet" href="../y1-theme-preview.css?v=20261114rowfocus2" />
+    <link rel="stylesheet" href="/studio-test/studio.css?v=20261114identity" />
+</head>
+
+<body class="site-themes-app site-dock-mode studio-app" data-mode="preview">
+    <div id="nav-root"></div>
+
+    <div class="studio-shell">
+        <div class="studio-commandbar">
+            <div class="studio-command-copy">
+                <span class="studio-eyebrow"><i class="fa-solid fa-compact-disc" aria-hidden="true"></i> 테마 스튜디오</span>
+                <span class="studio-command-context" id="studio-command-context">플레이어 테마 미리보기, 편집 및 게시</span>
+            </div>
+
+            <nav class="studio-modes" role="tablist" aria-label="스튜디오 모드">
+                <button class="studio-mode is-active" type="button" role="tab" aria-selected="true" aria-controls="pane-preview" data-mode-btn="preview">
+                    <i class="fa-solid fa-eye" aria-hidden="true"></i><span>시사</span>
+                </button>
+                <button class="studio-mode" type="button" role="tab" aria-selected="false" aria-controls="pane-edit" data-mode-btn="edit">
+                    <i class="fa-solid fa-pen-ruler" aria-hidden="true"></i><span>편집하다</span>
+                </button>
+                <button class="studio-mode" type="button" role="tab" aria-selected="false" aria-controls="pane-submit" data-mode-btn="submit">
+                    <i class="fa-solid fa-paper-plane" aria-hidden="true"></i><span>제출하다</span>
+                </button>
+            </nav>
+
+            <div class="studio-command-actions">
+                <span class="studio-unsaved" id="studio-unsaved" hidden><i class="fa-solid fa-circle" aria-hidden="true"></i>저장되지 않음</span>
+                <button class="studio-btn studio-btn--themes" id="studio-open-theme" type="button" aria-label="갤러리 테마를 선택하세요" aria-controls="studio-swap-panel" aria-expanded="false" title="갤러리 테마를 선택하세요">
+                    <i class="fa-solid fa-images" aria-hidden="true"></i><span>테마</span>
+                </button>
+                <button class="studio-btn studio-btn--save" id="studio-save" type="button" aria-label="이 기기에 테마를 저장하세요">
+                    <i class="fa-solid fa-download" aria-hidden="true"></i><span>장치에 저장</span>
+                </button>
+            </div>
+        </div>
+
+        <main class="studio-main">
+            <section class="studio-stage" aria-labelledby="studio-title">
+                <div class="studio-stage-head">
+                    <div class="studio-stage-copy">
+                        <div class="studio-eyebrow studio-breadcrumb">
+                            <span id="studio-source-label">갤러리 테마</span>
+                            <span class="studio-sep" aria-hidden="true">/</span>
+                            <span id="studio-source-detail">로드 중</span>
+                        </div>
+                        <h1 id="studio-title" translate="no" data-i18n-skip>Loading theme...</h1>
+                        <p id="studio-byline" translate="no" data-i18n-skip>Reading the package...</p>
+                    </div>
+                    <div class="studio-stage-meta">
+                        <span class="studio-chip"><i class="fa-solid fa-mobile-screen" aria-hidden="true"></i>Y1 / Y2</span>
+                        <span class="studio-chip studio-chip--muted" id="studio-source-chip">갱도</span>
+                    </div>
+                </div>
+
+                <div class="studio-preview-area" id="studio-preview-area">
+                    <div class="studio-preview-loading" id="studio-preview-loading">
+                        <span class="studio-spinner" aria-hidden="true"></span>
+                        <span id="studio-loading-label">미리보기 로드 중...</span>
+                    </div>
+                    <div class="studio-preview" id="studio-preview" translate="no" data-i18n-skip></div>
+                    <div class="studio-empty" id="studio-empty" hidden>
+                        <div class="studio-empty-card">
+                            <span class="studio-empty-icon"><i class="fa-solid fa-palette" aria-hidden="true"></i></span>
+                            <span class="studio-eyebrow" id="studio-empty-eyebrow" hidden>아직 열린 항목이 없습니다.</span>
+                            <strong id="studio-empty-title">미리보기를 사용할 수 없습니다.</strong>
+                            <p id="studio-empty-text">다른 테마를 선택하거나 로컬 패키지를 엽니다.</p>
+                            <div class="studio-empty-actions" id="studio-empty-actions" hidden>
+                                <a class="studio-btn studio-btn--primary" id="studio-empty-gallery" href="../">
+                                    <i class="fa-solid fa-images" aria-hidden="true"></i>갤러리에서 하나를 선택하세요
+                                </a>
+                                <button class="studio-btn" id="studio-empty-zip" type="button">
+                                    <i class="fa-solid fa-file-zipper" aria-hidden="true"></i>.zip 업로드
+                                </button>
+                                <button class="studio-btn" id="studio-empty-folder" type="button">
+                                    <i class="fa-solid fa-folder-open" aria-hidden="true"></i>폴더 업로드
+                                </button>
+                            </div>
+                            <p class="studio-hint" id="studio-empty-hint" hidden>이 페이지의 어느 곳으로든 폴더나 ZIP을 드래그하는 것도 가능합니다. 사이드바의 목록에서 갤러리 테마를 선택할 수도 있습니다.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="studio-stage-foot">
+                    <span><i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i>테마 폴더나 ZIP을 어디에든 놓으세요.</span>
+                    <span class="studio-foot-sep" aria-hidden="true"></span>
+                    <span>탐색하려면 휠을 클릭하거나 화살표 키를 사용하세요.</span>
+                </div>
+            </section>
+
+            <aside class="studio-panel" aria-label="스튜디오 인스펙터">
+                <div class="studio-panel-scroll" id="studio-panel-scroll">
+                    <section class="studio-pane" id="pane-preview" data-pane="preview" role="tabpanel">
+                        <div class="studio-pane-head">
+                            <p class="studio-eyebrow">현재 테마</p>
+                            <h2>시사</h2>
+                            <p>실제 플레이어의 모습입니다. 변경사항은 저장하거나 제출할 때까지 이 기기에 유지됩니다.</p>
+                        </div>
+
+                        <div class="studio-source-card">
+                            <div class="studio-cover" id="studio-cover-wrap">
+                                <img id="studio-cover" alt="" />
+                                <span class="studio-cover-fallback"><i class="fa-solid fa-palette" aria-hidden="true"></i></span>
+                            </div>
+                            <div class="studio-source-copy">
+                                <strong id="studio-source-name" translate="no" data-i18n-skip>-</strong>
+                                <span id="studio-source-author" translate="no" data-i18n-skip>-</span>
+                                <span class="studio-source-desc" id="studio-source-desc" translate="no" data-i18n-skip></span>
+                            </div>
+                        </div>
+
+                        <button class="studio-swap-btn" id="studio-swap" type="button" hidden>
+                            <i class="fa-solid fa-arrow-right-arrow-left" aria-hidden="true"></i>다른 테마 열기
+                        </button>
+
+                        <div class="studio-swap-panel" id="studio-swap-panel">
+                            <div class="studio-field">
+                                <label for="studio-theme-filter">갤러리 테마 열기</label>
+                                <input id="studio-theme-filter" type="search" placeholder="이름이나 작성자로 필터링" autocomplete="off" />
+                                <select id="studio-theme-select" aria-label="갤러리 테마"></select>
+                                <p class="studio-hint" id="studio-theme-count">모든 갤러리 테마</p>
+                            </div>
+
+                            <div class="studio-divider"></div>
+
+                            <div class="studio-import">
+                                <div class="studio-import-head">
+                                    <span class="studio-eyebrow">이 기기에서 열기</span>
+                                    <span class="studio-chip studio-chip--muted">ZIP 또는 폴더</span>
+                                </div>
+                                <p>여기에 테마 패키지를 놓거나 ZIP 또는 폴더를 찾아보세요. 저장되거나 전송되기 전에 시뮬레이터에서 열립니다.</p>
+                                <div class="studio-action-grid">
+                                    <button class="studio-btn" id="studio-open-zip" type="button">
+                                        <i class="fa-solid fa-file-zipper" aria-hidden="true"></i>.zip 찾아보기
+                                    </button>
+                                    <button class="studio-btn" id="studio-open-folder" type="button">
+                                        <i class="fa-solid fa-folder-open" aria-hidden="true"></i>폴더 찾아보기
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="studio-note">
+                                <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+                                <span>패키지가 브라우저에서 읽혀집니다. 제출을 선택하기 전까지는 아무것도 업로드되지 않습니다.</span>
+                            </div>
+                        </div>
+
+                        <div class="studio-action-grid studio-action-grid--single">
+                            <button class="studio-btn studio-btn--primary" id="studio-start-edit" type="button">
+                                <i class="fa-solid fa-pen-ruler" aria-hidden="true"></i>Studio에서 이것을 사용하세요
+                            </button>
+                        </div>
+                    </section>
+
+                    <section class="studio-pane" id="pane-edit" data-pane="edit" role="tabpanel" hidden>
+                        <div class="studio-pane-head">
+                            <p class="studio-eyebrow">테마 자산</p>
+                            <h2>편집하다</h2>
+                            <p>파일을 선택하거나, 이미지를 붙여넣거나, 슬롯에 직접 놓아 파일을 교체하세요.</p>
+                        </div>
+
+                        <div class="studio-asset-toolbar">
+                            <div class="studio-asset-filters" role="group" aria-label="자산 필터링">
+                                <button class="studio-asset-filter is-active" type="button" data-asset-filter="all">모두 <span id="studio-asset-count-all">0</span></button>
+                                <button class="studio-asset-filter" type="button" data-asset-filter="missing">없어진 <span id="studio-asset-count-missing">0</span></button>
+                                <button class="studio-asset-filter" type="button" data-asset-filter="changed">변경됨 <span id="studio-asset-count-changed">0</span></button>
+                            </div>
+                            <div class="studio-asset-tools">
+                                <button class="studio-mini-btn" id="studio-browse-font" type="button" title="글꼴 파일 찾아보기"><i class="fa-solid fa-font" aria-hidden="true"></i>세례반</button>
+                                <button class="studio-mini-btn" id="studio-reset-assets" type="button" title="교체할 때마다 재설정"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i>재설정</button>
+                            </div>
+                        </div>
+
+                        <div class="studio-asset-list" id="studio-asset-list" role="list" aria-label="테마 자산"></div>
+                        <p class="studio-asset-empty" id="studio-asset-empty" hidden>이 필터와 일치하는 자산이 없습니다.</p>
+
+                        <div class="studio-asset-detail" id="studio-asset-detail" hidden>
+                            <div class="studio-asset-detail-head">
+                                <div class="studio-asset-detail-copy">
+                                    <span class="studio-eyebrow" id="studio-asset-section">테마 아트</span>
+                                    <strong id="studio-asset-name">유산</strong>
+                                    <code id="studio-asset-path">-</code>
+                                </div>
+                                <span class="studio-asset-status" id="studio-asset-status">준비가 된</span>
+                            </div>
+                            <div class="studio-asset-detail-preview" id="studio-asset-detail-preview"></div>
+                            <div class="studio-asset-detail-actions">
+                                <button class="studio-btn studio-btn--primary" id="studio-asset-replace" type="button"><i class="fa-solid fa-folder-open" aria-hidden="true"></i>파일 교체</button>
+                                <button class="studio-btn" id="studio-asset-theme" type="button" title="다른 갤러리 테마의 동일한 자산으로 교체"><i class="fa-solid fa-images" aria-hidden="true"></i>테마에서</button>
+                                <button class="studio-btn" id="studio-asset-paste" type="button"><i class="fa-solid fa-paste" aria-hidden="true"></i>반죽</button>
+                                <button class="studio-btn" id="studio-asset-blank" type="button" title="이 파일을 저장하고 완전히 투명한 자리 표시자를 사용하세요."><i class="fa-solid fa-trash-can" aria-hidden="true"></i>공백</button>
+                                <button class="studio-btn" id="studio-asset-reset" type="button"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i>재설정</button>
+                            </div>
+                            <p class="studio-hint" id="studio-asset-hint">선택한 슬롯에 이미지를 놓거나 이미지를 복사하고 Ctrl+V / Cmd+V를 누르세요.</p>
+                        </div>
+
+                        <div class="studio-mask-editor" id="studio-mask-editor" hidden></div>
+
+                        <div class="studio-color-editor" id="studio-color-editor"></div>
+
+                        <div class="studio-pane-actions studio-pane-actions--three">
+                            <button class="studio-btn" id="studio-edit-back" type="button"><i class="fa-solid fa-eye" aria-hidden="true"></i>시사</button>
+                            <button class="studio-btn" data-studio-save type="button"><i class="fa-solid fa-download" aria-hidden="true"></i>구하다</button>
+                            <button class="studio-btn studio-btn--primary" id="studio-edit-submit" type="button">제출하다<i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+                        </div>
+                    </section>
+
+                    <section class="studio-pane" id="pane-submit" data-pane="submit" role="tabpanel" hidden>
+                        <div class="studio-pane-head">
+                            <p class="studio-eyebrow">갤러리 제출</p>
+                            <h2>제출하다</h2>
+                            <p>이는 갤러리 업로드 양식과 동일한 목록 세부정보입니다. 시뮬레이터의 테마는 제출하는 패키지입니다. 여기에서는 제목과 설명이 영어로 유지됩니다. 갤러리는 각 방문자를 위해 이를 번역합니다.</p>
+                        </div>
+
+                        <div class="studio-package">
+                            <div class="studio-cover" id="studio-submit-cover-wrap">
+                                <img id="studio-submit-cover" alt="" />
+                                <span class="studio-cover-fallback"><i class="fa-solid fa-palette" aria-hidden="true"></i></span>
+                            </div>
+                            <div class="studio-source-copy">
+                                <strong id="studio-package-name" translate="no" data-i18n-skip>-</strong>
+                                <span id="studio-package-source" translate="no" data-i18n-skip>-</span>
+                            </div>
+                        </div>
+
+                        <div class="studio-source-actions">
+                            <button class="studio-mini-btn" id="studio-submit-open-zip" type="button"><i class="fa-solid fa-file-zipper" aria-hidden="true"></i>다른 .zip을 엽니다.</button>
+                            <button class="studio-mini-btn" id="studio-submit-open-folder" type="button"><i class="fa-solid fa-folder-open" aria-hidden="true"></i>다른 폴더 열기</button>
+                        </div>
+
+                        <div class="studio-submit-form" id="studio-submit-form">
+                            <div class="studio-identity" id="studio-identity" hidden>
+                                <div class="studio-identity-head">
+                                    <span class="studio-eyebrow"><i class="fa-solid fa-code-compare" aria-hidden="true"></i> 먼저 질문 하나</span>
+                                    <span class="studio-chip studio-chip--muted">갤러리와 일치</span>
+                                </div>
+                                <p class="studio-identity-lead">
+                                    이 패키지에는 다음 사항이 포함되어 있습니다. <strong id="studio-identity-name" translate="no" data-i18n-skip>a gallery theme</strong><span id="studio-identity-author" translate="no" data-i18n-skip></span>, 따라서 해당 목록의 업데이트 또는 귀하의 새로운 테마로만 올라갈 수 있습니다.
+                                </p>
+
+                                <div class="studio-identity-step" id="studio-identity-own">
+                                    <p class="studio-identity-q">이것이 당신의 테마인가요?</p>
+                                    <div class="studio-identity-actions">
+                                        <button class="studio-btn studio-btn--primary" type="button" data-identity-own="yes">응, 해냈어</button>
+                                        <button class="studio-btn" type="button" data-identity-own="no">아니요, 내 것이 아닙니다</button>
+                                    </div>
+                                </div>
+
+                                <div class="studio-identity-step" id="studio-identity-change" hidden>
+                                    <p class="studio-identity-q">목록 세부정보를 변경하시겠습니까?</p>
+                                    <div class="studio-identity-actions">
+                                        <button class="studio-btn studio-btn--primary" type="button" data-identity-change="yes">예, 세부정보를 수정합니다</button>
+                                        <button class="studio-btn" type="button" data-identity-change="no">아니요, 나열된 대로 보내세요.</button>
+                                    </div>
+                                </div>
+
+                                <div class="studio-identity-result" id="studio-identity-result" hidden>
+                                    <p class="studio-identity-q" id="studio-identity-result-title"></p>
+                                    <p class="studio-hint" id="studio-identity-result-text"></p>
+                                    <button class="studio-mini-btn" type="button" id="studio-identity-reset">
+                                        <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>답변 변경
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="studio-submit-details" id="studio-submit-details">
+                            <div class="studio-field">
+                                <label for="studio-submit-title">갤러리 제목 <span class="studio-required">필수의</span></label>
+                                <input id="studio-submit-title" type="text" autocomplete="off" maxlength="120" placeholder="테마 제목" translate="no" data-i18n-skip />
+                                <p class="studio-hint">갤러리에서 모든 방문자를 위해 제목을 번역할 수 있도록 제목을 영어로 작성하세요.</p>
+                            </div>
+
+                            <div class="studio-form-grid">
+                                <div class="studio-field">
+                                    <label for="studio-submit-author">작성자 / 사용자 이름 <span class="studio-required">필수의</span></label>
+                                    <input id="studio-submit-author" type="text" autocomplete="name" autocapitalize="words" spellcheck="false" maxlength="80" placeholder="크리에이터 핸들" list="studio-author-options" translate="no" data-i18n-skip />
+                                    <datalist id="studio-author-options"></datalist>
+                                    <p class="studio-hint">적립하려는 핸들을 사용하세요. 공개 테마의 세부정보는 자리 표시자 텍스트로만 제안됩니다.</p>
+                                </div>
+                                <div class="studio-field">
+                                    <label for="studio-submit-author-url">작성자 링크 <span class="studio-optional">선택사항</span></label>
+                                    <input id="studio-submit-author-url" type="url" inputmode="url" autocomplete="url" placeholder="https://" translate="no" data-i18n-skip />
+                                </div>
+                            </div>
+
+                            <div class="studio-field">
+                                <label for="studio-submit-desc">설명 <span class="studio-optional">선택사항</span></label>
+                                <textarea id="studio-submit-desc" rows="3" maxlength="600" placeholder="갤러리를 향한 짧은 줄" translate="no" data-i18n-skip></textarea>
+                                <p class="studio-hint">룩, 팔레트 또는 가장 잘 어울리는 것에 대한 문장입니다. 갤러리에서 모든 방문자를 위해 번역할 수 있도록 영어로 작성하세요.</p>
+                            </div>
+
+                            <label class="studio-inline-check">
+                                <input id="studio-submit-external" type="checkbox" />
+                                <span><strong>내 페이지에서 다운로드 호스팅</strong> (Ko-fi, Patreon, 상점 또는 포트폴리오)</span>
+                            </label>
+                            <div class="studio-field" id="studio-submit-external-wrap" hidden>
+                                <label for="studio-submit-external-url">외부 다운로드 URL</label>
+                                                                    <input id="studio-submit-external-url" type="url" inputmode="url" placeholder="https://" translate="no" data-i18n-skip />
+                            </div>
+                            </div>
+
+                            <div class="studio-update-notice" id="studio-update-notice" hidden>
+                                <strong>이건 업데이트 같은데</strong>
+                                <p>작성자가 기존 목록과 일치합니다. <span id="studio-update-folder"></span>. 우리는 이것을 해당 주제에 대한 업데이트로 취급할 것입니다.</p>
+                                <label class="studio-inline-check">
+                                    <input id="studio-edit-ack" type="checkbox" />
+                                    <span>본인은 이것이 기존 목록에 대한 업데이트임을 확인합니다.</span>
+                                </label>
+                            </div>
+
+                            <div class="studio-policy-banner" id="studio-policy-banner" hidden></div>
+
+                            <ul class="studio-checklist" id="studio-checklist">
+                                <li data-check="config" data-state="pending">
+                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                                    <div><strong>패키지 발견</strong><span class="studio-check-detail">테마를 기다리는 중</span></div>
+                                </li>
+                                <li data-check="preview" data-state="pending">
+                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                                    <div><strong>렌더링된 미리보기</strong><span class="studio-check-detail">미리보기가 아직 렌더링되지 않았습니다.</span></div>
+                                </li>
+                                <li data-check="assets" data-state="pending">
+                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                                    <div><strong>참조된 파일</strong><span class="studio-check-detail">패키지 자산 확인 중</span></div>
+                                </li>
+                                <li data-check="details" data-state="pending">
+                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                                    <div><strong>목록 세부정보</strong><span class="studio-check-detail">제목 및 작성자 추가</span></div>
+                                </li>
+                            </ul>
+
+                            <button class="studio-btn studio-btn--primary studio-submit-btn" id="studio-submit-btn" type="button">
+                                <i class="fa-solid fa-paper-plane" aria-hidden="true"></i><span>내 테마 보내기</span>
+                            </button>
+                            <div class="studio-submit-status" id="studio-submit-status" role="status" aria-live="polite"></div>
+                        </div>
+
+                        <div class="studio-note">
+                            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                            <span>제출하면 검토를 위한 풀 요청이 열립니다. 먼저 이 기기에 테마를 저장할 수 있습니다.</span>
+                        </div>
+                    </section>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <div class="studio-drop" id="studio-drop" aria-hidden="true">
+        <div class="studio-drop-card">
+            <span class="studio-drop-icon"><i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i></span>
+            <strong>드롭하여 Studio에서 열기</strong>
+            <span>테마 폴더 또는 ZIP - 로컬에서 미리보기</span>
+        </div>
+    </div>
+
+    <div class="studio-toast" id="studio-toast" role="status" aria-live="polite"></div>
+
+    <div class="studio-modal studio-theme-picker" id="studio-theme-picker" hidden>
+        <div class="studio-modal-card studio-theme-picker-card" role="dialog" aria-modal="true" aria-labelledby="studio-theme-picker-title">
+            <span class="studio-eyebrow"><i class="fa-solid fa-images" aria-hidden="true"></i> 다른 테마에서 전환</span>
+            <h2 id="studio-theme-picker-title">유산</h2>
+            <p id="studio-theme-picker-text">갤러리 테마에서 동일한 자산을 선택하여 이 테마로 교체하세요.</p>
+            <label class="studio-theme-picker-search">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                <input id="studio-theme-picker-query" type="search" placeholder="이름이나 작성자로 테마 검색" autocomplete="off" />
+            </label>
+            <div class="studio-theme-picker-list" id="studio-theme-picker-list" role="list" aria-label="갤러리 테마"></div>
+            <p class="studio-theme-picker-empty" id="studio-theme-picker-empty" hidden>해당 검색과 일치하는 테마가 없습니다.</p>
+            <div class="studio-modal-actions">
+                <button class="studio-btn" id="studio-theme-picker-close" type="button">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="studio-save-progress" id="studio-save-progress" role="status" aria-live="polite" aria-atomic="true" hidden>
+        <div class="studio-save-progress-head">
+            <span id="studio-save-progress-label">테마 준비 중…</span>
+            <strong id="studio-save-progress-value" aria-hidden="true">0%</strong>
+        </div>
+        <progress id="studio-save-progress-bar" max="100" value="0" aria-labelledby="studio-save-progress-label">0%</progress>
+    </div>
+
+    <input type="file" id="studio-zip-input" accept=".zip,application/zip" hidden />
+    <input type="file" id="studio-folder-input" webkitdirectory multiple hidden />
+    <input type="file" id="studio-asset-input" hidden />
+
+    <div id="footer-root"></div>
+    <div id="support-toolbar-slot"></div>
+
+    <script src="../nav.js?v=20261111nav"></script>
+    <script src="../y1-theme-preview.js?v=20261115lock"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="../theme-packaging.js"></script>
+    <script src="../author-submission-policy.js?v=20260523"></script>
+    <script src="/studio-test/studio.js?v=20261115rowtheme"></script>
+    <script src="../site-locale.js?v=20261115skip2" defer></script>
+</body>
+
+</html>

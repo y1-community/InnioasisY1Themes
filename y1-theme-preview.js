@@ -57,6 +57,9 @@
 
     function previewLocale() {
         try {
+            // The studio edits the theme's own labels, so it pins the device UI
+            // to English: a translated menu would misreport what the author wrote.
+            if (global.STUDIO_PREVIEW_LOCALE) return String(global.STUDIO_PREVIEW_LOCALE).toLowerCase();
             if (global.InnioasisLocale && global.InnioasisLocale.locale) return String(global.InnioasisLocale.locale).toLowerCase();
             var node = document.documentElement;
             var fromDoc = node && (node.getAttribute("data-locale") || node.lang);

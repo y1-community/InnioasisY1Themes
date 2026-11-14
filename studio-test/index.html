@@ -18,6 +18,9 @@
         /* The dock is a convenience here, never a preference the rest of the
            site should inherit. support_toolbar.html reads this flag. */
         window.STUDIO_DOCK_ISOLATED = true;
+        /* The simulator draws the theme's own menu labels. Pin its device UI to
+           English so a translated player never misreports what the author wrote. */
+        window.STUDIO_PREVIEW_LOCALE = 'en';
         /* This page is reachable only by typing its URL: nothing on the site
            links to it, and no editor override points the header here. The nav's
            Editor item keeps resolving to the community editor, so following it
@@ -78,8 +81,8 @@
                             <span class="studio-sep" aria-hidden="true">/</span>
                             <span id="studio-source-detail">loading</span>
                         </div>
-                        <h1 id="studio-title">Loading theme...</h1>
-                        <p id="studio-byline">Reading the package...</p>
+                        <h1 id="studio-title" translate="no" data-i18n-skip>Loading theme...</h1>
+                        <p id="studio-byline" translate="no" data-i18n-skip>Reading the package...</p>
                     </div>
                     <div class="studio-stage-meta">
                         <span class="studio-chip"><i class="fa-solid fa-mobile-screen" aria-hidden="true"></i>Y1 / Y2</span>
@@ -92,7 +95,7 @@
                         <span class="studio-spinner" aria-hidden="true"></span>
                         <span id="studio-loading-label">Loading preview...</span>
                     </div>
-                    <div class="studio-preview" id="studio-preview"></div>
+                    <div class="studio-preview" id="studio-preview" translate="no" data-i18n-skip></div>
                     <div class="studio-empty" id="studio-empty" hidden>
                         <div class="studio-empty-card">
                             <span class="studio-empty-icon"><i class="fa-solid fa-palette" aria-hidden="true"></i></span>
@@ -137,9 +140,9 @@
                                 <span class="studio-cover-fallback"><i class="fa-solid fa-palette" aria-hidden="true"></i></span>
                             </div>
                             <div class="studio-source-copy">
-                                <strong id="studio-source-name">-</strong>
-                                <span id="studio-source-author">-</span>
-                                <span class="studio-source-desc" id="studio-source-desc"></span>
+                                <strong id="studio-source-name" translate="no" data-i18n-skip>-</strong>
+                                <span id="studio-source-author" translate="no" data-i18n-skip>-</span>
+                                <span class="studio-source-desc" id="studio-source-desc" translate="no" data-i18n-skip></span>
                             </div>
                         </div>
 
@@ -243,7 +246,7 @@
                         <div class="studio-pane-head">
                             <p class="studio-eyebrow">Gallery submission</p>
                             <h2>Submit</h2>
-                            <p>These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting.</p>
+                            <p>These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting. Titles and descriptions stay in English here: the gallery translates them for each visitor.</p>
                         </div>
 
                         <div class="studio-package">
@@ -252,8 +255,8 @@
                                 <span class="studio-cover-fallback"><i class="fa-solid fa-palette" aria-hidden="true"></i></span>
                             </div>
                             <div class="studio-source-copy">
-                                <strong id="studio-package-name">-</strong>
-                                <span id="studio-package-source">-</span>
+                                <strong id="studio-package-name" translate="no" data-i18n-skip>-</strong>
+                                <span id="studio-package-source" translate="no" data-i18n-skip>-</span>
                             </div>
                         </div>
 
@@ -269,7 +272,7 @@
                                     <span class="studio-chip studio-chip--muted">Matches the gallery</span>
                                 </div>
                                 <p class="studio-identity-lead">
-                                    This package carries the details of <strong id="studio-identity-name">a gallery theme</strong><span id="studio-identity-author"></span>, so it can only go up as that listing&rsquo;s update or as your own new theme.
+                                    This package carries the details of <strong id="studio-identity-name" translate="no" data-i18n-skip>a gallery theme</strong><span id="studio-identity-author" translate="no" data-i18n-skip></span>, so it can only go up as that listing&rsquo;s update or as your own new theme.
                                 </p>
 
                                 <div class="studio-identity-step" id="studio-identity-own">
@@ -300,26 +303,27 @@
                             <div class="studio-submit-details" id="studio-submit-details">
                             <div class="studio-field">
                                 <label for="studio-submit-title">Gallery title <span class="studio-required">Required</span></label>
-                                <input id="studio-submit-title" type="text" autocomplete="off" maxlength="120" placeholder="Theme title" />
+                                <input id="studio-submit-title" type="text" autocomplete="off" maxlength="120" placeholder="Theme title" translate="no" data-i18n-skip />
+                                <p class="studio-hint">Write the title in English so the gallery can translate it for every visitor.</p>
                             </div>
 
                             <div class="studio-form-grid">
                                 <div class="studio-field">
                                     <label for="studio-submit-author">Author / username <span class="studio-required">Required</span></label>
-                                    <input id="studio-submit-author" type="text" autocomplete="name" autocapitalize="words" spellcheck="false" maxlength="80" placeholder="Your creator handle" list="studio-author-options" />
+                                    <input id="studio-submit-author" type="text" autocomplete="name" autocapitalize="words" spellcheck="false" maxlength="80" placeholder="Your creator handle" list="studio-author-options" translate="no" data-i18n-skip />
                                     <datalist id="studio-author-options"></datalist>
                                     <p class="studio-hint">Use the handle you want credited. The open theme's details are only suggested as placeholder text.</p>
                                 </div>
                                 <div class="studio-field">
                                     <label for="studio-submit-author-url">Author link <span class="studio-optional">Optional</span></label>
-                                    <input id="studio-submit-author-url" type="url" inputmode="url" autocomplete="url" placeholder="https://" />
+                                    <input id="studio-submit-author-url" type="url" inputmode="url" autocomplete="url" placeholder="https://" translate="no" data-i18n-skip />
                                 </div>
                             </div>
 
                             <div class="studio-field">
                                 <label for="studio-submit-desc">Description <span class="studio-optional">Optional</span></label>
-                                <textarea id="studio-submit-desc" rows="3" maxlength="600" placeholder="A short line for the gallery"></textarea>
-                                <p class="studio-hint">A sentence about the look, palette or what it works best with.</p>
+                                <textarea id="studio-submit-desc" rows="3" maxlength="600" placeholder="A short line for the gallery" translate="no" data-i18n-skip></textarea>
+                                <p class="studio-hint">A sentence about the look, palette or what it works best with. Write it in English so the gallery can translate it for every visitor.</p>
                             </div>
 
                             <label class="studio-inline-check">
@@ -328,7 +332,7 @@
                             </label>
                             <div class="studio-field" id="studio-submit-external-wrap" hidden>
                                 <label for="studio-submit-external-url">External download URL</label>
-                                <input id="studio-submit-external-url" type="url" inputmode="url" placeholder="https://" />
+                                                                    <input id="studio-submit-external-url" type="url" inputmode="url" placeholder="https://" translate="no" data-i18n-skip />
                             </div>
                             </div>
 
@@ -421,12 +425,12 @@
     <div id="support-toolbar-slot"></div>
 
     <script src="../nav.js?v=20261111nav"></script>
-    <script src="../y1-theme-preview.js?v=20261114rowfocus2"></script>
+    <script src="../y1-theme-preview.js?v=20261115lock"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="../theme-packaging.js"></script>
     <script src="../author-submission-policy.js?v=20260523"></script>
-    <script src="/studio-test/studio.js?v=20261114identity"></script>
-    <script src="../site-locale.js?v=20261109live" defer></script>
+    <script src="/studio-test/studio.js?v=20261115rowtheme"></script>
+    <script src="../site-locale.js?v=20261115skip2" defer></script>
 </body>
 
 </html>

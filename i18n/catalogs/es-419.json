@@ -1,6 +1,6 @@
 {
  "base": "es",
- "count": 6951,
+ "count": 6954,
  "dir": "ltr",
  "locale": "es-419",
  "name": "Spanish (Latin America)",
@@ -6958,6 +6958,9 @@
   "🚀 Slidia": "🚀 deslizarse",
   "🛠️ Developer Friendly": "🛠️ Apto para desarrolladores",
   "🪟 Windows ARM64": "🪟Windows ARM64",
-  "🪟 Windows Installation": "🪟 Instalación de Windows"
+  "🪟 Windows Installation": "🪟 Instalación de Windows",
+  "These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting. Titles and descriptions stay in English here: the gallery translates them for each visitor.": "Estos son los mismos detalles del listado que el formulario de carga de la galería. El tema en el simulador es el paquete que estás enviando. Los títulos y descripciones permanecen aquí en inglés: la galería los traduce para cada visitante.",
+  "Write the title in English so the gallery can translate it for every visitor.": "Escribe el título en inglés para que la galería pueda traducirlo para cada visitante.",
+  "A sentence about the look, palette or what it works best with. Write it in English so the gallery can translate it for every visitor.": "Una frase sobre el look, la paleta o con qué funciona mejor. Escríbalo en inglés para que la galería pueda traducirlo para cada visitante."
  }
 }

@@ -1,6 +1,6 @@
 {
  "base": "pa",
- "count": 204,
+ "count": 207,
  "dir": "rtl",
  "locale": "pa-PK",
  "name": "Punjabi (Pakistan)",
@@ -211,6 +211,9 @@
   "{supporter} contributed {amount} for free by sharing 100MB on Honeygain{time}": "{supporter} ਨੇ Honeygain{time} 'ਤੇ 100MB ਸਾਂਝਾ ਕਰਕੇ ਮੁਫ਼ਤ ਵਿੱਚ {amount} ਦਾ ਯੋਗਦਾਨ ਪਾਇਆ",
   "{supporter} donated {amount}": "{supporter} ਨੇ {amount} ਦਾਨ ਕੀਤਾ",
   "{supporter} donated {amount} by {method}{time}": "{supporter} ਨੇ {method}{time} ਦੁਆਰਾ {amount} ਦਾਨ ਕੀਤਾ",
-  "{supporter} has donated {amount}{time}": "{supporter} ਨੇ {amount}{time} ਦਾਨ ਕੀਤਾ ਹੈ"
+  "{supporter} has donated {amount}{time}": "{supporter} ਨੇ {amount}{time} ਦਾਨ ਕੀਤਾ ਹੈ",
+  "These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting. Titles and descriptions stay in English here: the gallery translates them for each visitor.": "ਇਹ ਗੈਲਰੀ ਅੱਪਲੋਡ ਫਾਰਮ ਵਾਂਗ ਹੀ ਸੂਚੀਕਰਨ ਵੇਰਵੇ ਹਨ। ਸਿਮੂਲੇਟਰ ਵਿੱਚ ਥੀਮ ਉਹ ਪੈਕੇਜ ਹੈ ਜੋ ਤੁਸੀਂ ਜਮ੍ਹਾਂ ਕਰ ਰਹੇ ਹੋ। ਸਿਰਲੇਖ ਅਤੇ ਵਰਣਨ ਇੱਥੇ ਅੰਗਰੇਜ਼ੀ ਵਿੱਚ ਰਹਿੰਦੇ ਹਨ: ਗੈਲਰੀ ਹਰੇਕ ਵਿਜ਼ਟਰ ਲਈ ਉਹਨਾਂ ਦਾ ਅਨੁਵਾਦ ਕਰਦੀ ਹੈ।",
+  "Write the title in English so the gallery can translate it for every visitor.": "ਸਿਰਲੇਖ ਨੂੰ ਅੰਗਰੇਜ਼ੀ ਵਿੱਚ ਲਿਖੋ ਤਾਂ ਕਿ ਗੈਲਰੀ ਹਰੇਕ ਵਿਜ਼ਟਰ ਲਈ ਇਸਦਾ ਅਨੁਵਾਦ ਕਰ ਸਕੇ।",
+  "A sentence about the look, palette or what it works best with. Write it in English so the gallery can translate it for every visitor.": "ਦਿੱਖ, ਪੈਲੇਟ ਜਾਂ ਇਹ ਕਿਸ ਨਾਲ ਵਧੀਆ ਕੰਮ ਕਰਦਾ ਹੈ ਬਾਰੇ ਇੱਕ ਵਾਕ। ਇਸਨੂੰ ਅੰਗਰੇਜ਼ੀ ਵਿੱਚ ਲਿਖੋ ਤਾਂ ਕਿ ਗੈਲਰੀ ਹਰੇਕ ਵਿਜ਼ਟਰ ਲਈ ਇਸਦਾ ਅਨੁਵਾਦ ਕਰ ਸਕੇ।"
  }
 }

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-locale="fa">
+
+<head>
+    <meta charset="utf-8" />
+    <base href="/" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="theme-color" content="#2f80ed" />
+    <meta name="application-name" content="Theme Studio" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Theme Studio" />
+    <meta name="cf-pages-upload-api-origin" content="https://y1-theme-upload.itsryanspecter.workers.dev" />
+    <title>استودیو تم - Innioasis Y1 و Y2 تم</title>
+    <script>
+        /* The dock is a convenience here, never a preference the rest of the
+           site should inherit. support_toolbar.html reads this flag. */
+        window.STUDIO_DOCK_ISOLATED = true;
+        /* The simulator draws the theme's own menu labels. Pin its device UI to
+           English so a translated player never misreports what the author wrote. */
+        window.STUDIO_PREVIEW_LOCALE = 'en';
+        /* This page is reachable only by typing its URL: nothing on the site
+           links to it, and no editor override points the header here. The nav's
+           Editor item keeps resolving to the community editor, so following it
+           from Studio leaves for that editor instead of reloading this page and
+           discarding unsaved work. */
+    </script>
+    <script src="../site-init.js?v=20261110picker"></script>
+    <link rel="manifest" href="/studio-test/manifest.webmanifest" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/studio-test/icons/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/studio-test/icons/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="../site-theme.css?v=20261111dl2" />
+    <link rel="stylesheet" href="../site-toolbar.css?v=20261110accent2" />
+    <link rel="stylesheet" href="../y1-theme-preview.css?v=20261114rowfocus2" />
+    <link rel="stylesheet" href="/studio-test/studio.css?v=20261114identity" />
+</head>
+
+<body class="site-themes-app site-dock-mode studio-app" data-mode="preview">
+    <div id="nav-root"></div>
+
+    <div class="studio-shell">
+        <div class="studio-commandbar">
+            <div class="studio-command-copy">
+                <span class="studio-eyebrow"><i class="fa-solid fa-compact-disc" aria-hidden="true"></i> استودیو تم</span>
+                <span class="studio-command-context" id="studio-command-context">یک تم پخش کننده را پیش نمایش، ویرایش و منتشر کنید</span>
+            </div>
+
+            <nav class="studio-modes" role="tablist" aria-label="حالت استودیویی">
+                <button class="studio-mode is-active" type="button" role="tab" aria-selected="true" aria-controls="pane-preview" data-mode-btn="preview">
+                    <i class="fa-solid fa-eye" aria-hidden="true"></i><span>پیش نمایش</span>
+                </button>
+                <button class="studio-mode" type="button" role="tab" aria-selected="false" aria-controls="pane-edit" data-mode-btn="edit">
+                    <i class="fa-solid fa-pen-ruler" aria-hidden="true"></i><span>ویرایش کنید</span>
+                </button>
+                <button class="studio-mode" type="button" role="tab" aria-selected="false" aria-controls="pane-submit" data-mode-btn="submit">
+                    <i class="fa-solid fa-paper-plane" aria-hidden="true"></i><span>ارسال کنید</span>
+                </button>
+            </nav>
+
+            <div class="studio-command-actions">
+                <span class="studio-unsaved" id="studio-unsaved" hidden><i class="fa-solid fa-circle" aria-hidden="true"></i>ذخیره نشده است</span>
+                <button class="studio-btn studio-btn--themes" id="studio-open-theme" type="button" aria-label="موضوع گالری را انتخاب کنید" aria-controls="studio-swap-panel" aria-expanded="false" title="موضوع گالری را انتخاب کنید">
+                    <i class="fa-solid fa-images" aria-hidden="true"></i><span>تم ها</span>
+                </button>
+                <button class="studio-btn studio-btn--save" id="studio-save" type="button" aria-label="موضوع را در این دستگاه ذخیره کنید">
+                    <i class="fa-solid fa-download" aria-hidden="true"></i><span>ذخیره در دستگاه</span>
+                </button>
+            </div>
+        </div>
+
+        <main class="studio-main">
+            <section class="studio-stage" aria-labelledby="studio-title">
+                <div class="studio-stage-head">
+                    <div class="studio-stage-copy">
+                        <div class="studio-eyebrow studio-breadcrumb">
+                            <span id="studio-source-label">موضوع گالری</span>
+                            <span class="studio-sep" aria-hidden="true">/</span>
+                            <span id="studio-source-detail">در حال بارگذاری</span>
+                        </div>
+                        <h1 id="studio-title" translate="no" data-i18n-skip>Loading theme...</h1>
+                        <p id="studio-byline" translate="no" data-i18n-skip>Reading the package...</p>
+                    </div>
+                    <div class="studio-stage-meta">
+                        <span class="studio-chip"><i class="fa-solid fa-mobile-screen" aria-hidden="true"></i>Y1 / Y2</span>
+                        <span class="studio-chip studio-chip--muted" id="studio-source-chip">گالری</span>
+                    </div>
+                </div>
+
+                <div class="studio-preview-area" id="studio-preview-area">
+                    <div class="studio-preview-loading" id="studio-preview-loading">
+                        <span class="studio-spinner" aria-hidden="true"></span>
+                        <span id="studio-loading-label">در حال بارگیری پیش نمایش...</span>
+                    </div>
+                    <div class="studio-preview" id="studio-preview" translate="no" data-i18n-skip></div>
+                    <div class="studio-empty" id="studio-empty" hidden>
+                        <div class="studio-empty-card">
+                            <span class="studio-empty-icon"><i class="fa-solid fa-palette" aria-hidden="true"></i></span>
+                            <span class="studio-eyebrow" id="studio-empty-eyebrow" hidden>هنوز چیزی باز نشده</span>
+                            <strong id="studio-empty-title">پیش نمایش در دسترس نیست</strong>
+                            <p id="studio-empty-text">موضوع دیگری را انتخاب کنید یا یک بسته محلی باز کنید.</p>
+                            <div class="studio-empty-actions" id="studio-empty-actions" hidden>
+                                <a class="studio-btn studio-btn--primary" id="studio-empty-gallery" href="../">
+                                    <i class="fa-solid fa-images" aria-hidden="true"></i>یکی را از گالری انتخاب کنید
+                                </a>
+                                <button class="studio-btn" id="studio-empty-zip" type="button">
+                                    <i class="fa-solid fa-file-zipper" aria-hidden="true"></i>یک .zip آپلود کنید
+                                </button>
+                                <button class="studio-btn" id="studio-empty-folder" type="button">
+                                    <i class="fa-solid fa-folder-open" aria-hidden="true"></i>یک پوشه آپلود کنید
+                                </button>
+                            </div>
+                            <p class="studio-hint" id="studio-empty-hint" hidden>کشیدن یک پوشه یا ZIP در هر نقطه از این صفحه نیز کار می کند. تم گالری را نیز می توان از فهرست موجود در نوار کناری انتخاب کرد.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="studio-stage-foot">
+                    <span><i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i>یک پوشه تم یا ZIP را در هر جایی رها کنید</span>
+                    <span class="studio-foot-sep" aria-hidden="true"></span>
+                    <span>روی چرخ کلیک کنید یا برای کاوش از کلیدهای پیکان استفاده کنید</span>
+                </div>
+            </section>
+
+            <aside class="studio-panel" aria-label="بازرس استودیو">
+                <div class="studio-panel-scroll" id="studio-panel-scroll">
+                    <section class="studio-pane" id="pane-preview" data-pane="preview" role="tabpanel">
+                        <div class="studio-pane-head">
+                            <p class="studio-eyebrow">موضوع فعلی</p>
+                            <h2>پیش نمایش</h2>
+                            <p>این نمای واقعی بازیکن است. تغییرات تا زمانی که آنها را ذخیره یا ارسال نکنید در این دستگاه باقی می‌مانند.</p>
+                        </div>
+
+                        <div class="studio-source-card">
+                            <div class="studio-cover" id="studio-cover-wrap">
+                                <img id="studio-cover" alt="" />
+                                <span class="studio-cover-fallback"><i class="fa-solid fa-palette" aria-hidden="true"></i></span>
+                            </div>
+                            <div class="studio-source-copy">
+                                <strong id="studio-source-name" translate="no" data-i18n-skip>-</strong>
+                                <span id="studio-source-author" translate="no" data-i18n-skip>-</span>
+                                <span class="studio-source-desc" id="studio-source-desc" translate="no" data-i18n-skip></span>
+                            </div>
+                        </div>
+
+                        <button class="studio-swap-btn" id="studio-swap" type="button" hidden>
+                            <i class="fa-solid fa-arrow-right-arrow-left" aria-hidden="true"></i>موضوع دیگری را باز کنید
+                        </button>
+
+                        <div class="studio-swap-panel" id="studio-swap-panel">
+                            <div class="studio-field">
+                                <label for="studio-theme-filter">یک تم گالری باز کنید</label>
+                                <input id="studio-theme-filter" type="search" placeholder="بر اساس نام یا نویسنده فیلتر کنید" autocomplete="off" />
+                                <select id="studio-theme-select" aria-label="موضوع گالری"></select>
+                                <p class="studio-hint" id="studio-theme-count">تمام تم های گالری</p>
+                            </div>
+
+                            <div class="studio-divider"></div>
+
+                            <div class="studio-import">
+                                <div class="studio-import-head">
+                                    <span class="studio-eyebrow">از این دستگاه باز کنید</span>
+                                    <span class="studio-chip studio-chip--muted">ZIP یا پوشه</span>
+                                </div>
+                                <p>یک بسته تم را در اینجا رها کنید یا به دنبال ZIP یا پوشه بگردید. قبل از اینکه چیزی ذخیره یا ارسال شود در شبیه ساز باز می شود.</p>
+                                <div class="studio-action-grid">
+                                    <button class="studio-btn" id="studio-open-zip" type="button">
+                                        <i class="fa-solid fa-file-zipper" aria-hidden="true"></i>زیپ را مرور کنید
+                                    </button>
+                                    <button class="studio-btn" id="studio-open-folder" type="button">
+                                        <i class="fa-solid fa-folder-open" aria-hidden="true"></i>پوشه را مرور کنید
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="studio-note">
+                                <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+                                <span>بسته شما در مرورگر شما خوانده می شود. تا زمانی که ارسال را انتخاب نکنید، هیچ چیزی آپلود نمی شود.</span>
+                            </div>
+                        </div>
+
+                        <div class="studio-action-grid studio-action-grid--single">
+                            <button class="studio-btn studio-btn--primary" id="studio-start-edit" type="button">
+                                <i class="fa-solid fa-pen-ruler" aria-hidden="true"></i>از این در استودیو استفاده کنید
+                            </button>
+                        </div>
+                    </section>
+
+                    <section class="studio-pane" id="pane-edit" data-pane="edit" role="tabpanel" hidden>
+                        <div class="studio-pane-head">
+                            <p class="studio-eyebrow">دارایی های موضوعی</p>
+                            <h2>ویرایش کنید</h2>
+                            <p>هر فایلی را با انتخاب، چسباندن یک تصویر، یا انداختن مستقیم آن در یک شکاف جایگزین کنید.</p>
+                        </div>
+
+                        <div class="studio-asset-toolbar">
+                            <div class="studio-asset-filters" role="group" aria-label="دارایی ها را فیلتر کنید">
+                                <button class="studio-asset-filter is-active" type="button" data-asset-filter="all">همه <span id="studio-asset-count-all">0</span></button>
+                                <button class="studio-asset-filter" type="button" data-asset-filter="missing">گم شده <span id="studio-asset-count-missing">0</span></button>
+                                <button class="studio-asset-filter" type="button" data-asset-filter="changed">تغییر کرد <span id="studio-asset-count-changed">0</span></button>
+                            </div>
+                            <div class="studio-asset-tools">
+                                <button class="studio-mini-btn" id="studio-browse-font" type="button" title="برای یافتن یک فایل فونت جستجو کنید"><i class="fa-solid fa-font" aria-hidden="true"></i>فونت</button>
+                                <button class="studio-mini-btn" id="studio-reset-assets" type="button" title="هر جایگزینی را بازنشانی کنید"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i>بازنشانی کنید</button>
+                            </div>
+                        </div>
+
+                        <div class="studio-asset-list" id="studio-asset-list" role="list" aria-label="دارایی های موضوعی"></div>
+                        <p class="studio-asset-empty" id="studio-asset-empty" hidden>هیچ دارایی با این فیلتر مطابقت ندارد.</p>
+
+                        <div class="studio-asset-detail" id="studio-asset-detail" hidden>
+                            <div class="studio-asset-detail-head">
+                                <div class="studio-asset-detail-copy">
+                                    <span class="studio-eyebrow" id="studio-asset-section">هنر تم</span>
+                                    <strong id="studio-asset-name">دارایی</strong>
+                                    <code id="studio-asset-path">-</code>
+                                </div>
+                                <span class="studio-asset-status" id="studio-asset-status">آماده است</span>
+                            </div>
+                            <div class="studio-asset-detail-preview" id="studio-asset-detail-preview"></div>
+                            <div class="studio-asset-detail-actions">
+                                <button class="studio-btn studio-btn--primary" id="studio-asset-replace" type="button"><i class="fa-solid fa-folder-open" aria-hidden="true"></i>فایل را جایگزین کنید</button>
+                                <button class="studio-btn" id="studio-asset-theme" type="button" title="همان دارایی را با موضوع گالری دیگری تعویض کنید"><i class="fa-solid fa-images" aria-hidden="true"></i>از موضوع</button>
+                                <button class="studio-btn" id="studio-asset-paste" type="button"><i class="fa-solid fa-paste" aria-hidden="true"></i>چسباندن</button>
+                                <button class="studio-btn" id="studio-asset-blank" type="button" title="این فایل را بن کنید و از یک مکان نگهدار کاملاً شفاف استفاده کنید"><i class="fa-solid fa-trash-can" aria-hidden="true"></i>خالی</button>
+                                <button class="studio-btn" id="studio-asset-reset" type="button"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i>بازنشانی کنید</button>
+                            </div>
+                            <p class="studio-hint" id="studio-asset-hint">یک تصویر را در شکاف انتخاب شده رها کنید، یا یکی را کپی کنید و Ctrl+V / Cmd+V را فشار دهید.</p>
+                        </div>
+
+                        <div class="studio-mask-editor" id="studio-mask-editor" hidden></div>
+
+                        <div class="studio-color-editor" id="studio-color-editor"></div>
+
+                        <div class="studio-pane-actions studio-pane-actions--three">
+                            <button class="studio-btn" id="studio-edit-back" type="button"><i class="fa-solid fa-eye" aria-hidden="true"></i>پیش نمایش</button>
+                            <button class="studio-btn" data-studio-save type="button"><i class="fa-solid fa-download" aria-hidden="true"></i>ذخیره کنید</button>
+                            <button class="studio-btn studio-btn--primary" id="studio-edit-submit" type="button">ارسال کنید<i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+                        </div>
+                    </section>
+
+                    <section class="studio-pane" id="pane-submit" data-pane="submit" role="tabpanel" hidden>
+                        <div class="studio-pane-head">
+                            <p class="studio-eyebrow">ارسال گالری</p>
+                            <h2>ارسال کنید</h2>
+                            <p>اینها همان جزئیات فهرست بندی فرم آپلود گالری هستند. موضوع در شبیه ساز بسته ای است که شما ارسال می کنید. عناوین و توضیحات در اینجا به زبان انگلیسی می مانند: گالری آنها را برای هر بازدید کننده ترجمه می کند.</p>
+                        </div>
+
+                        <div class="studio-package">
+                            <div class="studio-cover" id="studio-submit-cover-wrap">
+                                <img id="studio-submit-cover" alt="" />
+                                <span class="studio-cover-fallback"><i class="fa-solid fa-palette" aria-hidden="true"></i></span>
+                            </div>
+                            <div class="studio-source-copy">
+                                <strong id="studio-package-name" translate="no" data-i18n-skip>-</strong>
+                                <span id="studio-package-source" translate="no" data-i18n-skip>-</span>
+                            </div>
+                        </div>
+
+                        <div class="studio-source-actions">
+                            <button class="studio-mini-btn" id="studio-submit-open-zip" type="button"><i class="fa-solid fa-file-zipper" aria-hidden="true"></i>یک .zip دیگر باز کنید</button>
+                            <button class="studio-mini-btn" id="studio-submit-open-folder" type="button"><i class="fa-solid fa-folder-open" aria-hidden="true"></i>پوشه دیگری را باز کنید</button>
+                        </div>
+
+                        <div class="studio-submit-form" id="studio-submit-form">
+                            <div class="studio-identity" id="studio-identity" hidden>
+                                <div class="studio-identity-head">
+                                    <span class="studio-eyebrow"><i class="fa-solid fa-code-compare" aria-hidden="true"></i> اول یک سوال</span>
+                                    <span class="studio-chip studio-chip--muted">با گالری مطابقت دارد</span>
+                                </div>
+                                <p class="studio-identity-lead">
+                                    این بسته حاوی جزئیات <strong id="studio-identity-name" translate="no" data-i18n-skip>a gallery theme</strong><span id="studio-identity-author" translate="no" data-i18n-skip></span>، بنابراین فقط می تواند به عنوان به روز رسانی آن لیست یا به عنوان تم جدید شما بالا رود.
+                                </p>
+
+                                <div class="studio-identity-step" id="studio-identity-own">
+                                    <p class="studio-identity-q">آیا این موضوع شماست؟</p>
+                                    <div class="studio-identity-actions">
+                                        <button class="studio-btn studio-btn--primary" type="button" data-identity-own="yes">بله درستش کردم</button>
+                                        <button class="studio-btn" type="button" data-identity-own="no">نه مال من نیست</button>
+                                    </div>
+                                </div>
+
+                                <div class="studio-identity-step" id="studio-identity-change" hidden>
+                                    <p class="studio-identity-q">آیا می خواهید جزئیات فهرست را تغییر دهید؟</p>
+                                    <div class="studio-identity-actions">
+                                        <button class="studio-btn studio-btn--primary" type="button" data-identity-change="yes">بله، جزئیات را ویرایش کنید</button>
+                                        <button class="studio-btn" type="button" data-identity-change="no">خیر، آن را به صورت فهرست ارسال کنید</button>
+                                    </div>
+                                </div>
+
+                                <div class="studio-identity-result" id="studio-identity-result" hidden>
+                                    <p class="studio-identity-q" id="studio-identity-result-title"></p>
+                                    <p class="studio-hint" id="studio-identity-result-text"></p>
+                                    <button class="studio-mini-btn" type="button" id="studio-identity-reset">
+                                        <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>پاسخ را تغییر دهید
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="studio-submit-details" id="studio-submit-details">
+                            <div class="studio-field">
+                                <label for="studio-submit-title">عنوان گالری <span class="studio-required">مورد نیاز</span></label>
+                                <input id="studio-submit-title" type="text" autocomplete="off" maxlength="120" placeholder="عنوان تم" translate="no" data-i18n-skip />
+                                <p class="studio-hint">عنوان را به انگلیسی بنویسید تا گالری بتواند آن را برای هر بازدیدکننده ای ترجمه کند.</p>
+                            </div>
+
+                            <div class="studio-form-grid">
+                                <div class="studio-field">
+                                    <label for="studio-submit-author">نویسنده / نام کاربری <span class="studio-required">مورد نیاز</span></label>
+                                    <input id="studio-submit-author" type="text" autocomplete="name" autocapitalize="words" spellcheck="false" maxlength="80" placeholder="دسته خالق شما" list="studio-author-options" translate="no" data-i18n-skip />
+                                    <datalist id="studio-author-options"></datalist>
+                                    <p class="studio-hint">از دسته ای که می خواهید اعتبار داده شود استفاده کنید. جزئیات طرح زمینه باز فقط به عنوان متن مکان‌نما پیشنهاد می‌شود.</p>
+                                </div>
+                                <div class="studio-field">
+                                    <label for="studio-submit-author-url">لینک نویسنده <span class="studio-optional">اختیاری</span></label>
+                                    <input id="studio-submit-author-url" type="url" inputmode="url" autocomplete="url" placeholder="https://" translate="no" data-i18n-skip />
+                                </div>
+                            </div>
+
+                            <div class="studio-field">
+                                <label for="studio-submit-desc">توضیحات <span class="studio-optional">اختیاری</span></label>
+                                <textarea id="studio-submit-desc" rows="3" maxlength="600" placeholder="یک خط کوتاه برای گالری" translate="no" data-i18n-skip></textarea>
+                                <p class="studio-hint">جمله ای در مورد ظاهر، پالت یا آنچه که با آن بهترین کار می کند. آن را به انگلیسی بنویسید تا گالری بتواند آن را برای هر بازدیدکننده ای ترجمه کند.</p>
+                            </div>
+
+                            <label class="studio-inline-check">
+                                <input id="studio-submit-external" type="checkbox" />
+                                <span><strong>دانلود را در صفحه خودم میزبانی کنم</strong> (Ko-fi، Patreon، فروشگاه یا نمونه کارها)</span>
+                            </label>
+                            <div class="studio-field" id="studio-submit-external-wrap" hidden>
+                                <label for="studio-submit-external-url">آدرس دانلود خارجی</label>
+                                                                    <input id="studio-submit-external-url" type="url" inputmode="url" placeholder="https://" translate="no" data-i18n-skip />
+                            </div>
+                            </div>
+
+                            <div class="studio-update-notice" id="studio-update-notice" hidden>
+                                <strong>به نظر می رسد این یک به روز رسانی است</strong>
+                                <p>نویسنده شما با فهرست موجود مطابقت دارد <span id="studio-update-folder"></span>. ما این را به عنوان یک به روز رسانی برای آن موضوع در نظر خواهیم گرفت.</p>
+                                <label class="studio-inline-check">
+                                    <input id="studio-edit-ack" type="checkbox" />
+                                    <span>تأیید می‌کنم که این یک به‌روزرسانی برای فهرست موجود است.</span>
+                                </label>
+                            </div>
+
+                            <div class="studio-policy-banner" id="studio-policy-banner" hidden></div>
+
+                            <ul class="studio-checklist" id="studio-checklist">
+                                <li data-check="config" data-state="pending">
+                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                                    <div><strong>بسته پیدا شد</strong><span class="studio-check-detail">منتظر تم</span></div>
+                                </li>
+                                <li data-check="preview" data-state="pending">
+                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                                    <div><strong>پیش نمایش ارائه شده است</strong><span class="studio-check-detail">پیش نمایش هنوز ارائه نشده است</span></div>
+                                </li>
+                                <li data-check="assets" data-state="pending">
+                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                                    <div><strong>فایل های ارجاع شده</strong><span class="studio-check-detail">بررسی دارایی های بسته</span></div>
+                                </li>
+                                <li data-check="details" data-state="pending">
+                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                                    <div><strong>جزئیات فهرست</strong><span class="studio-check-detail">عنوان و نویسنده را اضافه کنید</span></div>
+                                </li>
+                            </ul>
+
+                            <button class="studio-btn studio-btn--primary studio-submit-btn" id="studio-submit-btn" type="button">
+                                <i class="fa-solid fa-paper-plane" aria-hidden="true"></i><span>تم من را بفرست</span>
+                            </button>
+                            <div class="studio-submit-status" id="studio-submit-status" role="status" aria-live="polite"></div>
+                        </div>
+
+                        <div class="studio-note">
+                            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                            <span>ارسال یک درخواست کشش برای بررسی باز می شود. ابتدا می توانید موضوع را در این دستگاه ذخیره کنید.</span>
+                        </div>
+                    </section>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <div class="studio-drop" id="studio-drop" aria-hidden="true">
+        <div class="studio-drop-card">
+            <span class="studio-drop-icon"><i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i></span>
+            <strong>رها کنید تا در استودیو باز شود</strong>
+            <span>پوشه تم یا ZIP - پیش نمایش محلی</span>
+        </div>
+    </div>
+
+    <div class="studio-toast" id="studio-toast" role="status" aria-live="polite"></div>
+
+    <div class="studio-modal studio-theme-picker" id="studio-theme-picker" hidden>
+        <div class="studio-modal-card studio-theme-picker-card" role="dialog" aria-modal="true" aria-labelledby="studio-theme-picker-title">
+            <span class="studio-eyebrow"><i class="fa-solid fa-images" aria-hidden="true"></i> با موضوع دیگری تعویض کنید</span>
+            <h2 id="studio-theme-picker-title">دارایی</h2>
+            <p id="studio-theme-picker-text">همان دارایی را از هر تم گالری انتخاب کنید تا آن را با این موضوع عوض کنید.</p>
+            <label class="studio-theme-picker-search">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                <input id="studio-theme-picker-query" type="search" placeholder="تم ها را بر اساس نام یا نویسنده جستجو کنید" autocomplete="off" />
+            </label>
+            <div class="studio-theme-picker-list" id="studio-theme-picker-list" role="list" aria-label="تم های گالری"></div>
+            <p class="studio-theme-picker-empty" id="studio-theme-picker-empty" hidden>هیچ موضوعی با آن جستجو مطابقت ندارد.</p>
+            <div class="studio-modal-actions">
+                <button class="studio-btn" id="studio-theme-picker-close" type="button">بستن</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="studio-save-progress" id="studio-save-progress" role="status" aria-live="polite" aria-atomic="true" hidden>
+        <div class="studio-save-progress-head">
+            <span id="studio-save-progress-label">در حال آماده سازی موضوع…</span>
+            <strong id="studio-save-progress-value" aria-hidden="true">0%</strong>
+        </div>
+        <progress id="studio-save-progress-bar" max="100" value="0" aria-labelledby="studio-save-progress-label">0%</progress>
+    </div>
+
+    <input type="file" id="studio-zip-input" accept=".zip,application/zip" hidden />
+    <input type="file" id="studio-folder-input" webkitdirectory multiple hidden />
+    <input type="file" id="studio-asset-input" hidden />
+
+    <div id="footer-root"></div>
+    <div id="support-toolbar-slot"></div>
+
+    <script src="../nav.js?v=20261111nav"></script>
+    <script src="../y1-theme-preview.js?v=20261115lock"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="../theme-packaging.js"></script>
+    <script src="../author-submission-policy.js?v=20260523"></script>
+    <script src="/studio-test/studio.js?v=20261115rowtheme"></script>
+    <script src="../site-locale.js?v=20261115skip2" defer></script>
+</body>
+
+</html>

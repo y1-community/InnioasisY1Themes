@@ -1,7 +1,7 @@
 {
- "count": 1220,
+ "count": 1223,
  "dir": "ltr",
- "generated": "2026-11-14T00:19:29+00:00",
+ "generated": "2026-11-14T01:04:40+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "1G Pip-Boy",
@@ -258,7 +258,7 @@
  "locale": "sq",
  "name": "Albanian",
  "native": "Shqip",
- "provider": "google-web",
+ "provider": "clients5",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -322,6 +322,7 @@
   "A light iPod inspired theme Works on the Innioasis Y1 and Y2 with the Original Software, Better-Y, Koensayr and Solar.": "Një temë e lehtë e frymëzuar nga iPod Punon në Innioasis Y1 dhe Y2 me softuerin origjinal, Better-Y, Koensayr dhe Solar.",
   "A mashup of Microsoft Zune on an iPod-like device.": "Një përzierje e Microsoft Zune në një pajisje të ngjashme me iPod.",
   "A really simple minimal theme": "Një temë shumë e thjeshtë minimale",
+  "A sentence about the look, palette or what it works best with. Write it in English so the gallery can translate it for every visitor.": "Një fjali në lidhje me pamjen, paletën ose me çfarë funksionon më mirë. Shkruani atë në anglisht në mënyrë që galeria ta përkthejë atë për çdo vizitor.",
   "A simple theme based on the free game SHTDN": "Një temë e thjeshtë e bazuar në lojën falas SHTDN",
   "A simple theme made just for Carats :D": "Një temë e thjeshtë e krijuar vetëm për karat :D",
   "A soft matcha-green aesthetic minimalistic theme.": "Një temë e butë minimaliste estetike matcha-jeshile.",
@@ -1104,6 +1105,7 @@
   "Theme pages": "Faqet e temave",
   "Themes Gallery": "Galeria e Temave",
   "There's a new arrival on the way in Ryan's house. Every donation towards the servers and our growing family means a great deal.": "Një ardhje e re është rrugës në shtëpinë e Ryan. Çdo donacion për serverët dhe familjen tonë në rritje do të thotë shumë.",
+  "These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting. Titles and descriptions stay in English here: the gallery translates them for each visitor.": "Këto janë të njëjtat detaje të listimit si formulari i ngarkimit të galerisë. Tema në simulator është paketa që po dërgoni. Titujt dhe përshkrimet qëndrojnë në anglisht këtu: galeria i përkthen ato për çdo vizitor.",
   "This author has opted out of gallery submissions": "Ky autor ka hequr dorë nga dorëzimet e galerisë",
   "This looks like an update": "Kjo duket si një përditësim",
   "This month's": "Të këtij muaji",
@@ -1209,6 +1211,7 @@
   "Witchy": "magjistare",
   "Wolverine": "Wolverine",
   "Wolverine theme for Innioasis Y1 & Y2.": "Tema Wolverine për Innioasis Y1 dhe Y2.",
+  "Write the title in English so the gallery can translate it for every visitor.": "Shkruani titullin në anglisht në mënyrë që galeria ta përkthejë atë për çdo vizitor.",
   "Y1 & Y2 Themes": "Y1 & Y2 Temat",
   "Y1 theme inspired by Tomodachi Life": "Y1 tema e frymëzuar nga Tomodachi Life",
   "Y2 Default": "Y2 E parazgjedhur",

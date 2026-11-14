@@ -1,7 +1,7 @@
 {
- "count": 2242,
+ "count": 2245,
  "dir": "ltr",
- "generated": "2026-11-14T00:19:29+00:00",
+ "generated": "2026-11-14T01:04:37+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "1G Pip-Boy",
@@ -271,7 +271,7 @@
  "locale": "eu",
  "name": "Basque",
  "native": "Euskara",
- "provider": "google-web",
+ "provider": "clients5",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -335,6 +335,7 @@
   "A light iPod inspired theme Works on the Innioasis Y1 and Y2 with the Original Software, Better-Y, Koensayr and Solar.": "iPod inspiratutako gai arin batek Innioasis Y1 eta Y2-ekin funtzionatzen du jatorrizko softwarearekin, Better-Y, Koensayr eta Solar.",
   "A mashup of Microsoft Zune on an iPod-like device.": "Microsoft Zune-ren konbinazioa iPod antzeko gailu batean.",
   "A really simple minimal theme": "Gai minimo oso sinplea",
+  "A sentence about the look, palette or what it works best with. Write it in English so the gallery can translate it for every visitor.": "Itxurari, paletari edo ondoen funtzionatzen duenari buruzko esaldi bat. Idatzi ingelesez galeriak bisitari guztientzako itzul dezan.",
   "A simple theme based on the free game SHTDN": "SHTDN doako jokoan oinarritutako gai sinplea",
   "A simple theme made just for Carats :D": "Caratsentzat bakarrik egindako gai sinplea :D",
   "A soft matcha-green aesthetic minimalistic theme.": "Matcha berde leuna eta estetiko minimalista gaia.",
@@ -1117,6 +1118,7 @@
   "Theme pages": "Gai-orriak",
   "Themes Gallery": "Gaien Galeria",
   "There's a new arrival on the way in Ryan's house. Every donation towards the servers and our growing family means a great deal.": "Bidean etorri berri bat dago Ryanen etxera. Zerbitzariei eta gero eta handiagoa den gure familiari egindako dohaintza bakoitzak asko esan nahi du.",
+  "These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting. Titles and descriptions stay in English here: the gallery translates them for each visitor.": "Galeria kargatzeko formularioaren zerrendako xehetasun berberak dira. Simulagailuko gaia bidaltzen ari zaren paketea da. Izenburuak eta deskribapenak ingelesez geratzen dira hemen: galeriak bisitari bakoitzarentzat itzultzen ditu.",
   "This author has opted out of gallery submissions": "Egile honek galeria bidaltzeari uko egin dio",
   "This looks like an update": "Eguneratze bat dirudi",
   "This month's": "Hilabete honetakoa",
@@ -1222,6 +1224,7 @@
   "Witchy": "Sorgina",
   "Wolverine": "Wolverine",
   "Wolverine theme for Innioasis Y1 & Y2.": "Innioasis Y1 eta Y2entzako Wolverine gaia",
+  "Write the title in English so the gallery can translate it for every visitor.": "Idatzi izenburua ingelesez, galeriak bisitari guztientzako itzul dezan.",
   "Y1 & Y2 Themes": "Y1 eta Y2 gaiak",
   "Y1 theme inspired by Tomodachi Life": "Y1 Tomodachi Life-n inspiratutako gaia",
   "Y2 Default": "Y2 Lehenetsia",

@@ -1,7 +1,7 @@
 {
- "count": 2248,
+ "count": 2251,
  "dir": "rtl",
- "generated": "2026-11-14T00:19:29+00:00",
+ "generated": "2026-11-14T01:04:37+00:00",
  "keep": [
   "A(ero)OBA",
   "A+",
@@ -70,7 +70,7 @@
  "locale": "fa-AF",
  "name": "Dari",
  "native": "از",
- "provider": "google-web",
+ "provider": "clients5",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!ستاره شهر!!",
@@ -134,6 +134,7 @@
   "A light iPod inspired theme Works on the Innioasis Y1 and Y2 with the Original Software, Better-Y, Koensayr and Solar.": "یک تم سبک الهام گرفته از iPod روی Innioasis Y1 و Y2 با سافتویر اصلی، Better-Y، Koensayr و Solar کار میکند.",
   "A mashup of Microsoft Zune on an iPod-like device.": "یک ترکیب از مایکروسافت زون در یک دستگاه مانند iPod.",
   "A really simple minimal theme": "یک تم واقعاً ساده و حداقل",
+  "A sentence about the look, palette or what it works best with. Write it in English so the gallery can translate it for every visitor.": "یک جمله در مورد ظاهر، پالت یا اینکه با چه چیزی بهترین کار را انجام میدهد. آنرا به انگلیسی بنویسید تا گالری بتواند آنرا برای هر بازدید کننده ترجمه کند.",
   "A simple theme based on the free game SHTDN": "یک تم ساده بر اساس بازی رایگان SHTDN",
   "A simple theme made just for Carats :D": "یک تم ساده که فقط برای قیراط ها ساخته شده است :D",
   "A soft matcha-green aesthetic minimalistic theme.": "یک تم مینیمالیستی زیبایی نرم ماچا-سبز.",
@@ -921,6 +922,7 @@
   "Theme pages": "صفحات موضوعی",
   "Themes Gallery": "گالری موضوعات",
   "There's a new arrival on the way in Ryan's house. Every donation towards the servers and our growing family means a great deal.": "یک ورود جدید در خانه رایان در راه است. هر کمک به سرورها و خانواده در حال رشد ما معنی زیادی دارد.",
+  "These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting. Titles and descriptions stay in English here: the gallery translates them for each visitor.": "این جزئیات لیست مشابه فورم بارگذاری گالری است. موضوع در شبیه ساز بسته است که شما ارسال میکنید. عناوین و توضیحات اینجا به انگلیسی باقی میماند: گالری آنها را برای هر بازدید کننده ترجمه میکند.",
   "This author has opted out of gallery submissions": "این نویسنده از ارسال های گالری خارج شده است",
   "This looks like an update": "این مانند یک به روز رسانی به نظر میرسد",
   "This month's": "این ماه",
@@ -1027,6 +1029,7 @@
   "Witchy": "جادوگر",
   "Wolverine": "ولورین",
   "Wolverine theme for Innioasis Y1 & Y2.": "تم ولورین برای Innioasis Y1 و Y2.",
+  "Write the title in English so the gallery can translate it for every visitor.": "عنوان را به انگلیسی بنویسید تا گالری بتواند آنرا برای هر بازدید کننده ترجمه کند.",
   "Y1 & Y2 Themes": "Y1 & Y2 موضوعات",
   "Y1 theme inspired by Tomodachi Life": "Y1 تم الهام شده از زندگی توموداچی",
   "Y2 Default": "Y2 پیش فرض",

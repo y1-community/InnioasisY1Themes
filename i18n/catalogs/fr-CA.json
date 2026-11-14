@@ -1,7 +1,7 @@
 {
- "count": 7979,
+ "count": 7982,
  "dir": "ltr",
- "generated": "2026-11-14T00:19:29+00:00",
+ "generated": "2026-11-14T01:04:37+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "1 contribution",
@@ -173,7 +173,7 @@
  "locale": "fr-CA",
  "name": "French (Canada)",
  "native": "Français (Canada)",
- "provider": "google-web",
+ "provider": "clients5",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -659,6 +659,7 @@
   "A reference for installing Original Software on an Innioasis player.": "Une référence pour l'installation du logiciel original sur un lecteur Innioasis.",
   "A reference for setting up Rockbox on an Innioasis player.": "Une référence pour configurer Rockbox sur un lecteur Innioasis.",
   "A reset cannot run on a player that never reaches the home screen. That is a software problem, not a settings problem. Use": "Une réinitialisation ne peut pas s'exécuter sur un lecteur qui n'atteint jamais l'écran d'accueil. C'est un problème logiciel, pas un problème de paramètres. Utiliser",
+  "A sentence about the look, palette or what it works best with. Write it in English so the gallery can translate it for every visitor.": "Une phrase sur le look, la palette ou ce avec quoi ça fonctionne le mieux. Écrivez-le en anglais afin que la galerie puisse le traduire pour chaque visiteur.",
   "A shared release can contain": "Une version partagée peut contenir",
   "A short TikTok walkthrough of the Innioasis Updater CE Rockbox route.": "Une courte présentation TikTok de l'itinéraire Innioasis Updater CE Rockbox.",
   "A short catalogue description": "Une brève description du catalogue",
@@ -5258,6 +5259,7 @@
   "These are": "Ce sont",
   "These are the attributes current Updater CE builds understand. The generator writes only the ones you fill in; the app falls back to sensible defaults for the rest.": "Ce sont les attributs que les builds actuels de Updater CE comprennent. Le générateur écrit uniquement ceux que vous remplissez ; l'application revient à des valeurs par défaut raisonnables pour le reste.",
   "These are the post-install guides Updater CE links for each firmware. Pick your firmware to open its setup steps.": "Ce sont les liens des guides de post-installation Updater CE pour chaque micrologiciel. Choisissez votre firmware pour ouvrir ses étapes de configuration.",
+  "These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting. Titles and descriptions stay in English here: the gallery translates them for each visitor.": "Voici les mêmes détails de liste que le formulaire de téléchargement de galerie. Le thème du simulateur est le paquet que vous soumettez. Les titres et les descriptions restent ici en anglais : la galerie les traduit pour chaque visiteur.",
   "These guides cover the two failures people hit most often after an update or a flash. Pick the one that matches what you see, then work through it in order.": "Ces guides couvrent les deux échecs que les gens rencontrent le plus souvent après une mise à jour ou un flash. Choisissez celui qui correspond à ce que vous voyez, puis parcourez-le dans l'ordre.",
   "These images are the stock Android base (AOSP) with the device wireless radios enabled, so a custom firmware can add network features instead of replacing the radio stack. They are the practical starting point for the publishing steps below.": "Ces images représentent la base Android d'origine (AOSP) avec les radios sans fil de l'appareil activées, de sorte qu'un micrologiciel personnalisé peut ajouter des fonctionnalités réseau au lieu de remplacer la pile radio. Ils constituent le point de départ pratique des étapes de publication ci-dessous.",
   "These players are designed to run for days, not hours. A few habits keep the battery healthy.": "Ces lecteurs sont conçus pour fonctionner pendant des jours et non des heures. Quelques habitudes maintiennent la batterie en bonne santé.",
@@ -5897,6 +5899,7 @@
   "Works reliably across older and modern machines alike - supporting Intel x86_64 Macs and Apple Silicon Macs (macOS 10.15+), Linux (official AppImage for Intel/AMD), and Windows (Windows 10/11 x64 and experimental ARM64).": "Fonctionne de manière fiable sur les machines anciennes et modernes – prenant en charge les Mac Intel x86_64 et Apple Silicon Mac (macOS 10.15+), Linux (AppImage officielle pour Intel/AMD) et Windows (Windows 10/11 x64 et ARM64 expérimental).",
   "Works with Updater CE, Innioasis Universal Flash Tool, SP Flash Tool and MTKClient (Updater CE Recommended).": "Fonctionne avec Updater CE, Innioasis Universal Flash Tool, SP Flash Tool et MTKClient (Updater CE recommandé).",
   "Works with all Innioasis and Timmkoo audio players. Install Innioasis Updater CE on your computer, choose your model and the software you want, then follow the prompts.": "Fonctionne avec tous les lecteurs audio Innioasis et Timmkoo. Installez Innioasis Updater CE sur votre ordinateur, choisissez votre modèle et le logiciel souhaité, puis suivez les instructions.",
+  "Write the title in English so the gallery can translate it for every visitor.": "Écrivez le titre en anglais afin que la galerie puisse le traduire pour chaque visiteur.",
   "Written tutorial": "Tutoriel écrit",
   "XML parse error": "Erreur d'analyse XML",
   "Y1 & Y2 Themes": "Y1 et Y2 Thèmes",

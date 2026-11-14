@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN" dir="ltr" data-locale="zh-CN">
+
+<head>
+    <meta charset="utf-8" />
+    <base href="/" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="theme-color" content="#2f80ed" />
+    <meta name="application-name" content="Theme Studio" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Theme Studio" />
+    <meta name="cf-pages-upload-api-origin" content="https://y1-theme-upload.itsryanspecter.workers.dev" />
+    <title>主题工作室 - Innioasis Y1 和 Y2 主题</title>
+    <script>
+        /* The dock is a convenience here, never a preference the rest of the
+           site should inherit. support_toolbar.html reads this flag. */
+        window.STUDIO_DOCK_ISOLATED = true;
+        /* The simulator draws the theme's own menu labels. Pin its device UI to
+           English so a translated player never misreports what the author wrote. */
+        window.STUDIO_PREVIEW_LOCALE = 'en';
+        /* This page is reachable only by typing its URL: nothing on the site
+           links to it, and no editor override points the header here. The nav's
+           Editor item keeps resolving to the community editor, so following it
+           from Studio leaves for that editor instead of reloading this page and
+           discarding unsaved work. */
+    </script>
+    <script src="../site-init.js?v=20261110picker"></script>
+    <link rel="manifest" href="/studio-test/manifest.webmanifest" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/studio-test/icons/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/studio-test/icons/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="../site-theme.css?v=20261111dl2" />
+    <link rel="stylesheet" href="../site-toolbar.css?v=20261110accent2" />
+    <link rel="stylesheet" href="../y1-theme-preview.css?v=20261114rowfocus2" />
+    <link rel="stylesheet" href="/studio-test/studio.css?v=20261114identity" />
+</head>
+
+<body class="site-themes-app site-dock-mode studio-app" data-mode="preview">
+    <div id="nav-root"></div>
+
+    <div class="studio-shell">
+        <div class="studio-commandbar">
+            <div class="studio-command-copy">
+                <span class="studio-eyebrow"><i class="fa-solid fa-compact-disc" aria-hidden="true"></i> 主题工作室</span>
+                <span class="studio-command-context" id="studio-command-context">预览、编辑和发布播放器主题</span>
+            </div>
+
+            <nav class="studio-modes" role="tablist" aria-label="工作室模式">
+                <button class="studio-mode is-active" type="button" role="tab" aria-selected="true" aria-controls="pane-preview" data-mode-btn="preview">
+                    <i class="fa-solid fa-eye" aria-hidden="true"></i><span>预览</span>
+                </button>
+                <button class="studio-mode" type="button" role="tab" aria-selected="false" aria-controls="pane-edit" data-mode-btn="edit">
+                    <i class="fa-solid fa-pen-ruler" aria-hidden="true"></i><span>编辑</span>
+                </button>
+                <button class="studio-mode" type="button" role="tab" aria-selected="false" aria-controls="pane-submit" data-mode-btn="submit">
+                    <i class="fa-solid fa-paper-plane" aria-hidden="true"></i><span>提交</span>
+                </button>
+            </nav>
+
+            <div class="studio-command-actions">
+                <span class="studio-unsaved" id="studio-unsaved" hidden><i class="fa-solid fa-circle" aria-hidden="true"></i>未保存</span>
+                <button class="studio-btn studio-btn--themes" id="studio-open-theme" type="button" aria-label="选择画廊主题" aria-controls="studio-swap-panel" aria-expanded="false" title="选择画廊主题">
+                    <i class="fa-solid fa-images" aria-hidden="true"></i><span>主题</span>
+                </button>
+                <button class="studio-btn studio-btn--save" id="studio-save" type="button" aria-label="将主题保存到此设备">
+                    <i class="fa-solid fa-download" aria-hidden="true"></i><span>保存到设备</span>
+                </button>
+            </div>
+        </div>
+
+        <main class="studio-main">
+            <section class="studio-stage" aria-labelledby="studio-title">
+                <div class="studio-stage-head">
+                    <div class="studio-stage-copy">
+                        <div class="studio-eyebrow studio-breadcrumb">
+                            <span id="studio-source-label">画廊主题</span>
+                            <span class="studio-sep" aria-hidden="true">/</span>
+                            <span id="studio-source-detail">加载中</span>
+                        </div>
+                        <h1 id="studio-title" translate="no" data-i18n-skip>Loading theme...</h1>
+                        <p id="studio-byline" translate="no" data-i18n-skip>Reading the package...</p>
+                    </div>
+                    <div class="studio-stage-meta">
+                        <span class="studio-chip"><i class="fa-solid fa-mobile-screen" aria-hidden="true"></i>Y1 / Y2</span>
+                        <span class="studio-chip studio-chip--muted" id="studio-source-chip">画廊</span>
+                    </div>
+                </div>
+
+                <div class="studio-preview-area" id="studio-preview-area">
+                    <div class="studio-preview-loading" id="studio-preview-loading">
+                        <span class="studio-spinner" aria-hidden="true"></span>
+                        <span id="studio-loading-label">正在加载预览...</span>
+                    </div>
+                    <div class="studio-preview" id="studio-preview" translate="no" data-i18n-skip></div>
+                    <div class="studio-empty" id="studio-empty" hidden>
+                        <div class="studio-empty-card">
+                            <span class="studio-empty-icon"><i class="fa-solid fa-palette" aria-hidden="true"></i></span>
+                            <span class="studio-eyebrow" id="studio-empty-eyebrow" hidden>还没有开放</span>
+                            <strong id="studio-empty-title">预览不可用</strong>
+                            <p id="studio-empty-text">选择其他主题或打开本地包。</p>
+                            <div class="studio-empty-actions" id="studio-empty-actions" hidden>
+                                <a class="studio-btn studio-btn--primary" id="studio-empty-gallery" href="../">
+                                    <i class="fa-solid fa-images" aria-hidden="true"></i>从图库中选择一张
+                                </a>
+                                <button class="studio-btn" id="studio-empty-zip" type="button">
+                                    <i class="fa-solid fa-file-zipper" aria-hidden="true"></i>上传 .zip
+                                </button>
+                                <button class="studio-btn" id="studio-empty-folder" type="button">
+                                    <i class="fa-solid fa-folder-open" aria-hidden="true"></i>上传文件夹
+                                </button>
+                            </div>
+                            <p class="studio-hint" id="studio-empty-hint" hidden>也可以将文件夹或 ZIP 拖动到此页面上的任意位置。也可以从侧边栏中的列表中选择图库主题。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="studio-stage-foot">
+                    <span><i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i>将主题文件夹或 ZIP 拖放到任意位置</span>
+                    <span class="studio-foot-sep" aria-hidden="true"></span>
+                    <span>单击滚轮或使用箭头键进行探索</span>
+                </div>
+            </section>
+
+            <aside class="studio-panel" aria-label="工作室巡视员">
+                <div class="studio-panel-scroll" id="studio-panel-scroll">
+                    <section class="studio-pane" id="pane-preview" data-pane="preview" role="tabpanel">
+                        <div class="studio-pane-head">
+                            <p class="studio-eyebrow">当前主题</p>
+                            <h2>预览</h2>
+                            <p>这才是真正的玩家视角。更改将保留在此设备上，直到您保存或提交为止。</p>
+                        </div>
+
+                        <div class="studio-source-card">
+                            <div class="studio-cover" id="studio-cover-wrap">
+                                <img id="studio-cover" alt="" />
+                                <span class="studio-cover-fallback"><i class="fa-solid fa-palette" aria-hidden="true"></i></span>
+                            </div>
+                            <div class="studio-source-copy">
+                                <strong id="studio-source-name" translate="no" data-i18n-skip>-</strong>
+                                <span id="studio-source-author" translate="no" data-i18n-skip>-</span>
+                                <span class="studio-source-desc" id="studio-source-desc" translate="no" data-i18n-skip></span>
+                            </div>
+                        </div>
+
+                        <button class="studio-swap-btn" id="studio-swap" type="button" hidden>
+                            <i class="fa-solid fa-arrow-right-arrow-left" aria-hidden="true"></i>打开另一个主题
+                        </button>
+
+                        <div class="studio-swap-panel" id="studio-swap-panel">
+                            <div class="studio-field">
+                                <label for="studio-theme-filter">打开图库主题</label>
+                                <input id="studio-theme-filter" type="search" placeholder="按姓名或作者过滤" autocomplete="off" />
+                                <select id="studio-theme-select" aria-label="画廊主题"></select>
+                                <p class="studio-hint" id="studio-theme-count">所有画廊主题</p>
+                            </div>
+
+                            <div class="studio-divider"></div>
+
+                            <div class="studio-import">
+                                <div class="studio-import-head">
+                                    <span class="studio-eyebrow">从该设备打开</span>
+                                    <span class="studio-chip studio-chip--muted">ZIP 或文件夹</span>
+                                </div>
+                                <p>将主题包拖放到此处，或浏览 ZIP 或文件夹。在保存或发送任何内容之前，它会在模拟器中打开。</p>
+                                <div class="studio-action-grid">
+                                    <button class="studio-btn" id="studio-open-zip" type="button">
+                                        <i class="fa-solid fa-file-zipper" aria-hidden="true"></i>浏览.zip
+                                    </button>
+                                    <button class="studio-btn" id="studio-open-folder" type="button">
+                                        <i class="fa-solid fa-folder-open" aria-hidden="true"></i>浏览文件夹
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="studio-note">
+                                <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+                                <span>您的包将在您的浏览器中读取。在您选择“提交”之前，不会上传任何内容。</span>
+                            </div>
+                        </div>
+
+                        <div class="studio-action-grid studio-action-grid--single">
+                            <button class="studio-btn studio-btn--primary" id="studio-start-edit" type="button">
+                                <i class="fa-solid fa-pen-ruler" aria-hidden="true"></i>在 Studio 中使用它
+                            </button>
+                        </div>
+                    </section>
+
+                    <section class="studio-pane" id="pane-edit" data-pane="edit" role="tabpanel" hidden>
+                        <div class="studio-pane-head">
+                            <p class="studio-eyebrow">主题资产</p>
+                            <h2>编辑</h2>
+                            <p>通过拾取文件、粘贴图像或直接将其拖放到插槽中来替换任何文件。</p>
+                        </div>
+
+                        <div class="studio-asset-toolbar">
+                            <div class="studio-asset-filters" role="group" aria-label="过滤资产">
+                                <button class="studio-asset-filter is-active" type="button" data-asset-filter="all">全部 <span id="studio-asset-count-all">0</span></button>
+                                <button class="studio-asset-filter" type="button" data-asset-filter="missing">丢失的 <span id="studio-asset-count-missing">0</span></button>
+                                <button class="studio-asset-filter" type="button" data-asset-filter="changed">改变了 <span id="studio-asset-count-changed">0</span></button>
+                            </div>
+                            <div class="studio-asset-tools">
+                                <button class="studio-mini-btn" id="studio-browse-font" type="button" title="浏览字体文件"><i class="fa-solid fa-font" aria-hidden="true"></i>字体</button>
+                                <button class="studio-mini-btn" id="studio-reset-assets" type="button" title="重置每次更换"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i>重置</button>
+                            </div>
+                        </div>
+
+                        <div class="studio-asset-list" id="studio-asset-list" role="list" aria-label="主题资产"></div>
+                        <p class="studio-asset-empty" id="studio-asset-empty" hidden>没有资产与此过滤器匹配。</p>
+
+                        <div class="studio-asset-detail" id="studio-asset-detail" hidden>
+                            <div class="studio-asset-detail-head">
+                                <div class="studio-asset-detail-copy">
+                                    <span class="studio-eyebrow" id="studio-asset-section">主题艺术</span>
+                                    <strong id="studio-asset-name">资产</strong>
+                                    <code id="studio-asset-path">-</code>
+                                </div>
+                                <span class="studio-asset-status" id="studio-asset-status">准备好</span>
+                            </div>
+                            <div class="studio-asset-detail-preview" id="studio-asset-detail-preview"></div>
+                            <div class="studio-asset-detail-actions">
+                                <button class="studio-btn studio-btn--primary" id="studio-asset-replace" type="button"><i class="fa-solid fa-folder-open" aria-hidden="true"></i>替换文件</button>
+                                <button class="studio-btn" id="studio-asset-theme" type="button" title="从另一个画廊主题交换相同的资源"><i class="fa-solid fa-images" aria-hidden="true"></i>从主题</button>
+                                <button class="studio-btn" id="studio-asset-paste" type="button"><i class="fa-solid fa-paste" aria-hidden="true"></i>粘贴</button>
+                                <button class="studio-btn" id="studio-asset-blank" type="button" title="将此文件装箱并使用完全透明的占位符"><i class="fa-solid fa-trash-can" aria-hidden="true"></i>空白的</button>
+                                <button class="studio-btn" id="studio-asset-reset" type="button"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i>重置</button>
+                            </div>
+                            <p class="studio-hint" id="studio-asset-hint">将图像拖放到选定的插槽上，或复制图像并按 Ctrl+V / Cmd+V。</p>
+                        </div>
+
+                        <div class="studio-mask-editor" id="studio-mask-editor" hidden></div>
+
+                        <div class="studio-color-editor" id="studio-color-editor"></div>
+
+                        <div class="studio-pane-actions studio-pane-actions--three">
+                            <button class="studio-btn" id="studio-edit-back" type="button"><i class="fa-solid fa-eye" aria-hidden="true"></i>预览</button>
+                            <button class="studio-btn" data-studio-save type="button"><i class="fa-solid fa-download" aria-hidden="true"></i>节省</button>
+                            <button class="studio-btn studio-btn--primary" id="studio-edit-submit" type="button">提交<i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+                        </div>
+                    </section>
+
+                    <section class="studio-pane" id="pane-submit" data-pane="submit" role="tabpanel" hidden>
+                        <div class="studio-pane-head">
+                            <p class="studio-eyebrow">画廊提交</p>
+                            <h2>提交</h2>
+                            <p>这些列表详细信息与图库上传表单相同。模拟器中的主题是您提交的包。此处的标题和描述仍为英文：画廊为每位参观者翻译它们。</p>
+                        </div>
+
+                        <div class="studio-package">
+                            <div class="studio-cover" id="studio-submit-cover-wrap">
+                                <img id="studio-submit-cover" alt="" />
+                                <span class="studio-cover-fallback"><i class="fa-solid fa-palette" aria-hidden="true"></i></span>
+                            </div>
+                            <div class="studio-source-copy">
+                                <strong id="studio-package-name" translate="no" data-i18n-skip>-</strong>
+                                <span id="studio-package-source" translate="no" data-i18n-skip>-</span>
+                            </div>
+                        </div>
+
+                        <div class="studio-source-actions">
+                            <button class="studio-mini-btn" id="studio-submit-open-zip" type="button"><i class="fa-solid fa-file-zipper" aria-hidden="true"></i>打开另一个 .zip</button>
+                            <button class="studio-mini-btn" id="studio-submit-open-folder" type="button"><i class="fa-solid fa-folder-open" aria-hidden="true"></i>打开另一个文件夹</button>
+                        </div>
+
+                        <div class="studio-submit-form" id="studio-submit-form">
+                            <div class="studio-identity" id="studio-identity" hidden>
+                                <div class="studio-identity-head">
+                                    <span class="studio-eyebrow"><i class="fa-solid fa-code-compare" aria-hidden="true"></i> 先问一个问题</span>
+                                    <span class="studio-chip studio-chip--muted">与画廊相匹配</span>
+                                </div>
+                                <p class="studio-identity-lead">
+                                    该包包含以下详细信息 <strong id="studio-identity-name" translate="no" data-i18n-skip>a gallery theme</strong><span id="studio-identity-author" translate="no" data-i18n-skip></span>，因此它只能作为该列表的更新或作为您自己的新主题而上升。
+                                </p>
+
+                                <div class="studio-identity-step" id="studio-identity-own">
+                                    <p class="studio-identity-q">这是你的主题吗？</p>
+                                    <div class="studio-identity-actions">
+                                        <button class="studio-btn studio-btn--primary" type="button" data-identity-own="yes">是的，我做到了</button>
+                                        <button class="studio-btn" type="button" data-identity-own="no">不，这不是我的</button>
+                                    </div>
+                                </div>
+
+                                <div class="studio-identity-step" id="studio-identity-change" hidden>
+                                    <p class="studio-identity-q">您想更改列表详细信息吗？</p>
+                                    <div class="studio-identity-actions">
+                                        <button class="studio-btn studio-btn--primary" type="button" data-identity-change="yes">是的，编辑详细信息</button>
+                                        <button class="studio-btn" type="button" data-identity-change="no">否，按列表发送</button>
+                                    </div>
+                                </div>
+
+                                <div class="studio-identity-result" id="studio-identity-result" hidden>
+                                    <p class="studio-identity-q" id="studio-identity-result-title"></p>
+                                    <p class="studio-hint" id="studio-identity-result-text"></p>
+                                    <button class="studio-mini-btn" type="button" id="studio-identity-reset">
+                                        <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>更改答案
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="studio-submit-details" id="studio-submit-details">
+                            <div class="studio-field">
+                                <label for="studio-submit-title">画廊标题 <span class="studio-required">必需的</span></label>
+                                <input id="studio-submit-title" type="text" autocomplete="off" maxlength="120" placeholder="主题标题" translate="no" data-i18n-skip />
+                                <p class="studio-hint">用英文写下标题，以便画廊可以为每位参观者翻译。</p>
+                            </div>
+
+                            <div class="studio-form-grid">
+                                <div class="studio-field">
+                                    <label for="studio-submit-author">作者/用户名 <span class="studio-required">必需的</span></label>
+                                    <input id="studio-submit-author" type="text" autocomplete="name" autocapitalize="words" spellcheck="false" maxlength="80" placeholder="您的创建者句柄" list="studio-author-options" translate="no" data-i18n-skip />
+                                    <datalist id="studio-author-options"></datalist>
+                                    <p class="studio-hint">使用您想要记入的句柄。开放主题的详细信息仅建议作为占位符文本。</p>
+                                </div>
+                                <div class="studio-field">
+                                    <label for="studio-submit-author-url">作者链接 <span class="studio-optional">可选</span></label>
+                                    <input id="studio-submit-author-url" type="url" inputmode="url" autocomplete="url" placeholder="https://" translate="no" data-i18n-skip />
+                                </div>
+                            </div>
+
+                            <div class="studio-field">
+                                <label for="studio-submit-desc">描述 <span class="studio-optional">可选</span></label>
+                                <textarea id="studio-submit-desc" rows="3" maxlength="600" placeholder="画廊的短队" translate="no" data-i18n-skip></textarea>
+                                <p class="studio-hint">关于外观、调色板或最适合搭配的句子。用英语写下来，以便画廊可以为每位参观者翻译。</p>
+                            </div>
+
+                            <label class="studio-inline-check">
+                                <input id="studio-submit-external" type="checkbox" />
+                                <span><strong>在我自己的页面上托管下载</strong> （Ko-fi、Patreon、商店或组合）</span>
+                            </label>
+                            <div class="studio-field" id="studio-submit-external-wrap" hidden>
+                                <label for="studio-submit-external-url">外部下载地址</label>
+                                                                    <input id="studio-submit-external-url" type="url" inputmode="url" placeholder="https://" translate="no" data-i18n-skip />
+                            </div>
+                            </div>
+
+                            <div class="studio-update-notice" id="studio-update-notice" hidden>
+                                <strong>这看起来像是更新</strong>
+                                <p>您的作者与现有列表匹配 <span id="studio-update-folder"></span>。我们将把它视为该主题的更新。</p>
+                                <label class="studio-inline-check">
+                                    <input id="studio-edit-ack" type="checkbox" />
+                                    <span>我确认这是对现有列表的更新。</span>
+                                </label>
+                            </div>
+
+                            <div class="studio-policy-banner" id="studio-policy-banner" hidden></div>
+
+                            <ul class="studio-checklist" id="studio-checklist">
+                                <li data-check="config" data-state="pending">
+                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                                    <div><strong>发现包裹</strong><span class="studio-check-detail">等待主题</span></div>
+                                </li>
+                                <li data-check="preview" data-state="pending">
+                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                                    <div><strong>预览渲染</strong><span class="studio-check-detail">预览尚未渲染</span></div>
+                                </li>
+                                <li data-check="assets" data-state="pending">
+                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                                    <div><strong>参考文件</strong><span class="studio-check-detail">检查包资产</span></div>
+                                </li>
+                                <li data-check="details" data-state="pending">
+                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                                    <div><strong>房源详情</strong><span class="studio-check-detail">添加标题和作者</span></div>
+                                </li>
+                            </ul>
+
+                            <button class="studio-btn studio-btn--primary studio-submit-btn" id="studio-submit-btn" type="button">
+                                <i class="fa-solid fa-paper-plane" aria-hidden="true"></i><span>发送我的主题</span>
+                            </button>
+                            <div class="studio-submit-status" id="studio-submit-status" role="status" aria-live="polite"></div>
+                        </div>
+
+                        <div class="studio-note">
+                            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                            <span>提交会打开拉取请求以供审核。您可以先将主题保存到该设备。</span>
+                        </div>
+                    </section>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <div class="studio-drop" id="studio-drop" aria-hidden="true">
+        <div class="studio-drop-card">
+            <span class="studio-drop-icon"><i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i></span>
+            <strong>拖放到 Studio 中打开</strong>
+            <span>主题文件夹或 ZIP - 在本地预览</span>
+        </div>
+    </div>
+
+    <div class="studio-toast" id="studio-toast" role="status" aria-live="polite"></div>
+
+    <div class="studio-modal studio-theme-picker" id="studio-theme-picker" hidden>
+        <div class="studio-modal-card studio-theme-picker-card" role="dialog" aria-modal="true" aria-labelledby="studio-theme-picker-title">
+            <span class="studio-eyebrow"><i class="fa-solid fa-images" aria-hidden="true"></i> 从另一个主题交换</span>
+            <h2 id="studio-theme-picker-title">资产</h2>
+            <p id="studio-theme-picker-text">从任何画廊主题中选择相同的资产，将其交换到此主题中。</p>
+            <label class="studio-theme-picker-search">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                <input id="studio-theme-picker-query" type="search" placeholder="按名称或作者搜索主题" autocomplete="off" />
+            </label>
+            <div class="studio-theme-picker-list" id="studio-theme-picker-list" role="list" aria-label="画廊主题"></div>
+            <p class="studio-theme-picker-empty" id="studio-theme-picker-empty" hidden>没有主题与该搜索匹配。</p>
+            <div class="studio-modal-actions">
+                <button class="studio-btn" id="studio-theme-picker-close" type="button">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="studio-save-progress" id="studio-save-progress" role="status" aria-live="polite" aria-atomic="true" hidden>
+        <div class="studio-save-progress-head">
+            <span id="studio-save-progress-label">准备主题...</span>
+            <strong id="studio-save-progress-value" aria-hidden="true">0%</strong>
+        </div>
+        <progress id="studio-save-progress-bar" max="100" value="0" aria-labelledby="studio-save-progress-label">0%</progress>
+    </div>
+
+    <input type="file" id="studio-zip-input" accept=".zip,application/zip" hidden />
+    <input type="file" id="studio-folder-input" webkitdirectory multiple hidden />
+    <input type="file" id="studio-asset-input" hidden />
+
+    <div id="footer-root"></div>
+    <div id="support-toolbar-slot"></div>
+
+    <script src="../nav.js?v=20261111nav"></script>
+    <script src="../y1-theme-preview.js?v=20261115lock"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="../theme-packaging.js"></script>
+    <script src="../author-submission-policy.js?v=20260523"></script>
+    <script src="/studio-test/studio.js?v=20261115rowtheme"></script>
+    <script src="../site-locale.js?v=20261115skip2" defer></script>
+</body>
+
+</html>

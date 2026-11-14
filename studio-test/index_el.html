@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="el" dir="ltr" data-locale="el">
+
+<head>
+    <meta charset="utf-8" />
+    <base href="/" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="theme-color" content="#2f80ed" />
+    <meta name="application-name" content="Theme Studio" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Theme Studio" />
+    <meta name="cf-pages-upload-api-origin" content="https://y1-theme-upload.itsryanspecter.workers.dev" />
+    <title>Theme Studio - Innioasis Y1 &amp; Y2 Θέματα</title>
+    <script>
+        /* The dock is a convenience here, never a preference the rest of the
+           site should inherit. support_toolbar.html reads this flag. */
+        window.STUDIO_DOCK_ISOLATED = true;
+        /* The simulator draws the theme's own menu labels. Pin its device UI to
+           English so a translated player never misreports what the author wrote. */
+        window.STUDIO_PREVIEW_LOCALE = 'en';
+        /* This page is reachable only by typing its URL: nothing on the site
+           links to it, and no editor override points the header here. The nav's
+           Editor item keeps resolving to the community editor, so following it
+           from Studio leaves for that editor instead of reloading this page and
+           discarding unsaved work. */
+    </script>
+    <script src="../site-init.js?v=20261110picker"></script>
+    <link rel="manifest" href="/studio-test/manifest.webmanifest" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/studio-test/icons/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/studio-test/icons/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="../site-theme.css?v=20261111dl2" />
+    <link rel="stylesheet" href="../site-toolbar.css?v=20261110accent2" />
+    <link rel="stylesheet" href="../y1-theme-preview.css?v=20261114rowfocus2" />
+    <link rel="stylesheet" href="/studio-test/studio.css?v=20261114identity" />
+</head>
+
+<body class="site-themes-app site-dock-mode studio-app" data-mode="preview">
+    <div id="nav-root"></div>
+
+    <div class="studio-shell">
+        <div class="studio-commandbar">
+            <div class="studio-command-copy">
+                <span class="studio-eyebrow"><i class="fa-solid fa-compact-disc" aria-hidden="true"></i> Θεματικό Στούντιο</span>
+                <span class="studio-command-context" id="studio-command-context">Προεπισκόπηση, επεξεργασία και δημοσίευση ενός θέματος προγράμματος αναπαραγωγής</span>
+            </div>
+
+            <nav class="studio-modes" role="tablist" aria-label="Λειτουργία στούντιο">
+                <button class="studio-mode is-active" type="button" role="tab" aria-selected="true" aria-controls="pane-preview" data-mode-btn="preview">
+                    <i class="fa-solid fa-eye" aria-hidden="true"></i><span>Πρεμιέρα</span>
+                </button>
+                <button class="studio-mode" type="button" role="tab" aria-selected="false" aria-controls="pane-edit" data-mode-btn="edit">
+                    <i class="fa-solid fa-pen-ruler" aria-hidden="true"></i><span>Εκδίδω</span>
+                </button>
+                <button class="studio-mode" type="button" role="tab" aria-selected="false" aria-controls="pane-submit" data-mode-btn="submit">
+                    <i class="fa-solid fa-paper-plane" aria-hidden="true"></i><span>Υποτάσσομαι</span>
+                </button>
+            </nav>
+
+            <div class="studio-command-actions">
+                <span class="studio-unsaved" id="studio-unsaved" hidden><i class="fa-solid fa-circle" aria-hidden="true"></i>Μη αποθηκευμένο</span>
+                <button class="studio-btn studio-btn--themes" id="studio-open-theme" type="button" aria-label="Επιλέξτε ένα θέμα γκαλερί" aria-controls="studio-swap-panel" aria-expanded="false" title="Επιλέξτε ένα θέμα γκαλερί">
+                    <i class="fa-solid fa-images" aria-hidden="true"></i><span>Θέματα</span>
+                </button>
+                <button class="studio-btn studio-btn--save" id="studio-save" type="button" aria-label="Αποθηκεύστε το θέμα σε αυτήν τη συσκευή">
+                    <i class="fa-solid fa-download" aria-hidden="true"></i><span>Αποθήκευση στη συσκευή</span>
+                </button>
+            </div>
+        </div>
+
+        <main class="studio-main">
+            <section class="studio-stage" aria-labelledby="studio-title">
+                <div class="studio-stage-head">
+                    <div class="studio-stage-copy">
+                        <div class="studio-eyebrow studio-breadcrumb">
+                            <span id="studio-source-label">Θέμα γκαλερί</span>
+                            <span class="studio-sep" aria-hidden="true">/</span>
+                            <span id="studio-source-detail">φόρτωση</span>
+                        </div>
+                        <h1 id="studio-title" translate="no" data-i18n-skip>Loading theme...</h1>
+                        <p id="studio-byline" translate="no" data-i18n-skip>Reading the package...</p>
+                    </div>
+                    <div class="studio-stage-meta">
+                        <span class="studio-chip"><i class="fa-solid fa-mobile-screen" aria-hidden="true"></i>Y1 / Y2</span>
+                        <span class="studio-chip studio-chip--muted" id="studio-source-chip">Στοά</span>
+                    </div>
+                </div>
+
+                <div class="studio-preview-area" id="studio-preview-area">
+                    <div class="studio-preview-loading" id="studio-preview-loading">
+                        <span class="studio-spinner" aria-hidden="true"></span>
+                        <span id="studio-loading-label">Φόρτωση προεπισκόπησης...</span>
+                    </div>
+                    <div class="studio-preview" id="studio-preview" translate="no" data-i18n-skip></div>
+                    <div class="studio-empty" id="studio-empty" hidden>
+                        <div class="studio-empty-card">
+                            <span class="studio-empty-icon"><i class="fa-solid fa-palette" aria-hidden="true"></i></span>
+                            <span class="studio-eyebrow" id="studio-empty-eyebrow" hidden>Δεν έχει ανοίξει τίποτα ακόμα</span>
+                            <strong id="studio-empty-title">Η προεπισκόπηση δεν είναι διαθέσιμη</strong>
+                            <p id="studio-empty-text">Επιλέξτε ένα άλλο θέμα ή ανοίξτε ένα τοπικό πακέτο.</p>
+                            <div class="studio-empty-actions" id="studio-empty-actions" hidden>
+                                <a class="studio-btn studio-btn--primary" id="studio-empty-gallery" href="../">
+                                    <i class="fa-solid fa-images" aria-hidden="true"></i>Επιλέξτε ένα από τη γκαλερί
+                                </a>
+                                <button class="studio-btn" id="studio-empty-zip" type="button">
+                                    <i class="fa-solid fa-file-zipper" aria-hidden="true"></i>Ανεβάστε ένα .zip
+                                </button>
+                                <button class="studio-btn" id="studio-empty-folder" type="button">
+                                    <i class="fa-solid fa-folder-open" aria-hidden="true"></i>Ανεβάστε ένα φάκελο
+                                </button>
+                            </div>
+                            <p class="studio-hint" id="studio-empty-hint" hidden>Η μεταφορά ενός φακέλου ή ενός ZIP οπουδήποτε σε αυτήν τη σελίδα λειτουργεί επίσης. Μπορείτε επίσης να επιλέξετε ένα θέμα συλλογής από τη λίστα στην πλαϊνή γραμμή.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="studio-stage-foot">
+                    <span><i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i>Αποθέστε ένα φάκελο θέματος ή ZIP οπουδήποτε</span>
+                    <span class="studio-foot-sep" aria-hidden="true"></span>
+                    <span>Κάντε κλικ στον τροχό ή χρησιμοποιήστε τα πλήκτρα βέλους για εξερεύνηση</span>
+                </div>
+            </section>
+
+            <aside class="studio-panel" aria-label="Επιθεωρητής στούντιο">
+                <div class="studio-panel-scroll" id="studio-panel-scroll">
+                    <section class="studio-pane" id="pane-preview" data-pane="preview" role="tabpanel">
+                        <div class="studio-pane-head">
+                            <p class="studio-eyebrow">Τρέχον θέμα</p>
+                            <h2>Πρεμιέρα</h2>
+                            <p>Αυτή είναι η πραγματική άποψη του παίκτη. Οι αλλαγές παραμένουν σε αυτήν τη συσκευή μέχρι να τις αποθηκεύσετε ή να τις υποβάλετε.</p>
+                        </div>
+
+                        <div class="studio-source-card">
+                            <div class="studio-cover" id="studio-cover-wrap">
+                                <img id="studio-cover" alt="" />
+                                <span class="studio-cover-fallback"><i class="fa-solid fa-palette" aria-hidden="true"></i></span>
+                            </div>
+                            <div class="studio-source-copy">
+                                <strong id="studio-source-name" translate="no" data-i18n-skip>-</strong>
+                                <span id="studio-source-author" translate="no" data-i18n-skip>-</span>
+                                <span class="studio-source-desc" id="studio-source-desc" translate="no" data-i18n-skip></span>
+                            </div>
+                        </div>
+
+                        <button class="studio-swap-btn" id="studio-swap" type="button" hidden>
+                            <i class="fa-solid fa-arrow-right-arrow-left" aria-hidden="true"></i>Ανοίξτε ένα άλλο θέμα
+                        </button>
+
+                        <div class="studio-swap-panel" id="studio-swap-panel">
+                            <div class="studio-field">
+                                <label for="studio-theme-filter">Ανοίξτε ένα θέμα γκαλερί</label>
+                                <input id="studio-theme-filter" type="search" placeholder="Φιλτράρισμα κατά όνομα ή συγγραφέα" autocomplete="off" />
+                                <select id="studio-theme-select" aria-label="Θέμα γκαλερί"></select>
+                                <p class="studio-hint" id="studio-theme-count">Όλα τα θέματα της γκαλερί</p>
+                            </div>
+
+                            <div class="studio-divider"></div>
+
+                            <div class="studio-import">
+                                <div class="studio-import-head">
+                                    <span class="studio-eyebrow">Άνοιγμα από αυτήν τη συσκευή</span>
+                                    <span class="studio-chip studio-chip--muted">ZIP ή φάκελο</span>
+                                </div>
+                                <p>Ρίξτε ένα πακέτο θεμάτων εδώ ή αναζητήστε το ZIP ή το φάκελο. Ανοίγει στον προσομοιωτή πριν αποθηκευτεί ή σταλεί οτιδήποτε.</p>
+                                <div class="studio-action-grid">
+                                    <button class="studio-btn" id="studio-open-zip" type="button">
+                                        <i class="fa-solid fa-file-zipper" aria-hidden="true"></i>Περιήγηση στο .zip
+                                    </button>
+                                    <button class="studio-btn" id="studio-open-folder" type="button">
+                                        <i class="fa-solid fa-folder-open" aria-hidden="true"></i>Περιήγηση στο φάκελο
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="studio-note">
+                                <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+                                <span>Το πακέτο σας διαβάζεται στο πρόγραμμα περιήγησής σας. Δεν μεταφορτώνεται τίποτα μέχρι να επιλέξετε Υποβολή.</span>
+                            </div>
+                        </div>
+
+                        <div class="studio-action-grid studio-action-grid--single">
+                            <button class="studio-btn studio-btn--primary" id="studio-start-edit" type="button">
+                                <i class="fa-solid fa-pen-ruler" aria-hidden="true"></i>Χρησιμοποιήστε το στο Studio
+                            </button>
+                        </div>
+                    </section>
+
+                    <section class="studio-pane" id="pane-edit" data-pane="edit" role="tabpanel" hidden>
+                        <div class="studio-pane-head">
+                            <p class="studio-eyebrow">Θεματικά στοιχεία</p>
+                            <h2>Εκδίδω</h2>
+                            <p>Αντικαταστήστε οποιοδήποτε αρχείο επιλέγοντάς το, επικολλώντας μια εικόνα ή αφήνοντάς το κατευθείαν σε μια υποδοχή.</p>
+                        </div>
+
+                        <div class="studio-asset-toolbar">
+                            <div class="studio-asset-filters" role="group" aria-label="Φιλτράρισμα στοιχείων">
+                                <button class="studio-asset-filter is-active" type="button" data-asset-filter="all">Ολοι <span id="studio-asset-count-all">0</span></button>
+                                <button class="studio-asset-filter" type="button" data-asset-filter="missing">Απών <span id="studio-asset-count-missing">0</span></button>
+                                <button class="studio-asset-filter" type="button" data-asset-filter="changed">Άλλαξε <span id="studio-asset-count-changed">0</span></button>
+                            </div>
+                            <div class="studio-asset-tools">
+                                <button class="studio-mini-btn" id="studio-browse-font" type="button" title="Αναζητήστε ένα αρχείο γραμματοσειράς"><i class="fa-solid fa-font" aria-hidden="true"></i>Γραμματοσειρά</button>
+                                <button class="studio-mini-btn" id="studio-reset-assets" type="button" title="Επαναφέρετε κάθε αντικατάσταση"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Επαναφορά</button>
+                            </div>
+                        </div>
+
+                        <div class="studio-asset-list" id="studio-asset-list" role="list" aria-label="Θεματικά στοιχεία"></div>
+                        <p class="studio-asset-empty" id="studio-asset-empty" hidden>Δεν υπάρχουν στοιχεία που να αντιστοιχούν σε αυτό το φίλτρο.</p>
+
+                        <div class="studio-asset-detail" id="studio-asset-detail" hidden>
+                            <div class="studio-asset-detail-head">
+                                <div class="studio-asset-detail-copy">
+                                    <span class="studio-eyebrow" id="studio-asset-section">Τέχνη θέματος</span>
+                                    <strong id="studio-asset-name">Κεφάλαιο</strong>
+                                    <code id="studio-asset-path">-</code>
+                                </div>
+                                <span class="studio-asset-status" id="studio-asset-status">Ετοιμος</span>
+                            </div>
+                            <div class="studio-asset-detail-preview" id="studio-asset-detail-preview"></div>
+                            <div class="studio-asset-detail-actions">
+                                <button class="studio-btn studio-btn--primary" id="studio-asset-replace" type="button"><i class="fa-solid fa-folder-open" aria-hidden="true"></i>Αντικατάσταση αρχείου</button>
+                                <button class="studio-btn" id="studio-asset-theme" type="button" title="Εναλλάξτε το ίδιο στοιχείο από άλλο θέμα γκαλερί"><i class="fa-solid fa-images" aria-hidden="true"></i>Από το θέμα</button>
+                                <button class="studio-btn" id="studio-asset-paste" type="button"><i class="fa-solid fa-paste" aria-hidden="true"></i>Πάστα</button>
+                                <button class="studio-btn" id="studio-asset-blank" type="button" title="Αποθηκεύστε αυτό το αρχείο και χρησιμοποιήστε ένα πλήρως διαφανές σύμβολο κράτησης θέσης"><i class="fa-solid fa-trash-can" aria-hidden="true"></i>Κενό</button>
+                                <button class="studio-btn" id="studio-asset-reset" type="button"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Επαναφορά</button>
+                            </div>
+                            <p class="studio-hint" id="studio-asset-hint">Ρίξτε μια εικόνα στην επιλεγμένη υποδοχή ή αντιγράψτε μία και πατήστε Ctrl+V / Cmd+V.</p>
+                        </div>
+
+                        <div class="studio-mask-editor" id="studio-mask-editor" hidden></div>
+
+                        <div class="studio-color-editor" id="studio-color-editor"></div>
+
+                        <div class="studio-pane-actions studio-pane-actions--three">
+                            <button class="studio-btn" id="studio-edit-back" type="button"><i class="fa-solid fa-eye" aria-hidden="true"></i>Πρεμιέρα</button>
+                            <button class="studio-btn" data-studio-save type="button"><i class="fa-solid fa-download" aria-hidden="true"></i>Εκτός</button>
+                            <button class="studio-btn studio-btn--primary" id="studio-edit-submit" type="button">Υποτάσσομαι<i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+                        </div>
+                    </section>
+
+                    <section class="studio-pane" id="pane-submit" data-pane="submit" role="tabpanel" hidden>
+                        <div class="studio-pane-head">
+                            <p class="studio-eyebrow">Υποβολή γκαλερί</p>
+                            <h2>Υποτάσσομαι</h2>
+                            <p>Αυτές είναι οι ίδιες λεπτομέρειες καταχώρισης με τη φόρμα μεταφόρτωσης της συλλογής. Το θέμα στον προσομοιωτή είναι το πακέτο που υποβάλλετε. Οι τίτλοι και οι περιγραφές παραμένουν στα αγγλικά εδώ: η γκαλερί τα μεταφράζει για κάθε επισκέπτη.</p>
+                        </div>
+
+                        <div class="studio-package">
+                            <div class="studio-cover" id="studio-submit-cover-wrap">
+                                <img id="studio-submit-cover" alt="" />
+                                <span class="studio-cover-fallback"><i class="fa-solid fa-palette" aria-hidden="true"></i></span>
+                            </div>
+                            <div class="studio-source-copy">
+                                <strong id="studio-package-name" translate="no" data-i18n-skip>-</strong>
+                                <span id="studio-package-source" translate="no" data-i18n-skip>-</span>
+                            </div>
+                        </div>
+
+                        <div class="studio-source-actions">
+                            <button class="studio-mini-btn" id="studio-submit-open-zip" type="button"><i class="fa-solid fa-file-zipper" aria-hidden="true"></i>Ανοίξτε ένα άλλο .zip</button>
+                            <button class="studio-mini-btn" id="studio-submit-open-folder" type="button"><i class="fa-solid fa-folder-open" aria-hidden="true"></i>Ανοίξτε έναν άλλο φάκελο</button>
+                        </div>
+
+                        <div class="studio-submit-form" id="studio-submit-form">
+                            <div class="studio-identity" id="studio-identity" hidden>
+                                <div class="studio-identity-head">
+                                    <span class="studio-eyebrow"><i class="fa-solid fa-code-compare" aria-hidden="true"></i> Μια ερώτηση πρώτα</span>
+                                    <span class="studio-chip studio-chip--muted">Ταιριάζει με τη γκαλερί</span>
+                                </div>
+                                <p class="studio-identity-lead">
+                                    Αυτό το πακέτο περιέχει τις λεπτομέρειες του <strong id="studio-identity-name" translate="no" data-i18n-skip>a gallery theme</strong><span id="studio-identity-author" translate="no" data-i18n-skip></span>, επομένως μπορεί να ανέβει μόνο ως ενημέρωση αυτής της καταχώρισης ή ως το δικό σας νέο θέμα.
+                                </p>
+
+                                <div class="studio-identity-step" id="studio-identity-own">
+                                    <p class="studio-identity-q">Αυτό είναι το θέμα σας;</p>
+                                    <div class="studio-identity-actions">
+                                        <button class="studio-btn studio-btn--primary" type="button" data-identity-own="yes">Ναι, τα κατάφερα</button>
+                                        <button class="studio-btn" type="button" data-identity-own="no">Όχι, δεν είναι δικό μου</button>
+                                    </div>
+                                </div>
+
+                                <div class="studio-identity-step" id="studio-identity-change" hidden>
+                                    <p class="studio-identity-q">Θέλετε να αλλάξετε τις λεπτομέρειες της καταχώρισης;</p>
+                                    <div class="studio-identity-actions">
+                                        <button class="studio-btn studio-btn--primary" type="button" data-identity-change="yes">Ναι, επεξεργαστείτε τις λεπτομέρειες</button>
+                                        <button class="studio-btn" type="button" data-identity-change="no">Όχι, στείλτε το όπως αναφέρεται</button>
+                                    </div>
+                                </div>
+
+                                <div class="studio-identity-result" id="studio-identity-result" hidden>
+                                    <p class="studio-identity-q" id="studio-identity-result-title"></p>
+                                    <p class="studio-hint" id="studio-identity-result-text"></p>
+                                    <button class="studio-mini-btn" type="button" id="studio-identity-reset">
+                                        <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Αλλαγή απάντησης
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="studio-submit-details" id="studio-submit-details">
+                            <div class="studio-field">
+                                <label for="studio-submit-title">Τίτλος γκαλερί <span class="studio-required">Υποχρεούμαι</span></label>
+                                <input id="studio-submit-title" type="text" autocomplete="off" maxlength="120" placeholder="Τίτλος θέματος" translate="no" data-i18n-skip />
+                                <p class="studio-hint">Γράψτε τον τίτλο στα αγγλικά, ώστε η γκαλερί να μπορεί να τον μεταφράσει για κάθε επισκέπτη.</p>
+                            </div>
+
+                            <div class="studio-form-grid">
+                                <div class="studio-field">
+                                    <label for="studio-submit-author">Συγγραφέας / όνομα χρήστη <span class="studio-required">Υποχρεούμαι</span></label>
+                                    <input id="studio-submit-author" type="text" autocomplete="name" autocapitalize="words" spellcheck="false" maxlength="80" placeholder="Η λαβή του δημιουργού σας" list="studio-author-options" translate="no" data-i18n-skip />
+                                    <datalist id="studio-author-options"></datalist>
+                                    <p class="studio-hint">Χρησιμοποιήστε τη λαβή που θέλετε να πιστωθεί. Οι λεπτομέρειες του ανοιχτού θέματος προτείνονται μόνο ως κείμενο κράτησης θέσης.</p>
+                                </div>
+                                <div class="studio-field">
+                                    <label for="studio-submit-author-url">Σύνδεσμος συγγραφέα <span class="studio-optional">Προαιρετικός</span></label>
+                                    <input id="studio-submit-author-url" type="url" inputmode="url" autocomplete="url" placeholder="https://" translate="no" data-i18n-skip />
+                                </div>
+                            </div>
+
+                            <div class="studio-field">
+                                <label for="studio-submit-desc">Περιγραφή <span class="studio-optional">Προαιρετικός</span></label>
+                                <textarea id="studio-submit-desc" rows="3" maxlength="600" placeholder="Μια σύντομη γραμμή για τη γκαλερί" translate="no" data-i18n-skip></textarea>
+                                <p class="studio-hint">Μια πρόταση σχετικά με την εμφάνιση, την παλέτα ή με τι λειτουργεί καλύτερα. Γράψτε το στα αγγλικά, ώστε η γκαλερί να μπορεί να το μεταφράσει για κάθε επισκέπτη.</p>
+                            </div>
+
+                            <label class="studio-inline-check">
+                                <input id="studio-submit-external" type="checkbox" />
+                                <span><strong>Φιλοξενώ τη λήψη στη δική μου σελίδα</strong> (Ko-fi, Patreon, κατάστημα ή χαρτοφυλάκιο)</span>
+                            </label>
+                            <div class="studio-field" id="studio-submit-external-wrap" hidden>
+                                <label for="studio-submit-external-url">Εξωτερική διεύθυνση URL λήψης</label>
+                                                                    <input id="studio-submit-external-url" type="url" inputmode="url" placeholder="https://" translate="no" data-i18n-skip />
+                            </div>
+                            </div>
+
+                            <div class="studio-update-notice" id="studio-update-notice" hidden>
+                                <strong>Αυτό μοιάζει με ενημέρωση</strong>
+                                <p>Ο συγγραφέας σας ταιριάζει με την υπάρχουσα καταχώριση <span id="studio-update-folder"></span>. Θα το αντιμετωπίσουμε ως ενημέρωση σε αυτό το θέμα.</p>
+                                <label class="studio-inline-check">
+                                    <input id="studio-edit-ack" type="checkbox" />
+                                    <span>Επιβεβαιώνω ότι πρόκειται για ενημέρωση αυτής της υπάρχουσας καταχώρισης.</span>
+                                </label>
+                            </div>
+
+                            <div class="studio-policy-banner" id="studio-policy-banner" hidden></div>
+
+                            <ul class="studio-checklist" id="studio-checklist">
+                                <li data-check="config" data-state="pending">
+                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                                    <div><strong>Βρέθηκε το πακέτο</strong><span class="studio-check-detail">Αναμονή για ένα θέμα</span></div>
+                                </li>
+                                <li data-check="preview" data-state="pending">
+                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                                    <div><strong>Η προεπισκόπηση αποδόθηκε</strong><span class="studio-check-detail">Η προεπισκόπηση δεν έχει αποδοθεί ακόμα</span></div>
+                                </li>
+                                <li data-check="assets" data-state="pending">
+                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                                    <div><strong>Αρχεία αναφοράς</strong><span class="studio-check-detail">Έλεγχος περιουσιακών στοιχείων πακέτου</span></div>
+                                </li>
+                                <li data-check="details" data-state="pending">
+                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                                    <div><strong>Λεπτομέρειες καταχώρισης</strong><span class="studio-check-detail">Προσθέστε τίτλο και συγγραφέα</span></div>
+                                </li>
+                            </ul>
+
+                            <button class="studio-btn studio-btn--primary studio-submit-btn" id="studio-submit-btn" type="button">
+                                <i class="fa-solid fa-paper-plane" aria-hidden="true"></i><span>Στείλε το θέμα μου</span>
+                            </button>
+                            <div class="studio-submit-status" id="studio-submit-status" role="status" aria-live="polite"></div>
+                        </div>
+
+                        <div class="studio-note">
+                            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                            <span>Η υποβολή ανοίγει ένα αίτημα έλξης για έλεγχο. Μπορείτε να αποθηκεύσετε πρώτα το θέμα σε αυτήν τη συσκευή.</span>
+                        </div>
+                    </section>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <div class="studio-drop" id="studio-drop" aria-hidden="true">
+        <div class="studio-drop-card">
+            <span class="studio-drop-icon"><i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i></span>
+            <strong>Απόθεση για άνοιγμα στο Studio</strong>
+            <span>Φάκελος θέματος ή ZIP - προεπισκόπηση τοπικά</span>
+        </div>
+    </div>
+
+    <div class="studio-toast" id="studio-toast" role="status" aria-live="polite"></div>
+
+    <div class="studio-modal studio-theme-picker" id="studio-theme-picker" hidden>
+        <div class="studio-modal-card studio-theme-picker-card" role="dialog" aria-modal="true" aria-labelledby="studio-theme-picker-title">
+            <span class="studio-eyebrow"><i class="fa-solid fa-images" aria-hidden="true"></i> Εναλλαγή από άλλο θέμα</span>
+            <h2 id="studio-theme-picker-title">Κεφάλαιο</h2>
+            <p id="studio-theme-picker-text">Επιλέξτε το ίδιο στοιχείο από οποιοδήποτε θέμα γκαλερί για να το ανταλλάξετε σε αυτό.</p>
+            <label class="studio-theme-picker-search">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                <input id="studio-theme-picker-query" type="search" placeholder="Αναζήτηση θεμάτων ανά όνομα ή συγγραφέα" autocomplete="off" />
+            </label>
+            <div class="studio-theme-picker-list" id="studio-theme-picker-list" role="list" aria-label="Θέματα γκαλερί"></div>
+            <p class="studio-theme-picker-empty" id="studio-theme-picker-empty" hidden>Κανένα θέμα δεν ταιριάζει με αυτήν την αναζήτηση.</p>
+            <div class="studio-modal-actions">
+                <button class="studio-btn" id="studio-theme-picker-close" type="button">Κοντά</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="studio-save-progress" id="studio-save-progress" role="status" aria-live="polite" aria-atomic="true" hidden>
+        <div class="studio-save-progress-head">
+            <span id="studio-save-progress-label">Προετοιμασία θέματος…</span>
+            <strong id="studio-save-progress-value" aria-hidden="true">0%</strong>
+        </div>
+        <progress id="studio-save-progress-bar" max="100" value="0" aria-labelledby="studio-save-progress-label">0%</progress>
+    </div>
+
+    <input type="file" id="studio-zip-input" accept=".zip,application/zip" hidden />
+    <input type="file" id="studio-folder-input" webkitdirectory multiple hidden />
+    <input type="file" id="studio-asset-input" hidden />
+
+    <div id="footer-root"></div>
+    <div id="support-toolbar-slot"></div>
+
+    <script src="../nav.js?v=20261111nav"></script>
+    <script src="../y1-theme-preview.js?v=20261115lock"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="../theme-packaging.js"></script>
+    <script src="../author-submission-policy.js?v=20260523"></script>
+    <script src="/studio-test/studio.js?v=20261115rowtheme"></script>
+    <script src="../site-locale.js?v=20261115skip2" defer></script>
+</body>
+
+</html>

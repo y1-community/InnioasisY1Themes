@@ -1,7 +1,7 @@
 {
- "count": 2242,
+ "count": 2245,
  "dir": "ltr",
- "generated": "2026-11-14T00:19:28+00:00",
+ "generated": "2026-11-14T01:04:35+00:00",
  "keep": [
   "ACmp3",
   "BO1",
@@ -56,7 +56,7 @@
  "locale": "ber",
  "name": "Tamazight (Tifinagh)",
  "native": "ⵜⴰⵎⴰⵣⵉⵖⵜ (ⵜⵉⴼⵉⵏⴰⵖ)",
- "provider": "google-web",
+ "provider": "clients5",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!ITRI ⵏ TEMDINT!!",
@@ -120,6 +120,7 @@
   "A light iPod inspired theme Works on the Innioasis Y1 and Y2 with the Original Software, Better-Y, Koensayr and Solar.": "ⴰⵙⴻⵏⵜⴻⵍ ⵏ ⵜⴼⴻⴽⴽⴰ ⵙ ⵜⵎⵓⵖⵍⵉ ⵏ iPod Yexdem ⵖⴻⴼ Innioasis Y1 ⴷ Y2 ⵙ Uselkim Aẓuran, Better-Y, Koensayr ⴷ Solar.",
   "A mashup of Microsoft Zune on an iPod-like device.": "Mashup ⵏ Mikrusuft Zune ⴷⴻⴳ ⵢⵉⵡⴻⵏ ⵏ ⵡⴰⵍⵍⴰⵍ ⴰⵎ iPod.",
   "A really simple minimal theme": "ⴰⵙⴻⵏⵜⴻⵍ ⴰⵎⴻⵥⵢⴰⵏ ⴰⴼⵔⴰⵔⴰⵢ ⵙ ⵜⵉⴷⴻⵜ",
+  "A sentence about the look, palette or what it works best with. Write it in English so the gallery can translate it for every visitor.": "ⵜⴰⴼⵢⵉⵔⵜ ⵖⴻⴼ ⵜⵎⵓⵖⵍⵉ, ⵖⴻⴼ ⵜⴼⴻⵍⵡⵉⵜ ⵏⴻⵖ ⵖⴻⴼ ⵡⴰⵢⴻⵏ ⵙ ⵡⴰⵢⴻⵙ ⵉⵅⴻⴷⴷⴻⵎ ⵎⵍⵉⵃ. ⴰⵔⵓⵜ ⵙ ⵜⴻⴳⵍⵉⵣⵉⵜ ⴰⴽⴽⴻⵏ ⴰⴷ ⵜⵜⴻⵙⵙⵓⵇⴻⵍ ⵜⴳⴻⵎⵎⵉ ⵉ ⵢⴰⵍ ⴰⵏⴻⴳⴳⴰⵔⵓ.",
   "A simple theme based on the free game SHTDN": "ⴰⵙⴻⵏⵜⴻⵍ ⴰⴼⵔⴰⵔⴰⵢ ⵉ ⴷⵢⴻⵙⴱⴻⴷⴷⴻⵏ ⵓⵔⴰⵔ ⵉⵍⴻⵍⵍⵉ SHTDN .",
   "A simple theme made just for Carats :D": "ⴰⵙⴻⵏⵜⴻⵍ ⴰⴼⵔⴰⵔⴰⵢ ⵢⴻⵜⵜⵡⴰⵅⴷⴻⵎ ⴽⴰⵏ ⵉ Carats :D",
   "A soft matcha-green aesthetic minimalistic theme.": "ⴰⵙⴻⵏⵜⴻⵍ ⵏ ⵜⵎⵉⵏⵉⵎⴰⵍⵉⵙⵜ ⵏ ⵜⵎⴻⴷⵢⴰⵣⵜ ⵏ ⵎⴰⵜⵛⵀⴰⴰⵣⴻⴳⵣⴰⵡ ⵏ ⵜⵎⴻⵥⵥⵓⵖⵜ.",
@@ -902,6 +903,7 @@
   "Theme pages": "ⵉⵙⴻⴱⵜⴰⵔ ⵏ ⵓⵙⴻⵏⵜⴻⵍ",
   "Themes Gallery": "ⵜⴰⵣⴻⵇⵇⴰ ⵏ ⵢⵉⵙⴻⵏⵜⴰⵍ",
   "There's a new arrival on the way in Ryan's house. Every donation towards the servers and our growing family means a great deal.": "ⵢⴻⵍⵍⴰ ⵢⵉⵡⴻⵏ ⵏ ⵓⵎⴷⴰⵏ ⴰⵎⴰⵢⵏⵓⵜ ⴷⴻⴳ ⵓⴱⵔⵉⴷ ⴷⴻⴳ ⵡⴻⵅⵅⴰⵎ ⵏ Ryan. ⵢⴰⵍ ⵜⵉⴽⵛⵉ ⵙⴷⴰⵜ ⵏ ⵢⵉⵇⴻⴷⴷⴰⵛⴻⵏ ⴷ ⵜⵡⴰⵛⵓⵍⵜⵏⵏⴻⵖ ⵉ ⴷⵢⴻⵜⵜⵏⴻⵔⵏⵉⵏ ⵜⴻⵙⵄⴰ ⴰⵣⴰⵍ ⴰⵎⴻⵇⵇⵔⴰⵏ.",
+  "These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting. Titles and descriptions stay in English here: the gallery translates them for each visitor.": "ⵡⵉⴳⵉ ⴷ ⵉⴼⴻⵔⴷⵉⵙⴻⵏ ⵏ ⵓⵙⵎⴻⵍ ⴰⵎ ⵜⴼⴻⵍⵡⵉⵜ ⵏ ⵓⵙⵎⴻⵍ ⵏ ⵜⴼⴻⵍⵡⵉⵜ. ⴰⵙⴻⵏⵜⴻⵍ ⵢⴻⵍⵍⴰⵏ ⴷⴻⴳ ⵓⵙⵉⵎⵓⵍⴰⵜⵓⵔ ⴷ ⴰⴼⴻⵔⴷⵉⵙ ⵉ ⴷⵜⴻⵙⵙⵓⴼⵓⵖⴻⴹ. ⵜⵉⵣⵍⴰⵜⵉⵏ ⴷ ⵜⴼⴻⴽⴽⵉⵡⵉⵏ ⵇⵇⵉⵎⴻⵏⵜ ⵙ ⵜⴻⴳⵍⵉⵣⵉⵜ ⴷⴰⴳⵉ : ⵜⴰⵣⴻⵇⵇⴰ ⵜⴻⵙⵙⵓⵇⴻⵍⵉⵜⴻⵏⵜ ⵉ ⵢⴰⵍ ⴰⵏⴻⵔⵣⵓ.",
   "This author has opted out of gallery submissions": "ⴰⵎⴻⵙⴽⴰⵔⴰ ⵢⴻⴼⵔⴻⵏ ⴰⴷ ⵢⴻⴼⴼⴻⵖ ⵙⴻⴳ ⵓⵙⵉⵡⴻⴹ ⵏ ⵜⵎⴻⵣⴳⵓⵏⵜ",
   "This looks like an update": "ⵡⴰⴳⵉ ⵢⴻⵜⵜⴱⵉⵏⴷ ⴰⵎⵣⵓⵏ ⴷ ⴰⵙⴻⴳⴳⴻⵎ",
   "This month's": "ⴰⵢⵢⵓⵔⴰ",
@@ -1007,6 +1009,7 @@
   "Witchy": "ⴰⵙⴻⵃⵃⴰⵔ",
   "Wolverine": "ⵡⵓⵍⴼⴻⵔⵉⵏ",
   "Wolverine theme for Innioasis Y1 & Y2.": "ⴰⵙⴻⵏⵜⴻⵍ ⵏ Wulverin ⵉ Innioasis Y1 & Y2.",
+  "Write the title in English so the gallery can translate it for every visitor.": "ⴰⵔⵓⴷ ⴰⵣⵡⴻⵍ ⵙ ⵜⴻⴳⵍⵉⵣⵉⵜ ⴰⴽⴽⴻⵏ ⴰⴷ ⵜⵜⴻⵙⵙⵓⵇⴻⵍ ⵜⴳⴻⵎⵎⵉ ⵉ ⵢⴰⵍ ⴰⵏⴻⴳⴳⴰⵔⵓ.",
   "Y1 & Y2 Themes": "Y1 & Y2 ⵉⵙⴻⵏⵜⴰⴰⵍⴻⵏ",
   "Y1 theme inspired by Tomodachi Life": "Y1 ⴰⵙⴻⵏⵜⴻⵍ ⵢⴻⵜⵜⵡⴰⵙⵏⵓⵍⴼⴰⴷ ⵙⵖⵓⵔ Tudert ⵏ Tomodachi",
   "Y2 Default": "Y2 Amsawal",

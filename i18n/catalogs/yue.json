@@ -1,7 +1,7 @@
 {
- "count": 1213,
+ "count": 1216,
  "dir": "ltr",
- "generated": "2026-11-14T00:19:29+00:00",
+ "generated": "2026-11-14T01:04:47+00:00",
  "keep": [
   "ACmp3",
   "BO1",
@@ -51,7 +51,7 @@
  "locale": "yue",
  "name": "Cantonese",
  "native": "粵語",
- "provider": "google-web",
+ "provider": "clients5",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!! 城市之星 !!",
@@ -115,6 +115,7 @@
   "A light iPod inspired theme Works on the Innioasis Y1 and Y2 with the Original Software, Better-Y, Koensayr and Solar.": "輕巧嘅 iPod 啟發主題，用原始軟件 [ Better-Y 、 Koensayr 同 Solar 喺 [ Innioasis Y1 同 [ Y2 上面運作。",
   "A mashup of Microsoft Zune on an iPod-like device.": "微軟 Zune 喺類似 iPod 嘅裝置上面嘅混搭。",
   "A really simple minimal theme": "真係好簡單嘅簡約主題",
+  "A sentence about the look, palette or what it works best with. Write it in English so the gallery can translate it for every visitor.": "一句關於外觀、調色板或者佢最適合嘅嘢嘅句子。用英文寫，等畫廊可以為每個訪客翻譯。",
   "A simple theme based on the free game SHTDN": "基於免費遊戲 SHTDN 嘅簡單主題",
   "A simple theme made just for Carats :D": "一個只係為克拉而設嘅簡單主題：啲",
   "A soft matcha-green aesthetic minimalistic theme.": "柔和嘅抹茶綠美學簡約主題。",
@@ -891,6 +892,7 @@
   "Theme pages": "主題頁面",
   "Themes Gallery": "主題圖庫",
   "There's a new arrival on the way in Ryan's house. Every donation towards the servers and our growing family means a great deal.": "嚟緊 Ryan 屋企有個新人嚟緊。每一次捐款畀侍應同我哋成長中嘅家庭都意義重大。",
+  "These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting. Titles and descriptions stay in English here: the gallery translates them for each visitor.": "呢啲係同圖庫上載表格相同嘅列表詳情。模擬器入面嘅主題係你提交緊嘅包。呢度嘅標題同描述都係用英文寫：圖庫會為每個訪客翻譯。",
   "This author has opted out of gallery submissions": "呢位作者選擇唔提交圖庫",
   "This looks like an update": "呢個睇落好似係更新",
   "This month's": "今個月嘅",
@@ -996,6 +998,7 @@
   "Witchy": "巫婆",
   "Wolverine": "狼人",
   "Wolverine theme for Innioasis Y1 & Y2.": "狼人主題為［［0］］同［［1］］。",
+  "Write the title in English so the gallery can translate it for every visitor.": "用英文寫標題，等畫廊可以為每個訪客翻譯。",
   "Y1 & Y2 Themes": "［［0］］同［［1］］主題",
   "Y1 theme inspired by Tomodachi Life": "[ Y1 主題啟發自友田生活",
   "Y2 Default": "［［0］］預設",

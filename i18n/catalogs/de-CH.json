@@ -1,6 +1,6 @@
 {
   "base": "de",
-  "count": 6634,
+  "count": 6650,
   "dir": "ltr",
   "locale": "de-CH",
   "name": "German (Switzerland)",
@@ -6654,6 +6654,9 @@
     "Default": "Standard",
     "Already on your Y1": "Bereits auf Ihrem Y1",
     "Search": "Suche",
-    "Firmware zip downloaded": "Firmware-Zip heruntergeladen"
+    "Firmware zip downloaded": "Firmware-Zip heruntergeladen",
+    "These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting. Titles and descriptions stay in English here: the gallery translates them for each visitor.": "Dies sind die gleichen Eintragsdetails wie im Galerie-Upload-Formular. Das Thema im Simulator ist das Paket, das Sie einreichen. Titel und Beschreibungen bleiben hier auf Englisch: Die Galerie übersetzt sie für jeden Besucher.",
+    "Write the title in English so the gallery can translate it for every visitor.": "Schreiben Sie den Titel auf Englisch, damit die Galerie ihn für jeden Besucher übersetzen kann.",
+    "A sentence about the look, palette or what it works best with. Write it in English so the gallery can translate it for every visitor.": "Ein Satz über den Look, die Palette oder womit sie am besten harmoniert. Schreiben Sie es auf Englisch, damit die Galerie es für jeden Besucher übersetzen kann."
   }
 }

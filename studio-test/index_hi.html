@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="hi" dir="ltr" data-locale="hi">
+
+<head>
+    <meta charset="utf-8" />
+    <base href="/" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="theme-color" content="#2f80ed" />
+    <meta name="application-name" content="Theme Studio" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Theme Studio" />
+    <meta name="cf-pages-upload-api-origin" content="https://y1-theme-upload.itsryanspecter.workers.dev" />
+    <title>थीम स्टूडियो - Innioasis Y1 और Y2 थीम्स</title>
+    <script>
+        /* The dock is a convenience here, never a preference the rest of the
+           site should inherit. support_toolbar.html reads this flag. */
+        window.STUDIO_DOCK_ISOLATED = true;
+        /* The simulator draws the theme's own menu labels. Pin its device UI to
+           English so a translated player never misreports what the author wrote. */
+        window.STUDIO_PREVIEW_LOCALE = 'en';
+        /* This page is reachable only by typing its URL: nothing on the site
+           links to it, and no editor override points the header here. The nav's
+           Editor item keeps resolving to the community editor, so following it
+           from Studio leaves for that editor instead of reloading this page and
+           discarding unsaved work. */
+    </script>
+    <script src="../site-init.js?v=20261110picker"></script>
+    <link rel="manifest" href="/studio-test/manifest.webmanifest" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/studio-test/icons/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/studio-test/icons/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="../site-theme.css?v=20261111dl2" />
+    <link rel="stylesheet" href="../site-toolbar.css?v=20261110accent2" />
+    <link rel="stylesheet" href="../y1-theme-preview.css?v=20261114rowfocus2" />
+    <link rel="stylesheet" href="/studio-test/studio.css?v=20261114identity" />
+</head>
+
+<body class="site-themes-app site-dock-mode studio-app" data-mode="preview">
+    <div id="nav-root"></div>
+
+    <div class="studio-shell">
+        <div class="studio-commandbar">
+            <div class="studio-command-copy">
+                <span class="studio-eyebrow"><i class="fa-solid fa-compact-disc" aria-hidden="true"></i> थीम स्टूडियो</span>
+                <span class="studio-command-context" id="studio-command-context">प्लेयर थीम का पूर्वावलोकन करें, संपादित करें और प्रकाशित करें</span>
+            </div>
+
+            <nav class="studio-modes" role="tablist" aria-label="स्टूडियो मोड">
+                <button class="studio-mode is-active" type="button" role="tab" aria-selected="true" aria-controls="pane-preview" data-mode-btn="preview">
+                    <i class="fa-solid fa-eye" aria-hidden="true"></i><span>पूर्व दर्शन</span>
+                </button>
+                <button class="studio-mode" type="button" role="tab" aria-selected="false" aria-controls="pane-edit" data-mode-btn="edit">
+                    <i class="fa-solid fa-pen-ruler" aria-hidden="true"></i><span>संपादन करना</span>
+                </button>
+                <button class="studio-mode" type="button" role="tab" aria-selected="false" aria-controls="pane-submit" data-mode-btn="submit">
+                    <i class="fa-solid fa-paper-plane" aria-hidden="true"></i><span>जमा करना</span>
+                </button>
+            </nav>
+
+            <div class="studio-command-actions">
+                <span class="studio-unsaved" id="studio-unsaved" hidden><i class="fa-solid fa-circle" aria-hidden="true"></i>न सहेजा गया</span>
+                <button class="studio-btn studio-btn--themes" id="studio-open-theme" type="button" aria-label="गैलरी थीम चुनें" aria-controls="studio-swap-panel" aria-expanded="false" title="गैलरी थीम चुनें">
+                    <i class="fa-solid fa-images" aria-hidden="true"></i><span>विषय-वस्तु</span>
+                </button>
+                <button class="studio-btn studio-btn--save" id="studio-save" type="button" aria-label="थीम को इस डिवाइस में सहेजें">
+                    <i class="fa-solid fa-download" aria-hidden="true"></i><span>डिवाइस में सहेजें</span>
+                </button>
+            </div>
+        </div>
+
+        <main class="studio-main">
+            <section class="studio-stage" aria-labelledby="studio-title">
+                <div class="studio-stage-head">
+                    <div class="studio-stage-copy">
+                        <div class="studio-eyebrow studio-breadcrumb">
+                            <span id="studio-source-label">गैलरी थीम</span>
+                            <span class="studio-sep" aria-hidden="true">/</span>
+                            <span id="studio-source-detail">लोड हो रहा है</span>
+                        </div>
+                        <h1 id="studio-title" translate="no" data-i18n-skip>Loading theme...</h1>
+                        <p id="studio-byline" translate="no" data-i18n-skip>Reading the package...</p>
+                    </div>
+                    <div class="studio-stage-meta">
+                        <span class="studio-chip"><i class="fa-solid fa-mobile-screen" aria-hidden="true"></i>Y1 / Y2</span>
+                        <span class="studio-chip studio-chip--muted" id="studio-source-chip">गैलरी</span>
+                    </div>
+                </div>
+
+                <div class="studio-preview-area" id="studio-preview-area">
+                    <div class="studio-preview-loading" id="studio-preview-loading">
+                        <span class="studio-spinner" aria-hidden="true"></span>
+                        <span id="studio-loading-label">पूर्वावलोकन लोड हो रहा है...</span>
+                    </div>
+                    <div class="studio-preview" id="studio-preview" translate="no" data-i18n-skip></div>
+                    <div class="studio-empty" id="studio-empty" hidden>
+                        <div class="studio-empty-card">
+                            <span class="studio-empty-icon"><i class="fa-solid fa-palette" aria-hidden="true"></i></span>
+                            <span class="studio-eyebrow" id="studio-empty-eyebrow" hidden>अभी तक कुछ भी खुला नहीं है</span>
+                            <strong id="studio-empty-title">पूर्वावलोकन अनुपलब्ध</strong>
+                            <p id="studio-empty-text">कोई अन्य थीम चुनें या स्थानीय पैकेज खोलें।</p>
+                            <div class="studio-empty-actions" id="studio-empty-actions" hidden>
+                                <a class="studio-btn studio-btn--primary" id="studio-empty-gallery" href="../">
+                                    <i class="fa-solid fa-images" aria-hidden="true"></i>गैलरी से एक चुनें
+                                </a>
+                                <button class="studio-btn" id="studio-empty-zip" type="button">
+                                    <i class="fa-solid fa-file-zipper" aria-hidden="true"></i>एक .ज़िप अपलोड करें
+                                </button>
+                                <button class="studio-btn" id="studio-empty-folder" type="button">
+                                    <i class="fa-solid fa-folder-open" aria-hidden="true"></i>एक फ़ोल्डर अपलोड करें
+                                </button>
+                            </div>
+                            <p class="studio-hint" id="studio-empty-hint" hidden>किसी फ़ोल्डर या ज़िप को इस पृष्ठ पर कहीं भी खींचने से भी काम होता है। साइडबार में सूची से गैलरी थीम भी चुनी जा सकती है।</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="studio-stage-foot">
+                    <span><i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i>थीम फ़ोल्डर या ज़िप को कहीं भी छोड़ें</span>
+                    <span class="studio-foot-sep" aria-hidden="true"></span>
+                    <span>अन्वेषण करने के लिए पहिया पर क्लिक करें या तीर कुंजियों का उपयोग करें</span>
+                </div>
+            </section>
+
+            <aside class="studio-panel" aria-label="स्टूडियो निरीक्षक">
+                <div class="studio-panel-scroll" id="studio-panel-scroll">
+                    <section class="studio-pane" id="pane-preview" data-pane="preview" role="tabpanel">
+                        <div class="studio-pane-head">
+                            <p class="studio-eyebrow">वर्तमान विषय</p>
+                            <h2>पूर्व दर्शन</h2>
+                            <p>यह असली खिलाड़ी का दृश्य है. परिवर्तन इस डिवाइस पर तब तक बने रहते हैं जब तक आप उन्हें सहेजते या सबमिट नहीं करते।</p>
+                        </div>
+
+                        <div class="studio-source-card">
+                            <div class="studio-cover" id="studio-cover-wrap">
+                                <img id="studio-cover" alt="" />
+                                <span class="studio-cover-fallback"><i class="fa-solid fa-palette" aria-hidden="true"></i></span>
+                            </div>
+                            <div class="studio-source-copy">
+                                <strong id="studio-source-name" translate="no" data-i18n-skip>-</strong>
+                                <span id="studio-source-author" translate="no" data-i18n-skip>-</span>
+                                <span class="studio-source-desc" id="studio-source-desc" translate="no" data-i18n-skip></span>
+                            </div>
+                        </div>
+
+                        <button class="studio-swap-btn" id="studio-swap" type="button" hidden>
+                            <i class="fa-solid fa-arrow-right-arrow-left" aria-hidden="true"></i>कोई अन्य थीम खोलें
+                        </button>
+
+                        <div class="studio-swap-panel" id="studio-swap-panel">
+                            <div class="studio-field">
+                                <label for="studio-theme-filter">गैलरी थीम खोलें</label>
+                                <input id="studio-theme-filter" type="search" placeholder="नाम या लेखक के अनुसार फ़िल्टर करें" autocomplete="off" />
+                                <select id="studio-theme-select" aria-label="गैलरी थीम"></select>
+                                <p class="studio-hint" id="studio-theme-count">सभी गैलरी थीम</p>
+                            </div>
+
+                            <div class="studio-divider"></div>
+
+                            <div class="studio-import">
+                                <div class="studio-import-head">
+                                    <span class="studio-eyebrow">इस डिवाइस से खोलें</span>
+                                    <span class="studio-chip studio-chip--muted">ज़िप या फ़ोल्डर</span>
+                                </div>
+                                <p>यहां एक थीम पैकेज छोड़ें, या ज़िप या फ़ोल्डर ब्राउज़ करें। कुछ भी सहेजने या भेजने से पहले यह सिम्युलेटर में खुलता है।</p>
+                                <div class="studio-action-grid">
+                                    <button class="studio-btn" id="studio-open-zip" type="button">
+                                        <i class="fa-solid fa-file-zipper" aria-hidden="true"></i>ब्राउज़ करें .zip
+                                    </button>
+                                    <button class="studio-btn" id="studio-open-folder" type="button">
+                                        <i class="fa-solid fa-folder-open" aria-hidden="true"></i>फ़ोल्डर ब्राउज़ करें
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="studio-note">
+                                <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+                                <span>आपका पैकेज आपके ब्राउज़र में पढ़ा जाता है. जब तक आप सबमिट नहीं चुनते तब तक कुछ भी अपलोड नहीं किया जाता है।</span>
+                            </div>
+                        </div>
+
+                        <div class="studio-action-grid studio-action-grid--single">
+                            <button class="studio-btn studio-btn--primary" id="studio-start-edit" type="button">
+                                <i class="fa-solid fa-pen-ruler" aria-hidden="true"></i>स्टूडियो में इसका प्रयोग करें
+                            </button>
+                        </div>
+                    </section>
+
+                    <section class="studio-pane" id="pane-edit" data-pane="edit" role="tabpanel" hidden>
+                        <div class="studio-pane-head">
+                            <p class="studio-eyebrow">थीम संपत्ति</p>
+                            <h2>संपादन करना</h2>
+                            <p>किसी भी फ़ाइल को चुनकर, एक छवि चिपकाकर, या उसे सीधे एक स्लॉट पर छोड़ कर बदलें।</p>
+                        </div>
+
+                        <div class="studio-asset-toolbar">
+                            <div class="studio-asset-filters" role="group" aria-label="संपत्तियों को फ़िल्टर करें">
+                                <button class="studio-asset-filter is-active" type="button" data-asset-filter="all">सभी <span id="studio-asset-count-all">0</span></button>
+                                <button class="studio-asset-filter" type="button" data-asset-filter="missing">गुम <span id="studio-asset-count-missing">0</span></button>
+                                <button class="studio-asset-filter" type="button" data-asset-filter="changed">बदल गया <span id="studio-asset-count-changed">0</span></button>
+                            </div>
+                            <div class="studio-asset-tools">
+                                <button class="studio-mini-btn" id="studio-browse-font" type="button" title="फ़ॉन्ट फ़ाइल ब्राउज़ करें"><i class="fa-solid fa-font" aria-hidden="true"></i>फ़ॉन्ट</button>
+                                <button class="studio-mini-btn" id="studio-reset-assets" type="button" title="प्रत्येक प्रतिस्थापन को रीसेट करें"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i>रीसेट करें</button>
+                            </div>
+                        </div>
+
+                        <div class="studio-asset-list" id="studio-asset-list" role="list" aria-label="थीम संपत्ति"></div>
+                        <p class="studio-asset-empty" id="studio-asset-empty" hidden>कोई भी संपत्ति इस फ़िल्टर से मेल नहीं खाती.</p>
+
+                        <div class="studio-asset-detail" id="studio-asset-detail" hidden>
+                            <div class="studio-asset-detail-head">
+                                <div class="studio-asset-detail-copy">
+                                    <span class="studio-eyebrow" id="studio-asset-section">थीम कला</span>
+                                    <strong id="studio-asset-name">संपत्ति</strong>
+                                    <code id="studio-asset-path">-</code>
+                                </div>
+                                <span class="studio-asset-status" id="studio-asset-status">तैयार</span>
+                            </div>
+                            <div class="studio-asset-detail-preview" id="studio-asset-detail-preview"></div>
+                            <div class="studio-asset-detail-actions">
+                                <button class="studio-btn studio-btn--primary" id="studio-asset-replace" type="button"><i class="fa-solid fa-folder-open" aria-hidden="true"></i>फ़ाइल बदलें</button>
+                                <button class="studio-btn" id="studio-asset-theme" type="button" title="किसी अन्य गैलरी थीम से उसी संपत्ति में स्वैप करें"><i class="fa-solid fa-images" aria-hidden="true"></i>थीम से</button>
+                                <button class="studio-btn" id="studio-asset-paste" type="button"><i class="fa-solid fa-paste" aria-hidden="true"></i>पेस्ट करें</button>
+                                <button class="studio-btn" id="studio-asset-blank" type="button" title="इस फ़ाइल को बिन करें और पूर्णतः पारदर्शी प्लेसहोल्डर का उपयोग करें"><i class="fa-solid fa-trash-can" aria-hidden="true"></i>खाली</button>
+                                <button class="studio-btn" id="studio-asset-reset" type="button"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i>रीसेट करें</button>
+                            </div>
+                            <p class="studio-hint" id="studio-asset-hint">चयनित स्लॉट पर एक छवि छोड़ें, या एक कॉपी करें और Ctrl+V / Cmd+V दबाएँ।</p>
+                        </div>
+
+                        <div class="studio-mask-editor" id="studio-mask-editor" hidden></div>
+
+                        <div class="studio-color-editor" id="studio-color-editor"></div>
+
+                        <div class="studio-pane-actions studio-pane-actions--three">
+                            <button class="studio-btn" id="studio-edit-back" type="button"><i class="fa-solid fa-eye" aria-hidden="true"></i>पूर्व दर्शन</button>
+                            <button class="studio-btn" data-studio-save type="button"><i class="fa-solid fa-download" aria-hidden="true"></i>बचाना</button>
+                            <button class="studio-btn studio-btn--primary" id="studio-edit-submit" type="button">जमा करना<i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+                        </div>
+                    </section>
+
+                    <section class="studio-pane" id="pane-submit" data-pane="submit" role="tabpanel" hidden>
+                        <div class="studio-pane-head">
+                            <p class="studio-eyebrow">गैलरी प्रस्तुतीकरण</p>
+                            <h2>जमा करना</h2>
+                            <p>ये गैलरी अपलोड फॉर्म के समान लिस्टिंग विवरण हैं। सिम्युलेटर में थीम वह पैकेज है जिसे आप सबमिट कर रहे हैं। शीर्षक और विवरण यहां अंग्रेजी में रहते हैं: गैलरी प्रत्येक आगंतुक के लिए उनका अनुवाद करती है।</p>
+                        </div>
+
+                        <div class="studio-package">
+                            <div class="studio-cover" id="studio-submit-cover-wrap">
+                                <img id="studio-submit-cover" alt="" />
+                                <span class="studio-cover-fallback"><i class="fa-solid fa-palette" aria-hidden="true"></i></span>
+                            </div>
+                            <div class="studio-source-copy">
+                                <strong id="studio-package-name" translate="no" data-i18n-skip>-</strong>
+                                <span id="studio-package-source" translate="no" data-i18n-skip>-</span>
+                            </div>
+                        </div>
+
+                        <div class="studio-source-actions">
+                            <button class="studio-mini-btn" id="studio-submit-open-zip" type="button"><i class="fa-solid fa-file-zipper" aria-hidden="true"></i>दूसरा .zip खोलें</button>
+                            <button class="studio-mini-btn" id="studio-submit-open-folder" type="button"><i class="fa-solid fa-folder-open" aria-hidden="true"></i>दूसरा फ़ोल्डर खोलें</button>
+                        </div>
+
+                        <div class="studio-submit-form" id="studio-submit-form">
+                            <div class="studio-identity" id="studio-identity" hidden>
+                                <div class="studio-identity-head">
+                                    <span class="studio-eyebrow"><i class="fa-solid fa-code-compare" aria-hidden="true"></i> पहले एक प्रश्न</span>
+                                    <span class="studio-chip studio-chip--muted">गैलरी से मेल खाता है</span>
+                                </div>
+                                <p class="studio-identity-lead">
+                                    इस पैकेज में इसका विवरण दिया गया है <strong id="studio-identity-name" translate="no" data-i18n-skip>a gallery theme</strong><span id="studio-identity-author" translate="no" data-i18n-skip></span>, इसलिए यह केवल उस लिस्टिंग के अपडेट के रूप में या आपकी अपनी नई थीम के रूप में ऊपर जा सकता है।
+                                </p>
+
+                                <div class="studio-identity-step" id="studio-identity-own">
+                                    <p class="studio-identity-q">क्या यह आपका विषय है?</p>
+                                    <div class="studio-identity-actions">
+                                        <button class="studio-btn studio-btn--primary" type="button" data-identity-own="yes">हाँ, मैंने इसे बनाया</button>
+                                        <button class="studio-btn" type="button" data-identity-own="no">नहीं यह मेरा नहीं है</button>
+                                    </div>
+                                </div>
+
+                                <div class="studio-identity-step" id="studio-identity-change" hidden>
+                                    <p class="studio-identity-q">क्या आप लिस्टिंग विवरण बदलना चाहते हैं?</p>
+                                    <div class="studio-identity-actions">
+                                        <button class="studio-btn studio-btn--primary" type="button" data-identity-change="yes">हां, विवरण संपादित करें</button>
+                                        <button class="studio-btn" type="button" data-identity-change="no">नहीं, इसे सूचीबद्ध अनुसार भेजें</button>
+                                    </div>
+                                </div>
+
+                                <div class="studio-identity-result" id="studio-identity-result" hidden>
+                                    <p class="studio-identity-q" id="studio-identity-result-title"></p>
+                                    <p class="studio-hint" id="studio-identity-result-text"></p>
+                                    <button class="studio-mini-btn" type="button" id="studio-identity-reset">
+                                        <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>उत्तर बदलें
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="studio-submit-details" id="studio-submit-details">
+                            <div class="studio-field">
+                                <label for="studio-submit-title">गैलरी शीर्षक <span class="studio-required">आवश्यक</span></label>
+                                <input id="studio-submit-title" type="text" autocomplete="off" maxlength="120" placeholder="थीम शीर्षक" translate="no" data-i18n-skip />
+                                <p class="studio-hint">शीर्षक अंग्रेजी में लिखें ताकि गैलरी प्रत्येक आगंतुक के लिए इसका अनुवाद कर सके।</p>
+                            </div>
+
+                            <div class="studio-form-grid">
+                                <div class="studio-field">
+                                    <label for="studio-submit-author">लेखक/उपयोगकर्ता नाम <span class="studio-required">आवश्यक</span></label>
+                                    <input id="studio-submit-author" type="text" autocomplete="name" autocapitalize="words" spellcheck="false" maxlength="80" placeholder="आपका निर्माता हैंडल" list="studio-author-options" translate="no" data-i18n-skip />
+                                    <datalist id="studio-author-options"></datalist>
+                                    <p class="studio-hint">उस हैंडल का उपयोग करें जिसे आप श्रेय देना चाहते हैं। ओपन थीम का विवरण केवल प्लेसहोल्डर टेक्स्ट के रूप में सुझाया गया है।</p>
+                                </div>
+                                <div class="studio-field">
+                                    <label for="studio-submit-author-url">लेखक लिंक <span class="studio-optional">वैकल्पिक</span></label>
+                                    <input id="studio-submit-author-url" type="url" inputmode="url" autocomplete="url" placeholder="https://" translate="no" data-i18n-skip />
+                                </div>
+                            </div>
+
+                            <div class="studio-field">
+                                <label for="studio-submit-desc">विवरण <span class="studio-optional">वैकल्पिक</span></label>
+                                <textarea id="studio-submit-desc" rows="3" maxlength="600" placeholder="गैलरी के लिए एक छोटी लाइन" translate="no" data-i18n-skip></textarea>
+                                <p class="studio-hint">लुक, पैलेट या किसके साथ यह सबसे अच्छा काम करता है, इसके बारे में एक वाक्य। इसे अंग्रेजी में लिखें ताकि गैलरी प्रत्येक आगंतुक के लिए इसका अनुवाद कर सके।</p>
+                            </div>
+
+                            <label class="studio-inline-check">
+                                <input id="studio-submit-external" type="checkbox" />
+                                <span><strong>डाउनलोड को मेरे अपने पेज पर होस्ट करें</strong> (Ko-fi, Patreon, दुकान या पोर्टफोलियो)</span>
+                            </label>
+                            <div class="studio-field" id="studio-submit-external-wrap" hidden>
+                                <label for="studio-submit-external-url">बाहरी डाउनलोड यूआरएल</label>
+                                                                    <input id="studio-submit-external-url" type="url" inputmode="url" placeholder="https://" translate="no" data-i18n-skip />
+                            </div>
+                            </div>
+
+                            <div class="studio-update-notice" id="studio-update-notice" hidden>
+                                <strong>यह एक अपडेट जैसा दिखता है</strong>
+                                <p>आपका लेखक मौजूदा सूची से मेल खाता है <span id="studio-update-folder"></span>. हम इसे उस थीम के अपडेट के रूप में मानेंगे।</p>
+                                <label class="studio-inline-check">
+                                    <input id="studio-edit-ack" type="checkbox" />
+                                    <span>मैं पुष्टि करता हूं कि यह उस मौजूदा सूची का अद्यतन है।</span>
+                                </label>
+                            </div>
+
+                            <div class="studio-policy-banner" id="studio-policy-banner" hidden></div>
+
+                            <ul class="studio-checklist" id="studio-checklist">
+                                <li data-check="config" data-state="pending">
+                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                                    <div><strong>पैकेज मिल गया</strong><span class="studio-check-detail">किसी थीम का इंतजार है</span></div>
+                                </li>
+                                <li data-check="preview" data-state="pending">
+                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                                    <div><strong>पूर्वावलोकन प्रस्तुत किया गया</strong><span class="studio-check-detail">पूर्वावलोकन अभी तक प्रस्तुत नहीं किया गया है</span></div>
+                                </li>
+                                <li data-check="assets" data-state="pending">
+                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                                    <div><strong>संदर्भित फ़ाइलें</strong><span class="studio-check-detail">पैकेज परिसंपत्तियों की जाँच करना</span></div>
+                                </li>
+                                <li data-check="details" data-state="pending">
+                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                                    <div><strong>सूची विवरण</strong><span class="studio-check-detail">एक शीर्षक और लेखक जोड़ें</span></div>
+                                </li>
+                            </ul>
+
+                            <button class="studio-btn studio-btn--primary studio-submit-btn" id="studio-submit-btn" type="button">
+                                <i class="fa-solid fa-paper-plane" aria-hidden="true"></i><span>मेरी थीम भेजें</span>
+                            </button>
+                            <div class="studio-submit-status" id="studio-submit-status" role="status" aria-live="polite"></div>
+                        </div>
+
+                        <div class="studio-note">
+                            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                            <span>सबमिट करने से समीक्षा के लिए एक पुल अनुरोध खुल जाता है। आप थीम को पहले इस डिवाइस में सहेज सकते हैं.</span>
+                        </div>
+                    </section>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <div class="studio-drop" id="studio-drop" aria-hidden="true">
+        <div class="studio-drop-card">
+            <span class="studio-drop-icon"><i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i></span>
+            <strong>स्टूडियो में खोलने के लिए छोड़ें</strong>
+            <span>थीम फ़ोल्डर या ज़िप - स्थानीय रूप से पूर्वावलोकन किया गया</span>
+        </div>
+    </div>
+
+    <div class="studio-toast" id="studio-toast" role="status" aria-live="polite"></div>
+
+    <div class="studio-modal studio-theme-picker" id="studio-theme-picker" hidden>
+        <div class="studio-modal-card studio-theme-picker-card" role="dialog" aria-modal="true" aria-labelledby="studio-theme-picker-title">
+            <span class="studio-eyebrow"><i class="fa-solid fa-images" aria-hidden="true"></i> किसी अन्य थीम से स्वैप करें</span>
+            <h2 id="studio-theme-picker-title">संपत्ति</h2>
+            <p id="studio-theme-picker-text">किसी भी गैलरी थीम से उसी एसेट को इस थीम में बदलने के लिए चुनें।</p>
+            <label class="studio-theme-picker-search">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                <input id="studio-theme-picker-query" type="search" placeholder="नाम या लेखक के आधार पर थीम खोजें" autocomplete="off" />
+            </label>
+            <div class="studio-theme-picker-list" id="studio-theme-picker-list" role="list" aria-label="गैलरी थीम"></div>
+            <p class="studio-theme-picker-empty" id="studio-theme-picker-empty" hidden>कोई भी थीम उस खोज से मेल नहीं खाती.</p>
+            <div class="studio-modal-actions">
+                <button class="studio-btn" id="studio-theme-picker-close" type="button">बंद करें</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="studio-save-progress" id="studio-save-progress" role="status" aria-live="polite" aria-atomic="true" hidden>
+        <div class="studio-save-progress-head">
+            <span id="studio-save-progress-label">थीम तैयार की जा रही है...</span>
+            <strong id="studio-save-progress-value" aria-hidden="true">0%</strong>
+        </div>
+        <progress id="studio-save-progress-bar" max="100" value="0" aria-labelledby="studio-save-progress-label">0%</progress>
+    </div>
+
+    <input type="file" id="studio-zip-input" accept=".zip,application/zip" hidden />
+    <input type="file" id="studio-folder-input" webkitdirectory multiple hidden />
+    <input type="file" id="studio-asset-input" hidden />
+
+    <div id="footer-root"></div>
+    <div id="support-toolbar-slot"></div>
+
+    <script src="../nav.js?v=20261111nav"></script>
+    <script src="../y1-theme-preview.js?v=20261115lock"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="../theme-packaging.js"></script>
+    <script src="../author-submission-policy.js?v=20260523"></script>
+    <script src="/studio-test/studio.js?v=20261115rowtheme"></script>
+    <script src="../site-locale.js?v=20261115skip2" defer></script>
+</body>
+
+</html>

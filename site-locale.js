@@ -389,6 +389,10 @@
         if (SKIP_TAGS[element.tagName]) return true;
         if (element.hasAttribute && element.hasAttribute("data-i18n-skip")) return true;
         if (element.getAttribute && element.getAttribute("translate") === "no") return true;
+        /* Scripts hand over one row at a time, never the marked container. A
+           new row inside a protected subtree has to inherit that protection or
+           the catalog rewrites the theme data the author is editing. */
+        if (element.closest && element.closest("[data-i18n-skip], [translate='no']")) return true;
         return false;
     }
 
@@ -454,6 +458,18 @@
     function translateTree(root, reverse) {
         if (!root) return;
         if (root.nodeType === 3) {
+            /* A text node handed over on its own (a characterData or childList
+               record) has to check its ancestors itself: the skip markers sit on
+               the container, not on the text. Without this, copy swapped into a
+               marked subtree by script still went through the catalog. */
+            var host = root.parentElement;
+            if (
+                host &&
+                host.closest &&
+                host.closest("[data-i18n-skip], [translate='no'], .theme-card, [data-locale-panel]")
+            ) {
+                return;
+            }
             var next = translateValue(textSource(root, reverse));
             if (next !== root.nodeValue) {
                 root.nodeValue = next;

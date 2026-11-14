@@ -1,6 +1,6 @@
 {
  "base": "sr",
- "count": 204,
+ "count": 207,
  "dir": "ltr",
  "locale": "sr-Latn",
  "name": "Serbian (Latin)",
@@ -211,6 +211,9 @@
   "{supporter} contributed {amount} for free by sharing 100MB on Honeygain{time}": "[[ПХ0]] је бесплатно допринео [[ПХ1]] делећи 100 МБ на Honeygain[[ПХ2]]",
   "{supporter} donated {amount}": "[[ПХ0]] је донирао [[ПХ1]]",
   "{supporter} donated {amount} by {method}{time}": "[[ПХ0]] је донирао [[ПХ1]] од [[ПХ2]][[ПХ3]]",
-  "{supporter} has donated {amount}{time}": "[[ПХ0]] је донирао [[ПХ1]][[ПХ2]]"
+  "{supporter} has donated {amount}{time}": "[[ПХ0]] је донирао [[ПХ1]][[ПХ2]]",
+  "These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting. Titles and descriptions stay in English here: the gallery translates them for each visitor.": "Ово су исти подаци о листи као и образац за отпремање галерије. Тема у симулатору је пакет који шаљете. Наслови и описи остају на енглеском овде: галерија их преводи за сваког посетиоца.",
+  "Write the title in English so the gallery can translate it for every visitor.": "Напишите наслов на енглеском како би галерија могла да га преведе за сваког посетиоца.",
+  "A sentence about the look, palette or what it works best with. Write it in English so the gallery can translate it for every visitor.": "Реченица о изгледу, палети или ономе са чиме најбоље функционише. Напишите је на енглеском како би галерија могла да је преведе за сваког посетиоца."
  }
 }

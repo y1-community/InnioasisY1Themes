@@ -1,6 +1,6 @@
 {
   "base": "nl",
-  "count": 870,
+  "count": 887,
   "dir": "ltr",
   "locale": "nl-BE",
   "name": "Dutch (Belgium)",
@@ -891,6 +891,9 @@
     "Default": "Standaard",
     "Already on your Y1": "Al op je Y1",
     "Search": "Zoeken",
-    "Firmware zip downloaded": "Firmware-zip gedownload"
+    "Firmware zip downloaded": "Firmware-zip gedownload",
+    "These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting. Titles and descriptions stay in English here: the gallery translates them for each visitor.": "Dit zijn dezelfde vermeldingsgegevens als het uploadformulier voor de galerij. Het thema in de simulator is het pakket dat u indient. Titels en beschrijvingen blijven hier in het Engels: de galerij vertaalt ze voor elke bezoeker.",
+    "Write the title in English so the gallery can translate it for every visitor.": "Schrijf de titel in het Engels, zodat de galerie deze voor elke bezoeker kan vertalen.",
+    "A sentence about the look, palette or what it works best with. Write it in English so the gallery can translate it for every visitor.": "Een zin over de look, het palet of waar het het beste mee werkt. Schrijf het in het Engels, zodat de galerie het voor elke bezoeker kan vertalen."
   }
 }

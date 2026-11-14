@@ -1,7 +1,7 @@
 {
- "count": 2218,
+ "count": 2221,
  "dir": "ltr",
- "generated": "2026-11-14T00:19:29+00:00",
+ "generated": "2026-11-14T01:04:39+00:00",
  "keep": [
   "A+",
   "Alucard",
@@ -150,7 +150,7 @@
  "locale": "kek",
  "name": "Qʼeqchiʼ",
  "native": "Q'eqchi'.",
- "provider": "google-web",
+ "provider": "clients5",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CHIHIM RE LI TENAMIT!!",
@@ -214,6 +214,7 @@
   "A light iPod inspired theme Works on the Innioasis Y1 and Y2 with the Original Software, Better-Y, Koensayr and Solar.": "Jun li ch’ina-usil na’leb’ musiq’anb’il xb’aan li iPod Nak’anjelak sa’ xb’een li Innioasis Y1 ut Y2 rik’in li Software Original, Better-Y, Koensayr ut Solar.",
   "A mashup of Microsoft Zune on an iPod-like device.": "Jun li b’atz’unk re li Microsoft Zune sa’ jun li k’anjeleb’aal chanchan li iPod.",
   "A really simple minimal theme": "Jun li na’leb’ minimal tz’aqal sencillo .",
+  "A sentence about the look, palette or what it works best with. Write it in English so the gallery can translate it for every visitor.": "Jun li ch’ol aatin chirix li rilb’al, li paleta malaj li k’a’ru nak’anjelak chi us rik’in. Tz’iib’a sa’ Ingles re naq li galería taaruuq chixjaltesinkil ru choq’ re li junjunq chi ula’.",
   "A simple theme based on the free game SHTDN": "Jun li na’leb’ moko ch’a’aj ta li k’ojob’anb’il sa’ xb’een li b’atz’unk chi maak’a’ xtz’aq SHTDN .",
   "A simple theme made just for Carats :D": "Jun li na’leb’ moko ch’a’aj ta yiib’anb’il yal choq’ reheb’ li Carats :D",
   "A soft matcha-green aesthetic minimalistic theme.": "Jun li q’unal matcha-verde estético minimalista.",
@@ -996,6 +997,7 @@
   "Theme pages": "Ebʼ li perel re li naʼlebʼ",
   "Themes Gallery": "Galería de temas",
   "There's a new arrival on the way in Ryan's house. Every donation towards the servers and our growing family means a great deal.": "Wan jun li ak’ k’ulunik sa’ b’e sa’ rochoch laj Ryan. Li junjunq chi tenq’ank choq’ reheb’ laj k’anjel ut li qajunkab’al li yoo chi k’iik naraj naxye jun nimla k’anjel.",
+  "These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting. Titles and descriptions stay in English here: the gallery translates them for each visitor.": "A’aneb’ a’in li jun ajwi’ chi na’leb’ re li lista jo’ li hu re xkub’sinkil li galería. Li na’leb’ sa’ li simulador a’an li paquete li yookat chixtaqlankil. Eb’ li jolomil aatin ut li ch’olob’anb’il na’leb’ neke’kana sa’ Ingles arin: li galería naxjaltesi ruheb’ choq’ re li junjunq chi ula’.",
   "This author has opted out of gallery submissions": "Laj tz’iib’anel a’in kixtz’eqtaana li xtaqlankil li galería .",
   "This looks like an update": "A’in chanchan jun li ak’ob’resink .",
   "This month's": "Li po a’in .",
@@ -1101,6 +1103,7 @@
   "Witchy": "aj b'atz'unel",
   "Wolverine": "Lobo",
   "Wolverine theme for Innioasis Y1 & Y2.": "Li xnimal ru na’leb’ re li Innioasis Y1 & Y2.",
+  "Write the title in English so the gallery can translate it for every visitor.": "Tz’iib’a li jolomil aatin sa’ Ingles re naq li galería taaruuq chixjaltesinkil ru choq’ re li junjunq chi ula’.",
   "Y1 & Y2 Themes": "Y1 & Y2 Eb’ li na’leb’",
   "Y1 theme inspired by Tomodachi Life": "Y1 li na’leb’ musiq’anb’il xb’aan li Yu’am Tomodachi .",
   "Y2 Default": "Y2 Xk’ulub’il",

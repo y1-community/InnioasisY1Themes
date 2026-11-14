@@ -105,6 +105,13 @@ CORE_PAGE_STEMS = [
     "404",
 ]
 
+# Pages that live in a subdirectory keep their localised copies beside them:
+# studio-test/index.html -> studio-test/index_fr.html. The studio is noindex,
+# so it gets no hreflang or canonical work, only the baked catalogue copy.
+NESTED_PAGE_STEMS = [
+    "studio-test/index",
+]
+
 # Major global locales to generate literal static pages for
 DEFAULT_STATIC_LOCALES = [
     "de", "ja", "es", "fr", "it", "pt-BR", "pt-PT", "ru", "zh-CN", "zh-TW",
@@ -357,6 +364,12 @@ def main() -> int:
 
     print(f"Found {len(valid_stems)} candidate HTML pages in repository root: {sorted(valid_stems)}")
 
+    nested_stems: List[str] = [
+        stem for stem in NESTED_PAGE_STEMS if os.path.isfile(os.path.join(ROOT, stem + ".html"))
+    ]
+    if nested_stems:
+        print(f"Found {len(nested_stems)} nested page(s): {nested_stems}")
+
     # Update English source pages with hreflang alternates first
     for stem in sorted(valid_stems):
         src_path = os.path.join(ROOT, stem + ".html")
@@ -416,7 +429,21 @@ def main() -> int:
                 pages_generated.append((stem, alias))
                 total_written += 1
 
-        print(f"[{idx}/{len(available_codes)}] {code:<6} generated {len(valid_stems)} pages (+ {len(aliases)} aliases)")
+        for stem in nested_stems:
+            with open(os.path.join(ROOT, stem + ".html"), "r", encoding="utf-8", errors="replace") as handle:
+                markup = handle.read()
+
+            markup = strip_by_region(markup, region_id, availability)
+            markup, replaced = apply_catalog(markup, strings, ())
+            markup = set_html_language_attrs(markup, code, direction)
+            markup = rewrite_internal_links(markup, code, valid_stems, partner_origin)
+
+            with open(os.path.join(ROOT, f"{stem}_{code}.html"), "w", encoding="utf-8", newline="\n") as handle:
+                handle.write(markup)
+            pages_generated.append((stem, code))
+            total_written += 1
+
+        print(f"[{idx}/{len(available_codes)}] {code:<6} generated {len(valid_stems)} pages (+ {len(aliases)} aliases, {len(nested_stems)} nested)")
 
     # scripts/generate_sitemap.py is the only writer. This used to replace
     # sitemap.xml with just these static pages and drop every theme URL.
