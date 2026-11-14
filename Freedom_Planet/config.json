@@ -14,7 +14,7 @@
     "itemTextColor": "#f8f800",
     "itemSelectedTextColor": "#f8f8f8",
     "itemSelectedBackground": "1.png",
-    "itemBackground": "",
+    "itemBackground": "transparent.png",
     "itemRightArrow": "2.png"
   },
   "dialogConfig": {
@@ -27,7 +27,7 @@
   },
   "menuConfig": {
     "menuBackgroundColor": "#080000",
-    "menuItemBackground": "",
+    "menuItemBackground": "transparent.png",
     "menuItemTextColor": "#f8f800",
     "menuItemSelectedBackground": "1.png",
     "menuItemSelectedTextColor": "#f8f8f8"
@@ -50,8 +50,8 @@
     "fileManager": "transparent.png"
   },
   "fileConfig": {
-    "folderIcon": "",
-    "musicIcon": ""
+    "folderIcon": "transparent.png",
+    "musicIcon": "transparent.png"
   },
   "settingConfig": {
     "settingMask": "global_bg001.png",
@@ -108,16 +108,16 @@
     "launcher": "transparent.png"
   },
   "statusConfig": {
-    "playing": "",
-    "audiobookPlaying": "",
-    "pause": "",
-    "fmPlaying": "",
-    "stop": "",
-    "blConnected": "",
-    "blConnecting": "",
-    "blDisconnected": "",
-    "headsetWithMic": "",
-    "headsetWithoutMic": "",
+    "playing": "transparent.png",
+    "audiobookPlaying": "transparent.png",
+    "pause": "transparent.png",
+    "fmPlaying": "transparent.png",
+    "stop": "transparent.png",
+    "blConnected": "transparent.png",
+    "blConnecting": "transparent.png",
+    "blDisconnected": "transparent.png",
+    "headsetWithMic": "transparent.png",
+    "headsetWithoutMic": "transparent.png",
     "statusBarColor": "#180020",
     "battery": [
       "battery.001.png",

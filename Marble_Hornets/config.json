@@ -15,7 +15,7 @@
     "itemTextColor": "#ffffff",
     "itemSelectedTextColor": "#000000",
     "itemSelectedBackground": "1.png",
-    "itemBackground": "",
+    "itemBackground": "transparent.png",
     "itemRightArrow": "2.png"
   },
   "dialogConfig": {
@@ -28,9 +28,9 @@
   },
   "menuConfig": {
     "menuBackgroundColor": "#FFFFFF",
-    "menuItemBackground": "",
+    "menuItemBackground": "transparent.png",
     "menuItemTextColor": "#FFFFFF",
-    "menuItemSelectedBackground": "",
+    "menuItemSelectedBackground": "transparent.png",
     "menuItemSelectedTextColor": "#000000"
   },
   "homePageConfig": {
@@ -50,8 +50,8 @@
     "unselectedColor": "#ffffff"
   },
   "fileConfig": {
-    "folderIcon": "",
-    "musicIcon": ""
+    "folderIcon": "transparent.png",
+    "musicIcon": "transparent.png"
   },
   "settingConfig": {
     "settingMask": "setting_mask.png",

@@ -14,7 +14,7 @@
   "itemConfig": {
     "itemTextColor": "#ffffff",
     "itemSelectedTextColor": "#E10900",
-    "itemBackground": "",
+    "itemBackground": "transparent.png",
     "itemSelectedBackground": "selected.png",
     "itemRightArrow": "right_arrow.png"
   },
@@ -28,7 +28,7 @@
   },
   "menuConfig": {
     "menuBackgroundColor": "#ffffff",
-    "menuItemBackground": "",
+    "menuItemBackground": "transparent.png",
     "menuItemTextColor": "#000000",
     "menuItemSelectedBackground": "selectedMenu.png",
     "menuItemSelectedTextColor": "#E10900"
@@ -53,7 +53,7 @@
     "musicIcon": "music_file.png"
   },
   "settingConfig": {
-    "settingMask": "",
+    "settingMask": "transparent.png",
     "shutdown": "shutdown@1x.png",
     "timedShutdown_off": "timed_shutdown_001@1x.png",
     "timedShutdown_10": "timed_shutdown_002@1x.png",

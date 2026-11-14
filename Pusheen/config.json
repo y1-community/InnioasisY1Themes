@@ -17,7 +17,7 @@
         "itemTextColor": "#482f16",
         "itemSelectedTextColor": "#482f16",
         "itemSelectedBackground": "itemSelectedBackground.png",
-        "itemBackground": "",
+        "itemBackground": "transparent.png",
         "itemRightArrow": "itemRightArrow.png"
     },
     "dialogConfig": {
@@ -30,9 +30,9 @@
     },
     "menuConfig": {
         "menuBackgroundColor": "#c6bcb0",
-        "menuItemBackground": "",
+        "menuItemBackground": "transparent.png",
         "menuItemTextColor": "#482f16",
-        "menuItemSelectedBackground": "",
+        "menuItemSelectedBackground": "transparent.png",
         "menuItemSelectedTextColor": "#482f16"
     },
     "homePageConfig": {

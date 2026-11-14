@@ -13,7 +13,7 @@
   "itemConfig": {
     "itemTextColor": "#ECF4E4",
     "itemSelectedTextColor": "#0E1A0A",
-    "itemBackground": "",
+    "itemBackground": "transparent.png",
     "itemSelectedBackground": "item_selected.png",
     "itemRightArrow": "arrow_right.png"
   },
@@ -27,7 +27,7 @@
   },
   "menuConfig": {
     "menuBackgroundColor": "#12141F",
-    "menuItemBackground": "",
+    "menuItemBackground": "transparent.png",
     "menuItemTextColor": "#ECF4E4",
     "menuItemSelectedBackground": "item_selected.png",
     "menuItemSelectedTextColor": "#0E1A0A"

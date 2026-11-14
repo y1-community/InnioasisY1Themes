@@ -16,9 +16,9 @@
     "itemConfig": {
         "itemTextColor": "",
         "itemSelectedTextColor": "",
-        "itemSelectedBackground": "",
-        "itemBackground": "",
-        "itemRightArrow": ""
+        "itemSelectedBackground": "transparent.png",
+        "itemBackground": "transparent.png",
+        "itemRightArrow": "transparent.png"
     },
     "dialogConfig": {
         "dialogOptionBackground": "dialog_no_selected.png",
@@ -30,9 +30,9 @@
     },
     "menuConfig": {
         "menuBackgroundColor": "#3F4142",
-        "menuItemBackground": "",
+        "menuItemBackground": "transparent.png",
         "menuItemTextColor": "#d8b1e3",
-        "menuItemSelectedBackground": "",
+        "menuItemSelectedBackground": "transparent.png",
         "menuItemSelectedTextColor": "#d8b1e3"
     },
     "homePageConfig": {
@@ -51,8 +51,8 @@
         "fileManager": "transparent.png"
     },
     "fileConfig": {
-        "folderIcon": "",
-        "musicIcon": ""
+        "folderIcon": "transparent.png",
+        "musicIcon": "transparent.png"
     },
     "settingConfig": {
         "settingMask": "setting_mask.png",

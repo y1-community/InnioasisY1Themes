@@ -38,8 +38,8 @@
         "settings": "main menu icons/a10.png",
         "shuffleQuick": "",
         "ebook": "main menu icons/ebookicon.png",
-        "calculator": "",
-        "calendar": "",
+        "calculator": "transparent.png",
+        "calendar": "transparent.png",
         "fileManager": "transparent.png"
     },
     "fileConfig": {
@@ -96,7 +96,7 @@
         "fileExtensionOn": "all other images/settings menu/file ext on off/a5.png",
         "fileExtensionOff": "all other images/settings menu/file ext on off/a44.png",
         "settingMask": "backgrounds/office2.png",
-        "launcher": ""
+        "launcher": "transparent.png"
     },
     "statusConfig": {
         "playing": "all other images/status bar/music playing/a12.png",

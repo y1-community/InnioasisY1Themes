@@ -49,8 +49,8 @@
     "fileManager": "transparent.png"
   },
   "fileConfig": {
-    "folderIcon": "",
-    "musicIcon": ""
+    "folderIcon": "transparent.png",
+    "musicIcon": "transparent.png"
   },
   "settingConfig": {
     "shutdown": "Shutdown@1x.png",
@@ -101,19 +101,20 @@
     "theme": "Change Theme@1x.png",
     "fileExtensionOn": "file_ext_on.png",
     "fileExtensionOff": "file_ext_off.png",
-    "launcher": "transparent.png"
+    "launcher": "transparent.png",
+    "settingMask": "transparent.png"
   },
   "statusConfig": {
     "playing": "@Pris_play.png",
-    "audiobookPlaying": "",
+    "audiobookPlaying": "transparent.png",
     "pause": "@Pris_pause.png",
-    "fmPlaying": "",
+    "fmPlaying": "transparent.png",
     "stop": "@Pris_stop.png",
     "blConnected": "blConnected.png",
     "blConnecting": "blConnecting.png",
     "blDisconnected": "blDisconnected.png",
-    "headsetWithMic": "",
-    "headsetWithoutMic": "",
+    "headsetWithMic": "transparent.png",
+    "headsetWithoutMic": "transparent.png",
     "statusBarColor": "",
     "battery": [
       "battery.001.png",

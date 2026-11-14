@@ -14,20 +14,20 @@
     "itemTextColor": "#ffffff",
     "itemSelectedTextColor": "#df9595",
     "itemSelectedBackground": "1.png",
-    "itemBackground": "",
+    "itemBackground": "transparent.png",
     "itemRightArrow": "2.png"
   },
   "dialogConfig": {
     "dialogOptionBackground": "desk.png",
     "dialogOptionTextColor": "#282425",
-    "dialogOptionSelectedBackground": "",
+    "dialogOptionSelectedBackground": "transparent.png",
     "dialogOptionSelectedTextColor": "#bfbcb5",
     "dialogBackgroundColor": "#ffffff",
     "dialogTextColor": "#ffffff"
   },
   "menuConfig": {
     "menuBackgroundColor": "#ffffff",
-    "menuItemBackground": "",
+    "menuItemBackground": "transparent.png",
     "menuItemTextColor": "#282425",
     "menuItemSelectedBackground": "1.png",
     "menuItemSelectedTextColor": "#bfbcb5"
@@ -49,8 +49,8 @@
     "fileManager": "transparent.png"
   },
   "fileConfig": {
-    "folderIcon": "",
-    "musicIcon": ""
+    "folderIcon": "transparent.png",
+    "musicIcon": "transparent.png"
   },
   "settingConfig": {
     "shutdown": "transparent.png",
@@ -102,20 +102,33 @@
     "fileExtensionOn": "transparent.png",
     "fileExtensionOff": "transparent.png",
     "unselectedColor": "#ffffff",
-    "launcher": "transparent.png"
+    "launcher": "transparent.png",
+    "settingMask": "transparent.png"
   },
   "statusConfig": {
-    "playing": "",
-    "audiobookPlaying": "",
-    "pause": "",
-    "fmPlaying": "",
-    "stop": "",
-    "blConnected": "",
-    "blConnecting": "",
-    "blDisconnected": "",
-    "headsetWithMic": "",
-    "headsetWithoutMic": "",
-    "statusBarColor": "#28271f"
+    "playing": "transparent.png",
+    "audiobookPlaying": "transparent.png",
+    "pause": "transparent.png",
+    "fmPlaying": "transparent.png",
+    "stop": "transparent.png",
+    "blConnected": "transparent.png",
+    "blConnecting": "transparent.png",
+    "blDisconnected": "transparent.png",
+    "headsetWithMic": "transparent.png",
+    "headsetWithoutMic": "transparent.png",
+    "statusBarColor": "#28271f",
+    "battery": [
+      "transparent.png",
+      "transparent.png",
+      "transparent.png",
+      "transparent.png"
+    ],
+    "batteryCharging": [
+      "transparent.png",
+      "transparent.png",
+      "transparent.png",
+      "transparent.png"
+    ]
   },
   "playerConfig": {
     "progressColor": "#d24232",

@@ -13,7 +13,7 @@
         "itemTextColor": "#ffffff",
         "itemSelectedTextColor": "#ffffff",
         "itemSelectedBackground": "1.png",
-        "itemBackground": "",
+        "itemBackground": "transparent.png",
         "itemRightArrow": "2.png"
     },
     "dialogConfig": {
@@ -25,7 +25,7 @@
     },
     "menuConfig": {
         "menuBackgroundColor": "#000000",
-        "menuItemBackground": "",
+        "menuItemBackground": "transparent.png",
         "menuItemTextColor": "#ffffff",
         "menuItemSelectedBackground": "1.png",
         "menuItemSelectedTextColor": "#ffffff"
@@ -46,8 +46,8 @@
         "fileManager": "File Manager.png"
     },
     "fileConfig": {
-        "folderIcon": "",
-        "musicIcon": ""
+        "folderIcon": "transparent.png",
+        "musicIcon": "transparent.png"
     },
     "settingConfig": {
         "shutdown": "Shutdown@1x.png",
@@ -98,19 +98,32 @@
         "clearCache": "Clear cache@1x.png",
         "theme": "Change Theme@1x.png",
         "fileExtensionOn": "file_ext_on.png",
-        "fileExtensionOff": "file_ext_off.png"
+        "fileExtensionOff": "file_ext_off.png",
+        "settingMask": "transparent.png"
     },
     "statusConfig": {
-        "playing": "",
-        "audiobookPlaying": "",
-        "pause": "",
-        "fmPlaying": "",
-        "stop": "",
-        "blConnected": "",
-        "blConnecting": "",
-        "blDisconnected": "",
-        "headsetWithMic": "",
-        "headsetWithoutMic": "",
-        "statusBarColor": ""
+        "playing": "transparent.png",
+        "audiobookPlaying": "transparent.png",
+        "pause": "transparent.png",
+        "fmPlaying": "transparent.png",
+        "stop": "transparent.png",
+        "blConnected": "transparent.png",
+        "blConnecting": "transparent.png",
+        "blDisconnected": "transparent.png",
+        "headsetWithMic": "transparent.png",
+        "headsetWithoutMic": "transparent.png",
+        "statusBarColor": "",
+        "battery": [
+            "transparent.png",
+            "transparent.png",
+            "transparent.png",
+            "transparent.png"
+        ],
+        "batteryCharging": [
+            "transparent.png",
+            "transparent.png",
+            "transparent.png",
+            "transparent.png"
+        ]
     }
 }

@@ -9,7 +9,7 @@
         "itemTextColor": "#ecebe9",
         "itemSelectedTextColor": "#ecebe9",
         "itemSelectedBackground": "all other images/settings menu/behind selection/6070b0.png",
-        "itemBackground": "",
+        "itemBackground": "transparent.png",
         "itemRightArrow": "all other images/settings menu/arrow/kodama Background Removed.png"
     },
     "dialogConfig": {
@@ -38,8 +38,8 @@
         "settings": "main menu icons/8th.settings.png",
         "shuffleQuick": "all other images/settings menu/shuffle quick/shufflequick.png",
         "ebook": "main menu icons/ebookicon.png",
-        "calculator": "",
-        "calendar": "",
+        "calculator": "transparent.png",
+        "calendar": "transparent.png",
         "fileManager": "transparent.png"
     },
     "fileConfig": {
@@ -96,7 +96,7 @@
         "fileExtensionOn": "all other images/settings menu/file ext on off/fileexton.png",
         "fileExtensionOff": "all other images/settings menu/file ext on off/fileextoff.png",
         "settingMask": "backgrounds/mononoke023.png",
-        "launcher": ""
+        "launcher": "transparent.png"
     },
     "statusConfig": {
         "playing": "all other images/status bar/music playing/Play (recolored).png",

@@ -15,8 +15,8 @@
         "dialogOptionTextColor": "#ffffff"
     },
     "fileConfig": {
-        "folderIcon": "",
-        "musicIcon": ""
+        "folderIcon": "transparent.png",
+        "musicIcon": "transparent.png"
     },
     "fontFamily": "opensans-condbold.ttf",
     "globalWallpaper": "inniPod_globalwp.png",
@@ -36,7 +36,7 @@
         "fileManager": "transparent.png"
     },
     "itemConfig": {
-        "itemBackground": "",
+        "itemBackground": "transparent.png",
         "itemRightArrow": "2.png",
         "itemSelectedBackground": "1.png",
         "itemSelectedTextColor": "#ffffff",
@@ -44,7 +44,7 @@
     },
     "menuConfig": {
         "menuBackgroundColor": "#000000",
-        "menuItemBackground": "",
+        "menuItemBackground": "transparent.png",
         "menuItemSelectedBackground": "1.png",
         "menuItemSelectedTextColor": "#ffffff",
         "menuItemTextColor": "#ffffff"
@@ -102,7 +102,7 @@
         "wallpaper": "inniPod_settingswp.png"
     },
     "statusConfig": {
-        "audiobookPlaying": "",
+        "audiobookPlaying": "transparent.png",
         "battery": [
             "inniPod_battery001.png",
             "inniPod_battery002.png",
@@ -115,16 +115,16 @@
             "inniPod_batterycharge003.png",
             "inniPod_batterycharge004.png"
         ],
-        "blConnected": "",
-        "blConnecting": "",
-        "blDisconnected": "",
-        "fmPlaying": "",
-        "headsetWithMic": "",
-        "headsetWithoutMic": "",
-        "pause": "",
-        "playing": "",
+        "blConnected": "transparent.png",
+        "blConnecting": "transparent.png",
+        "blDisconnected": "transparent.png",
+        "fmPlaying": "transparent.png",
+        "headsetWithMic": "transparent.png",
+        "headsetWithoutMic": "transparent.png",
+        "pause": "transparent.png",
+        "playing": "transparent.png",
         "statusBarColor": "",
-        "stop": ""
+        "stop": "transparent.png"
     },
     "themeCover": "cover.png",
     "gallery": {

@@ -14,7 +14,7 @@
         "itemTextColor": "#ccffff",
         "itemSelectedTextColor": "#ffffff",
         "itemSelectedBackground": "blue_rectangle.png",
-        "itemBackground": "",
+        "itemBackground": "transparent.png",
         "itemRightArrow": "selected.png"
     },
     "dialogConfig": {
@@ -27,7 +27,7 @@
     },
     "menuConfig": {
         "menuBackgroundColor": "#ffffff",
-        "menuItemBackground": "",
+        "menuItemBackground": "transparent.png",
         "menuItemTextColor": "#ccffff",
         "menuItemSelectedBackground": "blue_rectangle.png",
         "menuItemSelectedTextColor": "#ffffff"
@@ -54,7 +54,7 @@
         "musicIcon": "musicIcon.png"
     },
     "settingConfig": {
-        "settingMask": "",
+        "settingMask": "transparent.png",
         "shutdown": "power.png",
         "timedShutdown_off": "countdown_off.png",
         "timedShutdown_10": "countdown_10.png",
@@ -115,7 +115,7 @@
         "stop": "stop.png",
         "blConnected": "bt_status.png",
         "blConnecting": "bt_connect.png",
-        "blDisconnected": "",
+        "blDisconnected": "transparent.png",
         "headsetWithMic": "headphones.png",
         "headsetWithoutMic": "headphones.png",
         "battery": [

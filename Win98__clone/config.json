@@ -27,7 +27,7 @@
   },
   "menuConfig": {
     "menuBackgroundColor": "#ffffff",
-    "menuItemBackground": "",
+    "menuItemBackground": "transparent.png",
     "menuItemTextColor": "#00000",
     "menuItemSelectedBackground": "1.png",
     "menuItemSelectedTextColor": "#ffffff"
@@ -107,16 +107,28 @@
   },
   "statusConfig": {
     "playing": "playing.png",
-    "audiobookPlaying": "",
+    "audiobookPlaying": "transparent.png",
     "pause": "pause.png",
     "fmPlaying": "fmPlaying.png",
     "stop": "stop.png",
     "blConnected": "blConnected.png",
     "blConnecting": "blConnecting.png",
     "blDisconnected": "blDisconnected.png",
-    "headsetWithMic": "",
-    "headsetWithoutMic": "",
-    "statusBarColor": "#2A2A2A"
+    "headsetWithMic": "transparent.png",
+    "headsetWithoutMic": "transparent.png",
+    "statusBarColor": "#2A2A2A",
+    "battery": [
+      "transparent.png",
+      "transparent.png",
+      "transparent.png",
+      "transparent.png"
+    ],
+    "batteryCharging": [
+      "transparent.png",
+      "transparent.png",
+      "transparent.png",
+      "transparent.png"
+    ]
   },
   "playerConfig": {
     "progressBackgroundColor": "#00000000",

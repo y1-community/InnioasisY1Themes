@@ -14,7 +14,7 @@
   "itemConfig": {
     "itemTextColor": "#FFF5FB",
     "itemSelectedTextColor": "#FFFFFF",
-    "itemBackground": "",
+    "itemBackground": "transparent.png",
     "itemSelectedBackground": "1.png",
     "itemRightArrow": "2.png"
   },
@@ -28,7 +28,7 @@
   },
   "menuConfig": {
     "menuBackgroundColor": "#4B0B38",
-    "menuItemBackground": "",
+    "menuItemBackground": "transparent.png",
     "menuItemTextColor": "#FFF5FB",
     "menuItemSelectedBackground": "1.png",
     "menuItemSelectedTextColor": "#FFFFFF"

@@ -28,7 +28,7 @@
     },
     "menuConfig": {
         "menuBackgroundColor": "",
-        "menuItemBackground": "",
+        "menuItemBackground": "transparent.png",
         "menuItemTextColor": "#ffffff",
         "menuItemSelectedBackground": "1.png",
         "menuItemSelectedTextColor": "#a7fcfa "
@@ -49,8 +49,8 @@
         "fileManager": "transparent.png"
     },
     "fileConfig": {
-        "folderIcon": "",
-        "musicIcon": ""
+        "folderIcon": "transparent.png",
+        "musicIcon": "transparent.png"
     },
     "settingConfig": {
         "shutdown": "Shutdown@1x.png",

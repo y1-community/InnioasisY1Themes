@@ -48,7 +48,17 @@
       "statusBar_battery_02_charging.png",
       "statusBar_battery_03_charging.png",
       "statusBar_battery_04_charged.png"
-    ]
+    ],
+    "playing": "transparent.png",
+    "audiobookPlaying": "transparent.png",
+    "pause": "transparent.png",
+    "fmPlaying": "transparent.png",
+    "stop": "transparent.png",
+    "blConnected": "transparent.png",
+    "blConnecting": "transparent.png",
+    "blDisconnected": "transparent.png",
+    "headsetWithMic": "transparent.png",
+    "headsetWithoutMic": "transparent.png"
   },
   "homePageConfig": {
     "nowPlaying": "homePageConfig_nowPlaying.png",
@@ -66,8 +76,8 @@
     "fileManager": "ADD ICON HERE"
   },
   "fileConfig": {
-    "folderIcon": "",
-    "musicIcon": ""
+    "folderIcon": "transparent.png",
+    "musicIcon": "transparent.png"
   },
   "settingConfig": {
     "shutdown": "settingConfig_shutdown.png",
@@ -118,7 +128,8 @@
     "displayBatteryOn": "settingConfig_displayBatteryOn.png",
     "displayBatteryOff": "settingConfig_displayBatteryOff.png",
     "fileExtensionOn": "settingConfig_fileExtensionOn.png",
-    "fileExtensionOff": "settingConfig_fileExtensionOff.png"
+    "fileExtensionOff": "settingConfig_fileExtensionOff.png",
+    "settingMask": "transparent.png"
   },
   "gallery": {
     "compatibilityMedal": "gold"
