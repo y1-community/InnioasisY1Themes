@@ -540,12 +540,13 @@
                 return haystack.indexOf(q) !== -1;
             });
         }
-        var limited = list.slice(0, 120);
+        /* The whole catalogue goes in the picker: capping it at 120 hid every
+           theme after the C's and left the rest reachable only by filtering. */
         el.themeSelect.innerHTML = '';
         el.themeSelect.appendChild(
             new Option(state.sourceType === 'local' ? 'Local package (not in gallery)' : 'Choose a gallery theme…', '')
         );
-        limited.forEach(function (theme) {
+        list.forEach(function (theme) {
             var label = theme.name || theme.folder;
             if (theme.author) label += ' · ' + theme.author;
             el.themeSelect.appendChild(new Option(label, theme.folder));
@@ -555,7 +556,7 @@
         }
         el.themeCount.textContent = q
             ? list.length
-                ? 'Showing ' + limited.length + ' of ' + list.length + ' matches'
+                ? list.length + (list.length === 1 ? ' match' : ' matches')
                 : 'No matching themes'
             : 'All ' + state.gallery.length + ' gallery themes';
         if (!q) updateThemeSelectValue();
@@ -572,9 +573,8 @@
         var placeholder = el.themeSelect.options[0];
         if (state.sourceType === 'gallery' && state.folder) {
             if (placeholder && placeholder.value === '') placeholder.text = 'Choose a gallery theme…';
-            /* The 120-option preview list is alphabetical, so a deep link to a
-               later theme (Persona5, for one) would otherwise leave the picker
-               reading "Choose a gallery theme" while that theme is loaded. */
+            /* A deep link can name a theme the picker was never rebuilt for, so
+               make sure the loaded theme always has its own option. */
             if (!optionExists(state.folder)) {
                 var theme = state.byFolder[state.folder];
                 var label = (theme && theme.name) || state.folder;
