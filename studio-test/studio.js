@@ -1241,8 +1241,10 @@
        to the theme's home screen, so only the four the gallery has always
        backfilled are listed. */
     var PLACEHOLDER_FILE = 'transparent.png';
+    /* 1x1 RGBA, every channel zero. The widely copied "transparent" snippet is
+       actually an opaque red pixel, which is what blank slots used to render. */
     var PLACEHOLDER_PNG_BASE64 =
-        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mNgAAIAAAUAAen63NgAAAAASUVORK5CYII=';
 
     var BLANK_SLOT_PATHS = [
         'desktopWallpaper',
@@ -1340,16 +1342,31 @@
         return false;
     }
 
-    function placeholderBlob() {
+    function decodeBase64Png(base64) {
         var binary = '';
         try {
-            binary = window.atob(PLACEHOLDER_PNG_BASE64);
+            binary = window.atob(base64);
         } catch (e) {
             binary = '';
         }
         var bytes = new Uint8Array(binary.length);
         for (var i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
-        return new Blob([bytes], { type: 'image/png' });
+        return bytes;
+    }
+
+    /* A fresh canvas is fully transparent, so let the browser encode the
+       placeholder: no hand-copied sprite can be red instead of clear. */
+    function placeholderBlob() {
+        try {
+            var canvas = document.createElement('canvas');
+            canvas.width = 1;
+            canvas.height = 1;
+            var dataUrl = canvas.toDataURL('image/png');
+            var encoded = String(dataUrl).split(',')[1] || '';
+            var bytes = decodeBase64Png(encoded);
+            if (bytes.length) return new Blob([bytes], { type: 'image/png' });
+        } catch (e) {}
+        return new Blob([decodeBase64Png(PLACEHOLDER_PNG_BASE64)], { type: 'image/png' });
     }
 
     /* One file backs every blank slot, exactly like the themes on disk: the
@@ -2110,6 +2127,14 @@
         if (el.unsaved) el.unsaved.hidden = false;
     }
 
+    /* Blanking a slot rewrites its config line instead of adding an override, so
+       the reset guard counts changed assets, not just override entries. */
+    function assetChangeCount() {
+        return (state.assets || []).filter(function (asset) {
+            return !!asset.changed;
+        }).length;
+    }
+
     /* The shared transparent.png override is not a replacement the author made. */
     function realOverrideCount() {
         var keys = Object.keys(state.assetOverrides || {});
@@ -2776,7 +2801,7 @@
         }
         if (el.resetAssets) {
             el.resetAssets.addEventListener('click', function () {
-                if (!realOverrideCount()) {
+                if (!assetChangeCount()) {
                     toast('There are no replacements to reset.');
                     return;
                 }
