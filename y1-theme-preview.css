@@ -536,3 +536,11 @@ body.site-themes-app .theme-card-media-skeleton::after {
         animation: none;
     }
 }
+
+/* A press-and-hold on a list row focuses it, so a finger that stays down must
+   not start a text selection or raise the iOS callout over the player. */
+.y1-tp-row {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}

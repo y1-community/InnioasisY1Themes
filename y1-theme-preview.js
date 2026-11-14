@@ -487,6 +487,9 @@
             var selected = idx === selectedIndex;
             var row = document.createElement('div');
             row.className = 'y1-tp-row' + (selected ? ' is-selected' : '');
+            /* Lets a hover or a touch-and-hold move the highlight, the same way
+               the up/down keys do on the device. */
+            row.setAttribute('data-y1-row', String(idx));
             if (item.assetPath) row.setAttribute('data-theme-asset-path', item.assetPath);
             var bg = selected ? itemSel : itemBg || { backgroundColor: 'transparent' };
             applyCssProps(row, bg);
@@ -601,6 +604,7 @@
             var selected = idx === selectedIndex;
             var row = document.createElement('div');
             var bg = selected ? itemSel : itemBg || { backgroundColor: 'transparent' };
+            row.setAttribute('data-y1-row', String(idx));
             if (item.assetPath) row.setAttribute('data-theme-asset-path', item.assetPath);
             applyCssProps(row, bg);
             row.style.cssText +=
@@ -2803,6 +2807,72 @@
                     } catch (e) {}
                 }
 
+                /* Hovering a row is the pointer's version of pressing up or down:
+                   the highlight moves to that row and the screen repaints, which
+                   also swaps the artwork drawn beside the list. Touch has no
+                   hover, so a press held still on one row does the same thing; a
+                   press that moves or lifts early stays an ordinary tap. */
+                var rowHold = null;
+
+                function rowIndexFromEvent(ev) {
+                    var target = ev.target;
+                    if (!target || !target.closest) return -1;
+                    var row = target.closest('[data-y1-row]');
+                    if (!row || !canvas.contains(row)) return -1;
+                    var idx = parseInt(row.getAttribute('data-y1-row'), 10);
+                    return isFinite(idx) ? idx : -1;
+                }
+
+                function focusRowIndex(index) {
+                    if (!interactive) return false;
+                    if (!(index >= 0)) return false;
+                    if (sim.dialogVisible) return false;
+                    if (index === sim.themeSelectedIndex) return false;
+                    sim.themeSelectedIndex = index;
+                    paint();
+                    return true;
+                }
+
+                function onRowHover(ev) {
+                    if (!interactive || ev.pointerType === 'touch') return;
+                    focusRowIndex(rowIndexFromEvent(ev));
+                }
+
+                function clearRowHold() {
+                    if (rowHold && rowHold.timer) global.clearTimeout(rowHold.timer);
+                    rowHold = null;
+                }
+
+                function onRowHoldStart(ev) {
+                    if (!interactive || ev.pointerType !== 'touch') return;
+                    var index = rowIndexFromEvent(ev);
+                    if (index < 0) return;
+                    clearRowHold();
+                    rowHold = {
+                        id: ev.pointerId,
+                        x: ev.clientX,
+                        y: ev.clientY,
+                        index: index,
+                        timer: global.setTimeout(function () {
+                            if (!rowHold || rowHold.index !== index) return;
+                            rowHold.timer = null;
+                            focusRowIndex(index);
+                        }, 380)
+                    };
+                }
+
+                function onRowHoldMove(ev) {
+                    if (!rowHold || ev.pointerId !== rowHold.id) return;
+                    var dx = ev.clientX - rowHold.x;
+                    var dy = ev.clientY - rowHold.y;
+                    if (dx * dx + dy * dy > 100) clearRowHold();
+                }
+
+                function onRowHoldEnd(ev) {
+                    if (!rowHold || ev.pointerId !== rowHold.id) return;
+                    clearRowHold();
+                }
+
                 if (interactive) {
                     dev.tabIndex = 0;
                     dev.addEventListener('keydown', onKeyDown);
@@ -2812,6 +2882,11 @@
                     wheel.addEventListener('pointermove', onWheelPointerMove);
                     wheel.addEventListener('pointerup', onWheelPointerEnd);
                     wheel.addEventListener('pointercancel', onWheelPointerEnd);
+                    canvas.addEventListener('pointerover', onRowHover);
+                    canvas.addEventListener('pointerdown', onRowHoldStart);
+                    canvas.addEventListener('pointermove', onRowHoldMove);
+                    canvas.addEventListener('pointerup', onRowHoldEnd);
+                    canvas.addEventListener('pointercancel', onRowHoldEnd);
                 }
 
                 /* The Studio can focus one asset. Jumping to the screen that draws
@@ -2886,6 +2961,12 @@
                             wheel.removeEventListener('pointerup', onWheelPointerEnd);
                             wheel.removeEventListener('pointercancel', onWheelPointerEnd);
                         }
+                        canvas.removeEventListener('pointerover', onRowHover);
+                        canvas.removeEventListener('pointerdown', onRowHoldStart);
+                        canvas.removeEventListener('pointermove', onRowHoldMove);
+                        canvas.removeEventListener('pointerup', onRowHoldEnd);
+                        canvas.removeEventListener('pointercancel', onRowHoldEnd);
+                        clearRowHold();
                     }
                     detachCwPointerTracking();
                     cwPointer = null;
