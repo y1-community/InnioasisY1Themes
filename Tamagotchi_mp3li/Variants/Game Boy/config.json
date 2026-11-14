@@ -38,8 +38,8 @@
         "settings": "main menu icons/Tarakotchi 53.png",
         "shuffleQuick": "",
         "ebook": "main menu icons/ebookicon.png",
-        "calculator": "",
-        "calendar": "",
+        "calculator": "transparent.png",
+        "calendar": "transparent.png",
         "fileManager": "transparent.png"
     },
     "fileConfig": {
@@ -90,13 +90,13 @@
         "displayBatteryOff": "all other images/settings menu/display battery on off/Tarakotchi 52.png",
         "dateTime": "all other images/settings menu/date and time/Mametchi 25.png",
         "language": "all other images/settings menu/language/Kusatchi 79.png",
-        "factoryReset": "",
+        "factoryReset": "transparent.png",
         "clearCache": "all other images/settings menu/clear cache/Mametchi 8.png",
         "theme": "all other images/settings menu/change theme/Mametchi 30.png",
         "fileExtensionOn": "all other images/settings menu/file ext on off/Tongaritchi 20.png",
         "fileExtensionOff": "all other images/settings menu/file ext on off/Tongaritchi 14.png",
         "settingMask": "backgrounds/bg3 (cropped).png",
-        "launcher": ""
+        "launcher": "transparent.png"
     },
     "statusConfig": {
         "playing": "all other images/status bar/music playing/Mametchi 3.png",

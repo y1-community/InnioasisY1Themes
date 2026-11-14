@@ -26,7 +26,7 @@
   },
   "menuConfig": {
     "menuBackgroundColor": "#000000",
-    "menuItemBackground": "",
+    "menuItemBackground": "transparent.png",
     "menuItemTextColor": "#ffffff",
     "menuItemSelectedBackground": "1.png",
     "menuItemSelectedTextColor": "#ffffff"
@@ -100,17 +100,18 @@
     "theme": "Change Theme@1x.png",
     "fileExtensionOn": "file_ext_on.png",
     "fileExtensionOff": "file_ext_off.png",
-    "launcher": "transparent.png"
+    "launcher": "transparent.png",
+    "settingMask": "transparent.png"
   },
   "statusConfig": {
     "playing": "gregplay.png",
-    "audiobookPlaying": "",
+    "audiobookPlaying": "transparent.png",
     "pause": "gregpause.png",
-    "fmPlaying": "",
+    "fmPlaying": "transparent.png",
     "stop": "gregstop.png",
-    "blConnected": "",
-    "blConnecting": "",
-    "blDisconnected": "",
+    "blConnected": "transparent.png",
+    "blConnecting": "transparent.png",
+    "blDisconnected": "transparent.png",
     "headsetWithMic": "headset2.png",
     "headsetWithoutMic": "headset1.png",
     "battery": [

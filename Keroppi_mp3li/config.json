@@ -45,8 +45,8 @@
         "settings": "main menu icons/k32.png",
         "shuffleQuick": "",
         "ebook": "main menu icons/ebookicon.png",
-        "calculator": "",
-        "calendar": "",
+        "calculator": "transparent.png",
+        "calendar": "transparent.png",
         "fileManager": "transparent.png"
     },
     "fileConfig": {
@@ -102,8 +102,8 @@
         "theme": "all other images/settings menu/change theme/k19.png",
         "fileExtensionOn": "all other images/settings menu/file ext on off/k39.png",
         "fileExtensionOff": "all other images/settings menu/file ext on off/k49.png",
-        "settingMask": "",
-        "launcher": ""
+        "settingMask": "transparent.png",
+        "launcher": "transparent.png"
     },
     "statusConfig": {
         "playing": "all other images/status bar/music playing/play.png",

@@ -45,8 +45,8 @@
         "settings": "main menu icons/t19.png",
         "shuffleQuick": "",
         "ebook": "main menu icons/ebookicon.png",
-        "calculator": "",
-        "calendar": "",
+        "calculator": "transparent.png",
+        "calendar": "transparent.png",
         "fileManager": "transparent.png"
     },
     "fileConfig": {
@@ -103,7 +103,7 @@
         "fileExtensionOn": "all other images/settings menu/file ext on off/t43.png",
         "fileExtensionOff": "all other images/settings menu/file ext on off/t46.png",
         "settingMask": "backgrounds/bg1 (cropped).png",
-        "launcher": ""
+        "launcher": "transparent.png"
     },
     "statusConfig": {
         "playing": "all other images/status bar/music playing/t42.png",

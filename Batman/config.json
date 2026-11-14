@@ -47,11 +47,11 @@
     "fileManager": "transparent.png"
   },
   "fileConfig": {
-    "folderIcon": "",
-    "musicIcon": ""
+    "folderIcon": "transparent.png",
+    "musicIcon": "transparent.png"
   },
   "settingConfig": {
-    "settingMask": "",
+    "settingMask": "transparent.png",
     "shutdown": "Shutdown@1x.png",
     "timedShutdown_off": "Timed shutdown_001@1x.png",
     "timedShutdown_10": "Timed shutdown_002@1x.png",
@@ -104,15 +104,15 @@
   },
   "statusConfig": {
     "playing": "@ThM_play.png",
-    "audiobookPlaying": "",
+    "audiobookPlaying": "transparent.png",
     "pause": "@ThM_pause.png",
-    "fmPlaying": "",
+    "fmPlaying": "transparent.png",
     "stop": "@ThM_stop.png",
-    "blConnected": "",
-    "blConnecting": "",
-    "blDisconnected": "",
-    "headsetWithMic": "",
-    "headsetWithoutMic": "",
+    "blConnected": "transparent.png",
+    "blConnecting": "transparent.png",
+    "blDisconnected": "transparent.png",
+    "headsetWithMic": "transparent.png",
+    "headsetWithoutMic": "transparent.png",
     "statusBarColor": "",
     "battery": [
       "battery.001.png",

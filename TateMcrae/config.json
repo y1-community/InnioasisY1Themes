@@ -1,7 +1,7 @@
 {
     "theme_info": {
-    "title": "Tate McRae (Blue)",
-    "author": "JoeyRosyRadio",
+        "title": "Tate McRae (Blue)",
+        "author": "JoeyRosyRadio",
         "authorUrl": "",
         "description": "For the TateMcrae Fans (bluestyle)",
         "externalDownloadUrl": ""
@@ -26,7 +26,7 @@
     },
     "menuConfig": {
         "menuBackgroundColor": "#000000",
-        "menuItemBackground": "",
+        "menuItemBackground": "transparent.png",
         "menuItemTextColor": "#ffffff",
         "menuItemSelectedBackground": "1.png",
         "menuItemSelectedTextColor": "#ffffff"

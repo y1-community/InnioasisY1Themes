@@ -38,8 +38,8 @@
         "settings": "main menu icons/toast41.png",
         "shuffleQuick": "",
         "ebook": "main menu icons/ebookicon.png",
-        "calculator": "",
-        "calendar": "",
+        "calculator": "transparent.png",
+        "calendar": "transparent.png",
         "fileManager": "transparent.png"
     },
     "fileConfig": {
@@ -84,7 +84,7 @@
         "backlight_60": "all other images/settings menu/backlight/toast36.png",
         "backlight_120": "all other images/settings menu/backlight/toast55.png",
         "backlight_300": "all other images/settings menu/backlight/toast58.png",
-        "backlight_always": "",
+        "backlight_always": "transparent.png",
         "brightness": "all other images/settings menu/brightness/toast52.png",
         "displayBatteryOn": "all other images/settings menu/display battery on off/toast23.png",
         "displayBatteryOff": "all other images/settings menu/display battery on off/toast44.png",
@@ -96,7 +96,7 @@
         "fileExtensionOn": "all other images/settings menu/file ext on off/toast53.png",
         "fileExtensionOff": "all other images/settings menu/file ext on off/toast54.png",
         "settingMask": "backgrounds/platebg12.png",
-        "launcher": ""
+        "launcher": "transparent.png"
     },
     "statusConfig": {
         "playing": "all other images/status bar/music playing/toast24.png",

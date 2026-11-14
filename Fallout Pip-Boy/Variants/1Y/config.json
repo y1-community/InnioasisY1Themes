@@ -14,7 +14,7 @@
         "itemTextColor": "#F7AE3A",
         "itemSelectedTextColor": "#F7AE3A",
         "itemSelectedBackground": "itemSelectedBackground.png",
-        "itemBackground": "",
+        "itemBackground": "transparent.png",
         "itemRightArrow": "itemRightArrow.png"
     },
     "dialogConfig": {
@@ -52,7 +52,7 @@
         "musicIcon": "musicIcon.png"
     },
     "settingConfig": {
-        "settingMask": "",
+        "settingMask": "transparent.png",
         "shutdown": "Shutdown.png",
         "timedShutdown_off": "Timed shutdoown-0.png",
         "timedShutdown_10": "Timed shutdoown-10.png",

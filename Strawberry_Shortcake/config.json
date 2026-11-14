@@ -45,8 +45,8 @@
         "settings": "main menu icons/s37.png",
         "shuffleQuick": "",
         "ebook": "main menu icons/ebookicon.png",
-        "calculator": "",
-        "calendar": "",
+        "calculator": "transparent.png",
+        "calendar": "transparent.png",
         "fileManager": "transparent.png"
     },
     "fileConfig": {
@@ -103,7 +103,7 @@
         "fileExtensionOn": "all other images/settings menu/file ext on off/s21.png",
         "fileExtensionOff": "all other images/settings menu/file ext on off/s17.png",
         "settingMask": "backgrounds/mp3li custom bg 5.png",
-        "launcher": ""
+        "launcher": "transparent.png"
     },
     "statusConfig": {
         "playing": "all other images/status bar/music playing/s45.png",

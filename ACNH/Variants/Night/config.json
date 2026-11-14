@@ -16,7 +16,7 @@
         "itemTextColor": "#017c74",
         "itemSelectedTextColor": "#fff9e5",
         "itemSelectedBackground": "main menu icons/behind selection/behindselection1.png",
-        "itemBackground": "",
+        "itemBackground": "transparent.png",
         "itemRightArrow": "main menu icons/icon on selected item/selecteditemicon.png"
     },
     "dialogConfig": {
@@ -29,7 +29,7 @@
     },
     "menuConfig": {
         "menuBackgroundColor": "background(s)/grass2.png",
-        "menuItemBackground": "",
+        "menuItemBackground": "transparent.png",
         "menuItemTextColor": "#017c74",
         "menuItemSelectedBackground": "main menu icons/behind selection/behindselection1.png",
         "menuItemSelectedTextColor": "#fff9e5"
@@ -113,7 +113,7 @@
         "stop": "all other images/status bar/stopped/Stop.png",
         "blConnected": "all other images/status bar/bluetooth connected/headphones.png",
         "blConnecting": "all other images/status bar/bluetooth connecting/headphones white.png",
-        "blDisconnected": "",
+        "blDisconnected": "transparent.png",
         "headsetWithMic": "all other images/status bar/headphones with mic connected/headphones.png",
         "headsetWithoutMic": "all other images/status bar/headphones without mic connected/headphones.png",
         "battery": [

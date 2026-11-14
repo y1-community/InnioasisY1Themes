@@ -50,8 +50,8 @@
     "fileManager": "slot-fileManager-45a718d6.png"
   },
   "fileConfig": {
-    "folderIcon": "",
-    "musicIcon": ""
+    "folderIcon": "transparent.png",
+    "musicIcon": "transparent.png"
   },
   "settingConfig": {
     "shutdown": "Shutdown@1x.png",
@@ -109,15 +109,15 @@
   },
   "statusConfig": {
     "playing": "@Pris_play.png",
-    "audiobookPlaying": "",
+    "audiobookPlaying": "transparent.png",
     "pause": "@Pris_pause.png",
-    "fmPlaying": "",
+    "fmPlaying": "transparent.png",
     "stop": "@Pris_stop.png",
     "blConnected": "blConnected.png",
     "blConnecting": "blConnecting.png",
     "blDisconnected": "blDisconnected.png",
-    "headsetWithMic": "",
-    "headsetWithoutMic": "",
+    "headsetWithMic": "transparent.png",
+    "headsetWithoutMic": "transparent.png",
     "statusBarColor": "",
     "battery": [
       "battery.001.png",

@@ -28,7 +28,7 @@
   },
   "menuConfig": {
     "menuBackgroundColor": "#000000",
-    "menuItemBackground": "",
+    "menuItemBackground": "transparent.png",
     "menuItemTextColor": "#72181d",
     "menuItemSelectedBackground": "1.png",
     "menuItemSelectedTextColor": "#000000"

@@ -45,8 +45,8 @@
         "settings": "main menu icons/ts59.png",
         "shuffleQuick": "",
         "ebook": "main menu icons/ebookicon.png",
-        "calculator": "",
-        "calendar": "",
+        "calculator": "transparent.png",
+        "calendar": "transparent.png",
         "fileManager": "transparent.png"
     },
     "fileConfig": {
@@ -103,7 +103,7 @@
         "fileExtensionOn": "all other images/settings menu/file ext on off/ts37.png",
         "fileExtensionOff": "all other images/settings menu/file ext on off/ts5.png",
         "settingMask": "backgrounds/mp3li custom background 1.png",
-        "launcher": ""
+        "launcher": "transparent.png"
     },
     "statusConfig": {
         "playing": "all other images/status bar/music playing/playing music statusbaricons by mp3li (recolored).png",

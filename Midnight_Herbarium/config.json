@@ -12,11 +12,16 @@
   "desktopMask": "mask.png",
   "itemConfig": {
     "itemTextColor": "#D7D9E7",
-    "itemSelectedTextColor": "#FFFFFF"
+    "itemSelectedTextColor": "#FFFFFF",
+    "itemBackground": "transparent.png",
+    "itemSelectedBackground": "transparent.png",
+    "itemRightArrow": "transparent.png"
   },
   "menuConfig": {
     "menuBackgroundColor": "#080A12",
-    "menuItemTextColor": "#D7D9E7"
+    "menuItemTextColor": "#D7D9E7",
+    "menuItemBackground": "transparent.png",
+    "menuItemSelectedBackground": "transparent.png"
   },
   "homePageConfig": {
     "selectedColor": "#A7A9C4",
@@ -28,15 +33,88 @@
   },
   "fileConfig": {
     "selectedColor": "#A7A9C4",
-    "unselectedColor": "#62657C"
+    "unselectedColor": "#62657C",
+    "folderIcon": "transparent.png",
+    "musicIcon": "transparent.png"
   },
   "settingConfig": {
     "selectedColor": "#A7A9C4",
     "unselectedColor": "#62657C",
-    "launcher": "transparent.png"
+    "launcher": "transparent.png",
+    "settingMask": "transparent.png",
+    "shutdown": "transparent.png",
+    "timedShutdown_off": "transparent.png",
+    "timedShutdown_10": "transparent.png",
+    "timedShutdown_20": "transparent.png",
+    "timedShutdown_30": "transparent.png",
+    "timedShutdown_60": "transparent.png",
+    "timedShutdown_90": "transparent.png",
+    "timedShutdown_120": "transparent.png",
+    "shuffleOn": "transparent.png",
+    "shuffleOff": "transparent.png",
+    "repeatOff": "transparent.png",
+    "repeatAll": "transparent.png",
+    "repeatOne": "transparent.png",
+    "equalizer_normal": "transparent.png",
+    "equalizer_classical": "transparent.png",
+    "equalizer_dance": "transparent.png",
+    "equalizer_flat": "transparent.png",
+    "equalizer_folk": "transparent.png",
+    "equalizer_heavymetal": "transparent.png",
+    "equalizer_hiphop": "transparent.png",
+    "equalizer_jazz": "transparent.png",
+    "equalizer_pop": "transparent.png",
+    "equalizer_rock": "transparent.png",
+    "keyLockOn": "transparent.png",
+    "keyLockOff": "transparent.png",
+    "keyToneOn": "transparent.png",
+    "keyToneOff": "transparent.png",
+    "keyVibrationOn": "transparent.png",
+    "keyVibrationOff": "transparent.png",
+    "wallpaper": "transparent.png",
+    "backlight_10": "transparent.png",
+    "backlight_15": "transparent.png",
+    "backlight_30": "transparent.png",
+    "backlight_45": "transparent.png",
+    "backlight_60": "transparent.png",
+    "backlight_120": "transparent.png",
+    "backlight_300": "transparent.png",
+    "backlight_always": "transparent.png",
+    "brightness": "transparent.png",
+    "displayBatteryOn": "transparent.png",
+    "displayBatteryOff": "transparent.png",
+    "dateTime": "transparent.png",
+    "language": "transparent.png",
+    "factoryReset": "transparent.png",
+    "clearCache": "transparent.png",
+    "theme": "transparent.png",
+    "fileExtensionOn": "transparent.png",
+    "fileExtensionOff": "transparent.png"
   },
   "statusConfig": {
-    "textColor": "#E2E3ED"
+    "textColor": "#E2E3ED",
+    "playing": "transparent.png",
+    "audiobookPlaying": "transparent.png",
+    "pause": "transparent.png",
+    "fmPlaying": "transparent.png",
+    "stop": "transparent.png",
+    "blConnected": "transparent.png",
+    "blConnecting": "transparent.png",
+    "blDisconnected": "transparent.png",
+    "headsetWithMic": "transparent.png",
+    "headsetWithoutMic": "transparent.png",
+    "battery": [
+      "transparent.png",
+      "transparent.png",
+      "transparent.png",
+      "transparent.png"
+    ],
+    "batteryCharging": [
+      "transparent.png",
+      "transparent.png",
+      "transparent.png",
+      "transparent.png"
+    ]
   },
   "playerConfig": {
     "textColor": "#E2E3ED",
@@ -45,5 +123,9 @@
   "desktopWallpaperMode": "fill",
   "gallery": {
     "compatibilityMedal": "none"
+  },
+  "dialogConfig": {
+    "dialogOptionBackground": "transparent.png",
+    "dialogOptionSelectedBackground": "transparent.png"
   }
 }

@@ -13,7 +13,7 @@
   "itemConfig": {
     "itemTextColor": "#FFF8FF",
     "itemSelectedTextColor": "#351E4E",
-    "itemBackground": "",
+    "itemBackground": "transparent.png",
     "itemSelectedBackground": "1.png",
     "itemRightArrow": "2.png"
   },
@@ -27,7 +27,7 @@
   },
   "menuConfig": {
     "menuBackgroundColor": "#39234F",
-    "menuItemBackground": "",
+    "menuItemBackground": "transparent.png",
     "menuItemTextColor": "#FFF8FF",
     "menuItemSelectedBackground": "1.png",
     "menuItemSelectedTextColor": "#351E4E"
@@ -102,7 +102,8 @@
     "clearCache": "Storage.png",
     "theme": "Display_selected.png",
     "fileExtensionOn": "Storage_selected.png",
-    "fileExtensionOff": "Storage.png"
+    "fileExtensionOff": "Storage.png",
+    "settingMask": "transparent.png"
   },
   "statusConfig": {
     "playing": "playing.png",

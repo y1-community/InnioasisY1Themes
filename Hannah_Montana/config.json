@@ -44,9 +44,9 @@
         "bluetooth": "main menu icons/hm59.png",
         "settings": "main menu icons/hm71.png",
         "shuffleQuick": "",
-        "ebook": "",
-        "calculator": "",
-        "calendar": "",
+        "ebook": "transparent.png",
+        "calculator": "transparent.png",
+        "calendar": "transparent.png",
         "fileManager": "transparent.png"
     },
     "fileConfig": {
@@ -103,7 +103,7 @@
         "fileExtensionOn": "all other images/settings menu/file ext on off/hm36.png",
         "fileExtensionOff": "all other images/settings menu/file ext on off/hm53.png",
         "settingMask": "backgrounds/2BC29058-B4A9-4DFC-BA8D-81C2DD128B11 (cropped).png",
-        "launcher": ""
+        "launcher": "transparent.png"
     },
     "statusConfig": {
         "playing": "all other images/status bar/music playing/hm64 Background Removed.png",

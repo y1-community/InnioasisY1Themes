@@ -15,7 +15,7 @@
     "itemTextColor": "#000000",
     "itemSelectedTextColor": "#ffffff",
     "itemSelectedBackground": "1_YS.png",
-    "itemBackground": "",
+    "itemBackground": "transparent.png",
     "itemRightArrow": "2_YS.png"
   },
   "dialogConfig": {
@@ -27,7 +27,7 @@
   },
   "menuConfig": {
     "menuBackgroundColor": "#000000",
-    "menuItemBackground": "",
+    "menuItemBackground": "transparent.png",
     "menuItemTextColor": "#000000",
     "menuItemSelectedBackground": "1_YS.png",
     "menuItemSelectedTextColor": "#ffffff"

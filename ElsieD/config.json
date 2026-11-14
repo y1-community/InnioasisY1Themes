@@ -15,7 +15,7 @@
         "itemTextColor": "#434136",
         "itemSelectedTextColor": "#9BA185",
         "itemSelectedBackground": "1.png",
-        "itemBackground": "",
+        "itemBackground": "transparent.png",
         "itemRightArrow": "2.png"
     },
     "dialogConfig": {
@@ -27,7 +27,7 @@
     },
     "menuConfig": {
         "menuBackgroundColor": "#000000",
-        "menuItemBackground": "",
+        "menuItemBackground": "transparent.png",
         "menuItemTextColor": "#434136",
         "menuItemSelectedBackground": "1.png",
         "menuItemSelectedTextColor": "#9BA185"
@@ -48,8 +48,8 @@
         "fileManager": "transparent.png"
     },
     "fileConfig": {
-        "folderIcon": "",
-        "musicIcon": ""
+        "folderIcon": "transparent.png",
+        "musicIcon": "transparent.png"
     },
     "settingConfig": {
         "settingMask": "global_bg001.png",
@@ -107,9 +107,9 @@
     "statusConfig": {
         "statusTextColor": "#FF0000",
         "playing": "play.png",
-        "audiobookPlaying": "",
+        "audiobookPlaying": "transparent.png",
         "pause": "pause.png",
-        "fmPlaying": "",
+        "fmPlaying": "transparent.png",
         "stop": "stop.png",
         "blConnected": "bl2.png",
         "blConnecting": "bl3.png",

@@ -11,7 +11,7 @@
   "globalWallpaper": "inniPod_globalwp.png",
   "fontFamily": "opensans-condbold.ttf",
   "itemConfig": {
-    "itemBackground": "",
+    "itemBackground": "transparent.png",
     "itemRightArrow": "2.png",
     "itemSelectedBackground": "1.png",
     "itemSelectedTextColor": "#ffffff",
@@ -26,7 +26,7 @@
   },
   "menuConfig": {
     "menuBackgroundColor": "#000000",
-    "menuItemBackground": "",
+    "menuItemBackground": "transparent.png",
     "menuItemSelectedBackground": "1.png",
     "menuItemSelectedTextColor": "#ffffff",
     "menuItemTextColor": "#ffffff"

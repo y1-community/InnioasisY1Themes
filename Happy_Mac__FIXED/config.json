@@ -14,20 +14,20 @@
     "itemTextColor": "#131111",
     "itemSelectedTextColor": "#454545",
     "itemSelectedBackground": "1.png",
-    "itemBackground": "",
+    "itemBackground": "transparent.png",
     "itemRightArrow": "2.png"
   },
   "dialogConfig": {
     "dialogOptionBackground": "desk.png",
     "dialogOptionTextColor": "#282425",
-    "dialogOptionSelectedBackground": "",
+    "dialogOptionSelectedBackground": "transparent.png",
     "dialogOptionSelectedTextColor": "#454545",
     "dialogBackgroundColor": "#454545",
     "dialogTextColor": "#454545"
   },
   "menuConfig": {
     "menuBackgroundColor": "#454545",
-    "menuItemBackground": "",
+    "menuItemBackground": "transparent.png",
     "menuItemTextColor": "#454545",
     "menuItemSelectedBackground": "1.png",
     "menuItemSelectedTextColor": "#454545"
@@ -50,8 +50,8 @@
     "fileManager": "transparent.png"
   },
   "fileConfig": {
-    "folderIcon": "",
-    "musicIcon": ""
+    "folderIcon": "transparent.png",
+    "musicIcon": "transparent.png"
   },
   "settingConfig": {
     "shutdown": "transparent.png",
@@ -104,20 +104,33 @@
     "fileExtensionOff": "transparent.png",
     "selectedColor": "#454545",
     "unselectedColor": "#282425",
-    "launcher": "transparent.png"
+    "launcher": "transparent.png",
+    "settingMask": "transparent.png"
   },
   "statusConfig": {
-    "playing": "",
-    "audiobookPlaying": "",
-    "pause": "",
-    "fmPlaying": "",
-    "stop": "",
-    "blConnected": "",
-    "blConnecting": "",
-    "blDisconnected": "",
-    "headsetWithMic": "",
-    "headsetWithoutMic": "",
-    "statusBarColor": "#282425"
+    "playing": "transparent.png",
+    "audiobookPlaying": "transparent.png",
+    "pause": "transparent.png",
+    "fmPlaying": "transparent.png",
+    "stop": "transparent.png",
+    "blConnected": "transparent.png",
+    "blConnecting": "transparent.png",
+    "blDisconnected": "transparent.png",
+    "headsetWithMic": "transparent.png",
+    "headsetWithoutMic": "transparent.png",
+    "statusBarColor": "#282425",
+    "battery": [
+      "transparent.png",
+      "transparent.png",
+      "transparent.png",
+      "transparent.png"
+    ],
+    "batteryCharging": [
+      "transparent.png",
+      "transparent.png",
+      "transparent.png",
+      "transparent.png"
+    ]
   },
   "playerConfig": {
     "progressColor": "#282425",

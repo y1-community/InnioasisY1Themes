@@ -15,7 +15,7 @@
     "itemTextColor": "#000000",
     "itemSelectedTextColor": "#FF7EB2",
     "itemSelectedBackground": "1.png",
-    "itemBackground": "",
+    "itemBackground": "transparent.png",
     "itemRightArrow": "arrow.png"
   },
   "dialogConfig": {
@@ -28,7 +28,7 @@
   },
   "menuConfig": {
     "menuBackgroundColor": "#3F4142",
-    "menuItemBackground": "",
+    "menuItemBackground": "transparent.png",
     "menuItemTextColor": "",
     "menuItemSelectedBackground": "1.png",
     "menuItemSelectedTextColor": ""
@@ -49,8 +49,8 @@
     "fileManager": "transparent.png"
   },
   "fileConfig": {
-    "folderIcon": "",
-    "musicIcon": ""
+    "folderIcon": "transparent.png",
+    "musicIcon": "transparent.png"
   },
   "settingConfig": {
     "settingMask": "setting_mask.png",

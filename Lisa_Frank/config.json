@@ -45,8 +45,8 @@
         "settings": "main menu icons/lf41.png",
         "shuffleQuick": "",
         "ebook": "main menu icons/ebookicon.png",
-        "calculator": "",
-        "calendar": "",
+        "calculator": "transparent.png",
+        "calendar": "transparent.png",
         "fileManager": "transparent.png"
     },
     "fileConfig": {
@@ -103,7 +103,7 @@
         "fileExtensionOn": "all other images/settings menu/file ext on off/lf51 2 Background Removed.png",
         "fileExtensionOff": "all other images/settings menu/file ext on off/lf8.png",
         "settingMask": "backgrounds/bg1 (cropped).png",
-        "launcher": ""
+        "launcher": "transparent.png"
     },
     "statusConfig": {
         "playing": "all other images/status bar/music playing/lf49 Background Removed.png",

@@ -45,8 +45,8 @@
         "settings": "main menu icons/cake20.png",
         "shuffleQuick": "",
         "ebook": "main menu icons/ebookicon.png",
-        "calculator": "",
-        "calendar": "",
+        "calculator": "transparent.png",
+        "calendar": "transparent.png",
         "fileManager": "transparent.png"
     },
     "fileConfig": {
@@ -103,7 +103,7 @@
         "fileExtensionOn": "all other images/settings menu/file ext on off/cake54.png",
         "fileExtensionOff": "all other images/settings menu/file ext on off/cake10.png",
         "settingMask": "backgrounds/bg2 (cropped).png",
-        "launcher": ""
+        "launcher": "transparent.png"
     },
     "statusConfig": {
         "playing": "all other images/status bar/music playing/cake81.png",

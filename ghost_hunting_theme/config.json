@@ -14,7 +14,7 @@
         "itemTextColor": "#cbcdcd",
         "itemSelectedTextColor": "#292929",
         "itemSelectedBackground": "1.png",
-        "itemBackground": "",
+        "itemBackground": "transparent.png",
         "itemRightArrow": "2.png"
     },
     "dialogConfig": {
@@ -26,7 +26,7 @@
     },
     "menuConfig": {
         "menuBackgroundColor": "#ffffff",
-        "menuItemBackground": "",
+        "menuItemBackground": "transparent.png",
         "menuItemTextColor": "#7a7a7a",
         "menuItemSelectedBackground": "1.png",
         "menuItemSelectedTextColor": "#ffffff"
@@ -98,7 +98,8 @@
         "clearCache": "Clear cache@1x.png",
         "theme": "Change Theme@1x.png",
         "fileExtensionOn": "file_ext_on.png",
-        "fileExtensionOff": "file_ext_off.png"
+        "fileExtensionOff": "file_ext_off.png",
+        "settingMask": "transparent.png"
     },
     "statusConfig": {
         "playing": "playing.png",
