@@ -2374,6 +2374,14 @@
                                 btn.style.fontSize = '16px';
                                 btn.style.fontWeight = '700';
                                 btn.style.cursor = 'pointer';
+                                /* Picking an option moves the highlight, so the
+                                   selected and unselected dialog art can both be
+                                   compared without guessing which is drawn. */
+                                btn.addEventListener('click', function () {
+                                    if (!sim.dialogVisible) return;
+                                    sim.dialogSelectedIndex = idx;
+                                    paint();
+                                });
                                 optsRow.appendChild(btn);
                             })(oi);
                         }
@@ -2873,7 +2881,36 @@
 
                 function onRowHoldEnd(ev) {
                     if (!rowHold || ev.pointerId !== rowHold.id) return;
+                    /* A quick tap (the hold timer never fired) is the pointer's
+                       Select: the first one only moves the highlight, the second
+                       on the same row opens it. */
+                    var wasTap = !!rowHold.timer;
+                    var index = rowHold.index;
                     clearRowHold();
+                    if (!wasTap) return;
+                    activateRow(index);
+                }
+
+                /* Selecting a row twice is the device's Select button. Rows that
+                   lead to a dialog (Shutdown, Factory reset, clear cache) open it,
+                   so the Studio can show what the dialog art looks like. */
+                function activateRow(index) {
+                    if (!interactive || !(index >= 0) || sim.dialogVisible) return false;
+                    if (index !== sim.themeSelectedIndex) {
+                        sim.themeSelectedIndex = index;
+                        paint();
+                        return false;
+                    }
+                    handleCenterClick();
+                    return true;
+                }
+
+                function onRowDoubleClick(ev) {
+                    if (!interactive) return;
+                    var index = rowIndexFromEvent(ev);
+                    if (!(index >= 0) || sim.dialogVisible) return;
+                    sim.themeSelectedIndex = index;
+                    handleCenterClick();
                 }
 
                 if (interactive) {
@@ -2886,6 +2923,7 @@
                     wheel.addEventListener('pointerup', onWheelPointerEnd);
                     wheel.addEventListener('pointercancel', onWheelPointerEnd);
                     canvas.addEventListener('pointerover', onRowHover);
+                    canvas.addEventListener('dblclick', onRowDoubleClick);
                     canvas.addEventListener('pointerdown', onRowHoldStart);
                     canvas.addEventListener('pointermove', onRowHoldMove);
                     canvas.addEventListener('pointerup', onRowHoldEnd);
@@ -2915,6 +2953,18 @@
                         sim.themeHistory = [];
                         sim.themeViewId = view;
                         sim.themeSelectedIndex = 0;
+                        /* Dialog art only exists on screen while a dialog is up,
+                           so give the author the shutdown dialog to look at
+                           instead of an empty settings list. */
+                        if (/^dialogConfig\./.test(String(assetPath))) {
+                            sim.dialogVisible = true;
+                            sim.dialogTitle = 'Shutdown';
+                            sim.dialogMessage = 'Sure to shut down?';
+                            sim.dialogOptions = ['Yes', 'No'];
+                            sim.dialogSelectedIndex = 1;
+                            paint();
+                            return true;
+                        }
                         try {
                             var items = view === 'settings' ? buildSettingsItems(cfg, buildFileUrl, contentFolder, sim) : view === 'home' ? homeItems : [];
                             for (var i = 0; i < items.length; i++) {
@@ -2965,6 +3015,7 @@
                             wheel.removeEventListener('pointercancel', onWheelPointerEnd);
                         }
                         canvas.removeEventListener('pointerover', onRowHover);
+                        canvas.removeEventListener('dblclick', onRowDoubleClick);
                         canvas.removeEventListener('pointerdown', onRowHoldStart);
                         canvas.removeEventListener('pointermove', onRowHoldMove);
                         canvas.removeEventListener('pointerup', onRowHoldEnd);
