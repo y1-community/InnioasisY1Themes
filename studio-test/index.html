@@ -32,8 +32,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="../site-theme.css?v=20261111dl2" />
     <link rel="stylesheet" href="../site-toolbar.css?v=20261110accent2" />
-    <link rel="stylesheet" href="../y1-theme-preview.css?v=20261114rowfocus" />
-    <link rel="stylesheet" href="/studio-test/studio.css?v=20261114mobile" />
+    <link rel="stylesheet" href="../y1-theme-preview.css?v=20261114rowfocus2" />
+    <link rel="stylesheet" href="/studio-test/studio.css?v=20261114identity" />
 </head>
 
 <body class="site-themes-app site-dock-mode studio-app" data-mode="preview">
@@ -263,6 +263,41 @@
                         </div>
 
                         <div class="studio-submit-form" id="studio-submit-form">
+                            <div class="studio-identity" id="studio-identity" hidden>
+                                <div class="studio-identity-head">
+                                    <span class="studio-eyebrow"><i class="fa-solid fa-code-compare" aria-hidden="true"></i> One question first</span>
+                                    <span class="studio-chip studio-chip--muted">Matches the gallery</span>
+                                </div>
+                                <p class="studio-identity-lead">
+                                    This package carries the details of <strong id="studio-identity-name">a gallery theme</strong><span id="studio-identity-author"></span>, so it can only go up as that listing&rsquo;s update or as your own new theme.
+                                </p>
+
+                                <div class="studio-identity-step" id="studio-identity-own">
+                                    <p class="studio-identity-q">Is this your theme?</p>
+                                    <div class="studio-identity-actions">
+                                        <button class="studio-btn studio-btn--primary" type="button" data-identity-own="yes">Yes, I made it</button>
+                                        <button class="studio-btn" type="button" data-identity-own="no">No, it is not mine</button>
+                                    </div>
+                                </div>
+
+                                <div class="studio-identity-step" id="studio-identity-change" hidden>
+                                    <p class="studio-identity-q">Do you want to change the listing details?</p>
+                                    <div class="studio-identity-actions">
+                                        <button class="studio-btn studio-btn--primary" type="button" data-identity-change="yes">Yes, edit the details</button>
+                                        <button class="studio-btn" type="button" data-identity-change="no">No, send it as listed</button>
+                                    </div>
+                                </div>
+
+                                <div class="studio-identity-result" id="studio-identity-result" hidden>
+                                    <p class="studio-identity-q" id="studio-identity-result-title"></p>
+                                    <p class="studio-hint" id="studio-identity-result-text"></p>
+                                    <button class="studio-mini-btn" type="button" id="studio-identity-reset">
+                                        <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Change answer
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="studio-submit-details" id="studio-submit-details">
                             <div class="studio-field">
                                 <label for="studio-submit-title">Gallery title <span class="studio-required">Required</span></label>
                                 <input id="studio-submit-title" type="text" autocomplete="off" maxlength="120" placeholder="Theme title" />
@@ -281,12 +316,6 @@
                                 </div>
                             </div>
 
-                            <label class="studio-inline-check studio-own-check">
-                                <input id="studio-submit-own" type="checkbox" />
-                                <span><strong>I am the original author updating my own theme</strong> <span id="studio-own-check-target"></span></span>
-                            </label>
-                            <p class="studio-hint studio-own-note" id="studio-own-update-note" hidden>This will be sent as an update to the existing listing. A maintainer reviews updates before they go live; they are never published automatically.</p>
-
                             <div class="studio-field">
                                 <label for="studio-submit-desc">Description <span class="studio-optional">Optional</span></label>
                                 <textarea id="studio-submit-desc" rows="3" maxlength="600" placeholder="A short line for the gallery"></textarea>
@@ -300,6 +329,7 @@
                             <div class="studio-field" id="studio-submit-external-wrap" hidden>
                                 <label for="studio-submit-external-url">External download URL</label>
                                 <input id="studio-submit-external-url" type="url" inputmode="url" placeholder="https://" />
+                            </div>
                             </div>
 
                             <div class="studio-update-notice" id="studio-update-notice" hidden>
@@ -358,26 +388,6 @@
 
     <div class="studio-toast" id="studio-toast" role="status" aria-live="polite"></div>
 
-    <div class="studio-modal" id="studio-own-modal" hidden>
-        <div class="studio-modal-card" role="dialog" aria-modal="true" aria-labelledby="studio-own-modal-title" aria-describedby="studio-own-modal-text">
-            <span class="studio-eyebrow"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Update an existing theme</span>
-            <h2 id="studio-own-modal-title">Did you create this theme originally?</h2>
-            <p id="studio-own-modal-text">
-                This sends your package as an update to <strong id="studio-own-modal-theme">the existing listing</strong>, credited to the same author.
-                Updates wait for a maintainer's approval, unlike a new upload, which can be published automatically.
-            </p>
-            <p class="studio-hint" id="studio-own-modal-warn">If this is not your theme, cancel and give your own title and author instead.</p>
-            <label class="studio-inline-check">
-                <input id="studio-own-modal-ack" type="checkbox" />
-                <span>I created this theme, and I want to update my existing listing.</span>
-            </label>
-            <div class="studio-modal-actions">
-                <button class="studio-btn" id="studio-own-modal-cancel" type="button">Cancel</button>
-                <button class="studio-btn studio-btn--primary" id="studio-own-modal-confirm" type="button" disabled>Continue as my update</button>
-            </div>
-        </div>
-    </div>
-
     <div class="studio-modal studio-theme-picker" id="studio-theme-picker" hidden>
         <div class="studio-modal-card studio-theme-picker-card" role="dialog" aria-modal="true" aria-labelledby="studio-theme-picker-title">
             <span class="studio-eyebrow"><i class="fa-solid fa-images" aria-hidden="true"></i> Swap from another theme</span>
@@ -411,11 +421,11 @@
     <div id="support-toolbar-slot"></div>
 
     <script src="../nav.js?v=20261111nav"></script>
-    <script src="../y1-theme-preview.js?v=20261114rowfocus"></script>
+    <script src="../y1-theme-preview.js?v=20261114rowfocus2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="../theme-packaging.js"></script>
     <script src="../author-submission-policy.js?v=20260523"></script>
-    <script src="/studio-test/studio.js?v=20261114mobile"></script>
+    <script src="/studio-test/studio.js?v=20261114identity"></script>
     <script src="../site-locale.js?v=20261109live" defer></script>
 </body>
 
