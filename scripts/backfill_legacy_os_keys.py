@@ -21,6 +21,8 @@ from typing import Any
 _GIT_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = _GIT_ROOT
 REFERENCE_CONFIG_PATH = Path(__file__).resolve().parent / "legacy_os_config_reference.json"
+THEME_ASSET_REFERENCE_PATH = Path(__file__).resolve().parent / "theme_asset_reference.json"
+_ASSET_REFERENCE_CACHE: dict[str, Any] | None = None
 TRANSPARENT_FILENAME = "transparent.png"
 BACKFILL_FILENAME = "backfill.png"
 TRANSPARENT_CANONICAL = REPO_ROOT / TRANSPARENT_FILENAME
@@ -110,6 +112,57 @@ def add_legacy_os_keys(
                 section_obj[key] = placeholder_value
                 changed = True
             elif upgrade_transparent and _is_transparent_placeholder_value(section_obj[key]):
+                section_obj[key] = placeholder_value
+                changed = True
+    return changed
+
+
+def _load_asset_reference() -> dict[str, Any]:
+    """Every asset slot a fully utilised theme fills, so blanks can be topped up."""
+    global _ASSET_REFERENCE_CACHE
+    if _ASSET_REFERENCE_CACHE is None:
+        _ASSET_REFERENCE_CACHE = _load_json(THEME_ASSET_REFERENCE_PATH) or {}
+    return _ASSET_REFERENCE_CACHE
+
+
+def fill_blank_asset_values(
+    theme_config: dict[str, Any],
+    reference: dict[str, Any],
+    *,
+    placeholder_value: str = TRANSPARENT_VALUE,
+) -> bool:
+    """Give every asset slot a file: missing, empty or whitespace values become the
+    transparent placeholder so the player keeps the gap instead of drawing its own
+    art. Creator-supplied files are never overwritten."""
+    changed = False
+    for section, keys_obj in reference.items():
+        if not isinstance(keys_obj, dict):
+            continue
+        section_obj = theme_config.get(section)
+        if section_obj is None:
+            section_obj = {}
+            theme_config[section] = section_obj
+            changed = True
+        elif not isinstance(section_obj, dict):
+            continue
+        for key, spec in keys_obj.items():
+            if isinstance(spec, list):
+                arity = max(1, len(spec))
+                current = section_obj.get(key)
+                if not isinstance(current, list):
+                    section_obj[key] = [placeholder_value] * arity
+                    changed = True
+                    continue
+                filled = list(current[:arity]) + [placeholder_value] * max(0, arity - len(current))
+                for index, item in enumerate(filled):
+                    if not isinstance(item, str) or not item.strip():
+                        filled[index] = placeholder_value
+                if filled != current:
+                    section_obj[key] = filled
+                    changed = True
+                continue
+            current_value = section_obj.get(key)
+            if not isinstance(current_value, str) or not current_value.strip():
                 section_obj[key] = placeholder_value
                 changed = True
     return changed
@@ -213,6 +266,9 @@ def backfill_config_file(
     placeholder = resolve_placeholder_value(content_dir)
     before = json.dumps(config, sort_keys=True)
     add_legacy_os_keys(config, reference, placeholder_value=placeholder)
+    asset_reference = _load_asset_reference()
+    if asset_reference:
+        fill_blank_asset_values(config, asset_reference, placeholder_value=placeholder)
     after = json.dumps(config, sort_keys=True)
     cfg_changed = before != after
     if cfg_changed:
@@ -264,6 +320,11 @@ def _folder_would_change(theme_dir: Path, ref: dict[str, Any], source: Path) -> 
         clone = json.loads(json.dumps(config))
         placeholder = resolve_placeholder_value(cfg_path.parent)
         if add_legacy_os_keys(clone, ref, placeholder_value=placeholder):
+            return True
+        asset_reference = _load_asset_reference()
+        if asset_reference and fill_blank_asset_values(
+            clone, asset_reference, placeholder_value=placeholder
+        ):
             return True
         if content_dir_needs_transparent_asset(cfg_path.parent, clone):
             dest = cfg_path.parent / TRANSPARENT_FILENAME

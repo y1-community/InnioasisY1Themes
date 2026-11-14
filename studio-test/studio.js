@@ -499,7 +499,8 @@
             .then(function (config) {
                 if (state.sourceType !== 'gallery' || state.folder !== requestedFolder) return;
                 state.config = config;
-                state.configBase = cloneJson(config);
+                applyBlankSlots(state.config);
+                state.configBase = cloneJson(state.config);
                 var info = (config && config.theme_info) || {};
                 if (info.title) state.meta.name = info.title;
                 if (info.author) state.meta.author = info.author;
@@ -1230,6 +1231,187 @@
         return '';
     }
 
+    /* —— Blank slots ——————————————————————————————————————————————
+       When a theme leaves an asset out, the player draws its own icon there.
+       Every slot the fully utilised reference theme (Melody Munchkin) fills a
+       config.json line for therefore gets a line pointing at one shared
+       transparent.png placeholder: the device keeps the gap, and the tray
+       reads "Blank" instead of a filename or "No file".
+       Core home-menu keys are deliberately excluded: adding one would add a row
+       to the theme's home screen, so only the four the gallery has always
+       backfilled are listed. */
+    var PLACEHOLDER_FILE = 'transparent.png';
+    var PLACEHOLDER_PNG_BASE64 =
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+
+    var BLANK_SLOT_PATHS = [
+        'desktopWallpaper',
+        'globalWallpaper',
+        'desktopMask',
+        'itemConfig.itemBackground',
+        'itemConfig.itemSelectedBackground',
+        'itemConfig.itemRightArrow',
+        'menuConfig.menuItemBackground',
+        'menuConfig.menuItemSelectedBackground',
+        'dialogConfig.dialogOptionBackground',
+        'dialogConfig.dialogOptionSelectedBackground',
+        'homePageConfig.ebook',
+        'homePageConfig.calendar',
+        'homePageConfig.calculator',
+        'homePageConfig.fileManager',
+        'fileConfig.folderIcon',
+        'fileConfig.musicIcon',
+        'settingConfig.settingMask',
+        'settingConfig.shutdown',
+        'settingConfig.timedShutdown_off',
+        'settingConfig.timedShutdown_10',
+        'settingConfig.timedShutdown_20',
+        'settingConfig.timedShutdown_30',
+        'settingConfig.timedShutdown_60',
+        'settingConfig.timedShutdown_90',
+        'settingConfig.timedShutdown_120',
+        'settingConfig.shuffleOn',
+        'settingConfig.shuffleOff',
+        'settingConfig.repeatOff',
+        'settingConfig.repeatAll',
+        'settingConfig.repeatOne',
+        'settingConfig.equalizer_normal',
+        'settingConfig.equalizer_classical',
+        'settingConfig.equalizer_dance',
+        'settingConfig.equalizer_flat',
+        'settingConfig.equalizer_folk',
+        'settingConfig.equalizer_heavymetal',
+        'settingConfig.equalizer_hiphop',
+        'settingConfig.equalizer_jazz',
+        'settingConfig.equalizer_pop',
+        'settingConfig.equalizer_rock',
+        'settingConfig.keyLockOn',
+        'settingConfig.keyLockOff',
+        'settingConfig.keyToneOn',
+        'settingConfig.keyToneOff',
+        'settingConfig.keyVibrationOn',
+        'settingConfig.keyVibrationOff',
+        'settingConfig.wallpaper',
+        'settingConfig.backlight_10',
+        'settingConfig.backlight_15',
+        'settingConfig.backlight_30',
+        'settingConfig.backlight_45',
+        'settingConfig.backlight_60',
+        'settingConfig.backlight_120',
+        'settingConfig.backlight_300',
+        'settingConfig.backlight_always',
+        'settingConfig.brightness',
+        'settingConfig.displayBatteryOn',
+        'settingConfig.displayBatteryOff',
+        'settingConfig.dateTime',
+        'settingConfig.language',
+        'settingConfig.launcher',
+        'settingConfig.factoryReset',
+        'settingConfig.clearCache',
+        'settingConfig.theme',
+        'settingConfig.fileExtensionOn',
+        'settingConfig.fileExtensionOff',
+        'statusConfig.playing',
+        'statusConfig.audiobookPlaying',
+        'statusConfig.pause',
+        'statusConfig.fmPlaying',
+        'statusConfig.stop',
+        'statusConfig.blConnected',
+        'statusConfig.blConnecting',
+        'statusConfig.blDisconnected',
+        'statusConfig.headsetWithMic',
+        'statusConfig.headsetWithoutMic'
+    ];
+
+    var BLANK_SLOT_ARRAYS = {
+        'statusConfig.battery': 4,
+        'statusConfig.batteryCharging': 4
+    };
+
+    function isPlaceholderValue(value) {
+        return fileName(String(value || '')).toLowerCase() === PLACEHOLDER_FILE;
+    }
+
+    function configUsesPlaceholder(config) {
+        var values = collectConfigAssetValues(config || {});
+        for (var i = 0; i < values.length; i += 1) {
+            if (isPlaceholderValue(values[i])) return true;
+        }
+        return false;
+    }
+
+    function placeholderBlob() {
+        var binary = '';
+        try {
+            binary = window.atob(PLACEHOLDER_PNG_BASE64);
+        } catch (e) {
+            binary = '';
+        }
+        var bytes = new Uint8Array(binary.length);
+        for (var i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+        return new Blob([bytes], { type: 'image/png' });
+    }
+
+    /* One file backs every blank slot, exactly like the themes on disk: the
+       package ships a single transparent.png and each config line points at it. */
+    function ensurePlaceholderAsset() {
+        var existing = state.assetOverrides[PLACEHOLDER_FILE];
+        if (existing && existing.placeholder) return existing;
+        if (existing && existing.url) revokeAssetUrl(existing.url);
+        var blob = placeholderBlob();
+        var url = URL.createObjectURL(blob);
+        state.assetUrls.push(url);
+        var entry = {
+            blob: blob,
+            url: url,
+            name: PLACEHOLDER_FILE,
+            size: blob.size,
+            type: 'image/png',
+            placeholder: true
+        };
+        state.assetOverrides[PLACEHOLDER_FILE] = entry;
+        if (state.sourceType === 'local') {
+            if (!state.localFileMap[PLACEHOLDER_FILE]) {
+                state.localFileMap[PLACEHOLDER_FILE] = blob;
+                state.localFiles.push({ path: PLACEHOLDER_FILE, blob: blob });
+            }
+            if (!state.localMap[PLACEHOLDER_FILE]) state.localMap[PLACEHOLDER_FILE] = url;
+        }
+        return entry;
+    }
+
+    function fillBlankSlots(config) {
+        if (!config || typeof config !== 'object') return false;
+        var changed = false;
+        BLANK_SLOT_PATHS.forEach(function (path) {
+            var current = readPath(config, path);
+            if (typeof current !== 'string' || !current.trim()) {
+                writePath(config, path, PLACEHOLDER_FILE);
+                changed = true;
+            }
+        });
+        Object.keys(BLANK_SLOT_ARRAYS).forEach(function (path) {
+            var arity = BLANK_SLOT_ARRAYS[path];
+            var current = readPath(config, path);
+            var next = [];
+            for (var i = 0; i < arity; i += 1) {
+                var item = Array.isArray(current) ? current[i] : '';
+                next.push(typeof item === 'string' && item.trim() ? item : PLACEHOLDER_FILE);
+            }
+            if (!Array.isArray(current) || current.length !== arity || next.join('\u0000') !== current.join('\u0000')) {
+                writePath(config, path, next);
+                changed = true;
+            }
+        });
+        return changed;
+    }
+
+    function applyBlankSlots(config) {
+        var changed = fillBlankSlots(config);
+        if (changed || configUsesPlaceholder(config)) ensurePlaceholderAsset();
+        return changed;
+    }
+
     function rebuildAssets() {
         var defs = collectAssetDefinitions(state.config || {});
         state.assetById = Object.create(null);
@@ -1237,6 +1419,7 @@
             var baseValue = readPath(state.configBase || {}, def.path);
             var key = localKey('', def.value);
             var override = state.assetOverrides[key];
+            var placeholderOverride = !!(override && override.placeholder);
             var localMissing = false;
             if (state.sourceType === 'local' && def.value && !override) {
                 localMissing = !(state.localFileMap && state.localFileMap[key]);
@@ -1252,8 +1435,11 @@
                 override: override || null,
                 missing: localMissing,
                 localMissing: localMissing,
+                placeholder: placeholderOverride || isPlaceholderValue(def.value),
                 empty: !String(def.value || '').trim(),
-                changed: !!override || String(baseValue || '') !== String(def.value || ''),
+                changed:
+                    (!!override && !placeholderOverride) ||
+                    String(baseValue || '') !== String(def.value || ''),
                 order: index
             };
             state.assetById[asset.id] = asset;
@@ -1345,8 +1531,10 @@
             var name = document.createElement('strong');
             name.textContent = slot.label;
             var file = document.createElement('span');
-            file.textContent = (fileName(asset.value) || 'No file') + ' · ' + slot.screen;
-            file.title = asset.value || 'No file assigned';
+            file.textContent = assetFileLabel(asset) + ' · ' + slot.screen;
+            file.title = asset.placeholder
+                ? 'Blank: the transparent.png placeholder keeps the device from drawing its own art'
+                : asset.value || 'Blank';
             var badge = document.createElement('span');
             badge.className = 'studio-mask-badge is-' + status.key;
             badge.textContent = status.label;
@@ -1376,11 +1564,18 @@
     }
 
     function assetStatus(asset) {
-        if (asset.override) return { label: 'Replaced', key: 'changed' };
+        if (asset.override && !asset.override.placeholder) return { label: 'Replaced', key: 'changed' };
         if (asset.localMissing) return { label: 'Missing', key: 'missing' };
+        if (asset.placeholder || asset.empty) return { label: 'Blank', key: 'empty' };
         if (asset.changed) return { label: 'Changed', key: 'changed' };
-        if (asset.empty) return { label: 'Empty', key: 'empty' };
         return { label: 'Ready', key: 'ready' };
+    }
+
+    /* A blank slot never shows a filename: it shows what it is. */
+    function assetFileLabel(asset) {
+        if (!asset) return 'Blank';
+        if (asset.placeholder || !String(asset.value || '').trim()) return 'Blank';
+        return fileName(asset.value) || 'Blank';
     }
 
     function createAssetRow(asset) {
@@ -1412,8 +1607,10 @@
         var name = document.createElement('strong');
         name.textContent = asset.label;
         var file = document.createElement('span');
-        file.textContent = (fileName(asset.value) || 'No file') + ' · ' + assetSizeLabel(asset);
-        file.title = asset.value || 'No file assigned';
+        file.textContent = assetFileLabel(asset) + ' · ' + assetSizeLabel(asset);
+        file.title = asset.placeholder
+            ? 'Blank: the transparent.png placeholder keeps the device from drawing its own art'
+            : asset.value || 'Blank';
         copy.appendChild(name);
         copy.appendChild(file);
 
@@ -1857,7 +2054,7 @@
         var status = assetStatus(asset);
         el.assetSection.textContent = asset.section;
         el.assetName.textContent = asset.label;
-        el.assetPath.textContent = asset.value || 'No file assigned';
+        el.assetPath.textContent = asset.placeholder ? 'Blank (transparent.png placeholder)' : asset.value || 'Blank';
         el.assetStatus.textContent = status.label;
         el.assetStatus.setAttribute('data-state', status.key);
         el.assetPreview.innerHTML = '';
@@ -1892,8 +2089,8 @@
         el.assetHint.textContent =
             (asset.localMissing
                 ? 'This file is referenced by config.json but is missing from the package. Import a replacement or reset it. '
-                : asset.empty
-                  ? 'This optional slot has no file yet. Import an image to add it to the theme. '
+                : asset.placeholder || asset.empty
+                  ? 'This slot is blank: config.json points at the shared transparent.png placeholder, so the device keeps the gap instead of drawing its own art. Import an image to fill it. '
                   : '') +
             sizeHint +
             (asset.kind === 'font'
@@ -1913,11 +2110,23 @@
         if (el.unsaved) el.unsaved.hidden = false;
     }
 
+    /* The shared transparent.png override is not a replacement the author made. */
+    function realOverrideCount() {
+        var keys = Object.keys(state.assetOverrides || {});
+        var count = 0;
+        for (var i = 0; i < keys.length; i += 1) {
+            var entry = state.assetOverrides[keys[i]];
+            if (entry && entry.placeholder) continue;
+            count += 1;
+        }
+        return count;
+    }
+
     function isDirty() {
         return !!(
             state.dirty ||
             state.formDirty ||
-            (state.assetOverrides && Object.keys(state.assetOverrides).length)
+            realOverrideCount() > 0
         );
     }
 
@@ -1968,8 +2177,13 @@
             }
         }
         var targetValue = String(asset.value || '').trim();
-        if (!targetValue) {
+        if (!targetValue || isPlaceholderValue(targetValue)) {
+            /* A filled blank slot gets its own file name: every blank slot shares
+               transparent.png, so writing the replacement there would change them all. */
             targetValue = defaultAssetFileName(asset, working);
+            if (isPlaceholderValue(targetValue)) {
+                targetValue = String(asset.path || 'asset').replace(/[^\w.-]+/g, '-') + '.png';
+            }
             writePath(state.config || {}, asset.path, targetValue);
         }
         var key = localKey('', targetValue);
@@ -2012,6 +2226,7 @@
         if (base === undefined) deletePath(state.config || {}, asset.path);
         else writePath(state.config || {}, asset.path, base);
         if (asset.path === 'themeCover') state.meta.cover = state.baseCover;
+        if (configUsesPlaceholder(state.config)) ensurePlaceholderAsset();
         markDirty();
         rebuildAssets();
         selectAsset(asset.id);
@@ -2041,6 +2256,7 @@
         resetAssetOverrides();
         state.config = cloneJson(state.configBase);
         state.meta.cover = state.baseCover;
+        if (configUsesPlaceholder(state.config)) ensurePlaceholderAsset();
         markDirty();
         rebuildAssets();
         remountPreview('Restoring the original theme…');
@@ -2092,24 +2308,9 @@
 
     /* —— Bin (transparent placeholder) —— */
 
-    /* Theme creators leave slots blank by shipping a fully transparent PNG: the
-       config keeps pointing at the file, so the device draws nothing instead of
-       falling back to its own default icon. Match the slot's expected size so
-       the layout on the device does not shift. */
-    function transparentPlaceholderFile(asset) {
-        var target = assetTargetSize(asset.path) || { width: 64, height: 64 };
-        var canvas = document.createElement('canvas');
-        canvas.width = Math.max(1, target.width);
-        canvas.height = Math.max(1, target.height);
-        var name = fileName(asset.value) || 'transparent.png';
-        if (!/\.png$/i.test(name)) name = name.replace(/\.[^.]+$/, '') + '.png';
-        return new Promise(function (resolve) {
-            canvas.toBlob(function (blob) {
-                resolve(new File([blob || new Blob([], { type: 'image/png' })], name, { type: 'image/png' }));
-            }, 'image/png');
-        });
-    }
-
+    /* Binning a slot points its config line at the shared transparent.png, so the
+       row reads Blank and the package carries one placeholder instead of a
+       one-off file per binned asset. */
     function blankAsset(assetId) {
         var asset = state.assetById[assetId];
         if (!asset) return;
@@ -2117,13 +2318,13 @@
             toast('Fonts cannot be blanked. Replace the font file, or reset it to the theme original.');
             return;
         }
-        transparentPlaceholderFile(asset).then(function (file) {
-            return replaceAssetFromFile(asset.id, file);
-        }).then(function () {
-            toast('Binned ' + asset.label + ': the slot now holds a transparent placeholder.');
-        }).catch(function (err) {
-            toast('Could not blank that asset: ' + ((err && err.message) || 'unknown error'));
-        });
+        writePath(state.config, asset.path, PLACEHOLDER_FILE);
+        ensurePlaceholderAsset();
+        markDirty();
+        rebuildAssets();
+        selectAsset(asset.id);
+        remountPreview('Blanking ' + asset.label + '…');
+        toast('Binned ' + asset.label + ': the slot now reads Blank and points at the transparent placeholder.');
     }
 
     /* —— Swap from another theme —— */
@@ -2575,7 +2776,7 @@
         }
         if (el.resetAssets) {
             el.resetAssets.addEventListener('click', function () {
-                if (!Object.keys(state.assetOverrides).length) {
+                if (!realOverrideCount()) {
                     toast('There are no replacements to reset.');
                     return;
                 }
@@ -3439,8 +3640,9 @@
             state.localFileMap[entry.path.toLowerCase()] = entry.blob;
         });
         state.config = prepared.config;
-        state.configBase = cloneJson(prepared.config);
         state.sourceType = 'local';
+        applyBlankSlots(state.config);
+        state.configBase = cloneJson(state.config);
         state.folder = null;
         state.compactExpanded = false;
         bootModeRequest = null;

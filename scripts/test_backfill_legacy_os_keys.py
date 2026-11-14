@@ -9,6 +9,7 @@ from backfill_legacy_os_keys import (
     TRANSPARENT_FILENAME,
     TRANSPARENT_VALUE,
     add_legacy_os_keys,
+    fill_blank_asset_values,
     backfill_config_file,
     ensure_canonical_transparent_source,
     fill_theme_folder,
@@ -105,6 +106,25 @@ class LegacyOsBackfillTests(unittest.TestCase):
             self.assertTrue(changed)
             self.assertTrue(copied)
             self.assertTrue((variant / TRANSPARENT_FILENAME).is_file())
+
+    def test_fill_blank_asset_values(self) -> None:
+        ref = {
+            "itemConfig": {"itemBackground": "", "itemRightArrow": ""},
+            "statusConfig": {"playing": "", "battery": ["", "", "", ""]},
+        }
+        cfg = {
+            "itemConfig": {"itemBackground": "", "itemRightArrow": "arrow.png"},
+            "statusConfig": {"playing": "playing.png", "battery": ["b1.png", "", "b3.png", "b4.png"]},
+        }
+        self.assertTrue(fill_blank_asset_values(cfg, ref))
+        self.assertEqual(cfg["itemConfig"]["itemBackground"], TRANSPARENT_VALUE)
+        self.assertEqual(cfg["itemConfig"]["itemRightArrow"], "arrow.png")
+        self.assertEqual(cfg["statusConfig"]["playing"], "playing.png")
+        self.assertEqual(
+            cfg["statusConfig"]["battery"],
+            ["b1.png", TRANSPARENT_VALUE, "b3.png", "b4.png"],
+        )
+        self.assertFalse(fill_blank_asset_values(cfg, ref))
 
     def test_fill_theme_folder_syncs_root_and_variant(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
