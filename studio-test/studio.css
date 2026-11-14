@@ -687,9 +687,12 @@
     }
 }
 
+/* In flow, not an overlay: an absolutely positioned card contributed no height
+   to .studio-preview-area, so the area collapsed to its 0px flex base and the
+   card was either clipped by the stage or scrolled out of a 16px strip. */
 .studio-empty {
-    position: absolute;
-    inset: 0;
+    position: static;
+    margin: auto;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1738,11 +1741,15 @@ body.studio-app {
     }
 }
 
+/* The stage only ever holds a 330px player, so the leftover width belongs to
+   the inspector: the asset trays, colour groups and listing form all read
+   better with room, and the fixed 400px cap used to squeeze names to an
+   ellipsis while the stage sat half empty. */
 .studio-app .studio-main {
-    width: min(100%, 1560px);
+    width: min(100%, 1760px);
     margin: 0 auto;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(332px, 400px);
+    grid-template-columns: minmax(0, 1fr) clamp(440px, 36vw, 620px);
     align-items: start;
     min-height: 0;
 }
@@ -2130,7 +2137,7 @@ body.studio-app {
 .studio-asset-row-copy > span { overflow: hidden; color: var(--site-muted); font: 500 0.64rem var(--site-font-mono); text-overflow: ellipsis; white-space: nowrap; }
 
 .studio-asset-row-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; min-width: 58px; }
-.studio-asset-row-meta > span:first-child { max-width: 82px; overflow: hidden; color: var(--site-muted); font-size: 0.6rem; text-overflow: ellipsis; white-space: nowrap; }
+.studio-asset-row-meta > span:first-child { max-width: 116px; overflow: hidden; color: var(--site-muted); font-size: 0.6rem; text-overflow: ellipsis; white-space: nowrap; }
 .studio-asset-badge { color: var(--site-muted); font: 600 0.56rem var(--site-font-mono); letter-spacing: 0.04em; text-transform: uppercase; }
 .studio-asset-row.is-changed .studio-asset-badge { color: var(--site-accent); }
 
@@ -2816,5 +2823,91 @@ body.studio-app {
     body.studio-app .studio-preview .y1-tp-device--full .y1-tp-clickwheel {
         width: 40px;
         height: 40px;
+    }
+}
+
+/* ==========================================================================
+   Workbench on every screen: square foldable covers, phones, tablets and
+   desktop-class monitors.
+   ========================================================================== */
+
+/* The picker lives in the inspector, which is always on screen above 760px, so
+   the command-bar shortcut would only duplicate it there. */
+.studio-btn--themes {
+    display: none;
+}
+
+@media (max-width: 760px) {
+    /* The stage is a column that owns the leftover height. The preview area had
+       a 0px flex base (it has no in-flow child while the theme loads or when
+       nothing is open), which pinned the player to the top of a tall screen and
+       clipped the empty card. */
+    body.studio-app .studio-preview-area {
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+
+    body.studio-app .studio-preview {
+        height: 100%;
+        min-height: 0;
+    }
+
+    /* Height-driven player that may use the whole width of a phone: the 320px
+       cap left a 390px screen showing a postage stamp in the corner. */
+    body.studio-app .studio-preview .y1-tp-device--full {
+        width: min(100%, calc((100dvh - 56px) / 1.2));
+        max-width: min(100%, 460px);
+    }
+
+    /* Nothing open yet: the only theme picker is in the inspector, so show that
+       instead of an empty stage the reader cannot act on. */
+    body.studio-app:not(.has-theme)[data-mode='preview'] .studio-stage,
+    body.studio-app.studio-chooser[data-mode='preview'] .studio-stage {
+        display: none;
+    }
+
+    body.studio-app:not(.has-theme)[data-mode='preview'] .studio-panel,
+    body.studio-app.studio-chooser[data-mode='preview'] .studio-panel {
+        display: flex;
+    }
+
+    body.studio-app:not(.has-theme) .studio-source-card,
+    body.studio-app:not(.has-theme) .studio-swap-btn,
+    body.studio-app:not(.has-theme) .studio-action-grid--single {
+        display: none;
+    }
+
+    /* Swap themes without leaving the player. */
+    body.studio-app .studio-btn--themes {
+        display: inline-flex;
+        width: 40px;
+        min-height: 36px;
+        padding: 0;
+        justify-content: center;
+    }
+
+    body.studio-app .studio-btn--themes span {
+        display: none;
+    }
+
+    body.studio-app.studio-chooser .studio-btn--themes {
+        border-color: var(--site-accent);
+        color: var(--site-accent);
+    }
+}
+
+@media (max-width: 760px) and (max-height: 420px) {
+    body.studio-app .studio-btn--themes {
+        width: 34px;
+        min-height: 32px;
+    }
+}
+
+/* Desktop-class screens: the player was capped at 330px inside a stage that can
+   be 1100px wide, which is a thumbnail on a 48in monitor. */
+@media (min-width: 1600px) and (min-height: 820px) {
+    body.studio-app .studio-preview .y1-tp-device--full {
+        width: min(100%, 440px);
+        max-width: min(100%, 440px);
     }
 }

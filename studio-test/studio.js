@@ -145,6 +145,7 @@
         browseFont: byId('studio-browse-font'),
         resetAssets: byId('studio-reset-assets'),
         save: byId('studio-save'),
+        openTheme: byId('studio-open-theme'),
         saveProgress: byId('studio-save-progress'),
         saveProgressLabel: byId('studio-save-progress-label'),
         saveProgressValue: byId('studio-save-progress-value'),
@@ -193,6 +194,7 @@
         assetFilter: 'all',
         relatedAnchor: '',
         relatedIds: [],
+        relatedTitle: '',
         assetOverrides: Object.create(null),
         assetUrls: [],
         pendingAssetId: null,
@@ -403,6 +405,12 @@
             }, 90);
         }
         updateChecklist();
+    }
+
+    function closeThemeChooser() {
+        if (!document.body.classList.contains('studio-chooser')) return;
+        document.body.classList.remove('studio-chooser');
+        if (el.openTheme) el.openTheme.setAttribute('aria-expanded', 'false');
     }
 
     function syncUrl() {
@@ -686,6 +694,8 @@
         var isLocalSource = state.sourceType === 'local';
         var hasTheme = !!state.meta;
         document.body.classList.toggle('has-theme', hasTheme);
+        /* Opening a theme answers the picker, so the player comes back. */
+        if (hasTheme) closeThemeChooser();
         el.title.textContent = hasTheme ? meta.name || 'Untitled theme' : 'Theme Studio';
         el.byline.textContent = hasTheme
             ? meta.author
@@ -1473,27 +1483,18 @@
         return out;
     }
 
-    function setRelatedAssets(id) {
+    function setRelatedAssets(id, explicitIds, title) {
         state.relatedAnchor = id || '';
-        state.relatedIds = id ? relatedIdsFor(id) : [];
+        state.relatedTitle = id && explicitIds && explicitIds.length ? String(title || '') : '';
+        state.relatedIds = !id ? [] : explicitIds && explicitIds.length ? explicitIds.slice() : relatedIdsFor(id);
         renderAssets();
-        if (!state.relatedIds.length) return;
-        /* On a phone the tray is its own surface: bring the row and its related
-           block into view so the tap in the preview lands on something visible. */
-        window.setTimeout(function () {
-            var block = el.assetList ? el.assetList.querySelector('.studio-related') : null;
-            if (!block) return;
-            var target = block.previousElementSibling || block;
-            try {
-                target.scrollIntoView({ block: 'center', behavior: 'auto' });
-            } catch (e) {}
-        }, 60);
     }
 
     function clearRelatedAssets() {
         if (!state.relatedAnchor && !state.relatedIds.length) return false;
         state.relatedAnchor = '';
         state.relatedIds = [];
+        state.relatedTitle = '';
         renderAssets();
         return true;
     }
@@ -1505,7 +1506,7 @@
         var head = document.createElement('div');
         head.className = 'studio-related-head';
         var title = document.createElement('span');
-        title.textContent = 'Also used by this item';
+        title.textContent = state.relatedTitle || 'Also used by this item';
         var count = document.createElement('span');
         count.className = 'studio-related-count';
         count.textContent = state.relatedIds.length + ' related';
@@ -1674,6 +1675,36 @@
         });
     }
 
+    function focusTrayAsset(id) {
+        window.setTimeout(function () {
+            var row = null;
+            each(el.assetList ? el.assetList.querySelectorAll('[data-asset-id]') : [], function (candidate) {
+                if (!row && candidate.getAttribute('data-asset-id') === id) row = candidate;
+            });
+            if (!row) return;
+            /* With a related group open, the group is the payload of the tap: pin
+               the item row to the top of the tray so the related rows below it are
+               on screen. Centering the row on a 240px watch pushed them a screen
+               below the fold, which made the tap look like it did nothing. */
+            var related = row.parentElement ? row.parentElement.querySelector('.studio-related') : null;
+            var target = related && related.previousElementSibling ? related.previousElementSibling : row;
+            try {
+                target.scrollIntoView({ behavior: 'auto', block: related ? 'start' : 'center' });
+                if (related) {
+                    /* On a watch-height tray the row plus the group is taller than the
+                       pane, so pinning the row still leaves the group off screen. Give
+                       the group the top of the pane instead: it is what the tap asked for. */
+                    var first = related.querySelector('[data-asset-id]');
+                    var box = first ? first.getBoundingClientRect() : null;
+                    if (!box || box.top < 0 || box.bottom > window.innerHeight + 1) {
+                        related.scrollIntoView({ behavior: 'auto', block: 'start' });
+                    }
+                }
+                row.focus({ preventScroll: true });
+            } catch (e) {}
+        }, 80);
+    }
+
     function revealAssetInEdit(id, options) {
         var asset = state.assetById[id];
         if (!asset) return false;
@@ -1688,17 +1719,41 @@
         if (options && options.related === false) clearRelatedAssets();
         else setRelatedAssets(id);
         selectAsset(id);
-        window.setTimeout(function () {
-            var row = null;
-            each(el.assetList ? el.assetList.querySelectorAll('[data-asset-id]') : [], function (candidate) {
-                if (!row && candidate.getAttribute('data-asset-id') === id) row = candidate;
-            });
-            if (!row) return;
-            try {
-                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                row.focus({ preventScroll: true });
-            } catch (e) {}
-        }, 80);
+        focusTrayAsset(id);
+        return true;
+    }
+
+    /* A screen's background is more than the wallpaper: on Home and Settings a
+       mask sits over it to clear the menu area. Neither is reachable by pointer,
+       because both are painted under the menu layer, so a click on the flat part
+       of the preview asks the simulator which slots draw this screen and pins
+       them into the tray together. */
+    function screenAssetIds() {
+        var api = el.preview ? el.preview._y1TpApi : null;
+        if (!api || typeof api.screenAssets !== 'function') return [];
+        var ids = [];
+        try {
+            ids = api.screenAssets() || [];
+        } catch (e) {
+            return [];
+        }
+        return ids.filter(function (id) {
+            return !!state.assetById[id];
+        });
+    }
+
+    function revealScreenAssets() {
+        var ids = screenAssetIds();
+        if (!ids.length) return false;
+        setMode('edit');
+        var filtered = ids.some(function (id) {
+            return !assetMatchesFilter(state.assetById[id], state.assetFilter);
+        });
+        if (filtered) state.assetFilter = 'all';
+        state.selectedAssetId = ids[0];
+        setRelatedAssets(ids.length > 1 ? ids[0] : '', ids.slice(1), 'Background and mask on this screen');
+        selectAsset(ids[0]);
+        focusTrayAsset(ids[0]);
         return true;
     }
 
@@ -1723,6 +1778,17 @@
         return node.tagName !== 'IMG' && !node.classList.contains('y1-tp-wallpaper');
     }
 
+    /* True when the tap sits on the flat part of a simulated screen: inside the
+       stage, below the controls, on no tagged asset and on no menu chrome. */
+    function previewBackgroundClick(event) {
+        var target = event && event.target;
+        if (!target || !target.closest || !el.preview || !el.preview.contains(target)) return false;
+        if (target.closest('[data-theme-asset-path]')) return false;
+        if (target.closest('button, a, input, select, textarea, [data-y1act], .y1-tp-status')) return false;
+        if (!target.closest('.y1-tp-canvas')) return false;
+        return revealScreenAssets();
+    }
+
     function setupPreviewAssetFocus() {
         if (!el.preview) return;
         el.preview.addEventListener('pointerover', function (event) {
@@ -1745,6 +1811,14 @@
             event.preventDefault();
             event.stopPropagation();
             revealAssetInEdit(path, { related: previewEventInMenuRow(event) });
+        });
+        /* Anything inside the stage that names no asset is background: the
+           wallpaper fill, the area under the settings mask, or empty canvas.
+           The asset handler above still wins whenever something is tagged. */
+        el.preview.addEventListener('click', function (event) {
+            if (previewAssetPathFromEvent(event)) return;
+            if (!previewBackgroundClick(event)) return;
+            event.preventDefault();
         });
         el.preview.addEventListener('contextmenu', function (event) {
             var path = previewAssetPathFromEvent(event);
@@ -2316,6 +2390,7 @@
                 if (!row.closest('.studio-related') && state.relatedAnchor) {
                     state.relatedAnchor = '';
                     state.relatedIds = [];
+                    state.relatedTitle = '';
                     renderAssets();
                 }
                 selectAsset(rowId, { reveal: true });
@@ -2330,6 +2405,7 @@
                 if (!row.closest('.studio-related') && state.relatedAnchor) {
                     state.relatedAnchor = '';
                     state.relatedIds = [];
+                    state.relatedTitle = '';
                     renderAssets();
                 }
                 selectAsset(keyId, { reveal: true });
@@ -3592,9 +3668,32 @@
 
         each(document.querySelectorAll('[data-mode-btn]'), function (btn) {
             btn.addEventListener('click', function () {
+                /* The mode tabs are the way out of the phone theme picker. */
+                closeThemeChooser();
                 setMode(btn.getAttribute('data-mode-btn'));
             });
         });
+
+        /* Below 760px the inspector is its own surface, so the gallery list it
+           owns disappears with it in Preview mode. Without this button a phone
+           that already has a theme open could never swap to another one. */
+        if (el.openTheme) {
+            el.openTheme.addEventListener('click', function () {
+                if (document.body.classList.contains('studio-chooser')) {
+                    closeThemeChooser();
+                    setMode('preview');
+                    return;
+                }
+                document.body.classList.add('studio-chooser');
+                el.openTheme.setAttribute('aria-expanded', 'true');
+                state.swapOpen = true;
+                if (el.swapPanel) el.swapPanel.hidden = false;
+                setMode('preview');
+                window.setTimeout(function () {
+                    if (el.themeFilter) el.themeFilter.focus({ preventScroll: true });
+                }, 80);
+            });
+        }
 
         el.startEdit.addEventListener('click', function () {
             if (!state.meta) {

@@ -373,6 +373,30 @@
         return full;
     }
 
+    /* The wallpaper and the mask are painted under the menu layer, so nothing
+       under the cursor can name them. These two helpers answer "which config
+       slot draws this screen's background" for the Studios: the wallpaper the
+       view actually uses, then the mask that punches the menu out of it. */
+    function wallpaperAssetPathForView(cfg, viewId) {
+        if (!cfg || typeof cfg !== 'object') return '';
+        var order =
+            viewId === 'home'
+                ? ['desktopWallpaper', 'globalWallpaper', 'themeWallpaper', 'themeCover']
+                : ['globalWallpaper', 'desktopWallpaper', 'themeWallpaper', 'themeCover'];
+        for (var i = 0; i < order.length; i += 1) {
+            if (cfg[order[i]]) return order[i];
+        }
+        return '';
+    }
+
+    function maskAssetPathForView(viewId) {
+        if (viewId === 'home') return 'desktopMask';
+        if (viewId === 'settings' || String(viewId || '').indexOf('settings') === 0) {
+            return 'settingConfig.settingMask';
+        }
+        return '';
+    }
+
     function applyCssProps(el, props) {
         if (!props || !el) return;
         for (var k in props) {
@@ -1586,14 +1610,7 @@
                     canvas.style.backgroundColor = 'transparent';
                     var wall = document.createElement('div');
                     wall.className = 'y1-tp-wallpaper';
-                    var wallAssetPath =
-                        sim.themeViewId === 'home'
-                            ? cfg.desktopWallpaper
-                                ? 'desktopWallpaper'
-                                : cfg.globalWallpaper
-                                  ? 'globalWallpaper'
-                                  : ''
-                            : '';
+                    var wallAssetPath = wallpaperAssetPathForView(cfg, sim.themeViewId);
                     if (wallAssetPath) wall.setAttribute('data-theme-asset-path', wallAssetPath);
                     wall.style.cssText =
                         'position:absolute;left:0;top:0;width:' +
@@ -2325,6 +2342,13 @@
                                 var btn = document.createElement('button');
                                 btn.type = 'button';
                                 btn.textContent = opt;
+                                /* Lets an editor focus the option art the same way it
+                                   focuses menu rows: the option owns the dialog
+                                   background slot it is drawn with. */
+                                btn.setAttribute(
+                                    'data-theme-asset-path',
+                                    sel ? 'dialogConfig.dialogOptionSelectedBackground' : 'dialogConfig.dialogOptionBackground'
+                                );
                                 applyCssProps(
                                     btn,
                                     obg || {
@@ -2836,6 +2860,16 @@
                     },
                     currentView: function () {
                         return sim.themeViewId;
+                    },
+                    /* The wallpaper and the mask this screen is drawn with, in
+                       painting order: wallpaper first, then the mask over it. */
+                    screenAssets: function () {
+                        var out = [];
+                        var wall = wallpaperAssetPathForView(cfg, sim.themeViewId);
+                        var mask = maskAssetPathForView(sim.themeViewId);
+                        if (wall) out.push(wall);
+                        if (mask) out.push(mask);
+                        return out;
                     }
                 };
 
