@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:37+00:00",
+ "generated": "2026-11-14T01:39:38+00:00",
  "keep": [
   "1G Pip-Boy",
   "1a Zelda",
@@ -102,7 +102,7 @@
  "locale": "crh-Latn",
  "name": "Crimean Tatar (Latin)",
  "native": "Qırımtatar (latin)",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!ŞEER YILDIZI!!",
@@ -1823,6 +1823,7 @@
   "prompt_restart_and_quit_desc": "Vspışka çalışmağan ola bile. Lütfen, yuqarıdaki haberni oqup, ​​kene tırışmazdan evel kompyüterni yañıdan başlatıñız. Eger «OK» nı bassañ, qullanma çıqıp kete, şunıñ içün sen yañıdan başlay bilesiñ.",
   "prompt_restart_and_quit_ok": "YAHŞI",
   "prompt_restart_and_quit_title": "Kompyüterni yañıdan çalıştırıñız",
+  "purple gothic": "mor götika",
   "purple neon": "mor neon",
   "purple, stars, cats.": "mor, yıldızlar, mışıqlar.",
   "purplecray0ns": "mor renkler0ns",

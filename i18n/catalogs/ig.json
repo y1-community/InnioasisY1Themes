@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:39+00:00",
+ "generated": "2026-11-14T01:39:45+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "2016 Ipod",
@@ -279,7 +279,7 @@
  "locale": "ig",
  "name": "Igbo",
  "native": "Igbo",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -2000,6 +2000,7 @@
   "prompt_restart_and_quit_desc": "Ọkụkụ ahụ nwere ike adaghị. Biko gụọ ozi dị n'elu wee malitegharịa kọmputa ahụ tupu ị nwaa ọzọ. Ọ bụrụ na ị pịa OK, ngwa ahụ ga-akwụsị ka i wee malitegharịa.",
   "prompt_restart_and_quit_ok": "Ọ DỊ MMA",
   "prompt_restart_and_quit_title": "Malitegharịa ekwentị gị na kọmputa",
+  "purple gothic": "gothic na-acha odo odo",
   "purple neon": "neon odo odo",
   "purple, stars, cats.": "odo odo, kpakpando, nwamba.",
   "purplecray0ns": "odo odo0ns",

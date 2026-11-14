@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:39+00:00",
+ "generated": "2026-11-14T01:39:44+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "\"Alfred da buttler\"",
@@ -270,7 +270,7 @@
  "locale": "hr",
  "name": "Croatian",
  "native": "Hrvatski",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -1991,6 +1991,7 @@
   "prompt_restart_and_quit_desc": "Bljeskalica možda nije uspjela. Pročitajte gornju poruku i ponovno pokrenite računalo prije ponovnog pokušaja. Ako kliknete OK, aplikacija će se zatvoriti kako biste je mogli ponovno pokrenuti.",
   "prompt_restart_and_quit_ok": "U REDU",
   "prompt_restart_and_quit_title": "Ponovno pokrenite računalo",
+  "purple gothic": "ljubičasta gotika",
   "purple neon": "ljubičasti neon",
   "purple, stars, cats.": "ljubičasta, zvijezde, mačke.",
   "purplecray0ns": "purplecray0ns",

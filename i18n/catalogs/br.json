@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:36+00:00",
+ "generated": "2026-11-14T01:39:35+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "\"Alfred da buttler\"",
@@ -281,7 +281,7 @@
  "locale": "br",
  "name": "Breton",
  "native": "Brezhoneg",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -2002,6 +2002,7 @@
   "prompt_restart_and_quit_desc": "C'hwitet eo bet ar flash marteze. Mar plij, lennit ar gemennadenn a-us hag adloc'hit an urzhiataer a-raok klask en-dro. Ma klikit war Mat eo e paouezo an arload evit ma c'hallit adloc'hañ.",
   "prompt_restart_and_quit_ok": "MAT EO",
   "prompt_restart_and_quit_title": "Adloc'hit hoc'h urzhiataer",
+  "purple gothic": "gotek limestra",
   "purple neon": "neon limestra",
   "purple, stars, cats.": "limestra, stered, kizhier.",
   "purplecray0ns": "purplecray0ns",

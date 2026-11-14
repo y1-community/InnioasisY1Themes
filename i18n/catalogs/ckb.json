@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "rtl",
- "generated": "2026-11-14T01:04:37+00:00",
+ "generated": "2026-11-14T01:39:37+00:00",
  "keep": [
   "20 minutos a uma hora",
   "A Hxh Theme",
@@ -113,7 +113,7 @@
  "locale": "ckb",
  "name": "Kurdish (Sorani)",
  "native": "کوردی",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!سیتی ستار!!",
@@ -1834,6 +1834,7 @@
   "prompt_restart_and_quit_desc": "لەوانەیە فلاشەکە لەکارکەوتبێت. تکایە ئەو پەیامەی سەرەوە بخوێنەرەوە و کۆمپیوتەرەکە دووبارە دابمەزرێنەرەوە پێش ئەوەی هەوڵی دووبارە بدەیتەوە. ئەگەر کلیک لەسەر OK بکەیت، ئەپەکە دەواسێت بۆ ئەوەی بتوانیت دووبارە دەستپێبکەیتەوە.",
   "prompt_restart_and_quit_ok": "باشە",
   "prompt_restart_and_quit_title": "کۆمپیوتەرەکەت دووبارە دابمەزرێنەرەوە",
+  "purple gothic": "وەنەوشەیی گۆتیک",
   "purple neon": "نیۆنی وەنەوشەیی",
   "purple, stars, cats.": "وەنەوشەیی، ئەستێرە، پشیلە.",
   "purplecray0ns": "purplecray0ns",

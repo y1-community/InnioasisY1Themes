@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:37+00:00",
+ "generated": "2026-11-14T01:39:36+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "1G Pip-Boy",
@@ -340,7 +340,7 @@
  "locale": "ceb",
  "name": "Cebuano",
  "native": "Cebuano",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -2061,6 +2061,7 @@
   "prompt_restart_and_quit_desc": "Mahimong napakyas ang flash. Palihug basaha ang mensahe sa ibabaw ug i-restart ang computer sa dili pa mosulay pag-usab. Kung imong i-klik ang OK, ang app mohunong aron ikaw maka-restart.",
   "prompt_restart_and_quit_ok": "OK ra",
   "prompt_restart_and_quit_title": "I-restart ang imong computer",
+  "purple gothic": "purpura nga gothic",
   "purple neon": "purpura nga neon",
   "purple, stars, cats.": "purpura, bituon, iring.",
   "purplecray0ns": "purplecray0ns",

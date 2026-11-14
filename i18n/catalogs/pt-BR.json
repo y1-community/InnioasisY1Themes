@@ -6,7 +6,7 @@
  "source": "en",
  "provider": "reviewed",
  "reviewed": true,
- "generated": "2026-11-14T00:19:27+00:00",
+ "generated": "2026-11-14T01:39:28+00:00",
  "count": 12415,
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -733,6 +733,7 @@
   "A reference for setting up Rockbox on an Innioasis player.": "Uma referência para configurar Rockbox em um jogador Innioasis.",
   "A remake of the original Life is Strange theme. I changed it a bit :)": "Um remake do tema original de Life is Strange. mudei um pouco :)",
   "A reset cannot run on a player that never reaches the home screen. That is a software problem, not a settings problem. Use": "Uma redefinição não pode ser executada em um jogador que nunca chega à tela inicial. Isso é um problema de software, não um problema de configuração. Usar",
+  "A sentence about the look, palette or what it works best with. Write it in English so the gallery can translate it for every visitor.": "Uma frase sobre o visual, a paleta ou com o que funciona melhor. Escreva em inglês para que a galeria possa traduzi-lo para cada visitante.",
   "A shared release can contain": "Uma versão compartilhada pode conter",
   "A short TikTok walkthrough of the Innioasis Updater CE Rockbox route.": "Um breve TikTok passo a passo da rota Innioasis Updater CE Rockbox.",
   "A short catalogue description": "Uma breve descrição do catálogo",
@@ -9205,6 +9206,7 @@
   "These are": "Estes são",
   "These are the attributes current Updater CE builds understand. The generator writes only the ones you fill in; the app falls back to sensible defaults for the rest.": "Estes são os atributos que as compilações atuais Updater CE entendem. O gerador grava apenas aqueles que você preenche; o aplicativo volta aos padrões sensatos para o resto.",
   "These are the post-install guides Updater CE links for each firmware. Pick your firmware to open its setup steps.": "Estes são os links dos guias de pós-instalação Updater CE para cada firmware. Escolha seu firmware para abrir as etapas de configuração.",
+  "These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting. Titles and descriptions stay in English here: the gallery translates them for each visitor.": "Estes são os mesmos detalhes de listagem do formulário de upload da galeria. O tema no simulador é o pacote que você está enviando. Os títulos e descrições ficam em inglês aqui: a galeria os traduz para cada visitante.",
   "These authors are not allowed on the public gallery or through the upload form. Themes credited to them are hidden from visitors. Upload attempts may still reach GitHub in some cases, but they will not be listed for download on themes.innioasis.app.": "Esses autores não são permitidos na galeria pública ou através do formulário de upload. Os temas creditados a eles ficam ocultos aos visitantes. As tentativas de upload ainda podem chegar a GitHub em alguns casos, mas não serão listadas para download em themes.innioasis.app.",
   "These authors have asked not to have themes submitted or offered for download on the Themes Site. You can still upload packages credited to them for": "Esses autores solicitaram que os temas não fossem submetidos ou oferecidos para download no Site de Temas. Você ainda pode fazer upload de pacotes creditados a eles por",
   "These guides cover the two failures people hit most often after an update or a flash. Pick the one that matches what you see, then work through it in order.": "Esses guias cobrem as duas falhas que as pessoas enfrentam com mais frequência após uma atualização ou flash. Escolha aquele que corresponde ao que você vê e analise-o em ordem.",
@@ -10386,6 +10388,7 @@
   "Wow, was für ein Bissen, aber was sage ich kichernd": "Uau, foi für ein Bissen, mas era sábio ich kichernd",
   "WrathfulCaly": "ColéricoCaly",
   "Write failed:": "Falha na gravação:",
+  "Write the title in English so the gallery can translate it for every visitor.": "Escreva o título em inglês para que a galeria possa traduzi-lo para cada visitante.",
   "Written tutorial": "Tutorial escrito",
   "Wrong turn": "Curva errada",
   "Wu-Tang": "Wu Tang",
@@ -12420,9 +12423,6 @@
   "🛠️ Developer Friendly": "🛠️ Amigável ao desenvolvedor",
   "🪓✧˖°🫀⋆｡𖦹🔪 80's camp/mystery/horror theme": "🪓✧˖°🫀⋆｡𖦹🔪 Tema acampamento/mistério/terror dos anos 80",
   "🪟 Windows ARM64": "🪟Windows ARM64",
-  "🪟 Windows Installation": "🪟 Instalação do Windows",
-  "These are the same listing details as the gallery upload form. The theme in the simulator is the package you are submitting. Titles and descriptions stay in English here: the gallery translates them for each visitor.": "Estes são os mesmos detalhes de listagem do formulário de upload da galeria. O tema no simulador é o pacote que você está enviando. Os títulos e descrições ficam em inglês aqui: a galeria os traduz para cada visitante.",
-  "Write the title in English so the gallery can translate it for every visitor.": "Escreva o título em inglês para que a galeria possa traduzi-lo para cada visitante.",
-  "A sentence about the look, palette or what it works best with. Write it in English so the gallery can translate it for every visitor.": "Uma frase sobre o visual, a paleta ou com o que funciona melhor. Escreva em inglês para que a galeria possa traduzi-lo para cada visitante."
+  "🪟 Windows Installation": "🪟 Instalação do Windows"
  }
 }

@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:37+00:00",
+ "generated": "2026-11-14T01:39:38+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "\"Alfred da buttler\"",
@@ -218,7 +218,7 @@
  "locale": "cy",
  "name": "Welsh",
  "native": "Cymraeg",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -1939,6 +1939,7 @@
   "prompt_restart_and_quit_desc": "Efallai bod y fflach wedi methu. Darllenwch y neges uchod ac ailgychwynnwch y cyfrifiadur cyn ceisio eto. Os cliciwch OK, bydd yr app yn rhoi'r gorau iddi er mwyn i chi allu ailgychwyn.",
   "prompt_restart_and_quit_ok": "iawn",
   "prompt_restart_and_quit_title": "Ailgychwyn eich cyfrifiadur",
+  "purple gothic": "gothig porffor",
   "purple neon": "neon porffor",
   "purple, stars, cats.": "porffor, sêr, cathod.",
   "purplecray0ns": "piwscray0ns",

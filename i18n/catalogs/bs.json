@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:36+00:00",
+ "generated": "2026-11-14T01:39:35+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "1G Pip-Boy",
@@ -415,7 +415,7 @@
  "locale": "bs",
  "name": "Bosnian",
  "native": "Bosanski",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -2136,6 +2136,7 @@
   "prompt_restart_and_quit_desc": "Blic je možda pokvario. Molimo pročitajte gornju poruku i ponovo pokrenite računar prije nego što pokušate ponovo. Ako kliknete OK, aplikacija će se zatvoriti tako da možete ponovo pokrenuti.",
   "prompt_restart_and_quit_ok": "OK",
   "prompt_restart_and_quit_title": "Ponovo pokrenite računar",
+  "purple gothic": "ljubičasta gotika",
   "purple neon": "ljubičasti neon",
   "purple, stars, cats.": "ljubičasta, zvijezde, mačke.",
   "purplecray0ns": "purplecray0ns",

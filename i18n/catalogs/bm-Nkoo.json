@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:35+00:00",
+ "generated": "2026-11-14T01:39:34+00:00",
  "keep": [
   "BO1",
   "BO2",
@@ -36,7 +36,7 @@
  "locale": "bm-Nkoo",
  "name": "NKo",
  "native": "ߒ ߕߐ߮",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!ߛߌߕߋߛߌߕߊߙߌ!!",
@@ -1757,6 +1757,7 @@
   "prompt_restart_and_quit_desc": "ߊ߬ ߛߌߦߊߡߊ߲ ߘߐ߫ ߦߟߋߞߎ ߓߘߊ߫ ߗߌߙߏ߲߫. ߌ ߖߏ߫ ߞߊ߬ ߛߊ߲ߘߐ߫ ߗߋߛߓߍߙߋ߲ ߞߊ߬ߙߊ߲߬ ߊ߬ ߣߌ߫ ߞߊ߬ ߕߟߋ߬ߓߊ߮ ߟߊߡߍߣߍ߲ߡߛߊߦߌ߫ ߦߊ߬ߣߴߌ ߦߴߊ߬ ߡߊߝߍߣߍ߲߫ ߕߎ߲߯. ߣߴߌ߫ ߦߋ߫ OK ߘߜ߭ߌ߫ ߑ ߔߙߏߜ߭ߙߊߡߎ ߓߍ߫ ߖߐ߬ ߥߟߊߛߊ߫ ߌ ߞߊ߫ ߛߋ߫ ߞߊ߬ ߟߊߥߎߟߌ.",
   "prompt_restart_and_quit_ok": "ߒ ߛߐ߬ߣߊ߫",
   "prompt_restart_and_quit_title": "ߌ ߟߊ߫ ߕߟߋ߬ߓߊ߮ ߟߊߡߍߣߍ߲ߡߛߊߦߌ",
+  "purple gothic": "ߜ߭ߏߕߌߞߌ ߥߌߦߏߟߍ",
   "purple neon": "ߣߋߦߐ߲߫ ߥߎ߬ߟߋ߲߬ߡߊ߲",
   "purple, stars, cats.": "ߥߌߏߛߍ ߑ ߟߏ߬ߟߏߥߵ ߑ ߖߊ߬ߞߎߡߊߥߵ.",
   "purplecray0ns": "ߔߍߙߌߔߍߙߌߞߙߍߦߵ",

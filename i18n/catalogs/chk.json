@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:37+00:00",
+ "generated": "2026-11-14T01:39:37+00:00",
  "keep": [
   "A+",
   "Aisha Shanaya Wasi",
@@ -137,7 +137,7 @@
  "locale": "chk",
  "name": "Chuukese",
  "native": "Trukese",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!EWE CHON TELINI!!",
@@ -1858,6 +1858,7 @@
   "prompt_restart_and_quit_desc": "Eli ewe flash a fen fis. Kopwe anneani ewe porous asan me kopwe poputani sefani ewe computer me mwen kopwe sotuni sefani. Ika ka OK, ewe app epwe ukutiw pwe kopwe tongeni poputa sefan.",
   "prompt_restart_and_quit_ok": "EWER",
   "prompt_restart_and_quit_title": "Kopwe poputásefál le féri .",
+  "purple gothic": "gotik mi pwechepwech",
   "purple neon": "neon mi pwechepwech",
   "purple, stars, cats.": "pur, ekkewe fuu, ekkewe pusi.",
   "purplecray0ns": "pwechepwech",

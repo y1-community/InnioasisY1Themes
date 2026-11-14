@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:37+00:00",
+ "generated": "2026-11-14T01:39:39+00:00",
  "keep": [
   "BO1",
   "BO2",
@@ -37,7 +37,7 @@
  "locale": "doi",
  "name": "Dogri",
  "native": "डोगरी",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!सिटीस्टार दा!!",
@@ -1758,6 +1758,7 @@
   "prompt_restart_and_quit_desc": "फ्लैश फेल हो सकदा ऐ। कृपा करियै उपर दित्ते गेदे संदेश गी पढ़ो ते दुबारा कोशश करने शा पैह् लें कंप्यूटर गी दुबारा शुरू करो. जेकर तुस ठीक पर क्लिक करदे ओ तां ऐप बंद होई जाग तां जे तुस दुबारा शुरू करी सकदे ओ।",
   "prompt_restart_and_quit_ok": "ठीक ऐ",
   "prompt_restart_and_quit_title": "अपने कंप्यूटर गी दुबारा शुरू करो",
+  "purple gothic": "बैंगनी गॉथिक",
   "purple neon": "बैंगनी रंग दा नीयन",
   "purple, stars, cats.": "बैंगनी, तारे, बिल्लियां।",
   "purplecray0ns": "बैंगनी क्रे0न्स",

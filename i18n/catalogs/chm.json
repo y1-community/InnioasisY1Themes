@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:37+00:00",
+ "generated": "2026-11-14T01:39:37+00:00",
  "keep": [
   "ACmp3",
   "Android",
@@ -78,7 +78,7 @@
  "locale": "chm",
  "name": "Meadow Mari",
  "native": "Олык марий",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!СИТИСТАР!!",
@@ -1799,6 +1799,7 @@
   "prompt_restart_and_quit_desc": "Вспышка локтылалтын кертеш. Пожалуйста, ӱлнӧ возымо серышым лудын лекса да угыч тӧчен ончымо деч ончыч компьютерым угыч тӱҥалза. OK темдал гын, приложений лектеш, тыге те угыч тӱҥалын кертыда.",
   "prompt_restart_and_quit_ok": "МАКУЛ",
   "prompt_restart_and_quit_title": "Компьютерым угыч тӱҥалза",
+  "purple gothic": "пурпурный готик",
   "purple neon": "пурпурный неон",
   "purple, stars, cats.": "пурпурный, звезд, кошки.",
   "purplecray0ns": "purplecray0ns",

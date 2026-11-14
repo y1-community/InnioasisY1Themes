@@ -1,7 +1,7 @@
 {
- "count": 2251,
+ "count": 2252,
  "dir": "rtl",
- "generated": "2026-11-14T01:04:37+00:00",
+ "generated": "2026-11-14T01:39:41+00:00",
  "keep": [
   "A(ero)OBA",
   "A+",
@@ -70,7 +70,7 @@
  "locale": "fa-AF",
  "name": "Dari",
  "native": "از",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!ستاره شهر!!",
@@ -1797,6 +1797,7 @@
   "prompt_restart_and_quit_desc": "فلش ممکن از کار افتیده باشد. لطفاً پیام بالا را بخوانید و قبل از اینکه دوباره تلاش کنید کمپیوتر را دوباره راه اندازی کنید. اگر شما روی OK کلیک کنید، اپلیکیشن قطع خواهد شد تا شما بتوانید دوباره راه اندازی کنید.",
   "prompt_restart_and_quit_ok": "درست",
   "prompt_restart_and_quit_title": "کمپیوتر تان را دوباره راه اندازی کنید",
+  "purple gothic": "گوتیک ارغوانی",
   "purple neon": "نئون ارغوانی",
   "purple, stars, cats.": "بنفش، ستاره ها، پشک ها.",
   "purplecray0ns": "ارغوانی کرای0نس",

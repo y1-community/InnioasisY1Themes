@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:39+00:00",
+ "generated": "2026-11-14T01:39:43+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "1G Pip-Boy",
@@ -259,7 +259,7 @@
  "locale": "gl",
  "name": "Galician",
  "native": "Galego",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -1980,6 +1980,7 @@
   "prompt_restart_and_quit_desc": "É posible que fallou o flash. Le a mensaxe anterior e reinicia o ordenador antes de tentalo de novo. Se fai clic en Aceptar, a aplicación pecharase para que poidas reiniciar.",
   "prompt_restart_and_quit_ok": "OK",
   "prompt_restart_and_quit_title": "Reinicia o teu ordenador",
+  "purple gothic": "gótico morado",
   "purple neon": "neón morado",
   "purple, stars, cats.": "roxo, estrelas, gatos.",
   "purplecray0ns": "purplecray0ns",

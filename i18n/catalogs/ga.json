@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:39+00:00",
+ "generated": "2026-11-14T01:39:42+00:00",
  "keep": [
   "1a Zelda",
   "A(ero)OBA",
@@ -198,7 +198,7 @@
  "locale": "ga",
  "name": "Irish",
  "native": "Gaeilge",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!Citystar!!",
@@ -1919,6 +1919,7 @@
   "prompt_restart_and_quit_desc": "Seans gur theip ar an splanc. Léigh an teachtaireacht thuas agus atosaigh an ríomhaire sula ndéanfaidh tú iarracht eile. Má chliceálann tú OK, scoirfidh an app ionas gur féidir leat atosú.",
   "prompt_restart_and_quit_ok": "ceart go leor",
   "prompt_restart_and_quit_title": "Atosaigh do ríomhaire",
+  "purple gothic": "corcra ghotach",
   "purple neon": "neon corcra",
   "purple, stars, cats.": "corcra, réaltaí, cait.",
   "purplecray0ns": "corcracray0ns",

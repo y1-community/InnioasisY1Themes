@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:35+00:00",
+ "generated": "2026-11-14T01:39:31+00:00",
  "keep": [
   "BO1",
   "BO2",
@@ -38,7 +38,7 @@
  "locale": "av",
  "name": "Avar",
  "native": "авар мацӏ",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!СИТИСТАР!!",
@@ -1759,6 +1759,7 @@
   "prompt_restart_and_quit_desc": "Вспышка лъугӀун батила. Гьарула, тӀадехун бугеб хабар цӀале ва цӀидасан хӀалбихьилалде цебе компьютер цӀидасан рагьизе. Если вы нажмете OK, приложение выйдет, чтобы вы могли перезапустить.",
   "prompt_restart_and_quit_ok": "АГЬА",
   "prompt_restart_and_quit_title": "Компьютер цӀидасан рагьизе",
+  "purple gothic": "пурпурный готика",
   "purple neon": "пурпурный неон",
   "purple, stars, cats.": "хъахӀил, цӀваби, катил.",
   "purplecray0ns": "пурпуркрей0нс",

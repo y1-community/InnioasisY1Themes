@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:39+00:00",
+ "generated": "2026-11-14T01:39:42+00:00",
  "keep": [
   "1a Zelda",
   "2000’s Teal",
@@ -143,7 +143,7 @@
  "locale": "gaa",
  "name": "Ga",
  "native": "Gã",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!Maŋ lɛ mli ŋulami!!",
@@ -1864,6 +1864,7 @@
   "prompt_restart_and_quit_desc": "Ekolɛ flash lɛ egbo. Ofainɛ kanemɔ sane ni yɔɔ ŋwɛi nɛɛ ni obɔi kɔmpiuta lɛ ekoŋŋ dani oka ekoŋŋ. Kɛ́ onyɛ OK nɔ lɛ, app lɛ baakpa nitsumɔ koni onyɛ obɔi nitsumɔ ekoŋŋ.",
   "prompt_restart_and_quit_ok": "YÓO",
   "prompt_restart_and_quit_title": "Je okɔmpiuta lɛ shishi ekoŋŋ",
+  "purple gothic": "gothic pɛpɛɛpɛ",
   "purple neon": "neon ni ji purple",
   "purple, stars, cats.": "purple, ŋulamii, ŋmɔji.",
   "purplecray0ns": "purpurkrɛs0ns",

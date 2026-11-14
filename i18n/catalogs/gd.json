@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:39+00:00",
+ "generated": "2026-11-14T01:39:42+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "A(ero)OBA",
@@ -208,7 +208,7 @@
  "locale": "gd",
  "name": "Scots Gaelic",
  "native": "Gàidhlig",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -1929,6 +1929,7 @@
   "prompt_restart_and_quit_desc": "'S dòcha gun do dh'fhàillig an flash. Feuch an leugh thu an teachdaireachd gu h-àrd agus ath-thòisich an coimpiutair mus feuch thu ris a-rithist. Ma bhriogas tu air OK, sguir an aplacaid gus an urrainn dhut ath-thòiseachadh.",
   "prompt_restart_and_quit_ok": "ceart gu leòr",
   "prompt_restart_and_quit_title": "Ath-thòisich an coimpiutair agad",
+  "purple gothic": "gothic purpaidh",
   "purple neon": "neon purpaidh",
   "purple, stars, cats.": "purpaidh, reultan, cait.",
   "purplecray0ns": "purpaidhcray0ns",

@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:35+00:00",
+ "generated": "2026-11-14T01:39:32+00:00",
  "keep": [
   "A+",
   "Aisha Shanaya Wasi",
@@ -142,7 +142,7 @@
  "locale": "bci",
  "name": "Baoulé",
  "native": "Wawle",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!KLƆ NDƐ!!",
@@ -1863,6 +1863,7 @@
   "prompt_restart_and_quit_desc": "Atrɛkpa’n, flash’n w’a yoman kpa. Kanngan ndɛ ng’ɔ o nglo lɔ’n nun naan bo ɔrdinatɛli’n i bo ekun ka naan w’a yo sɔ ekun. Sɛ a tin OK su’n, appli’n ɔ́ jrán naan w’a kwla bo i bo ekun.",
   "prompt_restart_and_quit_ok": "ETIPKA",
   "prompt_restart_and_quit_title": "Bo ɔ ɔrdinatɛli’n i bo ekun",
+  "purple gothic": "gothique violet",
   "purple neon": "néon violet",
   "purple, stars, cats.": "violet, étoiles, chats.",
   "purplecray0ns": "violet cray0ns",

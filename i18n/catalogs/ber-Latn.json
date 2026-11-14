@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:35+00:00",
+ "generated": "2026-11-14T01:39:33+00:00",
  "keep": [
   "1a Zelda",
   "20 minutos a uma hora",
@@ -111,7 +111,7 @@
  "locale": "ber-Latn",
  "name": "Tamazight",
  "native": "Tamaziɣt",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!ITRI n TEMDINT!!",
@@ -1832,6 +1832,7 @@
   "prompt_restart_and_quit_desc": "Ahat ur yezmir ara flash-nni. Ttxil ɣer izen-agi n ufella u ɛiwed sbedd aselkim uqbel ad tɛerḍeḍ tikkelt nniḍen. Ma tkecmeḍ OK, ad yeḥbes useɣzan akken ad tzemreḍ ad t-id-terreḍ.",
   "prompt_restart_and_quit_ok": "YERBAḤ",
   "prompt_restart_and_quit_title": "Aɛiwed n uselkim-ik",
+  "purple gothic": "Gutik aberṣaṣan",
   "purple neon": "neyun arxaṣan",
   "purple, stars, cats.": "arṣaṣ, itran, imcac.",
   "purplecray0ns": "aẓawan aẓayan",

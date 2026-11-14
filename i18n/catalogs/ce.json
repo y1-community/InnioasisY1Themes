@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:36+00:00",
+ "generated": "2026-11-14T01:39:36+00:00",
  "keep": [
   "BO1",
   "BO2",
@@ -36,7 +36,7 @@
  "locale": "ce",
  "name": "Chechen",
  "native": "Нохчийн",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!СИТИСТАР!!",
@@ -1757,6 +1757,7 @@
   "prompt_restart_and_quit_desc": "Вспышка дӀаяьлла хила а тарло. Лакхахь яздина хаам а дешна, юха а гӀертале компьютер юха дӀайолае. Нагахь санна ахь OK тӀе хьаьжча, и программа дӀайолу, ахь юха дӀайоло йиш йолуш.",
   "prompt_restart_and_quit_ok": "МЕГАР ДУ",
   "prompt_restart_and_quit_title": "Компьютер юха дӀайолае .",
+  "purple gothic": "морса готика",
   "purple neon": "морса неон",
   "purple, stars, cats.": "морса, седарчий, цицигаш.",
   "purplecray0ns": "пурпуркрей0нс",

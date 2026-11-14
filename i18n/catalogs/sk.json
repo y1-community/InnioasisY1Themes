@@ -1,7 +1,7 @@
 {
- "count": 1223,
+ "count": 1224,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:40+00:00",
+ "generated": "2026-11-14T01:40:02+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "1G Pip-Boy",
@@ -293,7 +293,7 @@
  "locale": "sk",
  "name": "Slovak",
  "native": "Slovenčina",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -1428,6 +1428,7 @@
   "pretty cool rick and morty theme if you ask me": "celkom cool rick and morty téma, ak sa ma pýtate",
   "pretty mt. fiji pictures": "pekný mt. obrázky z fidži",
   "pretty ocean stuff (1st of ocean collection)": "pekné oceánske veci (1st of ocean collection)",
+  "purple gothic": "fialová gotika",
   "purple neon": "fialový neón",
   "purple, stars, cats.": "fialová, hviezdy, mačky.",
   "purplecray0ns": "purplecray0ns",

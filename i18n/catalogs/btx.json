@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:36+00:00",
+ "generated": "2026-11-14T01:39:35+00:00",
  "keep": [
   "A+",
   "Aisha Shanaya Wasi",
@@ -127,7 +127,7 @@
  "locale": "btx",
  "name": "Batak Karo",
  "native": "Batak Karo",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!BINTANG KOTA!!",
@@ -1848,6 +1848,7 @@
   "prompt_restart_and_quit_desc": "Banci saja kilat e nggo gagal. Bacalah pesan i datas ras restart komputer ope denga icubakenndu mulihi. Adi i klikndu OK, aplikasi e berhenti me gelah banci i-restartndu.",
   "prompt_restart_and_quit_ok": "UE",
   "prompt_restart_and_quit_title": "Mulai mulihi komputerndu .",
+  "purple gothic": "ungu gothic",
   "purple neon": "neon ungu",
   "purple, stars, cats.": "ungu, bintang, kucing.",
   "purplecray0ns": "ungu0ns",

@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:35+00:00",
+ "generated": "2026-11-14T01:39:32+00:00",
  "keep": [
   "Apple Music",
   "BO1",
@@ -41,7 +41,7 @@
  "locale": "ba",
  "name": "Bashkir",
  "native": "Башҡортса",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!СИТИСТАР!!",
@@ -1762,6 +1762,7 @@
   "prompt_restart_and_quit_desc": "Вспышка эшләмәгәндер. Зинһар, өҫтәге хәбәрҙе уҡып, яңынан тырышыр алдынан компьютерҙы яңынан эшләтеп ебәрегеҙ. Әгәр һеҙ OK баҫығыҙ, ҡушымта ташлай, шулай итеп, һеҙ ҡабаттан башлай ала.",
   "prompt_restart_and_quit_ok": "ЯРАР",
   "prompt_restart_and_quit_title": "Компьютерҙы яңынан эшләтеп ебәрегеҙ",
+  "purple gothic": "фиолетовый готика",
   "purple neon": "алһыу неон",
   "purple, stars, cats.": "ҡыҙыл, йондоҙҙар, бесәйҙәр.",
   "purplecray0ns": "фиолетовый крей0нс",

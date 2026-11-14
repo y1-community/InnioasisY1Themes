@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:36+00:00",
+ "generated": "2026-11-14T01:39:35+00:00",
  "keep": [
   "ACmp3",
   "Apple 3",
@@ -78,7 +78,7 @@
  "locale": "bua",
  "name": "Buryat",
  "native": "Буряад",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!СИТИСТАР!!",
@@ -1799,6 +1799,7 @@
   "prompt_restart_and_quit_desc": "Флэш унтарһан байжа болохо. Дээрэхи мэдээсэл уншаад, дахин оролдохынгоо урда тээ компьютерээ дахин эхилүүлыт. Хэрбээ та OK дараа һаа, апп унтарааха, тиимэһээ та дахин эхилхэ аргатайт.",
   "prompt_restart_and_quit_ok": "ЗА",
   "prompt_restart_and_quit_title": "Компьютерээ дахин эхилүүлхэ",
+  "purple gothic": "ягаан готик",
   "purple neon": "ягаан неон",
   "purple, stars, cats.": "ягаан, одо мүшэд, муурнууд.",
   "purplecray0ns": "ягаан үнгэтэй",

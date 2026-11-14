@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:39+00:00",
+ "generated": "2026-11-14T01:39:43+00:00",
  "keep": [
   "1a Zelda",
   "A(ero)OBA",
@@ -97,7 +97,7 @@
  "locale": "gu",
  "name": "Gujarati",
  "native": "ગુજરાતી",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!સિટીસ્ટાર!!",
@@ -1818,6 +1818,7 @@
   "prompt_restart_and_quit_desc": "ફ્લેશ નિષ્ફળ થઈ શકે છે. કૃપા કરીને ઉપરનો સંદેશ વાંચો અને ફરીથી પ્રયાસ કરતા પહેલા કમ્પ્યુટરને ફરીથી પ્રારંભ કરો. જો તમે ઓકે ક્લિક કરો છો, તો એપ્લિકેશન બંધ થઈ જશે જેથી કરીને તમે પુનઃપ્રારંભ કરી શકો.",
   "prompt_restart_and_quit_ok": "ઠીક છે",
   "prompt_restart_and_quit_title": "તમારા કમ્પ્યુટરને ફરીથી પ્રારંભ કરો",
+  "purple gothic": "જાંબલી ગોથિક",
   "purple neon": "જાંબલી નિયોન",
   "purple, stars, cats.": "જાંબલી, તારાઓ, બિલાડીઓ.",
   "purplecray0ns": "purplecray0ns",

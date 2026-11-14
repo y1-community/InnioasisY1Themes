@@ -1,7 +1,7 @@
 {
- "count": 2221,
+ "count": 2222,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:39+00:00",
+ "generated": "2026-11-14T01:39:47+00:00",
  "keep": [
   "A+",
   "Alucard",
@@ -150,7 +150,7 @@
  "locale": "kek",
  "name": "Qʼeqchiʼ",
  "native": "Q'eqchi'.",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CHIHIM RE LI TENAMIT!!",
@@ -1849,6 +1849,7 @@
   "prompt_restart_and_quit_desc": "Maare ink’a’ ki’el chi us li flash. B’aanu usilal, il ru li esil wan sa’ xb’een ut b’oq wi’chik li ulul ch’iich’ rub’elaj naq taayal wi’chik. Wi nakaapitzʼ li OK, li aplicación t-elq re naq tatruuq chi xtikibʼankil wiʼ chik.",
   "prompt_restart_and_quit_ok": "US",
   "prompt_restart_and_quit_title": "Xtikib’ankil wi’chik laa k’anjeleb’aal .",
+  "purple gothic": "morado gótico",
   "purple neon": "neón morado",
   "purple, stars, cats.": "morado, chahim, mis.",
   "purplecray0ns": "morado",

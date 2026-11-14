@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:35+00:00",
+ "generated": "2026-11-14T01:39:30+00:00",
  "keep": [
   "\"Alfred da buttler\"",
   "1G Pip-Boy",
@@ -253,7 +253,7 @@
  "locale": "af",
  "name": "Afrikaans",
  "native": "Afrikaans",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!STADSSTER!!",
@@ -1974,6 +1974,7 @@
   "prompt_restart_and_quit_desc": "Die flits het dalk misluk. Lees asseblief die boodskap hierbo en herbegin die rekenaar voordat jy weer probeer. As jy OK klik, sal die toepassing sluit sodat jy weer kan begin.",
   "prompt_restart_and_quit_ok": "OK",
   "prompt_restart_and_quit_title": "Herbegin jou rekenaar",
+  "purple gothic": "pers gotiek",
   "purple neon": "pers neon",
   "purple, stars, cats.": "pers, sterre, katte.",
   "purplecray0ns": "purplecray0ns",

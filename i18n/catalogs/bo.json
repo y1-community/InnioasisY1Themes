@@ -1,7 +1,7 @@
 {
- "count": 2243,
+ "count": 2244,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:35+00:00",
+ "generated": "2026-11-14T01:39:34+00:00",
  "keep": [
   "1 day ago",
   "1 month ago",
@@ -57,7 +57,7 @@
  "locale": "bo",
  "name": "Tibetan",
  "native": "བོད་མི",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!གྲོང་ཁྱེར་གྱི་སྐར་མ་!!",
@@ -1776,6 +1776,7 @@
   "prompt_restart_and_quit_desc": "གློག་འོད་དེ་འཐུས་ཤོར་ཕྱིན་ཡོད་སྲིད། གོང་གི་འཕྲིན་ཡིག་དེ་ཀློག་ནས་བསྐྱར་དུ་ཚོད་ལྟ་མ་བྱེད་གོང་གློག་ཀླད་བསྐྱར་དུ་འགོ་བཙུགས་རོགས། གལ་ཏེ་ཁྱེད་ཀྱིས་བདེན་པ་ལ་སྣུན་ན། མཉེན་ཆས་དེ་བཀག་ནས་ཁྱེད་ཀྱིས་བསྐྱར་དུ་འགོ་འཛུགས་ཐུབ།",
   "prompt_restart_and_quit_ok": "ཆོག",
   "prompt_restart_and_quit_title": "གློག་ཀླད་བསྐྱར་དུ་འགོ་འཛུགས།",
+  "purple gothic": "མུ་མེན་གྷོ་ཐིག།",
   "purple neon": "མུ་མེན་མུ་མེན།",
   "purple, stars, cats.": "མུ་མེན། སྐར་མ། ཞི་མི།",
   "purplecray0ns": "མུ་མེན་སྨུག་པོ།",

@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:35+00:00",
+ "generated": "2026-11-14T01:39:31+00:00",
  "keep": [
   "20 minutos a uma hora",
   "A+",
@@ -78,7 +78,7 @@
  "locale": "ay",
  "name": "Aymara",
  "native": "Aymar aru",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR ukax mä juk'a pachanakanwa!!",
@@ -1799,6 +1799,7 @@
   "prompt_restart_and_quit_desc": "Inas uka flash ukax jan waltʼayatächïna. Aka pata yatiyawi uñxatt’aña ukatxa computadora wasitat qalltaña janïra mayampi yant’kasa. OK ukxaru ch’iqt’asaxa, app ukaxa mistuñapawa ukhamata mayampi qalltañataki.",
   "prompt_restart_and_quit_ok": "WALIKI",
   "prompt_restart_and_quit_title": "Computadora ukar wasitat qalltañamawa",
+  "purple gothic": "lila gótico ukaxa",
   "purple neon": "morado neon ukax wali ch’amawa",
   "purple, stars, cats.": "lila, warawaranaka, pusini.",
   "purplecray0ns": "purplecray0ns ukat juk’ampinaka",

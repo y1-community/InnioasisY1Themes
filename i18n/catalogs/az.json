@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:35+00:00",
+ "generated": "2026-11-14T01:39:31+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "1G Pip-Boy",
@@ -241,7 +241,7 @@
  "locale": "az",
  "name": "Azerbaijani",
  "native": "Azərbaycan dili",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -1962,6 +1962,7 @@
   "prompt_restart_and_quit_desc": "Flaş uğursuz ola bilər. Yenidən cəhd etməzdən əvvəl yuxarıdakı mesajı oxuyun və kompüteri yenidən başladın. OK düyməsini klikləsəniz, proqram çıxacaq ki, siz yenidən başlaya biləsiniz.",
   "prompt_restart_and_quit_ok": "OK",
   "prompt_restart_and_quit_title": "Kompüterinizi yenidən başladın",
+  "purple gothic": "bənövşəyi qotika",
   "purple neon": "bənövşəyi neon",
   "purple, stars, cats.": "bənövşəyi, ulduzlar, pişiklər.",
   "purplecray0ns": "purplecray0ns",

@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:35+00:00",
+ "generated": "2026-11-14T01:39:31+00:00",
  "keep": [
   "A+",
   "ACmp3",
@@ -91,7 +91,7 @@
  "locale": "as",
  "name": "Assamese",
  "native": "অসমীয়া",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!চিটিষ্টাৰ!!",
@@ -1812,6 +1812,7 @@
   "prompt_restart_and_quit_desc": "ফ্লেছটো হয়তো বিকল হৈ গৈছে। অনুগ্ৰহ কৰি ওপৰৰ বাৰ্তাটো পঢ়ক আৰু পুনৰ চেষ্টা কৰাৰ আগতে কমপিউটাৰটো পুনৰাৰম্ভ কৰক। যদি আপুনি ঠিক আছে ক্লিক কৰে, তেন্তে এপটো বন্ধ হৈ যাব যাতে আপুনি পুনৰ আৰম্ভ কৰিব পাৰে।",
   "prompt_restart_and_quit_ok": "ঠিক আছে",
   "prompt_restart_and_quit_title": "আপোনাৰ কমপিউটাৰ পুনৰাৰম্ভ কৰক",
+  "purple gothic": "বেঙুনীয়া ৰঙৰ গথিক",
   "purple neon": "বেঙুনীয়া ৰঙৰ নিয়ন",
   "purple, stars, cats.": "বেঙুনীয়া, তৰা, মেকুৰী।",
   "purplecray0ns": "বেঙুনীয়া ৰঙৰ cray0ns",

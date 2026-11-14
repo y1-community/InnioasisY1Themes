@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:39+00:00",
+ "generated": "2026-11-14T01:39:43+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "A+",
@@ -85,7 +85,7 @@
  "locale": "gn",
  "name": "Guarani",
  "native": "Avañe'ẽ",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -1806,6 +1806,7 @@
   "prompt_restart_and_quit_desc": "Ikatu pe flash ofalla ra’e. Emoñe’ẽ marandu yvategua ha emoñepyrũ jey komputadóra eñeha’ã jey mboyve. Emboguapýramo OK, pe app osẽta ikatu hag̃uáicha reñepyrũ jey.",
   "prompt_restart_and_quit_ok": "OĨMA",
   "prompt_restart_and_quit_title": "Emoñepyrũ jey ne komputadóra",
+  "purple gothic": "gótico púrpura rehegua",
   "purple neon": "neón púrpura rehegua",
   "purple, stars, cats.": "púrpura, mbyjakuéra, mymbakuéra.",
   "purplecray0ns": "púrpura cray0ns rehegua",

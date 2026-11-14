@@ -1,7 +1,7 @@
 {
- "count": 2244,
+ "count": 2245,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:37+00:00",
+ "generated": "2026-11-14T01:39:36+00:00",
  "keep": [
   "1a Zelda",
   "A+",
@@ -133,7 +133,7 @@
  "locale": "cgg",
  "name": "Kiga",
  "native": "Kiga",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!ENYONYOOZI Y'ORUREMBO!!",
@@ -1853,6 +1853,7 @@
   "prompt_restart_and_quit_desc": "Flash neebaasa kuba eremirwe. Nyabura shoma obutumwa obu aharuguru kandi ogarukye otandikireho kompyuta otakagyezeho. Waaba nooteera OK, app neija kurekyera aho kugira ngu ogarukye otandikire.",
   "prompt_restart_and_quit_ok": "KARE",
   "prompt_restart_and_quit_title": "Garuka otandikye kompyuta yaawe",
+  "purple gothic": "gothic ya papo",
   "purple neon": "neon ya papo",
   "purple, stars, cats.": "purpura, enyonyoozi, empunu.",
   "purplecray0ns": "erangi ya papo",

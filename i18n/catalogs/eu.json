@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:37+00:00",
+ "generated": "2026-11-14T01:39:40+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "1G Pip-Boy",
@@ -271,7 +271,7 @@
  "locale": "eu",
  "name": "Basque",
  "native": "Euskara",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -1992,6 +1992,7 @@
   "prompt_restart_and_quit_desc": "Baliteke flashak huts egin izana. Mesedez, irakurri goiko mezua eta berrabiarazi ordenagailua berriro saiatu aurretik. Ados sakatzen baduzu, aplikazioa irtengo da, berrabiarazi ahal izateko.",
   "prompt_restart_and_quit_ok": "Ados",
   "prompt_restart_and_quit_title": "Berrabiarazi ordenagailua",
+  "purple gothic": "gotiko morea",
   "purple neon": "neoi morea",
   "purple, stars, cats.": "morea, izarrak, katuak.",
   "purplecray0ns": "purplecray0ns",

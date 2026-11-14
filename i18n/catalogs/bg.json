@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:35+00:00",
+ "generated": "2026-11-14T01:39:33+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "2016 Ipod",
@@ -142,7 +142,7 @@
  "locale": "bg",
  "name": "Bulgarian",
  "native": "Български",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -1863,6 +1863,7 @@
   "prompt_restart_and_quit_desc": "Светкавицата може да е неуспешна. Моля, прочетете съобщението по-горе и рестартирайте компютъра, преди да опитате отново. Ако щракнете върху OK, приложението ще излезе, за да можете да рестартирате.",
   "prompt_restart_and_quit_ok": "добре",
   "prompt_restart_and_quit_title": "Рестартирайте компютъра си",
+  "purple gothic": "лилава готика",
   "purple neon": "лилав неон",
   "purple, stars, cats.": "лилаво, звезди, котки.",
   "purplecray0ns": "purplecray0ns",

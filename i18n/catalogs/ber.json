@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:35+00:00",
+ "generated": "2026-11-14T01:39:33+00:00",
  "keep": [
   "ACmp3",
   "BO1",
@@ -56,7 +56,7 @@
  "locale": "ber",
  "name": "Tamazight (Tifinagh)",
  "native": "ⵜⴰⵎⴰⵣⵉⵖⵜ (ⵜⵉⴼⵉⵏⴰⵖ)",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!ITRI ⵏ TEMDINT!!",
@@ -1777,6 +1777,7 @@
   "prompt_restart_and_quit_desc": "ⴰⵀⴰⵜ ⵢⴻⵖⵍⵉⴷ ⴼⵍⴰⵙⵀⵏⵏⵉ. ⵜⵜⵅⵉⵍⴽ ⵖⴻⵔ ⵉⵣⴻⵏⵏⵏⵉ ⵏ ⵜⴼⴻⵍⵡⵉⵜ ⵓ ⵔⵥⴻⵎ ⴰⵙⴻⵍⴽⵉⵎ ⵓⵇⴱⴻⵍ ⴰⴷ ⵜⵄⴻⵔⴹⴻⴹ ⵜⵉⴽⴽⴻⵍⵜ ⵏⵏⵉⴹⴻⵏ. ⵎⴰ ⵜⵖⴻⵍⴹⴻⴹ OK, ⴰⴷ ⵢⴻⵃⴱⴻⵙ ⵓⵙⴻⵍⴽⵉⵎ ⴰⴽⴽⴻⵏ ⴰⴷ ⵜⵣⴻⵎⵔⴻⴹ ⴰⴷ ⵜⵉⴷⵜⴻⵔⵔⴻⴹ.",
   "prompt_restart_and_quit_ok": "ⵢⴻⵔⴱⴰⵃ",
   "prompt_restart_and_quit_title": "ⵄⴰⵡⴻⴷ ⵙⴱⴻⴷⴷ ⴰⵙⴻⵍⴽⵉⵎⵉⴽ",
+  "purple gothic": "ⴰⵖⵓⵟⵉ ⴰⵕⵚⴰⵚⵉ",
   "purple neon": "ⵏⵢⵓⵏ ⴰⵔⵚⴰⵚⵉⵢ",
   "purple, stars, cats.": "ⴰⵔⵚⴰⵚⵉ, ⵉⵜⵔⴰⵏ, ⵉⵎⵛⴰⵛⴻⵏ.",
   "purplecray0ns": "ⴰⵔⵚⴰⵙⵉ ⴰⵔⵚⴰⵙⵉ",

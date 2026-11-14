@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:35+00:00",
+ "generated": "2026-11-14T01:39:32+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "ACmp3",
@@ -105,7 +105,7 @@
  "locale": "be",
  "name": "Belarusian",
  "native": "Беларуская",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -1826,6 +1826,7 @@
   "prompt_restart_and_quit_desc": "Магчыма, выйшла з ладу ўспышка. Калі ласка, прачытайце паведамленне вышэй і перазагрузіце кампутар перад паўторнай спробай. Калі вы націснеце \"ОК\", праграма закрыецца, і вы зможаце перазапусціць яе.",
   "prompt_restart_and_quit_ok": "добра",
   "prompt_restart_and_quit_title": "Перазагрузіце кампутар",
+  "purple gothic": "фіялетавая готыка",
   "purple neon": "фіялетавы неон",
   "purple, stars, cats.": "фіялетавы, зоркі, кошкі.",
   "purplecray0ns": "purplecray0ns",

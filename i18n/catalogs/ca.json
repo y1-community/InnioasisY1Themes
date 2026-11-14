@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:36+00:00",
+ "generated": "2026-11-14T01:39:36+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "1G Pip-Boy",
@@ -266,7 +266,7 @@
  "locale": "ca",
  "name": "Catalan",
  "native": "Català",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -1987,6 +1987,7 @@
   "prompt_restart_and_quit_desc": "És possible que el flaix hagi fallat. Si us plau, llegiu el missatge anterior i reinicieu l'ordinador abans de tornar-ho a provar. Si feu clic a D'acord, l'aplicació es tancarà perquè pugueu reiniciar-vos.",
   "prompt_restart_and_quit_ok": "D'acord",
   "prompt_restart_and_quit_title": "Reinicieu l'ordinador",
+  "purple gothic": "gòtic morat",
   "purple neon": "neó morat",
   "purple, stars, cats.": "morat, estrelles, gats.",
   "purplecray0ns": "purplecray0ns",

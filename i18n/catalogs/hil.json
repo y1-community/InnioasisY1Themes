@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:39+00:00",
+ "generated": "2026-11-14T01:39:44+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "\"Alfred da buttler\"",
@@ -419,7 +419,7 @@
  "locale": "hil",
  "name": "Hiligaynon",
  "native": "Hiligaynon",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -2140,6 +2140,7 @@
   "prompt_restart_and_quit_desc": "Mahimo nga napaslawan ang flash. Palihog basaha ang mensahe sa ibabaw kag i-restart ang kompyuter antes magtinguha liwat. Kon i-klik mo ang OK, ang app maga-untat agud maka-restart ka.",
   "prompt_restart_and_quit_ok": "SIGE",
   "prompt_restart_and_quit_title": "I-restart ang imo kompyuter",
+  "purple gothic": "purpura nga gothic",
   "purple neon": "purpura nga neon",
   "purple, stars, cats.": "purpura, mga bituon, mga iring.",
   "purplecray0ns": "purplecray0ns",

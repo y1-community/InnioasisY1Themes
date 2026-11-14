@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:35+00:00",
+ "generated": "2026-11-14T01:39:29+00:00",
  "keep": [
   "1a Zelda",
   "A+",
@@ -103,7 +103,7 @@
  "locale": "aa",
  "name": "Afar",
  "native": "Qafar",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!Magaalah cutukta!!",
@@ -1824,6 +1824,7 @@
   "prompt_restart_and_quit_desc": "urra raddem takkeh. Ku maganak dagal tan farmo ikriyaay, qagitaak gibbattaamak naharal kompiter qemmis. OK xagtek, assabalta soolele tonnal atu qagitak qimbissam duddah.",
   "prompt_restart_and_quit_ok": "MEQEH",
   "prompt_restart_and_quit_title": "isi kompiter qagitak qimbis",
+  "purple gothic": "qas burraacin gothic",
   "purple neon": "qas burraacin niyoon",
   "purple, stars, cats.": "burraacinaan, cutuuka, dummum.",
   "purplecray0ns": "burtukan burraacin0ns",

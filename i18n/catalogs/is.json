@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:39+00:00",
+ "generated": "2026-11-14T01:39:45+00:00",
  "keep": [
   "1G Pip-Boy",
   "1a Zelda",
@@ -273,7 +273,7 @@
  "locale": "is",
  "name": "Icelandic",
  "native": "Íslenska",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!BORGARSTJÓRNA!!",
@@ -1994,6 +1994,7 @@
   "prompt_restart_and_quit_desc": "Flassið gæti hafa bilað. Vinsamlegast lestu skilaboðin hér að ofan og endurræstu tölvuna áður en þú reynir aftur. Ef þú smellir á OK mun appið hætta svo þú getur endurræst.",
   "prompt_restart_and_quit_ok": "Allt í lagi",
   "prompt_restart_and_quit_title": "Endurræstu tölvuna þína",
+  "purple gothic": "fjólublár gotneskur",
   "purple neon": "fjólublátt neon",
   "purple, stars, cats.": "fjólublátt, stjörnur, kettir.",
   "purplecray0ns": "purplecray0ns",

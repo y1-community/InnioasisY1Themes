@@ -1,7 +1,7 @@
 {
- "count": 2244,
+ "count": 2245,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:35+00:00",
+ "generated": "2026-11-14T01:39:29+00:00",
  "keep": [
   "Apple Music",
   "BO1",
@@ -35,7 +35,7 @@
  "locale": "ab",
  "name": "Abkhaz",
  "native": "Аҧсуа",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!СИТИСТАР!!",
@@ -1755,6 +1755,7 @@
   "prompt_restart_and_quit_desc": "Аблеҭ еиқәымшәазар ҟалоит. Хыхь иаагоу адырраҭара шәаԥхьаны, даҽазнык шәҽазышәшәаанӡа акомпиутер ҿыц иаҿшәыргыла. Иашоуп ҳәа уақәыӷәӷәар, апрограмма аангылоит, еиҭа аус арура улшарц азы.",
   "prompt_restart_and_quit_ok": "ИБЗИОУП",
   "prompt_restart_and_quit_title": "Акомпиутер ҿыц аус арутәуп",
+  "purple gothic": "Аготика цәаԥшь",
   "purple neon": "Анеон цәаԥшь",
   "purple, stars, cats.": "ацәаԥшь, аеҵәақәа, ацгәқәа.",
   "purplecray0ns": "апурпуркреи0нс",

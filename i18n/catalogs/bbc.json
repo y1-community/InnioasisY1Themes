@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:35+00:00",
+ "generated": "2026-11-14T01:39:32+00:00",
  "keep": [
   "20 minutos a uma hora",
   "A+",
@@ -115,7 +115,7 @@
  "locale": "bbc",
  "name": "Batak Toba",
  "native": "Batak Toba",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!BINTANG KOTA!!",
@@ -1836,6 +1836,7 @@
   "prompt_restart_and_quit_desc": "Olo do ra gabe gagal kilat i. Tolong ma jaha hamu barita na di ginjang i jala mulai ma muse komputer i andorang so dicoba hamu muse. Molo di klik hamu OK, gabe mansohot ma aplikasi i asa boi dipungka hamu muse.",
   "prompt_restart_and_quit_ok": "OKE",
   "prompt_restart_and_quit_title": "Mulai ma muse komputermu .",
+  "purple gothic": "gotik ungu",
   "purple neon": "neon ungu",
   "purple, stars, cats.": "ungu, bintang, kucing.",
   "purplecray0ns": "ungu",

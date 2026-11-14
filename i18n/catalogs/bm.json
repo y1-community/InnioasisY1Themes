@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:35+00:00",
+ "generated": "2026-11-14T01:39:34+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "20 minutos a uma hora",
@@ -90,7 +90,7 @@
  "locale": "bm",
  "name": "Bambara",
  "native": "Bamanankan",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -1811,6 +1811,7 @@
   "prompt_restart_and_quit_desc": "A bɛ se ka kɛ ko flash ma ɲɛ. Aw ye cikan kalan sanfɛ ani ka ɔridinatɛri daminɛ kokura sani aw ka segin k’a lajɛ. N’i ​​ye OK digi, appli bɛna dabila walisa i ka se ka a daminɛ kokura.",
   "prompt_restart_and_quit_ok": "N SƆNNA",
   "prompt_restart_and_quit_title": "I ka ɔridinatɛri daminɛ kokura",
+  "purple gothic": "gothique violet ye",
   "purple neon": "neon violet (neon violet) ye",
   "purple, stars, cats.": "violet, dolow, wuluw.",
   "purplecray0ns": "violet cray0ns ye",

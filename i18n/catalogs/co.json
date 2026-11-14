@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:37+00:00",
+ "generated": "2026-11-14T01:39:37+00:00",
  "keep": [
   "\"Alfred da buttler\"",
   "1G Pip-Boy",
@@ -318,7 +318,7 @@
  "locale": "co",
  "name": "Corsican",
  "native": "Corsu",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR !!",
@@ -2039,6 +2039,7 @@
   "prompt_restart_and_quit_desc": "U flash pò avè fallutu. Per piacè leghjite u missaghju sopra è ripigliate l'urdinatore prima di pruvà di novu. Se cliccate OK, l'app smette per pudè riavvia.",
   "prompt_restart_and_quit_ok": "OK",
   "prompt_restart_and_quit_title": "Restart u vostru urdinatore",
+  "purple gothic": "goticu viola",
   "purple neon": "neon viola",
   "purple, stars, cats.": "viola, stelle, gatti.",
   "purplecray0ns": "purplecray0ns",

@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:35+00:00",
+ "generated": "2026-11-14T01:39:31+00:00",
  "keep": [
   "BO1",
   "BO2",
@@ -34,7 +34,7 @@
  "locale": "awa",
  "name": "Awadhi",
  "native": "अवधी",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!सिटीस्टार!!",
@@ -1755,6 +1755,7 @@
   "prompt_restart_and_quit_desc": "फ्लैश फेल होइ सकत है। कृपया ऊपर दिहे संदेश का पढ़ौ अऊर फिर से कोशिश करै से पहिले कंप्यूटर का फिर से चालू करा। अगर आप ठीक है पर क्लिक करत हैं, तौ ऐप बंद होइ जाई ताकि आप फिर से चालू होइ सकै।",
   "prompt_restart_and_quit_ok": "ठीक",
   "prompt_restart_and_quit_title": "आपन कम्प्यूटर फिर से चालू करा",
+  "purple gothic": "बैंगनी गोथिक",
   "purple neon": "बैंगनी नीयन",
   "purple, stars, cats.": "बैंगनी, तारा, बिल्लियाँ।",
   "purplecray0ns": "पर्पलक्रे0एनएस",

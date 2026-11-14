@@ -1,7 +1,7 @@
 {
- "count": 2221,
+ "count": 2222,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:39+00:00",
+ "generated": "2026-11-14T01:39:47+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "A+",
@@ -145,7 +145,7 @@
  "locale": "ka",
  "name": "Georgian",
  "native": "ქართული",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -1844,6 +1844,7 @@
   "prompt_restart_and_quit_desc": "ფლეშ შეიძლება ვერ მოხერხდა. გთხოვთ, წაიკითხოთ ზემოთ მოცემული შეტყობინება და გადატვირთეთ კომპიუტერი ხელახლა ცდამდე. თუ დააწკაპუნებთ OK-ზე, აპი გაითიშება, ასე რომ თქვენ შეგიძლიათ გადატვირთოთ.",
   "prompt_restart_and_quit_ok": "OK",
   "prompt_restart_and_quit_title": "გადატვირთეთ კომპიუტერი",
+  "purple gothic": "მეწამული გოთური",
   "purple neon": "მეწამული ნეონი",
   "purple, stars, cats.": "იასამნისფერი, ვარსკვლავები, კატები.",
   "purplecray0ns": "purplecray0ns",

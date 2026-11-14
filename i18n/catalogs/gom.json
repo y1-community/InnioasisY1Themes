@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:39+00:00",
+ "generated": "2026-11-14T01:39:43+00:00",
  "keep": [
   "BO1",
   "BO2",
@@ -33,7 +33,7 @@
  "locale": "gom",
  "name": "Konkani",
  "native": "कोंकणी",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!सिटीस्टार!!",
@@ -1754,6 +1754,7 @@
   "prompt_restart_and_quit_desc": "फ्लॅश फेल जाला आसूं येता. उपकार करून वयर दिल्लो संदेश वाचात आनी परतून यत्न करचे पयलीं संगणक परतून सुरू करात. तुमी बरोबर क्लिक केल्यार, ऍप्लिकेशन सोडटलें म्हणजे तुमी परतून सुरू करूंक शकतले.",
   "prompt_restart_and_quit_ok": "बरें",
   "prompt_restart_and_quit_title": "तुमचो संगणक परतून सुरू करचो",
+  "purple gothic": "जांबळो गॉथिक",
   "purple neon": "जांबळो निऑन",
   "purple, stars, cats.": "जांबळें, नखेत्रां, माजर.",
   "purplecray0ns": "जांबळें क्रे0न्स",

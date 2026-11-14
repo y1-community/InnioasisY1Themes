@@ -1,7 +1,7 @@
 {
- "count": 1223,
+ "count": 1224,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:40+00:00",
+ "generated": "2026-11-14T01:40:01+00:00",
  "keep": [
   "1G Pip-Boy",
   "1a Zelda",
@@ -175,7 +175,7 @@
  "locale": "scn",
  "name": "Sicilian",
  "native": "Sicilianu",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!STELLA DI LA CITTÀ!!",
@@ -1310,6 +1310,7 @@
   "pretty cool rick and morty theme if you ask me": "tema abbastanza bellu di rick e morty si mi chiedi",
   "pretty mt. fiji pictures": "beddu mt. fiji immagini",
   "pretty ocean stuff (1st of ocean collection)": "beddi cosi di l'oceanu (1° dâ raccolta di l'oceanu)",
+  "purple gothic": "gòticu viola",
   "purple neon": "neon viola",
   "purple, stars, cats.": "viola, stiddi, gatti.",
   "purplecray0ns": "viola",

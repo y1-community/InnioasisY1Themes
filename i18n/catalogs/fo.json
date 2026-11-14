@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:37+00:00",
+ "generated": "2026-11-14T01:39:41+00:00",
  "keep": [
   "1a Zelda",
   "A+",
@@ -121,7 +121,7 @@
  "locale": "fo",
  "name": "Faroese",
  "native": "Føroysk",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!BÝARSTJØRN!!",
@@ -1842,6 +1842,7 @@
   "prompt_restart_and_quit_desc": "Blinkið hevur kanska miseydnast. Vinarliga les boðini omanfyri og endurstarta telduna áðrenn tú roynir umaftur. Um tú trýstir á OK, so steðgar appin, so tú kanst endurbyrja.",
   "prompt_restart_and_quit_ok": "OK",
   "prompt_restart_and_quit_title": "Endurbyrja telduna",
+  "purple gothic": "lilla gotiskt",
   "purple neon": "lilla neon",
   "purple, stars, cats.": "lilla, stjørnur, kettur.",
   "purplecray0ns": "lillakrá0ns",

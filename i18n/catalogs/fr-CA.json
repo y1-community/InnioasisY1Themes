@@ -1,7 +1,7 @@
 {
- "count": 7982,
+ "count": 7983,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:37+00:00",
+ "generated": "2026-11-14T01:39:41+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "1 contribution",
@@ -173,7 +173,7 @@
  "locale": "fr-CA",
  "name": "French (Canada)",
  "native": "Français (Canada)",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -7389,6 +7389,7 @@
   "prompt_restart_and_quit_title": "Redémarrez votre ordinateur",
   "provides native MediaTek flashing on Mac, and how to flash any scatter-based MediaTek MP3 player or smartphone.": "fournit le flash natif MediaTek sur Mac et comment flasher n'importe quel lecteur MP3 ou smartphone MediaTek basé sur la dispersion.",
   "pulls the right firmware package directly from the community firmware developers' releases — no separate downloads to hunt down.": "extrait le bon progiciel directement à partir des versions des développeurs de micrologiciels de la communauté – aucun téléchargement séparé à rechercher.",
+  "purple gothic": "violet gothique",
   "purple neon": "néon violet",
   "purple, stars, cats.": "violet, étoiles, chats.",
   "purplecray0ns": "violet-cray0ns",

@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:37+00:00",
+ "generated": "2026-11-14T01:39:39+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "\"Alfred da buttler\"",
@@ -322,7 +322,7 @@
  "locale": "dov",
  "name": "Dombe",
  "native": "Dombe",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -2043,6 +2043,7 @@
   "prompt_restart_and_quit_desc": "Imumuni ulakonzya kuti wakaalilwa. Twalomba kuti ubale mulumbe uuli atala aawa mpawo ubweze kkompyuta kotanasola lubo. Kuti watyanka OK, pulogilamu ilamana kuchitila kuti utalike alimwi.",
   "prompt_restart_and_quit_ok": "KABOTU",
   "prompt_restart_and_quit_title": "Jula alimwi kkompiyuta yako",
+  "purple gothic": "mubala wa gothic",
   "purple neon": "neon iisalala pyu",
   "purple, stars, cats.": "ntumbula, nyenyezi, kkayi.",
   "purplecray0ns": "purplecray0ns",

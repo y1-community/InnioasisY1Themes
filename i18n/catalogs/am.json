@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:35+00:00",
+ "generated": "2026-11-14T01:39:30+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "ACmp3",
@@ -110,7 +110,7 @@
  "locale": "am",
  "name": "Amharic",
  "native": "አማርኛ",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -1831,6 +1831,7 @@
   "prompt_restart_and_quit_desc": "ብልጭታው አልተሳካም ይሆናል። እባክዎ ከላይ ያለውን መልእክት ያንብቡ እና እንደገና ከመሞከርዎ በፊት ኮምፒተርውን እንደገና ያስጀምሩ። እሺን ጠቅ ካደረጉ፣ እንደገና መጀመር እንዲችሉ መተግበሪያው ያቆማል።",
   "prompt_restart_and_quit_ok": "እሺ",
   "prompt_restart_and_quit_title": "ኮምፒተርዎን እንደገና ያስጀምሩ",
+  "purple gothic": "ሐምራዊ ጎቲክ",
   "purple neon": "ሐምራዊ ኒዮን",
   "purple, stars, cats.": "ሐምራዊ, ኮከቦች, ድመቶች.",
   "purplecray0ns": "ሐምራዊ ክሬም0ns",

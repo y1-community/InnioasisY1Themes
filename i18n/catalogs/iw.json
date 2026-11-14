@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "rtl",
- "generated": "2026-11-14T01:04:39+00:00",
+ "generated": "2026-11-14T01:39:46+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "1G Pip-Boy",
@@ -138,7 +138,7 @@
  "locale": "iw",
  "name": "Hebrew",
  "native": "עִברִית",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -1859,6 +1859,7 @@
   "prompt_restart_and_quit_desc": "ייתכן שהפלאש נכשל. אנא קרא את ההודעה למעלה והפעל מחדש את המחשב לפני שתנסה שוב. אם תלחץ על אישור, האפליקציה תיסגר כדי שתוכל להפעיל מחדש.",
   "prompt_restart_and_quit_ok": "בְּסֵדֶר",
   "prompt_restart_and_quit_title": "הפעל מחדש את המחשב",
+  "purple gothic": "גותי סגול",
   "purple neon": "ניאון סגול",
   "purple, stars, cats.": "סגול, כוכבים, חתולים.",
   "purplecray0ns": "purplecray0ns",

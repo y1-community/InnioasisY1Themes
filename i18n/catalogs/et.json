@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:37+00:00",
+ "generated": "2026-11-14T01:39:40+00:00",
  "keep": [
   "1G Pip-Boy",
   "1a Zelda",
@@ -261,7 +261,7 @@
  "locale": "et",
  "name": "Estonian",
  "native": "Eesti",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!LINNASTAAR!!",
@@ -1982,6 +1982,7 @@
   "prompt_restart_and_quit_desc": "Võimalik, et välklamp ebaõnnestus. Lugege ülaltoodud teadet ja taaskäivitage arvuti enne uuesti proovimist. Kui klõpsate nuppu OK, suletakse rakendus, et saaksite taaskäivitada.",
   "prompt_restart_and_quit_ok": "OK",
   "prompt_restart_and_quit_title": "Taaskäivitage arvuti",
+  "purple gothic": "lilla gooti",
   "purple neon": "lilla neoon",
   "purple, stars, cats.": "lilla, tähed, kassid.",
   "purplecray0ns": "purpurkrey0ns",

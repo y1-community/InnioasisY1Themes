@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:37+00:00",
+ "generated": "2026-11-14T01:39:38+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "\"Alfred da buttler\"",
@@ -357,7 +357,7 @@
  "locale": "crs",
  "name": "Seychellois Creole",
  "native": "Seselwa",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -2078,6 +2078,7 @@
   "prompt_restart_and_quit_desc": "flash i kapab in fel. silvouple lir sa mesaz anler e relans konpiter avan esey ankor. si ou klik OK, sa app pou arete pou ou kapab relanse.",
   "prompt_restart_and_quit_ok": "OK",
   "prompt_restart_and_quit_title": "relans ou konpiter",
+  "purple gothic": "mov gotik",
   "purple neon": "neon mov",
   "purple, stars, cats.": "mov, zetwal, sat.",
   "purplecray0ns": "purplecray0ns",

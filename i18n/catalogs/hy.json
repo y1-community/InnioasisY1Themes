@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:39+00:00",
+ "generated": "2026-11-14T01:39:45+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "1G Pip-Boy",
@@ -180,7 +180,7 @@
  "locale": "hy",
  "name": "Armenian",
  "native": "Հայերեն",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -1901,6 +1901,7 @@
   "prompt_restart_and_quit_desc": "Ֆլեշը կարող է ձախողվել: Խնդրում ենք կարդալ վերը նշված հաղորդագրությունը և վերագործարկել համակարգիչը՝ նախքան նորից փորձելը: Եթե ​​սեղմեք OK, հավելվածը կհեռանա, որպեսզի կարողանաք վերագործարկել:",
   "prompt_restart_and_quit_ok": "Լավ",
   "prompt_restart_and_quit_title": "Վերագործարկեք ձեր համակարգիչը",
+  "purple gothic": "մանուշակագույն գոթիկա",
   "purple neon": "մանուշակագույն նեոն",
   "purple, stars, cats.": "մանուշակագույն, աստղեր, կատուներ:",
   "purplecray0ns": "purplecray0ns",

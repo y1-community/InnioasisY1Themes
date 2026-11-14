@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:37+00:00",
+ "generated": "2026-11-14T01:39:42+00:00",
  "keep": [
   "1a Zelda",
   "A+",
@@ -140,7 +140,7 @@
  "locale": "fur",
  "name": "Friulian",
  "native": "Furlan",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!STELE DE CITÂT!!",
@@ -1861,6 +1861,7 @@
   "prompt_restart_and_quit_desc": "Il flash al pues jessi falit. Par plasê lei il messaç parsore e tornâ a scomençâ il computer prin di provâ di gnûf. Se tu fâs clic su Va ben, la aplicazion e fermarà cussì tu puedis tornâ a scomençâ.",
   "prompt_restart_and_quit_ok": "VA BEN",
   "prompt_restart_and_quit_title": "Riavviâ il computer",
+  "purple gothic": "gotic viole",
   "purple neon": "neon viole",
   "purple, stars, cats.": "viole, stelis, gjats.",
   "purplecray0ns": "grîs viole0ns",

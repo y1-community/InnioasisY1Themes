@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:35+00:00",
+ "generated": "2026-11-14T01:39:33+00:00",
  "keep": [
   "1a Zelda",
   "A+",
@@ -88,7 +88,7 @@
  "locale": "bem",
  "name": "Bemba",
  "native": "Ichibemba",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!INTANDA YA MU MUSU!!",
@@ -1809,6 +1809,7 @@
   "prompt_restart_and_quit_desc": "Flash kuti yafilwa ukubomba. Mukwai beleni imbila ili pamulu no kutendeka kompyuta ilyo tamulaesha nakabili. Nga mwatinika pali OK, app ikaleka ukubomba pa kuti mwingatendeka nakabili.",
   "prompt_restart_and_quit_ok": "EE",
   "prompt_restart_and_quit_title": "Tampa nakabili kompyuta yobe",
+  "purple gothic": "ubugotiki bwa peepo",
   "purple neon": "neon iya peepo",
   "purple, stars, cats.": "peepo, intanda, impanga.",
   "purplecray0ns": "ubutuntulu",

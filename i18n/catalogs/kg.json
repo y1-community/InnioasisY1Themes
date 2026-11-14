@@ -1,7 +1,7 @@
 {
- "count": 2221,
+ "count": 2222,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:39+00:00",
+ "generated": "2026-11-14T01:39:47+00:00",
  "keep": [
   "1a Zelda",
   "A+",
@@ -137,7 +137,7 @@
  "locale": "kg",
  "name": "Kikongo",
  "native": "Kitini ya maboko",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!MBUTU YA MBANZA!!",
@@ -1836,6 +1836,7 @@
   "prompt_restart_and_quit_desc": "Ziku flashe me sala ve. Tanga nsangu yina kele na zulu mpi yantika diaka ordinatere na ntwala ya kumeka diaka. Kana nge niema OK, application yango ta katuka sambu nge yantika diaka.",
   "prompt_restart_and_quit_ok": "OK",
   "prompt_restart_and_quit_title": "Kangula diaka ordinatere na nge",
+  "purple gothic": "gothique ya violet",
   "purple neon": "neon ya violet",
   "purple, stars, cats.": "violet, bambwetete, pusi.",
   "purplecray0ns": "mpusu ya violet",

@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:39+00:00",
+ "generated": "2026-11-14T01:39:43+00:00",
  "keep": [
   "1a Zelda",
   "A+",
@@ -138,7 +138,7 @@
  "locale": "gv",
  "name": "Manx",
  "native": "Gaelg",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!REEYN BHAEY!!",
@@ -1859,6 +1859,7 @@
   "prompt_restart_and_quit_desc": "Ta'n flash er n'eiyrt. Leigh y skeeal shoh as towse y chompuutar reesht roish as jean oo ymmyd jeh. As t'eh ry-hoi OK, t'eh ry-hoi y app y scughey son dy vod oo restart.",
   "prompt_restart_and_quit_ok": "OK",
   "prompt_restart_and_quit_title": "Reayll dty chompiutyr",
+  "purple gothic": "Gothic purple",
   "purple neon": "neon viollagh;",
   "purple, stars, cats.": "purple, reddyn, cats.",
   "purplecray0ns": "cray0ns purple",

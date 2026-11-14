@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:37+00:00",
+ "generated": "2026-11-14T01:39:42+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "1G Pip-Boy",
@@ -361,7 +361,7 @@
  "locale": "fy",
  "name": "Frisian",
  "native": "Frysk",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -2082,6 +2082,7 @@
   "prompt_restart_and_quit_desc": "De flitser kin mislearre. Lês asjebleaft it berjocht hjirboppe en start de kompjûter op 'e nij foardat jo it nochris besykje. As jo ​​op OK klikke, sil de app ôfslute sadat jo opnij starte kinne.",
   "prompt_restart_and_quit_ok": "OK",
   "prompt_restart_and_quit_title": "Restart jo kompjûter",
+  "purple gothic": "pears goatyk",
   "purple neon": "pears neon",
   "purple, stars, cats.": "pears, stjerren, katten.",
   "purplecray0ns": "purplecray0ns",

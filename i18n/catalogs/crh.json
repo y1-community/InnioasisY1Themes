@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:37+00:00",
+ "generated": "2026-11-14T01:39:37+00:00",
  "keep": [
   "BO1",
   "BO2",
@@ -32,7 +32,7 @@
  "locale": "crh",
  "name": "Crimean Tatar",
  "native": "Qırımtatarca",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!ШЕЭР ЙЫЛДЫЗЫ!!",
@@ -1753,6 +1753,7 @@
   "prompt_restart_and_quit_desc": "Вспышка чалышмайып къалгъандыр. Лютфен, юкъарыдаки хаберни окъуп, кене тырышмаздан эвель компьютерни янъыдан башлатынъыз. Эгер «ОК» ны бассанъ, къулланма чыкъып кете, шунынъ ичюн сен янъыдан башлай билесинъ.",
   "prompt_restart_and_quit_ok": "ЯХШЫ",
   "prompt_restart_and_quit_title": "Компьютерни янъыдан чалыштырынъыз .",
+  "purple gothic": "мор готика",
   "purple neon": "мор неон",
   "purple, stars, cats.": "мор, йылдызлар, мышыкълар.",
   "purplecray0ns": "мор крей0нс",

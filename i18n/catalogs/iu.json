@@ -1,7 +1,7 @@
 {
- "count": 2221,
+ "count": 2222,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:39+00:00",
+ "generated": "2026-11-14T01:39:46+00:00",
  "keep": [
   "A+",
   "ACmp3",
@@ -46,7 +46,7 @@
  "locale": "iu",
  "name": "Inuktut (Syllabics)",
  "native": "ᑎᑎᕋᐅᓯᖏᑦ",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!ᓯᑎᔅᑕ!!",
@@ -1745,6 +1745,7 @@
   "prompt_restart_and_quit_desc": "ᖃᐅᒻᒪᖅᑯᑎᖓ ᓱᕋᒃᓯᒪᑐᐃᓐᓇᕆᐊᓕᒃ. ᐊᑏ ᐅᖃᓕᒫᕐᓗᒍ ᖁᓛᓂ ᑎᑎᕋᖅᓯᒪᔪᖅ ᐊᒻᒪᓗ ᐱᒋᐊᒃᑲᓐᓂᕐᓗᒍ ᖃᕆᑕᐅᔭᖅ ᐆᒃᑐᒃᑲᓐᓂᓚᐅᙱᓐᓂᕐᓂ. ᓇᕿᒃᑯᕕᐅᒃ ᐆᑮ, ᖃᕆᑕᐅᔭᒃᑯᑦ ᓄᖅᑲᕐᓂᐊᖅᑐᖅ ᐱᒋᐊᒃᑲᓐᓂᕈᓐᓇᕐᓂᐊᕋᕕᑦ.",
   "prompt_restart_and_quit_ok": "ᐊᑏ",
   "prompt_restart_and_quit_title": "ᐱᒋᐊᒃᑲᓐᓂᕐᓗᒍ ᖃᕆᑕᐅᔭᐃᑦ",
+  "purple gothic": "ᐸᐅᕐᐳᓪ ᒎᑎᒃ",
   "purple neon": "ᐸᐅᕐᐳᓪ ᓂᐅᓐ",
   "purple, stars, cats.": "ᐸᐅᓗᓯ, ᓯᕿᓃᑦ, ᓇᓄᐃᑦ.",
   "purplecray0ns": "ᐳᐊᐳᓪᑯᕋᐃ0ᓐᔅ",

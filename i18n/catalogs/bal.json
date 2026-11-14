@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "rtl",
- "generated": "2026-11-14T01:04:35+00:00",
+ "generated": "2026-11-14T01:39:32+00:00",
  "keep": [
   "BO1",
   "BO2",
@@ -32,7 +32,7 @@
  "locale": "bal",
  "name": "Baluchi",
  "native": "بلوچی",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!شہر ءِ استار!!",
@@ -1753,6 +1753,7 @@
   "prompt_restart_and_quit_desc": "فلیش ناکام بوتگ بوت کنت۔ براہ کرم بُرز ءِ پیغام ءَ بوان اِت ءُ پدا جھد کنگ ءَ پیسر کمپیوٹر ءَ دوبر بندات کن اِت۔ اگاں تو اوکے ءَ کلک کن ئے گڑا ایپ یلہ دنت تاں تو دوبر بندات بہ کن ئے۔",
   "prompt_restart_and_quit_ok": "شریں",
   "prompt_restart_and_quit_title": "وتی کمپیوٹر ءَ پدا بندات کن اِت",
+  "purple gothic": "جامنی گوتھک",
   "purple neon": "جامنی رنگیں نیون",
   "purple, stars, cats.": "جامنی رنگ، ستارے، بلی",
   "purplecray0ns": "جامنی رنگ",

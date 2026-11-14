@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:37+00:00",
+ "generated": "2026-11-14T01:39:40+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "1a Zelda",
@@ -249,7 +249,7 @@
  "locale": "eo",
  "name": "Esperanto",
  "native": "Esperanto",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -1970,6 +1970,7 @@
   "prompt_restart_and_quit_desc": "La ekbrilo eble malsukcesis. Bonvolu legi la mesaĝon supre kaj rekomenci la komputilon antaŭ provi denove. Se vi alklakas Bone, la programo ĉesos por ke vi povu rekomenci.",
   "prompt_restart_and_quit_ok": "Bone",
   "prompt_restart_and_quit_title": "Rekomencu vian komputilon",
+  "purple gothic": "purpura gotika",
   "purple neon": "purpura neono",
   "purple, stars, cats.": "purpuro, steloj, katoj.",
   "purplecray0ns": "purplecray0ns",

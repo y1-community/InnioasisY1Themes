@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:39+00:00",
+ "generated": "2026-11-14T01:39:44+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "1G Pip-Boy",
@@ -323,7 +323,7 @@
  "locale": "hmn",
  "name": "Hmong",
  "native": "Hmoob",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -2044,6 +2044,7 @@
   "prompt_restart_and_quit_desc": "Lub flash yuav ua tsis tiav. Thov nyeem cov lus saum toj no thiab rov pib lub computer ua ntej sim dua. Yog tias koj nyem OK, lub app yuav tawm kom koj rov pib dua.",
   "prompt_restart_and_quit_ok": "OK",
   "prompt_restart_and_quit_title": "Restart koj lub computer",
+  "purple gothic": "ntshav gothic",
   "purple neon": "ntshav neon",
   "purple, stars, cats.": "ntshav, hnub qub, miv.",
   "purplecray0ns": "kob 0ns",

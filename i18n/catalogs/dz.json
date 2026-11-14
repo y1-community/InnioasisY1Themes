@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:37+00:00",
+ "generated": "2026-11-14T01:39:39+00:00",
  "keep": [
   "1 day ago",
   "1 month ago",
@@ -61,7 +61,7 @@
  "locale": "dz",
  "name": "Dzongkha",
  "native": "རྫོང་ཁ",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!སི་ཊི་སི་ཊར་!!",
@@ -1782,6 +1782,7 @@
   "prompt_restart_and_quit_desc": "འོད་འཚེར་འདི་འཐུས་ཤོར་བྱུང་ཡོདཔ་འོང་། གོང་གི་འཕྲིན་དོན་འདི་ལྷག་ཞིནམ་ལས་ ལོག་འབད་རྩོལ་བསྐྱེད་པའི་ཧེ་མ་ གློག་རིག་འདི་ལོག་འགོ་བཙུགས་གནང་། ཁྱོད་ཀྱིས་ བཏུབ་ཨེབ་གཏང་འབད་བ་ཅིན་ གློག་རིམ་འདི་ བཀོག་བཞག་འོང་ དེ་ལས་ ཁྱོད་ཀྱིས་ ལོག་འགོ་བཙུགས་ཚུགས།",
   "prompt_restart_and_quit_ok": "བཏུབ",
   "prompt_restart_and_quit_title": "ཁྱོད་རའི་གློག་རིག་ ལོག་འགོ་བཙུགས།",
+  "purple gothic": "མུ་མེན་གྷོ་ཐིག།",
   "purple neon": "མུ་མེན་ནིའོན།",
   "purple, stars, cats.": "purple, སྐར་མ།, བྱི་ལི།",
   "purplecray0ns": "མུ་མེན་མདོག་ཅན།0ns",

@@ -1,7 +1,7 @@
 {
- "count": 2221,
+ "count": 2222,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:39+00:00",
+ "generated": "2026-11-14T01:39:46+00:00",
  "keep": [
   "A+",
   "ACmp3",
@@ -45,7 +45,7 @@
  "locale": "iu-Latn",
  "name": "Inuktut (Latin)",
  "native": "Inuktuq (laatin)",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!sitista!!",
@@ -1744,6 +1744,7 @@
   "prompt_restart_and_quit_desc": "Qaummaqqutinga suraksimatuinnarialik. Atii uqalimaarlugu qulaani titiraqsimajuq ammalu pigiakkannirlugu qaritaujaq uuktukkannilaunnginnirni. Naqikkuviuk uukii, qaritaujakkut nuqqarniaqtuq pigiakkannirunnarniaravit.",
   "prompt_restart_and_quit_ok": "ATII",
   "prompt_restart_and_quit_title": "Qaritaujait pigiakkannirlugu",
+  "purple gothic": "Paurpul guutik",
   "purple neon": "Paurpul niun",
   "purple, stars, cats.": "Paurngaq, siqiniit, nanuit.",
   "purplecray0ns": "Puapulkurains",

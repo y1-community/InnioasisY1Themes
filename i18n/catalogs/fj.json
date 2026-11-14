@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:37+00:00",
+ "generated": "2026-11-14T01:39:41+00:00",
  "keep": [
   "A+",
   "ACmp3",
@@ -109,7 +109,7 @@
  "locale": "fj",
  "name": "Fijian",
  "native": "Vosa Vakaviti",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!KALOKALO NI KORO!!",
@@ -1830,6 +1830,7 @@
   "prompt_restart_and_quit_desc": "E rawa ni sega ni cakacaka na flash. Kerekere mo wilika na itukutuku e cake ka tekivutaka tale na kompiuta ni bera ni o tovolea tale. Kevaka o kiliki ena OK, ena biuta na app me rawa ni o tekivu tale.",
   "prompt_restart_and_quit_ok": "VINAKA",
   "prompt_restart_and_quit_title": "Vakavoutaka tale na nomu kompiuta .",
+  "purple gothic": "gótico damudamu",
   "purple neon": "neon damudamu",
   "purple, stars, cats.": "vulavula, kalokalo, pusi.",
   "purplecray0ns": "damudamu",

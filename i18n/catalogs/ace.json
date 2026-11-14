@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:35+00:00",
+ "generated": "2026-11-14T01:39:30+00:00",
  "keep": [
   "1a Zelda",
   "A+",
@@ -132,7 +132,7 @@
  "locale": "ace",
  "name": "Acehnese",
  "native": "Bahsa Acèh",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!BINTANG KOTA!!",
@@ -1853,6 +1853,7 @@
   "prompt_restart_and_quit_desc": "Mungken flash nyan ka gagal. Neu baca peusan di ateuh dan neu restart komputer sigohlom neu cuba lom. Meunyo neu klik OK, app nyan akan berhenti sehingga jeut neu restart.",
   "prompt_restart_and_quit_ok": "OK",
   "prompt_restart_and_quit_title": "Peuhah lom komputer droeneuh",
+  "purple gothic": "gotik ungu",
   "purple neon": "neon ungu",
   "purple, stars, cats.": "ungu, bintang, mi'ong.",
   "purplecray0ns": "ungu",

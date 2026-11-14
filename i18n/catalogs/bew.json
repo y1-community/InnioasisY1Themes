@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:35+00:00",
+ "generated": "2026-11-14T01:39:33+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "\"Alfred da buttler\"",
@@ -315,7 +315,7 @@
  "locale": "bew",
  "name": "Betawi",
  "native": "Betawi",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -2036,6 +2036,7 @@
   "prompt_restart_and_quit_desc": "Kilatnya mungkin udah gagal. Tolong baca pesan di atas dan nyalain ulang komputer sebelum nyoba lagi. Kalo lu klik OK, aplikasinya bakalan berhenti jadi lu bisa mulai lagi.",
   "prompt_restart_and_quit_ok": "OKE",
   "prompt_restart_and_quit_title": "Nyalain ulang komputer lu",
+  "purple gothic": "ungu gotik",
   "purple neon": "neon ungu",
   "purple, stars, cats.": "ungu, bintang, kucing.",
   "purplecray0ns": "purplecray0ns",

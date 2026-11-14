@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:37+00:00",
+ "generated": "2026-11-14T01:39:36+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "1G Pip-Boy",
@@ -377,7 +377,7 @@
  "locale": "ch",
  "name": "Chamorro",
  "native": "Chamorro",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -2098,6 +2098,7 @@
   "prompt_restart_and_quit_desc": "Siña ha' ti ma'usa i flash. På'go, taitai i mensåhi gi sanhilo' ya un na'lå'la' ta'lo i komputa antes di un prutehi ta'lo. Yanggen un ågang OK, u fañågu i app ya siña un tutuhon ta'lo.",
   "prompt_restart_and_quit_ok": "ESTA",
   "prompt_restart_and_quit_title": "Na'lå'la' ta'lo i komputa-mu",
+  "purple gothic": "lila na gotiku",
   "purple neon": "neon lila",
   "purple, stars, cats.": "lila, estreyas, ga'ga'.",
   "purplecray0ns": "purplecray0ns",

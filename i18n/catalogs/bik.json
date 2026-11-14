@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:35+00:00",
+ "generated": "2026-11-14T01:39:34+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "\"Alfred da buttler\"",
@@ -387,7 +387,7 @@
  "locale": "bik",
  "name": "Bikol",
  "native": "Bikol",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
@@ -2108,6 +2108,7 @@
   "prompt_restart_and_quit_desc": "An flash tibaad dai nagin mapanggana. Pakibasa an mensahe sa itaas asin i-restart an kompyuter bago magprobar giraray. Kun i-click mo an OK, an app mapundo tanganing ika makapag-restart.",
   "prompt_restart_and_quit_ok": "OK",
   "prompt_restart_and_quit_title": "I-restart an saimong kompyuter",
+  "purple gothic": "lila na gotiko",
   "purple neon": "lila na neon",
   "purple, stars, cats.": "lila, mga bitoon, mga pusa.",
   "purplecray0ns": "purplecray0ns",

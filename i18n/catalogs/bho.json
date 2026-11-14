@@ -1,7 +1,7 @@
 {
- "count": 2245,
+ "count": 2246,
  "dir": "ltr",
- "generated": "2026-11-14T01:04:35+00:00",
+ "generated": "2026-11-14T01:39:34+00:00",
  "keep": [
   "BO1",
   "BO2",
@@ -37,7 +37,7 @@
  "locale": "bho",
  "name": "Bhojpuri",
  "native": "भोजपुरी",
- "provider": "clients5",
+ "provider": "google-web",
  "source": "en",
  "strings": {
   "!!CITYSTAR!!": "!!सिटीस्टार के बा!!",
@@ -1758,6 +1758,7 @@
   "prompt_restart_and_quit_desc": "हो सकेला कि फ्लैश फेल हो गइल होखे. कृपया ऊपर दिहल संदेश पढ़ीं आ फेर से कोशिश करे से पहिले कंप्यूटर के फेर से शुरू करीं. अगर रउआ ठीक बा पर क्लिक करीं त ऐप छोड़ दिही ताकि रउआ रिस्टार्ट कर सकीले।",
   "prompt_restart_and_quit_ok": "ठीक बा",
   "prompt_restart_and_quit_title": "आपन कंप्यूटर के रिस्टार्ट करीं",
+  "purple gothic": "बैंगनी रंग के गॉथिक के बा",
   "purple neon": "बैंगनी रंग के नीयन के बा",
   "purple, stars, cats.": "बैंगनी, तारा, बिलार के बा।",
   "purplecray0ns": "बैंगनी क्रे0न्स के बा",
