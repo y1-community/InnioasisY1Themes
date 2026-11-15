@@ -1,5 +1,11 @@
 # Deploy y1-theme-analytics when analytics handler or Worker code changes.
 # Requires repository secret: CLOUDFLARE_API_TOKEN (Workers Scripts: Edit).
+#
+# This repository has no Cloudflare secrets configured at the moment, so the
+# deploy step used to fail on every matching push ("In a non-interactive
+# environment, it's necessary to set a CLOUDFLARE_API_TOKEN"). A missing secret
+# is a configuration gap, not a broken build: the job now reports it as a
+# warning and a job summary line, and deploys again as soon as the secret exists.
 name: Deploy theme-analytics Worker
 
 on:
@@ -21,10 +27,44 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - run: npm ci || npm install
-      - run: node scripts/deploy-analytics-worker.mjs
+
+      - name: Check Cloudflare credentials
+        id: cf
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -n "${CLOUDFLARE_API_TOKEN}" ]; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "found=false" >> "$GITHUB_OUTPUT"
+          echo "::warning title=Cloudflare token missing::CLOUDFLARE_API_TOKEN is not set for this repository, so y1-theme-analytics was not deployed. Add it under Settings -> Secrets and variables -> Actions (token scope: Workers Scripts: Edit) and re-run this workflow."
+          {
+            echo "### y1-theme-analytics was not deployed"
+            echo
+            echo "\`CLOUDFLARE_API_TOKEN\` is not set for this repository."
+            echo "Add it under **Settings → Secrets and variables → Actions** with the *Workers Scripts: Edit* scope, then re-run this workflow."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # No package-lock.json is committed, so `npm ci` can never succeed here; it
+      # only printed a page of EUSAGE errors before `npm install` ran anyway.
+      - name: Install dependencies
+        if: ${{ steps.cf.outputs.found == 'true' }}
+        run: |
+          set -euo pipefail
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install --no-audit --no-fund
+          fi
+
+      - name: Deploy y1-theme-analytics
+        if: ${{ steps.cf.outputs.found == 'true' }}
+        run: node scripts/deploy-analytics-worker.mjs
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

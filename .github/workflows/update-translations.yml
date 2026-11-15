@@ -50,6 +50,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Full history so the commit step can rebase onto main before pushing.
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -94,8 +97,15 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
+      # 75 pages (y2-themes*, install-themes, studio-test, donate, leaving, ...) had
+      # drifted without the GTM snippet, so a check-only step failed the whole job on
+      # every run and nothing ever repaired them. check_ga.py already ships a --fix
+      # mode that inserts the tag; run it first, then verify. The commit step below
+      # stages *.html, so the repaired pages ride along with the translation commit.
       - name: Verify the analytics tag on every page
-        run: python3 scripts/i18n/check_ga.py --check
+        run: |
+          python3 scripts/i18n/check_ga.py --fix
+          python3 scripts/i18n/check_ga.py --check
 
       # Raptive / AdSense (future): set RAPTIVE_SITE_ID and the ad loader in
       # site-ads.js reads it at runtime. No ad request is made until it is set.
@@ -121,12 +131,45 @@ jobs:
 
       - name: Commit updated catalogs, literal static pages, and sitemaps
         run: |
+          set -e
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add i18n/catalogs i18n/strings i18n/site-locales.json i18n/reviewed i18n/prerendered.json sitemap.xml sitemap-i18n.xml *.html || true
           if git diff --cached --quiet; then
             echo "No translation changes."
-          else
-            git commit -m "Update gallery translations and literal static language pages across supported languages"
-            git push
+            exit 0
+          fi
+          # [skip ci]: this commit rewrites *.html, which is one of this workflow's own
+          # trigger paths. Without it the commit started another full translation run
+          # that raced the first one to main. The output is already generated here, so
+          # there is nothing for a follow-up run to do.
+          git commit -m "Update gallery translations and literal static language pages across supported languages [skip ci]"
+          # Same rebase-and-retry push as generate-i18n-pages.yml: a concurrent push to
+          # main used to reject this one and report the run as failed. --autostash keeps
+          # the rebase working when the build leaves files outside the add list behind.
+          ok=0
+          for attempt in 1 2 3 4 5 6; do
+            if [ -d .git/rebase-merge ] || [ -d .git/rebase-apply ]; then
+              git rebase --abort || true
+            fi
+            if [ -f .git/MERGE_HEAD ]; then
+              git merge --abort || true
+            fi
+            git fetch origin main
+            if ! git rebase --autostash -X theirs origin/main; then
+              git rebase --abort || true
+              echo "Rebase attempt ${attempt} could not apply; backing off before retry..."
+              sleep $(( attempt * 10 ))
+              continue
+            fi
+            if git push origin "HEAD:main"; then
+              ok=1
+              break
+            fi
+            echo "Push attempt ${attempt} rejected; backing off before retry..."
+            sleep $(( attempt * 10 ))
+          done
+          if [ "$ok" != "1" ]; then
+            echo "ERROR: could not push translation output after retries."
+            exit 1
           fi

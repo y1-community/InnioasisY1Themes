@@ -30,7 +30,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # No Cloudflare secrets exist on this repository yet, so an unguarded deploy
+      # only ever produced "CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID are
+      # required". Treat that as a configuration gap to report, not a failed build.
+      - name: Check Cloudflare credentials
+        id: cf
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -n "${CLOUDFLARE_API_TOKEN}" ] && [ -n "${CLOUDFLARE_ACCOUNT_ID}" ]; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "found=false" >> "$GITHUB_OUTPUT"
+          echo "::warning title=Cloudflare credentials missing::CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID are not set for this repository, so the download proxy was not deployed. Add both under Settings -> Secrets and variables -> Actions and re-run this workflow."
+          {
+            echo "### Download proxy was not deployed"
+            echo
+            echo "\`CLOUDFLARE_API_TOKEN\` and \`CLOUDFLARE_ACCOUNT_ID\` are not set for this repository."
+            echo "Add both under **Settings → Secrets and variables → Actions** (token scopes: *Workers Scripts: Edit*, *Zone: Edit*) and re-run this workflow."
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Deploy the Worker and its route
+        if: ${{ steps.cf.outputs.found == 'true' }}
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -38,6 +61,7 @@ jobs:
           command: deploy --config wrangler.toml
 
       - name: Verify the proxy answers with the ROM filename
+        if: ${{ steps.cf.outputs.found == 'true' }}
         run: |
           set -euo pipefail
           URL="https://innioasis.app/download-proxy?url=https%3A%2F%2Fgithub.com%2Fy1-community%2Fy1_launcher-mirror%2Freleases%2Fdownload%2Flauncher-v0.9%2From-macos.zip&filename=rom-macos.zip"

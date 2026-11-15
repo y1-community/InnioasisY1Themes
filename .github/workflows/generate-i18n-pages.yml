@@ -15,8 +15,10 @@ on:
 permissions:
   contents: write
 
+# One queue with ingest / sitemap / screenshots / metadata sync: this job also
+# commits to main, so it must not build while another bot pushes.
 concurrency:
-  group: generate-i18n-pages
+  group: theme-publish-main
   cancel-in-progress: false
 
 jobs:
@@ -26,6 +28,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # Full history so the commit step can rebase onto main before pushing.
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -94,12 +99,48 @@ jobs:
 
       - name: Commit updated catalogs, literal static pages, and sitemaps
         run: |
+          set -e
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add i18n/catalogs/ i18n/strings/ i18n/site-locales.json i18n/reviewed/ i18n/prerendered.json sitemap.xml sitemap-index.xml sitemap-i18n*.xml *.html '*/index*.html' || true
           if git diff --cached --quiet; then
             echo "No translation or catalog changes to commit."
-          else
-            git commit -m "chore(i18n): update translations, literal static pages, and sitemaps [skip ci]"
-            git push
+            exit 0
+          fi
+          git commit -m "chore(i18n): update translations, literal static pages, and sitemaps [skip ci]"
+          # A bare `git push` here is what filled the Actions inbox: another workflow
+          # (ingest, sitemap, screenshots, translations) lands a commit while this
+          # build runs, the push is rejected with "! [rejected] main -> main (fetch
+          # first)", and the run is reported as failed. Rebase onto origin/main and
+          # retry instead. Everything staged here is regenerated from the repository
+          # on every run, so -X theirs keeps this run's generated files on a clash
+          # while still taking upstream changes to every other file. --autostash is
+          # required: the build also touches files outside the add list above, and a
+          # rebase refuses to start on a dirty tree ("cannot rebase: You have unstaged
+          # changes") — exactly the failure this retry loop has to survive.
+          ok=0
+          for attempt in 1 2 3 4 5 6; do
+            if [ -d .git/rebase-merge ] || [ -d .git/rebase-apply ]; then
+              git rebase --abort || true
+            fi
+            if [ -f .git/MERGE_HEAD ]; then
+              git merge --abort || true
+            fi
+            git fetch origin main
+            if ! git rebase --autostash -X theirs origin/main; then
+              git rebase --abort || true
+              echo "Rebase attempt ${attempt} could not apply; backing off before retry..."
+              sleep $(( attempt * 10 ))
+              continue
+            fi
+            if git push origin "HEAD:main"; then
+              ok=1
+              break
+            fi
+            echo "Push attempt ${attempt} rejected; backing off before retry..."
+            sleep $(( attempt * 10 ))
+          done
+          if [ "$ok" != "1" ]; then
+            echo "ERROR: could not push i18n output after retries."
+            exit 1
           fi

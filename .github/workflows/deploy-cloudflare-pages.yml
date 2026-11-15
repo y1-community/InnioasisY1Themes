@@ -71,17 +71,39 @@ jobs:
           DEPLOY_RUN_ID: ${{ github.run_id }}
         run: python3 scripts/trigger_pages_git_deploy.py
 
+      # Best effort only. Cloudflare answers datacenter IPs with 403, so on a runner
+      # this used to print "curl: (22) 403" followed by a JSONDecodeError and an
+      # ##[error] line, which read like a deploy failure in the log.
       - name: Verify live themes.json updated
         continue-on-error: true
         run: |
           LOCAL=$(python3 -c "import json; print(len(json.load(open('themes.json'))['themes']))")
           for i in 1 2 3 4 5 6 8 10 12; do
-            REMOTE=$(curl -fsSL "https://themes.innioasis.app/themes.json" | python3 -c "import json,sys; print(len(json.load(sys.stdin)['themes']))")
+            TMP=$(mktemp)
+            CODE=$(curl -sS -m 30 -A "InnioasisY1Themes-deploy-check/1.0" -o "$TMP" -w '%{http_code}' "https://themes.innioasis.app/themes.json" || echo "000")
+            if [ "$CODE" != "200" ]; then
+              echo "themes.json returned HTTP $CODE from this runner; skipping the live comparison (the Pages build is unaffected)."
+              rm -f "$TMP"
+              exit 0
+            fi
+            REMOTE=$(python3 -c "import json,sys; print(len(json.load(open(sys.argv[1]))['themes']))" "$TMP" 2>/dev/null || echo "")
+            rm -f "$TMP"
+            if [ -z "$REMOTE" ]; then
+              echo "attempt $i: response was not readable JSON; retrying"
+              sleep 30
+              continue
+            fi
             echo "local=$LOCAL remote=$REMOTE (attempt $i)"
-            if [[ "$REMOTE" -ge "$LOCAL" ]]; then
+            if [ "$REMOTE" -ge "$LOCAL" ]; then
               exit 0
             fi
             sleep 30
           done
-          echo "WARN: live themes.json still behind main ($REMOTE < $LOCAL)"
-          exit 1
+          echo "::warning title=Live themes.json lags main::local=$LOCAL remote=${REMOTE:-unknown} after all attempts. Check the Pages deployment for this commit."
+          {
+            echo "### Live themes.json still behind main"
+            echo
+            echo "Local \`themes.json\` has **$LOCAL** themes; the live copy reported **${REMOTE:-unknown}** after 12 attempts."
+            echo "This check is best effort — Cloudflare Pages may still be serving the previous build."
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 0
