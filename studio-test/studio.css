@@ -4,10 +4,22 @@
 .studio-app {
     --studio-line: var(--site-border);
     --studio-line-strong: var(--site-border-hover);
+    --studio-text: var(--site-text);
+    --studio-muted: var(--site-muted);
+    --studio-panel: var(--site-bg-elevated);
+    --studio-accent: var(--site-accent);
+    --studio-ok: var(--lumen-green, #1f7a4d);
+    --studio-warn: var(--lumen-amber, #8a610f);
+    --studio-danger: var(--lumen-red, #b3261e);
     --studio-panel-bg: color-mix(in oklab, var(--site-bg-elevated) 74%, var(--site-bg));
     --studio-card: color-mix(in oklab, var(--site-bg-card) 82%, transparent);
     --studio-accent-soft: color-mix(in oklab, var(--site-accent) 15%, transparent);
     --studio-accent-line: color-mix(in oklab, var(--site-accent) 38%, transparent);
+    /* Accent ink: the label on an accent-tinted control. The tint stays light
+       enough that the page's own text colour always reads on it, whatever
+       accent the reader picked, in Light, Dark, High contrast and 2077. */
+    --studio-accent-wash: color-mix(in oklab, var(--site-accent) 22%, transparent);
+    --studio-accent-wash-strong: color-mix(in oklab, var(--site-accent) 32%, transparent);
     height: 100dvh;
     min-height: 100dvh;
     overflow: hidden;
@@ -58,7 +70,7 @@
 }
 
 .studio-identity-lead strong {
-    color: var(--site-accent);
+    color: color-mix(in oklab, var(--site-accent) 62%, var(--site-text));
 }
 
 .studio-identity-q {
@@ -1112,16 +1124,16 @@
 }
 
 .studio-btn--primary {
-    border-color: transparent;
-    background: var(--site-accent);
-    color: #07101d;
+    border-color: var(--studio-accent-line);
+    background: var(--studio-accent-wash);
+    color: var(--site-text);
 }
 
 .studio-btn--primary:hover {
-    border-color: transparent;
-    background: var(--site-accent);
-    color: #07101d;
-    filter: brightness(1.07);
+    border-color: var(--site-accent);
+    background: var(--studio-accent-wash-strong);
+    color: var(--site-text);
+    filter: none;
 }
 
 .studio-divider {
@@ -2262,6 +2274,38 @@ body.studio-app {
 }
 
 .studio-asset-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Font rows show the face, not a generic glyph: Aa is short enough to read at
+   tray size and different enough between typefaces to choose by eye. */
+.studio-font-thumb-sample {
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    color: var(--site-text);
+}
+
+.studio-font-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    color: var(--site-text);
+    text-align: center;
+}
+
+.studio-font-preview-glyph {
+    font-size: clamp(3.5rem, 5.2vw, 5rem);
+    line-height: 1;
+}
+
+.studio-font-preview-line {
+    color: var(--site-muted);
+    font-size: 0.95rem;
+    line-height: 1.2;
+    letter-spacing: 0.02em;
+}
 
 .studio-asset-row-copy { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .studio-asset-row-copy strong { overflow: hidden; font-size: 0.78rem; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
@@ -3507,7 +3551,7 @@ body.studio-app {
     padding: 6px 10px;
     border-radius: 999px;
     border: 1px solid var(--studio-line, rgba(255, 255, 255, 0.16));
-    background: rgba(255, 255, 255, 0.04);
+    background: color-mix(in oklab, var(--site-text) 6%, transparent);
     color: var(--studio-text, #eceff8);
     font-size: 0.8rem;
     cursor: pointer;

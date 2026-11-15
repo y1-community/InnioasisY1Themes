@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-pt" dir="ltr" data-locale="pt-pt">
+<html lang="pt-PT" dir="ltr" data-locale="pt-PT">
 
 <head>
 <script>
@@ -40,7 +40,7 @@
     <meta property="og:type" content="website">
     <meta property="og:title" content="Innioasis Y1 and Y2 themes: Better-Y, Rockbox, Koensayr and Solar">
     <meta property="og:description" content="Better-Y themes, Rockbox themes, Koensayr themes and Solar themes for the Innioasis Y1 and Y2.">
-    <meta property="og:url" content="https://themes.innioasis.app/index_pt-pt.html">
+    <meta property="og:url" content="https://themes.innioasis.app/index_pt-PT.html">
     <meta property="og:image" content="https://innioasis.app/y1_illustration.png">
 
     <meta name="twitter:card" content="summary_large_image">
@@ -63,7 +63,7 @@
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script defer src="theme-packaging.js?v=20261010perf"></script>
     <script src="theme-display-name.js?v=20260624"></script>
-    <script src="y1-theme-preview.js?v=20261111hq2"></script>
+    <script src="y1-theme-preview.js?v=20261115menus"></script>
     <script src="theme-artwork-compat.js?v=20260711"></script>
     <script src="gold-theme-detect.js?v=20261109perf"></script>
     <script src="gallery-chrome.js?v=20261117studio3"></script>
@@ -807,7 +807,7 @@
         }
 
     </style>
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebSite", "@id": "https://themes.innioasis.app/#website", "url": "https://themes.innioasis.app/", "name": "Innioasis Themes Gallery", "alternateName": ["Better-Y themes", "Better-Y themes for Innioasis Y1", "Better-Y themes for Innioasis Y2", "Innioasis Y1 Better-Y themes", "Innioasis Y2 Better-Y themes", "Rockbox themes", "Rockbox-Themes", "Rockbox themes for Innioasis Y1", "Rockbox themes for Innioasis Y2", "Innioasis Y1 Rockbox themes", "Innioasis Y2 Rockbox themes", "Koensayr themes", "Koensayr themes for Innioasis Y1", "Koensayr themes for Innioasis Y2", "Innioasis Y1 Koensayr themes", "Innioasis Y2 Koensayr themes", "Solar themes", "Solar themes for Innioasis Y1", "Solar themes for Innioasis Y2", "Innioasis Y1 Solar themes", "Innioasis Y2 Solar themes"]}</script><meta property="og:site_name" content="Innioasis Galeria de temas">  <link rel="canonical" href="https://themes.innioasis.app/index_pt-pt.html">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebSite", "@id": "https://themes.innioasis.app/#website", "url": "https://themes.innioasis.app/", "name": "Innioasis Themes Gallery", "alternateName": ["Better-Y themes", "Better-Y themes for Innioasis Y1", "Better-Y themes for Innioasis Y2", "Innioasis Y1 Better-Y themes", "Innioasis Y2 Better-Y themes", "Rockbox themes", "Rockbox-Themes", "Rockbox themes for Innioasis Y1", "Rockbox themes for Innioasis Y2", "Innioasis Y1 Rockbox themes", "Innioasis Y2 Rockbox themes", "Koensayr themes", "Koensayr themes for Innioasis Y1", "Koensayr themes for Innioasis Y2", "Innioasis Y1 Koensayr themes", "Innioasis Y2 Koensayr themes", "Solar themes", "Solar themes for Innioasis Y1", "Solar themes for Innioasis Y2", "Innioasis Y1 Solar themes", "Innioasis Y2 Solar themes"]}</script><meta property="og:site_name" content="Innioasis Galeria de temas">  <link rel="canonical" href="https://themes.innioasis.app/index_pt-PT.html">
 <meta name="robots" content="index,follow,max-image-preview:large" />
   <!-- i18n-hreflang-start -->
   <link rel="alternate" hreflang="x-default" href="https://themes.innioasis.app/index.html">
@@ -5251,11 +5251,10 @@
             // Preview click → theme.html (reliable in-app preview). Theme name → pretty SEO URL.
             const buildCardPreviewHref = (variantSeg) => {
                 if (theme.sourceType === 'external' || !themeQueryKey) return '';
-                if (window.ThemeShareLinks && typeof ThemeShareLinks.buildThemeDetailPageUrl === 'function') {
-                    return ThemeShareLinks.buildThemeDetailPageUrl(themeQueryKey, variantSeg);
-                }
+                /* Preview click opens the Theme Studio, which mounts this theme
+                   on the device simulator and offers the editor beside it. */
                 const v = String(variantSeg || '').trim();
-                let href = `./theme.html?theme=${encodeURIComponent(themeQueryKey)}`;
+                let href = `/studio-test/?folder=${encodeURIComponent(themeQueryKey)}&mode=preview`;
                 if (v) href += `&variant=${encodeURIComponent(v)}`;
                 return href;
             };

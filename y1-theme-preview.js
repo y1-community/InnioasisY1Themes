@@ -229,13 +229,20 @@
             ebook: 'E-Book',
             photos: 'Photos',
             fm: 'FM Radio',
+            bluetooth: 'Bluetooth',
             fileManager: 'File manager',
             settings: 'Settings'
         };
         /* MyLauncher 3.2.4 MainActivity order on a stock Y2. Calculator and
-           Calendar are only inserted on the "v4" model, and Bluetooth and
-           Shuffle Quick are not in this launcher at all. FM is conditional on
-           the tuner build, so a theme's transparent.png hides that row. */
+           Calendar are only inserted on the "v4" model, and Shuffle Quick is
+           not in this launcher at all. FM is conditional on the tuner build,
+           so a theme's transparent.png hides that row.
+
+           The two launcher generations differ in one place: a Y1 launcher has
+           a Bluetooth row and no File manager, while a Y2 launcher has File
+           manager and keeps Bluetooth in Settings. A theme "is Y2" when it
+           ships File manager art, which is the same switch the editor uses. */
+        var fileManagerUsable = isUsableHomeIcon(homePageIconFromCfg(homeCfg, 'fileManager'));
         var ordered = [
             'nowPlaying',
             'music',
@@ -244,6 +251,7 @@
             'ebook',
             'photos',
             'fm',
+            'bluetooth',
             'fileManager',
             'settings'
         ];
@@ -251,6 +259,14 @@
             .filter(function (key) {
                 var file = homePageIconFromCfg(homeCfg, key);
                 if (key === 'fm') return isUsableHomeIcon(file);
+                /* Bluetooth only belongs on a Y1 home list: once the theme has
+                   File manager art, the Y2 launcher moved the control into
+                   Settings. */
+                if (key === 'bluetooth') return !fileManagerUsable && isUsableHomeIcon(file);
+                /* File manager is drawn whether or not the theme supplied art:
+                   the row is part of the launcher, and a theme that never drew
+                   it should still be able to fill the gap from the editor. */
+                if (key === 'fileManager') return true;
                 return file !== undefined;
             })
             .map(function (key) {
@@ -262,17 +278,9 @@
                     assetPath: 'homePageConfig.' + key
                 };
             });
-        /* The launcher icon is the switch-to-Rockbox control. It lives in the
-           Settings list on the device, but the preview also needs it on the
-           home screen so its purpose is obvious at a glance. */
-        if (isUsableHomeIcon(settingCfg.launcher)) {
-            items.push({
-                id: 'rockbox',
-                label: previewText('Rockbox'),
-                iconFile: settingCfg.launcher,
-                assetPath: 'settingConfig.launcher'
-            });
-        }
+        /* Rockbox is a Settings row on the device (SettingConfig.launcher) and
+           is drawn there by buildSettingsItems, so the home list stays the
+           launcher's own rows. */
         return items;
     }
 
@@ -1234,6 +1242,21 @@
             { id: 'factory_reset', label: 'Factory reset', iconFile: settingConfig.factoryReset, assetPath: 'settingConfig.factoryReset' },
             { id: 'clear_cache', label: 'Clear cache', iconFile: settingConfig.clearCache, assetPath: 'settingConfig.clearCache' }
         ];
+        /* A Y2 launcher keeps Bluetooth in Settings instead of on Home. Themes
+           may ship a dedicated settings icon (settingConfig.bluetooth);
+           otherwise the home-screen Bluetooth art stands in for it. */
+        var homeCfg = (cfg && cfg.homePageConfig) || {};
+        var settingsBluetooth = settingConfig.bluetooth || homeCfg.bluetooth;
+        if (isUsableHomeIcon(homeCfg.fileManager) && isUsableHomeIcon(settingsBluetooth)) {
+            base.push({
+                id: 'bluetooth',
+                label: 'Bluetooth',
+                iconFile: settingsBluetooth,
+                assetPath: settingConfig.bluetooth
+                    ? 'settingConfig.bluetooth'
+                    : 'homePageConfig.bluetooth'
+            });
+        }
         if (settingConfig.launcher && String(settingConfig.launcher).trim()) {
             base.push({
                 id: 'rockbox',

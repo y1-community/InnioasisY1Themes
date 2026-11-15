@@ -1150,6 +1150,35 @@
         node.classList.remove('has-layers');
     }
 
+    /* A font slot previews the face it ships, not a generic icon: "Aa" is short
+       enough to read at tray size and different enough between typefaces to
+       choose by eye, which is the whole point of the thumbnail. */
+    function paintFontThumb(node, asset) {
+        if (node === el.assetPreview) {
+            var plate = document.createElement('span');
+            plate.className = 'studio-font-preview';
+            var glyph = document.createElement('span');
+            glyph.className = 'studio-font-preview-glyph';
+            glyph.textContent = 'Aa';
+            var line = document.createElement('span');
+            line.className = 'studio-font-preview-line';
+            line.textContent = asset.value ? fileName(asset.value) : 'Theme font';
+            line.title = asset.value || 'Theme font';
+            plate.appendChild(glyph);
+            plate.appendChild(line);
+            node.appendChild(plate);
+            paintFontSample(glyph, asset.url);
+            paintFontSample(line, asset.url);
+            return;
+        }
+        var sample = document.createElement('span');
+        sample.className = 'studio-font-thumb-sample';
+        sample.textContent = 'Aa';
+        sample.setAttribute('aria-hidden', 'true');
+        node.appendChild(sample);
+        paintFontSample(sample, asset.url);
+    }
+
     function decorateAssetThumb(node, asset) {
         if (!node) return;
         var existing = node.querySelector('.studio-thumb-strip');
@@ -1158,6 +1187,10 @@
         node.classList.remove('has-live-crop');
         node.style.backgroundImage = '';
         clearThumbLayers(node);
+        if (asset && asset.kind === 'font') {
+            paintFontThumb(node, asset);
+            return;
+        }
         /* The detail plate has room for the real thing: a crop of the live
            screen, scaled up around the asset and clipped to 4:3. The small
            row thumbnails keep the lighter wallpaper/mask/art stack. */
@@ -2296,15 +2329,18 @@
         defs.forEach(function (def) {
             known[def.path] = true;
         });
+        /* The launcher always draws a File manager row, so its slot has to be
+           editable even in a theme that never shipped art for it. */
         [
             ['fileConfig.folderIcon', 'Folder icon'],
-            ['fileConfig.musicIcon', 'Music file icon']
+            ['fileConfig.musicIcon', 'Music file icon'],
+            ['homePageConfig.fileManager', 'File manager']
         ].forEach(function (optional) {
             if (known[optional[0]]) return;
             defs.push({
                 path: optional[0],
                 value: String(readPath(config || {}, optional[0]) || '').trim(),
-                section: 'Files',
+                section: assetSection(optional[0].split('.')[0]),
                 label: optional[1],
                 kind: 'image'
             });
@@ -3708,21 +3744,11 @@
             if (img.complete) fitLargeImage();
             else img.addEventListener('load', fitLargeImage);
             el.assetPreview.appendChild(img);
-        } else if (!liveCrop) {
+        } else if (!liveCrop && asset.kind !== 'font') {
             var icon = document.createElement('i');
-            icon.className = asset.kind === 'font' ? 'fa-solid fa-font' : 'fa-regular fa-image';
+            icon.className = 'fa-regular fa-image';
             icon.setAttribute('aria-hidden', 'true');
             el.assetPreview.appendChild(icon);
-        }
-        var previousSample = document.getElementById('studio-font-sample');
-        if (previousSample) previousSample.remove();
-        if (asset.kind === 'font') {
-            var sample = document.createElement('p');
-            sample.id = 'studio-font-sample';
-            sample.className = 'studio-font-sample';
-            sample.textContent = 'Aa Bb Cc 0123';
-            el.assetPreview.insertAdjacentElement('afterend', sample);
-            paintFontSample(sample, asset.url);
         }
         el.assetReset.disabled = !asset.changed;
         el.assetReplace.disabled = false;
@@ -4582,7 +4608,9 @@
         var editing = own && identity.changeDetails === 'yes';
         var listed = own && identity.changeDetails === 'no';
         var ownTheme = identity.answer === 'other';
-        if (el.identity) el.identity.hidden = !listing;
+        /* Confirming authorship hands the top of the pane to the listing tools,
+           so the question card steps aside for Manage \u2039theme\u203a. */
+        if (el.identity) el.identity.hidden = !listing || own;
         if (listing) {
             if (el.identityName) el.identityName.textContent = '\u201c' + (listing.name || listing.folder) + '\u201d';
             if (el.identityAuthor) el.identityAuthor.textContent = listing.author ? ' by ' + listing.author : '';
@@ -4615,6 +4643,7 @@
             if (label) label.textContent = submitActionLabel();
         }
         updateChecklist();
+        syncManageVisibility();
     }
 
     function updateUpdateNotice() {
@@ -4973,10 +5002,10 @@
         el.submitStatus.appendChild(text);
         if (linkUrl) {
             var link = document.createElement('a');
-            link.href = linkUrl;
+            link.href = trackingUrlFor(linkUrl) || linkUrl;
             link.target = '_blank';
             link.rel = 'noopener';
-            link.textContent = 'View pull request';
+            link.textContent = trackingUrlFor(linkUrl) ? 'Track this request' : 'View pull request';
             el.submitStatus.appendChild(link);
         }
     }
@@ -5136,12 +5165,15 @@
             });
             if (!response.ok) throw new Error(uploadFailureMessage(response.status, payload));
             var prUrl = payload.prUrl ? String(payload.prUrl) : '';
+            /* New themes (including ones derived from a listed theme) merge by
+               themselves once the checks pass; updates wait for a maintainer.
+               Either way the request is tracked on our own page, and the
+               submitter is the only one holding that link. */
             setSubmitStatus(
-                state.ownUpdate
-                    ? 'Received. Your update waits for a maintainer: updates are reviewed and never published automatically.'
-                    : prUrl
-                      ? 'Received. Your theme is in a pull request and can be merged automatically once the checks pass.'
-                      : 'Received. Your theme can go live automatically once the checks pass, with updates still waiting for a maintainer.',
+                (state.ownUpdate
+                    ? 'Received. Your update is in a pull request that waits for a maintainer to merge it.'
+                    : 'Received. Your theme is in a pull request that merges automatically once its checks pass.') +
+                    (prUrl ? ' Keep this tracking link: it is how you check on the request later.' : ''),
                 true,
                 prUrl
             );
@@ -5254,6 +5286,9 @@
     }
 
     function setCheck(name, ok, detail) {
+        /* The checklist left the Submit pane when the identity question and the
+           listing tools took over that space. */
+        if (!el.checklist) return;
         var item = el.checklist.querySelector('[data-check="' + name + '"]');
         if (!item) return;
         item.setAttribute('data-state', ok ? 'ok' : 'pending');
@@ -6087,30 +6122,20 @@
                 state.identity.changeDetails = '';
                 state.ownUpdate = false;
                 clearSubmitFields();
-                syncIdentity();
-                if (!mine) {
-                    toast('Send it as your own theme: fill in your own title and author.');
-                    if (el.submitTitle) el.submitTitle.focus();
+                if (mine) {
+                    /* The author confirmed the listing is theirs, so the package
+                       is an update until they say otherwise: the details stay
+                       as listed and the listing tools replace the question. */
+                    state.identity.changeDetails = 'no';
+                    state.ownUpdate = true;
+                    applyOwnDetails();
                 }
-            });
-        });
-
-        each(document.querySelectorAll('[data-identity-change]'), function (button) {
-            button.addEventListener('click', function () {
-                var edit = button.getAttribute('data-identity-change') === 'yes';
-                state.identity.changeDetails = edit ? 'yes' : 'no';
-                /* An update goes up with the listing's own details: either as
-                   real values the submitter can edit, or as the values that are
-                   packed untouched. */
-                state.ownUpdate = true;
-                applyOwnDetails();
                 syncIdentity();
                 updateUpdateNotice();
                 markDirty();
-                if (edit) {
+                if (!mine) {
+                    toast('Send it as your own theme: fill in your own title and author.');
                     if (el.submitTitle) el.submitTitle.focus();
-                } else {
-                    toast('Sending as an update. A maintainer reviews updates before they go live.');
                 }
             });
         });
@@ -6197,12 +6222,30 @@
         return document.getElementById('studio-manage');
     }
 
-    function setManageStatus(message, ok) {
+    function setManageStatus(message, ok, prUrl) {
         var status = document.getElementById('studio-manage-status');
         if (!status) return;
         status.textContent = message || '';
         status.classList.toggle('is-error', ok === false);
         status.classList.toggle('is-ok', ok === true);
+        var track = trackingUrlFor(prUrl);
+        if (message && track) {
+            var link = document.createElement('a');
+            link.href = track;
+            link.target = '_blank';
+            link.rel = 'noopener';
+            link.textContent = 'Track this request';
+            status.appendChild(document.createTextNode(' '));
+            status.appendChild(link);
+        }
+    }
+
+    /* Pull requests are tracked on our own page: it reads the merge state from
+       GitHub and keeps the submitter off GitHub unless they want the details. */
+    function trackingUrlFor(prUrl) {
+        var match = String(prUrl || '').match(/\/pull\/(\d+)/);
+        if (!match) return '';
+        return '/submission.html?pr=' + match[1];
     }
 
     async function postManageForm(path, form) {
@@ -6236,7 +6279,10 @@
         var section = manageSection();
         if (!section) return;
         var listing = state.sourceType === 'gallery' ? galleryThemeForManage() : null;
-        section.hidden = !listing;
+        /* The update, text and removal tools are the author's, so they only
+           appear once the question above has been answered with "Yes, I made
+           it"; everyone else sees the new-theme path instead. */
+        section.hidden = !listing || state.identity.answer !== 'own';
         if (!listing) return;
         var nameEl = section.querySelector('[data-manage-name]');
         if (nameEl) nameEl.textContent = listing.name || state.folder;
@@ -6287,6 +6333,9 @@
             '  <button class="studio-btn" type="button" data-manage-details><i class="fa-solid fa-pen" aria-hidden="true"></i>Fix the listing text</button>',
             '  <button class="studio-btn" type="button" data-manage-remove><i class="fa-solid fa-xmark" aria-hidden="true"></i>Request removal</button>',
             '</div>',
+            '<button class="studio-mini-btn" type="button" data-manage-reset>',
+            '  <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Change answer',
+            '</button>',
 
             '<form class="studio-manage-form" data-manage-details-form hidden>',
             '  <div class="studio-field">',
@@ -6355,7 +6404,11 @@
             '<p class="studio-manage-status" id="studio-manage-status" role="status" aria-live="polite"></p>'
         ].join('\n');
 
-        if (anchor && anchor.parentNode === pane) pane.insertBefore(section, anchor);
+        /* The card takes the identity question's place at the top of the pane,
+           above the cover and the theme title. */
+        var identityCard = el.identity;
+        if (identityCard && identityCard.parentNode === pane) pane.insertBefore(section, identityCard.nextSibling);
+        else if (anchor && anchor.parentNode === pane) pane.insertBefore(section, anchor);
         else pane.insertBefore(section, pane.firstChild);
 
         var detailsForm = section.querySelector('[data-manage-details-form]');
@@ -6370,6 +6423,7 @@
             closeForms();
             applyOwnDetails();
             state.ownUpdate = true;
+            state.identity.changeDetails = 'yes';
             syncIdentity();
             updateUpdateNotice();
             if (el.submitTitle) el.submitTitle.focus();
@@ -6405,6 +6459,19 @@
             });
         });
 
+        var resetAnswer = section.querySelector('[data-manage-reset]');
+        if (resetAnswer) {
+            resetAnswer.addEventListener('click', function () {
+                closeForms();
+                setManageStatus('');
+                clearSubmitFields();
+                resetIdentity(state.identity.listing);
+                syncIdentity();
+                updateUpdateNotice();
+                markDirty();
+            });
+        }
+
         detailsForm.addEventListener('submit', async function (event) {
             event.preventDefault();
             var folder = state.folder;
@@ -6419,7 +6486,7 @@
             }
             setManageStatus('Sending the new text…', true);
             try {
-                await postManageJson('/api/theme-metadata', {
+                var payload = await postManageJson('/api/theme-metadata', {
                     items: [
                         {
                             folder: folder,
@@ -6428,7 +6495,7 @@
                         }
                     ]
                 });
-                setManageStatus('Sent. A maintainer reviews the change before it goes live.', true);
+                setManageStatus('Sent. A maintainer merges listing text changes, so they go live once the pull request is merged.', true, payload && payload.prUrl);
                 announceSupportNote('listing');
             } catch (err) {
                 setManageStatus((err && err.message) || 'The change did not go through.', false);
@@ -6465,8 +6532,12 @@
                 form.set('contactEmail', email);
                 form.set('confirmContactEmail', email);
                 if (section.querySelector('#studio-remove-optout').checked) form.set('blacklistOptOut', '1');
-                await postManageForm('/api/removal-request', form);
-                setManageStatus('Sent. Nothing comes down until a maintainer has read it.', true);
+                var payload = await postManageForm('/api/removal-request', form);
+                setManageStatus(
+                    'Sent. Nothing comes down until a maintainer has read and merged the request.',
+                    true,
+                    payload && payload.prUrl
+                );
                 announceSupportNote('removal');
             } catch (err) {
                 setManageStatus((err && err.message) || 'The request did not go through.', false);

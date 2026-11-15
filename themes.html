@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Opening theme in Studio</title>
+    <link rel="icon" href="/favicon.ico" />
+    <script>
+        /* Every theme preview on the site runs in the Studio, so a themes.html
+           link (with or without a theme) hands off to it instead of drawing a
+           second, older preview here. */
+        (function () {
+            var params = new URLSearchParams(location.search);
+            var folder = params.get('theme') || params.get('folder') || '';
+            var mode = params.get('mode') || 'preview';
+            var target = '/studio-test/?mode=' + encodeURIComponent(mode);
+            if (folder) target = '/studio-test/?folder=' + encodeURIComponent(folder) + '&mode=' + encodeURIComponent(mode);
+            location.replace(target);
+        })();
+    </script>
+</head>
+
+<body style="margin: 0; min-height: 100vh; display: grid; place-items: center; background: #0a0b0f; color: #f3f5fb; font-family: system-ui, sans-serif;">
+    <p style="font-size: 1rem;">
+        Opening this theme in the <a style="color: #8fb7ff;" href="/studio-test/">Theme Studio</a>…
+    </p>
+</body>
+
+</html>
