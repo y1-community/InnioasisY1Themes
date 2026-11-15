@@ -4775,7 +4775,7 @@
         else delete info.externalDownloadUrl;
     }
 
-    async function buildThemePackage(reportProgress, folderOverride) {
+    async function buildThemePackage(reportProgress, folderOverride, options) {
         if (!state.config) throw new Error('Open a theme first.');
         if (!window.JSZip) throw new Error('The ZIP builder did not load.');
         if (!window.ThemePackaging) throw new Error('The theme packager did not load.');
@@ -4788,6 +4788,10 @@
         /* Updates pack into the listing's own folder so the gallery reads them
            as that listing's update; new themes use their own title. */
         var stem = safeStem(folderOverride || title);
+        /* A saved theme is installed by pointing the player at the folder, so
+           its ZIP opens straight onto config.json and the art. The upload path
+           keeps the stem folder because the ingest expects a theme package. */
+        var prefix = options && options.flat ? '' : stem + '/';
         var config = cloneJson(state.config);
         syncConfigMetadata(config, title, author);
         reportPercent(2, 'Preparing theme…');
@@ -4839,7 +4843,7 @@
                 ? window.ThemePackaging.rewriteConfigForDeviceFlatPack(config, '', manifest.logicalToDevice)
                 : config;
         var zip = new window.JSZip();
-        zip.file(stem + '/config.json', JSON.stringify(outputConfig, null, 2));
+        zip.file(prefix + 'config.json', JSON.stringify(outputConfig, null, 2));
         manifest.items.forEach(function (item) {
             if (String(item.devicePath || '').toLowerCase() === 'config.json') return;
             var blob =
@@ -4847,7 +4851,7 @@
                 blobs[String(item.resolved || '').toLowerCase()] ||
                 blobs[String(item.download_url || '').toLowerCase()];
             if (!blob) throw new Error('Missing file for ' + item.logicalPath + '.');
-            zip.file(stem + '/' + item.devicePath, blob);
+            zip.file(prefix + item.devicePath, blob);
         });
         var zipBlob = await zip.generateAsync(
             {
@@ -4954,7 +4958,7 @@
         setBusy(true, 'save');
         setSaveProgress(0, 'Preparing theme…');
         try {
-            var file = await buildThemePackage(setSaveProgress);
+            var file = await buildThemePackage(setSaveProgress, null, { flat: true });
             downloadBlob(file);
             setSaveProgress(100, 'Download started');
             hideSaveProgress(2400);
