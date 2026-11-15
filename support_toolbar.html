@@ -569,11 +569,10 @@
     min-width: 44px;
   }
 
-  /* Reserve the dock's height so page footers never sit underneath it and no
-     scroll jump appears when the density tier changes. */
-  body:not(.y1-dock-closed) {
-    padding-bottom: var(--y1-dock-space, 0px);
-  }
+  /* The dock's height is reserved once, by #footer-root (see lumen.css), which
+     is the last box on every page. Padding body as well stacked a second copy
+     of the dock's height under the footer, which on short pages left a band of
+     empty space between the footer and the dock. */
 </style>
 <div id="support-toolbar-container">
   <div class="y1-dock-backdrop" data-dock-backdrop hidden></div>

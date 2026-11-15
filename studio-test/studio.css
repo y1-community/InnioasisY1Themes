@@ -3584,3 +3584,9 @@ body.studio-app {
 .has-layers > img:not(.studio-thumb-layer) {
     display: none;
 }
+
+/* The workbench hides #footer-root, and the site footer is what reserves the
+   dock's height on content pages, so the studio reserves it on body instead. */
+body.studio-app:not(.y1-dock-closed) {
+    padding-bottom: var(--y1-dock-space, 0px);
+}

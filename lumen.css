@@ -132,7 +132,7 @@ body.site-themes-app #footer-root {
     border-top: 1px solid var(--lumen-line);
     background: var(--lumen-panel);
     color: var(--lumen-text);
-    padding-bottom: var(--y1-dock-space, 96px);
+    padding-bottom: calc(var(--y1-dock-space, 96px) + 12px);
 }
 
 body.site-themes-app #nav-root:empty { display: block; min-height: 58px; }

@@ -477,6 +477,14 @@ body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-ad-top:empty {
     appearance: none;
 }
 
+/* gallery-chrome.js parks the shared search input directly in <body> until a
+   sticky header mounts it. On pages without one it stayed there as an empty
+   34px block at the very end of the document, holding the footer off the
+   bottom of the page and showing as a band above the dock. */
+body > .topbar-search {
+    display: none !important;
+}
+
 .topbar-search::placeholder {
     color: var(--site-muted);
 }
@@ -811,7 +819,7 @@ body.site-themes-app #footer-root {
     flex-direction: column;
     background: var(--site-bg-elevated) !important;
     border-top: 1px solid var(--site-border) !important;
-    padding-bottom: var(--y1-dock-space, 96px);
+    padding-bottom: calc(var(--y1-dock-space, 96px) + 12px);
     box-sizing: border-box;
     overflow-wrap: anywhere;
 }
