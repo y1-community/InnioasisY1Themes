@@ -1680,6 +1680,58 @@ body.studio-app {
     min-width: 0;
 }
 
+.studio-asset-warm {
+    margin: 0 0 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--studio-line);
+    border-radius: 10px;
+    background: color-mix(in oklab, var(--site-text) 4%, transparent);
+}
+
+.studio-asset-warm[hidden] {
+    display: none;
+}
+
+.studio-asset-warm__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 7px;
+    font-size: 0.78rem;
+    color: var(--studio-muted);
+}
+
+.studio-asset-warm__head strong {
+    font-size: 0.76rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--site-text);
+}
+
+.studio-asset-warm progress {
+    display: block;
+    width: 100%;
+    height: 6px;
+    border: 0;
+    border-radius: 999px;
+    overflow: hidden;
+    background: color-mix(in oklab, var(--site-text) 10%, transparent);
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.studio-asset-warm progress::-webkit-progress-bar {
+    background: color-mix(in oklab, var(--site-text) 10%, transparent);
+}
+
+.studio-asset-warm progress::-webkit-progress-value {
+    background: var(--site-accent);
+}
+
+.studio-asset-warm progress::-moz-progress-bar {
+    background: var(--site-accent);
+}
+
 .studio-commandbar .studio-modes {
     justify-self: center;
 }

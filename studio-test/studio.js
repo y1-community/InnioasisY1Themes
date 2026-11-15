@@ -216,6 +216,10 @@
         swap: byId('studio-swap'),
         swapPanel: byId('studio-swap-panel'),
         unsaved: byId('studio-unsaved'),
+        assetWarm: byId('studio-asset-warm'),
+        assetWarmLabel: byId('studio-asset-warm-label'),
+        assetWarmCount: byId('studio-asset-warm-count'),
+        assetWarmBar: byId('studio-asset-warm-bar'),
         commandContext: byId('studio-command-context')
     };
 
@@ -1333,6 +1337,7 @@
         state.galleryBlobCache = Object.create(null);
         galleryWarmFolder = '';
         galleryWarmPromise = null;
+        setAssetWarmProgress(0, 0, 0);
         state.missingAssetPaths = Object.create(null);
         state.missingAssetValues = Object.create(null);
         state.config = null;
@@ -4600,9 +4605,43 @@
     /* Gallery files are read once and kept for the session. Opening Edit (or
        Upload) warms every file the config points at, so a later save and the
        upload package reuse the bytes already in the page instead of fetching
-       each image again. */
+       each image again. Preview keeps loading only what the simulator paints,
+       which is why the warm pass reports progress instead of blocking it. */
     var galleryWarmFolder = '';
     var galleryWarmPromise = null;
+    var assetWarmHideTimer = null;
+
+    function setAssetWarmProgress(done, total, failed) {
+        if (!el.assetWarm) return;
+        if (assetWarmHideTimer) {
+            window.clearTimeout(assetWarmHideTimer);
+            assetWarmHideTimer = null;
+        }
+        if (!total) {
+            el.assetWarm.hidden = true;
+            return;
+        }
+        el.assetWarm.hidden = false;
+        var finished = done >= total;
+        if (el.assetWarmLabel) {
+            el.assetWarmLabel.textContent = finished
+                ? failed
+                    ? 'Theme files ready — ' + failed + (failed === 1 ? ' file' : ' files') + ' could not be read'
+                    : 'Theme files ready'
+                : 'Loading theme files…';
+        }
+        if (el.assetWarmCount) el.assetWarmCount.textContent = done + ' / ' + total;
+        var percent = Math.round((done / total) * 100);
+        if (el.assetWarmBar) {
+            el.assetWarmBar.value = percent;
+            el.assetWarmBar.textContent = percent + '%';
+        }
+        if (finished) {
+            assetWarmHideTimer = window.setTimeout(function () {
+                if (el.assetWarm) el.assetWarm.hidden = true;
+            }, failed ? 8000 : 2400);
+        }
+    }
 
     function warmGalleryAssets() {
         if (state.sourceType !== 'gallery' || !state.folder || !state.config) return Promise.resolve();
@@ -4610,21 +4649,33 @@
         var folder = state.folder;
         var values = collectConfigAssetValues(state.config);
         galleryWarmFolder = folder;
+        if (!values.length) {
+            setAssetWarmProgress(0, 0, 0);
+            return Promise.resolve();
+        }
+        var done = 0;
+        var failed = 0;
+        setAssetWarmProgress(done, values.length, failed);
         var next = 0;
         function lane() {
             if (next >= values.length) return Promise.resolve();
             var value = values[next];
             next += 1;
             return blobForAssetValue(value)
-                .catch(function () {})
-                .then(lane);
+                .catch(function () {
+                    failed += 1;
+                })
+                .then(function () {
+                    done += 1;
+                    if (galleryWarmFolder === folder) setAssetWarmProgress(done, values.length, failed);
+                    return lane();
+                });
         }
         var lanes = [];
         var laneCount = Math.min(6, values.length);
         for (var i = 0; i < laneCount; i += 1) lanes.push(lane());
         galleryWarmPromise = Promise.all(lanes).then(function () {
-            if (galleryWarmFolder === folder) return undefined;
-            return undefined;
+            if (galleryWarmFolder === folder) setAssetWarmProgress(values.length, values.length, failed);
         });
         return galleryWarmPromise;
     }
@@ -5763,13 +5814,11 @@
         setupAssetListEvents();
         setupPreviewAssetFocus();
         setupPlatformBadge();
-        /* Edits are mirrored into browser storage for a week, so leaving the page
-           is recoverable and no longer needs the native "Leave site?" prompt —
-           that dialog is exactly what made an accidental exit feel destructive.
-           The guard stays for the one case where it is still true: storage is
-           unusable, so the document is the only copy. */
+        /* Once a theme has a changed asset, attribute or detail, leaving the
+           page is always asked about first. The recovery copy is a safety net,
+           not a reason to close an edit session without a word. */
         window.addEventListener('beforeunload', function (event) {
-            if (!recoveryBroken || !isDirty()) return;
+            if (!isDirty()) return;
             event.preventDefault();
             event.returnValue = '';
         });
