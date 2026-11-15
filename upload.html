@@ -2491,6 +2491,33 @@
             statusEl.className = "status " + (ok ? "ok" : "err");
         }
 
+        /* The Worker's own message is the most specific thing available, so it
+           wins. A status with no body (a dead route, a proxy error page) still
+           has to tell the person what they can do about it. */
+        function uploadFailureMessage(status, payload) {
+            const fromServer = payload && (payload.error || payload.message);
+            if (fromServer) return String(fromServer);
+            if (status === 400) {
+                return "The upload was rejected as invalid. Check that the package has a config.json plus a title and author, then try again.";
+            }
+            if (status === 401 || status === 403) {
+                return `The upload service could not write to the gallery repository (HTTP ${status}). This is a setup problem on the server; save the theme to this device and tell the team.`;
+            }
+            if (status === 404) {
+                return "The theme upload service is not available right now (HTTP 404). Save the theme to this device and try again later, or send the ZIP to the team.";
+            }
+            if (status === 413) {
+                return "This package is larger than the upload service accepts. Remove unused artwork from the theme and try again.";
+            }
+            if (status === 429) {
+                return "The gallery is receiving too many submissions right now. Wait a minute and press Send again - your theme is untouched.";
+            }
+            if (status >= 500) {
+                return `The upload service failed (HTTP ${status}). Your theme is still here: try again in a moment, or save it to this device and send the ZIP to the team.`;
+            }
+            return `Upload failed (HTTP ${status}). Try again, or save the theme to this device and send the ZIP to the team.`;
+        }
+
         function setRemovalStatus(message, ok) {
             if (!removalStatus) return;
             removalStatus.textContent = message;
@@ -3586,7 +3613,18 @@
                 renderThemeInfoEditors();
             } catch (err) {
                 renderThemeInfoEditors();
-                setStatus(`Could not inspect ZIP metadata: ${err.message || err}`, false);
+                /* JSZip answers a truncated or non-ZIP file with a stack-trace
+                   sentence and a link to its own docs. Say what went wrong and
+                   what to do instead. */
+                const zipProblem = String((err && err.message) || err || "");
+                const looksLikeZipFailure =
+                    /end of central directory|not a zip|corrupt|checksum|invalid|unexpected/i.test(zipProblem);
+                setStatus(
+                    looksLikeZipFailure
+                        ? "That file is not a valid theme ZIP, or the download was cut short. Download it again, or pick the unpacked theme folder."
+                        : `Could not read that ZIP: ${zipProblem || "unknown error"}. Download it again, or pick the unpacked theme folder.`,
+                    false
+                );
             }
         }
 
@@ -4180,12 +4218,16 @@
 
         zipInput.addEventListener("change", async () => {
             const file = zipInput.files && zipInput.files[0];
+            /* A new pick replaces whatever the last one said, including an
+               error that no longer applies to what is now loaded. */
+            setStatus("", true);
             await inspectZipForThemeInfo(file);
             syncSubmitButtonLabel();
             void syncAuthorPolicyBanner();
         });
 
         folderInput.addEventListener("change", async () => {
+            setStatus("", true);
             await inspectFolderForThemeInfo(folderInput.files);
             syncSubmitButtonLabel();
             void syncAuthorPolicyBanner();
@@ -4318,14 +4360,21 @@
                 const outerStem = primaryDestinationStem(renamesForExtras);
                 const batchZip = await wrapAsUploaderBatchZip(rebuiltZip, outerStem);
                 data.set("zip", batchZip, batchZip.name);
-                const res = await fetch(window.uploadThemeEndpoint(), {
-                    method: "POST",
-                    body: data
-                });
+                let res;
+                try {
+                    res = await fetch(window.uploadThemeEndpoint(), {
+                        method: "POST",
+                        body: data
+                    });
+                } catch (networkErr) {
+                    throw new Error(
+                        "The theme upload service did not answer. Your theme is still here: save it to this device, then send the ZIP to the team or try again later."
+                    );
+                }
                 const payload = await res.json().catch(() => ({}));
 
                 if (!res.ok) {
-                    throw new Error(payload.error || `Upload failed (${res.status})`);
+                    throw new Error(uploadFailureMessage(res.status, payload));
                 }
 
                 const link = payload.prUrl ? String(payload.prUrl) : "";
