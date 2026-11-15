@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-15T02:05:08+00:00",
+ "generated": "2026-11-15T02:22:04+00:00",
  "tiers": [
   "core",
   "full"
@@ -34,12 +34,12 @@
    "n": 840,
    "pages": 840
   },
-  "Editor": {
-   "n": 838,
-   "pages": 838
-  },
   "Innioasis Y1 & Y2 Themes": {
    "n": 853,
+   "pages": 837
+  },
+  "Editor": {
+   "n": 837,
    "pages": 837
   },
   "Copy page link": {
@@ -22477,6 +22477,11 @@
    "n": 1,
    "pages": 1
   },
+  "Studio": {
+   "n": 1,
+   "pages": 1,
+   "script": true
+  },
   "Studio inspector": {
    "n": 1,
    "pages": 1
@@ -35937,11 +35942,6 @@
   "Stray Kids Grayscale for Innioasis Y1 & Y2 by Jaya": {
    "n": 1,
    "pages": 10,
-   "script": true
-  },
-  "Studio": {
-   "n": 1,
-   "pages": 1,
    "script": true
   },
   "Studio Ghibli for Innioasis Y1 & Y2 by mp3li": {
