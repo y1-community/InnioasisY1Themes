@@ -34,8 +34,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="../site-theme.css?v=20261115footer1" />
     <link rel="stylesheet" href="../site-toolbar.css?v=20261110accent2" />
-    <link rel="stylesheet" href="../y1-theme-preview.css?v=20261114rowfocus2" />
-    <link rel="stylesheet" href="/studio-test/studio.css?v=20261115dockfix" />
+    <link rel="stylesheet" href="../y1-theme-preview.css?v=20261119menus1" />
+    <link rel="stylesheet" href="/studio-test/studio.css?v=20261115managetop2" />
 </head>
 
 <body class="site-themes-app site-dock-mode studio-app" data-mode="preview">
@@ -275,6 +275,32 @@
                             <p>Estes são os mesmos detalhes de listagem do formulário de carregamento da galeria. O tema no simulador é o pacote que está a enviar. Os títulos e as descrições estão em inglês aqui: a galeria traduz-nos para cada visitante.</p>
                         </div>
 
+                        <div class="studio-identity" id="studio-identity" hidden>
+                            <div class="studio-identity-head">
+                                <span class="studio-eyebrow"><i class="fa-solid fa-code-compare" aria-hidden="true"></i> Uma pergunta primeiro</span>
+                                <span class="studio-chip studio-chip--muted">Corresponde à galeria</span>
+                            </div>
+                            <p class="studio-identity-lead">
+                                Este pacote contém os detalhes de <strong id="studio-identity-name" translate="no" data-i18n-skip>a gallery theme</strong><span id="studio-identity-author" translate="no" data-i18n-skip></span>, pelo que só pode ser atualizado como uma atualização da listagem ou como o seu próprio novo tema.
+                            </p>
+
+                            <div class="studio-identity-step" id="studio-identity-own">
+                                <p class="studio-identity-q">Este é o seu tema?</p>
+                                <div class="studio-identity-actions">
+                                    <button class="studio-btn studio-btn--primary" type="button" data-identity-own="yes">Sim, consegui</button>
+                                    <button class="studio-btn" type="button" data-identity-own="no">I'm making my own theme from this one</button>
+                                </div>
+                            </div>
+
+                            <div class="studio-identity-result" id="studio-identity-result" hidden>
+                                <p class="studio-identity-q" id="studio-identity-result-title"></p>
+                                <p class="studio-hint" id="studio-identity-result-text"></p>
+                                <button class="studio-mini-btn" type="button" id="studio-identity-reset">
+                                    <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Alterar resposta
+                                </button>
+                            </div>
+                        </div>
+
                         <div class="studio-package">
                             <div class="studio-cover" id="studio-submit-cover-wrap">
                                 <img id="studio-submit-cover" alt="" />
@@ -292,40 +318,6 @@
                         </div>
 
                         <div class="studio-submit-form" id="studio-submit-form">
-                            <div class="studio-identity" id="studio-identity" hidden>
-                                <div class="studio-identity-head">
-                                    <span class="studio-eyebrow"><i class="fa-solid fa-code-compare" aria-hidden="true"></i> Uma pergunta primeiro</span>
-                                    <span class="studio-chip studio-chip--muted">Corresponde à galeria</span>
-                                </div>
-                                <p class="studio-identity-lead">
-                                    Este pacote contém os detalhes de <strong id="studio-identity-name" translate="no" data-i18n-skip>a gallery theme</strong><span id="studio-identity-author" translate="no" data-i18n-skip></span>, pelo que só pode ser atualizado como uma atualização da listagem ou como o seu próprio novo tema.
-                                </p>
-
-                                <div class="studio-identity-step" id="studio-identity-own">
-                                    <p class="studio-identity-q">Este é o seu tema?</p>
-                                    <div class="studio-identity-actions">
-                                        <button class="studio-btn studio-btn--primary" type="button" data-identity-own="yes">Sim, consegui</button>
-                                        <button class="studio-btn" type="button" data-identity-own="no">I'm making my own theme from this one</button>
-                                    </div>
-                                </div>
-
-                                <div class="studio-identity-step" id="studio-identity-change" hidden>
-                                    <p class="studio-identity-q">Pretende alterar os detalhes do anúncio?</p>
-                                    <div class="studio-identity-actions">
-                                        <button class="studio-btn studio-btn--primary" type="button" data-identity-change="yes">Sim, edite os detalhes</button>
-                                        <button class="studio-btn" type="button" data-identity-change="no">Não, envie conforme listado</button>
-                                    </div>
-                                </div>
-
-                                <div class="studio-identity-result" id="studio-identity-result" hidden>
-                                    <p class="studio-identity-q" id="studio-identity-result-title"></p>
-                                    <p class="studio-hint" id="studio-identity-result-text"></p>
-                                    <button class="studio-mini-btn" type="button" id="studio-identity-reset">
-                                        <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Alterar resposta
-                                    </button>
-                                </div>
-                            </div>
-
                             <div class="studio-submit-details" id="studio-submit-details">
                             <div class="studio-field">
                                 <label for="studio-submit-title">Título da galeria <span class="studio-required">Obrigatório</span></label>
@@ -372,25 +364,6 @@
                             </div>
 
                             <div class="studio-policy-banner" id="studio-policy-banner" hidden></div>
-
-                            <ul class="studio-checklist" id="studio-checklist">
-                                <li data-check="config" data-state="pending">
-                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
-                                    <div><strong>Pacote encontrado</strong><span class="studio-check-detail">Esperando por um tema</span></div>
-                                </li>
-                                <li data-check="preview" data-state="pending">
-                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
-                                    <div><strong>Pré-visualização renderizada</strong><span class="studio-check-detail">A visualização ainda não foi renderizada</span></div>
-                                </li>
-                                <li data-check="assets" data-state="pending">
-                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
-                                    <div><strong>Arquivos referenciados</strong><span class="studio-check-detail">Verificando os ativos do pacote</span></div>
-                                </li>
-                                <li data-check="details" data-state="pending">
-                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
-                                    <div><strong>Detalhes da listagem</strong><span class="studio-check-detail">Adicione um título e autor</span></div>
-                                </li>
-                            </ul>
 
                             <button class="studio-btn studio-btn--primary studio-submit-btn" id="studio-submit-btn" type="button">
                                 <i class="fa-solid fa-paper-plane" aria-hidden="true"></i><span>Enviar o meu tema</span>
@@ -451,11 +424,11 @@
     <div id="support-toolbar-slot"></div>
 
     <script src="../nav.js?v=20261120studio"></script>
-    <script src="../y1-theme-preview.js?v=20261118context2"></script>
+    <script src="../y1-theme-preview.js?v=20261119menus1"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="../theme-packaging.js"></script>
     <script src="../author-submission-policy.js?v=20260523"></script>
-    <script src="/studio-test/studio.js?v=20261115upload3"></script>
+    <script src="/studio-test/studio.js?v=20261115managetop"></script>
     <script src="../site-locale.js?v=20261115skip2" defer></script>
 </body>
 

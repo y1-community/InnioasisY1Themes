@@ -63,7 +63,7 @@
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script defer src="theme-packaging.js?v=20261010perf"></script>
     <script src="theme-display-name.js?v=20260624"></script>
-    <script src="y1-theme-preview.js?v=20261111hq2"></script>
+    <script src="y1-theme-preview.js?v=20261115menus"></script>
     <script src="theme-artwork-compat.js?v=20260711"></script>
     <script src="gold-theme-detect.js?v=20261109perf"></script>
     <script src="gallery-chrome.js?v=20261117studio3"></script>
@@ -893,6 +893,9 @@
                     </nav>
                     <a class="btn gallery-editor-cta" href="/studio-test/" data-theme-editor-link data-no-interstitial target="_blank" rel="noopener noreferrer">
                         <i class="fa-solid fa-pen-ruler" aria-hidden="true"></i> Studio
+                    </a>
+                    <a class="btn" href="https://github.com/y1-community/innioasisy1themes/issues/new" target="_blank" rel="noopener noreferrer">
+                        <i class="fa-solid fa-bug" aria-hidden="true"></i> Report an issue
                     </a>
                 </header>
                 <figure class="y1-hero" aria-hidden="true">
@@ -5251,11 +5254,10 @@
             // Preview click → theme.html (reliable in-app preview). Theme name → pretty SEO URL.
             const buildCardPreviewHref = (variantSeg) => {
                 if (theme.sourceType === 'external' || !themeQueryKey) return '';
-                if (window.ThemeShareLinks && typeof ThemeShareLinks.buildThemeDetailPageUrl === 'function') {
-                    return ThemeShareLinks.buildThemeDetailPageUrl(themeQueryKey, variantSeg);
-                }
+                /* Preview click opens the Theme Studio, which mounts this theme
+                   on the device simulator and offers the editor beside it. */
                 const v = String(variantSeg || '').trim();
-                let href = `./theme.html?theme=${encodeURIComponent(themeQueryKey)}`;
+                let href = `/studio-test/?folder=${encodeURIComponent(themeQueryKey)}&mode=preview`;
                 if (v) href += `&variant=${encodeURIComponent(v)}`;
                 return href;
             };

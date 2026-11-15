@@ -34,8 +34,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="../site-theme.css?v=20261115footer1" />
     <link rel="stylesheet" href="../site-toolbar.css?v=20261110accent2" />
-    <link rel="stylesheet" href="../y1-theme-preview.css?v=20261114rowfocus2" />
-    <link rel="stylesheet" href="/studio-test/studio.css?v=20261115dockfix" />
+    <link rel="stylesheet" href="../y1-theme-preview.css?v=20261119menus1" />
+    <link rel="stylesheet" href="/studio-test/studio.css?v=20261115managetop2" />
 </head>
 
 <body class="site-themes-app site-dock-mode studio-app" data-mode="preview">
@@ -275,6 +275,32 @@
                             <p>이는 갤러리 업로드 양식과 동일한 목록 세부정보입니다. 시뮬레이터의 테마는 제출하는 패키지입니다. 여기에서는 제목과 설명이 영어로 유지됩니다. 갤러리는 각 방문자를 위해 이를 번역합니다.</p>
                         </div>
 
+                        <div class="studio-identity" id="studio-identity" hidden>
+                            <div class="studio-identity-head">
+                                <span class="studio-eyebrow"><i class="fa-solid fa-code-compare" aria-hidden="true"></i> 먼저 질문 하나</span>
+                                <span class="studio-chip studio-chip--muted">갤러리와 일치</span>
+                            </div>
+                            <p class="studio-identity-lead">
+                                이 패키지에는 다음 사항이 포함되어 있습니다. <strong id="studio-identity-name" translate="no" data-i18n-skip>a gallery theme</strong><span id="studio-identity-author" translate="no" data-i18n-skip></span>, 따라서 해당 목록의 업데이트 또는 귀하의 새로운 테마로만 올라갈 수 있습니다.
+                            </p>
+
+                            <div class="studio-identity-step" id="studio-identity-own">
+                                <p class="studio-identity-q">이것이 당신의 테마인가요?</p>
+                                <div class="studio-identity-actions">
+                                    <button class="studio-btn studio-btn--primary" type="button" data-identity-own="yes">응, 해냈어</button>
+                                    <button class="studio-btn" type="button" data-identity-own="no">I'm making my own theme from this one</button>
+                                </div>
+                            </div>
+
+                            <div class="studio-identity-result" id="studio-identity-result" hidden>
+                                <p class="studio-identity-q" id="studio-identity-result-title"></p>
+                                <p class="studio-hint" id="studio-identity-result-text"></p>
+                                <button class="studio-mini-btn" type="button" id="studio-identity-reset">
+                                    <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>답변 변경
+                                </button>
+                            </div>
+                        </div>
+
                         <div class="studio-package">
                             <div class="studio-cover" id="studio-submit-cover-wrap">
                                 <img id="studio-submit-cover" alt="" />
@@ -292,40 +318,6 @@
                         </div>
 
                         <div class="studio-submit-form" id="studio-submit-form">
-                            <div class="studio-identity" id="studio-identity" hidden>
-                                <div class="studio-identity-head">
-                                    <span class="studio-eyebrow"><i class="fa-solid fa-code-compare" aria-hidden="true"></i> 먼저 질문 하나</span>
-                                    <span class="studio-chip studio-chip--muted">갤러리와 일치</span>
-                                </div>
-                                <p class="studio-identity-lead">
-                                    이 패키지에는 다음 사항이 포함되어 있습니다. <strong id="studio-identity-name" translate="no" data-i18n-skip>a gallery theme</strong><span id="studio-identity-author" translate="no" data-i18n-skip></span>, 따라서 해당 목록의 업데이트 또는 귀하의 새로운 테마로만 올라갈 수 있습니다.
-                                </p>
-
-                                <div class="studio-identity-step" id="studio-identity-own">
-                                    <p class="studio-identity-q">이것이 당신의 테마인가요?</p>
-                                    <div class="studio-identity-actions">
-                                        <button class="studio-btn studio-btn--primary" type="button" data-identity-own="yes">응, 해냈어</button>
-                                        <button class="studio-btn" type="button" data-identity-own="no">I'm making my own theme from this one</button>
-                                    </div>
-                                </div>
-
-                                <div class="studio-identity-step" id="studio-identity-change" hidden>
-                                    <p class="studio-identity-q">목록 세부정보를 변경하시겠습니까?</p>
-                                    <div class="studio-identity-actions">
-                                        <button class="studio-btn studio-btn--primary" type="button" data-identity-change="yes">예, 세부정보를 수정합니다</button>
-                                        <button class="studio-btn" type="button" data-identity-change="no">아니요, 나열된 대로 보내세요.</button>
-                                    </div>
-                                </div>
-
-                                <div class="studio-identity-result" id="studio-identity-result" hidden>
-                                    <p class="studio-identity-q" id="studio-identity-result-title"></p>
-                                    <p class="studio-hint" id="studio-identity-result-text"></p>
-                                    <button class="studio-mini-btn" type="button" id="studio-identity-reset">
-                                        <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>답변 변경
-                                    </button>
-                                </div>
-                            </div>
-
                             <div class="studio-submit-details" id="studio-submit-details">
                             <div class="studio-field">
                                 <label for="studio-submit-title">갤러리 제목 <span class="studio-required">필수의</span></label>
@@ -372,25 +364,6 @@
                             </div>
 
                             <div class="studio-policy-banner" id="studio-policy-banner" hidden></div>
-
-                            <ul class="studio-checklist" id="studio-checklist">
-                                <li data-check="config" data-state="pending">
-                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
-                                    <div><strong>패키지 발견</strong><span class="studio-check-detail">테마를 기다리는 중</span></div>
-                                </li>
-                                <li data-check="preview" data-state="pending">
-                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
-                                    <div><strong>렌더링된 미리보기</strong><span class="studio-check-detail">미리보기가 아직 렌더링되지 않았습니다.</span></div>
-                                </li>
-                                <li data-check="assets" data-state="pending">
-                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
-                                    <div><strong>참조된 파일</strong><span class="studio-check-detail">패키지 자산 확인 중</span></div>
-                                </li>
-                                <li data-check="details" data-state="pending">
-                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
-                                    <div><strong>목록 세부정보</strong><span class="studio-check-detail">제목 및 작성자 추가</span></div>
-                                </li>
-                            </ul>
 
                             <button class="studio-btn studio-btn--primary studio-submit-btn" id="studio-submit-btn" type="button">
                                 <i class="fa-solid fa-paper-plane" aria-hidden="true"></i><span>내 테마 보내기</span>
@@ -451,11 +424,11 @@
     <div id="support-toolbar-slot"></div>
 
     <script src="../nav.js?v=20261120studio"></script>
-    <script src="../y1-theme-preview.js?v=20261118context2"></script>
+    <script src="../y1-theme-preview.js?v=20261119menus1"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="../theme-packaging.js"></script>
     <script src="../author-submission-policy.js?v=20260523"></script>
-    <script src="/studio-test/studio.js?v=20261115upload3"></script>
+    <script src="/studio-test/studio.js?v=20261115managetop"></script>
     <script src="../site-locale.js?v=20261115skip2" defer></script>
 </body>
 

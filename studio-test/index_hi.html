@@ -34,8 +34,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="../site-theme.css?v=20261115footer1" />
     <link rel="stylesheet" href="../site-toolbar.css?v=20261110accent2" />
-    <link rel="stylesheet" href="../y1-theme-preview.css?v=20261114rowfocus2" />
-    <link rel="stylesheet" href="/studio-test/studio.css?v=20261115dockfix" />
+    <link rel="stylesheet" href="../y1-theme-preview.css?v=20261119menus1" />
+    <link rel="stylesheet" href="/studio-test/studio.css?v=20261115managetop2" />
 </head>
 
 <body class="site-themes-app site-dock-mode studio-app" data-mode="preview">
@@ -275,6 +275,32 @@
                             <p>ये गैलरी अपलोड फॉर्म के समान लिस्टिंग विवरण हैं। सिम्युलेटर में थीम वह पैकेज है जिसे आप सबमिट कर रहे हैं। शीर्षक और विवरण यहां अंग्रेजी में रहते हैं: गैलरी प्रत्येक आगंतुक के लिए उनका अनुवाद करती है।</p>
                         </div>
 
+                        <div class="studio-identity" id="studio-identity" hidden>
+                            <div class="studio-identity-head">
+                                <span class="studio-eyebrow"><i class="fa-solid fa-code-compare" aria-hidden="true"></i> पहले एक प्रश्न</span>
+                                <span class="studio-chip studio-chip--muted">गैलरी से मेल खाता है</span>
+                            </div>
+                            <p class="studio-identity-lead">
+                                इस पैकेज में इसका विवरण दिया गया है <strong id="studio-identity-name" translate="no" data-i18n-skip>a gallery theme</strong><span id="studio-identity-author" translate="no" data-i18n-skip></span>, इसलिए यह केवल उस लिस्टिंग के अपडेट के रूप में या आपकी अपनी नई थीम के रूप में ऊपर जा सकता है।
+                            </p>
+
+                            <div class="studio-identity-step" id="studio-identity-own">
+                                <p class="studio-identity-q">क्या यह आपका विषय है?</p>
+                                <div class="studio-identity-actions">
+                                    <button class="studio-btn studio-btn--primary" type="button" data-identity-own="yes">हाँ, मैंने इसे बनाया</button>
+                                    <button class="studio-btn" type="button" data-identity-own="no">I'm making my own theme from this one</button>
+                                </div>
+                            </div>
+
+                            <div class="studio-identity-result" id="studio-identity-result" hidden>
+                                <p class="studio-identity-q" id="studio-identity-result-title"></p>
+                                <p class="studio-hint" id="studio-identity-result-text"></p>
+                                <button class="studio-mini-btn" type="button" id="studio-identity-reset">
+                                    <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>उत्तर बदलें
+                                </button>
+                            </div>
+                        </div>
+
                         <div class="studio-package">
                             <div class="studio-cover" id="studio-submit-cover-wrap">
                                 <img id="studio-submit-cover" alt="" />
@@ -292,40 +318,6 @@
                         </div>
 
                         <div class="studio-submit-form" id="studio-submit-form">
-                            <div class="studio-identity" id="studio-identity" hidden>
-                                <div class="studio-identity-head">
-                                    <span class="studio-eyebrow"><i class="fa-solid fa-code-compare" aria-hidden="true"></i> पहले एक प्रश्न</span>
-                                    <span class="studio-chip studio-chip--muted">गैलरी से मेल खाता है</span>
-                                </div>
-                                <p class="studio-identity-lead">
-                                    इस पैकेज में इसका विवरण दिया गया है <strong id="studio-identity-name" translate="no" data-i18n-skip>a gallery theme</strong><span id="studio-identity-author" translate="no" data-i18n-skip></span>, इसलिए यह केवल उस लिस्टिंग के अपडेट के रूप में या आपकी अपनी नई थीम के रूप में ऊपर जा सकता है।
-                                </p>
-
-                                <div class="studio-identity-step" id="studio-identity-own">
-                                    <p class="studio-identity-q">क्या यह आपका विषय है?</p>
-                                    <div class="studio-identity-actions">
-                                        <button class="studio-btn studio-btn--primary" type="button" data-identity-own="yes">हाँ, मैंने इसे बनाया</button>
-                                        <button class="studio-btn" type="button" data-identity-own="no">I'm making my own theme from this one</button>
-                                    </div>
-                                </div>
-
-                                <div class="studio-identity-step" id="studio-identity-change" hidden>
-                                    <p class="studio-identity-q">क्या आप लिस्टिंग विवरण बदलना चाहते हैं?</p>
-                                    <div class="studio-identity-actions">
-                                        <button class="studio-btn studio-btn--primary" type="button" data-identity-change="yes">हां, विवरण संपादित करें</button>
-                                        <button class="studio-btn" type="button" data-identity-change="no">नहीं, इसे सूचीबद्ध अनुसार भेजें</button>
-                                    </div>
-                                </div>
-
-                                <div class="studio-identity-result" id="studio-identity-result" hidden>
-                                    <p class="studio-identity-q" id="studio-identity-result-title"></p>
-                                    <p class="studio-hint" id="studio-identity-result-text"></p>
-                                    <button class="studio-mini-btn" type="button" id="studio-identity-reset">
-                                        <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>उत्तर बदलें
-                                    </button>
-                                </div>
-                            </div>
-
                             <div class="studio-submit-details" id="studio-submit-details">
                             <div class="studio-field">
                                 <label for="studio-submit-title">गैलरी शीर्षक <span class="studio-required">आवश्यक</span></label>
@@ -372,25 +364,6 @@
                             </div>
 
                             <div class="studio-policy-banner" id="studio-policy-banner" hidden></div>
-
-                            <ul class="studio-checklist" id="studio-checklist">
-                                <li data-check="config" data-state="pending">
-                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
-                                    <div><strong>पैकेज मिल गया</strong><span class="studio-check-detail">किसी थीम का इंतजार है</span></div>
-                                </li>
-                                <li data-check="preview" data-state="pending">
-                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
-                                    <div><strong>पूर्वावलोकन प्रस्तुत किया गया</strong><span class="studio-check-detail">पूर्वावलोकन अभी तक प्रस्तुत नहीं किया गया है</span></div>
-                                </li>
-                                <li data-check="assets" data-state="pending">
-                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
-                                    <div><strong>संदर्भित फ़ाइलें</strong><span class="studio-check-detail">पैकेज परिसंपत्तियों की जाँच करना</span></div>
-                                </li>
-                                <li data-check="details" data-state="pending">
-                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
-                                    <div><strong>सूची विवरण</strong><span class="studio-check-detail">एक शीर्षक और लेखक जोड़ें</span></div>
-                                </li>
-                            </ul>
 
                             <button class="studio-btn studio-btn--primary studio-submit-btn" id="studio-submit-btn" type="button">
                                 <i class="fa-solid fa-paper-plane" aria-hidden="true"></i><span>मेरी थीम भेजें</span>
@@ -451,11 +424,11 @@
     <div id="support-toolbar-slot"></div>
 
     <script src="../nav.js?v=20261120studio"></script>
-    <script src="../y1-theme-preview.js?v=20261118context2"></script>
+    <script src="../y1-theme-preview.js?v=20261119menus1"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="../theme-packaging.js"></script>
     <script src="../author-submission-policy.js?v=20260523"></script>
-    <script src="/studio-test/studio.js?v=20261115upload3"></script>
+    <script src="/studio-test/studio.js?v=20261115managetop"></script>
     <script src="../site-locale.js?v=20261115skip2" defer></script>
 </body>
 

@@ -34,8 +34,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="../site-theme.css?v=20261115footer1" />
     <link rel="stylesheet" href="../site-toolbar.css?v=20261110accent2" />
-    <link rel="stylesheet" href="../y1-theme-preview.css?v=20261114rowfocus2" />
-    <link rel="stylesheet" href="/studio-test/studio.css?v=20261115dockfix" />
+    <link rel="stylesheet" href="../y1-theme-preview.css?v=20261119menus1" />
+    <link rel="stylesheet" href="/studio-test/studio.css?v=20261115managetop2" />
 </head>
 
 <body class="site-themes-app site-dock-mode studio-app" data-mode="preview">
@@ -275,6 +275,32 @@
                             <p>Dette er de samme fortegnelsesoplysninger som galleriets uploadformular. Temaet i simulatoren er den pakke, du indsender. Titler og beskrivelser forbliver på engelsk her: galleriet oversætter dem for hver besøgende.</p>
                         </div>
 
+                        <div class="studio-identity" id="studio-identity" hidden>
+                            <div class="studio-identity-head">
+                                <span class="studio-eyebrow"><i class="fa-solid fa-code-compare" aria-hidden="true"></i> Et spørgsmål først</span>
+                                <span class="studio-chip studio-chip--muted">Passer til galleriet</span>
+                            </div>
+                            <p class="studio-identity-lead">
+                                Denne pakke indeholder oplysninger om <strong id="studio-identity-name" translate="no" data-i18n-skip>a gallery theme</strong><span id="studio-identity-author" translate="no" data-i18n-skip></span>, så det kan kun gå op som den pågældende listes opdatering eller som dit eget nye tema.
+                            </p>
+
+                            <div class="studio-identity-step" id="studio-identity-own">
+                                <p class="studio-identity-q">Er dette dit tema?</p>
+                                <div class="studio-identity-actions">
+                                    <button class="studio-btn studio-btn--primary" type="button" data-identity-own="yes">Ja, jeg klarede det</button>
+                                    <button class="studio-btn" type="button" data-identity-own="no">I'm making my own theme from this one</button>
+                                </div>
+                            </div>
+
+                            <div class="studio-identity-result" id="studio-identity-result" hidden>
+                                <p class="studio-identity-q" id="studio-identity-result-title"></p>
+                                <p class="studio-hint" id="studio-identity-result-text"></p>
+                                <button class="studio-mini-btn" type="button" id="studio-identity-reset">
+                                    <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Skift svar
+                                </button>
+                            </div>
+                        </div>
+
                         <div class="studio-package">
                             <div class="studio-cover" id="studio-submit-cover-wrap">
                                 <img id="studio-submit-cover" alt="" />
@@ -292,40 +318,6 @@
                         </div>
 
                         <div class="studio-submit-form" id="studio-submit-form">
-                            <div class="studio-identity" id="studio-identity" hidden>
-                                <div class="studio-identity-head">
-                                    <span class="studio-eyebrow"><i class="fa-solid fa-code-compare" aria-hidden="true"></i> Et spørgsmål først</span>
-                                    <span class="studio-chip studio-chip--muted">Passer til galleriet</span>
-                                </div>
-                                <p class="studio-identity-lead">
-                                    Denne pakke indeholder oplysninger om <strong id="studio-identity-name" translate="no" data-i18n-skip>a gallery theme</strong><span id="studio-identity-author" translate="no" data-i18n-skip></span>, så det kan kun gå op som den pågældende listes opdatering eller som dit eget nye tema.
-                                </p>
-
-                                <div class="studio-identity-step" id="studio-identity-own">
-                                    <p class="studio-identity-q">Er dette dit tema?</p>
-                                    <div class="studio-identity-actions">
-                                        <button class="studio-btn studio-btn--primary" type="button" data-identity-own="yes">Ja, jeg klarede det</button>
-                                        <button class="studio-btn" type="button" data-identity-own="no">I'm making my own theme from this one</button>
-                                    </div>
-                                </div>
-
-                                <div class="studio-identity-step" id="studio-identity-change" hidden>
-                                    <p class="studio-identity-q">Vil du ændre fortegnelsesoplysningerne?</p>
-                                    <div class="studio-identity-actions">
-                                        <button class="studio-btn studio-btn--primary" type="button" data-identity-change="yes">Ja, rediger detaljerne</button>
-                                        <button class="studio-btn" type="button" data-identity-change="no">Nej, send det som anført</button>
-                                    </div>
-                                </div>
-
-                                <div class="studio-identity-result" id="studio-identity-result" hidden>
-                                    <p class="studio-identity-q" id="studio-identity-result-title"></p>
-                                    <p class="studio-hint" id="studio-identity-result-text"></p>
-                                    <button class="studio-mini-btn" type="button" id="studio-identity-reset">
-                                        <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Skift svar
-                                    </button>
-                                </div>
-                            </div>
-
                             <div class="studio-submit-details" id="studio-submit-details">
                             <div class="studio-field">
                                 <label for="studio-submit-title">Galleri titel <span class="studio-required">Påkrævet</span></label>
@@ -372,25 +364,6 @@
                             </div>
 
                             <div class="studio-policy-banner" id="studio-policy-banner" hidden></div>
-
-                            <ul class="studio-checklist" id="studio-checklist">
-                                <li data-check="config" data-state="pending">
-                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
-                                    <div><strong>Pakke fundet</strong><span class="studio-check-detail">Venter på et tema</span></div>
-                                </li>
-                                <li data-check="preview" data-state="pending">
-                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
-                                    <div><strong>Forhåndsvisning gengivet</strong><span class="studio-check-detail">Forhåndsvisningen er ikke gengivet endnu</span></div>
-                                </li>
-                                <li data-check="assets" data-state="pending">
-                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
-                                    <div><strong>Refererede filer</strong><span class="studio-check-detail">Kontrol af pakkeaktiver</span></div>
-                                </li>
-                                <li data-check="details" data-state="pending">
-                                    <span class="studio-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
-                                    <div><strong>Fortegnelse detaljer</strong><span class="studio-check-detail">Tilføj en titel og forfatter</span></div>
-                                </li>
-                            </ul>
 
                             <button class="studio-btn studio-btn--primary studio-submit-btn" id="studio-submit-btn" type="button">
                                 <i class="fa-solid fa-paper-plane" aria-hidden="true"></i><span>Send mit tema</span>
@@ -451,11 +424,11 @@
     <div id="support-toolbar-slot"></div>
 
     <script src="../nav.js?v=20261120studio"></script>
-    <script src="../y1-theme-preview.js?v=20261118context2"></script>
+    <script src="../y1-theme-preview.js?v=20261119menus1"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="../theme-packaging.js"></script>
     <script src="../author-submission-policy.js?v=20260523"></script>
-    <script src="/studio-test/studio.js?v=20261115upload3"></script>
+    <script src="/studio-test/studio.js?v=20261115managetop"></script>
     <script src="../site-locale.js?v=20261115skip2" defer></script>
 </body>
 
