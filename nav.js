@@ -650,7 +650,7 @@
   /* The editor is a separate tool, and a theme in progress is worth keeping:
      it opens beside the gallery rather than replacing the reader's filters. */
   var themeEditorNavLinkHtml = isThemesSite
-    ? '<li><a href="' + escapeHtml(THEME_EDITOR_URL) + '" target="_blank" rel="noopener noreferrer" data-no-interstitial>Editor</a></li>'
+    ? '<li><a href="' + escapeHtml(THEME_EDITOR_URL) + '" target="_blank" rel="noopener noreferrer" data-no-interstitial>Studio</a></li>'
     : "";
 
   var brandIconHtml = isThemesSite

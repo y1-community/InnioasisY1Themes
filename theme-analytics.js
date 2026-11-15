@@ -388,36 +388,9 @@
         el.innerHTML = "";
         el.className = "y1-theme-metrics" + (el.dataset.cardMetrics === "1" ? " y1-theme-metrics--card" : "");
 
-        if (shouldShowAnalyticsCounts()) {
-            const views = document.createElement("span");
-            views.className = "y1-metric";
-            views.title = "Page views (gallery + theme page + preview)";
-            /* Number and unit are separate text nodes: the catalog can only
-               translate a whole node, and "1,234 views" never matches. */
-            views.innerHTML =
-                '<i class="fa-regular fa-eye" aria-hidden="true"></i> ' +
-                formatCount(stats.pageViews) +
-                " ";
-            views.append(metricLabel("views"));
-
-            const dls = document.createElement("span");
-            dls.className = "y1-metric";
-            dls.title = "ZIP downloads and direct installs";
-            dls.innerHTML =
-                '<i class="fa-solid fa-download" aria-hidden="true"></i> ' +
-                formatCount(stats.downloads) +
-                " ";
-            dls.append(metricLabel("downloads"));
-
-            if (el.dataset.cardMetrics === "1") {
-                const countsRow = document.createElement("div");
-                countsRow.className = "y1-metrics-counts";
-                countsRow.append(views, dls);
-                el.append(countsRow);
-            } else {
-                el.append(views, dls);
-            }
-        }
+        /* View and download counters are paused: the tally is currently
+           unreliable (every listing reads zero), so the listings show ratings
+           only until the counting service is fixed. */
 
         if (shouldShowRatings(c)) {
             const ratingWrap = document.createElement("div");

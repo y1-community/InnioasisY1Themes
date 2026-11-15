@@ -1680,6 +1680,52 @@ body.studio-app {
     min-width: 0;
 }
 
+.studio-appearance {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 3px;
+    border: 1px solid var(--studio-line);
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--site-text) 4%, transparent);
+}
+
+.studio-appearance__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--site-text);
+    opacity: 0.62;
+    cursor: pointer;
+    transition: background 0.15s ease, opacity 0.15s ease, color 0.15s ease;
+}
+
+.studio-appearance__btn i {
+    font-size: 0.74rem;
+}
+
+.studio-appearance__btn:hover {
+    opacity: 1;
+    background: color-mix(in oklab, var(--site-text) 8%, transparent);
+}
+
+.studio-appearance__btn.is-active {
+    opacity: 1;
+    color: var(--lumen-on-accent, #07101d);
+    background: var(--site-accent);
+}
+
+.studio-appearance__btn:focus-visible {
+    outline: 2px solid var(--site-accent);
+    outline-offset: 2px;
+}
+
 .studio-commandbar .studio-modes {
     justify-self: center;
 }

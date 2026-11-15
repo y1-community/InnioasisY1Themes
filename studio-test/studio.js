@@ -253,6 +253,7 @@
         assetOverrides: Object.create(null),
         openTrays: Object.create(null),
         assetUrls: [],
+        galleryBlobCache: Object.create(null),
         pendingAssetId: null,
         gallery: [],
         byFolder: Object.create(null),
@@ -1152,6 +1153,7 @@
 
     function boot() {
         bindEvents();
+        mountStudioAppearance();
         setupManage();
         watchSaveTarget();
         setupPwa();
@@ -1240,6 +1242,9 @@
         }
         state.mode = mode;
         closePlatformPop();
+        if ((mode === 'edit' || mode === 'submit') && state.sourceType === 'gallery') {
+            warmGalleryAssets();
+        }
         document.body.setAttribute('data-mode', mode);
         each(document.querySelectorAll('[data-mode-btn]'), function (btn) {
             var active = btn.getAttribute('data-mode-btn') === mode;
@@ -1327,6 +1332,9 @@
         var requestedFolder = folder;
         state.sourceType = 'gallery';
         state.folder = folder;
+        state.galleryBlobCache = Object.create(null);
+        galleryWarmFolder = '';
+        galleryWarmPromise = null;
         state.missingAssetPaths = Object.create(null);
         state.missingAssetValues = Object.create(null);
         state.config = null;
@@ -4575,12 +4583,114 @@
             return Promise.reject(new Error('Missing file: ' + value));
         }
         if (state.sourceType === 'gallery') {
-            return fetch(galleryFileUrl(state.folder, value), { cache: 'no-store' }).then(function (res) {
-                if (!res.ok) throw new Error('Could not read ' + value + ' (' + res.status + ').');
-                return res.blob();
-            });
+            var cacheKey = localKey('', value);
+            var cached = state.galleryBlobCache[cacheKey];
+            if (cached) return Promise.resolve(cached);
+            return fetch(galleryFileUrl(state.folder, value), { cache: 'no-store' })
+                .then(function (res) {
+                    if (!res.ok) throw new Error('Could not read ' + value + ' (' + res.status + ').');
+                    return res.blob();
+                })
+                .then(function (blob) {
+                    state.galleryBlobCache[cacheKey] = blob;
+                    return blob;
+                });
         }
         return Promise.reject(new Error('No theme package is open.'));
+    }
+
+    /* Gallery files are read once and kept for the session. Opening Edit (or
+       Upload) warms every file the config points at, so a later save and the
+       upload package reuse the bytes already in the page instead of fetching
+       each image again. */
+    var galleryWarmFolder = '';
+    var galleryWarmPromise = null;
+
+    function warmGalleryAssets() {
+        if (state.sourceType !== 'gallery' || !state.folder || !state.config) return Promise.resolve();
+        if (galleryWarmFolder === state.folder && galleryWarmPromise) return galleryWarmPromise;
+        var folder = state.folder;
+        var values = collectConfigAssetValues(state.config);
+        galleryWarmFolder = folder;
+        var next = 0;
+        function lane() {
+            if (next >= values.length) return Promise.resolve();
+            var value = values[next];
+            next += 1;
+            return blobForAssetValue(value)
+                .catch(function () {})
+                .then(lane);
+        }
+        var lanes = [];
+        var laneCount = Math.min(6, values.length);
+        for (var i = 0; i < laneCount; i += 1) lanes.push(lane());
+        galleryWarmPromise = Promise.all(lanes).then(function () {
+            if (galleryWarmFolder === folder) return undefined;
+            return undefined;
+        });
+        return galleryWarmPromise;
+    }
+
+    /* Appearance: the shared header owns storage, but Studio gets its own
+       Light/Dark pair so a theme can be checked in both while editing. */
+    function currentStudioAppearance() {
+        var root = document.documentElement;
+        var attr = root.getAttribute('data-theme') || root.getAttribute('data-lumen-theme') || 'dark';
+        return attr === 'light' ? 'light' : 'dark';
+    }
+
+    function syncStudioAppearance() {
+        var current = currentStudioAppearance();
+        each(document.querySelectorAll('[data-studio-appearance]'), function (btn) {
+            var active = btn.getAttribute('data-studio-appearance') === current;
+            btn.classList.toggle('is-active', active);
+            btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+    }
+
+    function setStudioAppearance(theme) {
+        if (typeof window.y1ApplyAppearance === 'function') {
+            try {
+                window.y1ApplyAppearance(theme, true);
+            } catch (e) {}
+        } else {
+            document.documentElement.setAttribute('data-theme', theme);
+            document.documentElement.setAttribute('data-lumen-theme', theme);
+            try {
+                localStorage.setItem('lumen-theme', theme);
+            } catch (e) {}
+        }
+        if (el.appearance) el.appearance.value = theme;
+        syncStudioAppearance();
+    }
+
+    function mountStudioAppearance() {
+        var actions = document.querySelector('.studio-command-actions');
+        if (!actions || actions.querySelector('.studio-appearance')) return;
+        var wrap = document.createElement('div');
+        wrap.className = 'studio-appearance';
+        wrap.setAttribute('role', 'group');
+        wrap.setAttribute('aria-label', 'Appearance');
+        [
+            ['light', 'sun', 'Light appearance'],
+            ['dark', 'moon', 'Dark appearance']
+        ].forEach(function (def) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'studio-appearance__btn';
+            btn.setAttribute('data-studio-appearance', def[0]);
+            btn.setAttribute('aria-pressed', 'false');
+            btn.setAttribute('title', def[2]);
+            btn.setAttribute('aria-label', def[2]);
+            btn.innerHTML = '<i class="fa-solid fa-' + def[1] + '" aria-hidden="true"></i>';
+            btn.addEventListener('click', function () {
+                setStudioAppearance(def[0]);
+            });
+            wrap.appendChild(btn);
+        });
+        actions.insertBefore(wrap, actions.firstChild);
+        if (el.appearance) el.appearance.addEventListener('change', syncStudioAppearance);
+        syncStudioAppearance();
     }
 
     /* The description is optional, but the gallery should never receive the
