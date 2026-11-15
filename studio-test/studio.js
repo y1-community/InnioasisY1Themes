@@ -8,8 +8,39 @@
 (function () {
     'use strict';
 
-    var DEFAULT_THEME = 'Persona5';
-    var UPLOAD_ORIGIN = 'https://y1-theme-upload.itsryanspecter.workers.dev';
+    /* A first open lands on a theme that uses everything the player can do:
+       menu art, player art, the status bar set, the masks and the file icons.
+       An empty canvas teaches nobody which slots exist. */
+    var DEFAULT_THEME = 'Melody Munchkin';
+
+    /* Same-origin first: when the handling functions are deployed next to the
+       site, /api/* answers without a second hostname in the way. A page can
+       still name a different upload host in its meta tag (the hosted gallery
+       does), and the worker remains the last resort. */
+    var UPLOAD_ORIGIN = (function () {
+        var meta = document.querySelector('meta[name="cf-pages-upload-api-origin"]');
+        var configured = String(
+            (document.documentElement && document.documentElement.getAttribute('data-upload-origin')) ||
+            (window.Y1_THEME_UPLOAD_ORIGIN || '') ||
+            (meta ? meta.getAttribute('content') : '') ||
+            ''
+        ).trim();
+        if (configured) return configured.replace(/\/+$/, '');
+        if (location.protocol === 'file:') return 'https://y1-theme-upload.itsryanspecter.workers.dev';
+        return '';
+    })();
+
+    /* A dead upload host answers nothing at all, and "Failed to fetch" tells
+       the person nothing about what to do next. */
+    async function uploadRequest(path, options) {
+        try {
+            return await fetch(UPLOAD_ORIGIN + path, options);
+        } catch (err) {
+            throw new Error(
+                'The theme service did not answer. Check your connection and try again, or save the ZIP and send it to the theme maintainer.'
+            );
+        }
+    }
 
     function byId(id) {
         return document.getElementById(id);
@@ -84,6 +115,12 @@
         sourceLabel: byId('studio-source-label'),
         sourceDetail: byId('studio-source-detail'),
         sourceChip: byId('studio-source-chip'),
+        platformChip: byId('studio-platform-chip'),
+        platformLabel: byId('studio-platform-label'),
+        platformPop: byId('studio-platform-pop'),
+        platformPopTitle: byId('studio-platform-pop-title'),
+        platformPopBody: byId('studio-platform-pop-body'),
+        platformFocus: byId('studio-platform-focus'),
         sourceName: byId('studio-source-name'),
         sourceAuthor: byId('studio-source-author'),
         sourceDesc: byId('studio-source-desc'),
@@ -112,6 +149,10 @@
         startEdit: byId('studio-start-edit'),
         editBack: byId('studio-edit-back'),
         editSubmit: byId('studio-edit-submit'),
+        recovery: byId('studio-recovery'),
+        recoveryText: byId('studio-recovery-text'),
+        recoveryDiscard: byId('studio-recovery-discard'),
+        recoveryDismiss: byId('studio-recovery-dismiss'),
         openZip: byId('studio-open-zip'),
         openFolder: byId('studio-open-folder'),
         appearance: byId('lumen-theme-select'),
@@ -192,11 +233,23 @@
         localFileMap: Object.create(null),
         assets: [],
         assetById: Object.create(null),
+        missingAssetPaths: Object.create(null),
+        missingAssetValues: Object.create(null),
         selectedAssetId: null,
+        /* Which status bar state the preview should show. Battery icons come in
+           four levels, and charging has its own set. */
+        statusState: {
+            batteryLevel: 3,
+            isCharging: false,
+            playState: null,
+            bluetoothState: null,
+            headsetState: null
+        },
         assetFilter: 'all',
         relatedAnchor: '',
         relatedIds: [],
         relatedTitle: '',
+        relatedColors: [],
         assetOverrides: Object.create(null),
         openTrays: Object.create(null),
         assetUrls: [],
@@ -306,39 +359,848 @@
         if (window.visualViewport) window.visualViewport.addEventListener('resize', queueRefresh, { passive: true });
     }
 
+    /* —— Session recovery ————————————————————————————————————————
+       A closed tab used to throw away an afternoon of replacements: the picked
+       files only exist as object URLs, which die with the document. The open
+       gallery theme, its edited config, every replacement blob, the selected
+       asset and the listing fields are mirrored into IndexedDB shortly after
+       each edit, expire after a week, and are put back when the Studio opens
+       again. Local folders and ZIPs are not mirrored: their files cannot be
+       re-read after a reload, so restoring "the theme" would only half work. */
+    var RECOVERY_DB = 'innioasis-studio';
+    var RECOVERY_STORE = 'recovery';
+    var RECOVERY_TTL = 7 * 24 * 60 * 60 * 1000;
+    var recoveryTimer = null;
+    var recoveryDbPromise = null;
+    /* Set when browser storage refuses to work, so the tab knows the edits are
+       not safe anywhere but this document. */
+    var recoveryBroken = false;
+
+    function recoveryDb() {
+        if (recoveryDbPromise) return recoveryDbPromise;
+        recoveryDbPromise = new Promise(function (resolve, reject) {
+            if (!window.indexedDB) {
+                reject(new Error('IndexedDB unavailable'));
+                return;
+            }
+            var request = window.indexedDB.open(RECOVERY_DB, 1);
+            request.onupgradeneeded = function () {
+                var db = request.result;
+                if (!db.objectStoreNames.contains(RECOVERY_STORE)) db.createObjectStore(RECOVERY_STORE);
+            };
+            request.onsuccess = function () {
+                resolve(request.result);
+            };
+            request.onerror = function () {
+                reject(request.error || new Error('IndexedDB blocked'));
+            };
+        });
+        /* Private windows and blocked storage reject here; recovery is a
+           convenience, so it never blocks the Studio itself. */
+        recoveryDbPromise.catch(function () {
+            recoveryDbPromise = null;
+            recoveryBroken = true;
+        });
+        return recoveryDbPromise;
+    }
+
+    function recoveryRequest(mode, run) {
+        return recoveryDb().then(function (db) {
+            return new Promise(function (resolve, reject) {
+                var tx = db.transaction(RECOVERY_STORE, mode);
+                var request = run(tx.objectStore(RECOVERY_STORE));
+                request.onsuccess = function () {
+                    resolve(request.result);
+                };
+                request.onerror = function () {
+                    reject(request.error);
+                };
+                tx.onabort = function () {
+                    reject(tx.error || new Error('Recovery transaction aborted'));
+                };
+            });
+        });
+    }
+
+    function recoveryFormValues() {
+        return {
+            title: el.submitTitle ? el.submitTitle.value : '',
+            author: el.submitAuthor ? el.submitAuthor.value : '',
+            desc: el.submitDesc ? el.submitDesc.value : '',
+            authorUrl: el.submitAuthorUrl ? el.submitAuthorUrl.value : '',
+            external: !!(el.submitExternal && el.submitExternal.checked),
+            externalUrl: el.submitExternalUrl ? el.submitExternalUrl.value : ''
+        };
+    }
+
+    function recoverySnapshot() {
+        if (state.sourceType !== 'gallery' || !state.folder || !state.config || !state.meta) return null;
+        var overrides = [];
+        Object.keys(state.assetOverrides || {}).forEach(function (key) {
+            var entry = state.assetOverrides[key];
+            if (!entry || entry.placeholder || !entry.blob) return;
+            overrides.push({
+                key: key,
+                blob: entry.blob,
+                name: entry.name || '',
+                size: entry.size || entry.blob.size || 0,
+                type: entry.type || entry.blob.type || ''
+            });
+        });
+        return {
+            version: 1,
+            savedAt: Date.now(),
+            folder: state.folder,
+            mode: state.mode,
+            config: cloneJson(state.config),
+            meta: {
+                name: state.meta.name || '',
+                author: state.meta.author || '',
+                authorUrl: state.meta.authorUrl || '',
+                desc: state.meta.desc || '',
+                externalDownloadUrl: state.meta.externalDownloadUrl || ''
+            },
+            form: recoveryFormValues(),
+            overrides: overrides,
+            selectedAssetId: state.selectedAssetId,
+            openTrays: cloneJson(state.openTrays),
+            assetFilter: state.assetFilter,
+            compactExpanded: state.compactExpanded,
+            dirty: !!state.dirty,
+            formDirty: !!state.formDirty
+        };
+    }
+
+    /* Typing and replacing both land here on every keystroke, so the write is
+       debounced: a full snapshot carries image blobs and must not run per key. */
+    function scheduleRecoverySave() {
+        if (state.sourceType !== 'gallery' || !state.folder || !state.config) return;
+        if (recoveryTimer) window.clearTimeout(recoveryTimer);
+        recoveryTimer = window.setTimeout(function () {
+            recoveryTimer = null;
+            saveRecoveryNow();
+        }, 600);
+    }
+
+    function saveRecoveryNow() {
+        if (recoveryTimer) {
+            window.clearTimeout(recoveryTimer);
+            recoveryTimer = null;
+        }
+        var snapshot = recoverySnapshot();
+        if (!snapshot) return Promise.resolve();
+        /* One record per theme folder. A single shared key meant two Studio tabs
+           on different themes overwrote each other, so returning restored the
+           other tab's work. */
+        return recoveryRequest('readwrite', function (store) {
+            return store.put(snapshot, snapshot.folder);
+        })
+            .then(function () {
+                recoveryBroken = false;
+            })
+            .catch(function () {
+                recoveryBroken = true;
+            });
+    }
+
+    /* The most recent unexpired session wins: that is the tab the reader left
+       last. Expired records are dropped as they are found. */
+    function readRecovery() {
+        return recoveryRequest('readonly', function (store) {
+            return store.getAll();
+        })
+            .then(function (records) {
+                var list = Array.isArray(records) ? records : [];
+                var best = null;
+                list.forEach(function (record) {
+                    if (!record || !record.folder || !record.savedAt) return;
+                    if (Date.now() - record.savedAt > RECOVERY_TTL) {
+                        clearRecovery(record.folder);
+                        return;
+                    }
+                    if (!best || record.savedAt > best.savedAt) best = record;
+                });
+                return best;
+            })
+            .catch(function () {
+                return null;
+            });
+    }
+
+    function clearRecovery(folder) {
+        if (recoveryTimer) {
+            window.clearTimeout(recoveryTimer);
+            recoveryTimer = null;
+        }
+        var key = folder || (state.sourceType === 'gallery' ? state.folder : '');
+        return recoveryRequest('readwrite', function (store) {
+            return key ? store.delete(key) : store.clear();
+        }).catch(function () {});
+    }
+
+    /* Runs once the package's own config is in hand, so the saved config can be
+       laid over the pristine base: the base keeps Reset honest, the saved copy
+       keeps the work. */
+    function applyRecovery(record) {
+        if (!record || !state.config || !state.meta) return 0;
+        if (record.config && typeof record.config === 'object') {
+            state.config = cloneJson(record.config);
+            applyBlankSlots(state.config);
+        }
+        var restored = 0;
+        (record.overrides || []).forEach(function (item) {
+            if (!item || !item.key || !item.blob) return;
+            var previous = state.assetOverrides[item.key];
+            if (previous && previous.url) revokeAssetUrl(previous.url);
+            var url = URL.createObjectURL(item.blob);
+            state.assetUrls.push(url);
+            state.assetOverrides[item.key] = {
+                blob: item.blob,
+                url: url,
+                name: item.name || fileName(item.key) || 'restored.png',
+                size: item.size || item.blob.size || 0,
+                type: item.type || item.blob.type || ''
+            };
+            restored += 1;
+        });
+        if (record.meta) {
+            ['name', 'author', 'authorUrl', 'desc', 'externalDownloadUrl'].forEach(function (field) {
+                if (typeof record.meta[field] === 'string') state.meta[field] = record.meta[field];
+            });
+        }
+        var coverValue = state.config && state.config.themeCover;
+        if (coverValue) state.meta.cover = resolveStoredAssetUrl(String(coverValue)) || state.baseCover;
+        if (record.assetFilter === 'missing' || record.assetFilter === 'changed') state.assetFilter = record.assetFilter;
+        if (record.openTrays && typeof record.openTrays === 'object') {
+            state.openTrays = cloneJson(record.openTrays);
+        }
+        if (record.selectedAssetId) state.selectedAssetId = record.selectedAssetId;
+        state.compactExpanded = record.compactExpanded === true;
+        if (record.dirty) {
+            state.dirty = true;
+            if (el.unsaved) el.unsaved.hidden = false;
+        }
+        return restored;
+    }
+
+    /* The form is filled by fillSubmitForm after the assets are rebuilt, so its
+       restored values have to be written after that, not inside applyRecovery. */
+    function finishRecovery(record) {
+        if (!record) return;
+        var form = record.form || {};
+        if (el.submitTitle && typeof form.title === 'string') el.submitTitle.value = form.title;
+        if (el.submitAuthor && typeof form.author === 'string') el.submitAuthor.value = form.author;
+        if (el.submitDesc && typeof form.desc === 'string') el.submitDesc.value = form.desc;
+        if (el.submitAuthorUrl && typeof form.authorUrl === 'string') el.submitAuthorUrl.value = form.authorUrl;
+        if (el.submitExternal) el.submitExternal.checked = !!form.external;
+        if (el.submitExternalWrap) el.submitExternalWrap.hidden = !form.external;
+        if (el.submitExternalUrl && typeof form.externalUrl === 'string') el.submitExternalUrl.value = form.externalUrl;
+        if (record.formDirty) {
+            state.formDirty = true;
+            markDirty();
+        }
+        if (!bootModeRequest && (record.mode === 'edit' || record.mode === 'submit' || record.mode === 'preview')) {
+            setMode(record.mode, true);
+            /* The theme loaded in Preview and only now moves to the recovered
+               pane, so the URL still said preview; a second reload would have
+               obeyed it and dropped the user back on Preview. */
+            syncUrl();
+        }
+        showRecoveryBanner(record);
+        syncPolicy();
+        updateChecklist();
+        updateUpdateNotice();
+    }
+
+    function recoveryAgeLabel(savedAt) {
+        var minutes = Math.max(1, Math.round((Date.now() - savedAt) / 60000));
+        if (minutes < 60) return minutes + (minutes === 1 ? ' minute ago' : ' minutes ago');
+        var hours = Math.round(minutes / 60);
+        if (hours < 24) return hours + (hours === 1 ? ' hour ago' : ' hours ago');
+        var days = Math.round(hours / 24);
+        return days + (days === 1 ? ' day ago' : ' days ago');
+    }
+
+    function showRecoveryBanner(record) {
+        if (!el.recovery || !el.recoveryText) return;
+        var replaced = (record.overrides || []).length;
+        var detail = replaced
+            ? replaced + (replaced === 1 ? ' replaced file' : ' replaced files')
+            : 'your last theme';
+        el.recoveryText.textContent =
+            'Restored ' + detail + ' as you left it ' + recoveryAgeLabel(record.savedAt || Date.now()) + '.';
+        el.recovery.hidden = false;
+    }
+
+    function hideRecoveryBanner() {
+        if (el.recovery) el.recovery.hidden = true;
+    }
+
+    /* Discarding reloads the package so the tray, the preview and the unsaved
+       marker all go back to the untouched theme in one step. */
+    function discardRecovery() {
+        hideRecoveryBanner();
+        clearRecovery();
+        toast('Recovered session discarded.');
+        if (state.sourceType === 'gallery' && state.folder) loadGalleryTheme(state.folder);
+    }
+
+    /* —— Asset thumbnails on their real surface ———————————————————
+       The tray sits on a dark panel in dark mode, where a dark menu icon on a
+       plain tile is invisible. Each thumbnail is therefore drawn on the surface
+       the asset is drawn over in the player: home icons on the desktop
+       wallpaper, file icons on a file-list row over the global wallpaper, and
+       settings or dialog icons on a menu row. The theme's own files supply the
+       backdrop, so the thumbnail follows the theme instead of guessing. */
+    /* —— Files a theme references but does not ship ————————————————
+       Cupertino's config points at a dialog option background, folder.png and
+       music.png that the package does not contain. Every <img> or CSS
+       background pointing at one logs a console 404 and leaves a broken
+       thumbnail, so referenced files are checked with HEAD requests before
+       anything draws them: a failed fetch is not a console error, a failed
+       image load is. A slot whose file is gone is rewritten to the shared
+       transparent placeholder, so the row survives with a Missing badge and a
+       real backdrop, and nothing ever requests the missing file. */
+    /* Probing at runtime cannot help: Chromium logs a console error for every
+       404, including one from fetch or XHR, so a HEAD check trades an image 404
+       for a fetch 404. The gaps are computed at build time instead
+       (scripts/generate_missing_theme_assets.py) and served as one small JSON
+       file, which means the Studio never requests a file that is not there. */
+    var missingManifestPromise = null;
+
+    function loadMissingManifest() {
+        if (missingManifestPromise) return missingManifestPromise;
+        /* The page sets <base href="/">, so the folder has to be part of the
+           path or this resolves to /missing-theme-assets.json. */
+        missingManifestPromise = fetch('studio-test/missing-theme-assets.json', { cache: 'no-cache' })
+            .then(function (res) {
+                return res.ok ? res.json() : {};
+            })
+            .catch(function () {
+                return {};
+            });
+        return missingManifestPromise;
+    }
+
+    function missingMapForFolder(manifest, folder) {
+        var map = Object.create(null);
+        var entry = manifest && manifest[folder];
+        (entry && Array.isArray(entry.files) ? entry.files : []).forEach(function (value) {
+            map[String(value || '').trim().toLowerCase()] = true;
+        });
+        return map;
+    }
+
+    function markMissingConfigValues(config, missing) {
+        state.missingAssetPaths = Object.create(null);
+        state.missingAssetValues = Object.create(null);
+        if (!missing || !Object.keys(missing).length) return;
+        function visit(node, path) {
+            if (!node || typeof node !== 'object') return;
+            if (Array.isArray(node)) {
+                node.forEach(function (item, index) {
+                    var childPath = path + '.' + index;
+                    if (typeof item === 'string') {
+                        if (missing[item.trim().toLowerCase()]) {
+                            state.missingAssetPaths[childPath] = true;
+                            state.missingAssetValues[childPath] = item;
+                            node[index] = PLACEHOLDER_FILE;
+                        }
+                        return;
+                    }
+                    visit(item, childPath);
+                });
+                return;
+            }
+            Object.keys(node).forEach(function (key) {
+                var value = node[key];
+                var childPath = path ? path + '.' + key : key;
+                if (typeof value === 'string') {
+                    if (missing[value.trim().toLowerCase()]) {
+                        state.missingAssetPaths[childPath] = true;
+                        state.missingAssetValues[childPath] = value;
+                        node[key] = PLACEHOLDER_FILE;
+                    }
+                    return;
+                }
+                visit(value, childPath);
+            });
+        }
+        visit(config, '');
+    }
+
+    function configAssetUrl(path) {
+        var value = readPath(state.config || {}, path);
+        if (!value || typeof value !== 'string') return '';
+        /* A slot the Studio backfilled with the shared transparent placeholder is
+           not a background the theme defines, so the fallback chain keeps going. */
+        if (isPlaceholderValue(value)) return '';
+        return resolveStoredAssetUrl(value.trim());
+    }
+
+    /* The player paints exactly one of two wallpapers, chosen by screen: the home
+       screen uses desktopWallpaper, every other screen (settings, file lists,
+       menus, dialogs) uses globalWallpaper. Both fall back through the same chain
+       the preview engine uses, so a theme that ships only one background still
+       shows the right one. This follows config keys only: a filename proves
+       nothing — settingConfig.wallpaper is the icon on the Wallpaper setting row,
+       not a background, and treating it as one painted a 146px icon behind every
+       settings asset. */
+    var BACKDROP_CHAIN_HOME = ['desktopWallpaper', 'globalWallpaper', 'themeWallpaper', 'themeCover'];
+    var BACKDROP_CHAIN_GLOBAL = ['globalWallpaper', 'desktopWallpaper', 'themeWallpaper', 'themeCover'];
+    var BACKGROUND_PATHS = {
+        desktopWallpaper: true,
+        globalWallpaper: true,
+        themeWallpaper: true,
+        themeCover: true
+    };
+
+    function backdropChainFor(assetPath) {
+        var path = String(assetPath || '');
+        if (/^(homePageConfig\.|statusConfig\.|desktopMask$)/.test(path)) return BACKDROP_CHAIN_HOME;
+        return BACKDROP_CHAIN_GLOBAL;
+    }
+
+    /* The first background the theme actually defines for that screen. The asset
+       being thumbnailed is skipped: a wallpaper drawn on itself says nothing. */
+    function firstBackdropUrl(chain, selfPath) {
+        for (var i = 0; i < chain.length; i += 1) {
+            if (chain[i] === selfPath) continue;
+            var url = configAssetUrl(chain[i]);
+            if (url) return url;
+        }
+        return '';
+    }
+
+    /* The row art an item is drawn over, again by config key. File entries sit on
+       itemConfig rows; settings and menus on menuConfig rows; dialog options on
+       their own row art. */
+    function rowBackdropKeyFor(assetPath) {
+        var path = String(assetPath || '');
+        if (/^settingConfig\./.test(path)) return 'menuConfig.menuItemBackground';
+        if (/^fileConfig\./.test(path)) return 'itemConfig.itemBackground';
+        if (/^dialogConfig\./.test(path)) return 'dialogConfig.dialogOptionBackground';
+        if (/^menuConfig\.|^itemConfig\./.test(path)) return 'menuConfig.menuItemBackground';
+        return '';
+    }
+
+    function assetBackdrop(asset) {
+        if (!asset || asset.kind !== 'image') return null;
+        var path = String(asset.path || '');
+        /* A background is its own context: thumbnail it on its own art, not on a
+           duplicate of itself. */
+        if (BACKGROUND_PATHS[path]) return null;
+        var wallpaper = firstBackdropUrl(backdropChainFor(path), path);
+        var rowKey = rowBackdropKeyFor(path);
+        var strip = rowKey && rowKey !== path ? configAssetUrl(rowKey) : '';
+        if (!wallpaper && !strip) return null;
+        return { wallpaper: wallpaper, strip: strip };
+    }
+
+    function cssUrl(url) {
+        return 'url("' + String(url || '').replace(/"/g, '%22').replace(/\s/g, '%20') + '")';
+    }
+
+    /* Where the asset sits on the screen decides which part of the wallpaper is
+       behind it: status bar art hugs the top edge, home icons sit mid-screen, and
+       list rows read best on the middle band. */
+    function backdropPositionFor(assetPath) {
+        if (/^statusConfig\./.test(String(assetPath || ''))) return 'center top';
+        return 'center';
+    }
+
+    /* —— Thumbnails in context ——
+
+       A home icon is drawn over the home mask, and the mask sits over the
+       wallpaper. A thumbnail showing only the wallpaper misses both layers, so
+       assets that share a screen with a mask get a small crop of the live
+       screen instead: wallpaper, then the mask, then the art where it actually
+       sits. The mask is drawn as an image, so its transparent areas let the
+       wallpaper through exactly as they do on the player. */
+
+    var THUMB_FALLBACK = { width: 72, height: 54 };
+
+    /* On phones the edit layout hides the stage, so the canvas has no layout
+       box and every live crop would fall back to the file. Show it offscreen
+       for one layout pass, run the capture, then put the stage back exactly
+       as it was. */
+    function withPreviewVisible(run) {
+        var preview = el.preview;
+        var canvas = preview ? preview.querySelector('.y1-tp-canvas') : null;
+        if (!canvas) return false;
+        if (canvas.getBoundingClientRect().width > 0) return run();
+        var stage = preview.closest('.studio-stage');
+        if (!stage) return false;
+        var prior = stage.getAttribute('style');
+        stage.style.display = 'flex';
+        stage.style.position = 'fixed';
+        stage.style.left = '-10000px';
+        stage.style.top = '0';
+        stage.style.width = '900px';
+        stage.style.maxHeight = 'none';
+        stage.style.visibility = 'hidden';
+        window.requestAnimationFrame(function () {
+            window.requestAnimationFrame(function () {
+                try {
+                    run();
+                } finally {
+                    if (prior === null) stage.removeAttribute('style');
+                    else stage.setAttribute('style', prior);
+                }
+            });
+        });
+        return false;
+    }
+
+    function livePreviewNode(assetPath) {
+        if (!el.preview) return null;
+        var selector;
+        try {
+            selector = '[data-theme-asset-path="' + String(assetPath).replace(/["\\]/g, '\\$&') + '"]';
+        } catch (err) {
+            return null;
+        }
+        return el.preview.querySelector('.y1-tp-canvas ' + selector) || null;
+    }
+
+    function thumbLayer(className) {
+        var layer = document.createElement('span');
+        layer.className = 'studio-thumb-layer' + (className ? ' ' + className : '');
+        layer.setAttribute('aria-hidden', 'true');
+        return layer;
+    }
+
+    /* The asset detail plate is a window onto the live preview: clone the
+       mounted screen, scale it around the asset, and clip it to the plate.
+       Everything the player draws around the asset - wallpaper, mask, titles,
+       neighbouring icons - comes along in the right place, so the preview is
+       anatomically the same screen rather than an icon on an empty card. */
+    function paintLiveCrop(node, asset) {
+        var canvas = el.preview ? el.preview.querySelector('.y1-tp-canvas') : null;
+        if (!canvas || !asset || !node || !node.isConnected) return false;
+        if (canvas.getBoundingClientRect().width < 1) {
+            withPreviewVisible(function () {
+                paintLiveCrop(node, asset);
+            });
+            return false;
+        }
+        var live = livePreviewNode(asset.path);
+        if (!live) return false;
+        var hostBox = node.getBoundingClientRect();
+        var canvasBox = canvas.getBoundingClientRect();
+        var liveBox = live.getBoundingClientRect();
+        if (!hostBox.width || !hostBox.height || !canvasBox.width || !canvasBox.height || !liveBox.width) return false;
+        /* The mounted canvas is laid out at its native 480x360 and then scaled
+           to fit the stage. Clone it at layout size and fold that stage scale
+           into the transform, or the clone's pixel-positioned children clip. */
+        var layoutWidth = canvas.offsetWidth || 480;
+        var layoutHeight = canvas.offsetHeight || 360;
+        var stageScale = canvasBox.width / layoutWidth;
+
+        var isMask = asset.path === 'desktopMask' || asset.path === 'settingConfig.settingMask';
+        var zoom;
+        var centreX;
+        var centreY;
+        if (isMask) {
+            /* A mask is the size of the screen, so the honest preview is the
+               whole screen at 4:3, exactly as the editor draws it. */
+            zoom = Math.min(hostBox.width / canvasBox.width, hostBox.height / canvasBox.height);
+            centreX = canvasBox.width / 2;
+            centreY = canvasBox.height / 2;
+        } else {
+            /* Aim for roughly three asset-widths of context, but never zoom out
+               past 1:1 and never tighter than 6x. */
+            /* Three asset-widths of context, with a floor so a 20px glyph still
+               brings its neighbour (battery icon and its percentage, say) into
+               the crop instead of a postage stamp of wallpaper. */
+            var windowWidth = Math.min(canvasBox.width, Math.max(220, liveBox.width * 3));
+            var windowHeight = Math.min(canvasBox.height, Math.max(120, liveBox.height * 3));
+            zoom = Math.min(hostBox.width / windowWidth, hostBox.height / windowHeight, 6);
+            zoom = Math.max(1, zoom || 1);
+            centreX = liveBox.left - canvasBox.left + liveBox.width / 2;
+            centreY = liveBox.top - canvasBox.top + liveBox.height / 2;
+        }
+        if (!isFinite(zoom) || zoom <= 0) return false;
+
+        var left = hostBox.width / 2 - centreX * zoom;
+        var top = hostBox.height / 2 - centreY * zoom;
+        if (!isMask) {
+            /* Keep the screen's own edges at the plate's edges: a status icon
+               sits on the top border, so centring it would frame dead black
+               space that the live preview does not show. */
+            left = Math.min(0, Math.max(hostBox.width - canvasBox.width * zoom, left));
+            top = Math.min(0, Math.max(hostBox.height - canvasBox.height * zoom, top));
+        }
+        var layer = thumbLayer('studio-live-crop');
+        layer.classList.add('has-live-crop');
+        layer.style.cssText =
+            'position:absolute;left:' +
+            left +
+            'px;top:' +
+            top +
+            'px;width:' +
+            layoutWidth +
+            'px;height:' +
+            layoutHeight +
+            'px;transform:scale(' +
+            zoom * stageScale +
+            ');transform-origin:0 0;';
+
+        var clone = canvas.cloneNode(true);
+        clone.removeAttribute('id');
+        Array.prototype.forEach.call(clone.querySelectorAll('[id]'), function (child) {
+            child.removeAttribute('id');
+        });
+        Array.prototype.forEach.call(clone.querySelectorAll('[tabindex]'), function (child) {
+            child.removeAttribute('tabindex');
+        });
+        clone.setAttribute('aria-hidden', 'true');
+        clone.style.cssText =
+            'position:absolute;left:0;top:0;width:' +
+            layoutWidth +
+            'px;height:' +
+            layoutHeight +
+            'px;margin:0;pointer-events:none;';
+        layer.appendChild(clone);
+        node.classList.add('has-live-crop');
+        node.appendChild(layer);
+        if (!isMask) {
+            /* Mark the bit being edited inside the crop: at 4x a status icon
+               needs a pointer, not just a bigger picture. */
+            var target = thumbLayer('studio-live-crop-target');
+            target.style.cssText =
+                'position:absolute;left:' +
+                (left + (liveBox.left - canvasBox.left) * zoom) +
+                'px;top:' +
+                (top + (liveBox.top - canvasBox.top) * zoom) +
+                'px;width:' +
+                liveBox.width * zoom +
+                'px;height:' +
+                liveBox.height * zoom +
+                'px;border:2px solid var(--site-accent);border-radius:4px;box-shadow:0 1px 5px rgba(3, 6, 10, 0.35);';
+            node.appendChild(target);
+        }
+        return true;
+    }
+
+    function paintScreenCrop(node, asset) {
+        var canvas = el.preview ? el.preview.querySelector('.y1-tp-canvas') : null;
+        if (!canvas || !asset) return false;
+        /* A mask drawn over itself is not a useful crop. */
+        if (asset.path === 'desktopMask' || asset.path === 'settingConfig.settingMask') return false;
+        var mask = canvas.querySelector('.y1-tp-desktop-mask');
+        var maskUrl = mask ? mask.getAttribute('src') : '';
+        if (!maskUrl) return false;
+        var live = livePreviewNode(asset.path);
+        if (!live) return false;
+        var art = live.tagName === 'IMG' ? live : live.querySelector('img');
+        if (!art) return false;
+        var wall = canvas.querySelector('.y1-tp-wallpaper');
+        var wallImage = wall ? getComputedStyle(wall).backgroundImage : 'none';
+        if (!wallImage || wallImage === 'none') return false;
+
+        var hostBox = node.getBoundingClientRect();
+        var width = Math.round(hostBox.width) || THUMB_FALLBACK.width;
+        var height = Math.round(hostBox.height) || THUMB_FALLBACK.height;
+        var canvasBox = canvas.getBoundingClientRect();
+        var artBox = art.getBoundingClientRect();
+        if (!canvasBox.width || !artBox.width || !canvasBox.height) return false;
+
+        var zoom = Math.min(width / (artBox.width * 2.4), height / (artBox.height * 2.4), 2.4);
+        if (!isFinite(zoom) || zoom <= 0.05) return false;
+
+        var originLeft = width / 2 - (artBox.left + artBox.width / 2 - canvasBox.left) * zoom;
+        var originTop = height / 2 - (artBox.top + artBox.height / 2 - canvasBox.top) * zoom;
+        var sheetWidth = canvasBox.width * zoom;
+        var sheetHeight = canvasBox.height * zoom;
+
+        node.classList.add('has-layers');
+        node.style.backgroundImage = '';
+        node.style.backgroundColor = '#05070c';
+
+        var sheet = thumbLayer('studio-thumb-wallpaper');
+        sheet.style.cssText =
+            'left:' + originLeft + 'px;top:' + originTop + 'px;width:' + sheetWidth + 'px;height:' + sheetHeight + 'px;';
+        sheet.style.backgroundImage = wallImage;
+        node.appendChild(sheet);
+
+        var maskLayer = document.createElement('img');
+        maskLayer.className = 'studio-thumb-layer studio-thumb-mask';
+        maskLayer.alt = '';
+        maskLayer.src = maskUrl;
+        maskLayer.style.cssText =
+            'left:' + originLeft + 'px;top:' + originTop + 'px;width:' + sheetWidth + 'px;height:' + sheetHeight + 'px;';
+        node.appendChild(maskLayer);
+
+        var artLayer = document.createElement('img');
+        artLayer.className = 'studio-thumb-layer studio-thumb-art';
+        artLayer.alt = '';
+        artLayer.src = art.currentSrc || art.src;
+        artLayer.style.cssText =
+            'left:' +
+            (originLeft + (artBox.left - canvasBox.left) * zoom) +
+            'px;top:' +
+            (originTop + (artBox.top - canvasBox.top) * zoom) +
+            'px;width:' +
+            artBox.width * zoom +
+            'px;height:' +
+            artBox.height * zoom +
+            'px;';
+        node.appendChild(artLayer);
+        return true;
+    }
+
+    /* The preview mounts after the tray is built, so rows painted before it
+       exists are refreshed once the canvas has a screen to crop. */
+    function refreshThumbLayers() {
+        if (el.assetList) {
+            Array.prototype.forEach.call(el.assetList.querySelectorAll('[data-asset-id]'), function (row) {
+                var asset = state.assetById[row.getAttribute('data-asset-id')];
+                var thumb = row.querySelector('.studio-asset-thumb');
+                if (asset && thumb) decorateAssetThumb(thumb, asset);
+            });
+        }
+        refreshMaskThumbs();
+        if (state.selectedAssetId) updateAssetDetail();
+    }
+
+    function maskScreenFor(asset) {
+        if (!asset) return '';
+        if (asset.path === 'desktopMask') return 'home';
+        if (asset.path === 'settingConfig.settingMask') return 'settings';
+        return '';
+    }
+
+    /* The mask cards use the same live clone as the detail plate: switch the
+       simulator to the screen the mask belongs to, capture that screen, then
+       put the view back in the same task so the swap is never painted. */
+    function paintMaskCardCrop(node, asset) {
+        var api = el.preview ? el.preview._y1TpApi : null;
+        var screen = maskScreenFor(asset);
+        if (!api || !screen || typeof api.showView !== 'function' || typeof api.currentView !== 'function') return false;
+        return withPreviewVisible(function () {
+            var current = api.currentView();
+            var moved = false;
+            try {
+                if (current !== screen) {
+                    moved = api.showView(screen) !== false;
+                }
+                clearThumbLayers(node);
+                node.classList.remove('has-live-crop');
+                return paintLiveCrop(node, asset);
+            } catch (e) {
+                return false;
+            } finally {
+                if (moved) {
+                    try {
+                        api.showView(current);
+                    } catch (e) {}
+                }
+            }
+        });
+    }
+
+    function refreshMaskThumbs() {
+        if (!el.maskEditor) return;
+        Array.prototype.forEach.call(el.maskEditor.querySelectorAll('[data-mask-slot]'), function (card) {
+            var id = card.getAttribute('data-mask-slot');
+            var asset = state.assetById[id];
+            var art = card.querySelector('.studio-mask-art');
+            if (!asset || !art) return;
+            if (art.querySelector('.studio-live-crop')) return;
+            paintMaskCardCrop(art, asset);
+        });
+    }
+
+    function clearThumbLayers(node) {
+        Array.prototype.forEach.call(node.querySelectorAll('.studio-thumb-layer'), function (layer) {
+            layer.remove();
+        });
+        node.classList.remove('has-layers');
+    }
+
+    function decorateAssetThumb(node, asset) {
+        if (!node) return;
+        var existing = node.querySelector('.studio-thumb-strip');
+        if (existing) existing.parentNode.removeChild(existing);
+        node.classList.remove('has-backdrop');
+        node.classList.remove('has-live-crop');
+        node.style.backgroundImage = '';
+        clearThumbLayers(node);
+        /* The detail plate has room for the real thing: a crop of the live
+           screen, scaled up around the asset and clipped to 4:3. The small
+           row thumbnails keep the lighter wallpaper/mask/art stack. */
+        if (node === el.assetPreview && paintLiveCrop(node, asset)) return;
+        if (paintScreenCrop(node, asset)) return;
+        var backdrop = assetBackdrop(asset);
+        if (!backdrop) return;
+        node.classList.add('has-backdrop');
+        if (backdrop.wallpaper) {
+            node.style.backgroundImage = cssUrl(backdrop.wallpaper);
+            node.style.backgroundPosition = backdropPositionFor(asset.path);
+        }
+        if (backdrop.strip) {
+            var strip = document.createElement('span');
+            strip.className = 'studio-thumb-strip';
+            strip.setAttribute('aria-hidden', 'true');
+            strip.style.backgroundImage = cssUrl(backdrop.strip);
+            node.appendChild(strip);
+        }
+    }
+
     /* —— Boot and navigation —— */
 
     function boot() {
         bindEvents();
+        setupManage();
         watchSaveTarget();
         setupPwa();
         var params = new URLSearchParams(location.search);
         var requestedMode = params.get('mode');
+        var requestedPanel = String(params.get('panel') || '').trim();
         var requestedFolder = params.get('folder') || params.get('theme') || '';
         if (requestedMode === 'edit' || requestedMode === 'submit') {
             /* The theme is fetched after boot, so Edit and Submit cannot be
                activated yet. Remember the deep link and apply it once the
                config and its assets are in place. */
-            bootModeRequest = { mode: requestedMode, folder: requestedFolder };
+            bootModeRequest = { mode: requestedMode, folder: requestedFolder, panel: requestedPanel };
         }
         setMode('preview', true);
 
         loadGalleryIndex().then(function () {
-            var requested = params.get('folder') || params.get('theme');
-            if (requested && state.byFolder[requested]) {
-                loadGalleryTheme(requested);
-                return;
-            }
-            bootModeRequest = null;
-            updateChrome();
-            setLoading(false);
-            showEmpty(
-                state.gallery.length ? 'Pick a theme, or bring your own' : 'Open your own theme package',
-                state.gallery.length
-                    ? 'No theme is open yet. Choose one from the gallery, upload your own theme folder or ZIP, or pick a gallery theme from the list in the sidebar.'
-                    : 'The gallery list is unavailable, so start from a theme folder or ZIP on this device.',
-                'start'
-            );
+            return readRecovery().then(function (record) {
+                var requested = params.get('folder') || params.get('theme');
+                if (requested && state.byFolder[requested]) {
+                    loadGalleryTheme(requested, record && record.folder === requested ? record : null);
+                    return;
+                }
+                /* Nothing in the URL: a tab closed mid-edit comes back to the same
+                   theme with its replacements still applied. */
+                if (record && state.byFolder[record.folder]) {
+                    loadGalleryTheme(record.folder, record);
+                    return;
+                }
+                /* A plain first visit opens the reference theme instead of a
+                   holding screen. If it is missing from this checkout, the
+                   first listed theme does the same job. */
+                var fallbackFolder = state.byFolder[DEFAULT_THEME]
+                    ? DEFAULT_THEME
+                    : state.gallery[0] && state.gallery[0].folder;
+                if (fallbackFolder) {
+                    loadGalleryTheme(fallbackFolder, null);
+                    return;
+                }
+                bootModeRequest = null;
+                updateChrome();
+                setLoading(false);
+                showEmpty(
+                    state.gallery.length ? 'Pick a theme, or bring your own' : 'Open your own theme package',
+                    state.gallery.length
+                        ? 'No theme is open yet. Choose one from the gallery, upload your own theme folder or ZIP, or pick a gallery theme from the list in the sidebar.'
+                        : 'The gallery list is unavailable, so start from a theme folder or ZIP on this device.',
+                    'start'
+                );
+            });
         });
         if (window.ThemeAuthorPolicy && typeof window.ThemeAuthorPolicy.ready === 'function') {
             window.ThemeAuthorPolicy.ready().then(syncPolicy).catch(function () {});
@@ -377,6 +1239,7 @@
             mode = 'preview';
         }
         state.mode = mode;
+        closePlatformPop();
         document.body.setAttribute('data-mode', mode);
         each(document.querySelectorAll('[data-mode-btn]'), function (btn) {
             var active = btn.getAttribute('data-mode-btn') === mode;
@@ -437,17 +1300,16 @@
 
     /* —— Gallery themes —— */
 
+    function galleryCoverUrl(repoPath) {
+        var shot = String(repoPath || '').trim();
+        if (!shot) return '';
+        if (/^https?:\/\//i.test(shot) || shot.charAt(0) === '/') return shot;
+        var clean = shot.replace(/^\.\/+/, '').replace(/^\/+/, '');
+        return '../' + clean.split('/').map(encodeURIComponent).join('/');
+    }
+
     function galleryMeta(theme, folder) {
-        var shot = String((theme && (theme.screenshot || theme.screenshotPreview)) || '').trim();
-        var cover = '';
-        if (shot) {
-            if (/^https?:\/\//i.test(shot) || shot.charAt(0) === '/') {
-                cover = shot;
-            } else {
-                var clean = shot.replace(/^\.\/+/, '').replace(/^\/+/, '');
-                cover = '../' + clean.split('/').map(encodeURIComponent).join('/');
-            }
-        }
+        var cover = galleryCoverUrl(theme && (theme.screenshot || theme.screenshotPreview));
         return {
             name: (theme && theme.name) || folder || 'Untitled theme',
             author: (theme && theme.author) || '',
@@ -460,11 +1322,13 @@
         };
     }
 
-    function loadGalleryTheme(folder) {
+    function loadGalleryTheme(folder, restoreRecord) {
         if (!folder) return;
         var requestedFolder = folder;
         state.sourceType = 'gallery';
         state.folder = folder;
+        state.missingAssetPaths = Object.create(null);
+        state.missingAssetValues = Object.create(null);
         state.config = null;
         state.compactExpanded = false;
         state.previewOk = false;
@@ -472,7 +1336,11 @@
         state.dirty = false;
         state.swapOpen = false;
         state.meta = galleryMeta(state.byFolder[folder], folder);
-        state.baseCover = state.meta.cover;
+        /* Hold the declared cover until the manifest says whether it exists:
+           drawing it now would request a file the theme does not ship. */
+        var declaredCover = state.meta.cover;
+        state.meta.cover = '';
+        state.baseCover = '';
         state.localFiles = [];
         state.localFileMap = Object.create(null);
         resetAssetOverrides();
@@ -491,29 +1359,40 @@
         updateChecklist();
         syncUrl();
 
-        fetch('../' + encodePath(folder) + '/config.json', { cache: 'no-cache' })
+        fetch('../' + encodePath(folder) + '/config.json?v=' + Date.now(), { cache: 'no-cache' })
             .then(function (res) {
                 if (!res.ok) throw new Error('config.json (' + res.status + ')');
                 return res.json();
             })
             .then(function (config) {
                 if (state.sourceType !== 'gallery' || state.folder !== requestedFolder) return;
-                state.config = config;
-                applyBlankSlots(state.config);
-                state.configBase = cloneJson(state.config);
-                var info = (config && config.theme_info) || {};
-                if (info.title) state.meta.name = info.title;
-                if (info.author) state.meta.author = info.author;
-                if (info.authorUrl) state.meta.authorUrl = info.authorUrl;
-                if (info.description) state.meta.desc = info.description;
-                if (info.externalDownloadUrl) state.meta.externalDownloadUrl = info.externalDownloadUrl;
-                state.baseCover = state.meta.cover;
-                rebuildAssets();
-                updateChrome();
-                applyBootMode(requestedFolder);
-                fillSubmitForm();
-                updateChecklist();
-                return mountPreview();
+                return loadMissingManifest().then(function (manifest) {
+                    if (state.sourceType !== 'gallery' || state.folder !== requestedFolder) return;
+                    var manifestEntry = manifest && manifest[requestedFolder];
+                    markMissingConfigValues(config, missingMapForFolder(manifest, requestedFolder));
+                    state.meta.cover =
+                        manifestEntry && manifestEntry.cover
+                            ? galleryCoverUrl(manifestEntry.coverFallback)
+                            : declaredCover;
+                    state.config = config;
+                    applyBlankSlots(state.config);
+                    state.configBase = cloneJson(state.config);
+                    var info = (config && config.theme_info) || {};
+                    if (info.title) state.meta.name = info.title;
+                    if (info.author) state.meta.author = info.author;
+                    if (info.authorUrl) state.meta.authorUrl = info.authorUrl;
+                    if (info.description) state.meta.desc = info.description;
+                    if (info.externalDownloadUrl) state.meta.externalDownloadUrl = info.externalDownloadUrl;
+                    state.baseCover = state.meta.cover;
+                    if (restoreRecord) applyRecovery(restoreRecord);
+                    rebuildAssets();
+                    updateChrome();
+                    applyBootMode(requestedFolder);
+                    fillSubmitForm();
+                    if (restoreRecord) finishRecovery(restoreRecord);
+                    updateChecklist();
+                    return mountPreview();
+                });
             })
             .catch(function (err) {
                 if (state.sourceType !== 'gallery' || state.folder !== requestedFolder) return;
@@ -527,6 +1406,11 @@
         if (request.folder && folder && request.folder !== folder) return;
         bootModeRequest = null;
         setMode(request.mode);
+        if (request.panel === 'manage' || request.panel === 'remove' || request.panel === 'details') {
+            window.setTimeout(function () {
+                openManage(request.panel === 'manage' ? '' : request.panel);
+            }, 120);
+        }
     }
 
     function populateThemeSelect(query) {
@@ -608,6 +1492,7 @@
                 state.compactExpanded = expanded === true;
             },
             spec: state.config,
+            simState: state.statusState,
             buildFileUrl: state.sourceType === 'gallery' ? galleryFileUrl : localFileUrl,
             previewMeta: {
                 trackTitle: state.meta.name || 'Untitled theme',
@@ -621,6 +1506,7 @@
             setLoading(false);
             updateChecklist();
             if (state.selectedAssetId) highlightPreviewAsset(state.selectedAssetId);
+            refreshThumbLayers();
         });
     }
 
@@ -747,6 +1633,8 @@
         if (el.save) el.save.disabled = !hasTheme || state.busy;
         if (hasTheme) updateThemeSelectValue();
         renderAssets();
+        refreshPlatformChip();
+        syncManageVisibility();
     }
 
     /* —— Inspector content —— */
@@ -759,8 +1647,11 @@
         var status = config.statusConfig || {};
         var entries = [
             ['Item text', item.itemTextColor],
-            ['Selected', item.itemSelectedTextColor],
+            ['Selected item text', item.itemSelectedTextColor],
+            ['Menu item text', menu.menuItemTextColor],
+            ['Selected menu text', menu.menuItemSelectedTextColor],
             ['Menu', menu.menuBackgroundColor],
+            ['Status text', status.statusTextColor || autoStatusTextColor()],
             ['Status bar', status.statusBarColor]
         ];
         el.palette.innerHTML = '';
@@ -860,6 +1751,158 @@
         }, 320);
     }
 
+    /* Colours that belong with whatever the reader just clicked. A status
+       icon and the strip's text share a bar; a menu row and the palette that
+       draws its selected and unselected states share a list. */
+    function colorDefForPath(path) {
+        var defs = collectColorDefinitions(state.config || {});
+        for (var i = 0; i < defs.length; i++) {
+            if (defs[i].path === path) return defs[i];
+        }
+        return null;
+    }
+
+    function autoStatusTextColor() {
+        var status = (state.config && state.config.statusConfig) || {};
+        var hex = /^#([0-9a-f]{6})$/i.exec(String(status.statusBarColor || '').trim());
+        if (!hex) return '#ffffff';
+        var r = parseInt(hex[1].slice(0, 2), 16);
+        var g = parseInt(hex[1].slice(2, 4), 16);
+        var b = parseInt(hex[1].slice(4, 6), 16);
+        var luma = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        return luma > 0.55 ? '#000000' : '#ffffff';
+    }
+
+    /* Text colours belong with the font: the face and the ink are one choice.
+       They stay in the normal colour editor as well, but the Font family tray
+       offers them together so a theme can be tuned in one place. */
+    var TEXT_COLOR_PATHS = [
+        'itemConfig.itemTextColor',
+        'itemConfig.itemSelectedTextColor',
+        'menuConfig.menuItemTextColor',
+        'menuConfig.menuItemSelectedTextColor',
+        'dialogConfig.dialogOptionTextColor',
+        'dialogConfig.dialogOptionSelectedTextColor',
+        'dialogConfig.dialogTextColor'
+    ];
+
+    function typographyColorDefs() {
+        return colorDefsForPaths(TEXT_COLOR_PATHS);
+    }
+
+    function relatedColorPaths(anchorId) {
+        if (!anchorId) return [];
+        if (anchorId === 'fontFamily') return TEXT_COLOR_PATHS.slice();
+        if (/^statusConfig\./.test(anchorId)) {
+            return ['statusConfig.statusTextColor', 'statusConfig.statusBarColor'];
+        }
+        if (/^(desktopMask$|settingConfig\.settingMask$)/.test(anchorId)) {
+            return [
+                'itemConfig.itemTextColor',
+                'itemConfig.itemSelectedTextColor',
+                'menuConfig.menuItemTextColor',
+                'menuConfig.menuItemSelectedTextColor',
+                'menuConfig.menuBackgroundColor'
+            ];
+        }
+        if (/^(homePageConfig|menuConfig)\./.test(anchorId)) {
+            return [
+                'itemConfig.itemTextColor',
+                'itemConfig.itemSelectedTextColor',
+                'menuConfig.menuItemTextColor',
+                'menuConfig.menuItemSelectedTextColor',
+                'menuConfig.menuBackgroundColor'
+            ];
+        }
+        if (/^dialogConfig\./.test(anchorId)) {
+            return [
+                'dialogConfig.dialogOptionTextColor',
+                'dialogConfig.dialogOptionSelectedTextColor',
+                'dialogConfig.dialogTextColor',
+                'dialogConfig.dialogBackgroundColor'
+            ];
+        }
+        if (/^(itemConfig|fileConfig|settingConfig|playerConfig)\./.test(anchorId)) {
+            return [
+                'itemConfig.itemTextColor',
+                'itemConfig.itemSelectedTextColor',
+                'menuConfig.menuBackgroundColor'
+            ];
+        }
+        return [];
+    }
+
+    function colorDefsForPaths(paths) {
+        var out = [];
+        (paths || []).forEach(function (path) {
+            var def = colorDefForPath(path);
+            if (def) {
+                out.push(def);
+                return;
+            }
+            /* The status text colour is a new key: show the colour the bar is
+               already drawing so the first edit starts from the right place. */
+            if (path === 'statusConfig.statusTextColor') {
+                out.push({
+                    path: path,
+                    value: autoStatusTextColor(),
+                    label: 'Status bar text',
+                    section: 'Status bar'
+                });
+            } else if (path === 'statusConfig.statusBarColor') {
+                out.push({ path: path, value: '', label: 'Status bar background', section: 'Status bar' });
+            }
+        });
+        return out;
+    }
+
+    function createColorRow(def) {
+        var row = document.createElement('div');
+        row.className = 'studio-color-row';
+        var label = document.createElement('label');
+        label.textContent = def.label;
+        var code = document.createElement('code');
+        code.textContent = def.path;
+        code.title = def.path;
+        var picker = document.createElement('input');
+        picker.type = 'color';
+        picker.value = colorPickerValue(def.value) || '#000000';
+        picker.setAttribute('aria-label', def.label + ' colour picker');
+        var text = document.createElement('input');
+        text.type = 'text';
+        text.className = 'studio-color-value';
+        text.value = def.value;
+        text.spellcheck = false;
+        text.setAttribute('aria-label', def.label + ' value');
+
+        function commit(value) {
+            var clean = String(value || '').trim();
+            if (clean) writePath(state.config || {}, def.path, clean);
+            else deletePath(state.config || {}, def.path);
+            markDirty();
+            scheduleColorPreview();
+        }
+        picker.addEventListener('input', function () {
+            text.value = picker.value;
+            commit(picker.value);
+        });
+        text.addEventListener('input', function () {
+            picker.value = colorPickerValue(text.value) || picker.value;
+        });
+        text.addEventListener('change', function () {
+            commit(text.value);
+        });
+
+        var copy = document.createElement('div');
+        copy.className = 'studio-color-copy';
+        copy.appendChild(label);
+        copy.appendChild(code);
+        row.appendChild(copy);
+        row.appendChild(picker);
+        row.appendChild(text);
+        return row;
+    }
+
     function renderColorEditor() {
         if (!el.colorEditor) return;
         var defs = collectColorDefinitions(state.config || {});
@@ -905,50 +1948,7 @@
             group.appendChild(summary);
 
             groups[sectionName].forEach(function (def) {
-                var row = document.createElement('div');
-                row.className = 'studio-color-row';
-                var label = document.createElement('label');
-                label.textContent = def.label;
-                var code = document.createElement('code');
-                code.textContent = def.path;
-                code.title = def.path;
-                var picker = document.createElement('input');
-                picker.type = 'color';
-                picker.value = colorPickerValue(def.value);
-                picker.setAttribute('aria-label', def.label + ' colour picker');
-                var text = document.createElement('input');
-                text.type = 'text';
-                text.className = 'studio-color-value';
-                text.value = def.value;
-                text.spellcheck = false;
-                text.setAttribute('aria-label', def.label + ' value');
-
-                function commit(value) {
-                    var clean = String(value || '').trim();
-                    if (clean) writePath(state.config || {}, def.path, clean);
-                    else deletePath(state.config || {}, def.path);
-                    markDirty();
-                    scheduleColorPreview();
-                }
-                picker.addEventListener('input', function () {
-                    text.value = picker.value;
-                    commit(picker.value);
-                });
-                text.addEventListener('input', function () {
-                    picker.value = colorPickerValue(text.value);
-                });
-                text.addEventListener('change', function () {
-                    commit(text.value);
-                });
-
-                var copy = document.createElement('div');
-                copy.className = 'studio-color-copy';
-                copy.appendChild(label);
-                copy.appendChild(code);
-                row.appendChild(copy);
-                row.appendChild(picker);
-                row.appendChild(text);
-                group.appendChild(row);
+                group.appendChild(createColorRow(def));
             });
             el.colorEditor.appendChild(group);
         });
@@ -1015,6 +2015,7 @@
         calculatorConfig: 'Calculator',
         calendarConfig: 'Calendar',
         fileManagerConfig: 'Files',
+        fontFamily: 'Font family',
         theme_info: 'Listing metadata',
         source_info: 'Source metadata'
     };
@@ -1025,6 +2026,13 @@
         globalWallpaper: 'Global wallpaper',
         desktopMask: 'Home overlay mask',
         fontFamily: 'Theme font',
+        itemTextColor: 'Item text',
+        itemSelectedTextColor: 'Selected item text',
+        menuItemTextColor: 'Menu item text',
+        menuItemSelectedTextColor: 'Selected menu item text',
+        dialogOptionTextColor: 'Dialog option text',
+        dialogOptionSelectedTextColor: 'Selected dialog option text',
+        dialogTextColor: 'Dialog text',
         nowPlayingBackground: 'Now playing background',
         nowPlayingAlbumArt: 'Album art placeholder',
         albumArtDefault: 'Default album art',
@@ -1154,8 +2162,25 @@
         function walk(node, path, topKey) {
             if (!node || typeof node !== 'object') return;
             if (Array.isArray(node)) {
+                var arrayKey = String(path || '').split('.').pop();
                 node.forEach(function (value, index) {
-                    walk(value, path + '.' + index, topKey);
+                    var childPath = path + '.' + index;
+                    /* Arrays of filenames (battery levels, charging levels) are
+                       assets in their own right. Without this branch the status
+                       bar drew a battery the tray had no row for, so clicking it
+                       selected nothing. */
+                    if (typeof value === 'string') {
+                        if (!isThemeAssetValue(value)) return;
+                        defs.push({
+                            path: childPath,
+                            value: value.trim(),
+                            section: assetSection(topKey || arrayKey),
+                            label: assetLabel(arrayKey, childPath) + ' ' + (index + 1),
+                            kind: assetKind(childPath, value)
+                        });
+                        return;
+                    }
+                    walk(value, childPath, topKey);
                 });
                 return;
             }
@@ -1441,10 +2466,13 @@
             if (state.sourceType === 'local' && def.value && !override) {
                 localMissing = !(state.localFileMap && state.localFileMap[key]);
             }
+            var missingValue = state.missingAssetValues[def.path] || '';
             var asset = {
                 id: def.path,
                 path: def.path,
                 value: def.value,
+                missingFile: !!missingValue,
+                missingValue: missingValue,
                 label: def.label,
                 section: def.section,
                 kind: def.kind,
@@ -1471,7 +2499,96 @@
         if (!state.selectedAssetId && state.assets[0]) state.selectedAssetId = state.assets[0].id;
         renderAssets();
         renderColorEditor();
+        renderStatusEditor();
         renderMaskEditor();
+        /* Adding or binning the file manager icon changes which players the
+           theme is listed for, so the badge follows the asset list. */
+        refreshPlatformChip();
+    }
+
+    /* —— Status bar states ——
+
+       A theme ships four battery levels, a charging set and a handful of
+       indicator icons. The legacy editor let people pick the state they were
+       looking at; these chips do the same and jump straight to the artwork in
+       the tray, which is where the blinking cursor usually ends up. */
+
+    var STATUS_STATES = [
+        { path: 'statusConfig.battery.0', label: 'Battery 1 of 4', state: { batteryLevel: 0, isCharging: false } },
+        { path: 'statusConfig.battery.1', label: 'Battery 2 of 4', state: { batteryLevel: 1, isCharging: false } },
+        { path: 'statusConfig.battery.2', label: 'Battery 3 of 4', state: { batteryLevel: 2, isCharging: false } },
+        { path: 'statusConfig.battery.3', label: 'Battery full', state: { batteryLevel: 3, isCharging: false } },
+        { path: 'statusConfig.batteryCharging.0', label: 'Charging, low', state: { batteryLevel: 0, isCharging: true } },
+        { path: 'statusConfig.batteryCharging.3', label: 'Charging, full', state: { batteryLevel: 3, isCharging: true } },
+        { path: 'statusConfig.blConnected', label: 'Bluetooth connected', state: { bluetoothState: 'connected' } },
+        { path: 'statusConfig.blConnecting', label: 'Bluetooth connecting', state: { bluetoothState: 'connecting' } },
+        { path: 'statusConfig.blDisconnected', label: 'Bluetooth off', state: { bluetoothState: 'disconnected' } },
+        { path: 'statusConfig.headsetWithMic', label: 'Headset, with mic', state: { headsetState: 'withMic' } },
+        { path: 'statusConfig.headsetWithoutMic', label: 'Headset, no mic', state: { headsetState: 'withoutMic' } },
+        { path: 'statusConfig.playing', label: 'Playing', state: { playState: 'playing' } },
+        { path: 'statusConfig.pause', label: 'Paused', state: { playState: 'pause' } },
+        { path: 'statusConfig.stop', label: 'Stopped', state: { playState: 'stop' } },
+        { path: 'statusConfig.fmPlaying', label: 'Radio playing', state: { playState: 'fmPlaying' } },
+        { path: 'statusConfig.audiobookPlaying', label: 'Audiobook playing', state: { playState: 'audiobookPlaying' } }
+    ];
+
+    function statusEditorHost() {
+        if (el.statusEditor) return el.statusEditor;
+        var pane = document.getElementById('pane-edit');
+        if (!pane) return null;
+        var host = document.createElement('div');
+        host.className = 'studio-status-editor';
+        host.id = 'studio-status-editor';
+        host.innerHTML =
+            '<div class="studio-status-head">' +
+            '<h3>Status bar</h3>' +
+            '<p class="studio-hint">Pick a state to show it in the preview and open that file in the tray.</p>' +
+            '</div>' +
+            '<div class="studio-status-chips" role="group" aria-label="Status bar states"></div>';
+        var anchor = el.colorEditor && el.colorEditor.parentNode === pane ? el.colorEditor : pane.querySelector('.studio-pane-actions');
+        if (anchor && anchor.parentNode === pane) pane.insertBefore(host, anchor);
+        else pane.appendChild(host);
+        el.statusEditor = host;
+        return host;
+    }
+
+    function renderStatusEditor() {
+        var host = statusEditorHost();
+        if (!host) return;
+        var chips = host.querySelector('.studio-status-chips');
+        if (!chips) return;
+        chips.innerHTML = '';
+        var shown = 0;
+        STATUS_STATES.forEach(function (entry) {
+            var asset = state.assetById[entry.path];
+            if (!asset) return;
+            var button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'studio-status-chip';
+            button.setAttribute('data-status-path', entry.path);
+            /* A chip is a state, not just a file: the one whose state the
+               status bar is showing stays lit. */
+            var active = false;
+            if (entry.state) {
+                active = Object.keys(entry.state).every(function (key) {
+                    return state.statusState[key] === entry.state[key];
+                });
+            }
+            button.classList.toggle('is-active', active);
+            button.innerHTML = '<span>' + entry.label + '</span>';
+            if (asset.changed) button.classList.add('is-changed');
+            button.addEventListener('click', function () {
+                /* The strip is the context: icons plus the colours they sit
+                   on, listed together in the tray. */
+                setRelatedAssets(entry.path, statusStripIds(entry.path), 'Status bar icons and the font');
+                /* selectAsset applies the state this art stands for and
+                   rebuilds the preview. */
+                selectAsset(entry.path, { reveal: true });
+            });
+            chips.appendChild(button);
+            shown += 1;
+        });
+        host.hidden = !shown;
     }
 
     /* —— Masks —— */
@@ -1484,6 +2601,137 @@
         { id: 'desktopMask', label: 'Home menu mask', screen: 'Home screen' },
         { id: 'settingConfig.settingMask', label: 'Settings mask', screen: 'Settings list' }
     ];
+
+    var assetSwitchMenu = null;
+    var assetSwitchAnchor = null;
+
+    /* The little chevron next to a preview heading. It opens the set the asset
+       belongs to (the two masks, or the rest of its section) so the large
+       preview can be switched without finding a row or pressing Show. */
+    function assetSwitchButton(assetId, label) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'studio-asset-switch-toggle';
+        btn.setAttribute('aria-haspopup', 'menu');
+        btn.setAttribute('aria-expanded', 'false');
+        btn.setAttribute('data-asset-switch', assetId);
+        btn.title = 'Preview another asset from ' + (label || 'this set');
+        var icon = document.createElement('i');
+        icon.className = 'fa-solid fa-chevron-down';
+        icon.setAttribute('aria-hidden', 'true');
+        btn.appendChild(icon);
+        btn.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            /* The detail heading reuses one button as the selection changes,
+               so read the current id rather than the one it was born with. */
+            openAssetSwitchMenu(btn, btn.getAttribute('data-asset-switch') || assetId);
+        });
+        return btn;
+    }
+
+    function assetSwitchSet(asset) {
+        if (!asset) return [];
+        if (maskScreenFor(asset)) {
+            return MASK_SLOTS.map(function (slot) {
+                return state.assetById[slot.id];
+            }).filter(Boolean);
+        }
+        return state.assets.filter(function (item) {
+            return item.section === asset.section;
+        });
+    }
+
+    function closeAssetSwitchMenu() {
+        if (assetSwitchMenu && assetSwitchMenu.parentNode) assetSwitchMenu.parentNode.removeChild(assetSwitchMenu);
+        if (assetSwitchAnchor) assetSwitchAnchor.setAttribute('aria-expanded', 'false');
+        assetSwitchMenu = null;
+        assetSwitchAnchor = null;
+        document.removeEventListener('pointerdown', onAssetSwitchOutside, true);
+        document.removeEventListener('keydown', onAssetSwitchKey, true);
+    }
+
+    function onAssetSwitchOutside(event) {
+        if (assetSwitchMenu && assetSwitchMenu.contains(event.target)) return;
+        if (assetSwitchAnchor && assetSwitchAnchor.contains(event.target)) return;
+        closeAssetSwitchMenu();
+    }
+
+    function onAssetSwitchKey(event) {
+        if (event.key === 'Escape') closeAssetSwitchMenu();
+    }
+
+    function openAssetSwitchMenu(anchor, currentId) {
+        closeAssetSwitchMenu();
+        var asset = state.assetById[currentId];
+        if (!asset) return;
+        var items = assetSwitchSet(asset);
+        if (!items.length) return;
+
+        var menu = document.createElement('div');
+        menu.className = 'studio-asset-switch-menu';
+        menu.setAttribute('role', 'menu');
+        menu.setAttribute('aria-label', 'Preview another asset from this set');
+
+        items.forEach(function (item) {
+            var row = document.createElement('button');
+            row.type = 'button';
+            row.className = 'studio-asset-switch-item' + (item.id === currentId ? ' is-current' : '');
+            row.setAttribute('role', 'menuitem');
+            var thumb = document.createElement('span');
+            thumb.className = 'studio-asset-switch-thumb';
+            if (item.url && item.kind === 'image' && !item.missingFile) {
+                var img = document.createElement('img');
+                img.src = item.url;
+                img.alt = '';
+                thumb.appendChild(img);
+            } else {
+                var glyph = document.createElement('i');
+                glyph.className = item.kind === 'font' ? 'fa-solid fa-font' : 'fa-regular fa-image';
+                glyph.setAttribute('aria-hidden', 'true');
+                thumb.appendChild(glyph);
+            }
+            var text = document.createElement('span');
+            text.className = 'studio-asset-switch-copy';
+            var name = document.createElement('strong');
+            name.textContent = item.label;
+            var file = document.createElement('span');
+            file.textContent = assetFileLabel(item);
+            text.appendChild(name);
+            text.appendChild(file);
+            row.appendChild(thumb);
+            row.appendChild(text);
+            if (item.id === currentId) {
+                var check = document.createElement('i');
+                check.className = 'fa-solid fa-check studio-asset-switch-check';
+                check.setAttribute('aria-hidden', 'true');
+                row.appendChild(check);
+            }
+            row.addEventListener('click', function () {
+                closeAssetSwitchMenu();
+                selectAsset(item.id, { reveal: true });
+                focusTrayAsset(item.id);
+            });
+            menu.appendChild(row);
+        });
+
+        document.body.appendChild(menu);
+        assetSwitchMenu = menu;
+        assetSwitchAnchor = anchor;
+        anchor.setAttribute('aria-expanded', 'true');
+        var box = anchor.getBoundingClientRect();
+        var left = Math.max(8, Math.min(window.innerWidth - menu.offsetWidth - 8, box.right - menu.offsetWidth));
+        var top = box.bottom + 6;
+        if (top + menu.offsetHeight > window.innerHeight - 8) {
+            top = Math.max(8, box.top - menu.offsetHeight - 6);
+        }
+        menu.style.left = left + 'px';
+        menu.style.top = top + 'px';
+        document.addEventListener('pointerdown', onAssetSwitchOutside, true);
+        document.addEventListener('keydown', onAssetSwitchKey, true);
+        var first = menu.querySelector('.is-current') || menu.querySelector('.studio-asset-switch-item');
+        if (first) first.focus();
+    }
 
     function maskActionButton(id, action, icon, label, primary) {
         var btn = document.createElement('button');
@@ -1535,7 +2783,16 @@
             top.className = 'studio-mask-top';
             var art = document.createElement('span');
             art.className = 'studio-mask-art';
-            if (asset.url && asset.kind === 'image') {
+            /* Prefer the live screen crop; the file itself is only the fallback
+               until the preview has mounted (refreshMaskThumbs retries). */
+            var cropPainted = paintMaskCardCrop(art, asset);
+            if (cropPainted) {
+                art.classList.add('has-live-crop');
+                var fallbackImg = document.createElement('img');
+                fallbackImg.alt = '';
+                fallbackImg.src = asset.url || '';
+                art.appendChild(fallbackImg);
+            } else if (asset.url && asset.kind === 'image' && !asset.missingFile) {
                 var img = document.createElement('img');
                 img.alt = '';
                 img.src = asset.url;
@@ -1545,8 +2802,12 @@
             }
             var copy = document.createElement('span');
             copy.className = 'studio-mask-copy';
+            var nameRow = document.createElement('span');
+            nameRow.className = 'studio-mask-title';
             var name = document.createElement('strong');
             name.textContent = slot.label;
+            nameRow.appendChild(name);
+            nameRow.appendChild(assetSwitchButton(slot.id, slot.label));
             var file = document.createElement('span');
             file.textContent = assetFileLabel(asset) + ' · ' + slot.screen;
             file.title = asset.placeholder
@@ -1555,7 +2816,7 @@
             var badge = document.createElement('span');
             badge.className = 'studio-mask-badge is-' + status.key;
             badge.textContent = status.label;
-            copy.appendChild(name);
+            copy.appendChild(nameRow);
             copy.appendChild(file);
             copy.appendChild(badge);
             top.appendChild(art);
@@ -1583,6 +2844,7 @@
     function assetStatus(asset) {
         if (asset.override && !asset.override.placeholder) return { label: 'Replaced', key: 'changed' };
         if (asset.localMissing) return { label: 'Missing', key: 'missing' };
+        if (asset.missingFile) return { label: 'Missing', key: 'missing' };
         if (asset.placeholder || asset.empty) return { label: 'Blank', key: 'empty' };
         if (asset.changed) return { label: 'Changed', key: 'changed' };
         return { label: 'Ready', key: 'ready' };
@@ -1591,6 +2853,7 @@
     /* A blank slot never shows a filename: it shows what it is. */
     function assetFileLabel(asset) {
         if (!asset) return 'Blank';
+        if (asset.missingFile) return (fileName(asset.missingValue) || 'file') + ' (missing)';
         if (asset.placeholder || !String(asset.value || '').trim()) return 'Blank';
         return fileName(asset.value) || 'Blank';
     }
@@ -1606,7 +2869,8 @@
 
         var thumb = document.createElement('span');
         thumb.className = 'studio-asset-thumb';
-        if (asset.url && asset.kind === 'image') {
+        decorateAssetThumb(thumb, asset);
+        if (asset.url && asset.kind === 'image' && !asset.missingFile) {
             var img = document.createElement('img');
             img.loading = 'lazy';
             img.alt = '';
@@ -1697,13 +2961,17 @@
             });
         }
         if (/^homePageConfig\./.test(id)) {
+            add('fontFamily');
             itemChrome.forEach(add);
             ['menuConfig.menuItemBackground', 'menuConfig.menuItemSelectedBackground'].forEach(add);
         } else if (/^(setting|item|file)Config\./.test(id)) {
+            add('fontFamily');
             itemChrome.forEach(add);
         } else if (/^menuConfig\./.test(id)) {
+            add('fontFamily');
             ['menuConfig.menuItemBackground', 'menuConfig.menuItemSelectedBackground'].forEach(add);
         } else if (/^dialogConfig\./.test(id)) {
+            add('fontFamily');
             ['dialogConfig.dialogOptionBackground', 'dialogConfig.dialogOptionSelectedBackground'].forEach(add);
         }
         return out;
@@ -1711,8 +2979,9 @@
 
     function setRelatedAssets(id, explicitIds, title) {
         state.relatedAnchor = id || '';
-        state.relatedTitle = id && explicitIds && explicitIds.length ? String(title || '') : '';
+        state.relatedTitle = id && title ? String(title) : '';
         state.relatedIds = !id ? [] : explicitIds && explicitIds.length ? explicitIds.slice() : relatedIdsFor(id);
+        state.relatedColors = !id ? [] : relatedColorPaths(id);
         renderAssets();
     }
 
@@ -1721,12 +2990,29 @@
         state.relatedAnchor = '';
         state.relatedIds = [];
         state.relatedTitle = '';
+        state.relatedColors = [];
         renderAssets();
         return true;
     }
 
+    function statusStripIds(exceptId) {
+        return state.assets
+            .filter(function (item) {
+                return /^statusConfig\./.test(item.id) || item.id === 'fontFamily';
+            })
+            .map(function (item) {
+                return item.id;
+            })
+            .filter(function (itemId) {
+                return itemId !== exceptId;
+            });
+    }
+
     function createRelatedBlock(anchorId) {
-        if (!state.relatedIds.length || anchorId !== state.relatedAnchor) return null;
+        var colourDefs = colorDefsForPaths(state.relatedColors);
+        if ((!state.relatedIds.length && !colourDefs.length) || anchorId !== state.relatedAnchor) {
+            return null;
+        }
         var wrap = document.createElement('div');
         wrap.className = 'studio-related';
         var head = document.createElement('div');
@@ -1735,7 +3021,9 @@
         title.textContent = state.relatedTitle || 'Also used by this item';
         var count = document.createElement('span');
         count.className = 'studio-related-count';
-        count.textContent = state.relatedIds.length + ' related';
+        count.textContent = state.relatedIds.length
+            ? state.relatedIds.length + ' related'
+            : colourDefs.length + ' colours';
         var close = document.createElement('button');
         close.type = 'button';
         close.className = 'studio-related-close';
@@ -1750,11 +3038,27 @@
             var asset = state.assetById[id];
             if (asset) wrap.appendChild(createAssetRow(asset));
         });
+        if (colourDefs.length) {
+            var sub = document.createElement('div');
+            sub.className = 'studio-related-sub';
+            sub.textContent = 'Colours';
+            wrap.appendChild(sub);
+            colourDefs.forEach(function (def) {
+                wrap.appendChild(createColorRow(def));
+            });
+        }
         return wrap;
     }
 
+    /* Gallery themes get their gaps from the build-time manifest; dropped-in
+       packages get them from the exported file list. Both should count here so
+       the Missing filter matches the badges a row shows. */
+    function isMissingAsset(asset) {
+        return !!(asset.localMissing || asset.missingFile);
+    }
+
     function assetMatchesFilter(asset, filter) {
-        if (filter === 'missing') return !!asset.localMissing;
+        if (filter === 'missing') return isMissingAsset(asset);
         if (filter === 'changed') return !!asset.changed;
         return true;
     }
@@ -1762,9 +3066,7 @@
     function renderAssets() {
         if (!el.assetList) return;
         var all = state.assets;
-        var missing = all.filter(function (asset) {
-            return asset.localMissing;
-        }).length;
+        var missing = all.filter(isMissingAsset).length;
         var changed = all.filter(function (asset) {
             return asset.changed;
         }).length;
@@ -1782,9 +3084,10 @@
         var visible = all.filter(function (asset) {
             return assetMatchesFilter(asset, filter);
         });
+        var fontColors = filter === 'all' ? typographyColorDefs() : [];
         el.assetList.innerHTML = '';
         if (el.assetEmpty) {
-            el.assetEmpty.hidden = visible.length > 0;
+            el.assetEmpty.hidden = visible.length > 0 || fontColors.length > 0;
             el.assetEmpty.textContent = all.length
                 ? 'No assets match this filter.'
                 : 'This theme does not declare any image or font assets in config.json.';
@@ -1795,6 +3098,11 @@
             if (!groups[asset.section]) groups[asset.section] = [];
             groups[asset.section].push(asset);
         });
+        /* Even a package with no font still has text colour choices. Keep one
+           Font family tray for them rather than burying them in Colours. */
+        if (filter === 'all' && fontColors.length && !groups['Font family']) {
+            groups['Font family'] = [];
+        }
         Object.keys(groups).forEach(function (sectionName) {
             var group = document.createElement('details');
             group.className = 'studio-asset-group';
@@ -1807,9 +3115,10 @@
             summary.className = 'studio-asset-group-head';
             var title = document.createElement('span');
             title.textContent = sectionName;
+            var sectionColors = sectionName === 'Font family' && filter === 'all' ? fontColors : [];
             var count = document.createElement('span');
             count.className = 'studio-asset-group-count';
-            count.textContent = groups[sectionName].length;
+            count.textContent = groups[sectionName].length + sectionColors.length;
             summary.appendChild(title);
             summary.appendChild(count);
             group.appendChild(summary);
@@ -1822,6 +3131,15 @@
                     if (related) body.appendChild(related);
                 }
             });
+            if (sectionColors.length) {
+                var sub = document.createElement('div');
+                sub.className = 'studio-related-sub';
+                sub.textContent = 'Text colours';
+                body.appendChild(sub);
+                sectionColors.forEach(function (def) {
+                    body.appendChild(createColorRow(def));
+                });
+            }
             group.appendChild(body);
             el.assetList.appendChild(group);
         });
@@ -1853,6 +3171,9 @@
         if (!moved) return false;
         window.setTimeout(function () {
             highlightPreviewAsset(id);
+            /* revealAsset may have switched screens, so the detail plate can
+               now crop the screen that actually contains this asset. */
+            if (state.selectedAssetId === id) updateAssetDetail();
             var nodes = previewAssetNodes(id);
             if (!nodes.length) return;
             if (window.matchMedia('(max-width: 940px)').matches) {
@@ -1864,12 +3185,65 @@
         return true;
     }
 
+    /* Each status icon stands for a state. Choosing its art is also choosing
+       that state, so picking the low battery draws a low battery in the
+       preview instead of leaving the old level on screen. */
+    var STATUS_STATE_ASSETS = {
+        'statusConfig.blConnected': { bluetoothState: 'connected' },
+        'statusConfig.blConnecting': { bluetoothState: 'connecting' },
+        'statusConfig.blDisconnected': { bluetoothState: 'disconnected' },
+        'statusConfig.headsetWithMic': { headsetState: 'withMic' },
+        'statusConfig.headsetWithoutMic': { headsetState: 'withoutMic' },
+        'statusConfig.playing': { playState: 'playing' },
+        'statusConfig.pause': { playState: 'pause' },
+        'statusConfig.stop': { playState: 'stop' },
+        'statusConfig.fmPlaying': { playState: 'fmPlaying' },
+        'statusConfig.audiobookPlaying': { playState: 'audiobookPlaying' }
+    };
+
+    function statusStatePatchFor(path) {
+        var key = String(path || '');
+        if (STATUS_STATE_ASSETS[key]) return STATUS_STATE_ASSETS[key];
+        var battery = /^statusConfig\.battery\.(\d)$/.exec(key);
+        if (battery) return { batteryLevel: Number(battery[1]), isCharging: false };
+        var charging = /^statusConfig\.batteryCharging\.(\d)$/.exec(key);
+        if (charging) return { batteryLevel: Number(charging[1]), isCharging: true };
+        return null;
+    }
+
+    function applyStatusStateForAsset(path) {
+        var patch = statusStatePatchFor(path);
+        if (!patch) return false;
+        var changed = false;
+        Object.keys(patch).forEach(function (key) {
+            if (state.statusState[key] !== patch[key]) {
+                state.statusState[key] = patch[key];
+                changed = true;
+            }
+        });
+        return changed;
+    }
+
     function selectAsset(id, options) {
         if (!id || !state.assetById[id]) return;
         state.selectedAssetId = id;
+        var statusChanged = options && options.keepStatus ? false : applyStatusStateForAsset(id);
         paintAssetSelection();
-        if (options && options.reveal) revealAssetContext(id);
-        else highlightPreviewAsset(id);
+        if (statusChanged) {
+            /* The preview has to be rebuilt: these states live in the
+               simulator, not in the files. */
+            mountPreview()
+                .then(function () {
+                    renderStatusEditor();
+                    refreshThumbLayers();
+                    if (state.selectedAssetId) highlightPreviewAsset(state.selectedAssetId);
+                })
+                .catch(function () {});
+        } else if (options && options.reveal) {
+            revealAssetContext(id);
+        } else {
+            highlightPreviewAsset(id);
+        }
         if (window.matchMedia('(max-width: 940px)').matches && el.assetDetail) {
             el.assetDetail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
@@ -1939,6 +3313,44 @@
         }, 80);
     }
 
+    /* A colour is not a file in the asset list, so clicking the status text or
+       the bar itself opens the strip around it instead: every status icon plus
+       the two colours that paint the bar, with nothing simulated changing. */
+    function revealStatusColors() {
+        var anchor = state.assetById.fontFamily ? 'fontFamily' : '';
+        if (!anchor) {
+            [
+                'statusConfig.playing',
+                'statusConfig.pause',
+                'statusConfig.stop',
+                'statusConfig.battery.3',
+                'statusConfig.battery.2',
+                'statusConfig.battery.1',
+                'statusConfig.battery.0'
+            ].some(function (id) {
+                if (state.assetById[id]) {
+                    anchor = id;
+                    return true;
+                }
+                return false;
+            });
+        }
+        if (!anchor) return false;
+        setMode('edit');
+        if (!assetMatchesFilter(state.assetById[anchor], state.assetFilter)) {
+            state.assetFilter = 'all';
+            renderAssets();
+        }
+        setRelatedAssets(
+            anchor,
+            statusStripIds(anchor),
+            anchor === 'fontFamily' ? 'Text colours and the status bar' : 'Status bar icons and the font'
+        );
+        selectAsset(anchor, { keepStatus: true });
+        focusTrayAsset(anchor);
+        return true;
+    }
+
     function revealAssetInEdit(id, options) {
         var asset = state.assetById[id];
         if (!asset) return false;
@@ -1950,8 +3362,15 @@
         /* Only a menu row in the preview describes a whole item (icon, selection,
            background, arrow), so only there does the tray show the related group.
            Picking the large icon art on the right is a single-asset edit. */
-        if (options && options.related === false) clearRelatedAssets();
-        else setRelatedAssets(id);
+        if (id === 'fontFamily') {
+            setRelatedAssets(id, [], 'Text colours');
+        } else if (/^statusConfig\./.test(id)) {
+            setRelatedAssets(id, statusStripIds(id), 'Status bar icons and the font');
+        } else if (options && options.related === false) {
+            clearRelatedAssets();
+        } else {
+            setRelatedAssets(id);
+        }
         selectAsset(id);
         focusTrayAsset(id);
         return true;
@@ -1976,18 +3395,32 @@
         });
     }
 
-    function revealScreenAssets() {
+    function revealScreenAssets(focusPath) {
         var ids = screenAssetIds();
         if (!ids.length) return false;
+        /* The caller may know which of the two layers the pointer is over:
+           the transparent parts of a mask are the wallpaper showing through. */
+        var anchor = ids[0];
+        if (focusPath) {
+            for (var i = 0; i < ids.length; i++) {
+                if (ids[i] === focusPath) {
+                    anchor = ids[i];
+                    break;
+                }
+            }
+        }
         setMode('edit');
         var filtered = ids.some(function (id) {
             return !assetMatchesFilter(state.assetById[id], state.assetFilter);
         });
         if (filtered) state.assetFilter = 'all';
-        state.selectedAssetId = ids[0];
-        setRelatedAssets(ids.length > 1 ? ids[0] : '', ids.slice(1), 'Background and mask on this screen');
-        selectAsset(ids[0]);
-        focusTrayAsset(ids[0]);
+        state.selectedAssetId = anchor;
+        var related = ids.filter(function (id) {
+            return id !== anchor;
+        });
+        setRelatedAssets(ids.length > 1 ? anchor : '', related, 'Background and mask on this screen');
+        selectAsset(anchor);
+        focusTrayAsset(anchor);
         return true;
     }
 
@@ -2020,7 +3453,14 @@
         if (target.closest('[data-theme-asset-path]')) return false;
         if (target.closest('button, a, input, select, textarea, [data-y1act], .y1-tp-status')) return false;
         if (!target.closest('.y1-tp-canvas')) return false;
-        return revealScreenAssets();
+        var api = el.preview ? el.preview._y1TpApi : null;
+        var hit = api && typeof api.maskAtPoint === 'function' ? api.maskAtPoint(event.clientX, event.clientY) : null;
+        /* Home and Settings each have a mask over the wallpaper, and that mask
+           is the layer being edited: clicking anywhere inside it focuses the
+           mask, painted or clear. The wallpaper stays one row away in the
+           related block. Other screens have no mask, so the wallpaper wins. */
+        var focusPath = hit ? hit.path : '';
+        return revealScreenAssets(focusPath);
     }
 
     function setupPreviewAssetFocus() {
@@ -2041,6 +3481,12 @@
         });
         el.preview.addEventListener('click', function (event) {
             var path = previewAssetPathFromEvent(event);
+            if (path && !state.assetById[path] && /^statusConfig\.[A-Za-z]+Color$/.test(path)) {
+                event.preventDefault();
+                event.stopPropagation();
+                revealStatusColors();
+                return;
+            }
             if (!path || !state.assetById[path]) return;
             event.preventDefault();
             event.stopPropagation();
@@ -2056,11 +3502,58 @@
         });
         el.preview.addEventListener('contextmenu', function (event) {
             var path = previewAssetPathFromEvent(event);
+            if (path && !state.assetById[path] && /^statusConfig\.[A-Za-z]+Color$/.test(path)) {
+                event.preventDefault();
+                event.stopPropagation();
+                revealStatusColors();
+                return;
+            }
             if (!path || !state.assetById[path]) return;
             event.preventDefault();
             event.stopPropagation();
             revealAssetInEdit(path, { related: previewEventInMenuRow(event) });
         });
+    }
+
+    /* A font row in the tray shows a type sample in the theme's own face, so
+       swapping a font is a choice you make by looking at it rather than by
+       reading the file name. */
+    var fontSampleCounter = 0;
+    /* One loaded face per font file: the detail pane re-renders on every
+       selection, and a second load of the same file is wasted work. */
+    var fontSampleFamilies = Object.create(null);
+
+    function paintFontSample(host, url) {
+        if (!host || !url) return;
+        var ready = fontSampleFamilies[url];
+        if (ready) {
+            host.style.fontFamily = '"' + ready + '", inherit';
+            return;
+        }
+        if (typeof FontFace !== 'function' || !document.fonts) return;
+        fontSampleCounter += 1;
+        var family = 'studio-sample-' + fontSampleCounter;
+        var face;
+        try {
+            face = new FontFace(family, 'url("' + String(url).replace(/"/g, '%22') + '")');
+        } catch (err) {
+            return;
+        }
+        face
+            .load()
+            .then(function (loaded) {
+                try {
+                    document.fonts.add(loaded);
+                } catch (err) {
+                    return;
+                }
+                fontSampleFamilies[url] = family;
+                if (host.isConnected) host.style.fontFamily = '"' + family + '", inherit';
+            })
+            .catch(function () {
+                /* An unreadable font file leaves the sample in the page font,
+                   which is still a usable comparison. */
+            });
     }
 
     function updateAssetDetail() {
@@ -2074,17 +3567,54 @@
         el.assetPath.textContent = asset.placeholder ? 'Blank (transparent.png placeholder)' : asset.value || 'Blank';
         el.assetStatus.textContent = status.label;
         el.assetStatus.setAttribute('data-state', status.key);
+        var nameHost = el.assetName.parentElement;
+        var titleRow = nameHost.classList.contains('studio-asset-title-row') ? nameHost : null;
+        if (!titleRow) {
+            titleRow = document.createElement('span');
+            titleRow.className = 'studio-asset-title-row';
+            nameHost.insertBefore(titleRow, el.assetName);
+            titleRow.appendChild(el.assetName);
+        }
+        var detailSwitch = titleRow.querySelector('.studio-asset-switch-toggle');
+        if (!detailSwitch) {
+            detailSwitch = assetSwitchButton(asset.id, asset.section);
+            titleRow.appendChild(detailSwitch);
+        }
+        detailSwitch.setAttribute('data-asset-switch', asset.id);
+        detailSwitch.title = 'Preview another asset from ' + asset.section;
         el.assetPreview.innerHTML = '';
-        if (asset.url && asset.kind === 'image') {
+        decorateAssetThumb(el.assetPreview, asset);
+        /* The live crop already contains the asset in place; only fall back to a
+           plain image when there is no mounted screen to crop. */
+        var liveCrop = el.assetPreview.classList.contains('has-live-crop');
+        if (!liveCrop && asset.url && asset.kind === 'image' && !asset.missingFile) {
             var img = document.createElement('img');
             img.src = asset.url;
             img.alt = asset.label + ' preview';
+            /* Theme art and wallpapers are 4:3 plates of their own; scale them
+               up to the plate instead of leaving a 320px image in a 400px box.
+               Tiny icons keep their pixel size rather than turning to mush. */
+            var fitLargeImage = function () {
+                if (img.naturalWidth >= 160 || img.naturalHeight >= 160) img.classList.add('is-fit-plate');
+            };
+            if (img.complete) fitLargeImage();
+            else img.addEventListener('load', fitLargeImage);
             el.assetPreview.appendChild(img);
-        } else {
+        } else if (!liveCrop) {
             var icon = document.createElement('i');
             icon.className = asset.kind === 'font' ? 'fa-solid fa-font' : 'fa-regular fa-image';
             icon.setAttribute('aria-hidden', 'true');
             el.assetPreview.appendChild(icon);
+        }
+        var previousSample = document.getElementById('studio-font-sample');
+        if (previousSample) previousSample.remove();
+        if (asset.kind === 'font') {
+            var sample = document.createElement('p');
+            sample.id = 'studio-font-sample';
+            sample.className = 'studio-font-sample';
+            sample.textContent = 'Aa Bb Cc 0123';
+            el.assetPreview.insertAdjacentElement('afterend', sample);
+            paintFontSample(sample, asset.url);
         }
         el.assetReset.disabled = !asset.changed;
         el.assetReplace.disabled = false;
@@ -2125,6 +3655,7 @@
     function markDirty() {
         state.dirty = true;
         if (el.unsaved) el.unsaved.hidden = false;
+        scheduleRecoverySave();
     }
 
     /* Blanking a slot rewrites its config line instead of adding an override, so
@@ -2384,7 +3915,7 @@
 
     function themeConfig(folder) {
         if (!state.galleryConfigs[folder]) {
-            state.galleryConfigs[folder] = fetch('../' + encodePath(folder) + '/config.json', { cache: 'no-cache' })
+            state.galleryConfigs[folder] = fetch('../' + encodePath(folder) + '/config.json?v=' + Date.now(), { cache: 'no-cache' })
                 .then(function (res) {
                     if (!res.ok) return null;
                     return res.json();
@@ -2776,9 +4307,14 @@
                 else if (action === 'blank') blankAsset(id);
                 else if (action === 'theme') openThemePicker(id);
                 else {
-                    setMode('preview');
+                    /* Show moves the simulator to the screen the overlay sits on
+                       and highlights the art there. The edit pane stays open:
+                       that is where the person clicked, and switching tabs
+                       throws away the row they were working on. */
                     selectAsset(id);
-                    revealAssetContext(id);
+                    if (!revealAssetContext(id)) {
+                        toast('The preview is still loading, so this overlay cannot be shown yet.');
+                    }
                 }
             });
         }
@@ -3258,7 +4794,12 @@
             state.dirty = false;
             state.formDirty = false;
             if (el.unsaved) el.unsaved.hidden = true;
+            /* The work is in the downloaded ZIP now; there is nothing left to
+               recover, and a return visit should start clean. */
+            clearRecovery();
+            hideRecoveryBanner();
             toast('Saved ' + file.name + '. Copy it to your player’s theme folder to install.');
+            announceSupportNote('save');
         } catch (err) {
             hideSaveProgress(0);
             toast((err && err.message) || 'Could not build that theme ZIP.');
@@ -3359,7 +4900,7 @@
             form.set('submissionIntent', state.ownUpdate ? 'update' : 'new');
             if (updateFolder) form.set('targetFolder', updateFolder);
             form.set('shareFolderHints', JSON.stringify([packFolder]));
-            var response = await fetch(UPLOAD_ORIGIN + '/api/upload-theme', { method: 'POST', body: form });
+            var response = await uploadRequest('/api/upload-theme', { method: 'POST', body: form });
             var payload = await response.json().catch(function () {
                 return {};
             });
@@ -3378,6 +4919,7 @@
             state.formDirty = false;
             if (el.unsaved) el.unsaved.hidden = true;
             toast('Theme submitted for review.');
+            announceSupportNote(state.ownUpdate ? 'update' : 'submission');
         } catch (err) {
             var message = (err && err.message) || 'The upload did not complete.';
             setSubmitStatus(message, false);
@@ -3673,6 +5215,10 @@
         });
         state.config = prepared.config;
         state.sourceType = 'local';
+        /* Local packages resolve their own files (localMissing already covers
+           gaps), so nothing from the gallery validation applies here. */
+        state.missingAssetPaths = Object.create(null);
+        state.missingAssetValues = Object.create(null);
         applyBlankSlots(state.config);
         state.configBase = cloneJson(state.config);
         state.folder = null;
@@ -3980,11 +5526,204 @@
 
     /* —— Events —— */
 
+    /* —— Which players a theme is listed for ——
+       Y2 added a file manager icon to the home screen. A theme only counts as
+       Y1 / Y2 when that icon is part of the package; with the slot left on the
+       shared transparent placeholder the theme is Y1 only. The badge is read
+       from the asset list rather than from the theme's gallery metadata, so an
+       icon added or binned in the editor updates the claim immediately. */
+    var FILE_MANAGER_ASSET = 'homePageConfig.fileManager';
+
+    function fileManagerAsset() {
+        return state.assetById ? state.assetById[FILE_MANAGER_ASSET] : null;
+    }
+
+    function themeShipsFileManager() {
+        var asset = fileManagerAsset();
+        if (!asset) return false;
+        if (asset.placeholder || asset.empty) return false;
+        return !!String(asset.value || '').trim();
+    }
+
+    function platformCopy() {
+        if (!state.meta) {
+            return {
+                label: 'Y1 / Y2',
+                title: 'Y1 / Y2 theme',
+                body: 'A theme is listed as a Y1 / Y2 theme only when it includes the file manager icon that Y2 adds to the home screen. Open a theme to check it.',
+                action: ''
+            };
+        }
+        if (!state.config) {
+            return {
+                label: 'Y1 / Y2',
+                title: 'Y1 / Y2 theme',
+                body: 'Reading this theme to see whether it includes the Y2 file manager icon.',
+                action: ''
+            };
+        }
+        if (themeShipsFileManager()) {
+            return {
+                label: 'Y1 / Y2',
+                title: 'Y1 / Y2 theme',
+                body: 'This theme includes the file manager icon that Y2 adds to the home screen, so it is listed for both Y1 and Y2.',
+                action: 'Show file manager icon'
+            };
+        }
+        return {
+            label: 'Y1',
+            title: 'Y1 theme',
+            body: 'This theme has no file manager icon, so it is listed for Y1 only. Add that icon to have the theme listed as a Y1 / Y2 theme.',
+            action: 'Add file manager icon'
+        };
+    }
+
+    function refreshPlatformPopover() {
+        var copy = platformCopy();
+        if (el.platformPopTitle) el.platformPopTitle.textContent = copy.title;
+        if (el.platformPopBody) el.platformPopBody.textContent = copy.body;
+        if (el.platformFocus) {
+            var label = el.platformFocus.querySelector('span');
+            if (label && copy.action) label.textContent = copy.action;
+            el.platformFocus.hidden = !copy.action;
+        }
+    }
+
+    function refreshPlatformChip() {
+        var copy = platformCopy();
+        if (el.platformLabel) el.platformLabel.textContent = copy.label;
+        if (el.platformChip) {
+            el.platformChip.title = copy.title + ' — ' + copy.body;
+            el.platformChip.setAttribute('aria-label', copy.title + '. ' + copy.body);
+            el.platformChip.classList.toggle('is-y1-only', copy.label === 'Y1');
+        }
+        refreshPlatformPopover();
+    }
+
+    function closePlatformPop() {
+        if (!el.platformPop) return;
+        el.platformPop.hidden = true;
+        if (el.platformChip) el.platformChip.setAttribute('aria-expanded', 'false');
+        el.platformPop.__pinned = false;
+    }
+
+    function focusFileManagerAsset() {
+        if (!state.meta) {
+            toast('Open a theme first.');
+            return;
+        }
+        var asset = fileManagerAsset();
+        if (!asset) {
+            toast('This theme does not declare a file manager icon slot.');
+            return;
+        }
+        closePlatformPop();
+        setMode('edit');
+        var trayKey = 'asset:' + asset.section;
+        if (!state.openTrays[trayKey]) {
+            state.openTrays[trayKey] = true;
+            renderAssets();
+        }
+        selectAsset(asset.id, { reveal: true });
+        var row = null;
+        each(el.assetList ? el.assetList.querySelectorAll('[data-asset-id]') : [], function (candidate) {
+            if (candidate.getAttribute('data-asset-id') === asset.id) row = candidate;
+        });
+        if (!row) {
+            toast('Open the ' + asset.section + ' group to find ' + asset.label + '.');
+            return;
+        }
+        window.setTimeout(function () {
+            try {
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } catch (_) {}
+            row.classList.add('is-platform-focus');
+            window.setTimeout(function () {
+                row.classList.remove('is-platform-focus');
+            }, 2600);
+        }, 60);
+    }
+
+    function setupPlatformBadge() {
+        if (!el.platformChip || !el.platformPop) return;
+        var wrap = el.platformChip.parentNode;
+        var hoverTimer = 0;
+
+        function show(pin) {
+            window.clearTimeout(hoverTimer);
+            refreshPlatformPopover();
+            el.platformPop.hidden = false;
+            el.platformChip.setAttribute('aria-expanded', 'true');
+            if (pin) el.platformPop.__pinned = true;
+        }
+
+        function hide(force) {
+            if (el.platformPop.__pinned && !force) return;
+            window.clearTimeout(hoverTimer);
+            closePlatformPop();
+        }
+
+        el.platformChip.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            if (!el.platformPop.hidden && el.platformPop.__pinned) hide(true);
+            else show(true);
+        });
+
+        wrap.addEventListener('pointerenter', function () {
+            show(false);
+        });
+
+        wrap.addEventListener('pointerleave', function () {
+            window.clearTimeout(hoverTimer);
+            hoverTimer = window.setTimeout(function () { hide(false); }, 170);
+        });
+
+        el.platformPop.addEventListener('pointerenter', function () {
+            window.clearTimeout(hoverTimer);
+        });
+
+        el.platformPop.addEventListener('focusin', function () {
+            window.clearTimeout(hoverTimer);
+        });
+
+        el.platformPop.addEventListener('focusout', function (event) {
+            if (wrap.contains(event.relatedTarget)) return;
+            hoverTimer = window.setTimeout(function () { hide(false); }, 130);
+        });
+
+        document.addEventListener('click', function (event) {
+            if (el.platformPop.hidden) return;
+            if (wrap.contains(event.target)) return;
+            hide(true);
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key !== 'Escape' || el.platformPop.hidden) return;
+            hide(true);
+            el.platformChip.focus();
+        });
+
+        if (el.platformFocus) {
+            el.platformFocus.addEventListener('click', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                focusFileManagerAsset();
+            });
+        }
+    }
+
     function bindEvents() {
         setupAssetListEvents();
         setupPreviewAssetFocus();
+        setupPlatformBadge();
+        /* Edits are mirrored into browser storage for a week, so leaving the page
+           is recoverable and no longer needs the native "Leave site?" prompt —
+           that dialog is exactly what made an accidental exit feel destructive.
+           The guard stays for the one case where it is still true: storage is
+           unusable, so the document is the only copy. */
         window.addEventListener('beforeunload', function (event) {
-            if (!isDirty()) return;
+            if (!recoveryBroken || !isDirty()) return;
             event.preventDefault();
             event.returnValue = '';
         });
@@ -4181,6 +5920,313 @@
         window.addEventListener('keydown', function (event) {
             if (event.key === 'Escape') hideDrop();
         });
+        /* A debounced write can still be pending when the tab goes away; closing
+           the lid mid-edit should not cost the last asset change. */
+        window.addEventListener('pagehide', function () {
+            if (recoveryTimer) saveRecoveryNow();
+        });
+        document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'hidden' && recoveryTimer) saveRecoveryNow();
+        });
+        if (el.recoveryDiscard) el.recoveryDiscard.addEventListener('click', discardRecovery);
+        if (el.recoveryDismiss) el.recoveryDismiss.addEventListener('click', hideRecoveryBanner);
+    }
+
+    /* —— Managing a listing: update, text fixes, removal ——
+
+       These three used to be separate pages (upload.html, report-theme.html).
+       They live in the Studio now because the Studio already knows which theme
+       is open, who is editing it and what its current details are. */
+
+    function manageSection() {
+        return document.getElementById('studio-manage');
+    }
+
+    function setManageStatus(message, ok) {
+        var status = document.getElementById('studio-manage-status');
+        if (!status) return;
+        status.textContent = message || '';
+        status.classList.toggle('is-error', ok === false);
+        status.classList.toggle('is-ok', ok === true);
+    }
+
+    async function postManageForm(path, form) {
+        var response = await uploadRequest(path, { method: 'POST', body: form });
+        var payload = await response.json().catch(function () {
+            return {};
+        });
+        if (!response.ok) throw new Error(payload.error || payload.message || 'The request failed (' + response.status + ').');
+        return payload;
+    }
+
+    async function postManageJson(path, body) {
+        var response = await uploadRequest(path, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        var payload = await response.json().catch(function () {
+            return {};
+        });
+        if (!response.ok) throw new Error(payload.error || payload.message || 'The request failed (' + response.status + ').');
+        return payload;
+    }
+
+    function galleryThemeForManage() {
+        if (!state.folder) return null;
+        return state.byFolder[state.folder] || null;
+    }
+
+    function syncManageVisibility() {
+        var section = manageSection();
+        if (!section) return;
+        var listing = state.sourceType === 'gallery' ? galleryThemeForManage() : null;
+        section.hidden = !listing;
+        if (!listing) return;
+        var nameEl = section.querySelector('[data-manage-name]');
+        if (nameEl) nameEl.textContent = listing.name || state.folder;
+        var authorEl = section.querySelector('[data-manage-author]');
+        if (authorEl) authorEl.textContent = listing.author ? 'by ' + listing.author : '';
+        var hint = section.querySelector('[data-manage-hint]');
+        if (hint) {
+            hint.textContent = listing.sourceType === 'external'
+                ? 'This entry points at a download on the author’s own page, so only the listing text can be changed here.'
+                : 'Updates, text fixes and takedowns all go to a maintainer as a pull request.';
+        }
+        var updateBtn = section.querySelector('[data-manage-update]');
+        if (updateBtn) updateBtn.hidden = listing.sourceType === 'external';
+    }
+
+    function openManage(panel) {
+        var section = manageSection();
+        if (!section) return;
+        setMode('submit');
+        section.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        var which = panel === 'remove' || panel === 'details' ? panel : '';
+        section.querySelector('[data-manage-remove-form]').hidden = which !== 'remove';
+        section.querySelector('[data-manage-details-form]').hidden = which !== 'details';
+        if (which === 'remove') {
+            var confirmName = section.querySelector('#studio-remove-confirm-name');
+            if (confirmName) confirmName.focus();
+        }
+    }
+
+    function setupManage() {
+        var pane = document.getElementById('pane-submit');
+        if (!pane || manageSection()) return;
+        var anchor = pane.querySelector('.studio-package');
+
+        var section = document.createElement('section');
+        section.className = 'studio-manage';
+        section.id = 'studio-manage';
+        section.hidden = true;
+        section.innerHTML = [
+            '<div class="studio-manage-head">',
+            '  <p class="studio-eyebrow"><i class="fa-solid fa-screwdriver-wrench" aria-hidden="true"></i> Your listing</p>',
+            '  <h2>Manage <span data-manage-name translate="no" data-i18n-skip></span></h2>',
+            '  <p class="studio-manage-author" data-manage-author translate="no" data-i18n-skip></p>',
+            '  <p class="studio-hint" data-manage-hint></p>',
+            '</div>',
+            '<div class="studio-manage-actions">',
+            '  <button class="studio-btn studio-btn--primary" type="button" data-manage-update><i class="fa-solid fa-upload" aria-hidden="true"></i>Send an update</button>',
+            '  <button class="studio-btn" type="button" data-manage-details><i class="fa-solid fa-pen" aria-hidden="true"></i>Fix the listing text</button>',
+            '  <button class="studio-btn" type="button" data-manage-remove><i class="fa-solid fa-xmark" aria-hidden="true"></i>Request removal</button>',
+            '</div>',
+
+            '<form class="studio-manage-form" data-manage-details-form hidden>',
+            '  <div class="studio-field">',
+            '    <label for="studio-details-title">Title</label>',
+            '    <input id="studio-details-title" type="text" maxlength="120" translate="no" data-i18n-skip />',
+            '  </div>',
+            '  <div class="studio-field">',
+            '    <label for="studio-details-desc">Description</label>',
+            '    <textarea id="studio-details-desc" rows="3" maxlength="600" translate="no" data-i18n-skip></textarea>',
+            '  </div>',
+            '  <div class="studio-field">',
+            '    <label for="studio-details-author-url">Author link</label>',
+            '    <input id="studio-details-author-url" type="url" placeholder="https://" translate="no" data-i18n-skip />',
+            '  </div>',
+            '  <p class="studio-hint">Write both in English. The gallery translates them for every visitor.</p>',
+            '  <div class="studio-manage-buttons">',
+            '    <button class="studio-btn studio-btn--primary" type="submit">Send the new text</button>',
+            '    <button class="studio-btn" type="button" data-manage-cancel>Cancel</button>',
+            '  </div>',
+            '</form>',
+
+            '<form class="studio-manage-form" data-manage-remove-form hidden>',
+            '  <div class="studio-field">',
+            '    <label for="studio-remove-reason">Why should it come down?</label>',
+            '    <select id="studio-remove-reason">',
+            '      <option value="author request">I am the author and I want it removed</option>',
+            '      <option value="copyright">It uses work I own without permission</option>',
+            '      <option value="wrong details">The listing credits the wrong person or title</option>',
+            '      <option value="other">Something else</option>',
+            '    </select>',
+            '  </div>',
+            '  <div class="studio-field">',
+            '    <label for="studio-remove-notes">What should the maintainer know?</label>',
+            '    <textarea id="studio-remove-notes" rows="3" maxlength="600" placeholder="Links or details that help us check this"></textarea>',
+            '  </div>',
+            '  <div class="studio-form-grid">',
+            '    <div class="studio-field">',
+            '      <label for="studio-remove-requester">Your name or handle</label>',
+            '      <input id="studio-remove-requester" type="text" maxlength="80" autocomplete="name" />',
+            '    </div>',
+            '    <div class="studio-field">',
+            '      <label for="studio-remove-email">Contact email</label>',
+            '      <input id="studio-remove-email" type="email" autocomplete="email" placeholder="you@example.com" />',
+            '    </div>',
+            '  </div>',
+            '  <div class="studio-form-grid">',
+            '    <div class="studio-field">',
+            '      <label for="studio-remove-confirm-name">Type the listed title to confirm</label>',
+            '      <input id="studio-remove-confirm-name" type="text" translate="no" data-i18n-skip />',
+            '    </div>',
+            '    <div class="studio-field">',
+            '      <label for="studio-remove-confirm-author">Type the listed author to confirm</label>',
+            '      <input id="studio-remove-confirm-author" type="text" translate="no" data-i18n-skip />',
+            '    </div>',
+            '  </div>',
+            '  <label class="studio-inline-check">',
+            '    <input id="studio-remove-optout" type="checkbox" />',
+            '    <span>Do not block this theme’s files from being uploaded again later</span>',
+            '  </label>',
+            '  <div class="studio-manage-buttons">',
+            '    <button class="studio-btn studio-btn--danger" type="submit">Ask for removal</button>',
+            '    <button class="studio-btn" type="button" data-manage-cancel>Cancel</button>',
+            '  </div>',
+            '</form>',
+
+            '<p class="studio-manage-status" id="studio-manage-status" role="status" aria-live="polite"></p>'
+        ].join('\n');
+
+        if (anchor && anchor.parentNode === pane) pane.insertBefore(section, anchor);
+        else pane.insertBefore(section, pane.firstChild);
+
+        var detailsForm = section.querySelector('[data-manage-details-form]');
+        var removeForm = section.querySelector('[data-manage-remove-form]');
+
+        function closeForms() {
+            detailsForm.hidden = true;
+            removeForm.hidden = true;
+        }
+
+        section.querySelector('[data-manage-update]').addEventListener('click', function () {
+            closeForms();
+            applyOwnDetails();
+            state.ownUpdate = true;
+            syncIdentity();
+            updateUpdateNotice();
+            if (el.submitTitle) el.submitTitle.focus();
+            setManageStatus('The update keeps this listing’s folder, so it replaces the theme in place once a maintainer merges it.', true);
+        });
+
+        section.querySelector('[data-manage-details]').addEventListener('click', function () {
+            var listing = galleryThemeForManage() || {};
+            section.querySelector('#studio-details-title').value = listing.name || '';
+            section.querySelector('#studio-details-desc').value = listing.description || '';
+            section.querySelector('#studio-details-author-url').value = listing.authorUrl || '';
+            removeForm.hidden = true;
+            detailsForm.hidden = false;
+            section.querySelector('#studio-details-title').focus();
+            setManageStatus('');
+        });
+
+        section.querySelector('[data-manage-remove]').addEventListener('click', function () {
+            var listing = galleryThemeForManage() || {};
+            section.querySelector('#studio-remove-confirm-name').value = '';
+            section.querySelector('#studio-remove-confirm-author').value = '';
+            detailsForm.hidden = true;
+            removeForm.hidden = false;
+            section.querySelector('#studio-remove-notes').placeholder = 'The listed title is “' + (listing.name || state.folder) + '”.';
+            section.querySelector('#studio-remove-confirm-name').focus();
+            setManageStatus('');
+        });
+
+        each(section.querySelectorAll('[data-manage-cancel]'), function (button) {
+            button.addEventListener('click', function () {
+                closeForms();
+                setManageStatus('');
+            });
+        });
+
+        detailsForm.addEventListener('submit', async function (event) {
+            event.preventDefault();
+            var folder = state.folder;
+            if (!folder) return;
+            var title = section.querySelector('#studio-details-title').value.trim();
+            var description =
+                section.querySelector('#studio-details-desc').value.trim() || genericThemeDescription(title);
+            var authorUrl = section.querySelector('#studio-details-author-url').value.trim();
+            if (!title) {
+                setManageStatus('A listing needs a title.', false);
+                return;
+            }
+            setManageStatus('Sending the new text…', true);
+            try {
+                await postManageJson('/api/theme-metadata', {
+                    items: [
+                        {
+                            folder: folder,
+                            themeInfo: { title: title, description: description, authorUrl: authorUrl },
+                            listing: { name: title, description: description, authorUrl: authorUrl }
+                        }
+                    ]
+                });
+                setManageStatus('Sent. A maintainer reviews the change before it goes live.', true);
+                announceSupportNote('listing');
+            } catch (err) {
+                setManageStatus((err && err.message) || 'The change did not go through.', false);
+            }
+        });
+
+        removeForm.addEventListener('submit', async function (event) {
+            event.preventDefault();
+            var folder = state.folder;
+            if (!folder) return;
+            var listing = galleryThemeForManage() || {};
+            var reason = section.querySelector('#studio-remove-reason').value;
+            var notes = section.querySelector('#studio-remove-notes').value.trim();
+            var requester = section.querySelector('#studio-remove-requester').value.trim();
+            var email = section.querySelector('#studio-remove-email').value.trim();
+            var confirmName = section.querySelector('#studio-remove-confirm-name').value.trim();
+            var confirmAuthor = section.querySelector('#studio-remove-confirm-author').value.trim();
+            if (!email) {
+                setManageStatus('Add an email so we can check with you before taking anything down.', false);
+                return;
+            }
+            if (!confirmName) {
+                setManageStatus('Type the listed title to confirm.', false);
+                return;
+            }
+            setManageStatus('Sending the request…', true);
+            try {
+                var form = new FormData();
+                form.set('folder', folder);
+                form.set('reason', [reason, notes].filter(Boolean).join(' — '));
+                form.set('requester', requester || listing.author || '');
+                form.set('confirmName', confirmName);
+                if (confirmAuthor) form.set('confirmAuthor', confirmAuthor);
+                form.set('contactEmail', email);
+                form.set('confirmContactEmail', email);
+                if (section.querySelector('#studio-remove-optout').checked) form.set('blacklistOptOut', '1');
+                await postManageForm('/api/removal-request', form);
+                setManageStatus('Sent. Nothing comes down until a maintainer has read it.', true);
+                announceSupportNote('removal');
+            } catch (err) {
+                setManageStatus((err && err.message) || 'The request did not go through.', false);
+            }
+        });
+
+        syncManageVisibility();
+    }
+
+    /* One line in the support panel after a real outcome. Once per session per
+       kind, so it never turns into a nag. */
+    function announceSupportNote(kind) {
+        try {
+            if (typeof window.Y1SupportNote === 'function') window.Y1SupportNote(kind);
+        } catch (e) {}
     }
 
     function encodePath(path) {

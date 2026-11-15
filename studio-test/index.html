@@ -21,11 +21,10 @@
         /* The simulator draws the theme's own menu labels. Pin its device UI to
            English so a translated player never misreports what the author wrote. */
         window.STUDIO_PREVIEW_LOCALE = 'en';
-        /* This page is reachable only by typing its URL: nothing on the site
-           links to it, and no editor override points the header here. The nav's
-           Editor item keeps resolving to the community editor, so following it
-           from Studio leaves for that editor instead of reloading this page and
-           discarding unsaved work. */
+        /* The header's Editor item, the gallery cards and every theme page's
+           Editor link open this Studio. Following the header from here opens a
+           second Studio tab rather than reloading this one and discarding
+           unsaved work. */
     </script>
     <script src="../site-init.js?v=20261110picker"></script>
     <link rel="manifest" href="/studio-test/manifest.webmanifest" />
@@ -36,7 +35,7 @@
     <link rel="stylesheet" href="../site-theme.css?v=20261111dl2" />
     <link rel="stylesheet" href="../site-toolbar.css?v=20261110accent2" />
     <link rel="stylesheet" href="../y1-theme-preview.css?v=20261114rowfocus2" />
-    <link rel="stylesheet" href="/studio-test/studio.css?v=20261114identity" />
+    <link rel="stylesheet" href="/studio-test/studio.css?v=20261119zoom12" />
 </head>
 
 <body class="site-themes-app site-dock-mode studio-app" data-mode="preview">
@@ -85,7 +84,18 @@
                         <p id="studio-byline" translate="no" data-i18n-skip>Reading the package...</p>
                     </div>
                     <div class="studio-stage-meta">
-                        <span class="studio-chip"><i class="fa-solid fa-mobile-screen" aria-hidden="true"></i>Y1 / Y2</span>
+                        <div class="studio-platform">
+                            <button class="studio-chip studio-chip--platform" id="studio-platform-chip" type="button" aria-expanded="false" aria-controls="studio-platform-pop" aria-label="Which players this theme is listed for" title="Y1 / Y2">
+                                <i class="fa-solid fa-mobile-screen" aria-hidden="true"></i><span id="studio-platform-label">Y1 / Y2</span><i class="fa-solid fa-circle-info studio-platform-info" aria-hidden="true"></i>
+                            </button>
+                            <div class="studio-platform-pop" id="studio-platform-pop" role="dialog" aria-labelledby="studio-platform-pop-title" hidden>
+                                <strong id="studio-platform-pop-title">Y1 / Y2 theme</strong>
+                                <p id="studio-platform-pop-body">A theme is listed as a Y1 / Y2 theme only when it includes the file manager icon that Y2 adds to the home screen.</p>
+                                <button class="studio-btn studio-btn--primary" id="studio-platform-focus" type="button">
+                                    <i class="fa-solid fa-crosshairs" aria-hidden="true"></i><span>Show file manager icon</span>
+                                </button>
+                            </div>
+                        </div>
                         <span class="studio-chip studio-chip--muted" id="studio-source-chip">Gallery</span>
                     </div>
                 </div>
@@ -127,6 +137,14 @@
 
             <aside class="studio-panel" aria-label="Studio inspector">
                 <div class="studio-panel-scroll" id="studio-panel-scroll">
+                    <div class="studio-recovery" id="studio-recovery" role="status" hidden>
+                        <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
+                        <p id="studio-recovery-text">Restored your last session.</p>
+                        <button class="studio-recovery-btn" type="button" id="studio-recovery-discard">Discard</button>
+                        <button class="studio-recovery-close" type="button" id="studio-recovery-dismiss" aria-label="Dismiss">
+                            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                        </button>
+                    </div>
                     <section class="studio-pane" id="pane-preview" data-pane="preview" role="tabpanel">
                         <div class="studio-pane-head">
                             <p class="studio-eyebrow">Current theme</p>
@@ -425,11 +443,11 @@
     <div id="support-toolbar-slot"></div>
 
     <script src="../nav.js?v=20261111nav"></script>
-    <script src="../y1-theme-preview.js?v=20261115dialogs"></script>
+    <script src="../y1-theme-preview.js?v=20261118context2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="../theme-packaging.js"></script>
     <script src="../author-submission-policy.js?v=20260523"></script>
-    <script src="/studio-test/studio.js?v=20261115blankfix"></script>
+    <script src="/studio-test/studio.js?v=20261119zoom13"></script>
     <script src="../site-locale.js?v=20261115skip2" defer></script>
 </body>
 

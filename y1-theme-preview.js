@@ -26,7 +26,9 @@
     var SETTINGS_MENU_TOP = 45;
     var SETTINGS_MENU_WIDTH = 218;
     var SETTINGS_MENU_HEIGHT = 305;
-    var SETTINGS_ROW_HEIGHT = 40;
+    /* item_setting.xml uses @dimen/main_item_height (45dp), not the 40px the
+       old Theme Maker preview assumed. */
+    var SETTINGS_ROW_HEIGHT = 45;
 
     var SETTINGS_RIGHT_W = 179;
     var SETTINGS_RIGHT_MARGIN = 22;
@@ -185,7 +187,8 @@
     function statusBarHeightPx(cfg) {
         var t = cfg && cfg.layout_tokens && cfg.layout_tokens.status_bar;
         if (t && typeof t.height_px === 'number') return t.height_px;
-        return 40;
+        /* values-480x360/dimens.xml: status_bar_height = 45dp. */
+        return 45;
     }
 
     /** Resolve homePageConfig icon keys (supports ``Calendar`` / ``calendar``). */
@@ -210,45 +213,45 @@
         return undefined;
     }
 
-    function buildHomeItems(homeCfg) {
+    function isUsableHomeIcon(value) {
+        var file = String(value || '').trim();
+        return !!file && !/(^|\/)transparent\.png$/i.test(file);
+    }
+
+    function buildHomeItems(homeCfg, settingCfg) {
         homeCfg = homeCfg || {};
+        settingCfg = settingCfg || {};
         var labelMap = {
             nowPlaying: 'Now Playing',
             music: 'Music',
             video: 'Videos',
             audiobooks: 'Audiobook',
-            fm: 'FM Radio',
             ebook: 'E-Book',
             photos: 'Photos',
+            fm: 'FM Radio',
             fileManager: 'File manager',
-            settings: 'Settings',
-            bluetooth: 'Bluetooth',
-            calculator: 'Calculator',
-            calendar: 'Calendar'
+            settings: 'Settings'
         };
-        // Device home menu order (shuffleQuick is not shown in previews).
+        /* MyLauncher 3.2.4 MainActivity order on a stock Y2. Calculator and
+           Calendar are only inserted on the "v4" model, and Bluetooth and
+           Shuffle Quick are not in this launcher at all. FM is conditional on
+           the tuner build, so a theme's transparent.png hides that row. */
         var ordered = [
             'nowPlaying',
             'music',
             'video',
             'audiobooks',
-            'fm',
             'ebook',
             'photos',
+            'fm',
             'fileManager',
-            'settings',
-            'bluetooth',
-            'calculator',
-            'calendar'
+            'settings'
         ];
-        var optionalExtras = { calculator: 1, calendar: 1, ebook: 1 };
-        return ordered
+        var items = ordered
             .filter(function (key) {
-                if (optionalExtras[key]) {
-                    var f = homePageIconFromCfg(homeCfg, key);
-                    return typeof f === 'string' && String(f).trim().length > 0;
-                }
-                return homeCfg[key] !== undefined;
+                var file = homePageIconFromCfg(homeCfg, key);
+                if (key === 'fm') return isUsableHomeIcon(file);
+                return file !== undefined;
             })
             .map(function (key) {
                 var file = homePageIconFromCfg(homeCfg, key);
@@ -259,6 +262,18 @@
                     assetPath: 'homePageConfig.' + key
                 };
             });
+        /* The launcher icon is the switch-to-Rockbox control. It lives in the
+           Settings list on the device, but the preview also needs it on the
+           home screen so its purpose is obvious at a glance. */
+        if (isUsableHomeIcon(settingCfg.launcher)) {
+            items.push({
+                id: 'rockbox',
+                label: previewText('Rockbox'),
+                iconFile: settingCfg.launcher,
+                assetPath: 'settingConfig.launcher'
+            });
+        }
+        return items;
     }
 
     function buildColors(itemCfg, menuCfg, statusCfg) {
@@ -270,8 +285,65 @@
         return {
             text_primary: text_primary,
             text_selected: text_selected,
-            status_bar_bg: statusCfg.statusBarColor || '#0000004e'
+            /* MainActivity paints the home list with ItemConfig. The launcher's
+               submenu adapters (music/video/ebook option lists) use MenuConfig,
+               so those screens get their own pair rather than silently reusing
+               the item colours. */
+            menu_text_primary: menuCfg.menuItemTextColor || text_primary,
+            menu_text_selected: menuCfg.menuItemSelectedTextColor || text_selected,
+            status_bar_bg: statusCfg.statusBarColor || '#0000004e',
+            status_text: statusTextColor(statusCfg)
         };
+    }
+
+    /* The launcher's status bar has two looks, not a colour per theme: white
+       glyphs for a dark strip, dark glyphs for a light one (StatusBarFloatView
+       swaps its drawables and text colour together). Themes here can say which
+       they want, and when they do not the bar colour decides. */
+    function cssColorChannels(value) {
+        var text = String(value || '').trim();
+        var hex = /^#([0-9a-f]{3,8})$/i.exec(text);
+        if (hex) {
+            var digits = hex[1];
+            if (digits.length === 3 || digits.length === 4) {
+                digits = digits
+                    .split('')
+                    .map(function (ch) {
+                        return ch + ch;
+                    })
+                    .join('');
+            }
+            if (digits.length === 6 || digits.length === 8) {
+                return {
+                    r: parseInt(digits.slice(0, 2), 16),
+                    g: parseInt(digits.slice(2, 4), 16),
+                    b: parseInt(digits.slice(4, 6), 16),
+                    a: digits.length === 8 ? parseInt(digits.slice(6, 8), 16) / 255 : 1
+                };
+            }
+        }
+        var rgba = /^rgba?\(([^)]+)\)$/i.exec(text);
+        if (rgba) {
+            var parts = rgba[1].split(',').map(function (part) {
+                return parseFloat(part);
+            });
+            if (parts.length >= 3) {
+                return { r: parts[0] | 0, g: parts[1] | 0, b: parts[2] | 0, a: parts.length > 3 ? parts[3] : 1 };
+            }
+        }
+        return null;
+    }
+
+    function statusTextColor(statusCfg) {
+        var explicit =
+            statusCfg.statusTextColor || statusCfg.statusBarTextColor || statusCfg.textColor || statusCfg.textColorStr;
+        if (explicit) return String(explicit).trim();
+        var bg = cssColorChannels(statusCfg.statusBarColor);
+        if (bg && bg.a >= 0.5) {
+            var luma = (0.299 * bg.r + 0.587 * bg.g + 0.114 * bg.b) / 255;
+            return luma > 0.55 ? '#000000' : '#ffffff';
+        }
+        return '#ffffff';
     }
 
     function resolveBackgroundStyle(val, buildFileUrl, contentFolder) {
@@ -444,6 +516,15 @@
         );
     }
 
+    /* Hovering a row must not recentre the list under the cursor: the rows
+       would slide, the pointer would land on a different row, and the
+       highlight would chase itself up and down. A hover-driven paint reuses
+       the offset the list already had; the wheel, the keys and touch drags
+       still move the page. */
+    var menuScrollOverride = null;
+    var lastMenuScrollY = 0;
+    var lastMenuViewId = '';
+
     function menuScrollOffset(selectedIndex, itemsLength, itemHeight, visibleHeight) {
         var totalHeight = itemsLength * itemHeight;
         var maxScroll = Math.max(0, totalHeight - visibleHeight);
@@ -476,13 +557,33 @@
 
         var actualRowWidth = fullWidth ? W : rowWidth;
         var rowX = fullWidth ? 0 : leftPad;
-        var scrollY = menuScrollOffset(selectedIndex, items.length, itemHeight, visibleHeight);
+        var scrollY =
+            menuScrollOverride != null
+                ? menuScrollOverride
+                : menuScrollOffset(selectedIndex, items.length, itemHeight, visibleHeight);
+        var previousScrollY = lastMenuScrollY;
+        if (menuScrollOverride == null) lastMenuScrollY = scrollY;
 
         var outer = document.createElement('div');
         outer.style.cssText =
             'position:relative;height:' + visibleHeight + 'px;overflow:hidden;width:100%;';
+        /* A finger that starts on the list scrolls the list, not the page. */
+        outer.style.touchAction = 'none';
         var inner = document.createElement('div');
         inner.style.cssText = 'position:relative;transform:translateY(-' + scrollY + 'px);';
+        /* Sliding from the old offset to the new one keeps a wheel step or a
+           drag feeling like a scroll instead of a cut. */
+        if (previousScrollY !== scrollY && typeof inner.animate === 'function') {
+            try {
+                inner.animate(
+                    [
+                        { transform: 'translateY(-' + previousScrollY + 'px)' },
+                        { transform: 'translateY(-' + scrollY + 'px)' }
+                    ],
+                    { duration: 170, easing: 'cubic-bezier(0.22, 0.8, 0.35, 1)' }
+                );
+            } catch (e) {}
+        }
         outer.appendChild(inner);
 
         for (var idx = 0; idx < items.length; idx++) {
@@ -591,13 +692,33 @@
         var itemSel = options.itemSelectedBackgroundStyle;
         var arrowUrl = options.itemRightArrowUrl || '';
         var itemHeight = SETTINGS_ROW_HEIGHT;
-        var scrollY = menuScrollOffset(selectedIndex, items.length, itemHeight, visibleHeight);
+        var scrollY =
+            menuScrollOverride != null
+                ? menuScrollOverride
+                : menuScrollOffset(selectedIndex, items.length, itemHeight, visibleHeight);
+        var previousScrollY = lastMenuScrollY;
+        if (menuScrollOverride == null) lastMenuScrollY = scrollY;
 
         var outer = document.createElement('div');
         outer.style.cssText =
             'position:relative;height:' + visibleHeight + 'px;overflow:hidden;width:100%;';
+        /* A finger that starts on the list scrolls the list, not the page. */
+        outer.style.touchAction = 'none';
         var inner = document.createElement('div');
         inner.style.cssText = 'position:relative;transform:translateY(-' + scrollY + 'px);';
+        /* Sliding from the old offset to the new one keeps a wheel step or a
+           drag feeling like a scroll instead of a cut. */
+        if (previousScrollY !== scrollY && typeof inner.animate === 'function') {
+            try {
+                inner.animate(
+                    [
+                        { transform: 'translateY(-' + previousScrollY + 'px)' },
+                        { transform: 'translateY(-' + scrollY + 'px)' }
+                    ],
+                    { duration: 170, easing: 'cubic-bezier(0.22, 0.8, 0.35, 1)' }
+                );
+            } catch (e) {}
+        }
         outer.appendChild(inner);
 
         var SELECTED_TEXT = colors.text_selected;
@@ -606,6 +727,7 @@
             var item = items[idx];
             var selected = idx === selectedIndex;
             var row = document.createElement('div');
+            row.className = 'y1-tp-row' + (selected ? ' is-selected' : '');
             var bg = selected ? itemSel : itemBg || { backgroundColor: 'transparent' };
             row.setAttribute('data-y1-row', String(idx));
             if (item.assetPath) row.setAttribute('data-theme-asset-path', item.assetPath);
@@ -637,8 +759,9 @@
 
             if (selected && !item.valueText) {
                 var ar = document.createElement('div');
+                /* item_setting.xml: a 30dp arrow with 5dp trailing margin. */
                 ar.style.cssText =
-                    'position:absolute;right:10px;top:0;height:' +
+                    'position:absolute;right:5px;top:0;height:' +
                     itemHeight +
                     'px;display:flex;align-items:center;justify-content:center;';
                 if (arrowUrl) {
@@ -647,7 +770,7 @@
                     im.alt = '';
                     bindPreviewImgFallback(im);
                     im.style.cssText =
-                        'height:100%;width:auto;object-fit:contain;max-width:64px;max-height:64px;opacity:0.9;';
+                        'height:30px;width:auto;object-fit:contain;max-width:64px;max-height:30px;opacity:0.9;';
                     im.setAttribute('data-theme-asset-path', 'itemConfig.itemRightArrow');
                     ar.appendChild(im);
                 } else {
@@ -838,7 +961,7 @@
             }
         }
         if (!themeFonts.length) {
-            return 'Arial, "Helvetica Neue", Helvetica, sans-serif';
+            return 'Roboto, Arial, "Helvetica Neue", Helvetica, sans-serif';
         }
         var def = null;
         for (var fi = 0; fi < themeFonts.length; fi++) {
@@ -851,7 +974,7 @@
         var logical = def.id || stripExt(def.file);
         var fam = scopedThemeFontFamily(styleId, logical);
         var stack = ['"' + fam + '"'];
-        stack.push('Arial', '"Helvetica Neue"', 'Helvetica', 'sans-serif');
+        stack.push('Roboto', 'Arial', '"Helvetica Neue"', 'Helvetica', 'sans-serif');
         return stack.join(', ');
     }
 
@@ -888,7 +1011,53 @@
     }
 
     /** Theme Maker–style fallback when no battery bitmap is available. */
-    function appendBatteryFallback(rightEl, pct, textColor) {
+    /* The view title and the battery figure are the two spots where the theme
+       font is always on screen, so they double as a way into that font: the
+       Studio tags them and opens the font asset when the text is tapped. */
+    function tagFontHotspot(node, cfg, label) {
+        if (!node || !cfg || !cfg.fontFamily) return node;
+        node.setAttribute('data-theme-asset-path', 'fontFamily');
+        node.style.cursor = 'pointer';
+        node.title = label + ' uses the theme font. Click to change it.';
+        return node;
+    }
+
+    /* The title and the battery figure are text, not files. When the theme
+       brings its own font they open that; otherwise they stand for the strip's
+       text colour, which is the thing the reader can actually change. */
+    function tagStatusTextHotspot(node, label) {
+        if (!node || node.hasAttribute('data-theme-asset-path')) return node;
+        node.setAttribute('data-theme-asset-path', 'statusConfig.statusTextColor');
+        node.style.cursor = 'pointer';
+        node.title = label + ': status bar text colour.';
+        return node;
+    }
+
+    /* One status icon: the same size and object-fit the player uses, tagged so
+       a click in the Studio can open that file. */
+    function appendStatusIcon(rightEl, statusCfg, key, buildFileUrl, contentFolder, mode) {
+        var file = statusCfg && statusCfg[key];
+        if (!file) return null;
+        var raw = buildFileUrl(contentFolder, file);
+        if (!raw) return null;
+        var preview = mode === 'gallery' || mode === 'menu' ? previewAssetUrl(raw, 'png') : raw;
+        var img = document.createElement('img');
+        img.src = preview;
+        img.alt = '';
+        img.style.cssText = 'height:25px;width:25px;object-fit:contain;display:block;';
+        img.setAttribute('data-theme-asset-path', 'statusConfig.' + key);
+        if (preview !== raw) {
+            img.onerror = function () {
+                img.onerror = null;
+                img.src = raw;
+            };
+        }
+        bindPreviewImgFallback(img);
+        rightEl.appendChild(img);
+        return img;
+    }
+
+    function appendBatteryFallback(rightEl, pct, textColor, cfg) {
         var p = Number(pct);
         if (!isFinite(p)) p = 100;
         var wrap = document.createElement('div');
@@ -909,6 +1078,7 @@
         wrap.appendChild(box);
         var sp = document.createElement('span');
         sp.textContent = p + '%';
+        tagFontHotspot(sp, cfg, 'The battery figure');
         wrap.appendChild(sp);
         rightEl.appendChild(wrap);
     }
@@ -1421,6 +1591,21 @@
                           playState: null,
                           brightnessLevel: 50
                       };
+                /* The Studio edits a theme on a desk, not on a player, so it can
+                   ask for a particular battery or charging state and see how the
+                   status bar artwork holds up. */
+                if (opts.simState && typeof opts.simState === 'object') {
+                    Object.keys(opts.simState).forEach(function (key) {
+                        var value = opts.simState[key];
+                        if (value === undefined) return;
+                        if (key === 'batteryLevel') {
+                            var level = Number(value);
+                            sim.batteryLevel = isNaN(level) ? sim.batteryLevel : Math.max(0, Math.min(3, Math.round(level)));
+                            return;
+                        }
+                        sim[key] = value;
+                    });
+                }
                 var previewMeta = opts.previewMeta || {};
 
                 var fontStyleId = themePreviewFontStyleId(catalogFolder, variantSegment);
@@ -1456,7 +1641,7 @@
                     ? buildFileUrl(contentFolder, settingCfg.settingMask)
                     : '';
 
-                var homeItems = buildHomeItems(cfg.homePageConfig || {});
+                var homeItems = buildHomeItems(cfg.homePageConfig || {}, settingCfg);
                 var folderIconFile = (cfg.fileConfig && cfg.fileConfig.folderIcon) || '';
                 var folderIconUrl = folderIconFile
                     ? buildFileUrl(contentFolder, folderIconFile)
@@ -1609,7 +1794,52 @@
                     return previewText(VIEW_TITLES[sim.themeViewId] || 'Home');
                 }
 
+                var maskProbe = null;
+
+                /* Which of the two background layers is under the pointer? The
+                   mask is only reachable through its pixels: where it is clear,
+                   the wallpaper is what the user sees and clicks; where it is
+                   painted, the mask is. */
+                function maskAtPoint(clientX, clientY) {
+                    var path = maskAssetPathForView(sim.themeViewId);
+                    if (!path) return null;
+                    var node = canvas.querySelector('.y1-tp-desktop-mask');
+                    if (!node || !node.complete || !node.naturalWidth || !node.naturalHeight) return null;
+                    var rect = node.getBoundingClientRect();
+                    if (!rect.width || !rect.height) return null;
+                    if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) {
+                        return null;
+                    }
+                    var scale = Math.max(rect.width / node.naturalWidth, rect.height / node.naturalHeight);
+                    var sx = (clientX - rect.left - (rect.width - node.naturalWidth * scale) / 2) / scale;
+                    var sy = (clientY - rect.top - (rect.height - node.naturalHeight * scale) / 2) / scale;
+                    if (sx < 0 || sy < 0 || sx >= node.naturalWidth || sy >= node.naturalHeight) return null;
+                    if (!maskProbe) maskProbe = document.createElement('canvas');
+                    maskProbe.width = 1;
+                    maskProbe.height = 1;
+                    var ctx = maskProbe.getContext('2d', { willReadFrequently: true });
+                    if (!ctx) return null;
+                    /* Two CSS pixels of source, averaged: a single pixel can
+                       catch the antialiased edge of a hard mask. */
+                    var span = Math.max(1, 2 / scale);
+                    var sw = Math.min(span, node.naturalWidth - sx);
+                    var sh = Math.min(span, node.naturalHeight - sy);
+                    try {
+                        ctx.clearRect(0, 0, 1, 1);
+                        ctx.drawImage(node, sx, sy, sw, sh, 0, 0, 1, 1);
+                        var data = ctx.getImageData(0, 0, 1, 1).data;
+                        return { path: path, alpha: data[3] / 255 };
+                    } catch (eTaint) {
+                        return null;
+                    }
+                }
+
                 function paint() {
+                    if (sim.themeViewId !== lastMenuViewId) {
+                        lastMenuViewId = sim.themeViewId;
+                        lastMenuScrollY = 0;
+                        menuScrollOverride = null;
+                    }
                     canvas.innerHTML = '';
                     var rawBgUrl = backgroundUrlForView(cfg, sim.themeViewId, buildFileUrl, contentFolder, false);
                     var previewBgUrl = (mode === 'gallery' || mode === 'menu') ? backgroundUrlForView(cfg, sim.themeViewId, buildFileUrl, contentFolder, true) : rawBgUrl;
@@ -1648,6 +1878,10 @@
 
                     var status = document.createElement('div');
                     status.className = 'y1-tp-status';
+                    /* The strip itself stands for its background, so a click on
+                       the bar away from any icon still opens the status assets
+                       and the two colours that draw them. */
+                    status.setAttribute('data-theme-asset-path', 'statusConfig.statusBarColor');
                     status.style.cssText =
                         'position:absolute;left:0;top:0;width:' +
                         W +
@@ -1655,13 +1889,33 @@
                         statusH +
                         'px;background-color:' +
                         (colors.status_bar_bg || 'rgba(0,0,0,0.25)') +
-                        ';color:#ffffff;display:flex;align-items:center;padding-left:14px;padding-right:14px;justify-content:space-between;z-index:20;font-size:20px;font-weight:700;box-sizing:border-box;';
+                        ';color:' +
+                        colors.status_text +
+                        ';display:flex;align-items:center;padding-left:14px;padding-right:14px;justify-content:space-between;z-index:20;font-size:20px;font-weight:700;box-sizing:border-box;';
                     var leftTitle = document.createElement('span');
                     leftTitle.textContent = getViewTitle();
+                    tagFontHotspot(leftTitle, cfg, 'This screen title');
+                    tagStatusTextHotspot(leftTitle, 'This screen title');
                     status.appendChild(leftTitle);
 
                     var right = document.createElement('div');
                     right.style.cssText = 'display:flex;align-items:center;gap:6px;';
+                    /* Headset and Bluetooth are ordinary status icons in the
+                       theme, so they obey the same rules as the play badge: the
+                       state picks the file, and the file is the thing you edit. */
+                    if (sim.headsetState) {
+                        var headsetKey = sim.headsetState === 'withoutMic' ? 'headsetWithoutMic' : 'headsetWithMic';
+                        appendStatusIcon(right, statusCfg, headsetKey, buildFileUrl, contentFolder, mode);
+                    }
+                    if (sim.bluetoothState) {
+                        var btKey =
+                            sim.bluetoothState === 'connected'
+                                ? 'blConnected'
+                                : sim.bluetoothState === 'connecting'
+                                  ? 'blConnecting'
+                                  : 'blDisconnected';
+                        appendStatusIcon(right, statusCfg, btKey, buildFileUrl, contentFolder, mode);
+                    }
                     if (sim.playState) {
                         var pk =
                             sim.playState === 'playing'
@@ -1727,12 +1981,14 @@
                         var pctSpan = document.createElement('span');
                         pctSpan.style.fontSize = '16px';
                         pctSpan.textContent = pct + '%';
+                        tagFontHotspot(pctSpan, cfg, 'The battery figure');
+                        tagStatusTextHotspot(pctSpan, 'The battery figure');
                         if (prevBatt !== rawBatt) {
                             bi.onerror = function () {
                                 bi.onerror = function () {
                                     bi.style.display = 'none';
                                     if (pctSpan.parentNode) pctSpan.parentNode.removeChild(pctSpan);
-                                    appendBatteryFallback(right, pct, colors.text_primary);
+                                    appendBatteryFallback(right, pct, colors.status_text, cfg);
                                 };
                                 bi.src = rawBatt;
                             };
@@ -1741,13 +1997,13 @@
                                 bi.onerror = null;
                                 bi.style.display = 'none';
                                 if (pctSpan.parentNode) pctSpan.parentNode.removeChild(pctSpan);
-                                appendBatteryFallback(right, pct, colors.text_primary);
+                                appendBatteryFallback(right, pct, colors.status_text, cfg);
                             };
                         }
                         right.appendChild(bi);
                         right.appendChild(pctSpan);
                     } else {
-                        appendBatteryFallback(right, pct, colors.text_primary);
+                        appendBatteryFallback(right, pct, colors.status_text, cfg);
                     }
                     status.appendChild(right);
                     canvas.appendChild(status);
@@ -1872,7 +2128,10 @@
                             selectedIndex: sim.themeSelectedIndex,
                             itemHeight: Math.floor((H - statusH - 12) / 7) || 40,
                             visibleHeight: H - statusH,
-                            colors: colors,
+                            colors: {
+                                text_primary: colors.menu_text_primary,
+                                text_selected: colors.menu_text_selected
+                            },
                             itemBackgroundStyle: itemBackgroundStyle,
                             itemSelectedBackgroundStyle: itemSelectedBackgroundStyle,
                             itemRightArrowUrl: itemRightArrowUrl,
@@ -1923,7 +2182,9 @@
                             'px;z-index:10;';
                         var rt = document.createElement('div');
                         rt.style.cssText =
-                            'position:absolute;top:58px;left:0;right:0;text-align:center;font-size:18px;font-weight:bold;color:#ffffff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 5px;line-height:1.2;';
+                            'position:absolute;top:58px;left:0;right:0;text-align:center;font-size:18px;font-weight:bold;color:' +
+                            colors.text_primary +
+                            ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 5px;line-height:1.2;';
                         rt.textContent = selS.label || '';
                         rp.appendChild(rt);
 
@@ -1938,17 +2199,19 @@
                             sq.style.cssText =
                                 'width:140px;height:140px;background:rgba(255,255,255,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;border:2px solid rgba(255,255,255,0.3);';
                             var y1 = document.createElement('div');
-                            y1.style.cssText = 'color:#ffffff;font-size:48px;font-weight:bold;';
+                            y1.style.cssText =
+                                'color:' + colors.text_primary + ';font-size:48px;font-weight:bold;';
                             y1.textContent = 'Y1';
                             sq.appendChild(y1);
                             abWrap.appendChild(sq);
                             var v1 = document.createElement('div');
-                            v1.style.cssText = 'color:#ffffff;font-size:16px;text-align:center;margin-bottom:10px;';
+                            v1.style.cssText =
+                                'color:' + colors.text_primary + ';font-size:16px;text-align:center;margin-bottom:10px;';
                             v1.textContent = 'Version 3.0.2';
                             abWrap.appendChild(v1);
                             var v2 = document.createElement('div');
                             v2.style.cssText =
-                                'color:#ffffff;font-size:14px;text-align:center;opacity:0.8;';
+                                'color:' + colors.text_primary + ';font-size:14px;text-align:center;opacity:0.8;';
                             v2.textContent = 'Innioasis Y1';
                             abWrap.appendChild(v2);
                             imgBox.appendChild(abWrap);
@@ -1967,7 +2230,9 @@
                         if (selS.valueText && !isAbout) {
                             var stx = document.createElement('div');
                             stx.style.cssText =
-                                'position:absolute;top:242px;left:0;right:0;font-size:16px;color:#ffffff;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 5px;';
+                                'position:absolute;top:242px;left:0;right:0;font-size:16px;color:' +
+                                colors.text_primary +
+                                ';text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 5px;';
                             stx.textContent = String(selS.valueText);
                             rp.appendChild(stx);
                         }
@@ -2010,7 +2275,9 @@
                             'px;z-index:10;';
                         var et = document.createElement('div');
                         et.style.cssText =
-                            'position:absolute;top:58px;left:0;right:0;text-align:center;font-size:18px;font-weight:bold;color:#ffffff;white-space:nowrap;overflow:hidden;padding:0 5px;';
+                            'position:absolute;top:58px;left:0;right:0;text-align:center;font-size:18px;font-weight:bold;color:' +
+                            colors.text_primary +
+                            ';white-space:nowrap;overflow:hidden;padding:0 5px;';
                         et.textContent = 'Equalizer';
                         erp.appendChild(et);
                         if (eqSel.iconUrl) {
@@ -2029,7 +2296,9 @@
                         }
                         var elb = document.createElement('div');
                         elb.style.cssText =
-                            'position:absolute;top:242px;left:0;right:0;font-size:16px;color:#ffffff;text-align:center;white-space:nowrap;overflow:hidden;padding:0 5px;';
+                            'position:absolute;top:242px;left:0;right:0;font-size:16px;color:' +
+                            colors.text_primary +
+                            ';text-align:center;white-space:nowrap;overflow:hidden;padding:0 5px;';
                         elb.textContent = eqSel.label || '';
                         erp.appendChild(elb);
                         layer.appendChild(erp);
@@ -2483,14 +2752,10 @@
                     }
                     var vid = sim.themeViewId;
                     if (vid === 'home') {
-                        var hl = homeLen();
-                        if (hl > 0) {
-                            if (direction === 'down') {
-                                sim.themeSelectedIndex = (sim.themeSelectedIndex + 1) % hl;
-                            } else {
-                                sim.themeSelectedIndex = (sim.themeSelectedIndex - 1 + hl) % hl;
-                            }
-                        }
+                        /* Clamped, not wrapped: a wheel or a swipe carried past
+                           the first row used to jump to the last one (and back),
+                           which read as the menu zipping about. */
+                        scrollClamp(direction, homeLen());
                     } else if (vid === 'music' || vid === 'videos' || vid === 'audiobooks') {
                         var g1 = genericListForView(vid);
                         scrollClamp(direction, g1.length);
@@ -2564,6 +2829,9 @@
                         } else if (selId === 'settings') {
                             sim.themeViewId = 'settings';
                             sim.themeSelectedIndex = 0;
+                        } else if (selId === 'rockbox') {
+                            showToast('Switch to Rockbox');
+                            sim.themeHistory.pop();
                         } else {
                             showToast('Not implemented');
                             sim.themeHistory.pop();
@@ -2760,12 +3028,30 @@
                     } catch (e) {}
                 }
 
+                /* One notch of a trackpad can arrive as dozens of wheel events.
+                   Stepping on every one of them was a blur; collect the intent
+                   and move a row at a time, no faster than a finger can follow. */
+                var wheelStepTimer = null;
+                var wheelSteps = 0;
+
                 function onWheelDelta(ev) {
                     if (!interactive) return;
                     ev.preventDefault();
                     var dy = ev.deltaY;
-                    if (dy > 0.5) handleScroll('down');
-                    else if (dy < -0.5) handleScroll('up');
+                    if (Math.abs(dy) < 0.5) return;
+                    wheelSteps += dy > 0 ? 1 : -1;
+                    if (wheelStepTimer) return;
+                    var step = function () {
+                        if (!wheelSteps) {
+                            wheelStepTimer = null;
+                            return;
+                        }
+                        var direction = wheelSteps > 0 ? 'down' : 'up';
+                        wheelSteps -= wheelSteps > 0 ? 1 : -1;
+                        handleScroll(direction);
+                        wheelStepTimer = global.setTimeout(step, 90);
+                    };
+                    wheelStepTimer = global.setTimeout(step, 0);
                 }
 
                 var ringDrag = { active: false, lastAngle: 0, acc: 0 };
@@ -2824,6 +3110,7 @@
                    hover, so a press held still on one row does the same thing; a
                    press that moves or lifts early stays an ordinary tap. */
                 var rowHold = null;
+                var rowDrag = null;
 
                 function rowIndexFromEvent(ev) {
                     var target = ev.target;
@@ -2840,13 +3127,34 @@
                     if (sim.dialogVisible) return false;
                     if (index === sim.themeSelectedIndex) return false;
                     sim.themeSelectedIndex = index;
-                    paint();
+                    menuScrollOverride = lastMenuScrollY;
+                    try {
+                        paint();
+                    } finally {
+                        menuScrollOverride = null;
+                    }
                     return true;
                 }
 
+                /* pointerover fires again whenever a paint puts a fresh row
+                   under a stationary cursor, so it cannot be the hover source.
+                   Real movement is: coalesce it to one frame, then ask the
+                   document what is under the pointer now. */
+                var hoverFrame = 0;
+                var hoverPoint = null;
+
                 function onRowHover(ev) {
                     if (!interactive || ev.pointerType === 'touch') return;
-                    focusRowIndex(rowIndexFromEvent(ev));
+                    hoverPoint = { x: ev.clientX, y: ev.clientY };
+                    if (hoverFrame) return;
+                    hoverFrame = global.requestAnimationFrame(function () {
+                        hoverFrame = 0;
+                        if (!hoverPoint) return;
+                        var node = document.elementFromPoint(hoverPoint.x, hoverPoint.y);
+                        var row = node && node.closest ? node.closest('[data-y1-row]') : null;
+                        if (!row || !canvas.contains(row)) return;
+                        focusRowIndex(parseInt(row.getAttribute('data-y1-row'), 10));
+                    });
                 }
 
                 function clearRowHold() {
@@ -2859,6 +3167,14 @@
                     var index = rowIndexFromEvent(ev);
                     if (index < 0) return;
                     clearRowHold();
+                    rowDrag = {
+                        id: ev.pointerId,
+                        x0: ev.clientX,
+                        y0: ev.clientY,
+                        lastY: ev.clientY,
+                        acc: 0,
+                        moved: false
+                    };
                     rowHold = {
                         id: ev.pointerId,
                         x: ev.clientX,
@@ -2867,19 +3183,54 @@
                         timer: global.setTimeout(function () {
                             if (!rowHold || rowHold.index !== index) return;
                             rowHold.timer = null;
+                            /* Held still: open the artwork behind this row in
+                               the Studio's asset list. Painting first means the
+                               row was rebuilt, so ask for it again. */
                             focusRowIndex(index);
-                        }, 380)
+                            var row = canvas.querySelector('[data-y1-row="' + index + '"]');
+                            var path = row && row.getAttribute('data-theme-asset-path');
+                            if (row && path) {
+                                row.dispatchEvent(
+                                    new MouseEvent('click', { bubbles: true, cancelable: true, view: global })
+                                );
+                            }
+                        }, 450)
                     };
                 }
 
                 function onRowHoldMove(ev) {
-                    if (!rowHold || ev.pointerId !== rowHold.id) return;
-                    var dx = ev.clientX - rowHold.x;
-                    var dy = ev.clientY - rowHold.y;
-                    if (dx * dx + dy * dy > 100) clearRowHold();
+                    if (!rowDrag || ev.pointerId !== rowDrag.id) return;
+                    var dy = ev.clientY - rowDrag.lastY;
+                    rowDrag.lastY = ev.clientY;
+                    if (Math.abs(ev.clientY - rowDrag.y0) > 8 || Math.abs(ev.clientX - rowDrag.x0) > 8) {
+                        rowDrag.moved = true;
+                        /* A finger that travels is scrolling, not holding. */
+                        if (rowHold) {
+                            if (rowHold.timer) global.clearTimeout(rowHold.timer);
+                            rowHold = null;
+                        }
+                    }
+                    /* A drag step is one row: the list follows the finger
+                       instead of jumping a page at a time. */
+                    var step = 24;
+                    rowDrag.acc += dy;
+                    while (rowDrag.acc >= step) {
+                        rowDrag.acc -= step;
+                        handleScroll('down');
+                    }
+                    while (rowDrag.acc <= -step) {
+                        rowDrag.acc += step;
+                        handleScroll('up');
+                    }
                 }
 
                 function onRowHoldEnd(ev) {
+                    if (rowDrag && ev.pointerId === rowDrag.id && rowDrag.moved) {
+                        rowDrag = null;
+                        clearRowHold();
+                        return;
+                    }
+                    if (rowDrag && ev.pointerId === rowDrag.id) rowDrag = null;
                     if (!rowHold || ev.pointerId !== rowHold.id) return;
                     /* A quick tap (the hold timer never fired) is the pointer's
                        Select: the first one only moves the highlight, the second
@@ -2922,7 +3273,7 @@
                     wheel.addEventListener('pointermove', onWheelPointerMove);
                     wheel.addEventListener('pointerup', onWheelPointerEnd);
                     wheel.addEventListener('pointercancel', onWheelPointerEnd);
-                    canvas.addEventListener('pointerover', onRowHover);
+                    canvas.addEventListener('pointermove', onRowHover);
                     canvas.addEventListener('dblclick', onRowDoubleClick);
                     canvas.addEventListener('pointerdown', onRowHoldStart);
                     canvas.addEventListener('pointermove', onRowHoldMove);
@@ -2991,6 +3342,7 @@
                     },
                     /* The wallpaper and the mask this screen is drawn with, in
                        painting order: wallpaper first, then the mask over it. */
+                    maskAtPoint: maskAtPoint,
                     screenAssets: function () {
                         var out = [];
                         var wall = wallpaperAssetPathForView(cfg, sim.themeViewId);

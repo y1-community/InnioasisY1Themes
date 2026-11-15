@@ -180,9 +180,10 @@
 .studio-mask-top { display: flex; align-items: center; gap: 8px; min-width: 0; }
 
 .studio-mask-art {
-    flex: 0 0 40px;
-    width: 40px;
-    height: 40px;
+    position: relative;
+    flex: 0 0 56px;
+    width: 56px;
+    height: 42px;
     display: grid;
     place-items: center;
     overflow: hidden;
@@ -191,6 +192,8 @@
     background: color-mix(in oklab, var(--site-bg) 60%, #000);
     color: var(--site-muted);
 }
+
+.studio-mask-art.has-live-crop { background: #05070c; }
 
 .studio-mask-art img { width: 100%; height: 100%; object-fit: contain; }
 
@@ -2148,6 +2151,26 @@ body.studio-app {
     border-radius: 9px;
 }
 
+.studio-related-sub {
+    margin: 14px 10px 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    opacity: 0.62;
+}
+
+.studio-related .studio-color-row {
+    margin: 0 10px 6px;
+    padding: 4px 6px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.studio-related .studio-color-row code {
+    display: none;
+}
+
 .studio-related .studio-asset-row.is-selected {
     box-shadow: inset 3px 0 0 var(--site-accent);
 }
@@ -2344,8 +2367,128 @@ body.studio-app {
 .studio-asset-status[data-state="changed"] { color: var(--site-accent); }
 .studio-asset-status[data-state="missing"] { color: var(--lumen-red, #e55); }
 
-.studio-asset-detail-preview { width: 100%; min-height: 120px; max-height: 210px; display: grid; place-items: center; margin: 10px 0; overflow: hidden; border: 1px solid var(--studio-line); border-radius: 8px; background: var(--site-bg); color: var(--site-muted); font-size: 2rem; }
-.studio-asset-detail-preview img { max-width: 100%; max-height: 208px; object-fit: contain; }
+/* The detail plate is a 4:3 window onto the live screen, not a full-width
+   banner: a 64px status icon on a 1300px plate read as an empty box. */
+.studio-asset-detail-preview {
+    position: relative;
+    width: min(100%, 400px);
+    aspect-ratio: 4 / 3;
+    min-height: 0;
+    max-height: none;
+    display: grid;
+    place-items: center;
+    margin: 10px auto;
+    overflow: hidden;
+    border: 1px solid var(--studio-line);
+    border-radius: 8px;
+    background: var(--site-bg);
+    color: var(--site-muted);
+    font-size: 2rem;
+}
+.studio-asset-detail-preview img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.studio-asset-detail-preview > img.is-fit-plate { width: 100%; height: 100%; object-fit: contain; object-position: center; }
+
+/* —— Preview heading switcher —— */
+
+.studio-asset-title-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+}
+
+.studio-asset-title-row strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.studio-mask-title {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    min-width: 0;
+}
+
+.studio-mask-title strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.studio-asset-switch-toggle {
+    flex: 0 0 auto;
+    width: 24px;
+    height: 24px;
+    display: inline-grid;
+    place-items: center;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--site-muted);
+    font-size: 0.64rem;
+    cursor: pointer;
+}
+
+.studio-mask-title .studio-asset-switch-toggle { width: 20px; height: 20px; font-size: 0.56rem; }
+
+.studio-asset-switch-toggle:hover,
+.studio-asset-switch-toggle[aria-expanded="true"] {
+    border-color: var(--studio-line);
+    background: var(--studio-accent-soft);
+    color: var(--site-accent);
+}
+
+.studio-asset-switch-toggle:focus-visible { outline: 2px solid var(--site-accent); outline-offset: 1px; }
+
+.studio-asset-switch-menu {
+    position: fixed;
+    z-index: 5000;
+    width: min(300px, calc(100vw - 16px));
+    max-height: min(56vh, 340px);
+    overflow: auto;
+    padding: 6px;
+    border: 1px solid var(--studio-line);
+    border-radius: 10px;
+    background: var(--studio-card, var(--site-bg));
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.48);
+}
+
+.studio-asset-switch-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--site-text);
+    text-align: left;
+    cursor: pointer;
+}
+
+.studio-asset-switch-item:hover,
+.studio-asset-switch-item:focus-visible { background: var(--studio-accent-soft); outline: none; }
+.studio-asset-switch-item.is-current { background: var(--studio-accent-soft); }
+
+.studio-asset-switch-thumb {
+    flex: 0 0 32px;
+    width: 32px;
+    height: 24px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    border: 1px solid var(--studio-line);
+    border-radius: 5px;
+    background: #05070c;
+    color: var(--site-muted);
+}
+
+.studio-asset-switch-thumb img { width: 100%; height: 100%; object-fit: contain; }
+
+.studio-asset-switch-copy { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.studio-asset-switch-copy strong { font-size: 0.72rem; line-height: 1.2; }
+.studio-asset-switch-copy span { overflow: hidden; color: var(--site-muted); font: 500 0.6rem var(--site-font-mono); text-overflow: ellipsis; white-space: nowrap; }
+.studio-asset-switch-check { margin-left: auto; flex: 0 0 auto; color: var(--site-accent); font-size: 0.66rem; }
+
+/* A live crop is a clone of the mounted screen, scaled around the asset. */
+.studio-asset-detail-preview.has-live-crop { background: #05070c; }
+.studio-live-crop * { animation: none !important; transition: none !important; }
+.has-live-crop > img:not(.studio-thumb-layer) { display: none; }
 .studio-asset-detail-actions { display: flex; flex-wrap: wrap; gap: 6px; }
 .studio-asset-detail-actions .studio-btn { flex: 1 1 96px; min-height: 38px; padding: 7px 8px; font-size: 0.72rem; }
 .studio-asset-detail-actions .studio-btn:disabled { opacity: 0.45; cursor: not-allowed; }
@@ -2960,4 +3103,386 @@ body.studio-app {
         width: min(100%, 440px);
         max-width: min(100%, 440px);
     }
+}
+
+/* —— Player badge and its explanation ——
+   The badge names the players a theme is listed for, which is a fact about the
+   package, not a label on the device family. Y2 added a file manager icon to
+   the home screen, so a theme only earns the Y1 / Y2 wording when that icon is
+   part of it; a theme without it is an Y1 theme. The badge is a button because
+   the answer is only useful if the reader can jump straight to the asset. */
+.studio-platform {
+    position: relative;
+    display: inline-flex;
+}
+
+.studio-chip--platform {
+    cursor: pointer;
+    font-family: var(--site-font);
+    font-size: 0.7rem;
+    font-weight: 650;
+    letter-spacing: 0.01em;
+    color: var(--site-text);
+}
+
+.studio-chip--platform:hover,
+.studio-chip--platform:focus-visible,
+.studio-chip--platform[aria-expanded='true'] {
+    border-color: var(--studio-accent-line);
+    color: var(--site-accent);
+}
+
+.studio-chip--platform:focus-visible {
+    outline: 2px solid var(--site-accent);
+    outline-offset: 2px;
+}
+
+.studio-chip--platform.is-y1-only {
+    color: var(--site-muted);
+}
+
+.studio-platform-info {
+    font-size: 0.62rem;
+    opacity: 0.55;
+}
+
+.studio-platform-pop {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 60;
+    display: grid;
+    gap: 8px;
+    width: min(312px, calc(100vw - 28px));
+    padding: 12px;
+    border: 1px solid var(--studio-accent-line);
+    border-radius: 12px;
+    background: var(--site-bg-elevated);
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.46);
+}
+
+.studio-platform-pop[hidden] {
+    display: none;
+}
+
+.studio-platform-pop strong {
+    color: var(--site-text);
+    font: 650 0.82rem var(--site-font);
+}
+
+.studio-platform-pop p {
+    margin: 0;
+    color: var(--site-muted);
+    font-size: 0.76rem;
+    line-height: 1.45;
+}
+
+.studio-platform-pop .studio-btn {
+    justify-content: center;
+    min-height: 34px;
+}
+
+/* The row the badge sent the reader to, ringed until they move on. */
+.studio-asset-row.is-platform-focus {
+    outline: 2px solid var(--site-accent);
+    outline-offset: -2px;
+    background: color-mix(in oklab, var(--site-accent) 12%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .studio-chip--platform,
+    .studio-platform-pop {
+        transition: none;
+    }
+}
+
+/* —— Backdrop-aware asset thumbnails ————————————————————————————
+   A thumbnail answers "what will this look like on the player?". In dark mode a
+   dark icon on the plain tray tile is invisible, so each one is drawn on the
+   surface it is drawn over: the wallpaper, a file-list row, or a menu row. The
+   theme's own files supply the backdrop, and moody themes get a readable thumb. */
+.studio-asset-thumb,
+.studio-mask-art,
+.studio-asset-detail-preview {
+    position: relative;
+}
+
+.studio-asset-thumb.has-backdrop,
+.studio-mask-art.has-backdrop,
+.studio-asset-detail-preview.has-backdrop {
+    background-color: transparent;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.studio-thumb-strip {
+    position: absolute;
+    inset: 24% 0;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    pointer-events: none;
+}
+
+.studio-asset-thumb.has-backdrop > img,
+.studio-mask-art.has-backdrop > img,
+.studio-asset-detail-preview.has-backdrop > img {
+    position: relative;
+    z-index: 1;
+    width: 72%;
+    height: 72%;
+    object-fit: contain;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
+}
+
+/* The detail plate is wide, so a percentage size stretched a 64px battery icon
+   to 600px. Let the art keep its own size and only cap it. */
+.studio-asset-detail-preview.has-backdrop > img {
+    width: auto;
+    height: auto;
+    max-width: 84%;
+    max-height: 84%;
+}
+
+.studio-asset-thumb.has-backdrop > i,
+.studio-mask-art.has-backdrop > i {
+    position: relative;
+    z-index: 1;
+}
+
+/* —— Restored-session banner —— */
+.studio-recovery {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 14px;
+    padding: 10px 12px;
+    border: 1px solid color-mix(in oklab, var(--site-accent) 45%, var(--studio-line));
+    border-radius: 10px;
+    background: color-mix(in oklab, var(--site-accent) 12%, var(--studio-card));
+    color: var(--site-text);
+    font-size: 0.78rem;
+    line-height: 1.35;
+}
+
+.studio-recovery[hidden] { display: none; }
+.studio-recovery > i { flex: 0 0 auto; color: var(--site-accent); }
+.studio-recovery p { flex: 1 1 auto; margin: 0; min-width: 0; }
+
+.studio-recovery-btn {
+    flex: 0 0 auto;
+    padding: 6px 10px;
+    border: 1px solid var(--studio-line);
+    border-radius: 7px;
+    background: var(--site-bg);
+    color: var(--site-text);
+    font: 600 0.72rem var(--site-font-mono);
+    cursor: pointer;
+}
+.studio-recovery-btn:hover { border-color: var(--site-accent); color: var(--site-accent); }
+.studio-recovery-btn:focus-visible { outline: 2px solid var(--site-accent); outline-offset: 1px; }
+
+.studio-recovery-close {
+    flex: 0 0 auto;
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    background: none;
+    color: var(--site-muted);
+    cursor: pointer;
+}
+.studio-recovery-close:hover { border-color: var(--studio-line); color: var(--site-text); }
+.studio-recovery-close:focus-visible { outline: 2px solid var(--site-accent); outline-offset: 1px; }
+
+/* —— Managing a listing ——
+   The update, text-fix and removal paths share one block so the submit pane
+   does not grow three near-identical forms with three different buttons. */
+
+.studio-manage {
+    border: 1px solid var(--studio-line, rgba(255, 255, 255, 0.14));
+    border-radius: 14px;
+    background: var(--studio-panel, rgba(255, 255, 255, 0.04));
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.studio-manage h2 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px;
+    margin: 0 0 2px;
+    font-size: 1.05rem;
+}
+
+.studio-manage h2 [data-manage-name] {
+    font-weight: 600;
+    color: var(--studio-text, #f3f5fb);
+    overflow-wrap: anywhere;
+}
+
+.studio-manage-author {
+    margin: 0 0 6px;
+    color: var(--studio-muted, #9aa3b5);
+    font-size: 0.85rem;
+}
+
+.studio-manage-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 12px 0 4px;
+}
+
+.studio-manage-form {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--studio-line, rgba(255, 255, 255, 0.12));
+}
+
+.studio-manage-form[hidden] {
+    display: none;
+}
+
+.studio-manage-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.studio-manage-status {
+    margin: 10px 0 0;
+    min-height: 1.2em;
+    font-size: 0.86rem;
+    color: var(--studio-muted, #9aa3b5);
+}
+
+.studio-manage-status.is-ok {
+    color: var(--studio-ok, #5ee0a0);
+}
+
+.studio-manage-status.is-error {
+    color: var(--studio-danger, #ff8b85);
+}
+
+.studio-btn--danger {
+    background: color-mix(in oklab, var(--studio-danger, #ff8b85) 26%, transparent);
+    border-color: color-mix(in oklab, var(--studio-danger, #ff8b85) 55%, transparent);
+    color: var(--studio-text, #fff);
+}
+
+.studio-btn--danger:hover {
+    background: color-mix(in oklab, var(--studio-danger, #ff8b85) 38%, transparent);
+}
+
+/* —— Status bar states ——
+   One chip per state the theme actually ships; the artwork lives in the tray,
+   so a chip doubles as a shortcut to the file. */
+
+.studio-status-editor {
+    margin: 14px 0 4px;
+}
+
+.studio-status-editor h3 {
+    margin: 0 0 2px;
+    font-size: 0.9rem;
+    letter-spacing: 0.01em;
+}
+
+.studio-status-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.studio-status-chip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--studio-line, rgba(255, 255, 255, 0.16));
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--studio-text, #eceff8);
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.studio-status-chip:hover {
+    border-color: color-mix(in oklab, var(--studio-accent, #8fb7ff) 55%, transparent);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.studio-status-chip.is-active {
+    border-color: var(--studio-accent, #8fb7ff);
+    background: color-mix(in oklab, var(--studio-accent, #8fb7ff) 22%, transparent);
+}
+
+.studio-status-chip.is-changed::after {
+    content: "";
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--studio-warn, #ffcf6b);
+}
+
+.studio-status-chip:focus-visible {
+    outline: 2px solid var(--studio-accent, #8fb7ff);
+    outline-offset: 2px;
+}
+
+/* The type sample under the font row: the theme's own face, at a size where
+   letter shapes are visible without opening the player. */
+.studio-font-sample {
+    margin: 8px 0 0;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px dashed var(--studio-line, rgba(255, 255, 255, 0.18));
+    background: rgba(255, 255, 255, 0.03);
+    font-size: 1.35rem;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+    color: var(--studio-text, #f0f3fb);
+    overflow-wrap: anywhere;
+}
+
+/* —— Thumbnails that show the screen, not just the art ——
+   Home icons sit on the home mask and the mask sits on the wallpaper, so the
+   crop stacks all three. Each layer is positioned from the live preview's own
+   rectangles, which keeps the mask window and the icon lined up. */
+.studio-asset-thumb.has-layers,
+.studio-mask-art.has-layers,
+.studio-asset-detail-preview.has-layers {
+    position: relative;
+    overflow: hidden;
+    background-color: #05070c;
+}
+
+.studio-thumb-layer {
+    position: absolute;
+    display: block;
+    pointer-events: none;
+}
+
+.studio-thumb-wallpaper {
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.studio-thumb-mask,
+.studio-thumb-art {
+    object-fit: fill;
+}
+
+/* The plain centred icon would sit on top of the crop and hide it. */
+.has-layers > img:not(.studio-thumb-layer) {
+    display: none;
 }

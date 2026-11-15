@@ -628,3 +628,130 @@
         init();
     }
 })();
+
+/* Theme Studio hand-off: a card's screenshot opens that theme in the Studio,
+   and every card carries the same two destinations as buttons. The theme's
+   own page keeps the name link, so nothing is lost from the old path.
+
+   The screenshot is a real <a> overlay rather than a click handler that
+   assigns location: a link navigates natively, survives the browser's
+   popup/navigation guards, and lets the existing card handlers keep the
+   buttons they own. */
+(function () {
+    "use strict";
+
+    var STUDIO = "/studio-test/";
+
+    function studioHref(folder, mode) {
+        return STUDIO + "?folder=" + encodeURIComponent(folder) + "&mode=" + mode;
+    }
+
+    function folderOf(card) {
+        return card ? String(card.getAttribute("data-catalog-folder") || "").trim() : "";
+    }
+
+    function cardName(card) {
+        var link = card ? card.querySelector(".theme-name") : null;
+        return link ? String(link.textContent || "").trim() : "";
+    }
+
+    /* One action per card. Sharing, reporting and removal live inside the
+       Studio, so the card keeps a single labelled door into it. */
+    function buildButtons(folder) {
+        var row = document.createElement("div");
+        row.className = "theme-card-studio";
+        row.setAttribute("data-studio-row", "1");
+
+        var edit = document.createElement("a");
+        edit.className = "theme-card-studio-btn";
+        edit.href = studioHref(folder, "edit");
+        edit.setAttribute("data-studio-open", "edit");
+        edit.innerHTML = '<i class="fa-solid fa-pen-ruler" aria-hidden="true"></i><span>Edit in Studio</span>';
+
+        row.appendChild(edit);
+        return row;
+    }
+
+    /* The old icon strip (share, copy, details, report, removal) answered a
+       question the Studio now answers with a form, so the card drops it. */
+    function dropCornerToolbar(card) {
+        var corner = card.querySelector(".theme-card-corner-actions");
+        if (corner) corner.remove();
+    }
+
+    function addShotLink(card, folder) {
+        var frame = card.querySelector(".theme-preview-frame");
+        if (!frame || frame.querySelector(".theme-card-shot-link")) return;
+        var shot = document.createElement("a");
+        shot.className = "theme-card-shot-link";
+        shot.href = studioHref(folder, "preview");
+        /* The frame itself stays the keyboard target it always was; this
+           overlay exists so a pointer click on the capture lands in the
+           Studio instead of the theme page. */
+        shot.tabIndex = -1;
+        shot.setAttribute("aria-hidden", "true");
+        shot.setAttribute("data-shot-link", "1");
+        var name = cardName(card);
+        shot.title = name ? name + " in the Theme Studio" : "Open in the Theme Studio";
+        frame.appendChild(shot);
+    }
+
+    function enhanceCard(card) {
+        var folder = folderOf(card);
+        if (!folder) return;
+        dropCornerToolbar(card);
+        if (!card.querySelector("[data-studio-row]")) {
+            var buttons = card.querySelector(".theme-card-buttons");
+            if (buttons) buttons.insertBefore(buildButtons(folder), buttons.firstChild);
+        }
+        addShotLink(card, folder);
+    }
+
+    /* Theme pages (the ones a card title links to) get the same two doors:
+       open the theme in the Studio, or ask the team to take it down. */
+    function enhanceShellPage() {
+        var actions = document.querySelector('.theme-seo-shell-actions');
+        if (!actions || actions.querySelector('[data-studio-open]')) return;
+        var source = document.querySelector('[data-theme-download]');
+        var folder = source ? String(source.getAttribute('data-folder') || '').trim() : '';
+        if (!folder) {
+            var parts = location.pathname.split('/').filter(Boolean);
+            if (parts.length >= 2) folder = decodeURIComponent(parts[parts.length - 2]);
+        }
+        if (!folder) return;
+
+        var edit = document.createElement('a');
+        edit.className = 'btn';
+        edit.href = studioHref(folder, 'edit');
+        edit.setAttribute('data-studio-open', 'edit');
+        edit.innerHTML = '<i class="fa-solid fa-pen-ruler" aria-hidden="true"></i> Edit in Studio';
+
+        var manage = document.createElement('a');
+        manage.className = 'btn';
+        manage.href = studioHref(folder, 'edit') + '&panel=manage';
+        manage.setAttribute('data-studio-open', 'manage');
+        manage.innerHTML = '<i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Request update or removal';
+
+        actions.append(edit, manage);
+    }
+
+    function start() {
+        document.querySelectorAll('.theme-card[data-catalog-folder]').forEach(enhanceCard);
+        enhanceShellPage();
+        var observer = new MutationObserver(function (records) {
+            records.forEach(function (record) {
+                Array.prototype.forEach.call(record.addedNodes, function (node) {
+                    if (!node || node.nodeType !== 1) return;
+                    if (node.matches && node.matches('.theme-card[data-catalog-folder]')) enhanceCard(node);
+                    if (node.querySelectorAll) {
+                        node.querySelectorAll('.theme-card[data-catalog-folder]').forEach(enhanceCard);
+                    }
+                });
+            });
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
+    else start();
+})();

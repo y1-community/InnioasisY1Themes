@@ -1256,11 +1256,11 @@
 
     function toolbarCandidates() {
         return [
-            "support_toolbar.html?v=20261110panel",
-            "../support_toolbar.html?v=20261110panel",
-            "../../support_toolbar.html?v=20261110panel",
-            "../../../support_toolbar.html?v=20261110panel",
-            "https://themes.innioasis.app/support_toolbar.html?v=20261110panel",
+            "support_toolbar.html?v=20261117dock",
+            "../support_toolbar.html?v=20261117dock",
+            "../../support_toolbar.html?v=20261117dock",
+            "../../../support_toolbar.html?v=20261117dock",
+            "https://themes.innioasis.app/support_toolbar.html?v=20261117dock",
         ];
     }
 

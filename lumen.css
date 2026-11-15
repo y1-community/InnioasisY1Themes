@@ -1308,3 +1308,50 @@ body.site-themes-app .site-footer .footer-col > a {
 @media (max-width: 640px) {
     body.site-themes-app .site-footer .footer-grid { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Studio hand-off buttons on gallery cards (painted by gallery-chrome.js).
+   Deliberately not .btn: the toolbar sheet pins .btn font sizes with
+   !important, and these two links need their own compact sizing. */
+.theme-card .theme-preview-frame { position: relative; }
+.theme-card .theme-preview-frame .theme-card-shot-link {
+  position: absolute;
+  inset: 0;
+  /* Below the gold badge (3), the HQ toggle (6) and the frozen layer (12). */
+  z-index: 2;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.theme-card .theme-card-studio { display: flex; flex-direction: column; gap: .35rem; margin-bottom: .45rem; }
+.theme-card .theme-card-studio .theme-card-studio-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .45rem;
+  min-height: 34px;
+  padding: 7px 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: var(--lumen-accent, #4f8cff);
+  color: var(--lumen-on-accent, #0b1020);
+  font: 600 .8rem/1.15 var(--lumen-body, Inter, system-ui, sans-serif);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.theme-card .theme-card-studio .theme-card-studio-btn span { overflow: hidden; text-overflow: ellipsis; }
+.theme-card .theme-card-studio .theme-card-studio-btn i { font-size: .8rem; flex: 0 0 auto; }
+.theme-card .theme-card-studio .theme-card-studio-btn:hover { filter: brightness(1.06); }
+.theme-card .theme-card-studio .theme-card-studio-btn--quiet {
+  background: rgba(255, 255, 255, .12);
+  border-color: var(--lumen-line-strong, rgba(255, 255, 255, .18));
+  color: var(--lumen-text, #f5f7ff);
+}
+[data-lumen-theme="light"] .theme-card .theme-card-studio .theme-card-studio-btn--quiet,
+[data-lumen-theme="high-contrast"] .theme-card .theme-card-studio .theme-card-studio-btn--quiet {
+  background: rgba(15, 23, 42, .08);
+  border-color: rgba(15, 23, 42, .16);
+}
+@media (max-width: 480px) {
+  .theme-card .theme-card-studio .theme-card-studio-btn { min-height: 40px; }
+}

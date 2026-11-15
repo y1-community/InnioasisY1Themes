@@ -1,10 +1,10 @@
 (function () {
   "use strict";
 
-  /* The community Y1 Theme Maker is its own deployment for now. Keeping the
-     address here lets the header, the gallery and any future surface point at
-     the same editor, so swapping in the in-house one is a single change. */
-  var THEME_EDITOR_URL = window.Y1_THEME_EDITOR_URL_OVERRIDE || "https://y1-themes.vercel.app/";
+  /* The in-house Theme Studio is the editor now. The header, the gallery cards
+     and every page's editor link read the address from here, so moving the
+     Studio is a single change. */
+  var THEME_EDITOR_URL = window.Y1_THEME_EDITOR_URL_OVERRIDE || "/studio-test/";
   window.Y1_THEME_EDITOR_URL = THEME_EDITOR_URL;
 
   /* Donation appeals and cross-subdomain / inter-page preference persistence.
@@ -1750,7 +1750,8 @@
       '<a href="' + escapeHtml(decorateMainSiteHref("/guide.html")) + '">Installation Guide</a>' +
       '<a href="' + escapeHtml(decorateMainSiteHref("/manuals/index.html")) + '">Player manuals</a>' +
       (isThemesSite
-        ? '<a href="' + escapeHtml(decorateMainSiteHref("/firmware.html")) + '">Player updates</a>'
+        ? '<a href="' + escapeHtml(decorateMainSiteHref("/firmware.html")) + '">Player updates</a>' +
+          '<a href="/screenshots.html">Theme screenshots</a>'
         : '<a href="' + escapeHtml(decorateMainSiteHref("/firmware.html?view=software")) + '">Software Updates</a>' +
           '<a href="' + escapeHtml(decorateMainSiteHref("/firmware.html?view=firmware")) + '">Custom software</a>'
       ) +
