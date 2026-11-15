@@ -1450,6 +1450,13 @@
             return top;
         }
 
+        /* The description is optional, but an empty field must not leave the
+           generated metadata with the form placeholder (or nothing at all). */
+        function genericThemeDescription(name) {
+            const clean = String(name || "").trim() || "This";
+            return `${clean} is a custom theme for the Innioasis Y1 and Y2.`;
+        }
+
         function augmentThemeInfoFromVariationRow(themeInfo, row) {
             const out = { ...themeInfo };
             const d = String((row && row.description) || "").trim();
@@ -1578,7 +1585,11 @@
             const map = new Map();
             for (const entry of themeInfoEntries) {
                 const p = normRelPath(entry.path);
-                let nextParsed = { ...entry.parsed, theme_info: { ...entry.themeInfo } };
+                const themeInfo = { ...entry.themeInfo };
+                const entryTitle = String(themeInfo.title || "").trim();
+                themeInfo.description =
+                    String(themeInfo.description || "").trim() || genericThemeDescription(entryTitle);
+                let nextParsed = { ...entry.parsed, theme_info: themeInfo };
                 if (isRootThemeConfigPath(p)) {
                     const gallery = { ...(nextParsed.gallery || {}) };
                     gallery.compatibilityMedal = medal;
@@ -3674,7 +3685,8 @@
             const name = String(source.title || fallback.name || "").trim();
             const author = String(source.author || fallback.author || "").trim();
             const authorUrl = String(source.authorUrl || fallback.authorUrl || "").trim();
-            const description = String(source.description || fallback.description || "").trim();
+            const description =
+                String(source.description || "").trim() || genericThemeDescription(name);
             const externalDownloadUrl = String(source.externalDownloadUrl || fallback.externalDownloadUrl || "").trim();
             const sortName = name.toLowerCase();
             const searchText = [name, description, author, safeFolder, externalDownloadUrl]
@@ -3706,7 +3718,8 @@
             const title = String(entry.themeInfo.title || "").trim();
             const author = String(entry.themeInfo.author || "").trim();
             const authorUrl = String(entry.themeInfo.authorUrl || "").trim();
-            const description = String(entry.themeInfo.description || "").trim();
+            const description =
+                String(entry.themeInfo.description || "").trim() || genericThemeDescription(title);
             const externalDownloadUrl = String(entry.themeInfo.externalDownloadUrl || "").trim();
             const titleForListing = title;
 
@@ -3893,7 +3906,7 @@
                     const displayName = String(ti.title || catalogFolder).trim() || catalogFolder;
                     const author = String(ti.author || "Innioasis Community").trim();
                     let rawDesc = String(ti.description || "").trim();
-                    if (!rawDesc) rawDesc = `${displayName} UI theme for the Innioasis Y1 media player.`;
+                    if (!rawDesc) rawDesc = genericThemeDescription(displayName);
                     const variantNote = variant ? ` Variant: ${variant}.` : "";
                     const fullDesc = `${rawDesc}${variantNote}`.trim();
                     const descPlain = fullDesc.length <= 320 ? fullDesc : fullDesc.slice(0, 320);

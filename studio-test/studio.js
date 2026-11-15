@@ -3047,6 +3047,14 @@
         return Promise.reject(new Error('No theme package is open.'));
     }
 
+    /* The description is optional, but the gallery should never receive the
+       field's placeholder as if it were written copy. An empty field gets a
+       plain description that still names the theme. */
+    function genericThemeDescription(name) {
+        var clean = String(name || '').trim() || 'This';
+        return clean + ' is a custom theme for the Innioasis Y1 and Y2.';
+    }
+
     function syncConfigMetadata(config, title, author) {
         if (!config.theme_info || typeof config.theme_info !== 'object' || Array.isArray(config.theme_info)) {
             config.theme_info = {};
@@ -3059,8 +3067,7 @@
         var external = el.submitExternal.checked ? el.submitExternalUrl.value.trim() : '';
         if (authorUrl) info.authorUrl = authorUrl;
         else delete info.authorUrl;
-        if (desc) info.description = desc;
-        else delete info.description;
+        info.description = desc || genericThemeDescription(info.title);
         if (external) info.externalDownloadUrl = external;
         else delete info.externalDownloadUrl;
     }
