@@ -37,7 +37,7 @@
             return await fetch(UPLOAD_ORIGIN + path, options);
         } catch (err) {
             throw new Error(
-                'The theme service did not answer. Check your connection and try again, or save the ZIP and send it to the theme maintainer.'
+                'The theme upload service did not answer. Your theme is still here: save it to this device, then send the ZIP to the team or try again later.'
             );
         }
     }
