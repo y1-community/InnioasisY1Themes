@@ -1,6 +1,6 @@
 /* Theme Studio app-shell worker. Theme packages and preview art stay network-first
    so an edit never previews a stale player asset. */
-const CACHE = 'innioasis-studio-v30';
+const CACHE = 'innioasis-studio-v31';
 const SHELL = [
   './',
   './index.html',
