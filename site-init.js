@@ -1276,11 +1276,11 @@
 
     function toolbarCandidates() {
         return [
-            "support_toolbar.html?v=20261117dock",
-            "../support_toolbar.html?v=20261117dock",
-            "../../support_toolbar.html?v=20261117dock",
-            "../../../support_toolbar.html?v=20261117dock",
-            "https://themes.innioasis.app/support_toolbar.html?v=20261117dock",
+            "support_toolbar.html?v=20261115dockfix",
+            "../support_toolbar.html?v=20261115dockfix",
+            "../../support_toolbar.html?v=20261115dockfix",
+            "../../../support_toolbar.html?v=20261115dockfix",
+            "https://themes.innioasis.app/support_toolbar.html?v=20261115dockfix",
         ];
     }
 

@@ -573,6 +573,12 @@
      is the last box on every page. Padding body as well stacked a second copy
      of the dock's height under the footer, which on short pages left a band of
      empty space between the footer and the dock. */
+
+  /* The heart sits over the page's bottom-right corner, where the footer keeps
+     its last links. Keep that row clear of it while the dock is closed. */
+  body:has(#support-toolbar-container.y1-toolbar-hidden) .site-footer .footer-bottom {
+    padding-right: 84px !important;
+  }
 </style>
 <div id="support-toolbar-container">
   <div class="y1-dock-backdrop" data-dock-backdrop hidden></div>
