@@ -42,6 +42,33 @@
         }
     }
 
+    /* The Worker's own message is the most specific thing available, so it wins.
+       A status with no body (a dead route, a proxy error page) still has to tell
+       the person what they can do about it. */
+    function uploadFailureMessage(status, payload) {
+        var fromServer = payload && (payload.error || payload.message);
+        if (fromServer) return String(fromServer);
+        if (status === 400) {
+            return 'The upload was rejected as invalid. Check that the package has a config.json and a title and author, then try again.';
+        }
+        if (status === 401 || status === 403) {
+            return 'The upload service could not write to the gallery repository (HTTP ' + status + '). This is a setup problem on the server; save the theme to this device and tell the team.';
+        }
+        if (status === 404) {
+            return 'The theme upload service is not available right now (HTTP 404). Save the theme to this device and try again later, or send the ZIP to the team.';
+        }
+        if (status === 413) {
+            return 'This package is larger than the upload service accepts. Remove unused artwork from the theme and try again.';
+        }
+        if (status === 429) {
+            return 'The gallery is receiving too many submissions right now. Wait a minute and press Send again - your theme is untouched.';
+        }
+        if (status >= 500) {
+            return 'The upload service failed (HTTP ' + status + '). Your theme is still here: try again in a moment, or save it to this device and send the ZIP to the team.';
+        }
+        return 'Upload failed (HTTP ' + status + '). Try again, or save the theme to this device and send the ZIP to the team.';
+    }
+
     function byId(id) {
         return document.getElementById(id);
     }
@@ -1154,6 +1181,11 @@
 
     /* —— Boot and navigation —— */
 
+    /* themes.json decides whether a package is an update to an existing listing
+       or a new theme. The submit path waits for this so a slow catalog can
+       never make an update look new and become eligible for auto-merge. */
+    var galleryIndexReady = null;
+
     function boot() {
         bindEvents();
         setupManage();
@@ -1171,7 +1203,7 @@
         }
         setMode('preview', true);
 
-        loadGalleryIndex().then(function () {
+        galleryIndexReady = loadGalleryIndex().then(function () {
             return readRecovery().then(function (record) {
                 var requested = params.get('folder') || params.get('theme');
                 if (requested && state.byFolder[requested]) {
@@ -4981,6 +5013,33 @@
 
     async function submitTheme() {
         if (state.busy) return;
+        if (galleryIndexReady) {
+            try {
+                await galleryIndexReady;
+            } catch (_) {
+                /* No catalog means no listing can match; the Worker validates
+                   the submission either way. */
+            }
+        }
+        /* The catalog can land after the package opened, so the identity
+           question may not have been asked yet. Ask it now rather than send an
+           update as a new theme. */
+        if (!state.identity.listing) {
+            var lateListing = matchingGalleryListing();
+            if (lateListing) {
+                resetIdentity(lateListing);
+                syncIdentity();
+                updateUpdateNotice();
+                updateChecklist();
+                toast(
+                    'This package matches the gallery listing \u201c' +
+                        (lateListing.name || lateListing.folder) +
+                        '\u201d. Answer the question in the panel before sending.'
+                );
+                if (el.identity) el.identity.scrollIntoView({ block: 'nearest' });
+                return;
+            }
+        }
         if (!state.config || !state.previewOk) {
             toast('Wait for the theme preview to render first.');
             return;
@@ -5075,7 +5134,7 @@
             var payload = await response.json().catch(function () {
                 return {};
             });
-            if (!response.ok) throw new Error(payload.error || payload.message || 'Upload failed (' + response.status + ').');
+            if (!response.ok) throw new Error(uploadFailureMessage(response.status, payload));
             var prUrl = payload.prUrl ? String(payload.prUrl) : '';
             setSubmitStatus(
                 state.ownUpdate
@@ -5180,6 +5239,18 @@
         updateUpdateNotice();
         syncPolicy();
         updateChecklist();
+        /* A package opened before themes.json arrives cannot be matched against
+           the gallery yet. Once the index lands, ask the identity question so
+           an update is never filed as a brand-new theme. */
+        if (!state.gallery.length && galleryIndexReady) {
+            galleryIndexReady.then(function () {
+                if (!state.meta || state.identity.answer) return;
+                resetIdentity(matchingGalleryListing());
+                syncIdentity();
+                updateUpdateNotice();
+                updateChecklist();
+            });
+        }
     }
 
     function setCheck(name, ok, detail) {
@@ -5331,11 +5402,26 @@
                 return chain;
             })
             .then(function () {
+                if (!entries.length) {
+                    setLoading(false);
+                    toast('That ZIP has no theme files in it. Pick the packaged theme archive, not an empty folder.');
+                    return;
+                }
                 return openLocalEntries(entries, file.name.replace(/\.zip$/i, ''));
             })
             .catch(function (err) {
                 setLoading(false);
-                toast((err && err.message) || 'Could not read that ZIP.');
+                var raw = (err && err.message) || '';
+                /* JSZip answers a truncated or non-ZIP file with a stack-trace
+                   sentence and a link to its own docs. Say what went wrong and
+                   what to do instead. */
+                if (/end of central directory|not a zip|corrupt|checksum|invalid|unexpected/i.test(raw)) {
+                    toast(
+                        'That file is not a valid theme ZIP, or the download was cut short. Download it again, or use \u201cOpen folder\u201d to pick the unpacked theme folder.'
+                    );
+                    return;
+                }
+                toast(raw || 'Could not read that ZIP. Download it again, or use \u201cOpen folder\u201d instead.');
             });
     }
 

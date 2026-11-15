@@ -4191,8 +4191,13 @@
             void syncAuthorPolicyBanner();
         });
 
+        /* Submitting before the catalog has loaded would miss an existing
+           listing and file an update as a new theme, so the submit handler
+           waits for this promise before deciding what the package is. */
+        let themesIndexReady = null;
+
         window.addEventListener("DOMContentLoaded", () => {
-            loadThemesIndex().then(() => {
+            themesIndexReady = loadThemesIndex().then(() => {
                 if ((pageMode === "edit" || pageMode === "edit-metadata") && themeFolderParam) prefetchConfigForEdit();
                 syncSubmitButtonLabel();
                 void syncAuthorPolicyBanner();
@@ -4201,6 +4206,14 @@
 
         form.addEventListener("submit", async (event) => {
             event.preventDefault();
+            if (themesIndexReady) {
+                try {
+                    await themesIndexReady;
+                } catch (_) {
+                    // A failed catalog fetch leaves the collision maps empty; the
+                    // submission still proceeds and the Worker validates it.
+                }
+            }
             resetScrubbedSubmissionPaths();
             syncCollisionUi();
             const { hasCollision, isEdit, hits } = analyzeCollision();
@@ -4282,6 +4295,22 @@
                 fieldThemeAuthor.value = ta.author;
 
                 const data = new FormData(form);
+                /* An update to an existing listing must reach the Worker as an
+                   update, or the PR is titled like a brand-new theme and the
+                   auto-merge workflow may publish it without a maintainer.
+                   `analyzeCollision` is the same test the “Update to an existing
+                   listing” notice uses, so the submission and the notice agree. */
+                const collForIntent = analyzeCollision();
+                const isUpdateSubmission =
+                    !metadataSubmitScenario() &&
+                    (pageMode === "edit" || (collForIntent.hasCollision && collForIntent.isEdit));
+                if (isUpdateSubmission) {
+                    data.set("submissionIntent", "update");
+                    const existingFolder = collForIntent.hits && collForIntent.hits[0]
+                        ? String(collForIntent.hits[0].folder || "")
+                        : String(themeFolderParam || "");
+                    if (existingFolder) data.set("targetFolder", existingFolder);
+                }
                 // One outer batch ZIP (inner = packaged theme) → Worker commits root zip + meta.
                 // Root zip basename matches the theme folder stem (title-based) so ingest + share URLs align.
                 const rebuiltZip = await buildZipForUpload(artworkWarnings);
@@ -4300,8 +4329,7 @@
                 }
 
                 const link = payload.prUrl ? String(payload.prUrl) : "";
-                const coll = analyzeCollision();
-                const autoEligible = pageMode === "new" && !(coll.hasCollision && coll.isEdit);
+                const autoEligible = !isUpdateSubmission;
                 if (link) {
                     const next = new URL("upload.html", location.href);
                     next.searchParams.set("mode", "submitted");
