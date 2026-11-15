@@ -562,6 +562,12 @@
     z-index: 1;
 }
 
+/* The head owns the player badge and its explanation. It has to stack above
+   the preview below it, or the device shell paints over the open popover. */
+.studio-stage > .studio-stage-head {
+    z-index: 3;
+}
+
 .studio-stage-head {
     flex: 0 0 auto;
     display: flex;
@@ -3444,6 +3450,46 @@ body.studio-app {
     margin: 0 0 2px;
     font-size: 0.9rem;
     letter-spacing: 0.01em;
+}
+
+.studio-status-text {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 9px;
+    font-size: 0.72rem;
+    color: var(--studio-muted, #9aa3b5);
+}
+
+.studio-status-text > span {
+    margin-right: 2px;
+}
+
+.studio-status-text button {
+    padding: 4px 10px;
+    border: 1px solid var(--studio-line, rgba(255, 255, 255, 0.16));
+    border-radius: 999px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: 0.72rem;
+    cursor: pointer;
+}
+
+.studio-status-text button:hover {
+    border-color: var(--studio-line-strong, rgba(255, 255, 255, 0.3));
+}
+
+.studio-status-text button.is-active {
+    border-color: var(--site-accent);
+    color: var(--site-accent);
+    background: color-mix(in oklab, var(--site-accent) 14%, transparent);
+}
+
+.studio-status-text button:focus-visible {
+    outline: 2px solid var(--site-accent);
+    outline-offset: 2px;
 }
 
 .studio-status-chips {

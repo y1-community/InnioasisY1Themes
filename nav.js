@@ -526,7 +526,7 @@
     return decorateLinkUrl(href);
   }
 
-  var isThemesSite = (window.location.hostname === "themes.innioasis.app") || (window.location.port === "8081") || !!document.querySelector(".gallery-topbar");
+  var isThemesSite = (window.location.hostname === "themes.innioasis.app") || (window.location.port === "8081") || !!document.querySelector(".gallery-topbar") || document.documentElement.getAttribute("data-site-persona") === "themes";
 
   function decorateMainSiteHref(path) {
     if (!path) return path;

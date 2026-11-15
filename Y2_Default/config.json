@@ -114,7 +114,8 @@
         "blDisconnected": "blDisconnected.png",
         "headsetWithMic": "headset2.png",
         "headsetWithoutMic": "headset1.png",
-        "statusBarColor": "#000000",
+        "statusBarColor": "#00000000",
+        "statusTextColor": "#000000",
         "battery": [
             "battery.001.png",
             "battery.002.png",

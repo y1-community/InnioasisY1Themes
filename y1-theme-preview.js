@@ -292,7 +292,7 @@
             menu_text_primary: menuCfg.menuItemTextColor || text_primary,
             menu_text_selected: menuCfg.menuItemSelectedTextColor || text_selected,
             status_bar_bg: statusCfg.statusBarColor || '#0000004e',
-            status_text: statusTextColor(statusCfg)
+            status_text: statusTextColor(statusCfg, itemCfg)
         };
     }
 
@@ -334,7 +334,7 @@
         return null;
     }
 
-    function statusTextColor(statusCfg) {
+    function statusTextColor(statusCfg, itemCfg) {
         var explicit =
             statusCfg.statusTextColor || statusCfg.statusBarTextColor || statusCfg.textColor || statusCfg.textColorStr;
         if (explicit) return String(explicit).trim();
@@ -342,6 +342,14 @@
         if (bg && bg.a >= 0.5) {
             var luma = (0.299 * bg.r + 0.587 * bg.g + 0.114 * bg.b) / 255;
             return luma > 0.55 ? '#000000' : '#ffffff';
+        }
+        /* A see-through strip has no colour of its own. The theme's list text
+           already sits on the same art and contrasts with it, so it is the
+           honest default until the author picks a status text colour. */
+        var ink = itemCfg && cssColorChannels(itemCfg.itemTextColor);
+        if (ink) {
+            var inkLuma = (0.299 * ink.r + 0.587 * ink.g + 0.114 * ink.b) / 255;
+            return inkLuma > 0.55 ? '#ffffff' : '#000000';
         }
         return '#ffffff';
     }

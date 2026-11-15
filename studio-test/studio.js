@@ -1773,15 +1773,62 @@
         return null;
     }
 
+    function colorChannels(value) {
+        var text = String(value || '').trim();
+        var hex = /^#([0-9a-f]{3,8})$/i.exec(text);
+        if (hex) {
+            var digits = hex[1];
+            if (digits.length === 3 || digits.length === 4) {
+                digits = digits.split('').map(function (ch) { return ch + ch; }).join('');
+            }
+            if (digits.length === 6 || digits.length === 8) {
+                return {
+                    r: parseInt(digits.slice(0, 2), 16),
+                    g: parseInt(digits.slice(2, 4), 16),
+                    b: parseInt(digits.slice(4, 6), 16),
+                    a: digits.length === 8 ? parseInt(digits.slice(6, 8), 16) / 255 : 1
+                };
+            }
+        }
+        return null;
+    }
+
+    function colorLuma(channels) {
+        return channels ? (0.299 * channels.r + 0.587 * channels.g + 0.114 * channels.b) / 255 : 0;
+    }
+
     function autoStatusTextColor() {
         var status = (state.config && state.config.statusConfig) || {};
-        var hex = /^#([0-9a-f]{6})$/i.exec(String(status.statusBarColor || '').trim());
-        if (!hex) return '#ffffff';
-        var r = parseInt(hex[1].slice(0, 2), 16);
-        var g = parseInt(hex[1].slice(2, 4), 16);
-        var b = parseInt(hex[1].slice(4, 6), 16);
-        var luma = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-        return luma > 0.55 ? '#000000' : '#ffffff';
+        var bg = colorChannels(status.statusBarColor);
+        /* A translucent strip takes its brightness from the art behind it. The
+           theme's own text colour already contrasts with that art, so it is
+           the best hint the config gives until someone picks Light or Dark. */
+        if (bg && bg.a >= 0.5) return colorLuma(bg) > 0.55 ? '#000000' : '#ffffff';
+        var item = (state.config && state.config.itemConfig) || {};
+        var ink = colorChannels(item.itemTextColor);
+        if (ink) return colorLuma(ink) > 0.55 ? '#ffffff' : '#000000';
+        return '#ffffff';
+    }
+
+    function statusTextChoice(statusCfg) {
+        var v = String((statusCfg && statusCfg.statusTextColor) || '').trim();
+        if (!v) return 'auto';
+        var channels = colorChannels(v);
+        if (!channels || channels.a < 0.5) return 'auto';
+        return colorLuma(channels) > 0.55 ? 'light' : 'dark';
+    }
+
+    function setStatusTextChoice(choice) {
+        if (!state.config) return;
+        if (choice === 'auto') {
+            deletePath(state.config, 'statusConfig.statusTextColor');
+        } else {
+            writePath(state.config, 'statusConfig.statusTextColor', choice === 'light' ? '#ffffff' : '#000000');
+        }
+        markDirty();
+        renderColorEditor();
+        renderStatusEditor();
+        remountPreview('Updating the status bar…');
     }
 
     /* Text colours belong with the font: the face and the ink are one choice.
@@ -2555,7 +2602,18 @@
             '<h3>Status bar</h3>' +
             '<p class="studio-hint">Pick a state to show it in the preview and open that file in the tray.</p>' +
             '</div>' +
+            '<div class="studio-status-text" role="group" aria-label="Status bar text colour">' +
+            '<span>Status text</span>' +
+            '<button type="button" data-status-text="auto">Auto</button>' +
+            '<button type="button" data-status-text="light">Light</button>' +
+            '<button type="button" data-status-text="dark">Dark</button>' +
+            '</div>' +
             '<div class="studio-status-chips" role="group" aria-label="Status bar states"></div>';
+        each(host.querySelectorAll('[data-status-text]'), function (button) {
+            button.addEventListener('click', function () {
+                setStatusTextChoice(button.getAttribute('data-status-text'));
+            });
+        });
         var anchor = el.colorEditor && el.colorEditor.parentNode === pane ? el.colorEditor : pane.querySelector('.studio-pane-actions');
         if (anchor && anchor.parentNode === pane) pane.insertBefore(host, anchor);
         else pane.appendChild(host);
@@ -2566,6 +2624,13 @@
     function renderStatusEditor() {
         var host = statusEditorHost();
         if (!host) return;
+        var statusCfg = (state.config && state.config.statusConfig) || {};
+        var choice = statusTextChoice(statusCfg);
+        each(host.querySelectorAll('[data-status-text]'), function (button) {
+            var active = button.getAttribute('data-status-text') === choice;
+            button.classList.toggle('is-active', active);
+            button.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
         var chips = host.querySelector('.studio-status-chips');
         if (!chips) return;
         chips.innerHTML = '';
@@ -3824,7 +3889,11 @@
         state.config = cloneJson(state.configBase);
         state.meta.cover = state.baseCover;
         if (configUsesPlaceholder(state.config)) ensurePlaceholderAsset();
-        markDirty();
+        /* Resetting every replacement puts the theme back where it started, so
+           the page is clean again unless the listing details were also edited. */
+        state.dirty = !!(realOverrideCount() || JSON.stringify(state.config) !== JSON.stringify(state.configBase));
+        if (el.unsaved) el.unsaved.hidden = !(state.dirty || state.formDirty);
+        scheduleRecoverySave();
         rebuildAssets();
         remountPreview('Restoring the original theme…');
         toast('All asset replacements were reset.');
@@ -4623,10 +4692,11 @@
         }
         el.assetWarm.hidden = false;
         var finished = done >= total;
+        el.assetWarm.classList.toggle('is-error', finished && failed > 0);
         if (el.assetWarmLabel) {
             el.assetWarmLabel.textContent = finished
                 ? failed
-                    ? 'Theme files ready — ' + failed + (failed === 1 ? ' file' : ' files') + ' could not be read'
+                    ? failed + (failed === 1 ? ' file' : ' files') + ' could not be read — Save will try again'
                     : 'Theme files ready'
                 : 'Loading theme files…';
         }
@@ -4636,10 +4706,10 @@
             el.assetWarmBar.value = percent;
             el.assetWarmBar.textContent = percent + '%';
         }
-        if (finished) {
+        if (finished && !failed) {
             assetWarmHideTimer = window.setTimeout(function () {
                 if (el.assetWarm) el.assetWarm.hidden = true;
-            }, failed ? 8000 : 2400);
+            }, 2400);
         }
     }
 
