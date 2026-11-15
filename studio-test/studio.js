@@ -155,7 +155,6 @@
         recoveryDismiss: byId('studio-recovery-dismiss'),
         openZip: byId('studio-open-zip'),
         openFolder: byId('studio-open-folder'),
-        appearance: byId('lumen-theme-select'),
         assetInput: byId('studio-asset-input'),
         assetList: byId('studio-asset-list'),
         assetEmpty: byId('studio-asset-empty'),
@@ -1153,7 +1152,6 @@
 
     function boot() {
         bindEvents();
-        mountStudioAppearance();
         setupManage();
         watchSaveTarget();
         setupPwa();
@@ -4629,68 +4627,6 @@
             return undefined;
         });
         return galleryWarmPromise;
-    }
-
-    /* Appearance: the shared header owns storage, but Studio gets its own
-       Light/Dark pair so a theme can be checked in both while editing. */
-    function currentStudioAppearance() {
-        var root = document.documentElement;
-        var attr = root.getAttribute('data-theme') || root.getAttribute('data-lumen-theme') || 'dark';
-        return attr === 'light' ? 'light' : 'dark';
-    }
-
-    function syncStudioAppearance() {
-        var current = currentStudioAppearance();
-        each(document.querySelectorAll('[data-studio-appearance]'), function (btn) {
-            var active = btn.getAttribute('data-studio-appearance') === current;
-            btn.classList.toggle('is-active', active);
-            btn.setAttribute('aria-pressed', active ? 'true' : 'false');
-        });
-    }
-
-    function setStudioAppearance(theme) {
-        if (typeof window.y1ApplyAppearance === 'function') {
-            try {
-                window.y1ApplyAppearance(theme, true);
-            } catch (e) {}
-        } else {
-            document.documentElement.setAttribute('data-theme', theme);
-            document.documentElement.setAttribute('data-lumen-theme', theme);
-            try {
-                localStorage.setItem('lumen-theme', theme);
-            } catch (e) {}
-        }
-        if (el.appearance) el.appearance.value = theme;
-        syncStudioAppearance();
-    }
-
-    function mountStudioAppearance() {
-        var actions = document.querySelector('.studio-command-actions');
-        if (!actions || actions.querySelector('.studio-appearance')) return;
-        var wrap = document.createElement('div');
-        wrap.className = 'studio-appearance';
-        wrap.setAttribute('role', 'group');
-        wrap.setAttribute('aria-label', 'Appearance');
-        [
-            ['light', 'sun', 'Light appearance'],
-            ['dark', 'moon', 'Dark appearance']
-        ].forEach(function (def) {
-            var btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'studio-appearance__btn';
-            btn.setAttribute('data-studio-appearance', def[0]);
-            btn.setAttribute('aria-pressed', 'false');
-            btn.setAttribute('title', def[2]);
-            btn.setAttribute('aria-label', def[2]);
-            btn.innerHTML = '<i class="fa-solid fa-' + def[1] + '" aria-hidden="true"></i>';
-            btn.addEventListener('click', function () {
-                setStudioAppearance(def[0]);
-            });
-            wrap.appendChild(btn);
-        });
-        actions.insertBefore(wrap, actions.firstChild);
-        if (el.appearance) el.appearance.addEventListener('change', syncStudioAppearance);
-        syncStudioAppearance();
     }
 
     /* The description is optional, but the gallery should never receive the
