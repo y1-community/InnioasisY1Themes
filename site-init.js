@@ -889,6 +889,8 @@
             '<p class="lumen-accent-heading">Accent colour</p>' +
             '<div class="lumen-accent-pad" id="lumen-accent-pad" role="slider" aria-label="Saturation and brightness" aria-valuemin="0" aria-valuemax="100">' +
             '<span class="lumen-accent-pad-thumb" id="lumen-accent-pad-thumb"></span></div>' +
+            '<label class="lumen-accent-row">Colour' +
+            '<input type="color" id="lumen-accent-native" class="lumen-accent-native" value="#4f8cff" aria-label="Choose accent with the system colour picker"></label>' +
             '<label class="lumen-accent-row">Hex' +
             '<input type="text" id="lumen-accent-hex" class="lumen-accent-hex" value="" placeholder="#4f8cff" spellcheck="false" autocapitalize="off" maxlength="9" aria-label="Accent hex code" inputmode="text"></label>' +
             '<div class="lumen-accent-swatches" role="group" aria-label="Preset accents">' + swatches + '</div>' +
@@ -915,6 +917,8 @@
         if (dot) dot.style.background = accent || "";
         var hexField = document.getElementById("lumen-accent-hex");
         if (hexField && document.activeElement !== hexField) hexField.value = accent || "";
+        var nativeField = document.getElementById("lumen-accent-native");
+        if (nativeField && document.activeElement !== nativeField) nativeField.value = normalizeAccent(accent) || "#4f8cff";
         /* The tray moves into <body> once it opens, so the presets are not
            always inside the wrapper. */
         var swatches = document.querySelectorAll(".lumen-accent-swatch");
@@ -945,14 +949,13 @@
         var toggle = document.getElementById("lumen-accent-toggle");
         var tray = document.getElementById("lumen-accent-tray");
         var hexField = document.getElementById("lumen-accent-hex");
+        var nativeField = document.getElementById("lumen-accent-native");
         var matchInput = document.getElementById("lumen-accent-match");
         var reset = document.getElementById("lumen-accent-reset");
         var eyedrop = document.getElementById("lumen-accent-eyedrop");
 
-        /* One picker on every platform: Chromium can sample any pixel on
-           screen, so the tray offers the eyedropper instead of the browser's
-           own colour dialog, which looks different on every system and
-           carries black and white in its preset row. */
+        /* Chromium can sample any pixel on screen; the eyedropper complements
+           the native colour dialog rather than replacing it. */
         if (eyedrop && typeof global.EyeDropper === "function") {
             eyedrop.addEventListener("click", function () {
                 new global.EyeDropper().open().then(function (result) {
@@ -1010,6 +1013,23 @@
                 if (event.key !== "Enter") return;
                 event.preventDefault();
                 commitHex();
+            });
+        }
+        /* The system colour dialog is the right picker on every platform: it
+           is the one the reader already knows, and Safari opens the macOS
+           colour panel instead of pretending to be a web widget. */
+        if (nativeField) {
+            nativeField.addEventListener("input", function () {
+                var next = normalizeAccent(nativeField.value);
+                if (!next) return;
+                setMatchPcTheme(false);
+                applyAccent(next, false);
+            });
+            nativeField.addEventListener("change", function () {
+                var next = normalizeAccent(nativeField.value);
+                if (!next) return;
+                setMatchPcTheme(false);
+                applyAccent(next, true);
             });
         }
         var pad = document.getElementById("lumen-accent-pad");

@@ -1108,6 +1108,14 @@ body.site-themes-app #nav-root nav { position: sticky; top: 0; width: 100%; }
 }
 .lumen-accent-eyedrop[hidden] { display: none; }
 .lumen-accent-eyedrop:hover { border-color: var(--lumen-accent, #4f8cff); }
+.lumen-accent-native {
+    width: 7.2rem; height: 30px; padding: 2px;
+    border: 1px solid var(--lumen-line-strong, rgba(255, 255, 255, .18));
+    border-radius: 8px; background: var(--lumen-panel-soft, rgba(255, 255, 255, .06));
+    cursor: pointer;
+}
+.lumen-accent-native::-webkit-color-swatch-wrapper { padding: 0; }
+.lumen-accent-native::-webkit-color-swatch { border: 0; border-radius: 5px; }
 .lumen-accent-hex {
     width: 7.2rem; margin-left: auto; padding: .35rem .5rem;
     border: 1px solid var(--lumen-line-strong, rgba(255, 255, 255, .18));
