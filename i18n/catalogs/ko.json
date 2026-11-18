@@ -1,5 +1,5 @@
 {
- "count": 12738,
+ "count": 12740,
  "dir": "ltr",
  "generated": "2026-11-15T14:27:07+00:00",
  "keep": [
@@ -13291,6 +13291,8 @@
   "🪟 Windows ARM64": "🪟 윈도우 ARM64",
   "🪟 Windows Installation": "🪟 윈도우 설치",
   "Issues reported with JJ Launcher on Y2": "Y2의 JJ Launcher에서 보고된 문제",
-  "A user has reported that their Y2 would not boot after installing JJ Launcher": "사용자가 JJ Launcher를 설치한 후 Y2가 부팅되지 않는다고 보고했습니다."
+  "A user has reported that their Y2 would not boot after installing JJ Launcher": "사용자가 JJ Launcher를 설치한 후 Y2가 부팅되지 않는다고 보고했습니다.",
+  "Installing Reborn for the First Time?": "Reborn을 처음 설치하시나요?",
+  "Install Original Software for Y2 (any version) for the best results, it may not boot if coming from Classy or another custom firmware. Only select Keep Settings if you're already running Reborn.": "최상의 결과를 얻으려면 Y2(모든 버전)용 원본 소프트웨어를 설치하세요. Classy 또는 다른 사용자 정의 펌웨어에서 가져온 경우 부팅되지 않을 수 있습니다. 이미 Reborn을 실행하고 있는 경우에만 설정 유지를 선택하세요."
  }
 }

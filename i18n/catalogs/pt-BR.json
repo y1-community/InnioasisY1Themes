@@ -7,7 +7,7 @@
  "provider": "reviewed",
  "reviewed": true,
  "generated": "2026-11-15T14:27:06+00:00",
- "count": 12417,
+ "count": 12419,
  "strings": {
   "!!CITYSTAR!!": "!!CITYSTAR!!",
   "!!CITYSTAR!! - Innioasis Y1 and Y2 Themes Gallery": "!!CITYSTAR!! - Galeria de temas Innioasis Y1 e Y2",
@@ -12425,6 +12425,8 @@
   "🪟 Windows ARM64": "🪟Windows ARM64",
   "🪟 Windows Installation": "🪟 Instalação do Windows",
   "Issues reported with JJ Launcher on Y2": "Problemas relatados com JJ Launcher no Y2",
-  "A user has reported that their Y2 would not boot after installing JJ Launcher": "Um usuário relatou que seu Y2 não inicializava após instalar o JJ Launcher"
+  "A user has reported that their Y2 would not boot after installing JJ Launcher": "Um usuário relatou que seu Y2 não inicializava após instalar o JJ Launcher",
+  "Installing Reborn for the First Time?": "Instalando Reborn pela primeira vez?",
+  "Install Original Software for Y2 (any version) for the best results, it may not boot if coming from Classy or another custom firmware. Only select Keep Settings if you're already running Reborn.": "Instale o software original para Y2 (qualquer versão) para obter os melhores resultados; ele pode não inicializar se vier do Classy ou de outro firmware personalizado. Selecione Manter configurações apenas se você já estiver executando o Reborn."
  }
 }
