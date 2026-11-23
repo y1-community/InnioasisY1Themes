@@ -7572,6 +7572,16 @@
             "screenshotPreview": "./Teardown/screenshot_preview.jpg"
         },
         {
+            "name": "Test123",
+            "folder": "Test123",
+            "author": "Test123",
+            "description": "Test123 is a custom theme for the Innioasis Y1 and Y2.",
+            "screenshot": "./Test123/cover.jpg",
+            "sourceType": "internal",
+            "sortName": "test123",
+            "searchText": "test123 test123 is a custom theme for the innioasis y1 and y2. test123 test123"
+        },
+        {
             "name": "Teto",
             "folder": "Teto",
             "author": "Lezz",
