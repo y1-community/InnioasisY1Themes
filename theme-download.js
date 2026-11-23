@@ -227,6 +227,14 @@
                             global.ThemeAnalytics.trackZipDownload(folder, 'theme-page');
                         }
                         ui.done();
+                        if (typeof global.openY1DonatePanel === 'function') {
+                            setTimeout(function () {
+                                global.openY1DonatePanel({
+                                    action: 'download',
+                                    themeName: name
+                                });
+                            }, 350);
+                        }
                         return true;
                     });
             })

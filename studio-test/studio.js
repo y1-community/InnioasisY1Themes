@@ -5045,8 +5045,13 @@
                recover, and a return visit should start clean. */
             clearRecovery();
             hideRecoveryBanner();
+            var savedTitle = el.submitTitle.value.trim() || (state.meta && state.meta.name) || '';
             toast('Saved ' + file.name + '. Copy it to your player’s theme folder to install.');
-            announceSupportNote('save');
+            announceSupportNote('save', {
+                themeName: savedTitle,
+                fileName: file.name,
+                delayMs: 350
+            });
         } catch (err) {
             hideSaveProgress(0);
             toast((err && err.message) || 'Could not build that theme ZIP.');
@@ -5196,7 +5201,11 @@
             state.formDirty = false;
             if (el.unsaved) el.unsaved.hidden = true;
             toast('Theme submitted for review.');
-            announceSupportNote(state.ownUpdate ? 'update' : 'submission');
+            announceSupportNote(state.ownUpdate ? 'update' : 'submission', {
+                themeName: title,
+                linkUrl: trackingUrlFor(prUrl) || prUrl,
+                linkLabel: trackingUrlFor(prUrl) ? 'Track this request' : 'View pull request'
+            });
         } catch (err) {
             var message = (err && err.message) || 'The upload did not complete.';
             setSubmitStatus(message, false);
@@ -6510,8 +6519,13 @@
                         }
                     ]
                 });
-                setManageStatus('Sent. A maintainer merges listing text changes, so they go live once the pull request is merged.', true, payload && payload.prUrl);
-                announceSupportNote('listing');
+                var metaPr = payload && payload.prUrl ? String(payload.prUrl) : '';
+                setManageStatus('Sent. A maintainer merges listing text changes, so they go live once the pull request is merged.', true, metaPr);
+                announceSupportNote('listing', {
+                    themeName: title,
+                    linkUrl: trackingUrlFor(metaPr) || metaPr,
+                    linkLabel: trackingUrlFor(metaPr) ? 'Track this request' : 'View pull request'
+                });
             } catch (err) {
                 setManageStatus((err && err.message) || 'The change did not go through.', false);
             }
@@ -6548,12 +6562,17 @@
                 form.set('confirmContactEmail', email);
                 if (section.querySelector('#studio-remove-optout').checked) form.set('blacklistOptOut', '1');
                 var payload = await postManageForm('/api/removal-request', form);
+                var remPr = payload && payload.prUrl ? String(payload.prUrl) : '';
                 setManageStatus(
                     'Sent. Nothing comes down until a maintainer has read and merged the request.',
                     true,
-                    payload && payload.prUrl
+                    remPr
                 );
-                announceSupportNote('removal');
+                announceSupportNote('removal', {
+                    themeName: listing.name || folder,
+                    linkUrl: trackingUrlFor(remPr) || remPr,
+                    linkLabel: trackingUrlFor(remPr) ? 'Track this request' : 'View pull request'
+                });
             } catch (err) {
                 setManageStatus((err && err.message) || 'The request did not go through.', false);
             }
@@ -6562,11 +6581,26 @@
         syncManageVisibility();
     }
 
-    /* One line in the support panel after a real outcome. Once per session per
-       kind, so it never turns into a nag. */
-    function announceSupportNote(kind) {
+    /* Show the completion confirmation inside the toolbar donations appeal modal
+       whenever donations are enabled. If the visitor has turned donations off,
+       openY1DonatePanel returns without opening anything. */
+    function announceSupportNote(kind, details) {
         try {
-            if (typeof window.Y1SupportNote === 'function') window.Y1SupportNote(kind);
+            var opts = details && typeof details === 'object' ? Object.assign({}, details) : {};
+            var delayMs = typeof opts.delayMs === 'number' ? opts.delayMs : 250;
+            delete opts.delayMs;
+            opts.action = kind;
+            var trigger = function () {
+                try {
+                    if (typeof window.openY1DonatePanel === 'function') {
+                        window.openY1DonatePanel(opts);
+                    } else if (typeof window.Y1SupportNote === 'function') {
+                        window.Y1SupportNote(kind, opts);
+                    }
+                } catch (e) {}
+            };
+            if (delayMs > 0) window.setTimeout(trigger, delayMs);
+            else trigger();
         } catch (e) {}
     }
 

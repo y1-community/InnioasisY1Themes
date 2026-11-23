@@ -3634,3 +3634,10 @@ body.studio-app {
 body.studio-app:not(.y1-dock-closed) {
     padding-bottom: var(--y1-dock-space, 0px);
 }
+
+/* Compact/mobile workbench viewports hide #support-toolbar-slot to save screen
+   space, but when the donations appeal modal opens after a save/upload we must
+   let the modal slot render on top of the workbench. */
+body.studio-app.y1-donate-panel-open #support-toolbar-slot {
+    display: block !important;
+}

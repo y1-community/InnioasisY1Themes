@@ -55,7 +55,7 @@
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
     <link rel="stylesheet" href="site-theme.css?v=20261115footer1">
     <link rel="stylesheet" href="lumen.css?v=20261117studio7">
-    <link rel="stylesheet" href="site-toolbar.css?v=20261110accent2">
+    <link rel="stylesheet" href="site-toolbar.css?v=20261123donatecompletion">
     <link rel="stylesheet" href="site-pages.css?v=20260622">
     <link rel="stylesheet" href="y1-theme-preview.css?v=20261111hq2">
     <link rel="stylesheet" href="theme-analytics.css?v=20260518">
@@ -68,7 +68,7 @@
     <script src="gold-theme-detect.js?v=20261109perf"></script>
     <script src="gallery-chrome.js?v=20261117studio3"></script>
     <script src="author-links.js?v=20260622"></script>
-    <script src="site-init.js?v=20261117dock"></script>
+    <script src="site-init.js?v=20261123donatecompletion"></script>
     <script src="gallery-loaded-theme.js?v=20261109perf"></script>
     <script src="theme-share-links.js"></script>
     <script src="author-submission-policy.js?v=20260523"></script>
@@ -4641,6 +4641,15 @@
             if (bulkUpdateCancelBtn) {
                 bulkUpdateCancelBtn.disabled = false;
                 bulkUpdateCancelBtn.textContent = 'Close';
+            }
+            if (!bulkUpdateAbortRequested && okCount > 0 && typeof window.openY1DonatePanel === 'function') {
+                setTimeout(() => {
+                    window.openY1DonatePanel({
+                        action: 'bulk_install',
+                        count: okCount,
+                        total: total
+                    });
+                }, 400);
             }
         }
 

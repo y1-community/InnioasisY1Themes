@@ -770,6 +770,15 @@
             return;
         }
         paint(job);
+        if (typeof global.openY1DonatePanel === "function") {
+            setTimeout(function () {
+                global.openY1DonatePanel({
+                    action: "file_download",
+                    fileName: job.name,
+                    themeName: job.name
+                });
+            }, 350);
+        }
         setTimeout(function () { finish(job); }, 6000);
     }
 

@@ -1276,11 +1276,11 @@
 
     function toolbarCandidates() {
         return [
-            "support_toolbar.html?v=20261115dockfix",
-            "../support_toolbar.html?v=20261115dockfix",
-            "../../support_toolbar.html?v=20261115dockfix",
-            "../../../support_toolbar.html?v=20261115dockfix",
-            "https://themes.innioasis.app/support_toolbar.html?v=20261115dockfix",
+            "support_toolbar.html?v=20261123donatecompletion",
+            "../support_toolbar.html?v=20261123donatecompletion",
+            "../../support_toolbar.html?v=20261123donatecompletion",
+            "../../../support_toolbar.html?v=20261123donatecompletion",
+            "https://themes.innioasis.app/support_toolbar.html?v=20261123donatecompletion",
         ];
     }
 
@@ -1431,12 +1431,35 @@
         void init();
     }
 
+    function isDonationsDisabledNow() {
+        if (document.documentElement && document.documentElement.classList.contains("y1-donations-off")) return true;
+        if (typeof global.isY1DonationsDisabled === "function" && global.isY1DonationsDisabled()) return true;
+        try {
+            if (global.localStorage && global.localStorage.getItem("innioasis-donations-off") === "1") return true;
+        } catch (_) {}
+        return false;
+    }
+
     if (typeof global.openY1DonatePanel !== "function") {
         global.openY1DonatePanel = function (options) {
+            if (isDonationsDisabledNow()) return false;
             global._y1PendingDonateOpen = options || true;
             if (typeof global.y1LoadSupportToolbar === "function") {
                 void global.y1LoadSupportToolbar();
             }
+            return true;
+        };
+    }
+
+    if (typeof global.Y1SupportNote !== "function") {
+        global.Y1SupportNote = function (kind, details) {
+            if (isDonationsDisabledNow()) return false;
+            var payload = details && typeof details === "object" ? Object.assign({}, details) : {};
+            if (kind && !payload.action) payload.action = String(kind);
+            if (typeof global.openY1DonatePanel === "function") {
+                return global.openY1DonatePanel(payload);
+            }
+            return false;
         };
     }
 
@@ -1457,7 +1480,7 @@
         } catch (_) {}
         var node = document.createElement("script");
         node.id = "site-downloads-script";
-        node.src = base + "site-downloads.js?v=20261109dl";
+        node.src = base + "site-downloads.js?v=20261123donatecompletion";
         node.defer = true;
         document.head.appendChild(node);
     }

@@ -46,7 +46,7 @@
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
     <link rel="stylesheet" href="site-theme.css?v=20261115footer1">
     <link rel="stylesheet" href="lumen.css?v=20261110picker">
-    <link rel="stylesheet" href="site-toolbar.css?v=20261110accent2">
+    <link rel="stylesheet" href="site-toolbar.css?v=20261123donatecompletion">
     <link rel="stylesheet" href="site-pages.css?v=20260622">
     <!-- Same origin as upload; POST {origin}/api/upload-theme and /api/removal-request -->
     <meta name="cf-pages-upload-api-origin" content="https://y1-theme-upload.itsryanspecter.workers.dev" />
@@ -655,7 +655,7 @@
         }
     </style>
     <script src="gallery-chrome.js?v=20261110header"></script>
-    <script src="site-init.js?v=20261110picker"></script>
+    <script src="site-init.js?v=20261123donatecompletion"></script>
   <!-- i18n-hreflang-start -->
   <link rel="alternate" hreflang="x-default" href="https://themes.innioasis.app/upload.html">
   <link rel="alternate" hreflang="en" href="https://themes.innioasis.app/upload.html">
@@ -1818,6 +1818,27 @@
                             if (copyStatus) copyStatus.textContent = "Copy failed - select the field and copy manually.";
                         }
                     };
+                }
+                if (typeof window.openY1DonatePanel === "function") {
+                    const submittedThemeName = String(urlParams.get("themeName") || "").trim();
+                    const donateAction =
+                        submittedFlow === "removal"
+                            ? "removal"
+                            : submittedFlow === "metadata"
+                                ? "listing"
+                                : submittedFlow === "update"
+                                    ? "update"
+                                    : "submission";
+                    const prMatch = dec ? dec.match(/\/pull\/(\d+)/) : null;
+                    const trackLink = prMatch ? ("/submission.html?pr=" + prMatch[1]) : dec;
+                    setTimeout(() => {
+                        window.openY1DonatePanel({
+                            action: donateAction,
+                            themeName: submittedThemeName,
+                            linkUrl: trackLink,
+                            linkLabel: prMatch ? "Track this request" : "View pull request",
+                        });
+                    }, 350);
                 }
                 return;
             }
