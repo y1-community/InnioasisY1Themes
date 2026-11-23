@@ -1661,12 +1661,65 @@
             });
     }
 
+    var submitScrollTimer = null;
+
+    function clearSubmitScrollTimer() {
+        if (submitScrollTimer) {
+            window.clearTimeout(submitScrollTimer);
+            submitScrollTimer = null;
+        }
+    }
+
+    /* Keep the top of the Submit pane — especially the "Is this your theme?"
+       question when shown — squarely in view instead of scrolling past it to
+       the form fields below. */
+    function scrollSubmitPaneIntoView() {
+        if (state.mode !== 'submit') return;
+        if (el.panelScroll) el.panelScroll.scrollTop = 0;
+        var pane = document.getElementById('pane-submit');
+        if (!pane || pane.hidden) return;
+        var identityVisible = !!(el.identity && !el.identity.hidden);
+        var focusTarget = identityVisible ? el.identity : pane;
+        /* Compact mobile layout (<=760px) scrolls inside el.panelScroll, which
+           is already reset to 0 above. Only focus the title input if the
+           identity question is not waiting for an answer. */
+        if (window.matchMedia('(max-width: 760px)').matches) {
+            if (!identityVisible && el.submitDetails && !el.submitDetails.hidden && el.submitTitle) {
+                el.submitTitle.focus({ preventScroll: true });
+            }
+            return;
+        }
+        var bar = document.querySelector('.studio-commandbar');
+        var barRect = bar ? bar.getBoundingClientRect() : null;
+        var barBottom = barRect ? Math.max(0, barRect.bottom) : 72;
+        var barHeight = barRect ? Math.ceil(barRect.height) : 64;
+        var margin = 12;
+        var focusRect = focusTarget.getBoundingClientRect();
+        var paneRect = pane.getBoundingClientRect();
+        var alreadyInView =
+            focusRect.top >= barBottom + 4 &&
+            focusRect.bottom <= window.innerHeight - 12 &&
+            paneRect.top >= barBottom - 24;
+        if (alreadyInView) return;
+        var paneDocTop = paneRect.top + window.scrollY;
+        var focusDocTop = focusRect.top + window.scrollY;
+        var targetTop = paneDocTop <= barHeight + 140 ? 0 : Math.max(0, paneDocTop - (barHeight + margin));
+        if (identityVisible) {
+            var projectedIdentityBottom = focusDocTop - targetTop + focusRect.height;
+            if (projectedIdentityBottom > window.innerHeight - 12) {
+                targetTop = Math.max(0, focusDocTop - (barHeight + margin));
+            }
+        }
+        window.scrollTo({ top: targetTop, behavior: 'smooth' });
+    }
+
     function setMode(mode, initial) {
         if (mode !== 'preview' && mode !== 'edit' && mode !== 'submit') mode = 'preview';
         if (mode !== 'preview' && !state.meta) {
             toast('Open a theme first.');
             mode = 'preview';
         }
+        clearSubmitScrollTimer();
         state.mode = mode;
         closePlatformPop();
         if ((mode === 'edit' || mode === 'submit') && state.sourceType === 'gallery') {
@@ -1699,11 +1752,10 @@
             scheduleThumbRefresh(60);
         }
         if (mode === 'submit') {
-            window.setTimeout(function () {
-                if (!el.submitForm) return;
-                var top = el.submitForm.getBoundingClientRect().top + window.scrollY - 92;
-                window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
-                if (window.matchMedia('(max-width: 700px)').matches) el.submitTitle.focus({ preventScroll: true });
+            if (el.panelScroll) el.panelScroll.scrollTop = 0;
+            submitScrollTimer = window.setTimeout(function () {
+                submitScrollTimer = null;
+                scrollSubmitPaneIntoView();
             }, 90);
         }
         updateChecklist();
@@ -1840,8 +1892,8 @@
                     if (restoreRecord) applyRecovery(restoreRecord);
                     rebuildAssets();
                     updateChrome();
-                    applyBootMode(requestedFolder);
                     fillSubmitForm();
+                    applyBootMode(requestedFolder);
                     if (restoreRecord) finishRecovery(restoreRecord);
                     updateChecklist();
                     return mountPreview();
@@ -6880,7 +6932,10 @@
         var section = manageSection();
         if (!section) return;
         setMode('submit');
-        section.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        if (!section.hidden) {
+            clearSubmitScrollTimer();
+            section.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        }
         var which = panel === 'remove' || panel === 'details' ? panel : '';
         section.querySelector('[data-manage-remove-form]').hidden = which !== 'remove';
         section.querySelector('[data-manage-details-form]').hidden = which !== 'details';
