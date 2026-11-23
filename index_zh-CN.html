@@ -861,7 +861,7 @@
             <span class="gallery-brand-text">Innioasis Y1 和 Y2 主题</span>
         </a>
         <div class="gallery-tabs" aria-label="网站部分">
-            <a class="gallery-tab" href="/studio-test/index_zh-CN.html?welcome=upload">上传</a>
+            <a class="gallery-tab" href="/studio-test/?welcome=upload">上传</a>
         </div>
         <div class="topbar-search-wrap">
             <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
@@ -903,7 +903,7 @@
                 </figure>
             </div>
             <div class="cast-div hero-actions">
-                <a href="/studio-test/index_zh-CN.html?welcome=upload" class="btn"><i class="fa-solid fa-upload" aria-hidden="true"></i> 上传主题</a>
+                <a href="/studio-test/?welcome=upload" class="btn"><i class="fa-solid fa-upload" aria-hidden="true"></i> 上传主题</a>
                 <a id="rockbox-btn" class="btn" href="#"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Rockbox 主题</a>
             </div>
         </section>
@@ -1648,6 +1648,7 @@
         <a href="Teardown/">拆解</a>
         <a href="test/">测试</a>
         <a href="test_me/">测试</a>
+        <a href="Test123/">测试123</a>
         <a href="Teto/">特托</a>
         <a href="TF2/">TF2</a>
         <a href="The_Amazing_Digital_Circus___TADC/">令人惊叹的数字马戏团！ (TADC)</a>
@@ -5169,7 +5170,7 @@
                         location.href = ThemeShareLinks.buildThemeDetailPageUrl(key, v);
                         return;
                     }
-                    let href = `/studio-test/index_zh-CN.html?folder=${encodeURIComponent(key)}&mode=preview`;
+                    let href = `/studio-test/?folder=${encodeURIComponent(key)}&mode=preview`;
                     if (v) href += `&variant=${encodeURIComponent(v)}`;
                     location.href = href;
                 };

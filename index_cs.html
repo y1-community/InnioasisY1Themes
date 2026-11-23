@@ -861,7 +861,7 @@
             <span class="gallery-brand-text">Innioasis Y1 &amp; Y2 Témata</span>
         </a>
         <div class="gallery-tabs" aria-label="Sekce webu">
-            <a class="gallery-tab" href="/studio-test/index_cs.html?welcome=upload">Nahrát</a>
+            <a class="gallery-tab" href="/studio-test/?welcome=upload">Nahrát</a>
         </div>
         <div class="topbar-search-wrap">
             <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
@@ -903,7 +903,7 @@
                 </figure>
             </div>
             <div class="cast-div hero-actions">
-                <a href="/studio-test/index_cs.html?welcome=upload" class="btn"><i class="fa-solid fa-upload" aria-hidden="true"></i> Nahrajte motiv</a>
+                <a href="/studio-test/?welcome=upload" class="btn"><i class="fa-solid fa-upload" aria-hidden="true"></i> Nahrajte motiv</a>
                 <a id="rockbox-btn" class="btn" href="#"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Rockbox témat</a>
             </div>
         </section>
@@ -1648,6 +1648,7 @@
         <a href="Teardown/">Stržení</a>
         <a href="test/">test</a>
         <a href="test_me/">test</a>
+        <a href="Test123/">Test123</a>
         <a href="Teto/">Teto</a>
         <a href="TF2/">TF2</a>
         <a href="The_Amazing_Digital_Circus___TADC/">Úžasný digitální cirkus! (TADC)</a>
@@ -5169,7 +5170,7 @@
                         location.href = ThemeShareLinks.buildThemeDetailPageUrl(key, v);
                         return;
                     }
-                    let href = `/studio-test/index_cs.html?folder=${encodeURIComponent(key)}&mode=preview`;
+                    let href = `/studio-test/?folder=${encodeURIComponent(key)}&mode=preview`;
                     if (v) href += `&variant=${encodeURIComponent(v)}`;
                     location.href = href;
                 };

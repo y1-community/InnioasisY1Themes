@@ -48,31 +48,55 @@
     </script>
 
     <meta name="description" content="Переглядайте та завантажуйте створені спільнотою теми для ваших Innioasis Y1 або Y2 і зробіть свій плеєр схожим на ваш.">
+    <meta name="robots" content="noindex,follow">
     <meta name="keywords" content="Innioasis Y1 теми, Innioasis Y2 теми, Y1 налаштування, Y2 налаштування, тема MP3-плеєра, теми спільноти, галерея тем, веб-хостинг Luci, themes.innioasis.app">
     <meta name="author" content="Ryan Specter &amp; Innioasis Community">
   <meta name="creator" content="Ryan Specter &amp; Innioasis Community">
     <meta name="publisher" content="Luci Ltd">
     <link rel="author" href="https://www.luci.ltd" title="Luci Ltd - веб-хостинг для тем Innioasis Y1 і Y2.">
 
-    <meta name="robots" content="noindex,follow">
     <link rel="canonical" id="theme-canonical" href="https://themes.innioasis.app/theme_uk.html">
     <script>
       (function () {
         var params;
         try { params = new URLSearchParams(location.search); } catch (e) { return; }
-        var theme = params.get("theme") || "";
+        var theme = params.get("theme") || params.get("folder") || "";
         var variant = params.get("variant") || "";
-        if (!theme || /[\\/]/.test(theme) || theme.indexOf("..") !== -1) return;
+        var keepLegacy = params.get("legacy") === "1";
+        if (theme && (/[\\/]/.test(theme) || theme.indexOf("..") !== -1)) theme = "";
         if (variant && (/[\\/]/.test(variant) || variant.indexOf("..") !== -1)) variant = "";
-        var file = (location.pathname.split("/").pop() || "theme.html");
-        var localeMatch = file.match(/^theme_(de|es|fr|ja|jp)\.html$/);
-        var href = "https://themes.innioasis.app/" + encodeURIComponent(theme) + "/";
-        if (variant) href += "Variants/" + encodeURIComponent(variant) + "/_share/";
-        else if (localeMatch) href += "index_" + localeMatch[1] + ".html";
-        var link = document.getElementById("theme-canonical");
-        if (link) link.setAttribute("href", href);
-        var og = document.querySelector('meta[property="og:url"]');
-        if (og) og.setAttribute("content", href);
+        if (theme) {
+          var file = (location.pathname.split("/").pop() || "theme.html");
+          var localeMatch = file.match(/^theme_(de|es|fr|ja|jp)\.html$/);
+          var href = "https://themes.innioasis.app/" + encodeURIComponent(theme) + "/";
+          if (variant) href += "Variants/" + encodeURIComponent(variant) + "/_share/";
+          else if (localeMatch) href += "index_" + localeMatch[1] + ".html";
+          var link = document.getElementById("theme-canonical");
+          if (link) link.setAttribute("href", href);
+          var og = document.querySelector('meta[property="og:url"]');
+          if (og) og.setAttribute("content", href);
+        }
+        /* theme.html is retired in favour of Theme Studio Preview; static /<Folder>/
+           pages stay indexable for search engines and RAG. */
+        if (!keepLegacy) {
+          var dest;
+          if (theme) {
+            dest = new URL("/studio-test/", location.origin);
+            dest.searchParams.set("folder", theme);
+            dest.searchParams.set("mode", params.get("mode") || "preview");
+            if (variant) dest.searchParams.set("variant", variant);
+          } else {
+            dest = new URL("/", location.origin);
+          }
+          ["donations", "lang", "accent", "theme_ui", "font", "privacy", "ce"].forEach(function (k) {
+            if (params.has(k)) dest.searchParams.set(k, params.get(k));
+          });
+          try {
+            location.replace(dest.toString());
+          } catch (e) {
+            location.href = dest.toString();
+          }
+        }
       })();
     </script>
 
@@ -334,9 +358,9 @@
                             <a id="theme-action-remove" class="btn btn-secondary" style="text-decoration:none;padding:.45rem .75rem;font-size:0.82rem;font-weight:normal;" href="__THEME_UPLOAD_REMOVE_HREF__">Запит на видалення</a>
                         </div>
                         <div id="download-area" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-                            <a id="studio-preview-link" class="btn btn-primary" style="text-decoration:none;font-weight:normal;" href="/studio-test/index_uk.html?mode=preview"><i class="fa-solid fa-eye" style="margin-right:4px;"></i> Preview in Studio</a>
-                            <a id="studio-edit-link" class="btn btn-secondary" style="text-decoration:none;font-weight:normal;" href="/studio-test/index_uk.html?mode=edit"><i class="fa-solid fa-pen-ruler" style="margin-right:4px;"></i> Edit in Studio</a>
-                            <a id="studio-update-link" class="btn btn-secondary" style="text-decoration:none;font-weight:normal;" href="/studio-test/index_uk.html?mode=submit"><i class="fa-solid fa-paper-plane" style="margin-right:4px;"></i> Update in Studio</a>
+                            <a id="studio-preview-link" class="btn btn-primary" style="text-decoration:none;font-weight:normal;" href="/studio-test/?mode=preview"><i class="fa-solid fa-eye" style="margin-right:4px;"></i> Попередній перегляд у Studio</a>
+                            <a id="studio-edit-link" class="btn btn-secondary" style="text-decoration:none;font-weight:normal;" href="/studio-test/?mode=edit"><i class="fa-solid fa-pen-ruler" style="margin-right:4px;"></i> Редагувати в Studio</a>
+                            <a id="studio-update-link" class="btn btn-secondary" style="text-decoration:none;font-weight:normal;" href="/studio-test/?mode=submit"><i class="fa-solid fa-paper-plane" style="margin-right:4px;"></i> Оновлення в Studio</a>
                             <button id="download-btn" class="btn btn-secondary" style="font-weight: normal"><i class="fa-solid fa-download" style="margin-right: 4px;"></i> Завантажити</button>
                             <label id="mask-variant-wrap" style="display:none;align-items:center;gap:6px;color:var(--text-secondary);font-size:0.86rem;">
                                 <img id="mask-variant-preview" alt="Попередній перегляд маски" style="display:none;width:46px;height:46px;object-fit:contain;border-radius:6px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.04);" />
@@ -2103,6 +2127,13 @@
                     }
                     return { variantSeg: v, contentFolder: cf };
                 };
+                const studioBase = folder ? `/studio-test/?folder=${encodeURIComponent(folder)}${activeVariant ? `&variant=${encodeURIComponent(activeVariant)}` : ''}` : '/studio-test/';
+                const spLink = document.getElementById('studio-preview-link');
+                const seLink = document.getElementById('studio-edit-link');
+                const suLink = document.getElementById('studio-update-link');
+                if (spLink) spLink.href = `${studioBase}${studioBase.includes('?') ? '&' : '?'}mode=preview`;
+                if (seLink) seLink.href = `${studioBase}${studioBase.includes('?') ? '&' : '?'}mode=edit`;
+                if (suLink) suLink.href = `${studioBase}${studioBase.includes('?') ? '&' : '?'}mode=submit`;
                 downloadBtn.onclick = () => {
                     const { variantSeg, contentFolder } = readPreviewVariantForDownload();
                     downloadTheme(themeObj, downloadBtn, effectiveFiles, maskVariantState, contentFolder, variantSeg);

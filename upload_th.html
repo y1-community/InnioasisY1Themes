@@ -655,7 +655,7 @@
         }
     </style>
     <script src="gallery-chrome.js?v=20261110header"></script>
-    <script src="site-init.js?v=20261123donatecompletion2"></script>
+    <script src="site-init.js?v=20261123studio2"></script>
   <!-- i18n-hreflang-start -->
   <link rel="alternate" hreflang="x-default" href="https://themes.innioasis.app/upload.html">
   <link rel="alternate" hreflang="en" href="https://themes.innioasis.app/upload.html">
@@ -749,7 +749,7 @@
         <h1 style="font-size:1.35rem;font-weight:650;margin:0 0 0.5rem 0;">__Y1_DISPLAY_NAME____Y1_VARIANT_HEADING__</h1>
         <p style="margin:0 0 0.35rem 0;font-size:0.92rem;color:#aeb6c5;">__Y1_ผู้เขียน__</p>
         <p style="line-height:1.5;color:#aeb6c5;">__Y1_META_DESC__</p>
-        <p style="margin-top:1.25rem;"><a href="__Y1_PREVIEW_HREF__" style="color:#8ec5ff;font-weight:600;text-decoration:none;">เปิดตัวอย่าง</a></p>
+        <p style="margin-top:1.25rem;display:flex;flex-wrap:wrap;gap:10px;"><a href="__Y1_PREVIEW_HREF__" style="color:#8ec5ff;font-weight:600;text-decoration:none;">ดูตัวอย่างใน Studio</a><a href="__Y1_EDIT_HREF__" style="color:#8ec5ff;font-weight:600;text-decoration:none;">แก้ไขในสตูดิโอ</a><a href="__Y1_UPDATE_HREF__" style="color:#8ec5ff;font-weight:600;text-decoration:none;">อัพเดตในสตูดิโอ</a></p>
     </main>
     <script>
         (function () {
@@ -1830,7 +1830,10 @@
                                     ? "update"
                                     : "submission";
                     const prMatch = dec ? (dec.match(/\/pull\/(\d+)/) || dec.match(/[?&]pr=(\d+)/)) : null;
-                    const trackLink = prMatch ? ("/submission.html?pr=" + prMatch[1]) : dec;
+                    const submittedFolder = String(urlParams.get("folder") || urlParams.get("theme") || "").trim();
+                    const trackLink = prMatch
+                        ? ("/submission.html?pr=" + prMatch[1] + (submittedFolder ? ("&folder=" + encodeURIComponent(submittedFolder)) : ""))
+                        : dec;
                     setTimeout(() => {
                         window.openY1DonatePanel({
                             action: donateAction,
@@ -3864,6 +3867,8 @@
                 __Y1_DISPLAY_NAME__: v.dispE,
                 __Y1_VARIANT_HEADING__: v.variantHeading,
                 __Y1_PREVIEW_HREF__: v.previewHref,
+                __Y1_EDIT_HREF__: v.editHref || v.previewHref,
+                __Y1_UPDATE_HREF__: v.updateHref || v.previewHref,
             });
             let html = raw;
             for (const token of Object.keys(reps)) {
@@ -3988,7 +3993,13 @@
                     const descPlain = fullDesc.length <= 320 ? fullDesc : fullDesc.slice(0, 320);
                     const description = escapeHtml(descPlain);
 
-                    const previewUrl = `${SITE}/theme.html?theme=${encodeURIComponent(catalogFolder)}${
+                    const previewUrl = `${SITE}/studio-test/?folder=${encodeURIComponent(catalogFolder)}&mode=preview${
+                        variant ? `&variant=${encodeURIComponent(variant)}` : ""
+                    }`;
+                    const editUrl = `${SITE}/studio-test/?folder=${encodeURIComponent(catalogFolder)}&mode=edit${
+                        variant ? `&variant=${encodeURIComponent(variant)}` : ""
+                    }`;
+                    const updateUrl = `${SITE}/studio-test/?folder=${encodeURIComponent(catalogFolder)}&mode=submit${
                         variant ? `&variant=${encodeURIComponent(variant)}` : ""
                     }`;
                     const refreshAttr = previewUrl.replace(/&/g, "&amp;");
@@ -4067,6 +4078,8 @@
                     const titleE = escapeHtml(title);
                     const authorE = escapeHtml(author);
                     const previewE = escapeHtml(previewUrl);
+                    const editE = escapeHtml(editUrl);
+                    const updateE = escapeHtml(updateUrl);
                     const shareE = escapeHtml(sharePageUrl);
                     const ogImageE = escapeHtml(ogImageUrl);
                     const dispE = escapeHtml(displayName);
@@ -4079,6 +4092,8 @@
                         titleE,
                         previewE,
                         previewHref: previewE,
+                        editHref: editE,
+                        updateHref: updateE,
                         description,
                         keywords,
                         authorE,

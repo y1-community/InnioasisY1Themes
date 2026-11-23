@@ -48,31 +48,55 @@
     </script>
 
     <meta name="description" content="Navegue e baixe temas criados pela comunidade para seu Innioasis Y1 ou Y2 e faça com que seu player se pareça com o seu.">
+    <meta name="robots" content="noindex,follow">
     <meta name="keywords" content="Innioasis Y1 temas, Innioasis Y2 temas, Y1 personalização, Y2 personalização, tema do MP3 player, temas da comunidade, galeria de temas, hospedagem na web Luci, temas.innioasis.app">
     <meta name="author" content="Ryan Specter &amp; Innioasis Community">
   <meta name="creator" content="Ryan Specter &amp; Innioasis Community">
     <meta name="publisher" content="Luci Ltd">
     <link rel="author" href="https://www.luci.ltd" title="Luci Ltd - hospedagem web para temas Innioasis Y1 e Y2">
 
-    <meta name="robots" content="noindex,follow">
     <link rel="canonical" id="theme-canonical" href="https://themes.innioasis.app/theme_pt-br.html">
     <script>
       (function () {
         var params;
         try { params = new URLSearchParams(location.search); } catch (e) { return; }
-        var theme = params.get("theme") || "";
+        var theme = params.get("theme") || params.get("folder") || "";
         var variant = params.get("variant") || "";
-        if (!theme || /[\\/]/.test(theme) || theme.indexOf("..") !== -1) return;
+        var keepLegacy = params.get("legacy") === "1";
+        if (theme && (/[\\/]/.test(theme) || theme.indexOf("..") !== -1)) theme = "";
         if (variant && (/[\\/]/.test(variant) || variant.indexOf("..") !== -1)) variant = "";
-        var file = (location.pathname.split("/").pop() || "theme.html");
-        var localeMatch = file.match(/^theme_(de|es|fr|ja|jp)\.html$/);
-        var href = "https://themes.innioasis.app/" + encodeURIComponent(theme) + "/";
-        if (variant) href += "Variants/" + encodeURIComponent(variant) + "/_share/";
-        else if (localeMatch) href += "index_" + localeMatch[1] + ".html";
-        var link = document.getElementById("theme-canonical");
-        if (link) link.setAttribute("href", href);
-        var og = document.querySelector('meta[property="og:url"]');
-        if (og) og.setAttribute("content", href);
+        if (theme) {
+          var file = (location.pathname.split("/").pop() || "theme.html");
+          var localeMatch = file.match(/^theme_(de|es|fr|ja|jp)\.html$/);
+          var href = "https://themes.innioasis.app/" + encodeURIComponent(theme) + "/";
+          if (variant) href += "Variants/" + encodeURIComponent(variant) + "/_share/";
+          else if (localeMatch) href += "index_" + localeMatch[1] + ".html";
+          var link = document.getElementById("theme-canonical");
+          if (link) link.setAttribute("href", href);
+          var og = document.querySelector('meta[property="og:url"]');
+          if (og) og.setAttribute("content", href);
+        }
+        /* theme.html is retired in favour of Theme Studio Preview; static /<Folder>/
+           pages stay indexable for search engines and RAG. */
+        if (!keepLegacy) {
+          var dest;
+          if (theme) {
+            dest = new URL("/studio-test/", location.origin);
+            dest.searchParams.set("folder", theme);
+            dest.searchParams.set("mode", params.get("mode") || "preview");
+            if (variant) dest.searchParams.set("variant", variant);
+          } else {
+            dest = new URL("/", location.origin);
+          }
+          ["donations", "lang", "accent", "theme_ui", "font", "privacy", "ce"].forEach(function (k) {
+            if (params.has(k)) dest.searchParams.set(k, params.get(k));
+          });
+          try {
+            location.replace(dest.toString());
+          } catch (e) {
+            location.href = dest.toString();
+          }
+        }
       })();
     </script>
 
@@ -2103,6 +2127,13 @@
                     }
                     return { variantSeg: v, contentFolder: cf };
                 };
+                const studioBase = folder ? `/studio-test/?folder=${encodeURIComponent(folder)}${activeVariant ? `&variant=${encodeURIComponent(activeVariant)}` : ''}` : '/studio-test/';
+                const spLink = document.getElementById('studio-preview-link');
+                const seLink = document.getElementById('studio-edit-link');
+                const suLink = document.getElementById('studio-update-link');
+                if (spLink) spLink.href = `${studioBase}${studioBase.includes('?') ? '&' : '?'}mode=preview`;
+                if (seLink) seLink.href = `${studioBase}${studioBase.includes('?') ? '&' : '?'}mode=edit`;
+                if (suLink) suLink.href = `${studioBase}${studioBase.includes('?') ? '&' : '?'}mode=submit`;
                 downloadBtn.onclick = () => {
                     const { variantSeg, contentFolder } = readPreviewVariantForDownload();
                     downloadTheme(themeObj, downloadBtn, effectiveFiles, maskVariantState, contentFolder, variantSeg);

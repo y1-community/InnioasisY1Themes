@@ -861,7 +861,7 @@
             <span class="gallery-brand-text">Innioasis Y1 और Y2 थीम</span>
         </a>
         <div class="gallery-tabs" aria-label="साइट अनुभाग">
-            <a class="gallery-tab" href="/studio-test/index_hi.html?welcome=upload">अपलोड करें</a>
+            <a class="gallery-tab" href="/studio-test/?welcome=upload">अपलोड करें</a>
         </div>
         <div class="topbar-search-wrap">
             <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
@@ -903,7 +903,7 @@
                 </figure>
             </div>
             <div class="cast-div hero-actions">
-                <a href="/studio-test/index_hi.html?welcome=upload" class="btn"><i class="fa-solid fa-upload" aria-hidden="true"></i> थीम अपलोड करें</a>
+                <a href="/studio-test/?welcome=upload" class="btn"><i class="fa-solid fa-upload" aria-hidden="true"></i> थीम अपलोड करें</a>
                 <a id="rockbox-btn" class="btn" href="#"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Rockbox थीम</a>
             </div>
         </section>
@@ -1648,6 +1648,7 @@
         <a href="Teardown/">चीथड़े कर दो</a>
         <a href="test/">परीक्षा</a>
         <a href="test_me/">परीक्षा</a>
+        <a href="Test123/">टेस्ट123</a>
         <a href="Teto/">टेटो</a>
         <a href="TF2/">TF2</a>
         <a href="The_Amazing_Digital_Circus___TADC/">अद्भुत डिजिटल सर्कस! (टीएडीसी)</a>
@@ -5169,7 +5170,7 @@
                         location.href = ThemeShareLinks.buildThemeDetailPageUrl(key, v);
                         return;
                     }
-                    let href = `/studio-test/index_hi.html?folder=${encodeURIComponent(key)}&mode=preview`;
+                    let href = `/studio-test/?folder=${encodeURIComponent(key)}&mode=preview`;
                     if (v) href += `&variant=${encodeURIComponent(v)}`;
                     location.href = href;
                 };
