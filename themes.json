@@ -8077,6 +8077,16 @@
             "screenshotPreview": "./Test123/screenshot_preview.jpg"
         },
         {
+            "name": "Test1234",
+            "folder": "Test1234",
+            "author": "test1234",
+            "description": "test1234",
+            "screenshot": "./Test1234/cover.jpg",
+            "sourceType": "internal",
+            "sortName": "test1234",
+            "searchText": "test1234 test1234 test1234 test1234"
+        },
+        {
             "name": "test",
             "folder": "test_me",
             "author": "me",
