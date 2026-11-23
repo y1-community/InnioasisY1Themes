@@ -1,80 +1,4 @@
 {
-  "2000": {
-    "cover": true,
-    "coverFallback": "2000/screenshot_preview.jpg",
-    "files": [
-      "cover1.png",
-      "folder.png",
-      "musicnote.png",
-      "Settings/Backlight_001@1x.png",
-      "Settings/Backlight_002@1x.png",
-      "Settings/Backlight_003@1x.png",
-      "Settings/Backlight_004@1x.png",
-      "Settings/Backlight_005@1x.png",
-      "Settings/Backlight_006@1x.png",
-      "Settings/Backlight_007@1x.png",
-      "Settings/Backlight_008@1x.png",
-      "Settings/Brightness@1x.png",
-      "Settings/Change Theme@1x.png",
-      "Settings/Clear cache@1x.png",
-      "Settings/Date & Time@1x.png",
-      "Settings/Display battery_off@1x.png",
-      "Settings/Display battery_on@1x.png",
-      "Settings/Equalizer_classical@1x.png",
-      "Settings/Equalizer_dance@1x.png",
-      "Settings/Equalizer_flat@1x.png",
-      "Settings/Equalizer_folk@1x.png",
-      "Settings/Equalizer_heavy metal@1x.png",
-      "Settings/Equalizer_hiphop@1x.png",
-      "Settings/Equalizer_jazz@1x.png",
-      "Settings/Equalizer_normal@1x.png",
-      "Settings/Equalizer_pop@1x.png",
-      "Settings/Equalizer_rock@1x.png",
-      "Settings/Factory@1x.png",
-      "Settings/file_ext_off.png",
-      "Settings/file_ext_on.png",
-      "Settings/Key lock_off@1x.png",
-      "Settings/Key lock_on@1x.png",
-      "Settings/Key tone_off@1x.png",
-      "Settings/Key tone_on@1x.png",
-      "Settings/Key vibration_off@1x.png",
-      "Settings/Key vibration_on@1x.png",
-      "Settings/Language@1x.png",
-      "Settings/Repeat_all@1x.png",
-      "Settings/Repeat_off@1x.png",
-      "Settings/Repeat_one@1x.png",
-      "Settings/Shuffle_off@1x.png",
-      "Settings/Shuffle_on@1x.png",
-      "Settings/Shutdown@1x.png",
-      "Settings/Timed shutdown_001@1x.png",
-      "Settings/Timed shutdown_002@1x.png",
-      "Settings/Timed shutdown_003@1x.png",
-      "Settings/Timed shutdown_004@1x.png",
-      "Settings/Timed shutdown_005@1x.png",
-      "Settings/Timed shutdown_006@1x.png",
-      "Settings/Timed shutdown_007@1x.png",
-      "Settings/Wallpaper@1x.png",
-      "shuffle.png",
-      "TopBar/audiobook_playing.png",
-      "TopBar/battery.001.png",
-      "TopBar/battery.002.png",
-      "TopBar/battery.003.png",
-      "TopBar/battery.004.png",
-      "TopBar/batterycharge.001.png",
-      "TopBar/batterycharge.002.png",
-      "TopBar/batterycharge.003.png",
-      "TopBar/batterycharge.004.png",
-      "TopBar/bl1.png",
-      "TopBar/bl2.png",
-      "TopBar/bl3.png",
-      "TopBar/fm_playing.png",
-      "TopBar/headset1.png",
-      "TopBar/headset2.png",
-      "TopBar/pause.png",
-      "TopBar/playing.png",
-      "TopBar/stop.png"
-    ]
-  },
   "2000s_fall_cozy_mall_hotel": {
     "files": [
       "@Cup_dialogOptionBackground.png",
@@ -437,11 +361,6 @@
       "setting_mask.png"
     ]
   },
-  "BlueTate": {
-    "files": [
-      "Wallpapper@1x.png"
-    ]
-  },
   "Blue_theme_leopard": {
     "files": [
       "@Cup_dialogOptionBackground.png",
@@ -526,11 +445,6 @@
       "Key tone_off@1x.png",
       "Key vibration_off@1x.png",
       "Shuffle Quick.png"
-    ]
-  },
-  "CITRUS__2": {
-    "files": [
-      "music_icon.png"
     ]
   },
   "CITYSTAR_NO_ICONS": {
@@ -619,14 +533,6 @@
       "Launcher.png",
       "mask.png",
       "setting_mask.png"
-    ]
-  },
-  "CottonCandy": {
-    "files": [
-      "0.png",
-      "1.png",
-      "2.png",
-      "global_wallpaper.png"
     ]
   },
   "Crystal_Ball_Pink": {
@@ -802,11 +708,6 @@
       "ebook.png"
     ]
   },
-  "Ethereal_Princess": {
-    "files": [
-      "Mask.png"
-    ]
-  },
   "Ethereal_Princess_Updated": {
     "files": [
       "Mask.png"
@@ -880,22 +781,6 @@
   "Flyff": {
     "files": [
       "Shuffle Quick.png"
-    ]
-  },
-  "GTA3__Clone": {
-    "files": [
-      "Audiobooks.png",
-      "Bluetooth.png",
-      "calculator.png",
-      "calendar.png",
-      "FM Radio.png",
-      "folder.png",
-      "Music.png",
-      "music_file.png",
-      "Photos.png",
-      "Settings.png",
-      "Shuffle Quick.png",
-      "Videos.png"
     ]
   },
   "GZA": {
@@ -1004,15 +889,6 @@
       "Shuffle Quick.png"
     ]
   },
-  "Hawaii_relax": {
-    "files": [
-      "ebook.png",
-      "Key lock_on@1x.png",
-      "Key tone_off@1x.png",
-      "Key vibration_off@1x.png",
-      "Shuffle Quick.png"
-    ]
-  },
   "HelloKitty": {
     "files": [
       "dialog_no_selected.png",
@@ -1037,14 +913,6 @@
     ]
   },
   "IGORPOD__FIXED": {
-    "files": [
-      "0.png",
-      "3.png",
-      "global_wallpaper.png",
-      "setting_mask.png"
-    ]
-  },
-  "IGORPOD__FIXED___FIXED": {
     "files": [
       "0.png",
       "3.png",
@@ -1177,11 +1045,6 @@
       "music_icon.png"
     ]
   },
-  "Minecraft_v2.0_lunen": {
-    "files": [
-      "music_icon.png"
-    ]
-  },
   "MiniMedieval": {
     "files": [
       "Mask.png"
@@ -1221,14 +1084,6 @@
     ]
   },
   "Monster_High": {
-    "files": [
-      "dialog_no_selected.png",
-      "dialog_selected.png",
-      "mask.png",
-      "setting_mask.png"
-    ]
-  },
-  "Monster_High__G1": {
     "files": [
       "dialog_no_selected.png",
       "dialog_selected.png",
@@ -1335,35 +1190,6 @@
       "ebook.png",
       "mask.png",
       "setting_mask.png"
-    ]
-  },
-  "N": {
-    "files": [
-      "Music.png"
-    ]
-  },
-  "NGTH": {
-    "cover": true,
-    "coverFallback": "NGTH/screenshot_preview.jpg",
-    "files": [
-      "cover.png",
-      "Now Playing.png",
-      "Shuffle Quick.png",
-      "Wallpaper@1x.png"
-    ]
-  },
-  "NGTS": {
-    "cover": true,
-    "coverFallback": "NGTS/screenshot_preview.jpg",
-    "files": [
-      "cover.png",
-      "Shuffle Quick.png",
-      "Wallpaper@1x.png"
-    ]
-  },
-  "NIGYHS": {
-    "files": [
-      "Music.png"
     ]
   },
   "Naruto": {
@@ -1581,12 +1407,6 @@
     "files": [
       "@Pris_dialogOptionBackground.png",
       "Shuffle Quick.png"
-    ]
-  },
-  "Purple Pineapple": {
-    "files": [
-      "Mask.png",
-      "Option.png"
     ]
   },
   "Purple_Lo-fi": {
@@ -1903,11 +1723,6 @@
       "music_icon.png"
     ]
   },
-  "Stranger_Things": {
-    "files": [
-      "music_icon.png"
-    ]
-  },
   "StrawberryShortcake2006": {
     "files": [
       "dialog_no_selected.png",
@@ -2107,14 +1922,6 @@
       "Shuffle Quick.png"
     ]
   },
-  "Water_chill": {
-    "files": [
-      "Key lock_on@1x.png",
-      "Key tone_off@1x.png",
-      "Key vibration_off@1x.png",
-      "Shuffle Quick.png"
-    ]
-  },
   "Whimsical_angel-50000": {
     "files": [
       "dialog_no_selected.png",
@@ -2277,13 +2084,6 @@
       "Timed shutdoown-60.png",
       "Timed shutdoown-90.png",
       "Wallpapper.png"
-    ]
-  },
-  "bkg": {
-    "files": [
-      "Key lock_on@1x.png",
-      "Key tone_off@1x.png",
-      "Key vibration_off@1x.png"
     ]
   },
   "bunlith_the_witch_upstairs": {
@@ -2961,18 +2761,6 @@
     "files": [
       "Mask.png",
       "Option.png"
-    ]
-  },
-  "test": {
-    "files": [
-      "mask.png",
-      "setting_mask.png"
-    ]
-  },
-  "test_me": {
-    "files": [
-      "mask.png",
-      "setting_mask.png"
     ]
   },
   "the_amazing_digital_circus": {
