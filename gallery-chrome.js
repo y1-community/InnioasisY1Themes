@@ -707,32 +707,64 @@
         addShotLink(card, folder);
     }
 
-    /* Theme pages (the ones a card title links to) get the same two doors:
-       open the theme in the Studio, or ask the team to take it down. */
+    /* Theme pages (the ones a card title links to) get Preview, Edit and Update
+       doors into Studio, coordinated with theme-download.js so buttons never duplicate. */
     function enhanceShellPage() {
+        var uploadTabs = document.querySelectorAll('.gallery-tab[href$="upload.html"], .gallery-tab[href*="/upload.html"]');
+        uploadTabs.forEach(function (tab) {
+            tab.setAttribute('href', '/studio-test/?welcome=upload');
+        });
+        var editorTabs = document.querySelectorAll('.gallery-tab[href*="y1-themes.vercel.app"], .gallery-tab[href="/studio-test"]');
+        editorTabs.forEach(function (tab) {
+            tab.setAttribute('href', '/studio-test/');
+        });
+
         var actions = document.querySelector('.theme-seo-shell-actions');
-        if (!actions || actions.querySelector('[data-studio-open]')) return;
+        if (!actions) return;
         var source = document.querySelector('[data-theme-download]');
         var folder = source ? String(source.getAttribute('data-folder') || '').trim() : '';
+        var variant = source ? String(source.getAttribute('data-variant') || '').trim() : '';
         if (!folder) {
             var parts = location.pathname.split('/').filter(Boolean);
-            if (parts.length >= 2) folder = decodeURIComponent(parts[parts.length - 2]);
+            if (parts.length && !/\.html$/i.test(parts[0])) folder = decodeURIComponent(parts[0]);
+            if (parts.length >= 3 && parts[1] === 'Variants') variant = decodeURIComponent(parts[2]);
         }
         if (!folder) return;
 
-        var edit = document.createElement('a');
-        edit.className = 'btn';
-        edit.href = studioHref(folder, 'edit');
-        edit.setAttribute('data-studio-open', 'edit');
-        edit.innerHTML = '<i class="fa-solid fa-pen-ruler" aria-hidden="true"></i> Edit in Studio';
+        var variantQuery = variant ? '&variant=' + encodeURIComponent(variant) : '';
+        var previewHref = studioHref(folder, 'preview') + variantQuery;
+        var editHref = studioHref(folder, 'edit') + variantQuery;
+        var updateHref = studioHref(folder, 'submit') + variantQuery;
 
-        var manage = document.createElement('a');
-        manage.className = 'btn';
-        manage.href = studioHref(folder, 'edit') + '&panel=manage';
-        manage.setAttribute('data-studio-open', 'manage');
-        manage.innerHTML = '<i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Request update or removal';
+        var legacyPreview = actions.querySelector('a[href*="theme.html"], a[data-studio-action="preview"], a[data-studio-open="preview"]');
+        if (legacyPreview) {
+            legacyPreview.href = previewHref;
+            legacyPreview.setAttribute('data-studio-action', 'preview');
+            legacyPreview.setAttribute('data-studio-open', 'preview');
+            legacyPreview.innerHTML = '<i class="fa-solid fa-eye" aria-hidden="true"></i> Preview in Studio';
+        }
 
-        actions.append(edit, manage);
+        if (!actions.querySelector('[data-studio-action="edit"], [data-studio-open="edit"]')) {
+            var edit = document.createElement('a');
+            edit.className = 'btn';
+            edit.href = editHref;
+            edit.setAttribute('data-studio-action', 'edit');
+            edit.setAttribute('data-studio-open', 'edit');
+            edit.innerHTML = '<i class="fa-solid fa-pen-ruler" aria-hidden="true"></i> Edit in Studio';
+            if (source) actions.insertBefore(edit, source);
+            else actions.appendChild(edit);
+        }
+
+        if (!actions.querySelector('[data-studio-action="update"], [data-studio-open="update"], [data-studio-open="manage"]')) {
+            var update = document.createElement('a');
+            update.className = 'btn';
+            update.href = updateHref;
+            update.setAttribute('data-studio-action', 'update');
+            update.setAttribute('data-studio-open', 'update');
+            update.innerHTML = '<i class="fa-solid fa-paper-plane" aria-hidden="true"></i> Update in Studio';
+            if (source) actions.insertBefore(update, source);
+            else actions.appendChild(update);
+        }
     }
 
     function start() {

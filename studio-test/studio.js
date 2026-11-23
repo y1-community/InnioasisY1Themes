@@ -181,6 +181,7 @@
         recoveryDiscard: byId('studio-recovery-discard'),
         recoveryDismiss: byId('studio-recovery-dismiss'),
         openZip: byId('studio-open-zip'),
+        openZipBar: byId('studio-open-zip-bar'),
         openFolder: byId('studio-open-folder'),
         assetInput: byId('studio-asset-input'),
         assetList: byId('studio-asset-list'),
@@ -196,6 +197,7 @@
         assetPreview: byId('studio-asset-detail-preview'),
         assetReplace: byId('studio-asset-replace'),
         assetTheme: byId('studio-asset-theme'),
+        assetSave: byId('studio-asset-save'),
         assetPaste: byId('studio-asset-paste'),
         assetBlank: byId('studio-asset-blank'),
         assetReset: byId('studio-asset-reset'),
@@ -247,13 +249,25 @@
         assetWarmLabel: byId('studio-asset-warm-label'),
         assetWarmCount: byId('studio-asset-warm-count'),
         assetWarmBar: byId('studio-asset-warm-bar'),
-        commandContext: byId('studio-command-context')
+        commandContext: byId('studio-command-context'),
+        helpBtn: byId('studio-help-btn'),
+        onboarding: byId('studio-onboarding'),
+        onboardingTitle: byId('studio-onboarding-title'),
+        onboardingLead: byId('studio-onboarding-lead'),
+        onboardingTemplate: byId('studio-onboarding-template'),
+        onboardingZip: byId('studio-onboarding-zip'),
+        onboardingFolder: byId('studio-onboarding-folder'),
+        onboardingUpload: byId('studio-onboarding-upload'),
+        onboardingClose: byId('studio-onboarding-close'),
+        onboardingX: byId('studio-onboarding-x'),
+        onboardingSuppress: byId('studio-onboarding-suppress')
     };
 
     var state = {
         mode: 'preview',
         sourceType: null,
         folder: null,
+        variant: '',
         meta: null,
         config: null,
         configBase: null,
@@ -310,16 +324,21 @@
     var saveProgressTimer = null;
     var dragDepth = 0;
     var bootModeRequest = null;
-    var saveTarget = { kind: 'device', label: 'Save to device' };
+    var saveTarget = {
+        kind: 'device',
+        device: 'device',
+        label: 'Save to device',
+        openZipLabel: 'Open ZIP from device',
+        saveAssetLabel: 'Save to device'
+    };
     var saveTargetTimer = null;
 
-    /* —— Save target wording —— */
+    /* —— Save / open target wording —— */
 
     function detectSaveTarget(nav, screenLike) {
         nav = nav || {};
         screenLike = screenLike || {};
         var ua = String(nav.userAgent || '').toLowerCase();
-        var platform = String(nav.platform || '').toLowerCase();
         var uad = nav.userAgentData || {};
         var uadPlatform = String(uad.platform || '').toLowerCase();
         var touch = Math.max(Number(nav.maxTouchPoints || 0), Number(nav.msMaxTouchPoints || 0)) > 1;
@@ -328,40 +347,46 @@
         var minSide = Math.min(width, height);
         var maxSide = Math.max(width, height);
 
-        function target(kind, label) {
-            return { kind: kind, label: label };
+        function target(kind, deviceName) {
+            return {
+                kind: kind,
+                device: deviceName,
+                label: 'Save to ' + deviceName,
+                openZipLabel: 'Open ZIP from ' + deviceName,
+                saveAssetLabel: 'Save to ' + deviceName
+            };
         }
 
         if (
             /smart-tv|smarttv|googletv|appletv|hbbtv|tizen|webos|netcast|viera|bravia|roku|firetv|aft[bsm]|crkey|playstation|xbox|nintendo/.test(ua) ||
             uadPlatform === 'tv'
         ) {
-            return target('tv', 'Save to TV');
+            return target('tv', 'TV');
         }
-        if (/windows phone/.test(ua)) return target('phone', 'Save to Phone');
+        if (/windows phone/.test(ua)) return target('phone', 'Phone');
 
         var isIPad =
             /ipad/.test(ua) ||
             (/iphone|ipad|ipod/.test(ua) && touch && /macintosh|mac os x/.test(ua)) ||
             (uadPlatform === 'macos' && touch);
-        if (isIPad) return target('ipad', 'Save to iPad');
-        if (/iphone|ipod/.test(ua) || uadPlatform === 'ios') return target('iphone', 'Save to iPhone');
+        if (isIPad) return target('ipad', 'iPad');
+        if (/iphone|ipod/.test(ua) || uadPlatform === 'ios') return target('iphone', 'iPhone');
 
         if (/android/.test(ua) || uadPlatform === 'android') {
             var androidMobile = /mobile/.test(ua) || uad.mobile === true;
             if (!androidMobile && (minSide >= 600 || maxSide >= 900)) {
-                return target('android-tablet', 'Save to Tablet');
+                return target('android-tablet', 'Tablet');
             }
-            return target('android-phone', 'Save to Phone');
+            return target('android-phone', 'Phone');
         }
 
-        if (/cros/.test(ua) || uadPlatform === 'chrome os') return target('chromebook', 'Save to Chromebook');
-        if (/windows/.test(ua) || uadPlatform === 'windows') return target('windows', 'Save to Windows PC');
-        if (/macintosh|mac os x/.test(ua) || uadPlatform === 'macos') return target('mac', 'Save to Mac');
-        if (/linux|x11/.test(ua) || uadPlatform === 'linux') return target('linux', 'Save to Linux PC');
-        if (touch && minSide >= 600) return target('tablet', 'Save to Tablet');
-        if (touch || /mobile/.test(ua)) return target('phone', 'Save to Phone');
-        return target('device', 'Save to device');
+        if (/cros/.test(ua) || uadPlatform === 'chrome os') return target('chromebook', 'Chromebook');
+        if (/windows/.test(ua) || uadPlatform === 'windows') return target('pc', 'PC');
+        if (/macintosh|mac os x/.test(ua) || uadPlatform === 'macos') return target('mac', 'Mac');
+        if (/linux|x11/.test(ua) || uadPlatform === 'linux') return target('pc', 'PC');
+        if (touch && minSide >= 600) return target('tablet', 'Tablet');
+        if (touch || /mobile/.test(ua)) return target('phone', 'Phone');
+        return target('device', 'device');
     }
 
     function refreshSaveTarget() {
@@ -373,8 +398,40 @@
             el.save.setAttribute('title', saveTarget.label + ' as a ZIP');
             el.save.setAttribute('data-save-target', saveTarget.kind);
         }
+        if (el.openZipBar) {
+            var openLabel = el.openZipBar.querySelector('span');
+            if (openLabel) openLabel.textContent = saveTarget.openZipLabel;
+            el.openZipBar.setAttribute('aria-label', saveTarget.openZipLabel);
+            el.openZipBar.setAttribute('title', saveTarget.openZipLabel);
+            el.openZipBar.setAttribute('data-open-target', saveTarget.kind);
+        }
+        if (el.openZip) {
+            el.openZip.innerHTML = '<i class="fa-solid fa-file-zipper" aria-hidden="true"></i>' + saveTarget.openZipLabel;
+            el.openZip.setAttribute('title', saveTarget.openZipLabel);
+        }
+        [el.emptyZip, el.submitOpenZip].forEach(function (btn) {
+            if (!btn) return;
+            btn.innerHTML = '<i class="fa-solid fa-file-zipper" aria-hidden="true"></i>' + saveTarget.openZipLabel;
+            btn.setAttribute('title', saveTarget.openZipLabel);
+        });
+        if (el.onboardingZip) {
+            var obZipSpan = el.onboardingZip.querySelector('span');
+            if (obZipSpan) obZipSpan.textContent = saveTarget.openZipLabel;
+            el.onboardingZip.setAttribute('title', saveTarget.openZipLabel);
+        }
+        if (el.assetSave) {
+            var assetSaveSpan = el.assetSave.querySelector('span');
+            if (assetSaveSpan) assetSaveSpan.textContent = saveTarget.saveAssetLabel;
+            el.assetSave.setAttribute('title', saveTarget.saveAssetLabel + ' (blank slots export a transparent PNG at the recommended size)');
+        }
         window.StudioSaveTarget = {
-            current: { kind: saveTarget.kind, label: saveTarget.label },
+            current: {
+                kind: saveTarget.kind,
+                device: saveTarget.device,
+                label: saveTarget.label,
+                openZipLabel: saveTarget.openZipLabel,
+                saveAssetLabel: saveTarget.saveAssetLabel
+            },
             detect: detectSaveTarget
         };
     }
@@ -883,15 +940,44 @@
         return false;
     }
 
-    function livePreviewNode(assetPath) {
-        if (!el.preview) return null;
-        var selector;
+    function livePreviewNode(assetPath, asset) {
+        if (!el.preview || !assetPath) return null;
+        var path = String(assetPath);
+        var canvas = el.preview.querySelector('.y1-tp-canvas');
+        if (!canvas) return null;
+        if (path === 'itemConfig.itemSelectedBackground') {
+            return canvas.querySelector('.y1-tp-row.is-selected') || canvas.querySelector('.y1-tp-row') || null;
+        }
+        if (path === 'itemConfig.itemBackground') {
+            return canvas.querySelector('.y1-tp-row:not(.is-selected)') || canvas.querySelector('.y1-tp-row') || null;
+        }
+        if (path === 'desktopWallpaper' || path === 'globalWallpaper') {
+            return canvas.querySelector('.y1-tp-wallpaper') || null;
+        }
+        var escaped;
         try {
-            selector = '[data-theme-asset-path="' + String(assetPath).replace(/["\\]/g, '\\$&') + '"]';
+            escaped = path.replace(/["\\]/g, '\\$&');
         } catch (err) {
             return null;
         }
-        return el.preview.querySelector('.y1-tp-canvas ' + selector) || null;
+        /* Prefer the actual rendered <img> artwork (e.g. right-side Home/Settings icon,
+           status icon, mask overlay) rather than the left-hand menu text row that shares
+           the same data-theme-asset-path for hover highlighting. */
+        var imgNode = canvas.querySelector('img[data-theme-asset-path="' + escaped + '"]');
+        var artBox = canvas.querySelector('[data-theme-art-box="' + escaped + '"]');
+        if (imgNode) {
+            var imgRect = imgNode.getBoundingClientRect();
+            /* Blank transparent.png placeholders are 1x1; frame their real artwork slot box instead. */
+            if (artBox && ((asset && (asset.placeholder || asset.empty)) || (imgRect.width < 12 && imgRect.height < 12))) {
+                return artBox;
+            }
+            if (imgRect.width >= 2 && imgRect.height >= 2) return imgNode;
+        }
+        if (artBox) {
+            var boxRect = artBox.getBoundingClientRect();
+            if (boxRect.width >= 2 && boxRect.height >= 2) return artBox;
+        }
+        return canvas.querySelector('[data-theme-asset-path="' + escaped + '"]') || null;
     }
 
     function thumbLayer(className) {
@@ -901,26 +987,42 @@
         return layer;
     }
 
-    /* The asset detail plate is a window onto the live preview: clone the
-       mounted screen, scale it around the asset, and clip it to the plate.
-       Everything the player draws around the asset - wallpaper, mask, titles,
-       neighbouring icons - comes along in the right place, so the preview is
-       anatomically the same screen rather than an icon on an empty card. */
-    function paintLiveCrop(node, asset) {
+    /* Both small asset preview thumbnails and the large asset detail plate are
+       windows onto the live preview: clone the mounted screen, zoom/crop around
+       the complete asset with its surrounding screen context, and preserve exact
+       relative positioning against the real screen edges. */
+    function paintLiveCrop(node, asset, opts) {
+        opts = opts || {};
         var canvas = el.preview ? el.preview.querySelector('.y1-tp-canvas') : null;
         if (!canvas || !asset || !node || !node.isConnected) return false;
         if (canvas.getBoundingClientRect().width < 1) {
-            withPreviewVisible(function () {
-                paintLiveCrop(node, asset);
-            });
+            if (!opts.skipOffscreenRetry) {
+                withPreviewVisible(function () {
+                    paintLiveCrop(node, asset, { skipOffscreenRetry: true });
+                });
+            }
             return false;
         }
-        var live = livePreviewNode(asset.path);
+        var live = livePreviewNode(asset.path, asset);
         if (!live) return false;
-        var hostBox = node.getBoundingClientRect();
+        var rawHostBox = node.getBoundingClientRect();
+        var hostW = rawHostBox.width;
+        var hostH = rawHostBox.height;
+        if (!hostW || !hostH) {
+            if (node === el.assetPreview) {
+                hostW = 360;
+                hostH = 270;
+            } else if (node.classList.contains('studio-mask-art')) {
+                hostW = 64;
+                hostH = 48;
+            } else {
+                hostW = 52;
+                hostH = 39;
+            }
+        }
         var canvasBox = canvas.getBoundingClientRect();
         var liveBox = live.getBoundingClientRect();
-        if (!hostBox.width || !hostBox.height || !canvasBox.width || !canvasBox.height || !liveBox.width) return false;
+        if (!canvasBox.width || !canvasBox.height || !liveBox.width || !liveBox.height) return false;
         /* The mounted canvas is laid out at its native 480x360 and then scaled
            to fit the stage. Clone it at layout size and fold that stage scale
            into the transform, or the clone's pixel-positioned children clip. */
@@ -928,40 +1030,72 @@
         var layoutHeight = canvas.offsetHeight || 360;
         var stageScale = canvasBox.width / layoutWidth;
 
-        var isMask = asset.path === 'desktopMask' || asset.path === 'settingConfig.settingMask';
+        var rx = Math.max(0, liveBox.left - canvasBox.left);
+        var ry = Math.max(0, liveBox.top - canvasBox.top);
+        var rw = Math.min(canvasBox.width - rx, liveBox.width);
+        var rh = Math.min(canvasBox.height - ry, liveBox.height);
+        if (rw < 1 || rh < 1) return false;
+
+        var isFullScreen =
+            asset.path === 'desktopMask' ||
+            asset.path === 'settingConfig.settingMask' ||
+            asset.path === 'desktopWallpaper' ||
+            asset.path === 'globalWallpaper' ||
+            (rw >= canvasBox.width * 0.85 && rh >= canvasBox.height * 0.85);
+
+        var isSmall = hostW < 120;
+        var fitWholeScreen = Math.min(hostW / canvasBox.width, hostH / canvasBox.height);
         var zoom;
         var centreX;
         var centreY;
-        if (isMask) {
-            /* A mask is the size of the screen, so the honest preview is the
-               whole screen at 4:3, exactly as the editor draws it. */
-            zoom = Math.min(hostBox.width / canvasBox.width, hostBox.height / canvasBox.height);
+
+        if (isFullScreen) {
+            /* Full-screen wallpapers & masks show the entire 4:3 screen cleanly
+               without cropping away edges. */
+            zoom = fitWholeScreen;
             centreX = canvasBox.width / 2;
             centreY = canvasBox.height / 2;
         } else {
-            /* Aim for roughly three asset-widths of context, but never zoom out
-               past 1:1 and never tighter than 6x. */
-            /* Three asset-widths of context, with a floor so a 20px glyph still
-               brings its neighbour (battery icon and its percentage, say) into
-               the crop instead of a postage stamp of wallpaper. */
-            var windowWidth = Math.min(canvasBox.width, Math.max(220, liveBox.width * 3));
-            var windowHeight = Math.min(canvasBox.height, Math.max(120, liveBox.height * 3));
-            zoom = Math.min(hostBox.width / windowWidth, hostBox.height / windowHeight, 6);
-            zoom = Math.max(1, zoom || 1);
-            centreX = liveBox.left - canvasBox.left + liveBox.width / 2;
-            centreY = liveBox.top - canvasBox.top + liveBox.height / 2;
+            /* Zoomed/cropped in-context view: always fit 100% of the complete
+               asset plus surrounding screen context, never clipping large icons
+               or wide menu bars, while keeping tiny status glyphs legible with
+               their neighbouring icons. */
+            var padMult = isSmall ? 1.45 : 1.75;
+            var minContextW = canvasBox.width * (isSmall ? 0.24 : 0.34);
+            var minContextH = canvasBox.height * (isSmall ? 0.24 : 0.34);
+            var windowWidth = Math.min(canvasBox.width, Math.max(rw * padMult, minContextW));
+            var windowHeight = Math.min(canvasBox.height, Math.max(rh * padMult, minContextH));
+            zoom = Math.min(hostW / windowWidth, hostH / windowHeight);
+            /* Hard cap so the complete asset ALWAYS fits inside the viewport with margin. */
+            var maxFitAsset = Math.min((hostW * 0.88) / rw, (hostH * 0.88) / rh);
+            zoom = Math.min(zoom, maxFitAsset);
+            var maxZoom = isSmall ? 2.6 : 5.0;
+            zoom = Math.max(fitWholeScreen, Math.min(maxZoom, zoom));
+            centreX = rx + rw / 2;
+            centreY = ry + rh / 2;
         }
         if (!isFinite(zoom) || zoom <= 0) return false;
 
-        var left = hostBox.width / 2 - centreX * zoom;
-        var top = hostBox.height / 2 - centreY * zoom;
-        if (!isMask) {
-            /* Keep the screen's own edges at the plate's edges: a status icon
-               sits on the top border, so centring it would frame dead black
-               space that the live preview does not show. */
-            left = Math.min(0, Math.max(hostBox.width - canvasBox.width * zoom, left));
-            top = Math.min(0, Math.max(hostBox.height - canvasBox.height * zoom, top));
+        var scaledW = canvasBox.width * zoom;
+        var scaledH = canvasBox.height * zoom;
+        var left = hostW / 2 - centreX * zoom;
+        var top = hostH / 2 - centreY * zoom;
+
+        /* Clamp to real screen boundaries when zoomed past host bounds so edge-anchored
+           assets stay in their true relative screen position with zero dead void;
+           center cleanly when the full 4:3 screen fits inside the host. */
+        if (scaledW >= hostW) {
+            left = Math.min(0, Math.max(hostW - scaledW, left));
+        } else {
+            left = (hostW - scaledW) / 2;
         }
+        if (scaledH >= hostH) {
+            top = Math.min(0, Math.max(hostH - scaledH, top));
+        } else {
+            top = (hostH - scaledH) / 2;
+        }
+
+        clearThumbLayers(node);
         var layer = thumbLayer('studio-live-crop');
         layer.classList.add('has-live-crop');
         layer.style.cssText =
@@ -995,104 +1129,157 @@
         layer.appendChild(clone);
         node.classList.add('has-live-crop');
         node.appendChild(layer);
-        if (!isMask) {
-            /* Mark the bit being edited inside the crop: at 4x a status icon
-               needs a pointer, not just a bigger picture. */
+        if (live.tagName === 'IMG' && (!live.complete || !live.naturalWidth)) {
+            var pendingImg = clone.querySelector('img[src]') || live;
+            if (pendingImg && !pendingImg._y1ThumbRetryBound) {
+                pendingImg._y1ThumbRetryBound = true;
+                pendingImg.addEventListener(
+                    'load',
+                    function () {
+                        scheduleThumbRefresh(120);
+                    },
+                    { once: true }
+                );
+            }
+        }
+        if (!isFullScreen && node === el.assetPreview) {
+            /* Mark the exact asset bounds on the large detail plate. */
             var target = thumbLayer('studio-live-crop-target');
             target.style.cssText =
                 'position:absolute;left:' +
-                (left + (liveBox.left - canvasBox.left) * zoom) +
+                (left + rx * zoom) +
                 'px;top:' +
-                (top + (liveBox.top - canvasBox.top) * zoom) +
+                (top + ry * zoom) +
                 'px;width:' +
-                liveBox.width * zoom +
+                rw * zoom +
                 'px;height:' +
-                liveBox.height * zoom +
+                rh * zoom +
                 'px;border:2px solid var(--site-accent);border-radius:4px;box-shadow:0 1px 5px rgba(3, 6, 10, 0.35);';
             node.appendChild(target);
         }
         return true;
     }
 
-    function paintScreenCrop(node, asset) {
-        var canvas = el.preview ? el.preview.querySelector('.y1-tp-canvas') : null;
-        if (!canvas || !asset) return false;
-        /* A mask drawn over itself is not a useful crop. */
-        if (asset.path === 'desktopMask' || asset.path === 'settingConfig.settingMask') return false;
-        var mask = canvas.querySelector('.y1-tp-desktop-mask');
-        var maskUrl = mask ? mask.getAttribute('src') : '';
-        if (!maskUrl) return false;
-        var live = livePreviewNode(asset.path);
-        if (!live) return false;
-        var art = live.tagName === 'IMG' ? live : live.querySelector('img');
-        if (!art) return false;
-        var wall = canvas.querySelector('.y1-tp-wallpaper');
-        var wallImage = wall ? getComputedStyle(wall).backgroundImage : 'none';
-        if (!wallImage || wallImage === 'none') return false;
-
-        var hostBox = node.getBoundingClientRect();
-        var width = Math.round(hostBox.width) || THUMB_FALLBACK.width;
-        var height = Math.round(hostBox.height) || THUMB_FALLBACK.height;
-        var canvasBox = canvas.getBoundingClientRect();
-        var artBox = art.getBoundingClientRect();
-        if (!canvasBox.width || !artBox.width || !canvasBox.height) return false;
-
-        var zoom = Math.min(width / (artBox.width * 2.4), height / (artBox.height * 2.4), 2.4);
-        if (!isFinite(zoom) || zoom <= 0.05) return false;
-
-        var originLeft = width / 2 - (artBox.left + artBox.width / 2 - canvasBox.left) * zoom;
-        var originTop = height / 2 - (artBox.top + artBox.height / 2 - canvasBox.top) * zoom;
-        var sheetWidth = canvasBox.width * zoom;
-        var sheetHeight = canvasBox.height * zoom;
-
-        node.classList.add('has-layers');
-        node.style.backgroundImage = '';
-        node.style.backgroundColor = '#05070c';
-
-        var sheet = thumbLayer('studio-thumb-wallpaper');
-        sheet.style.cssText =
-            'left:' + originLeft + 'px;top:' + originTop + 'px;width:' + sheetWidth + 'px;height:' + sheetHeight + 'px;';
-        sheet.style.backgroundImage = wallImage;
-        node.appendChild(sheet);
-
-        var maskLayer = document.createElement('img');
-        maskLayer.className = 'studio-thumb-layer studio-thumb-mask';
-        maskLayer.alt = '';
-        maskLayer.src = maskUrl;
-        maskLayer.style.cssText =
-            'left:' + originLeft + 'px;top:' + originTop + 'px;width:' + sheetWidth + 'px;height:' + sheetHeight + 'px;';
-        node.appendChild(maskLayer);
-
-        var artLayer = document.createElement('img');
-        artLayer.className = 'studio-thumb-layer studio-thumb-art';
-        artLayer.alt = '';
-        artLayer.src = art.currentSrc || art.src;
-        artLayer.style.cssText =
-            'left:' +
-            (originLeft + (artBox.left - canvasBox.left) * zoom) +
-            'px;top:' +
-            (originTop + (artBox.top - canvasBox.top) * zoom) +
-            'px;width:' +
-            artBox.width * zoom +
-            'px;height:' +
-            artBox.height * zoom +
-            'px;';
-        node.appendChild(artLayer);
-        return true;
+    function paintAssetCropWithReveal(node, asset) {
+        if (!node || !asset || asset.kind === 'font') return false;
+        var api = el.preview ? el.preview._y1TpApi : null;
+        if (!api || typeof api.revealAsset !== 'function') {
+            return paintLiveCrop(node, asset);
+        }
+        return withPreviewVisible(function () {
+            var snap = typeof api.snapshotState === 'function' ? api.snapshotState() : null;
+            var prevView = !snap && typeof api.currentView === 'function' ? api.currentView() : '';
+            var moved = false;
+            try {
+                moved = api.revealAsset(asset.path) !== false;
+                if (!moved && !livePreviewNode(asset.path, asset)) return false;
+                return paintLiveCrop(node, asset, { skipOffscreenRetry: true });
+            } catch (e) {
+                return false;
+            } finally {
+                if (moved) {
+                    try {
+                        if (snap && typeof api.restoreState === 'function') api.restoreState(snap);
+                        else if (prevView && typeof api.showView === 'function') api.showView(prevView);
+                    } catch (e) {}
+                }
+            }
+        });
     }
 
-    /* The preview mounts after the tray is built, so rows painted before it
-       exists are refreshed once the canvas has a screen to crop. */
+    var thumbRefreshTimer = null;
+    function scheduleThumbRefresh(delay) {
+        if (thumbRefreshTimer) window.clearTimeout(thumbRefreshTimer);
+        thumbRefreshTimer = window.setTimeout(function () {
+            thumbRefreshTimer = null;
+            refreshThumbLayers();
+        }, delay || 180);
+    }
+
+    function paintRowsInContainer(container, api) {
+        if (!container || !api) return;
+        Array.prototype.forEach.call(container.querySelectorAll('[data-asset-id]'), function (row) {
+            var group = row.closest('details.studio-asset-group');
+            if (group && !group.open) return;
+            var asset = state.assetById[row.getAttribute('data-asset-id')];
+            var thumb = row.querySelector('.studio-asset-thumb');
+            if (!asset || !thumb || asset.kind === 'font') return;
+            var revealed = typeof api.revealAsset === 'function' && api.revealAsset(asset.path) !== false;
+            if (revealed && paintLiveCrop(thumb, asset, { skipOffscreenRetry: true })) {
+                return;
+            }
+            decorateAssetThumb(thumb, asset, { skipReveal: true });
+        });
+    }
+
+    function refreshGroupThumbs(group) {
+        if (!group || !group.open) return;
+        var api = el.preview ? el.preview._y1TpApi : null;
+        var canvas = el.preview ? el.preview.querySelector('.y1-tp-canvas') : null;
+        if (!canvas || !api) return;
+        withPreviewVisible(function () {
+            var snap = typeof api.snapshotState === 'function' ? api.snapshotState() : null;
+            var prevView = !snap && typeof api.currentView === 'function' ? api.currentView() : '';
+            try {
+                paintRowsInContainer(group, api);
+            } catch (e) {
+            } finally {
+                try {
+                    if (snap && typeof api.restoreState === 'function') api.restoreState(snap);
+                    else if (prevView && typeof api.showView === 'function') api.showView(prevView);
+                } catch (e) {}
+            }
+        });
+    }
+
+    /* Batch-capture real zoomed/cropped in-context previews for every visible
+       row thumbnail, mask card, and the selected large detail plate in one
+       atomic pass, restoring the simulator's exact view/selection afterward. */
     function refreshThumbLayers() {
-        if (el.assetList) {
-            Array.prototype.forEach.call(el.assetList.querySelectorAll('[data-asset-id]'), function (row) {
-                var asset = state.assetById[row.getAttribute('data-asset-id')];
-                var thumb = row.querySelector('.studio-asset-thumb');
-                if (asset && thumb) decorateAssetThumb(thumb, asset);
-            });
+        var api = el.preview ? el.preview._y1TpApi : null;
+        var canvas = el.preview ? el.preview.querySelector('.y1-tp-canvas') : null;
+        if (!canvas || !api) {
+            refreshMaskThumbs();
+            if (state.selectedAssetId) updateAssetDetail();
+            return;
         }
-        refreshMaskThumbs();
-        if (state.selectedAssetId) updateAssetDetail();
+        withPreviewVisible(function () {
+            var snap = typeof api.snapshotState === 'function' ? api.snapshotState() : null;
+            var prevView = !snap && typeof api.currentView === 'function' ? api.currentView() : '';
+            try {
+                if (el.assetList) {
+                    paintRowsInContainer(el.assetList, api);
+                }
+                if (el.maskEditor) {
+                    Array.prototype.forEach.call(el.maskEditor.querySelectorAll('[data-mask-slot]'), function (card) {
+                        var id = card.getAttribute('data-mask-slot');
+                        var asset = state.assetById[id];
+                        var art = card.querySelector('.studio-mask-art');
+                        if (!asset || !art) return;
+                        var screen = maskScreenFor(asset);
+                        if (screen && typeof api.showView === 'function') {
+                            api.showView(screen);
+                            paintLiveCrop(art, asset, { skipOffscreenRetry: true });
+                        }
+                    });
+                }
+                if (state.selectedAssetId && el.assetPreview && el.assetDetail && !el.assetDetail.hidden) {
+                    var selectedAsset = state.assetById[state.selectedAssetId];
+                    if (selectedAsset && selectedAsset.kind !== 'font') {
+                        var rev = typeof api.revealAsset === 'function' && api.revealAsset(selectedAsset.path) !== false;
+                        if (rev) {
+                            paintLiveCrop(el.assetPreview, selectedAsset, { skipOffscreenRetry: true });
+                        }
+                    }
+                }
+            } catch (e) {
+            } finally {
+                try {
+                    if (snap && typeof api.restoreState === 'function') api.restoreState(snap);
+                    else if (prevView && typeof api.showView === 'function') api.showView(prevView);
+                } catch (e) {}
+            }
+        });
     }
 
     function maskScreenFor(asset) {
@@ -1102,15 +1289,13 @@
         return '';
     }
 
-    /* The mask cards use the same live clone as the detail plate: switch the
-       simulator to the screen the mask belongs to, capture that screen, then
-       put the view back in the same task so the swap is never painted. */
     function paintMaskCardCrop(node, asset) {
         var api = el.preview ? el.preview._y1TpApi : null;
         var screen = maskScreenFor(asset);
-        if (!api || !screen || typeof api.showView !== 'function' || typeof api.currentView !== 'function') return false;
+        if (!api || !screen || typeof api.showView !== 'function') return false;
         return withPreviewVisible(function () {
-            var current = api.currentView();
+            var snap = typeof api.snapshotState === 'function' ? api.snapshotState() : null;
+            var current = !snap && typeof api.currentView === 'function' ? api.currentView() : '';
             var moved = false;
             try {
                 if (current !== screen) {
@@ -1118,13 +1303,14 @@
                 }
                 clearThumbLayers(node);
                 node.classList.remove('has-live-crop');
-                return paintLiveCrop(node, asset);
+                return paintLiveCrop(node, asset, { skipOffscreenRetry: true });
             } catch (e) {
                 return false;
             } finally {
                 if (moved) {
                     try {
-                        api.showView(current);
+                        if (snap && typeof api.restoreState === 'function') api.restoreState(snap);
+                        else if (current && typeof api.showView === 'function') api.showView(current);
                     } catch (e) {}
                 }
             }
@@ -1138,7 +1324,6 @@
             var asset = state.assetById[id];
             var art = card.querySelector('.studio-mask-art');
             if (!asset || !art) return;
-            if (art.querySelector('.studio-live-crop')) return;
             paintMaskCardCrop(art, asset);
         });
     }
@@ -1179,8 +1364,9 @@
         paintFontSample(sample, asset.url);
     }
 
-    function decorateAssetThumb(node, asset) {
+    function decorateAssetThumb(node, asset, opts) {
         if (!node) return;
+        opts = opts || {};
         var existing = node.querySelector('.studio-thumb-strip');
         if (existing) existing.parentNode.removeChild(existing);
         node.classList.remove('has-backdrop');
@@ -1191,11 +1377,8 @@
             paintFontThumb(node, asset);
             return;
         }
-        /* The detail plate has room for the real thing: a crop of the live
-           screen, scaled up around the asset and clipped to 4:3. The small
-           row thumbnails keep the lighter wallpaper/mask/art stack. */
-        if (node === el.assetPreview && paintLiveCrop(node, asset)) return;
-        if (paintScreenCrop(node, asset)) return;
+        if (!opts.skipReveal && paintAssetCropWithReveal(node, asset)) return;
+        if (paintLiveCrop(node, asset, { skipOffscreenRetry: true })) return;
         var backdrop = assetBackdrop(asset);
         if (!backdrop) return;
         node.classList.add('has-backdrop');
@@ -1219,8 +1402,168 @@
        never make an update look new and become eligible for auto-merge. */
     var galleryIndexReady = null;
 
+    function openPendingDropHandoff() {
+        if (!window.Y1StudioDropHandoff || typeof window.Y1StudioDropHandoff.consumePending !== 'function') {
+            return Promise.resolve(false);
+        }
+        return window.Y1StudioDropHandoff.consumePending().then(function (record) {
+            if (!record) return false;
+            try {
+                var cleanParams = new URLSearchParams(location.search);
+                if (cleanParams.has('handoff')) {
+                    cleanParams.delete('handoff');
+                    var qs = cleanParams.toString();
+                    history.replaceState(null, '', location.pathname + (qs ? '?' + qs : ''));
+                }
+            } catch (_) {}
+            if (record.kind === 'zip' && record.blob) {
+                var zipFile =
+                    typeof File === 'function'
+                        ? new File([record.blob], record.name || 'theme.zip', { type: 'application/zip' })
+                        : record.blob;
+                importZip(zipFile);
+                return true;
+            }
+            if (record.kind === 'entries' && Array.isArray(record.entries) && record.entries.length) {
+                openLocalEntries(record.entries, record.label || 'Dropped theme');
+                return true;
+            }
+            return false;
+        });
+    }
+
+    function resolveRequestedFolder(raw) {
+        var clean = String(raw || '')
+            .replace(/^\.\/+/, '')
+            .replace(/\/+$/, '')
+            .trim();
+        if (!clean) return '';
+        if (state.byFolder[clean]) return clean;
+        var low = clean.toLowerCase();
+        var norm = low.replace(/[\s_]+/g, ' ');
+        var exactLow = '';
+        var fuzzy = '';
+        for (var i = 0; i < state.gallery.length; i += 1) {
+            var item = state.gallery[i];
+            if (!item || !item.folder) continue;
+            var fl = String(item.folder).toLowerCase();
+            if (fl === low) {
+                exactLow = item.folder;
+                break;
+            }
+            if (!fuzzy && (fl.replace(/[\s_]+/g, ' ') === norm || String(item.name || '').toLowerCase() === low)) {
+                fuzzy = item.folder;
+            }
+        }
+        return exactLow || fuzzy || clean;
+    }
+
+    var ONBOARDING_STORAGE_KEY = 'y1_studio_onboarding_dismissed';
+
+    function isOnboardingDismissed() {
+        try {
+            return window.localStorage && window.localStorage.getItem(ONBOARDING_STORAGE_KEY) === '1';
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function openOnboarding(context) {
+        if (!el.onboarding) return;
+        var fromUpload = context === 'upload';
+        if (el.onboardingTitle) {
+            el.onboardingTitle.textContent = fromUpload
+                ? 'Edit or upload a theme in Theme Studio'
+                : 'Welcome to Innioasis Theme Studio';
+        }
+        if (el.onboardingLead) {
+            el.onboardingLead.textContent = fromUpload
+                ? 'Pick an existing gallery theme to use as a template, or drag and drop / browse a local folder or ZIP to edit in Studio and upload it to the gallery.'
+                : 'Design, remix, preview, and publish custom themes for your Innioasis Y1 or Y2 right in your browser — no desktop software required.';
+        }
+        if (el.onboardingSuppress) {
+            el.onboardingSuppress.checked = isOnboardingDismissed();
+        }
+        el.onboarding.hidden = false;
+        window.setTimeout(function () {
+            if (el.onboardingTemplate) el.onboardingTemplate.focus({ preventScroll: true });
+        }, 40);
+    }
+
+    function closeOnboarding() {
+        if (!el.onboarding || el.onboarding.hidden) return;
+        if (el.onboardingSuppress) {
+            try {
+                if (el.onboardingSuppress.checked) window.localStorage.setItem(ONBOARDING_STORAGE_KEY, '1');
+                else window.localStorage.removeItem(ONBOARDING_STORAGE_KEY);
+            } catch (e) {}
+        }
+        el.onboarding.hidden = true;
+        try {
+            var p = new URLSearchParams(location.search);
+            if (p.has('welcome')) {
+                p.delete('welcome');
+                var q = p.toString();
+                history.replaceState(null, '', location.pathname + (q ? '?' + q : ''));
+            }
+        } catch (e) {}
+    }
+
+    function bindOnboardingEvents() {
+        if (el.helpBtn) {
+            el.helpBtn.addEventListener('click', function () {
+                openOnboarding('manual');
+            });
+        }
+        if (!el.onboarding) return;
+        if (el.onboardingClose) el.onboardingClose.addEventListener('click', closeOnboarding);
+        if (el.onboardingX) el.onboardingX.addEventListener('click', closeOnboarding);
+        el.onboarding.addEventListener('click', function (event) {
+            if (event.target === el.onboarding) closeOnboarding();
+        });
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && el.onboarding && !el.onboarding.hidden) {
+                closeOnboarding();
+            }
+        });
+        if (el.onboardingTemplate) {
+            el.onboardingTemplate.addEventListener('click', function () {
+                closeOnboarding();
+                state.swapOpen = true;
+                if (el.swapPanel) el.swapPanel.hidden = false;
+                if (window.matchMedia('(max-width: 760px)').matches) {
+                    document.body.classList.add('studio-chooser');
+                    if (el.openTheme) el.openTheme.setAttribute('aria-expanded', 'true');
+                }
+                setMode('preview');
+                window.setTimeout(function () {
+                    if (el.themeFilter) el.themeFilter.focus({ preventScroll: true });
+                }, 60);
+            });
+        }
+        if (el.onboardingZip) {
+            el.onboardingZip.addEventListener('click', function () {
+                closeOnboarding();
+                el.zipInput.click();
+            });
+        }
+        if (el.onboardingFolder) {
+            el.onboardingFolder.addEventListener('click', function () {
+                closeOnboarding();
+                el.folderInput.click();
+            });
+        }
+        if (el.onboardingUpload) {
+            el.onboardingUpload.addEventListener('click', function () {
+                closeOnboarding();
+                setMode('submit');
+            });
+        }
+    }
+
     function boot() {
         bindEvents();
+        bindOnboardingEvents();
         setupManage();
         watchSaveTarget();
         setupPwa();
@@ -1228,6 +1571,9 @@
         var requestedMode = params.get('mode');
         var requestedPanel = String(params.get('panel') || '').trim();
         var requestedFolder = params.get('folder') || params.get('theme') || '';
+        var requestedVariant = String(params.get('variant') || '').trim();
+        var requestedWelcome = String(params.get('welcome') || '').trim().toLowerCase();
+        var handoffDrop = params.get('handoff') === 'drop';
         if (requestedMode === 'edit' || requestedMode === 'submit') {
             /* The theme is fetched after boot, so Edit and Submit cannot be
                activated yet. Remember the deep link and apply it once the
@@ -1235,40 +1581,54 @@
             bootModeRequest = { mode: requestedMode, folder: requestedFolder, panel: requestedPanel };
         }
         setMode('preview', true);
+        if (requestedWelcome === 'upload' || requestedWelcome === '1' || requestedWelcome === 'true') {
+            openOnboarding(requestedWelcome === 'upload' ? 'upload' : 'first');
+        } else if (!requestedFolder && !handoffDrop && !requestedMode && !isOnboardingDismissed()) {
+            openOnboarding('first');
+        }
 
         galleryIndexReady = loadGalleryIndex().then(function () {
-            return readRecovery().then(function (record) {
-                var requested = params.get('folder') || params.get('theme');
-                if (requested && state.byFolder[requested]) {
-                    loadGalleryTheme(requested, record && record.folder === requested ? record : null);
-                    return;
-                }
-                /* Nothing in the URL: a tab closed mid-edit comes back to the same
-                   theme with its replacements still applied. */
-                if (record && state.byFolder[record.folder]) {
-                    loadGalleryTheme(record.folder, record);
-                    return;
-                }
-                /* A plain first visit opens the reference theme instead of a
-                   holding screen. If it is missing from this checkout, the
-                   first listed theme does the same job. */
-                var fallbackFolder = state.byFolder[DEFAULT_THEME]
-                    ? DEFAULT_THEME
-                    : state.gallery[0] && state.gallery[0].folder;
-                if (fallbackFolder) {
-                    loadGalleryTheme(fallbackFolder, null);
-                    return;
-                }
-                bootModeRequest = null;
-                updateChrome();
-                setLoading(false);
-                showEmpty(
-                    state.gallery.length ? 'Pick a theme, or bring your own' : 'Open your own theme package',
-                    state.gallery.length
-                        ? 'No theme is open yet. Choose one from the gallery, upload your own theme folder or ZIP, or pick a gallery theme from the list in the sidebar.'
-                        : 'The gallery list is unavailable, so start from a theme folder or ZIP on this device.',
-                    'start'
-                );
+            var handoffPromise = handoffDrop ? openPendingDropHandoff() : Promise.resolve(false);
+            return handoffPromise.then(function (handledDrop) {
+                if (handledDrop) return;
+                return readRecovery().then(function (record) {
+                    var requested = resolveRequestedFolder(requestedFolder);
+                    if (requested) {
+                        if (bootModeRequest && bootModeRequest.folder) bootModeRequest.folder = requested;
+                        loadGalleryTheme(
+                            requested,
+                            !requestedVariant && record && record.folder === requested ? record : null,
+                            requestedVariant
+                        );
+                        return;
+                    }
+                    /* Nothing in the URL: a tab closed mid-edit comes back to the same
+                       theme with its replacements still applied. */
+                    if (record && state.byFolder[record.folder]) {
+                        loadGalleryTheme(record.folder, record);
+                        return;
+                    }
+                    /* A plain first visit opens the reference theme instead of a
+                       holding screen. If it is missing from this checkout, the
+                       first listed theme does the same job. */
+                    var fallbackFolder = state.byFolder[DEFAULT_THEME]
+                        ? DEFAULT_THEME
+                        : state.gallery[0] && state.gallery[0].folder;
+                    if (fallbackFolder) {
+                        loadGalleryTheme(fallbackFolder, null);
+                        return;
+                    }
+                    bootModeRequest = null;
+                    updateChrome();
+                    setLoading(false);
+                    showEmpty(
+                        state.gallery.length ? 'Pick a theme, or bring your own' : 'Open your own theme package',
+                        state.gallery.length
+                            ? 'No theme is open yet. Choose one from the gallery, upload your own theme folder or ZIP, or pick a gallery theme from the list in the sidebar.'
+                            : 'The gallery list is unavailable, so start from a theme folder or ZIP on this device.',
+                        'start'
+                    );
+                });
             });
         });
         if (window.ThemeAuthorPolicy && typeof window.ThemeAuthorPolicy.ready === 'function') {
@@ -1335,6 +1695,9 @@
                 } catch (e) {}
             }
         });
+        if (mode === 'edit') {
+            scheduleThumbRefresh(60);
+        }
         if (mode === 'submit') {
             window.setTimeout(function () {
                 if (!el.submitForm) return;
@@ -1352,11 +1715,22 @@
         if (el.openTheme) el.openTheme.setAttribute('aria-expanded', 'false');
     }
 
+    function galleryContentFolder() {
+        if (!state.folder) return '';
+        return state.variant ? state.folder + '/Variants/' + state.variant : state.folder;
+    }
+
     function syncUrl() {
         if (!history.replaceState) return;
         var params = new URLSearchParams(location.search);
-        if (state.sourceType === 'gallery' && state.folder) params.set('folder', state.folder);
-        else params.delete('folder');
+        if (state.sourceType === 'gallery' && state.folder) {
+            params.set('folder', state.folder);
+            if (state.variant) params.set('variant', state.variant);
+            else params.delete('variant');
+        } else {
+            params.delete('folder');
+            params.delete('variant');
+        }
         params.delete('theme');
         var pendingMode =
             bootModeRequest &&
@@ -1394,11 +1768,13 @@
         };
     }
 
-    function loadGalleryTheme(folder, restoreRecord) {
+    function loadGalleryTheme(folder, restoreRecord, variant) {
         if (!folder) return;
         var requestedFolder = folder;
+        var requestedVariant = String(variant || '').trim();
         state.sourceType = 'gallery';
         state.folder = folder;
+        state.variant = requestedVariant;
         state.galleryBlobCache = Object.create(null);
         galleryWarmFolder = '';
         galleryWarmPromise = null;
@@ -1435,15 +1811,16 @@
         updateChecklist();
         syncUrl();
 
-        fetch('../' + encodePath(folder) + '/config.json?v=' + Date.now(), { cache: 'no-cache' })
+        var contentPath = galleryContentFolder();
+        fetch('../' + encodePath(contentPath) + '/config.json?v=' + Date.now(), { cache: 'no-cache' })
             .then(function (res) {
                 if (!res.ok) throw new Error('config.json (' + res.status + ')');
                 return res.json();
             })
             .then(function (config) {
-                if (state.sourceType !== 'gallery' || state.folder !== requestedFolder) return;
+                if (state.sourceType !== 'gallery' || state.folder !== requestedFolder || state.variant !== requestedVariant) return;
                 return loadMissingManifest().then(function (manifest) {
-                    if (state.sourceType !== 'gallery' || state.folder !== requestedFolder) return;
+                    if (state.sourceType !== 'gallery' || state.folder !== requestedFolder || state.variant !== requestedVariant) return;
                     var manifestEntry = manifest && manifest[requestedFolder];
                     markMissingConfigValues(config, missingMapForFolder(manifest, requestedFolder));
                     state.meta.cover =
@@ -1560,7 +1937,7 @@
 
         var options = {
             catalogFolder: state.sourceType === 'gallery' ? state.folder : '__studio_local__',
-            variantSegment: '',
+            variantSegment: state.sourceType === 'gallery' ? state.variant || '' : '',
             mode: 'full',
             compactControls: true,
             compactExpanded: state.compactExpanded === true,
@@ -1583,6 +1960,7 @@
             updateChecklist();
             if (state.selectedAssetId) highlightPreviewAsset(state.selectedAssetId);
             refreshThumbLayers();
+            scheduleThumbRefresh(450);
         });
     }
 
@@ -2203,17 +2581,147 @@
         if (key.indexOf('homePageConfig.') === 0) return { width: 166, height: 166 };
         if (key === 'settingConfig.settingMask') return { width: 320, height: 240 };
         if (key.indexOf('settingConfig.') === 0) return { width: 146, height: 146 };
-        if (key === 'itemConfig.itemBackground' || key === 'itemConfig.itemSelectedBackground') {
+        if (
+            key === 'itemConfig.itemBackground' ||
+            key === 'itemConfig.itemSelectedBackground' ||
+            key === 'menuConfig.menuItemBackground' ||
+            key === 'menuConfig.menuItemSelectedBackground'
+        ) {
             return { width: 640, height: 91 };
         }
-        if (key === 'desktopWallpaper' || key === 'globalWallpaper' || key === 'themeCover') {
+        if (
+            key === 'dialogConfig.dialogOptionBackground' ||
+            key === 'dialogConfig.dialogOptionSelectedBackground'
+        ) {
+            return { width: 160, height: 56 };
+        }
+        if (key === 'dialogConfig.dialogBackground') {
+            return { width: 380, height: 220 };
+        }
+        if (
+            key === 'desktopWallpaper' ||
+            key === 'globalWallpaper' ||
+            key === 'desktopMask' ||
+            key === 'themeCover' ||
+            /(?:bootLogo|shutdownLogo|nowPlayingBackground|backgroundImage|menuBackground)$/i.test(key)
+        ) {
             return { width: 320, height: 240 };
+        }
+        if (/(?:nowPlayingAlbumArt|albumArtDefault)$/i.test(key)) {
+            return { width: 200, height: 200 };
+        }
+        if (/scrollbarThumb$/i.test(key)) {
+            return { width: 12, height: 64 };
         }
         if (key.indexOf('statusConfig.') === 0 || key === 'itemConfig.itemRightArrow') {
             return { width: 64, height: 64 };
         }
         if (key.indexOf('fileConfig.') === 0) return { width: 166, height: 166 };
         return null;
+    }
+
+    function recommendedBlankSize(asset) {
+        var target = asset ? assetTargetSize(asset.path) : null;
+        return target || { width: 320, height: 240 };
+    }
+
+    function assetDownloadFileName(asset, isBlank) {
+        if (!asset) return 'asset.png';
+        if (!isBlank && asset.value && !isPlaceholderValue(asset.value)) {
+            var existing = fileName(asset.value);
+            if (existing) return existing;
+        }
+        var leaf = String(asset.path || asset.label || 'asset')
+            .split('.')
+            .filter(Boolean)
+            .slice(-2)
+            .join('_')
+            .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+            .toLowerCase()
+            .replace(/[^a-z0-9_-]+/g, '_')
+            .replace(/^_+|_+$/g, '') || 'asset';
+        var ext = asset.kind === 'font' ? 'ttf' : 'png';
+        return leaf + '.' + ext;
+    }
+
+    function createBlankTransparentPng(width, height) {
+        var w = Math.max(1, Math.round(Number(width) || 320));
+        var h = Math.max(1, Math.round(Number(height) || 240));
+        return new Promise(function (resolve, reject) {
+            var canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            var ctx = canvas.getContext('2d');
+            if (!ctx) {
+                reject(new Error('Could not create transparent canvas.'));
+                return;
+            }
+            ctx.clearRect(0, 0, w, h);
+            canvas.toBlob(function (blob) {
+                if (blob) resolve(blob);
+                else reject(new Error('Could not encode transparent PNG.'));
+            }, 'image/png');
+        });
+    }
+
+    function downloadAsset(assetId) {
+        var asset = state.assetById[assetId];
+        if (!asset) return;
+        var isBlankImage =
+            asset.kind === 'image' &&
+            (asset.placeholder ||
+                asset.empty ||
+                asset.missingFile ||
+                asset.localMissing ||
+                isPlaceholderValue(asset.value));
+        if (isBlankImage) {
+            var size = recommendedBlankSize(asset);
+            var blankName = assetDownloadFileName(asset, true);
+            createBlankTransparentPng(size.width, size.height)
+                .then(function (blob) {
+                    var file = new File([blob], blankName, { type: 'image/png' });
+                    downloadBlob(file);
+                    toast('Saved blank ' + size.width + '×' + size.height + ' transparent PNG (' + blankName + ').');
+                })
+                .catch(function (err) {
+                    toast((err && err.message) || 'Could not generate a blank PNG for that asset.');
+                });
+            return;
+        }
+        var outName = assetDownloadFileName(asset, false);
+        blobForAssetValue(asset.value)
+            .then(function (blob) {
+                var mime =
+                    (blob && blob.type && blob.type !== 'application/octet-stream' && blob.type) ||
+                    (asset.kind === 'font' ? 'font/ttf' : 'image/png');
+                var file = new File([blob], outName, { type: mime });
+                downloadBlob(file);
+                toast('Saved ' + outName + ' to your ' + (saveTarget.device || 'device') + '.');
+            })
+            .catch(function (err) {
+                if (asset.kind === 'image') {
+                    var fallbackSize = recommendedBlankSize(asset);
+                    var fallbackName = assetDownloadFileName(asset, true);
+                    createBlankTransparentPng(fallbackSize.width, fallbackSize.height)
+                        .then(function (blob) {
+                            downloadBlob(new File([blob], fallbackName, { type: 'image/png' }));
+                            toast(
+                                'Saved blank ' +
+                                    fallbackSize.width +
+                                    '×' +
+                                    fallbackSize.height +
+                                    ' transparent PNG (' +
+                                    fallbackName +
+                                    ').'
+                            );
+                        })
+                        .catch(function () {
+                            toast((err && err.message) || 'Could not save that asset.');
+                        });
+                    return;
+                }
+                toast((err && err.message) || 'Could not save that asset.');
+            });
     }
 
     function assetSizeLabel(asset) {
@@ -2378,7 +2886,7 @@
         var override = state.assetOverrides[key];
         if (override && override.url) return override.url;
         if (state.sourceType === 'local') return state.localMap ? state.localMap[key] || '' : '';
-        if (state.sourceType === 'gallery' && state.folder) return galleryFileUrl(state.folder, value);
+        if (state.sourceType === 'gallery' && state.folder) return galleryFileUrl(galleryContentFolder(), value);
         return '';
     }
 
@@ -2969,9 +3477,10 @@
             var actions = document.createElement('div');
             actions.className = 'studio-mask-actions';
             actions.appendChild(maskActionButton(slot.id, 'preview', 'fa-eye', 'Show', false));
-            actions.appendChild(maskActionButton(slot.id, 'replace', 'fa-folder-open', 'Replace', true));
+            actions.appendChild(maskActionButton(slot.id, 'replace', 'fa-images', 'Replace', true));
+            actions.appendChild(maskActionButton(slot.id, 'save', 'fa-download', 'Save', false));
             actions.appendChild(maskActionButton(slot.id, 'blank', 'fa-trash-can', 'Blank', false));
-            actions.appendChild(maskActionButton(slot.id, 'theme', 'fa-images', 'Theme', false));
+            actions.appendChild(maskActionButton(slot.id, 'theme', 'fa-palette', 'Theme', false));
 
             card.appendChild(top);
             card.appendChild(actions);
@@ -3052,8 +3561,9 @@
         var actions = document.createElement('span');
         actions.className = 'studio-asset-row-actions';
         var rowActions = [
-            ['import', 'fa-folder-open', 'Import or replace ' + asset.label],
-            ['theme', 'fa-images', 'Use ' + asset.label + ' from another gallery theme'],
+            ['import', 'fa-images', 'Select file from ' + (saveTarget.device || 'device') + ' for ' + asset.label],
+            ['theme', 'fa-palette', 'Use ' + asset.label + ' from another gallery theme'],
+            ['save', 'fa-download', (saveTarget.saveAssetLabel || 'Save asset') + ' (' + asset.label + ')'],
             ['paste', 'fa-paste', 'Paste into ' + asset.label]
         ];
         if (asset.kind !== 'font') {
@@ -3254,6 +3764,11 @@
             group.open = !!state.openTrays[trayKey];
             group.addEventListener('toggle', function () {
                 state.openTrays[trayKey] = group.open;
+                if (group.open) {
+                    window.requestAnimationFrame(function () {
+                        refreshGroupThumbs(group);
+                    });
+                }
             });
             var summary = document.createElement('summary');
             summary.className = 'studio-asset-group-head';
@@ -3289,6 +3804,7 @@
         });
         paintAssetSelection();
         if (state.selectedAssetId) highlightPreviewAsset(state.selectedAssetId);
+        scheduleThumbRefresh(30);
     }
 
     function paintAssetSelection() {
@@ -3753,6 +4269,20 @@
         el.assetReset.disabled = !asset.changed;
         el.assetReplace.disabled = false;
         el.assetPaste.disabled = asset.kind !== 'image';
+        if (el.assetSave) {
+            el.assetSave.disabled = false;
+            var saveBlank =
+                asset.kind === 'image' &&
+                (asset.placeholder ||
+                    asset.empty ||
+                    asset.missingFile ||
+                    asset.localMissing ||
+                    isPlaceholderValue(asset.value));
+            var recSize = saveBlank ? recommendedBlankSize(asset) : null;
+            el.assetSave.title = saveBlank
+                ? 'Save a blank ' + recSize.width + '×' + recSize.height + ' transparent PNG template for ' + asset.label
+                : (saveTarget.saveAssetLabel || 'Save to device') + ' (' + asset.label + ')';
+        }
         if (el.assetBlank) {
             el.assetBlank.disabled = asset.kind === 'font';
             el.assetBlank.title =
@@ -4297,6 +4827,7 @@
                 var kind = action.getAttribute('data-asset-action');
                 if (kind === 'import') openAssetPicker(id);
                 else if (kind === 'theme') openThemePicker(id);
+                else if (kind === 'save') downloadAsset(id);
                 else if (kind === 'blank') blankAsset(id);
                 else pasteIntoAsset(id);
                 return;
@@ -4391,6 +4922,11 @@
                 if (state.selectedAssetId) openThemePicker(state.selectedAssetId);
             });
         }
+        if (el.assetSave) {
+            el.assetSave.addEventListener('click', function () {
+                if (state.selectedAssetId) downloadAsset(state.selectedAssetId);
+            });
+        }
         if (el.assetBlank) {
             el.assetBlank.addEventListener('click', function () {
                 if (state.selectedAssetId) blankAsset(state.selectedAssetId);
@@ -4442,6 +4978,7 @@
                 var action = button.getAttribute('data-mask-action');
                 if (!state.assetById[id]) return;
                 if (action === 'replace') openAssetPicker(id);
+                else if (action === 'save') downloadAsset(id);
                 else if (action === 'blank') blankAsset(id);
                 else if (action === 'theme') openThemePicker(id);
                 else {
@@ -4719,7 +5256,7 @@
             var cacheKey = localKey('', value);
             var cached = state.galleryBlobCache[cacheKey];
             if (cached) return Promise.resolve(cached);
-            return fetch(galleryFileUrl(state.folder, value), { cache: 'no-store' })
+            return fetch(galleryFileUrl(galleryContentFolder(), value), { cache: 'no-store' })
                 .then(function (res) {
                     if (!res.ok) throw new Error('Could not read ' + value + ' (' + res.status + ').');
                     return res.blob();
@@ -4806,7 +5343,10 @@
         var laneCount = Math.min(6, values.length);
         for (var i = 0; i < laneCount; i += 1) lanes.push(lane());
         galleryWarmPromise = Promise.all(lanes).then(function () {
-            if (galleryWarmFolder === folder) setAssetWarmProgress(values.length, values.length, failed);
+            if (galleryWarmFolder === folder) {
+                setAssetWarmProgress(values.length, values.length, failed);
+                if (state.mode === 'edit') scheduleThumbRefresh(120);
+            }
         });
         return galleryWarmPromise;
     }
@@ -5008,7 +5548,7 @@
         }
     }
 
-    function setSubmitStatus(message, ok, linkUrl) {
+    function setSubmitStatus(message, ok, linkUrl, folderHint) {
         if (!el.submitStatus) return;
         el.submitStatus.innerHTML = '';
         el.submitStatus.className = 'studio-submit-status' + (ok ? ' is-ok' : ' is-error');
@@ -5016,11 +5556,12 @@
         text.textContent = message;
         el.submitStatus.appendChild(text);
         if (linkUrl) {
+            var track = trackingUrlFor(linkUrl, folderHint);
             var link = document.createElement('a');
-            link.href = trackingUrlFor(linkUrl) || linkUrl;
+            link.href = track || linkUrl;
             link.target = '_blank';
             link.rel = 'noopener';
-            link.textContent = trackingUrlFor(linkUrl) ? 'Track this request' : 'View pull request';
+            link.textContent = track ? 'Track this request' : 'View pull request';
             el.submitStatus.appendChild(link);
         }
     }
@@ -5195,16 +5736,18 @@
                     : 'Received. Your theme is in a pull request that merges automatically once its checks pass.') +
                     (prUrl ? ' Keep this tracking link: it is how you check on the request later.' : ''),
                 true,
-                prUrl
+                prUrl,
+                packFolder
             );
             state.dirty = false;
             state.formDirty = false;
             if (el.unsaved) el.unsaved.hidden = true;
             toast('Theme submitted for review.');
+            var submitTrack = trackingUrlFor(prUrl, packFolder);
             announceSupportNote(state.ownUpdate ? 'update' : 'submission', {
                 themeName: title,
-                linkUrl: trackingUrlFor(prUrl) || prUrl,
-                linkLabel: trackingUrlFor(prUrl) ? 'Track this request' : 'View pull request'
+                linkUrl: submitTrack || prUrl,
+                linkLabel: submitTrack ? 'Track this request' : 'View pull request'
             });
         } catch (err) {
             var message = (err && err.message) || 'The upload did not complete.';
@@ -5538,6 +6081,7 @@
         applyBlankSlots(state.config);
         state.configBase = cloneJson(state.config);
         state.folder = null;
+        state.variant = '';
         state.compactExpanded = false;
         bootModeRequest = null;
         state.meta = {
@@ -5722,6 +6266,7 @@
         event.preventDefault();
         dragDepth = 0;
         hideDrop();
+        closeOnboarding();
         var dt = event.dataTransfer;
         if (!dt) return;
 
@@ -6085,6 +6630,11 @@
             setMode('submit');
         });
 
+        if (el.openZipBar) {
+            el.openZipBar.addEventListener('click', function () {
+                el.zipInput.click();
+            });
+        }
         el.openZip.addEventListener('click', function () {
             el.zipInput.click();
         });
@@ -6246,13 +6796,13 @@
         return document.getElementById('studio-manage');
     }
 
-    function setManageStatus(message, ok, prUrl) {
+    function setManageStatus(message, ok, prUrl, folderHint) {
         var status = document.getElementById('studio-manage-status');
         if (!status) return;
         status.textContent = message || '';
         status.classList.toggle('is-error', ok === false);
         status.classList.toggle('is-ok', ok === true);
-        var track = trackingUrlFor(prUrl);
+        var track = trackingUrlFor(prUrl, folderHint || state.folder);
         if (message && track) {
             var link = document.createElement('a');
             link.href = track;
@@ -6265,11 +6815,15 @@
     }
 
     /* Pull requests are tracked on our own page: it reads the merge state from
-       GitHub and keeps the submitter off GitHub unless they want the details. */
-    function trackingUrlFor(prUrl) {
+       GitHub, keeps the submitter off GitHub unless they want the details, and
+       links straight into Theme Studio's Preview tab for the submitted theme. */
+    function trackingUrlFor(prUrl, folderHint) {
         var match = String(prUrl || '').match(/\/pull\/(\d+)/);
         if (!match) return '';
-        return '/submission.html?pr=' + match[1];
+        var url = '/submission.html?pr=' + match[1];
+        var folder = String(folderHint || '').trim();
+        if (folder) url += '&folder=' + encodeURIComponent(folder);
+        return url;
     }
 
     async function postManageForm(path, form) {
@@ -6520,11 +7074,12 @@
                     ]
                 });
                 var metaPr = payload && payload.prUrl ? String(payload.prUrl) : '';
-                setManageStatus('Sent. A maintainer merges listing text changes, so they go live once the pull request is merged.', true, metaPr);
+                var metaTrack = trackingUrlFor(metaPr, folder);
+                setManageStatus('Sent. A maintainer merges listing text changes, so they go live once the pull request is merged.', true, metaPr, folder);
                 announceSupportNote('listing', {
                     themeName: title,
-                    linkUrl: trackingUrlFor(metaPr) || metaPr,
-                    linkLabel: trackingUrlFor(metaPr) ? 'Track this request' : 'View pull request'
+                    linkUrl: metaTrack || metaPr,
+                    linkLabel: metaTrack ? 'Track this request' : 'View pull request'
                 });
             } catch (err) {
                 setManageStatus((err && err.message) || 'The change did not go through.', false);
@@ -6563,15 +7118,17 @@
                 if (section.querySelector('#studio-remove-optout').checked) form.set('blacklistOptOut', '1');
                 var payload = await postManageForm('/api/removal-request', form);
                 var remPr = payload && payload.prUrl ? String(payload.prUrl) : '';
+                var remTrack = trackingUrlFor(remPr, folder);
                 setManageStatus(
                     'Sent. Nothing comes down until a maintainer has read and merged the request.',
                     true,
-                    remPr
+                    remPr,
+                    folder
                 );
                 announceSupportNote('removal', {
                     themeName: listing.name || folder,
-                    linkUrl: trackingUrlFor(remPr) || remPr,
-                    linkLabel: trackingUrlFor(remPr) ? 'Track this request' : 'View pull request'
+                    linkUrl: remTrack || remPr,
+                    linkLabel: remTrack ? 'Track this request' : 'View pull request'
                 });
             } catch (err) {
                 setManageStatus((err && err.message) || 'The request did not go through.', false);

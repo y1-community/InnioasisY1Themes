@@ -114,6 +114,116 @@
     backdrop-filter: blur(8px);
 }
 
+.studio-modal[hidden] {
+    display: none;
+}
+
+.studio-onboarding-card {
+    width: min(100%, 580px);
+    max-height: min(90dvh, 720px);
+}
+
+.studio-onboarding-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.studio-onboarding-x {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--studio-line);
+    border-radius: 9px;
+    background: transparent;
+    color: var(--site-muted);
+    cursor: pointer;
+}
+
+.studio-onboarding-x:hover {
+    color: var(--site-text);
+    border-color: var(--studio-line-strong);
+}
+
+.studio-onboarding-steps {
+    display: grid;
+    gap: 10px;
+    margin: 14px 0 18px;
+}
+
+.studio-onboarding-step {
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 12px;
+    align-items: start;
+    padding: 12px 13px;
+    border: 1px solid var(--studio-line);
+    border-radius: 12px;
+    background: color-mix(in oklab, var(--site-bg) 52%, transparent);
+}
+
+.studio-onboarding-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    background: var(--studio-accent-soft);
+    color: var(--site-accent);
+    font-size: 0.96rem;
+}
+
+.studio-onboarding-step strong {
+    display: block;
+    font-size: 0.9rem;
+    line-height: 1.3;
+    margin-bottom: 3px;
+}
+
+.studio-onboarding-step p {
+    margin: 0;
+    font-size: 0.82rem;
+    line-height: 1.48;
+    color: var(--site-muted);
+}
+
+.studio-onboarding-quick {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.studio-onboarding-quick .studio-btn {
+    justify-content: center;
+    min-height: 40px;
+}
+
+.studio-onboarding-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--studio-line);
+}
+
+.studio-btn--help {
+    min-width: 38px;
+    min-height: 38px;
+    padding: 0 10px;
+    justify-content: center;
+}
+
+@media (max-width: 560px) {
+    .studio-onboarding-quick {
+        grid-template-columns: 1fr;
+    }
+}
+
 .studio-modal-card {
     width: min(100%, 520px);
     max-height: min(86dvh, 640px);
@@ -1758,7 +1868,8 @@ body.studio-app {
     color: var(--lumen-on-accent, #07101d);
 }
 
-.studio-btn--save {
+.studio-btn--save,
+.studio-btn--open-zip {
     min-height: 38px;
     white-space: nowrap;
 }
@@ -2142,7 +2253,7 @@ body.studio-app {
 .studio-asset-row {
     position: relative;
     display: grid;
-    grid-template-columns: 40px minmax(0, 1fr) auto auto;
+    grid-template-columns: 52px minmax(0, 1fr) auto auto;
     align-items: center;
     gap: 8px;
     min-height: 58px;
@@ -2262,8 +2373,9 @@ body.studio-app {
 }
 
 .studio-asset-thumb {
-    width: 40px;
-    height: 40px;
+    position: relative;
+    width: 52px;
+    height: 39px;
     display: grid;
     place-items: center;
     overflow: hidden;
@@ -2273,7 +2385,8 @@ body.studio-app {
     color: var(--site-muted);
 }
 
-.studio-asset-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.studio-asset-thumb.has-live-crop { background: #05070c; }
+.studio-asset-thumb > img { width: 100%; height: 100%; object-fit: contain; }
 
 /* Font rows show the face, not a generic glyph: Aa is short enough to read at
    tray size and different enough between typefaces to choose by eye. */
@@ -2588,9 +2701,11 @@ body.studio-app {
 .studio-asset-switch-check { margin-left: auto; flex: 0 0 auto; color: var(--site-accent); font-size: 0.66rem; }
 
 /* A live crop is a clone of the mounted screen, scaled around the asset. */
-.studio-asset-detail-preview.has-live-crop { background: #05070c; }
+.studio-asset-detail-preview.has-live-crop,
+.studio-asset-thumb.has-live-crop { background: #05070c; }
 .studio-live-crop * { animation: none !important; transition: none !important; }
-.has-live-crop > img:not(.studio-thumb-layer) { display: none; }
+.has-live-crop > img:not(.studio-thumb-layer),
+.has-live-crop > i:not(.studio-thumb-layer) { display: none; }
 .studio-asset-detail-actions { display: flex; flex-wrap: wrap; gap: 6px; }
 .studio-asset-detail-actions .studio-btn { flex: 1 1 96px; min-height: 38px; padding: 7px 8px; font-size: 0.72rem; }
 .studio-asset-detail-actions .studio-btn:disabled { opacity: 0.45; cursor: not-allowed; }
@@ -2625,7 +2740,8 @@ body.studio-app {
     .studio-command-actions { grid-row: 2; justify-self: stretch; }
     .studio-command-actions .studio-btn { flex: 1; justify-content: center; }
     .studio-command-actions .studio-unsaved { flex: 1 0 100%; justify-content: flex-end; }
-    .studio-btn--save span { display: inline; }
+    .studio-btn--save span,
+    .studio-btn--open-zip span { display: inline; }
     .studio-stage { padding: 14px 12px 10px; }
     .studio-stage-head { gap: 8px; }
     .studio-app .studio-preview .y1-tp-device--full { width: min(100%, 286px); padding: 9px 10px 10px; }
@@ -2634,9 +2750,10 @@ body.studio-app {
     .studio-form-grid { grid-template-columns: 1fr; }
     .studio-panel-scroll { padding: 16px 13px 44px; }
     .studio-asset-list { max-height: min(46vh, 360px); }
-    .studio-asset-row { grid-template-columns: 38px minmax(0, 1fr) auto; }
+    .studio-asset-row { grid-template-columns: 48px minmax(0, 1fr) auto; }
+    .studio-asset-thumb { width: 48px; height: 36px; }
     .studio-asset-row-meta { display: none; }
-    .studio-asset-row-action { width: 38px; height: 38px; }
+    .studio-asset-row-action { width: 36px; height: 36px; }
     .studio-asset-detail-actions .studio-btn { flex: 1 1 46%; }
     .studio-mini-btn { min-height: 38px; }
     .studio-action-grid, .studio-pane-actions { grid-template-columns: 1fr; }
@@ -2646,13 +2763,14 @@ body.studio-app {
 @media (max-width: 420px), (max-height: 560px) {
     .studio-commandbar .studio-mode span { font-size: 0.7rem; }
     .studio-commandbar .studio-mode { padding: 7px 6px; }
-    .studio-btn--save span { max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
+    .studio-btn--save span,
+    .studio-btn--open-zip span { max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
     .studio-app .studio-preview .y1-tp-device--full { width: min(100%, 250px); }
     .studio-app .studio-preview .y1-tp-device--full .y1-tp-clickwheel { width: 86px; height: 86px; }
     .studio-stage-foot { display: none; }
-    .studio-asset-row { grid-template-columns: 34px minmax(0, 1fr) auto; gap: 6px; padding: 6px; }
-    .studio-asset-thumb { width: 34px; height: 34px; }
-    .studio-asset-row-action { width: 34px; height: 34px; }
+    .studio-asset-row { grid-template-columns: 44px minmax(0, 1fr) auto; gap: 6px; padding: 6px; }
+    .studio-asset-thumb { width: 44px; height: 33px; }
+    .studio-asset-row-action { width: 32px; height: 32px; }
 }
 
 /* Square and passport foldables: the preview must not become the whole page. */
@@ -2748,14 +2866,17 @@ body.studio-app {
         flex: 0 0 auto;
     }
 
-    body.studio-app .studio-btn--save {
+    body.studio-app .studio-btn--save,
+    body.studio-app .studio-btn--open-zip,
+    body.studio-app .studio-btn--help {
         width: 40px;
         min-height: 36px;
         padding: 0;
         justify-content: center;
     }
 
-    body.studio-app .studio-btn--save span {
+    body.studio-app .studio-btn--save span,
+    body.studio-app .studio-btn--open-zip span {
         display: none;
     }
 
@@ -2863,7 +2984,9 @@ body.studio-app {
         font-size: 0.64rem;
     }
 
-    body.studio-app .studio-btn--save {
+    body.studio-app .studio-btn--save,
+    body.studio-app .studio-btn--open-zip,
+    body.studio-app .studio-btn--help {
         width: 34px;
         min-height: 32px;
     }
@@ -2903,7 +3026,9 @@ body.studio-app {
         font-size: 0.6rem;
     }
 
-    body.studio-app .studio-btn--save {
+    body.studio-app .studio-btn--save,
+    body.studio-app .studio-btn--open-zip,
+    body.studio-app .studio-btn--help {
         width: 30px;
         min-height: 30px;
     }
@@ -2923,14 +3048,14 @@ body.studio-app {
     }
 
     body.studio-app .studio-asset-row {
-        grid-template-columns: 28px minmax(0, 1fr) auto;
+        grid-template-columns: 36px minmax(0, 1fr) auto;
         gap: 4px;
         padding: 4px;
     }
 
     body.studio-app .studio-asset-thumb {
-        width: 28px;
-        height: 28px;
+        width: 36px;
+        height: 27px;
     }
 
     body.studio-app .studio-asset-row-copy span {

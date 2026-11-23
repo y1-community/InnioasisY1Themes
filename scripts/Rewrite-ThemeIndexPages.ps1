@@ -1,4 +1,4 @@
-<#!
+﻿<#!
   Regenerate theme/variant index.html SEO shells (repo root index.html is untouched).
   Static GitHub Pages — no Node required. Run from repo root (or via theme-ingest-and-sync CI):
     pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/Rewrite-ThemeIndexPages.ps1
@@ -67,14 +67,19 @@ function Get-VariantSubfolders([string]$folder, $themeMeta) {
     return $names
 }
 
-function Build-PreviewUrl([string]$catalogFolder, [string]$variant) {
+function Build-StudioUrl([string]$catalogFolder, [string]$mode, [string]$variant) {
     $t = [Uri]::EscapeDataString($catalogFolder)
-    $qs = "theme=$t"
+    $m = [Uri]::EscapeDataString($mode)
+    $qs = "folder=$t&mode=$m"
     $v = ($variant -as [string]).Trim()
     if ($v) {
         $qs += "&variant=$([Uri]::EscapeDataString($v))"
     }
-    return "$Site/theme.html?$qs"
+    return "$Site/studio-test/?$qs"
+}
+
+function Build-PreviewUrl([string]$catalogFolder, [string]$variant) {
+    return Build-StudioUrl -catalogFolder $catalogFolder -mode 'preview' -variant $variant
 }
 
 function Build-SharePageUrl([string]$catalogFolder, [string]$variant) {
@@ -171,6 +176,8 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
     $titleE = Escape-Html $title
     $authorE = Escape-Html $author
     $previewE = Escape-Html $previewUrl
+    $editE = Escape-Html (Build-StudioUrl -catalogFolder $catalogFolder -mode 'edit' -variant $variant)
+    $updateE = Escape-Html (Build-StudioUrl -catalogFolder $catalogFolder -mode 'submit' -variant $variant)
     $shareE = Escape-Html $sharePageUrl
     $ogImageE = Escape-Html $ogImage
     $dispE = Escape-Html $displayName
@@ -245,8 +252,8 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
       <span class="gallery-brand-text">Innioasis Y1 & Y2 Themes</span>
     </a>
     <div class="gallery-tabs" aria-label="Site sections">
-      <a class="gallery-tab" href="https://y1-themes.vercel.app">Editor</a>
-      <a class="gallery-tab" href="https://themes.innioasis.app/upload.html">Upload</a>
+      <a class="gallery-tab" href="/studio-test/">Editor</a>
+      <a class="gallery-tab" href="/studio-test/?welcome=upload">Upload</a>
     </div>
     <form class="topbar-search-wrap" action="https://themes.innioasis.app/index.html" method="get">
       <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
@@ -254,12 +261,12 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
     </form>
   </div>
   <main class="theme-seo-shell-main">
-    <p class="theme-seo-shell-lead">Preview and download this theme.</p>
+    <p class="theme-seo-shell-lead">Preview, edit, and download this theme.</p>
     <button type="button" class="btn" id="theme-seo-copy" data-copy-url="$shareE">Copy page link</button>
     <h1 class="site-display">$dispE$variantHeading</h1>
     <p class="theme-seo-shell-author">$authorE</p>
     <p class="theme-seo-shell-desc">$description</p>
-    <p class="theme-seo-shell-actions"><a class="btn btn-primary" href="$previewE">Open preview</a><button type="button" class="btn" data-theme-download data-folder="$catalogFolder" data-name="$dispE"$downloadVariantAttr>Download theme</button></p>
+    <p class="theme-seo-shell-actions"><a class="btn btn-primary" data-studio-action="preview" href="$previewE">Preview in Studio</a><a class="btn" data-studio-action="edit" href="$editE">Edit in Studio</a><a class="btn" data-studio-action="update" href="$updateE">Update in Studio</a><button type="button" class="btn" data-theme-download data-folder="$catalogFolder" data-name="$dispE"$downloadVariantAttr>Download theme</button></p>
     <img src="/luci-alt.svg" alt="Innioasis Y1 & Y2 Themes gallery hosted by Luci Ltd at luci.ltd — themes.innioasis.app" width="1" height="1" decoding="async" class="theme-seo-hosting-mark" aria-hidden="true" />
   </main>
   <div id="footer-root"></div>

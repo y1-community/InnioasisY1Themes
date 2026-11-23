@@ -25,6 +25,7 @@ import argparse
 import html
 import re
 from pathlib import Path
+from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[1]
 SHELL_MARK = 'class="theme-seo-shell-main"'
@@ -61,23 +62,38 @@ def _target(page: Path) -> tuple[str, str] | None:
     return folder, variant
 
 
+def _studio_href(folder: str, mode: str, variant: str = "") -> str:
+    url = f"/studio-test/?folder={quote(folder, safe='')}&mode={quote(mode, safe='')}"
+    if variant:
+        url += f"&variant={quote(variant, safe='')}"
+    return url
+
+
 def update(page: Path, folder: str, variant: str) -> str:
     text = page.read_text(encoding="utf-8")
     h1 = H1_RE.search(text)
     name = re.sub(r"\s*\([^)]*\)\s*$", "", _text(h1.group(1))) if h1 else folder
     name = name or folder
 
-    if DOWNLOAD_MARK not in text:
-        attrs = (
-            f' data-theme-download data-folder="{html.escape(folder, quote=True)}"'
-            f' data-name="{html.escape(name, quote=True)}"'
-        )
-        if variant:
-            attrs += f' data-variant="{html.escape(variant, quote=True)}"'
-        button = f'<button type="button" class="btn"{attrs}>Download theme</button>'
-        actions = ACTIONS_RE.search(text)
-        if actions:
-            text = text[: actions.start()] + actions.group(1) + actions.group(2) + button + actions.group(3) + text[actions.end():]
+    attrs = (
+        f' data-theme-download data-folder="{html.escape(folder, quote=True)}"'
+        f' data-name="{html.escape(name, quote=True)}"'
+    )
+    if variant:
+        attrs += f' data-variant="{html.escape(variant, quote=True)}"'
+
+    preview_href = html.escape(_studio_href(folder, "preview", variant), quote=True)
+    edit_href = html.escape(_studio_href(folder, "edit", variant), quote=True)
+    update_href = html.escape(_studio_href(folder, "submit", variant), quote=True)
+    new_actions_inner = (
+        f'<a class="btn btn-primary" data-studio-action="preview" href="{preview_href}">Preview in Studio</a>'
+        f'<a class="btn" data-studio-action="edit" href="{edit_href}">Edit in Studio</a>'
+        f'<a class="btn" data-studio-action="update" href="{update_href}">Update in Studio</a>'
+        f'<button type="button" class="btn"{attrs}>Download theme</button>'
+    )
+    actions = ACTIONS_RE.search(text)
+    if actions and ('data-studio-action="edit"' not in actions.group(2) or DOWNLOAD_MARK not in actions.group(2) or 'theme.html?' in actions.group(2)):
+        text = text[: actions.start()] + actions.group(1) + new_actions_inner + actions.group(3) + text[actions.end():]
 
     text = SCRIPTS_RE.sub("", text)
     body = BODY_END_RE.search(text)

@@ -46,20 +46,26 @@
         return `${SITE_ORIGIN}/${encodePathSegments(root)}/`;
     }
 
-    /** Theme detail page (query params). */
+    /** Interactive theme preview URL in Theme Studio (replaces retired theme.html). */
     function buildThemeDetailPageUrl(catalogFolder, variantSegment, baseHref) {
         const theme = cleanFolder(catalogFolder);
-        if (!theme) return String(baseHref || './theme.html');
+        const explicitBase = String(baseHref || '').trim();
+        if (!theme) return explicitBase || '/studio-test/';
         const v = String(variantSegment || '').trim();
-        let base = String(baseHref || './theme.html').replace(/\?.*$/, '');
-        // Preserve current localized page if on a localized index or theme page (e.g. index_de.html -> theme_de.html)
+        if (explicitBase && !/^(?:\.\/)?theme(?:_[a-z0-9-]+)?\.html(?:\?.*)?$/i.test(explicitBase)) {
+            let cleanBase = explicitBase.replace(/\?.*$/, '');
+            let custom = `${cleanBase}?folder=${encodeURIComponent(theme)}&mode=preview`;
+            if (v) custom += `&variant=${encodeURIComponent(v)}`;
+            return custom;
+        }
+        let studioBase = '/studio-test/';
         if (typeof location !== 'undefined' && location.pathname) {
             const locMatch = location.pathname.match(/(?:index|theme)_([a-zA-Z0-9_-]+)\.html$/i);
-            if (locMatch && (base === './theme.html' || base === 'theme.html')) {
-                base = `./theme_${locMatch[1]}.html`;
+            if (locMatch) {
+                studioBase = `/studio-test/index_${locMatch[1]}.html`;
             }
         }
-        let href = `${base}?theme=${encodeURIComponent(theme)}`;
+        let href = `${studioBase}?folder=${encodeURIComponent(theme)}&mode=preview`;
         if (v) href += `&variant=${encodeURIComponent(v)}`;
         return href;
     }

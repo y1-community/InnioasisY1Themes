@@ -1,11 +1,12 @@
 /* Theme Studio app-shell worker. Theme packages and preview art stay network-first
    so an edit never previews a stale player asset. */
-const CACHE = 'innioasis-studio-v34';
+const CACHE = 'innioasis-studio-v35';
 const SHELL = [
   './',
   './index.html',
   './studio.css',
   './studio.js',
+  '../studio-drop-handoff.js',
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png',
@@ -43,7 +44,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   const url = new URL(request.url);
-  const isShell = SHELL.some((path) => url.pathname.endsWith(path.replace('./', '/')));
+  const isShell = SHELL.some((path) => url.pathname.endsWith(path.replace(/^\.\.?\/+/, '/')));
   if (!isShell) return;
 
   event.respondWith(

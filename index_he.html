@@ -63,14 +63,14 @@
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script defer src="theme-packaging.js?v=20261010perf"></script>
     <script src="theme-display-name.js?v=20260624"></script>
-    <script src="y1-theme-preview.js?v=20261115menus"></script>
+    <script src="y1-theme-preview.js?v=20261123studio2"></script>
     <script src="theme-artwork-compat.js?v=20260711"></script>
     <script src="gold-theme-detect.js?v=20261109perf"></script>
-    <script src="gallery-chrome.js?v=20261117studio3"></script>
+    <script src="gallery-chrome.js?v=20261123studio2"></script>
     <script src="author-links.js?v=20260622"></script>
-    <script src="site-init.js?v=20261123donatecompletion2"></script>
+    <script src="site-init.js?v=20261123studio2"></script>
     <script src="gallery-loaded-theme.js?v=20261109perf"></script>
-    <script src="theme-share-links.js"></script>
+    <script src="theme-share-links.js?v=20261123studio2"></script>
     <script src="author-submission-policy.js?v=20260523"></script>
     <link rel="stylesheet" href="theme-frozen.css?v=20260526">
     <script src="theme-frozen.js?v=20260526"></script>
@@ -861,7 +861,7 @@
             <span class="gallery-brand-text">Innioasis Y1 ו-Y2 ערכות נושא</span>
         </a>
         <div class="gallery-tabs" aria-label="קטעי אתר">
-            <a class="gallery-tab" href="upload_he.html">העלה</a>
+            <a class="gallery-tab" href="/studio-test/index_he.html?welcome=upload">העלה</a>
         </div>
         <div class="topbar-search-wrap">
             <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
@@ -903,7 +903,7 @@
                 </figure>
             </div>
             <div class="cast-div hero-actions">
-                <a href="upload_he.html" class="btn"><i class="fa-solid fa-upload" aria-hidden="true"></i> העלה ערכת נושא</a>
+                <a href="/studio-test/index_he.html?welcome=upload" class="btn"><i class="fa-solid fa-upload" aria-hidden="true"></i> העלה ערכת נושא</a>
                 <a id="rockbox-btn" class="btn" href="#"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Rockbox ערכות נושא</a>
             </div>
         </section>
@@ -5169,7 +5169,7 @@
                         location.href = ThemeShareLinks.buildThemeDetailPageUrl(key, v);
                         return;
                     }
-                    let href = `./theme.html?theme=${encodeURIComponent(key)}`;
+                    let href = `/studio-test/index_he.html?folder=${encodeURIComponent(key)}&mode=preview`;
                     if (v) href += `&variant=${encodeURIComponent(v)}`;
                     location.href = href;
                 };

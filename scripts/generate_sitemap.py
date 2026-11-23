@@ -203,7 +203,8 @@ def _theme_entries(known: dict[str, str]) -> tuple[list[tuple[str, str, str, str
             continue
         if not _noindex(index):
             loc = _encode([folder.name])
-            entries.append((loc, _lastmod(known, loc, bumped=True), "weekly", "0.8"))
+            prio = "0.95" if folder.name == "studio-test" else "0.8"
+            entries.append((loc, _lastmod(known, loc, bumped=True), "weekly", prio))
         for translated in sorted(folder.glob("index_*.html")):
             if not LOCALE_FILE_RE.match(translated.name) or _noindex(translated):
                 continue

@@ -1483,6 +1483,14 @@
         node.src = base + "site-downloads.js?v=20261123donatecompletion";
         node.defer = true;
         document.head.appendChild(node);
+
+        if (!global.Y1StudioDropHandoff && !document.getElementById("studio-drop-handoff-script")) {
+            var dropNode = document.createElement("script");
+            dropNode.id = "studio-drop-handoff-script";
+            dropNode.src = base + "studio-drop-handoff.js?v=20261123studio2";
+            dropNode.defer = true;
+            document.head.appendChild(dropNode);
+        }
     }
     loadSiteDownloads();
 

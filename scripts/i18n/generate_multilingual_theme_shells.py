@@ -159,7 +159,9 @@ def generate_localized_shell(
     escaped_folder = html.escape(folder, quote=True)
 
     folder_encoded = urllib.parse.quote(folder)
-    target_theme_page = f"{CANONICAL_HOST}/theme_{locale}.html?theme={folder_encoded}"
+    target_theme_page = f"{CANONICAL_HOST}/studio-test/?folder={folder_encoded}&amp;mode=preview"
+    target_edit_page = f"{CANONICAL_HOST}/studio-test/?folder={folder_encoded}&amp;mode=edit"
+    target_update_page = f"{CANONICAL_HOST}/studio-test/?folder={folder_encoded}&amp;mode=submit"
     cover_url = f"{CANONICAL_HOST}/{folder_encoded}/{urllib.parse.quote(cover)}"
     shell_page_url = f"{CANONICAL_HOST}/{folder_encoded}/index_{locale}.html"
 
@@ -242,7 +244,7 @@ def generate_localized_shell(
       <span class="gallery-brand-text">{escaped_site_title}</span>
     </a>
     <div class="gallery-tabs" aria-label="Site sections">
-      <a class="gallery-tab" href="https://y1-themes.vercel.app">Editor</a>
+      <a class="gallery-tab" href="/studio-test/">Editor</a>
       <a class="gallery-tab" href="https://themes.innioasis.app/upload_{locale}.html">Upload</a>
     </div>
     <form class="topbar-search-wrap" action="https://themes.innioasis.app/index_{locale}.html" method="get">
@@ -255,7 +257,7 @@ def generate_localized_shell(
     <h1 class="site-display">{escaped_title}</h1>
     <p class="theme-seo-shell-author">{escaped_author}</p>
     <p class="theme-seo-shell-desc">{escaped_desc}</p>
-    <p class="theme-seo-shell-actions"><a class="btn btn-primary" href="{target_theme_page}">{html.escape(open_btn)}</a><button type="button" class="btn" data-theme-download data-folder="{escaped_folder}" data-name="{escaped_title}">Download theme</button></p>
+    <p class="theme-seo-shell-actions"><a class="btn btn-primary" data-studio-action="preview" href="{target_theme_page}">{html.escape(open_btn)}</a><a class="btn" data-studio-action="edit" href="{target_edit_page}">Edit in Studio</a><a class="btn" data-studio-action="update" href="{target_update_page}">Update in Studio</a><button type="button" class="btn" data-theme-download data-folder="{escaped_folder}" data-name="{escaped_title}">Download theme</button></p>
     <img src="/luci-alt.svg" alt="Innioasis Y1 &amp; Y2 Themes gallery hosted by Luci Ltd at luci.ltd — themes.innioasis.app" width="1" height="1" decoding="async" class="theme-seo-hosting-mark" aria-hidden="true" />
   </main>
   <div id="footer-root"></div>

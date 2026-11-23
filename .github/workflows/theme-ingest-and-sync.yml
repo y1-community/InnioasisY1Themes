@@ -406,7 +406,7 @@ jobs:
                 "",
                 "The automated listing update finished successfully. **themes.json** and your theme files on `main` are up to date.",
                 "",
-                "**Your theme page** (bookmark or share this link):",
+                "**Preview your theme in Theme Studio** (bookmark or share this link):",
                 urlLines,
                 "",
                                 "The main gallery at **https://themes.innioasis.app** should update within a few minutes after the **Deploy Cloudflare Pages** workflow finishes (usually right after this ingest run).",

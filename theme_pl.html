@@ -54,6 +54,7 @@
     <meta name="publisher" content="Luci Ltd">
     <link rel="author" href="https://www.luci.ltd" title="Luci Ltd - hosting stron internetowych dla motywów Innioasis Y1 i Y2.">
 
+    <meta name="robots" content="noindex,follow">
     <link rel="canonical" id="theme-canonical" href="https://themes.innioasis.app/theme_pl.html">
     <script>
       (function () {
@@ -100,7 +101,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="theme-packaging.js"></script>
     <script src="theme-display-name.js?v=20260624"></script>
-    <script src="y1-theme-preview.js?v=20261111hq1"></script>
+    <script src="y1-theme-preview.js?v=20261123studio2"></script>
     <script src="theme-artwork-compat.js?v=20260524"></script>
     <script src="gold-theme-detect.js?v=20261109perf"></script>
     <script src="gallery-chrome.js?v=20261110header"></script>
@@ -333,7 +334,10 @@
                             <a id="theme-action-remove" class="btn btn-secondary" style="text-decoration:none;padding:.45rem .75rem;font-size:0.82rem;font-weight:normal;" href="__THEME_UPLOAD_REMOVE_HREF__">Poproś o usunięcie</a>
                         </div>
                         <div id="download-area" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-                            <button id="download-btn" class="btn btn-primary" style="font-weight: normal"><i class="fa-solid fa-download" style="margin-right: 4px;"></i> Pobierz</button>
+                            <a id="studio-preview-link" class="btn btn-primary" style="text-decoration:none;font-weight:normal;" href="/studio-test/index_pl.html?mode=preview"><i class="fa-solid fa-eye" style="margin-right:4px;"></i> Preview in Studio</a>
+                            <a id="studio-edit-link" class="btn btn-secondary" style="text-decoration:none;font-weight:normal;" href="/studio-test/index_pl.html?mode=edit"><i class="fa-solid fa-pen-ruler" style="margin-right:4px;"></i> Edit in Studio</a>
+                            <a id="studio-update-link" class="btn btn-secondary" style="text-decoration:none;font-weight:normal;" href="/studio-test/index_pl.html?mode=submit"><i class="fa-solid fa-paper-plane" style="margin-right:4px;"></i> Update in Studio</a>
+                            <button id="download-btn" class="btn btn-secondary" style="font-weight: normal"><i class="fa-solid fa-download" style="margin-right: 4px;"></i> Pobierz</button>
                             <label id="mask-variant-wrap" style="display:none;align-items:center;gap:6px;color:var(--text-secondary);font-size:0.86rem;">
                                 <img id="mask-variant-preview" alt="Podgląd maski" style="display:none;width:46px;height:46px;object-fit:contain;border-radius:6px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.04);" />
                                 Odmiana maski
@@ -370,7 +374,7 @@
     <div id="footer-root"></div>
     <div id="support-toolbar-slot"></div>
 
-    <script src="site-init.js?v=20261123donatecompletion2"></script>
+    <script src="site-init.js?v=20261123studio2"></script>
     <script src="nav.js?v=20261120studio"></script>
     <script>
 

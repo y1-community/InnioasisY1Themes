@@ -2107,6 +2107,7 @@
                             if (previewIu) {
                                 var maxPrevH = Math.max(40, H - HOME_PREVIEW_TOP_MARGIN - 8);
                                 var tile = document.createElement('div');
+                                if (sel.assetPath) tile.setAttribute('data-theme-art-box', sel.assetPath);
                                 tile.style.cssText =
                                     'position:absolute;right:' +
                                     HOME_PREVIEW_RIGHT_MARGIN +
@@ -2220,6 +2221,7 @@
                         rp.appendChild(rt);
 
                         var imgBox = document.createElement('div');
+                        if (selS.assetPath) imgBox.setAttribute('data-theme-art-box', selS.assetPath);
                         imgBox.style.cssText =
                             'position:absolute;top:96px;left:0;right:0;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;';
                         if (isAbout) {
@@ -2313,8 +2315,9 @@
                         erp.appendChild(et);
                         if (eqSel.iconUrl) {
                             var eib = document.createElement('div');
+                            if (eqSel.assetPath) eib.setAttribute('data-theme-art-box', eqSel.assetPath);
                             eib.style.cssText =
-                                'position:absolute;top:96px;left:0;right:0;display:flex;flex-direction:column;align-items:center;';
+                                'position:absolute;top:96px;left:0;right:0;height:146px;display:flex;flex-direction:column;align-items:center;justify-content:center;';
                             var eim = document.createElement('img');
                             eim.src = eqSel.iconUrl;
                             eim.alt = eqSel.label || '';
@@ -2348,6 +2351,7 @@
                             'px;display:flex;align-items:center;justify-content:center;z-index:10;';
                         if (themeUrl) {
                             var box = document.createElement('div');
+                            box.setAttribute('data-theme-art-box', 'themeCover');
                             box.style.cssText =
                                 'width:' +
                                 Math.floor(W * 0.7) +
@@ -2357,6 +2361,7 @@
                             var tim = document.createElement('img');
                             tim.src = themeUrl;
                             tim.alt = 'Theme';
+                            tim.setAttribute('data-theme-asset-path', 'themeCover');
                             bindPreviewImgFallback(tim);
                             tim.style.cssText =
                                 'width:100%;height:100%;object-fit:contain;background:rgba(255,255,255,0.04);';
@@ -2615,6 +2620,7 @@
                             H +
                             'px;background:rgba(0,0,0,0.45);z-index:40;display:flex;align-items:center;justify-content:center;';
                         var panel = document.createElement('div');
+                        panel.setAttribute('data-theme-asset-path', 'dialogConfig.dialogBackground');
                         var dgbg = dialogCfg.dialogBackgroundColor || 'rgba(0,0,0,0.85)';
                         panel.style.cssText =
                             'width:75%;max-width:380px;background-color:' +
@@ -3318,15 +3324,116 @@
                 function assetContextView(assetPath) {
                     var path = String(assetPath || '');
                     if (/^homePageConfig\./.test(path)) return 'home';
+                    if (/^settingConfig\.equalizer_/i.test(path)) return 'settingsEqualizer';
                     if (/^settingConfig\./.test(path)) return 'settings';
                     if (/^fileConfig\./.test(path)) return 'music_folders';
                     if (/^itemConfig\.|^menuConfig\.|^dialogConfig\./.test(path)) return 'settings';
-                    if (/^statusConfig\.|^themeCover$/.test(path)) return 'home';
+                    if (/^themeCover$/.test(path)) return 'settingsTheme';
+                    if (/^statusConfig\./.test(path)) return 'home';
+                    if (/^globalWallpaper$/i.test(path)) return 'settings';
                     if (/wallpaper/i.test(path) || /desktopMask$/.test(path)) return 'home';
                     return '';
                 }
 
+                function applyRevealAssetState(assetPath) {
+                    var p = String(assetPath || '');
+                    var batt = /^statusConfig\.battery\.(\d)$/.exec(p);
+                    if (batt) {
+                        sim.batteryLevel = Number(batt[1]);
+                        sim.isCharging = false;
+                        return;
+                    }
+                    var chg = /^statusConfig\.batteryCharging\.(\d)$/.exec(p);
+                    if (chg) {
+                        sim.batteryLevel = Number(chg[1]);
+                        sim.isCharging = true;
+                        return;
+                    }
+                    if (p === 'statusConfig.blConnected') { sim.bluetoothState = 'connected'; return; }
+                    if (p === 'statusConfig.blConnecting') { sim.bluetoothState = 'connecting'; return; }
+                    if (p === 'statusConfig.blDisconnected') { sim.bluetoothState = 'disconnected'; return; }
+                    if (p === 'statusConfig.headsetWithMic') { sim.headsetState = 'withMic'; return; }
+                    if (p === 'statusConfig.headsetWithoutMic') { sim.headsetState = 'withoutMic'; return; }
+                    if (p === 'statusConfig.playing') { sim.playState = 'playing'; return; }
+                    if (p === 'statusConfig.pause') { sim.playState = 'pause'; return; }
+                    if (p === 'statusConfig.stop') { sim.playState = 'stop'; return; }
+                    if (p === 'statusConfig.fmPlaying') { sim.playState = 'fmPlaying'; return; }
+                    if (p === 'statusConfig.audiobookPlaying') { sim.playState = 'audiobookPlaying'; return; }
+                    if (p === 'settingConfig.shuffleOn') { sim.shuffleEnabled = true; return; }
+                    if (p === 'settingConfig.shuffleOff') { sim.shuffleEnabled = false; return; }
+                    if (p === 'settingConfig.repeatOff') { sim.repeatMode = 'off'; return; }
+                    if (p === 'settingConfig.repeatAll') { sim.repeatMode = 'all'; return; }
+                    if (p === 'settingConfig.repeatOne') { sim.repeatMode = 'one'; return; }
+                    if (p === 'settingConfig.fileExtensionOn') { sim.fileExtensionsEnabled = true; return; }
+                    if (p === 'settingConfig.fileExtensionOff') { sim.fileExtensionsEnabled = false; return; }
+                    if (p === 'settingConfig.keyLockOn') { sim.keyLockEnabled = true; return; }
+                    if (p === 'settingConfig.keyLockOff') { sim.keyLockEnabled = false; return; }
+                    if (p === 'settingConfig.keyToneOn') { sim.keyToneEnabled = true; return; }
+                    if (p === 'settingConfig.keyToneOff') { sim.keyToneEnabled = false; return; }
+                    if (p === 'settingConfig.keyVibrationOn') { sim.keyVibrationEnabled = true; return; }
+                    if (p === 'settingConfig.keyVibrationOff') { sim.keyVibrationEnabled = false; return; }
+                    if (p === 'settingConfig.displayBatteryOn') { sim.displayBatteryEnabled = true; return; }
+                    if (p === 'settingConfig.displayBatteryOff') { sim.displayBatteryEnabled = false; return; }
+                    var td = /^settingConfig\.timedShutdown_(.+)$/.exec(p);
+                    if (td) { sim.timedShutdownValue = td[1]; return; }
+                    var bl = /^settingConfig\.backlight_(.+)$/.exec(p);
+                    if (bl) { sim.backlightValue = bl[1]; return; }
+                }
+
                 container._y1TpApi = {
+                    snapshotState: function () {
+                        return {
+                            themeViewId: sim.themeViewId,
+                            themeSelectedIndex: sim.themeSelectedIndex,
+                            themeHistory: Array.isArray(sim.themeHistory) ? sim.themeHistory.slice() : [],
+                            dialogVisible: !!sim.dialogVisible,
+                            dialogTitle: sim.dialogTitle,
+                            dialogMessage: sim.dialogMessage,
+                            dialogOptions: Array.isArray(sim.dialogOptions) ? sim.dialogOptions.slice() : [],
+                            dialogSelectedIndex: sim.dialogSelectedIndex,
+                            batteryLevel: sim.batteryLevel,
+                            isCharging: sim.isCharging,
+                            playState: sim.playState,
+                            bluetoothState: sim.bluetoothState,
+                            headsetState: sim.headsetState,
+                            timedShutdownValue: sim.timedShutdownValue,
+                            backlightValue: sim.backlightValue,
+                            shuffleEnabled: sim.shuffleEnabled,
+                            repeatMode: sim.repeatMode,
+                            fileExtensionsEnabled: sim.fileExtensionsEnabled,
+                            keyLockEnabled: sim.keyLockEnabled,
+                            keyToneEnabled: sim.keyToneEnabled,
+                            keyVibrationEnabled: sim.keyVibrationEnabled,
+                            displayBatteryEnabled: sim.displayBatteryEnabled
+                        };
+                    },
+                    restoreState: function (snap) {
+                        if (!snap) return false;
+                        sim.themeViewId = snap.themeViewId || 'home';
+                        sim.themeSelectedIndex = Number(snap.themeSelectedIndex) || 0;
+                        sim.themeHistory = Array.isArray(snap.themeHistory) ? snap.themeHistory.slice() : [];
+                        sim.dialogVisible = !!snap.dialogVisible;
+                        sim.dialogTitle = snap.dialogTitle || '';
+                        sim.dialogMessage = snap.dialogMessage || '';
+                        sim.dialogOptions = Array.isArray(snap.dialogOptions) ? snap.dialogOptions.slice() : [];
+                        sim.dialogSelectedIndex = Number(snap.dialogSelectedIndex) || 0;
+                        sim.batteryLevel = snap.batteryLevel;
+                        sim.isCharging = snap.isCharging;
+                        sim.playState = snap.playState;
+                        sim.bluetoothState = snap.bluetoothState;
+                        sim.headsetState = snap.headsetState;
+                        sim.timedShutdownValue = snap.timedShutdownValue;
+                        sim.backlightValue = snap.backlightValue;
+                        sim.shuffleEnabled = snap.shuffleEnabled;
+                        sim.repeatMode = snap.repeatMode;
+                        sim.fileExtensionsEnabled = snap.fileExtensionsEnabled;
+                        sim.keyLockEnabled = snap.keyLockEnabled;
+                        sim.keyToneEnabled = snap.keyToneEnabled;
+                        sim.keyVibrationEnabled = snap.keyVibrationEnabled;
+                        sim.displayBatteryEnabled = snap.displayBatteryEnabled;
+                        paint();
+                        return true;
+                    },
                     revealAsset: function (assetPath) {
                         if (!interactive || !assetPath) return false;
                         var view = assetContextView(assetPath);
@@ -3335,6 +3442,7 @@
                         sim.themeHistory = [];
                         sim.themeViewId = view;
                         sim.themeSelectedIndex = 0;
+                        applyRevealAssetState(assetPath);
                         /* Dialog art only exists on screen while a dialog is up,
                            so give the author the shutdown dialog to look at
                            instead of an empty settings list. */
@@ -3348,7 +3456,14 @@
                             return true;
                         }
                         try {
-                            var items = view === 'settings' ? buildSettingsItems(cfg, buildFileUrl, contentFolder, sim) : view === 'home' ? homeItems : [];
+                            var items =
+                                view === 'settings'
+                                    ? buildSettingsItems(cfg, buildFileUrl, contentFolder, sim)
+                                    : view === 'settingsEqualizer'
+                                      ? buildEqualizerItems(settingCfg, buildFileUrl, contentFolder)
+                                      : view === 'home'
+                                        ? homeItems
+                                        : [];
                             for (var i = 0; i < items.length; i++) {
                                 if (items[i] && items[i].assetPath === assetPath) {
                                     sim.themeSelectedIndex = i;

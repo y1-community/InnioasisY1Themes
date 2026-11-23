@@ -106,8 +106,8 @@ CORE_PAGE_STEMS = [
 ]
 
 # Pages that live in a subdirectory keep their localised copies beside them:
-# studio-test/index.html -> studio-test/index_fr.html. The studio is noindex,
-# so it gets no hreflang or canonical work, only the baked catalogue copy.
+# studio-test/index.html -> studio-test/index_fr.html. Theme Studio is indexed
+# so people searching for a Y1/Y2 theme maker or editor can find it directly.
 NESTED_PAGE_STEMS = [
     "studio-test/index",
 ]

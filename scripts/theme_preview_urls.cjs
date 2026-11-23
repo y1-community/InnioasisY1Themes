@@ -1,5 +1,5 @@
 /**
- * Build public theme.html preview URLs for PR comments (Node / github-script).
+ * Build public Theme Studio preview URLs for PR comments (Node / github-script).
  * @param {string} hint Theme folder or path (e.g. "MyTheme", "MyTheme/Variants/Dark/_share").
  * @returns {string}
  */
@@ -8,7 +8,7 @@ function themePreviewUrlFromHint(hint) {
         .split("/")
         .map((s) => s.trim())
         .filter(Boolean);
-    if (!parts.length) return "https://themes.innioasis.app/";
+    if (!parts.length) return "https://themes.innioasis.app/studio-test/";
     const folder = parts[0];
     let variant = "";
     const vi = parts.findIndex((p) => p.toLowerCase() === "variants");
@@ -16,7 +16,7 @@ function themePreviewUrlFromHint(hint) {
         const seg = parts[vi + 1];
         if (seg.toLowerCase() !== "_share") variant = seg;
     }
-    let url = `https://themes.innioasis.app/theme.html?theme=${encodeURIComponent(folder)}`;
+    let url = `https://themes.innioasis.app/studio-test/?folder=${encodeURIComponent(folder)}&mode=preview`;
     if (variant) url += `&variant=${encodeURIComponent(variant)}`;
     return url;
 }
@@ -31,7 +31,7 @@ function themePreviewUrlsFromHints(hints) {
         seen.add(url);
         out.push(url);
     }
-    return out.length ? out : ["https://themes.innioasis.app/"];
+    return out.length ? out : ["https://themes.innioasis.app/studio-test/"];
 }
 
 module.exports = { themePreviewUrlFromHint, themePreviewUrlsFromHints };

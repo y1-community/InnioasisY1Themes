@@ -48,18 +48,10 @@ export async function onRequest(context) {
         return context.next();
     }
 
-    const dest = new URL('/theme.html', url.origin);
-    dest.searchParams.set('theme', parsed.theme);
+    const dest = new URL('/studio-test/', url.origin);
+    dest.searchParams.set('folder', parsed.theme);
+    dest.searchParams.set('mode', 'preview');
     if (parsed.variant) dest.searchParams.set('variant', parsed.variant);
-
-    const assetRequest = new Request(dest.toString(), {
-        method,
-        headers: context.request.headers
-    });
-
-    if (context.env && context.env.ASSETS) {
-        return context.env.ASSETS.fetch(assetRequest);
-    }
 
     return Response.redirect(dest.toString(), 302);
 }

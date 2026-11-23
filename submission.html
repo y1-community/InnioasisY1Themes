@@ -207,6 +207,8 @@
             var raw = (params.get('pr') || params.get('pull') || '').trim();
             var match = raw.match(/(\d+)/);
             var prNumber = match ? match[1] : '';
+            var folderParam = String(params.get('folder') || params.get('theme') || '').trim();
+            var variantParam = String(params.get('variant') || '').trim();
 
             var stateEl = document.getElementById('state');
             var detailsEl = document.getElementById('details');
@@ -218,14 +220,51 @@
                 stateEl.className = 'state state--' + (kind || 'unknown');
             }
 
-            function addAction(label, href, primary) {
+            function studioUrlFor(folder, mode, variant) {
+                if (!folder) return '';
+                var url = '/studio-test/?folder=' + encodeURIComponent(folder) + '&mode=' + encodeURIComponent(mode || 'preview');
+                if (variant) url += '&variant=' + encodeURIComponent(variant);
+                return url;
+            }
+
+            function addAction(label, href, primary, sameTab) {
                 var link = document.createElement('a');
                 link.className = 'btn' + (primary ? ' btn--primary' : '');
                 link.href = href;
-                link.target = '_blank';
-                link.rel = 'noopener';
+                if (!sameTab) {
+                    link.target = '_blank';
+                    link.rel = 'noopener';
+                }
                 link.textContent = label;
                 actionsEl.appendChild(link);
+                return link;
+            }
+
+            function renderActions(opts) {
+                opts = opts || {};
+                var folder = String(opts.folder || '').trim();
+                var variant = String(opts.variant || '').trim();
+                var isRemoval = !!opts.isRemoval;
+                var isMerged = !!opts.isMerged;
+                var isLive = !!opts.isLive;
+                actionsEl.innerHTML = '';
+                actionsEl.hidden = false;
+                if (folder && !isRemoval) {
+                    var previewHref = studioUrlFor(folder, 'preview', variant);
+                    var editHref = studioUrlFor(folder, 'edit', variant);
+                    addAction(
+                        isMerged ? 'Preview in Theme Studio' : 'Open in Studio Preview',
+                        previewHref,
+                        isMerged || isLive,
+                        true
+                    );
+                    if (isMerged || isLive) {
+                        addAction('Edit in Theme Studio', editHref, false, true);
+                        addAction('Static theme page', '/' + encodeURIComponent(folder) + '/', false, true);
+                    }
+                }
+                addAction('Open the pull request', htmlUrl, !(folder && !isRemoval && (isMerged || isLive)), false);
+                addAction('Back to the gallery', '/', false, true);
             }
 
             function addDetail(label, value) {
@@ -252,6 +291,49 @@
                 }
             }
 
+            function folderFromPrFiles(files) {
+                if (!Array.isArray(files)) return '';
+                for (var i = 0; i < files.length; i += 1) {
+                    var name = String((files[i] && files[i].filename) || '').trim();
+                    if (!name) continue;
+                    if (/^[^/]+\/config\.json$/i.test(name)) {
+                        return name.replace(/\/config\.json$/i, '');
+                    }
+                }
+                for (var j = 0; j < files.length; j += 1) {
+                    var z = String((files[j] && files[j].filename) || '').trim();
+                    if (/^[^/]+\.zip$/i.test(z)) {
+                        return z.replace(/\.zip$/i, '');
+                    }
+                }
+                return '';
+            }
+
+            function folderFromPrBody(body) {
+                var text = String(body || '');
+                var studioMatch = text.match(/\/studio-test\/\?folder=([^&\s)]+)/i);
+                if (studioMatch && studioMatch[1]) {
+                    try { return decodeURIComponent(studioMatch[1]); } catch (_) { return studioMatch[1]; }
+                }
+                var themeMatch = text.match(/theme\.html\?theme=([^&\s)]+)/i);
+                if (themeMatch && themeMatch[1]) {
+                    try { return decodeURIComponent(themeMatch[1]); } catch (_) { return themeMatch[1]; }
+                }
+                var folderLine = text.match(/(?:catalog\s*folder|theme\s*folder|folder)\s*[:=]\s*`?([^`\r\n]+)`?/i);
+                if (folderLine && folderLine[1]) return folderLine[1].trim();
+                return '';
+            }
+
+            function checkThemeLive(folder, variant) {
+                if (!folder) return Promise.resolve(false);
+                var path = variant
+                    ? '/' + encodeURIComponent(folder) + '/Variants/' + encodeURIComponent(variant) + '/config.json'
+                    : '/' + encodeURIComponent(folder) + '/config.json';
+                return fetch(path, { method: 'HEAD', cache: 'no-cache' })
+                    .then(function (r) { return !!(r && r.ok); })
+                    .catch(function () { return false; });
+            }
+
             if (!prNumber) {
                 setState('No request in this link', 'bad');
                 statusEl.textContent = 'This address is missing the request number. Open the link the Studio gave you after submitting.';
@@ -259,11 +341,10 @@
             }
 
             var api = 'https://api.github.com/repos/' + OWNER + '/' + REPO + '/pulls/' + prNumber;
+            var filesApi = api + '/files?per_page=100';
             var htmlUrl = 'https://github.com/' + OWNER + '/' + REPO + '/pull/' + prNumber;
 
-            actionsEl.hidden = false;
-            addAction('Open the pull request', htmlUrl, true);
-            addAction('Back to the gallery', '/');
+            renderActions({ folder: folderParam, variant: variantParam, isMerged: false, isLive: false });
 
             statusEl.textContent = 'Checking with the gallery…';
 
@@ -287,25 +368,63 @@
                     addDetail('Requested by', pr.user && pr.user.login ? '@' + pr.user.login : '');
                     addDetail('Opened', formatDate(pr.created_at));
 
-                    if (pr.merged_at) {
-                        setState('Merged ✓', 'ok');
-                        addDetail('Merged', formatDate(pr.merged_at));
-                        statusEl.textContent = 'Done: this request has been merged into the gallery.';
-                        return;
-                    }
-                    if (pr.state === 'closed') {
-                        setState('Closed without merging', 'bad');
-                        statusEl.textContent = 'A maintainer closed this request without merging it. Open the pull request to read why.';
-                        return;
-                    }
-                    if (pr.draft) {
-                        setState('Waiting for a maintainer', 'wait');
-                        statusEl.textContent = 'The request is still a draft, so nothing has been merged yet.';
-                        return;
-                    }
-                    setState('Open, waiting for a merge', 'wait');
-                    statusEl.textContent =
-                        'The request exists and has not been merged yet. Updates and removals always wait for a maintainer; new themes merge by themselves once their checks pass. Reload this page to check again.';
+                    var isRemoval = /^\[Removal\]/i.test(String(pr.title || ''));
+                    var resolvedFolder = folderParam || folderFromPrBody(pr.body);
+
+                    var resolveFolderPromise = resolvedFolder
+                        ? Promise.resolve(resolvedFolder)
+                        : fetch(filesApi, { headers: { Accept: 'application/vnd.github+json' } })
+                              .then(function (r) { return r.ok ? r.json() : []; })
+                              .then(function (files) { return folderFromPrFiles(files); })
+                              .catch(function () { return ''; });
+
+                    return resolveFolderPromise.then(function (folder) {
+                        if (folder && !isRemoval) {
+                            addDetail('Theme folder', folder);
+                        }
+                        if (pr.merged_at) {
+                            addDetail('Merged', formatDate(pr.merged_at));
+                            return checkThemeLive(folder, variantParam).then(function (live) {
+                                if (live && folder && !isRemoval) {
+                                    setState('Live in the gallery ✓', 'ok');
+                                    statusEl.textContent =
+                                        'Your theme is live! Open it in Theme Studio Preview to view, test, or share it.';
+                                } else {
+                                    setState('Merged ✓', 'ok');
+                                    statusEl.textContent = folder && !isRemoval
+                                        ? 'Done: this request has been merged into the gallery. Your theme usually goes live in Theme Studio Preview within a few minutes.'
+                                        : 'Done: this request has been merged into the gallery.';
+                                }
+                                renderActions({
+                                    folder: folder,
+                                    variant: variantParam,
+                                    isRemoval: isRemoval,
+                                    isMerged: true,
+                                    isLive: live
+                                });
+                            });
+                        }
+                        renderActions({
+                            folder: folder,
+                            variant: variantParam,
+                            isRemoval: isRemoval,
+                            isMerged: false,
+                            isLive: false
+                        });
+                        if (pr.state === 'closed') {
+                            setState('Closed without merging', 'bad');
+                            statusEl.textContent = 'A maintainer closed this request without merging it. Open the pull request to read why.';
+                            return;
+                        }
+                        if (pr.draft) {
+                            setState('Waiting for a maintainer', 'wait');
+                            statusEl.textContent = 'The request is still a draft, so nothing has been merged yet.';
+                            return;
+                        }
+                        setState('Open, waiting for a merge', 'wait');
+                        statusEl.textContent =
+                            'The request exists and has not been merged yet. Updates and removals always wait for a maintainer; new themes merge by themselves once their checks pass. Reload this page to check again.';
+                    });
                 })
                 .catch(function (err) {
                     if (err && err.code === 404) {

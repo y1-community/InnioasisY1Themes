@@ -246,7 +246,95 @@
             });
     }
 
+    function studioHref(folder, mode, variant) {
+        var url = '/studio-test/?folder=' + encodeURIComponent(folder) + '&mode=' + encodeURIComponent(mode || 'preview');
+        if (variant) url += '&variant=' + encodeURIComponent(variant);
+        return url;
+    }
+
+    function enhanceThemeShellActions() {
+        var actionsBar = doc.querySelector('.theme-seo-shell-actions');
+        if (!actionsBar || actionsBar.dataset.studioActionsReady === '1') return;
+        var dlBtn = actionsBar.querySelector('[data-theme-download]');
+        var folder = dlBtn ? String(dlBtn.getAttribute('data-folder') || '').trim() : '';
+        var variant = dlBtn ? String(dlBtn.getAttribute('data-variant') || '').trim() : '';
+        if (!folder) {
+            var segs = String(global.location && global.location.pathname || '').split('/').filter(Boolean);
+            if (segs.length && !/\.html$/i.test(segs[0])) {
+                try { folder = decodeURIComponent(segs[0]); } catch (_) { folder = segs[0]; }
+            }
+            if (segs.length >= 3 && segs[1] === 'Variants') {
+                try { variant = decodeURIComponent(segs[2]); } catch (_) { variant = segs[2]; }
+            }
+        }
+        if (!folder) return;
+        actionsBar.dataset.studioActionsReady = '1';
+
+        /* Upgrade legacy "Open preview" link pointing at retired theme.html */
+        var previewHref = studioHref(folder, 'preview', variant);
+        var editHref = studioHref(folder, 'edit', variant);
+        var updateHref = studioHref(folder, 'submit', variant);
+
+        var legacyPreview = actionsBar.querySelector('a[href*="theme.html"], a[data-studio-action="preview"]');
+        if (legacyPreview) {
+            legacyPreview.href = previewHref;
+            legacyPreview.setAttribute('data-studio-action', 'preview');
+            legacyPreview.innerHTML = '<i class="fa-solid fa-eye" aria-hidden="true"></i> Preview in Studio';
+        } else {
+            var previewLink = doc.createElement('a');
+            previewLink.className = 'btn btn-primary';
+            previewLink.href = previewHref;
+            previewLink.setAttribute('data-studio-action', 'preview');
+            previewLink.innerHTML = '<i class="fa-solid fa-eye" aria-hidden="true"></i> Preview in Studio';
+            actionsBar.insertBefore(previewLink, actionsBar.firstChild);
+        }
+
+        if (!actionsBar.querySelector('a[data-studio-action="edit"], a[data-studio-open="edit"]')) {
+            var editLink = doc.createElement('a');
+            editLink.className = 'btn';
+            editLink.href = editHref;
+            editLink.setAttribute('data-studio-action', 'edit');
+            editLink.setAttribute('data-studio-open', 'edit');
+            editLink.title = 'Open this theme as a base in Theme Studio';
+            editLink.innerHTML = '<i class="fa-solid fa-pen-ruler" aria-hidden="true"></i> Edit in Studio';
+            if (dlBtn) actionsBar.insertBefore(editLink, dlBtn);
+            else actionsBar.appendChild(editLink);
+        }
+
+        if (!actionsBar.querySelector('a[data-studio-action="update"], a[data-studio-open="update"], a[data-studio-open="manage"]')) {
+            var updateLink = doc.createElement('a');
+            updateLink.className = 'btn';
+            updateLink.href = updateHref;
+            updateLink.setAttribute('data-studio-action', 'update');
+            updateLink.setAttribute('data-studio-open', 'update');
+            updateLink.title = 'Submit an update or manage this listing in Theme Studio';
+            updateLink.innerHTML = '<i class="fa-solid fa-paper-plane" aria-hidden="true"></i> Update in Studio';
+            if (dlBtn) actionsBar.insertBefore(updateLink, dlBtn);
+            else actionsBar.appendChild(updateLink);
+        }
+
+        /* Keep topbar Editor and Upload tabs pointed at local Studio */
+        var legacyTabs = doc.querySelectorAll('.gallery-tab[href*="y1-themes.vercel.app"], .gallery-tab[href="/studio-test"]');
+        for (var j = 0; j < legacyTabs.length; j++) {
+            legacyTabs[j].setAttribute('href', '/studio-test/');
+        }
+        var uploadTabs = doc.querySelectorAll('.gallery-tab[href$="upload.html"], .gallery-tab[href*="/upload.html"]');
+        for (var u = 0; u < uploadTabs.length; u++) {
+            uploadTabs[u].setAttribute('href', '/studio-test/?welcome=upload');
+        }
+
+        /* Ensure site-wide drag-and-drop into Theme Studio is also active on static theme pages */
+        if (!global.Y1StudioDropHandoff && !doc.getElementById('studio-drop-handoff-script')) {
+            var dropScript = doc.createElement('script');
+            dropScript.id = 'studio-drop-handoff-script';
+            dropScript.src = '/studio-drop-handoff.js?v=20261123studio2';
+            dropScript.defer = true;
+            if (doc.head) doc.head.appendChild(dropScript);
+        }
+    }
+
     function wire() {
+        enhanceThemeShellActions();
         var buttons = doc.querySelectorAll('[data-theme-download]');
         for (var i = 0; i < buttons.length; i++) {
             (function (button) {
@@ -268,5 +356,5 @@
     if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', wire);
     else wire();
 
-    global.ThemePageDownload = { download: download, wire: wire };
+    global.ThemePageDownload = { download: download, wire: wire, enhanceThemeShellActions: enhanceThemeShellActions };
 })(window);

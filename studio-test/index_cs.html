@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <base href="/" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-    <meta name="robots" content="noindex,nofollow" />
+    <meta name="robots" content="index,follow,max-image-preview:large" />
     <meta name="theme-color" content="#2f80ed" />
     <meta name="application-name" content="Theme Studio" />
     <meta name="mobile-web-app-capable" content="yes" />
@@ -26,7 +26,7 @@
            second Studio tab rather than reloading this one and discarding
            unsaved work. */
     </script>
-    <script src="../site-init.js?v=20261123donatecompletion2"></script>
+    <script src="../site-init.js?v=20261123studio2"></script>
     <link rel="manifest" href="/studio-test/manifest.webmanifest" />
     <link rel="icon" href="/y1_illustration.png" />
     <link rel="apple-touch-icon" href="/y1_illustration.png" />
@@ -35,7 +35,7 @@
     <link rel="stylesheet" href="../site-theme.css?v=20261115footer1" />
     <link rel="stylesheet" href="../site-toolbar.css?v=20261123donatecompletion2" />
     <link rel="stylesheet" href="../y1-theme-preview.css?v=20261119menus1" />
-    <link rel="stylesheet" href="/studio-test/studio.css?v=20261123donatecompletion2" />
+    <link rel="stylesheet" href="/studio-test/studio.css?v=20261123studio2" />
 </head>
 
 <body class="site-themes-app site-dock-mode studio-app" data-mode="preview">
@@ -63,10 +63,16 @@
             <div class="studio-command-actions">
                 <span class="studio-unsaved" id="studio-unsaved" hidden><i class="fa-solid fa-circle" aria-hidden="true"></i>Neuloženo</span>
                 <button class="studio-btn studio-btn--themes" id="studio-open-theme" type="button" aria-label="Vyberte téma galerie" aria-controls="studio-swap-panel" aria-expanded="false" title="Vyberte téma galerie">
-                    <i class="fa-solid fa-images" aria-hidden="true"></i><span>Témata</span>
+                    <i class="fa-solid fa-palette" aria-hidden="true"></i><span>Témata</span>
+                </button>
+                <button class="studio-btn studio-btn--open-zip" id="studio-open-zip-bar" type="button" aria-label="Open ZIP from device" title="Open ZIP from device">
+                    <i class="fa-solid fa-file-zipper" aria-hidden="true"></i><span>Open ZIP from device</span>
                 </button>
                 <button class="studio-btn studio-btn--save" id="studio-save" type="button" aria-label="Uložte motiv do tohoto zařízení">
                     <i class="fa-solid fa-download" aria-hidden="true"></i><span>Uložit do zařízení</span>
+                </button>
+                <button class="studio-btn studio-btn--help" id="studio-help-btn" type="button" aria-label="How Theme Studio works" title="How Theme Studio works">
+                    <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
                 </button>
             </div>
         </div>
@@ -248,8 +254,9 @@
                             </div>
                             <div class="studio-asset-detail-preview" id="studio-asset-detail-preview"></div>
                             <div class="studio-asset-detail-actions">
-                                <button class="studio-btn studio-btn--primary" id="studio-asset-replace" type="button"><i class="fa-solid fa-folder-open" aria-hidden="true"></i>Nahradit soubor</button>
-                                <button class="studio-btn" id="studio-asset-theme" type="button" title="Vyměňte stejné dílo z jiného motivu galerie"><i class="fa-solid fa-images" aria-hidden="true"></i>Z tématu</button>
+                                <button class="studio-btn studio-btn--primary" id="studio-asset-replace" type="button"><i class="fa-solid fa-images" aria-hidden="true"></i>Nahradit soubor</button>
+                                <button class="studio-btn" id="studio-asset-theme" type="button" title="Vyměňte stejné dílo z jiného motivu galerie"><i class="fa-solid fa-palette" aria-hidden="true"></i>Z tématu</button>
+                                <button class="studio-btn" id="studio-asset-save" type="button" title="Save this asset to your device (blank slots export a transparent PNG at the recommended size)"><i class="fa-solid fa-download" aria-hidden="true"></i><span>Save to device</span></button>
                                 <button class="studio-btn" id="studio-asset-paste" type="button"><i class="fa-solid fa-paste" aria-hidden="true"></i>Pasta</button>
                                 <button class="studio-btn" id="studio-asset-blank" type="button" title="Složte tento soubor a použijte plně průhledný zástupný symbol"><i class="fa-solid fa-trash-can" aria-hidden="true"></i>Prázdný</button>
                                 <button class="studio-btn" id="studio-asset-reset" type="button"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Resetovat</button>
@@ -391,9 +398,66 @@
 
     <div class="studio-toast" id="studio-toast" role="status" aria-live="polite"></div>
 
+    <div class="studio-modal studio-onboarding" id="studio-onboarding" hidden>
+        <div class="studio-modal-card studio-onboarding-card" role="dialog" aria-modal="true" aria-labelledby="studio-onboarding-title">
+            <div class="studio-onboarding-head">
+                <span class="studio-eyebrow"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> Getting started</span>
+                <button class="studio-onboarding-x" id="studio-onboarding-x" type="button" aria-label="Close guide">
+                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                </button>
+            </div>
+            <h2 id="studio-onboarding-title">Welcome to Innioasis Theme Studio</h2>
+            <p id="studio-onboarding-lead">Design, remix, preview, and publish custom themes for your Innioasis Y1 or Y2 right in your browser — no desktop software required.</p>
+            <div class="studio-onboarding-steps">
+                <div class="studio-onboarding-step">
+                    <span class="studio-onboarding-icon" aria-hidden="true"><i class="fa-solid fa-palette"></i></span>
+                    <div>
+                        <strong>Start from a gallery theme as a template</strong>
+                        <p>Pick any existing theme from the community gallery to remix its icons, wallpapers, masks, fonts, and colors into something new.</p>
+                    </div>
+                </div>
+                <div class="studio-onboarding-step">
+                    <span class="studio-onboarding-icon" aria-hidden="true"><i class="fa-solid fa-file-zipper"></i></span>
+                    <div>
+                        <strong>Drag &amp; drop or browse a local folder or ZIP</strong>
+                        <p>Drop a theme folder or <code>.zip</code> anywhere on the website — or open one from your device — to inspect and edit it locally.</p>
+                    </div>
+                </div>
+                <div class="studio-onboarding-step">
+                    <span class="studio-onboarding-icon" aria-hidden="true"><i class="fa-solid fa-paper-plane"></i></span>
+                    <div>
+                        <strong>Save for your player or upload to the gallery</strong>
+                        <p>Export a ready-to-install ZIP to your device anytime, or switch to the <strong>Upload</strong> tab to share your creation (or update your listing) with the community.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="studio-onboarding-quick">
+                <button class="studio-btn studio-btn--primary" id="studio-onboarding-template" type="button">
+                    <i class="fa-solid fa-palette" aria-hidden="true"></i><span>Choose a gallery template</span>
+                </button>
+                <button class="studio-btn" id="studio-onboarding-zip" type="button">
+                    <i class="fa-solid fa-file-zipper" aria-hidden="true"></i><span>Open ZIP from device</span>
+                </button>
+                <button class="studio-btn" id="studio-onboarding-folder" type="button">
+                    <i class="fa-solid fa-folder-open" aria-hidden="true"></i><span>Open theme folder</span>
+                </button>
+                <button class="studio-btn" id="studio-onboarding-upload" type="button">
+                    <i class="fa-solid fa-paper-plane" aria-hidden="true"></i><span>Go to Upload tab</span>
+                </button>
+            </div>
+            <div class="studio-onboarding-foot">
+                <label class="studio-inline-check">
+                    <input id="studio-onboarding-suppress" type="checkbox" />
+                    <span>Don’t show this automatically next time</span>
+                </label>
+                <button class="studio-btn" id="studio-onboarding-close" type="button">Continue to Studio</button>
+            </div>
+        </div>
+    </div>
+
     <div class="studio-modal studio-theme-picker" id="studio-theme-picker" hidden>
         <div class="studio-modal-card studio-theme-picker-card" role="dialog" aria-modal="true" aria-labelledby="studio-theme-picker-title">
-            <span class="studio-eyebrow"><i class="fa-solid fa-images" aria-hidden="true"></i> Vyměnit z jiného motivu</span>
+            <span class="studio-eyebrow"><i class="fa-solid fa-palette" aria-hidden="true"></i> Vyměnit z jiného motivu</span>
             <h2 id="studio-theme-picker-title">Aktivum</h2>
             <p id="studio-theme-picker-text">Vyberte stejné dílo z libovolného motivu galerie a zaměňte jej za toto.</p>
             <label class="studio-theme-picker-search">
@@ -424,11 +488,12 @@
     <div id="support-toolbar-slot"></div>
 
     <script src="../nav.js?v=20261120studio"></script>
-    <script src="../y1-theme-preview.js?v=20261119menus1"></script>
+    <script src="../y1-theme-preview.js?v=20261123studio2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="../theme-packaging.js"></script>
     <script src="../author-submission-policy.js?v=20260523"></script>
-    <script src="/studio-test/studio.js?v=20261123donatecompletion2"></script>
+    <script src="../studio-drop-handoff.js?v=20261123studio2"></script>
+    <script src="/studio-test/studio.js?v=20261123studio2"></script>
     <script src="../site-locale.js?v=20261115skip2" defer></script>
 </body>
 
