@@ -1129,19 +1129,27 @@
         layer.appendChild(clone);
         node.classList.add('has-live-crop');
         node.appendChild(layer);
+        var pendingImgs = [];
         if (live.tagName === 'IMG' && (!live.complete || !live.naturalWidth)) {
-            var pendingImg = clone.querySelector('img[src]') || live;
+            pendingImgs.push(live);
+        }
+        Array.prototype.forEach.call(canvas.querySelectorAll('img[src]'), function (canvasImg) {
+            if ((!canvasImg.complete || !canvasImg.naturalWidth) && pendingImgs.indexOf(canvasImg) === -1) {
+                pendingImgs.push(canvasImg);
+            }
+        });
+        pendingImgs.forEach(function (pendingImg) {
             if (pendingImg && !pendingImg._y1ThumbRetryBound) {
                 pendingImg._y1ThumbRetryBound = true;
                 pendingImg.addEventListener(
                     'load',
                     function () {
-                        scheduleThumbRefresh(120);
+                        scheduleThumbRefresh(90);
                     },
                     { once: true }
                 );
             }
-        }
+        });
         if (!isFullScreen && node === el.assetPreview) {
             /* Mark the exact asset bounds on the large detail plate. */
             var target = thumbLayer('studio-live-crop-target');
@@ -1896,7 +1904,8 @@
                     applyBootMode(requestedFolder);
                     if (restoreRecord) finishRecovery(restoreRecord);
                     updateChecklist();
-                    return mountPreview();
+                    trackStudioGalleryVisit(requestedFolder, state.meta, state.byFolder[requestedFolder]);
+                    return mountPreview({ freshView: true });
                 });
             })
             .catch(function (err) {
@@ -1979,10 +1988,129 @@
 
     /* —— Preview —— */
 
-    function mountPreview() {
+    var previewMountSeq = 0;
+
+    function isExternalDownloadTheme(metaObj, catalogEntry) {
+        if (catalogEntry && String(catalogEntry.sourceType || '').toLowerCase() === 'external') return true;
+        var raw = String(
+            (metaObj && metaObj.externalDownloadUrl) ||
+                (catalogEntry && catalogEntry.externalDownloadUrl) ||
+                ''
+        ).trim();
+        if (!raw) return false;
+        if (window.ThemePackaging && typeof window.ThemePackaging.effectiveExternalDownloadUrl === 'function') {
+            return !!window.ThemePackaging.effectiveExternalDownloadUrl(raw);
+        }
+        return /^https?:\/\//i.test(raw);
+    }
+
+    function trackStudioGalleryVisit(folder, metaObj, catalogEntry) {
+        if (!folder || !window.ThemeAnalytics) return;
+        try {
+            if (typeof window.ThemeAnalytics.trackPageView === 'function') {
+                window.ThemeAnalytics.trackPageView(folder, 'studio');
+            }
+            if (
+                isExternalDownloadTheme(metaObj, catalogEntry) &&
+                typeof window.ThemeAnalytics.trackZipDownload === 'function'
+            ) {
+                window.ThemeAnalytics.trackZipDownload(folder, 'studio');
+            }
+        } catch (e) {}
+    }
+
+    function waitForCanvasMedia(root, timeoutMs) {
+        var promises = [];
+        if (root) {
+            Array.prototype.forEach.call(root.querySelectorAll('img'), function (img) {
+                if (!img.getAttribute('src')) return;
+                if (img.complete && img.naturalWidth > 0) return;
+                promises.push(
+                    new Promise(function (resolve) {
+                        var done = false;
+                        var finish = function () {
+                            if (done) return;
+                            done = true;
+                            resolve();
+                        };
+                        img.addEventListener('load', finish, { once: true });
+                        img.addEventListener('error', finish, { once: true });
+                        if (typeof img.decode === 'function') {
+                            img.decode().then(finish, finish);
+                        }
+                    })
+                );
+            });
+            Array.prototype.forEach.call(root.querySelectorAll('[style*="blob:"]'), function (node) {
+                var bg = node.style && node.style.backgroundImage;
+                if (!bg) return;
+                var match = /url\(["']?(blob:[^"')]+)["']?\)/i.exec(bg);
+                if (!match || !match[1]) return;
+                promises.push(
+                    new Promise(function (resolve) {
+                        var probe = new Image();
+                        probe.onload = resolve;
+                        probe.onerror = resolve;
+                        probe.src = match[1];
+                    })
+                );
+            });
+        }
+        if (document.fonts && document.fonts.ready) {
+            promises.push(document.fonts.ready.catch(function () {}));
+        }
+        if (!promises.length) return Promise.resolve();
+        return Promise.race([
+            Promise.all(promises),
+            new Promise(function (resolve) {
+                window.setTimeout(resolve, timeoutMs || 700);
+            })
+        ]);
+    }
+
+    function mergeStatusIntoSnapshot(snap) {
+        if (!snap || !state.statusState) return snap;
+        var out = Object.assign({}, snap);
+        Object.keys(state.statusState).forEach(function (key) {
+            var val = state.statusState[key];
+            if (val !== undefined) out[key] = val;
+        });
+        return out;
+    }
+
+    function shouldPreserveScreenForAsset(assetPath, snap) {
+        if (!snap || !assetPath) return false;
+        var p = String(assetPath);
+        if (p === 'fontFamily') return true;
+        if (/^statusConfig\./.test(p)) return true;
+        if (p === 'desktopWallpaper' || p === 'desktopMask') return snap.themeViewId === 'home';
+        if (p === 'globalWallpaper' || p === 'settingConfig.settingMask') return snap.themeViewId === 'settings';
+        if (/^(itemConfig|menuConfig)\./.test(p)) {
+            return (
+                snap.themeViewId === 'home' ||
+                snap.themeViewId === 'settings' ||
+                snap.themeViewId === 'music_folders' ||
+                snap.themeViewId === 'settingsEqualizer'
+            );
+        }
+        return false;
+    }
+
+    function mountPreview(opts) {
+        opts = opts || {};
         if (!window.Y1ThemePreview || typeof window.Y1ThemePreview.mount !== 'function') {
             return Promise.reject(new Error('The preview engine did not load.'));
         }
+        if (thumbRefreshTimer) {
+            window.clearTimeout(thumbRefreshTimer);
+            thumbRefreshTimer = null;
+        }
+        var mountSeq = ++previewMountSeq;
+        var prevApi = !opts.freshView && el.preview ? el.preview._y1TpApi : null;
+        var prevSnap =
+            prevApi && typeof prevApi.snapshotState === 'function'
+                ? mergeStatusIntoSnapshot(prevApi.snapshotState())
+                : null;
         hideEmpty();
         window.Y1ThemePreview.unmount(el.preview);
         el.preview.innerHTML = '';
@@ -2007,12 +2135,43 @@
         };
 
         return window.Y1ThemePreview.mount(el.preview, options).then(function () {
+            if (mountSeq !== previewMountSeq) return;
+            var api = el.preview ? el.preview._y1TpApi : null;
+            var focusId = opts.focusAssetId || '';
+            if (api) {
+                if (focusId) {
+                    if (prevSnap && shouldPreserveScreenForAsset(focusId, prevSnap)) {
+                        if (typeof api.restoreState === 'function') api.restoreState(prevSnap);
+                    } else {
+                        var revealed = typeof api.revealAsset === 'function' && api.revealAsset(focusId) !== false;
+                        if (!revealed && prevSnap && typeof api.restoreState === 'function') {
+                            api.restoreState(prevSnap);
+                        }
+                    }
+                } else if (prevSnap && typeof api.restoreState === 'function') {
+                    api.restoreState(prevSnap);
+                }
+            }
             state.previewOk = true;
             setLoading(false);
             updateChecklist();
             if (state.selectedAssetId) highlightPreviewAsset(state.selectedAssetId);
-            refreshThumbLayers();
-            scheduleThumbRefresh(450);
+
+            return waitForCanvasMedia(el.preview, 700).then(function () {
+                if (mountSeq !== previewMountSeq) return;
+                refreshThumbLayers();
+                if (state.selectedAssetId) {
+                    var sel = state.assetById[state.selectedAssetId];
+                    if (
+                        (sel && sel.kind === 'font') ||
+                        (el.assetPreview && !el.assetPreview.classList.contains('has-live-crop'))
+                    ) {
+                        updateAssetDetail();
+                    }
+                    highlightPreviewAsset(state.selectedAssetId);
+                }
+                scheduleThumbRefresh(350);
+            });
         });
     }
 
@@ -2782,14 +2941,53 @@
         return target ? target.width + ' × ' + target.height : 'Source size';
     }
 
+    function isAssetKeyUsedElsewhere(candidateKey, ignorePath) {
+        if (!candidateKey) return false;
+        if (state.assetOverrides && state.assetOverrides[candidateKey]) {
+            var usedByOther = (state.assets || []).some(function (item) {
+                return item.path !== ignorePath && localKey('', item.value) === candidateKey;
+            });
+            if (usedByOther) return true;
+        }
+        return (state.assets || []).some(function (item) {
+            return item.path !== ignorePath && localKey('', item.value) === candidateKey;
+        });
+    }
+
     function defaultAssetFileName(asset, file) {
+        var rawName = fileName((file && file.name) || '');
+        var extMatch = /\.([a-z0-9]+)$/i.exec(rawName);
+        var rawExt = extMatch ? extMatch[1].toLowerCase() : '';
         var base = 'asset';
         if (asset.path === 'fileConfig.folderIcon') base = 'folder';
         else if (asset.path === 'fileConfig.musicIcon') base = 'music_file';
-        else base = fileName(file.name || '').replace(/\.[^.]+$/, '') || 'asset';
-        var type = String(file.type || '').toLowerCase();
-        var ext = type.indexOf('jpeg') !== -1 ? 'jpg' : type.indexOf('webp') !== -1 ? 'webp' : 'png';
-        return base + '.' + ext;
+        else base = rawName.replace(/\.[^.]+$/, '') || 'asset';
+        var ext;
+        if (asset.kind === 'font') {
+            ext = /^(ttf|otf|woff2?)$/.test(rawExt) ? rawExt : 'ttf';
+        } else {
+            var type = String((file && file.type) || '').toLowerCase();
+            ext =
+                type.indexOf('jpeg') !== -1 || rawExt === 'jpg' || rawExt === 'jpeg'
+                    ? 'jpg'
+                    : type.indexOf('webp') !== -1 || rawExt === 'webp'
+                      ? 'webp'
+                      : type.indexOf('gif') !== -1 || rawExt === 'gif'
+                        ? 'gif'
+                        : 'png';
+        }
+        var candidate = base + '.' + ext;
+        if (
+            isPlaceholderValue(candidate) ||
+            /^clipboard-image$/i.test(base) ||
+            isAssetKeyUsedElsewhere(localKey('', candidate), asset.path)
+        ) {
+            var slotSlug = String(asset.path || 'asset')
+                .replace(/[^\w.-]+/g, '_')
+                .replace(/^_+|_+$/g, '');
+            candidate = (slotSlug || 'asset') + '.' + ext;
+        }
+        return candidate;
     }
 
     function resizeImageFile(file, target) {
@@ -3140,7 +3338,8 @@
         return changed;
     }
 
-    function rebuildAssets() {
+    function rebuildAssets(opts) {
+        opts = opts || {};
         var defs = collectAssetDefinitions(state.config || {});
         state.assetById = Object.create(null);
         state.assets = defs.map(function (def, index) {
@@ -3183,7 +3382,7 @@
             state.selectedAssetId = state.assets[0] ? state.assets[0].id : null;
         }
         if (!state.selectedAssetId && state.assets[0]) state.selectedAssetId = state.assets[0].id;
-        renderAssets();
+        renderAssets(opts);
         renderColorEditor();
         renderStatusEditor();
         renderMaskEditor();
@@ -3769,7 +3968,8 @@
         return true;
     }
 
-    function renderAssets() {
+    function renderAssets(opts) {
+        opts = opts || {};
         if (!el.assetList) return;
         var all = state.assets;
         var missing = all.filter(isMissingAsset).length;
@@ -3856,7 +4056,7 @@
         });
         paintAssetSelection();
         if (state.selectedAssetId) highlightPreviewAsset(state.selectedAssetId);
-        scheduleThumbRefresh(30);
+        if (!opts.deferThumbRefresh) scheduleThumbRefresh(30);
     }
 
     function paintAssetSelection() {
@@ -3940,15 +4140,16 @@
         if (!id || !state.assetById[id]) return;
         state.selectedAssetId = id;
         var statusChanged = options && options.keepStatus ? false : applyStatusStateForAsset(id);
+        if (statusChanged) renderStatusEditor();
         paintAssetSelection();
-        if (statusChanged) {
+        if (options && options.skipRemount) {
+            highlightPreviewAsset(id);
+        } else if (statusChanged) {
             /* The preview has to be rebuilt: these states live in the
                simulator, not in the files. */
-            mountPreview()
+            mountPreview({ focusAssetId: id })
                 .then(function () {
                     renderStatusEditor();
-                    refreshThumbLayers();
-                    if (state.selectedAssetId) highlightPreviewAsset(state.selectedAssetId);
                 })
                 .catch(function () {});
         } else if (options && options.reveal) {
@@ -4454,10 +4655,24 @@
                transparent.png, so writing the replacement there would change them all. */
             targetValue = defaultAssetFileName(asset, working);
             if (isPlaceholderValue(targetValue)) {
-                targetValue = String(asset.path || 'asset').replace(/[^\w.-]+/g, '-') + '.png';
+                targetValue = String(asset.path || 'asset').replace(/[^\w.-]+/g, '_') + (asset.kind === 'font' ? '.ttf' : '.png');
             }
             writePath(state.config || {}, asset.path, targetValue);
+        } else if (asset.kind === 'font') {
+            var incomingFontExt = /\.(ttf|otf|woff2?)$/i.exec(working.name || '');
+            var existingFontExt = /\.(ttf|otf|woff2?)$/i.exec(targetValue);
+            if (incomingFontExt && (!existingFontExt || existingFontExt[1].toLowerCase() !== incomingFontExt[1].toLowerCase())) {
+                var oldKey = localKey('', targetValue);
+                if (state.assetOverrides[oldKey] && state.assetOverrides[oldKey].url) {
+                    revokeAssetUrl(state.assetOverrides[oldKey].url);
+                }
+                delete state.assetOverrides[oldKey];
+                targetValue = targetValue.replace(/\.[^.\/]+$/, '') + '.' + incomingFontExt[1].toLowerCase();
+                writePath(state.config || {}, asset.path, targetValue);
+            }
         }
+        delete state.missingAssetPaths[asset.path];
+        delete state.missingAssetValues[asset.path];
         var key = localKey('', targetValue);
         var previous = state.assetOverrides[key];
         if (previous && previous.url) revokeAssetUrl(previous.url);
@@ -4470,11 +4685,15 @@
             size: working.size,
             type: working.type
         };
-        if (asset.path === 'themeCover') state.meta.cover = url;
+        if (asset.path === 'themeCover') {
+            state.meta.cover = url;
+            setCover(el.cover, el.coverWrap, url);
+            setCover(el.submitCover, el.submitCoverWrap, url);
+        }
         markDirty();
-        rebuildAssets();
-        selectAsset(asset.id);
-        remountPreview('Applying ' + fileName(targetValue) + '…');
+        rebuildAssets({ deferThumbRefresh: true });
+        selectAsset(asset.id, { skipRemount: true });
+        remountPreview('Applying ' + fileName(targetValue) + '…', { focusAssetId: asset.id });
         toast('Replaced ' + asset.label + '. Save when you are ready.');
     }
 
@@ -4497,12 +4716,16 @@
         var base = readPath(state.configBase || {}, asset.path);
         if (base === undefined) deletePath(state.config || {}, asset.path);
         else writePath(state.config || {}, asset.path, base);
-        if (asset.path === 'themeCover') state.meta.cover = state.baseCover;
+        if (asset.path === 'themeCover') {
+            state.meta.cover = state.baseCover;
+            setCover(el.cover, el.coverWrap, state.baseCover);
+            setCover(el.submitCover, el.submitCoverWrap, state.baseCover);
+        }
         if (configUsesPlaceholder(state.config)) ensurePlaceholderAsset();
         markDirty();
-        rebuildAssets();
-        selectAsset(asset.id);
-        remountPreview('Restoring ' + asset.label + '…');
+        rebuildAssets({ deferThumbRefresh: true });
+        selectAsset(asset.id, { skipRemount: true });
+        remountPreview('Restoring ' + asset.label + '…', { focusAssetId: asset.id });
     }
 
     function resetAssetOverrides() {
@@ -4528,20 +4751,22 @@
         resetAssetOverrides();
         state.config = cloneJson(state.configBase);
         state.meta.cover = state.baseCover;
+        setCover(el.cover, el.coverWrap, state.baseCover);
+        setCover(el.submitCover, el.submitCoverWrap, state.baseCover);
         if (configUsesPlaceholder(state.config)) ensurePlaceholderAsset();
         /* Resetting every replacement puts the theme back where it started, so
            the page is clean again unless the listing details were also edited. */
         state.dirty = !!(realOverrideCount() || JSON.stringify(state.config) !== JSON.stringify(state.configBase));
         if (el.unsaved) el.unsaved.hidden = !(state.dirty || state.formDirty);
         scheduleRecoverySave();
-        rebuildAssets();
+        rebuildAssets({ deferThumbRefresh: true });
         remountPreview('Restoring the original theme…');
         toast('All asset replacements were reset.');
     }
 
-    function remountPreview(label) {
+    function remountPreview(label, opts) {
         setLoading(true, label || 'Updating preview…');
-        mountPreview().catch(function (err) {
+        mountPreview(opts).catch(function (err) {
             showPreviewError(err);
         });
     }
@@ -4594,18 +4819,117 @@
             toast('Fonts cannot be blanked. Replace the font file, or reset it to the theme original.');
             return;
         }
+        delete state.missingAssetPaths[asset.path];
+        delete state.missingAssetValues[asset.path];
         writePath(state.config, asset.path, PLACEHOLDER_FILE);
         ensurePlaceholderAsset();
+        if (asset.path === 'themeCover') {
+            state.meta.cover = '';
+            setCover(el.cover, el.coverWrap, '');
+            setCover(el.submitCover, el.submitCoverWrap, '');
+        }
         markDirty();
-        rebuildAssets();
-        selectAsset(asset.id);
-        remountPreview('Blanking ' + asset.label + '…');
+        rebuildAssets({ deferThumbRefresh: true });
+        selectAsset(asset.id, { skipRemount: true });
+        remountPreview('Blanking ' + asset.label + '…', { focusAssetId: asset.id });
         toast('Binned ' + asset.label + ': the slot now reads Blank and points at the transparent placeholder.');
     }
 
     /* —— Swap from another theme —— */
 
-    var themePickerState = { assetId: '', limit: 40, observer: null };
+    var THEME_PICKER_PAGE_SIZE = 24;
+    var THEME_PICKER_CONCURRENCY = 8;
+    var transparentImageCache = Object.create(null);
+    var alphaProbeCanvas = null;
+
+    var themePickerState = {
+        assetId: '',
+        session: 0,
+        themes: [],
+        cursor: 0,
+        shownCount: 0,
+        targetCount: THEME_PICKER_PAGE_SIZE,
+        inFlight: 0,
+        query: '',
+        manifest: null
+    };
+
+    function isPixelBufferFullyTransparent(data) {
+        if (!data || !data.length) return true;
+        for (var i = 3; i < data.length; i += 4) {
+            if (data[i] !== 0) return false;
+        }
+        return true;
+    }
+
+    /* Fast filename screen for obvious transparent placeholder files; arbitrarily
+       named blank PNGs are caught by full-pixel alpha inspection below. */
+    function isTransparentPlaceholderFileName(value) {
+        var name = fileName(String(value || '')).toLowerCase();
+        if (!name) return true;
+        if (name === PLACEHOLDER_FILE) return true;
+        return /^transparent(?:[_-].*)?\.(png|gif|webp|bmp|svg)$/i.test(name);
+    }
+
+    function isImageElementFullyTransparent(img, cacheKey) {
+        if (cacheKey && Object.prototype.hasOwnProperty.call(transparentImageCache, cacheKey)) {
+            return transparentImageCache[cacheKey];
+        }
+        var w = img ? img.naturalWidth || img.width || 0 : 0;
+        var h = img ? img.naturalHeight || img.height || 0 : 0;
+        if (!w || !h) {
+            if (cacheKey) transparentImageCache[cacheKey] = true;
+            return true;
+        }
+        if (!alphaProbeCanvas) alphaProbeCanvas = document.createElement('canvas');
+        var maxDim = 2048;
+        var drawW = w;
+        var drawH = h;
+        if (drawW > maxDim || drawH > maxDim) {
+            var scale = Math.min(maxDim / drawW, maxDim / drawH);
+            drawW = Math.max(1, Math.round(drawW * scale));
+            drawH = Math.max(1, Math.round(drawH * scale));
+        }
+        var fullyTransparent = false;
+        try {
+            alphaProbeCanvas.width = drawW;
+            alphaProbeCanvas.height = drawH;
+            var ctx = alphaProbeCanvas.getContext('2d', { willReadFrequently: true });
+            if (ctx) {
+                ctx.clearRect(0, 0, drawW, drawH);
+                ctx.drawImage(img, 0, 0, drawW, drawH);
+                fullyTransparent = isPixelBufferFullyTransparent(ctx.getImageData(0, 0, drawW, drawH).data);
+            }
+        } catch (err) {
+            fullyTransparent = false;
+        } finally {
+            try {
+                alphaProbeCanvas.width = 1;
+                alphaProbeCanvas.height = 1;
+            } catch (e) {}
+        }
+        if (cacheKey) transparentImageCache[cacheKey] = fullyTransparent;
+        return fullyTransparent;
+    }
+
+    function probeThemePickerImage(url) {
+        if (!url) return Promise.resolve(false);
+        if (Object.prototype.hasOwnProperty.call(transparentImageCache, url)) {
+            return Promise.resolve(!transparentImageCache[url]);
+        }
+        return new Promise(function (resolve) {
+            var img = new Image();
+            img.decoding = 'async';
+            img.onload = function () {
+                resolve(!isImageElementFullyTransparent(img, url));
+            };
+            img.onerror = function () {
+                transparentImageCache[url] = true;
+                resolve(false);
+            };
+            img.src = url;
+        });
+    }
 
     /* A plain catalogue URL for another theme's file: galleryFileUrl applies this
        theme's overrides, which must not leak into someone else's package. */
@@ -4647,17 +4971,52 @@
         return state.galleryConfigs[folder];
     }
 
-    function themePickerRow(theme, asset) {
+    function inspectThemePickerCandidate(theme, asset, manifest) {
+        var folder = theme && theme.folder;
+        if (!folder || !asset) return Promise.resolve(null);
+        return themeConfig(folder).then(function (config) {
+            var value = config ? String(readPath(config, asset.path) || '').trim() : '';
+            if (!value) return null;
+            var missingMap = missingMapForFolder(manifest, folder);
+            if (missingMap[value.toLowerCase()]) return null;
+            var url = catalogAssetUrl(folder, value);
+            if (!url) return null;
+            if (asset.kind === 'font') {
+                return { theme: theme, value: value, url: url, isFont: true };
+            }
+            if (isTransparentPlaceholderFileName(value)) return null;
+            return probeThemePickerImage(url).then(function (hasVisiblePixels) {
+                if (!hasVisiblePixels) return null;
+                return { theme: theme, value: value, url: url, isFont: false };
+            });
+        });
+    }
+
+    function buildThemePickerRow(candidate, asset) {
+        var theme = candidate.theme;
         var row = document.createElement('button');
         row.type = 'button';
-        row.className = 'studio-theme-row';
+        row.className = 'studio-theme-row has-asset';
         row.setAttribute('role', 'listitem');
         row.setAttribute('data-theme-folder', theme.folder);
-        row.setAttribute('aria-label', (theme.name || theme.folder) + ': checking for ' + asset.label.toLowerCase());
+        row.setAttribute('data-theme-value', candidate.value);
+        row.setAttribute(
+            'aria-label',
+            'Use ' + asset.label.toLowerCase() + ' from ' + (theme.name || theme.folder)
+        );
 
         var thumb = document.createElement('span');
-        thumb.className = 'studio-theme-row-thumb';
-        thumb.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i>';
+        thumb.className = 'studio-theme-row-thumb' + (candidate.isFont ? ' studio-theme-row-thumb--font' : '');
+        if (candidate.isFont) {
+            thumb.textContent = 'Aa';
+            paintFontSample(thumb, candidate.url);
+        } else {
+            var img = document.createElement('img');
+            img.alt = '';
+            img.decoding = 'async';
+            img.src = candidate.url;
+            thumb.appendChild(img);
+        }
 
         var copy = document.createElement('span');
         copy.className = 'studio-theme-row-copy';
@@ -4670,7 +5029,8 @@
 
         var badge = document.createElement('span');
         badge.className = 'studio-theme-row-badge';
-        badge.textContent = 'Checking';
+        badge.textContent = fileName(candidate.value) || 'Included';
+        badge.title = candidate.value;
 
         row.appendChild(thumb);
         row.appendChild(copy);
@@ -4678,64 +5038,99 @@
         return row;
     }
 
-    function fillThemePickerRow(row) {
-        if (row.getAttribute('data-filled')) return;
-        row.setAttribute('data-filled', '1');
-        var asset = state.assetById[themePickerState.assetId];
-        var folder = row.getAttribute('data-theme-folder');
-        if (!asset || !folder) return;
-        themeConfig(folder).then(function (config) {
-            if (themePickerState.assetId !== asset.id) return;
-            var value = config ? String(readPath(config, asset.path) || '').trim() : '';
-            var thumb = row.querySelector('.studio-theme-row-thumb');
-            var badge = row.querySelector('.studio-theme-row-badge');
-            if (!value) {
-                row.classList.add('is-empty');
-                row.setAttribute('aria-disabled', 'true');
-                if (badge) badge.textContent = 'Not used';
-                if (thumb) thumb.innerHTML = '<i class="fa-solid fa-minus" aria-hidden="true"></i>';
-                return;
+    function updateThemePickerFooter() {
+        if (!el.themePickerList) return;
+        var oldStatus = el.themePickerList.querySelector('[data-theme-status]');
+        var oldMore = el.themePickerList.querySelector('[data-theme-more]');
+        var scanning = themePickerState.inFlight > 0;
+        var hasMore = themePickerState.cursor < themePickerState.themes.length;
+
+        if (scanning) {
+            if (oldMore) oldMore.remove();
+            if (!oldStatus) {
+                var status = document.createElement('div');
+                status.className = 'studio-theme-picker-status';
+                status.setAttribute('data-theme-status', '');
+                status.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i><span>Checking gallery themes…</span>';
+                el.themePickerList.appendChild(status);
+            } else {
+                el.themePickerList.appendChild(oldStatus);
             }
-            row.setAttribute('data-theme-value', value);
-            row.classList.add('has-asset');
-            row.setAttribute('aria-label', 'Use ' + asset.label.toLowerCase() + ' from ' + (state.byFolder[folder] ? state.byFolder[folder].name : folder));
-            if (badge) {
-                badge.textContent = fileName(value) || 'Included';
-                badge.title = value;
+            if (el.themePickerEmpty) el.themePickerEmpty.hidden = true;
+            return;
+        }
+
+        if (oldStatus) oldStatus.remove();
+        if (themePickerState.shownCount === 0) {
+            if (oldMore) oldMore.remove();
+            if (el.themePickerEmpty) {
+                el.themePickerEmpty.textContent = themePickerState.query
+                    ? 'No matching gallery themes have a non-blank asset for this slot.'
+                    : 'No gallery themes have a non-blank asset for this slot.';
+                el.themePickerEmpty.hidden = false;
             }
-            if (thumb) {
-                thumb.innerHTML = '';
-                var img = document.createElement('img');
-                img.alt = '';
-                img.loading = 'lazy';
-                img.src = catalogAssetUrl(folder, value);
-                img.onerror = function () {
-                    thumb.innerHTML = '<i class="fa-regular fa-image" aria-hidden="true"></i>';
-                };
-                thumb.appendChild(img);
+            return;
+        }
+
+        if (el.themePickerEmpty) el.themePickerEmpty.hidden = true;
+        if (hasMore) {
+            var remaining = themePickerState.themes.length - themePickerState.cursor;
+            if (!oldMore) {
+                oldMore = document.createElement('button');
+                oldMore.type = 'button';
+                oldMore.className = 'studio-btn studio-theme-more';
+                oldMore.setAttribute('data-theme-more', '');
             }
-        });
+            oldMore.textContent = 'Show more themes (' + remaining + ' left to check)';
+            el.themePickerList.appendChild(oldMore);
+        } else if (oldMore) {
+            oldMore.remove();
+        }
     }
 
-    function ensureThemePickerObserver() {
-        if (themePickerState.observer || typeof IntersectionObserver !== 'function') return themePickerState.observer;
-        themePickerState.observer = new IntersectionObserver(
-            function (entries) {
-                entries.forEach(function (entry) {
-                    if (!entry.isIntersecting) return;
-                    themePickerState.observer.unobserve(entry.target);
-                    fillThemePickerRow(entry.target);
+    function pumpThemePicker(session) {
+        if (session !== themePickerState.session || !el.themePickerList) return;
+        var asset = state.assetById[themePickerState.assetId];
+        if (!asset) return;
+
+        while (
+            themePickerState.session === session &&
+            themePickerState.shownCount < themePickerState.targetCount &&
+            themePickerState.cursor < themePickerState.themes.length &&
+            themePickerState.inFlight < THEME_PICKER_CONCURRENCY
+        ) {
+            var theme = themePickerState.themes[themePickerState.cursor];
+            themePickerState.cursor += 1;
+            themePickerState.inFlight += 1;
+            inspectThemePickerCandidate(theme, asset, themePickerState.manifest)
+                .then(function (candidate) {
+                    if (themePickerState.session !== session) return;
+                    themePickerState.inFlight -= 1;
+                    if (candidate && el.themePickerList) {
+                        var row = buildThemePickerRow(candidate, asset);
+                        var footer =
+                            el.themePickerList.querySelector('[data-theme-status]') ||
+                            el.themePickerList.querySelector('[data-theme-more]');
+                        if (footer) el.themePickerList.insertBefore(row, footer);
+                        else el.themePickerList.appendChild(row);
+                        themePickerState.shownCount += 1;
+                    }
+                    pumpThemePicker(session);
+                })
+                .catch(function () {
+                    if (themePickerState.session !== session) return;
+                    themePickerState.inFlight -= 1;
+                    pumpThemePicker(session);
                 });
-            },
-            { root: el.themePickerList, rootMargin: '180px 0px' }
-        );
-        return themePickerState.observer;
+        }
+        updateThemePickerFooter();
     }
 
     function renderThemePickerRows(query) {
         if (!el.themePickerList) return;
         var asset = state.assetById[themePickerState.assetId];
         if (!asset) return;
+        var session = ++themePickerState.session;
         var q = String(query || '').trim().toLowerCase();
         var themes = state.gallery.filter(function (theme) {
             if (!theme || !theme.folder) return false;
@@ -4743,24 +5138,32 @@
             if (!q) return true;
             return [theme.name, theme.folder, theme.author].join(' ').toLowerCase().indexOf(q) !== -1;
         });
+        themePickerState.themes = themes;
+        themePickerState.cursor = 0;
+        themePickerState.shownCount = 0;
+        themePickerState.targetCount = THEME_PICKER_PAGE_SIZE;
+        themePickerState.inFlight = 0;
+        themePickerState.query = q;
         el.themePickerList.innerHTML = '';
-        var observer = ensureThemePickerObserver();
-        var shown = themes.slice(0, themePickerState.limit);
-        shown.forEach(function (theme) {
-            var row = themePickerRow(theme, asset);
-            el.themePickerList.appendChild(row);
-            if (observer) observer.observe(row);
-            else fillThemePickerRow(row);
-        });
-        if (themes.length > shown.length) {
-            var more = document.createElement('button');
-            more.type = 'button';
-            more.className = 'studio-btn studio-theme-more';
-            more.setAttribute('data-theme-more', '');
-            more.textContent = 'Show ' + Math.min(40, themes.length - shown.length) + ' more themes';
-            el.themePickerList.appendChild(more);
+        if (!themes.length) {
+            if (el.themePickerEmpty) {
+                el.themePickerEmpty.textContent = 'No theme matches that search.';
+                el.themePickerEmpty.hidden = false;
+            }
+            return;
         }
-        if (el.themePickerEmpty) el.themePickerEmpty.hidden = themes.length > 0;
+        if (el.themePickerEmpty) el.themePickerEmpty.hidden = true;
+        loadMissingManifest().then(function (manifest) {
+            if (themePickerState.session !== session) return;
+            themePickerState.manifest = manifest || {};
+            pumpThemePicker(session);
+        });
+    }
+
+    function loadMoreThemePickerRows() {
+        if (!themePickerState.assetId || !el.themePickerList) return;
+        themePickerState.targetCount += THEME_PICKER_PAGE_SIZE;
+        pumpThemePicker(themePickerState.session);
     }
 
     function openThemePicker(assetId) {
@@ -4771,13 +5174,16 @@
             return;
         }
         themePickerState.assetId = assetId;
-        themePickerState.limit = 40;
         if (el.themePickerTitle) el.themePickerTitle.textContent = asset.label;
         if (el.themePickerText) {
             el.themePickerText.textContent =
-                'Pick ' +
-                asset.label.toLowerCase() +
-                ' from any gallery theme. Themes that never used this slot are dimmed, and swapping never touches the other theme.';
+                asset.kind === 'font'
+                    ? 'Pick ' +
+                      asset.label.toLowerCase() +
+                      ' from another gallery theme. Themes without a custom font are hidden, and swapping never touches the other theme.'
+                    : 'Pick ' +
+                      asset.label.toLowerCase() +
+                      ' from another gallery theme. Blank and fully transparent placeholder images are hidden automatically, and swapping never touches the other theme.';
         }
         if (el.themePickerQuery) el.themePickerQuery.value = '';
         el.themePicker.hidden = false;
@@ -4786,6 +5192,8 @@
     }
 
     function closeThemePicker() {
+        themePickerState.session += 1;
+        themePickerState.inFlight = 0;
         if (el.themePicker) el.themePicker.hidden = true;
         if (el.themePickerList) el.themePickerList.innerHTML = '';
         themePickerState.assetId = '';
@@ -5000,7 +5408,6 @@
             el.themePickerQuery.addEventListener('input', function () {
                 clearTimeout(pickerFilterTimer);
                 pickerFilterTimer = setTimeout(function () {
-                    themePickerState.limit = 40;
                     renderThemePickerRows(el.themePickerQuery.value);
                 }, 160);
             });
@@ -5008,8 +5415,7 @@
         if (el.themePickerList) {
             el.themePickerList.addEventListener('click', function (event) {
                 if (event.target.closest('[data-theme-more]')) {
-                    themePickerState.limit += 40;
-                    renderThemePickerRows(el.themePickerQuery ? el.themePickerQuery.value : '');
+                    loadMoreThemePickerRows();
                     return;
                 }
                 var row = event.target.closest('[data-theme-folder]');
@@ -5629,6 +6035,14 @@
         try {
             var file = await buildThemePackage(setSaveProgress, null, { flat: true });
             downloadBlob(file);
+            if (
+                state.sourceType === 'gallery' &&
+                state.folder &&
+                window.ThemeAnalytics &&
+                typeof window.ThemeAnalytics.trackZipDownload === 'function'
+            ) {
+                window.ThemeAnalytics.trackZipDownload(state.folder, 'studio');
+            }
             setSaveProgress(100, 'Download started');
             hideSaveProgress(2400);
             state.dirty = false;
@@ -6161,7 +6575,7 @@
         syncUrl();
 
         try {
-            await mountPreview();
+            await mountPreview({ freshView: true });
             toast('Opened ' + prepared.name + ' locally.');
         } catch (err) {
             showPreviewError(err);

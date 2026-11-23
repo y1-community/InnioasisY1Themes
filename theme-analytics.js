@@ -29,9 +29,11 @@
     };
 
     const statsCache = new Map();
-    /** Gallery has 100+ themes; batch + session cache keeps Worker usage under Free-tier limits. */
-    const STATS_SESSION_CACHE_KEY = "y1-theme-stats-batch-v1";
-    const STATS_SESSION_CACHE_TTL_MS = 10 * 60 * 1000;
+    let allStatsLoaded = false;
+    let allStatsInFlight = null;
+    /** Single-request batch + short session cache keeps stats fresh and fast under Free-tier limits. */
+    const STATS_SESSION_CACHE_KEY = "y1-theme-stats-batch-v2";
+    const STATS_SESSION_CACHE_TTL_MS = 2 * 60 * 1000;
     const STATS_FETCH_CHUNK = 80;
     const REACTIONS = [
         { key: "down", value: 0, label: "Thumbs down", icon: "&#128078;" },
@@ -44,6 +46,14 @@
         return (Math.round(n * 10) / 10).toFixed(1);
     }
 
+    function applyStatsToCard(card, stats) {
+        if (!card || !stats) return;
+        card.setAttribute("data-views", String(Number(stats.pageViews) || 0));
+        card.setAttribute("data-downloads", String(Number(stats.downloads) || 0));
+        card.setAttribute("data-rating", String(Number(stats.ratingAverage) || 0));
+        card.setAttribute("data-rating-count", String(Number(stats.ratingCount) || 0));
+    }
+
     function syncCardStatsAttributes(themeKey) {
         const key = normalizeThemeKey(themeKey);
         const stats = statsCache.get(key);
@@ -51,15 +61,18 @@
         const cards = document.querySelectorAll(".theme-card[data-catalog-folder]");
         for (const card of cards) {
             if (normalizeThemeKey(card.getAttribute("data-catalog-folder")) !== key) continue;
-            card.setAttribute("data-views", String(Number(stats.pageViews) || 0));
-            card.setAttribute("data-downloads", String(Number(stats.downloads) || 0));
-            card.setAttribute("data-rating", String(Number(stats.ratingAverage) || 0));
-            card.setAttribute("data-rating-count", String(Number(stats.ratingCount) || 0));
+            applyStatsToCard(card, stats);
         }
     }
 
     function syncAllCardStats() {
-        for (const key of statsCache.keys()) syncCardStatsAttributes(key);
+        const cards = document.querySelectorAll(".theme-card[data-catalog-folder]");
+        for (const card of cards) {
+            const key = normalizeThemeKey(card.getAttribute("data-catalog-folder"));
+            if (!key) continue;
+            const stats = statsCache.get(key);
+            if (stats) applyStatsToCard(card, stats);
+        }
         try {
             global.dispatchEvent(new CustomEvent("y1-theme-stats-updated"));
         } catch (_) {}
@@ -262,6 +275,7 @@
                 if (!key) continue;
                 statsCache.set(key, normalizeStats(themes[k]));
             }
+            if (parsed.all === true) allStatsLoaded = true;
         } catch (_) {}
     }
 
@@ -271,9 +285,41 @@
             for (const [k, v] of statsCache.entries()) themes[k] = v;
             sessionStorage.setItem(
                 STATS_SESSION_CACHE_KEY,
-                JSON.stringify({ ts: Date.now(), themes }),
+                JSON.stringify({ ts: Date.now(), all: allStatsLoaded, themes }),
             );
         } catch (_) {}
+    }
+
+    async function fetchAllStats() {
+        if (!apiUrl("/api/theme-stats")) return false;
+        if (allStatsInFlight) return allStatsInFlight;
+        const q = new URLSearchParams();
+        q.set("all", "1");
+        const c = loadConsent();
+        if (shouldSubmitRatings(c)) q.set("voterId", getVisitorId());
+        allStatsInFlight = (async () => {
+            try {
+                const res = await fetch(apiUrl("/api/theme-stats") + "?" + q.toString(), {
+                    cache: "no-store",
+                });
+                if (!res.ok) return false;
+                const data = await res.json();
+                if (!data || !data.ok || !data.themes || typeof data.themes !== "object") return false;
+                for (const k of Object.keys(data.themes)) {
+                    const key = normalizeThemeKey(k);
+                    if (!key) continue;
+                    statsCache.set(key, normalizeStats(data.themes[k]));
+                }
+                allStatsLoaded = true;
+                persistStatsCacheToSession();
+                return true;
+            } catch (_) {
+                return false;
+            } finally {
+                allStatsInFlight = null;
+            }
+        })();
+        return allStatsInFlight;
     }
 
     async function fetchStatsChunk(missing) {
@@ -288,9 +334,9 @@
             });
             if (!res.ok) return;
             const data = await res.json();
-            const themes = data && data.themes ? data.themes : {};
+            if (!data || !data.ok || !data.themes || typeof data.themes !== "object") return;
             for (const k of missing) {
-                statsCache.set(k, normalizeStats(themes[k]));
+                statsCache.set(k, normalizeStats(data.themes[k]));
             }
             persistStatsCacheToSession();
         } catch (_) {}
@@ -300,9 +346,30 @@
         hydrateStatsCacheFromSession();
         const keys = [...new Set(themeKeys.map(normalizeThemeKey).filter(Boolean))];
         if (!keys.length) return {};
-        const missing = keys.filter((k) => !statsCache.has(k));
-        for (let i = 0; i < missing.length; i += STATS_FETCH_CHUNK) {
-            await fetchStatsChunk(missing.slice(i, i + STATS_FETCH_CHUNK));
+        let missing = keys.filter((k) => !statsCache.has(k));
+        if (missing.length > STATS_FETCH_CHUNK && !allStatsLoaded) {
+            const ok = await fetchAllStats();
+            if (ok) {
+                for (const k of keys) {
+                    if (!statsCache.has(k)) statsCache.set(k, emptyStats());
+                }
+                missing = [];
+            }
+        } else if (allStatsLoaded && missing.length) {
+            for (const k of missing) {
+                if (!statsCache.has(k)) statsCache.set(k, emptyStats());
+            }
+            missing = [];
+        }
+        if (missing.length) {
+            const chunks = [];
+            for (let i = 0; i < missing.length; i += STATS_FETCH_CHUNK) {
+                chunks.push(missing.slice(i, i + STATS_FETCH_CHUNK));
+            }
+            const CONCURRENCY = 4;
+            for (let i = 0; i < chunks.length; i += CONCURRENCY) {
+                await Promise.all(chunks.slice(i, i + CONCURRENCY).map((c) => fetchStatsChunk(c)));
+            }
         }
         const out = {};
         for (const k of keys) {
@@ -344,6 +411,7 @@
         const cur = statsCache.get(themeKey) || emptyStats();
         const next = normalizeStats({ ...cur, [field]: (Number(cur[field]) || 0) + delta });
         statsCache.set(themeKey, next);
+        persistStatsCacheToSession();
     }
 
     function trackEvent(themeKey, event, source) {
@@ -363,13 +431,24 @@
         } else if (event === "direct_install") {
             bumpLocalStat(key, "directInstalls", 1);
         }
+        refreshMetricsHosts(key);
         void postJson("/api/theme-event", {
             theme: key,
             event,
             source: source || "other",
             voterId: getVisitorId(),
+        }).then((res) => {
+            if (res && res.ok && res.stats) {
+                const existing = statsCache.get(key);
+                const merged = normalizeStats({
+                    ...res.stats,
+                    userRating: existing ? existing.userRating : null,
+                });
+                statsCache.set(key, merged);
+                persistStatsCacheToSession();
+                refreshMetricsHosts(key);
+            }
         });
-        refreshMetricsHosts(key);
     }
 
     function metricLabel(text) {
@@ -388,9 +467,31 @@
         el.innerHTML = "";
         el.className = "y1-theme-metrics" + (el.dataset.cardMetrics === "1" ? " y1-theme-metrics--card" : "");
 
-        /* View and download counters are paused: the tally is currently
-           unreliable (every listing reads zero), so the listings show ratings
-           only until the counting service is fixed. */
+        /* Show download count and rating only; page views stay tracked internally
+           for Newest / Best sorting without cluttering the user-facing card. */
+        if (shouldShowAnalyticsCounts()) {
+            const dlCount = Number(stats.downloads) || 0;
+            const dls = document.createElement("span");
+            dls.className = "y1-metric y1-metric--downloads";
+            dls.setAttribute("data-metric", "downloads");
+            const dlWord = dlCount === 1 ? "download" : "downloads";
+            dls.title = dlCount.toLocaleString() + " " + dlWord;
+            dls.setAttribute("aria-label", dlCount.toLocaleString() + " " + dlWord);
+            dls.innerHTML =
+                '<i class="fa-solid fa-download" aria-hidden="true"></i> ' +
+                formatCount(dlCount) +
+                " ";
+            dls.append(metricLabel(dlWord));
+
+            if (el.dataset.cardMetrics === "1") {
+                const countsRow = document.createElement("div");
+                countsRow.className = "y1-metrics-counts";
+                countsRow.append(dls);
+                el.appendChild(countsRow);
+            } else {
+                el.appendChild(dls);
+            }
+        }
 
         if (shouldShowRatings(c)) {
             const ratingWrap = document.createElement("div");
@@ -692,6 +793,12 @@
         trackEvent(themeKey, "direct_install", source || "gallery");
     }
 
+    /** External-download themes count visits/clicks to their download page as both a view and a download. */
+    function trackExternalDownload(themeKey, source) {
+        trackEvent(themeKey, "page_view", source || "gallery");
+        trackEvent(themeKey, "zip_download", source || "gallery");
+    }
+
     function wrapDownloadSuccess(themeKey, source, fn) {
         return async function (...args) {
             const result = await fn.apply(this, args);
@@ -711,9 +818,11 @@
         trackPageView,
         trackZipDownload,
         trackDirectInstall,
+        trackExternalDownload,
         registerMetricsHost,
         mountMetrics,
         mountMetricsBatch,
+        fetchAllStats,
         fetchStatsMap,
         getStats: (themeKey) => statsCache.get(normalizeThemeKey(themeKey)) || emptyStats(),
         syncAllCardStats,

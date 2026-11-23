@@ -824,6 +824,8 @@
         return /\.(ttf|otf|woff2?)(\?|#|$)/i.test(s);
     }
 
+    var _specFontMountSeq = 0;
+
     /** Stable id for `<style id="…">` + scoped @font-face family names (one gallery card / preview root). */
     function themePreviewFontStyleId(catalogFolder, variantSegment) {
         return (
@@ -1639,7 +1641,15 @@
                 }
                 var previewMeta = opts.previewMeta || {};
 
-                var fontStyleId = themePreviewFontStyleId(catalogFolder, variantSegment);
+                /* Studio remounts pass a live spec object whose font blob URL may
+                   have just been replaced; giving each Studio mount a fresh scoped
+                   style/family id guarantees the browser paints the new face
+                   immediately instead of reusing a cached @font-face entry. */
+                var baseFontStyleId = themePreviewFontStyleId(catalogFolder, variantSegment);
+                var fontStyleId =
+                    opts.spec && typeof opts.spec === 'object'
+                        ? baseFontStyleId + '-r' + (++_specFontMountSeq)
+                        : baseFontStyleId;
                 var fontDisplay = isPreviewMode ? 'block' : 'swap';
                 /* Prime and mount share one style id; re-injecting it restarts the
                    font request and flashes the fallback face. */

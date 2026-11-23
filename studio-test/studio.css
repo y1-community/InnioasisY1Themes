@@ -454,6 +454,7 @@
 }
 
 .studio-theme-row-thumb img { width: 100%; height: 100%; object-fit: contain; }
+.studio-theme-row-thumb--font { color: var(--site-text); font-size: 0.96rem; font-weight: 700; }
 
 .studio-theme-row-copy { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
 .studio-theme-row-copy strong { overflow: hidden; font-size: 0.78rem; text-overflow: ellipsis; white-space: nowrap; }
@@ -471,6 +472,15 @@
 
 .studio-theme-row.has-asset .studio-theme-row-badge { color: var(--site-accent); }
 .studio-theme-more { margin-top: 4px; }
+.studio-theme-picker-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 8px;
+    color: var(--site-muted);
+    font-size: 0.78rem;
+}
 .studio-theme-picker-empty { margin: 8px 0 0; color: var(--site-muted); font-size: 0.82rem; }
 
 @media (max-width: 460px), (max-height: 560px) {

@@ -53,7 +53,7 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
-    <link rel="stylesheet" href="site-theme.css?v=20261115footer1">
+    <link rel="stylesheet" href="site-theme.css?v=20261123gallery1">
     <link rel="stylesheet" href="lumen.css?v=20261117studio7">
     <link rel="stylesheet" href="site-toolbar.css?v=20261123donatecompletion2">
     <link rel="stylesheet" href="site-pages.css?v=20260622">
@@ -63,7 +63,7 @@
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script defer src="theme-packaging.js?v=20261010perf"></script>
     <script src="theme-display-name.js?v=20260624"></script>
-    <script src="y1-theme-preview.js?v=20261123studio2"></script>
+    <script src="y1-theme-preview.js?v=20261123studio4"></script>
     <script src="theme-artwork-compat.js?v=20260711"></script>
     <script src="gold-theme-detect.js?v=20261109perf"></script>
     <script src="gallery-chrome.js?v=20261123studio2"></script>
@@ -74,7 +74,7 @@
     <script src="author-submission-policy.js?v=20260523"></script>
     <link rel="stylesheet" href="theme-frozen.css?v=20260526">
     <script src="theme-frozen.js?v=20260526"></script>
-    <script src="theme-analytics.js?v=20261120stats2b"></script>
+    <script src="theme-analytics.js?v=20261123stats3"></script>
     <script src="themes-i18n.js?v=20261109live"></script>
 
     <style>
@@ -496,7 +496,8 @@
             opacity: 1;
         }
 
-        .theme-card .theme-preview-frame.theme-preview-frame--screenshot .theme-card-media-skeleton {
+        .theme-card .theme-preview-frame.theme-preview-frame--screenshot .theme-card-media-skeleton,
+        .theme-card .theme-preview-frame.theme-preview-frame--live-hover .theme-card-media-skeleton {
             display: none;
         }
 
@@ -954,17 +955,20 @@
             <label class="gallery-control" for="sort-filter">
                 Sort
                 <select id="sort-filter">
-                    <option value="name_asc">Name (A-Z)</option>
-                    <option value="name_desc">Name (Z-A)</option>
-                    <option value="author_asc">Author (A-Z)</option>
-                    <option value="views_desc">Most views</option>
-                    <option value="views_asc">Fewest views</option>
-                    <option value="downloads_desc" selected>Most downloads</option>
+                    <option value="newest" selected>Newest themes</option>
+                    <option value="best">Best themes</option>
+                    <option value="downloads_desc">Most downloads</option>
                     <option value="downloads_asc">Fewest downloads</option>
                     <option value="rating_desc">Highest rating</option>
                     <option value="rating_asc">Lowest rating</option>
+                    <option value="name_asc">Name (A-Z)</option>
+                    <option value="name_desc">Name (Z-A)</option>
+                    <option value="author_asc">Author (A-Z)</option>
                 </select>
             </label>
+            <button type="button" id="best-themes-btn" class="gallery-best-btn" aria-pressed="false" title="Sort by most downloaded and viewed themes">
+                <i class="fa-solid fa-trophy" aria-hidden="true"></i> Best themes
+            </button>
             <label class="gallery-control" for="page-size">
                 Per page
                 <select id="page-size">
@@ -2220,10 +2224,20 @@
         const sourceFilter = document.getElementById('source-filter');
         const authorFilter = document.getElementById('author-filter');
         const sortFilter = document.getElementById('sort-filter');
+        const bestThemesBtn = document.getElementById('best-themes-btn');
         const pageSizeSelect = document.getElementById('page-size');
         const goldOnlyCheckbox = document.getElementById('gold-only-filter');
         let goldOnlyFilter = false;
+        let currentPage = 1;
+        const DEFAULT_GALLERY_SORT = 'newest';
         const galleryGoldQueued = new Set();
+
+        function syncBestThemesButton() {
+            if (!bestThemesBtn) return;
+            const active = (sortFilter ? String(sortFilter.value || DEFAULT_GALLERY_SORT) : DEFAULT_GALLERY_SORT) === 'best';
+            bestThemesBtn.classList.toggle('is-active', active);
+            bestThemesBtn.setAttribute('aria-pressed', active ? 'true' : 'false');
+        }
 
         function galleryConnectionSavesData() {
             const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
@@ -2282,7 +2296,10 @@
             const sourceQ = qp.get('source');
             if (sourceFilter && sourceQ) sourceFilter.value = sourceQ;
             const sortQ = qp.get('sort');
-            if (sortFilter && sortQ) sortFilter.value = sortQ;
+            if (sortFilter && sortQ) {
+                const hasOpt = Array.from(sortFilter.options).some((o) => o.value === sortQ);
+                if (hasOpt) sortFilter.value = sortQ;
+            }
             const authorQ = qp.get('author');
             if (authorFilter && authorQ) {
                 authorFilter.value = authorQ;
@@ -2294,6 +2311,7 @@
             const pageQ = Number(qp.get('page') || '1');
             currentPage = Number.isFinite(pageQ) && pageQ > 0 ? Math.floor(pageQ) : 1;
         } catch (e) {}
+        syncBestThemesButton();
 
         function syncQueryState(totalPages) {
             try {
@@ -2304,8 +2322,8 @@
                 const sourceV = sourceFilter ? String(sourceFilter.value || 'all') : 'all';
                 if (sourceV !== 'all') params.set('source', sourceV);
                 else params.delete('source');
-                const sortV = sortFilter ? String(sortFilter.value || 'downloads_desc') : 'downloads_desc';
-                if (sortV !== 'downloads_desc') params.set('sort', sortV);
+                const sortV = sortFilter ? String(sortFilter.value || DEFAULT_GALLERY_SORT) : DEFAULT_GALLERY_SORT;
+                if (sortV !== DEFAULT_GALLERY_SORT) params.set('sort', sortV);
                 else params.delete('sort');
                 const authorV = authorFilter ? String(authorFilter.value || 'all') : 'all';
                 if (authorV !== 'all') params.set('author', authorV);
@@ -2326,7 +2344,6 @@
 
         const pagerTopEl = document.getElementById('theme-pager-top');
         const pagerBottomEl = document.getElementById('theme-pager-bottom');
-        let currentPage = 1;
 
         const pagerNumberFormat = (() => {
             try {
@@ -2466,7 +2483,8 @@
             const onlyOn = onlyOnDeviceCheckbox && onlyOnDeviceCheckbox.checked;
             const sourceV = sourceFilter ? String(sourceFilter.value || 'all') : 'all';
             const authorV = authorFilter ? String(authorFilter.value || 'all') : 'all';
-            const sortV = sortFilter ? String(sortFilter.value || 'downloads_desc') : 'downloads_desc';
+            const sortV = sortFilter ? String(sortFilter.value || DEFAULT_GALLERY_SORT) : DEFAULT_GALLERY_SORT;
+            syncBestThemesButton();
             const pageSize = Number(pageSizeSelect && pageSizeSelect.value || '24') || 24;
             const cards = document.querySelectorAll('.theme-card');
             const matched = [];
@@ -2484,11 +2502,36 @@
                 if (visible) matched.push(card);
             }
 
+            const newestScore = (card) =>
+                cardMetric(card, 'data-downloads') +
+                cardMetric(card, 'data-rating-count') +
+                cardMetric(card, 'data-views');
+            const bestScore = (card) =>
+                cardMetric(card, 'data-downloads') +
+                cardMetric(card, 'data-views');
+
             matched.sort((a, b) => {
                 const nameA = String(a.getAttribute('data-name') || '');
                 const nameB = String(b.getAttribute('data-name') || '');
                 const authorA = String(a.getAttribute('data-author') || '');
                 const authorB = String(b.getAttribute('data-author') || '');
+                if (sortV === 'newest') {
+                    return (
+                        newestScore(a) - newestScore(b) ||
+                        cardMetric(a, 'data-downloads') - cardMetric(b, 'data-downloads') ||
+                        cardMetric(a, 'data-views') - cardMetric(b, 'data-views') ||
+                        compareThemeTitles(nameA, nameB)
+                    );
+                }
+                if (sortV === 'best') {
+                    return (
+                        bestScore(b) - bestScore(a) ||
+                        cardMetric(b, 'data-downloads') - cardMetric(a, 'data-downloads') ||
+                        cardMetric(b, 'data-views') - cardMetric(a, 'data-views') ||
+                        cardMetric(b, 'data-rating') - cardMetric(a, 'data-rating') ||
+                        compareThemeTitles(nameA, nameB)
+                    );
+                }
                 if (sortV === 'name_desc') return compareThemeTitles(nameA, nameB, 'desc');
                 if (sortV === 'author_asc') return compareAuthorNames(authorA, authorB) || compareThemeTitles(nameA, nameB);
                 if (sortV === 'views_desc') return cardMetric(b, 'data-views') - cardMetric(a, 'data-views') || compareThemeTitles(nameA, nameB);
@@ -2550,6 +2593,14 @@
             applyFilters();
         });
         if (sortFilter) sortFilter.addEventListener('change', () => {
+            syncBestThemesButton();
+            currentPage = 1;
+            applyFilters();
+        });
+        if (bestThemesBtn) bestThemesBtn.addEventListener('click', () => {
+            if (!sortFilter) return;
+            sortFilter.value = String(sortFilter.value || DEFAULT_GALLERY_SORT) === 'best' ? DEFAULT_GALLERY_SORT : 'best';
+            syncBestThemesButton();
             currentPage = 1;
             applyFilters();
         });
@@ -5187,6 +5238,12 @@
             return str;
         }
 
+        /* Only one screenshot-backed card runs its live HQ preview at a time:
+           toggling HQ on another screenshot-backed card reverts the previous one
+           back to its screenshot image. Cards without a screenshot keep their
+           auto-HQ preview running always and never hide/show an HQ button. */
+        let activeScreenshotHqReset = null;
+
         function createCard(theme, isPriority) {
             const c = document.createElement('article');
             c.className = 'theme-card';
@@ -5207,7 +5264,18 @@
                 'data-search',
                 `${safeText(theme.name)} ${safeText(theme.description)} ${safeText(theme.author)} ${safeText(folderPath)} ${safeText(theme.searchText || '')}`.toLowerCase()
             );
-            if (folderPath) c.setAttribute('data-catalog-folder', folderPath);
+            if (folderPath) {
+                c.setAttribute('data-catalog-folder', folderPath);
+                if (window.ThemeAnalytics && typeof window.ThemeAnalytics.getStats === 'function') {
+                    const st = window.ThemeAnalytics.getStats(folderPath);
+                    if (st) {
+                        c.setAttribute('data-views', String(Number(st.pageViews) || 0));
+                        c.setAttribute('data-downloads', String(Number(st.downloads) || 0));
+                        c.setAttribute('data-rating', String(Number(st.ratingAverage) || 0));
+                        c.setAttribute('data-rating-count', String(Number(st.ratingCount) || 0));
+                    }
+                }
+            }
 
             const cardTop = document.createElement('div');
             cardTop.className = 'theme-card-top';
@@ -5284,6 +5352,8 @@
             };
             let staticScreenshotActive = false;
             let staticPreviewActive = false;
+            let autoHqMode = false;
+            let autoHqMounted = false;
             const folderImageCandidates = folderPath ? [
                 `${folderPath}/cover-thumb.jpg`,
                 `${folderPath}/cover.jpg`,
@@ -5328,28 +5398,6 @@
             img.addEventListener('load', () => {
                 previewFrame.classList.add('theme-preview-frame--cover-ready');
             });
-            img.onerror = () => {
-                if (staticScreenshotActive) {
-                    /* Stale themes.json: the capture is gone. Keep the card static
-                       and try the generated cover set instead of mounting the
-                       simulator, so a missing capture cannot cost every card a
-                       theme config, font and icon download. */
-                    staticScreenshotActive = false;
-                    usingGeneratedJpeg = false;
-                    img.removeAttribute('srcset');
-                    screenshotIdx = 0;
-                    void applyNextScreenshot();
-                    return;
-                }
-                if (usingGeneratedJpeg) {
-                    usingGeneratedJpeg = false;
-                    img.removeAttribute('srcset');
-                    screenshotIdx = 0;
-                } else {
-                    screenshotIdx += 1;
-                }
-                void applyNextScreenshot();
-            };
             const armCover = () => {
                 if (img.dataset.coverArmed === '1') return;
                 img.dataset.coverArmed = '1';
@@ -5360,7 +5408,6 @@
                     return;
                 }
                 const enc = folderPath.split('/').filter(Boolean).map(encodeURIComponent).join('/');
-                staticPreviewActive = true;
                 usingGeneratedJpeg = true;
                 img.src = `./${enc}/cover-thumb.jpg`;
                 if (!saveData) {
@@ -5373,27 +5420,30 @@
                 if (!src) return false;
                 staticScreenshotActive = true;
                 staticPreviewActive = true;
+                autoHqMode = false;
+                autoHqMounted = false;
                 usingGeneratedJpeg = false;
                 img.dataset.coverArmed = '1';
                 img.removeAttribute('srcset');
                 img.removeAttribute('sizes');
                 img.fetchPriority = isPriority ? 'high' : 'low';
+                img.style.visibility = '';
+                img.style.opacity = '';
+                img.style.pointerEvents = '';
                 previewFrame.classList.add('theme-preview-frame--screenshot');
+                previewFrame.classList.remove('theme-preview-frame--auto-hq');
                 if (simHost) simHost.style.display = 'none';
                 if (img.getAttribute('src') !== src) img.src = src;
                 return true;
             };
-            if (!applyStaticScreenshot('')) {
-                if (isPriority) {
-                    armCover();
-                }
-            }
+            applyStaticScreenshot('');
             previewFrame.append(mediaSkeleton, img);
 
-            /* Hover / HQ: keep the static capture on screen until the live
-               rendered assets are ready. Only a real hover (or an explicit HQ
-               press) starts the expensive simulator mount, keeping translation
-               and asset work off the initial gallery paint. */
+            /* Hover / HQ: for themes WITH a screenshot image, keep the static
+               capture on screen until someone clicks HQ, and switching on HQ
+               for another screenshot-backed card reverts the previous one back
+               to its screenshot. Themes WITHOUT a screenshot mount HQ preview
+               automatically and stay on always without an HQ toggle button. */
             const hqToggle = document.createElement('button');
             hqToggle.type = 'button';
             hqToggle.className = 'theme-preview-hq';
@@ -5401,7 +5451,7 @@
             hqToggle.title = 'Show the live rendered preview';
             hqToggle.setAttribute('aria-label', 'Show the live rendered preview');
             hqToggle.setAttribute('aria-pressed', 'false');
-            hqToggle.hidden = !staticPreviewActive;
+            hqToggle.hidden = !staticScreenshotActive;
             previewFrame.appendChild(hqToggle);
 
             let hoverMountTimer = 0;
@@ -5429,7 +5479,7 @@
                 }
             };
             const livePreviewAllowed = () =>
-                staticPreviewActive &&
+                staticScreenshotActive &&
                 !!folderPath &&
                 !!window.Y1ThemePreview &&
                 typeof window.Y1ThemePreview.mountGalleryCardLazy === 'function' &&
@@ -5437,6 +5487,7 @@
                 !(window.ThemeFrozen && window.ThemeFrozen.isFrozen(theme));
             const restoreStaticScreenshot = (force) => {
                 clearTimeout(hoverMountTimer);
+                if (autoHqMode) return;
                 if (hqPinned && !force) return;
                 if (!livePreviewMounted && !livePreviewReady) return;
                 livePreviewMounted = false;
@@ -5451,12 +5502,31 @@
                     simHost.style.display = 'none';
                 }
                 previewFrame.classList.remove('theme-preview-frame--live-hover');
-                if (img) img.style.opacity = '';
+                if (img) {
+                    img.style.visibility = '';
+                    img.style.opacity = '';
+                    img.style.pointerEvents = '';
+                }
                 hqToggle.setAttribute('aria-pressed', 'false');
                 setHqPillState('idle');
             };
+            const resetLivePreview = () => {
+                if (activeScreenshotHqReset === resetLivePreview) {
+                    activeScreenshotHqReset = null;
+                }
+                hqPinned = false;
+                hqToggle.setAttribute('aria-pressed', 'false');
+                setHqPillState('idle');
+                restoreStaticScreenshot(true);
+            };
             const mountLivePreview = () => {
                 if (livePreviewMounted || livePreviewReady || !livePreviewAllowed()) return;
+                if (activeScreenshotHqReset && activeScreenshotHqReset !== resetLivePreview) {
+                    try {
+                        activeScreenshotHqReset();
+                    } catch (_) {}
+                }
+                activeScreenshotHqReset = resetLivePreview;
                 livePreviewMounted = true;
                 setHqPillState('loading');
                 const seg = String(variantSelect.value || '').trim();
@@ -5481,27 +5551,101 @@
                             applyGalleryCardPreviewReady(c, cfg, meta, folderPath, seg, theme);
                         },
                         onError: () => {
-                            hqPinned = false;
-                            hqToggle.setAttribute('aria-pressed', 'false');
-                            setHqPillState('idle');
-                            restoreStaticScreenshot(true);
+                            resetLivePreview();
                         },
                     });
                 } catch (_) {
-                    setHqPillState('idle');
-                    restoreStaticScreenshot(true);
+                    resetLivePreview();
                 }
             };
-            const resetLivePreview = () => {
-                hqPinned = false;
-                hqToggle.setAttribute('aria-pressed', 'false');
-                setHqPillState('idle');
-                restoreStaticScreenshot(true);
+            const startAutoHqPreview = (variantSeg) => {
+                staticScreenshotActive = false;
+                staticPreviewActive = false;
+                if (activeScreenshotHqReset === resetLivePreview) {
+                    activeScreenshotHqReset = null;
+                }
+                hqToggle.hidden = true;
+                previewFrame.classList.remove('theme-preview-frame--screenshot');
+                const canMountAuto =
+                    !!folderPath &&
+                    !!window.Y1ThemePreview &&
+                    typeof window.Y1ThemePreview.mountGalleryCardLazy === 'function' &&
+                    !(window.ThemeFrozen && window.ThemeFrozen.isFrozen(theme));
+                if (!canMountAuto) {
+                    autoHqMode = false;
+                    autoHqMounted = false;
+                    armCover();
+                    return;
+                }
+                if (autoHqMounted) return;
+                autoHqMode = true;
+                autoHqMounted = true;
+                previewFrame.classList.add('theme-preview-frame--auto-hq');
+                if (simHost) simHost.style.display = '';
+                const seg = String(variantSeg || '').trim();
+                try {
+                    window.Y1ThemePreview.mountGalleryCardLazy(simHost, {
+                        catalogFolder: folderPath,
+                        variantSegment: seg,
+                        mode: 'gallery',
+                        priority: true,
+                        loadingOverlay: false,
+                        buildFileUrl: (cf, rel) => buildThemeFileUrl(cf, rel),
+                        previewMeta: cardPreviewMeta,
+                        onReady: (cfg, meta) => {
+                            if (!autoHqMode) return;
+                            if (simHost) simHost.style.display = '';
+                            previewFrame.classList.add('theme-preview-frame--live-hover', 'theme-preview-frame--cover-ready');
+                            if (img) {
+                                img.style.visibility = 'hidden';
+                                img.style.opacity = '0';
+                                img.style.pointerEvents = 'none';
+                            }
+                            applyGalleryCardPreviewReady(c, cfg, meta, folderPath, seg, theme);
+                        },
+                        onError: () => {
+                            autoHqMode = false;
+                            autoHqMounted = false;
+                            previewFrame.classList.remove('theme-preview-frame--auto-hq', 'theme-preview-frame--live-hover');
+                            if (simHost) simHost.style.display = 'none';
+                            if (img) {
+                                img.style.visibility = '';
+                                img.style.opacity = '';
+                                img.style.pointerEvents = '';
+                            }
+                            armCover();
+                        },
+                    });
+                } catch (_) {
+                    autoHqMode = false;
+                    autoHqMounted = false;
+                    armCover();
+                }
+            };
+            img.onerror = () => {
+                if (staticScreenshotActive) {
+                    /* No screenshot image available (stale/missing screenshot_preview.jpg):
+                       switch automatically to live HQ preview with the HQ button hidden. */
+                    staticScreenshotActive = false;
+                    staticPreviewActive = false;
+                    usingGeneratedJpeg = false;
+                    img.removeAttribute('srcset');
+                    startAutoHqPreview(String(variantSelect.value || '').trim());
+                    return;
+                }
+                if (usingGeneratedJpeg) {
+                    usingGeneratedJpeg = false;
+                    img.removeAttribute('srcset');
+                    screenshotIdx = 0;
+                } else {
+                    screenshotIdx += 1;
+                }
+                void applyNextScreenshot();
             };
             hqToggle.addEventListener('click', (ev) => {
                 ev.preventDefault();
                 ev.stopPropagation();
-                if (!staticPreviewActive) return;
+                if (!staticScreenshotActive) return;
                 if (hqPinned && livePreviewMounted) {
                     resetLivePreview();
                     return;
@@ -5599,18 +5743,22 @@
                 } catch (_) {}
             };
             c._armGalleryMedia = () => {
-                if (!staticPreviewActive) armCover();
                 void loadCardVariants();
                 if (window.Y1ThemesI18n && typeof window.Y1ThemesI18n.lazyTranslateCard === 'function') {
                     window.Y1ThemesI18n.lazyTranslateCard(c);
                 }
                 if (previewMounted) return;
                 previewMounted = true;
-                hqToggle.hidden = !staticPreviewActive;
-                /* The card always paints a static capture or cover first. The
-                   simulator only runs when someone presses HQ, so scrolling the
-                   gallery never downloads theme configs, fonts or icon art. */
-                void hydrateStaticPreviewCard('');
+                if (staticScreenshotActive) {
+                    hqToggle.hidden = false;
+                    /* The card paints its pre-rendered screenshot first; the live
+                       simulator runs only when someone clicks HQ. */
+                    void hydrateStaticPreviewCard('');
+                } else {
+                    /* No screenshot image is available for this theme: display the
+                       live HQ preview automatically with the HQ button hidden. */
+                    startAutoHqPreview('');
+                }
             };
             if (galleryMediaObserver) galleryMediaObserver.observe(c);
             else c._armGalleryMedia();
@@ -5672,6 +5820,12 @@
                 n.href = theme.authorUrl;
                 n.target = '_blank';
                 n.rel = 'noopener';
+                n.addEventListener('click', () => {
+                    const analyticsKey = folderPath || safeText(theme.name);
+                    if (analyticsKey && window.ThemeAnalytics && typeof window.ThemeAnalytics.trackExternalDownload === 'function') {
+                        window.ThemeAnalytics.trackExternalDownload(analyticsKey, 'gallery');
+                    }
+                });
             } else {
                 n.href = buildCardSeoHref(String(variantSelect.value || '').trim());
             }
@@ -5685,6 +5839,8 @@
                 updateCardThemeNameHref();
                 if (!folderPath || !window.Y1ThemePreview) return;
                 const seg = String(variantSelect.value || '').trim();
+                autoHqMode = false;
+                autoHqMounted = false;
                 if (typeof window.Y1ThemePreview.unmount === 'function') {
                     window.Y1ThemePreview.unmount(simHost);
                 }
@@ -5693,12 +5849,7 @@
                     hqToggle.hidden = false;
                     void hydrateStaticPreviewCard(seg);
                 } else {
-                    staticScreenshotActive = false;
-                    hqToggle.hidden = true;
-                    previewFrame.classList.remove('theme-preview-frame--screenshot');
-                    if (simHost) simHost.style.display = '';
-                    img.style.visibility = '';
-                    mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, c, seg, theme);
+                    startAutoHqPreview(seg);
                 }
                 void syncDownloadButtonToThemeConfig(seg);
                 if (window.ThemeFrozen && ThemeFrozen.isFrozen(theme)) {
@@ -5797,6 +5948,10 @@
             if (outboundUrl) {
                 dl.innerHTML = `<i class="fa-solid fa-arrow-up-right-from-square"></i> ${safeText(theme.authorCTA || (hasExternalDownload ? 'Open download page' : 'Visit author'))}`;
                 dl.onclick = () => {
+                    const analyticsKey = folderPath || safeText(theme.name);
+                    if (analyticsKey && window.ThemeAnalytics && typeof window.ThemeAnalytics.trackExternalDownload === 'function') {
+                        window.ThemeAnalytics.trackExternalDownload(analyticsKey, 'gallery');
+                    }
                     if (outboundUrl) {
                         window.open(outboundUrl, '_blank', 'noopener');
                     }
@@ -6016,6 +6171,22 @@
                 return;
             }
 
+            /* Kick off the single-request stats preload immediately in parallel
+               with card rendering so Newest / Best sorts and download counts
+               appear right away instead of waiting for all 700+ cards first. */
+            const allAnalyticsFolders = pendingCards
+                .map((t) => String(t.folder || '').replace(/^\.\/+/, ''))
+                .filter(Boolean);
+            const upfrontStatsPromise =
+                window.ThemeAnalytics && typeof window.ThemeAnalytics.fetchStatsMap === 'function'
+                    ? window.ThemeAnalytics.fetchStatsMap(allAnalyticsFolders).then(() => {
+                          if (window.ThemeAnalytics && typeof window.ThemeAnalytics.refreshAll === 'function') {
+                              window.ThemeAnalytics.refreshAll();
+                          }
+                          applyFilters();
+                      }).catch(() => {})
+                    : Promise.resolve();
+
             let cardsAdded = 0;
             let cardCursor = 0;
             let cardSliceHandle = 0;
@@ -6048,6 +6219,7 @@
                 }
 
                 void (async () => {
+                    await upfrontStatsPromise;
                     if (!window.ThemeAnalytics) return;
                     const entries = [...grid.querySelectorAll('.theme-card')].map((card) => {
                         const folder = card.getAttribute('data-catalog-folder');

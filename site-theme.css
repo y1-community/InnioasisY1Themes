@@ -579,13 +579,56 @@ body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-controls {
     }
 
     .gallery-control--author,
-    .gallery-control--gold {
+    .gallery-control--gold,
+    .gallery-best-btn {
         grid-column: 1 / -1;
+    }
+
+    .gallery-best-btn {
+        width: 100%;
+        justify-content: center;
     }
 
     .gallery-control--author select {
         max-width: 100%;
     }
+}
+
+.gallery-best-btn {
+    align-self: flex-end;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.48rem 0.9rem;
+    min-height: 2.25rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    border-radius: 10px;
+    border: 1px solid var(--site-border);
+    background: var(--site-bg-elevated);
+    color: var(--site-text);
+    cursor: pointer;
+    transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease, transform 0.12s ease;
+}
+
+.gallery-best-btn:hover,
+.gallery-best-btn:focus-visible {
+    border-color: var(--site-accent);
+    color: var(--site-accent);
+}
+
+.gallery-best-btn.is-active,
+.gallery-best-btn[aria-pressed="true"] {
+    background: var(--site-accent);
+    border-color: var(--site-accent);
+    color: #fff;
+}
+
+.gallery-best-btn.is-active:hover,
+.gallery-best-btn[aria-pressed="true"]:hover {
+    color: #fff;
+    filter: brightness(1.06);
 }
 
 .gallery-control {

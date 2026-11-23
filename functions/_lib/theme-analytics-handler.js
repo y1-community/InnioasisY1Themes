@@ -372,11 +372,23 @@ export async function handleThemeEventPost(request, env) {
         : "direct_installs";
   try {
     await incrementMetric(env.DB, themeKey, col);
+    const row = await env.DB.prepare(
+      `SELECT page_views, zip_downloads, direct_installs, rating_sum, rating_count
+       FROM theme_metrics WHERE theme_key = ?`,
+    )
+      .bind(themeKey)
+      .first();
+    return jsonResponse({
+      ok: true,
+      theme: themeKey,
+      event,
+      recorded: true,
+      stats: metricRowToStats(row, null),
+    });
   } catch (err) {
     console.error("theme event", err);
     return jsonResponse({ error: "Could not record event." }, 500);
   }
-  return jsonResponse({ ok: true, theme: themeKey, event, recorded: true });
 }
 
 export async function handleThemeRatingPost(request, env) {
@@ -455,6 +467,53 @@ export async function handleThemeStatsGet(request, env) {
   }
   const url = new URL(request.url);
   const voterId = String(url.searchParams.get("voterId") || "").trim().slice(0, 64);
+  const fetchAll = url.searchParams.get("all") === "1";
+
+  if (fetchAll) {
+    try {
+      const { results } = await env.DB.prepare(
+        `SELECT theme_key, page_views, zip_downloads, direct_installs, rating_sum, rating_count
+         FROM theme_metrics`,
+      ).all();
+      const userVotes = new Map();
+      if (voterId && voterId.length >= 8) {
+        const { results: votes } = await env.DB.prepare(
+          `SELECT theme_key, rating FROM theme_rating_votes WHERE voter_id = ?`,
+        )
+          .bind(voterId)
+          .all();
+        for (const v of votes || []) {
+          userVotes.set(v.theme_key, Number(v.rating));
+        }
+      }
+      const themes = {};
+      for (const row of results || []) {
+        if (!row || !row.theme_key) continue;
+        themes[row.theme_key] = metricRowToStats(row, userVotes.get(row.theme_key));
+      }
+      for (const [votedKey, rating] of userVotes.entries()) {
+        if (!themes[votedKey]) {
+          themes[votedKey] = metricRowToStats(null, rating);
+        }
+      }
+      return Response.json(
+        { ok: true, all: true, themes },
+        {
+          status: 200,
+          headers: {
+            ...CORS_HEADERS,
+            "Cache-Control": voterId
+              ? "no-store"
+              : "public, max-age=30, stale-while-revalidate=60",
+          },
+        },
+      );
+    } catch (err) {
+      console.error("theme stats all", err);
+      return jsonResponse({ error: "Could not load stats." }, 500);
+    }
+  }
+
   const keys = [];
   const single = url.searchParams.get("theme");
   if (single) {

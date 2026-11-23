@@ -1,13 +1,16 @@
 /**
- * Lightweight page-view tracking for per-theme SEO index.html shells (before redirect to theme.html).
- * Shares session dedupe keys with theme-analytics.js so one visit = one view.
+ * Lightweight analytics tracking for per-theme SEO index.html shells.
+ * Shares session dedupe keys with theme-analytics.js so one visit = one view,
+ * exposes ThemeAnalytics tracking hooks for theme-download.js, and records
+ * downloads when visitors open external-download themes.
  */
-(function () {
+(function (global) {
     "use strict";
 
     var CONSENT_KEY = "y1-theme-consent-v2";
     var LEGACY_CONSENT_KEY = "y1-theme-consent-v1";
     var PV_SESSION_PREFIX = "y1-pv-session:";
+    var EXT_DL_SESSION_PREFIX = "y1-ext-dl-session:";
     var VISITOR_KEY = "y1-rating-visitor-id";
 
     function readMetaOrigin() {
@@ -39,12 +42,12 @@
     function getVisitorId() {
         try {
             var id = localStorage.getItem(VISITOR_KEY);
-            if (id && id.length >= 8) return id;
+            if (id && id.length >= 12) return id;
             id = "v_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
             localStorage.setItem(VISITOR_KEY, id);
             return id;
         } catch (e) {
-            return "anon";
+            return "anon-" + Math.random().toString(36).slice(2) + Date.now().toString(36);
         }
     }
 
@@ -53,7 +56,7 @@
             var h = document.documentElement;
             var a = h && h.getAttribute("data-themes-preview-redirect");
             if (a) return String(a).trim();
-            var preview = document.querySelector("a.btn-primary[href*='theme=']");
+            var preview = document.querySelector("a.btn-primary[href*='theme='], a[data-studio-action='preview'][href*='folder=']");
             if (preview && preview.href) return String(preview.href).trim();
             var c = document.querySelector('link[rel="canonical"]');
             if (c && c.href) return String(c.href).trim();
@@ -84,32 +87,28 @@
         }
     }
 
-    function track() {
+    function sendEvent(themeKey, event, source) {
         var base = readMetaOrigin();
-        if (!base) return;
+        var key = normalizeThemeKey(themeKey);
+        if (!base || !key) return;
         var consent = loadConsent();
         if (consent.analytics === false) return;
-        var dest = destUrl();
-        var key = parseThemeFromDest(dest) || themeFromPath();
-        if (!key) return;
-        try {
-            var sk = PV_SESSION_PREFIX + key;
-            if (sessionStorage.getItem(sk)) return;
-            sessionStorage.setItem(sk, "1");
-        } catch (e) {}
+        if (event === "page_view") {
+            try {
+                var sk = PV_SESSION_PREFIX + key;
+                if (sessionStorage.getItem(sk)) return;
+                sessionStorage.setItem(sk, "1");
+            } catch (e) {}
+        }
         var url = base + "/api/theme-event";
         var body = JSON.stringify({
             theme: key,
-            event: "page_view",
-            source: "seo_shell",
+            event: event,
+            source: source || "theme_page",
             voterId: getVisitorId(),
         });
-        try {
-            if (navigator.sendBeacon) {
-                navigator.sendBeacon(url, new Blob([body], { type: "application/json" }));
-                return;
-            }
-        } catch (e2) {}
+        /* Use fetch with keepalive instead of cross-origin sendBeacon(Blob, application/json),
+           which browsers reject on CORS wildcard endpoints. */
         fetch(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -118,5 +117,78 @@
         }).catch(function () {});
     }
 
+    function isExternalDownloadUrl(raw) {
+        var s = String(raw || "").trim();
+        if (!s || !/^https?:\/\//i.test(s)) return false;
+        if (global.ThemePackaging && typeof global.ThemePackaging.effectiveExternalDownloadUrl === "function") {
+            return !!global.ThemePackaging.effectiveExternalDownloadUrl(s);
+        }
+        try {
+            var u = new URL(s);
+            var host = String(u.hostname || "").toLowerCase();
+            if (host === "themes.innioasis.app" || host === "www.themes.innioasis.app") return false;
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function trackExternalShellDownload(key) {
+        try {
+            var dlKey = EXT_DL_SESSION_PREFIX + key;
+            if (sessionStorage.getItem(dlKey)) return;
+            sessionStorage.setItem(dlKey, "1");
+        } catch (e) {}
+        sendEvent(key, "zip_download", "theme_page");
+    }
+
+    if (!global.ThemeAnalytics) {
+        global.ThemeAnalytics = {
+            normalizeThemeKey: normalizeThemeKey,
+            trackPageView: function (themeKey, source) {
+                sendEvent(themeKey, "page_view", source || "theme_page");
+            },
+            trackZipDownload: function (themeKey, source) {
+                sendEvent(themeKey, "zip_download", source || "theme_page");
+            },
+            trackDirectInstall: function (themeKey, source) {
+                sendEvent(themeKey, "direct_install", source || "theme_page");
+            },
+            trackExternalDownload: function (themeKey, source) {
+                sendEvent(themeKey, "page_view", source || "theme_page");
+                sendEvent(themeKey, "zip_download", source || "theme_page");
+            },
+            hasApi: function () {
+                return !!readMetaOrigin();
+            },
+        };
+    }
+
+    function track() {
+        var dest = destUrl();
+        var key = parseThemeFromDest(dest) || themeFromPath();
+        if (!key) return;
+        sendEvent(key, "page_view", "theme_page");
+
+        /* Check ./config.json on the static theme page: external download URL themes
+           count visits to their theme page as downloads as well as views. */
+        fetch("./config.json", { cache: "no-cache" })
+            .then(function (res) {
+                return res && res.ok ? res.json() : null;
+            })
+            .then(function (cfg) {
+                if (!cfg || typeof cfg !== "object") return;
+                var info = cfg.theme_info || cfg.source_info || {};
+                var extUrl =
+                    (info && info.externalDownloadUrl) ||
+                    cfg.externalDownloadUrl ||
+                    "";
+                if (isExternalDownloadUrl(extUrl)) {
+                    trackExternalShellDownload(key);
+                }
+            })
+            .catch(function () {});
+    }
+
     track();
-})();
+})(typeof window !== "undefined" ? window : globalThis);
