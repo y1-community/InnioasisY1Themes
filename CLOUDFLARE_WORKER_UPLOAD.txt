@@ -1,41 +1,36 @@
 y1-theme-upload Worker — Cloudflare dashboard settings (copy/paste)
 ====================================================================
 
-This repo has no root wrangler.toml (avoids analytics accidentally deploying upload code).
-Use the build script below — do not use plain `npx wrangler deploy` at repo root.
+Root `wrangler.toml` and `cloudflare-worker-upload.toml` both target
+`y1-theme-upload` (`upload-worker.js`) with `workers_dev = true`, so both
+`node scripts/deploy-upload-worker.mjs` and bare `npx wrangler deploy` deploy
+the upload Worker safely.
+
+Note: `y1-theme-analytics` always deploys with `--config cloudflare-worker-analytics.toml`
+(via `scripts/deploy-analytics-worker.mjs`) and ignores root `wrangler.toml`.
 
 Workers & Pages → y1-theme-upload → Settings → Builds & deployments
 -------------------------------------------------------------------
 
   Root directory:     (repository root — leave empty/default so `scripts/` resolves)
 
-  Build command:        node scripts/deploy-upload-worker.mjs
-
-  Deploy command:       exit 0
-
-  Version command:      (leave EMPTY)
-
-Why: Deploy runs in a step that often does not see wrangler.toml. Running our deploy
-script during **Build** runs while the full Git clone is present.
-
-⚠ Fatal misconfiguration seen in CI: Deploy command **`npx wrangler deploy`** (no config)
-against this repository root discovers `functions/`, guesses **Workers Static + assets `.` ,
-node_modules)** and fails with **"Asset too large"** (~workerd binary in node_modules).
-
-  Fix that failure by NEVER using bare `npx wrangler deploy` at repo root for this project.
-
-Alternative (if you prefer deploy in the Deploy step):
-
   Build command:        exit 0
 
   Deploy command:       node scripts/deploy-upload-worker.mjs
 
-  (or: npm run deploy)
+  Version command:      (leave EMPTY)
 
-Do NOT use plain `npx wrangler deploy` at repository root.
+Alternative (if Cloudflare runs `npx wrangler deploy` in the Deploy step):
 
-If Wrangler insists on scaffolding: set **Workers project → Root directory** to a minimal
-subdir that contains only Worker files (recommended: keep Deploy as **`exit 0`** anyway).
+  Build command:        exit 0
+
+  Deploy command:       npx wrangler deploy
+
+After a green build, test:
+  https://y1-theme-upload.itsryanspecter.workers.dev/health
+  (GET should return 200 {"ok":true,"worker":"y1-theme-upload","configured":true})
+  https://y1-theme-upload.itsryanspecter.workers.dev/api/upload-theme
+  (OPTIONS should return 204; POST needs multipart from Studio or upload.html)
 
 Free plan note
 --------------
@@ -45,7 +40,3 @@ Free plan note
 Secrets (Worker → Settings → Variables)
 ---------------------------------------
   GITHUB_UPLOAD_TOKEN   (required, encrypted)
-
-After a green build, test:
-  https://y1-theme-upload.itsryanspecter.workers.dev/api/upload-theme
-  (OPTIONS should return 204; POST needs multipart from upload.html)

@@ -18,6 +18,7 @@ on:
       - "functions/_lib/theme-removal-handler.js"
       - "functions/_lib/theme-metadata-handler.js"
       - "cloudflare-worker-upload.toml"
+      - "wrangler.toml"
       - "upload-worker.js"
       - "scripts/deploy-upload-worker.mjs"
       - ".github/workflows/deploy-theme-upload-worker.yml"

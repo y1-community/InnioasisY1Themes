@@ -1,6 +1,4 @@
 # y1-theme-upload — npx wrangler deploy --config cloudflare-worker-upload.toml
-
-# y1-theme-upload — npx wrangler deploy --config cloudflare-worker-upload.toml
 #
 # workers_dev must stay on: upload.html and the Studio reach this Worker through
 # its *.workers.dev hostname. A deployment that leaves the route off answers
@@ -11,3 +9,4 @@ name = "y1-theme-upload"
 main = "upload-worker.js"
 compatibility_date = "2026-05-11"
 workers_dev = true
+preview_urls = true

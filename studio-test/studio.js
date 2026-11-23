@@ -4872,15 +4872,30 @@
         }
 
         if (state.sourceType === 'local') {
-            totalAssets = state.localFiles.length;
+            var configValues = collectConfigAssetValues(config);
+            totalAssets = state.localFiles.length + configValues.length;
             state.localFiles.forEach(function (entry) {
                 var path = entry.path;
-                var key = path.toLowerCase();
-                if (seenPaths[key]) return;
+                var key = localKey('', path);
+                if (!key || seenPaths[key]) return;
                 seenPaths[key] = true;
+                var override = state.assetOverrides && state.assetOverrides[key];
+                var blob = override && override.blob ? override.blob : entry.blob;
                 entries.push({ path: path, download_url: path });
-                blobs[key] = entry.blob;
+                blobs[key] = blob;
+                blobs[path.toLowerCase()] = blob;
                 reportAsset(path);
+            });
+            configValues.forEach(function (value) {
+                var key = localKey('', value);
+                if (!key || seenPaths[key]) return;
+                var override = state.assetOverrides && state.assetOverrides[key];
+                if (!override || !override.blob) return;
+                seenPaths[key] = true;
+                entries.push({ path: value, download_url: value });
+                blobs[key] = override.blob;
+                blobs[value.toLowerCase()] = override.blob;
+                reportAsset(value);
             });
         } else {
             var values = collectConfigAssetValues(config);

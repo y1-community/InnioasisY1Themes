@@ -9,10 +9,10 @@ export const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "Content-Type",
 };
 
-function jsonResponse(body, status = 200) {
+function jsonResponse(body, status = 200, extraHeaders = null) {
   return Response.json(body, {
     status,
-    headers: CORS_HEADERS,
+    headers: extraHeaders ? { ...CORS_HEADERS, ...extraHeaders } : CORS_HEADERS,
   });
 }
 
@@ -57,6 +57,21 @@ async function ghJson(url, token, init = {}, context = "") {
     if (json.message) parts.push(String(json.message));
     if (json.error) parts.push(String(json.error));
     let detail = parts.filter(Boolean).join(" — ") || raw?.slice(0, 300) || `HTTP ${res.status}`;
+    const isRateLimit =
+      (res.status === 403 || res.status === 429) &&
+      (res.headers.get("x-ratelimit-remaining") === "0" || /rate limit/i.test(detail));
+    if (isRateLimit) {
+      const resetEpoch = Number(res.headers.get("x-ratelimit-reset") || 0);
+      const retryAfterSec =
+        resetEpoch > 0 ? Math.max(1, Math.ceil(resetEpoch - Date.now() / 1000)) : 60;
+      const waitMinutes = Math.max(1, Math.ceil(retryAfterSec / 60));
+      const err = new Error(
+        `GitHub's request quota is temporarily full. Wait about ${waitMinutes} minute${waitMinutes === 1 ? "" : "s"} and try again.`
+      );
+      err.status = 429;
+      err.retryAfter = String(retryAfterSec);
+      throw err;
+    }
     const prefix = context ? `${context}: ` : "";
     throw new Error(`${prefix}GitHub API ${res.status}: ${detail}`);
   }
@@ -137,7 +152,12 @@ export async function handleRemovalPost(request, env) {
       return jsonResponse({ error: "Server upload token is not configured." }, 500);
     }
 
-    const form = await request.formData();
+    let form;
+    try {
+      form = await request.formData();
+    } catch {
+      return jsonResponse({ error: "Expected a multipart/form-data request body." }, 400);
+    }
     const folderRaw = String(form.get("folder") || "").trim();
     const reason = String(form.get("reason") || "").trim();
     const requester = String(form.get("requester") || "").trim();
@@ -413,7 +433,15 @@ export async function handleRemovalPost(request, env) {
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Removal request failed.";
-    console.error("[theme-removal]", message);
-    return jsonResponse({ error: message }, 500);
+    const status =
+      error && typeof error === "object" && typeof error.status === "number" && error.status >= 400 && error.status < 600
+        ? error.status
+        : 500;
+    const extraHeaders =
+      error && typeof error === "object" && error.retryAfter
+        ? { "Retry-After": String(error.retryAfter) }
+        : null;
+    console.error("[theme-removal]", status, message);
+    return jsonResponse({ error: message }, status, extraHeaders);
   }
 }
