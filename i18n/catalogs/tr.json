@@ -1,7 +1,7 @@
 {
- "count": 11226,
+ "count": 11227,
  "dir": "ltr",
- "generated": "2026-11-15T14:27:07+00:00",
+ "generated": "2026-11-23T15:21:58+00:00",
  "keep": [
   "(1P)",
   "(1RG)",
@@ -445,6 +445,7 @@
   "Tema StrawberryShortcake2006 para Innioasis Y1.",
   "Tema mp3 sombie caprichoso lindo rosa y verde",
   "Terry_Gato",
+  "Test123",
   "Teto",
   "The Beatles",
   "Timmkoo Q3, Q5, G1, A5:",
@@ -1353,6 +1354,7 @@
   "A theme that came to me while drinking Arizona Ice tea (credits to angiee for the base of this theme)": "Arizona Ice tea içerken aklıma gelen bir tema (bu temanın temeli için Angiee'ye teşekkürler)",
   "A top supporter": "En iyi destekçi",
   "A tranquil theme for the teal lovers": "Deniz mavisi sevenler için sakin bir tema",
+  "A user has reported that their Y2 would not boot after installing JJ Launcher": "Bir kullanıcı, JJ Launcher'ı yükledikten sonra Y2'sinin önyükleme yapmadığını bildirdi",
   "A vibrant hot-pink theme for the Innioasis Y1.": "Innioasis Y1 için canlı, sıcak pembe bir tema.",
   "A vibrant rainbow-inspired custom theme for the Innioasis Y1.": "Innioasis Y1 için canlı, gökkuşağından ilham alan özel bir tema.",
   "A vintage fleur": "Vintage bir fleur",
@@ -5168,6 +5170,7 @@
   "Install Linux on the Y1.": "Linux'u Y1 üzerine yükleyin.",
   "Install Method": "Kurulum Yöntemi",
   "Install Original Software 3.2.0 or later before installing Reborn": "Reborn'u yüklemeden önce Orijinal Yazılım 3.2.0 veya üstünü yükleyin",
+  "Install Original Software for Y2 (any version) for the best results, it may not boot if coming from Classy or another custom firmware. Only select Keep Settings if you're already running Reborn.": "En iyi sonuçları elde etmek için Y2 için Orijinal Yazılımı (herhangi bir sürüm) yükleyin; Classy veya başka bir özel ürün yazılımından geliyorsa önyükleme yapmayabilir. Yalnızca zaten Reborn'u çalıştırıyorsanız Ayarları Koru'yu seçin.",
   "Install Reborn (Y2Linux) custom firmware on an Innioasis Y2 with Innioasis Updater CE. Choose Y2, select Reborn (Y2Linux), pick a release, and connect only when prompted.": "Innioasis Güncelleyici CE ile Reborn (Y2Linux) özel donanım yazılımını Innioasis Y2 cihazına yükleyin. Y2 seçin, Reborn (Y2Linux) seçin, bir sürüm seçin ve yalnızca istendiğinde bağlanın.",
   "Install Reborn (Y2Linux) on Y2": "Reborn (Y2Linux)'ı Y2 üzerine yükleyin",
   "Install Reborn (Y2Linux) on your Innioasis Y2.": "Innioasis Y2 cihazınıza Reborn (Y2Linux) yükleyin.",
@@ -5239,6 +5242,7 @@
   "Installation Overview": "Kuruluma Genel Bakış",
   "Installation Steps": "Kurulum Adımları",
   "Installing Firmware on Your Innioasis Y2": "Firmware'i Innioasis Y2 Cihazınıza Yükleme",
+  "Installing Reborn for the First Time?": "Reborn'u İlk Kez mi Yüklüyorsunuz?",
   "Installing Solar on your Innioasis Y1 is quick and easy right inside the official Innioasis Updater application.": "Innioasis Y1 cihazınıza Solar yüklemek, doğrudan resmi Innioasis Güncelleyici uygulamasının içinde hızlı ve kolaydır.",
   "Installing and resetting themes on Rockbox-Y2.": "Rockbox-Y2 üzerinde temaların yüklenmesi ve sıfırlanması.",
   "Intelligent tag splitting": "Akıllı etiket bölme",
@@ -5276,6 +5280,7 @@
   "Isaiah's Masterpiece!": "Isaiah'ın Başyapıtı!",
   "Isaiah's Masterpiece! - Innioasis Y1 and Y2 Themes Gallery": "Isaiah'ın Başyapıtı! - Innioasis Y1 ve Y2 Tema Galerisi",
   "Isaiah's Masterpiece! for Innioasis Y1 & Y2 by Mr. Iminix Sonc": "Isaiah'ın Başyapıtı! Bay Iminix Sonc tarafından Innioasis Y1 ve Y2 için",
+  "Issues reported with JJ Launcher on Y2": "Y2'de JJ Launcher ile bildirilen sorunlar",
   "It cannot connect to the player": "Oynatıcıya bağlanamıyor",
   "It detected the player but the flash failed": "Oynatıcıyı algıladı ancak flaş başarısız oldu",
   "It ensures the MediaTek driver has full control over USB communication": "MediaTek sürücüsünün USB iletişimi üzerinde tam kontrole sahip olmasını sağlar",
@@ -8625,6 +8630,7 @@
   "Test the wheel in more than one software. If it works in stock software but not in Rockbox, it is a firmware mapping problem. If it does nothing on any screen, including a recovery menu, suspect the wheel, its ribbon, or the board.": "Tekerleği birden fazla yazılımda test edin. Stok yazılımda çalışıyor ancak Rockbox'da çalışmıyorsa, bu bir ürün yazılımı eşleme sorunudur. Kurtarma menüsü de dahil olmak üzere herhangi bir ekranda hiçbir şey yapmazsa, tekerlekten, şeridinden veya karttan şüphelenin.",
   "Test the wheel on the home screen, in Settings, and in the music player.": "Tekerleği ana ekranda, Ayarlar'da ve müzik çalarda test edin.",
   "Test the widget on your website to ensure it works correctly": "Doğru çalıştığından emin olmak için widget'ı web sitenizde test edin",
+  "Test123": "Test123",
   "Testers Needed: Solar Custom Firmware & Launcher - Innioasis Y1": "Gerekli Test Uzmanları: Solar Özel Donanım Yazılımı ve Başlatıcı - Innioasis Y1",
   "Testers Needed: Solar Custom Firmware & Launcher — Innioasis Y1": "Gerekli Test Uzmanları: Solar Özel Firmware ve Başlatıcı — Innioasis Y1",
   "Testers needed: Solar for Y1": "Test uzmanlarına ihtiyaç var: Y1 için Solar",
@@ -11878,10 +11884,6 @@
   "🚀 Slidia": "🚀 Slayt",
   "🛠️ Developer Friendly": "🛠️ Geliştirici Dostu",
   "🪓✧˖°🫀⋆｡𖦹🔪 80's camp/mystery/horror theme": "🪓✧˖°🫀⋆｡𖦹🔪 80'lerin kampı/gizem/korku teması",
-  "🪟 Windows Installation": "🪟 Windows Kurulumu",
-  "Issues reported with JJ Launcher on Y2": "Y2'de JJ Launcher ile bildirilen sorunlar",
-  "A user has reported that their Y2 would not boot after installing JJ Launcher": "Bir kullanıcı, JJ Launcher'ı yükledikten sonra Y2'sinin önyükleme yapmadığını bildirdi",
-  "Installing Reborn for the First Time?": "Reborn'u İlk Kez mi Yüklüyorsunuz?",
-  "Install Original Software for Y2 (any version) for the best results, it may not boot if coming from Classy or another custom firmware. Only select Keep Settings if you're already running Reborn.": "En iyi sonuçları elde etmek için Y2 için Orijinal Yazılımı (herhangi bir sürüm) yükleyin; Classy veya başka bir özel ürün yazılımından geliyorsa önyükleme yapmayabilir. Yalnızca zaten Reborn'u çalıştırıyorsanız Ayarları Koru'yu seçin."
+  "🪟 Windows Installation": "🪟 Windows Kurulumu"
  }
 }

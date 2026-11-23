@@ -1,7 +1,7 @@
 {
- "count": 11277,
+ "count": 11278,
  "dir": "ltr",
- "generated": "2026-11-15T14:27:07+00:00",
+ "generated": "2026-11-23T15:21:54+00:00",
  "keep": [
   "\">Updater CE",
   "(1M)",
@@ -495,6 +495,7 @@
   "Tema",
   "Tema Pokémon Rumble",
   "Terry_Gato",
+  "Test123",
   "Teto",
   "Thema",
   "Thema aus der Silence of the Lambs-Reihe",
@@ -1438,6 +1439,7 @@
   "A theme that came to me while drinking Arizona Ice tea (credits to angiee for the base of this theme)": "Een thema dat bij me opkwam tijdens het drinken van Arizona Ice tea (credits aan Angiee voor de basis van dit thema)",
   "A top supporter": "Een topsupporter",
   "A tranquil theme for the teal lovers": "Een rustig thema voor de blauwgroen minnaars",
+  "A user has reported that their Y2 would not boot after installing JJ Launcher": "Een gebruiker heeft gemeld dat hun Y2 niet zou opstarten na het installeren van JJ Launcher",
   "A vibrant hot-pink theme for the Innioasis Y1.": "Een levendig felroze thema voor de Innioasis Y1.",
   "A vibrant rainbow-inspired custom theme for the Innioasis Y1.": "Een levendig, op de regenboog geïnspireerd, aangepast thema voor de Innioasis Y1.",
   "A vintage fleur": "Een vintage fleur",
@@ -5224,6 +5226,7 @@
   "Install Linux on the Y1.": "Installeer Linux op de Y1.",
   "Install Method": "Installatiemethode",
   "Install Original Software 3.2.0 or later before installing Reborn": "Installeer originele software 3.2.0 of hoger voordat u Reborn installeert",
+  "Install Original Software for Y2 (any version) for the best results, it may not boot if coming from Classy or another custom firmware. Only select Keep Settings if you're already running Reborn.": "Installeer originele software voor Y2 (elke versie) voor de beste resultaten. Het kan zijn dat de software niet opstart als deze afkomstig is van Classy of een andere aangepaste firmware. Selecteer Instellingen behouden alleen als u Reborn al gebruikt.",
   "Install Reborn (Y2Linux) custom firmware on an Innioasis Y2 with Innioasis Updater CE. Choose Y2, select Reborn (Y2Linux), pick a release, and connect only when prompted.": "Installeer Reborn (Y2Linux) aangepaste firmware op een Innioasis Y2 met Innioasis Updater CE. Kies Y2, selecteer Reborn (Y2Linux), kies een release en maak alleen verbinding als daarom wordt gevraagd.",
   "Install Reborn (Y2Linux) on Y2": "Installeer Reborn (Y2Linux) op Y2",
   "Install Reborn (Y2Linux) on your Innioasis Y2.": "Installeer Reborn (Y2Linux) op uw Innioasis Y2.",
@@ -5295,6 +5298,7 @@
   "Installation Overview": "Installatieoverzicht",
   "Installation Steps": "Installatiestappen",
   "Installing Firmware on Your Innioasis Y2": "Firmware installeren op uw Innioasis Y2",
+  "Installing Reborn for the First Time?": "Reborn voor de eerste keer installeren?",
   "Installing Solar on your Innioasis Y1 is quick and easy right inside the official Innioasis Updater application.": "Het installeren van Solar op uw Innioasis Y1 gaat snel en eenvoudig rechtstreeks vanuit de officiële Innioasis Updater-applicatie.",
   "Installing and resetting themes on Rockbox-Y2.": "Thema's installeren en opnieuw instellen op Rockbox-Y2.",
   "Intelligent tag splitting": "Intelligente tagsplitsing",
@@ -5332,6 +5336,7 @@
   "Isaiah's Masterpiece!": "Jesaja's meesterwerk!",
   "Isaiah's Masterpiece! - Innioasis Y1 and Y2 Themes Gallery": "Jesaja's meesterwerk! - Innioasis Y1 en Y2 Themagalerij",
   "Isaiah's Masterpiece! for Innioasis Y1 & Y2 by Mr. Iminix Sonc": "Jesaja's meesterwerk! voor Innioasis Y1 & Y2 door de heer Iminix Sonc",
+  "Issues reported with JJ Launcher on Y2": "Problemen gemeld met JJ Launcher in het tweede jaar",
   "It cannot connect to the player": "Er kan geen verbinding worden gemaakt met de speler",
   "It detected the player but the flash failed": "Het heeft de speler gedetecteerd, maar de flitser is mislukt",
   "It ensures the MediaTek driver has full control over USB communication": "Het zorgt ervoor dat de MediaTek-driver volledige controle heeft over de USB-communicatie",
@@ -8663,6 +8668,7 @@
   "Test the wheel in more than one software. If it works in stock software but not in Rockbox, it is a firmware mapping problem. If it does nothing on any screen, including a recovery menu, suspect the wheel, its ribbon, or the board.": "Test het stuur in meer dan één software. Als het werkt in standaardsoftware, maar niet in Rockbox, is er sprake van een probleem met de firmware-toewijzing. Als het op geen enkel scherm doet, inclusief een herstelmenu, vermoed dan het wiel, het lint of het bord.",
   "Test the wheel on the home screen, in Settings, and in the music player.": "Test het stuur op het startscherm, in Instellingen en in de muziekspeler.",
   "Test the widget on your website to ensure it works correctly": "Test de widget op uw website om er zeker van te zijn dat deze correct werkt",
+  "Test123": "Test123",
   "Testers Needed: Solar Custom Firmware & Launcher - Innioasis Y1": "Testers nodig: Solar Aangepaste firmware en launcher - Innioasis Y1",
   "Testers Needed: Solar Custom Firmware & Launcher — Innioasis Y1": "Testers nodig: Solar Aangepaste firmware en launcher — Innioasis Y1",
   "Testers needed: Solar for Y1": "Testers nodig: Solar voor Y1",
@@ -12010,10 +12016,6 @@
   "🛠️ Developer Friendly": "🛠️ Ontwikkelaarvriendelijk",
   "🪓✧˖°🫀⋆｡𖦹🔪 80's camp/mystery/horror theme": "🪓✧˖°🫀⋆｡𖦹🔪 Jaren 80 kamp/mysterie/horror thema",
   "🪟 Windows ARM64": "🪟Windows ARM64",
-  "🪟 Windows Installation": "🪟Windows-installatie",
-  "Issues reported with JJ Launcher on Y2": "Problemen gemeld met JJ Launcher in het tweede jaar",
-  "A user has reported that their Y2 would not boot after installing JJ Launcher": "Een gebruiker heeft gemeld dat hun Y2 niet zou opstarten na het installeren van JJ Launcher",
-  "Installing Reborn for the First Time?": "Reborn voor de eerste keer installeren?",
-  "Install Original Software for Y2 (any version) for the best results, it may not boot if coming from Classy or another custom firmware. Only select Keep Settings if you're already running Reborn.": "Installeer originele software voor Y2 (elke versie) voor de beste resultaten. Het kan zijn dat de software niet opstart als deze afkomstig is van Classy of een andere aangepaste firmware. Selecteer Instellingen behouden alleen als u Reborn al gebruikt."
+  "🪟 Windows Installation": "🪟Windows-installatie"
  }
 }

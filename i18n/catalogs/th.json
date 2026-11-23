@@ -1,7 +1,7 @@
 {
- "count": 12595,
+ "count": 12596,
  "dir": "ltr",
- "generated": "2026-11-15T14:27:07+00:00",
+ "generated": "2026-11-23T15:22:07+00:00",
  "keep": [
   "(1M)",
   "(1P)",
@@ -1014,6 +1014,7 @@
   "A top supporter": "ผู้สนับสนุนชั้นยอด",
   "A tranquil theme for the teal lovers": "ธีมอันเงียบสงบสำหรับคนรักนกเป็ดน้ำ",
   "A tutorial about Rockbox and themes on an Innioasis player.": "บทช่วยสอนเกี่ยวกับ Rockbox และธีมในเครื่องเล่น Innioasis",
+  "A user has reported that their Y2 would not boot after installing JJ Launcher": "ผู้ใช้รายงานว่า Y2 ของพวกเขาไม่สามารถบู๊ตได้หลังจากติดตั้ง JJ Launcher",
   "A vibrant hot-pink theme for the Innioasis Y1.": "ธีมสีชมพูร้อนอันมีชีวิตชีวาสำหรับ Innioasis Y1",
   "A vibrant rainbow-inspired custom theme for the Innioasis Y1.": "ธีมแบบกำหนดเองที่ได้รับแรงบันดาลใจจากสีรุ้งอันสดใสสำหรับ Innioasis Y1",
   "A video about Innioasis player use and Rockbox.": "วิดีโอเกี่ยวกับการใช้งานของผู้เล่น Innioasis และ Rockbox",
@@ -5370,6 +5371,7 @@
   "Install Linux on the Y1.": "ติดตั้ง Linux บน Y1",
   "Install Method": "วิธีการติดตั้ง",
   "Install Original Software 3.2.0 or later before installing Reborn": "ติดตั้งซอฟต์แวร์ต้นฉบับ 3.2.0 หรือใหม่กว่าก่อนติดตั้ง Reborn",
+  "Install Original Software for Y2 (any version) for the best results, it may not boot if coming from Classy or another custom firmware. Only select Keep Settings if you're already running Reborn.": "ติดตั้งซอฟต์แวร์ต้นฉบับสำหรับ Y2 (เวอร์ชันใดก็ได้) เพื่อให้ได้ผลลัพธ์ที่ดีที่สุด อาจไม่สามารถบู๊ตได้หากมาจาก Classy หรือเฟิร์มแวร์อื่นที่กำหนดเอง เลือก Keep Settings หากคุณใช้งาน Reborn อยู่แล้ว",
   "Install Reborn (Y2Linux) custom firmware on an Innioasis Y2 with Innioasis Updater CE. Choose Y2, select Reborn (Y2Linux), pick a release, and connect only when prompted.": "ติดตั้งเฟิร์มแวร์ที่กำหนดเอง Reborn (Y2Linux) บน Innioasis Y2 ด้วย Innioasis Updater CE เลือก Y2 เลือก Reborn (Y2Linux) เลือกรุ่น และเชื่อมต่อเมื่อได้รับแจ้งเท่านั้น",
   "Install Reborn (Y2Linux) on Y2": "ติดตั้ง Reborn (Y2Linux) บน Y2",
   "Install Reborn (Y2Linux) on your Innioasis Y2.": "ติดตั้ง Reborn (Y2Linux) บน Innioasis Y2 ของคุณ",
@@ -5544,6 +5546,7 @@
   "Installation Guide": "คู่มือการติดตั้ง",
   "Installation Overview": "ภาพรวมการติดตั้ง",
   "Installation Steps": "ขั้นตอนการติดตั้ง",
+  "Installing Reborn for the First Time?": "กำลังติดตั้ง Reborn เป็นครั้งแรกหรือไม่?",
   "Installing Solar on your Innioasis Y1 is quick and easy right inside the official Innioasis Updater application.": "การติดตั้ง Solar บน Innioasis Y1 ของคุณนั้นรวดเร็วและง่ายดายจากแอปพลิเคชันอัปเดต Innioasis อย่างเป็นทางการ",
   "Installing and resetting themes on Rockbox-Y2.": "การติดตั้งและการรีเซ็ตธีมบน Rockbox-Y2",
   "Instructions published by the project, shown here word for word.": "คำแนะนำที่เผยแพร่โดยโครงการ แสดงไว้ที่นี่คำต่อคำ",
@@ -5597,6 +5600,7 @@
   "Isaiah's Masterpiece!": "ผลงานชิ้นเอกของอิสยาห์!",
   "Isaiah's Masterpiece! - Innioasis Y1 and Y2 Themes Gallery": "ผลงานชิ้นเอกของอิสยาห์! - Innioasis Y1 และ Y2 แกลเลอรีธีม",
   "Isaiah's Masterpiece! for Innioasis Y1 & Y2 by Mr. Iminix Sonc": "ผลงานชิ้นเอกของอิสยาห์! สำหรับ Innioasis Y1 & Y2 โดย Mr. Iminix Sonc",
+  "Issues reported with JJ Launcher on Y2": "ปัญหาที่รายงานด้วย JJ Launcher บน Y2",
   "It cannot connect to the player": "ไม่สามารถเชื่อมต่อกับเครื่องเล่นได้",
   "It detected the player but the flash failed": "ตรวจพบเครื่องเล่นแต่แฟลชล้มเหลว",
   "It ensures the MediaTek driver has full control over USB communication": "ช่วยให้มั่นใจได้ว่าไดรเวอร์ MediaTek สามารถควบคุมการสื่อสาร USB ได้อย่างสมบูรณ์",
@@ -9275,6 +9279,7 @@
   "Test the wheel in more than one software. If it works in stock software but not in Rockbox, it is a firmware mapping problem. If it does nothing on any screen, including a recovery menu, suspect the wheel, its ribbon, or the board.": "ทดสอบวงล้อในซอฟต์แวร์มากกว่าหนึ่งตัว หากใช้งานได้ในซอฟต์แวร์สต็อกแต่ใช้ไม่ได้กับ Rockbox แสดงว่าเป็นปัญหาการจับคู่เฟิร์มแวร์ หากไม่ได้ทำอะไรบนหน้าจอใดๆ รวมถึงเมนูการกู้คืน ให้สงสัยเกี่ยวกับล้อ ริบบิ้น หรือบอร์ด",
   "Test the wheel on the home screen, in Settings, and in the music player.": "ทดสอบวงล้อบนหน้าจอหลัก ในการตั้งค่า และในเครื่องเล่นเพลง",
   "Test the widget on your website to ensure it works correctly": "ทดสอบวิดเจ็ตบนเว็บไซต์ของคุณเพื่อให้แน่ใจว่าทำงานได้อย่างถูกต้อง",
+  "Test123": "ทดสอบ123",
   "Testers Needed: Solar Custom Firmware & Launcher - Innioasis Y1": "ผู้ทดสอบที่ต้องการ: Solar เฟิร์มแวร์และตัวเรียกใช้งานที่กำหนดเอง - Innioasis Y1",
   "Testers Needed: Solar Custom Firmware & Launcher — Innioasis Y1": "ผู้ทดสอบที่ต้องการ: Solar เฟิร์มแวร์และตัวเรียกใช้งานแบบกำหนดเอง — Innioasis Y1",
   "Testers needed: Solar for Y1": "ผู้ทดสอบที่ต้องการ: Solar สำหรับ Y1",
@@ -12898,10 +12903,6 @@
   "🛠️ Developer Friendly": "🛠️ เป็นมิตรกับนักพัฒนา",
   "🪓✧˖°🫀⋆｡𖦹🔪 80's camp/mystery/horror theme": "🪓✧˖°🫀⋆｡𖦹🔪 ธีมค่าย/ลึกลับ/สยองขวัญยุค 80",
   "🪟 Windows ARM64": "🪟 วินโดว์ ARM64",
-  "🪟 Windows Installation": "🪟 การติดตั้งวินโดวส์",
-  "Issues reported with JJ Launcher on Y2": "ปัญหาที่รายงานด้วย JJ Launcher บน Y2",
-  "A user has reported that their Y2 would not boot after installing JJ Launcher": "ผู้ใช้รายงานว่า Y2 ของพวกเขาไม่สามารถบู๊ตได้หลังจากติดตั้ง JJ Launcher",
-  "Installing Reborn for the First Time?": "กำลังติดตั้ง Reborn เป็นครั้งแรกหรือไม่?",
-  "Install Original Software for Y2 (any version) for the best results, it may not boot if coming from Classy or another custom firmware. Only select Keep Settings if you're already running Reborn.": "ติดตั้งซอฟต์แวร์ต้นฉบับสำหรับ Y2 (เวอร์ชันใดก็ได้) เพื่อให้ได้ผลลัพธ์ที่ดีที่สุด อาจไม่สามารถบู๊ตได้หากมาจาก Classy หรือเฟิร์มแวร์อื่นที่กำหนดเอง เลือก Keep Settings หากคุณใช้งาน Reborn อยู่แล้ว"
+  "🪟 Windows Installation": "🪟 การติดตั้งวินโดวส์"
  }
 }

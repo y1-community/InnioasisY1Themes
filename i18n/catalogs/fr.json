@@ -1,7 +1,7 @@
 {
- "count": 13760,
+ "count": 13761,
  "dir": "ltr",
- "generated": "2026-11-15T14:27:07+00:00",
+ "generated": "2026-11-23T15:21:52+00:00",
  "keep": [
   "!!CITYSTAR!!",
   "(1M)",
@@ -522,6 +522,7 @@
   "Tate Mcrae-Fans",
   "TateMcrae",
   "Terry_Gato",
+  "Test123",
   "The Owl Hose Theme Modèle officiel et final",
   "Thème",
   "Thème Ace Attorney pour Y1",
@@ -1689,6 +1690,7 @@
   "A top supporter": "Un donateur majeur",
   "A tranquil theme for the teal lovers": "Un thème tranquille pour les amoureux de la sarcelle",
   "A tutorial about Rockbox and themes on an Innioasis player.": "Un tutoriel sur Rockbox et les thèmes sur un lecteur Innioasis.",
+  "A user has reported that their Y2 would not boot after installing JJ Launcher": "Un utilisateur a signalé que son Y2 ne démarrait pas après l'installation de JJ Launcher",
   "A vibrant hot-pink theme for the Innioasis Y1.": "Un thème rose vif vibrant pour le Innioasis Y1.",
   "A vibrant rainbow-inspired custom theme for the Innioasis Y1.": "Un thème personnalisé vibrant inspiré de l'arc-en-ciel pour le Innioasis Y1.",
   "A video about Innioasis player use and Rockbox.": "Une vidéo sur l'utilisation du lecteur Innioasis et Rockbox.",
@@ -6069,6 +6071,7 @@
   "Install Linux on the Y1.": "Installez Linux sur le Y1.",
   "Install Method": "Méthode d'installation",
   "Install Original Software 3.2.0 or later before installing Reborn": "Installez le logiciel d'origine 3.2.0 ou version ultérieure avant d'installer Reborn",
+  "Install Original Software for Y2 (any version) for the best results, it may not boot if coming from Classy or another custom firmware. Only select Keep Settings if you're already running Reborn.": "Installez le logiciel original pour Y2 (n'importe quelle version) pour obtenir les meilleurs résultats. Il se peut qu'il ne démarre pas s'il provient de Classy ou d'un autre firmware personnalisé. Sélectionnez uniquement Conserver les paramètres si vous exécutez déjà Reborn.",
   "Install Reborn (Y2Linux) custom firmware on an Innioasis Y2 with Innioasis Updater CE. Choose Y2, select Reborn (Y2Linux), pick a release, and connect only when prompted.": "Installez le micrologiciel personnalisé Reborn (Y2Linux) sur un Innioasis Y2 avec Innioasis Updater CE. Choisissez Y2, sélectionnez Reborn (Y2Linux), choisissez une version et connectez-vous uniquement lorsque vous y êtes invité.",
   "Install Reborn (Y2Linux) on Y2": "Installez Reborn (Y2Linux) sur Y2",
   "Install Reborn (Y2Linux) on your Innioasis Y2.": "Installez Reborn (Y2Linux) sur votre Innioasis Y2.",
@@ -6244,6 +6247,7 @@
   "Installation Overview": "Aperçu de l'installation",
   "Installation Steps": "Étapes d'installation",
   "Installing Firmware on Your Innioasis Y2": "Installation du micrologiciel sur votre Innioasis Y2",
+  "Installing Reborn for the First Time?": "Vous installez Reborn pour la première fois ?",
   "Installing Solar on your Innioasis Y1 is quick and easy right inside the official Innioasis Updater application.": "L'installation de Solar sur votre Innioasis Y1 est simple et rapide, directement dans l'application officielle Innioasis Updater.",
   "Installing and resetting themes on Rockbox-Y2.": "Installation et réinitialisation de thèmes sur Rockbox-Y2.",
   "Instructions published by the project, shown here word for word.": "Instructions publiées par le projet, présentées ici mot pour mot.",
@@ -6297,6 +6301,7 @@
   "Isaiah's Masterpiece!": "Le chef-d'œuvre d'Isaïe !",
   "Isaiah's Masterpiece! - Innioasis Y1 and Y2 Themes Gallery": "Le chef-d'œuvre d'Isaïe ! - Galerie de thèmes Innioasis Y1 et Y2",
   "Isaiah's Masterpiece! for Innioasis Y1 & Y2 by Mr. Iminix Sonc": "Le chef-d'œuvre d'Isaïe ! pour Innioasis Y1 & Y2 par M. Iminix Sonc",
+  "Issues reported with JJ Launcher on Y2": "Problèmes signalés avec JJ Launcher sur Y2",
   "It cannot connect to the player": "Il ne peut pas se connecter au lecteur",
   "It detected the player but the flash failed": "Il a détecté le lecteur mais le flash a échoué",
   "It ensures the MediaTek driver has full control over USB communication": "Il garantit que le pilote MediaTek a un contrôle total sur la communication USB",
@@ -9999,6 +10004,7 @@
   "Test the wheel in more than one software. If it works in stock software but not in Rockbox, it is a firmware mapping problem. If it does nothing on any screen, including a recovery menu, suspect the wheel, its ribbon, or the board.": "Testez la roue dans plusieurs logiciels. Si cela fonctionne dans le logiciel d'origine mais pas dans Rockbox, il s'agit d'un problème de mappage du micrologiciel. S'il ne fait rien sur aucun écran, y compris un menu de récupération, suspectez la roue, son ruban ou le tableau.",
   "Test the wheel on the home screen, in Settings, and in the music player.": "Testez la molette sur l'écran d'accueil, dans Paramètres et dans le lecteur de musique.",
   "Test the widget on your website to ensure it works correctly": "Testez le widget sur votre site Web pour vous assurer qu'il fonctionne correctement",
+  "Test123": "Test123",
   "Testers Needed: Solar Custom Firmware & Launcher - Innioasis Y1": "Testeurs nécessaires : Solar Firmware et lanceur personnalisés - Innioasis Y1",
   "Testers Needed: Solar Custom Firmware & Launcher — Innioasis Y1": "Testeurs nécessaires : Solar Firmware et lanceur personnalisés – Innioasis Y1",
   "Testers needed: Solar for Y1": "Testeurs nécessaires : Solar pour Y1",
@@ -14675,10 +14681,6 @@
   "🚀 Slidia": "🚀Slidia See More",
   "🛠️ Developer Friendly": "🛠️ Adapté aux développeurs",
   "🪓✧˖°🫀⋆｡𖦹🔪 80's camp/mystery/horror theme": "🪓✧˖°🫀⋆｡𖦹🔪 Thème camp/mystère/horreur des années 80",
-  "🪟 Windows Installation": "🪟Installation Windows",
-  "Issues reported with JJ Launcher on Y2": "Problèmes signalés avec JJ Launcher sur Y2",
-  "A user has reported that their Y2 would not boot after installing JJ Launcher": "Un utilisateur a signalé que son Y2 ne démarrait pas après l'installation de JJ Launcher",
-  "Installing Reborn for the First Time?": "Vous installez Reborn pour la première fois ?",
-  "Install Original Software for Y2 (any version) for the best results, it may not boot if coming from Classy or another custom firmware. Only select Keep Settings if you're already running Reborn.": "Installez le logiciel original pour Y2 (n'importe quelle version) pour obtenir les meilleurs résultats. Il se peut qu'il ne démarre pas s'il provient de Classy ou d'un autre firmware personnalisé. Sélectionnez uniquement Conserver les paramètres si vous exécutez déjà Reborn."
+  "🪟 Windows Installation": "🪟Installation Windows"
  }
 }

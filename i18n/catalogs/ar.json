@@ -1,7 +1,7 @@
 {
- "count": 12496,
+ "count": 12497,
  "dir": "rtl",
- "generated": "2026-11-15T14:27:07+00:00",
+ "generated": "2026-11-23T15:21:58+00:00",
  "keep": [
   "(1RG)",
   "(1RM)",
@@ -1107,6 +1107,7 @@
   "A theme that came to me while drinking Arizona Ice tea (credits to angiee for the base of this theme)": "موضوع خطر في ذهني أثناء شرب شاي أريزونا المثلج (يعود الفضل إلى angiee في أساس هذا الموضوع)",
   "A top supporter": "من كبار الداعمين",
   "A tranquil theme for the teal lovers": "موضوع هادئ لمحبي البط البري",
+  "A user has reported that their Y2 would not boot after installing JJ Launcher": "أبلغ أحد المستخدمين أن جهاز Y2 الخاص به لن يتم تشغيله بعد تثبيت JJ Launcher",
   "A vibrant hot-pink theme for the Innioasis Y1.": "مظهر وردي فاقع نابض بالحياة لـ Innioasis Y1.",
   "A vibrant rainbow-inspired custom theme for the Innioasis Y1.": "سمة مخصصة نابضة بالحياة مستوحاة من قوس قزح لـ Innioasis Y1.",
   "A vintage fleur": "زهرة خمر",
@@ -4950,6 +4951,7 @@
   "Install Linux on the Y1.": "قم بتثبيت Linux على Y1.",
   "Install Method": "طريقة التثبيت",
   "Install Original Software 3.2.0 or later before installing Reborn": "قم بتثبيت البرنامج الأصلي 3.2.0 أو الأحدث قبل تثبيت Reborn",
+  "Install Original Software for Y2 (any version) for the best results, it may not boot if coming from Classy or another custom firmware. Only select Keep Settings if you're already running Reborn.": "قم بتثبيت البرنامج الأصلي لـ Y2 (أي إصدار) للحصول على أفضل النتائج، وقد لا يتم تشغيله إذا كان قادمًا من Classy أو برنامج ثابت آخر مخصص. حدد الاحتفاظ بالإعدادات فقط إذا كنت تقوم بتشغيل Reborn بالفعل.",
   "Install Reborn (Y2Linux) custom firmware on an Innioasis Y2 with Innioasis Updater CE. Choose Y2, select Reborn (Y2Linux), pick a release, and connect only when prompted.": "قم بتثبيت البرنامج الثابت المخصص Reborn (Y2Linux) على جهاز Innioasis Y2 باستخدام برنامج التحديث Innioasis CE. اختر Y2، وحدد Reborn (Y2Linux)، واختر إصدارًا، واتصل فقط عندما يُطلب منك ذلك.",
   "Install Reborn (Y2Linux) on Y2": "تثبيت Reborn (Y2Linux) على Y2",
   "Install Reborn (Y2Linux) on your Innioasis Y2.": "قم بتثبيت Reborn (Y2Linux) على Innioasis Y2.",
@@ -5021,6 +5023,7 @@
   "Installation Overview": "نظرة عامة على التثبيت",
   "Installation Steps": "خطوات التثبيت",
   "Installing Firmware on Your Innioasis Y2": "تثبيت البرامج الثابتة على جهازك Innioasis Y2",
+  "Installing Reborn for the First Time?": "تثبيت Reborn لأول مرة؟",
   "Installing Solar on your Innioasis Y1 is quick and easy right inside the official Innioasis Updater application.": "يعد تثبيت Solar على Innioasis Y1 الخاص بك أمرًا سريعًا وسهلاً داخل تطبيق التحديث الرسمي Innioasis.",
   "Installing and resetting themes on Rockbox-Y2.": "تثبيت وإعادة ضبط السمات على Rockbox-Y2.",
   "Intelligent tag splitting": "تقسيم العلامات الذكية",
@@ -5058,6 +5061,7 @@
   "Isaiah's Masterpiece!": "تحفة إشعياء!",
   "Isaiah's Masterpiece! - Innioasis Y1 and Y2 Themes Gallery": "تحفة إشعياء! - Innioasis Y1 و Y2 معرض الثيمات",
   "Isaiah's Masterpiece! for Innioasis Y1 & Y2 by Mr. Iminix Sonc": "تحفة إشعياء! لـ Innioasis Y1 & Y2 للسيد إيمينيكس سونك",
+  "Issues reported with JJ Launcher on Y2": "تم الإبلاغ عن مشكلات في JJ Launcher على Y2",
   "It cannot connect to the player": "لا يمكن الاتصال باللاعب",
   "It detected the player but the flash failed": "لقد اكتشف المشغل لكن الفلاش فشل",
   "It ensures the MediaTek driver has full control over USB communication": "فهو يضمن أن يتمتع برنامج التشغيل MediaTek بالتحكم الكامل في اتصال USB",
@@ -8451,6 +8455,7 @@
   "Test the wheel in more than one software. If it works in stock software but not in Rockbox, it is a firmware mapping problem. If it does nothing on any screen, including a recovery menu, suspect the wheel, its ribbon, or the board.": "اختبر العجلة في أكثر من برنامج. إذا كان يعمل في برنامج المخزون ولكن ليس في Rockbox، فهذه مشكلة في تعيين البرنامج الثابت. إذا لم يفعل شيئًا على أي شاشة، بما في ذلك قائمة الاسترداد، فاشتبه في العجلة أو الشريط الخاص بها أو اللوحة.",
   "Test the wheel on the home screen, in Settings, and in the music player.": "اختبر العجلة على الشاشة الرئيسية وفي الإعدادات وفي مشغل الموسيقى.",
   "Test the widget on your website to ensure it works correctly": "اختبر الأداة على موقع الويب الخاص بك للتأكد من أنها تعمل بشكل صحيح",
+  "Test123": "اختبار123",
   "Testers Needed: Solar Custom Firmware & Launcher - Innioasis Y1": "مطلوب مختبرين: Solar برنامج ثابت ومشغل مخصص - Innioasis Y1",
   "Testers Needed: Solar Custom Firmware & Launcher — Innioasis Y1": "مطلوب مختبرين: Solar برنامج ثابت ومشغّل مخصص — Innioasis Y1",
   "Testers needed: Solar for Y1": "المختبرون المطلوبون: Solar لـ Y1",
@@ -12836,10 +12841,6 @@
   "🛠️ Developer Friendly": "🛠️ صديق للمطورين",
   "🪓✧˖°🫀⋆｡𖦹🔪 80's camp/mystery/horror theme": "🪓✧˖°🫀⋆｡𖦹🔪 موضوع المعسكر/الغموض/الرعب في الثمانينيات",
   "🪟 Windows ARM64": "🪟 ويندوز ARM64",
-  "🪟 Windows Installation": "🪟 تثبيت ويندوز",
-  "Issues reported with JJ Launcher on Y2": "تم الإبلاغ عن مشكلات في JJ Launcher على Y2",
-  "A user has reported that their Y2 would not boot after installing JJ Launcher": "أبلغ أحد المستخدمين أن جهاز Y2 الخاص به لن يتم تشغيله بعد تثبيت JJ Launcher",
-  "Installing Reborn for the First Time?": "تثبيت Reborn لأول مرة؟",
-  "Install Original Software for Y2 (any version) for the best results, it may not boot if coming from Classy or another custom firmware. Only select Keep Settings if you're already running Reborn.": "قم بتثبيت البرنامج الأصلي لـ Y2 (أي إصدار) للحصول على أفضل النتائج، وقد لا يتم تشغيله إذا كان قادمًا من Classy أو برنامج ثابت آخر مخصص. حدد الاحتفاظ بالإعدادات فقط إذا كنت تقوم بتشغيل Reborn بالفعل."
+  "🪟 Windows Installation": "🪟 تثبيت ويندوز"
  }
 }

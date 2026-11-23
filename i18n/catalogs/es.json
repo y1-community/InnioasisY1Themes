@@ -1,7 +1,7 @@
 {
- "count": 13689,
+ "count": 13690,
  "dir": "ltr",
- "generated": "2026-11-15T14:27:07+00:00",
+ "generated": "2026-11-23T15:21:52+00:00",
  "keep": [
   "(1P)",
   "(1RG)",
@@ -1753,6 +1753,7 @@
   "A top supporter": "Un colaborador destacado",
   "A tranquil theme for the teal lovers": "Un tema tranquilo para los amantes del verde azulado.",
   "A tutorial about Rockbox and themes on an Innioasis player.": "Un tutorial sobre Rockbox y temas en un reproductor Innioasis.",
+  "A user has reported that their Y2 would not boot after installing JJ Launcher": "Un usuario informó que su Y2 no arrancaba después de instalar JJ Launcher",
   "A vibrant hot-pink theme for the Innioasis Y1.": "Un tema vibrante de color rosa intenso para Innioasis Y1.",
   "A vibrant rainbow-inspired custom theme for the Innioasis Y1.": "Un vibrante tema personalizado inspirado en el arcoíris para Innioasis Y1.",
   "A video about Innioasis player use and Rockbox.": "Un vídeo sobre el uso del reproductor Innioasis y Rockbox.",
@@ -6103,6 +6104,7 @@
   "Install Linux on the Y1.": "Instale Linux en Y1.",
   "Install Method": "Método de instalación",
   "Install Original Software 3.2.0 or later before installing Reborn": "Instale el software original 3.2.0 o posterior antes de instalar Reborn",
+  "Install Original Software for Y2 (any version) for the best results, it may not boot if coming from Classy or another custom firmware. Only select Keep Settings if you're already running Reborn.": "Instale el software original para Y2 (cualquier versión) para obtener los mejores resultados; es posible que no arranque si proviene de Classy u otro firmware personalizado. Solo selecciona Mantener configuración si ya estás ejecutando Reborn.",
   "Install Reborn (Y2Linux) custom firmware on an Innioasis Y2 with Innioasis Updater CE. Choose Y2, select Reborn (Y2Linux), pick a release, and connect only when prompted.": "Instale el firmware personalizado Reborn (Y2Linux) en un Innioasis Y2 con Innioasis Updater CE. Elija Y2, seleccione Reborn (Y2Linux), elija una versión y conéctese solo cuando se le solicite.",
   "Install Reborn (Y2Linux) on Y2": "Instale Reborn (Y2Linux) en Y2",
   "Install Reborn (Y2Linux) on your Innioasis Y2.": "Instala Reborn (Y2Linux) en tu Innioasis Y2.",
@@ -6278,6 +6280,7 @@
   "Installation Overview": "Descripción general de la instalación",
   "Installation Steps": "Pasos de instalación",
   "Installing Firmware on Your Innioasis Y2": "Instalación de firmware en su Innioasis Y2",
+  "Installing Reborn for the First Time?": "¿Instalar Reborn por primera vez?",
   "Installing Solar on your Innioasis Y1 is quick and easy right inside the official Innioasis Updater application.": "Instalar Solar en tu Innioasis Y1 es rápido y fácil desde la aplicación oficial Innioasis Updater.",
   "Installing and resetting themes on Rockbox-Y2.": "Instalando y restableciendo temas en Rockbox-Y2.",
   "Instructions published by the project, shown here word for word.": "Instrucciones publicadas por el proyecto, mostradas aquí palabra por palabra.",
@@ -6331,6 +6334,7 @@
   "Isaiah's Masterpiece!": "¡La obra maestra de Isaías!",
   "Isaiah's Masterpiece! - Innioasis Y1 and Y2 Themes Gallery": "¡La obra maestra de Isaías! - Galería de temas Innioasis Y1 y Y2",
   "Isaiah's Masterpiece! for Innioasis Y1 & Y2 by Mr. Iminix Sonc": "¡La obra maestra de Isaías! para Innioasis Y1 y Y2 por el Sr. Iminix Sonc",
+  "Issues reported with JJ Launcher on Y2": "Problemas reportados con JJ Launcher en Y2",
   "It cannot connect to the player": "No se puede conectar al reproductor.",
   "It detected the player but the flash failed": "Detectó el reproductor pero el flash falló.",
   "It ensures the MediaTek driver has full control over USB communication": "Garantiza que el controlador MediaTek tenga control total sobre la comunicación USB",
@@ -10033,6 +10037,7 @@
   "Test the wheel in more than one software. If it works in stock software but not in Rockbox, it is a firmware mapping problem. If it does nothing on any screen, including a recovery menu, suspect the wheel, its ribbon, or the board.": "Pruebe la rueda en más de un software. Si funciona en el software original pero no en Rockbox, es un problema de asignación de firmware. Si no hace nada en ninguna pantalla, incluido un menú de recuperación, sospeche de la rueda, su cinta o el tablero.",
   "Test the wheel on the home screen, in Settings, and in the music player.": "Pruebe el volante en la pantalla de inicio, en Configuración y en el reproductor de música.",
   "Test the widget on your website to ensure it works correctly": "Pruebe el widget en su sitio web para asegurarse de que funciona correctamente",
+  "Test123": "Prueba123",
   "Testers Needed: Solar Custom Firmware & Launcher - Innioasis Y1": "Probadores necesarios: Solar Firmware y iniciador personalizados - Innioasis Y1",
   "Testers Needed: Solar Custom Firmware & Launcher — Innioasis Y1": "Probadores necesarios: Solar Firmware y lanzador personalizados — Innioasis Y1",
   "Testers needed: Solar for Y1": "Se necesitan probadores: Solar para Y1",
@@ -14647,10 +14652,6 @@
   "🛠️ Developer Friendly": "🛠️ Apto para desarrolladores",
   "🪓✧˖°🫀⋆｡𖦹🔪 80's camp/mystery/horror theme": "🪓✧˖°🫀⋆｡𖦹🔪 Tema de campamento/misterio/horror de los 80",
   "🪟 Windows ARM64": "🪟Windows ARM64",
-  "🪟 Windows Installation": "🪟 Instalación de Windows",
-  "Issues reported with JJ Launcher on Y2": "Problemas reportados con JJ Launcher en Y2",
-  "A user has reported that their Y2 would not boot after installing JJ Launcher": "Un usuario informó que su Y2 no arrancaba después de instalar JJ Launcher",
-  "Installing Reborn for the First Time?": "¿Instalar Reborn por primera vez?",
-  "Install Original Software for Y2 (any version) for the best results, it may not boot if coming from Classy or another custom firmware. Only select Keep Settings if you're already running Reborn.": "Instale el software original para Y2 (cualquier versión) para obtener los mejores resultados; es posible que no arranque si proviene de Classy u otro firmware personalizado. Solo selecciona Mantener configuración si ya estás ejecutando Reborn."
+  "🪟 Windows Installation": "🪟 Instalación de Windows"
  }
 }

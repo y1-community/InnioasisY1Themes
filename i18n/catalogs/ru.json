@@ -1,7 +1,7 @@
 {
- "count": 13828,
+ "count": 13829,
  "dir": "ltr",
- "generated": "2026-11-15T14:27:07+00:00",
+ "generated": "2026-11-23T15:21:56+00:00",
  "keep": [
   "(1RY)",
   "(v2)",
@@ -1023,6 +1023,7 @@
   "A top supporter": "Один из главных спонсоров",
   "A tranquil theme for the teal lovers": "Спокойная тема для любителей бирюзового цвета",
   "A tutorial about Rockbox and themes on an Innioasis player.": "Учебное пособие по Rockbox и темам для плеера Innioasis.",
+  "A user has reported that their Y2 would not boot after installing JJ Launcher": "Пользователь сообщил, что его Y2 не загружается после установки JJ Launcher.",
   "A vibrant hot-pink theme for the Innioasis Y1.": "Яркая ярко-розовая тема для Innioasis Y1.",
   "A vibrant rainbow-inspired custom theme for the Innioasis Y1.": "Яркая радужная тема для Innioasis Y1.",
   "A video about Innioasis player use and Rockbox.": "Видео об использовании плеера Innioasis и Rockbox.",
@@ -5408,6 +5409,7 @@
   "Install Linux on the Y1.": "Установите Linux на Y1.",
   "Install Method": "Метод установки",
   "Install Original Software 3.2.0 or later before installing Reborn": "Перед установкой Reborn установите оригинальное программное обеспечение 3.2.0 или новее.",
+  "Install Original Software for Y2 (any version) for the best results, it may not boot if coming from Classy or another custom firmware. Only select Keep Settings if you're already running Reborn.": "Для достижения наилучших результатов установите оригинальное программное обеспечение для Y2 (любую версию), оно может не загрузиться, если оно установлено на Classy или другой пользовательской прошивке. Выбирайте «Сохранить настройки», только если вы уже используете Reborn.",
   "Install Reborn (Y2Linux) custom firmware on an Innioasis Y2 with Innioasis Updater CE. Choose Y2, select Reborn (Y2Linux), pick a release, and connect only when prompted.": "Установите Reborn (Y2Linux) пользовательскую прошивку на Innioasis Y2 с помощью Innioasis Updater CE. Выберите Y2, выберите Reborn (Y2Linux), выберите версию и подключайтесь только при появлении соответствующего запроса.",
   "Install Reborn (Y2Linux) on Y2": "Установите Reborn (Y2Linux) на Y2",
   "Install Reborn (Y2Linux) on your Innioasis Y2.": "Установите Reborn (Y2Linux) на свой Innioasis Y2.",
@@ -5583,6 +5585,7 @@
   "Installation Overview": "Обзор установки",
   "Installation Steps": "Этапы установки",
   "Installing Firmware on Your Innioasis Y2": "Установка прошивки на ваш Innioasis Y2",
+  "Installing Reborn for the First Time?": "Устанавливаете Reborn в первый раз?",
   "Installing Solar on your Innioasis Y1 is quick and easy right inside the official Innioasis Updater application.": "Установить Solar на свой Innioasis Y1 можно быстро и легко прямо в официальном приложении Innioasis Updater.",
   "Installing and resetting themes on Rockbox-Y2.": "Установка и сброс тем на Rockbox-Y2.",
   "Instructions published by the project, shown here word for word.": "Инструкция, опубликованная проектом, показана здесь дословно.",
@@ -5636,6 +5639,7 @@
   "Isaiah's Masterpiece!": "Шедевр Исайи!",
   "Isaiah's Masterpiece! - Innioasis Y1 and Y2 Themes Gallery": "Шедевр Исайи! - Галерея тем Innioasis Y1 и Y2",
   "Isaiah's Masterpiece! for Innioasis Y1 & Y2 by Mr. Iminix Sonc": "Шедевр Исайи! для Innioasis Y1 и Y2 г-на Иминикса Сонка",
+  "Issues reported with JJ Launcher on Y2": "Сообщалось о проблемах с JJ Launcher на Y2.",
   "It cannot connect to the player": "Невозможно подключиться к плееру",
   "It detected the player but the flash failed": "Он обнаружил плеер, но прошивка не удалась",
   "It ensures the MediaTek driver has full control over USB communication": "Это гарантирует, что драйвер MediaTek имеет полный контроль над связью USB",
@@ -9347,6 +9351,7 @@
   "Test the wheel in more than one software. If it works in stock software but not in Rockbox, it is a firmware mapping problem. If it does nothing on any screen, including a recovery menu, suspect the wheel, its ribbon, or the board.": "Проверьте колесо в нескольких программах. Если это работает в стандартном программном обеспечении, но не в Rockbox, это проблема с сопоставлением прошивки. Если он ничего не делает ни на одном экране, включая меню восстановления, заподозрите колесо, его ленту или плату.",
   "Test the wheel on the home screen, in Settings, and in the music player.": "Проверьте колесо на главном экране, в настройках и в музыкальном проигрывателе.",
   "Test the widget on your website to ensure it works correctly": "Проверьте виджет на своем сайте, чтобы убедиться, что он работает правильно.",
+  "Test123": "Тест123",
   "Testers Needed: Solar Custom Firmware & Launcher - Innioasis Y1": "Требуются тестировщики: Solar Пользовательская прошивка и программа запуска - Innioasis Y1",
   "Testers Needed: Solar Custom Firmware & Launcher — Innioasis Y1": "Требуются тестировщики: Solar Пользовательская прошивка и программа запуска — Innioasis Y1",
   "Testers needed: Solar for Y1": "Требуются тестировщики: Solar для Y1",
@@ -14074,10 +14079,6 @@
   "🚀 Slidia": "🚀 Слидия",
   "🛠️ Developer Friendly": "🛠️ Удобство для разработчиков",
   "🪓✧˖°🫀⋆｡𖦹🔪 80's camp/mystery/horror theme": "🪓✧˖°🫀⋆｡𖦹🔪 Лагерь 80-х/мистика/ужасы",
-  "🪟 Windows Installation": "🪟 Установка Windows",
-  "Issues reported with JJ Launcher on Y2": "Сообщалось о проблемах с JJ Launcher на Y2.",
-  "A user has reported that their Y2 would not boot after installing JJ Launcher": "Пользователь сообщил, что его Y2 не загружается после установки JJ Launcher.",
-  "Installing Reborn for the First Time?": "Устанавливаете Reborn в первый раз?",
-  "Install Original Software for Y2 (any version) for the best results, it may not boot if coming from Classy or another custom firmware. Only select Keep Settings if you're already running Reborn.": "Для достижения наилучших результатов установите оригинальное программное обеспечение для Y2 (любую версию), оно может не загрузиться, если оно установлено на Classy или другой пользовательской прошивке. Выбирайте «Сохранить настройки», только если вы уже используете Reborn."
+  "🪟 Windows Installation": "🪟 Установка Windows"
  }
 }

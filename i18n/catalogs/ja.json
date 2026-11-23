@@ -1,7 +1,7 @@
 {
- "count": 13827,
+ "count": 13828,
  "dir": "ltr",
- "generated": "2026-11-15T14:27:07+00:00",
+ "generated": "2026-11-23T15:22:08+00:00",
  "keep": [
   "(1M)",
   "(1P)",
@@ -1029,6 +1029,7 @@
   "A top supporter": "トップサポーター",
   "A tranquil theme for the teal lovers": "ティール愛好家のための静かなテーマ",
   "A tutorial about Rockbox and themes on an Innioasis player.": "Rockbox と Innioasis プレーヤーのテーマに関するチュートリアル。",
+  "A user has reported that their Y2 would not boot after installing JJ Launcher": "JJ Launcher をインストールした後、Y2 が起動しないとユーザーが報告しました。",
   "A vibrant hot-pink theme for the Innioasis Y1.": "Innioasis Y1 の鮮やかなホットピンクのテーマ。",
   "A vibrant rainbow-inspired custom theme for the Innioasis Y1.": "Innioasis Y1 の鮮やかな虹をイメージしたカスタム テーマ。",
   "A video about Innioasis player use and Rockbox.": "Innioasis プレーヤーの使用法と Rockbox に関するビデオ。",
@@ -5418,6 +5419,7 @@
   "Install Linux on the Y1.": "Y1 に Linux をインストールします。",
   "Install Method": "インストール方法",
   "Install Original Software 3.2.0 or later before installing Reborn": "Reborn をインストールする前に、オリジナル ソフトウェア 3.2.0 以降をインストールしてください",
+  "Install Original Software for Y2 (any version) for the best results, it may not boot if coming from Classy or another custom firmware. Only select Keep Settings if you're already running Reborn.": "最良の結果を得るには、Y2 のオリジナル ソフトウェア (任意のバージョン) をインストールしてください。Classy または別のカスタム ファームウェアからのものである場合は、起動しない可能性があります。すでに Reborn を実行している場合は、「設定を維持」のみを選択してください。",
   "Install Reborn (Y2Linux) custom firmware on an Innioasis Y2 with Innioasis Updater CE. Choose Y2, select Reborn (Y2Linux), pick a release, and connect only when prompted.": "Innioasis Updater CE を使用して Innioasis Y2 に Reborn (Y2Linux) カスタム ファームウェアをインストールします。 Y2、Reborn (Y2Linux) を選択し、リリースを選択し、プロンプトが表示された場合にのみ接続します。",
   "Install Reborn (Y2Linux) on Y2": "Reborn (Y2Linux) を Y2 にインストールします",
   "Install Reborn (Y2Linux) on your Innioasis Y2.": "Innioasis Y2 に Reborn (Y2Linux) をインストールします。",
@@ -5593,6 +5595,7 @@
   "Installation Overview": "インストールの概要",
   "Installation Steps": "インストール手順",
   "Installing Firmware on Your Innioasis Y2": "Innioasis Y2 にファームウェアをインストールしています",
+  "Installing Reborn for the First Time?": "Reborn を初めてインストールしますか?",
   "Installing Solar on your Innioasis Y1 is quick and easy right inside the official Innioasis Updater application.": "Innioasis Y1 への Solar のインストールは、公式 Innioasis アップデータ アプリケーション内ですばやく簡単に行えます。",
   "Installing and resetting themes on Rockbox-Y2.": "Rockbox-Y2 にテーマをインストールしてリセットしています。",
   "Instructions published by the project, shown here word for word.": "プロジェクトによって発行された説明書。ここでは一字一句そのまま示しています。",
@@ -5646,6 +5649,7 @@
   "Isaiah's Masterpiece!": "イザヤの最高傑作！",
   "Isaiah's Masterpiece! - Innioasis Y1 and Y2 Themes Gallery": "イザヤの最高傑作！ - Innioasis Y1 および Y2 テーマ ギャラリー",
   "Isaiah's Masterpiece! for Innioasis Y1 & Y2 by Mr. Iminix Sonc": "イザヤの最高傑作！ Innioasis Y1 & Y2 について Iminix Sonc 氏による",
+  "Issues reported with JJ Launcher on Y2": "Y2 に JJ Launcher で報告された問題",
   "It cannot connect to the player": "プレーヤーに接続できません",
   "It detected the player but the flash failed": "プレーヤーは検出されましたが、フラッシュは失敗しました",
   "It ensures the MediaTek driver has full control over USB communication": "これにより、MediaTek ドライバーが USB 通信を完全に制御できるようになります。",
@@ -9357,6 +9361,7 @@
   "Test the wheel in more than one software. If it works in stock software but not in Rockbox, it is a firmware mapping problem. If it does nothing on any screen, including a recovery menu, suspect the wheel, its ribbon, or the board.": "複数のソフトウェアでホイールをテストします。ストック ソフトウェアでは動作するが Rockbox では動作しない場合は、ファームウェア マッピングに問題があります。リカバリメニューを含むどの画面でも何も起こらない場合は、ホイール、リボン、またはボードを疑ってください。",
   "Test the wheel on the home screen, in Settings, and in the music player.": "ホーム画面、設定、音楽プレーヤーでホイールをテストします。",
   "Test the widget on your website to ensure it works correctly": "Web サイト上のウィジェットをテストして、正しく動作することを確認します。",
+  "Test123": "テスト123",
   "Testers Needed: Solar Custom Firmware & Launcher - Innioasis Y1": "必要なテスター: Solar カスタム ファームウェアとランチャー - Innioasis Y1",
   "Testers Needed: Solar Custom Firmware & Launcher — Innioasis Y1": "必要なテスター: Solar カスタム ファームウェアとランチャー — Innioasis Y1",
   "Testers needed: Solar for Y1": "必要なテスター: Y1 の Solar",
@@ -14074,10 +14079,6 @@
   "🚀 Slidia": "🚀 スライディア",
   "🛠️ Developer Friendly": "🛠️ 開発者に優しい",
   "🪓✧˖°🫀⋆｡𖦹🔪 80's camp/mystery/horror theme": "🪓✧˖°🫀⋆｡𖦹🔪 80年代のキャンプ/ミステリー/ホラーのテーマ",
-  "🪟 Windows Installation": "🪟 Windows のインストール",
-  "Issues reported with JJ Launcher on Y2": "Y2 に JJ Launcher で報告された問題",
-  "A user has reported that their Y2 would not boot after installing JJ Launcher": "JJ Launcher をインストールした後、Y2 が起動しないとユーザーが報告しました。",
-  "Installing Reborn for the First Time?": "Reborn を初めてインストールしますか?",
-  "Install Original Software for Y2 (any version) for the best results, it may not boot if coming from Classy or another custom firmware. Only select Keep Settings if you're already running Reborn.": "最良の結果を得るには、Y2 のオリジナル ソフトウェア (任意のバージョン) をインストールしてください。Classy または別のカスタム ファームウェアからのものである場合は、起動しない可能性があります。すでに Reborn を実行している場合は、「設定を維持」のみを選択してください。"
+  "🪟 Windows Installation": "🪟 Windows のインストール"
  }
 }

@@ -1,7 +1,7 @@
 {
- "count": 13840,
+ "count": 13841,
  "dir": "ltr",
- "generated": "2026-11-15T14:27:08+00:00",
+ "generated": "2026-11-23T15:22:10+00:00",
  "keep": [
   "(1M)",
   "(1P)",
@@ -991,6 +991,7 @@
   "A top supporter": "一位主要支持者",
   "A tranquil theme for the teal lovers": "适合青色爱好者的宁静主题",
   "A tutorial about Rockbox and themes on an Innioasis player.": "关于 Rockbox 和 Innioasis 播放器主题的教程。",
+  "A user has reported that their Y2 would not boot after installing JJ Launcher": "一位用户报告说，他们的 Y2 在安装 JJ Launcher 后无法启动",
   "A vibrant hot-pink theme for the Innioasis Y1.": "Innioasis Y1 的充满活力的粉红色主题。",
   "A vibrant rainbow-inspired custom theme for the Innioasis Y1.": "一个充满活力的彩虹风格的自定义主题 Innioasis Y1。",
   "A video about Innioasis player use and Rockbox.": "关于 Innioasis 玩家使用和 Rockbox 的视频。",
@@ -5387,6 +5388,7 @@
   "Install Linux on the Y1.": "在 Y1 上安装 Linux。",
   "Install Method": "安装方法",
   "Install Original Software 3.2.0 or later before installing Reborn": "安装 Reborn 之前先安装原始软件 3.2.0 或更高版本",
+  "Install Original Software for Y2 (any version) for the best results, it may not boot if coming from Classy or another custom firmware. Only select Keep Settings if you're already running Reborn.": "安装 Y2 的原始软件（任何版本）以获得最佳结果，如果来自 Classy 或其他自定义固件，它可能无法启动。仅当您已在运行 Reborn 时才选择“保留设置”。",
   "Install Reborn (Y2Linux) custom firmware on an Innioasis Y2 with Innioasis Updater CE. Choose Y2, select Reborn (Y2Linux), pick a release, and connect only when prompted.": "使用 Innioasis 更新程序 CE 在 Innioasis Y2 上安装 Reborn (Y2Linux) 自定义固件。选择 Y2，选择 Reborn (Y2Linux)，选择一个版本，然后仅在出现提示时连接。",
   "Install Reborn (Y2Linux) on Y2": "在 Y2 上安装 Reborn (Y2Linux)",
   "Install Reborn (Y2Linux) on your Innioasis Y2.": "在您的 Innioasis Y2 上安装 Reborn (Y2Linux)。",
@@ -5562,6 +5564,7 @@
   "Installation Overview": "安装概述",
   "Installation Steps": "安装步骤",
   "Installing Firmware on Your Innioasis Y2": "在您的 Innioasis Y2 上安装固件",
+  "Installing Reborn for the First Time?": "第一次安装 Reborn？",
   "Installing Solar on your Innioasis Y1 is quick and easy right inside the official Innioasis Updater application.": "在官方 Innioasis 更新应用程序中，在 Innioasis Y1 上安装 Solar 既快速又简单。",
   "Installing and resetting themes on Rockbox-Y2.": "在 Rockbox-Y2 上安装和重置主题。",
   "Instructions published by the project, shown here word for word.": "该项目发布的说明，此处逐字显示。",
@@ -5615,6 +5618,7 @@
   "Isaiah's Masterpiece!": "以赛亚的杰作！",
   "Isaiah's Masterpiece! - Innioasis Y1 and Y2 Themes Gallery": "以赛亚的杰作！ - Innioasis Y1 和 Y2 主题库",
   "Isaiah's Masterpiece! for Innioasis Y1 & Y2 by Mr. Iminix Sonc": "以赛亚的杰作！ Iminix Sonc 先生的 Innioasis Y1 和 Y2",
+  "Issues reported with JJ Launcher on Y2": "第 2 年 JJ Launcher 报告的问题",
   "It cannot connect to the player": "无法连接到播放器",
   "It detected the player but the flash failed": "检测到播放器但闪光失败",
   "It ensures the MediaTek driver has full control over USB communication": "它确保 MediaTek 驱动程序完全控制 USB 通信",
@@ -9335,6 +9339,7 @@
   "Test the wheel in more than one software. If it works in stock software but not in Rockbox, it is a firmware mapping problem. If it does nothing on any screen, including a recovery menu, suspect the wheel, its ribbon, or the board.": "在多个软件中测试车轮。如果它在库存软件中工作但在 Rockbox 中不起作用，则这是固件映射问题。如果它在任何屏幕（包括恢复菜单）上都没有任何反应，则怀疑是轮子、功能区或主板造成的。",
   "Test the wheel on the home screen, in Settings, and in the music player.": "在主屏幕、“设置”和音乐播放器中测试方向盘。",
   "Test the widget on your website to ensure it works correctly": "在您的网站上测试小部件以确保其正常工作",
+  "Test123": "测试123",
   "Testers Needed: Solar Custom Firmware & Launcher - Innioasis Y1": "需要测试人员：Solar 自定义固件和启动器 - Innioasis Y1",
   "Testers Needed: Solar Custom Firmware & Launcher — Innioasis Y1": "需要测试人员：Solar 自定义固件和启动器 — Innioasis Y1",
   "Testers needed: Solar for Y1": "所需测试人员：Solar 用于 Y1",
@@ -14059,10 +14064,6 @@
   "🛠️ Developer Friendly": "🛠️ 开发者友好",
   "🪓✧˖°🫀⋆｡𖦹🔪 80's camp/mystery/horror theme": "🪓✧˖°🫀⋆｡𖦹🔪 80 年代阵营/神秘/恐怖主题",
   "🪟 Windows ARM64": "🪟Windows ARM64",
-  "🪟 Windows Installation": "🪟 Windows 安装",
-  "Issues reported with JJ Launcher on Y2": "第 2 年 JJ Launcher 报告的问题",
-  "A user has reported that their Y2 would not boot after installing JJ Launcher": "一位用户报告说，他们的 Y2 在安装 JJ Launcher 后无法启动",
-  "Installing Reborn for the First Time?": "第一次安装 Reborn？",
-  "Install Original Software for Y2 (any version) for the best results, it may not boot if coming from Classy or another custom firmware. Only select Keep Settings if you're already running Reborn.": "安装 Y2 的原始软件（任何版本）以获得最佳结果，如果来自 Classy 或其他自定义固件，它可能无法启动。仅当您已在运行 Reborn 时才选择“保留设置”。"
+  "🪟 Windows Installation": "🪟 Windows 安装"
  }
 }

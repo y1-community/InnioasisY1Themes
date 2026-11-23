@@ -2745,6 +2745,18 @@
                             : `Removal request created. We may email you to verify you represent the listed author.${fabNote}`,
                         true
                     );
+                    if (typeof window.openY1DonatePanel === "function") {
+                        const removedTitle = String(payload.catalogTitle || document.getElementById("removal-catalog-name")?.textContent || folder || "").trim();
+                        const prMatch = link ? link.match(/\/pull\/(\d+)/) : null;
+                        setTimeout(() => {
+                            window.openY1DonatePanel({
+                                action: "removal",
+                                themeName: removedTitle,
+                                linkUrl: prMatch ? ("/submission.html?pr=" + prMatch[1]) : link,
+                                linkLabel: prMatch ? "Track this request" : "View pull request",
+                            });
+                        }, 300);
+                    }
                     removalForm.reset();
                     if (folderEl) folderEl.value = folder;
                     const disp = document.getElementById("removal-folder-display");
@@ -3812,11 +3824,17 @@
                 const next = new URL("upload.html", location.origin);
                 next.searchParams.set("mode", "submitted");
                 next.searchParams.set("flow", "metadata");
+                if (titleForListing) next.searchParams.set("themeName", titleForListing);
                 next.searchParams.set("prUrl", prUrl);
                 location.href = next.toString();
                 return;
             }
             setStatus("Theme information update was submitted, but we could not return a tracking link.", true);
+            if (typeof window.openY1DonatePanel === "function") {
+                setTimeout(() => {
+                    window.openY1DonatePanel({ action: "listing", themeName: titleForListing || themeFolderParam || "" });
+                }, 300);
+            }
         }
 
         /** @typedef {{ titleE:string, previewE:string, previewHref:string, description:string, keywords:string, authorE:string, refreshAttr:string, shareE:string, ogImageE:string, jsonLdSafe:string, dispE:string, variantHeading:string }} ThemeSeoIndexVars */
@@ -4399,9 +4417,12 @@
 
                 const link = payload.prUrl ? String(payload.prUrl) : "";
                 const autoEligible = !isUpdateSubmission;
+                const submittedTitle = String((ta && ta.title) || fieldThemeTitle.value || "").trim();
                 if (link) {
                     const next = new URL("upload.html", location.href);
                     next.searchParams.set("mode", "submitted");
+                    next.searchParams.set("flow", isUpdateSubmission ? "update" : "new");
+                    if (submittedTitle) next.searchParams.set("themeName", submittedTitle);
                     next.searchParams.set("prUrl", link);
                     if (autoEligible) next.searchParams.set("autoTimeline", "1");
                     location.href = next.toString();
@@ -4412,6 +4433,14 @@
                     : "";
                 const msg = `Thanks! Your theme was received. If this updates an existing listing, a maintainer will confirm before anything goes live.${scrubbedNote}`;
                 setStatus(msg, true);
+                if (typeof window.openY1DonatePanel === "function") {
+                    setTimeout(() => {
+                        window.openY1DonatePanel({
+                            action: isUpdateSubmission ? "update" : "submission",
+                            themeName: submittedTitle,
+                        });
+                    }, 300);
+                }
                 form.reset();
                 resetThemeState();
             } catch (err) {
