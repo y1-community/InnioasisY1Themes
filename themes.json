@@ -8065,6 +8065,17 @@
             "screenshotPreview": "./test/screenshot_preview.jpg"
         },
         {
+            "name": "Test123",
+            "folder": "Test123",
+            "author": "Test123",
+            "authorUrl": "https://ko-fi.com/teamslide",
+            "description": "Test123",
+            "screenshot": "./Test123/cover.jpg",
+            "sourceType": "internal",
+            "sortName": "test123",
+            "searchText": "test123 test123 test123 test123"
+        },
+        {
             "name": "test",
             "folder": "test_me",
             "author": "me",
