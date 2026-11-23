@@ -899,7 +899,7 @@ body.y1-donate-panel-open .y1-dock-goal-layer {
     border-radius: 12px;
     color: var(--lumen-paper, #fff);
     box-shadow: 0 4px 14px rgba(16, 185, 129, 0.12);
-    animation: y1-notice-fade-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity: 1;
 }
 
 .y1-donate-completion-notice[hidden] {
@@ -963,6 +963,10 @@ body.y1-donate-panel-open .y1-dock-goal-layer {
 
 #support-toolbar-container.y1-toolbar-hidden.y1-modal-overlay-active {
     display: flex !important;
+}
+
+#support-toolbar-container.y1-toolbar-hidden.y1-modal-overlay-active .y1-site-dock-wrap {
+    display: block !important;
 }
 
 #support-toolbar-container.y1-toolbar-hidden.y1-modal-overlay-active #y1-site-dock-bar {
