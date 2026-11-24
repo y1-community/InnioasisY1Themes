@@ -2886,51 +2886,60 @@
     function assetTargetSize(path) {
         var key = String(path || '');
         if (/fontFamily$/i.test(key)) return null;
-        if (key.indexOf('homePageConfig.') === 0) return { width: 166, height: 166 };
-        if (key === 'settingConfig.settingMask') return { width: 320, height: 240 };
-        if (key.indexOf('settingConfig.') === 0) return { width: 146, height: 146 };
+        if (key.indexOf('homePageConfig.') === 0) return { width: 166, height: 166, fit: 'contain-pad' };
+        if (key === 'settingConfig.settingMask') return { width: 480, height: 360, fit: 'contain-pad' };
+        if (key.indexOf('settingConfig.') === 0) return { width: 146, height: 146, fit: 'contain-pad' };
         if (
             key === 'itemConfig.itemBackground' ||
             key === 'itemConfig.itemSelectedBackground' ||
             key === 'menuConfig.menuItemBackground' ||
             key === 'menuConfig.menuItemSelectedBackground'
         ) {
-            return { width: 640, height: 91 };
+            return { width: 640, height: 91, fit: 'contain-down' };
         }
         if (
             key === 'dialogConfig.dialogOptionBackground' ||
             key === 'dialogConfig.dialogOptionSelectedBackground'
         ) {
-            return { width: 160, height: 56 };
+            return { width: 160, height: 56, fit: 'contain-down' };
         }
         if (key === 'dialogConfig.dialogBackground') {
-            return { width: 380, height: 220 };
+            return { width: 380, height: 220, fit: 'contain-down' };
+        }
+        if (key === 'desktopMask') {
+            return { width: 480, height: 360, fit: 'contain-pad' };
         }
         if (
             key === 'desktopWallpaper' ||
             key === 'globalWallpaper' ||
-            key === 'desktopMask' ||
+            key === 'themeWallpaper' ||
             key === 'themeCover' ||
             /(?:bootLogo|shutdownLogo|nowPlayingBackground|backgroundImage|menuBackground)$/i.test(key)
         ) {
-            return { width: 320, height: 240 };
+            return { width: 480, height: 360, fit: 'cover' };
         }
         if (/(?:nowPlayingAlbumArt|albumArtDefault)$/i.test(key)) {
-            return { width: 200, height: 200 };
+            return { width: 200, height: 200, fit: 'contain-pad' };
         }
         if (/scrollbarThumb$/i.test(key)) {
-            return { width: 12, height: 64 };
+            return { width: 12, height: 64, fit: 'contain-down' };
         }
-        if (key.indexOf('statusConfig.') === 0 || key === 'itemConfig.itemRightArrow') {
-            return { width: 64, height: 64 };
+        if (/^statusConfig\.battery/i.test(key)) {
+            return { width: 64, height: 32, fit: 'contain-down' };
         }
-        if (key.indexOf('fileConfig.') === 0) return { width: 166, height: 166 };
+        if (key.indexOf('statusConfig.') === 0) {
+            return { width: 64, height: 64, fit: 'contain-pad' };
+        }
+        if (key === 'itemConfig.itemRightArrow') {
+            return { width: 64, height: 64, fit: 'contain-down' };
+        }
+        if (key.indexOf('fileConfig.') === 0) return { width: 166, height: 166, fit: 'contain-pad' };
         return null;
     }
 
     function recommendedBlankSize(asset) {
         var target = asset ? assetTargetSize(asset.path) : null;
-        return target || { width: 320, height: 240 };
+        return target || { width: 480, height: 360 };
     }
 
     function assetDownloadFileName(asset, isBlank) {
@@ -3088,9 +3097,13 @@
     }
 
     function resizeImageFile(file, target) {
-        if (!target || !/^image\//i.test(file.type || '') || /svg|gif/i.test(file.type || '')) {
+        if (!target || !/^image\//i.test(file.type || '') || /gif/i.test(file.type || '')) {
             return Promise.resolve(file);
         }
+        if (/\.9\.png$/i.test(file.name || '')) {
+            return Promise.resolve(file);
+        }
+        var fit = target.fit || 'contain-down';
         return new Promise(function (resolve) {
             var url = URL.createObjectURL(file);
             var image = new Image();
@@ -3098,31 +3111,84 @@
                 URL.revokeObjectURL(url);
                 var width = image.naturalWidth || image.width;
                 var height = image.naturalHeight || image.height;
-                if (!width || !height || (width <= target.width && height <= target.height)) {
+                if (!width || !height) {
                     resolve(file);
                     return;
                 }
-                var scale = Math.min(target.width / width, target.height / height);
-                var nextWidth = Math.max(1, Math.round(width * scale));
-                var nextHeight = Math.max(1, Math.round(height * scale));
+                var isSvg = /svg/i.test(file.type || '') || /\.svg$/i.test(file.name || '');
+                if (fit === 'contain-down') {
+                    if (!isSvg && width <= target.width && height <= target.height) {
+                        resolve(file);
+                        return;
+                    }
+                    var downScale = Math.min(target.width / width, target.height / height, isSvg ? Infinity : 1);
+                    var nextW = Math.max(1, Math.round(width * downScale));
+                    var nextH = Math.max(1, Math.round(height * downScale));
+                    var downCanvas = document.createElement('canvas');
+                    downCanvas.width = nextW;
+                    downCanvas.height = nextH;
+                    var downCtx = downCanvas.getContext('2d');
+                    if (!downCtx) {
+                        resolve(file);
+                        return;
+                    }
+                    downCtx.imageSmoothingEnabled = true;
+                    downCtx.imageSmoothingQuality = 'high';
+                    downCtx.drawImage(image, 0, 0, nextW, nextH);
+                    downCanvas.toBlob(function (blob) {
+                        if (!blob) {
+                            resolve(file);
+                            return;
+                        }
+                        resolve(
+                            new File([blob], fileName(file.name || '').replace(/\.[^.]+$/, '') + '.png', {
+                                type: 'image/png'
+                            })
+                        );
+                    }, 'image/png');
+                    return;
+                }
+
+                /* Already matches exact target pixel dimensions (e.g. edited from a
+                   downloaded template) — preserve intentional placement untouched. */
+                if (!isSvg && width === target.width && height === target.height) {
+                    resolve(file);
+                    return;
+                }
+
                 var canvas = document.createElement('canvas');
-                canvas.width = nextWidth;
-                canvas.height = nextHeight;
+                canvas.width = target.width;
+                canvas.height = target.height;
                 var context = canvas.getContext('2d');
                 if (!context) {
                     resolve(file);
                     return;
                 }
+                context.clearRect(0, 0, target.width, target.height);
                 context.imageSmoothingEnabled = true;
                 context.imageSmoothingQuality = 'high';
-                context.drawImage(image, 0, 0, nextWidth, nextHeight);
+
+                var scale =
+                    fit === 'cover'
+                        ? Math.max(target.width / width, target.height / height)
+                        : Math.min(target.width / width, target.height / height);
+                var drawW = Math.max(1, Math.round(width * scale));
+                var drawH = Math.max(1, Math.round(height * scale));
+                var dx = Math.round((target.width - drawW) / 2);
+                var dy = Math.round((target.height - drawH) / 2);
+                context.drawImage(image, dx, dy, drawW, drawH);
+
                 canvas.toBlob(
                     function (blob) {
                         if (!blob) {
                             resolve(file);
                             return;
                         }
-                        resolve(new File([blob], fileName(file.name || '').replace(/\.[^.]+$/, '') + '.png', { type: 'image/png' }));
+                        resolve(
+                            new File([blob], fileName(file.name || '').replace(/\.[^.]+$/, '') + '.png', {
+                                type: 'image/png'
+                            })
+                        );
                     },
                     'image/png'
                 );
@@ -4795,11 +4861,19 @@
             working = new File([working], working.name || 'image.' + ext, { type: inferred });
         }
         var target = asset.kind === 'image' ? assetTargetSize(asset.path) : null;
+        var autoAdjusted = false;
         if (target) {
             var before = working;
             working = await resizeImageFile(working, target);
             if (working !== before) {
-                toast('Resized ' + asset.label + ' to fit ' + assetSizeLabel(asset) + '.');
+                autoAdjusted = true;
+                toast(
+                    (target.fit === 'contain-pad' ? 'Sized & centered ' : 'Sized ') +
+                        asset.label +
+                        ' to ' +
+                        assetSizeLabel(asset) +
+                        '.'
+                );
             }
         }
         var targetValue = String(asset.value || '').trim();
@@ -4810,6 +4884,16 @@
             if (isPlaceholderValue(targetValue)) {
                 targetValue = String(asset.path || 'asset').replace(/[^\w.-]+/g, '_') + (asset.kind === 'font' ? '.ttf' : '.png');
             }
+            writePath(state.config || {}, asset.path, targetValue);
+        } else if (asset.kind === 'image' && autoAdjusted && /^image\/png$/i.test(working.type || '') && !/\.png$/i.test(targetValue)) {
+            /* Auto-padded transparent PNGs must save with a .png filename so the
+               player preserves alpha instead of decoding under a .jpg/.webp name. */
+            var oldImgKey = localKey('', targetValue);
+            if (state.assetOverrides[oldImgKey] && state.assetOverrides[oldImgKey].url) {
+                revokeAssetUrl(state.assetOverrides[oldImgKey].url);
+            }
+            delete state.assetOverrides[oldImgKey];
+            targetValue = targetValue.replace(/\.[^.\/]+$/, '') + '.png';
             writePath(state.config || {}, asset.path, targetValue);
         } else if (asset.kind === 'font') {
             var incomingFontExt = /\.(ttf|otf|woff2?)$/i.exec(working.name || '');
