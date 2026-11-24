@@ -247,10 +247,16 @@
                 stateEl.className = 'state state--' + (kind || 'unknown');
             }
 
+            function encodeQueryValue(value) {
+                return encodeURIComponent(String(value || '')).replace(/[!'()*]/g, function (c) {
+                    return '%' + c.charCodeAt(0).toString(16).toUpperCase();
+                });
+            }
+
             function studioUrlFor(folder, mode, variant) {
                 if (!folder) return '';
-                var url = '/studio-test/?folder=' + encodeURIComponent(folder) + '&mode=' + encodeURIComponent(mode || 'preview');
-                if (variant) url += '&variant=' + encodeURIComponent(variant);
+                var url = '/studio-test/?folder=' + encodeQueryValue(folder) + '&mode=' + encodeQueryValue(mode || 'preview');
+                if (variant) url += '&variant=' + encodeQueryValue(variant);
                 return url;
             }
 
@@ -398,6 +404,113 @@
                 return m && m[1] ? cleanMarkdownValue(m[1]) : '';
             }
 
+            function titleFromPr(pr) {
+                var body = String((pr && pr.body) || '');
+                var m = body.match(/^\s*[-*]\s*(?:\*\*)?Title\s*\(from config\)(?:\*\*)?\s*:\s*(.+)$/im);
+                if (m && m[1]) {
+                    var cleaned = cleanMarkdownValue(m[1]);
+                    if (cleaned) return cleaned;
+                }
+                var rawTitle = String((pr && pr.title) || '')
+                    .replace(/^\[(?:Update|Metadata|Removal)\]\s*/i, '')
+                    .trim();
+                var parts = rawTitle.split(/\s+(?:—|--)\s+/);
+                return parts[0] ? cleanMarkdownValue(parts[0]) : '';
+            }
+
+            function normSpace(value) {
+                return String(value || '').toLowerCase().replace(/[\s_-]+/g, ' ').trim();
+            }
+
+            function normAlnum(value) {
+                return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+            }
+
+            function normAuthorKey(value) {
+                return String(value || '').toLowerCase().replace(/^@/, '').replace(/[^a-z0-9]+/g, '');
+            }
+
+            function pickBestCatalogTheme(matches, author) {
+                if (!matches.length) return null;
+                if (matches.length === 1) return matches[0];
+                var want = normAuthorKey(author);
+                if (want) {
+                    for (var i = 0; i < matches.length; i += 1) {
+                        if (normAuthorKey(matches[i] && matches[i].author) === want) return matches[i];
+                    }
+                }
+                return matches[0];
+            }
+
+            function resolveCanonicalFolder(candidates, prTitle, prAuthor, themes) {
+                var list = Array.isArray(themes) ? themes : [];
+                var cleanCandidates = (candidates || [])
+                    .map(function (c) { return String(c || '').trim(); })
+                    .filter(Boolean);
+                var fallback = cleanCandidates[0] || '';
+                if (!list.length) return fallback;
+
+                for (var cIdx = 0; cIdx < cleanCandidates.length; cIdx += 1) {
+                    var cand = cleanCandidates[cIdx];
+                    for (var i = 0; i < list.length; i += 1) {
+                        if (list[i] && String(list[i].folder) === cand) return list[i].folder;
+                    }
+                }
+
+                for (var cIdx2 = 0; cIdx2 < cleanCandidates.length; cIdx2 += 1) {
+                    var low = cleanCandidates[cIdx2].toLowerCase();
+                    var ciMatches = list.filter(function (t) {
+                        return t && t.folder && String(t.folder).toLowerCase() === low;
+                    });
+                    var ciPick = pickBestCatalogTheme(ciMatches, prAuthor);
+                    if (ciPick) return ciPick.folder;
+                }
+
+                for (var cIdx3 = 0; cIdx3 < cleanCandidates.length; cIdx3 += 1) {
+                    var sp = normSpace(cleanCandidates[cIdx3]);
+                    if (!sp) continue;
+                    var spMatches = list.filter(function (t) {
+                        return t && t.folder && (normSpace(t.folder) === sp || normSpace(t.name) === sp);
+                    });
+                    var spPick = pickBestCatalogTheme(spMatches, prAuthor);
+                    if (spPick) return spPick.folder;
+                }
+
+                for (var cIdx4 = 0; cIdx4 < cleanCandidates.length; cIdx4 += 1) {
+                    var al = normAlnum(cleanCandidates[cIdx4]);
+                    if (!al) continue;
+                    var alMatches = list.filter(function (t) {
+                        return t && t.folder && (normAlnum(t.folder) === al || normAlnum(t.name) === al);
+                    });
+                    var alPick = pickBestCatalogTheme(alMatches, prAuthor);
+                    if (alPick) return alPick.folder;
+                }
+
+                var titleAl = normAlnum(prTitle);
+                var authKey = normAuthorKey(prAuthor);
+                if (titleAl && authKey) {
+                    for (var j = 0; j < list.length; j += 1) {
+                        var item = list[j];
+                        if (!item || !item.folder) continue;
+                        if (
+                            normAuthorKey(item.author) === authKey &&
+                            (normAlnum(item.name) === titleAl || normAlnum(item.folder).indexOf(titleAl) === 0)
+                        ) {
+                            return item.folder;
+                        }
+                    }
+                }
+
+                return fallback;
+            }
+
+            function loadCatalogThemes() {
+                return fetch('/themes.json?v=' + Date.now(), { cache: 'no-store' })
+                    .then(function (r) { return r && r.ok ? r.json() : null; })
+                    .then(function (d) { return d && Array.isArray(d.themes) ? d.themes : []; })
+                    .catch(function () { return []; });
+            }
+
             function folderFromPrFiles(files) {
                 if (!Array.isArray(files)) return '';
                 for (var i = 0; i < files.length; i += 1) {
@@ -473,8 +586,10 @@
                 })
                 .then(function (pr) {
                     detailsEl.hidden = false;
+                    var prAuthorName = requesterFromPr(pr);
+                    var prThemeTitle = titleFromPr(pr);
                     addDetail('Theme change', pr.title || '');
-                    addDetail('Requested by', requesterFromPr(pr));
+                    addDetail('Requested by', prAuthorName);
                     var clientSubmittedAt = clientSubmittedAtFromPrBody(pr.body);
                     var originalSubmittedAt = originalSubmittedAtFromPrBody(pr.body);
                     addDetail('Submitted', formatTimestamp(clientSubmittedAt || pr.created_at));
@@ -483,16 +598,28 @@
                     }
 
                     var isRemoval = /^\[Removal\]/i.test(String(pr.title || ''));
-                    var resolvedFolder = folderParam || folderFromPrBody(pr.body);
+                    var bodyFolder = folderFromPrBody(pr.body);
 
-                    var resolveFolderPromise = resolvedFolder
-                        ? Promise.resolve(resolvedFolder)
+                    var filesFolderPromise = (folderParam || bodyFolder)
+                        ? Promise.resolve('')
                         : fetch(filesApi, { headers: { Accept: 'application/vnd.github+json' } })
                               .then(function (r) { return r.ok ? r.json() : []; })
                               .then(function (files) { return folderFromPrFiles(files); })
                               .catch(function () { return ''; });
 
-                    return resolveFolderPromise.then(function (folder) {
+                    var catalogPromise = isRemoval ? Promise.resolve([]) : loadCatalogThemes();
+
+                    return Promise.all([filesFolderPromise, catalogPromise]).then(function (res) {
+                        var fileFolder = res[0] || '';
+                        var catalog = res[1] || [];
+                        var folder = isRemoval
+                            ? (folderParam || bodyFolder || fileFolder)
+                            : resolveCanonicalFolder(
+                                  [folderParam, bodyFolder, prThemeTitle, fileFolder],
+                                  prThemeTitle,
+                                  prAuthorName,
+                                  catalog
+                              );
                         if (folder && !isRemoval) {
                             addDetail('Theme folder', folder);
                         }

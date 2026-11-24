@@ -232,14 +232,17 @@ jobs:
           exit 0
 
   notify-source-pr-after-ingest:
-    needs: ingest-and-sync
+    needs: [ingest-and-sync, deploy-live-site]
     if: ${{ always() && (needs.ingest-and-sync.result == 'success' || needs.ingest-and-sync.result == 'failure') }}
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
     steps:
-      - name: Checkout
+      - name: Checkout main
         uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
 
       - name: Comment on originating theme PR (listing sync outcome)
         uses: actions/github-script@v7
@@ -247,12 +250,20 @@ jobs:
           INGEST_RESULT: ${{ needs.ingest-and-sync.result }}
         with:
           script: |
+            const fs = require("fs");
             const path = require("path");
             const { themePreviewUrlsFromHints } = require(path.join(
               process.env.GITHUB_WORKSPACE,
               "scripts",
               "theme_preview_urls.cjs"
             ));
+            let catalogThemes = [];
+            try {
+              const parsed = JSON.parse(fs.readFileSync(path.join(process.env.GITHUB_WORKSPACE, "themes.json"), "utf8"));
+              catalogThemes = Array.isArray(parsed && parsed.themes) ? parsed.themes : [];
+            } catch (e) {
+              console.warn("Could not read themes.json:", e.message);
+            }
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const ingestResult = process.env.INGEST_RESULT || "";
@@ -330,18 +341,30 @@ jobs:
                   }
                   continue;
                 }
-                if (file.status === "added" && /^[^/]+\.zip$/i.test(name)) {
+                if (["added", "modified", "renamed"].includes(file.status) && /^[^/]+\.zip$/i.test(name)) {
                   rootZips.push(name);
                 }
               }
+              const prBody = String((pr && pr.body) || "");
+              const titleFromBody = prBody.match(/^\s*[-*]\s*Title\s*\(from config\)\s*:\s*(.+)$/im);
+              const authorFromBody = prBody.match(/^\s*[-*]\s*Author\s*\(from config\)\s*:\s*(.+)$/im);
+              const prTitleRaw = String((pr && pr.title) || "").replace(/^\[(?:Update|Metadata|Removal)\]\s*/i, "").trim();
+              const titleParts = prTitleRaw.split(/\s+(?:—|--)\s+/);
+              const prTitle = (titleFromBody && titleFromBody[1] ? titleFromBody[1].trim() : "") || (titleParts[0] || "").trim();
+              const prAuthor = (authorFromBody && authorFromBody[1] ? authorFromBody[1].trim() : "") || (titleParts[1] || "").trim();
               for (const zipPath of rootZips) {
                 const fromMeta = await readShareHintsFromMeta(zipPath);
                 if (!fromMeta) {
-                  const stem = zipPath.replace(/\.zip$/i, "").trim();
+                  const stem = prTitle || zipPath.replace(/\.zip$/i, "").trim();
                   if (stem) folders.add(stem);
                 }
               }
-              return themePreviewUrlsFromHints(folders);
+              if (!folders.size && prTitle) folders.add(prTitle);
+              return themePreviewUrlsFromHints(folders, {
+                themes: catalogThemes,
+                prTitle,
+                prAuthor,
+              });
             }
 
             let prNum = null;

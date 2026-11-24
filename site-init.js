@@ -1211,7 +1211,9 @@
             if (params.has("theme")) {
                 var tVal = (params.get("theme") || "").toLowerCase().trim();
                 var isSiteTheme = ["auto", "dark", "high-contrast", "2077", "light"].indexOf(tVal) >= 0;
-                var isThemeGalleryDetail = /theme(?:_[a-zA-Z0-9_-]+)?\.html$/i.test(url.pathname);
+                var isThemeGalleryDetail =
+                    /theme(?:_[a-zA-Z0-9_-]+)?\.html$/i.test(url.pathname) ||
+                    /\/studio-test(?:\/(?:index(?:_[a-zA-Z0-9_-]+)?\.html)?)?$/i.test(url.pathname);
                 if (isSiteTheme || !isThemeGalleryDetail) {
                     params.delete("theme");
                     modified = true;

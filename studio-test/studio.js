@@ -1536,30 +1536,62 @@
         });
     }
 
-    function resolveRequestedFolder(raw) {
+    var GITHUB_RAW_GALLERY_BASE = 'https://raw.githubusercontent.com/y1-community/InnioasisY1Themes/main/';
+
+    function encodeQueryValue(value) {
+        return encodeURIComponent(String(value || '')).replace(/[!'()*]/g, function (c) {
+            return '%' + c.charCodeAt(0).toString(16).toUpperCase();
+        });
+    }
+
+    function resolveRequestedFolder(raw, listOverride, byFolderOverride) {
         var clean = String(raw || '')
             .replace(/^\.\/+/, '')
             .replace(/\/+$/, '')
             .trim();
         if (!clean) return '';
-        if (state.byFolder[clean]) return clean;
+        if (/%[0-9a-f]{2}/i.test(clean)) {
+            try {
+                var decoded = decodeURIComponent(clean).trim();
+                if (decoded) clean = decoded;
+            } catch (_) {}
+        }
+        var byFolder = byFolderOverride || state.byFolder;
+        var list = listOverride || state.gallery;
+        if (byFolder && byFolder[clean]) return clean;
         var low = clean.toLowerCase();
-        var norm = low.replace(/[\s_]+/g, ' ');
+        var normSpace = low.replace(/[\s_-]+/g, ' ').trim();
+        var normAlnum = low.replace(/[^a-z0-9]+/g, ' ').trim();
         var exactLow = '';
-        var fuzzy = '';
-        for (var i = 0; i < state.gallery.length; i += 1) {
-            var item = state.gallery[i];
+        var spaceMatch = '';
+        var alnumMatch = '';
+        for (var i = 0; i < list.length; i += 1) {
+            var item = list[i];
             if (!item || !item.folder) continue;
             var fl = String(item.folder).toLowerCase();
             if (fl === low) {
                 exactLow = item.folder;
                 break;
             }
-            if (!fuzzy && (fl.replace(/[\s_]+/g, ' ') === norm || String(item.name || '').toLowerCase() === low)) {
-                fuzzy = item.folder;
+            var itemNameLow = String(item.name || '').toLowerCase();
+            if (
+                !spaceMatch &&
+                (fl.replace(/[\s_-]+/g, ' ').trim() === normSpace ||
+                    itemNameLow === low ||
+                    itemNameLow.replace(/[\s_-]+/g, ' ').trim() === normSpace)
+            ) {
+                spaceMatch = item.folder;
+            }
+            if (
+                !alnumMatch &&
+                normAlnum &&
+                (fl.replace(/[^a-z0-9]+/g, ' ').trim() === normAlnum ||
+                    itemNameLow.replace(/[^a-z0-9]+/g, ' ').trim() === normAlnum)
+            ) {
+                alnumMatch = item.folder;
             }
         }
-        return exactLow || fuzzy || clean;
+        return exactLow || spaceMatch || alnumMatch || clean;
     }
 
     var ONBOARDING_STORAGE_KEY = 'y1_studio_onboarding_dismissed';
@@ -1691,47 +1723,56 @@
             openOnboarding('first');
         }
 
-        galleryIndexReady = loadGalleryIndex().then(function () {
+        galleryIndexReady = loadGalleryIndex(false).then(function () {
             var handoffPromise = handoffDrop ? openPendingDropHandoff() : Promise.resolve(false);
             return handoffPromise.then(function (handledDrop) {
                 if (handledDrop) return;
-                return readRecovery().then(function (record) {
-                    var requested = resolveRequestedFolder(requestedFolder);
-                    if (requested) {
-                        if (bootModeRequest && bootModeRequest.folder) bootModeRequest.folder = requested;
-                        loadGalleryTheme(
-                            requested,
-                            !requestedVariant && record && record.folder === requested ? record : null,
-                            requestedVariant
+                /* If the URL asks for a specific theme that isn't in the
+                   edge-cached themes.json yet (e.g. freshly merged PR), retry
+                   once with a cache-busting query string before resolving. */
+                var refreshIndexPromise =
+                    requestedFolder && !state.byFolder[resolveRequestedFolder(requestedFolder)]
+                        ? loadGalleryIndex(true)
+                        : Promise.resolve();
+                return refreshIndexPromise.then(function () {
+                    return readRecovery().then(function (record) {
+                        var requested = resolveRequestedFolder(requestedFolder);
+                        if (requested) {
+                            if (bootModeRequest && bootModeRequest.folder) bootModeRequest.folder = requested;
+                            loadGalleryTheme(
+                                requested,
+                                !requestedVariant && record && record.folder === requested ? record : null,
+                                requestedVariant
+                            );
+                            return;
+                        }
+                        /* Nothing in the URL: a tab closed mid-edit comes back to the same
+                           theme with its replacements still applied. */
+                        if (record && state.byFolder[record.folder]) {
+                            loadGalleryTheme(record.folder, record);
+                            return;
+                        }
+                        /* A plain first visit opens the reference theme instead of a
+                           holding screen. If it is missing from this checkout, the
+                           first listed theme does the same job. */
+                        var fallbackFolder = state.byFolder[DEFAULT_THEME]
+                            ? DEFAULT_THEME
+                            : state.gallery[0] && state.gallery[0].folder;
+                        if (fallbackFolder) {
+                            loadGalleryTheme(fallbackFolder, null);
+                            return;
+                        }
+                        bootModeRequest = null;
+                        updateChrome();
+                        setLoading(false);
+                        showEmpty(
+                            state.gallery.length ? 'Pick a theme, or bring your own' : 'Open your own theme package',
+                            state.gallery.length
+                                ? 'No theme is open yet. Choose one from the gallery, upload your own theme folder or ZIP, or pick a gallery theme from the list in the sidebar.'
+                                : 'The gallery list is unavailable, so start from a theme folder or ZIP on this device.',
+                            'start'
                         );
-                        return;
-                    }
-                    /* Nothing in the URL: a tab closed mid-edit comes back to the same
-                       theme with its replacements still applied. */
-                    if (record && state.byFolder[record.folder]) {
-                        loadGalleryTheme(record.folder, record);
-                        return;
-                    }
-                    /* A plain first visit opens the reference theme instead of a
-                       holding screen. If it is missing from this checkout, the
-                       first listed theme does the same job. */
-                    var fallbackFolder = state.byFolder[DEFAULT_THEME]
-                        ? DEFAULT_THEME
-                        : state.gallery[0] && state.gallery[0].folder;
-                    if (fallbackFolder) {
-                        loadGalleryTheme(fallbackFolder, null);
-                        return;
-                    }
-                    bootModeRequest = null;
-                    updateChrome();
-                    setLoading(false);
-                    showEmpty(
-                        state.gallery.length ? 'Pick a theme, or bring your own' : 'Open your own theme package',
-                        state.gallery.length
-                            ? 'No theme is open yet. Choose one from the gallery, upload your own theme folder or ZIP, or pick a gallery theme from the list in the sidebar.'
-                            : 'The gallery list is unavailable, so start from a theme folder or ZIP on this device.',
-                        'start'
-                    );
+                    });
                 });
             });
         });
@@ -1740,23 +1781,29 @@
         }
     }
 
-    function loadGalleryIndex() {
-        return fetch('../themes.json', { cache: 'no-cache' })
+    function applyGalleryIndex(data) {
+        state.gallery = data && Array.isArray(data.themes) ? data.themes.filter(function (t) {
+            return t && t.folder;
+        }) : [];
+        state.byFolder = Object.create(null);
+        state.gallery.forEach(function (theme) {
+            state.byFolder[theme.folder] = theme;
+        });
+        populateThemeSelect('');
+    }
+
+    function loadGalleryIndex(bustCache) {
+        var url = bustCache ? '../themes.json?v=' + Date.now() : '../themes.json';
+        return fetch(url, { cache: bustCache ? 'no-store' : 'no-cache' })
             .then(function (res) {
                 if (!res.ok) throw new Error('themes.json (' + res.status + ')');
                 return res.json();
             })
             .then(function (data) {
-                state.gallery = data && Array.isArray(data.themes) ? data.themes.filter(function (t) {
-                    return t && t.folder;
-                }) : [];
-                state.byFolder = Object.create(null);
-                state.gallery.forEach(function (theme) {
-                    state.byFolder[theme.folder] = theme;
-                });
-                populateThemeSelect('');
+                applyGalleryIndex(data);
             })
             .catch(function (err) {
+                if (bustCache && state.gallery.length) return;
                 console.warn('Studio: gallery index unavailable', err);
                 state.gallery = [];
                 state.byFolder = Object.create(null);
@@ -1896,18 +1943,26 @@
                 ? bootModeRequest.mode
                 : null;
         params.set('mode', pendingMode || state.mode);
-        var query = params.toString();
+        var parts = [];
+        params.forEach(function (value, key) {
+            parts.push(encodeQueryValue(key) + '=' + encodeQueryValue(value));
+        });
+        var query = parts.join('&');
         history.replaceState(null, '', location.pathname + (query ? '?' + query : ''));
     }
 
     /* —— Gallery themes —— */
+
+    function galleryBasePrefix() {
+        return state.galleryBaseUrl || '../';
+    }
 
     function galleryCoverUrl(repoPath) {
         var shot = String(repoPath || '').trim();
         if (!shot) return '';
         if (/^https?:\/\//i.test(shot) || shot.charAt(0) === '/') return shot;
         var clean = shot.replace(/^\.\/+/, '').replace(/^\/+/, '');
-        return '../' + clean.split('/').map(encodeURIComponent).join('/');
+        return galleryBasePrefix() + clean.split('/').map(encodeURIComponent).join('/');
     }
 
     function galleryMeta(theme, folder) {
@@ -1924,6 +1979,58 @@
         };
     }
 
+    function fetchGalleryConfigWithRawFallback(folder, variant) {
+        var contentPath = variant ? folder + '/Variants/' + variant : folder;
+        return fetch('../' + encodePath(contentPath) + '/config.json?v=' + Date.now(), { cache: 'no-cache' })
+            .then(function (res) {
+                if (!res.ok) {
+                    var err = new Error('config.json (' + res.status + ')');
+                    err.status = res.status;
+                    throw err;
+                }
+                return res.json().then(function (config) {
+                    return { config: config, folder: folder, baseUrl: '', themeEntry: state.byFolder[folder] || null };
+                });
+            })
+            .catch(function (localErr) {
+                /* A freshly merged PR can take a few minutes to publish on the
+                   CDN; fall back to raw.githubusercontent.com on main so PR
+                   preview links open immediately even right after ingest. */
+                if (localErr && localErr.status && localErr.status !== 404) throw localErr;
+                return fetch(GITHUB_RAW_GALLERY_BASE + 'themes.json?v=' + Date.now(), { cache: 'no-store' })
+                    .then(function (r) {
+                        return r && r.ok ? r.json() : null;
+                    })
+                    .catch(function () {
+                        return null;
+                    })
+                    .then(function (rawCatalog) {
+                        var rawList = rawCatalog && Array.isArray(rawCatalog.themes)
+                            ? rawCatalog.themes.filter(function (t) { return t && t.folder; })
+                            : [];
+                        var rawByFolder = Object.create(null);
+                        rawList.forEach(function (t) { rawByFolder[t.folder] = t; });
+                        var resolved = rawList.length
+                            ? resolveRequestedFolder(folder, rawList, rawByFolder)
+                            : folder;
+                        var rawContentPath = variant ? resolved + '/Variants/' + variant : resolved;
+                        return fetch(GITHUB_RAW_GALLERY_BASE + encodePath(rawContentPath) + '/config.json?v=' + Date.now(), {
+                            cache: 'no-store'
+                        }).then(function (rawRes) {
+                            if (!rawRes.ok) throw localErr;
+                            return rawRes.json().then(function (config) {
+                                return {
+                                    config: config,
+                                    folder: resolved,
+                                    baseUrl: GITHUB_RAW_GALLERY_BASE,
+                                    themeEntry: rawByFolder[resolved] || state.byFolder[resolved] || null
+                                };
+                            });
+                        });
+                    });
+            });
+    }
+
     function loadGalleryTheme(folder, restoreRecord, variant) {
         if (!folder) return;
         var requestedFolder = folder;
@@ -1931,6 +2038,7 @@
         state.sourceType = 'gallery';
         state.folder = folder;
         state.variant = requestedVariant;
+        state.galleryBaseUrl = '';
         state.galleryBlobCache = Object.create(null);
         galleryWarmFolder = '';
         galleryWarmPromise = null;
@@ -1967,14 +2075,29 @@
         updateChecklist();
         syncUrl();
 
-        var contentPath = galleryContentFolder();
-        fetch('../' + encodePath(contentPath) + '/config.json?v=' + Date.now(), { cache: 'no-cache' })
-            .then(function (res) {
-                if (!res.ok) throw new Error('config.json (' + res.status + ')');
-                return res.json();
-            })
-            .then(function (config) {
+        fetchGalleryConfigWithRawFallback(requestedFolder, requestedVariant)
+            .then(function (loaded) {
                 if (state.sourceType !== 'gallery' || state.folder !== requestedFolder || state.variant !== requestedVariant) return;
+                var config = loaded.config;
+                if (loaded.baseUrl) {
+                    state.galleryBaseUrl = loaded.baseUrl;
+                }
+                if (loaded.folder && loaded.folder !== requestedFolder) {
+                    requestedFolder = loaded.folder;
+                    state.folder = loaded.folder;
+                    if (bootModeRequest && bootModeRequest.folder) bootModeRequest.folder = loaded.folder;
+                    syncUrl();
+                }
+                if (loaded.themeEntry) {
+                    if (!state.byFolder[requestedFolder]) {
+                        state.byFolder[requestedFolder] = loaded.themeEntry;
+                        state.gallery.push(loaded.themeEntry);
+                    }
+                    state.meta = galleryMeta(loaded.themeEntry, requestedFolder);
+                    declaredCover = state.meta.cover;
+                } else if (loaded.baseUrl) {
+                    declaredCover = galleryCoverUrl(requestedFolder + '/cover.jpg');
+                }
                 return loadMissingManifest().then(function (manifest) {
                     if (state.sourceType !== 'gallery' || state.folder !== requestedFolder || state.variant !== requestedVariant) return;
                     var manifestEntry = manifest && manifest[requestedFolder];
@@ -2001,6 +2124,9 @@
                     if (restoreRecord) finishRecovery(restoreRecord);
                     updateChecklist();
                     trackStudioGalleryVisit(requestedFolder, state.meta, state.byFolder[requestedFolder]);
+                    if (loaded.baseUrl) {
+                        toast('Showing the latest version from GitHub while the live site finishes updating.');
+                    }
                     return mountPreview({ freshView: true });
                 });
             })
@@ -2295,7 +2421,7 @@
             }
             stack.push(segment);
         });
-        return '../' + stack.map(encodeURIComponent).join('/');
+        return galleryBasePrefix() + stack.map(encodeURIComponent).join('/');
     }
 
     function localFileUrl(contentFolder, relativePath) {
