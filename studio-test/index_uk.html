@@ -106,7 +106,7 @@
     <link rel="stylesheet" href="../site-theme.css?v=20261115footer1" />
     <link rel="stylesheet" href="../site-toolbar.css?v=20261123donatecompletion2" />
     <link rel="stylesheet" href="../y1-theme-preview.css?v=20261119menus1" />
-    <link rel="stylesheet" href="/studio-test/studio.css?v=20261123studio4" />
+    <link rel="stylesheet" href="/studio-test/studio.css?v=20261124studio6" />
 </head>
 
 <body class="site-themes-app site-dock-mode studio-app" data-mode="preview">
@@ -138,6 +138,9 @@
                 </button>
                 <button class="studio-btn studio-btn--open-zip" id="studio-open-zip-bar" type="button" aria-label="Open ZIP from device" title="Open ZIP from device">
                     <i class="fa-solid fa-file-zipper" aria-hidden="true"></i><span>Open ZIP from device</span>
+                </button>
+                <button class="studio-btn studio-btn--try-device" id="studio-try-device" type="button" aria-label="Try on Device" title="Try this theme directly on your Y1 or Y2 via USB">
+                    <i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i><span>Try on Device</span>
                 </button>
                 <button class="studio-btn studio-btn--save" id="studio-save" type="button" aria-label="Збережіть тему на цьому пристрої">
                     <i class="fa-solid fa-download" aria-hidden="true"></i><span>Зберегти на пристрій</span>
@@ -543,6 +546,77 @@
         </div>
     </div>
 
+
+    <div class="studio-modal studio-try-device" id="studio-try-device-modal" hidden>
+        <div class="studio-modal-card studio-try-device-card" role="dialog" aria-modal="true" aria-labelledby="studio-try-device-title">
+            <div class="studio-onboarding-head">
+                <span class="studio-eyebrow"><i class="fa-solid fa-plug" aria-hidden="true"></i> USB Storage Mode</span>
+                <button class="studio-onboarding-x" id="studio-try-device-x" type="button" aria-label="Close Try on Device dialog">
+                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                </button>
+            </div>
+            <h2 id="studio-try-device-title">Try this theme on your player</h2>
+            <p class="studio-try-device-lead" id="studio-try-device-lead">Copy your current Studio theme straight into your player’s <code>Themes</code> folder over USB so you can test it on real hardware right away.</p>
+            <div class="studio-try-device-reminder" id="studio-try-device-reminder" role="note" hidden>
+                <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+                <div>
+                    <strong>Testing again in this session?</strong>
+                    <p>After ejecting USB storage, <strong>restart your device</strong> and <strong>select another theme</strong> (then switch back) so your player clears its cache and loads your updated files.</p>
+                </div>
+            </div>
+            <ol class="studio-try-device-steps" id="studio-try-device-steps">
+                <li>
+                    <span class="studio-try-step-num" aria-hidden="true">1</span>
+                    <div>
+                        <strong>Enable USB Storage Mode on your player</strong>
+                        <p>Connect your Innioasis Y1 or Y2 over USB and enable <strong>USB Storage Mode</strong> on the player so its storage appears on your computer.</p>
+                    </div>
+                </li>
+                <li>
+                    <span class="studio-try-step-num" aria-hidden="true">2</span>
+                    <div>
+                        <strong>Click “Select Themes folder”</strong>
+                        <p>Choose the <code>Themes</code> folder on your player. Studio will copy <code id="studio-try-folder-name">your theme</code> directly into it for testing.</p>
+                    </div>
+                </li>
+            </ol>
+            <div class="studio-try-device-unsupported" id="studio-try-device-unsupported" hidden>
+                <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                <div>
+                    <strong>Direct USB folder access isn’t available in this browser</strong>
+                    <p>Picking your player’s <code>Themes</code> folder directly requires a Chromium desktop browser (Chrome, Edge, Brave, or Opera) over HTTPS. You can still save the theme ZIP to your device and copy the unzipped folder into your player’s <code>Themes</code> folder.</p>
+                </div>
+            </div>
+            <div class="studio-try-device-connected" id="studio-try-device-connected" hidden>
+                <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
+                <span>Selected folder: <strong id="studio-try-connected-name">Themes</strong></span>
+            </div>
+            <div class="studio-try-device-progress" id="studio-try-device-progress" hidden>
+                <div class="studio-save-progress-head">
+                    <span id="studio-try-progress-label">Preparing files…</span>
+                    <strong id="studio-try-progress-value">0%</strong>
+                </div>
+                <progress id="studio-try-progress-bar" max="100" value="0">0%</progress>
+            </div>
+            <p class="studio-try-device-status" id="studio-try-device-status" role="status" aria-live="polite" hidden></p>
+            <div class="studio-try-device-actions">
+                <button class="studio-btn studio-btn--primary" id="studio-try-select-folder" type="button">
+                    <i class="fa-solid fa-folder-open" aria-hidden="true"></i><span>Select Themes folder</span>
+                </button>
+                <button class="studio-btn studio-btn--primary" id="studio-try-copy-again" type="button" hidden>
+                    <i class="fa-solid fa-copy" aria-hidden="true"></i><span>Copy updated theme to device</span>
+                </button>
+                <button class="studio-btn" id="studio-try-change-folder" type="button" hidden>
+                    <i class="fa-solid fa-folder-tree" aria-hidden="true"></i><span>Change folder</span>
+                </button>
+                <button class="studio-btn" id="studio-try-save-fallback" type="button" hidden>
+                    <i class="fa-solid fa-download" aria-hidden="true"></i><span>Save theme ZIP instead</span>
+                </button>
+                <button class="studio-btn" id="studio-try-device-close" type="button">Close</button>
+            </div>
+        </div>
+    </div>
+
     <div class="studio-save-progress" id="studio-save-progress" role="status" aria-live="polite" aria-atomic="true" hidden>
         <div class="studio-save-progress-head">
             <span id="studio-save-progress-label">Готується тема…</span>
@@ -559,13 +633,13 @@
     <div id="support-toolbar-slot"></div>
 
     <script src="../nav.js?v=20261120studio"></script>
-    <script src="../y1-theme-preview.js?v=20261123studio5"></script>
+    <script src="../y1-theme-preview.js?v=20261124studio6"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="../theme-packaging.js"></script>
     <script src="../author-submission-policy.js?v=20260523"></script>
     <script src="../studio-drop-handoff.js?v=20261123studio2"></script>
     <script src="../theme-analytics.js?v=20261123stats4"></script>
-    <script src="/studio-test/studio.js?v=20261123studio5"></script>
+    <script src="/studio-test/studio.js?v=20261124studio6"></script>
     <script src="../site-locale.js?v=20261115skip2" defer></script>
 </body>
 

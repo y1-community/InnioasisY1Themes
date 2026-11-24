@@ -214,6 +214,25 @@
         browseFont: byId('studio-browse-font'),
         resetAssets: byId('studio-reset-assets'),
         save: byId('studio-save'),
+        tryDevice: byId('studio-try-device'),
+        tryDeviceModal: byId('studio-try-device-modal'),
+        tryDeviceX: byId('studio-try-device-x'),
+        tryDeviceClose: byId('studio-try-device-close'),
+        tryDeviceReminder: byId('studio-try-device-reminder'),
+        tryDeviceSteps: byId('studio-try-device-steps'),
+        tryDeviceFolderName: byId('studio-try-folder-name'),
+        tryDeviceUnsupported: byId('studio-try-device-unsupported'),
+        tryDeviceConnected: byId('studio-try-device-connected'),
+        tryDeviceConnectedName: byId('studio-try-connected-name'),
+        tryDeviceProgress: byId('studio-try-device-progress'),
+        tryDeviceProgressLabel: byId('studio-try-progress-label'),
+        tryDeviceProgressValue: byId('studio-try-progress-value'),
+        tryDeviceProgressBar: byId('studio-try-progress-bar'),
+        tryDeviceStatus: byId('studio-try-device-status'),
+        trySelectFolder: byId('studio-try-select-folder'),
+        tryCopyAgain: byId('studio-try-copy-again'),
+        tryChangeFolder: byId('studio-try-change-folder'),
+        trySaveFallback: byId('studio-try-save-fallback'),
         openTheme: byId('studio-open-theme'),
         saveProgress: byId('studio-save-progress'),
         saveProgressLabel: byId('studio-save-progress-label'),
@@ -316,7 +335,15 @@
         assetScrollTimer: null,
         colorPreviewTimer: null,
         swapOpen: false,
-        compactExpanded: false
+        compactExpanded: false,
+        tryDeviceHandle: null,
+        tryOnDeviceCount: (function () {
+            try {
+                return Math.max(0, parseInt(window.sessionStorage.getItem('y1-studio-try-device-count') || '0', 10) || 0);
+            } catch (e) {
+                return 0;
+            }
+        })()
     };
 
     var filterTimer = null;
@@ -951,8 +978,11 @@
         if (path === 'itemConfig.itemBackground') {
             return canvas.querySelector('.y1-tp-row:not(.is-selected)') || canvas.querySelector('.y1-tp-row') || null;
         }
-        if (path === 'desktopWallpaper' || path === 'globalWallpaper') {
+        if (path === 'desktopWallpaper' || path === 'globalWallpaper' || path === 'themeWallpaper') {
             return canvas.querySelector('.y1-tp-wallpaper') || null;
+        }
+        if (path === 'desktopMask' || path === 'settingConfig.settingMask') {
+            return canvas.querySelector('.y1-tp-desktop-mask') || canvas.querySelector('.y1-tp-wallpaper') || null;
         }
         var escaped;
         try {
@@ -1036,11 +1066,16 @@
         var rh = Math.min(canvasBox.height - ry, liveBox.height);
         if (rw < 1 || rh < 1) return false;
 
-        var isFullScreen =
-            asset.path === 'desktopMask' ||
-            asset.path === 'settingConfig.settingMask' ||
+        var isWallpaperAsset =
             asset.path === 'desktopWallpaper' ||
             asset.path === 'globalWallpaper' ||
+            asset.path === 'themeWallpaper';
+        var isMaskAsset =
+            asset.path === 'desktopMask' ||
+            asset.path === 'settingConfig.settingMask';
+        var isFullScreen =
+            isMaskAsset ||
+            isWallpaperAsset ||
             (rw >= canvasBox.width * 0.85 && rh >= canvasBox.height * 0.85);
 
         var isSmall = hostW < 120;
@@ -1119,6 +1154,45 @@
         Array.prototype.forEach.call(clone.querySelectorAll('[tabindex]'), function (child) {
             child.removeAttribute('tabindex');
         });
+        if (isWallpaperAsset) {
+            /* Previewing a wallpaper asset shows ONLY the wallpaper — no overlay
+               mask, status bar, menu items, or icons covering it. */
+            Array.prototype.forEach.call(Array.prototype.slice.call(clone.children), function (child) {
+                if (!child.classList || !child.classList.contains('y1-tp-wallpaper')) {
+                    child.remove();
+                }
+            });
+            var wallClone = clone.querySelector('.y1-tp-wallpaper');
+            if (wallClone) {
+                var wallBlank =
+                    asset.placeholder ||
+                    asset.empty ||
+                    asset.missingFile ||
+                    asset.localMissing ||
+                    isPlaceholderValue(asset.value);
+                if (wallBlank) {
+                    wallClone.style.backgroundImage = '';
+                } else if (asset.url) {
+                    wallClone.style.backgroundImage = 'url("' + String(asset.url).replace(/"/g, '%22') + '")';
+                    wallClone.style.backgroundSize = 'cover';
+                    wallClone.style.backgroundPosition = 'center';
+                    wallClone.style.backgroundRepeat = 'no-repeat';
+                }
+            }
+        } else if (isMaskAsset) {
+            /* Previewing a mask asset shows the background wallpaper it sits over
+               plus the mask itself, with menu rows, icons, and status bar removed
+               so the author can clearly inspect what the mask covers and reveals. */
+            Array.prototype.forEach.call(Array.prototype.slice.call(clone.children), function (child) {
+                if (
+                    !child.classList ||
+                    (!child.classList.contains('y1-tp-wallpaper') &&
+                        !child.classList.contains('y1-tp-desktop-mask'))
+                ) {
+                    child.remove();
+                }
+            });
+        }
         clone.setAttribute('aria-hidden', 'true');
         clone.style.cssText =
             'position:absolute;left:0;top:0;width:' +
@@ -1130,15 +1204,18 @@
         node.classList.add('has-live-crop');
         node.appendChild(layer);
         var pendingUrls = [];
-        if (live.tagName === 'IMG' && (!live.complete || !live.naturalWidth) && (live.currentSrc || live.src)) {
-            pendingUrls.push(live.currentSrc || live.src);
-        }
-        Array.prototype.forEach.call(canvas.querySelectorAll('img[src]'), function (canvasImg) {
-            var src = canvasImg.currentSrc || canvasImg.getAttribute('src') || '';
-            if (src && (!canvasImg.complete || !canvasImg.naturalWidth) && pendingUrls.indexOf(src) === -1) {
-                pendingUrls.push(src);
+        if (!isWallpaperAsset) {
+            if (live.tagName === 'IMG' && (!live.complete || !live.naturalWidth) && (live.currentSrc || live.src)) {
+                pendingUrls.push(live.currentSrc || live.src);
             }
-        });
+            var imgSelector = isMaskAsset ? 'img.y1-tp-desktop-mask[src]' : 'img[src]';
+            Array.prototype.forEach.call(canvas.querySelectorAll(imgSelector), function (canvasImg) {
+                var src = canvasImg.currentSrc || canvasImg.getAttribute('src') || '';
+                if (src && (!canvasImg.complete || !canvasImg.naturalWidth) && pendingUrls.indexOf(src) === -1) {
+                    pendingUrls.push(src);
+                }
+            });
+        }
         pendingUrls.forEach(function (src) {
             if (!src || thumbAwaitedUrls[src]) return;
             thumbAwaitedUrls[src] = 1;
@@ -2315,6 +2392,7 @@
         if (el.editBack) el.editBack.disabled = !hasTheme;
         if (el.editSubmit) el.editSubmit.disabled = !hasTheme;
         if (el.save) el.save.disabled = !hasTheme || state.busy;
+        if (el.tryDevice) el.tryDevice.disabled = !hasTheme || state.busy;
         if (hasTheme) updateThemeSelectValue();
         renderAssets();
         refreshPlatformChip();
@@ -4200,12 +4278,14 @@
         });
     }
 
-    function highlightPreviewAsset(path) {
+    function highlightPreviewAsset(path, opts) {
         clearPreviewAssetLink();
         if (!path) return;
-        each(previewAssetNodes(path), function (node) {
-            node.classList.add('is-studio-linked');
-        });
+        if (!(opts && opts.skipCanvasOutline)) {
+            each(previewAssetNodes(path), function (node) {
+                node.classList.add('is-studio-linked');
+            });
+        }
         each(el.assetList ? el.assetList.querySelectorAll('[data-asset-id]') : [], function (row) {
             if (row.getAttribute('data-asset-id') === path) row.classList.add('is-preview-linked');
         });
@@ -4377,75 +4457,127 @@
         return node.tagName !== 'IMG' && !node.classList.contains('y1-tp-wallpaper');
     }
 
-    /* True when the tap sits on the flat part of a simulated screen: inside the
-       stage, below the controls, on no tagged asset and on no menu chrome. */
-    function previewBackgroundClick(event) {
+    function previewHitLabel(path) {
+        if (!path) return '';
+        if (state.assetById[path] && state.assetById[path].label) {
+            return state.assetById[path].label;
+        }
+        if (path === 'statusConfig.statusBarColor') return 'Status bar colour';
+        if (path === 'statusConfig.statusTextColor') return 'Status bar text colour';
+        return '';
+    }
+
+    /* Alpha-aware layered hit-test inside the live preview screen:
+       clicking or hovering 100% transparent pixels on an asset (icon, arrow,
+       status icon, overlay mask) falls through to whichever visible asset lies
+       behind it (e.g. mask -> wallpaper). */
+    function resolvePreviewHit(event) {
         var target = event && event.target;
-        if (!target || !target.closest || !el.preview || !el.preview.contains(target)) return false;
-        if (target.closest('[data-theme-asset-path]')) return false;
-        if (target.closest('button, a, input, select, textarea, [data-y1act], .y1-tp-status')) return false;
-        if (!target.closest('.y1-tp-canvas')) return false;
-        var api = el.preview ? el.preview._y1TpApi : null;
-        var hit = api && typeof api.maskAtPoint === 'function' ? api.maskAtPoint(event.clientX, event.clientY) : null;
-        /* Home and Settings each have a mask over the wallpaper, and that mask
-           is the layer being edited: clicking anywhere inside it focuses the
-           mask, painted or clear. The wallpaper stays one row away in the
-           related block. Other screens have no mask, so the wallpaper wins. */
-        var focusPath = hit ? hit.path : '';
-        return revealScreenAssets(focusPath);
+        if (!target || !target.closest || !el.preview || !el.preview.contains(target)) return null;
+        if (target.closest('[data-y1act], .y1-tp-control-strip, .y1-tp-wheel, .y1-tp-wheel-collapse')) return null;
+        var canvas = target.closest('.y1-tp-canvas');
+        if (!canvas) return null;
+        var api = el.preview._y1TpApi;
+        if (api && typeof api.assetAtPoint === 'function' && isFinite(event.clientX) && isFinite(event.clientY)) {
+            var hit = api.assetAtPoint(event.clientX, event.clientY);
+            if (hit && hit.path) return hit;
+        }
+        var fallbackPath = previewAssetPathFromEvent(event);
+        if (fallbackPath) {
+            return {
+                path: fallbackPath,
+                node: target.closest('[data-theme-asset-path]'),
+                inMenuRow: previewEventInMenuRow(event),
+                isScreenLayer: false
+            };
+        }
+        return null;
+    }
+
+    function activatePreviewHit(event) {
+        var hit = resolvePreviewHit(event);
+        if (!hit || !hit.path) return false;
+        var path = hit.path;
+        if (!state.assetById[path] && /^statusConfig\.[A-Za-z]+Color$/.test(path)) {
+            event.preventDefault();
+            event.stopPropagation();
+            revealStatusColors();
+            return true;
+        }
+        if (hit.isScreenLayer) {
+            if (!revealScreenAssets(path)) return false;
+            event.preventDefault();
+            event.stopPropagation();
+            return true;
+        }
+        if (!state.assetById[path]) return false;
+        event.preventDefault();
+        event.stopPropagation();
+        revealAssetInEdit(path, { related: !!hit.inMenuRow });
+        return true;
     }
 
     function setupPreviewAssetFocus() {
         if (!el.preview) return;
-        el.preview.addEventListener('pointerover', function (event) {
-            if (isCapturingThumbs) return;
-            var path = previewAssetPathFromEvent(event);
-            if (!path || !state.assetById[path]) return;
-            var node = event.target.closest('[data-theme-asset-path]');
-            if (node && !node.title) node.title = 'Click to edit this theme asset';
-            highlightPreviewAsset(path);
-        });
-        el.preview.addEventListener('pointerout', function (event) {
-            if (isCapturingThumbs) return;
-            var node = event.target && event.target.closest ? event.target.closest('[data-theme-asset-path]') : null;
-            if (!node) return;
-            var next = event.relatedTarget;
-            if (next && node.contains(next)) return;
+        var hoverRaf = 0;
+        var lastHoverEvent = null;
+        var lastHoverPath = '';
+        var lastHoverScreen = false;
+
+        function clearPreviewHover() {
+            if (hoverRaf) {
+                window.cancelAnimationFrame(hoverRaf);
+                hoverRaf = 0;
+            }
+            lastHoverEvent = null;
+            lastHoverPath = '';
+            lastHoverScreen = false;
             clearPreviewAssetLink();
+            var canvas = el.preview ? el.preview.querySelector('.y1-tp-canvas') : null;
+            if (canvas) canvas.removeAttribute('title');
+        }
+
+        el.preview.addEventListener('pointermove', function (event) {
+            if (isCapturingThumbs || event.pointerType === 'touch') return;
+            lastHoverEvent = event;
+            if (hoverRaf) return;
+            hoverRaf = window.requestAnimationFrame(function () {
+                hoverRaf = 0;
+                var ev = lastHoverEvent;
+                if (!ev || isCapturingThumbs) return;
+                var canvas = el.preview ? el.preview.querySelector('.y1-tp-canvas') : null;
+                var hit = resolvePreviewHit(ev);
+                if (!hit || !hit.path || (!state.assetById[hit.path] && !/^statusConfig\.[A-Za-z]+Color$/.test(hit.path))) {
+                    if (lastHoverPath) clearPreviewHover();
+                    return;
+                }
+                if (hit.path !== lastHoverPath || !!hit.isScreenLayer !== lastHoverScreen) {
+                    lastHoverPath = hit.path;
+                    lastHoverScreen = !!hit.isScreenLayer;
+                    if (state.assetById[hit.path]) {
+                        highlightPreviewAsset(hit.path, { skipCanvasOutline: !!hit.isScreenLayer });
+                    } else {
+                        clearPreviewAssetLink();
+                    }
+                    if (canvas) {
+                        var label = previewHitLabel(hit.path);
+                        canvas.title = label ? label + ' — click to edit' : 'Click to edit this theme asset';
+                    }
+                }
+            });
         });
+
+        el.preview.addEventListener('pointerleave', function () {
+            if (isCapturingThumbs) return;
+            clearPreviewHover();
+        });
+
         el.preview.addEventListener('click', function (event) {
-            var path = previewAssetPathFromEvent(event);
-            if (path && !state.assetById[path] && /^statusConfig\.[A-Za-z]+Color$/.test(path)) {
-                event.preventDefault();
-                event.stopPropagation();
-                revealStatusColors();
-                return;
-            }
-            if (!path || !state.assetById[path]) return;
-            event.preventDefault();
-            event.stopPropagation();
-            revealAssetInEdit(path, { related: previewEventInMenuRow(event) });
+            activatePreviewHit(event);
         });
-        /* Anything inside the stage that names no asset is background: the
-           wallpaper fill, the area under the settings mask, or empty canvas.
-           The asset handler above still wins whenever something is tagged. */
-        el.preview.addEventListener('click', function (event) {
-            if (previewAssetPathFromEvent(event)) return;
-            if (!previewBackgroundClick(event)) return;
-            event.preventDefault();
-        });
+
         el.preview.addEventListener('contextmenu', function (event) {
-            var path = previewAssetPathFromEvent(event);
-            if (path && !state.assetById[path] && /^statusConfig\.[A-Za-z]+Color$/.test(path)) {
-                event.preventDefault();
-                event.stopPropagation();
-                revealStatusColors();
-                return;
-            }
-            if (!path || !state.assetById[path]) return;
-            event.preventDefault();
-            event.stopPropagation();
-            revealAssetInEdit(path, { related: previewEventInMenuRow(event) });
+            activatePreviewHit(event);
         });
     }
 
@@ -5864,9 +5996,8 @@
         else delete info.externalDownloadUrl;
     }
 
-    async function buildThemePackage(reportProgress, folderOverride, options) {
+    async function collectThemeDeviceFiles(reportProgress, folderOverride) {
         if (!state.config) throw new Error('Open a theme first.');
-        if (!window.JSZip) throw new Error('The ZIP builder did not load.');
         if (!window.ThemePackaging) throw new Error('The theme packager did not load.');
         var report = typeof reportProgress === 'function' ? reportProgress : null;
         function reportPercent(percent, label) {
@@ -5877,10 +6008,6 @@
         /* Updates pack into the listing's own folder so the gallery reads them
            as that listing's update; new themes use their own title. */
         var stem = safeStem(folderOverride || title);
-        /* A saved theme is installed by pointing the player at the folder, so
-           its ZIP opens straight onto config.json and the art. The upload path
-           keeps the stem folder because the ingest expects a theme package. */
-        var prefix = options && options.flat ? '' : stem + '/';
         var config = cloneJson(state.config);
         syncConfigMetadata(config, title, author);
         reportPercent(2, 'Preparing theme…');
@@ -5940,14 +6067,12 @@
             }
         }
 
-        reportPercent(35, 'Compressing theme…');
         var manifest = window.ThemePackaging.buildPackManifest(entries, '', '', config);
         var outputConfig =
             manifest.mode === 'flat'
                 ? window.ThemePackaging.rewriteConfigForDeviceFlatPack(config, '', manifest.logicalToDevice)
                 : config;
-        var zip = new window.JSZip();
-        zip.file(prefix + 'config.json', JSON.stringify(outputConfig, null, 2));
+        var deviceFiles = [];
         var packagedDeviceBlobs = Object.create(null);
         manifest.items.forEach(function (item) {
             if (String(item.devicePath || '').toLowerCase() === 'config.json') return;
@@ -5956,8 +6081,40 @@
                 blobs[String(item.resolved || '').toLowerCase()] ||
                 blobs[String(item.download_url || '').toLowerCase()];
             if (!blob) throw new Error('Missing file for ' + item.logicalPath + '.');
-            zip.file(prefix + item.devicePath, blob);
+            deviceFiles.push({ devicePath: item.devicePath, blob: blob });
             packagedDeviceBlobs[String(item.devicePath || '').replace(/\\/g, '/').replace(/^\.\/+/, '').toLowerCase()] = blob;
+        });
+
+        return {
+            title: title,
+            stem: stem,
+            outputConfig: outputConfig,
+            deviceFiles: deviceFiles,
+            blobs: blobs,
+            packagedDeviceBlobs: packagedDeviceBlobs
+        };
+    }
+
+    async function buildThemePackage(reportProgress, folderOverride, options) {
+        if (!window.JSZip) throw new Error('The ZIP builder did not load.');
+        var report = typeof reportProgress === 'function' ? reportProgress : null;
+        function reportPercent(percent, label) {
+            if (report) report(percent, label);
+        }
+        var collected = await collectThemeDeviceFiles(reportProgress, folderOverride);
+        var stem = collected.stem;
+        var outputConfig = collected.outputConfig;
+        var blobs = collected.blobs;
+        var packagedDeviceBlobs = collected.packagedDeviceBlobs;
+        /* A saved theme is installed by pointing the player at the folder, so
+           its ZIP opens straight onto config.json and the art. The upload path
+           keeps the stem folder because the ingest expects a theme package. */
+        var prefix = options && options.flat ? '' : stem + '/';
+        reportPercent(35, 'Compressing theme…');
+        var zip = new window.JSZip();
+        zip.file(prefix + 'config.json', JSON.stringify(outputConfig, null, 2));
+        collected.deviceFiles.forEach(function (item) {
+            zip.file(prefix + item.devicePath, item.blob);
         });
         /* Gallery uploads (never player Save ZIPs) include a browser-rendered
            480x360 Home screen capture so the theme displays accurately right
@@ -6085,10 +6242,255 @@
             var saveText = el.save.querySelector('span');
             if (saveText) saveText.textContent = on && action === 'save' ? 'Building ZIP…' : saveTarget.label;
         }
+        if (el.tryDevice) {
+            el.tryDevice.disabled = !!on || !state.meta;
+        }
         if (el.submitBtn) {
             el.submitBtn.disabled = !!on || !state.meta;
             var submitText = el.submitBtn.querySelector('span');
             if (submitText) submitText.textContent = on && action === 'submit' ? 'Sending theme…' : submitActionLabel();
+        }
+        [el.trySelectFolder, el.tryCopyAgain, el.tryChangeFolder, el.trySaveFallback].forEach(function (btn) {
+            if (btn) btn.disabled = !!on;
+        });
+    }
+
+    /* —— Try on Device (USB Storage Mode) —— */
+
+    function supportsTryOnDevicePicker() {
+        return typeof window.showDirectoryPicker === 'function' && window.isSecureContext !== false;
+    }
+
+    function currentTryThemeStem() {
+        var title = (el.submitTitle && el.submitTitle.value.trim()) || (state.meta && state.meta.name) || 'StudioTheme';
+        return safeStem(title);
+    }
+
+    function setTryDeviceProgress(percent, label) {
+        if (!el.tryDeviceProgress) return;
+        var val = Math.max(0, Math.min(100, Math.round(Number(percent) || 0)));
+        el.tryDeviceProgress.hidden = false;
+        if (el.tryDeviceProgressLabel && label) el.tryDeviceProgressLabel.textContent = label;
+        if (el.tryDeviceProgressValue) el.tryDeviceProgressValue.textContent = val + '%';
+        if (el.tryDeviceProgressBar) {
+            el.tryDeviceProgressBar.value = val;
+            el.tryDeviceProgressBar.textContent = val + '%';
+        }
+    }
+
+    function setTryDeviceStatus(message, ok) {
+        if (!el.tryDeviceStatus) return;
+        if (!message) {
+            el.tryDeviceStatus.hidden = true;
+            el.tryDeviceStatus.textContent = '';
+            el.tryDeviceStatus.className = 'studio-try-device-status';
+            return;
+        }
+        el.tryDeviceStatus.hidden = false;
+        el.tryDeviceStatus.textContent = message;
+        el.tryDeviceStatus.className = 'studio-try-device-status' + (ok ? ' is-ok' : ' is-error');
+    }
+
+    function syncTryDeviceModalState() {
+        var supported = supportsTryOnDevicePicker();
+        var connected = !!(supported && state.tryDeviceHandle);
+        var repeated = state.tryOnDeviceCount >= 1;
+        if (el.tryDeviceFolderName) {
+            el.tryDeviceFolderName.textContent = currentTryThemeStem() + '/';
+        }
+        if (el.tryDeviceReminder) {
+            el.tryDeviceReminder.hidden = !repeated;
+        }
+        if (el.tryDeviceSteps) {
+            el.tryDeviceSteps.hidden = !supported;
+        }
+        if (el.tryDeviceUnsupported) {
+            el.tryDeviceUnsupported.hidden = supported;
+        }
+        if (el.tryDeviceConnected) {
+            el.tryDeviceConnected.hidden = !connected;
+        }
+        if (el.tryDeviceConnectedName && connected) {
+            el.tryDeviceConnectedName.textContent = state.tryDeviceHandle.name || 'Themes';
+        }
+        if (el.trySelectFolder) {
+            el.trySelectFolder.hidden = !supported || connected;
+        }
+        if (el.tryCopyAgain) {
+            el.tryCopyAgain.hidden = !connected;
+        }
+        if (el.tryChangeFolder) {
+            el.tryChangeFolder.hidden = !connected;
+        }
+        if (el.trySaveFallback) {
+            el.trySaveFallback.hidden = supported;
+        }
+    }
+
+    function openTryOnDeviceModal() {
+        if (!state.config) {
+            toast('Open a theme first.');
+            return;
+        }
+        if (!el.tryDeviceModal) return;
+        if (el.tryDeviceProgress) el.tryDeviceProgress.hidden = true;
+        setTryDeviceStatus('', true);
+        syncTryDeviceModalState();
+        el.tryDeviceModal.hidden = false;
+        var focusTarget =
+            (el.trySelectFolder && !el.trySelectFolder.hidden && el.trySelectFolder) ||
+            (el.tryCopyAgain && !el.tryCopyAgain.hidden && el.tryCopyAgain) ||
+            (el.trySaveFallback && !el.trySaveFallback.hidden && el.trySaveFallback) ||
+            el.tryDeviceClose;
+        if (focusTarget) {
+            try {
+                focusTarget.focus({ preventScroll: true });
+            } catch (e) {}
+        }
+    }
+
+    function closeTryOnDeviceModal() {
+        if (state.busy || !el.tryDeviceModal || el.tryDeviceModal.hidden) return;
+        el.tryDeviceModal.hidden = true;
+    }
+
+    async function resolvePlayerThemesDir(pickedHandle) {
+        if (!pickedHandle) return null;
+        var pickedName = String(pickedHandle.name || '').trim().toLowerCase();
+        if (pickedName !== 'themes') {
+            var candidates = ['Themes', 'themes', 'THEMES'];
+            for (var i = 0; i < candidates.length; i += 1) {
+                try {
+                    var child = await pickedHandle.getDirectoryHandle(candidates[i], { create: false });
+                    if (child) return child;
+                } catch (_missing) {}
+            }
+        }
+        return pickedHandle;
+    }
+
+    async function writeBlobToRelativePath(rootDir, relativePath, blob) {
+        var parts = String(relativePath || '')
+            .replace(/\\/g, '/')
+            .replace(/^\/+/, '')
+            .split('/')
+            .filter(Boolean);
+        if (!parts.length) return;
+        var dir = rootDir;
+        for (var i = 0; i < parts.length - 1; i += 1) {
+            dir = await dir.getDirectoryHandle(parts[i], { create: true });
+        }
+        var fileHandle = await dir.getFileHandle(parts[parts.length - 1], { create: true });
+        var writable = await fileHandle.createWritable();
+        try {
+            await writable.write(blob);
+            await writable.close();
+        } catch (err) {
+            try {
+                await writable.abort();
+            } catch (_e) {}
+            throw err;
+        }
+    }
+
+    async function copyThemeToDeviceHandle(baseHandle) {
+        if (!baseHandle || state.busy) return;
+        if (!state.config) {
+            toast('Open a theme first.');
+            return;
+        }
+        setBusy(true, 'try-device');
+        setTryDeviceStatus('', true);
+        setTryDeviceProgress(2, 'Checking folder permissions…');
+        try {
+            if (typeof baseHandle.requestPermission === 'function') {
+                var perm = await baseHandle.requestPermission({ mode: 'readwrite' });
+                if (perm !== 'granted') {
+                    throw new Error('Write permission to the Themes folder was not granted.');
+                }
+            }
+            var themesDir = await resolvePlayerThemesDir(baseHandle);
+            state.tryDeviceHandle = themesDir;
+            syncTryDeviceModalState();
+
+            var collected = await collectThemeDeviceFiles(function (pct, label) {
+                setTryDeviceProgress(Math.min(40, pct), label);
+            });
+            var folderName = collected.stem;
+            var themeDir = await themesDir.getDirectoryHandle(folderName, { create: true });
+            var totalWrites = collected.deviceFiles.length + 1;
+            setTryDeviceProgress(42, 'Writing config.json (1/' + totalWrites + ')…');
+            await writeBlobToRelativePath(
+                themeDir,
+                'config.json',
+                new Blob([JSON.stringify(collected.outputConfig, null, 2)], { type: 'application/json' })
+            );
+            for (var i = 0; i < collected.deviceFiles.length; i += 1) {
+                var item = collected.deviceFiles[i];
+                var step = i + 2;
+                setTryDeviceProgress(
+                    42 + (step / totalWrites) * 56,
+                    'Copying ' + (fileName(item.devicePath) || 'asset') + ' (' + step + '/' + totalWrites + ')…'
+                );
+                await writeBlobToRelativePath(themeDir, item.devicePath, item.blob);
+            }
+            setTryDeviceProgress(100, 'Copied to device');
+
+            state.tryOnDeviceCount += 1;
+            try {
+                window.sessionStorage.setItem('y1-studio-try-device-count', String(state.tryOnDeviceCount));
+            } catch (_e) {}
+            syncTryDeviceModalState();
+
+            var baseMsg =
+                'Copied "' +
+                collected.title +
+                '" into ' +
+                (themesDir.name || 'Themes') +
+                '/' +
+                folderName +
+                '/. Safely eject USB storage on your computer to test it on your player.';
+            if (state.tryOnDeviceCount > 1) {
+                baseMsg +=
+                    ' Since you have tested more than once in this session, remember to restart your device and select another theme (then switch back) so your updated files load fresh.';
+            }
+            setTryDeviceStatus(baseMsg, true);
+            toast('Copied "' + collected.title + '" to ' + (themesDir.name || 'Themes') + '/' + folderName + '/');
+        } catch (err) {
+            if (err && err.name === 'AbortError') {
+                if (el.tryDeviceProgress) el.tryDeviceProgress.hidden = true;
+                return;
+            }
+            setTryDeviceStatus(
+                (err && err.message) || 'Could not copy theme files into that folder. Make sure USB Storage Mode is enabled and try again.',
+                false
+            );
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    async function pickThemesFolderAndTry() {
+        if (state.busy) return;
+        if (!supportsTryOnDevicePicker()) {
+            syncTryDeviceModalState();
+            return;
+        }
+        var handle = null;
+        try {
+            try {
+                handle = await window.showDirectoryPicker({ id: 'y1-themes-folder', mode: 'readwrite' });
+            } catch (optErr) {
+                if (optErr && optErr.name === 'AbortError') return;
+                handle = await window.showDirectoryPicker();
+            }
+        } catch (err) {
+            if (err && err.name === 'AbortError') return;
+            setTryDeviceStatus((err && err.message) || 'Could not open the folder chooser.', false);
+            return;
+        }
+        if (handle) {
+            await copyThemeToDeviceHandle(handle);
         }
     }
 
@@ -7280,6 +7682,28 @@
         });
 
         if (el.save) el.save.addEventListener('click', saveTheme);
+        if (el.tryDevice) el.tryDevice.addEventListener('click', openTryOnDeviceModal);
+        if (el.tryDeviceX) el.tryDeviceX.addEventListener('click', closeTryOnDeviceModal);
+        if (el.tryDeviceClose) el.tryDeviceClose.addEventListener('click', closeTryOnDeviceModal);
+        if (el.tryDeviceModal) {
+            el.tryDeviceModal.addEventListener('click', function (event) {
+                if (event.target === el.tryDeviceModal) closeTryOnDeviceModal();
+            });
+        }
+        if (el.trySelectFolder) el.trySelectFolder.addEventListener('click', pickThemesFolderAndTry);
+        if (el.tryChangeFolder) el.tryChangeFolder.addEventListener('click', pickThemesFolderAndTry);
+        if (el.tryCopyAgain) {
+            el.tryCopyAgain.addEventListener('click', function () {
+                if (state.tryDeviceHandle) copyThemeToDeviceHandle(state.tryDeviceHandle);
+                else pickThemesFolderAndTry();
+            });
+        }
+        if (el.trySaveFallback) {
+            el.trySaveFallback.addEventListener('click', function () {
+                closeTryOnDeviceModal();
+                saveTheme();
+            });
+        }
         each(document.querySelectorAll('[data-studio-save]'), function (button) {
             button.addEventListener('click', saveTheme);
         });
@@ -7324,7 +7748,10 @@
         });
         window.addEventListener('drop', onDrop);
         window.addEventListener('keydown', function (event) {
-            if (event.key === 'Escape') hideDrop();
+            if (event.key === 'Escape') {
+                hideDrop();
+                closeTryOnDeviceModal();
+            }
         });
         /* A debounced write can still be pending when the tab goes away; closing
            the lid mid-edit should not cost the last asset change. */

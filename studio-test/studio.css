@@ -1785,7 +1785,7 @@ body.studio-app {
     top: 0;
     z-index: 40;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-columns: minmax(0, auto) auto minmax(0, 1fr);
     align-items: center;
     gap: 12px;
     padding: 10px clamp(14px, 2.4vw, 28px);
@@ -1793,6 +1793,12 @@ body.studio-app {
     background: color-mix(in oklab, var(--site-bg) 92%, transparent);
     -webkit-backdrop-filter: blur(18px);
     backdrop-filter: blur(18px);
+}
+
+@media (max-width: 1360px) and (min-width: 1041px) {
+    .studio-app .studio-commandbar .studio-command-context {
+        display: none;
+    }
 }
 
 .studio-command-copy {
@@ -1879,6 +1885,7 @@ body.studio-app {
 }
 
 .studio-btn--save,
+.studio-btn--try-device,
 .studio-btn--open-zip {
     min-height: 38px;
     white-space: nowrap;
@@ -2366,6 +2373,10 @@ body.studio-app {
     box-shadow: inset 3px 0 0 var(--site-accent);
 }
 
+.studio-preview .y1-tp-canvas {
+    cursor: pointer;
+}
+
 .studio-preview [data-theme-asset-path] {
     cursor: pointer;
     transition: box-shadow 0.14s ease, filter 0.14s ease;
@@ -2379,7 +2390,11 @@ body.studio-app {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .studio-preview [data-theme-asset-path] { transition: none; }
+    .studio-preview .y1-tp-canvas {
+    cursor: pointer;
+}
+
+.studio-preview [data-theme-asset-path] { transition: none; }
 }
 
 .studio-asset-thumb {
@@ -2751,6 +2766,7 @@ body.studio-app {
     .studio-command-actions .studio-btn { flex: 1; justify-content: center; }
     .studio-command-actions .studio-unsaved { flex: 1 0 100%; justify-content: flex-end; }
     .studio-btn--save span,
+    .studio-btn--try-device span,
     .studio-btn--open-zip span { display: inline; }
     .studio-stage { padding: 14px 12px 10px; }
     .studio-stage-head { gap: 8px; }
@@ -2774,6 +2790,7 @@ body.studio-app {
     .studio-commandbar .studio-mode span { font-size: 0.7rem; }
     .studio-commandbar .studio-mode { padding: 7px 6px; }
     .studio-btn--save span,
+    .studio-btn--try-device span,
     .studio-btn--open-zip span { max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
     .studio-app .studio-preview .y1-tp-device--full { width: min(100%, 250px); }
     .studio-app .studio-preview .y1-tp-device--full .y1-tp-clickwheel { width: 86px; height: 86px; }
@@ -2870,6 +2887,7 @@ body.studio-app {
         flex: 0 0 auto;
         grid-row: auto;
         justify-self: auto;
+        gap: 5px;
     }
 
     body.studio-app .studio-command-actions .studio-btn {
@@ -2877,15 +2895,17 @@ body.studio-app {
     }
 
     body.studio-app .studio-btn--save,
+    body.studio-app .studio-btn--try-device,
     body.studio-app .studio-btn--open-zip,
     body.studio-app .studio-btn--help {
-        width: 40px;
+        width: 34px;
         min-height: 36px;
         padding: 0;
         justify-content: center;
     }
 
     body.studio-app .studio-btn--save span,
+    body.studio-app .studio-btn--try-device span,
     body.studio-app .studio-btn--open-zip span {
         display: none;
     }
@@ -2994,10 +3014,16 @@ body.studio-app {
         font-size: 0.64rem;
     }
 
+    body.studio-app .studio-command-actions {
+        gap: 4px;
+    }
+
     body.studio-app .studio-btn--save,
+    body.studio-app .studio-btn--try-device,
     body.studio-app .studio-btn--open-zip,
+    body.studio-app .studio-btn--themes,
     body.studio-app .studio-btn--help {
-        width: 34px;
+        width: 30px;
         min-height: 32px;
     }
 
@@ -3037,9 +3063,11 @@ body.studio-app {
     }
 
     body.studio-app .studio-btn--save,
+    body.studio-app .studio-btn--try-device,
     body.studio-app .studio-btn--open-zip,
+    body.studio-app .studio-btn--themes,
     body.studio-app .studio-btn--help {
-        width: 30px;
+        width: 28px;
         min-height: 30px;
     }
 
@@ -3310,7 +3338,7 @@ body.studio-app {
     /* Swap themes without leaving the player. */
     body.studio-app .studio-btn--themes {
         display: inline-flex;
-        width: 40px;
+        width: 34px;
         min-height: 36px;
         padding: 0;
         justify-content: center;
@@ -3775,4 +3803,246 @@ body.studio-app:not(.y1-dock-closed) {
    let the modal slot render on top of the workbench. */
 body.studio-app.y1-donate-panel-open #support-toolbar-slot {
     display: block !important;
+}
+
+/* —— Try on Device (USB Storage Mode) modal & button —— */
+.studio-btn--try-device {
+    border-color: var(--studio-accent-line);
+    background: color-mix(in oklab, var(--site-accent) 12%, transparent);
+    color: var(--site-text);
+}
+
+.studio-btn--try-device:hover {
+    border-color: var(--site-accent);
+    background: color-mix(in oklab, var(--site-accent) 20%, transparent);
+}
+
+.studio-try-device-card {
+    width: min(100%, 540px);
+    max-height: min(90dvh, 720px);
+    overflow-y: auto;
+    display: grid;
+    gap: 12px;
+}
+
+.studio-try-device-card h2 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.studio-try-device-lead {
+    margin: 0;
+    color: var(--site-muted);
+    font-size: 0.86rem;
+    line-height: 1.5;
+}
+
+.studio-try-device-reminder {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr);
+    gap: 10px;
+    align-items: start;
+    padding: 12px 13px;
+    border-radius: 12px;
+    border: 1px solid color-mix(in oklab, var(--lumen-amber, #f5a623) 55%, transparent);
+    background: color-mix(in oklab, var(--lumen-amber, #f5a623) 14%, transparent);
+    color: var(--site-text);
+    font-size: 0.82rem;
+    line-height: 1.48;
+}
+
+.studio-try-device-reminder i {
+    margin-top: 2px;
+    color: var(--lumen-amber, #f5a623);
+    font-size: 1rem;
+    text-align: center;
+}
+
+.studio-try-device-reminder strong {
+    display: block;
+    margin-bottom: 2px;
+}
+
+.studio-try-device-reminder p {
+    margin: 0;
+    color: var(--site-text);
+}
+
+.studio-try-device-steps {
+    list-style: none;
+    margin: 2px 0 0;
+    padding: 0;
+    display: grid;
+    gap: 10px;
+}
+
+.studio-try-device-steps li {
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr);
+    gap: 11px;
+    align-items: start;
+    padding: 10px 12px;
+    border-radius: 11px;
+    border: 1px solid var(--studio-line);
+    background: color-mix(in oklab, var(--site-text) 4%, transparent);
+}
+
+.studio-try-step-num {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    background: var(--studio-accent-soft);
+    border: 1px solid var(--studio-accent-line);
+    color: var(--site-accent);
+    font: 700 0.78rem var(--site-font-mono);
+}
+
+.studio-try-device-steps strong {
+    display: block;
+    margin-bottom: 2px;
+    font-size: 0.86rem;
+}
+
+.studio-try-device-steps p {
+    margin: 0;
+    color: var(--site-muted);
+    font-size: 0.8rem;
+    line-height: 1.45;
+}
+
+.studio-try-device-unsupported {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr);
+    gap: 10px;
+    align-items: start;
+    padding: 12px 13px;
+    border-radius: 11px;
+    border: 1px solid var(--studio-line-strong);
+    background: color-mix(in oklab, var(--site-text) 5%, transparent);
+    font-size: 0.82rem;
+    line-height: 1.48;
+}
+
+.studio-try-device-unsupported i {
+    margin-top: 2px;
+    color: var(--site-accent);
+    text-align: center;
+}
+
+.studio-try-device-unsupported strong {
+    display: block;
+    margin-bottom: 3px;
+}
+
+.studio-try-device-unsupported p {
+    margin: 0;
+    color: var(--site-muted);
+}
+
+.studio-try-device-connected {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--studio-accent-line);
+    background: var(--studio-accent-soft);
+    font-size: 0.8rem;
+    color: var(--site-text);
+}
+
+.studio-try-device-connected i {
+    color: var(--site-accent);
+}
+
+.studio-try-device-progress {
+    display: grid;
+    gap: 6px;
+}
+
+.studio-try-device-progress progress {
+    width: 100%;
+    height: 8px;
+    border: 0;
+    border-radius: 999px;
+    overflow: hidden;
+    background: var(--studio-line);
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.studio-try-device-progress progress::-webkit-progress-bar {
+    border-radius: 999px;
+    background: var(--studio-line);
+}
+
+.studio-try-device-progress progress::-webkit-progress-value {
+    border-radius: 999px;
+    background: var(--site-accent);
+    transition: width 140ms ease;
+}
+
+.studio-try-device-progress progress::-moz-progress-bar {
+    border-radius: 999px;
+    background: var(--site-accent);
+}
+
+.studio-try-device-status {
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    line-height: 1.48;
+    border: 1px solid var(--studio-line);
+    background: color-mix(in oklab, var(--site-text) 4%, transparent);
+}
+
+.studio-try-device-status.is-ok {
+    border-color: color-mix(in oklab, var(--studio-ok, #1f7a4d) 55%, transparent);
+    background: color-mix(in oklab, var(--studio-ok, #1f7a4d) 14%, transparent);
+    color: var(--site-text);
+}
+
+.studio-try-device-status.is-error {
+    border-color: color-mix(in oklab, var(--studio-danger, #b3261e) 55%, transparent);
+    background: color-mix(in oklab, var(--studio-danger, #b3261e) 14%, transparent);
+    color: var(--site-text);
+}
+
+.studio-try-device-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.studio-try-device-actions .studio-btn {
+    min-height: 40px;
+}
+
+@media (max-width: 1040px) and (min-width: 761px) {
+    .studio-command-actions {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 560px) {
+    .studio-try-device-card {
+        padding: 16px 14px;
+        max-height: 92dvh;
+    }
+
+    .studio-try-device-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .studio-try-device-actions .studio-btn {
+        width: 100%;
+        justify-content: center;
+    }
 }

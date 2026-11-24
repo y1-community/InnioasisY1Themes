@@ -1172,6 +1172,7 @@
         wrap.style.cssText =
             'display:flex;align-items:center;gap:4px;font-size:16px;color:#ffffff;';
         var box = document.createElement('div');
+        box.setAttribute('data-theme-asset-path', 'statusConfig.battery.3');
         var borderCol = textColor && String(textColor).charAt(0) === '#' ? textColor : '#ffffff';
         box.style.cssText =
             'width:22px;height:11px;border:1px solid ' +
@@ -1925,44 +1926,271 @@
                     return previewText(VIEW_TITLES[sim.themeViewId] || 'Home');
                 }
 
-                var maskProbe = null;
+                var alphaProbeCanvas = null;
+                var alphaCache = Object.create(null);
+                var ALPHA_CACHE_MAX_PIXELS = 1000000;
+
+                function parseObjectPosRatio(token) {
+                    var s = String(token || '').trim().toLowerCase();
+                    if (s === 'left' || s === 'top') return 0;
+                    if (s === 'right' || s === 'bottom') return 1;
+                    if (s === 'center') return 0.5;
+                    var pct = /^(-?\d+(?:\.\d+)?)%$/.exec(s);
+                    if (pct) return Math.max(0, Math.min(1, parseFloat(pct[1]) / 100));
+                    return 0.5;
+                }
+
+                function getCachedAlphaGrid(img) {
+                    var nw = img.naturalWidth | 0;
+                    var nh = img.naturalHeight | 0;
+                    if (nw <= 0 || nh <= 0 || nw * nh > ALPHA_CACHE_MAX_PIXELS) return null;
+                    var src = img.currentSrc || img.getAttribute('src') || '';
+                    if (!src) return null;
+                    var key = src + '|' + nw + 'x' + nh;
+                    if (Object.prototype.hasOwnProperty.call(alphaCache, key)) {
+                        return alphaCache[key];
+                    }
+                    try {
+                        var c = document.createElement('canvas');
+                        c.width = nw;
+                        c.height = nh;
+                        var ctx = c.getContext('2d', { willReadFrequently: true });
+                        if (!ctx) return null;
+                        ctx.clearRect(0, 0, nw, nh);
+                        ctx.drawImage(img, 0, 0, nw, nh);
+                        var rgba = ctx.getImageData(0, 0, nw, nh).data;
+                        var len = nw * nh;
+                        var alpha = new Uint8Array(len);
+                        for (var i = 0; i < len; i++) {
+                            alpha[i] = rgba[i * 4 + 3];
+                        }
+                        var entry = { w: nw, h: nh, alpha: alpha, tainted: false };
+                        alphaCache[key] = entry;
+                        return entry;
+                    } catch (eTaint) {
+                        var taintedEntry = { w: nw, h: nh, alpha: null, tainted: true };
+                        alphaCache[key] = taintedEntry;
+                        return taintedEntry;
+                    }
+                }
+
+                /* Sample the exact rendered source pixel alpha under (clientX, clientY)
+                   for any <img> in the preview, respecting CSS object-fit & object-position.
+                   Returns 0 for 100% transparent or out-of-bounds pixels, > 0 for visible
+                   pixels, or null if cross-origin canvas read is blocked. */
+                function imageAlphaAtPoint(img, clientX, clientY) {
+                    if (!img || img.tagName !== 'IMG') return null;
+                    if (
+                        img.style &&
+                        (img.style.display === 'none' ||
+                            img.style.visibility === 'hidden' ||
+                            img.style.opacity === '0')
+                    ) {
+                        return 0;
+                    }
+                    if (!img.complete || !img.naturalWidth || !img.naturalHeight) return 0;
+                    var rect = img.getBoundingClientRect();
+                    if (!rect.width || !rect.height) return 0;
+                    if (
+                        clientX < rect.left ||
+                        clientX > rect.right ||
+                        clientY < rect.top ||
+                        clientY > rect.bottom
+                    ) {
+                        return 0;
+                    }
+                    var nw = img.naturalWidth;
+                    var nh = img.naturalHeight;
+                    var cs = global.getComputedStyle ? global.getComputedStyle(img) : null;
+                    var fit = String((cs && cs.objectFit) || img.style.objectFit || 'fill').toLowerCase();
+                    var posParts = String((cs && cs.objectPosition) || img.style.objectPosition || '50% 50%')
+                        .trim()
+                        .split(/\s+/);
+                    var posX = parseObjectPosRatio(posParts[0]);
+                    var posY = parseObjectPosRatio(posParts[1] != null ? posParts[1] : posParts[0]);
+
+                    var sx;
+                    var sy;
+                    if (fit === 'cover') {
+                        var covScale = Math.max(rect.width / nw, rect.height / nh);
+                        var covOx = (rect.width - nw * covScale) * posX;
+                        var covOy = (rect.height - nh * covScale) * posY;
+                        sx = (clientX - rect.left - covOx) / covScale;
+                        sy = (clientY - rect.top - covOy) / covScale;
+                    } else if (fit === 'contain' || fit === 'scale-down') {
+                        var conScale = Math.min(rect.width / nw, rect.height / nh);
+                        if (fit === 'scale-down') conScale = Math.min(1, conScale);
+                        var conOx = (rect.width - nw * conScale) * posX;
+                        var conOy = (rect.height - nh * conScale) * posY;
+                        sx = (clientX - rect.left - conOx) / conScale;
+                        sy = (clientY - rect.top - conOy) / conScale;
+                    } else if (fit === 'none') {
+                        var noneOx = (rect.width - nw) * posX;
+                        var noneOy = (rect.height - nh) * posY;
+                        sx = clientX - rect.left - noneOx;
+                        sy = clientY - rect.top - noneOy;
+                    } else {
+                        sx = ((clientX - rect.left) / rect.width) * nw;
+                        sy = ((clientY - rect.top) / rect.height) * nh;
+                    }
+
+                    if (!isFinite(sx) || !isFinite(sy) || sx < 0 || sy < 0 || sx > nw || sy > nh) {
+                        return 0;
+                    }
+                    var ix = Math.max(0, Math.min(nw - 1, Math.floor(sx)));
+                    var iy = Math.max(0, Math.min(nh - 1, Math.floor(sy)));
+
+                    var cached = getCachedAlphaGrid(img);
+                    if (cached) {
+                        if (cached.tainted) return null;
+                        return cached.alpha[iy * cached.w + ix] / 255;
+                    }
+
+                    if (!alphaProbeCanvas) alphaProbeCanvas = document.createElement('canvas');
+                    alphaProbeCanvas.width = 1;
+                    alphaProbeCanvas.height = 1;
+                    var ctx = alphaProbeCanvas.getContext('2d', { willReadFrequently: true });
+                    if (!ctx) return null;
+                    try {
+                        ctx.clearRect(0, 0, 1, 1);
+                        ctx.drawImage(img, ix, iy, 1, 1, 0, 0, 1, 1);
+                        var data = ctx.getImageData(0, 0, 1, 1).data;
+                        return data[3] / 255;
+                    } catch (eTaint) {
+                        return null;
+                    }
+                }
 
                 /* Which of the two background layers is under the pointer? The
-                   mask is only reachable through its pixels: where it is clear,
-                   the wallpaper is what the user sees and clicks; where it is
-                   painted, the mask is. */
+                   mask is only reachable through its visible (non-transparent)
+                   pixels: where alpha === 0, the wallpaper shows through and
+                   wins the click. */
                 function maskAtPoint(clientX, clientY) {
                     var path = maskAssetPathForView(sim.themeViewId);
                     if (!path) return null;
                     var node = canvas.querySelector('.y1-tp-desktop-mask');
                     if (!node || !node.complete || !node.naturalWidth || !node.naturalHeight) return null;
-                    var rect = node.getBoundingClientRect();
-                    if (!rect.width || !rect.height) return null;
-                    if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) {
+                    var alpha = imageAlphaAtPoint(node, clientX, clientY);
+                    if (alpha === null) return { path: path, alpha: null };
+                    return { path: path, alpha: alpha };
+                }
+
+                /* Layered, alpha-aware hit-testing for Theme Studio:
+                   walk every asset under (clientX, clientY) from front to back.
+                   Clicking a 100% transparent pixel (alpha === 0) passes right
+                   through to the visible asset behind it (e.g. icon corner ->
+                   mask -> wallpaper, or transparent mask area -> wallpaper). */
+                function assetAtPoint(clientX, clientY) {
+                    var cRect = canvas.getBoundingClientRect();
+                    if (!cRect.width || !cRect.height) return null;
+                    if (
+                        clientX < cRect.left ||
+                        clientX > cRect.right ||
+                        clientY < cRect.top ||
+                        clientY > cRect.bottom
+                    ) {
                         return null;
                     }
-                    var scale = Math.max(rect.width / node.naturalWidth, rect.height / node.naturalHeight);
-                    var sx = (clientX - rect.left - (rect.width - node.naturalWidth * scale) / 2) / scale;
-                    var sy = (clientY - rect.top - (rect.height - node.naturalHeight * scale) / 2) / scale;
-                    if (sx < 0 || sy < 0 || sx >= node.naturalWidth || sy >= node.naturalHeight) return null;
-                    if (!maskProbe) maskProbe = document.createElement('canvas');
-                    maskProbe.width = 1;
-                    maskProbe.height = 1;
-                    var ctx = maskProbe.getContext('2d', { willReadFrequently: true });
-                    if (!ctx) return null;
-                    /* Two CSS pixels of source, averaged: a single pixel can
-                       catch the antialiased edge of a hard mask. */
-                    var span = Math.max(1, 2 / scale);
-                    var sw = Math.min(span, node.naturalWidth - sx);
-                    var sh = Math.min(span, node.naturalHeight - sy);
-                    try {
-                        ctx.clearRect(0, 0, 1, 1);
-                        ctx.drawImage(node, sx, sy, sw, sh, 0, 0, 1, 1);
-                        var data = ctx.getImageData(0, 0, 1, 1).data;
-                        return { path: path, alpha: data[3] / 255 };
-                    } catch (eTaint) {
-                        return null;
+
+                    var stack =
+                        typeof document.elementsFromPoint === 'function'
+                            ? document.elementsFromPoint(clientX, clientY)
+                            : [];
+                    var seen = [];
+                    var candidates = [];
+
+                    for (var i = 0; i < stack.length; i++) {
+                        var hitEl = stack[i];
+                        if (!hitEl || !canvas.contains(hitEl)) continue;
+                        var tagged =
+                            hitEl.hasAttribute && hitEl.hasAttribute('data-theme-asset-path')
+                                ? hitEl
+                                : hitEl.closest
+                                  ? hitEl.closest('[data-theme-asset-path]')
+                                  : null;
+                        if (!tagged || !canvas.contains(tagged)) continue;
+                        if (seen.indexOf(tagged) !== -1) continue;
+                        seen.push(tagged);
+                        if (
+                            tagged.classList &&
+                            (tagged.classList.contains('y1-tp-desktop-mask') ||
+                                tagged.classList.contains('y1-tp-wallpaper'))
+                        ) {
+                            continue;
+                        }
+                        candidates.push(tagged);
                     }
+
+                    for (var ci = 0; ci < candidates.length; ci++) {
+                        var node = candidates[ci];
+                        var path = node.getAttribute('data-theme-asset-path') || '';
+                        if (!path) continue;
+                        if (
+                            node.style &&
+                            (node.style.display === 'none' ||
+                                node.style.visibility === 'hidden' ||
+                                node.style.opacity === '0')
+                        ) {
+                            continue;
+                        }
+
+                        if (node.tagName === 'IMG') {
+                            var alpha = imageAlphaAtPoint(node, clientX, clientY);
+                            if (alpha === 0) continue;
+                            return {
+                                path: path,
+                                node: node,
+                                inMenuRow: !!node.closest('.y1-tp-row'),
+                                isScreenLayer: false,
+                                alpha: alpha == null ? 1 : alpha
+                            };
+                        }
+
+                        if (node.classList && node.classList.contains('y1-tp-status')) {
+                            /* Empty status bar space (away from the title, battery
+                               percentage, and status icons) always passes through to
+                               the screen's mask / wallpaper alpha hit-test below. */
+                            continue;
+                        }
+
+                        var inMenu =
+                            !!node.closest('.y1-tp-row') ||
+                            (node.tagName !== 'IMG' &&
+                                !node.classList.contains('y1-tp-wallpaper') &&
+                                !node.closest('.y1-tp-status') &&
+                                !/^dialogConfig\./.test(path));
+                        return {
+                            path: path,
+                            node: node,
+                            inMenuRow: inMenu,
+                            isScreenLayer: false,
+                            alpha: 1
+                        };
+                    }
+
+                    var maskHit = maskAtPoint(clientX, clientY);
+                    if (maskHit && (maskHit.alpha == null || maskHit.alpha > 0)) {
+                        return {
+                            path: maskHit.path,
+                            node: canvas.querySelector('.y1-tp-desktop-mask'),
+                            inMenuRow: false,
+                            isScreenLayer: true,
+                            alpha: maskHit.alpha == null ? 1 : maskHit.alpha
+                        };
+                    }
+
+                    var wallPath = wallpaperAssetPathForView(cfg, sim.themeViewId);
+                    if (wallPath) {
+                        return {
+                            path: wallPath,
+                            node: canvas.querySelector('.y1-tp-wallpaper'),
+                            inMenuRow: false,
+                            isScreenLayer: true,
+                            alpha: 1
+                        };
+                    }
+
+                    return null;
                 }
 
                 /* Per-mount scroll & live-list state so multiple previews or
@@ -2234,10 +2462,6 @@
 
                     var status = document.createElement('div');
                     status.className = 'y1-tp-status';
-                    /* The strip itself stands for its background, so a click on
-                       the bar away from any icon still opens the status assets
-                       and the two colours that draw them. */
-                    status.setAttribute('data-theme-asset-path', 'statusConfig.statusBarColor');
                     status.style.cssText =
                         'position:absolute;left:0;top:0;width:' +
                         W +
@@ -3938,6 +4162,7 @@
                     /* The wallpaper and the mask this screen is drawn with, in
                        painting order: wallpaper first, then the mask over it. */
                     maskAtPoint: maskAtPoint,
+                    assetAtPoint: assetAtPoint,
                     screenAssets: function () {
                         var out = [];
                         var wall = wallpaperAssetPathForView(cfg, sim.themeViewId);
@@ -3966,6 +4191,7 @@
                     wheelSteps = 0;
                     wheelDeltaAcc = 0;
                     preloadedArt.length = 0;
+                    alphaCache = Object.create(null);
                     activeMenuList = null;
                     activeRightPanel = null;
                     if (ro) ro.disconnect();
