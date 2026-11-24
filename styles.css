@@ -191,7 +191,7 @@ body {
 
 .btn-primary {
     background: var(--primary);
-    color: #fff;
+    color: var(--lumen-on-accent, var(--lumen-ink, #04070e));
 }
 
 .btn-primary:hover {
@@ -463,7 +463,7 @@ footer a,
 
 .download {
     background: var(--primary);
-    color: #fff;
+    color: var(--lumen-on-accent, var(--lumen-ink, #04070e));
     padding: .5rem .75rem;
     border-radius: 8px;
     text-decoration: none;

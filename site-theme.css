@@ -1,7 +1,7 @@
 /* Innioasis Y1 Themes — fintech-grade typography & chrome (Gold Badge aesthetic) */
 @import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap");
-@import url("tokens.css");
-@import url("lumen.css");
+@import url("tokens.css?v=20261124contrast1");
+@import url("lumen.css?v=20261124contrast1");
 
 /* Appearance palettes live in tokens.css, which every page imports first.
    This file composes the gallery from those tokens and adds no palette of
@@ -620,15 +620,16 @@ body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-controls {
 
 .gallery-best-btn.is-active,
 .gallery-best-btn[aria-pressed="true"] {
-    background: var(--site-accent);
-    border-color: var(--site-accent);
-    color: #fff;
+    background: var(--lumen-accent, var(--site-accent));
+    border-color: var(--lumen-accent, var(--site-accent));
+    color: var(--lumen-on-accent, var(--lumen-ink)) !important;
 }
 
 .gallery-best-btn.is-active:hover,
 .gallery-best-btn[aria-pressed="true"]:hover {
-    color: #fff;
-    filter: brightness(1.06);
+    background: var(--lumen-accent-strong, var(--lumen-accent, var(--site-accent)));
+    border-color: var(--lumen-accent-strong, var(--lumen-accent, var(--site-accent)));
+    color: var(--lumen-on-accent-strong, var(--lumen-on-accent, var(--lumen-ink))) !important;
 }
 
 .gallery-control {
@@ -848,9 +849,9 @@ body.site-themes-app .rckbox-btn:hover {
 }
 
 body.site-themes-app .btn.btn-primary {
-    background: var(--site-accent, var(--lumen-accent)) !important;
-    border-color: var(--site-accent, var(--lumen-accent)) !important;
-    color: var(--lumen-paper) !important;
+    background: var(--lumen-accent, var(--site-accent)) !important;
+    border-color: var(--lumen-accent, var(--site-accent)) !important;
+    color: var(--lumen-on-accent, var(--lumen-ink)) !important;
 }
 
 /* —— Site footer (nav.js) —— */

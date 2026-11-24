@@ -1,7 +1,7 @@
 /* Hallmark · macrostructure: Workbench · tone: technical · anchor hue: blue */
 /* critique: technical apparatus workbench for player firmware and themes; 4 distinct appearances (dark, light, 2077, high-contrast) */
 /* waive: 24b on clickwheel preview simulation; 38iii on hero brand signature */
-@import url("tokens.css");
+@import url("tokens.css?v=20261124contrast1");
 
 html { overflow-x: clip; scroll-behavior: smooth; scroll-padding-top: var(--gallery-sticky-offset, 74px); }
 html, body { min-width: 0; }
@@ -94,8 +94,8 @@ body.site-themes-app { overflow-x: clip; background: var(--lumen-ink); color: va
     }
 }
 body.site-themes-app *, body.site-themes-app *::before, body.site-themes-app *::after { box-sizing: border-box; }
-body.site-themes-app :where(a:not(.btn, .lumen-button, .guide-action-btn, .site-compat-banner__cta, .y1-dock-link, .lumen-brand-home)) { color: var(--lumen-accent); text-underline-offset: .18em; }
-body.site-themes-app :where(a:not(.btn, .lumen-button, .guide-action-btn, .site-compat-banner__cta, .y1-dock-link, .lumen-brand-home)):hover { color: var(--lumen-text); }
+body.site-themes-app :where(a:not(.btn, .lumen-button, .guide-action-btn, .site-compat-banner__cta, .y1-dock-link, .lumen-brand-home, .dl-stats__install, .lumen-announcement-cta, .lumen-nav-install-cta)) { color: var(--lumen-accent); text-underline-offset: .18em; }
+body.site-themes-app :where(a:not(.btn, .lumen-button, .guide-action-btn, .site-compat-banner__cta, .y1-dock-link, .lumen-brand-home, .dl-stats__install, .lumen-announcement-cta, .lumen-nav-install-cta)):hover { color: var(--lumen-text); }
 body.site-themes-app .btn,
 body.site-themes-app .lumen-button:not(.lumen-button--secondary),
 body.site-themes-app .guide-action-btn,
@@ -110,7 +110,7 @@ body.site-themes-app .guide-action-btn:hover,
 body.site-themes-app a.site-compat-banner__cta:hover {
     background: var(--lumen-accent-strong, var(--lumen-accent));
     border-color: var(--lumen-accent-strong, var(--lumen-accent));
-    color: var(--lumen-on-accent, var(--lumen-ink)) !important;
+    color: var(--lumen-on-accent-strong, var(--lumen-on-accent, var(--lumen-ink))) !important;
 }
 body.site-themes-app .nav-links a { color: var(--lumen-muted); }
 body.site-themes-app #support-toolbar-container .y1-dock-link { color: var(--lumen-text); }
@@ -235,9 +235,9 @@ body.site-themes-app .lumen-secondary-action:hover { transform: translateY(-1px)
 .lumen-filterbar { display: flex; flex-wrap: wrap; gap: .7rem; align-items: end; padding: var(--lumen-space-5) 0; }
 .lumen-field { display: grid; gap: .35rem; min-width: 150px; flex: 1 1 160px; }
 .lumen-field[hidden] { display: none; }
-.lumen-field label { color: var(--lumen-muted); font-size: .78rem; font-weight: 700; }
+.lumen-field label { color: var(--lumen-muted); font-size: max(.88rem, 13px); font-weight: 700; }
 .lumen-field select { width: 100%; min-height: 44px; padding: .6rem .7rem; border: 1px solid var(--lumen-line-strong); border-radius: var(--lumen-radius-sm); background: var(--lumen-panel); color: var(--lumen-text); font: .9rem var(--lumen-body); }
-.lumen-field-help { color: var(--lumen-faint); font-size: .76rem; }
+.lumen-field-help { color: var(--lumen-muted); font-size: max(.88rem, 13px); line-height: 1.45; }
 .lumen-model-control { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; margin: var(--lumen-space-3) 0 var(--lumen-space-5); }
 .lumen-model-control label { color: var(--lumen-muted); font-size: .8rem; font-weight: 700; }
 .lumen-model-control select { min-height: 40px; padding: .45rem 2rem .45rem .75rem; border: 1px solid var(--lumen-line-strong); border-radius: var(--lumen-radius-sm); background: var(--lumen-panel); color: var(--lumen-text); font: 600 .86rem var(--lumen-body); cursor: pointer; }
@@ -473,7 +473,7 @@ body.site-themes-app .lumen-secondary-action:hover { transform: translateY(-1px)
 .lumen-steps { display: grid; gap: .7rem; margin: var(--lumen-space-5) 0 0; padding: 0; list-style: none; counter-reset: lumen-step; }
 .lumen-steps[ start ] { counter-reset: lumen-step 2; }
 .lumen-steps li { position: relative; padding: 1rem 1rem 1rem 3.2rem; border: 1px solid var(--lumen-line); border-radius: var(--lumen-radius-sm); background: var(--lumen-panel); color: var(--lumen-text); }
-.lumen-steps li::before { counter-increment: lumen-step; content: counter(lumen-step); position: absolute; left: 1rem; top: 1rem; display: grid; place-items: center; width: 1.55rem; height: 1.55rem; border-radius: 50%; background: var(--lumen-accent); color: var(--lumen-ink); font-size: .78rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.lumen-steps li::before { counter-increment: lumen-step; content: counter(lumen-step); position: absolute; left: 1rem; top: 1rem; display: grid; place-items: center; width: 1.55rem; height: 1.55rem; border-radius: 50%; background: var(--lumen-accent); color: var(--lumen-on-accent, var(--lumen-ink)); font-size: .78rem; font-weight: 800; font-variant-numeric: tabular-nums; }
 .lumen-guide figure { margin: 0; }
 figure.lumen-shot { display: block; width: min(100%, 640px); height: auto; margin: var(--lumen-space-5) 0; border: 1px solid var(--lumen-line); border-radius: var(--lumen-radius-sm); background: var(--lumen-panel); padding: .5rem; }
 figure.lumen-shot--compact { width: min(100%, 520px); }
@@ -499,7 +499,7 @@ img.lumen-shot { display: block; width: auto; max-width: min(100%, 640px); heigh
 .lumen-donate-method--paypal { border-color: color-mix(in oklab, var(--lumen-accent) 60%, var(--lumen-line-strong)); }
 .lumen-donate-close { display: block; width: 100%; min-height: 40px; margin-top: .9rem; border: 0; background: transparent; color: var(--lumen-muted); font: 600 .82rem var(--lumen-body); cursor: pointer; }
 .lumen-donate-close:hover { color: var(--lumen-text); }
-.lumen-muted-inline { color: var(--lumen-faint); font-size: .82rem; }
+.lumen-muted-inline { color: var(--lumen-muted); font-size: max(.86rem, 13px); line-height: 1.45; }
 .lumen-download-link { color: var(--lumen-accent); font-size: .82rem; white-space: nowrap; }
 .lumen-release-notes-link { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 1px solid var(--lumen-line-strong); border-radius: var(--lumen-pill); color: var(--lumen-muted); transition: transform .18s var(--lumen-ease), border-color .18s var(--lumen-ease), background .18s var(--lumen-ease), color .18s var(--lumen-ease); }
 .lumen-release-notes-link:hover { transform: translateY(-1px); border-color: var(--lumen-accent); background: var(--lumen-accent-wash); color: var(--lumen-text); }
