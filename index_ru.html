@@ -53,7 +53,7 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
-    <link rel="stylesheet" href="site-theme.css?v=20261115footer1">
+    <link rel="stylesheet" href="site-theme.css?v=20261123gallery1">
     <link rel="stylesheet" href="lumen.css?v=20261117studio7">
     <link rel="stylesheet" href="site-toolbar.css?v=20261123donatecompletion2">
     <link rel="stylesheet" href="site-pages.css?v=20260622">
@@ -63,18 +63,18 @@
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script defer src="theme-packaging.js?v=20261010perf"></script>
     <script src="theme-display-name.js?v=20260624"></script>
-    <script src="y1-theme-preview.js?v=20261123studio2"></script>
+    <script src="y1-theme-preview.js?v=20261123studio5"></script>
     <script src="theme-artwork-compat.js?v=20260711"></script>
     <script src="gold-theme-detect.js?v=20261109perf"></script>
     <script src="gallery-chrome.js?v=20261123studio2"></script>
     <script src="author-links.js?v=20260622"></script>
-    <script src="site-init.js?v=20261123studio2"></script>
+    <script src="site-init.js?v=20261123stats4"></script>
     <script src="gallery-loaded-theme.js?v=20261109perf"></script>
     <script src="theme-share-links.js?v=20261123studio2"></script>
     <script src="author-submission-policy.js?v=20260523"></script>
     <link rel="stylesheet" href="theme-frozen.css?v=20260526">
     <script src="theme-frozen.js?v=20260526"></script>
-    <script src="theme-analytics.js?v=20261120stats2b"></script>
+    <script src="theme-analytics.js?v=20261123stats4"></script>
     <script src="themes-i18n.js?v=20261109live"></script>
 
     <style>
@@ -496,7 +496,8 @@
             opacity: 1;
         }
 
-        .theme-card .theme-preview-frame.theme-preview-frame--screenshot .theme-card-media-skeleton {
+        .theme-card .theme-preview-frame.theme-preview-frame--screenshot .theme-card-media-skeleton,
+        .theme-card .theme-preview-frame.theme-preview-frame--live-hover .theme-card-media-skeleton {
             display: none;
         }
 
@@ -954,17 +955,20 @@
             <label class="gallery-control" for="sort-filter">
                 Сортировать
                 <select id="sort-filter">
-                    <option value="name_asc">Имя (А-Я)</option>
-                    <option value="name_desc">Имя (Я-А)</option>
-                    <option value="author_asc">Автор (А-Я)</option>
-                    <option value="views_desc">Большинство просмотров</option>
-                    <option value="views_asc">Наименьшее количество просмотров</option>
-                    <option value="downloads_desc" selected>Большинство загрузок</option>
+                    <option value="newest" selected>Newest themes</option>
+                    <option value="best">Лучшие темы</option>
+                    <option value="downloads_desc">Большинство загрузок</option>
                     <option value="downloads_asc">Наименьшее количество загрузок</option>
                     <option value="rating_desc">Высший рейтинг</option>
                     <option value="rating_asc">Самый низкий рейтинг</option>
+                    <option value="name_asc">Имя (А-Я)</option>
+                    <option value="name_desc">Имя (Я-А)</option>
+                    <option value="author_asc">Автор (А-Я)</option>
                 </select>
             </label>
+            <button type="button" id="best-themes-btn" class="gallery-best-btn" aria-pressed="false" title="Sort by most downloaded and viewed themes">
+                <i class="fa-solid fa-trophy" aria-hidden="true"></i> Лучшие темы
+            </button>
             <label class="gallery-control" for="page-size">
                 За страницу
                 <select id="page-size">
@@ -1050,7 +1054,6 @@
         <a href="70s_truck/">Грузовик 70-х!</a>
         <a href="80_s_slasher/">слэшер 80-х</a>
         <a href="80s_synthwave/">синтвейв 80-х</a>
-        <a href="90s_Z32_Nissan/">90-е Z32 Ниссан</a>
         <a href="90s_Z32_Nissan_V2/">90-е Z32 Ниссан V2</a>
         <a href="90s_2000s_Teen/">Подросток 90-х/2000-х годов</a>
         <a href="NI__stuff/">[НИИ] вещи</a>
@@ -1081,12 +1084,10 @@
         <a href="ANIMECORE__eye_strain_glitch_effect_animecore_webcore/">АНИМКОР!!! напряжение глаз/эффект глюка/анимекор/вебкор</a>
         <a href="Unseen/">Яблоко 3</a>
         <a href="AppleMusic/">Apple Музыка</a>
-        <a href="Apple_MusicApp/">Apple MusicApp</a>
         <a href="aqua_y2k__v2/">аква y2k (v2)</a>
         <a href="ARCANE_JINX/">МАЙСКОЕ ПРОКЛЯТИЕ</a>
         <a href="Ariana_Grande/">Ариана Гранде</a>
         <a href="Ariana_Grande_Petal/">Ариана Гранде Петал</a>
-        <a href="Arizona_ice_tea/">Ледяной чай из Аризоны</a>
         <a href="Arizona_iced_tea/">Аризонский холодный чай</a>
         <a href="Arrow_Vortex/">Стрела Вихрь</a>
         <a href="Artemis_Hades/">Артемида_Аид</a>
@@ -1100,9 +1101,6 @@
         <a href="baja_blast_ocean/">Баха взрывной океан</a>
         <a href="BAKUGO_mila-wolf/">БАКУГО</a>
         <a href="bakugo/">бакуго</a>
-        <a href="bkg/">Бакуго (2)</a>
-        <a href="bakugo__3/">Бакуго &lt;3</a>
-        <a href="bakugo__3_2/">бакуго &lt;3 (2)</a>
         <a href="BAPE/">Бэйп</a>
         <a href="BarbiePrincess/">БарбиПринцесса</a>
         <a href="Bassie_Blomington/">Бэсси Бломингтон</a>
@@ -1123,6 +1121,7 @@
         <a href="Blue_and_yellow_stars/">Синие и желтые звезды</a>
         <a href="Blue_Flowers/">Синие Цветы!!</a>
         <a href="Blue_Lock/">Синий замок</a>
+        <a href="blue lock [ simple ]/">blue lock [ simple ]</a>
         <a href="blue_purple_starry_bubbly/">сине-фиолетовый звездный пузырь</a>
         <a href="Blue_theme_leopard/">Голубая тема леопарда</a>
         <a href="Blue_Thing/">Синяя вещь</a>
@@ -1152,14 +1151,10 @@
         <a href="Cinnamoroll_aisha-shanaya-wasi/">Циннаморолл</a>
         <a href="Circuitry/">Схема</a>
         <a href="Circular/">Круговой</a>
-        <a href="Circular_but_more_circular/">Круглый, но более круглый</a>
         <a href="Circular_but_more_circular__fixed_icons/">Круглый, но более круглый (фиксированные значки)</a>
         <a href="CITRUS/">ЦИТРУСОВЫЕ</a>
-        <a href="CITRUS__2/">ЦИТРУСОВЫЕ (2)</a>
-        <a href="CITRUS__Clone/">ЦИТРУСОВЫЕ (Клон)</a>
         <a href="Citrus_lol/">Цитрусовые лол</a>
         <a href="CITYSTAR_NO_ICONS/">CITYSTAR БЕЗ ИКОН</a>
-        <a href="Classic Millennial/">Классический миллениал</a>
         <a href="Millennial/">Классический миллениал (2)</a>
         <a href="clean_doggy_aesthetic/">чистая собачья эстетика</a>
         <a href="Clean_green/">Чистый зеленый</a>
@@ -1182,7 +1177,6 @@
         <a href="Cute_anime_style/">Милый аниме стиль</a>
         <a href="2000s_spider-man/">Симпатичное ядро</a>
         <a href="cute_pink_ryan_gosling/">милый розовый Райан Гослинг</a>
-        <a href="Cute_Pokemon_Eevee_Eveeelutions/">Милый покемон Иви Eeveelutions</a>
         <a href="Cute_Pokemon_Eevee_Eeveelutions_V2/">Милый покемон Иви Eeveelutions V2</a>
         <a href="Cute_Strawberry/">Милая клубника</a>
         <a href="Cute_Teal_Style/">Милый бирюзовый стиль!</a>
@@ -1201,10 +1195,10 @@
         <a href="Dark_Pink_Train/">Темно-розовый поезд</a>
         <a href="Dark_Souls_3/">Темные души 3</a>
         <a href="Death Note/">Смертная записка</a>
+        <a href="Death_Note/">Смертная записка</a>
         <a href="Death_The_Kid_d1/">Смерть Малыш d1</a>
         <a href="Deathnote__L_Lawliet/">Тетрадь смерти (L Lawliet)</a>
         <a href="DEEP_SKIN/">ГЛУБОКАЯ КОЖА</a>
-        <a href="Default_blank__Clone/">Пустой по умолчанию (клонировать)</a>
         <a href="deftones/">детонации</a>
         <a href="DELTARUNE/">ДЕЛЬТАРУНА</a>
         <a href="DELTARUNE__improved/">ДЕЛЬТАРУНА (улучшенная)</a>
@@ -1223,7 +1217,6 @@
         <a href="ElectricHues/">Электрические оттенки</a>
         <a href="elevator_hitch_theme/">сцепное устройство для лифта</a>
         <a href="Eminence_In_Shadow__Delta/">Преосвященство в тени {Delta}</a>
-        <a href="Ethereal_Princess/">Эфирная принцесса</a>
         <a href="Ethereal_Princess_Updated/">Эфирная принцесса обновлена</a>
         <a href="Evergreen/">Эвергрин</a>
         <a href="Evie/">Иви</a>
@@ -1234,7 +1227,6 @@
         <a href="FatalFrame2DCB/">FatalFrame2DCB</a>
         <a href="FatalFrame3/">FatalFrame3</a>
         <a href="FBI/">ФБР</a>
-        <a href="Find_the_markers/">Найдите маркеры</a>
         <a href="Find_the_markers__fixed/">Найдите маркеры (фиксировано)</a>
         <a href="FinKL/">ФинКЛ</a>
         <a href="FLOWERS/">ЦВЕТЫ!! 2</a>
@@ -1250,7 +1242,6 @@
         <a href="Furina/">Фурина</a>
         <a href="Galaxy_Gold/">Галактика Золото</a>
         <a href="gambit/">гамбит</a>
-        <a href="gambit_themed/">тематический гамбит</a>
         <a href="Gaslight_District/">Газовый район</a>
         <a href="GC/">ГК</a>
         <a href="Ghost/">Призрак</a>
@@ -1264,10 +1255,8 @@
         <a href="girly_pink_design_hehe__3/">девчачий розовый дизайн хе-хе &lt;3</a>
         <a href="girly_y2k/">девчачий, 2000 год</a>
         <a href="Girlypop/">девчачий поп</a>
-        <a href="Girlypop__Clone/">Girlypop (Клон)</a>
         <a href="Gojo_Satoru/">Годзё Сатору</a>
         <a href="Goldie/">Голди</a>
-        <a href="Gothic/">Готика</a>
         <a href="Gothic__updated/">Готика (обновлено)</a>
         <a href="Gothic_aesthetic_theme/">Готическая эстетика</a>
         <a href="Gothic2/">Готика2</a>
@@ -1281,7 +1270,6 @@
         <a href="GRUNGE/">ГРАНЖ</a>
         <a href="Gruvbox_Material/">Материал Грувбокса</a>
         <a href="GTA3/">GTA3</a>
-        <a href="GTA3__Clone/">GTA3 (Клон)</a>
         <a href="H_Murakami/">Х Мураками</a>
         <a href="Habbo/">Хаббо</a>
         <a href="HalcyonTheme/">HalcyonТема</a>
@@ -1309,7 +1297,6 @@
         <a href="Hunter_x_Hunter_V1/">Охотник х Охотник V1</a>
         <a href="if_you_say__enhypen/">если ты скажешь (расширить)</a>
         <a href="IGORPOD__FIXED/">ИГОРПОД</a>
-        <a href="IGORPOD__FIXED___FIXED/">ИГОРПОД (ИСПРАВЛЕНО) (ИСПРАВЛЕНО)</a>
         <a href="In_Another_Time/">В другой раз</a>
         <a href="inniPod/">inniPod</a>
         <a href="inniPod.v2_by_EliEntee/">inniPod.v2 от EliEntee</a>
@@ -1318,14 +1305,11 @@
         <a href="IOS_Theme_me/">iOS</a>
         <a href="iPod_Light_ipod-community/">iPod Лайт</a>
         <a href="iPod-ish/">iPod-иш</a>
-        <a href="iPod-ish_reddit/">iPod-иш</a>
         <a href="iPod-ish__Clone/">iPod-ish (клон)</a>
         <a href="iPod-ish_but_make_it_green/">iPod-ish, но сделайте его зеленым</a>
         <a href="Iron_Lung/">Железное легкое</a>
         <a href="Isaiah/">Исайя</a>
-        <a href="Isaiah_s_Masterpiece/">Шедевр Исайи!</a>
         <a href="ISAT/">ИСАТ</a>
-        <a href="It_s_Isaiah/">Это Исайя</a>
         <a href="IvanTill/">ИванТилль</a>
         <a href="Jessie_the_Yodeling_Cowgirl/">Джесси-йодлинг-ковбойша</a>
         <a href="Jinx_From_Arcane/">Джинкс из тайной магии</a>
@@ -1361,7 +1345,6 @@
         <a href="lil_hero_pawwfect___3/">маленький герой, лапочка!!! &lt;3</a>
         <a href="Linkin_Park_Hybrid_Theory/">Гибридная теория Linkin Park</a>
         <a href="Linkin_Park_Hybrid_Theory__alt_wallpaper/">Гибридная теория Linkin Park (альтернативные обои)</a>
-        <a href="LiquidGlass/">ЖидкоеСтекло</a>
         <a href="lirio_ara_a/">лирио аранья</a>
         <a href="Littlest_Pet_Shop/">Маленький зоомагазин</a>
         <a href="Lord_X/">Лорд Икс</a>
@@ -1374,7 +1357,6 @@
         <a href="MADOKAAA/">МАДОКААА</a>
         <a href="main_package/">основной пакет</a>
         <a href="Malcolm_Todd/">Малькольм Тодд</a>
-        <a href="mallgoth_layout/">макет торгового центра</a>
         <a href="mallgoth_layout_starr/">макет торгового центра</a>
         <a href="Manu_s_PS3_Theme/">PS3 Ману</a>
         <a href="Marble_Hornets/">Мраморные Шершни</a>
@@ -1403,7 +1385,6 @@
         <a href="Minecraft_Black/">Майнкрафт Черный</a>
         <a href="Minecraft_Classic/">Майнкрафт Классик</a>
         <a href="Minecraft_snow_dark/">Майнкрафт снег темный</a>
-        <a href="Minecraft_v2.0_lunen/">Майнкрафт v2.0</a>
         <a href="MiniMedieval/">Мини Средневековье</a>
         <a href="Mini_Medieval__Clone/">Мини Средневековье (Клон)</a>
         <a href="Minimal/">Минимальный</a>
@@ -1416,7 +1397,6 @@
         <a href="MLP/">МЛП</a>
         <a href="Monet/">Моне</a>
         <a href="MonstaX/">МонстаХ</a>
-        <a href="Monster_High__G1/">Школа Монстров (G1)</a>
         <a href="Moonlight/">Лунный свет</a>
         <a href="mouldy_fridge/">заплесневелый холодильник</a>
         <a href="Mt._Fiji/">Гора Фиджи</a>
@@ -1428,7 +1408,6 @@
         <a href="My_Little_Pony___MLP/">Мой Маленький Пони! (МЛП)</a>
         <a href="Myspace/">Майспейс</a>
         <a href="MySweetPiano&amp;MyMelody/">MySweetPiano&amp;MyMelody</a>
-        <a href="N/">N</a>
         <a href="Naruto/">Наруто</a>
         <a href="Naruto_Uzumaki/">Наруто Узумаки</a>
         <a href="NavyBuble/">Военно-Морской ФлотBuble</a>
@@ -1481,7 +1460,6 @@
         <a href="pink/">розовый</a>
         <a href="pink_judy/">розовый</a>
         <a href="Pink_Adela/">Розовая Адела</a>
-        <a href="PINK_AESTHETIC_ceriales/">РОЗОВАЯ ЭСТЕТИКА</a>
         <a href="Pink_and_Black/">Розовый и черный</a>
         <a href="pink_and_cherry_red/">розовый и вишнево-красный</a>
         <a href="Pink_and_Girly/">Розовый и девчачий</a>
@@ -1520,7 +1498,6 @@
         <a href="Purple_Lo-fi/">Фиолетовый лоу-фай</a>
         <a href="Purple_Metro/">Фиолетовое метро</a>
         <a href="purple_neon/">фиолетовый неон</a>
-        <a href="Purple Pineapple/">Фиолетовый ананас</a>
         <a href="Pusheen/">Пушин</a>
         <a href="radiohead/">радиохед</a>
         <a href="RainBow/">РАДУГА</a>
@@ -1543,7 +1520,6 @@
         <a href="Rock_II/">Рок II</a>
         <a href="ROTTING_ZOMBIE/">ГНИЮЩИЙ ЗОМБИ</a>
         <a href="Royalty/">Роялти</a>
-        <a href="ryan_gosling_cute/">Райан Гослинг милый</a>
         <a href="S.E.S/">С.Э.С.</a>
         <a href="SabrinasWorld/">Мир Сабрины</a>
         <a href="Saiki_K/">Сайки К.</a>
@@ -1556,9 +1532,7 @@
         <a href="SAM_WINCHESTER/">СЭМ ВИНЧЕСТЕР</a>
         <a href="Sampo/">Сампо</a>
         <a href="Santa_Cruz/">Санта-Крус</a>
-        <a href="Satoru_Gojo/">Сатору Годзё</a>
         <a href="Satoru_Gojo__Fixed_8_31_26/">Сатору Годзё (исправлено 31 августа 26 г.)</a>
-        <a href="Satoru_Gojo__Updated/">Сатору Годзё (Обновлено)</a>
         <a href="SCENE_THEME/">СЦЕНА</a>
         <a href="Seattle_Kraken/">Сиэтл Кракен</a>
         <a href="Sebastian_from_Hogwarts_Legacy/">Себастьян из «Наследия Хогвартса»</a>
@@ -1619,7 +1593,6 @@
         <a href="No homepage items/">Стивен Вселенная (2)</a>
         <a href="Steven_Universe_v1-v3/">Вселенная Стивена v1-v3</a>
         <a href="Stranger Things/">Очень странные дела</a>
-        <a href="Stranger_Things/">Очень странные дела</a>
         <a href="strawberry_desert/">клубничный десерт!</a>
         <a href="Strawberry_Shortcake_lovenlow/">Клубничное песочное печенье</a>
         <a href="StrawberryShortcake2006/">Клубничное песочное печенье2006</a>
@@ -1641,13 +1614,10 @@
         <a href="Tae_Aestethic__3/">Тэ Эстетик &lt;3</a>
         <a href="Takanaka/">Таканака</a>
         <a href="Tamagotchi_Theme/">Тамагочи</a>
-        <a href="BlueTate/">Тейт Макрей</a>
         <a href="TateMcrae/">Тейт Макрей (синий)</a>
         <a href="Teal_Y3k_Girl/">Бирюзовая девочка Y3k</a>
         <a href="Team_Fortress_2/">Командная крепость 2</a>
         <a href="Teardown/">Срывать</a>
-        <a href="test/">тест</a>
-        <a href="test_me/">тест</a>
         <a href="Test123/">Тест123</a>
         <a href="Teto/">Тето</a>
         <a href="TF2/">TF2</a>
@@ -1663,7 +1633,6 @@
         <a href="The Magnus Archives/">Архивы Магнуса</a>
         <a href="The_Owl_House/">Совиный дом</a>
         <a href="The_Owl_House_laura-abril-uribe/">Совиный дом</a>
-        <a href="The_Owl_House_laura-abril/">Совиный дом</a>
         <a href="The_Stanley_Parable/">Притча о Стэнли</a>
         <a href="The_Summer_Hikaru_Died/">Летний Хикару умер</a>
         <a href="The_Vampire_Armand/">Вампир Арманд</a>
@@ -1701,8 +1670,6 @@
         <a href="Violent_Vira/">жестокая Вира</a>
         <a href="Vista/">Виста</a>
         <a href="WARM_CHEETAH/">ТЕПЛЫЙ ГЕПАРД</a>
-        <a href="Water_chill/">Холодная вода</a>
-        <a href="Weirdcore_test/">Странный тест</a>
         <a href="Welcome_to_Night_Vale/">Добро пожаловать в Найт-Вейл</a>
         <a href="Whimsical_angel-50000/">Причудливый</a>
         <a href="Whimsy/">Прихоть 2.0</a>
@@ -1735,13 +1702,11 @@
         <a href="Yoongi__3/">Юнги &lt;3</a>
         <a href="Yoshitomo_Nara/">Ёшитомо Нара</a>
         <a href="Yoshka/">Йошка!</a>
-        <a href="yPod/">yPod</a>
         <a href="yPodDark_Pro/">yPodDark Pro</a>
         <a href="Yume Nikki/">Юме Никки</a>
         <a href="Yuto_Arc_V/">Юто Арк V</a>
         <a href="Zelda_s_Rule_made_by_Pjp.maia/">Правило Зельды, созданное Pjp.maia</a>
         <a href="zennnnn/">зеннннн</a>
-        <a href="ZOMG_-_Kokeshi/">ЗОМГ - Кокэси</a>
         <a href="ZOMG_-_Village_Greens/">ЗОМГ - Деревенская зелень</a>
         <a href="My_Little_Pony_andreiaroomao/">⊹₊˚ Мой Маленький Пони ⊹₊˚</a>
         <a href="Electra_Heart_-_Marina_and_The_Diamonds/">♡ ЭЛЕКТРА СЕРДЦЕ ♡</a>
@@ -2259,10 +2224,20 @@
         const sourceFilter = document.getElementById('source-filter');
         const authorFilter = document.getElementById('author-filter');
         const sortFilter = document.getElementById('sort-filter');
+        const bestThemesBtn = document.getElementById('best-themes-btn');
         const pageSizeSelect = document.getElementById('page-size');
         const goldOnlyCheckbox = document.getElementById('gold-only-filter');
         let goldOnlyFilter = false;
+        let currentPage = 1;
+        const DEFAULT_GALLERY_SORT = 'newest';
         const galleryGoldQueued = new Set();
+
+        function syncBestThemesButton() {
+            if (!bestThemesBtn) return;
+            const active = (sortFilter ? String(sortFilter.value || DEFAULT_GALLERY_SORT) : DEFAULT_GALLERY_SORT) === 'best';
+            bestThemesBtn.classList.toggle('is-active', active);
+            bestThemesBtn.setAttribute('aria-pressed', active ? 'true' : 'false');
+        }
 
         function galleryConnectionSavesData() {
             const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
@@ -2321,7 +2296,10 @@
             const sourceQ = qp.get('source');
             if (sourceFilter && sourceQ) sourceFilter.value = sourceQ;
             const sortQ = qp.get('sort');
-            if (sortFilter && sortQ) sortFilter.value = sortQ;
+            if (sortFilter && sortQ) {
+                const hasOpt = Array.from(sortFilter.options).some((o) => o.value === sortQ);
+                if (hasOpt) sortFilter.value = sortQ;
+            }
             const authorQ = qp.get('author');
             if (authorFilter && authorQ) {
                 authorFilter.value = authorQ;
@@ -2333,6 +2311,7 @@
             const pageQ = Number(qp.get('page') || '1');
             currentPage = Number.isFinite(pageQ) && pageQ > 0 ? Math.floor(pageQ) : 1;
         } catch (e) {}
+        syncBestThemesButton();
 
         function syncQueryState(totalPages) {
             try {
@@ -2343,8 +2322,8 @@
                 const sourceV = sourceFilter ? String(sourceFilter.value || 'all') : 'all';
                 if (sourceV !== 'all') params.set('source', sourceV);
                 else params.delete('source');
-                const sortV = sortFilter ? String(sortFilter.value || 'downloads_desc') : 'downloads_desc';
-                if (sortV !== 'downloads_desc') params.set('sort', sortV);
+                const sortV = sortFilter ? String(sortFilter.value || DEFAULT_GALLERY_SORT) : DEFAULT_GALLERY_SORT;
+                if (sortV !== DEFAULT_GALLERY_SORT) params.set('sort', sortV);
                 else params.delete('sort');
                 const authorV = authorFilter ? String(authorFilter.value || 'all') : 'all';
                 if (authorV !== 'all') params.set('author', authorV);
@@ -2365,7 +2344,6 @@
 
         const pagerTopEl = document.getElementById('theme-pager-top');
         const pagerBottomEl = document.getElementById('theme-pager-bottom');
-        let currentPage = 1;
 
         const pagerNumberFormat = (() => {
             try {
@@ -2505,7 +2483,8 @@
             const onlyOn = onlyOnDeviceCheckbox && onlyOnDeviceCheckbox.checked;
             const sourceV = sourceFilter ? String(sourceFilter.value || 'all') : 'all';
             const authorV = authorFilter ? String(authorFilter.value || 'all') : 'all';
-            const sortV = sortFilter ? String(sortFilter.value || 'downloads_desc') : 'downloads_desc';
+            const sortV = sortFilter ? String(sortFilter.value || DEFAULT_GALLERY_SORT) : DEFAULT_GALLERY_SORT;
+            syncBestThemesButton();
             const pageSize = Number(pageSizeSelect && pageSizeSelect.value || '24') || 24;
             const cards = document.querySelectorAll('.theme-card');
             const matched = [];
@@ -2523,11 +2502,36 @@
                 if (visible) matched.push(card);
             }
 
+            const newestScore = (card) =>
+                cardMetric(card, 'data-downloads') +
+                cardMetric(card, 'data-rating-count') +
+                cardMetric(card, 'data-views');
+            const bestScore = (card) =>
+                cardMetric(card, 'data-downloads') +
+                cardMetric(card, 'data-views');
+
             matched.sort((a, b) => {
                 const nameA = String(a.getAttribute('data-name') || '');
                 const nameB = String(b.getAttribute('data-name') || '');
                 const authorA = String(a.getAttribute('data-author') || '');
                 const authorB = String(b.getAttribute('data-author') || '');
+                if (sortV === 'newest') {
+                    return (
+                        newestScore(a) - newestScore(b) ||
+                        cardMetric(a, 'data-downloads') - cardMetric(b, 'data-downloads') ||
+                        cardMetric(a, 'data-views') - cardMetric(b, 'data-views') ||
+                        compareThemeTitles(nameA, nameB)
+                    );
+                }
+                if (sortV === 'best') {
+                    return (
+                        bestScore(b) - bestScore(a) ||
+                        cardMetric(b, 'data-downloads') - cardMetric(a, 'data-downloads') ||
+                        cardMetric(b, 'data-views') - cardMetric(a, 'data-views') ||
+                        cardMetric(b, 'data-rating') - cardMetric(a, 'data-rating') ||
+                        compareThemeTitles(nameA, nameB)
+                    );
+                }
                 if (sortV === 'name_desc') return compareThemeTitles(nameA, nameB, 'desc');
                 if (sortV === 'author_asc') return compareAuthorNames(authorA, authorB) || compareThemeTitles(nameA, nameB);
                 if (sortV === 'views_desc') return cardMetric(b, 'data-views') - cardMetric(a, 'data-views') || compareThemeTitles(nameA, nameB);
@@ -2589,6 +2593,14 @@
             applyFilters();
         });
         if (sortFilter) sortFilter.addEventListener('change', () => {
+            syncBestThemesButton();
+            currentPage = 1;
+            applyFilters();
+        });
+        if (bestThemesBtn) bestThemesBtn.addEventListener('click', () => {
+            if (!sortFilter) return;
+            sortFilter.value = String(sortFilter.value || DEFAULT_GALLERY_SORT) === 'best' ? DEFAULT_GALLERY_SORT : 'best';
+            syncBestThemesButton();
             currentPage = 1;
             applyFilters();
         });
@@ -5226,6 +5238,12 @@
             return str;
         }
 
+        /* Only one screenshot-backed card runs its live HQ preview at a time:
+           toggling HQ on another screenshot-backed card reverts the previous one
+           back to its screenshot image. Cards without a screenshot keep their
+           auto-HQ preview running always and never hide/show an HQ button. */
+        let activeScreenshotHqReset = null;
+
         function createCard(theme, isPriority) {
             const c = document.createElement('article');
             c.className = 'theme-card';
@@ -5246,7 +5264,18 @@
                 'data-search',
                 `${safeText(theme.name)} ${safeText(theme.description)} ${safeText(theme.author)} ${safeText(folderPath)} ${safeText(theme.searchText || '')}`.toLowerCase()
             );
-            if (folderPath) c.setAttribute('data-catalog-folder', folderPath);
+            if (folderPath) {
+                c.setAttribute('data-catalog-folder', folderPath);
+                if (window.ThemeAnalytics && typeof window.ThemeAnalytics.getStats === 'function') {
+                    const st = window.ThemeAnalytics.getStats(folderPath);
+                    if (st) {
+                        c.setAttribute('data-views', String(Number(st.pageViews) || 0));
+                        c.setAttribute('data-downloads', String(Number(st.downloads) || 0));
+                        c.setAttribute('data-rating', String(Number(st.ratingAverage) || 0));
+                        c.setAttribute('data-rating-count', String(Number(st.ratingCount) || 0));
+                    }
+                }
+            }
 
             const cardTop = document.createElement('div');
             cardTop.className = 'theme-card-top';
@@ -5323,6 +5352,8 @@
             };
             let staticScreenshotActive = false;
             let staticPreviewActive = false;
+            let autoHqMode = false;
+            let autoHqMounted = false;
             const folderImageCandidates = folderPath ? [
                 `${folderPath}/cover-thumb.jpg`,
                 `${folderPath}/cover.jpg`,
@@ -5367,28 +5398,6 @@
             img.addEventListener('load', () => {
                 previewFrame.classList.add('theme-preview-frame--cover-ready');
             });
-            img.onerror = () => {
-                if (staticScreenshotActive) {
-                    /* Stale themes.json: the capture is gone. Keep the card static
-                       and try the generated cover set instead of mounting the
-                       simulator, so a missing capture cannot cost every card a
-                       theme config, font and icon download. */
-                    staticScreenshotActive = false;
-                    usingGeneratedJpeg = false;
-                    img.removeAttribute('srcset');
-                    screenshotIdx = 0;
-                    void applyNextScreenshot();
-                    return;
-                }
-                if (usingGeneratedJpeg) {
-                    usingGeneratedJpeg = false;
-                    img.removeAttribute('srcset');
-                    screenshotIdx = 0;
-                } else {
-                    screenshotIdx += 1;
-                }
-                void applyNextScreenshot();
-            };
             const armCover = () => {
                 if (img.dataset.coverArmed === '1') return;
                 img.dataset.coverArmed = '1';
@@ -5399,7 +5408,6 @@
                     return;
                 }
                 const enc = folderPath.split('/').filter(Boolean).map(encodeURIComponent).join('/');
-                staticPreviewActive = true;
                 usingGeneratedJpeg = true;
                 img.src = `./${enc}/cover-thumb.jpg`;
                 if (!saveData) {
@@ -5412,27 +5420,30 @@
                 if (!src) return false;
                 staticScreenshotActive = true;
                 staticPreviewActive = true;
+                autoHqMode = false;
+                autoHqMounted = false;
                 usingGeneratedJpeg = false;
                 img.dataset.coverArmed = '1';
                 img.removeAttribute('srcset');
                 img.removeAttribute('sizes');
                 img.fetchPriority = isPriority ? 'high' : 'low';
+                img.style.visibility = '';
+                img.style.opacity = '';
+                img.style.pointerEvents = '';
                 previewFrame.classList.add('theme-preview-frame--screenshot');
+                previewFrame.classList.remove('theme-preview-frame--auto-hq');
                 if (simHost) simHost.style.display = 'none';
                 if (img.getAttribute('src') !== src) img.src = src;
                 return true;
             };
-            if (!applyStaticScreenshot('')) {
-                if (isPriority) {
-                    armCover();
-                }
-            }
+            applyStaticScreenshot('');
             previewFrame.append(mediaSkeleton, img);
 
-            /* Hover / HQ: keep the static capture on screen until the live
-               rendered assets are ready. Only a real hover (or an explicit HQ
-               press) starts the expensive simulator mount, keeping translation
-               and asset work off the initial gallery paint. */
+            /* Hover / HQ: for themes WITH a screenshot image, keep the static
+               capture on screen until someone clicks HQ, and switching on HQ
+               for another screenshot-backed card reverts the previous one back
+               to its screenshot. Themes WITHOUT a screenshot mount HQ preview
+               automatically and stay on always without an HQ toggle button. */
             const hqToggle = document.createElement('button');
             hqToggle.type = 'button';
             hqToggle.className = 'theme-preview-hq';
@@ -5440,7 +5451,7 @@
             hqToggle.title = 'Show the live rendered preview';
             hqToggle.setAttribute('aria-label', 'Show the live rendered preview');
             hqToggle.setAttribute('aria-pressed', 'false');
-            hqToggle.hidden = !staticPreviewActive;
+            hqToggle.hidden = !staticScreenshotActive;
             previewFrame.appendChild(hqToggle);
 
             let hoverMountTimer = 0;
@@ -5468,7 +5479,7 @@
                 }
             };
             const livePreviewAllowed = () =>
-                staticPreviewActive &&
+                staticScreenshotActive &&
                 !!folderPath &&
                 !!window.Y1ThemePreview &&
                 typeof window.Y1ThemePreview.mountGalleryCardLazy === 'function' &&
@@ -5476,6 +5487,7 @@
                 !(window.ThemeFrozen && window.ThemeFrozen.isFrozen(theme));
             const restoreStaticScreenshot = (force) => {
                 clearTimeout(hoverMountTimer);
+                if (autoHqMode) return;
                 if (hqPinned && !force) return;
                 if (!livePreviewMounted && !livePreviewReady) return;
                 livePreviewMounted = false;
@@ -5490,12 +5502,31 @@
                     simHost.style.display = 'none';
                 }
                 previewFrame.classList.remove('theme-preview-frame--live-hover');
-                if (img) img.style.opacity = '';
+                if (img) {
+                    img.style.visibility = '';
+                    img.style.opacity = '';
+                    img.style.pointerEvents = '';
+                }
                 hqToggle.setAttribute('aria-pressed', 'false');
                 setHqPillState('idle');
             };
+            const resetLivePreview = () => {
+                if (activeScreenshotHqReset === resetLivePreview) {
+                    activeScreenshotHqReset = null;
+                }
+                hqPinned = false;
+                hqToggle.setAttribute('aria-pressed', 'false');
+                setHqPillState('idle');
+                restoreStaticScreenshot(true);
+            };
             const mountLivePreview = () => {
                 if (livePreviewMounted || livePreviewReady || !livePreviewAllowed()) return;
+                if (activeScreenshotHqReset && activeScreenshotHqReset !== resetLivePreview) {
+                    try {
+                        activeScreenshotHqReset();
+                    } catch (_) {}
+                }
+                activeScreenshotHqReset = resetLivePreview;
                 livePreviewMounted = true;
                 setHqPillState('loading');
                 const seg = String(variantSelect.value || '').trim();
@@ -5520,27 +5551,101 @@
                             applyGalleryCardPreviewReady(c, cfg, meta, folderPath, seg, theme);
                         },
                         onError: () => {
-                            hqPinned = false;
-                            hqToggle.setAttribute('aria-pressed', 'false');
-                            setHqPillState('idle');
-                            restoreStaticScreenshot(true);
+                            resetLivePreview();
                         },
                     });
                 } catch (_) {
-                    setHqPillState('idle');
-                    restoreStaticScreenshot(true);
+                    resetLivePreview();
                 }
             };
-            const resetLivePreview = () => {
-                hqPinned = false;
-                hqToggle.setAttribute('aria-pressed', 'false');
-                setHqPillState('idle');
-                restoreStaticScreenshot(true);
+            const startAutoHqPreview = (variantSeg) => {
+                staticScreenshotActive = false;
+                staticPreviewActive = false;
+                if (activeScreenshotHqReset === resetLivePreview) {
+                    activeScreenshotHqReset = null;
+                }
+                hqToggle.hidden = true;
+                previewFrame.classList.remove('theme-preview-frame--screenshot');
+                const canMountAuto =
+                    !!folderPath &&
+                    !!window.Y1ThemePreview &&
+                    typeof window.Y1ThemePreview.mountGalleryCardLazy === 'function' &&
+                    !(window.ThemeFrozen && window.ThemeFrozen.isFrozen(theme));
+                if (!canMountAuto) {
+                    autoHqMode = false;
+                    autoHqMounted = false;
+                    armCover();
+                    return;
+                }
+                if (autoHqMounted) return;
+                autoHqMode = true;
+                autoHqMounted = true;
+                previewFrame.classList.add('theme-preview-frame--auto-hq');
+                if (simHost) simHost.style.display = '';
+                const seg = String(variantSeg || '').trim();
+                try {
+                    window.Y1ThemePreview.mountGalleryCardLazy(simHost, {
+                        catalogFolder: folderPath,
+                        variantSegment: seg,
+                        mode: 'gallery',
+                        priority: true,
+                        loadingOverlay: false,
+                        buildFileUrl: (cf, rel) => buildThemeFileUrl(cf, rel),
+                        previewMeta: cardPreviewMeta,
+                        onReady: (cfg, meta) => {
+                            if (!autoHqMode) return;
+                            if (simHost) simHost.style.display = '';
+                            previewFrame.classList.add('theme-preview-frame--live-hover', 'theme-preview-frame--cover-ready');
+                            if (img) {
+                                img.style.visibility = 'hidden';
+                                img.style.opacity = '0';
+                                img.style.pointerEvents = 'none';
+                            }
+                            applyGalleryCardPreviewReady(c, cfg, meta, folderPath, seg, theme);
+                        },
+                        onError: () => {
+                            autoHqMode = false;
+                            autoHqMounted = false;
+                            previewFrame.classList.remove('theme-preview-frame--auto-hq', 'theme-preview-frame--live-hover');
+                            if (simHost) simHost.style.display = 'none';
+                            if (img) {
+                                img.style.visibility = '';
+                                img.style.opacity = '';
+                                img.style.pointerEvents = '';
+                            }
+                            armCover();
+                        },
+                    });
+                } catch (_) {
+                    autoHqMode = false;
+                    autoHqMounted = false;
+                    armCover();
+                }
+            };
+            img.onerror = () => {
+                if (staticScreenshotActive) {
+                    /* No screenshot image available (stale/missing screenshot_preview.jpg):
+                       switch automatically to live HQ preview with the HQ button hidden. */
+                    staticScreenshotActive = false;
+                    staticPreviewActive = false;
+                    usingGeneratedJpeg = false;
+                    img.removeAttribute('srcset');
+                    startAutoHqPreview(String(variantSelect.value || '').trim());
+                    return;
+                }
+                if (usingGeneratedJpeg) {
+                    usingGeneratedJpeg = false;
+                    img.removeAttribute('srcset');
+                    screenshotIdx = 0;
+                } else {
+                    screenshotIdx += 1;
+                }
+                void applyNextScreenshot();
             };
             hqToggle.addEventListener('click', (ev) => {
                 ev.preventDefault();
                 ev.stopPropagation();
-                if (!staticPreviewActive) return;
+                if (!staticScreenshotActive) return;
                 if (hqPinned && livePreviewMounted) {
                     resetLivePreview();
                     return;
@@ -5638,18 +5743,22 @@
                 } catch (_) {}
             };
             c._armGalleryMedia = () => {
-                if (!staticPreviewActive) armCover();
                 void loadCardVariants();
                 if (window.Y1ThemesI18n && typeof window.Y1ThemesI18n.lazyTranslateCard === 'function') {
                     window.Y1ThemesI18n.lazyTranslateCard(c);
                 }
                 if (previewMounted) return;
                 previewMounted = true;
-                hqToggle.hidden = !staticPreviewActive;
-                /* The card always paints a static capture or cover first. The
-                   simulator only runs when someone presses HQ, so scrolling the
-                   gallery never downloads theme configs, fonts or icon art. */
-                void hydrateStaticPreviewCard('');
+                if (staticScreenshotActive) {
+                    hqToggle.hidden = false;
+                    /* The card paints its pre-rendered screenshot first; the live
+                       simulator runs only when someone clicks HQ. */
+                    void hydrateStaticPreviewCard('');
+                } else {
+                    /* No screenshot image is available for this theme: display the
+                       live HQ preview automatically with the HQ button hidden. */
+                    startAutoHqPreview('');
+                }
             };
             if (galleryMediaObserver) galleryMediaObserver.observe(c);
             else c._armGalleryMedia();
@@ -5711,6 +5820,12 @@
                 n.href = theme.authorUrl;
                 n.target = '_blank';
                 n.rel = 'noopener';
+                n.addEventListener('click', () => {
+                    const analyticsKey = folderPath || safeText(theme.name);
+                    if (analyticsKey && window.ThemeAnalytics && typeof window.ThemeAnalytics.trackExternalDownload === 'function') {
+                        window.ThemeAnalytics.trackExternalDownload(analyticsKey, 'gallery');
+                    }
+                });
             } else {
                 n.href = buildCardSeoHref(String(variantSelect.value || '').trim());
             }
@@ -5724,6 +5839,8 @@
                 updateCardThemeNameHref();
                 if (!folderPath || !window.Y1ThemePreview) return;
                 const seg = String(variantSelect.value || '').trim();
+                autoHqMode = false;
+                autoHqMounted = false;
                 if (typeof window.Y1ThemePreview.unmount === 'function') {
                     window.Y1ThemePreview.unmount(simHost);
                 }
@@ -5732,12 +5849,7 @@
                     hqToggle.hidden = false;
                     void hydrateStaticPreviewCard(seg);
                 } else {
-                    staticScreenshotActive = false;
-                    hqToggle.hidden = true;
-                    previewFrame.classList.remove('theme-preview-frame--screenshot');
-                    if (simHost) simHost.style.display = '';
-                    img.style.visibility = '';
-                    mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, c, seg, theme);
+                    startAutoHqPreview(seg);
                 }
                 void syncDownloadButtonToThemeConfig(seg);
                 if (window.ThemeFrozen && ThemeFrozen.isFrozen(theme)) {
@@ -5836,6 +5948,10 @@
             if (outboundUrl) {
                 dl.innerHTML = `<i class="fa-solid fa-arrow-up-right-from-square"></i> ${safeText(theme.authorCTA || (hasExternalDownload ? 'Open download page' : 'Visit author'))}`;
                 dl.onclick = () => {
+                    const analyticsKey = folderPath || safeText(theme.name);
+                    if (analyticsKey && window.ThemeAnalytics && typeof window.ThemeAnalytics.trackExternalDownload === 'function') {
+                        window.ThemeAnalytics.trackExternalDownload(analyticsKey, 'gallery');
+                    }
                     if (outboundUrl) {
                         window.open(outboundUrl, '_blank', 'noopener');
                     }
@@ -6055,6 +6171,22 @@
                 return;
             }
 
+            /* Kick off the single-request stats preload immediately in parallel
+               with card rendering so Newest / Best sorts and download counts
+               appear right away instead of waiting for all 700+ cards first. */
+            const allAnalyticsFolders = pendingCards
+                .map((t) => String(t.folder || '').replace(/^\.\/+/, ''))
+                .filter(Boolean);
+            const upfrontStatsPromise =
+                window.ThemeAnalytics && typeof window.ThemeAnalytics.fetchStatsMap === 'function'
+                    ? window.ThemeAnalytics.fetchStatsMap(allAnalyticsFolders).then(() => {
+                          if (window.ThemeAnalytics && typeof window.ThemeAnalytics.refreshAll === 'function') {
+                              window.ThemeAnalytics.refreshAll();
+                          }
+                          applyFilters();
+                      }).catch(() => {})
+                    : Promise.resolve();
+
             let cardsAdded = 0;
             let cardCursor = 0;
             let cardSliceHandle = 0;
@@ -6087,6 +6219,7 @@
                 }
 
                 void (async () => {
+                    await upfrontStatsPromise;
                     if (!window.ThemeAnalytics) return;
                     const entries = [...grid.querySelectorAll('.theme-card')].map((card) => {
                         const folder = card.getAttribute('data-catalog-folder');

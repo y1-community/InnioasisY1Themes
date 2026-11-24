@@ -53,7 +53,7 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
-    <link rel="stylesheet" href="site-theme.css?v=20261115footer1">
+    <link rel="stylesheet" href="site-theme.css?v=20261123gallery1">
     <link rel="stylesheet" href="lumen.css?v=20261117studio7">
     <link rel="stylesheet" href="site-toolbar.css?v=20261123donatecompletion2">
     <link rel="stylesheet" href="site-pages.css?v=20260622">
@@ -63,18 +63,18 @@
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script defer src="theme-packaging.js?v=20261010perf"></script>
     <script src="theme-display-name.js?v=20260624"></script>
-    <script src="y1-theme-preview.js?v=20261123studio2"></script>
+    <script src="y1-theme-preview.js?v=20261123studio5"></script>
     <script src="theme-artwork-compat.js?v=20260711"></script>
     <script src="gold-theme-detect.js?v=20261109perf"></script>
     <script src="gallery-chrome.js?v=20261123studio2"></script>
     <script src="author-links.js?v=20260622"></script>
-    <script src="site-init.js?v=20261123studio2"></script>
+    <script src="site-init.js?v=20261123stats4"></script>
     <script src="gallery-loaded-theme.js?v=20261109perf"></script>
     <script src="theme-share-links.js?v=20261123studio2"></script>
     <script src="author-submission-policy.js?v=20260523"></script>
     <link rel="stylesheet" href="theme-frozen.css?v=20260526">
     <script src="theme-frozen.js?v=20260526"></script>
-    <script src="theme-analytics.js?v=20261120stats2b"></script>
+    <script src="theme-analytics.js?v=20261123stats4"></script>
     <script src="themes-i18n.js?v=20261109live"></script>
 
     <style>
@@ -496,7 +496,8 @@
             opacity: 1;
         }
 
-        .theme-card .theme-preview-frame.theme-preview-frame--screenshot .theme-card-media-skeleton {
+        .theme-card .theme-preview-frame.theme-preview-frame--screenshot .theme-card-media-skeleton,
+        .theme-card .theme-preview-frame.theme-preview-frame--live-hover .theme-card-media-skeleton {
             display: none;
         }
 
@@ -954,17 +955,20 @@
             <label class="gallery-control" for="sort-filter">
                 Soort
                 <select id="sort-filter">
-                    <option value="name_asc">Naam (A-Z)</option>
-                    <option value="name_desc">Naam (Z-A)</option>
-                    <option value="author_asc">Auteur (A-Z)</option>
-                    <option value="views_desc">De meeste weergaven</option>
-                    <option value="views_asc">Minste weergaven</option>
-                    <option value="downloads_desc" selected>De meeste downloads</option>
+                    <option value="newest" selected>Newest themes</option>
+                    <option value="best">Beste thema's</option>
+                    <option value="downloads_desc">De meeste downloads</option>
                     <option value="downloads_asc">Minste downloads</option>
                     <option value="rating_desc">Hoogste beoordeling</option>
                     <option value="rating_asc">Laagste beoordeling</option>
+                    <option value="name_asc">Naam (A-Z)</option>
+                    <option value="name_desc">Naam (Z-A)</option>
+                    <option value="author_asc">Auteur (A-Z)</option>
                 </select>
             </label>
+            <button type="button" id="best-themes-btn" class="gallery-best-btn" aria-pressed="false" title="Sort by most downloaded and viewed themes">
+                <i class="fa-solid fa-trophy" aria-hidden="true"></i> Beste thema's
+            </button>
             <label class="gallery-control" for="page-size">
                 Per pagina
                 <select id="page-size">
@@ -1050,7 +1054,6 @@
         <a href="70s_truck/">Vrachtwagen uit de jaren 70!</a>
         <a href="80_s_slasher/">Jaren 80 slasher</a>
         <a href="80s_synthwave/">Synthwave uit de jaren 80</a>
-        <a href="90s_Z32_Nissan/">Z32 Nissan uit de jaren 90</a>
         <a href="90s_Z32_Nissan_V2/">Jaren 90 Z32 Nissan V2</a>
         <a href="90s_2000s_Teen/">Tiener uit de jaren 90/2000</a>
         <a href="NI__stuff/">[NIИ] dingen</a>
@@ -1081,12 +1084,10 @@
         <a href="ANIMECORE__eye_strain_glitch_effect_animecore_webcore/">ANIMECORE!!! vermoeide ogen/glitch-effect/animecore/webcore</a>
         <a href="Unseen/">Appel 3</a>
         <a href="AppleMusic/">Apple-muziek</a>
-        <a href="Apple_MusicApp/">Apple MusicApp</a>
         <a href="aqua_y2k__v2/">aqua y2k (v2)</a>
         <a href="ARCANE_JINX/">ARCANE JINX</a>
         <a href="Ariana_Grande/">Ariana Grande</a>
         <a href="Ariana_Grande_Petal/">Ariana Grande-bloemblaadje</a>
-        <a href="Arizona_ice_tea/">Ijsthee uit Arizona</a>
         <a href="Arizona_iced_tea/">Ijsthee uit Arizona</a>
         <a href="Arrow_Vortex/">Pijl Vortex</a>
         <a href="Artemis_Hades/">Artemis_Hades</a>
@@ -1100,9 +1101,6 @@
         <a href="baja_blast_ocean/">baja explosie oceaan</a>
         <a href="BAKUGO_mila-wolf/">BAKUGO</a>
         <a href="bakugo/">bakugo</a>
-        <a href="bkg/">bakugo (2)</a>
-        <a href="bakugo__3/">bakugo &lt;3</a>
-        <a href="bakugo__3_2/">bakugo &lt;3 (2)</a>
         <a href="BAPE/">Bape</a>
         <a href="BarbiePrincess/">BarbiePrinses</a>
         <a href="Bassie_Blomington/">Bassie Blomington</a>
@@ -1123,6 +1121,7 @@
         <a href="Blue_and_yellow_stars/">Blauwe en gele sterren</a>
         <a href="Blue_Flowers/">Blauwe bloemen!!</a>
         <a href="Blue_Lock/">Blauw slot</a>
+        <a href="blue lock [ simple ]/">blue lock [ simple ]</a>
         <a href="blue_purple_starry_bubbly/">blauwpaarse sterrenhemel bruisend</a>
         <a href="Blue_theme_leopard/">Luipaard met blauw thema</a>
         <a href="Blue_Thing/">Blauw ding</a>
@@ -1152,14 +1151,10 @@
         <a href="Cinnamoroll_aisha-shanaya-wasi/">Kaneelrol</a>
         <a href="Circuitry/">Schakelingen</a>
         <a href="Circular/">Circulaire</a>
-        <a href="Circular_but_more_circular/">Circulair maar nog circulairder</a>
         <a href="Circular_but_more_circular__fixed_icons/">Circulair maar meer circulair (vaste iconen)</a>
         <a href="CITRUS/">CITRUS</a>
-        <a href="CITRUS__2/">CITRUS (2)</a>
-        <a href="CITRUS__Clone/">CITRUS (kloon)</a>
         <a href="Citrus_lol/">Citrus lol</a>
         <a href="CITYSTAR_NO_ICONS/">CITYSTAR GEEN PICTOGRAMMEN</a>
-        <a href="Classic Millennial/">Klassieke millennial</a>
         <a href="Millennial/">Klassieke millennial (2)</a>
         <a href="clean_doggy_aesthetic/">schone doggy-esthetiek</a>
         <a href="Clean_green/">Schoon groen</a>
@@ -1182,7 +1177,6 @@
         <a href="Cute_anime_style/">Leuke anime-stijl</a>
         <a href="2000s_spider-man/">Leuke kern</a>
         <a href="cute_pink_ryan_gosling/">schattig roze ryan gansje</a>
-        <a href="Cute_Pokemon_Eevee_Eveeelutions/">Leuke Pokemon Eevee Eeveelutions</a>
         <a href="Cute_Pokemon_Eevee_Eeveelutions_V2/">Leuke Pokemon Eevee Eeveelutions V2</a>
         <a href="Cute_Strawberry/">Leuke Aardbei</a>
         <a href="Cute_Teal_Style/">Leuke blauwgroen stijl!</a>
@@ -1201,10 +1195,10 @@
         <a href="Dark_Pink_Train/">Donkerroze trein</a>
         <a href="Dark_Souls_3/">Donkere zielen 3</a>
         <a href="Death Note/">Overlijdensbrief</a>
+        <a href="Death_Note/">Overlijdensbrief</a>
         <a href="Death_The_Kid_d1/">Dood Het Kind d1</a>
         <a href="Deathnote__L_Lawliet/">Doodsbrief (L Lawliet)</a>
         <a href="DEEP_SKIN/">DIEPE HUID</a>
-        <a href="Default_blank__Clone/">Standaard blanco (kloon)</a>
         <a href="deftones/">ontdoet</a>
         <a href="DELTARUNE/">DELTARUNE</a>
         <a href="DELTARUNE__improved/">DELTARUNE (verbeterd)</a>
@@ -1223,7 +1217,6 @@
         <a href="ElectricHues/">Elektrische tinten</a>
         <a href="elevator_hitch_theme/">lift trekhaak</a>
         <a href="Eminence_In_Shadow__Delta/">Eminentie in schaduw {Delta}</a>
-        <a href="Ethereal_Princess/">Etherische prinses</a>
         <a href="Ethereal_Princess_Updated/">Etherische prinses bijgewerkt</a>
         <a href="Evergreen/">Groenblijvend</a>
         <a href="Evie/">Evie</a>
@@ -1234,7 +1227,6 @@
         <a href="FatalFrame2DCB/">FataalFrame2DCB</a>
         <a href="FatalFrame3/">FataalFrame3</a>
         <a href="FBI/">FBI</a>
-        <a href="Find_the_markers/">Zoek de markeringen</a>
         <a href="Find_the_markers__fixed/">Zoek de markeringen (vast)</a>
         <a href="FinKL/">FinKL</a>
         <a href="FLOWERS/">BLOEMEN!! 2</a>
@@ -1250,7 +1242,6 @@
         <a href="Furina/">Furina</a>
         <a href="Galaxy_Gold/">Melkweggoud</a>
         <a href="gambit/">gambiet</a>
-        <a href="gambit_themed/">Gambit-thema</a>
         <a href="Gaslight_District/">Gaslight-district</a>
         <a href="GC/">GC</a>
         <a href="Ghost/">Spook</a>
@@ -1264,10 +1255,8 @@
         <a href="girly_pink_design_hehe__3/">meisjesachtig roze ontwerp hehe &lt;3</a>
         <a href="girly_y2k/">meisjesachtig y2k</a>
         <a href="Girlypop/">Meisjespop</a>
-        <a href="Girlypop__Clone/">Girlypop (kloon)</a>
         <a href="Gojo_Satoru/">Gojo Satoru</a>
         <a href="Goldie/">Goudje</a>
-        <a href="Gothic/">Gotisch</a>
         <a href="Gothic__updated/">Gotisch (bijgewerkt)</a>
         <a href="Gothic_aesthetic_theme/">Gotische esthetiek</a>
         <a href="Gothic2/">Gotisch2</a>
@@ -1281,7 +1270,6 @@
         <a href="GRUNGE/">GRUNGE</a>
         <a href="Gruvbox_Material/">Gruvbox-materiaal</a>
         <a href="GTA3/">GTA3</a>
-        <a href="GTA3__Clone/">GTA3 (kloon)</a>
         <a href="H_Murakami/">H Murakami</a>
         <a href="Habbo/">Habbo</a>
         <a href="HalcyonTheme/">HalcyonThema</a>
@@ -1309,7 +1297,6 @@
         <a href="Hunter_x_Hunter_V1/">Jager x Jager V1</a>
         <a href="if_you_say__enhypen/">als je zegt (enhypen)</a>
         <a href="IGORPOD__FIXED/">IGORPOD</a>
-        <a href="IGORPOD__FIXED___FIXED/">IGORPOD (VAST) (VAST)</a>
         <a href="In_Another_Time/">In een andere tijd</a>
         <a href="inniPod/">inniPod</a>
         <a href="inniPod.v2_by_EliEntee/">inniPod.v2 van EliEntee</a>
@@ -1318,14 +1305,11 @@
         <a href="IOS_Theme_me/">iOS</a>
         <a href="iPod_Light_ipod-community/">iPod-lampje</a>
         <a href="iPod-ish/">iPod-achtig</a>
-        <a href="iPod-ish_reddit/">iPod-achtig</a>
         <a href="iPod-ish__Clone/">iPod-achtig (kloon)</a>
         <a href="iPod-ish_but_make_it_green/">iPod-achtig, maar maak het groen</a>
         <a href="Iron_Lung/">Ijzeren long</a>
         <a href="Isaiah/">Jesaja</a>
-        <a href="Isaiah_s_Masterpiece/">Jesaja's meesterwerk!</a>
         <a href="ISAT/">ISAT</a>
-        <a href="It_s_Isaiah/">Het is Jesaja</a>
         <a href="IvanTill/">IvanTill</a>
         <a href="Jessie_the_Yodeling_Cowgirl/">Jessie de jodeling-cowgirl</a>
         <a href="Jinx_From_Arcane/">Jinx van Arcane</a>
@@ -1361,7 +1345,6 @@
         <a href="lil_hero_pawwfect___3/">Kleine held, pawwfect!!! &lt;3</a>
         <a href="Linkin_Park_Hybrid_Theory/">Linkin Park hybride theorie</a>
         <a href="Linkin_Park_Hybrid_Theory__alt_wallpaper/">Linkin Park hybride theorie (alt wallpaper)</a>
-        <a href="LiquidGlass/">VloeibaarGlas</a>
         <a href="lirio_ara_a/">lirio araña</a>
         <a href="Littlest_Pet_Shop/">Kleinste dierenwinkel</a>
         <a href="Lord_X/">Heer X</a>
@@ -1374,7 +1357,6 @@
         <a href="MADOKAAA/">MADOKAAA</a>
         <a href="main_package/">hoofdpakket</a>
         <a href="Malcolm_Todd/">Malcolm Todd</a>
-        <a href="mallgoth_layout/">mallgoth-indeling</a>
         <a href="mallgoth_layout_starr/">mallgoth-indeling</a>
         <a href="Manu_s_PS3_Theme/">Manu's PS3</a>
         <a href="Marble_Hornets/">Marmeren horzels</a>
@@ -1403,7 +1385,6 @@
         <a href="Minecraft_Black/">Minecraft Zwart</a>
         <a href="Minecraft_Classic/">Minecraft-klassieker</a>
         <a href="Minecraft_snow_dark/">Minecraft sneeuw donker</a>
-        <a href="Minecraft_v2.0_lunen/">Minecraft v2.0</a>
         <a href="MiniMedieval/">Mini-middeleeuws</a>
         <a href="Mini_Medieval__Clone/">Mini-middeleeuws (kloon)</a>
         <a href="Minimal/">Minimaal</a>
@@ -1416,7 +1397,6 @@
         <a href="MLP/">MLP</a>
         <a href="Monet/">Monet</a>
         <a href="MonstaX/">MonstaX</a>
-        <a href="Monster_High__G1/">Monsterhoog (G1)</a>
         <a href="Moonlight/">Maanlicht</a>
         <a href="mouldy_fridge/">beschimmelde koelkast</a>
         <a href="Mt._Fiji/">Mount Fiji</a>
@@ -1428,7 +1408,6 @@
         <a href="My_Little_Pony___MLP/">Mijn kleine pony! (MLP)</a>
         <a href="Myspace/">Mijnruimte</a>
         <a href="MySweetPiano&amp;MyMelody/">MijnSweetPiano&amp;Mijn Melodie</a>
-        <a href="N/">N</a>
         <a href="Naruto/">Naruto</a>
         <a href="Naruto_Uzumaki/">Naruto Uzumaki</a>
         <a href="NavyBuble/">MarineBubbel</a>
@@ -1481,7 +1460,6 @@
         <a href="pink/">roze</a>
         <a href="pink_judy/">roze</a>
         <a href="Pink_Adela/">Roze Adela</a>
-        <a href="PINK_AESTHETIC_ceriales/">ROZE ESTHETISCH</a>
         <a href="Pink_and_Black/">Roze en zwart</a>
         <a href="pink_and_cherry_red/">roze en kersenrood</a>
         <a href="Pink_and_Girly/">Roze en meisjesachtig</a>
@@ -1520,7 +1498,6 @@
         <a href="Purple_Lo-fi/">Paarse Lo-fi</a>
         <a href="Purple_Metro/">Paarse Metro</a>
         <a href="purple_neon/">paars neon</a>
-        <a href="Purple Pineapple/">Paarse ananas</a>
         <a href="Pusheen/">Pusheen</a>
         <a href="radiohead/">radiokop</a>
         <a href="RainBow/">REGENBOOG</a>
@@ -1543,7 +1520,6 @@
         <a href="Rock_II/">Rots II</a>
         <a href="ROTTING_ZOMBIE/">ROTTENDE ZOMBIE</a>
         <a href="Royalty/">Royalty</a>
-        <a href="ryan_gosling_cute/">Ryan Gosling schattig</a>
         <a href="S.E.S/">S.E.S.</a>
         <a href="SabrinasWorld/">Sabrina's wereld</a>
         <a href="Saiki_K/">Saiki K</a>
@@ -1556,9 +1532,7 @@
         <a href="SAM_WINCHESTER/">SAM WINCHESTER</a>
         <a href="Sampo/">Sampo</a>
         <a href="Santa_Cruz/">Santa Cruz</a>
-        <a href="Satoru_Gojo/">Satoru Gojo</a>
         <a href="Satoru_Gojo__Fixed_8_31_26/">Satoru Gojo (vast 31-8-26)</a>
-        <a href="Satoru_Gojo__Updated/">Satoru Gojo (bijgewerkt)</a>
         <a href="SCENE_THEME/">SCÈNE</a>
         <a href="Seattle_Kraken/">Seattle Kraken</a>
         <a href="Sebastian_from_Hogwarts_Legacy/">Sebastian uit Hogwarts Legacy</a>
@@ -1619,7 +1593,6 @@
         <a href="No homepage items/">Steven Universum (2)</a>
         <a href="Steven_Universe_v1-v3/">Steven Universe v1-v3</a>
         <a href="Stranger Things/">Vreemdere dingen</a>
-        <a href="Stranger_Things/">Vreemdere dingen</a>
         <a href="strawberry_desert/">Aardbeien woestijn!</a>
         <a href="Strawberry_Shortcake_lovenlow/">Aardbeien Shortcake</a>
         <a href="StrawberryShortcake2006/">AardbeienShortcake2006</a>
@@ -1641,13 +1614,10 @@
         <a href="Tae_Aestethic__3/">Tae Esthetisch &lt;3</a>
         <a href="Takanaka/">Takanaka</a>
         <a href="Tamagotchi_Theme/">Tamagotchi</a>
-        <a href="BlueTate/">Tate McRae</a>
         <a href="TateMcrae/">Tate McRae (blauw)</a>
         <a href="Teal_Y3k_Girl/">Blauwgroen Y3k meisje</a>
         <a href="Team_Fortress_2/">Teamfort 2</a>
         <a href="Teardown/">Afbraak</a>
-        <a href="test/">test</a>
-        <a href="test_me/">test</a>
         <a href="Test123/">Test123</a>
         <a href="Teto/">Teto</a>
         <a href="TF2/">TF2</a>
@@ -1663,7 +1633,6 @@
         <a href="The Magnus Archives/">Het Magnus-archief</a>
         <a href="The_Owl_House/">Het Uilenhuis</a>
         <a href="The_Owl_House_laura-abril-uribe/">Het Uilenhuis</a>
-        <a href="The_Owl_House_laura-abril/">Het Uilenhuis</a>
         <a href="The_Stanley_Parable/">De Stanley-parabel</a>
         <a href="The_Summer_Hikaru_Died/">De zomer-Hikaru stierf</a>
         <a href="The_Vampire_Armand/">De vampier Armand</a>
@@ -1701,8 +1670,6 @@
         <a href="Violent_Vira/">Gewelddadige Vira</a>
         <a href="Vista/">Uitzicht</a>
         <a href="WARM_CHEETAH/">WARME CHEETAH</a>
-        <a href="Water_chill/">Waterkoeling</a>
-        <a href="Weirdcore_test/">Rare kerntest</a>
         <a href="Welcome_to_Night_Vale/">Welkom bij Nachtvale</a>
         <a href="Whimsical_angel-50000/">Grillig</a>
         <a href="Whimsy/">Eigenzinnigheid 2.0</a>
@@ -1735,13 +1702,11 @@
         <a href="Yoongi__3/">Yoongi &lt;3</a>
         <a href="Yoshitomo_Nara/">Yoshitomo Nara</a>
         <a href="Yoshka/">Joska!</a>
-        <a href="yPod/">yPod</a>
         <a href="yPodDark_Pro/">yPodDark Pro</a>
         <a href="Yume Nikki/">Yume Nikki</a>
         <a href="Yuto_Arc_V/">Yuto Arc V</a>
         <a href="Zelda_s_Rule_made_by_Pjp.maia/">Zelda's regel gemaakt door Pjp.maia</a>
         <a href="zennnnn/">zennnn</a>
-        <a href="ZOMG_-_Kokeshi/">ZOMG-Kokeshi</a>
         <a href="ZOMG_-_Village_Greens/">ZOMG - Dorpsgroenten</a>
         <a href="My_Little_Pony_andreiaroomao/">⊹₊˚ Mijn kleine pony ⊹₊˚</a>
         <a href="Electra_Heart_-_Marina_and_The_Diamonds/">♡ ELECTRA HART ♡</a>
@@ -2259,10 +2224,20 @@
         const sourceFilter = document.getElementById('source-filter');
         const authorFilter = document.getElementById('author-filter');
         const sortFilter = document.getElementById('sort-filter');
+        const bestThemesBtn = document.getElementById('best-themes-btn');
         const pageSizeSelect = document.getElementById('page-size');
         const goldOnlyCheckbox = document.getElementById('gold-only-filter');
         let goldOnlyFilter = false;
+        let currentPage = 1;
+        const DEFAULT_GALLERY_SORT = 'newest';
         const galleryGoldQueued = new Set();
+
+        function syncBestThemesButton() {
+            if (!bestThemesBtn) return;
+            const active = (sortFilter ? String(sortFilter.value || DEFAULT_GALLERY_SORT) : DEFAULT_GALLERY_SORT) === 'best';
+            bestThemesBtn.classList.toggle('is-active', active);
+            bestThemesBtn.setAttribute('aria-pressed', active ? 'true' : 'false');
+        }
 
         function galleryConnectionSavesData() {
             const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
@@ -2321,7 +2296,10 @@
             const sourceQ = qp.get('source');
             if (sourceFilter && sourceQ) sourceFilter.value = sourceQ;
             const sortQ = qp.get('sort');
-            if (sortFilter && sortQ) sortFilter.value = sortQ;
+            if (sortFilter && sortQ) {
+                const hasOpt = Array.from(sortFilter.options).some((o) => o.value === sortQ);
+                if (hasOpt) sortFilter.value = sortQ;
+            }
             const authorQ = qp.get('author');
             if (authorFilter && authorQ) {
                 authorFilter.value = authorQ;
@@ -2333,6 +2311,7 @@
             const pageQ = Number(qp.get('page') || '1');
             currentPage = Number.isFinite(pageQ) && pageQ > 0 ? Math.floor(pageQ) : 1;
         } catch (e) {}
+        syncBestThemesButton();
 
         function syncQueryState(totalPages) {
             try {
@@ -2343,8 +2322,8 @@
                 const sourceV = sourceFilter ? String(sourceFilter.value || 'all') : 'all';
                 if (sourceV !== 'all') params.set('source', sourceV);
                 else params.delete('source');
-                const sortV = sortFilter ? String(sortFilter.value || 'downloads_desc') : 'downloads_desc';
-                if (sortV !== 'downloads_desc') params.set('sort', sortV);
+                const sortV = sortFilter ? String(sortFilter.value || DEFAULT_GALLERY_SORT) : DEFAULT_GALLERY_SORT;
+                if (sortV !== DEFAULT_GALLERY_SORT) params.set('sort', sortV);
                 else params.delete('sort');
                 const authorV = authorFilter ? String(authorFilter.value || 'all') : 'all';
                 if (authorV !== 'all') params.set('author', authorV);
@@ -2365,7 +2344,6 @@
 
         const pagerTopEl = document.getElementById('theme-pager-top');
         const pagerBottomEl = document.getElementById('theme-pager-bottom');
-        let currentPage = 1;
 
         const pagerNumberFormat = (() => {
             try {
@@ -2505,7 +2483,8 @@
             const onlyOn = onlyOnDeviceCheckbox && onlyOnDeviceCheckbox.checked;
             const sourceV = sourceFilter ? String(sourceFilter.value || 'all') : 'all';
             const authorV = authorFilter ? String(authorFilter.value || 'all') : 'all';
-            const sortV = sortFilter ? String(sortFilter.value || 'downloads_desc') : 'downloads_desc';
+            const sortV = sortFilter ? String(sortFilter.value || DEFAULT_GALLERY_SORT) : DEFAULT_GALLERY_SORT;
+            syncBestThemesButton();
             const pageSize = Number(pageSizeSelect && pageSizeSelect.value || '24') || 24;
             const cards = document.querySelectorAll('.theme-card');
             const matched = [];
@@ -2523,11 +2502,36 @@
                 if (visible) matched.push(card);
             }
 
+            const newestScore = (card) =>
+                cardMetric(card, 'data-downloads') +
+                cardMetric(card, 'data-rating-count') +
+                cardMetric(card, 'data-views');
+            const bestScore = (card) =>
+                cardMetric(card, 'data-downloads') +
+                cardMetric(card, 'data-views');
+
             matched.sort((a, b) => {
                 const nameA = String(a.getAttribute('data-name') || '');
                 const nameB = String(b.getAttribute('data-name') || '');
                 const authorA = String(a.getAttribute('data-author') || '');
                 const authorB = String(b.getAttribute('data-author') || '');
+                if (sortV === 'newest') {
+                    return (
+                        newestScore(a) - newestScore(b) ||
+                        cardMetric(a, 'data-downloads') - cardMetric(b, 'data-downloads') ||
+                        cardMetric(a, 'data-views') - cardMetric(b, 'data-views') ||
+                        compareThemeTitles(nameA, nameB)
+                    );
+                }
+                if (sortV === 'best') {
+                    return (
+                        bestScore(b) - bestScore(a) ||
+                        cardMetric(b, 'data-downloads') - cardMetric(a, 'data-downloads') ||
+                        cardMetric(b, 'data-views') - cardMetric(a, 'data-views') ||
+                        cardMetric(b, 'data-rating') - cardMetric(a, 'data-rating') ||
+                        compareThemeTitles(nameA, nameB)
+                    );
+                }
                 if (sortV === 'name_desc') return compareThemeTitles(nameA, nameB, 'desc');
                 if (sortV === 'author_asc') return compareAuthorNames(authorA, authorB) || compareThemeTitles(nameA, nameB);
                 if (sortV === 'views_desc') return cardMetric(b, 'data-views') - cardMetric(a, 'data-views') || compareThemeTitles(nameA, nameB);
@@ -2589,6 +2593,14 @@
             applyFilters();
         });
         if (sortFilter) sortFilter.addEventListener('change', () => {
+            syncBestThemesButton();
+            currentPage = 1;
+            applyFilters();
+        });
+        if (bestThemesBtn) bestThemesBtn.addEventListener('click', () => {
+            if (!sortFilter) return;
+            sortFilter.value = String(sortFilter.value || DEFAULT_GALLERY_SORT) === 'best' ? DEFAULT_GALLERY_SORT : 'best';
+            syncBestThemesButton();
             currentPage = 1;
             applyFilters();
         });
@@ -5226,6 +5238,12 @@
             return str;
         }
 
+        /* Only one screenshot-backed card runs its live HQ preview at a time:
+           toggling HQ on another screenshot-backed card reverts the previous one
+           back to its screenshot image. Cards without a screenshot keep their
+           auto-HQ preview running always and never hide/show an HQ button. */
+        let activeScreenshotHqReset = null;
+
         function createCard(theme, isPriority) {
             const c = document.createElement('article');
             c.className = 'theme-card';
@@ -5246,7 +5264,18 @@
                 'data-search',
                 `${safeText(theme.name)} ${safeText(theme.description)} ${safeText(theme.author)} ${safeText(folderPath)} ${safeText(theme.searchText || '')}`.toLowerCase()
             );
-            if (folderPath) c.setAttribute('data-catalog-folder', folderPath);
+            if (folderPath) {
+                c.setAttribute('data-catalog-folder', folderPath);
+                if (window.ThemeAnalytics && typeof window.ThemeAnalytics.getStats === 'function') {
+                    const st = window.ThemeAnalytics.getStats(folderPath);
+                    if (st) {
+                        c.setAttribute('data-views', String(Number(st.pageViews) || 0));
+                        c.setAttribute('data-downloads', String(Number(st.downloads) || 0));
+                        c.setAttribute('data-rating', String(Number(st.ratingAverage) || 0));
+                        c.setAttribute('data-rating-count', String(Number(st.ratingCount) || 0));
+                    }
+                }
+            }
 
             const cardTop = document.createElement('div');
             cardTop.className = 'theme-card-top';
@@ -5323,6 +5352,8 @@
             };
             let staticScreenshotActive = false;
             let staticPreviewActive = false;
+            let autoHqMode = false;
+            let autoHqMounted = false;
             const folderImageCandidates = folderPath ? [
                 `${folderPath}/cover-thumb.jpg`,
                 `${folderPath}/cover.jpg`,
@@ -5367,28 +5398,6 @@
             img.addEventListener('load', () => {
                 previewFrame.classList.add('theme-preview-frame--cover-ready');
             });
-            img.onerror = () => {
-                if (staticScreenshotActive) {
-                    /* Stale themes.json: the capture is gone. Keep the card static
-                       and try the generated cover set instead of mounting the
-                       simulator, so a missing capture cannot cost every card a
-                       theme config, font and icon download. */
-                    staticScreenshotActive = false;
-                    usingGeneratedJpeg = false;
-                    img.removeAttribute('srcset');
-                    screenshotIdx = 0;
-                    void applyNextScreenshot();
-                    return;
-                }
-                if (usingGeneratedJpeg) {
-                    usingGeneratedJpeg = false;
-                    img.removeAttribute('srcset');
-                    screenshotIdx = 0;
-                } else {
-                    screenshotIdx += 1;
-                }
-                void applyNextScreenshot();
-            };
             const armCover = () => {
                 if (img.dataset.coverArmed === '1') return;
                 img.dataset.coverArmed = '1';
@@ -5399,7 +5408,6 @@
                     return;
                 }
                 const enc = folderPath.split('/').filter(Boolean).map(encodeURIComponent).join('/');
-                staticPreviewActive = true;
                 usingGeneratedJpeg = true;
                 img.src = `./${enc}/cover-thumb.jpg`;
                 if (!saveData) {
@@ -5412,27 +5420,30 @@
                 if (!src) return false;
                 staticScreenshotActive = true;
                 staticPreviewActive = true;
+                autoHqMode = false;
+                autoHqMounted = false;
                 usingGeneratedJpeg = false;
                 img.dataset.coverArmed = '1';
                 img.removeAttribute('srcset');
                 img.removeAttribute('sizes');
                 img.fetchPriority = isPriority ? 'high' : 'low';
+                img.style.visibility = '';
+                img.style.opacity = '';
+                img.style.pointerEvents = '';
                 previewFrame.classList.add('theme-preview-frame--screenshot');
+                previewFrame.classList.remove('theme-preview-frame--auto-hq');
                 if (simHost) simHost.style.display = 'none';
                 if (img.getAttribute('src') !== src) img.src = src;
                 return true;
             };
-            if (!applyStaticScreenshot('')) {
-                if (isPriority) {
-                    armCover();
-                }
-            }
+            applyStaticScreenshot('');
             previewFrame.append(mediaSkeleton, img);
 
-            /* Hover / HQ: keep the static capture on screen until the live
-               rendered assets are ready. Only a real hover (or an explicit HQ
-               press) starts the expensive simulator mount, keeping translation
-               and asset work off the initial gallery paint. */
+            /* Hover / HQ: for themes WITH a screenshot image, keep the static
+               capture on screen until someone clicks HQ, and switching on HQ
+               for another screenshot-backed card reverts the previous one back
+               to its screenshot. Themes WITHOUT a screenshot mount HQ preview
+               automatically and stay on always without an HQ toggle button. */
             const hqToggle = document.createElement('button');
             hqToggle.type = 'button';
             hqToggle.className = 'theme-preview-hq';
@@ -5440,7 +5451,7 @@
             hqToggle.title = 'Show the live rendered preview';
             hqToggle.setAttribute('aria-label', 'Show the live rendered preview');
             hqToggle.setAttribute('aria-pressed', 'false');
-            hqToggle.hidden = !staticPreviewActive;
+            hqToggle.hidden = !staticScreenshotActive;
             previewFrame.appendChild(hqToggle);
 
             let hoverMountTimer = 0;
@@ -5468,7 +5479,7 @@
                 }
             };
             const livePreviewAllowed = () =>
-                staticPreviewActive &&
+                staticScreenshotActive &&
                 !!folderPath &&
                 !!window.Y1ThemePreview &&
                 typeof window.Y1ThemePreview.mountGalleryCardLazy === 'function' &&
@@ -5476,6 +5487,7 @@
                 !(window.ThemeFrozen && window.ThemeFrozen.isFrozen(theme));
             const restoreStaticScreenshot = (force) => {
                 clearTimeout(hoverMountTimer);
+                if (autoHqMode) return;
                 if (hqPinned && !force) return;
                 if (!livePreviewMounted && !livePreviewReady) return;
                 livePreviewMounted = false;
@@ -5490,12 +5502,31 @@
                     simHost.style.display = 'none';
                 }
                 previewFrame.classList.remove('theme-preview-frame--live-hover');
-                if (img) img.style.opacity = '';
+                if (img) {
+                    img.style.visibility = '';
+                    img.style.opacity = '';
+                    img.style.pointerEvents = '';
+                }
                 hqToggle.setAttribute('aria-pressed', 'false');
                 setHqPillState('idle');
             };
+            const resetLivePreview = () => {
+                if (activeScreenshotHqReset === resetLivePreview) {
+                    activeScreenshotHqReset = null;
+                }
+                hqPinned = false;
+                hqToggle.setAttribute('aria-pressed', 'false');
+                setHqPillState('idle');
+                restoreStaticScreenshot(true);
+            };
             const mountLivePreview = () => {
                 if (livePreviewMounted || livePreviewReady || !livePreviewAllowed()) return;
+                if (activeScreenshotHqReset && activeScreenshotHqReset !== resetLivePreview) {
+                    try {
+                        activeScreenshotHqReset();
+                    } catch (_) {}
+                }
+                activeScreenshotHqReset = resetLivePreview;
                 livePreviewMounted = true;
                 setHqPillState('loading');
                 const seg = String(variantSelect.value || '').trim();
@@ -5520,27 +5551,101 @@
                             applyGalleryCardPreviewReady(c, cfg, meta, folderPath, seg, theme);
                         },
                         onError: () => {
-                            hqPinned = false;
-                            hqToggle.setAttribute('aria-pressed', 'false');
-                            setHqPillState('idle');
-                            restoreStaticScreenshot(true);
+                            resetLivePreview();
                         },
                     });
                 } catch (_) {
-                    setHqPillState('idle');
-                    restoreStaticScreenshot(true);
+                    resetLivePreview();
                 }
             };
-            const resetLivePreview = () => {
-                hqPinned = false;
-                hqToggle.setAttribute('aria-pressed', 'false');
-                setHqPillState('idle');
-                restoreStaticScreenshot(true);
+            const startAutoHqPreview = (variantSeg) => {
+                staticScreenshotActive = false;
+                staticPreviewActive = false;
+                if (activeScreenshotHqReset === resetLivePreview) {
+                    activeScreenshotHqReset = null;
+                }
+                hqToggle.hidden = true;
+                previewFrame.classList.remove('theme-preview-frame--screenshot');
+                const canMountAuto =
+                    !!folderPath &&
+                    !!window.Y1ThemePreview &&
+                    typeof window.Y1ThemePreview.mountGalleryCardLazy === 'function' &&
+                    !(window.ThemeFrozen && window.ThemeFrozen.isFrozen(theme));
+                if (!canMountAuto) {
+                    autoHqMode = false;
+                    autoHqMounted = false;
+                    armCover();
+                    return;
+                }
+                if (autoHqMounted) return;
+                autoHqMode = true;
+                autoHqMounted = true;
+                previewFrame.classList.add('theme-preview-frame--auto-hq');
+                if (simHost) simHost.style.display = '';
+                const seg = String(variantSeg || '').trim();
+                try {
+                    window.Y1ThemePreview.mountGalleryCardLazy(simHost, {
+                        catalogFolder: folderPath,
+                        variantSegment: seg,
+                        mode: 'gallery',
+                        priority: true,
+                        loadingOverlay: false,
+                        buildFileUrl: (cf, rel) => buildThemeFileUrl(cf, rel),
+                        previewMeta: cardPreviewMeta,
+                        onReady: (cfg, meta) => {
+                            if (!autoHqMode) return;
+                            if (simHost) simHost.style.display = '';
+                            previewFrame.classList.add('theme-preview-frame--live-hover', 'theme-preview-frame--cover-ready');
+                            if (img) {
+                                img.style.visibility = 'hidden';
+                                img.style.opacity = '0';
+                                img.style.pointerEvents = 'none';
+                            }
+                            applyGalleryCardPreviewReady(c, cfg, meta, folderPath, seg, theme);
+                        },
+                        onError: () => {
+                            autoHqMode = false;
+                            autoHqMounted = false;
+                            previewFrame.classList.remove('theme-preview-frame--auto-hq', 'theme-preview-frame--live-hover');
+                            if (simHost) simHost.style.display = 'none';
+                            if (img) {
+                                img.style.visibility = '';
+                                img.style.opacity = '';
+                                img.style.pointerEvents = '';
+                            }
+                            armCover();
+                        },
+                    });
+                } catch (_) {
+                    autoHqMode = false;
+                    autoHqMounted = false;
+                    armCover();
+                }
+            };
+            img.onerror = () => {
+                if (staticScreenshotActive) {
+                    /* No screenshot image available (stale/missing screenshot_preview.jpg):
+                       switch automatically to live HQ preview with the HQ button hidden. */
+                    staticScreenshotActive = false;
+                    staticPreviewActive = false;
+                    usingGeneratedJpeg = false;
+                    img.removeAttribute('srcset');
+                    startAutoHqPreview(String(variantSelect.value || '').trim());
+                    return;
+                }
+                if (usingGeneratedJpeg) {
+                    usingGeneratedJpeg = false;
+                    img.removeAttribute('srcset');
+                    screenshotIdx = 0;
+                } else {
+                    screenshotIdx += 1;
+                }
+                void applyNextScreenshot();
             };
             hqToggle.addEventListener('click', (ev) => {
                 ev.preventDefault();
                 ev.stopPropagation();
-                if (!staticPreviewActive) return;
+                if (!staticScreenshotActive) return;
                 if (hqPinned && livePreviewMounted) {
                     resetLivePreview();
                     return;
@@ -5638,18 +5743,22 @@
                 } catch (_) {}
             };
             c._armGalleryMedia = () => {
-                if (!staticPreviewActive) armCover();
                 void loadCardVariants();
                 if (window.Y1ThemesI18n && typeof window.Y1ThemesI18n.lazyTranslateCard === 'function') {
                     window.Y1ThemesI18n.lazyTranslateCard(c);
                 }
                 if (previewMounted) return;
                 previewMounted = true;
-                hqToggle.hidden = !staticPreviewActive;
-                /* The card always paints a static capture or cover first. The
-                   simulator only runs when someone presses HQ, so scrolling the
-                   gallery never downloads theme configs, fonts or icon art. */
-                void hydrateStaticPreviewCard('');
+                if (staticScreenshotActive) {
+                    hqToggle.hidden = false;
+                    /* The card paints its pre-rendered screenshot first; the live
+                       simulator runs only when someone clicks HQ. */
+                    void hydrateStaticPreviewCard('');
+                } else {
+                    /* No screenshot image is available for this theme: display the
+                       live HQ preview automatically with the HQ button hidden. */
+                    startAutoHqPreview('');
+                }
             };
             if (galleryMediaObserver) galleryMediaObserver.observe(c);
             else c._armGalleryMedia();
@@ -5711,6 +5820,12 @@
                 n.href = theme.authorUrl;
                 n.target = '_blank';
                 n.rel = 'noopener';
+                n.addEventListener('click', () => {
+                    const analyticsKey = folderPath || safeText(theme.name);
+                    if (analyticsKey && window.ThemeAnalytics && typeof window.ThemeAnalytics.trackExternalDownload === 'function') {
+                        window.ThemeAnalytics.trackExternalDownload(analyticsKey, 'gallery');
+                    }
+                });
             } else {
                 n.href = buildCardSeoHref(String(variantSelect.value || '').trim());
             }
@@ -5724,6 +5839,8 @@
                 updateCardThemeNameHref();
                 if (!folderPath || !window.Y1ThemePreview) return;
                 const seg = String(variantSelect.value || '').trim();
+                autoHqMode = false;
+                autoHqMounted = false;
                 if (typeof window.Y1ThemePreview.unmount === 'function') {
                     window.Y1ThemePreview.unmount(simHost);
                 }
@@ -5732,12 +5849,7 @@
                     hqToggle.hidden = false;
                     void hydrateStaticPreviewCard(seg);
                 } else {
-                    staticScreenshotActive = false;
-                    hqToggle.hidden = true;
-                    previewFrame.classList.remove('theme-preview-frame--screenshot');
-                    if (simHost) simHost.style.display = '';
-                    img.style.visibility = '';
-                    mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, c, seg, theme);
+                    startAutoHqPreview(seg);
                 }
                 void syncDownloadButtonToThemeConfig(seg);
                 if (window.ThemeFrozen && ThemeFrozen.isFrozen(theme)) {
@@ -5836,6 +5948,10 @@
             if (outboundUrl) {
                 dl.innerHTML = `<i class="fa-solid fa-arrow-up-right-from-square"></i> ${safeText(theme.authorCTA || (hasExternalDownload ? 'Open download page' : 'Visit author'))}`;
                 dl.onclick = () => {
+                    const analyticsKey = folderPath || safeText(theme.name);
+                    if (analyticsKey && window.ThemeAnalytics && typeof window.ThemeAnalytics.trackExternalDownload === 'function') {
+                        window.ThemeAnalytics.trackExternalDownload(analyticsKey, 'gallery');
+                    }
                     if (outboundUrl) {
                         window.open(outboundUrl, '_blank', 'noopener');
                     }
@@ -6055,6 +6171,22 @@
                 return;
             }
 
+            /* Kick off the single-request stats preload immediately in parallel
+               with card rendering so Newest / Best sorts and download counts
+               appear right away instead of waiting for all 700+ cards first. */
+            const allAnalyticsFolders = pendingCards
+                .map((t) => String(t.folder || '').replace(/^\.\/+/, ''))
+                .filter(Boolean);
+            const upfrontStatsPromise =
+                window.ThemeAnalytics && typeof window.ThemeAnalytics.fetchStatsMap === 'function'
+                    ? window.ThemeAnalytics.fetchStatsMap(allAnalyticsFolders).then(() => {
+                          if (window.ThemeAnalytics && typeof window.ThemeAnalytics.refreshAll === 'function') {
+                              window.ThemeAnalytics.refreshAll();
+                          }
+                          applyFilters();
+                      }).catch(() => {})
+                    : Promise.resolve();
+
             let cardsAdded = 0;
             let cardCursor = 0;
             let cardSliceHandle = 0;
@@ -6087,6 +6219,7 @@
                 }
 
                 void (async () => {
+                    await upfrontStatsPromise;
                     if (!window.ThemeAnalytics) return;
                     const entries = [...grid.querySelectorAll('.theme-card')].map((card) => {
                         const folder = card.getAttribute('data-catalog-folder');

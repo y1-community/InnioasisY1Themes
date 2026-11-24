@@ -53,7 +53,7 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://innioasis.app/styles.css">
-    <link rel="stylesheet" href="site-theme.css?v=20261115footer1">
+    <link rel="stylesheet" href="site-theme.css?v=20261123gallery1">
     <link rel="stylesheet" href="lumen.css?v=20261117studio7">
     <link rel="stylesheet" href="site-toolbar.css?v=20261123donatecompletion2">
     <link rel="stylesheet" href="site-pages.css?v=20260622">
@@ -63,18 +63,18 @@
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script defer src="theme-packaging.js?v=20261010perf"></script>
     <script src="theme-display-name.js?v=20260624"></script>
-    <script src="y1-theme-preview.js?v=20261123studio2"></script>
+    <script src="y1-theme-preview.js?v=20261123studio5"></script>
     <script src="theme-artwork-compat.js?v=20260711"></script>
     <script src="gold-theme-detect.js?v=20261109perf"></script>
     <script src="gallery-chrome.js?v=20261123studio2"></script>
     <script src="author-links.js?v=20260622"></script>
-    <script src="site-init.js?v=20261123studio2"></script>
+    <script src="site-init.js?v=20261123stats4"></script>
     <script src="gallery-loaded-theme.js?v=20261109perf"></script>
     <script src="theme-share-links.js?v=20261123studio2"></script>
     <script src="author-submission-policy.js?v=20260523"></script>
     <link rel="stylesheet" href="theme-frozen.css?v=20260526">
     <script src="theme-frozen.js?v=20260526"></script>
-    <script src="theme-analytics.js?v=20261120stats2b"></script>
+    <script src="theme-analytics.js?v=20261123stats4"></script>
     <script src="themes-i18n.js?v=20261109live"></script>
 
     <style>
@@ -496,7 +496,8 @@
             opacity: 1;
         }
 
-        .theme-card .theme-preview-frame.theme-preview-frame--screenshot .theme-card-media-skeleton {
+        .theme-card .theme-preview-frame.theme-preview-frame--screenshot .theme-card-media-skeleton,
+        .theme-card .theme-preview-frame.theme-preview-frame--live-hover .theme-card-media-skeleton {
             display: none;
         }
 
@@ -954,17 +955,20 @@
             <label class="gallery-control" for="sort-filter">
                 選別
                 <select id="sort-filter">
-                    <option value="name_asc">名前 (A ～ Z)</option>
-                    <option value="name_desc">名前 (Z-A)</option>
-                    <option value="author_asc">著者 (A-Z)</option>
-                    <option value="views_desc">ほとんどのビュー</option>
-                    <option value="views_asc">閲覧数が最も少ない</option>
-                    <option value="downloads_desc" selected>ほとんどのダウンロード</option>
+                    <option value="newest" selected>Newest themes</option>
+                    <option value="best">最高のテーマ</option>
+                    <option value="downloads_desc">ほとんどのダウンロード</option>
                     <option value="downloads_asc">ダウンロード数が最も少ない</option>
                     <option value="rating_desc">最高評価</option>
                     <option value="rating_asc">最低評価</option>
+                    <option value="name_asc">名前 (A ～ Z)</option>
+                    <option value="name_desc">名前 (Z-A)</option>
+                    <option value="author_asc">著者 (A-Z)</option>
                 </select>
             </label>
+            <button type="button" id="best-themes-btn" class="gallery-best-btn" aria-pressed="false" title="Sort by most downloaded and viewed themes">
+                <i class="fa-solid fa-trophy" aria-hidden="true"></i> 最高のテーマ
+            </button>
             <label class="gallery-control" for="page-size">
                 ページごと
                 <select id="page-size">
@@ -1050,7 +1054,6 @@
         <a href="70s_truck/">70年代のトラック！</a>
         <a href="80_s_slasher/">80年代のスラッシャー</a>
         <a href="80s_synthwave/">80年代のシンセウェーブ</a>
-        <a href="90s_Z32_Nissan/">90年代 Z32 日産</a>
         <a href="90s_Z32_Nissan_V2/">90年代 Z32 日産 V2</a>
         <a href="90s_2000s_Teen/">90 年代/2000 年代のティーン</a>
         <a href="NI__stuff/">[NIИ]のもの</a>
@@ -1081,12 +1084,10 @@
         <a href="ANIMECORE__eye_strain_glitch_effect_animecore_webcore/">アニメコア!!!眼精疲労/グリッチエフェクト/アニメコア/ウェブコア</a>
         <a href="Unseen/">アップル3</a>
         <a href="AppleMusic/">Apple Music</a>
-        <a href="Apple_MusicApp/">Apple MusicApp</a>
         <a href="aqua_y2k__v2/">アクア y2k (v2)</a>
         <a href="ARCANE_JINX/">秘儀ジンクス</a>
         <a href="Ariana_Grande/">アリアナ・グランデ</a>
         <a href="Ariana_Grande_Petal/">アリアナ・グランデ・ペタル</a>
-        <a href="Arizona_ice_tea/">アリゾナアイスティー</a>
         <a href="Arizona_iced_tea/">アリゾナアイスティー</a>
         <a href="Arrow_Vortex/">アローボルテックス</a>
         <a href="Artemis_Hades/">アルテミス_ハデス</a>
@@ -1100,9 +1101,6 @@
         <a href="baja_blast_ocean/">バハ ブラスト オーシャン</a>
         <a href="BAKUGO_mila-wolf/">爆豪</a>
         <a href="bakugo/">爆豪</a>
-        <a href="bkg/">爆豪 (2)</a>
-        <a href="bakugo__3/">爆豪 &lt;3</a>
-        <a href="bakugo__3_2/">爆豪 &lt;3 (2)</a>
         <a href="BAPE/">ベイプ</a>
         <a href="BarbiePrincess/">バービープリンセス</a>
         <a href="Bassie_Blomington/">ベイシー・ブロミントン</a>
@@ -1123,6 +1121,7 @@
         <a href="Blue_and_yellow_stars/">青と黄色の星</a>
         <a href="Blue_Flowers/">青い花!!</a>
         <a href="Blue_Lock/">ブルーロック</a>
+        <a href="blue lock [ simple ]/">blue lock [ simple ]</a>
         <a href="blue_purple_starry_bubbly/">青紫の星空の泡</a>
         <a href="Blue_theme_leopard/">青のテーマのヒョウ</a>
         <a href="Blue_Thing/">青いもの</a>
@@ -1152,14 +1151,10 @@
         <a href="Cinnamoroll_aisha-shanaya-wasi/">シナモロール</a>
         <a href="Circuitry/">回路</a>
         <a href="Circular/">円形</a>
-        <a href="Circular_but_more_circular/">円形だが、より円形に</a>
         <a href="Circular_but_more_circular__fixed_icons/">円形だがより円形（固定アイコン）</a>
         <a href="CITRUS/">柑橘類</a>
-        <a href="CITRUS__2/">シトラス (2)</a>
-        <a href="CITRUS__Clone/">シトラス (クローン)</a>
         <a href="Citrus_lol/">柑橘類（笑）</a>
         <a href="CITYSTAR_NO_ICONS/">シティスターにはアイコンがありません</a>
-        <a href="Classic Millennial/">古典的なミレニアル世代</a>
         <a href="Millennial/">クラシックミレニアル (2)</a>
         <a href="clean_doggy_aesthetic/">清潔な犬の美学</a>
         <a href="Clean_green/">クリーングリーン</a>
@@ -1182,7 +1177,6 @@
         <a href="Cute_anime_style/">かわいいアニメスタイル</a>
         <a href="2000s_spider-man/">キュートコア</a>
         <a href="cute_pink_ryan_gosling/">かわいいピンクのライアン・ゴスリング</a>
-        <a href="Cute_Pokemon_Eevee_Eveeelutions/">かわいいポケモン イーブイ Eeveelutions</a>
         <a href="Cute_Pokemon_Eevee_Eeveelutions_V2/">かわいいポケモン イーブイ Eeveelutions V2</a>
         <a href="Cute_Strawberry/">かわいいイチゴ</a>
         <a href="Cute_Teal_Style/">かわいいティールスタイル！</a>
@@ -1201,10 +1195,10 @@
         <a href="Dark_Pink_Train/">ダークピンクの電車</a>
         <a href="Dark_Souls_3/">ダークソウル3</a>
         <a href="Death Note/">デスノート</a>
+        <a href="Death_Note/">デスノート</a>
         <a href="Death_The_Kid_d1/">デス・ザ・キッド d1</a>
         <a href="Deathnote__L_Lawliet/">デスノート (L・ローリエット)</a>
         <a href="DEEP_SKIN/">ディープスキン</a>
-        <a href="Default_blank__Clone/">デフォルトの空白 (クローン)</a>
         <a href="deftones/">デフトーンズ</a>
         <a href="DELTARUNE/">デルタルーン</a>
         <a href="DELTARUNE__improved/">デルタルーン（改良版）</a>
@@ -1223,7 +1217,6 @@
         <a href="ElectricHues/">エレクトリックな色合い</a>
         <a href="elevator_hitch_theme/">エレベーターヒッチ</a>
         <a href="Eminence_In_Shadow__Delta/">影のエミネンス {デルタ}</a>
-        <a href="Ethereal_Princess/">エーテルプリンセス</a>
         <a href="Ethereal_Princess_Updated/">エーテルプリンセスが更新されました</a>
         <a href="Evergreen/">エバーグリーン</a>
         <a href="Evie/">イヴィー</a>
@@ -1234,7 +1227,6 @@
         <a href="FatalFrame2DCB/">FatalFrame2DCB</a>
         <a href="FatalFrame3/">FatalFrame3</a>
         <a href="FBI/">FBI</a>
-        <a href="Find_the_markers/">マーカーを見つける</a>
         <a href="Find_the_markers__fixed/">マーカーを見つける (修正)</a>
         <a href="FinKL/">フィンクル</a>
         <a href="FLOWERS/">フラワーズ!! 2</a>
@@ -1250,7 +1242,6 @@
         <a href="Furina/">フリナ</a>
         <a href="Galaxy_Gold/">ギャラクシーゴールド</a>
         <a href="gambit/">ギャンビット</a>
-        <a href="gambit_themed/">ガンビットをテーマにした</a>
         <a href="Gaslight_District/">ガス灯地区</a>
         <a href="GC/">GC</a>
         <a href="Ghost/">おばけ</a>
@@ -1264,10 +1255,8 @@
         <a href="girly_pink_design_hehe__3/">ガーリーなピンクのデザインですふふ &lt;3</a>
         <a href="girly_y2k/">ガーリーy2k</a>
         <a href="Girlypop/">ガーリーポップ</a>
-        <a href="Girlypop__Clone/">ガーリーポップ (クローン)</a>
         <a href="Gojo_Satoru/">五条悟</a>
         <a href="Goldie/">ゴールディ</a>
-        <a href="Gothic/">ゴシック</a>
         <a href="Gothic__updated/">ゴシック体 (更新)</a>
         <a href="Gothic_aesthetic_theme/">ゴシック美学</a>
         <a href="Gothic2/">ゴシック2</a>
@@ -1281,7 +1270,6 @@
         <a href="GRUNGE/">グランジ</a>
         <a href="Gruvbox_Material/">Gruvbox マテリアル</a>
         <a href="GTA3/">GTA3</a>
-        <a href="GTA3__Clone/">GTA3 (クローン)</a>
         <a href="H_Murakami/">村上弘</a>
         <a href="Habbo/">ハボ</a>
         <a href="HalcyonTheme/">ハルシオンのテーマ</a>
@@ -1309,7 +1297,6 @@
         <a href="Hunter_x_Hunter_V1/">ハンター×ハンター V1</a>
         <a href="if_you_say__enhypen/">あなたが言うなら（強調して）</a>
         <a href="IGORPOD__FIXED/">イゴルポッド</a>
-        <a href="IGORPOD__FIXED___FIXED/">IGORPOD (固定) (固定)</a>
         <a href="In_Another_Time/">イン・アナザー・タイム</a>
         <a href="inniPod/">インiPod</a>
         <a href="inniPod.v2_by_EliEntee/">inniPod.v2 by EliEntee</a>
@@ -1318,14 +1305,11 @@
         <a href="IOS_Theme_me/">iOS</a>
         <a href="iPod_Light_ipod-community/">iPodライト</a>
         <a href="iPod-ish/">iPodっぽい</a>
-        <a href="iPod-ish_reddit/">iPodっぽい</a>
         <a href="iPod-ish__Clone/">iPodっぽい（クローン）</a>
         <a href="iPod-ish_but_make_it_green/">iPodっぽいけど緑にしてみよう</a>
         <a href="Iron_Lung/">鉄の肺</a>
         <a href="Isaiah/">イザヤ書</a>
-        <a href="Isaiah_s_Masterpiece/">イザヤの最高傑作！</a>
         <a href="ISAT/">ISAT</a>
-        <a href="It_s_Isaiah/">イザヤです</a>
         <a href="IvanTill/">イヴァンティル</a>
         <a href="Jessie_the_Yodeling_Cowgirl/">ヨーデルのカウガールのジェシー</a>
         <a href="Jinx_From_Arcane/">ジンクス・フロム・アルケイン</a>
@@ -1361,7 +1345,6 @@
         <a href="lil_hero_pawwfect___3/">リル・ヒーロー・ポーフェクト！ &lt;3</a>
         <a href="Linkin_Park_Hybrid_Theory/">リンキン・パークのハイブリッド理論</a>
         <a href="Linkin_Park_Hybrid_Theory__alt_wallpaper/">リンキン・パークのハイブリッド理論 (代替壁紙)</a>
-        <a href="LiquidGlass/">液体ガラス</a>
         <a href="lirio_ara_a/">リリオ・アラニャ</a>
         <a href="Littlest_Pet_Shop/">リトルペット ショップ</a>
         <a href="Lord_X/">ロードX</a>
@@ -1374,7 +1357,6 @@
         <a href="MADOKAAA/">まどかぁ</a>
         <a href="main_package/">メインパッケージ</a>
         <a href="Malcolm_Todd/">マルコム・トッド</a>
-        <a href="mallgoth_layout/">モールゴスのレイアウト</a>
         <a href="mallgoth_layout_starr/">モールゴスのレイアウト</a>
         <a href="Manu_s_PS3_Theme/">マヌーのPS3</a>
         <a href="Marble_Hornets/">マーブルスズメバチ</a>
@@ -1403,7 +1385,6 @@
         <a href="Minecraft_Black/">マインクラフト ブラック</a>
         <a href="Minecraft_Classic/">マインクラフト クラシック</a>
         <a href="Minecraft_snow_dark/">Minecraft 雪ダーク</a>
-        <a href="Minecraft_v2.0_lunen/">マインクラフト v2.0</a>
         <a href="MiniMedieval/">ミニ中世</a>
         <a href="Mini_Medieval__Clone/">ミニ中世 (クローン)</a>
         <a href="Minimal/">最小限</a>
@@ -1416,7 +1397,6 @@
         <a href="MLP/">MLP</a>
         <a href="Monet/">モネ</a>
         <a href="MonstaX/">モンスタX</a>
-        <a href="Monster_High__G1/">モンスターハイ (G1)</a>
         <a href="Moonlight/">月光</a>
         <a href="mouldy_fridge/">カビの生えた冷蔵庫</a>
         <a href="Mt._Fiji/">フィジー山</a>
@@ -1428,7 +1408,6 @@
         <a href="My_Little_Pony___MLP/">マイリトルポニー！ (MLP)</a>
         <a href="Myspace/">マイスペース</a>
         <a href="MySweetPiano&amp;MyMelody/">マイスイートピアノ&amp;マイメロディ</a>
-        <a href="N/">N</a>
         <a href="Naruto/">ナルト</a>
         <a href="Naruto_Uzumaki/">うずまきナルト</a>
         <a href="NavyBuble/">ネイビーバブル</a>
@@ -1481,7 +1460,6 @@
         <a href="pink/">ピンク</a>
         <a href="pink_judy/">ピンク</a>
         <a href="Pink_Adela/">ピンク・アデラ</a>
-        <a href="PINK_AESTHETIC_ceriales/">ピンクの美学</a>
         <a href="Pink_and_Black/">ピンクと黒</a>
         <a href="pink_and_cherry_red/">ピンクとチェリーレッド</a>
         <a href="Pink_and_Girly/">ピンクでガーリー</a>
@@ -1520,7 +1498,6 @@
         <a href="Purple_Lo-fi/">パープル ローファイ</a>
         <a href="Purple_Metro/">パープルメトロ</a>
         <a href="purple_neon/">紫のネオン</a>
-        <a href="Purple Pineapple/">パープルパイナップル</a>
         <a href="Pusheen/">プシーン</a>
         <a href="radiohead/">レディオヘッド</a>
         <a href="RainBow/">虹</a>
@@ -1543,7 +1520,6 @@
         <a href="Rock_II/">ロックⅡ</a>
         <a href="ROTTING_ZOMBIE/">腐ったゾンビ</a>
         <a href="Royalty/">ロイヤリティー</a>
-        <a href="ryan_gosling_cute/">ライアン・ゴズリングかわいい</a>
         <a href="S.E.S/">S.E.S.</a>
         <a href="SabrinasWorld/">サブリナの世界</a>
         <a href="Saiki_K/">斉木K</a>
@@ -1556,9 +1532,7 @@
         <a href="SAM_WINCHESTER/">サム・ウィンチェスター</a>
         <a href="Sampo/">三宝</a>
         <a href="Santa_Cruz/">サンタクルーズ</a>
-        <a href="Satoru_Gojo/">五条悟</a>
         <a href="Satoru_Gojo__Fixed_8_31_26/">五条悟(26/8/31修正)</a>
-        <a href="Satoru_Gojo__Updated/">五条悟（更新）</a>
         <a href="SCENE_THEME/">シーン</a>
         <a href="Seattle_Kraken/">シアトル クラーケン</a>
         <a href="Sebastian_from_Hogwarts_Legacy/">ホグワーツレガシーのセバスチャン</a>
@@ -1619,7 +1593,6 @@
         <a href="No homepage items/">スティーブン・ユニバース (2)</a>
         <a href="Steven_Universe_v1-v3/">スティーブン・ユニバース v1-v3</a>
         <a href="Stranger Things/">ストレンジャー・シングス</a>
-        <a href="Stranger_Things/">ストレンジャー・シングス</a>
         <a href="strawberry_desert/">イチゴのデザート！</a>
         <a href="Strawberry_Shortcake_lovenlow/">ストロベリーショートケーキ</a>
         <a href="StrawberryShortcake2006/">ストロベリーショートケーキ2006</a>
@@ -1641,13 +1614,10 @@
         <a href="Tae_Aestethic__3/">テテ美学 &lt;3</a>
         <a href="Takanaka/">高中</a>
         <a href="Tamagotchi_Theme/">たまごっち</a>
-        <a href="BlueTate/">テート・マクレー</a>
         <a href="TateMcrae/">テート・マクレー (ブルー)</a>
         <a href="Teal_Y3k_Girl/">ティール 3000 歳の女の子</a>
         <a href="Team_Fortress_2/">チームフォートレス2</a>
         <a href="Teardown/">取り壊す</a>
-        <a href="test/">テスト</a>
-        <a href="test_me/">テスト</a>
         <a href="Test123/">テスト123</a>
         <a href="Teto/">テト</a>
         <a href="TF2/">TF2</a>
@@ -1663,7 +1633,6 @@
         <a href="The Magnus Archives/">マグナスアーカイブ</a>
         <a href="The_Owl_House/">フクロウハウス</a>
         <a href="The_Owl_House_laura-abril-uribe/">フクロウハウス</a>
-        <a href="The_Owl_House_laura-abril/">フクロウハウス</a>
         <a href="The_Stanley_Parable/">スタンレーの寓話</a>
         <a href="The_Summer_Hikaru_Died/">ヒカルが死んだ夏</a>
         <a href="The_Vampire_Armand/">吸血鬼アルマンド</a>
@@ -1701,8 +1670,6 @@
         <a href="Violent_Vira/">暴力的なウイルス</a>
         <a href="Vista/">ビスタ</a>
         <a href="WARM_CHEETAH/">温かいチーター</a>
-        <a href="Water_chill/">水冷</a>
-        <a href="Weirdcore_test/">奇妙なテスト</a>
         <a href="Welcome_to_Night_Vale/">ナイトヴェイルへようこそ</a>
         <a href="Whimsical_angel-50000/">気まぐれな</a>
         <a href="Whimsy/">奇抜な 2.0</a>
@@ -1735,13 +1702,11 @@
         <a href="Yoongi__3/">ユンギ &lt;3</a>
         <a href="Yoshitomo_Nara/">奈良美智</a>
         <a href="Yoshka/">ヨシュカ！</a>
-        <a href="yPod/">yポッド</a>
         <a href="yPodDark_Pro/">yPodDark プロ</a>
         <a href="Yume Nikki/">ゆめにっき</a>
         <a href="Yuto_Arc_V/">ユウトアークV</a>
         <a href="Zelda_s_Rule_made_by_Pjp.maia/">Pjp.maia が作成したゼルダのルール</a>
         <a href="zennnnn/">ゼンンンン</a>
-        <a href="ZOMG_-_Kokeshi/">ZOMG - こけし</a>
         <a href="ZOMG_-_Village_Greens/">ZOMG - ヴィレッジグリーンズ</a>
         <a href="My_Little_Pony_andreiaroomao/">⊹₊˚ マイリトルポニー ⊹₊˚</a>
         <a href="Electra_Heart_-_Marina_and_The_Diamonds/">♡エレクトラハート♡</a>
@@ -2259,10 +2224,20 @@
         const sourceFilter = document.getElementById('source-filter');
         const authorFilter = document.getElementById('author-filter');
         const sortFilter = document.getElementById('sort-filter');
+        const bestThemesBtn = document.getElementById('best-themes-btn');
         const pageSizeSelect = document.getElementById('page-size');
         const goldOnlyCheckbox = document.getElementById('gold-only-filter');
         let goldOnlyFilter = false;
+        let currentPage = 1;
+        const DEFAULT_GALLERY_SORT = 'newest';
         const galleryGoldQueued = new Set();
+
+        function syncBestThemesButton() {
+            if (!bestThemesBtn) return;
+            const active = (sortFilter ? String(sortFilter.value || DEFAULT_GALLERY_SORT) : DEFAULT_GALLERY_SORT) === 'best';
+            bestThemesBtn.classList.toggle('is-active', active);
+            bestThemesBtn.setAttribute('aria-pressed', active ? 'true' : 'false');
+        }
 
         function galleryConnectionSavesData() {
             const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
@@ -2321,7 +2296,10 @@
             const sourceQ = qp.get('source');
             if (sourceFilter && sourceQ) sourceFilter.value = sourceQ;
             const sortQ = qp.get('sort');
-            if (sortFilter && sortQ) sortFilter.value = sortQ;
+            if (sortFilter && sortQ) {
+                const hasOpt = Array.from(sortFilter.options).some((o) => o.value === sortQ);
+                if (hasOpt) sortFilter.value = sortQ;
+            }
             const authorQ = qp.get('author');
             if (authorFilter && authorQ) {
                 authorFilter.value = authorQ;
@@ -2333,6 +2311,7 @@
             const pageQ = Number(qp.get('page') || '1');
             currentPage = Number.isFinite(pageQ) && pageQ > 0 ? Math.floor(pageQ) : 1;
         } catch (e) {}
+        syncBestThemesButton();
 
         function syncQueryState(totalPages) {
             try {
@@ -2343,8 +2322,8 @@
                 const sourceV = sourceFilter ? String(sourceFilter.value || 'all') : 'all';
                 if (sourceV !== 'all') params.set('source', sourceV);
                 else params.delete('source');
-                const sortV = sortFilter ? String(sortFilter.value || 'downloads_desc') : 'downloads_desc';
-                if (sortV !== 'downloads_desc') params.set('sort', sortV);
+                const sortV = sortFilter ? String(sortFilter.value || DEFAULT_GALLERY_SORT) : DEFAULT_GALLERY_SORT;
+                if (sortV !== DEFAULT_GALLERY_SORT) params.set('sort', sortV);
                 else params.delete('sort');
                 const authorV = authorFilter ? String(authorFilter.value || 'all') : 'all';
                 if (authorV !== 'all') params.set('author', authorV);
@@ -2365,7 +2344,6 @@
 
         const pagerTopEl = document.getElementById('theme-pager-top');
         const pagerBottomEl = document.getElementById('theme-pager-bottom');
-        let currentPage = 1;
 
         const pagerNumberFormat = (() => {
             try {
@@ -2505,7 +2483,8 @@
             const onlyOn = onlyOnDeviceCheckbox && onlyOnDeviceCheckbox.checked;
             const sourceV = sourceFilter ? String(sourceFilter.value || 'all') : 'all';
             const authorV = authorFilter ? String(authorFilter.value || 'all') : 'all';
-            const sortV = sortFilter ? String(sortFilter.value || 'downloads_desc') : 'downloads_desc';
+            const sortV = sortFilter ? String(sortFilter.value || DEFAULT_GALLERY_SORT) : DEFAULT_GALLERY_SORT;
+            syncBestThemesButton();
             const pageSize = Number(pageSizeSelect && pageSizeSelect.value || '24') || 24;
             const cards = document.querySelectorAll('.theme-card');
             const matched = [];
@@ -2523,11 +2502,36 @@
                 if (visible) matched.push(card);
             }
 
+            const newestScore = (card) =>
+                cardMetric(card, 'data-downloads') +
+                cardMetric(card, 'data-rating-count') +
+                cardMetric(card, 'data-views');
+            const bestScore = (card) =>
+                cardMetric(card, 'data-downloads') +
+                cardMetric(card, 'data-views');
+
             matched.sort((a, b) => {
                 const nameA = String(a.getAttribute('data-name') || '');
                 const nameB = String(b.getAttribute('data-name') || '');
                 const authorA = String(a.getAttribute('data-author') || '');
                 const authorB = String(b.getAttribute('data-author') || '');
+                if (sortV === 'newest') {
+                    return (
+                        newestScore(a) - newestScore(b) ||
+                        cardMetric(a, 'data-downloads') - cardMetric(b, 'data-downloads') ||
+                        cardMetric(a, 'data-views') - cardMetric(b, 'data-views') ||
+                        compareThemeTitles(nameA, nameB)
+                    );
+                }
+                if (sortV === 'best') {
+                    return (
+                        bestScore(b) - bestScore(a) ||
+                        cardMetric(b, 'data-downloads') - cardMetric(a, 'data-downloads') ||
+                        cardMetric(b, 'data-views') - cardMetric(a, 'data-views') ||
+                        cardMetric(b, 'data-rating') - cardMetric(a, 'data-rating') ||
+                        compareThemeTitles(nameA, nameB)
+                    );
+                }
                 if (sortV === 'name_desc') return compareThemeTitles(nameA, nameB, 'desc');
                 if (sortV === 'author_asc') return compareAuthorNames(authorA, authorB) || compareThemeTitles(nameA, nameB);
                 if (sortV === 'views_desc') return cardMetric(b, 'data-views') - cardMetric(a, 'data-views') || compareThemeTitles(nameA, nameB);
@@ -2589,6 +2593,14 @@
             applyFilters();
         });
         if (sortFilter) sortFilter.addEventListener('change', () => {
+            syncBestThemesButton();
+            currentPage = 1;
+            applyFilters();
+        });
+        if (bestThemesBtn) bestThemesBtn.addEventListener('click', () => {
+            if (!sortFilter) return;
+            sortFilter.value = String(sortFilter.value || DEFAULT_GALLERY_SORT) === 'best' ? DEFAULT_GALLERY_SORT : 'best';
+            syncBestThemesButton();
             currentPage = 1;
             applyFilters();
         });
@@ -5226,6 +5238,12 @@
             return str;
         }
 
+        /* Only one screenshot-backed card runs its live HQ preview at a time:
+           toggling HQ on another screenshot-backed card reverts the previous one
+           back to its screenshot image. Cards without a screenshot keep their
+           auto-HQ preview running always and never hide/show an HQ button. */
+        let activeScreenshotHqReset = null;
+
         function createCard(theme, isPriority) {
             const c = document.createElement('article');
             c.className = 'theme-card';
@@ -5246,7 +5264,18 @@
                 'data-search',
                 `${safeText(theme.name)} ${safeText(theme.description)} ${safeText(theme.author)} ${safeText(folderPath)} ${safeText(theme.searchText || '')}`.toLowerCase()
             );
-            if (folderPath) c.setAttribute('data-catalog-folder', folderPath);
+            if (folderPath) {
+                c.setAttribute('data-catalog-folder', folderPath);
+                if (window.ThemeAnalytics && typeof window.ThemeAnalytics.getStats === 'function') {
+                    const st = window.ThemeAnalytics.getStats(folderPath);
+                    if (st) {
+                        c.setAttribute('data-views', String(Number(st.pageViews) || 0));
+                        c.setAttribute('data-downloads', String(Number(st.downloads) || 0));
+                        c.setAttribute('data-rating', String(Number(st.ratingAverage) || 0));
+                        c.setAttribute('data-rating-count', String(Number(st.ratingCount) || 0));
+                    }
+                }
+            }
 
             const cardTop = document.createElement('div');
             cardTop.className = 'theme-card-top';
@@ -5323,6 +5352,8 @@
             };
             let staticScreenshotActive = false;
             let staticPreviewActive = false;
+            let autoHqMode = false;
+            let autoHqMounted = false;
             const folderImageCandidates = folderPath ? [
                 `${folderPath}/cover-thumb.jpg`,
                 `${folderPath}/cover.jpg`,
@@ -5367,28 +5398,6 @@
             img.addEventListener('load', () => {
                 previewFrame.classList.add('theme-preview-frame--cover-ready');
             });
-            img.onerror = () => {
-                if (staticScreenshotActive) {
-                    /* Stale themes.json: the capture is gone. Keep the card static
-                       and try the generated cover set instead of mounting the
-                       simulator, so a missing capture cannot cost every card a
-                       theme config, font and icon download. */
-                    staticScreenshotActive = false;
-                    usingGeneratedJpeg = false;
-                    img.removeAttribute('srcset');
-                    screenshotIdx = 0;
-                    void applyNextScreenshot();
-                    return;
-                }
-                if (usingGeneratedJpeg) {
-                    usingGeneratedJpeg = false;
-                    img.removeAttribute('srcset');
-                    screenshotIdx = 0;
-                } else {
-                    screenshotIdx += 1;
-                }
-                void applyNextScreenshot();
-            };
             const armCover = () => {
                 if (img.dataset.coverArmed === '1') return;
                 img.dataset.coverArmed = '1';
@@ -5399,7 +5408,6 @@
                     return;
                 }
                 const enc = folderPath.split('/').filter(Boolean).map(encodeURIComponent).join('/');
-                staticPreviewActive = true;
                 usingGeneratedJpeg = true;
                 img.src = `./${enc}/cover-thumb.jpg`;
                 if (!saveData) {
@@ -5412,27 +5420,30 @@
                 if (!src) return false;
                 staticScreenshotActive = true;
                 staticPreviewActive = true;
+                autoHqMode = false;
+                autoHqMounted = false;
                 usingGeneratedJpeg = false;
                 img.dataset.coverArmed = '1';
                 img.removeAttribute('srcset');
                 img.removeAttribute('sizes');
                 img.fetchPriority = isPriority ? 'high' : 'low';
+                img.style.visibility = '';
+                img.style.opacity = '';
+                img.style.pointerEvents = '';
                 previewFrame.classList.add('theme-preview-frame--screenshot');
+                previewFrame.classList.remove('theme-preview-frame--auto-hq');
                 if (simHost) simHost.style.display = 'none';
                 if (img.getAttribute('src') !== src) img.src = src;
                 return true;
             };
-            if (!applyStaticScreenshot('')) {
-                if (isPriority) {
-                    armCover();
-                }
-            }
+            applyStaticScreenshot('');
             previewFrame.append(mediaSkeleton, img);
 
-            /* Hover / HQ: keep the static capture on screen until the live
-               rendered assets are ready. Only a real hover (or an explicit HQ
-               press) starts the expensive simulator mount, keeping translation
-               and asset work off the initial gallery paint. */
+            /* Hover / HQ: for themes WITH a screenshot image, keep the static
+               capture on screen until someone clicks HQ, and switching on HQ
+               for another screenshot-backed card reverts the previous one back
+               to its screenshot. Themes WITHOUT a screenshot mount HQ preview
+               automatically and stay on always without an HQ toggle button. */
             const hqToggle = document.createElement('button');
             hqToggle.type = 'button';
             hqToggle.className = 'theme-preview-hq';
@@ -5440,7 +5451,7 @@
             hqToggle.title = 'Show the live rendered preview';
             hqToggle.setAttribute('aria-label', 'Show the live rendered preview');
             hqToggle.setAttribute('aria-pressed', 'false');
-            hqToggle.hidden = !staticPreviewActive;
+            hqToggle.hidden = !staticScreenshotActive;
             previewFrame.appendChild(hqToggle);
 
             let hoverMountTimer = 0;
@@ -5468,7 +5479,7 @@
                 }
             };
             const livePreviewAllowed = () =>
-                staticPreviewActive &&
+                staticScreenshotActive &&
                 !!folderPath &&
                 !!window.Y1ThemePreview &&
                 typeof window.Y1ThemePreview.mountGalleryCardLazy === 'function' &&
@@ -5476,6 +5487,7 @@
                 !(window.ThemeFrozen && window.ThemeFrozen.isFrozen(theme));
             const restoreStaticScreenshot = (force) => {
                 clearTimeout(hoverMountTimer);
+                if (autoHqMode) return;
                 if (hqPinned && !force) return;
                 if (!livePreviewMounted && !livePreviewReady) return;
                 livePreviewMounted = false;
@@ -5490,12 +5502,31 @@
                     simHost.style.display = 'none';
                 }
                 previewFrame.classList.remove('theme-preview-frame--live-hover');
-                if (img) img.style.opacity = '';
+                if (img) {
+                    img.style.visibility = '';
+                    img.style.opacity = '';
+                    img.style.pointerEvents = '';
+                }
                 hqToggle.setAttribute('aria-pressed', 'false');
                 setHqPillState('idle');
             };
+            const resetLivePreview = () => {
+                if (activeScreenshotHqReset === resetLivePreview) {
+                    activeScreenshotHqReset = null;
+                }
+                hqPinned = false;
+                hqToggle.setAttribute('aria-pressed', 'false');
+                setHqPillState('idle');
+                restoreStaticScreenshot(true);
+            };
             const mountLivePreview = () => {
                 if (livePreviewMounted || livePreviewReady || !livePreviewAllowed()) return;
+                if (activeScreenshotHqReset && activeScreenshotHqReset !== resetLivePreview) {
+                    try {
+                        activeScreenshotHqReset();
+                    } catch (_) {}
+                }
+                activeScreenshotHqReset = resetLivePreview;
                 livePreviewMounted = true;
                 setHqPillState('loading');
                 const seg = String(variantSelect.value || '').trim();
@@ -5520,27 +5551,101 @@
                             applyGalleryCardPreviewReady(c, cfg, meta, folderPath, seg, theme);
                         },
                         onError: () => {
-                            hqPinned = false;
-                            hqToggle.setAttribute('aria-pressed', 'false');
-                            setHqPillState('idle');
-                            restoreStaticScreenshot(true);
+                            resetLivePreview();
                         },
                     });
                 } catch (_) {
-                    setHqPillState('idle');
-                    restoreStaticScreenshot(true);
+                    resetLivePreview();
                 }
             };
-            const resetLivePreview = () => {
-                hqPinned = false;
-                hqToggle.setAttribute('aria-pressed', 'false');
-                setHqPillState('idle');
-                restoreStaticScreenshot(true);
+            const startAutoHqPreview = (variantSeg) => {
+                staticScreenshotActive = false;
+                staticPreviewActive = false;
+                if (activeScreenshotHqReset === resetLivePreview) {
+                    activeScreenshotHqReset = null;
+                }
+                hqToggle.hidden = true;
+                previewFrame.classList.remove('theme-preview-frame--screenshot');
+                const canMountAuto =
+                    !!folderPath &&
+                    !!window.Y1ThemePreview &&
+                    typeof window.Y1ThemePreview.mountGalleryCardLazy === 'function' &&
+                    !(window.ThemeFrozen && window.ThemeFrozen.isFrozen(theme));
+                if (!canMountAuto) {
+                    autoHqMode = false;
+                    autoHqMounted = false;
+                    armCover();
+                    return;
+                }
+                if (autoHqMounted) return;
+                autoHqMode = true;
+                autoHqMounted = true;
+                previewFrame.classList.add('theme-preview-frame--auto-hq');
+                if (simHost) simHost.style.display = '';
+                const seg = String(variantSeg || '').trim();
+                try {
+                    window.Y1ThemePreview.mountGalleryCardLazy(simHost, {
+                        catalogFolder: folderPath,
+                        variantSegment: seg,
+                        mode: 'gallery',
+                        priority: true,
+                        loadingOverlay: false,
+                        buildFileUrl: (cf, rel) => buildThemeFileUrl(cf, rel),
+                        previewMeta: cardPreviewMeta,
+                        onReady: (cfg, meta) => {
+                            if (!autoHqMode) return;
+                            if (simHost) simHost.style.display = '';
+                            previewFrame.classList.add('theme-preview-frame--live-hover', 'theme-preview-frame--cover-ready');
+                            if (img) {
+                                img.style.visibility = 'hidden';
+                                img.style.opacity = '0';
+                                img.style.pointerEvents = 'none';
+                            }
+                            applyGalleryCardPreviewReady(c, cfg, meta, folderPath, seg, theme);
+                        },
+                        onError: () => {
+                            autoHqMode = false;
+                            autoHqMounted = false;
+                            previewFrame.classList.remove('theme-preview-frame--auto-hq', 'theme-preview-frame--live-hover');
+                            if (simHost) simHost.style.display = 'none';
+                            if (img) {
+                                img.style.visibility = '';
+                                img.style.opacity = '';
+                                img.style.pointerEvents = '';
+                            }
+                            armCover();
+                        },
+                    });
+                } catch (_) {
+                    autoHqMode = false;
+                    autoHqMounted = false;
+                    armCover();
+                }
+            };
+            img.onerror = () => {
+                if (staticScreenshotActive) {
+                    /* No screenshot image available (stale/missing screenshot_preview.jpg):
+                       switch automatically to live HQ preview with the HQ button hidden. */
+                    staticScreenshotActive = false;
+                    staticPreviewActive = false;
+                    usingGeneratedJpeg = false;
+                    img.removeAttribute('srcset');
+                    startAutoHqPreview(String(variantSelect.value || '').trim());
+                    return;
+                }
+                if (usingGeneratedJpeg) {
+                    usingGeneratedJpeg = false;
+                    img.removeAttribute('srcset');
+                    screenshotIdx = 0;
+                } else {
+                    screenshotIdx += 1;
+                }
+                void applyNextScreenshot();
             };
             hqToggle.addEventListener('click', (ev) => {
                 ev.preventDefault();
                 ev.stopPropagation();
-                if (!staticPreviewActive) return;
+                if (!staticScreenshotActive) return;
                 if (hqPinned && livePreviewMounted) {
                     resetLivePreview();
                     return;
@@ -5638,18 +5743,22 @@
                 } catch (_) {}
             };
             c._armGalleryMedia = () => {
-                if (!staticPreviewActive) armCover();
                 void loadCardVariants();
                 if (window.Y1ThemesI18n && typeof window.Y1ThemesI18n.lazyTranslateCard === 'function') {
                     window.Y1ThemesI18n.lazyTranslateCard(c);
                 }
                 if (previewMounted) return;
                 previewMounted = true;
-                hqToggle.hidden = !staticPreviewActive;
-                /* The card always paints a static capture or cover first. The
-                   simulator only runs when someone presses HQ, so scrolling the
-                   gallery never downloads theme configs, fonts or icon art. */
-                void hydrateStaticPreviewCard('');
+                if (staticScreenshotActive) {
+                    hqToggle.hidden = false;
+                    /* The card paints its pre-rendered screenshot first; the live
+                       simulator runs only when someone clicks HQ. */
+                    void hydrateStaticPreviewCard('');
+                } else {
+                    /* No screenshot image is available for this theme: display the
+                       live HQ preview automatically with the HQ button hidden. */
+                    startAutoHqPreview('');
+                }
             };
             if (galleryMediaObserver) galleryMediaObserver.observe(c);
             else c._armGalleryMedia();
@@ -5711,6 +5820,12 @@
                 n.href = theme.authorUrl;
                 n.target = '_blank';
                 n.rel = 'noopener';
+                n.addEventListener('click', () => {
+                    const analyticsKey = folderPath || safeText(theme.name);
+                    if (analyticsKey && window.ThemeAnalytics && typeof window.ThemeAnalytics.trackExternalDownload === 'function') {
+                        window.ThemeAnalytics.trackExternalDownload(analyticsKey, 'gallery');
+                    }
+                });
             } else {
                 n.href = buildCardSeoHref(String(variantSelect.value || '').trim());
             }
@@ -5724,6 +5839,8 @@
                 updateCardThemeNameHref();
                 if (!folderPath || !window.Y1ThemePreview) return;
                 const seg = String(variantSelect.value || '').trim();
+                autoHqMode = false;
+                autoHqMounted = false;
                 if (typeof window.Y1ThemePreview.unmount === 'function') {
                     window.Y1ThemePreview.unmount(simHost);
                 }
@@ -5732,12 +5849,7 @@
                     hqToggle.hidden = false;
                     void hydrateStaticPreviewCard(seg);
                 } else {
-                    staticScreenshotActive = false;
-                    hqToggle.hidden = true;
-                    previewFrame.classList.remove('theme-preview-frame--screenshot');
-                    if (simHost) simHost.style.display = '';
-                    img.style.visibility = '';
-                    mountGalleryCardPreview(simHost, img, folderPath, cardPreviewMeta, c, seg, theme);
+                    startAutoHqPreview(seg);
                 }
                 void syncDownloadButtonToThemeConfig(seg);
                 if (window.ThemeFrozen && ThemeFrozen.isFrozen(theme)) {
@@ -5836,6 +5948,10 @@
             if (outboundUrl) {
                 dl.innerHTML = `<i class="fa-solid fa-arrow-up-right-from-square"></i> ${safeText(theme.authorCTA || (hasExternalDownload ? 'Open download page' : 'Visit author'))}`;
                 dl.onclick = () => {
+                    const analyticsKey = folderPath || safeText(theme.name);
+                    if (analyticsKey && window.ThemeAnalytics && typeof window.ThemeAnalytics.trackExternalDownload === 'function') {
+                        window.ThemeAnalytics.trackExternalDownload(analyticsKey, 'gallery');
+                    }
                     if (outboundUrl) {
                         window.open(outboundUrl, '_blank', 'noopener');
                     }
@@ -6055,6 +6171,22 @@
                 return;
             }
 
+            /* Kick off the single-request stats preload immediately in parallel
+               with card rendering so Newest / Best sorts and download counts
+               appear right away instead of waiting for all 700+ cards first. */
+            const allAnalyticsFolders = pendingCards
+                .map((t) => String(t.folder || '').replace(/^\.\/+/, ''))
+                .filter(Boolean);
+            const upfrontStatsPromise =
+                window.ThemeAnalytics && typeof window.ThemeAnalytics.fetchStatsMap === 'function'
+                    ? window.ThemeAnalytics.fetchStatsMap(allAnalyticsFolders).then(() => {
+                          if (window.ThemeAnalytics && typeof window.ThemeAnalytics.refreshAll === 'function') {
+                              window.ThemeAnalytics.refreshAll();
+                          }
+                          applyFilters();
+                      }).catch(() => {})
+                    : Promise.resolve();
+
             let cardsAdded = 0;
             let cardCursor = 0;
             let cardSliceHandle = 0;
@@ -6087,6 +6219,7 @@
                 }
 
                 void (async () => {
+                    await upfrontStatsPromise;
                     if (!window.ThemeAnalytics) return;
                     const entries = [...grid.querySelectorAll('.theme-card')].map((card) => {
                         const folder = card.getAttribute('data-catalog-folder');
