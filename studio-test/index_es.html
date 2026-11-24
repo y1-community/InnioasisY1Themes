@@ -106,7 +106,7 @@
     <link rel="stylesheet" href="../site-theme.css?v=20261115footer1" />
     <link rel="stylesheet" href="../site-toolbar.css?v=20261123donatecompletion2" />
     <link rel="stylesheet" href="../y1-theme-preview.css?v=20261119menus1" />
-    <link rel="stylesheet" href="/studio-test/studio.css?v=20261124studio6" />
+    <link rel="stylesheet" href="/studio-test/studio.css?v=20261124studio9" />
 </head>
 
 <body class="site-themes-app site-dock-mode studio-app" data-mode="preview">
@@ -145,6 +145,9 @@
                 <button class="studio-btn studio-btn--save" id="studio-save" type="button" aria-label="Guarde el tema en este dispositivo">
                     <i class="fa-solid fa-download" aria-hidden="true"></i><span>Guardar en dispositivo</span>
                 </button>
+                <a class="studio-btn studio-btn--discord" id="studio-discord-help" href="https://discord.gg/zHrT2zrcek" target="_blank" rel="noopener noreferrer" aria-label="Get help on Discord" title="Chat with us on Discord for help">
+                    <i class="fa-brands fa-discord" aria-hidden="true"></i><span>Help</span>
+                </a>
                 <button class="studio-btn studio-btn--help" id="studio-help-btn" type="button" aria-label="How Theme Studio works" title="How Theme Studio works">
                     <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
                 </button>
@@ -435,6 +438,12 @@
                             </div>
                             </div>
 
+                            <div class="studio-field studio-original-submitted" id="studio-original-submitted-wrap" hidden>
+                                <label for="studio-original-submitted">Original submission date <span class="studio-optional">For updates</span></label>
+                                <input id="studio-original-submitted" type="date" autocomplete="off" />
+                                <p class="studio-hint" id="studio-original-submitted-hint">Recorded from your original submission. This date will be included on your update PR.</p>
+                            </div>
+
                             <div class="studio-update-notice" id="studio-update-notice" hidden>
                                 <strong>Esto parece una actualización</strong>
                                 <p>Tu autor coincide con el listado existente <span id="studio-update-folder"></span>. Trataremos esto como una actualización de ese tema.</p>
@@ -518,6 +527,9 @@
                 <button class="studio-btn" id="studio-onboarding-upload" type="button">
                     <i class="fa-solid fa-paper-plane" aria-hidden="true"></i><span>Go to Upload tab</span>
                 </button>
+                <a class="studio-btn studio-btn--discord" href="https://discord.gg/zHrT2zrcek" target="_blank" rel="noopener noreferrer">
+                    <i class="fa-brands fa-discord" aria-hidden="true"></i><span>Chat with us on Discord</span>
+                </a>
             </div>
             <div class="studio-onboarding-foot">
                 <label class="studio-inline-check">
@@ -639,7 +651,7 @@
     <script src="../author-submission-policy.js?v=20260523"></script>
     <script src="../studio-drop-handoff.js?v=20261123studio2"></script>
     <script src="../theme-analytics.js?v=20261123stats4"></script>
-    <script src="/studio-test/studio.js?v=20261124studio8"></script>
+    <script src="/studio-test/studio.js?v=20261124studio9"></script>
     <script src="../site-locale.js?v=20261115skip2" defer></script>
 </body>
 

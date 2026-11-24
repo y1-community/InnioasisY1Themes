@@ -4046,3 +4046,122 @@ body.studio-app.y1-donate-panel-open #support-toolbar-slot {
         justify-content: center;
     }
 }
+
+/* —— Discord Help button & update original-date field —— */
+.studio-btn--discord {
+    min-height: 38px;
+    white-space: nowrap;
+    border-color: color-mix(in oklab, #5865F2 55%, transparent);
+    background: color-mix(in oklab, #5865F2 18%, transparent);
+    color: var(--site-text);
+    text-decoration: none;
+}
+
+.studio-btn--discord:hover {
+    border-color: #5865F2;
+    background: color-mix(in oklab, #5865F2 30%, transparent);
+    color: var(--site-text);
+}
+
+.studio-btn--discord i {
+    color: #7c87ff;
+}
+
+.studio-onboarding-quick .studio-btn--discord {
+    grid-column: 1 / -1;
+}
+
+.studio-original-submitted {
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--studio-line);
+    background: color-mix(in oklab, var(--site-text) 3%, transparent);
+}
+
+.studio-original-submitted input[type="date"] {
+    width: 100%;
+    color-scheme: light dark;
+}
+
+.studio-note a {
+    color: var(--site-accent);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+/* Keep all 6 compact commandbar action icons comfortably inside narrow mobile viewports (360px-760px). */
+@media (max-width: 760px) {
+    body.studio-app .studio-btn--save,
+    body.studio-app .studio-btn--try-device,
+    body.studio-app .studio-btn--open-zip,
+    body.studio-app .studio-btn--themes,
+    body.studio-app .studio-btn--discord,
+    body.studio-app .studio-btn--help {
+        width: 32px;
+        min-width: 0;
+        min-height: 36px;
+        padding: 0;
+        justify-content: center;
+    }
+
+    body.studio-app .studio-btn--discord span {
+        display: none;
+    }
+
+    body.studio-app .studio-command-actions {
+        gap: 4px;
+    }
+}
+
+@media (max-width: 420px) {
+    body.studio-app .studio-commandbar {
+        gap: 5px;
+        padding-left: 6px;
+        padding-right: 6px;
+    }
+
+    body.studio-app .studio-commandbar .studio-mode {
+        padding: 4px 3px;
+        gap: 3px;
+        font-size: 0.68rem;
+    }
+
+    body.studio-app .studio-btn--save,
+    body.studio-app .studio-btn--try-device,
+    body.studio-app .studio-btn--open-zip,
+    body.studio-app .studio-btn--themes,
+    body.studio-app .studio-btn--discord,
+    body.studio-app .studio-btn--help {
+        width: 30px;
+        min-height: 34px;
+    }
+}
+
+@media (max-width: 380px), (max-height: 420px) {
+    body.studio-app .studio-command-actions {
+        gap: 3px;
+    }
+
+    body.studio-app .studio-btn--save,
+    body.studio-app .studio-btn--try-device,
+    body.studio-app .studio-btn--open-zip,
+    body.studio-app .studio-btn--themes,
+    body.studio-app .studio-btn--discord,
+    body.studio-app .studio-btn--help {
+        width: 28px;
+        min-height: 32px;
+    }
+}
+
+@media (max-width: 300px) {
+    body.studio-app .studio-btn--save,
+    body.studio-app .studio-btn--try-device,
+    body.studio-app .studio-btn--open-zip,
+    body.studio-app .studio-btn--themes,
+    body.studio-app .studio-btn--discord,
+    body.studio-app .studio-btn--help {
+        width: 26px;
+        min-height: 30px;
+    }
+}

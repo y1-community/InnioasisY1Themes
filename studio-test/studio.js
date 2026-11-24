@@ -244,6 +244,9 @@
         submitExternalWrap: byId('studio-submit-external-wrap'),
         submitExternalUrl: byId('studio-submit-external-url'),
         submitStatus: byId('studio-submit-status'),
+        originalSubmittedWrap: byId('studio-original-submitted-wrap'),
+        originalSubmitted: byId('studio-original-submitted'),
+        originalSubmittedHint: byId('studio-original-submitted-hint'),
         updateNotice: byId('studio-update-notice'),
         updateFolder: byId('studio-update-folder'),
         editAck: byId('studio-edit-ack'),
@@ -5874,6 +5877,7 @@
             var label = el.submitBtn.querySelector('span');
             if (label) label.textContent = submitActionLabel();
         }
+        syncOriginalSubmittedField();
         updateChecklist();
         syncManageVisibility();
     }
@@ -6062,7 +6066,173 @@
         return text;
     }
 
-    function syncConfigMetadata(config, title, author) {
+    var CLIENT_SUBMITTED_DATES_KEY = 'y1-theme-submitted-dates';
+
+    function clientIsoTimestamp(date) {
+        var d = date instanceof Date ? date : new Date();
+        var pad = function (n) {
+            return String(n).padStart(2, '0');
+        };
+        var tzMin = -d.getTimezoneOffset();
+        var sign = tzMin >= 0 ? '+' : '-';
+        var absTz = Math.abs(tzMin);
+        return (
+            d.getFullYear() +
+            '-' +
+            pad(d.getMonth() + 1) +
+            '-' +
+            pad(d.getDate()) +
+            'T' +
+            pad(d.getHours()) +
+            ':' +
+            pad(d.getMinutes()) +
+            ':' +
+            pad(d.getSeconds()) +
+            sign +
+            pad(Math.floor(absTz / 60)) +
+            ':' +
+            pad(absTz % 60)
+        );
+    }
+
+    function readClientSubmissionDates() {
+        try {
+            var raw = window.localStorage.getItem(CLIENT_SUBMITTED_DATES_KEY);
+            var parsed = raw ? JSON.parse(raw) : null;
+            return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+        } catch (_) {
+            return {};
+        }
+    }
+
+    function clientSubmissionKeys(folder, title, author) {
+        var keys = [];
+        var f = String(folder || '').trim().toLowerCase();
+        if (f) keys.push('folder:' + f);
+        var t = String(title || '').trim().toLowerCase().replace(/\s+/g, ' ');
+        var a = String(author || '').trim().toLowerCase().replace(/\s+/g, ' ');
+        if (t && a) keys.push('ta:' + t + '::' + a);
+        return keys;
+    }
+
+    function lookupClientSubmissionDate(folder, title, author) {
+        var map = readClientSubmissionDates();
+        var keys = clientSubmissionKeys(folder, title, author);
+        for (var i = 0; i < keys.length; i += 1) {
+            var val = typeof map[keys[i]] === 'string' ? map[keys[i]].trim() : '';
+            if (val) return val;
+        }
+        return '';
+    }
+
+    function recordClientSubmissionDate(folder, title, author, iso) {
+        var stamp = String(iso || '').trim();
+        if (!stamp) return;
+        try {
+            var map = readClientSubmissionDates();
+            var keys = clientSubmissionKeys(folder, title, author);
+            var changed = false;
+            for (var i = 0; i < keys.length; i += 1) {
+                if (!map[keys[i]]) {
+                    map[keys[i]] = stamp;
+                    changed = true;
+                }
+            }
+            if (changed) {
+                window.localStorage.setItem(CLIENT_SUBMITTED_DATES_KEY, JSON.stringify(map));
+            }
+        } catch (_) {}
+    }
+
+    function resolveOriginalSubmittedAt(listing, folder, title, author) {
+        var cfgDate =
+            state.config && state.config.theme_info && typeof state.config.theme_info.submittedAt === 'string'
+                ? state.config.theme_info.submittedAt.trim()
+                : '';
+        if (cfgDate) return cfgDate;
+        var listingDate =
+            listing && typeof listing.submittedAt === 'string' ? listing.submittedAt.trim() : '';
+        if (listingDate) return listingDate;
+        var metaDate =
+            state.meta && typeof state.meta.submittedAt === 'string' ? state.meta.submittedAt.trim() : '';
+        if (metaDate) return metaDate;
+        return lookupClientSubmissionDate(folder || (listing && listing.folder) || state.folder, title, author);
+    }
+
+    function formatClientTimestampDisplay(value) {
+        var raw = String(value || '').trim();
+        if (!raw) return '';
+        var dateOnly = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        try {
+            if (dateOnly) {
+                var localDate = new Date(Number(dateOnly[1]), Number(dateOnly[2]) - 1, Number(dateOnly[3]));
+                return localDate.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+            }
+            var parsed = new Date(raw);
+            if (!Number.isNaN(parsed.getTime())) {
+                return parsed.toLocaleString(undefined, {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit'
+                });
+            }
+        } catch (_) {}
+        return raw;
+    }
+
+    function syncOriginalSubmittedField() {
+        if (!el.originalSubmittedWrap || !el.originalSubmitted) return;
+        var isUpdate = !!state.ownUpdate;
+        el.originalSubmittedWrap.hidden = !isUpdate;
+        if (!isUpdate) return;
+        var listing = state.identity && state.identity.listing ? state.identity.listing : galleryThemeForManage();
+        var folder = (listing && listing.folder) || state.folder || '';
+        var title = (el.submitTitle && el.submitTitle.value.trim()) || (listing && listing.name) || (state.meta && state.meta.name) || '';
+        var author = (el.submitAuthor && el.submitAuthor.value.trim()) || (listing && listing.author) || (state.meta && state.meta.author) || '';
+        var detected = resolveOriginalSubmittedAt(listing, folder, title, author);
+        var currentManual = el.originalSubmitted.value.trim();
+        if (detected) {
+            var datePart = detected.slice(0, 10);
+            if (/^\d{4}-\d{2}-\d{2}$/.test(datePart) && (!currentManual || el.originalSubmitted.dataset.source !== 'manual')) {
+                el.originalSubmitted.value = datePart;
+                el.originalSubmitted.dataset.exactIso = detected;
+                el.originalSubmitted.dataset.source = 'auto';
+            }
+            if (el.originalSubmittedHint) {
+                el.originalSubmittedHint.textContent =
+                    'Recorded from your original submission (' +
+                    formatClientTimestampDisplay(detected) +
+                    '). This date will be included on your update PR.';
+            }
+        } else {
+            if (el.originalSubmitted.dataset.source !== 'manual') {
+                el.originalSubmitted.value = '';
+                delete el.originalSubmitted.dataset.exactIso;
+            }
+            if (el.originalSubmittedHint) {
+                el.originalSubmittedHint.textContent =
+                    'Enter the date you originally submitted this theme so it’s included on your update PR.';
+            }
+        }
+    }
+
+    function selectedOriginalSubmittedAt(listing, folder, title, author) {
+        if (el.originalSubmitted) {
+            var inputVal = el.originalSubmitted.value.trim();
+            var exactIso = String(el.originalSubmitted.dataset.exactIso || '').trim();
+            if (inputVal && exactIso && exactIso.slice(0, 10) === inputVal) {
+                return exactIso;
+            }
+            if (/^\d{4}-\d{2}-\d{2}$/.test(inputVal)) {
+                return inputVal;
+            }
+        }
+        return resolveOriginalSubmittedAt(listing, folder, title, author);
+    }
+
+    function syncConfigMetadata(config, title, author, submissionMeta) {
         if (!config.theme_info || typeof config.theme_info !== 'object' || Array.isArray(config.theme_info)) {
             config.theme_info = {};
         }
@@ -6078,9 +6248,22 @@
         else delete info.description;
         if (external) info.externalDownloadUrl = external;
         else delete info.externalDownloadUrl;
+        if (submissionMeta && submissionMeta.clientSubmittedAt) {
+            if (submissionMeta.isUpdate) {
+                var orig = String(submissionMeta.originalSubmittedAt || info.submittedAt || '').trim();
+                if (orig) info.submittedAt = orig;
+                info.updatedAt = submissionMeta.clientSubmittedAt;
+            } else {
+                info.submittedAt = submissionMeta.clientSubmittedAt;
+                delete info.updatedAt;
+            }
+        } else if (!state.ownUpdate && state.identity && state.identity.answer === 'other') {
+            delete info.submittedAt;
+            delete info.updatedAt;
+        }
     }
 
-    async function collectThemeDeviceFiles(reportProgress, folderOverride) {
+    async function collectThemeDeviceFiles(reportProgress, folderOverride, options) {
         if (!state.config) throw new Error('Open a theme first.');
         if (!window.ThemePackaging) throw new Error('The theme packager did not load.');
         var report = typeof reportProgress === 'function' ? reportProgress : null;
@@ -6093,7 +6276,7 @@
            as that listing's update; new themes use their own title. */
         var stem = safeStem(folderOverride || title);
         var config = cloneJson(state.config);
-        syncConfigMetadata(config, title, author);
+        syncConfigMetadata(config, title, author, options && options.submissionMeta ? options.submissionMeta : null);
         reportPercent(2, 'Preparing theme…');
 
         var entries = [];
@@ -6185,7 +6368,7 @@
         function reportPercent(percent, label) {
             if (report) report(percent, label);
         }
-        var collected = await collectThemeDeviceFiles(reportProgress, folderOverride);
+        var collected = await collectThemeDeviceFiles(reportProgress, folderOverride, options);
         var stem = collected.stem;
         var outputConfig = collected.outputConfig;
         var blobs = collected.blobs;
@@ -6748,7 +6931,18 @@
             var listing = state.identity.listing;
             var updateFolder = state.ownUpdate && listing && listing.folder ? safeStem(listing.folder) : '';
             var packFolder = updateFolder || stem;
-            var file = await buildThemePackage(undefined, packFolder, { includeScreenshotPreview: true });
+            var clientSubmittedAt = clientIsoTimestamp(new Date());
+            var originalSubmittedAt = state.ownUpdate
+                ? selectedOriginalSubmittedAt(listing, packFolder, title, author)
+                : '';
+            var file = await buildThemePackage(undefined, packFolder, {
+                includeScreenshotPreview: true,
+                submissionMeta: {
+                    isUpdate: !!state.ownUpdate,
+                    clientSubmittedAt: clientSubmittedAt,
+                    originalSubmittedAt: originalSubmittedAt
+                }
+            });
             var batch = await wrapUploadBatch(file, packFolder);
             setSubmitStatus('Sending your theme for review…', true);
             var form = new FormData();
@@ -6756,6 +6950,10 @@
             form.set('themeTitle', title);
             form.set('themeAuthor', author);
             form.set('submissionIntent', state.ownUpdate ? 'update' : 'new');
+            form.set('clientSubmittedAt', clientSubmittedAt);
+            if (state.ownUpdate && originalSubmittedAt) {
+                form.set('originalSubmittedAt', originalSubmittedAt);
+            }
             if (updateFolder) form.set('targetFolder', updateFolder);
             form.set('shareFolderHints', JSON.stringify([packFolder]));
             var response = await uploadRequest('/api/upload-theme', { method: 'POST', body: form });
@@ -6763,6 +6961,17 @@
                 return {};
             });
             if (!response.ok) throw new Error(uploadFailureMessage(response.status, payload));
+            if (!state.ownUpdate) {
+                recordClientSubmissionDate(packFolder, title, author, clientSubmittedAt);
+                if (state.config) {
+                    if (!state.config.theme_info || typeof state.config.theme_info !== 'object') {
+                        state.config.theme_info = {};
+                    }
+                    state.config.theme_info.submittedAt = clientSubmittedAt;
+                }
+            } else if (originalSubmittedAt) {
+                recordClientSubmissionDate(packFolder, title, author, originalSubmittedAt);
+            }
             var prUrl = payload.prUrl ? String(payload.prUrl) : '';
             /* New themes (including ones derived from a listed theme) merge by
                themselves once the checks pass; updates wait for a maintainer.
@@ -6835,6 +7044,11 @@
         });
         if (el.submitExternal) el.submitExternal.checked = false;
         if (el.submitExternalWrap) el.submitExternalWrap.hidden = true;
+        if (el.originalSubmitted) {
+            el.originalSubmitted.value = '';
+            delete el.originalSubmitted.dataset.exactIso;
+            delete el.originalSubmitted.dataset.source;
+        }
     }
 
     function applyOwnDetails() {
@@ -7723,6 +7937,16 @@
             if (el.submitExternal.checked) el.submitExternalUrl.focus();
         });
 
+        if (el.originalSubmitted) {
+            el.originalSubmitted.addEventListener('input', function () {
+                el.originalSubmitted.dataset.source = 'manual';
+                var exactIso = String(el.originalSubmitted.dataset.exactIso || '').trim();
+                if (exactIso && exactIso.slice(0, 10) !== el.originalSubmitted.value.trim()) {
+                    delete el.originalSubmitted.dataset.exactIso;
+                }
+            });
+        }
+
         /* —— Identity question ——
            Answering it is what tells the studio which kind of submission this
            is, so each answer sets the intent and the details in one step. */
@@ -8129,7 +8353,18 @@
             }
             setManageStatus('Sending the new text…', true);
             try {
+                var listingForMeta = galleryThemeForManage() || {};
+                var metaClientSubmittedAt = clientIsoTimestamp(new Date());
+                var metaOriginalSubmittedAt = resolveOriginalSubmittedAt(
+                    listingForMeta,
+                    folder,
+                    title,
+                    listingForMeta.author || ''
+                );
                 var payload = await postManageJson('/api/theme-metadata', {
+                    clientSubmittedAt: metaClientSubmittedAt,
+                    originalSubmittedAt: metaOriginalSubmittedAt || undefined,
+                    requestedBy: listingForMeta.author || '',
                     items: [
                         {
                             folder: folder,
@@ -8180,6 +8415,7 @@
                 if (confirmAuthor) form.set('confirmAuthor', confirmAuthor);
                 form.set('contactEmail', email);
                 form.set('confirmContactEmail', email);
+                form.set('clientSubmittedAt', clientIsoTimestamp(new Date()));
                 if (section.querySelector('#studio-remove-optout').checked) form.set('blacklistOptOut', '1');
                 var payload = await postManageForm('/api/removal-request', form);
                 var remPr = payload && payload.prUrl ? String(payload.prUrl) : '';

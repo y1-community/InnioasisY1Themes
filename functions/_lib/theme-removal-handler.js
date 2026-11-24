@@ -101,6 +101,16 @@ function redactEmailLikeText(value) {
   return String(value || "").replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[redacted-email]");
 }
 
+function sanitizeClientTimestamp(value) {
+  const raw = String(value || "").trim().slice(0, 64);
+  if (!raw) return "";
+  if (!/^\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d{1,6})?)?(?:Z|[+-]\d{2}:?\d{2})?)?$/i.test(raw)) {
+    return "";
+  }
+  if (Number.isNaN(Date.parse(raw))) return "";
+  return raw;
+}
+
 async function readThemeConfigAuthorFromBase(apiBase, token, folder, branch) {
   const enc = encodeRepoPath(`${folder}/config.json`);
   try {
@@ -163,6 +173,7 @@ export async function handleRemovalPost(request, env) {
     const requester = String(form.get("requester") || "").trim();
     const safeRequester = redactEmailLikeText(requester);
     const safeReason = redactEmailLikeText(reason);
+    const clientSubmittedAt = sanitizeClientTimestamp(form.get("clientSubmittedAt"));
 
     const confirmNameRaw = String(form.get("confirmName") || "").trim();
     const confirmAuthorRaw = String(form.get("confirmAuthor") || "").trim();
@@ -388,6 +399,7 @@ export async function handleRemovalPost(request, env) {
       catalogAuthor ? `- **Catalog author:** ${catalogAuthor}` : `- **Catalog author:** _(none listed)_`,
       "- **Submitter contact email:** _(redacted; delivered privately via FabForm)_",
       safeRequester ? `- **Requester:** ${safeRequester}` : null,
+      clientSubmittedAt ? `- **Submitted (client):** ${clientSubmittedAt}` : null,
       safeReason ? `- **Reason:** ${safeReason}` : null,
       `- **Blacklist preference:** ${blacklistOptOut ? "Requested (block re-uploads)" : "Not requested"}`,
       "",

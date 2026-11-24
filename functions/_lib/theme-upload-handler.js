@@ -67,6 +67,16 @@ function normalizeAuthorKey(value) {
   return normalizeSpaces(value).toLowerCase().replace(/[^a-z0-9]+/g, "");
 }
 
+function sanitizeClientTimestamp(value) {
+  const raw = String(value || "").trim().slice(0, 64);
+  if (!raw) return "";
+  if (!/^\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d{1,6})?)?(?:Z|[+-]\d{2}:?\d{2})?)?$/i.test(raw)) {
+    return "";
+  }
+  if (Number.isNaN(Date.parse(raw))) return "";
+  return raw;
+}
+
 function hasReservedAuthorName(value) {
   const key = normalizeAuthorKey(value);
   if (!key) return true;
@@ -407,6 +417,8 @@ export async function handleUploadPost(request, env) {
         ? "update"
         : "new";
     const isUpdateIntent = submissionIntent === "update";
+    const clientSubmittedAt = sanitizeClientTimestamp(form.get("clientSubmittedAt"));
+    const originalSubmittedAt = sanitizeClientTimestamp(form.get("originalSubmittedAt"));
     const targetFolder = (
       String(form.get("targetFolder") || "")
         .replace(/\\/g, "/")
@@ -563,6 +575,8 @@ export async function handleUploadPost(request, env) {
           themeTitle: themeTitle || "",
           submissionIntent,
           targetFolder: targetFolder || "",
+          clientSubmittedAt: clientSubmittedAt || "",
+          originalSubmittedAt: isUpdateIntent ? originalSubmittedAt || "" : "",
         },
         null,
         2
@@ -617,6 +631,10 @@ export async function handleUploadPost(request, env) {
         : null,
       themeTitle ? `- Title (from config): ${themeTitle}` : null,
       themeAuthor ? `- Author (from config): ${themeAuthor}` : null,
+      clientSubmittedAt ? `- Submitted (client): ${clientSubmittedAt}` : null,
+      isUpdateIntent && originalSubmittedAt
+        ? `- Originally submitted: ${originalSubmittedAt}`
+        : null,
       isUpdateIntent
         ? `- **Submission intent:** update${targetFolder ? ` of the existing folder \`${targetFolder}\`` : ""} — this PR stays open for a maintainer and is never auto-merged.`
         : "- **Submission intent:** new theme — eligible for automatic merge once validation passes.",
@@ -652,6 +670,8 @@ export async function handleUploadPost(request, env) {
         targetFolder: targetFolder || null,
         prUrl: pr.html_url || null,
         branch: branchName,
+        clientSubmittedAt: clientSubmittedAt || null,
+        originalSubmittedAt: isUpdateIntent && originalSubmittedAt ? originalSubmittedAt : null,
       },
       200
     );

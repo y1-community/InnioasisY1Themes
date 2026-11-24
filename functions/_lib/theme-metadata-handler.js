@@ -125,6 +125,16 @@ function asTrimmedString(value) {
   return String(value ?? "").trim();
 }
 
+function sanitizeClientTimestamp(value) {
+  const raw = String(value || "").trim().slice(0, 64);
+  if (!raw) return "";
+  if (!/^\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d{1,6})?)?(?:Z|[+-]\d{2}:?\d{2})?)?$/i.test(raw)) {
+    return "";
+  }
+  if (Number.isNaN(Date.parse(raw))) return "";
+  return raw;
+}
+
 const BLOCKED_AUTHOR_KEYS = new Set([
   "community",
   "user",
@@ -255,6 +265,9 @@ export async function handleMetadataPost(request, env) {
     }
 
     const items = Array.isArray(body.items) ? body.items : [];
+    const clientSubmittedAt = sanitizeClientTimestamp(body.clientSubmittedAt);
+    const bodyOriginalSubmittedAt = sanitizeClientTimestamp(body.originalSubmittedAt);
+    const requestedByRaw = normalizeSpaces(body.requestedBy || "");
     if (!items.length) {
       return jsonResponse({ error: "Provide a non-empty items array." }, 400);
     }
@@ -276,6 +289,8 @@ export async function handleMetadataPost(request, env) {
     }
 
     const puts = [];
+    const discoveredAuthors = [];
+    const discoveredSubmittedAts = [];
 
     for (const raw of items) {
       if (!raw || typeof raw !== "object") {
@@ -367,6 +382,14 @@ export async function handleMetadataPost(request, env) {
         nextTi[k] = typeof v === "string" ? v.trim() : String(v ?? "");
       }
       const nextConfig = { ...config, theme_info: nextTi };
+      const itemAuthor = normalizeSpaces(nextTi.author || block.author || "");
+      if (itemAuthor && !discoveredAuthors.includes(itemAuthor)) {
+        discoveredAuthors.push(itemAuthor);
+      }
+      const itemSubmittedAt = sanitizeClientTimestamp(block.submittedAt || "");
+      if (itemSubmittedAt && !discoveredSubmittedAts.includes(itemSubmittedAt)) {
+        discoveredSubmittedAts.push(itemSubmittedAt);
+      }
       const nextText = stableStringify(nextConfig);
       const prevText = stableStringify(config);
       if (nextText !== prevText) {
@@ -419,6 +442,14 @@ export async function handleMetadataPost(request, env) {
         return jsonResponse({ error: `Folder ${put.folder} not found in themes.json.` }, 400);
       }
       const row = { ...list[idx] };
+      const rowAuthor = normalizeSpaces(row.author || "");
+      if (rowAuthor && !discoveredAuthors.includes(rowAuthor)) {
+        discoveredAuthors.push(rowAuthor);
+      }
+      const rowSubmittedAt = sanitizeClientTimestamp(row.submittedAt || "");
+      if (rowSubmittedAt && !discoveredSubmittedAts.includes(rowSubmittedAt)) {
+        discoveredSubmittedAts.push(rowSubmittedAt);
+      }
       for (const k of Object.keys(put.listing)) {
         if (!LISTING_KEYS.has(k)) continue;
         row[k] = asTrimmedString(put.listing[k]);
@@ -504,17 +535,25 @@ export async function handleMetadataPost(request, env) {
       fileCommits = [...fileCommits, { path: "themes.json" }];
     }
 
+    const effectiveAuthor = requestedByRaw || discoveredAuthors.join(", ");
+    const effectiveOriginalSubmittedAt = bodyOriginalSubmittedAt || discoveredSubmittedAts[0] || "";
     const prTitle = `[Metadata] Gallery details update (${items.length} theme(s))`;
     const prBody = [
       "## Metadata-only update (gallery)",
       "",
       "This PR was opened from the theme gallery **metadata** flow (no new image binaries).",
       "",
+      effectiveAuthor ? `- Author: ${effectiveAuthor}` : null,
+      clientSubmittedAt ? `- Submitted (client): ${clientSubmittedAt}` : null,
+      effectiveOriginalSubmittedAt ? `- Originally submitted: ${effectiveOriginalSubmittedAt}` : null,
+      "",
       "**Changed paths:**",
       ...fileCommits.map((p) => `- \`${p.path}\``),
       "",
       "This PR is intended for maintainer review and is not auto-merged.",
-    ].join("\n");
+    ]
+      .filter((line) => line !== null)
+      .join("\n");
 
     const pr = await ghJson(
       `${apiBase}/pulls`,

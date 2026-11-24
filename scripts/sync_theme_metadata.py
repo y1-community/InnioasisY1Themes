@@ -292,7 +292,7 @@ def _extract_theme_info_from_config(config: dict[str, Any], *, folder: str = "")
     if not isinstance(theme_info, dict):
         return {}
     extracted: dict[str, str] = {}
-    for key in ("title", "author", "authorUrl", "description", "externalDownloadUrl"):
+    for key in ("title", "author", "authorUrl", "description", "externalDownloadUrl", "submittedAt"):
         value = str(theme_info.get(key) or "").strip()
         if key == "title" and value:
             value = strip_redundant_theme_word(value)
@@ -540,6 +540,7 @@ def _theme_entry_from_folder(folder: str, config: dict[str, Any] | None) -> dict
     if _is_boilerplate_template_description(description, folder=folder):
         description = ""
     external_download_url = theme_info.get("externalDownloadUrl") or ""
+    submitted_at = theme_info.get("submittedAt") or ""
 
     if author:
         entry["author"] = author
@@ -549,6 +550,8 @@ def _theme_entry_from_folder(folder: str, config: dict[str, Any] | None) -> dict
         entry["description"] = description
     if external_download_url:
         entry["externalDownloadUrl"] = external_download_url
+    if submitted_at:
+        entry["submittedAt"] = submitted_at
     shot = _gallery_screenshot(folder, config if isinstance(config, dict) else None)
     if shot:
         entry["screenshot"] = shot
@@ -629,6 +632,8 @@ def _refresh_existing_theme_entry(entry: dict[str, Any], folder: str, config: di
         refreshed["description"] = str(info["description"]).strip()
     if info.get("externalDownloadUrl"):
         refreshed["externalDownloadUrl"] = str(info["externalDownloadUrl"]).strip()
+    if info.get("submittedAt"):
+        refreshed["submittedAt"] = str(info["submittedAt"]).strip()
     shot = _gallery_screenshot(folder, config)
     if shot:
         refreshed["screenshot"] = shot
@@ -744,6 +749,11 @@ def _sync_theme_info(config: dict[str, Any], theme_entry: dict[str, Any], *, for
         elif not theme_info.get(key) and value:
             theme_info[key] = value
             changed = True
+
+    entry_submitted_at = str(theme_entry.get("submittedAt") or "").strip()
+    if entry_submitted_at and not str(theme_info.get("submittedAt") or "").strip():
+        theme_info["submittedAt"] = entry_submitted_at
+        changed = True
 
     ordered_theme_info = {
         key: theme_info.get(key, "")
