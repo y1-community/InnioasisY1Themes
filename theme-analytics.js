@@ -251,6 +251,7 @@
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(body),
+                credentials: "omit",
                 keepalive: true,
             });
             if (!res.ok) return null;

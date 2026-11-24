@@ -113,6 +113,7 @@
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: body,
+            credentials: "omit",
             keepalive: true,
         }).catch(function () {});
     }

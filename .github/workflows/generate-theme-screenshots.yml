@@ -10,18 +10,43 @@ name: Generate theme screenshot previews
 # touches .jpg files (plus themes.json), which does not match the push paths below,
 # so this workflow cannot loop on its own commit.
 on:
+  workflow_run:
+    workflows:
+      - Theme ingest and sync
+      - Auto Merge New Theme PRs
+    types:
+      - completed
   push:
     branches: [main]
     paths:
-      - "*/config.json"
-      - "*/Variants/**/config.json"
+      - "*/*.json"
+      - "*/*.png"
+      - "*/*.jpg"
+      - "*/*.jpeg"
+      - "*/*.webp"
+      - "*/*.gif"
+      - "*/*.ttf"
+      - "*/*.otf"
+      - "*/*.woff"
+      - "*/*.woff2"
+      - "*/Variants/**"
+      - "!*/screenshot_preview.jpg"
+      - "!*/screenshot_preview.jpeg"
+      - "!*/Variants/**/screenshot_preview.jpg"
+      - "!*/Variants/**/screenshot_preview.jpeg"
+      - "!*/cover.jpg"
+      - "!*/cover-thumb.jpg"
+      - "!assets/**"
+      - "!studio-test/**"
+      - "!i18n/**"
+      - "!themes-i18n/**"
       - "screenshot.html"
       - "y1-theme-preview.js"
       - "y1-theme-preview.css"
       - "scripts/generate_theme_screenshots.py"
       - ".github/workflows/generate-theme-screenshots.yml"
   schedule:
-    # Catch-up sweep for themes edited without touching config.json.
+    # Catch-up sweep for themes edited outside the normal paths.
     - cron: "17 4 * * *"
   workflow_dispatch:
     inputs:
@@ -45,6 +70,7 @@ permissions:
 
 jobs:
   screenshots:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
@@ -56,6 +82,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
 
       - name: Set up Python
@@ -70,7 +97,7 @@ jobs:
           python -m pip install pillow playwright
           python -m playwright install --with-deps chromium
 
-      - name: Render missing captures
+      - name: Render missing or updated captures
         env:
           SCREENSHOT_FOLDER: ${{ github.event.inputs.folder }}
           SCREENSHOT_FORCE: ${{ github.event.inputs.force }}
@@ -84,6 +111,7 @@ jobs:
             ARGS+=(--force)
           fi
           python scripts/generate_theme_screenshots.py "${ARGS[@]}"
+          python scripts/theme_screenshot_seo.py
 
       - name: Commit and push captures
         run: |

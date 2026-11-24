@@ -16,6 +16,7 @@ on:
   workflow_run:
     workflows:
       - Theme ingest and sync
+      - Generate theme screenshot previews
       - Generate Sitemap
     types:
       - completed

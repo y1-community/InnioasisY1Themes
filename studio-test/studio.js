@@ -1129,26 +1129,26 @@
         layer.appendChild(clone);
         node.classList.add('has-live-crop');
         node.appendChild(layer);
-        var pendingImgs = [];
-        if (live.tagName === 'IMG' && (!live.complete || !live.naturalWidth)) {
-            pendingImgs.push(live);
+        var pendingUrls = [];
+        if (live.tagName === 'IMG' && (!live.complete || !live.naturalWidth) && (live.currentSrc || live.src)) {
+            pendingUrls.push(live.currentSrc || live.src);
         }
         Array.prototype.forEach.call(canvas.querySelectorAll('img[src]'), function (canvasImg) {
-            if ((!canvasImg.complete || !canvasImg.naturalWidth) && pendingImgs.indexOf(canvasImg) === -1) {
-                pendingImgs.push(canvasImg);
+            var src = canvasImg.currentSrc || canvasImg.getAttribute('src') || '';
+            if (src && (!canvasImg.complete || !canvasImg.naturalWidth) && pendingUrls.indexOf(src) === -1) {
+                pendingUrls.push(src);
             }
         });
-        pendingImgs.forEach(function (pendingImg) {
-            if (pendingImg && !pendingImg._y1ThumbRetryBound) {
-                pendingImg._y1ThumbRetryBound = true;
-                pendingImg.addEventListener(
-                    'load',
-                    function () {
-                        scheduleThumbRefresh(90);
-                    },
-                    { once: true }
-                );
-            }
+        pendingUrls.forEach(function (src) {
+            if (!src || thumbAwaitedUrls[src]) return;
+            thumbAwaitedUrls[src] = 1;
+            try {
+                var probe = new Image();
+                probe.onload = function () {
+                    if (state.mode === 'edit') scheduleThumbRefresh(140);
+                };
+                probe.src = src;
+            } catch (e) {}
         });
         if (!isFullScreen && node === el.assetPreview) {
             /* Mark the exact asset bounds on the large detail plate. */
@@ -1168,6 +1168,9 @@
         return true;
     }
 
+    var thumbAwaitedUrls = Object.create(null);
+    var isCapturingThumbs = false;
+
     function paintAssetCropWithReveal(node, asset) {
         if (!node || !asset || asset.kind === 'font') return false;
         var api = el.preview ? el.preview._y1TpApi : null;
@@ -1178,8 +1181,10 @@
             var snap = typeof api.snapshotState === 'function' ? api.snapshotState() : null;
             var prevView = !snap && typeof api.currentView === 'function' ? api.currentView() : '';
             var moved = false;
+            var prevCapturing = isCapturingThumbs;
+            isCapturingThumbs = true;
             try {
-                moved = api.revealAsset(asset.path) !== false;
+                moved = api.revealAsset(asset.path, { silent: true }) !== false;
                 if (!moved && !livePreviewNode(asset.path, asset)) return false;
                 return paintLiveCrop(node, asset, { skipOffscreenRetry: true });
             } catch (e) {
@@ -1188,9 +1193,10 @@
                 if (moved) {
                     try {
                         if (snap && typeof api.restoreState === 'function') api.restoreState(snap);
-                        else if (prevView && typeof api.showView === 'function') api.showView(prevView);
+                        else if (prevView && typeof api.showView === 'function') api.showView(prevView, { silent: true });
                     } catch (e) {}
                 }
+                isCapturingThumbs = prevCapturing;
             }
         });
     }
@@ -1212,7 +1218,7 @@
             var asset = state.assetById[row.getAttribute('data-asset-id')];
             var thumb = row.querySelector('.studio-asset-thumb');
             if (!asset || !thumb || asset.kind === 'font') return;
-            var revealed = typeof api.revealAsset === 'function' && api.revealAsset(asset.path) !== false;
+            var revealed = typeof api.revealAsset === 'function' && api.revealAsset(asset.path, { silent: true }) !== false;
             if (revealed && paintLiveCrop(thumb, asset, { skipOffscreenRetry: true })) {
                 return;
             }
@@ -1221,21 +1227,24 @@
     }
 
     function refreshGroupThumbs(group) {
-        if (!group || !group.open) return;
+        if (!group || !group.open || state.mode !== 'edit') return;
         var api = el.preview ? el.preview._y1TpApi : null;
         var canvas = el.preview ? el.preview.querySelector('.y1-tp-canvas') : null;
         if (!canvas || !api) return;
         withPreviewVisible(function () {
             var snap = typeof api.snapshotState === 'function' ? api.snapshotState() : null;
             var prevView = !snap && typeof api.currentView === 'function' ? api.currentView() : '';
+            var prevCapturing = isCapturingThumbs;
+            isCapturingThumbs = true;
             try {
                 paintRowsInContainer(group, api);
             } catch (e) {
             } finally {
                 try {
                     if (snap && typeof api.restoreState === 'function') api.restoreState(snap);
-                    else if (prevView && typeof api.showView === 'function') api.showView(prevView);
+                    else if (prevView && typeof api.showView === 'function') api.showView(prevView, { silent: true });
                 } catch (e) {}
+                isCapturingThumbs = prevCapturing;
             }
         });
     }
@@ -1244,6 +1253,7 @@
        row thumbnail, mask card, and the selected large detail plate in one
        atomic pass, restoring the simulator's exact view/selection afterward. */
     function refreshThumbLayers() {
+        if (state.mode !== 'edit') return;
         var api = el.preview ? el.preview._y1TpApi : null;
         var canvas = el.preview ? el.preview.querySelector('.y1-tp-canvas') : null;
         if (!canvas || !api) {
@@ -1254,6 +1264,8 @@
         withPreviewVisible(function () {
             var snap = typeof api.snapshotState === 'function' ? api.snapshotState() : null;
             var prevView = !snap && typeof api.currentView === 'function' ? api.currentView() : '';
+            var prevCapturing = isCapturingThumbs;
+            isCapturingThumbs = true;
             try {
                 if (el.assetList) {
                     paintRowsInContainer(el.assetList, api);
@@ -1266,7 +1278,7 @@
                         if (!asset || !art) return;
                         var screen = maskScreenFor(asset);
                         if (screen && typeof api.showView === 'function') {
-                            api.showView(screen);
+                            api.showView(screen, { silent: true });
                             paintLiveCrop(art, asset, { skipOffscreenRetry: true });
                         }
                     });
@@ -1274,7 +1286,7 @@
                 if (state.selectedAssetId && el.assetPreview && el.assetDetail && !el.assetDetail.hidden) {
                     var selectedAsset = state.assetById[state.selectedAssetId];
                     if (selectedAsset && selectedAsset.kind !== 'font') {
-                        var rev = typeof api.revealAsset === 'function' && api.revealAsset(selectedAsset.path) !== false;
+                        var rev = typeof api.revealAsset === 'function' && api.revealAsset(selectedAsset.path, { silent: true }) !== false;
                         if (rev) {
                             paintLiveCrop(el.assetPreview, selectedAsset, { skipOffscreenRetry: true });
                         }
@@ -1284,8 +1296,9 @@
             } finally {
                 try {
                     if (snap && typeof api.restoreState === 'function') api.restoreState(snap);
-                    else if (prevView && typeof api.showView === 'function') api.showView(prevView);
+                    else if (prevView && typeof api.showView === 'function') api.showView(prevView, { silent: true });
                 } catch (e) {}
+                isCapturingThumbs = prevCapturing;
             }
         });
     }
@@ -1305,9 +1318,11 @@
             var snap = typeof api.snapshotState === 'function' ? api.snapshotState() : null;
             var current = !snap && typeof api.currentView === 'function' ? api.currentView() : '';
             var moved = false;
+            var prevCapturing = isCapturingThumbs;
+            isCapturingThumbs = true;
             try {
                 if (current !== screen) {
-                    moved = api.showView(screen) !== false;
+                    moved = api.showView(screen, { silent: true }) !== false;
                 }
                 clearThumbLayers(node);
                 node.classList.remove('has-live-crop');
@@ -1318,9 +1333,10 @@
                 if (moved) {
                     try {
                         if (snap && typeof api.restoreState === 'function') api.restoreState(snap);
-                        else if (current && typeof api.showView === 'function') api.showView(current);
+                        else if (current && typeof api.showView === 'function') api.showView(current, { silent: true });
                     } catch (e) {}
                 }
+                isCapturingThumbs = prevCapturing;
             }
         });
     }
@@ -2159,18 +2175,21 @@
 
             return waitForCanvasMedia(el.preview, 700).then(function () {
                 if (mountSeq !== previewMountSeq) return;
-                refreshThumbLayers();
-                if (state.selectedAssetId) {
-                    var sel = state.assetById[state.selectedAssetId];
-                    if (
-                        (sel && sel.kind === 'font') ||
-                        (el.assetPreview && !el.assetPreview.classList.contains('has-live-crop'))
-                    ) {
-                        updateAssetDetail();
+                thumbAwaitedUrls = Object.create(null);
+                if (state.mode === 'edit') {
+                    refreshThumbLayers();
+                    if (state.selectedAssetId) {
+                        var sel = state.assetById[state.selectedAssetId];
+                        if (
+                            (sel && sel.kind === 'font') ||
+                            (el.assetPreview && !el.assetPreview.classList.contains('has-live-crop'))
+                        ) {
+                            updateAssetDetail();
+                        }
+                        highlightPreviewAsset(state.selectedAssetId);
                     }
-                    highlightPreviewAsset(state.selectedAssetId);
+                    scheduleThumbRefresh(350);
                 }
-                scheduleThumbRefresh(350);
             });
         });
     }
@@ -4379,6 +4398,7 @@
     function setupPreviewAssetFocus() {
         if (!el.preview) return;
         el.preview.addEventListener('pointerover', function (event) {
+            if (isCapturingThumbs) return;
             var path = previewAssetPathFromEvent(event);
             if (!path || !state.assetById[path]) return;
             var node = event.target.closest('[data-theme-asset-path]');
@@ -4386,6 +4406,7 @@
             highlightPreviewAsset(path);
         });
         el.preview.addEventListener('pointerout', function (event) {
+            if (isCapturingThumbs) return;
             var node = event.target && event.target.closest ? event.target.closest('[data-theme-asset-path]') : null;
             if (!node) return;
             var next = event.relatedTarget;
@@ -5809,12 +5830,20 @@
         return galleryWarmPromise;
     }
 
-    /* The description is optional, but the gallery should never receive the
-       field's placeholder as if it were written copy. An empty field gets a
-       plain description that still names the theme. */
-    function genericThemeDescription(name) {
-        var clean = String(name || '').trim() || 'This';
-        return clean + ' is a custom theme for the Innioasis Y1 and Y2.';
+    function cleanThemeDescription(raw) {
+        var text = String(raw || '').trim();
+        if (!text) return '';
+        var low = text.toLowerCase();
+        var isThemeless = String(state.folder || '').trim().toLowerCase() === 'themeless';
+        if (
+            /^blank template theme with full config coverage for easy customization\.?/.test(low) ||
+            (!isThemeless && /^a blank canvas to start\.\s*drop in your own desktop_wallpaper\.png\b/.test(low)) ||
+            /\bis a custom theme for the innioasis y1( and y2)?\.?$/.test(low) ||
+            /^download the .+ theme for (the )?innioasis y1\b/.test(low)
+        ) {
+            return '';
+        }
+        return text;
     }
 
     function syncConfigMetadata(config, title, author) {
@@ -5825,11 +5854,12 @@
         info.title = String(title || '').trim();
         info.author = String(author || '').trim();
         var authorUrl = el.submitAuthorUrl.value.trim();
-        var desc = el.submitDesc.value.trim();
+        var desc = cleanThemeDescription(el.submitDesc.value.trim());
         var external = el.submitExternal.checked ? el.submitExternalUrl.value.trim() : '';
         if (authorUrl) info.authorUrl = authorUrl;
         else delete info.authorUrl;
-        info.description = desc || genericThemeDescription(info.title);
+        if (desc) info.description = desc;
+        else delete info.description;
         if (external) info.externalDownloadUrl = external;
         else delete info.externalDownloadUrl;
     }
@@ -5918,6 +5948,7 @@
                 : config;
         var zip = new window.JSZip();
         zip.file(prefix + 'config.json', JSON.stringify(outputConfig, null, 2));
+        var packagedDeviceBlobs = Object.create(null);
         manifest.items.forEach(function (item) {
             if (String(item.devicePath || '').toLowerCase() === 'config.json') return;
             var blob =
@@ -5926,7 +5957,62 @@
                 blobs[String(item.download_url || '').toLowerCase()];
             if (!blob) throw new Error('Missing file for ' + item.logicalPath + '.');
             zip.file(prefix + item.devicePath, blob);
+            packagedDeviceBlobs[String(item.devicePath || '').replace(/\\/g, '/').replace(/^\.\/+/, '').toLowerCase()] = blob;
         });
+        /* Gallery uploads (never player Save ZIPs) include a browser-rendered
+           480x360 Home screen capture so the theme displays accurately right
+           away; if rendering fails, the GitHub Action captures it instead. */
+        if (
+            options &&
+            options.includeScreenshotPreview === true &&
+            window.Y1ThemePreview &&
+            typeof window.Y1ThemePreview.renderHomeScreenshotBlob === 'function'
+        ) {
+            var tempShotUrls = [];
+            var tempUrlByKey = Object.create(null);
+            try {
+                var resolveShotUrl = function (_folder, relPath) {
+                    var norm = String(relPath || '')
+                        .trim()
+                        .replace(/\\/g, '/')
+                        .replace(/^\.\/+/, '')
+                        .replace(/^\/+/, '');
+                    if (!norm) return '';
+                    var key = norm.toLowerCase();
+                    if (tempUrlByKey[key]) return tempUrlByKey[key];
+                    var matched =
+                        packagedDeviceBlobs[key] ||
+                        blobs[key] ||
+                        packagedDeviceBlobs[norm.split('/').pop().toLowerCase()];
+                    if (matched) {
+                        var objUrl = URL.createObjectURL(matched);
+                        tempUrlByKey[key] = objUrl;
+                        tempShotUrls.push(objUrl);
+                        return objUrl;
+                    }
+                    return state.sourceType === 'gallery'
+                        ? galleryFileUrl(state.contentFolder || state.folder || '', norm)
+                        : localFileUrl(state.contentFolder || '', norm);
+                };
+                var shotBlob = await window.Y1ThemePreview.renderHomeScreenshotBlob(outputConfig, {
+                    catalogFolder: '',
+                    variantSegment: '',
+                    buildFileUrl: resolveShotUrl,
+                    maxBytes: 32000
+                });
+                if (shotBlob && shotBlob.size > 0) {
+                    zip.file(prefix + 'screenshot_preview.jpg', shotBlob);
+                }
+            } catch (_shotErr) {
+                /* Fall back gracefully to GitHub Actions screenshot generation. */
+            } finally {
+                tempShotUrls.forEach(function (u) {
+                    try {
+                        URL.revokeObjectURL(u);
+                    } catch (e) {}
+                });
+            }
+        }
         var zipBlob = await zip.generateAsync(
             {
                 type: 'blob',
@@ -6176,7 +6262,7 @@
             var listing = state.identity.listing;
             var updateFolder = state.ownUpdate && listing && listing.folder ? safeStem(listing.folder) : '';
             var packFolder = updateFolder || stem;
-            var file = await buildThemePackage(undefined, packFolder);
+            var file = await buildThemePackage(undefined, packFolder, { includeScreenshotPreview: true });
             var batch = await wrapUploadBatch(file, packFolder);
             setSubmitStatus('Sending your theme for review…', true);
             var form = new FormData();
@@ -6270,7 +6356,7 @@
         var meta = state.meta;
         if (el.submitTitle) el.submitTitle.value = meta.name || '';
         if (el.submitAuthor) el.submitAuthor.value = meta.author || '';
-        if (el.submitDesc) el.submitDesc.value = meta.desc || '';
+        if (el.submitDesc) el.submitDesc.value = cleanThemeDescription(meta.desc || '');
         if (el.submitAuthorUrl) el.submitAuthorUrl.value = meta.authorUrl || '';
         if (meta.externalDownloadUrl) {
             el.submitExternal.checked = true;
@@ -6294,7 +6380,7 @@
            down the update path. */
         setPlaceholder(el.submitTitle, state.meta.name);
         setPlaceholder(el.submitAuthor, state.meta.author);
-        setPlaceholder(el.submitDesc, state.meta.desc);
+        setPlaceholder(el.submitDesc, cleanThemeDescription(state.meta.desc));
         setPlaceholder(el.submitAuthorUrl, state.meta.authorUrl);
         setPlaceholder(el.submitExternalUrl, state.meta.externalDownloadUrl);
         clearSubmitFields();
@@ -7524,8 +7610,7 @@
             var folder = state.folder;
             if (!folder) return;
             var title = section.querySelector('#studio-details-title').value.trim();
-            var description =
-                section.querySelector('#studio-details-desc').value.trim() || genericThemeDescription(title);
+            var description = cleanThemeDescription(section.querySelector('#studio-details-desc').value.trim());
             var authorUrl = section.querySelector('#studio-details-author-url').value.trim();
             if (!title) {
                 setManageStatus('A listing needs a title.', false);

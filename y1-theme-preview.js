@@ -500,11 +500,12 @@
     }
 
     /** Hide broken / empty preview bitmaps so layout keeps a blank slot (no broken-image icon). */
-    function bindPreviewImgFallback(img) {
+    function bindPreviewImgFallback(img, opts) {
         if (!img || typeof img.addEventListener !== 'function') return;
-        img.decoding = 'async';
+        var eager = !!(opts && opts.eager);
+        img.decoding = eager ? 'sync' : 'async';
         try {
-            img.loading = 'lazy';
+            img.loading = eager ? 'eager' : 'lazy';
         } catch (e) {}
         img.addEventListener(
             'error',
@@ -532,15 +533,6 @@
         );
     }
 
-    /* Hovering a row must not recentre the list under the cursor: the rows
-       would slide, the pointer would land on a different row, and the
-       highlight would chase itself up and down. A hover-driven paint reuses
-       the offset the list already had; the wheel, the keys and touch drags
-       still move the page. */
-    var menuScrollOverride = null;
-    var lastMenuScrollY = 0;
-    var lastMenuViewId = '';
-
     function menuScrollOffset(selectedIndex, itemsLength, itemHeight, visibleHeight) {
         var totalHeight = itemsLength * itemHeight;
         var maxScroll = Math.max(0, totalHeight - visibleHeight);
@@ -554,6 +546,108 @@
             if (targetY > maxScroll) targetY = maxScroll;
         }
         return Math.max(0, Math.min(targetY, maxScroll));
+    }
+
+    function resetRowBackground(el) {
+        if (!el) return;
+        el.style.backgroundColor = '';
+        el.style.backgroundImage = '';
+        el.style.backgroundSize = '';
+        el.style.backgroundRepeat = '';
+        el.style.backgroundPosition = '';
+    }
+
+    function applyMenuRowSelection(row, item, selected, ctx) {
+        if (!row) return;
+        row.classList.toggle('is-selected', !!selected);
+        resetRowBackground(row);
+        var bg = selected ? ctx.itemSel : ctx.itemBg || { backgroundColor: 'transparent' };
+        applyCssProps(row, bg);
+
+        if (ctx.isSettings) {
+            var selText = ctx.colors.text_selected;
+            var textCol = selected ? selText : ctx.colors.text_primary;
+            if (row._y1Title) row._y1Title.style.color = textCol;
+            if (row._y1Value) row._y1Value.style.color = textCol;
+            if (row._y1Arrow) {
+                row._y1Arrow.style.display = selected && !item.valueText ? 'flex' : 'none';
+            } else if (selected && !item.valueText) {
+                var sar = document.createElement('div');
+                /* item_setting.xml: a 30dp arrow with 5dp trailing margin. */
+                sar.style.cssText =
+                    'position:absolute;right:5px;top:0;height:' +
+                    ctx.itemHeight +
+                    'px;display:flex;align-items:center;justify-content:center;';
+                if (ctx.arrowUrl) {
+                    var simg = document.createElement('img');
+                    simg.src = ctx.arrowUrl;
+                    simg.alt = '';
+                    bindPreviewImgFallback(simg, { eager: ctx.eager });
+                    simg.style.cssText =
+                        'height:30px;width:auto;object-fit:contain;max-width:64px;max-height:30px;opacity:0.9;';
+                    simg.setAttribute('data-theme-asset-path', 'itemConfig.itemRightArrow');
+                    sar.appendChild(simg);
+                } else {
+                    var sch = document.createElement('span');
+                    sch.textContent = '\u203A';
+                    sch.style.cssText =
+                        'color:' + selText + ';font-weight:700;font-size:22px;line-height:1;';
+                    sar.appendChild(sch);
+                }
+                row._y1Arrow = sar;
+                row.appendChild(sar);
+            }
+            return;
+        }
+
+        var rowTextColor = selected ? ctx.colors.text_selected : ctx.colors.text_primary;
+        if (row._y1LabelWrap) row._y1LabelWrap.style.color = rowTextColor;
+        if (row._y1LabelInner) {
+            var lab = item.label != null ? String(item.label) : '';
+            var wantMarquee = !!(selected && lab.length > 12 && !item.isFolder && ctx.marqueeOnLongLabel);
+            if (wantMarquee !== !!row._y1HasMarquee) {
+                row._y1HasMarquee = wantMarquee;
+                row._y1LabelInner.textContent = lab;
+                if (wantMarquee) {
+                    row._y1LabelInner.style.animation = 'y1-tp-marquee 8s linear infinite';
+                    var dup = document.createElement('span');
+                    dup.style.paddingLeft = '40px';
+                    dup.textContent = lab;
+                    row._y1LabelInner.appendChild(dup);
+                } else {
+                    row._y1LabelInner.style.animation = '';
+                }
+            }
+        }
+        if (row._y1Arrow) {
+            row._y1Arrow.style.display = selected ? 'flex' : 'none';
+        } else if (selected) {
+            var ar = document.createElement('div');
+            ar.style.cssText =
+                'position:absolute;right:10px;top:0;height:' +
+                ctx.itemHeight +
+                'px;display:flex;align-items:center;justify-content:center;';
+            if (ctx.arrowUrl) {
+                var im = document.createElement('img');
+                im.src = ctx.arrowUrl;
+                im.alt = '';
+                bindPreviewImgFallback(im, { eager: ctx.eager });
+                im.style.cssText =
+                    'height:100%;width:auto;object-fit:contain;max-width:64px;max-height:64px;opacity:0.9;';
+                im.setAttribute('data-theme-asset-path', 'itemConfig.itemRightArrow');
+                ar.appendChild(im);
+            } else {
+                var ch = document.createElement('span');
+                ch.textContent = '\u203A';
+                ch.style.cssText =
+                    'color:' +
+                    ctx.colors.text_selected +
+                    ';font-weight:700;font-size:22px;line-height:1;';
+                ar.appendChild(ch);
+            }
+            row._y1Arrow = ar;
+            row.appendChild(ar);
+        }
     }
 
     function appendMenuRows(host, options) {
@@ -570,15 +664,17 @@
         var rowWidth = options.rowWidth != null ? options.rowWidth : 200;
         var folderIconUrl = options.folderIconUrl || '';
         var marqueeOnLongLabel = options.marqueeOnLongLabel !== false;
+        var eager = !!options.eager;
+        var scrollState = options.scrollState || { override: null, lastY: 0, animate: true };
 
         var actualRowWidth = fullWidth ? W : rowWidth;
         var rowX = fullWidth ? 0 : leftPad;
         var scrollY =
-            menuScrollOverride != null
-                ? menuScrollOverride
+            scrollState.override != null
+                ? scrollState.override
                 : menuScrollOffset(selectedIndex, items.length, itemHeight, visibleHeight);
-        var previousScrollY = lastMenuScrollY;
-        if (menuScrollOverride == null) lastMenuScrollY = scrollY;
+        var previousScrollY = scrollState.lastY || 0;
+        if (scrollState.override == null) scrollState.lastY = scrollY;
 
         var outer = document.createElement('div');
         outer.style.cssText =
@@ -589,7 +685,7 @@
         inner.style.cssText = 'position:relative;transform:translateY(-' + scrollY + 'px);';
         /* Sliding from the old offset to the new one keeps a wheel step or a
            drag feeling like a scroll instead of a cut. */
-        if (previousScrollY !== scrollY && typeof inner.animate === 'function') {
+        if (scrollState.animate !== false && previousScrollY !== scrollY && typeof inner.animate === 'function') {
             try {
                 inner.animate(
                     [
@@ -602,6 +698,18 @@
         }
         outer.appendChild(inner);
 
+        var rowCtx = {
+            isSettings: false,
+            itemHeight: itemHeight,
+            colors: colors,
+            itemBg: itemBg,
+            itemSel: itemSel,
+            arrowUrl: arrowUrl,
+            marqueeOnLongLabel: marqueeOnLongLabel,
+            eager: eager
+        };
+        var rows = [];
+
         for (var idx = 0; idx < items.length; idx++) {
             var item = items[idx];
             var selected = idx === selectedIndex;
@@ -611,9 +719,7 @@
                the up/down keys do on the device. */
             row.setAttribute('data-y1-row', String(idx));
             if (item.assetPath) row.setAttribute('data-theme-asset-path', item.assetPath);
-            var bg = selected ? itemSel : itemBg || { backgroundColor: 'transparent' };
-            applyCssProps(row, bg);
-            row.style.cssText +=
+            row.style.cssText =
                 'position:absolute;left:' +
                 rowX +
                 'px;top:' +
@@ -629,7 +735,7 @@
                     var fi = document.createElement('img');
                     fi.src = folderIconUrl;
                     fi.alt = '';
-                    bindPreviewImgFallback(fi);
+                    bindPreviewImgFallback(fi, { eager: eager });
                     fi.style.cssText =
                         'width:24px;height:24px;margin-left:10px;margin-right:8px;object-fit:contain;flex-shrink:0;';
                     fi.setAttribute('data-theme-asset-path', 'fileConfig.folderIcon');
@@ -658,45 +764,28 @@
                 (item.isFolder ? 'text-overflow:ellipsis;' : '');
             var lab = item.label != null ? String(item.label) : '';
             labelInner.textContent = lab;
-            if (selected && lab.length > 12 && !item.isFolder && marqueeOnLongLabel) {
-                labelInner.style.animation = 'y1-tp-marquee 8s linear infinite';
-                var dup = document.createElement('span');
-                dup.style.paddingLeft = '40px';
-                dup.textContent = lab;
-                labelInner.appendChild(dup);
-            }
             labelWrap.appendChild(labelInner);
             row.appendChild(labelWrap);
+            row._y1LabelWrap = labelWrap;
+            row._y1LabelInner = labelInner;
+            row._y1HasMarquee = false;
+            row._y1Arrow = null;
 
-            if (selected) {
-                var ar = document.createElement('div');
-                ar.style.cssText =
-                    'position:absolute;right:10px;top:0;height:' +
-                    itemHeight +
-                    'px;display:flex;align-items:center;justify-content:center;';
-                if (arrowUrl) {
-                    var im = document.createElement('img');
-                    im.src = arrowUrl;
-                    im.alt = '';
-                    bindPreviewImgFallback(im);
-                    im.style.cssText =
-                        'height:100%;width:auto;object-fit:contain;max-width:64px;max-height:64px;opacity:0.9;';
-                    im.setAttribute('data-theme-asset-path', 'itemConfig.itemRightArrow');
-                    ar.appendChild(im);
-                } else {
-                    var ch = document.createElement('span');
-                    ch.textContent = '\u203A';
-                    ch.style.cssText =
-                        'color:' +
-                        colors.text_selected +
-                        ';font-weight:700;font-size:22px;line-height:1;';
-                    ar.appendChild(ch);
-                }
-                row.appendChild(ar);
-            }
+            applyMenuRowSelection(row, item, selected, rowCtx);
+            rows.push(row);
             inner.appendChild(row);
         }
         host.appendChild(outer);
+        return {
+            outer: outer,
+            inner: inner,
+            rows: rows,
+            items: items,
+            itemHeight: itemHeight,
+            visibleHeight: visibleHeight,
+            selectedIndex: selectedIndex,
+            rowCtx: rowCtx
+        };
     }
 
     function appendSettingsMenuRows(host, options) {
@@ -707,13 +796,15 @@
         var itemBg = options.itemBackgroundStyle;
         var itemSel = options.itemSelectedBackgroundStyle;
         var arrowUrl = options.itemRightArrowUrl || '';
+        var eager = !!options.eager;
+        var scrollState = options.scrollState || { override: null, lastY: 0, animate: true };
         var itemHeight = SETTINGS_ROW_HEIGHT;
         var scrollY =
-            menuScrollOverride != null
-                ? menuScrollOverride
+            scrollState.override != null
+                ? scrollState.override
                 : menuScrollOffset(selectedIndex, items.length, itemHeight, visibleHeight);
-        var previousScrollY = lastMenuScrollY;
-        if (menuScrollOverride == null) lastMenuScrollY = scrollY;
+        var previousScrollY = scrollState.lastY || 0;
+        if (scrollState.override == null) scrollState.lastY = scrollY;
 
         var outer = document.createElement('div');
         outer.style.cssText =
@@ -724,7 +815,7 @@
         inner.style.cssText = 'position:relative;transform:translateY(-' + scrollY + 'px);';
         /* Sliding from the old offset to the new one keeps a wheel step or a
            drag feeling like a scroll instead of a cut. */
-        if (previousScrollY !== scrollY && typeof inner.animate === 'function') {
+        if (scrollState.animate !== false && previousScrollY !== scrollY && typeof inner.animate === 'function') {
             try {
                 inner.animate(
                     [
@@ -738,17 +829,25 @@
         outer.appendChild(inner);
 
         var SELECTED_TEXT = colors.text_selected;
+        var rowCtx = {
+            isSettings: true,
+            itemHeight: itemHeight,
+            colors: colors,
+            itemBg: itemBg,
+            itemSel: itemSel,
+            arrowUrl: arrowUrl,
+            eager: eager
+        };
+        var rows = [];
 
         for (var idx = 0; idx < items.length; idx++) {
             var item = items[idx];
             var selected = idx === selectedIndex;
             var row = document.createElement('div');
             row.className = 'y1-tp-row' + (selected ? ' is-selected' : '');
-            var bg = selected ? itemSel : itemBg || { backgroundColor: 'transparent' };
             row.setAttribute('data-y1-row', String(idx));
             if (item.assetPath) row.setAttribute('data-theme-asset-path', item.assetPath);
-            applyCssProps(row, bg);
-            row.style.cssText +=
+            row.style.cssText =
                 'position:absolute;left:0;top:' +
                 idx * itemHeight +
                 'px;width:100%;height:' +
@@ -762,6 +861,9 @@
                 ';font-weight:bold;font-size:22px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;margin-right:5px;';
             title.textContent = item.label != null ? String(item.label) : '';
             row.appendChild(title);
+            row._y1Title = title;
+            row._y1Value = null;
+            row._y1Arrow = null;
 
             if (item.valueText) {
                 var vt = document.createElement('div');
@@ -771,36 +873,24 @@
                     ';margin-right:5px;white-space:nowrap;';
                 vt.textContent = String(item.valueText);
                 row.appendChild(vt);
+                row._y1Value = vt;
             }
 
-            if (selected && !item.valueText) {
-                var ar = document.createElement('div');
-                /* item_setting.xml: a 30dp arrow with 5dp trailing margin. */
-                ar.style.cssText =
-                    'position:absolute;right:5px;top:0;height:' +
-                    itemHeight +
-                    'px;display:flex;align-items:center;justify-content:center;';
-                if (arrowUrl) {
-                    var im = document.createElement('img');
-                    im.src = arrowUrl;
-                    im.alt = '';
-                    bindPreviewImgFallback(im);
-                    im.style.cssText =
-                        'height:30px;width:auto;object-fit:contain;max-width:64px;max-height:30px;opacity:0.9;';
-                    im.setAttribute('data-theme-asset-path', 'itemConfig.itemRightArrow');
-                    ar.appendChild(im);
-                } else {
-                    var ch = document.createElement('span');
-                    ch.textContent = '\u203A';
-                    ch.style.cssText =
-                        'color:' + SELECTED_TEXT + ';font-weight:700;font-size:22px;line-height:1;';
-                    ar.appendChild(ch);
-                }
-                row.appendChild(ar);
-            }
+            applyMenuRowSelection(row, item, selected, rowCtx);
+            rows.push(row);
             inner.appendChild(row);
         }
         host.appendChild(outer);
+        return {
+            outer: outer,
+            inner: inner,
+            rows: rows,
+            items: items,
+            itemHeight: itemHeight,
+            visibleHeight: visibleHeight,
+            selectedIndex: selectedIndex,
+            rowCtx: rowCtx
+        };
     }
 
     function injectRobotoFallback() {
@@ -1070,7 +1160,7 @@
                 img.src = raw;
             };
         }
-        bindPreviewImgFallback(img);
+        bindPreviewImgFallback(img, { eager: mode === 'full' });
         rightEl.appendChild(img);
         return img;
     }
@@ -1875,12 +1965,237 @@
                     }
                 }
 
-                function paint() {
-                    if (sim.themeViewId !== lastMenuViewId) {
-                        lastMenuViewId = sim.themeViewId;
-                        lastMenuScrollY = 0;
-                        menuScrollOverride = null;
+                /* Per-mount scroll & live-list state so multiple previews or
+                   thumbnail capture passes never clobber another mount's offset,
+                   and row hover/scroll updates the DOM in place without tearing
+                   down wallpaper, masks, status bar, or menu rows. */
+                var scrollState = {
+                    override: null,
+                    lastY: 0,
+                    lastViewId: '',
+                    animate: true
+                };
+                var activeMenuList = null;
+                var activeRightPanel = null;
+                var eagerImages = !isPreviewMode;
+                var cleanedUp = false;
+                var preloadedArt = [];
+
+                function bindReusableArtImg(im) {
+                    im.decoding = eagerImages ? 'sync' : 'async';
+                    try {
+                        im.loading = eagerImages ? 'eager' : 'lazy';
+                    } catch (e) {}
+                    im._y1ReqId = 0;
+                    im.addEventListener('error', function () {
+                        var fallback = im._y1FallbackUrl;
+                        if (fallback && im.src !== fallback) {
+                            im._y1FallbackUrl = '';
+                            im.src = fallback;
+                            return;
+                        }
+                        im.style.opacity = '0';
+                        im.style.visibility = 'hidden';
+                    });
+                    im.addEventListener('load', function () {
+                        try {
+                            if (im.naturalWidth <= 1 && im.naturalHeight <= 1) {
+                                im.style.opacity = '0';
+                                im.style.visibility = 'hidden';
+                            } else {
+                                im.style.opacity = '';
+                                im.style.visibility = '';
+                            }
+                        } catch (e) {}
+                    });
+                }
+
+                function setReusableArtSrc(im, primaryUrl, fallbackUrl) {
+                    if (!im) return;
+                    im._y1FallbackUrl = fallbackUrl && fallbackUrl !== primaryUrl ? fallbackUrl : '';
+                    if (!primaryUrl) {
+                        im._y1CurrentUrl = '';
+                        im.style.opacity = '0';
+                        im.style.visibility = 'hidden';
+                        try {
+                            im.removeAttribute('src');
+                        } catch (e) {}
+                        return;
                     }
+                    if (im._y1CurrentUrl === primaryUrl && im.getAttribute('src')) {
+                        if (im.complete && im.naturalWidth > 1 && im.naturalHeight > 1) {
+                            im.style.opacity = '';
+                            im.style.visibility = '';
+                        }
+                        return;
+                    }
+                    im._y1CurrentUrl = primaryUrl;
+                    im.style.opacity = '';
+                    im.style.visibility = '';
+                    im.src = primaryUrl;
+                }
+
+                function warmInteractiveArtwork() {
+                    if (!eagerImages) return;
+                    var seen = Object.create(null);
+                    var urls = [];
+                    function pushUrl(u) {
+                        if (!u || seen[u]) return;
+                        seen[u] = 1;
+                        urls.push(u);
+                    }
+                    for (var i = 0; i < homeItems.length; i++) {
+                        if (homeItems[i] && homeItems[i].iconFile) {
+                            pushUrl(buildFileUrl(contentFolder, homeItems[i].iconFile));
+                        }
+                    }
+                    if (itemRightArrowUrl) pushUrl(itemRightArrowUrl);
+                    if (desktopMaskUrl) pushUrl(desktopMaskUrl);
+                    if (settingMaskUrl) pushUrl(settingMaskUrl);
+                    if (folderIconUrl) pushUrl(folderIconUrl);
+                    for (var u = 0; u < urls.length; u++) {
+                        try {
+                            var img = new Image();
+                            img.decoding = 'async';
+                            img.src = urls[u];
+                            preloadedArt.push(img);
+                        } catch (e) {}
+                    }
+                }
+                warmInteractiveArtwork();
+
+                function updateRightPanelInPlace() {
+                    if (!activeRightPanel) return;
+                    if (activeRightPanel.kind === 'home') {
+                        var sel = homeItems[sim.themeSelectedIndex];
+                        var rawIu = sel && sel.iconFile ? buildFileUrl(contentFolder, sel.iconFile) : '';
+                        var previewIu = rawIu
+                            ? isPreviewMode
+                                ? previewAssetUrl(rawIu, 'png')
+                                : rawIu
+                            : '';
+                        var tile = activeRightPanel.tile;
+                        var im = activeRightPanel.img;
+                        if (previewIu) {
+                            tile.style.display = 'flex';
+                            if (sel.assetPath) {
+                                tile.setAttribute('data-theme-art-box', sel.assetPath);
+                                im.setAttribute('data-theme-asset-path', sel.assetPath);
+                            } else {
+                                tile.removeAttribute('data-theme-art-box');
+                                im.removeAttribute('data-theme-asset-path');
+                            }
+                            im.alt = sel.label || '';
+                            setReusableArtSrc(im, previewIu, rawIu);
+                        } else {
+                            tile.style.display = 'none';
+                            tile.removeAttribute('data-theme-art-box');
+                            im.removeAttribute('data-theme-asset-path');
+                            setReusableArtSrc(im, '', '');
+                        }
+                        return;
+                    }
+                    if (activeRightPanel.kind === 'settings') {
+                        var sItem = (activeMenuList && activeMenuList.items && activeMenuList.items[sim.themeSelectedIndex]) || {};
+                        var isAbout = sItem.id === 'about';
+                        activeRightPanel.titleEl.textContent = sItem.label || '';
+                        if (sItem.assetPath) {
+                            activeRightPanel.imgBox.setAttribute('data-theme-art-box', sItem.assetPath);
+                        } else {
+                            activeRightPanel.imgBox.removeAttribute('data-theme-art-box');
+                        }
+                        activeRightPanel.aboutWrap.style.display = isAbout ? 'flex' : 'none';
+                        if (!isAbout && sItem.iconUrl) {
+                            activeRightPanel.img.style.display = 'block';
+                            activeRightPanel.img.alt = sItem.label || '';
+                            if (sItem.assetPath) {
+                                activeRightPanel.img.setAttribute('data-theme-asset-path', sItem.assetPath);
+                            } else {
+                                activeRightPanel.img.removeAttribute('data-theme-asset-path');
+                            }
+                            setReusableArtSrc(activeRightPanel.img, sItem.iconUrl, '');
+                        } else {
+                            activeRightPanel.img.style.display = 'none';
+                            activeRightPanel.img.removeAttribute('data-theme-asset-path');
+                            setReusableArtSrc(activeRightPanel.img, '', '');
+                        }
+                        if (sItem.valueText && !isAbout) {
+                            activeRightPanel.valueEl.style.display = 'block';
+                            activeRightPanel.valueEl.textContent = String(sItem.valueText);
+                        } else {
+                            activeRightPanel.valueEl.style.display = 'none';
+                            activeRightPanel.valueEl.textContent = '';
+                        }
+                        return;
+                    }
+                    if (activeRightPanel.kind === 'settingsEqualizer') {
+                        var eqItem = (activeRightPanel.items && activeRightPanel.items[sim.themeSelectedIndex]) || {};
+                        activeRightPanel.labelEl.textContent = eqItem.label || '';
+                        if (eqItem.iconUrl) {
+                            activeRightPanel.imgBox.style.display = 'flex';
+                            if (eqItem.assetPath) {
+                                activeRightPanel.imgBox.setAttribute('data-theme-art-box', eqItem.assetPath);
+                                activeRightPanel.img.setAttribute('data-theme-asset-path', eqItem.assetPath);
+                            } else {
+                                activeRightPanel.imgBox.removeAttribute('data-theme-art-box');
+                                activeRightPanel.img.removeAttribute('data-theme-asset-path');
+                            }
+                            activeRightPanel.img.alt = eqItem.label || '';
+                            setReusableArtSrc(activeRightPanel.img, eqItem.iconUrl, '');
+                        } else {
+                            activeRightPanel.imgBox.style.display = 'none';
+                            activeRightPanel.imgBox.removeAttribute('data-theme-art-box');
+                            activeRightPanel.img.removeAttribute('data-theme-asset-path');
+                            setReusableArtSrc(activeRightPanel.img, '', '');
+                        }
+                    }
+                }
+
+                function updateSelectionInPlace(preserveScroll) {
+                    if (
+                        !activeMenuList ||
+                        activeMenuList.viewId !== sim.themeViewId ||
+                        sim.dialogVisible ||
+                        !activeMenuList.outer ||
+                        !activeMenuList.outer.isConnected
+                    ) {
+                        return false;
+                    }
+                    var list = activeMenuList;
+                    var nextIndex = sim.themeSelectedIndex | 0;
+                    if (nextIndex < 0 || nextIndex >= list.rows.length) return false;
+                    var prevIndex = list.selectedIndex;
+                    if (prevIndex !== nextIndex) {
+                        if (prevIndex >= 0 && prevIndex < list.rows.length) {
+                            applyMenuRowSelection(list.rows[prevIndex], list.items[prevIndex], false, list.rowCtx);
+                        }
+                        applyMenuRowSelection(list.rows[nextIndex], list.items[nextIndex], true, list.rowCtx);
+                        list.selectedIndex = nextIndex;
+                    }
+                    if (!preserveScroll) {
+                        var nextY = menuScrollOffset(nextIndex, list.items.length, list.itemHeight, list.visibleHeight);
+                        if (nextY !== scrollState.lastY) {
+                            list.inner.style.transition =
+                                scrollState.animate !== false
+                                    ? 'transform 160ms cubic-bezier(0.22, 0.8, 0.35, 1)'
+                                    : 'none';
+                            list.inner.style.transform = 'translateY(-' + nextY + 'px)';
+                            scrollState.lastY = nextY;
+                        }
+                    }
+                    updateRightPanelInPlace();
+                    return true;
+                }
+
+                function paint() {
+                    if (cleanedUp) return;
+                    if (sim.themeViewId !== scrollState.lastViewId) {
+                        scrollState.lastViewId = sim.themeViewId;
+                        scrollState.lastY = 0;
+                        scrollState.override = null;
+                    }
+                    activeMenuList = null;
+                    activeRightPanel = null;
                     canvas.innerHTML = '';
                     var rawBgUrl = backgroundUrlForView(cfg, sim.themeViewId, buildFileUrl, contentFolder, false);
                     var previewBgUrl = (mode === 'gallery' || mode === 'menu') ? backgroundUrlForView(cfg, sim.themeViewId, buildFileUrl, contentFolder, true) : rawBgUrl;
@@ -1981,7 +2296,7 @@
                                     pi.src = rawPf;
                                 };
                             }
-                            bindPreviewImgFallback(pi);
+                            bindPreviewImgFallback(pi, { eager: eagerImages });
                             pi.style.cssText = 'height:25px;width:25px;object-fit:contain;display:block;';
                             pi.setAttribute('data-theme-asset-path', 'statusConfig.' + pk);
                             right.appendChild(pi);
@@ -2015,6 +2330,10 @@
                         var rawBatt = battUrl;
                         var prevBatt = (mode === 'gallery' || mode === 'menu') ? previewAssetUrl(rawBatt, 'png') : rawBatt;
                         var bi = document.createElement('img');
+                        bi.decoding = eagerImages ? 'sync' : 'async';
+                        try {
+                            bi.loading = eagerImages ? 'eager' : 'lazy';
+                        } catch (e) {}
                         bi.src = prevBatt;
                         bi.alt = '';
                         bi.style.cssText = 'height:15px;width:auto;object-fit:contain;display:block;';
@@ -2057,6 +2376,10 @@
                     if (maskUrl) {
                         var mk = document.createElement('img');
                         mk.className = 'y1-tp-desktop-mask';
+                        mk.decoding = eagerImages ? 'sync' : 'async';
+                        try {
+                            mk.loading = eagerImages ? 'eager' : 'lazy';
+                        } catch (e) {}
                         mk.src = maskUrl;
                         mk.alt = '';
                         mk.setAttribute(
@@ -2094,7 +2417,7 @@
                             'px;height:' +
                             HOME_MENU_HEIGHT +
                             'px;overflow:hidden;z-index:10;';
-                        appendMenuRows(menuBox, {
+                        activeMenuList = appendMenuRows(menuBox, {
                             items: homeItems,
                             selectedIndex: sim.themeSelectedIndex,
                             itemHeight: HOME_ROW_HEIGHT,
@@ -2106,48 +2429,40 @@
                             fullWidth: false,
                             leftPad: HOME_ROW_LEFT_PAD,
                             rowWidth: HOME_ROW_WIDTH,
-                            folderIconUrl: folderIconUrl
+                            folderIconUrl: folderIconUrl,
+                            scrollState: scrollState,
+                            eager: eagerImages
                         });
+                        activeMenuList.viewId = 'home';
                         layer.appendChild(menuBox);
 
-                        var sel = homeItems[sim.themeSelectedIndex];
-                        if (sel && sel.iconFile) {
-                            var rawIu = buildFileUrl(contentFolder, sel.iconFile);
-                            var previewIu = (mode === 'gallery' || mode === 'menu') ? previewAssetUrl(rawIu, 'png') : rawIu;
-                            if (previewIu) {
-                                var maxPrevH = Math.max(40, H - HOME_PREVIEW_TOP_MARGIN - 8);
-                                var tile = document.createElement('div');
-                                if (sel.assetPath) tile.setAttribute('data-theme-art-box', sel.assetPath);
-                                tile.style.cssText =
-                                    'position:absolute;right:' +
-                                    HOME_PREVIEW_RIGHT_MARGIN +
-                                    'px;top:' +
-                                    HOME_PREVIEW_TOP_MARGIN +
-                                    'px;width:' +
-                                    HOME_PREVIEW_WIDTH +
-                                    'px;max-height:' +
-                                    maxPrevH +
-                                    'px;height:auto;display:flex;align-items:center;justify-content:center;overflow:hidden;z-index:10;box-sizing:border-box;';
-                                var im = document.createElement('img');
-                                im.fetchPriority = 'high';
-                                im.src = previewIu;
-                                im.alt = sel.label || '';
-                                if (sel.assetPath) im.setAttribute('data-theme-asset-path', sel.assetPath);
-                                if (previewIu !== rawIu) {
-                                    im.onerror = function () {
-                                        im.onerror = null;
-                                        im.src = rawIu;
-                                    };
-                                }
-                                bindPreviewImgFallback(im);
-                                im.style.cssText =
-                                    'max-width:100%;width:auto;height:auto;max-height:' +
-                                    maxPrevH +
-                                    'px;object-fit:contain;object-position:center;display:block;';
-                                tile.appendChild(im);
-                                layer.appendChild(tile);
-                            }
-                        }
+                        var maxPrevH = Math.max(40, H - HOME_PREVIEW_TOP_MARGIN - 8);
+                        var tile = document.createElement('div');
+                        tile.style.cssText =
+                            'position:absolute;right:' +
+                            HOME_PREVIEW_RIGHT_MARGIN +
+                            'px;top:' +
+                            HOME_PREVIEW_TOP_MARGIN +
+                            'px;width:' +
+                            HOME_PREVIEW_WIDTH +
+                            'px;max-height:' +
+                            maxPrevH +
+                            'px;height:auto;display:none;align-items:center;justify-content:center;overflow:hidden;z-index:10;box-sizing:border-box;';
+                        var im = document.createElement('img');
+                        im.fetchPriority = 'high';
+                        bindReusableArtImg(im);
+                        im.style.cssText =
+                            'max-width:100%;width:auto;height:auto;max-height:' +
+                            maxPrevH +
+                            'px;object-fit:contain;object-position:center;display:block;';
+                        tile.appendChild(im);
+                        layer.appendChild(tile);
+                        activeRightPanel = {
+                            kind: 'home',
+                            tile: tile,
+                            img: im
+                        };
+                        updateRightPanelInPlace();
                     } else if (
                         sim.themeViewId === 'music' ||
                         sim.themeViewId === 'music_folders' ||
@@ -2165,7 +2480,7 @@
                             (H - statusH) +
                             'px;overflow:hidden;z-index:10;';
                         var gItems = genericListForView(sim.themeViewId);
-                        appendMenuRows(genBox, {
+                        activeMenuList = appendMenuRows(genBox, {
                             items: gItems,
                             selectedIndex: sim.themeSelectedIndex,
                             itemHeight: Math.floor((H - statusH - 12) / 7) || 40,
@@ -2180,8 +2495,11 @@
                             fullWidth: true,
                             leftPad: 0,
                             rowWidth: W,
-                            folderIconUrl: folderIconUrl
+                            folderIconUrl: folderIconUrl,
+                            scrollState: scrollState,
+                            eager: eagerImages
                         });
+                        activeMenuList.viewId = sim.themeViewId;
                         layer.appendChild(genBox);
                     } else if (sim.themeViewId === 'settings') {
                         var settingsColors = {
@@ -2200,19 +2518,20 @@
                             'px;height:' +
                             SETTINGS_MENU_HEIGHT +
                             'px;overflow:hidden;z-index:10;';
-                        appendSettingsMenuRows(sMenu, {
+                        activeMenuList = appendSettingsMenuRows(sMenu, {
                             items: sItems,
                             selectedIndex: sim.themeSelectedIndex,
                             visibleHeight: SETTINGS_MENU_HEIGHT,
                             colors: settingsColors,
                             itemBackgroundStyle: itemBackgroundStyle,
                             itemSelectedBackgroundStyle: itemSelectedBackgroundStyle,
-                            itemRightArrowUrl: itemRightArrowUrl
+                            itemRightArrowUrl: itemRightArrowUrl,
+                            scrollState: scrollState,
+                            eager: eagerImages
                         });
+                        activeMenuList.viewId = 'settings';
                         layer.appendChild(sMenu);
 
-                        var selS = sItems[sim.themeSelectedIndex] || {};
-                        var isAbout = selS.id === 'about';
                         var rp = document.createElement('div');
                         rp.style.cssText =
                             'position:absolute;right:' +
@@ -2227,59 +2546,59 @@
                             'position:absolute;top:58px;left:0;right:0;text-align:center;font-size:18px;font-weight:bold;color:' +
                             colors.text_primary +
                             ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 5px;line-height:1.2;';
-                        rt.textContent = selS.label || '';
                         rp.appendChild(rt);
 
                         var imgBox = document.createElement('div');
-                        if (selS.assetPath) imgBox.setAttribute('data-theme-art-box', selS.assetPath);
                         imgBox.style.cssText =
                             'position:absolute;top:96px;left:0;right:0;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;';
-                        if (isAbout) {
-                            var abWrap = document.createElement('div');
-                            abWrap.style.cssText =
-                                'width:100%;display:flex;flex-direction:column;align-items:center;';
-                            var sq = document.createElement('div');
-                            sq.style.cssText =
-                                'width:140px;height:140px;background:rgba(255,255,255,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;border:2px solid rgba(255,255,255,0.3);';
-                            var y1 = document.createElement('div');
-                            y1.style.cssText =
-                                'color:' + colors.text_primary + ';font-size:48px;font-weight:bold;';
-                            y1.textContent = 'Y1';
-                            sq.appendChild(y1);
-                            abWrap.appendChild(sq);
-                            var v1 = document.createElement('div');
-                            v1.style.cssText =
-                                'color:' + colors.text_primary + ';font-size:16px;text-align:center;margin-bottom:10px;';
-                            v1.textContent = 'Version 3.0.2';
-                            abWrap.appendChild(v1);
-                            var v2 = document.createElement('div');
-                            v2.style.cssText =
-                                'color:' + colors.text_primary + ';font-size:14px;text-align:center;opacity:0.8;';
-                            v2.textContent = 'Innioasis Y1';
-                            abWrap.appendChild(v2);
-                            imgBox.appendChild(abWrap);
-                        } else if (selS.iconUrl) {
-                            var simg = document.createElement('img');
-                            simg.src = selS.iconUrl;
-                            simg.alt = selS.label || '';
-                            if (selS.assetPath) simg.setAttribute('data-theme-asset-path', selS.assetPath);
-                            bindPreviewImgFallback(simg);
-                            simg.style.cssText =
-                                'max-width:146px;max-height:146px;width:auto;height:auto;object-fit:contain;display:block;';
-                            imgBox.appendChild(simg);
-                        }
+                        var abWrap = document.createElement('div');
+                        abWrap.style.cssText =
+                            'width:100%;display:none;flex-direction:column;align-items:center;';
+                        var sq = document.createElement('div');
+                        sq.style.cssText =
+                            'width:140px;height:140px;background:rgba(255,255,255,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;border:2px solid rgba(255,255,255,0.3);';
+                        var y1 = document.createElement('div');
+                        y1.style.cssText =
+                            'color:' + colors.text_primary + ';font-size:48px;font-weight:bold;';
+                        y1.textContent = 'Y1';
+                        sq.appendChild(y1);
+                        abWrap.appendChild(sq);
+                        var v1 = document.createElement('div');
+                        v1.style.cssText =
+                            'color:' + colors.text_primary + ';font-size:16px;text-align:center;margin-bottom:10px;';
+                        v1.textContent = 'Version 3.0.2';
+                        abWrap.appendChild(v1);
+                        var v2 = document.createElement('div');
+                        v2.style.cssText =
+                            'color:' + colors.text_primary + ';font-size:14px;text-align:center;opacity:0.8;';
+                        v2.textContent = 'Innioasis Y1';
+                        abWrap.appendChild(v2);
+                        imgBox.appendChild(abWrap);
+
+                        var simg = document.createElement('img');
+                        bindReusableArtImg(simg);
+                        simg.style.cssText =
+                            'max-width:146px;max-height:146px;width:auto;height:auto;object-fit:contain;display:none;';
+                        imgBox.appendChild(simg);
                         rp.appendChild(imgBox);
 
-                        if (selS.valueText && !isAbout) {
-                            var stx = document.createElement('div');
-                            stx.style.cssText =
-                                'position:absolute;top:242px;left:0;right:0;font-size:16px;color:' +
-                                colors.text_primary +
-                                ';text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 5px;';
-                            stx.textContent = String(selS.valueText);
-                            rp.appendChild(stx);
-                        }
+                        var stx = document.createElement('div');
+                        stx.style.cssText =
+                            'position:absolute;top:242px;left:0;right:0;font-size:16px;color:' +
+                            colors.text_primary +
+                            ';text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 5px;display:none;';
+                        rp.appendChild(stx);
                         layer.appendChild(rp);
+
+                        activeRightPanel = {
+                            kind: 'settings',
+                            titleEl: rt,
+                            imgBox: imgBox,
+                            aboutWrap: abWrap,
+                            img: simg,
+                            valueEl: stx
+                        };
+                        updateRightPanelInPlace();
                     } else if (sim.themeViewId === 'settingsEqualizer') {
                         var eqColors = {
                             text_primary: colors.text_primary,
@@ -2297,7 +2616,7 @@
                             'px;height:' +
                             SETTINGS_MENU_HEIGHT +
                             'px;overflow:hidden;z-index:10;';
-                        appendSettingsMenuRows(eqMenu, {
+                        activeMenuList = appendSettingsMenuRows(eqMenu, {
                             items: eqItems.map(function (e) {
                                 return { id: e.id, label: e.label, assetPath: e.assetPath };
                             }),
@@ -2306,11 +2625,13 @@
                             colors: eqColors,
                             itemBackgroundStyle: itemBackgroundStyle,
                             itemSelectedBackgroundStyle: itemSelectedBackgroundStyle,
-                            itemRightArrowUrl: itemRightArrowUrl
+                            itemRightArrowUrl: itemRightArrowUrl,
+                            scrollState: scrollState,
+                            eager: eagerImages
                         });
+                        activeMenuList.viewId = 'settingsEqualizer';
                         layer.appendChild(eqMenu);
 
-                        var eqSel = eqItems[sim.themeSelectedIndex] || {};
                         var erp = document.createElement('div');
                         erp.style.cssText =
                             'position:absolute;right:22px;top:0;width:200px;height:' +
@@ -2323,29 +2644,30 @@
                             ';white-space:nowrap;overflow:hidden;padding:0 5px;';
                         et.textContent = 'Equalizer';
                         erp.appendChild(et);
-                        if (eqSel.iconUrl) {
-                            var eib = document.createElement('div');
-                            if (eqSel.assetPath) eib.setAttribute('data-theme-art-box', eqSel.assetPath);
-                            eib.style.cssText =
-                                'position:absolute;top:96px;left:0;right:0;height:146px;display:flex;flex-direction:column;align-items:center;justify-content:center;';
-                            var eim = document.createElement('img');
-                            eim.src = eqSel.iconUrl;
-                            eim.alt = eqSel.label || '';
-                            if (eqSel.assetPath) eim.setAttribute('data-theme-asset-path', eqSel.assetPath);
-                            bindPreviewImgFallback(eim);
-                            eim.style.cssText =
-                                'max-width:146px;max-height:146px;width:auto;height:auto;object-fit:contain;display:block;';
-                            eib.appendChild(eim);
-                            erp.appendChild(eib);
-                        }
+                        var eib = document.createElement('div');
+                        eib.style.cssText =
+                            'position:absolute;top:96px;left:0;right:0;height:146px;display:none;flex-direction:column;align-items:center;justify-content:center;';
+                        var eim = document.createElement('img');
+                        bindReusableArtImg(eim);
+                        eim.style.cssText =
+                            'max-width:146px;max-height:146px;width:auto;height:auto;object-fit:contain;display:block;';
+                        eib.appendChild(eim);
+                        erp.appendChild(eib);
                         var elb = document.createElement('div');
                         elb.style.cssText =
                             'position:absolute;top:242px;left:0;right:0;font-size:16px;color:' +
                             colors.text_primary +
                             ';text-align:center;white-space:nowrap;overflow:hidden;padding:0 5px;';
-                        elb.textContent = eqSel.label || '';
                         erp.appendChild(elb);
                         layer.appendChild(erp);
+                        activeRightPanel = {
+                            kind: 'settingsEqualizer',
+                            items: eqItems,
+                            imgBox: eib,
+                            img: eim,
+                            labelEl: elb
+                        };
+                        updateRightPanelInPlace();
                     } else if (sim.themeViewId === 'settingsTheme') {
                         var themeUrl = cfg.themeCover
                             ? buildFileUrl(contentFolder, cfg.themeCover)
@@ -2503,7 +2825,7 @@
                             text_primary: colors.text_primary,
                             text_selected: itemCfg.itemSelectedTextColor || '#3CFFDE'
                         };
-                        appendSettingsMenuRows(dtMenu, {
+                        activeMenuList = appendSettingsMenuRows(dtMenu, {
                             items: dtItems.map(function (d) {
                                 return { id: d.id, label: d.label, valueText: d.value };
                             }),
@@ -2512,8 +2834,11 @@
                             colors: dtc,
                             itemBackgroundStyle: itemBackgroundStyle,
                             itemSelectedBackgroundStyle: itemSelectedBackgroundStyle,
-                            itemRightArrowUrl: itemRightArrowUrl
+                            itemRightArrowUrl: itemRightArrowUrl,
+                            scrollState: scrollState,
+                            eager: eagerImages
                         });
+                        activeMenuList.viewId = 'settingsDateTime';
                         layer.appendChild(dtMenu);
                     } else if (sim.themeViewId === 'settingsLanguage') {
                         var langItems = genericListForView('settingsLanguage');
@@ -2526,7 +2851,7 @@
                             'px;height:' +
                             (H - statusH) +
                             'px;overflow:hidden;z-index:10;';
-                        appendMenuRows(lbox, {
+                        activeMenuList = appendMenuRows(lbox, {
                             items: langItems,
                             selectedIndex: sim.themeSelectedIndex,
                             itemHeight: Math.floor((H - statusH - 12) / 7) || 40,
@@ -2538,8 +2863,11 @@
                             fullWidth: true,
                             leftPad: 0,
                             rowWidth: W,
-                            folderIconUrl: ''
+                            folderIconUrl: '',
+                            scrollState: scrollState,
+                            eager: eagerImages
                         });
+                        activeMenuList.viewId = 'settingsLanguage';
                         layer.appendChild(lbox);
                     } else if (sim.themeViewId === 'settingsAbout') {
                         var ab = document.createElement('div');
@@ -2715,6 +3043,19 @@
                     }
                 }
 
+                function paintKeepingScrollQuietly() {
+                    if (cleanedUp) return;
+                    var prevAnim = scrollState.animate;
+                    scrollState.override = scrollState.lastY;
+                    scrollState.animate = false;
+                    try {
+                        paint();
+                    } finally {
+                        scrollState.override = null;
+                        scrollState.animate = prevAnim;
+                    }
+                }
+
                 function primeLoadedThemeFontsThenInitialPaint() {
                     paint();
                     if (typeof document !== 'undefined' && document.fonts && document.fonts.load) {
@@ -2725,17 +3066,17 @@
                             .load('22px ' + firstFam)
                             .catch(function () {})
                             .then(function () {
-                                paint();
+                                paintKeepingScrollQuietly();
                             });
                     } else {
                         global.setTimeout(function () {
-                            paint();
+                            paintKeepingScrollQuietly();
                         }, 60);
                     }
                     if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
                         document.fonts.ready
                             .then(function () {
-                                paint();
+                                paintKeepingScrollQuietly();
                             })
                             .catch(function () {});
                     }
@@ -2788,7 +3129,10 @@
                     return homeItems.length;
                 }
 
+                var suppressHoverUntil = 0;
+
                 function handleScroll(direction) {
+                    suppressHoverUntil = Date.now() + 360;
                     if (sim.dialogVisible && (sim.dialogOptions || []).length) {
                         var len = sim.dialogOptions.length;
                         var delta = direction === 'down' ? 1 : -1;
@@ -2798,6 +3142,7 @@
                         return;
                     }
                     var vid = sim.themeViewId;
+                    var prevIdx = sim.themeSelectedIndex;
                     if (vid === 'home') {
                         /* Clamped, not wrapped: a wheel or a swipe carried past
                            the first row used to jump to the last one (and back),
@@ -2826,18 +3171,25 @@
                         } else {
                             sim.brightnessLevel = Math.max(sim.brightnessLevel - 10, 0);
                         }
+                        paint();
+                        return;
                     } else if (vid === 'settingsWallpaper') {
                         if (direction === 'down') {
                             sim.themeSelectedIndex = Math.min(sim.themeSelectedIndex + 1, 1);
                         } else {
                             sim.themeSelectedIndex = Math.max(sim.themeSelectedIndex - 1, 0);
                         }
+                        paint();
+                        return;
                     } else if (vid === 'settingsDateTime') {
                         scrollClamp(direction, 4);
                     } else if (vid === 'settingsLanguage') {
                         scrollClamp(direction, genericListForView('settingsLanguage').length);
                     }
-                    paint();
+                    if (sim.themeSelectedIndex === prevIdx) return;
+                    if (!updateSelectionInPlace(false)) {
+                        paint();
+                    }
                 }
 
                 function scrollClamp(direction, len) {
@@ -3076,27 +3428,55 @@
                 }
 
                 /* One notch of a trackpad can arrive as dozens of wheel events.
-                   Stepping on every one of them was a blur; collect the intent
-                   and move a row at a time, no faster than a finger can follow. */
+                   Accumulate physical pixels with a clear per-step threshold and
+                   cap the pending queue so a single flick never turns into
+                   seconds of runaway scrolling. */
                 var wheelStepTimer = null;
+                var wheelAccResetTimer = null;
                 var wheelSteps = 0;
+                var wheelDeltaAcc = 0;
+                var WHEEL_STEP_PX = 42;
+                var WHEEL_MAX_QUEUED = 3;
 
                 function onWheelDelta(ev) {
                     if (!interactive) return;
                     ev.preventDefault();
                     var dy = ev.deltaY;
-                    if (Math.abs(dy) < 0.5) return;
-                    wheelSteps += dy > 0 ? 1 : -1;
-                    if (wheelStepTimer) return;
+                    if (ev.deltaMode === 1) dy *= 36;
+                    else if (ev.deltaMode === 2) dy *= 240;
+                    if (!isFinite(dy) || Math.abs(dy) < 0.5) return;
+                    suppressHoverUntil = Date.now() + 360;
+                    if ((dy > 0 && wheelDeltaAcc < 0) || (dy < 0 && wheelDeltaAcc > 0)) {
+                        wheelDeltaAcc = 0;
+                    }
+                    wheelDeltaAcc += dy;
+                    if (wheelAccResetTimer) global.clearTimeout(wheelAccResetTimer);
+                    wheelAccResetTimer = global.setTimeout(function () {
+                        wheelAccResetTimer = null;
+                        wheelDeltaAcc = 0;
+                    }, 220);
+
+                    var added = 0;
+                    while (Math.abs(wheelDeltaAcc) >= WHEEL_STEP_PX) {
+                        var dir = wheelDeltaAcc > 0 ? 1 : -1;
+                        wheelDeltaAcc -= dir * WHEEL_STEP_PX;
+                        wheelSteps = Math.max(-WHEEL_MAX_QUEUED, Math.min(WHEEL_MAX_QUEUED, wheelSteps + dir));
+                        added += 1;
+                    }
+                    if (!added && Math.abs(dy) >= 24 && !wheelStepTimer && wheelSteps === 0) {
+                        wheelSteps = dy > 0 ? 1 : -1;
+                        wheelDeltaAcc = 0;
+                    }
+                    if (!wheelSteps || wheelStepTimer) return;
                     var step = function () {
-                        if (!wheelSteps) {
+                        if (cleanedUp || !wheelSteps) {
                             wheelStepTimer = null;
                             return;
                         }
                         var direction = wheelSteps > 0 ? 'down' : 'up';
                         wheelSteps -= wheelSteps > 0 ? 1 : -1;
                         handleScroll(direction);
-                        wheelStepTimer = global.setTimeout(step, 90);
+                        wheelStepTimer = wheelSteps ? global.setTimeout(step, 95) : null;
                     };
                     wheelStepTimer = global.setTimeout(step, 0);
                 }
@@ -3174,32 +3554,62 @@
                     if (sim.dialogVisible) return false;
                     if (index === sim.themeSelectedIndex) return false;
                     sim.themeSelectedIndex = index;
-                    menuScrollOverride = lastMenuScrollY;
+                    if (updateSelectionInPlace(true)) {
+                        return true;
+                    }
+                    scrollState.override = scrollState.lastY;
+                    scrollState.animate = false;
                     try {
                         paint();
                     } finally {
-                        menuScrollOverride = null;
+                        scrollState.override = null;
+                        scrollState.animate = true;
                     }
                     return true;
                 }
 
                 /* pointerover fires again whenever a paint puts a fresh row
                    under a stationary cursor, so it cannot be the hover source.
-                   Real movement is: coalesce it to one frame, then ask the
-                   document what is under the pointer now. */
+                   Real physical movement is: require >= 3px of actual pointer
+                   motion, ignore hovers during active scroll transitions, skip
+                   barely-clipped edge slivers, and update the row in place. */
                 var hoverFrame = 0;
                 var hoverPoint = null;
+                var lastHoverX = NaN;
+                var lastHoverY = NaN;
+
+                function rowVisibleInList(row) {
+                    if (!row || !activeMenuList || !activeMenuList.outer) return true;
+                    var outerBox = activeMenuList.outer.getBoundingClientRect();
+                    var rowBox = row.getBoundingClientRect();
+                    if (!outerBox.height || !rowBox.height) return false;
+                    var visibleTop = Math.max(rowBox.top, outerBox.top);
+                    var visibleBottom = Math.min(rowBox.bottom, outerBox.bottom);
+                    var visibleH = visibleBottom - visibleTop;
+                    return visibleH >= Math.min(16, rowBox.height * 0.45);
+                }
 
                 function onRowHover(ev) {
                     if (!interactive || ev.pointerType === 'touch') return;
+                    if (Date.now() < suppressHoverUntil) return;
+                    if (
+                        isFinite(lastHoverX) &&
+                        isFinite(lastHoverY) &&
+                        Math.hypot(ev.clientX - lastHoverX, ev.clientY - lastHoverY) < 3
+                    ) {
+                        return;
+                    }
+                    lastHoverX = ev.clientX;
+                    lastHoverY = ev.clientY;
                     hoverPoint = { x: ev.clientX, y: ev.clientY };
                     if (hoverFrame) return;
                     hoverFrame = global.requestAnimationFrame(function () {
                         hoverFrame = 0;
-                        if (!hoverPoint) return;
+                        if (cleanedUp || !hoverPoint || Date.now() < suppressHoverUntil) return;
                         var node = document.elementFromPoint(hoverPoint.x, hoverPoint.y);
                         var row = node && node.closest ? node.closest('[data-y1-row]') : null;
                         if (!row || !canvas.contains(row)) return;
+                        if (!rowVisibleInList(row)) return;
                         focusRowIndex(parseInt(row.getAttribute('data-y1-row'), 10));
                     });
                 }
@@ -3296,7 +3706,9 @@
                     if (!interactive || !(index >= 0) || sim.dialogVisible) return false;
                     if (index !== sim.themeSelectedIndex) {
                         sim.themeSelectedIndex = index;
-                        paint();
+                        if (!updateSelectionInPlace(true)) {
+                            paint();
+                        }
                         return false;
                     }
                     handleCenterClick();
@@ -3395,6 +3807,7 @@
                         return {
                             themeViewId: sim.themeViewId,
                             themeSelectedIndex: sim.themeSelectedIndex,
+                            lastMenuScrollY: scrollState.lastY,
                             themeHistory: Array.isArray(sim.themeHistory) ? sim.themeHistory.slice() : [],
                             dialogVisible: !!sim.dialogVisible,
                             dialogTitle: sim.dialogTitle,
@@ -3441,11 +3854,24 @@
                         sim.keyToneEnabled = snap.keyToneEnabled;
                         sim.keyVibrationEnabled = snap.keyVibrationEnabled;
                         sim.displayBatteryEnabled = snap.displayBatteryEnabled;
-                        paint();
+                        var restoreY = typeof snap.lastMenuScrollY === 'number' ? snap.lastMenuScrollY : null;
+                        scrollState.lastViewId = sim.themeViewId;
+                        if (restoreY != null) {
+                            scrollState.lastY = restoreY;
+                            scrollState.override = restoreY;
+                        }
+                        scrollState.animate = false;
+                        try {
+                            paint();
+                        } finally {
+                            scrollState.override = null;
+                            scrollState.animate = true;
+                        }
                         return true;
                     },
-                    revealAsset: function (assetPath) {
+                    revealAsset: function (assetPath, revealOpts) {
                         if (!interactive || !assetPath) return false;
+                        var silent = !!(revealOpts && revealOpts.silent);
                         var view = assetContextView(assetPath);
                         if (!view) return false;
                         sim.dialogVisible = false;
@@ -3453,44 +3879,57 @@
                         sim.themeViewId = view;
                         sim.themeSelectedIndex = 0;
                         applyRevealAssetState(assetPath);
-                        /* Dialog art only exists on screen while a dialog is up,
-                           so give the author the shutdown dialog to look at
-                           instead of an empty settings list. */
-                        if (/^dialogConfig\./.test(String(assetPath))) {
-                            sim.dialogVisible = true;
-                            sim.dialogTitle = 'Shutdown';
-                            sim.dialogMessage = 'Sure to shut down?';
-                            sim.dialogOptions = ['Yes', 'No'];
-                            sim.dialogSelectedIndex = 1;
+                        var prevAnim = scrollState.animate;
+                        if (silent) scrollState.animate = false;
+                        try {
+                            /* Dialog art only exists on screen while a dialog is up,
+                               so give the author the shutdown dialog to look at
+                               instead of an empty settings list. */
+                            if (/^dialogConfig\./.test(String(assetPath))) {
+                                sim.dialogVisible = true;
+                                sim.dialogTitle = 'Shutdown';
+                                sim.dialogMessage = 'Sure to shut down?';
+                                sim.dialogOptions = ['Yes', 'No'];
+                                sim.dialogSelectedIndex = 1;
+                                paint();
+                                return true;
+                            }
+                            try {
+                                var items =
+                                    view === 'settings'
+                                        ? buildSettingsItems(cfg, buildFileUrl, contentFolder, sim)
+                                        : view === 'settingsEqualizer'
+                                          ? buildEqualizerItems(settingCfg, buildFileUrl, contentFolder)
+                                          : view === 'home'
+                                            ? homeItems
+                                            : [];
+                                for (var i = 0; i < items.length; i++) {
+                                    if (items[i] && items[i].assetPath === assetPath) {
+                                        sim.themeSelectedIndex = i;
+                                        break;
+                                    }
+                                }
+                            } catch (e) {}
                             paint();
                             return true;
+                        } finally {
+                            scrollState.animate = prevAnim;
                         }
-                        try {
-                            var items =
-                                view === 'settings'
-                                    ? buildSettingsItems(cfg, buildFileUrl, contentFolder, sim)
-                                    : view === 'settingsEqualizer'
-                                      ? buildEqualizerItems(settingCfg, buildFileUrl, contentFolder)
-                                      : view === 'home'
-                                        ? homeItems
-                                        : [];
-                            for (var i = 0; i < items.length; i++) {
-                                if (items[i] && items[i].assetPath === assetPath) {
-                                    sim.themeSelectedIndex = i;
-                                    break;
-                                }
-                            }
-                        } catch (e) {}
-                        paint();
-                        return true;
                     },
-                    showView: function (viewId) {
+                    showView: function (viewId, viewOpts) {
                         if (!interactive || !viewId) return false;
+                        var silent = !!(viewOpts && viewOpts.silent);
                         sim.dialogVisible = false;
                         sim.themeHistory = [];
                         sim.themeViewId = String(viewId);
                         sim.themeSelectedIndex = 0;
-                        paint();
+                        var prevAnim = scrollState.animate;
+                        if (silent) scrollState.animate = false;
+                        try {
+                            paint();
+                        } finally {
+                            scrollState.animate = prevAnim;
+                        }
                         return true;
                     },
                     currentView: function () {
@@ -3510,7 +3949,25 @@
                 };
 
                 container._y1TpCleanup = function () {
+                    cleanedUp = true;
                     container._y1TpApi = null;
+                    if (hoverFrame) {
+                        global.cancelAnimationFrame(hoverFrame);
+                        hoverFrame = 0;
+                    }
+                    if (wheelStepTimer) {
+                        global.clearTimeout(wheelStepTimer);
+                        wheelStepTimer = null;
+                    }
+                    if (wheelAccResetTimer) {
+                        global.clearTimeout(wheelAccResetTimer);
+                        wheelAccResetTimer = null;
+                    }
+                    wheelSteps = 0;
+                    wheelDeltaAcc = 0;
+                    preloadedArt.length = 0;
+                    activeMenuList = null;
+                    activeRightPanel = null;
                     if (ro) ro.disconnect();
                     if (interactive) {
                         dev.removeEventListener('keydown', onKeyDown);
@@ -3522,7 +3979,7 @@
                             wheel.removeEventListener('pointerup', onWheelPointerEnd);
                             wheel.removeEventListener('pointercancel', onWheelPointerEnd);
                         }
-                        canvas.removeEventListener('pointerover', onRowHover);
+                        canvas.removeEventListener('pointermove', onRowHover);
                         canvas.removeEventListener('dblclick', onRowDoubleClick);
                         canvas.removeEventListener('pointerdown', onRowHoldStart);
                         canvas.removeEventListener('pointermove', onRowHoldMove);
@@ -3704,12 +4161,334 @@
         io.observe(container);
     }
 
+    function loadCanvasImage(url, timeoutMs) {
+        return new Promise(function (resolve) {
+            if (!url || typeof Image === 'undefined') return resolve(null);
+            var settled = false;
+            var timer = null;
+            var img = new Image();
+            if (!/^(blob:|data:)/i.test(String(url))) {
+                try {
+                    img.crossOrigin = 'anonymous';
+                } catch (e) {}
+            }
+            function finish(result) {
+                if (settled) return;
+                settled = true;
+                if (timer) global.clearTimeout(timer);
+                img.onload = null;
+                img.onerror = null;
+                resolve(result);
+            }
+            timer = global.setTimeout(function () {
+                finish(null);
+            }, timeoutMs || 4500);
+            img.onload = function () {
+                if (img.naturalWidth <= 1 && img.naturalHeight <= 1) {
+                    finish(null);
+                    return;
+                }
+                finish(img);
+            };
+            img.onerror = function () {
+                finish(null);
+            };
+            img.src = url;
+        });
+    }
+
+    function drawImageCover(ctx, img, dx, dy, dw, dh) {
+        if (!ctx || !img || !img.naturalWidth || !img.naturalHeight) return;
+        var nw = img.naturalWidth;
+        var nh = img.naturalHeight;
+        var scale = Math.max(dw / nw, dh / nh);
+        var sw = dw / scale;
+        var sh = dh / scale;
+        var sx = (nw - sw) / 2;
+        var sy = (nh - sh) / 2;
+        ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+    }
+
+    function canvasToJpegBlob(canvas, quality) {
+        return new Promise(function (resolve) {
+            try {
+                if (typeof canvas.toBlob === 'function') {
+                    canvas.toBlob(
+                        function (blob) {
+                            resolve(blob || null);
+                        },
+                        'image/jpeg',
+                        quality
+                    );
+                    return;
+                }
+                var dataUrl = canvas.toDataURL('image/jpeg', quality);
+                if (!dataUrl || dataUrl.indexOf('data:image/jpeg') !== 0) return resolve(null);
+                var bin = global.atob(dataUrl.split(',')[1] || '');
+                var bytes = new Uint8Array(bin.length);
+                for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+                resolve(new Blob([bytes], { type: 'image/jpeg' }));
+            } catch (err) {
+                resolve(null);
+            }
+        });
+    }
+
+    /**
+     * Render a 480x360 Home screen JPEG capture directly in the user's browser
+     * using the exact same layout metrics, colors, masks, icons, and fonts as
+     * the live preview so uploads can include an accurate screenshot_preview.jpg
+     * upfront (with GitHub Actions as an automatic fallback).
+     */
+    function renderHomeScreenshotBlob(cfg, options) {
+        if (typeof document === 'undefined' || !cfg || typeof cfg !== 'object') {
+            return Promise.resolve(null);
+        }
+        var opts = options || {};
+        var catalogFolder = String(opts.catalogFolder || '')
+            .replace(/^\.\/+/, '')
+            .trim();
+        var variantSegment = String(opts.variantSegment || '').trim();
+        var contentFolder = effectiveContentPrefix(catalogFolder, variantSegment);
+        var buildFileUrl =
+            typeof opts.buildFileUrl === 'function' ? opts.buildFileUrl : defaultBuildFileUrl;
+        var maxBytes = typeof opts.maxBytes === 'number' && opts.maxBytes > 4096 ? opts.maxBytes : 32000;
+
+        var fontStyleId = 'y1-tp-shot-font-' + (++_specFontMountSeq);
+        injectThemeFonts(cfg, buildFileUrl, contentFolder, fontStyleId, 'block');
+        var fontStack = defaultFontStack(cfg, fontStyleId);
+
+        var itemCfg = cfg.itemConfig || {};
+        var menuCfg = cfg.menuConfig || {};
+        var statusCfg = cfg.statusConfig || {};
+        var settingCfg = cfg.settingConfig || {};
+        var colors = buildColors(itemCfg, menuCfg, statusCfg);
+        var statusH = statusBarHeightPx(cfg);
+
+        var prevStudioLocale = global.STUDIO_PREVIEW_LOCALE;
+        var homeItems = [];
+        try {
+            global.STUDIO_PREVIEW_LOCALE = 'en';
+            homeItems = buildHomeItems(cfg.homePageConfig || {}, settingCfg);
+        } finally {
+            if (prevStudioLocale === undefined) delete global.STUDIO_PREVIEW_LOCALE;
+            else global.STUDIO_PREVIEW_LOCALE = prevStudioLocale;
+        }
+
+        function resolveSlotVisual(val) {
+            if (!val) return null;
+            if (isHexColor8or6(val)) return { color: String(val).trim(), url: '' };
+            var u = buildFileUrl(contentFolder, val);
+            return u ? { color: '', url: u } : null;
+        }
+
+        var itemBgVis = resolveSlotVisual(itemCfg.itemBackground);
+        if (!itemBgVis && menuCfg.menuItemBackground && !isHexColor8or6(menuCfg.menuItemBackground)) {
+            itemBgVis = resolveSlotVisual(menuCfg.menuItemBackground);
+        }
+        var itemSelVis =
+            resolveSlotVisual(itemCfg.itemSelectedBackground) ||
+            resolveSlotVisual(menuCfg.menuItemSelectedBackground) || {
+                color: 'rgba(255,255,255,0.12)',
+                url: ''
+            };
+
+        var wallUrl = backgroundUrlForView(cfg, 'home', buildFileUrl, contentFolder, false);
+        var maskUrl = cfg.desktopMask ? buildFileUrl(contentFolder, cfg.desktopMask) : '';
+        var battUrl = getBatteryIconUrl(statusCfg, buildFileUrl, contentFolder, 3, false);
+        var arrowUrl = itemCfg.itemRightArrow ? buildFileUrl(contentFolder, itemCfg.itemRightArrow) : '';
+        var firstItem = homeItems[0] || null;
+        var heroUrl = firstItem && firstItem.iconFile ? buildFileUrl(contentFolder, firstItem.iconFile) : '';
+
+        var fontWait = Promise.race([
+            waitForFontFamily(fontStack),
+            new Promise(function (resolve) {
+                global.setTimeout(resolve, 2600);
+            })
+        ]);
+
+        return Promise.all([
+            fontWait,
+            loadCanvasImage(wallUrl, 4500),
+            loadCanvasImage(maskUrl, 4500),
+            loadCanvasImage(battUrl, 3000),
+            loadCanvasImage(arrowUrl, 3000),
+            loadCanvasImage(heroUrl, 4500),
+            itemBgVis && itemBgVis.url ? loadCanvasImage(itemBgVis.url, 3000) : Promise.resolve(null),
+            itemSelVis && itemSelVis.url ? loadCanvasImage(itemSelVis.url, 3000) : Promise.resolve(null)
+        ])
+            .then(function (loaded) {
+                var wallImg = loaded[1];
+                var maskImg = loaded[2];
+                var battImg = loaded[3];
+                var arrowImg = loaded[4];
+                var heroImg = loaded[5];
+                var itemBgImg = loaded[6];
+                var itemSelImg = loaded[7];
+
+                var canvas = document.createElement('canvas');
+                canvas.width = W;
+                canvas.height = H;
+                var ctx = canvas.getContext('2d');
+                if (!ctx) return null;
+
+                /* 1. Background & wallpaper (object-fit: cover). */
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(0, 0, W, H);
+                if (wallImg) {
+                    drawImageCover(ctx, wallImg, 0, 0, W, H);
+                }
+
+                /* 2. Desktop mask overlay (z-index 5, object-fit: cover). */
+                if (maskImg) {
+                    drawImageCover(ctx, maskImg, 0, 0, W, H);
+                }
+
+                /* 3. Home menu rows (clipped to HOME_MENU box). */
+                ctx.save();
+                ctx.beginPath();
+                ctx.rect(HOME_MENU_LEFT, HOME_MENU_TOP, HOME_MENU_WIDTH, HOME_MENU_HEIGHT);
+                ctx.clip();
+
+                for (var idx = 0; idx < homeItems.length; idx++) {
+                    var item = homeItems[idx];
+                    var rowY = HOME_MENU_TOP + idx * HOME_ROW_HEIGHT;
+                    if (rowY >= HOME_MENU_TOP + HOME_MENU_HEIGHT) break;
+                    var selected = idx === 0;
+                    var rowX = HOME_MENU_LEFT + HOME_ROW_LEFT_PAD;
+                    var rowW = HOME_ROW_WIDTH;
+                    var rowH = HOME_ROW_HEIGHT;
+
+                    if (selected) {
+                        if (itemSelImg) {
+                            ctx.drawImage(itemSelImg, rowX, rowY, rowW, rowH);
+                        } else if (itemSelVis && itemSelVis.color) {
+                            ctx.fillStyle = itemSelVis.color;
+                            ctx.fillRect(rowX, rowY, rowW, rowH);
+                        }
+                    } else if (itemBgImg) {
+                        ctx.drawImage(itemBgImg, rowX, rowY, rowW, rowH);
+                    } else if (itemBgVis && itemBgVis.color) {
+                        ctx.fillStyle = itemBgVis.color;
+                        ctx.fillRect(rowX, rowY, rowW, rowH);
+                    }
+
+                    /* Label text clipped to [rowX + 5, rowX + rowW - 42]. */
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.rect(rowX + 5, rowY, Math.max(10, rowW - 47), rowH);
+                    ctx.clip();
+                    ctx.fillStyle = selected ? colors.text_selected : colors.text_primary;
+                    ctx.font = '700 22px ' + fontStack;
+                    ctx.textBaseline = 'middle';
+                    ctx.textAlign = 'left';
+                    ctx.fillText(String(item.label || ''), rowX + 5, rowY + rowH / 2 + 1);
+                    ctx.restore();
+
+                    if (selected) {
+                        if (arrowImg && arrowImg.naturalWidth && arrowImg.naturalHeight) {
+                            var aScale = Math.min(rowH / arrowImg.naturalHeight, 64 / arrowImg.naturalWidth, 64 / arrowImg.naturalHeight);
+                            var aw = Math.max(1, arrowImg.naturalWidth * aScale);
+                            var ah = Math.max(1, arrowImg.naturalHeight * aScale);
+                            ctx.save();
+                            ctx.globalAlpha = 0.9;
+                            ctx.drawImage(arrowImg, rowX + rowW - 10 - aw, rowY + (rowH - ah) / 2, aw, ah);
+                            ctx.restore();
+                        } else {
+                            ctx.save();
+                            ctx.fillStyle = colors.text_selected;
+                            ctx.font = '700 22px ' + fontStack;
+                            ctx.textBaseline = 'middle';
+                            ctx.textAlign = 'right';
+                            ctx.fillText('\u203A', rowX + rowW - 10, rowY + rowH / 2);
+                            ctx.restore();
+                        }
+                    }
+                }
+                ctx.restore();
+
+                /* 4. Right-hand preview tile for the first Home item. */
+                if (heroImg && heroImg.naturalWidth && heroImg.naturalHeight) {
+                    var maxPrevH = Math.max(40, H - HOME_PREVIEW_TOP_MARGIN - 8);
+                    var tileX = W - HOME_PREVIEW_RIGHT_MARGIN - HOME_PREVIEW_WIDTH;
+                    var tileY = HOME_PREVIEW_TOP_MARGIN;
+                    var fitScale = Math.min(
+                        1,
+                        HOME_PREVIEW_WIDTH / heroImg.naturalWidth,
+                        maxPrevH / heroImg.naturalHeight
+                    );
+                    var drawW = heroImg.naturalWidth * fitScale;
+                    var drawH = heroImg.naturalHeight * fitScale;
+                    var drawX = tileX + (HOME_PREVIEW_WIDTH - drawW) / 2;
+                    ctx.drawImage(heroImg, drawX, tileY, drawW, drawH);
+                }
+
+                /* 5. Status bar (z-index 20). */
+                ctx.fillStyle = colors.status_bar_bg || 'rgba(0,0,0,0.25)';
+                ctx.fillRect(0, 0, W, statusH);
+                ctx.fillStyle = colors.status_text || '#ffffff';
+                ctx.font = '700 20px ' + fontStack;
+                ctx.textBaseline = 'middle';
+                ctx.textAlign = 'left';
+                ctx.fillText('Home', 14, statusH / 2 + 1);
+
+                var pctText = '100%';
+                ctx.font = '700 16px ' + fontStack;
+                ctx.textAlign = 'right';
+                var rightEdge = W - 14;
+                var pctWidth = ctx.measureText(pctText).width;
+                ctx.fillText(pctText, rightEdge, statusH / 2 + 1);
+                if (battImg && battImg.naturalWidth && battImg.naturalHeight) {
+                    var bh = 15;
+                    var bw = Math.max(1, (battImg.naturalWidth / battImg.naturalHeight) * bh);
+                    ctx.drawImage(battImg, rightEdge - pctWidth - 6 - bw, (statusH - bh) / 2, bw, bh);
+                } else {
+                    var bx = rightEdge - pctWidth - 4 - 22;
+                    var by = (statusH - 11) / 2;
+                    var borderCol =
+                        colors.status_text && String(colors.status_text).charAt(0) === '#'
+                            ? colors.status_text
+                            : '#ffffff';
+                    ctx.save();
+                    ctx.strokeStyle = borderCol;
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(bx + 0.5, by + 0.5, 21, 10);
+                    var grad = ctx.createLinearGradient(0, by + 2, 0, by + 9);
+                    grad.addColorStop(0, '#7ef29a');
+                    grad.addColorStop(1, '#2db84d');
+                    ctx.fillStyle = grad;
+                    ctx.fillRect(bx + 2, by + 2, 16, 7);
+                    ctx.restore();
+                }
+
+                var qualities = [0.76, 0.66, 0.58, 0.5, 0.44];
+                function encodeAt(qi) {
+                    return canvasToJpegBlob(canvas, qualities[qi]).then(function (blob) {
+                        if (!blob || blob.size === 0) return null;
+                        if (blob.size <= maxBytes || qi >= qualities.length - 1) return blob;
+                        return encodeAt(qi + 1);
+                    });
+                }
+                return encodeAt(0);
+            })
+            .catch(function () {
+                return null;
+            })
+            .finally(function () {
+                try {
+                    var st = document.getElementById(fontStyleId);
+                    if (st && st.parentNode) st.parentNode.removeChild(st);
+                } catch (e) {}
+            });
+    }
+
     global.Y1ThemePreview = {
         mount: mount,
         unmount: unmount,
         effectiveContentPrefix: effectiveContentPrefix,
         mountGalleryCardLazy: mountGalleryCardLazy,
         previewAssetUrl: previewAssetUrl,
-        ensureCardPreviewFonts: ensureCardPreviewFonts
+        ensureCardPreviewFonts: ensureCardPreviewFonts,
+        renderHomeScreenshotBlob: renderHomeScreenshotBlob
     };
 })(typeof window !== 'undefined' ? window : this);

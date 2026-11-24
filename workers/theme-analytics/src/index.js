@@ -18,7 +18,7 @@ export default {
     const path = url.pathname.replace(/\/+$/, "") || "/";
 
     if (request.method === "OPTIONS") {
-      return handleAnalyticsOptions();
+      return handleAnalyticsOptions(request);
     }
 
     if (path === STATS_PATH && request.method === "GET") {

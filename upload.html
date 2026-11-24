@@ -92,9 +92,10 @@
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="theme-display-name.js?v=20260624"></script>
+    <script src="y1-theme-preview.js?v=20261123studio5"></script>
     <link rel="stylesheet" href="theme-analytics.css?v=20260518">
     <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
-    <script src="theme-analytics.js?v=20260521"></script>
+    <script src="theme-analytics.js?v=20261123stats4"></script>
     <script src="author-submission-policy.js?v=20260523"></script>
     <style>
         html {
@@ -655,7 +656,7 @@
         }
     </style>
     <script src="gallery-chrome.js?v=20261110header"></script>
-    <script src="site-init.js?v=20261123studio2"></script>
+    <script src="site-init.js?v=20261123stats4"></script>
   <!-- i18n-hreflang-start -->
   <link rel="alternate" hreflang="x-default" href="https://themes.innioasis.app/upload.html">
   <link rel="alternate" hreflang="en" href="https://themes.innioasis.app/upload.html">
@@ -4119,6 +4120,120 @@
             }
         }
 
+        async function injectThemeScreenshotPreviewsIntoZip(outputZip) {
+            if (
+                !outputZip ||
+                !window.Y1ThemePreview ||
+                typeof window.Y1ThemePreview.renderHomeScreenshotBlob !== "function"
+            ) {
+                return;
+            }
+            const configEntries = [];
+            for (const ze of Object.values(outputZip.files || {})) {
+                if (!ze || ze.dir) continue;
+                const norm = String(ze.name || "").replace(/\\/g, "/").replace(/^\/+/, "");
+                if (!/(^|\/)config\.json$/i.test(norm)) continue;
+                configEntries.push({ entry: ze, path: norm });
+            }
+            for (const item of configEntries) {
+                const slash = item.path.lastIndexOf("/");
+                const dirPrefix = slash >= 0 ? item.path.slice(0, slash + 1) : "";
+                const dirLow = dirPrefix.toLowerCase();
+                let cfg = null;
+                try {
+                    cfg = JSON.parse(await item.entry.async("text"));
+                } catch (_err) {
+                    continue;
+                }
+                if (!cfg || typeof cfg !== "object") continue;
+
+                const tempUrls = [];
+                const urlByRel = Object.create(null);
+                const zipByRel = Object.create(null);
+                for (const ze of Object.values(outputZip.files || {})) {
+                    if (!ze || ze.dir) continue;
+                    const norm = String(ze.name || "").replace(/\\/g, "/").replace(/^\/+/, "");
+                    const low = norm.toLowerCase();
+                    if (dirLow && !low.startsWith(dirLow)) continue;
+                    const rel = dirPrefix ? norm.slice(dirPrefix.length) : norm;
+                    if (!rel) continue;
+                    zipByRel[rel.toLowerCase()] = ze;
+                }
+
+                const needed = new Set();
+                function collectRef(val) {
+                    if (typeof val !== "string") return;
+                    const s = val.trim().replace(/\\/g, "/").replace(/^\.\/+/, "").replace(/^\/+/, "");
+                    if (!s || /^#[0-9a-f]{3,8}$/i.test(s) || /^https?:\/\//i.test(s)) return;
+                    needed.add(s);
+                }
+                collectRef(cfg.desktopWallpaper);
+                collectRef(cfg.globalWallpaper);
+                collectRef(cfg.themeWallpaper);
+                collectRef(cfg.themeCover);
+                collectRef(cfg.desktopMask);
+                collectRef(cfg.fontFamily);
+                if (cfg.theme && Array.isArray(cfg.theme.fonts)) {
+                    for (const f of cfg.theme.fonts) if (f && f.file) collectRef(f.file);
+                }
+                if (cfg.itemConfig && typeof cfg.itemConfig === "object") {
+                    collectRef(cfg.itemConfig.itemBackground);
+                    collectRef(cfg.itemConfig.itemSelectedBackground);
+                    collectRef(cfg.itemConfig.itemRightArrow);
+                }
+                if (cfg.menuConfig && typeof cfg.menuConfig === "object") {
+                    collectRef(cfg.menuConfig.menuItemBackground);
+                    collectRef(cfg.menuConfig.menuItemSelectedBackground);
+                }
+                if (cfg.statusConfig && typeof cfg.statusConfig === "object") {
+                    const batt = cfg.statusConfig.battery;
+                    if (typeof batt === "string") collectRef(batt);
+                    else if (Array.isArray(batt)) batt.forEach(collectRef);
+                    else if (batt && typeof batt === "object") Object.values(batt).forEach(collectRef);
+                }
+                if (cfg.homePageConfig && typeof cfg.homePageConfig === "object") {
+                    Object.values(cfg.homePageConfig).forEach(collectRef);
+                }
+
+                try {
+                    for (const rel of needed) {
+                        const key = rel.toLowerCase();
+                        const ze = zipByRel[key] || zipByRel[rel.split("/").pop().toLowerCase()];
+                        if (!ze) continue;
+                        try {
+                            const blob = await ze.async("blob");
+                            const objUrl = URL.createObjectURL(blob);
+                            urlByRel[key] = objUrl;
+                            urlByRel[rel.split("/").pop().toLowerCase()] = objUrl;
+                            tempUrls.push(objUrl);
+                        } catch (_blobErr) {}
+                    }
+                    const buildFileUrl = (_folder, relPath) => {
+                        const norm = String(relPath || "").trim().replace(/\\/g, "/").replace(/^\.\/+/, "").replace(/^\/+/, "");
+                        if (!norm) return "";
+                        return urlByRel[norm.toLowerCase()] || urlByRel[norm.split("/").pop().toLowerCase()] || "";
+                    };
+                    const shotBlob = await window.Y1ThemePreview.renderHomeScreenshotBlob(cfg, {
+                        catalogFolder: "",
+                        variantSegment: "",
+                        buildFileUrl,
+                        maxBytes: 32000,
+                    });
+                    if (shotBlob && shotBlob.size > 0) {
+                        outputZip.file(`${dirPrefix}screenshot_preview.jpg`, shotBlob);
+                    }
+                } catch (_shotErr) {
+                    /* GitHub Actions renders screenshot_preview.jpg automatically as fallback. */
+                } finally {
+                    for (const u of tempUrls) {
+                        try {
+                            URL.revokeObjectURL(u);
+                        } catch (_e) {}
+                    }
+                }
+            }
+        }
+
         async function buildZipForUpload(artworkWarnings) {
             if (uploadMode === "folder" && folderFiles && folderFiles.length) {
                 if (!window.JSZip) throw new Error("ZIP library is unavailable.");
@@ -4169,6 +4284,7 @@
                 }
 
                 await injectThemeSeoShellsIntoZip(outputZip, renames);
+                await injectThemeScreenshotPreviewsIntoZip(outputZip);
 
                 const blob = await outputZip.generateAsync({ type: "blob" });
                 const name = loadedZipFileName || inferFolderZipName(folderFiles);
@@ -4233,6 +4349,7 @@
             }
 
             await injectThemeSeoShellsIntoZip(outputZip, renames);
+            await injectThemeScreenshotPreviewsIntoZip(outputZip);
 
             const blob = await outputZip.generateAsync({ type: "blob" });
             const outName = packagedZipFileName(renames, loadedZipFileName || file.name || "theme.zip", overallThemeTitleForPackaging());

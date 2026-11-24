@@ -40,6 +40,7 @@ import json
 import os
 import shutil
 import socketserver
+import subprocess
 import sys
 import threading
 from pathlib import Path
@@ -80,7 +81,6 @@ EXCLUDED_DIRS = {
     "node_modules",
     "themes-i18n",
     "docs",
-    "main_package",
 }
 
 RENDER_INPUT_SUFFIXES = {
@@ -96,6 +96,15 @@ RENDER_INPUT_SUFFIXES = {
     ".otf",
     ".woff",
     ".woff2",
+}
+
+NON_RENDER_INPUT_NAMES = {
+    SCREENSHOT_NAME,
+    "screenshot_preview.jpeg",
+    "cover.jpg",
+    "cover.jpeg",
+    "cover-thumb.jpg",
+    "cover-thumb.jpeg",
 }
 
 
@@ -151,17 +160,113 @@ def discover_themes(only_folder: str = "") -> list[tuple[str, str, Path]]:
     return targets
 
 
+def _is_render_input_name(filename: str) -> bool:
+    low = filename.lower()
+    if low in NON_RENDER_INPUT_NAMES:
+        return False
+    if ".preview." in low:
+        return False
+    return Path(filename).suffix.lower() in RENDER_INPUT_SUFFIXES
+
+
+def _content_dir_key(rel_path: str) -> tuple[str, str] | None:
+    """Map a repo-relative path to ``(content_dir_rel, filename)`` for a theme or variant."""
+    norm = rel_path.replace("\\", "/").strip("/")
+    parts = norm.split("/")
+    if len(parts) < 2:
+        return None
+    top = parts[0]
+    if top.startswith(".") or top in EXCLUDED_DIRS:
+        return None
+    if len(parts) >= 4 and parts[1] == VARIANTS_SEGMENT:
+        # Variant asset: <Theme>/Variants/<Variant>/...
+        return f"{top}/{VARIANTS_SEGMENT}/{parts[2]}", parts[-1]
+    if parts[1] == VARIANTS_SEGMENT:
+        return None
+    return top, parts[-1]
+
+
+def build_git_timestamp_index() -> tuple[dict[str, int], dict[str, int], set[str]]:
+    """Return ``(latest_input_ts, screenshot_ts, dirty_content_dirs)`` from git history.
+
+    In GitHub Actions, ``actions/checkout`` writes files sequentially so mtimes
+    often reflect alphabetical checkout order rather than when an asset changed.
+    Commit timestamps reliably detect both newly submitted themes and updates to
+    existing theme artwork/configs.
+    """
+    latest_input: dict[str, int] = {}
+    screenshot_ts: dict[str, int] = {}
+    dirty_dirs: set[str] = set()
+    try:
+        proc = subprocess.run(
+            ["git", "log", "--format=__COMMIT__%ct", "--name-only", "--no-renames"],
+            cwd=str(REPO_ROOT),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+            check=False,
+        )
+        if proc.returncode == 0:
+            current_ts = 0
+            for raw_line in proc.stdout.splitlines():
+                line = raw_line.strip()
+                if not line:
+                    continue
+                if line.startswith("__COMMIT__"):
+                    try:
+                        current_ts = int(line[len("__COMMIT__") :])
+                    except ValueError:
+                        current_ts = 0
+                    continue
+                if not current_ts:
+                    continue
+                mapped = _content_dir_key(line)
+                if not mapped:
+                    continue
+                cdir, fname = mapped
+                if fname.lower() == SCREENSHOT_NAME:
+                    if cdir not in screenshot_ts:
+                        screenshot_ts[cdir] = current_ts
+                elif _is_render_input_name(fname):
+                    if cdir not in latest_input:
+                        latest_input[cdir] = current_ts
+        status_proc = subprocess.run(
+            ["git", "status", "--porcelain", "-uall"],
+            cwd=str(REPO_ROOT),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+            check=False,
+        )
+        if status_proc.returncode == 0:
+            for raw_line in status_proc.stdout.splitlines():
+                if len(raw_line) < 4:
+                    continue
+                rel = raw_line[3:].strip()
+                if " -> " in rel:
+                    rel = rel.split(" -> ", 1)[1].strip()
+                rel = rel.strip('"')
+                mapped = _content_dir_key(rel)
+                if mapped:
+                    dirty_dirs.add(mapped[0])
+    except OSError:
+        pass
+    return latest_input, screenshot_ts, dirty_dirs
+
+
 def newest_render_input(content_dir: Path) -> float:
     """Newest mtime of any file that can change what the preview paints."""
     newest = 0.0
     for root, dirs, files in os.walk(content_dir):
-        dirs[:] = [d for d in dirs if d not in {"__pycache__", "node_modules"}]
+        dirs[:] = [
+            d
+            for d in dirs
+            if d not in {"__pycache__", "node_modules", VARIANTS_SEGMENT}
+        ]
         for name in files:
-            if name == SCREENSHOT_NAME:
+            if not _is_render_input_name(name):
                 continue
             path = Path(root) / name
-            if path.suffix.lower() not in RENDER_INPUT_SUFFIXES:
-                continue
             try:
                 newest = max(newest, path.stat().st_mtime)
             except OSError:
@@ -169,10 +274,25 @@ def newest_render_input(content_dir: Path) -> float:
     return newest
 
 
-def is_stale(content_dir: Path, force: bool) -> bool:
+def is_stale(
+    content_dir: Path,
+    force: bool,
+    git_index: tuple[dict[str, int], dict[str, int], set[str]] | None = None,
+) -> bool:
     output = content_dir / SCREENSHOT_NAME
     if force or not output.is_file() or output.stat().st_size == 0:
         return True
+    if git_index is not None:
+        latest_input, screenshot_ts, dirty_dirs = git_index
+        try:
+            rel_dir = content_dir.relative_to(REPO_ROOT).as_posix()
+        except ValueError:
+            rel_dir = ""
+        if rel_dir and rel_dir not in dirty_dirs:
+            shot_t = screenshot_ts.get(rel_dir, 0)
+            input_t = latest_input.get(rel_dir, 0)
+            if shot_t > 0 and input_t > 0:
+                return input_t > shot_t
     try:
         output_mtime = output.stat().st_mtime
     except OSError:
@@ -386,7 +506,8 @@ def main(argv: list[str] | None = None) -> int:
 
     force = bool(args.force)
     targets = discover_themes(args.folder)
-    pending = [t for t in targets if force or is_stale(t[2], force)]
+    git_index = None if force else build_git_timestamp_index()
+    pending = [t for t in targets if force or is_stale(t[2], force, git_index=git_index)]
     if args.limit:
         pending = pending[: args.limit]
 

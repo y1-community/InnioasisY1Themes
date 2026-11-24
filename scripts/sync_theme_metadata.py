@@ -268,7 +268,26 @@ def _extract_folder_key(item: dict[str, Any]) -> str:
     return str(item.get("folder") or item.get("Folder") or "").strip()
 
 
-def _extract_theme_info_from_config(config: dict[str, Any]) -> dict[str, str]:
+def _is_boilerplate_template_description(value: str, folder: str = "") -> bool:
+    """True for template placeholder copy that authors forgot to replace."""
+    clean = str(value or "").strip()
+    if not clean:
+        return False
+    low = clean.lower()
+    if low.startswith("blank template theme with full config coverage for easy customization"):
+        return True
+    if folder.strip().lower() != "themeless" and low.startswith(
+        "a blank canvas to start. drop in your own desktop_wallpaper.png"
+    ):
+        return True
+    if re.search(r"\bis a custom theme for the innioasis y1( and y2)?\.?$", low):
+        return True
+    if re.match(r"^download the .+ theme for (the )?innioasis y1\b", low):
+        return True
+    return False
+
+
+def _extract_theme_info_from_config(config: dict[str, Any], *, folder: str = "") -> dict[str, str]:
     theme_info = config.get("theme_info")
     if not isinstance(theme_info, dict):
         return {}
@@ -277,6 +296,8 @@ def _extract_theme_info_from_config(config: dict[str, Any]) -> dict[str, str]:
         value = str(theme_info.get(key) or "").strip()
         if key == "title" and value:
             value = strip_redundant_theme_word(value)
+        if key == "description" and value and _is_boilerplate_template_description(value, folder=folder):
+            value = ""
         if value:
             extracted[key] = value
     return extracted
@@ -515,7 +536,9 @@ def _theme_entry_from_folder(folder: str, config: dict[str, Any] | None) -> dict
 
     author = theme_info.get("author") or ("" if protected_uploader else uploader.get("login", ""))
     author_url = theme_info.get("authorUrl") or ("" if protected_uploader else uploader.get("url", ""))
-    description = theme_info.get("description") or _download_description(name, author)
+    description = theme_info.get("description") or ""
+    if _is_boilerplate_template_description(description, folder=folder):
+        description = ""
     external_download_url = theme_info.get("externalDownloadUrl") or ""
 
     if author:
@@ -576,14 +599,14 @@ def _base_theme_folder(folder: str) -> str:
 
 
 def _theme_info_for_folder(folder: str, config: dict[str, Any] | None) -> dict[str, str]:
-    info = _extract_theme_info_from_config(config) if isinstance(config, dict) else {}
+    info = _extract_theme_info_from_config(config, folder=folder) if isinstance(config, dict) else {}
     if not _is_dark_mode_folder(folder):
         return info
     base = _base_theme_folder(folder)
     if not base or base == folder:
         return info
     base_cfg = _load_json_file(REPO_ROOT / base / "config.json")
-    base_info = _extract_theme_info_from_config(base_cfg) if isinstance(base_cfg, dict) else {}
+    base_info = _extract_theme_info_from_config(base_cfg, folder=base) if isinstance(base_cfg, dict) else {}
     return base_info or info
 
 
@@ -640,14 +663,19 @@ def _refresh_existing_theme_entry(entry: dict[str, Any], folder: str, config: di
             refreshed["authorUrl"] = author_url
 
     description = str(refreshed.get("description") or "").strip()
+    if _is_boilerplate_template_description(description, folder=folder):
+        description = ""
     fallback_desc = str(baseline.get("description") or "").strip()
+    if _is_boilerplate_template_description(fallback_desc, folder=folder):
+        fallback_desc = ""
     if not description:
-        if fallback_desc:
-            refreshed["description"] = fallback_desc
+        refreshed["description"] = fallback_desc
     else:
         name_for_default = str(refreshed.get("name") or folder).strip()
-        if _is_default_description(description, name_for_default) and fallback_desc:
+        if _is_default_description(description, name_for_default):
             refreshed["description"] = fallback_desc
+        else:
+            refreshed["description"] = description
 
     pack_variants = _discover_pack_variant_folder_names(folder)
     if pack_variants:

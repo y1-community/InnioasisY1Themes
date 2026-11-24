@@ -514,6 +514,40 @@ def _extract_theme(
     return True, f"Extracted {theme_key} -> {dest_name}/"
 
 
+def _validate_extracted_screenshots(dest_dir: Path) -> list[str]:
+    """Keep valid browser-rendered screenshot_preview.jpg files; drop corrupt ones so CI regenerates them."""
+    notes: list[str] = []
+    for shot in sorted(dest_dir.rglob("screenshot_preview.jpg")):
+        if not shot.is_file():
+            continue
+        try:
+            raw = shot.read_bytes()
+            if len(raw) < 256 or len(raw) > 512_000 or not raw.startswith(b"\xff\xd8\xff"):
+                shot.unlink()
+                notes.append(f"Removed invalid browser screenshot {shot.relative_to(REPO_ROOT)} (CI will regenerate).")
+                continue
+            try:
+                from PIL import Image
+                import io as _io
+
+                with Image.open(_io.BytesIO(raw)) as im:
+                    w, h = im.size
+                if w < 160 or h < 120 or w > 960 or h > 720:
+                    shot.unlink()
+                    notes.append(
+                        f"Removed unexpected-size screenshot {shot.relative_to(REPO_ROOT)} ({w}x{h}; CI will regenerate)."
+                    )
+            except ImportError:
+                pass
+        except Exception:
+            try:
+                shot.unlink()
+            except OSError:
+                pass
+            notes.append(f"Removed unreadable screenshot {shot.relative_to(REPO_ROOT)} (CI will regenerate).")
+    return notes
+
+
 def _zip_processing_label(path: Path) -> str:
     try:
         return str(path.relative_to(REPO_ROOT))
@@ -867,6 +901,7 @@ def _process_zip(
             logs.append(msg)
             if ok:
                 extracted_any = True
+                logs.extend(_validate_extracted_screenshots(REPO_ROOT / dest_name))
                 if planned.get("rewrite_author") and planned.get("credit"):
                     try:
                         if _rewrite_theme_author(REPO_ROOT / dest_name, str(planned["credit"])):

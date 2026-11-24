@@ -4,7 +4,7 @@
 (function (global) {
     "use strict";
 
-    var THEME_ANALYTICS_VERSION = "20261108";
+    var THEME_ANALYTICS_VERSION = "20261123stats4";
     var THEME_ANALYTICS_CSS_VERSION = "20260518";
     var CONSENT_KEY = "innioasis-consent";
     var THEME_CONSENT_KEY = "y1-theme-consent-v2";
