@@ -574,7 +574,7 @@ export async function handleThemeStatsGet(request, env) {
   try {
     const { results } = await env.DB.prepare(
       `SELECT theme_key, page_views, zip_downloads, direct_installs, rating_sum, rating_count
-       FROM theme_metrics WHERE theme_key IN (${placeholders}, 200, request)`,
+       FROM theme_metrics WHERE theme_key IN (${placeholders})`,
     )
       .bind(...keys)
       .all();
