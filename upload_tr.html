@@ -654,6 +654,25 @@
             opacity: 0.42;
             pointer-events: none;
         }
+
+        a.submitted-discord-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.65rem 1.15rem;
+            border-radius: 10px;
+            font-weight: 600;
+            text-decoration: none;
+            color: #ffffff !important;
+            background: #5865F2;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 4px 14px rgba(88, 101, 242, 0.35);
+        }
+
+        a.submitted-discord-btn:hover {
+            filter: brightness(1.08);
+        }
     </style>
     <script src="gallery-chrome.js?v=20261110header"></script>
     <script src="site-init.js?v=20261123stats4"></script>
@@ -940,6 +959,10 @@
                 <a id="submitted-track-pr" class="submitted-track-pr" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true">
                     <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
                     Gönderiminizi takip edin
+                </a>
+                <a id="submitted-discord-btn" class="submitted-discord-btn" href="https://discord.gg/zHrT2zrcek" target="_blank" rel="noopener noreferrer">
+                    <i class="fa-brands fa-discord" aria-hidden="true"></i>
+                    Chat with us on Discord
                 </a>
                 <button type="button" class="btn" id="submitted-copy-btn">Bağlantıyı kopyala</button>
                 <a class="btn" href="upload_tr.html">Yüklemeye geri dön</a>
@@ -1578,17 +1601,112 @@
             return [...out].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
         }
 
-        async function buildConfigEditsByPath(renames, artworkWarnings) {
+        const CLIENT_SUBMITTED_DATES_KEY = "y1-theme-submitted-dates";
+
+        function clientIsoTimestamp(date) {
+            const d = date instanceof Date ? date : new Date();
+            const pad = (n) => String(n).padStart(2, "0");
+            const tzMin = -d.getTimezoneOffset();
+            const sign = tzMin >= 0 ? "+" : "-";
+            const absTz = Math.abs(tzMin);
+            return (
+                `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` +
+                `T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}` +
+                `${sign}${pad(Math.floor(absTz / 60))}:${pad(absTz % 60)}`
+            );
+        }
+
+        function readClientSubmissionDates() {
+            try {
+                const raw = window.localStorage.getItem(CLIENT_SUBMITTED_DATES_KEY);
+                const parsed = raw ? JSON.parse(raw) : null;
+                return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+            } catch (_) {
+                return {};
+            }
+        }
+
+        function clientSubmissionKeys(folder, title, author) {
+            const keys = [];
+            const f = String(folder || "").trim().toLowerCase();
+            if (f) keys.push("folder:" + f);
+            const t = String(title || "").trim().toLowerCase().replace(/\s+/g, " ");
+            const a = String(author || "").trim().toLowerCase().replace(/\s+/g, " ");
+            if (t && a) keys.push("ta:" + t + "::" + a);
+            return keys;
+        }
+
+        function lookupClientSubmissionDate(folder, title, author) {
+            const map = readClientSubmissionDates();
+            const keys = clientSubmissionKeys(folder, title, author);
+            for (const key of keys) {
+                const val = typeof map[key] === "string" ? map[key].trim() : "";
+                if (val) return val;
+            }
+            return "";
+        }
+
+        function recordClientSubmissionDate(folder, title, author, iso) {
+            const stamp = String(iso || "").trim();
+            if (!stamp) return;
+            try {
+                const map = readClientSubmissionDates();
+                let changed = false;
+                for (const key of clientSubmissionKeys(folder, title, author)) {
+                    if (!map[key]) {
+                        map[key] = stamp;
+                        changed = true;
+                    }
+                }
+                if (changed) {
+                    window.localStorage.setItem(CLIENT_SUBMITTED_DATES_KEY, JSON.stringify(map));
+                }
+            } catch (_) {}
+        }
+
+        function resolveUploadOriginalSubmittedAt(existingFolder, title, author) {
+            for (const entry of themeInfoEntries) {
+                const raw =
+                    (entry && entry.themeInfo && entry.themeInfo.submittedAt) ||
+                    (entry && entry.parsed && entry.parsed.theme_info && entry.parsed.theme_info.submittedAt) ||
+                    "";
+                const clean = String(raw || "").trim();
+                if (clean) return clean;
+            }
+            const folderKey = String(existingFolder || "").trim().toLowerCase();
+            if (folderKey && typeof catalogRowByFolderLower !== "undefined" && catalogRowByFolderLower instanceof Map) {
+                const row = catalogRowByFolderLower.get(folderKey);
+                const rowDate = row && row.submittedAt ? String(row.submittedAt).trim() : "";
+                if (rowDate) return rowDate;
+            }
+            return lookupClientSubmissionDate(existingFolder, title, author);
+        }
+
+        async function buildConfigEditsByPath(renames, artworkWarnings, submissionMeta) {
             readEditorValues();
             const medal = artworkWarnings && artworkWarnings.length ? "none" : "gold";
             const variantFolders = buildVariantFolderListForGallery();
             const map = new Map();
+            const meta = submissionMeta && typeof submissionMeta === "object" ? submissionMeta : null;
             for (const entry of themeInfoEntries) {
                 const p = normRelPath(entry.path);
                 const themeInfo = { ...entry.themeInfo };
                 const entryTitle = String(themeInfo.title || "").trim();
                 themeInfo.description =
                     String(themeInfo.description || "").trim() || genericThemeDescription(entryTitle);
+                if (meta && meta.clientSubmittedAt) {
+                    if (meta.isUpdate) {
+                        const existingOriginal =
+                            String(themeInfo.submittedAt || "").trim() ||
+                            String((entry.parsed && entry.parsed.theme_info && entry.parsed.theme_info.submittedAt) || "").trim() ||
+                            String(meta.originalSubmittedAt || "").trim();
+                        if (existingOriginal) themeInfo.submittedAt = existingOriginal;
+                        themeInfo.updatedAt = meta.clientSubmittedAt;
+                    } else {
+                        themeInfo.submittedAt = meta.clientSubmittedAt;
+                        delete themeInfo.updatedAt;
+                    }
+                }
                 let nextParsed = { ...entry.parsed, theme_info: themeInfo };
                 if (isRootThemeConfigPath(p)) {
                     const gallery = { ...(nextParsed.gallery || {}) };
@@ -2716,6 +2834,7 @@
                     fd.set("reason", reason);
                     fd.set("requester", requester);
                     fd.set("blacklistOptOut", blacklistOptOut ? "1" : "");
+                    fd.set("clientSubmittedAt", clientIsoTimestamp(new Date()));
                     const res = await fetch(window.removalThemeEndpoint(), {
                         method: "POST",
                         body: fd
@@ -3802,7 +3921,14 @@
                 throw new Error("Could not find this folder in themes.json. Use the normal upload flow if this is a new theme.");
             }
 
+            const metaClientSubmittedAt = clientIsoTimestamp(new Date());
+            const metaOriginalSubmittedAt =
+                (listingRow && listingRow.submittedAt ? String(listingRow.submittedAt).trim() : "") ||
+                lookupClientSubmissionDate(themeFolderParam, titleForListing, author);
             const payload = {
+                clientSubmittedAt: metaClientSubmittedAt,
+                originalSubmittedAt: metaOriginalSubmittedAt || undefined,
+                requestedBy: author || (listingRow && listingRow.author ? String(listingRow.author).trim() : ""),
                 items: [
                     {
                         folder: themeFolderParam,
@@ -4233,13 +4359,13 @@
             }
         }
 
-        async function buildZipForUpload(artworkWarnings) {
+        async function buildZipForUpload(artworkWarnings, submissionMeta) {
             if (uploadMode === "folder" && folderFiles && folderFiles.length) {
                 if (!window.JSZip) throw new Error("ZIP library is unavailable.");
                 validateThemeInfoEntriesForSubmit();
                 const renames = effectiveRootRenames();
                 assertNoDisallowedHtmlInSubmission(renames);
-                const editsByOriginalPath = await buildConfigEditsByPath(renames, artworkWarnings);
+                const editsByOriginalPath = await buildConfigEditsByPath(renames, artworkWarnings, submissionMeta);
                 const outputZip = new window.JSZip();
 
                 for (const file of folderFiles) {
@@ -4305,7 +4431,7 @@
             assertNoDisallowedHtmlInSubmission(renames);
 
             const outputZip = new window.JSZip();
-            const editsByOriginalPath = await buildConfigEditsByPath(renames, artworkWarnings);
+            const editsByOriginalPath = await buildConfigEditsByPath(renames, artworkWarnings, submissionMeta);
 
             const zipEntries = Object.values(loadedZip.files);
             for (const zipEntry of zipEntries) {
@@ -4516,16 +4642,28 @@
                 const isUpdateSubmission =
                     !metadataSubmitScenario() &&
                     (pageMode === "edit" || (collForIntent.hasCollision && collForIntent.isEdit));
+                const existingFolder = isUpdateSubmission
+                    ? (collForIntent.hits && collForIntent.hits[0]
+                        ? String(collForIntent.hits[0].folder || "")
+                        : String(themeFolderParam || ""))
+                    : "";
+                const clientSubmittedAt = clientIsoTimestamp(new Date());
+                const originalSubmittedAt = isUpdateSubmission
+                    ? resolveUploadOriginalSubmittedAt(existingFolder, ta.title, ta.author)
+                    : "";
+                data.set("clientSubmittedAt", clientSubmittedAt);
                 if (isUpdateSubmission) {
                     data.set("submissionIntent", "update");
-                    const existingFolder = collForIntent.hits && collForIntent.hits[0]
-                        ? String(collForIntent.hits[0].folder || "")
-                        : String(themeFolderParam || "");
                     if (existingFolder) data.set("targetFolder", existingFolder);
+                    if (originalSubmittedAt) data.set("originalSubmittedAt", originalSubmittedAt);
                 }
                 // One outer batch ZIP (inner = packaged theme) → Worker commits root zip + meta.
                 // Root zip basename matches the theme folder stem (title-based) so ingest + share URLs align.
-                const rebuiltZip = await buildZipForUpload(artworkWarnings);
+                const rebuiltZip = await buildZipForUpload(artworkWarnings, {
+                    isUpdate: isUpdateSubmission,
+                    clientSubmittedAt,
+                    originalSubmittedAt,
+                });
                 data.set("shareFolderHints", shareFolderHintsForForm(renamesForExtras));
                 const outerStem = primaryDestinationStem(renamesForExtras);
                 const batchZip = await wrapAsUploaderBatchZip(rebuiltZip, outerStem);
@@ -4545,6 +4683,12 @@
 
                 if (!res.ok) {
                     throw new Error(uploadFailureMessage(res.status, payload));
+                }
+
+                if (!isUpdateSubmission) {
+                    recordClientSubmissionDate(outerStem, ta.title, ta.author, clientSubmittedAt);
+                } else if (originalSubmittedAt) {
+                    recordClientSubmissionDate(existingFolder || outerStem, ta.title, ta.author, originalSubmittedAt);
                 }
 
                 const link = payload.prUrl ? String(payload.prUrl) : "";

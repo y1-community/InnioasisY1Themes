@@ -1,12 +1,12 @@
 {
- "generated": "2026-11-24T14:10:45+00:00",
+ "generated": "2026-11-24T16:23:58+00:00",
  "tiers": [
   "core",
   "full"
  ],
- "pages": 1764,
- "occurrences": 26394,
- "count": 9287,
+ "pages": 1765,
+ "occurrences": 26405,
+ "count": 9296,
  "strings": {
   "Innioasis Themes Gallery": {
    "n": 871,
@@ -3919,6 +3919,11 @@
   },
   "Themes Gallery": {
    "n": 6,
+   "pages": 3,
+   "script": true
+  },
+  "Chat with us on Discord": {
+   "n": 4,
    "pages": 3,
    "script": true
   },
@@ -14209,6 +14214,10 @@
    "pages": 1,
    "theme": true
   },
+  "Chat with us on Discord for help": {
+   "n": 1,
+   "pages": 1
+  },
   "ChatGPT": {
    "n": 1,
    "pages": 1,
@@ -16235,6 +16244,10 @@
    "pages": 1,
    "theme": true
   },
+  "For updates": {
+   "n": 1,
+   "pages": 1
+  },
   "Formula 1 inspired theme for the Innioasis Y1. Carbon-fibre and racing-suit nomex backgrounds, race-flag home buttons, a timing-tower settings set and colour-coded pit-wall status icons.": {
    "n": 1,
    "pages": 1,
@@ -16458,6 +16471,10 @@
    "n": 1,
    "pages": 1,
    "script": true
+  },
+  "Get help on Discord": {
+   "n": 1,
+   "pages": 1
   },
   "Getting started": {
    "n": 1,
@@ -16935,6 +16952,10 @@
    "n": 1,
    "pages": 1,
    "theme": true
+  },
+  "Help": {
+   "n": 1,
+   "pages": 1
   },
   "Help cover hosting, the domain, and running costs for the themes gallery and related tools.": {
    "n": 1,
@@ -19251,7 +19272,7 @@
    "pages": 1,
    "theme": true
   },
-  "Keep this page's address: it is the way back to your request. The gallery has no account system, so nobody can look the request up for you.": {
+  "Keep this page's address: it is the way back to your request. The gallery has no account system, so nobody can look the request up for you. Need help with your submission? Use the": {
    "n": 1,
    "pages": 1
   },
@@ -20593,6 +20614,10 @@
    "n": 1,
    "pages": 1
   },
+  "Original submission date": {
+   "n": 1,
+   "pages": 1
+  },
   "OtacoWeeb": {
    "n": 1,
    "pages": 1,
@@ -21191,6 +21216,10 @@
    "pages": 1
   },
   "Recommended Recovery Setup": {
+   "n": 1,
+   "pages": 1
+  },
+  "Recorded from your original submission. This date will be included on your update PR.": {
    "n": 1,
    "pages": 1
   },
@@ -22441,7 +22470,7 @@
    "n": 1,
    "pages": 1
   },
-  "Submitting opens a pull request for review. You can save the theme to this device first.": {
+  "Submitting opens a pull request for review. You can save the theme to this device first. Need help?": {
    "n": 1,
    "pages": 1
   },
@@ -25081,6 +25110,10 @@
    "pages": 1
   },
   "bunnybun, Innioasis Y1, Luci web hosting, luci.ltd, MP3 player theme, pochaccotypeshit, Rockbox, themes.innioasis.app hosting, Y1 theme": {
+   "n": 1,
+   "pages": 1
+  },
+  "button above.": {
    "n": 1,
    "pages": 1
   },
@@ -33862,6 +33895,11 @@
    "script": true
   },
   "Original theme": {
+   "n": 1,
+   "pages": 1,
+   "script": true
+  },
+  "Originally submitted": {
    "n": 1,
    "pages": 1,
    "script": true
