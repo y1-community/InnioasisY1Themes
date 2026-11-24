@@ -548,10 +548,14 @@
   var activeHomeHref = isFirmwarePersona ? "/firmware.html" : "/";
 
   (function updateDocumentTitle() {
+    var docLang = ((document.documentElement && (document.documentElement.getAttribute("data-locale") || document.documentElement.getAttribute("lang"))) || "en").toLowerCase();
+    if (docLang && docLang !== "en" && docLang.indexOf("en-") !== 0) {
+      return;
+    }
     var path = (window.location.pathname || "").toLowerCase();
     var t = document.title || "";
     if (isThemesSite) {
-      if (path === "" || path === "/" || path.endsWith("/index.html")) {
+      if (path === "" || path === "/" || /\/index(?:_[a-z0-9-]+)?\.html$/i.test(path)) {
         return;
       }
       if (t.indexOf("Themes Gallery") === -1) {
