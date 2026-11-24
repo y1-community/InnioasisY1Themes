@@ -8184,6 +8184,27 @@
             "screenshotPreview": "./UNDERTALE/screenshot_preview.jpg"
         },
         {
+            "name": "Undertale",
+            "folder": "Undertale",
+            "author": "Richie",
+            "screenshot": "./Undertale/cover.jpg",
+            "screenshotPreview": "./Undertale/screenshot_preview.jpg",
+            "sourceType": "internal",
+            "sortName": "undertale",
+            "searchText": "undertale  richie undertale"
+        },
+        {
+            "name": "Undertale richie",
+            "folder": "Undertale richie",
+            "author": "Undertale Richie",
+            "description": "Undertale richie",
+            "screenshot": "./Undertale richie/cover.jpg",
+            "screenshotPreview": "./Undertale richie/screenshot_preview.jpg",
+            "sourceType": "internal",
+            "sortName": "undertale richie",
+            "searchText": "undertale richie undertale richie undertale richie undertale richie"
+        },
+        {
             "name": "Apple 3",
             "folder": "Unseen",
             "sourceType": "internal",
