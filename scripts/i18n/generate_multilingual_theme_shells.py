@@ -203,13 +203,13 @@ def generate_localized_shell(
 {hreflang_tags}
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <link rel="stylesheet" href="/site-theme.css?v=20261102header" />
-  <link rel="stylesheet" href="/site-toolbar.css?v=20261110accent2" />
+  <link rel="stylesheet" href="/site-theme.css?v=20261124fixes1" />
+  <link rel="stylesheet" href="/site-toolbar.css?v=20261124fixes1" />
   <link rel="stylesheet" href="/site-pages.css?v=20260622" />
   <script src="/theme-seo-shell-analytics.js"></script>
   <script src="/author-submission-policy.js?v=20260522"></script>
   <script src="/gallery-chrome.js?v=20261102header"></script>
-  <script src="/site-init.js?v=20260522privacy"></script>
+  <script src="/site-init.js?v=20261124fixes1"></script>
   <script>
 (function () {{
   var shellAuthor = {json.dumps(author)};
@@ -262,7 +262,7 @@ def generate_localized_shell(
   </main>
   <div id="footer-root"></div>
   <div id="support-toolbar-slot"></div>
-  <script src="/nav.js"></script>
+  <script src="/nav.js?v=20261124fixes1"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="/theme-packaging.js?v=20261111dl"></script>
   <script src="/theme-download.js?v=20261111dl"></script>
@@ -282,7 +282,7 @@ def generate_localized_shell(
   }}
 }})();
   </script>
-<script src="../site-locale.js?v=20261108d" defer></script>
+<script src="../site-locale.js?v=20261124fixes1" defer></script>
 </body>
 </html>
 """

@@ -290,12 +290,12 @@ def standalone(filename: str, title: str, description: str, keywords: str, body:
     <meta name="twitter:description" content="{esc(description)}" />
     <link rel="icon" href="y1_illustration.png" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link rel="stylesheet" href="https://innioasis.app/styles.css" />
-    <link rel="stylesheet" href="site-theme.css?v=20261110seo" />
-    <link rel="stylesheet" href="lumen.css?v=20261110strip" />
-    <link rel="stylesheet" href="site-toolbar.css?v=20261110accent2" />
+    <link rel="stylesheet" href="https://innioasis.app/styles.css?v=20261124fixes1" />
+    <link rel="stylesheet" href="site-theme.css?v=20261124fixes1" />
+    <link rel="stylesheet" href="lumen.css?v=20261124fixes1" />
+    <link rel="stylesheet" href="site-toolbar.css?v=20261124fixes1" />
     <link rel="stylesheet" href="site-pages.css?v=20261110seo" />
-    <script src="site-init.js?v=20261110ink"></script>
+    <script src="site-init.js?v=20261124fixes1"></script>
     <script type="application/ld+json">{ld}</script>
 </head>
 <body class="site-themes-app site-dock-mode">
@@ -305,8 +305,8 @@ def standalone(filename: str, title: str, description: str, keywords: str, body:
     </main>
     <div id="footer-root"></div>
     <div id="support-toolbar-slot"></div>
-    <script src="nav.js?v=20261110seo"></script>
-    <script src="site-locale.js?v=20261109i18n" defer></script>
+    <script src="nav.js?v=20261124fixes1"></script>
+    <script src="site-locale.js?v=20261124fixes1" defer></script>
 </body>
 </html>
 """

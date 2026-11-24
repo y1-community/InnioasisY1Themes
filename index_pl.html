@@ -26,10 +26,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
     <script>try{if(localStorage.getItem('y1-compat-banner-dismissed')==='1'){document.documentElement.classList.add('y1-compat-banner-closed');}}catch(_){}</script>
-    <title>Innioasis Y1 and Y2 themes: Better-Y, Rockbox, Koensayr and Solar</title>
+    <title>Motywy dla Innioasis Y1 i Y2: Better-Y, Rockbox, Koensayr i Solar</title>
 
-    <meta name="description" content="Themes for the Innioasis Y1 and Y2, including Better-Y themes, Rockbox themes, Rockbox-Themes, Koensayr themes and Solar themes. Preview one, then download it.">
-    <meta name="keywords" content="Better-Y themes, Better-Y themes for Innioasis Y1, Better-Y themes for Innioasis Y2, Innioasis Y1 Better-Y themes, Innioasis Y2 Better-Y themes, Rockbox themes, Rockbox-Themes, Rockbox themes for Innioasis Y1, Rockbox themes for Innioasis Y2, Innioasis Y1 Rockbox themes, Innioasis Y2 Rockbox themes, Koensayr themes, Koensayr themes for Innioasis Y1, Koensayr themes for Innioasis Y2, Innioasis Y1 Koensayr themes, Innioasis Y2 Koensayr themes, Solar themes, Solar themes for Innioasis Y1, Solar themes for Innioasis Y2, Innioasis Y1 Solar themes, Innioasis Y2 Solar themes">
+    <meta name="description" content="Motywy dla Innioasis Y1 i Y2, w tym motywy Better-Y, Rockbox, Koensayr i Solar. Obejrzyj podgląd i pobierz.">
+    <meta name="keywords" content="motywy Better-Y, motywy Rockbox, motywy Koensayr, motywy Solar, motywy Innioasis Y1, motywy Innioasis Y2">
     <meta name="author" content="Ryan Specter &amp; Innioasis Community">
   <meta name="creator" content="Ryan Specter &amp; Innioasis Community">
     <meta name="publisher" content="Luci Ltd">
@@ -38,24 +38,24 @@
     <link rel="preload" href="themes.json" as="fetch" crossorigin="anonymous" />
 
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Innioasis Y1 and Y2 themes: Better-Y, Rockbox, Koensayr and Solar">
-    <meta property="og:description" content="Better-Y themes, Rockbox themes, Koensayr themes and Solar themes for the Innioasis Y1 and Y2.">
+    <meta property="og:title" content="Motywy dla Innioasis Y1 i Y2: Better-Y, Rockbox, Koensayr i Solar">
+    <meta property="og:description" content="Motywy Better-Y, Rockbox, Koensayr i Solar dla Innioasis Y1 i Y2.">
     <meta property="og:url" content="https://themes.innioasis.app/index_pl.html">
     <meta property="og:image" content="https://innioasis.app/y1_illustration.png">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Innioasis Y1 and Y2 themes: Better-Y, Rockbox, Koensayr and Solar">
-    <meta name="twitter:description" content="Better-Y, Rockbox, Koensayr and Solar themes for the Innioasis Y1 and Y2.">
+    <meta name="twitter:title" content="Motywy dla Innioasis Y1 i Y2: Better-Y, Rockbox, Koensayr i Solar">
+    <meta name="twitter:description" content="Motywy Better-Y, Rockbox, Koensayr i Solar dla Innioasis Y1 i Y2.">
     <meta name="twitter:image" content="https://innioasis.app/y1_illustration.png">
 
     <link rel="icon" href="y1_illustration.png">
 
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://innioasis.app/styles.css">
-    <link rel="stylesheet" href="site-theme.css?v=20261123gallery1">
-    <link rel="stylesheet" href="lumen.css?v=20261117studio7">
-    <link rel="stylesheet" href="site-toolbar.css?v=20261123donatecompletion2">
+    <link rel="stylesheet" href="https://innioasis.app/styles.css?v=20261124fixes1">
+    <link rel="stylesheet" href="site-theme.css?v=20261124fixes1">
+    <link rel="stylesheet" href="lumen.css?v=20261124fixes1">
+    <link rel="stylesheet" href="site-toolbar.css?v=20261124fixes1">
     <link rel="stylesheet" href="site-pages.css?v=20260622">
     <link rel="stylesheet" href="y1-theme-preview.css?v=20261111hq2">
     <link rel="stylesheet" href="theme-analytics.css?v=20260518">
@@ -68,7 +68,7 @@
     <script src="gold-theme-detect.js?v=20261109perf"></script>
     <script src="gallery-chrome.js?v=20261123studio2"></script>
     <script src="author-links.js?v=20260622"></script>
-    <script src="site-init.js?v=20261123stats4"></script>
+    <script src="site-init.js?v=20261124fixes1"></script>
     <script src="gallery-loaded-theme.js?v=20261109perf"></script>
     <script src="theme-share-links.js?v=20261123studio2"></script>
     <script src="author-submission-policy.js?v=20260523"></script>
@@ -534,6 +534,7 @@
         .theme-preview-hq[aria-pressed="true"] {
             opacity: 1;
             background: var(--lumen-accent, var(--site-accent, #4f8cff));
+            color: var(--lumen-on-accent, var(--lumen-ink, #04070e));
             border-color: transparent;
         }
 
@@ -656,7 +657,7 @@
 
         .btn {
             background: var(--primary);
-            color: var(--lumen-ink);
+            color: var(--lumen-on-accent, var(--lumen-ink));
             padding: 8px 12px;
             border-radius: 8px;
             text-decoration: none;
@@ -808,49 +809,297 @@
         }
 
     </style>
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebSite", "@id": "https://themes.innioasis.app/#website", "url": "https://themes.innioasis.app/", "name": "Innioasis Themes Gallery", "alternateName": ["Better-Y themes", "Better-Y themes for Innioasis Y1", "Better-Y themes for Innioasis Y2", "Innioasis Y1 Better-Y themes", "Innioasis Y2 Better-Y themes", "Rockbox themes", "Rockbox-Themes", "Rockbox themes for Innioasis Y1", "Rockbox themes for Innioasis Y2", "Innioasis Y1 Rockbox themes", "Innioasis Y2 Rockbox themes", "Koensayr themes", "Koensayr themes for Innioasis Y1", "Koensayr themes for Innioasis Y2", "Innioasis Y1 Koensayr themes", "Innioasis Y2 Koensayr themes", "Solar themes", "Solar themes for Innioasis Y1", "Solar themes for Innioasis Y2", "Innioasis Y1 Solar themes", "Innioasis Y2 Solar themes"]}</script><meta property="og:site_name" content="Innioasis Galeria motywów">  <link rel="canonical" href="https://themes.innioasis.app/index_pl.html">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebSite", "@id": "https://themes.innioasis.app/#website", "url": "https://themes.innioasis.app/", "name": "Innioasis Themes Gallery", "alternateName": ["Better-Y themes", "Better-Y themes for Innioasis Y1", "Better-Y themes for Innioasis Y2", "Innioasis Y1 Better-Y themes", "Innioasis Y2 Better-Y themes", "Rockbox themes", "Rockbox-Themes", "Rockbox themes for Innioasis Y1", "Rockbox themes for Innioasis Y2", "Innioasis Y1 Rockbox themes", "Innioasis Y2 Rockbox themes", "Koensayr themes", "Koensayr themes for Innioasis Y1", "Koensayr themes for Innioasis Y2", "Innioasis Y1 Koensayr themes", "Innioasis Y2 Koensayr themes", "Solar themes", "Solar themes for Innioasis Y1", "Solar themes for Innioasis Y2", "Innioasis Y1 Solar themes", "Innioasis Y2 Solar themes"]}</script><meta property="og:site_name" content="Galeria motywów Innioasis">  <link rel="canonical" href="https://themes.innioasis.app/index_pl.html">
 <meta name="robots" content="index,follow,max-image-preview:large" />
   <!-- i18n-hreflang-start -->
   <link rel="alternate" hreflang="x-default" href="https://themes.innioasis.app/index.html">
   <link rel="alternate" hreflang="en" href="https://themes.innioasis.app/index.html">
+  <link rel="alternate" hreflang="aa" href="https://themes.innioasis.app/index_aa.html">
+  <link rel="alternate" hreflang="ab" href="https://themes.innioasis.app/index_ab.html">
+  <link rel="alternate" hreflang="ace" href="https://themes.innioasis.app/index_ace.html">
+  <link rel="alternate" hreflang="ach" href="https://themes.innioasis.app/index_ach.html">
+  <link rel="alternate" hreflang="af" href="https://themes.innioasis.app/index_af.html">
+  <link rel="alternate" hreflang="ak" href="https://themes.innioasis.app/index_ak.html">
+  <link rel="alternate" hreflang="alz" href="https://themes.innioasis.app/index_alz.html">
+  <link rel="alternate" hreflang="am" href="https://themes.innioasis.app/index_am.html">
+  <link rel="alternate" hreflang="ar" href="https://themes.innioasis.app/index_ar.html">
+  <link rel="alternate" hreflang="as" href="https://themes.innioasis.app/index_as.html">
+  <link rel="alternate" hreflang="av" href="https://themes.innioasis.app/index_av.html">
+  <link rel="alternate" hreflang="awa" href="https://themes.innioasis.app/index_awa.html">
+  <link rel="alternate" hreflang="ay" href="https://themes.innioasis.app/index_ay.html">
+  <link rel="alternate" hreflang="az" href="https://themes.innioasis.app/index_az.html">
+  <link rel="alternate" hreflang="ba" href="https://themes.innioasis.app/index_ba.html">
+  <link rel="alternate" hreflang="bal" href="https://themes.innioasis.app/index_bal.html">
+  <link rel="alternate" hreflang="ban" href="https://themes.innioasis.app/index_ban.html">
+  <link rel="alternate" hreflang="bbc" href="https://themes.innioasis.app/index_bbc.html">
+  <link rel="alternate" hreflang="bci" href="https://themes.innioasis.app/index_bci.html">
+  <link rel="alternate" hreflang="be" href="https://themes.innioasis.app/index_be.html">
+  <link rel="alternate" hreflang="bem" href="https://themes.innioasis.app/index_bem.html">
+  <link rel="alternate" hreflang="ber" href="https://themes.innioasis.app/index_ber.html">
+  <link rel="alternate" hreflang="ber-Latn" href="https://themes.innioasis.app/index_ber-Latn.html">
+  <link rel="alternate" hreflang="bew" href="https://themes.innioasis.app/index_bew.html">
+  <link rel="alternate" hreflang="bg" href="https://themes.innioasis.app/index_bg.html">
+  <link rel="alternate" hreflang="bho" href="https://themes.innioasis.app/index_bho.html">
+  <link rel="alternate" hreflang="bik" href="https://themes.innioasis.app/index_bik.html">
+  <link rel="alternate" hreflang="bm" href="https://themes.innioasis.app/index_bm.html">
+  <link rel="alternate" hreflang="bm-Nkoo" href="https://themes.innioasis.app/index_bm-Nkoo.html">
+  <link rel="alternate" hreflang="bn" href="https://themes.innioasis.app/index_bn.html">
+  <link rel="alternate" hreflang="bo" href="https://themes.innioasis.app/index_bo.html">
+  <link rel="alternate" hreflang="br" href="https://themes.innioasis.app/index_br.html">
+  <link rel="alternate" hreflang="bs" href="https://themes.innioasis.app/index_bs.html">
+  <link rel="alternate" hreflang="bts" href="https://themes.innioasis.app/index_bts.html">
+  <link rel="alternate" hreflang="btx" href="https://themes.innioasis.app/index_btx.html">
+  <link rel="alternate" hreflang="bua" href="https://themes.innioasis.app/index_bua.html">
+  <link rel="alternate" hreflang="ca" href="https://themes.innioasis.app/index_ca.html">
+  <link rel="alternate" hreflang="ce" href="https://themes.innioasis.app/index_ce.html">
+  <link rel="alternate" hreflang="ceb" href="https://themes.innioasis.app/index_ceb.html">
+  <link rel="alternate" hreflang="cgg" href="https://themes.innioasis.app/index_cgg.html">
+  <link rel="alternate" hreflang="ch" href="https://themes.innioasis.app/index_ch.html">
+  <link rel="alternate" hreflang="chk" href="https://themes.innioasis.app/index_chk.html">
+  <link rel="alternate" hreflang="chm" href="https://themes.innioasis.app/index_chm.html">
+  <link rel="alternate" hreflang="ckb" href="https://themes.innioasis.app/index_ckb.html">
+  <link rel="alternate" hreflang="cnh" href="https://themes.innioasis.app/index_cnh.html">
+  <link rel="alternate" hreflang="co" href="https://themes.innioasis.app/index_co.html">
+  <link rel="alternate" hreflang="crh" href="https://themes.innioasis.app/index_crh.html">
+  <link rel="alternate" hreflang="crh-Latn" href="https://themes.innioasis.app/index_crh-Latn.html">
+  <link rel="alternate" hreflang="crs" href="https://themes.innioasis.app/index_crs.html">
+  <link rel="alternate" hreflang="cs" href="https://themes.innioasis.app/index_cs.html">
+  <link rel="alternate" hreflang="cv" href="https://themes.innioasis.app/index_cv.html">
+  <link rel="alternate" hreflang="cy" href="https://themes.innioasis.app/index_cy.html">
+  <link rel="alternate" hreflang="da" href="https://themes.innioasis.app/index_da.html">
   <link rel="alternate" hreflang="de" href="https://themes.innioasis.app/index_de.html">
+  <link rel="alternate" hreflang="din" href="https://themes.innioasis.app/index_din.html">
+  <link rel="alternate" hreflang="doi" href="https://themes.innioasis.app/index_doi.html">
+  <link rel="alternate" hreflang="dov" href="https://themes.innioasis.app/index_dov.html">
+  <link rel="alternate" hreflang="dv" href="https://themes.innioasis.app/index_dv.html">
+  <link rel="alternate" hreflang="dyu" href="https://themes.innioasis.app/index_dyu.html">
+  <link rel="alternate" hreflang="dz" href="https://themes.innioasis.app/index_dz.html">
+  <link rel="alternate" hreflang="ee" href="https://themes.innioasis.app/index_ee.html">
+  <link rel="alternate" hreflang="el" href="https://themes.innioasis.app/index_el.html">
+  <link rel="alternate" hreflang="en-GB" href="https://themes.innioasis.app/index_en-GB.html">
+  <link rel="alternate" hreflang="en-US" href="https://themes.innioasis.app/index_en-US.html">
+  <link rel="alternate" hreflang="eo" href="https://themes.innioasis.app/index_eo.html">
+  <link rel="alternate" hreflang="es" href="https://themes.innioasis.app/index_es.html">
+  <link rel="alternate" hreflang="et" href="https://themes.innioasis.app/index_et.html">
+  <link rel="alternate" hreflang="eu" href="https://themes.innioasis.app/index_eu.html">
+  <link rel="alternate" hreflang="fa" href="https://themes.innioasis.app/index_fa.html">
+  <link rel="alternate" hreflang="fa-AF" href="https://themes.innioasis.app/index_fa-AF.html">
+  <link rel="alternate" hreflang="ff" href="https://themes.innioasis.app/index_ff.html">
+  <link rel="alternate" hreflang="fi" href="https://themes.innioasis.app/index_fi.html">
+  <link rel="alternate" hreflang="fil" href="https://themes.innioasis.app/index_fil.html">
+  <link rel="alternate" hreflang="fj" href="https://themes.innioasis.app/index_fj.html">
+  <link rel="alternate" hreflang="fo" href="https://themes.innioasis.app/index_fo.html">
+  <link rel="alternate" hreflang="fon" href="https://themes.innioasis.app/index_fon.html">
+  <link rel="alternate" hreflang="fr" href="https://themes.innioasis.app/index_fr.html">
+  <link rel="alternate" hreflang="fr-CA" href="https://themes.innioasis.app/index_fr-CA.html">
+  <link rel="alternate" hreflang="fur" href="https://themes.innioasis.app/index_fur.html">
+  <link rel="alternate" hreflang="fy" href="https://themes.innioasis.app/index_fy.html">
+  <link rel="alternate" hreflang="ga" href="https://themes.innioasis.app/index_ga.html">
+  <link rel="alternate" hreflang="gaa" href="https://themes.innioasis.app/index_gaa.html">
+  <link rel="alternate" hreflang="gd" href="https://themes.innioasis.app/index_gd.html">
+  <link rel="alternate" hreflang="gl" href="https://themes.innioasis.app/index_gl.html">
+  <link rel="alternate" hreflang="gn" href="https://themes.innioasis.app/index_gn.html">
+  <link rel="alternate" hreflang="gom" href="https://themes.innioasis.app/index_gom.html">
+  <link rel="alternate" hreflang="gu" href="https://themes.innioasis.app/index_gu.html">
+  <link rel="alternate" hreflang="gv" href="https://themes.innioasis.app/index_gv.html">
+  <link rel="alternate" hreflang="ha" href="https://themes.innioasis.app/index_ha.html">
+  <link rel="alternate" hreflang="haw" href="https://themes.innioasis.app/index_haw.html">
+  <link rel="alternate" hreflang="he" href="https://themes.innioasis.app/index_he.html">
+  <link rel="alternate" hreflang="hi" href="https://themes.innioasis.app/index_hi.html">
+  <link rel="alternate" hreflang="hil" href="https://themes.innioasis.app/index_hil.html">
+  <link rel="alternate" hreflang="hmn" href="https://themes.innioasis.app/index_hmn.html">
+  <link rel="alternate" hreflang="hr" href="https://themes.innioasis.app/index_hr.html">
+  <link rel="alternate" hreflang="hrx" href="https://themes.innioasis.app/index_hrx.html">
+  <link rel="alternate" hreflang="ht" href="https://themes.innioasis.app/index_ht.html">
+  <link rel="alternate" hreflang="hu" href="https://themes.innioasis.app/index_hu.html">
+  <link rel="alternate" hreflang="hy" href="https://themes.innioasis.app/index_hy.html">
+  <link rel="alternate" hreflang="iba" href="https://themes.innioasis.app/index_iba.html">
+  <link rel="alternate" hreflang="id" href="https://themes.innioasis.app/index_id.html">
+  <link rel="alternate" hreflang="ig" href="https://themes.innioasis.app/index_ig.html">
+  <link rel="alternate" hreflang="ilo" href="https://themes.innioasis.app/index_ilo.html">
+  <link rel="alternate" hreflang="is" href="https://themes.innioasis.app/index_is.html">
+  <link rel="alternate" hreflang="it" href="https://themes.innioasis.app/index_it.html">
+  <link rel="alternate" hreflang="iu" href="https://themes.innioasis.app/index_iu.html">
+  <link rel="alternate" hreflang="iu-Latn" href="https://themes.innioasis.app/index_iu-Latn.html">
+  <link rel="alternate" hreflang="iw" href="https://themes.innioasis.app/index_iw.html">
   <link rel="alternate" hreflang="ja" href="https://themes.innioasis.app/index_ja.html">
   <link rel="alternate" hreflang="jp" href="https://themes.innioasis.app/index_jp.html">
-  <link rel="alternate" hreflang="es" href="https://themes.innioasis.app/index_es.html">
-  <link rel="alternate" hreflang="fr" href="https://themes.innioasis.app/index_fr.html">
-  <link rel="alternate" hreflang="it" href="https://themes.innioasis.app/index_it.html">
-  <link rel="alternate" hreflang="pt-BR" href="https://themes.innioasis.app/index_pt-BR.html">
+  <link rel="alternate" hreflang="jam" href="https://themes.innioasis.app/index_jam.html">
+  <link rel="alternate" hreflang="jv" href="https://themes.innioasis.app/index_jv.html">
+  <link rel="alternate" hreflang="jw" href="https://themes.innioasis.app/index_jw.html">
+  <link rel="alternate" hreflang="ka" href="https://themes.innioasis.app/index_ka.html">
+  <link rel="alternate" hreflang="kac" href="https://themes.innioasis.app/index_kac.html">
+  <link rel="alternate" hreflang="kek" href="https://themes.innioasis.app/index_kek.html">
+  <link rel="alternate" hreflang="kg" href="https://themes.innioasis.app/index_kg.html">
+  <link rel="alternate" hreflang="kha" href="https://themes.innioasis.app/index_kha.html">
+  <link rel="alternate" hreflang="kk" href="https://themes.innioasis.app/index_kk.html">
+  <link rel="alternate" hreflang="kl" href="https://themes.innioasis.app/index_kl.html">
+  <link rel="alternate" hreflang="km" href="https://themes.innioasis.app/index_km.html">
+  <link rel="alternate" hreflang="kn" href="https://themes.innioasis.app/index_kn.html">
+  <link rel="alternate" hreflang="ko" href="https://themes.innioasis.app/index_ko.html">
+  <link rel="alternate" hreflang="kr" href="https://themes.innioasis.app/index_kr.html">
+  <link rel="alternate" hreflang="kr" href="https://themes.innioasis.app/index_kr.html">
+  <link rel="alternate" hreflang="kri" href="https://themes.innioasis.app/index_kri.html">
+  <link rel="alternate" hreflang="ktu" href="https://themes.innioasis.app/index_ktu.html">
+  <link rel="alternate" hreflang="ku" href="https://themes.innioasis.app/index_ku.html">
+  <link rel="alternate" hreflang="kv" href="https://themes.innioasis.app/index_kv.html">
+  <link rel="alternate" hreflang="ky" href="https://themes.innioasis.app/index_ky.html">
+  <link rel="alternate" hreflang="la" href="https://themes.innioasis.app/index_la.html">
+  <link rel="alternate" hreflang="lb" href="https://themes.innioasis.app/index_lb.html">
+  <link rel="alternate" hreflang="lg" href="https://themes.innioasis.app/index_lg.html">
+  <link rel="alternate" hreflang="li" href="https://themes.innioasis.app/index_li.html">
+  <link rel="alternate" hreflang="lij" href="https://themes.innioasis.app/index_lij.html">
+  <link rel="alternate" hreflang="lmo" href="https://themes.innioasis.app/index_lmo.html">
+  <link rel="alternate" hreflang="ln" href="https://themes.innioasis.app/index_ln.html">
+  <link rel="alternate" hreflang="lo" href="https://themes.innioasis.app/index_lo.html">
+  <link rel="alternate" hreflang="lt" href="https://themes.innioasis.app/index_lt.html">
+  <link rel="alternate" hreflang="ltg" href="https://themes.innioasis.app/index_ltg.html">
+  <link rel="alternate" hreflang="lua" href="https://themes.innioasis.app/index_lua.html">
+  <link rel="alternate" hreflang="luo" href="https://themes.innioasis.app/index_luo.html">
+  <link rel="alternate" hreflang="lus" href="https://themes.innioasis.app/index_lus.html">
+  <link rel="alternate" hreflang="lv" href="https://themes.innioasis.app/index_lv.html">
+  <link rel="alternate" hreflang="mad" href="https://themes.innioasis.app/index_mad.html">
+  <link rel="alternate" hreflang="mai" href="https://themes.innioasis.app/index_mai.html">
+  <link rel="alternate" hreflang="mak" href="https://themes.innioasis.app/index_mak.html">
+  <link rel="alternate" hreflang="mam" href="https://themes.innioasis.app/index_mam.html">
+  <link rel="alternate" hreflang="mfe" href="https://themes.innioasis.app/index_mfe.html">
+  <link rel="alternate" hreflang="mg" href="https://themes.innioasis.app/index_mg.html">
+  <link rel="alternate" hreflang="mh" href="https://themes.innioasis.app/index_mh.html">
+  <link rel="alternate" hreflang="mi" href="https://themes.innioasis.app/index_mi.html">
+  <link rel="alternate" hreflang="min" href="https://themes.innioasis.app/index_min.html">
+  <link rel="alternate" hreflang="mk" href="https://themes.innioasis.app/index_mk.html">
+  <link rel="alternate" hreflang="ml" href="https://themes.innioasis.app/index_ml.html">
+  <link rel="alternate" hreflang="mn" href="https://themes.innioasis.app/index_mn.html">
+  <link rel="alternate" hreflang="mni-Mtei" href="https://themes.innioasis.app/index_mni-Mtei.html">
+  <link rel="alternate" hreflang="mr" href="https://themes.innioasis.app/index_mr.html">
+  <link rel="alternate" hreflang="ms" href="https://themes.innioasis.app/index_ms.html">
+  <link rel="alternate" hreflang="ms-Arab" href="https://themes.innioasis.app/index_ms-Arab.html">
+  <link rel="alternate" hreflang="mt" href="https://themes.innioasis.app/index_mt.html">
+  <link rel="alternate" hreflang="mwr" href="https://themes.innioasis.app/index_mwr.html">
+  <link rel="alternate" hreflang="my" href="https://themes.innioasis.app/index_my.html">
+  <link rel="alternate" hreflang="ndc-ZW" href="https://themes.innioasis.app/index_ndc-ZW.html">
+  <link rel="alternate" hreflang="ne" href="https://themes.innioasis.app/index_ne.html">
+  <link rel="alternate" hreflang="new" href="https://themes.innioasis.app/index_new.html">
+  <link rel="alternate" hreflang="nhe" href="https://themes.innioasis.app/index_nhe.html">
+  <link rel="alternate" hreflang="nl" href="https://themes.innioasis.app/index_nl.html">
+  <link rel="alternate" hreflang="no" href="https://themes.innioasis.app/index_no.html">
+  <link rel="alternate" hreflang="nr" href="https://themes.innioasis.app/index_nr.html">
+  <link rel="alternate" hreflang="nso" href="https://themes.innioasis.app/index_nso.html">
+  <link rel="alternate" hreflang="nus" href="https://themes.innioasis.app/index_nus.html">
+  <link rel="alternate" hreflang="ny" href="https://themes.innioasis.app/index_ny.html">
+  <link rel="alternate" hreflang="oc" href="https://themes.innioasis.app/index_oc.html">
+  <link rel="alternate" hreflang="om" href="https://themes.innioasis.app/index_om.html">
+  <link rel="alternate" hreflang="or" href="https://themes.innioasis.app/index_or.html">
+  <link rel="alternate" hreflang="os" href="https://themes.innioasis.app/index_os.html">
+  <link rel="alternate" hreflang="pa" href="https://themes.innioasis.app/index_pa.html">
+  <link rel="alternate" hreflang="pa-Arab" href="https://themes.innioasis.app/index_pa-Arab.html">
+  <link rel="alternate" hreflang="pag" href="https://themes.innioasis.app/index_pag.html">
+  <link rel="alternate" hreflang="pam" href="https://themes.innioasis.app/index_pam.html">
+  <link rel="alternate" hreflang="pap" href="https://themes.innioasis.app/index_pap.html">
+  <link rel="alternate" hreflang="pl" href="https://themes.innioasis.app/index_pl.html">
+  <link rel="alternate" hreflang="ps" href="https://themes.innioasis.app/index_ps.html">
   <link rel="alternate" hreflang="pt" href="https://themes.innioasis.app/index_pt.html">
-  <link rel="alternate" hreflang="pt-br" href="https://themes.innioasis.app/index_pt-br.html">
   <link rel="alternate" hreflang="pt-PT" href="https://themes.innioasis.app/index_pt-PT.html">
   <link rel="alternate" hreflang="pt-pt" href="https://themes.innioasis.app/index_pt-pt.html">
+  <link rel="alternate" hreflang="qu" href="https://themes.innioasis.app/index_qu.html">
+  <link rel="alternate" hreflang="rn" href="https://themes.innioasis.app/index_rn.html">
+  <link rel="alternate" hreflang="ro" href="https://themes.innioasis.app/index_ro.html">
+  <link rel="alternate" hreflang="rom" href="https://themes.innioasis.app/index_rom.html">
   <link rel="alternate" hreflang="ru" href="https://themes.innioasis.app/index_ru.html">
+  <link rel="alternate" hreflang="rw" href="https://themes.innioasis.app/index_rw.html">
+  <link rel="alternate" hreflang="sa" href="https://themes.innioasis.app/index_sa.html">
+  <link rel="alternate" hreflang="sah" href="https://themes.innioasis.app/index_sah.html">
+  <link rel="alternate" hreflang="sat" href="https://themes.innioasis.app/index_sat.html">
+  <link rel="alternate" hreflang="sat-Latn" href="https://themes.innioasis.app/index_sat-Latn.html">
+  <link rel="alternate" hreflang="scn" href="https://themes.innioasis.app/index_scn.html">
+  <link rel="alternate" hreflang="sd" href="https://themes.innioasis.app/index_sd.html">
+  <link rel="alternate" hreflang="se" href="https://themes.innioasis.app/index_se.html">
+  <link rel="alternate" hreflang="sg" href="https://themes.innioasis.app/index_sg.html">
+  <link rel="alternate" hreflang="shn" href="https://themes.innioasis.app/index_shn.html">
+  <link rel="alternate" hreflang="si" href="https://themes.innioasis.app/index_si.html">
+  <link rel="alternate" hreflang="sk" href="https://themes.innioasis.app/index_sk.html">
+  <link rel="alternate" hreflang="sl" href="https://themes.innioasis.app/index_sl.html">
+  <link rel="alternate" hreflang="sm" href="https://themes.innioasis.app/index_sm.html">
+  <link rel="alternate" hreflang="sn" href="https://themes.innioasis.app/index_sn.html">
+  <link rel="alternate" hreflang="so" href="https://themes.innioasis.app/index_so.html">
+  <link rel="alternate" hreflang="sq" href="https://themes.innioasis.app/index_sq.html">
+  <link rel="alternate" hreflang="sr" href="https://themes.innioasis.app/index_sr.html">
+  <link rel="alternate" hreflang="ss" href="https://themes.innioasis.app/index_ss.html">
+  <link rel="alternate" hreflang="st" href="https://themes.innioasis.app/index_st.html">
+  <link rel="alternate" hreflang="su" href="https://themes.innioasis.app/index_su.html">
+  <link rel="alternate" hreflang="sus" href="https://themes.innioasis.app/index_sus.html">
+  <link rel="alternate" hreflang="sv" href="https://themes.innioasis.app/index_sv.html">
+  <link rel="alternate" hreflang="sw" href="https://themes.innioasis.app/index_sw.html">
+  <link rel="alternate" hreflang="szl" href="https://themes.innioasis.app/index_szl.html">
+  <link rel="alternate" hreflang="ta" href="https://themes.innioasis.app/index_ta.html">
+  <link rel="alternate" hreflang="tcy" href="https://themes.innioasis.app/index_tcy.html">
+  <link rel="alternate" hreflang="te" href="https://themes.innioasis.app/index_te.html">
+  <link rel="alternate" hreflang="tet" href="https://themes.innioasis.app/index_tet.html">
+  <link rel="alternate" hreflang="tg" href="https://themes.innioasis.app/index_tg.html">
+  <link rel="alternate" hreflang="th" href="https://themes.innioasis.app/index_th.html">
+  <link rel="alternate" hreflang="ti" href="https://themes.innioasis.app/index_ti.html">
+  <link rel="alternate" hreflang="tiv" href="https://themes.innioasis.app/index_tiv.html">
+  <link rel="alternate" hreflang="tk" href="https://themes.innioasis.app/index_tk.html">
+  <link rel="alternate" hreflang="tl" href="https://themes.innioasis.app/index_tl.html">
+  <link rel="alternate" hreflang="tn" href="https://themes.innioasis.app/index_tn.html">
+  <link rel="alternate" hreflang="to" href="https://themes.innioasis.app/index_to.html">
+  <link rel="alternate" hreflang="tpi" href="https://themes.innioasis.app/index_tpi.html">
+  <link rel="alternate" hreflang="tr" href="https://themes.innioasis.app/index_tr.html">
+  <link rel="alternate" hreflang="trp" href="https://themes.innioasis.app/index_trp.html">
+  <link rel="alternate" hreflang="ts" href="https://themes.innioasis.app/index_ts.html">
+  <link rel="alternate" hreflang="tt" href="https://themes.innioasis.app/index_tt.html">
+  <link rel="alternate" hreflang="tum" href="https://themes.innioasis.app/index_tum.html">
+  <link rel="alternate" hreflang="ty" href="https://themes.innioasis.app/index_ty.html">
+  <link rel="alternate" hreflang="tyv" href="https://themes.innioasis.app/index_tyv.html">
+  <link rel="alternate" hreflang="udm" href="https://themes.innioasis.app/index_udm.html">
+  <link rel="alternate" hreflang="ug" href="https://themes.innioasis.app/index_ug.html">
+  <link rel="alternate" hreflang="uk" href="https://themes.innioasis.app/index_uk.html">
+  <link rel="alternate" hreflang="ur" href="https://themes.innioasis.app/index_ur.html">
+  <link rel="alternate" hreflang="uz" href="https://themes.innioasis.app/index_uz.html">
+  <link rel="alternate" hreflang="ve" href="https://themes.innioasis.app/index_ve.html">
+  <link rel="alternate" hreflang="vec" href="https://themes.innioasis.app/index_vec.html">
+  <link rel="alternate" hreflang="vi" href="https://themes.innioasis.app/index_vi.html">
+  <link rel="alternate" hreflang="war" href="https://themes.innioasis.app/index_war.html">
+  <link rel="alternate" hreflang="wo" href="https://themes.innioasis.app/index_wo.html">
+  <link rel="alternate" hreflang="xh" href="https://themes.innioasis.app/index_xh.html">
+  <link rel="alternate" hreflang="yi" href="https://themes.innioasis.app/index_yi.html">
+  <link rel="alternate" hreflang="yo" href="https://themes.innioasis.app/index_yo.html">
+  <link rel="alternate" hreflang="yua" href="https://themes.innioasis.app/index_yua.html">
+  <link rel="alternate" hreflang="yue" href="https://themes.innioasis.app/index_yue.html">
+  <link rel="alternate" hreflang="zap" href="https://themes.innioasis.app/index_zap.html">
   <link rel="alternate" hreflang="zh-CN" href="https://themes.innioasis.app/index_zh-CN.html">
   <link rel="alternate" hreflang="zh" href="https://themes.innioasis.app/index_zh.html">
   <link rel="alternate" hreflang="zh-cn" href="https://themes.innioasis.app/index_zh-cn.html">
   <link rel="alternate" hreflang="zh-TW" href="https://themes.innioasis.app/index_zh-TW.html">
   <link rel="alternate" hreflang="zh-tw" href="https://themes.innioasis.app/index_zh-tw.html">
-  <link rel="alternate" hreflang="ko" href="https://themes.innioasis.app/index_ko.html">
-  <link rel="alternate" hreflang="kr" href="https://themes.innioasis.app/index_kr.html">
-  <link rel="alternate" hreflang="ar" href="https://themes.innioasis.app/index_ar.html">
-  <link rel="alternate" hreflang="nl" href="https://themes.innioasis.app/index_nl.html">
-  <link rel="alternate" hreflang="pl" href="https://themes.innioasis.app/index_pl.html">
-  <link rel="alternate" hreflang="tr" href="https://themes.innioasis.app/index_tr.html">
-  <link rel="alternate" hreflang="uk" href="https://themes.innioasis.app/index_uk.html">
-  <link rel="alternate" hreflang="vi" href="https://themes.innioasis.app/index_vi.html">
-  <link rel="alternate" hreflang="th" href="https://themes.innioasis.app/index_th.html">
-  <link rel="alternate" hreflang="id" href="https://themes.innioasis.app/index_id.html">
-  <link rel="alternate" hreflang="he" href="https://themes.innioasis.app/index_he.html">
-  <link rel="alternate" hreflang="hi" href="https://themes.innioasis.app/index_hi.html">
-  <link rel="alternate" hreflang="cs" href="https://themes.innioasis.app/index_cs.html">
-  <link rel="alternate" hreflang="el" href="https://themes.innioasis.app/index_el.html">
-  <link rel="alternate" hreflang="sv" href="https://themes.innioasis.app/index_sv.html">
-  <link rel="alternate" hreflang="fa" href="https://themes.innioasis.app/index_fa.html">
-  <link rel="alternate" hreflang="da" href="https://themes.innioasis.app/index_da.html">
-  <link rel="alternate" hreflang="fi" href="https://themes.innioasis.app/index_fi.html">
-  <link rel="alternate" hreflang="hu" href="https://themes.innioasis.app/index_hu.html">
-  <link rel="alternate" hreflang="no" href="https://themes.innioasis.app/index_no.html">
-  <link rel="alternate" hreflang="ro" href="https://themes.innioasis.app/index_ro.html">
+  <link rel="alternate" hreflang="zu" href="https://themes.innioasis.app/index_zu.html">
+  <link rel="alternate" hreflang="ar-SA" href="https://themes.innioasis.app/index_ar-SA.html">
+  <link rel="alternate" hreflang="bn-IN" href="https://themes.innioasis.app/index_bn-IN.html">
+  <link rel="alternate" hreflang="de-AT" href="https://themes.innioasis.app/index_de-AT.html">
+  <link rel="alternate" hreflang="de-CH" href="https://themes.innioasis.app/index_de-CH.html">
+  <link rel="alternate" hreflang="en-AU" href="https://themes.innioasis.app/index_en-AU.html">
+  <link rel="alternate" hreflang="en-CA" href="https://themes.innioasis.app/index_en-CA.html">
+  <link rel="alternate" hreflang="en-GB" href="https://themes.innioasis.app/index_en-GB.html">
+  <link rel="alternate" hreflang="en-IN" href="https://themes.innioasis.app/index_en-IN.html">
+  <link rel="alternate" hreflang="en-NZ" href="https://themes.innioasis.app/index_en-NZ.html">
+  <link rel="alternate" hreflang="es-419" href="https://themes.innioasis.app/index_es-419.html">
+  <link rel="alternate" hreflang="es-AR" href="https://themes.innioasis.app/index_es-AR.html">
+  <link rel="alternate" hreflang="es-ES" href="https://themes.innioasis.app/index_es-ES.html">
+  <link rel="alternate" hreflang="es-MX" href="https://themes.innioasis.app/index_es-MX.html">
+  <link rel="alternate" hreflang="fr-BE" href="https://themes.innioasis.app/index_fr-BE.html">
+  <link rel="alternate" hreflang="fr-CA" href="https://themes.innioasis.app/index_fr-CA.html">
+  <link rel="alternate" hreflang="fr-CH" href="https://themes.innioasis.app/index_fr-CH.html">
+  <link rel="alternate" hreflang="it-CH" href="https://themes.innioasis.app/index_it-CH.html">
+  <link rel="alternate" hreflang="nl-BE" href="https://themes.innioasis.app/index_nl-BE.html">
+  <link rel="alternate" hreflang="pa-PK" href="https://themes.innioasis.app/index_pa-PK.html">
+  <link rel="alternate" hreflang="pt-BR" href="https://themes.innioasis.app/index_pt-BR.html">
+  <link rel="alternate" hreflang="pt" href="https://themes.innioasis.app/index_pt.html">
+  <link rel="alternate" hreflang="pt-br" href="https://themes.innioasis.app/index_pt-br.html">
+  <link rel="alternate" hreflang="pt-PT" href="https://themes.innioasis.app/index_pt-PT.html">
+  <link rel="alternate" hreflang="pt-pt" href="https://themes.innioasis.app/index_pt-pt.html">
+  <link rel="alternate" hreflang="sr-Latn" href="https://themes.innioasis.app/index_sr-Latn.html">
+  <link rel="alternate" hreflang="sw-KE" href="https://themes.innioasis.app/index_sw-KE.html">
+  <link rel="alternate" hreflang="zh-HK" href="https://themes.innioasis.app/index_zh-HK.html">
   <!-- i18n-hreflang-end -->
 </head>
 
@@ -869,16 +1118,16 @@
             <input id="theme-search" class="topbar-search" type="search" placeholder="Szukaj" aria-label="Wyszukaj motywy">
         </div>
     </div>
-    <aside class="site-compat-banner" id="site-compat-banner" role="note" aria-label="Informacja o kompatybilności oprogramowania sprzętowego">
+    <aside class="site-compat-banner" id="site-compat-banner" role="note" aria-label="Informacja o zgodności firmware">
         <div class="site-compat-banner__content">
             <i class="fa-solid fa-circle-check site-compat-banner__icon" aria-hidden="true"></i>
             <span class="site-compat-banner__text">
-                <span class="site-compat-banner__text-desktop">Motywy w tej galerii są kompatybilne z <a class="site-compat-banner__link" href="https://innioasis.app/original-software-benefits.html?lang=pl" target="_blank" rel="noopener noreferrer"><strong>Oryginalny system operacyjny</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/better-y-benefits.html?lang=pl" target="_blank" rel="noopener noreferrer"><strong>Better-Y</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/solar-benefits.html?lang=pl" target="_blank" rel="noopener noreferrer"><strong>Solar</strong></a>, i <a class="site-compat-banner__link" href="https://innioasis.app/koensayr-benefits.html?lang=pl" target="_blank" rel="noopener noreferrer"><strong>Koensayr</strong></a> niestandardowe oprogramowanie sprzętowe - </span>
-                <span class="site-compat-banner__text-mobile">Compatible with <a class="site-compat-banner__link" href="https://innioasis.app/original-software-benefits.html?lang=pl" target="_blank" rel="noopener noreferrer"><strong>Oryginalny system operacyjny</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/better-y-benefits.html?lang=pl" target="_blank" rel="noopener noreferrer"><strong>Better-Y</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/solar-benefits.html?lang=pl" target="_blank" rel="noopener noreferrer"><strong>Solar</strong></a> &amp; <a class="site-compat-banner__link" href="https://innioasis.app/koensayr-benefits.html?lang=pl" target="_blank" rel="noopener noreferrer"><strong>Koensayr</strong></a> - </span>
+                <span class="site-compat-banner__text-desktop">Motywy w tej galerii są kompatybilne z <a class="site-compat-banner__link" href="https://innioasis.app/original-software-benefits.html?lang=pl" target="_blank" rel="noopener noreferrer"><strong>Oryginalny system operacyjny</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/better-y-benefits.html?lang=pl" target="_blank" rel="noopener noreferrer"><strong>Better-Y</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/solar-benefits.html?lang=pl" target="_blank" rel="noopener noreferrer"><strong>Solar</strong></a>, i <a class="site-compat-banner__link" href="https://innioasis.app/koensayr-benefits.html?lang=pl" target="_blank" rel="noopener noreferrer"><strong>Koensayr</strong></a> custom firmware — </span>
+                <span class="site-compat-banner__text-mobile">Zgodny z <a class="site-compat-banner__link" href="https://innioasis.app/original-software-benefits.html?lang=pl" target="_blank" rel="noopener noreferrer"><strong>Oryginalny system operacyjny</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/better-y-benefits.html?lang=pl" target="_blank" rel="noopener noreferrer"><strong>Better-Y</strong></a>, <a class="site-compat-banner__link" href="https://innioasis.app/solar-benefits.html?lang=pl" target="_blank" rel="noopener noreferrer"><strong>Solar</strong></a> &amp; <a class="site-compat-banner__link" href="https://innioasis.app/koensayr-benefits.html?lang=pl" target="_blank" rel="noopener noreferrer"><strong>Koensayr</strong></a> - </span>
                 <a class="site-compat-banner__cta" href="https://innioasis.app/guide.html#platform?lang=pl" target="_blank" rel="noopener noreferrer">Dostępne w Updater CE →</a>
             </span>
         </div>
-        <button type="button" class="site-compat-banner__close" id="site-compat-banner-close" aria-label="Dismiss compatibility notice" title="Dismiss notice">&times;</button>
+        <button type="button" class="site-compat-banner__close" id="site-compat-banner-close" aria-label="Ukryj informację o zgodności" title="Ukryj powiadomienie">&times;</button>
     </aside>
     <div class="wrap">
         <section class="gallery-home-hero" aria-label="Wprowadzenie do galerii motywów">
@@ -886,9 +1135,9 @@
                 <header class="gallery-home-intro">
                     <h1 class="site-display">Motywy</h1>
                     <p class="site-lead gallery-home-lead">Galeria motywów dla Innioasis Y1 i Y2, stworzona przez społeczność. Wyświetl podgląd motywu przed jego zainstalowaniem lub prześlij utworzony przez siebie motyw.</p>
-                    <nav class="gallery-software-links" aria-label="Themes by software">
+                    <nav class="gallery-software-links" aria-label="Motywy według oprogramowania">
                         <a href="better-y-themes.html">Better-Y motywy</a>
-                        <a href="rockbox-themes.html">Rockbox motywy</a>
+                        <a href="rockbox-themes.html">Motywy Rockbox</a>
                         <a href="koensayr-themes.html">Koensayr motywy</a>
                         <a href="solar-themes.html">Solar motywy</a>
                     </nav>
@@ -896,7 +1145,7 @@
                         <i class="fa-solid fa-pen-ruler" aria-hidden="true"></i> Studio
                     </a>
                     <a class="btn" href="https://github.com/y1-community/innioasisy1themes/issues/new" target="_blank" rel="noopener noreferrer">
-                        <i class="fa-solid fa-bug" aria-hidden="true"></i> Report an issue
+                        <i class="fa-solid fa-bug" aria-hidden="true"></i> Zgłoś problem
                     </a>
                 </header>
                 <figure class="y1-hero" aria-hidden="true">
@@ -905,14 +1154,14 @@
             </div>
             <div class="cast-div hero-actions">
                 <a href="/studio-test/?welcome=upload" class="btn"><i class="fa-solid fa-upload" aria-hidden="true"></i> Prześlij motyw</a>
-                <a id="rockbox-btn" class="btn" href="#"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Rockbox motywy</a>
+                <a id="rockbox-btn" class="btn" href="#"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Motywy Rockbox</a>
             </div>
         </section>
 
         <div id="direct-install-banner" class="direct-install-note" style="margin-top: 1rem; display: none;">
             <div style="display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap;">
                 <div style="flex: 1 1 240px; min-width: 0;">
-                    <strong style="display: block; font-size: 0.92rem; line-height: 1.3;">Direct install via USB</strong>
+                    <strong style="display: block; font-size: 0.92rem; line-height: 1.3;">Bezpośrednia instalacja przez USB</strong>
                     <span style="font-size: 0.8rem; line-height: 1.35; color: var(--text-secondary);">Zainstaluj bezpośrednio na swoim Y1 lub Y2 – wybierz folder motywów odtwarzacza, bez pobierania zip.</span>
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
@@ -938,7 +1187,7 @@
             <label class="gallery-control" for="source-filter">
                 Źródło
                 <select id="source-filter">
-                    <option value="all">Wszystkie tematy</option>
+                    <option value="all">Wszystkie motywy</option>
                     <option value="internal">Pakiety galerii</option>
                     <option value="external">Linki zewnętrzne</option>
                 </select>
@@ -955,7 +1204,7 @@
             <label class="gallery-control" for="sort-filter">
                 Sortować
                 <select id="sort-filter">
-                    <option value="newest" selected>Newest themes</option>
+                    <option value="newest" selected>Najnowsze motywy</option>
                     <option value="best">Najlepsze motywy</option>
                     <option value="downloads_desc">Większość pobrań</option>
                     <option value="downloads_asc">Najmniej pobrań</option>
@@ -966,7 +1215,7 @@
                     <option value="author_asc">Autor (A-Z)</option>
                 </select>
             </label>
-            <button type="button" id="best-themes-btn" class="gallery-best-btn" aria-pressed="false" title="Sort by most downloaded and viewed themes">
+            <button type="button" id="best-themes-btn" class="gallery-best-btn" aria-pressed="false" title="Sortuj według najpopularniejszych i najczęściej pobieranych motywów">
                 <i class="fa-solid fa-trophy" aria-hidden="true"></i> Najlepsze motywy
             </button>
             <label class="gallery-control" for="page-size">
@@ -983,7 +1232,7 @@
             </label>
         </div>
 
-        <nav id="theme-pager-top" class="pager pager--top" aria-label="Strony tematyczne" hidden></nav>
+        <nav id="theme-pager-top" class="pager pager--top" aria-label="Strony motywów" hidden></nav>
 
         <div id="theme-grid" class="theme-grid theme-grid--loading" aria-busy="true">
             <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
@@ -1012,7 +1261,7 @@
             <div class="theme-card theme-card--skeleton" aria-hidden="true"><div class="theme-card-skeleton-preview"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--title"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--author"></div><div class="theme-card-skeleton-line theme-card-skeleton-line--short"></div><div class="theme-card-skeleton-actions"><span></span><span></span></div></div>
         </div>
         <div id="theme-empty" style="display:none; margin-top:1rem; text-align:center; color:#94a3b8;">Żaden motyw nie pasuje do Twoich bieżących filtrów.</div>
-        <nav id="theme-pager-bottom" class="pager pager--bottom" aria-label="Strony tematyczne" hidden></nav>
+        <nav id="theme-pager-bottom" class="pager pager--bottom" aria-label="Strony motywów" hidden></nav>
         <div class="gallery-ad-container gallery-ad-bottom gallery-ad--bottom" id="gallery-ad-bottom" aria-label="Sponsorowane" data-ad-slot="gallery-bottom"></div>
 
     </div>
@@ -1020,14 +1269,14 @@
     <div id="bulk-update-backdrop" role="dialog" aria-modal="true" aria-labelledby="bulk-update-title" hidden>
         <div class="bulk-update-panel">
             <h2 id="bulk-update-title">Zaktualizuj wszystkie motywy na Y1</h2>
-            <p class="bulk-update-lead" id="bulk-update-lead">Refresh every theme already on your Y1 with the latest files from this gallery. New themes are not installed - use Direct Install via USB on each card first.</p>
+            <p class="bulk-update-lead" id="bulk-update-lead">Zaktualizuj wszystkie motywy już obecne na Twoim Y1 do najnowszych plików z tej galerii. Nowe motywy nie są dodawane — aby zainstalować nowy motyw, użyj najpierw przycisku Bezpośrednia instalacja przez USB na jego karcie.</p>
             <div class="bulk-update-overall-bar" aria-hidden="true">
                 <div class="bulk-update-overall-bar-inner" id="bulk-update-overall-bar"></div>
             </div>
             <div class="bulk-update-status" id="bulk-update-status" aria-live="polite">Gotowy do rozpoczęcia.</div>
             <div class="bulk-update-count" id="bulk-update-count"></div>
             <div class="bulk-update-actions">
-                <button type="button" class="btn" id="bulk-update-cancel-btn" style="font-family: Inter; font-weight: normal; background: #2a2f3a;">Anulować</button>
+                <button type="button" class="lumen-button lumen-button--secondary" id="bulk-update-cancel-btn" style="font-family: Inter; font-weight: normal;">Anulować</button>
                 <button type="button" class="btn" id="bulk-update-start-btn" style="font-family: Inter; font-weight: normal;">
                     <i class="fas fa-play" style="margin-right: 6px;"></i>Rozpocznij aktualizację
                 </button>
@@ -1038,8 +1287,8 @@
     <!-- software-explainer -->
     <!-- gallery-folder-index:start -->
 <details class="gallery-folder-index">
-    <summary>Every theme page</summary>
-    <nav aria-label="Strony tematyczne">
+    <summary>Każda strona motywu</summary>
+    <nav aria-label="Strony motywów">
         <a href="CITYSTAR/">!!CITYSTAR!!</a>
         <a href="Prototype__Formula_One/">(Prototyp) Formuła 1</a>
         <a href="1a_Zelda/">1a Zelda</a>
@@ -1127,7 +1376,7 @@
         <a href="Blue_Thing/">Niebieska rzecz</a>
         <a href="Blue_Whales/">Błękitne wieloryby</a>
         <a href="BlueCollage/">NiebieskiKolaż</a>
-        <a href="BMO_theme_WIP/">Temat BMO WIP</a>
+        <a href="BMO_theme_WIP/">Motyw BMO (WIP)</a>
         <a href="BO1/">BO1</a>
         <a href="BO2/">BO2</a>
         <a href="Botan/">Botan</a>
@@ -1233,7 +1482,7 @@
         <a href="FLOWERZ/">KWIATRZ</a>
         <a href="Flyff/">Flyff</a>
         <a href="FNAF/">FNAFA</a>
-        <a href="fpe_theme__v1/">temat fpe! v1</a>
+        <a href="fpe_theme__v1/">fpe theme! v1</a>
         <a href="Freedom_Planet/">Planeta Wolności</a>
         <a href="fruitiger_aqua/">woda owocowa</a>
         <a href="Frutiger_Aero/">frutiger aero</a>
@@ -1716,7 +1965,7 @@
     <div id="footer-root"></div>
     <div id="support-toolbar-slot"></div>
 
-    <script src="nav.js?v=20261117studio"></script>
+    <script src="nav.js?v=20261124fixes1"></script>
     <script>
         const rbBtn = document.getElementById('rockbox-btn')
         const ROCKBOX_THEMES_URL = 'https://github.com/rockbox-y1/themes/releases/tag/for_the_gays_and_the_theys'
@@ -6320,6 +6569,6 @@
 
         load()
     </script>
-<script src="site-locale.js?v=20261115skip2" defer></script></body>
+<script src="site-locale.js?v=20261124fixes1" defer></script></body>
 
 </html>
