@@ -203,7 +203,7 @@ def generate_localized_shell(
 {hreflang_tags}
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <link rel="stylesheet" href="/site-theme.css?v=20261124fixes2" />
+  <link rel="stylesheet" href="/site-theme.css?v=20261124fixes3" />
   <link rel="stylesheet" href="/site-toolbar.css?v=20261124fixes1" />
   <link rel="stylesheet" href="/site-pages.css?v=20260622" />
   <script src="/theme-seo-shell-analytics.js"></script>
@@ -282,7 +282,7 @@ def generate_localized_shell(
   }}
 }})();
   </script>
-<script src="../site-locale.js?v=20261124fixes1" defer></script>
+<script src="../site-locale.js?v=20261124fixes2" defer></script>
 </body>
 </html>
 """

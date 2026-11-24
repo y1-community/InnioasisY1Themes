@@ -1,7 +1,7 @@
 /* Innioasis Y1 Themes — fintech-grade typography & chrome (Gold Badge aesthetic) */
 @import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap");
 @import url("tokens.css?v=20261124contrast2");
-@import url("lumen.css?v=20261124fixes2");
+@import url("lumen.css?v=20261124fixes3");
 
 /* Appearance palettes live in tokens.css, which every page imports first.
    This file composes the gallery from those tokens and adds no palette of
@@ -747,7 +747,8 @@ body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-controls {
 
 /* —— Gold badge pill —— */
 .theme-gold-title-badge,
-a.theme-gold-title-badge {
+a.theme-gold-title-badge,
+body.site-themes-app a.theme-gold-title-badge {
     display: inline-block;
     font-family: var(--site-font-mono, monospace);
     font-variant-numeric: tabular-nums;
@@ -755,7 +756,7 @@ a.theme-gold-title-badge {
     font-weight: 700;
     letter-spacing: normal;
     text-transform: none;
-    color: var(--lumen-ink);
+    color: var(--lumen-on-accent, var(--lumen-ink));
     padding: 2px 7px;
     border-radius: 6px;
     background: linear-gradient(135deg, var(--lumen-accent-strong), var(--site-accent) 50%, var(--lumen-amber));
@@ -766,7 +767,9 @@ a.theme-gold-title-badge {
     cursor: pointer;
 }
 
-a.theme-gold-title-badge:hover {
+a.theme-gold-title-badge:hover,
+body.site-themes-app a.theme-gold-title-badge:hover {
+    color: var(--lumen-on-accent, var(--lumen-ink));
     filter: brightness(1.08);
     text-decoration: none;
 }
@@ -791,7 +794,8 @@ a.theme-gold-medal-banner:hover {
 }
 
 .theme-preview-gold-badge,
-a.theme-preview-gold-badge {
+a.theme-preview-gold-badge,
+body.site-themes-app a.theme-preview-gold-badge {
     position: absolute;
     top: 8px;
     left: 8px;
@@ -802,7 +806,7 @@ a.theme-preview-gold-badge {
     font-weight: 700;
     letter-spacing: normal;
     text-transform: none;
-    color: var(--lumen-ink);
+    color: var(--lumen-on-accent, var(--lumen-ink));
     padding: 2px 7px;
     border-radius: 6px;
     background: linear-gradient(135deg, var(--lumen-accent-strong), var(--site-accent) 50%, var(--lumen-amber));
@@ -812,7 +816,9 @@ a.theme-preview-gold-badge {
     pointer-events: auto;
 }
 
-a.theme-preview-gold-badge:hover {
+a.theme-preview-gold-badge:hover,
+body.site-themes-app a.theme-preview-gold-badge:hover {
+    color: var(--lumen-on-accent, var(--lumen-ink));
     filter: brightness(1.08);
     text-decoration: none;
 }

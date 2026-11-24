@@ -94,8 +94,8 @@ body.site-themes-app { overflow-x: clip; background: var(--lumen-ink); color: va
     }
 }
 body.site-themes-app *, body.site-themes-app *::before, body.site-themes-app *::after { box-sizing: border-box; }
-body.site-themes-app :where(a:not(.btn, .lumen-button, .guide-action-btn, .site-compat-banner__cta, .y1-dock-link, .lumen-brand-home, .dl-stats__install, .lumen-announcement-cta, .lumen-nav-install-cta)) { color: var(--lumen-accent); text-underline-offset: .18em; }
-body.site-themes-app :where(a:not(.btn, .lumen-button, .guide-action-btn, .site-compat-banner__cta, .y1-dock-link, .lumen-brand-home, .dl-stats__install, .lumen-announcement-cta, .lumen-nav-install-cta)):hover { color: var(--lumen-text); }
+body.site-themes-app :where(a:not(.btn, .lumen-button, .guide-action-btn, .site-compat-banner__cta, .y1-dock-link, .lumen-brand-home, .dl-stats__install, .lumen-announcement-cta, .lumen-nav-install-cta, .theme-gold-title-badge, .theme-preview-gold-badge, .theme-gold-medal-banner)) { color: var(--lumen-accent); text-underline-offset: .18em; }
+body.site-themes-app :where(a:not(.btn, .lumen-button, .guide-action-btn, .site-compat-banner__cta, .y1-dock-link, .lumen-brand-home, .dl-stats__install, .lumen-announcement-cta, .lumen-nav-install-cta, .theme-gold-title-badge, .theme-preview-gold-badge, .theme-gold-medal-banner)):hover { color: var(--lumen-text); }
 body.site-themes-app .btn,
 body.site-themes-app .lumen-button:not(.lumen-button--secondary),
 body.site-themes-app .guide-action-btn,
