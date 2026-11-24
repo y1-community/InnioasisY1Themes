@@ -1,7 +1,7 @@
 /* Hallmark · macrostructure: Workbench · tone: technical · anchor hue: blue */
 /* critique: technical apparatus workbench for player firmware and themes; 4 distinct appearances (dark, light, 2077, high-contrast) */
 /* waive: 24b on clickwheel preview simulation; 38iii on hero brand signature */
-@import url("tokens.css?v=20261124contrast1");
+@import url("tokens.css?v=20261124contrast2");
 
 html { overflow-x: clip; scroll-behavior: smooth; scroll-padding-top: var(--gallery-sticky-offset, 74px); }
 html, body { min-width: 0; }

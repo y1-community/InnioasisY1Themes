@@ -210,7 +210,7 @@ function Render-IndexHtml([string]$catalogFolder, [string]$variant) {
   <meta name="robots" content="index,follow" />
   <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <link rel="stylesheet" href="/site-theme.css?v=20261124fixes1" />
+  <link rel="stylesheet" href="/site-theme.css?v=20261124fixes2" />
   <link rel="stylesheet" href="/site-toolbar.css?v=20261124fixes1" />
   <link rel="stylesheet" href="/site-pages.css?v=20260622" />
   <script src="/theme-seo-shell-analytics.js"></script>
