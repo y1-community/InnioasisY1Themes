@@ -1285,11 +1285,11 @@
 
     function toolbarCandidates() {
         return [
-            "support_toolbar.html?v=20261123donatecompletion2",
-            "../support_toolbar.html?v=20261123donatecompletion2",
-            "../../support_toolbar.html?v=20261123donatecompletion2",
-            "../../../support_toolbar.html?v=20261123donatecompletion2",
-            "https://themes.innioasis.app/support_toolbar.html?v=20261123donatecompletion2",
+            "support_toolbar.html?v=20261124appeals1",
+            "../support_toolbar.html?v=20261124appeals1",
+            "../../support_toolbar.html?v=20261124appeals1",
+            "../../../support_toolbar.html?v=20261124appeals1",
+            "https://themes.innioasis.app/support_toolbar.html?v=20261124appeals1",
         ];
     }
 
