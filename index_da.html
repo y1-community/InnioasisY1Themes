@@ -534,6 +534,7 @@
         .theme-preview-hq[aria-pressed="true"] {
             opacity: 1;
             background: var(--lumen-accent, var(--site-accent, #4f8cff));
+            color: var(--lumen-on-accent, var(--lumen-ink, #04070e));
             border-color: transparent;
         }
 
@@ -656,7 +657,7 @@
 
         .btn {
             background: var(--primary);
-            color: var(--lumen-ink);
+            color: var(--lumen-on-accent, var(--lumen-ink));
             padding: 8px 12px;
             border-radius: 8px;
             text-decoration: none;
@@ -1027,7 +1028,7 @@
             <div class="bulk-update-status" id="bulk-update-status" aria-live="polite">Klar til at starte.</div>
             <div class="bulk-update-count" id="bulk-update-count"></div>
             <div class="bulk-update-actions">
-                <button type="button" class="btn" id="bulk-update-cancel-btn" style="font-family: Inter; font-weight: normal; background: #2a2f3a;">Ophæve</button>
+                <button type="button" class="lumen-button lumen-button--secondary" id="bulk-update-cancel-btn" style="font-family: Inter; font-weight: normal;">Ophæve</button>
                 <button type="button" class="btn" id="bulk-update-start-btn" style="font-family: Inter; font-weight: normal;">
                     <i class="fas fa-play" style="margin-right: 6px;"></i>Start opdatering
                 </button>

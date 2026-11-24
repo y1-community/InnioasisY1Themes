@@ -14,20 +14,20 @@
     <meta name="apple-mobile-web-app-title" content="Theme Studio" />
     <meta name="cf-pages-upload-api-origin" content="https://y1-theme-upload.itsryanspecter.workers.dev" />
     <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
-    <title>Innioasis Theme Studio — Free Y1 &amp; Y2 Theme Maker, Editor &amp; Creator</title>
-    <meta name="description" content="Build, customize, preview, and publish custom themes for Innioasis Y1 and Y2 MP3 players in your browser. Free online Y1 theme maker, Y2 theme creator, and Innioasis theme editor for Original OS, Better-Y, Solar, and Koensayr." />
-    <meta name="keywords" content="Innioasis Theme Studio, Y1 theme maker, Y2 theme maker, Innioasis Y1 theme maker, Innioasis Y2 theme maker, Innioasis theme editor, Innioasis theme creator, Y1 theme editor, Y2 theme editor, Y1 theme creator, Y2 theme creator, Innioasis custom themes, Better-Y theme maker, Solar theme maker, Koensayr theme maker, MP3 player theme maker" />
+    <title>Innioasis Studio motywów — darmowy edytor i kreator motywów dla Y1 i Y2</title>
+    <meta name="description" content="Twórz, dostosowuj, podglądaj i publikuj własne motywy dla odtwarzaczy MP3 Innioasis Y1 i Y2 prosto w przeglądarce. Darmowy edytor i kreator motywów dla oryginalnego oprogramowania, Better-Y, Solar i Koensayr." />
+    <meta name="keywords" content="Innioasis Studio motywów, kreator motywów Y1, kreator motywów Y2, edytor motywów Innioasis, własne motywy Innioasis, motywy Better-Y, motywy Solar, motywy Koensayr" />
     <meta name="author" content="Ryan Specter &amp; Innioasis Community" />
     <link rel="canonical" href="https://themes.innioasis.app/studio-test/" />
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Innioasis Galeria motywów" />
-    <meta property="og:title" content="Innioasis Theme Studio — Free Y1 &amp; Y2 Theme Maker, Editor &amp; Creator" />
-    <meta property="og:description" content="Create, edit, live-preview, and export custom Innioasis Y1 and Y2 themes right in your browser. Supports ZIP packages, local theme folders, custom icons, wallpapers, masks, fonts, and colors." />
+    <meta property="og:site_name" content="Galeria motywów Innioasis" />
+    <meta property="og:title" content="Innioasis Studio motywów — darmowy edytor i kreator motywów dla Y1 i Y2" />
+    <meta property="og:description" content="Twórz, edytuj, podglądaj na żywo i eksportuj własne motywy dla Innioasis Y1 i Y2 w przeglądarce. Obsługuje pliki ZIP, lokalne foldery motywów, własne ikony, tapety, maski, czcionki i kolory." />
     <meta property="og:url" content="https://themes.innioasis.app/studio-test/" />
     <meta property="og:image" content="https://themes.innioasis.app/y1_illustration.png" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Innioasis Theme Studio — Free Y1 &amp; Y2 Theme Maker, Editor &amp; Creator" />
-    <meta name="twitter:description" content="Free online Innioasis Y1 &amp; Y2 theme maker, theme editor, and theme creator with live player simulator and one-click gallery publishing." />
+    <meta name="twitter:title" content="Innioasis Studio motywów — darmowy edytor i kreator motywów dla Y1 i Y2" />
+    <meta name="twitter:description" content="Darmowy kreator i edytor motywów online dla Innioasis Y1 i Y2 z symulatorem odtwarzacza na żywo i publikacją w galerii jednym kliknięciem." />
     <meta name="twitter:image" content="https://themes.innioasis.app/y1_illustration.png" />
     <script type="application/ld+json">
       {
@@ -115,7 +115,7 @@
     <div class="studio-shell">
         <div class="studio-commandbar">
             <div class="studio-command-copy">
-                <span class="studio-eyebrow"><i class="fa-solid fa-compact-disc" aria-hidden="true"></i> Studio tematyczne</span>
+                <span class="studio-eyebrow"><i class="fa-solid fa-compact-disc" aria-hidden="true"></i> Studio motywów</span>
                 <span class="studio-command-context" id="studio-command-context">Przeglądaj, edytuj i publikuj motyw odtwarzacza</span>
             </div>
 
@@ -124,7 +124,7 @@
                     <i class="fa-solid fa-eye" aria-hidden="true"></i><span>Zapowiedź</span>
                 </button>
                 <button class="studio-mode" type="button" role="tab" aria-selected="false" aria-controls="pane-edit" data-mode-btn="edit">
-                    <i class="fa-solid fa-pen-ruler" aria-hidden="true"></i><span>Redagować</span>
+                    <i class="fa-solid fa-pen-ruler" aria-hidden="true"></i><span>Edytuj</span>
                 </button>
                 <button class="studio-mode" type="button" role="tab" aria-selected="false" aria-controls="pane-submit" data-mode-btn="submit">
                     <i class="fa-solid fa-paper-plane" aria-hidden="true"></i><span>Wgrywać</span>
@@ -136,11 +136,11 @@
                 <button class="studio-btn studio-btn--themes" id="studio-open-theme" type="button" aria-label="Wybierz motyw galerii" aria-controls="studio-swap-panel" aria-expanded="false" title="Wybierz motyw galerii">
                     <i class="fa-solid fa-palette" aria-hidden="true"></i><span>Motywy</span>
                 </button>
-                <button class="studio-btn studio-btn--open-zip" id="studio-open-zip-bar" type="button" aria-label="Open ZIP from device" title="Open ZIP from device">
-                    <i class="fa-solid fa-file-zipper" aria-hidden="true"></i><span>Open ZIP from device</span>
+                <button class="studio-btn studio-btn--open-zip" id="studio-open-zip-bar" type="button" aria-label="Otwórz plik ZIP z urządzenia" title="Otwórz plik ZIP z urządzenia">
+                    <i class="fa-solid fa-file-zipper" aria-hidden="true"></i><span>Otwórz plik ZIP z urządzenia</span>
                 </button>
-                <button class="studio-btn studio-btn--try-device" id="studio-try-device" type="button" aria-label="Try on Device" title="Try this theme directly on your Y1 or Y2 via USB">
-                    <i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i><span>Try on Device</span>
+                <button class="studio-btn studio-btn--try-device" id="studio-try-device" type="button" aria-label="Wypróbuj na urządzeniu" title="Wypróbuj ten motyw bezpośrednio na swoim Y1 lub Y2 przez USB">
+                    <i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i><span>Wypróbuj na urządzeniu</span>
                 </button>
                 <button class="studio-btn studio-btn--save" id="studio-save" type="button" aria-label="Zapisz motyw na tym urządzeniu">
                     <i class="fa-solid fa-download" aria-hidden="true"></i><span>Zapisz na urządzeniu</span>
@@ -148,7 +148,7 @@
                 <a class="studio-btn studio-btn--discord" id="studio-discord-help" href="https://discord.gg/zHrT2zrcek" target="_blank" rel="noopener noreferrer" aria-label="Get help on Discord" title="Chat with us on Discord for help">
                     <i class="fa-brands fa-discord" aria-hidden="true"></i><span>Pomoc</span>
                 </a>
-                <button class="studio-btn studio-btn--help" id="studio-help-btn" type="button" aria-label="How Theme Studio works" title="How Theme Studio works">
+                <button class="studio-btn studio-btn--help" id="studio-help-btn" type="button" aria-label="Jak działa Studio motywów" title="Jak działa Studio motywów">
                     <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
                 </button>
             </div>
@@ -159,7 +159,7 @@
                 <div class="studio-stage-head">
                     <div class="studio-stage-copy">
                         <div class="studio-eyebrow studio-breadcrumb">
-                            <span id="studio-source-label">Temat galerii</span>
+                            <span id="studio-source-label">Motyw z galerii</span>
                             <span class="studio-sep" aria-hidden="true">/</span>
                             <span id="studio-source-detail">załadunek</span>
                         </div>
@@ -168,14 +168,14 @@
                     </div>
                     <div class="studio-stage-meta">
                         <div class="studio-platform">
-                            <button class="studio-chip studio-chip--platform" id="studio-platform-chip" type="button" aria-expanded="false" aria-controls="studio-platform-pop" aria-label="Which players this theme is listed for" title="Y1 / Y2">
+                            <button class="studio-chip studio-chip--platform" id="studio-platform-chip" type="button" aria-expanded="false" aria-controls="studio-platform-pop" aria-label="Dla jakich odtwarzaczy przeznaczony jest ten motyw" title="Y1 / Y2">
                                 <i class="fa-solid fa-mobile-screen" aria-hidden="true"></i><span id="studio-platform-label">Y1 / Y2</span><i class="fa-solid fa-circle-info studio-platform-info" aria-hidden="true"></i>
                             </button>
                             <div class="studio-platform-pop" id="studio-platform-pop" role="dialog" aria-labelledby="studio-platform-pop-title" hidden>
-                                <strong id="studio-platform-pop-title">Y1 / Y2 theme</strong>
-                                <p id="studio-platform-pop-body">A theme is listed as a Y1 / Y2 theme only when it includes the file manager icon that Y2 adds to the home screen.</p>
+                                <strong id="studio-platform-pop-title">Motyw Y1 / Y2</strong>
+                                <p id="studio-platform-pop-body">Motyw jest oznaczony jako Y1 / Y2 tylko wtedy, gdy zawiera ikonę menedżera plików, którą Y2 dodaje na ekranie głównym.</p>
                                 <button class="studio-btn studio-btn--primary" id="studio-platform-focus" type="button">
-                                    <i class="fa-solid fa-crosshairs" aria-hidden="true"></i><span>Show file manager icon</span>
+                                    <i class="fa-solid fa-crosshairs" aria-hidden="true"></i><span>Pokaż ikonę menedżera plików</span>
                                 </button>
                             </div>
                         </div>
@@ -222,15 +222,15 @@
                 <div class="studio-panel-scroll" id="studio-panel-scroll">
                     <div class="studio-recovery" id="studio-recovery" role="status" hidden>
                         <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
-                        <p id="studio-recovery-text">Restored your last session.</p>
-                        <button class="studio-recovery-btn" type="button" id="studio-recovery-discard">Discard</button>
-                        <button class="studio-recovery-close" type="button" id="studio-recovery-dismiss" aria-label="Odrzucać">
+                        <p id="studio-recovery-text">Przywrócono ostatnią sesję.</p>
+                        <button class="studio-recovery-btn" type="button" id="studio-recovery-discard">Odrzuć</button>
+                        <button class="studio-recovery-close" type="button" id="studio-recovery-dismiss" aria-label="Zamknij">
                             <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                         </button>
                     </div>
                     <div class="studio-asset-warm" id="studio-asset-warm" role="status" aria-live="polite" hidden>
                         <div class="studio-asset-warm__head">
-                            <span id="studio-asset-warm-label">Loading theme files…</span>
+                            <span id="studio-asset-warm-label">Wczytywanie plików motywu…</span>
                             <strong id="studio-asset-warm-count" aria-hidden="true">0 / 0</strong>
                         </div>
                         <progress id="studio-asset-warm-bar" max="100" value="0">0%</progress>
@@ -263,7 +263,7 @@
                             <div class="studio-field">
                                 <label for="studio-theme-filter">Otwórz motyw galerii</label>
                                 <input id="studio-theme-filter" type="search" placeholder="Filtruj według nazwiska lub autora" autocomplete="off" />
-                                <select id="studio-theme-select" aria-label="Temat galerii"></select>
+                                <select id="studio-theme-select" aria-label="Motyw z galerii"></select>
                                 <p class="studio-hint" id="studio-theme-count">Wszystkie motywy galerii</p>
                             </div>
 
@@ -301,7 +301,7 @@
                     <section class="studio-pane" id="pane-edit" data-pane="edit" role="tabpanel" hidden>
                         <div class="studio-pane-head">
                             <p class="studio-eyebrow">Zasoby motywu</p>
-                            <h2>Redagować</h2>
+                            <h2>Edytuj</h2>
                             <p>Zastąp dowolny plik, wybierając go, wklejając obraz lub upuszczając bezpośrednio w gnieździe.</p>
                         </div>
 
@@ -313,7 +313,7 @@
                             </div>
                             <div class="studio-asset-tools">
                                 <button class="studio-mini-btn" id="studio-browse-font" type="button" title="Wyszukaj plik czcionki"><i class="fa-solid fa-font" aria-hidden="true"></i>Chrzcielnica</button>
-                                <button class="studio-mini-btn" id="studio-reset-assets" type="button" title="Zresetuj każdą wymianę"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Zresetuj</button>
+                                <button class="studio-mini-btn" id="studio-reset-assets" type="button" title="Zresetuj każdą wymianę"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Resetuj</button>
                             </div>
                         </div>
 
@@ -323,8 +323,8 @@
                         <div class="studio-asset-detail" id="studio-asset-detail" hidden>
                             <div class="studio-asset-detail-head">
                                 <div class="studio-asset-detail-copy">
-                                    <span class="studio-eyebrow" id="studio-asset-section">Sztuka tematyczna</span>
-                                    <strong id="studio-asset-name">Zaleta</strong>
+                                    <span class="studio-eyebrow" id="studio-asset-section">Grafiki motywu</span>
+                                    <strong id="studio-asset-name">Zasób</strong>
                                     <code id="studio-asset-path">-</code>
                                 </div>
                                 <span class="studio-asset-status" id="studio-asset-status">Gotowy</span>
@@ -332,11 +332,11 @@
                             <div class="studio-asset-detail-preview" id="studio-asset-detail-preview"></div>
                             <div class="studio-asset-detail-actions">
                                 <button class="studio-btn studio-btn--primary" id="studio-asset-replace" type="button"><i class="fa-solid fa-images" aria-hidden="true"></i>Zamień plik</button>
-                                <button class="studio-btn" id="studio-asset-theme" type="button" title="Zamień ten sam zasób z innego motywu galerii"><i class="fa-solid fa-palette" aria-hidden="true"></i>Z tematu</button>
-                                <button class="studio-btn" id="studio-asset-save" type="button" title="Save this asset to your computer"><i class="fa-solid fa-download" aria-hidden="true"></i><span>Zapisz na urządzeniu</span></button>
+                                <button class="studio-btn" id="studio-asset-theme" type="button" title="Zamień ten sam zasób z innego motywu galerii"><i class="fa-solid fa-palette" aria-hidden="true"></i>Z motywu</button>
+                                <button class="studio-btn" id="studio-asset-save" type="button" title="Zapisz ten zasób na komputerze"><i class="fa-solid fa-download" aria-hidden="true"></i><span>Zapisz na urządzeniu</span></button>
                                 <button class="studio-btn" id="studio-asset-paste" type="button"><i class="fa-solid fa-paste" aria-hidden="true"></i>Pasta</button>
                                 <button class="studio-btn" id="studio-asset-blank" type="button" title="Wyrzuć ten plik do kosza i użyj w pełni przezroczystego obiektu zastępczego"><i class="fa-solid fa-trash-can" aria-hidden="true"></i>Pusty</button>
-                                <button class="studio-btn" id="studio-asset-reset" type="button"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Zresetuj</button>
+                                <button class="studio-btn" id="studio-asset-reset" type="button"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Resetuj</button>
                             </div>
                             <p class="studio-hint" id="studio-asset-hint">Upuść obraz w wybranym gnieździe lub skopiuj go i naciśnij Ctrl+V / Cmd+V.</p>
                         </div>
@@ -369,10 +369,10 @@
                             </p>
 
                             <div class="studio-identity-step" id="studio-identity-own">
-                                <p class="studio-identity-q">Czy to Twój temat?</p>
+                                <p class="studio-identity-q">Czy to Twój motyw?</p>
                                 <div class="studio-identity-actions">
-                                    <button class="studio-btn" type="button" data-identity-own="yes">Yes, this is my theme (update existing)</button>
-                                    <button class="studio-btn studio-btn--primary" type="button" data-identity-own="no">I'm making my own theme from this one</button>
+                                    <button class="studio-btn" type="button" data-identity-own="yes">Tak, to mój motyw (zaktualizuj istniejący)</button>
+                                    <button class="studio-btn studio-btn--primary" type="button" data-identity-own="no">Tworzę własny motyw na bazie tego</button>
                                 </div>
                             </div>
 
@@ -405,7 +405,7 @@
                             <div class="studio-submit-details" id="studio-submit-details">
                             <div class="studio-field">
                                 <label for="studio-submit-title">Tytuł galerii <span class="studio-required">Wymagany</span></label>
-                                <input id="studio-submit-title" type="text" autocomplete="off" maxlength="120" placeholder="Tytuł tematu" translate="no" data-i18n-skip />
+                                <input id="studio-submit-title" type="text" autocomplete="off" maxlength="120" placeholder="Nazwa motywu" translate="no" data-i18n-skip />
                                 <p class="studio-hint">Napisz tytuł po angielsku, aby galeria mogła go przetłumaczyć dla każdego odwiedzającego.</p>
                             </div>
 
@@ -446,7 +446,7 @@
 
                             <div class="studio-update-notice" id="studio-update-notice" hidden>
                                 <strong>To wygląda na aktualizację</strong>
-                                <p>Twój autor pasuje do istniejącego wpisu <span id="studio-update-folder"></span>. Potraktujemy to jako aktualizację tego tematu.</p>
+                                <p>Twój autor pasuje do istniejącego wpisu <span id="studio-update-folder"></span>. Potraktujemy to jako aktualizację tego motywu.</p>
                                 <label class="studio-inline-check">
                                     <input id="studio-edit-ack" type="checkbox" />
                                     <span>Potwierdzam, że jest to aktualizacja istniejącego wpisu.</span>
@@ -463,7 +463,7 @@
 
                         <div class="studio-note">
                             <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
-                            <span>Submitting opens a pull request for review. You can save the theme to this device first. Need help? <a href="https://discord.gg/zHrT2zrcek" target="_blank" rel="noopener noreferrer">Chat with us on Discord</a>.</span>
+                            <span>Submitting opens a pull request for review. You can save the theme to this device first. Need help? <a href="https://discord.gg/zHrT2zrcek" target="_blank" rel="noopener noreferrer">Porozmawiaj z nami na Discord</a>.</span>
                         </div>
                     </section>
                 </div>
@@ -484,59 +484,59 @@
     <div class="studio-modal studio-onboarding" id="studio-onboarding" hidden>
         <div class="studio-modal-card studio-onboarding-card" role="dialog" aria-modal="true" aria-labelledby="studio-onboarding-title">
             <div class="studio-onboarding-head">
-                <span class="studio-eyebrow"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> Getting started</span>
-                <button class="studio-onboarding-x" id="studio-onboarding-x" type="button" aria-label="Close guide">
+                <span class="studio-eyebrow"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i> Pierwsze kroki</span>
+                <button class="studio-onboarding-x" id="studio-onboarding-x" type="button" aria-label="Zamknij poradnik">
                     <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                 </button>
             </div>
-            <h2 id="studio-onboarding-title">Welcome to Innioasis Theme Studio</h2>
-            <p id="studio-onboarding-lead">Design, remix, preview, and publish custom themes for your Innioasis Y1 or Y2 right in your browser — no desktop software required.</p>
+            <h2 id="studio-onboarding-title">Witaj w Innioasis Studio motywów</h2>
+            <p id="studio-onboarding-lead">Projektuj, przerabiaj, podglądaj i publikuj własne motywy dla Innioasis Y1 lub Y2 w przeglądarce — bez instalowania dodatkowego oprogramowania.</p>
             <div class="studio-onboarding-steps">
                 <div class="studio-onboarding-step">
                     <span class="studio-onboarding-icon" aria-hidden="true"><i class="fa-solid fa-palette"></i></span>
                     <div>
-                        <strong>Start from a gallery theme as a template</strong>
-                        <p>Pick any existing theme from the community gallery to remix its icons, wallpapers, masks, fonts, and colors into something new.</p>
+                        <strong>Zacznij od motywu z galerii jako szablonu</strong>
+                        <p>Wybierz dowolny motyw z galerii społeczności, aby przerobić jego ikony, tapety, maski, czcionki i kolory na coś własnego.</p>
                     </div>
                 </div>
                 <div class="studio-onboarding-step">
                     <span class="studio-onboarding-icon" aria-hidden="true"><i class="fa-solid fa-file-zipper"></i></span>
                     <div>
-                        <strong>Drag &amp; drop or browse a local folder or ZIP</strong>
-                        <p>Drop a theme folder or <code>.zip</code> anywhere on the website — or open one from your device — to inspect and edit it locally.</p>
+                        <strong>Przeciągnij i upuść lub wybierz lokalny folder albo plik ZIP</strong>
+                        <p>Upuść folder motywu lub <code>.zip</code> w dowolnym miejscu na stronie — albo otwórz go z urządzenia — aby obejrzeć i edytować go lokalnie.</p>
                     </div>
                 </div>
                 <div class="studio-onboarding-step">
                     <span class="studio-onboarding-icon" aria-hidden="true"><i class="fa-solid fa-paper-plane"></i></span>
                     <div>
-                        <strong>Save for your player or upload to the gallery</strong>
-                        <p>Export a ready-to-install ZIP to your device anytime, or switch to the <strong>Wgrywać</strong> tab to share your creation (or update your listing) with the community.</p>
+                        <strong>Zapisz na odtwarzacz lub wyślij do galerii</strong>
+                        <p>Wyeksportuj w każdej chwili gotowy plik ZIP na swoje urządzenie albo przejdź do zakładki <strong>Wgrywać</strong> , aby udostępnić swój projekt (lub zaktualizować wpis) społeczności.</p>
                     </div>
                 </div>
             </div>
             <div class="studio-onboarding-quick">
                 <button class="studio-btn studio-btn--primary" id="studio-onboarding-template" type="button">
-                    <i class="fa-solid fa-palette" aria-hidden="true"></i><span>Choose a gallery template</span>
+                    <i class="fa-solid fa-palette" aria-hidden="true"></i><span>Wybierz szablon z galerii</span>
                 </button>
                 <button class="studio-btn" id="studio-onboarding-zip" type="button">
-                    <i class="fa-solid fa-file-zipper" aria-hidden="true"></i><span>Open ZIP from device</span>
+                    <i class="fa-solid fa-file-zipper" aria-hidden="true"></i><span>Otwórz plik ZIP z urządzenia</span>
                 </button>
                 <button class="studio-btn" id="studio-onboarding-folder" type="button">
-                    <i class="fa-solid fa-folder-open" aria-hidden="true"></i><span>Open theme folder</span>
+                    <i class="fa-solid fa-folder-open" aria-hidden="true"></i><span>Otwórz folder motywu</span>
                 </button>
                 <button class="studio-btn" id="studio-onboarding-upload" type="button">
-                    <i class="fa-solid fa-paper-plane" aria-hidden="true"></i><span>Go to Upload tab</span>
+                    <i class="fa-solid fa-paper-plane" aria-hidden="true"></i><span>Przejdź do zakładki Prześlij</span>
                 </button>
                 <a class="studio-btn studio-btn--discord" href="https://discord.gg/zHrT2zrcek" target="_blank" rel="noopener noreferrer">
-                    <i class="fa-brands fa-discord" aria-hidden="true"></i><span>Chat with us on Discord</span>
+                    <i class="fa-brands fa-discord" aria-hidden="true"></i><span>Porozmawiaj z nami na Discord</span>
                 </a>
             </div>
             <div class="studio-onboarding-foot">
                 <label class="studio-inline-check">
                     <input id="studio-onboarding-suppress" type="checkbox" />
-                    <span>Don’t show this automatically next time</span>
+                    <span>Nie pokazuj tego automatycznie następnym razem</span>
                 </label>
-                <button class="studio-btn" id="studio-onboarding-close" type="button">Continue to Studio</button>
+                <button class="studio-btn" id="studio-onboarding-close" type="button">Przejdź do Studia</button>
             </div>
         </div>
     </div>
@@ -544,13 +544,13 @@
     <div class="studio-modal studio-theme-picker" id="studio-theme-picker" hidden>
         <div class="studio-modal-card studio-theme-picker-card" role="dialog" aria-modal="true" aria-labelledby="studio-theme-picker-title">
             <span class="studio-eyebrow"><i class="fa-solid fa-palette" aria-hidden="true"></i> Zamień z innego motywu</span>
-            <h2 id="studio-theme-picker-title">Zaleta</h2>
+            <h2 id="studio-theme-picker-title">Zasób</h2>
             <p id="studio-theme-picker-text">Wybierz ten sam zasób z dowolnego motywu galerii, aby zamienić go na ten.</p>
             <label class="studio-theme-picker-search">
                 <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-                <input id="studio-theme-picker-query" type="search" placeholder="Szukaj tematów według nazwy lub autora" autocomplete="off" />
+                <input id="studio-theme-picker-query" type="search" placeholder="Szukaj motywów po nazwie lub autorze" autocomplete="off" />
             </label>
-            <div class="studio-theme-picker-list" id="studio-theme-picker-list" role="list" aria-label="Tematyka galerii"></div>
+            <div class="studio-theme-picker-list" id="studio-theme-picker-list" role="list" aria-label="Motywy z galerii"></div>
             <p class="studio-theme-picker-empty" id="studio-theme-picker-empty" hidden>Żaden motyw nie pasuje do tego wyszukiwania.</p>
             <div class="studio-modal-actions">
                 <button class="studio-btn" id="studio-theme-picker-close" type="button">Zamknij</button>
@@ -562,50 +562,50 @@
     <div class="studio-modal studio-try-device" id="studio-try-device-modal" hidden>
         <div class="studio-modal-card studio-try-device-card" role="dialog" aria-modal="true" aria-labelledby="studio-try-device-title">
             <div class="studio-onboarding-head">
-                <span class="studio-eyebrow"><i class="fa-solid fa-plug" aria-hidden="true"></i> USB Storage Mode</span>
-                <button class="studio-onboarding-x" id="studio-try-device-x" type="button" aria-label="Close Try on Device dialog">
+                <span class="studio-eyebrow"><i class="fa-solid fa-plug" aria-hidden="true"></i> Tryb pamięci USB</span>
+                <button class="studio-onboarding-x" id="studio-try-device-x" type="button" aria-label="Zamknij okno testowania na urządzeniu">
                     <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                 </button>
             </div>
-            <h2 id="studio-try-device-title">Try this theme on your player</h2>
-            <p class="studio-try-device-lead" id="studio-try-device-lead">Copy your current Studio theme straight into your player’s <code>Themes</code> folder over USB so you can test it on real hardware right away.</p>
+            <h2 id="studio-try-device-title">Wypróbuj ten motyw na swoim odtwarzaczu</h2>
+            <p class="studio-try-device-lead" id="studio-try-device-lead">Skopiuj bieżący motyw ze Studia prosto do folderu odtwarzacza <code>Themes</code> przez USB, abyś mógł od razu przetestować go na prawdziwym sprzęcie.</p>
             <div class="studio-try-device-reminder" id="studio-try-device-reminder" role="note" hidden>
                 <i class="fa-solid fa-rotate" aria-hidden="true"></i>
                 <div>
-                    <strong>Testing again in this session?</strong>
-                    <p>After ejecting USB storage, <strong>restart your device</strong> i <strong>select another theme</strong> (then switch back) so your player clears its cache and loads your updated files.</p>
+                    <strong>Testujesz ponownie w tej sesji?</strong>
+                    <p>Po bezpiecznym odłączeniu pamięci USB <strong>uruchom ponownie odtwarzacz</strong> i <strong>wybierz inny motyw</strong> (a potem wróć do niego), aby odtwarzacz wyczyścił pamięć podręczną i wczytał zaktualizowane pliki.</p>
                 </div>
             </div>
             <ol class="studio-try-device-steps" id="studio-try-device-steps">
                 <li>
                     <span class="studio-try-step-num" aria-hidden="true">1</span>
                     <div>
-                        <strong>Enable USB Storage Mode on your player</strong>
-                        <p>Connect your Innioasis Y1 or Y2 over USB and enable <strong>USB Storage Mode</strong> on the player so its storage appears on your computer.</p>
+                        <strong>Włącz tryb pamięci USB na odtwarzaczu</strong>
+                        <p>Podłącz Innioasis Y1 lub Y2 przez USB i włącz <strong>Tryb pamięci USB</strong> na odtwarzaczu, aby jego pamięć pojawiła się na komputerze.</p>
                     </div>
                 </li>
                 <li>
                     <span class="studio-try-step-num" aria-hidden="true">2</span>
                     <div>
-                        <strong>Click “Select Themes folder”</strong>
-                        <p>Choose the <code>Themes</code> folder on your player. Studio will copy <code id="studio-try-folder-name">your theme</code> directly into it for testing.</p>
+                        <strong>Kliknij „Wybierz folder Themes”</strong>
+                        <p>Wybierz <code>Themes</code> na swoim odtwarzaczu. Studio skopiuje <code id="studio-try-folder-name">your theme</code> bezpośrednio do niego w celu przetestowania.</p>
                     </div>
                 </li>
             </ol>
             <div class="studio-try-device-unsupported" id="studio-try-device-unsupported" hidden>
                 <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
                 <div>
-                    <strong>Direct USB folder access isn’t available in this browser</strong>
-                    <p>Picking your player’s <code>Themes</code> folder directly requires a Chromium desktop browser (Chrome, Edge, Brave, or Opera) over HTTPS. You can still save the theme ZIP to your device and copy the unzipped folder into your player’s <code>Themes</code> falcówka.</p>
+                    <strong>Bezpośredni dostęp do folderu USB nie jest dostępny w tej przeglądarce</strong>
+                    <p>Wybieranie folderu odtwarzacza <code>Themes</code> bezpośrednio wymaga desktopowej przeglądarki opartej na Chromium (Chrome, Edge, Brave lub Opera) przez HTTPS. Nadal możesz zapisać plik ZIP motywu na urządzeniu i skopiować rozpakowany folder do katalogu odtwarzacza <code>Themes</code> folder.</p>
                 </div>
             </div>
             <div class="studio-try-device-connected" id="studio-try-device-connected" hidden>
                 <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
-                <span>Selected folder: <strong id="studio-try-connected-name">Motywy</strong></span>
+                <span>Wybrany folder: <strong id="studio-try-connected-name">Motywy</strong></span>
             </div>
             <div class="studio-try-device-progress" id="studio-try-device-progress" hidden>
                 <div class="studio-save-progress-head">
-                    <span id="studio-try-progress-label">Preparing files…</span>
+                    <span id="studio-try-progress-label">Przygotowywanie plików…</span>
                     <strong id="studio-try-progress-value">0%</strong>
                 </div>
                 <progress id="studio-try-progress-bar" max="100" value="0">0%</progress>
@@ -613,16 +613,16 @@
             <p class="studio-try-device-status" id="studio-try-device-status" role="status" aria-live="polite" hidden></p>
             <div class="studio-try-device-actions">
                 <button class="studio-btn studio-btn--primary" id="studio-try-select-folder" type="button">
-                    <i class="fa-solid fa-folder-open" aria-hidden="true"></i><span>Select Themes folder</span>
+                    <i class="fa-solid fa-folder-open" aria-hidden="true"></i><span>Wybierz folder Themes</span>
                 </button>
                 <button class="studio-btn studio-btn--primary" id="studio-try-copy-again" type="button" hidden>
-                    <i class="fa-solid fa-copy" aria-hidden="true"></i><span>Copy updated theme to device</span>
+                    <i class="fa-solid fa-copy" aria-hidden="true"></i><span>Skopiuj zaktualizowany motyw na urządzenie</span>
                 </button>
                 <button class="studio-btn" id="studio-try-change-folder" type="button" hidden>
-                    <i class="fa-solid fa-folder-tree" aria-hidden="true"></i><span>Change folder</span>
+                    <i class="fa-solid fa-folder-tree" aria-hidden="true"></i><span>Zmień folder</span>
                 </button>
                 <button class="studio-btn" id="studio-try-save-fallback" type="button" hidden>
-                    <i class="fa-solid fa-download" aria-hidden="true"></i><span>Save theme ZIP instead</span>
+                    <i class="fa-solid fa-download" aria-hidden="true"></i><span>Zapisz plik ZIP motywu</span>
                 </button>
                 <button class="studio-btn" id="studio-try-device-close" type="button">Zamknij</button>
             </div>
