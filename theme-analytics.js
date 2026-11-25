@@ -1,5 +1,14 @@
 /**
- * Unified theme analytics + star ratings for themes.innioasis.app (GitHub Pages → Cloudflare Worker).
+ * Unified theme analytics + star ratings for themes.innioasis.app (GitHub Pages -> Cloudflare Worker).
+ *
+ * Quota-safe design:
+ * - Public stats are fetched from /api/theme-stats?all=1 (no voterId, HTTP & localStorage cached 15m).
+ * - Personal votes are stored in localStorage and synced at most once via /api/theme-stats?votesOnly=1
+ *   only for returning visitors who already had a visitor ID (brand-new visitors make 0 vote queries).
+ * - Never falls back to 9 concurrent chunked requests on error; enters a 5m circuit-breaker backoff so
+ *   analytics outages never cause retry storms or compete with theme uploads for account Worker quota.
+ * - Uses CORS-simple text/plain JSON POSTs to eliminate OPTIONS preflight requests (-50% Worker calls).
+ * - Skips crawler/bot page_view beacons and dedupes page views per UTC day in localStorage.
  */
 (function (global) {
     "use strict";
@@ -8,6 +17,15 @@
     const LEGACY_CONSENT_KEY = "y1-theme-consent-v1";
     const VISITOR_KEY = "y1-rating-visitor-id";
     const PV_SESSION_PREFIX = "y1-pv-session:";
+    const PV_DAY_PREFIX = "y1-pv-day:";
+    const USER_VOTES_KEY = "y1-user-votes-v1";
+    const USER_VOTES_SYNCED_KEY = "y1-user-votes-synced-v1";
+    const STATS_BACKOFF_KEY = "y1-theme-stats-backoff-until";
+    const STATS_BACKOFF_MS = 5 * 60 * 1000;
+    const FETCH_TIMEOUT_MS = 8000;
+
+    const CRAWLER_UA_RE =
+        /googlebot|bingbot|bingpreview|slurp|duckduckbot|baiduspider|yandex|applebot|ahrefsbot|semrushbot|mj12bot|dotbot|petalbot|bytespider|gptbot|oai-searchbot|claudebot|anthropic-ai|ccbot|perplexitybot|amazonbot|facebookexternalhit|twitterbot|linkedinbot|slackbot|discordbot|pinterestbot|uptimerobot|pingdom|statuscake|pagespeed|lighthouse|gtmetrix|scrapy/i;
 
     /** Visitors contribute by default; they may opt out via Privacy settings. Public stats stay visible. */
     const DEFAULT_CONSENT = {
@@ -29,17 +47,76 @@
     };
 
     const statsCache = new Map();
+    const userVotesCache = new Map();
+    let userVotesHydrated = false;
+    let userVotesInFlight = null;
     let allStatsLoaded = false;
+    let allStatsAttempted = false;
     let allStatsInFlight = null;
-    /** Single-request batch + short session cache keeps stats fresh and fast under Free-tier limits. */
-    const STATS_SESSION_CACHE_KEY = "y1-theme-stats-batch-v2";
-    const STATS_SESSION_CACHE_TTL_MS = 2 * 60 * 1000;
+
+    /** Public stats snapshot cached across page loads for 15 minutes (0 Worker/D1 calls on revisits). */
+    const STATS_CACHE_KEY = "y1-theme-stats-public-v3";
+    const STATS_CACHE_TTL_MS = 15 * 60 * 1000;
     const STATS_FETCH_CHUNK = 80;
     const REACTIONS = [
         { key: "down", value: 0, label: "Thumbs down", icon: "&#128078;" },
         { key: "up", value: 2.5, label: "Thumbs up", icon: "&#128077;" },
         { key: "heart", value: 5, label: "Love it", icon: "&#10084;&#65039;" },
     ];
+
+    function isLikelyCrawler() {
+        try {
+            const ua = (global.navigator && global.navigator.userAgent) || "";
+            if (CRAWLER_UA_RE.test(ua)) return true;
+        } catch (_) {}
+        return false;
+    }
+
+    function utcDayStamp() {
+        try {
+            return new Date().toISOString().slice(0, 10);
+        } catch (_) {
+            return "";
+        }
+    }
+
+    function isInStatsBackoff() {
+        try {
+            const until = Number(localStorage.getItem(STATS_BACKOFF_KEY) || 0);
+            return until > Date.now();
+        } catch (_) {
+            return false;
+        }
+    }
+
+    function tripStatsBackoff(ms) {
+        try {
+            localStorage.setItem(STATS_BACKOFF_KEY, String(Date.now() + (ms || STATS_BACKOFF_MS)));
+        } catch (_) {}
+    }
+
+    function clearStatsBackoff() {
+        try {
+            localStorage.removeItem(STATS_BACKOFF_KEY);
+        } catch (_) {}
+    }
+
+    async function fetchWithTimeout(url, init) {
+        if (typeof AbortController !== "function") {
+            return fetch(url, init);
+        }
+        const ac = new AbortController();
+        const timer = setTimeout(() => {
+            try {
+                ac.abort();
+            } catch (_) {}
+        }, FETCH_TIMEOUT_MS);
+        try {
+            return await fetch(url, { ...(init || {}), signal: ac.signal });
+        } finally {
+            clearTimeout(timer);
+        }
+    }
 
     function formatScoreOutOfFive(avg) {
         const n = Number(avg) || 0;
@@ -112,9 +189,7 @@
     /** Compare stored REAL ratings (0 | 2.5 | 5) to meter values without IEEE noise. */
     function reactionStoredMatches(userStored, needle) {
         if (userStored === null || userStored === undefined) return false;
-        return (
-            Math.round(Number(userStored) * 100) === Math.round(Number(needle) * 100)
-        );
+        return Math.round(Number(userStored) * 100) === Math.round(Number(needle) * 100);
     }
 
     function normalizeConsentObject(c) {
@@ -124,12 +199,6 @@
             ratingsView: c.ratingsView !== false,
             ratingsSubmit: c.ratingsSubmit !== false,
         };
-    }
-
-    function migrateLegacyConsent(parsed) {
-        if (!parsed || typeof parsed !== "object") return { ...DEFAULT_CONSENT };
-        if (!parsed.decided) return { ...DEFAULT_CONSENT };
-        return normalizeConsentObject(parsed);
     }
 
     function loadConsent() {
@@ -180,7 +249,9 @@
 
     function saveConsentLocal(c) {
         const normalized = normalizeConsentObject({ ...c, decided: true });
-        localStorage.setItem(CONSENT_KEY, JSON.stringify(normalized));
+        try {
+            localStorage.setItem(CONSENT_KEY, JSON.stringify(normalized));
+        } catch (_) {}
         return normalized;
     }
 
@@ -201,23 +272,13 @@
         return normalized;
     }
 
-    async function hydrateConsentFromServer() {
-        if (loadConsent().decided) return;
-        const vid = getVisitorId();
-        const url = apiUrl("/api/theme-privacy");
-        if (!vid || !url) return;
+    function readExistingVisitorId() {
         try {
-            const res = await fetch(url + "?voterId=" + encodeURIComponent(vid), { cache: "no-store" });
-            if (!res.ok) return;
-            const data = await res.json();
-            if (!data || !data.stored || !data.preferences) return;
-            const p = data.preferences;
-            saveConsentLocal({
-                analytics: p.analytics !== false,
-                ratingsSubmit: p.ratingsSubmit !== false,
-                ratingsView: p.ratingsView !== false,
-            });
-        } catch (_) {}
+            const id = localStorage.getItem(VISITOR_KEY);
+            return id && id.length >= 12 ? id : "";
+        } catch (_) {
+            return "";
+        }
     }
 
     function getVisitorId() {
@@ -228,11 +289,97 @@
                     (global.crypto && crypto.randomUUID && crypto.randomUUID()) ||
                     "v-" + Math.random().toString(36).slice(2) + Date.now().toString(36);
                 localStorage.setItem(VISITOR_KEY, id);
+                /* Brand-new visitor has zero prior votes in D1; skip remote votes lookup. */
+                try {
+                    if (!localStorage.getItem(USER_VOTES_SYNCED_KEY)) {
+                        localStorage.setItem(USER_VOTES_SYNCED_KEY, "1");
+                    }
+                } catch (_) {}
             }
             return id;
         } catch (_) {
             return "anon-" + Math.random().toString(36).slice(2);
         }
+    }
+
+    function hydrateUserVotesLocal() {
+        if (userVotesHydrated) return;
+        userVotesHydrated = true;
+        try {
+            const raw = localStorage.getItem(USER_VOTES_KEY);
+            if (!raw) return;
+            const parsed = JSON.parse(raw);
+            if (!parsed || typeof parsed !== "object") return;
+            for (const k of Object.keys(parsed)) {
+                const key = normalizeThemeKey(k);
+                const val = Number(parsed[k]);
+                if (key && !Number.isNaN(val)) userVotesCache.set(key, val);
+            }
+        } catch (_) {}
+    }
+
+    function persistUserVotesLocal() {
+        try {
+            const out = {};
+            for (const [k, v] of userVotesCache.entries()) out[k] = v;
+            localStorage.setItem(USER_VOTES_KEY, JSON.stringify(out));
+            localStorage.setItem(USER_VOTES_SYNCED_KEY, "1");
+        } catch (_) {}
+    }
+
+    function applyUserVotesToStatsCache() {
+        for (const [key, rating] of userVotesCache.entries()) {
+            const cur = statsCache.get(key) || emptyStats();
+            if (cur.userRating !== rating) {
+                statsCache.set(key, { ...cur, userRating: rating });
+            }
+        }
+    }
+
+    /**
+     * Sync existing returning visitor's votes ONCE via the indexed votesOnly endpoint (0-3 D1 rows).
+     * Brand-new visitors (and anyone already synced) make 0 network requests.
+     */
+    async function syncUserVotesOnce() {
+        hydrateUserVotesLocal();
+        if (!shouldSubmitRatings(loadConsent()) || isInStatsBackoff() || isLikelyCrawler()) return;
+        try {
+            if (localStorage.getItem(USER_VOTES_SYNCED_KEY) === "1") return;
+        } catch (_) {}
+        const existingVid = readExistingVisitorId();
+        if (!existingVid) {
+            try {
+                localStorage.setItem(USER_VOTES_SYNCED_KEY, "1");
+            } catch (_) {}
+            return;
+        }
+        const base = apiUrl("/api/theme-stats");
+        if (!base) return;
+        if (userVotesInFlight) return userVotesInFlight;
+        userVotesInFlight = (async () => {
+            try {
+                const q = new URLSearchParams();
+                q.set("votesOnly", "1");
+                q.set("voterId", existingVid);
+                const res = await fetchWithTimeout(base + "?" + q.toString(), {
+                    cache: "default",
+                });
+                if (!res.ok) return;
+                const data = await res.json();
+                if (!data || !data.ok || !data.votes || typeof data.votes !== "object") return;
+                for (const k of Object.keys(data.votes)) {
+                    const key = normalizeThemeKey(k);
+                    const val = Number(data.votes[k]);
+                    if (key && !Number.isNaN(val)) userVotesCache.set(key, val);
+                }
+                persistUserVotesLocal();
+                applyUserVotesToStatsCache();
+            } catch (_) {
+            } finally {
+                userVotesInFlight = null;
+            }
+        })();
+        return userVotesInFlight;
     }
 
     function formatCount(n) {
@@ -243,17 +390,22 @@
         return String(x);
     }
 
+    /** Send CORS-simple text/plain JSON POST to avoid OPTIONS preflight Worker requests. */
     async function postJson(path, body) {
         const url = apiUrl(path);
         if (!url) return null;
         try {
-            const res = await fetch(url, {
+            const res = await fetchWithTimeout(url, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "text/plain;charset=UTF-8" },
                 body: JSON.stringify(body),
                 credentials: "omit",
                 keepalive: true,
             });
+            if (res.status === 429 || res.status >= 500) {
+                tripStatsBackoff();
+                return null;
+            }
             if (!res.ok) return null;
             return await res.json();
         } catch (_) {
@@ -261,60 +413,88 @@
         }
     }
 
-    function hydrateStatsCacheFromSession() {
+    function hydrateStatsCacheFromStorage() {
+        hydrateUserVotesLocal();
         try {
-            const raw = sessionStorage.getItem(STATS_SESSION_CACHE_KEY);
+            const raw =
+                localStorage.getItem(STATS_CACHE_KEY) ||
+                sessionStorage.getItem(STATS_CACHE_KEY);
             if (!raw) return;
             const parsed = JSON.parse(raw);
             if (!parsed || typeof parsed !== "object") return;
             const ts = Number(parsed.ts) || 0;
-            if (!ts || Date.now() - ts > STATS_SESSION_CACHE_TTL_MS) return;
+            if (!ts || Date.now() - ts > STATS_CACHE_TTL_MS) return;
             const themes = parsed.themes;
             if (!themes || typeof themes !== "object") return;
             for (const k of Object.keys(themes)) {
                 const key = normalizeThemeKey(k);
                 if (!key) continue;
-                statsCache.set(key, normalizeStats(themes[k]));
+                const s = normalizeStats(themes[k]);
+                if (userVotesCache.has(key)) s.userRating = userVotesCache.get(key);
+                statsCache.set(key, s);
             }
             if (parsed.all === true) allStatsLoaded = true;
+            applyUserVotesToStatsCache();
         } catch (_) {}
     }
 
-    function persistStatsCacheToSession() {
+    function persistStatsCacheToStorage() {
         try {
             const themes = {};
-            for (const [k, v] of statsCache.entries()) themes[k] = v;
-            sessionStorage.setItem(
-                STATS_SESSION_CACHE_KEY,
-                JSON.stringify({ ts: Date.now(), all: allStatsLoaded, themes }),
-            );
+            for (const [k, v] of statsCache.entries()) {
+                themes[k] = {
+                    pageViews: v.pageViews,
+                    zipDownloads: v.zipDownloads,
+                    directInstalls: v.directInstalls,
+                    ratingCount: v.ratingCount,
+                    ratingAverage: v.ratingAverage,
+                };
+            }
+            const payload = JSON.stringify({ ts: Date.now(), all: allStatsLoaded, themes });
+            try {
+                localStorage.setItem(STATS_CACHE_KEY, payload);
+            } catch (_) {
+                sessionStorage.setItem(STATS_CACHE_KEY, payload);
+            }
         } catch (_) {}
     }
 
     async function fetchAllStats() {
         if (!apiUrl("/api/theme-stats")) return false;
+        if (isInStatsBackoff()) {
+            allStatsAttempted = true;
+            return false;
+        }
         if (allStatsInFlight) return allStatsInFlight;
-        const q = new URLSearchParams();
-        q.set("all", "1");
-        const c = loadConsent();
-        if (shouldSubmitRatings(c)) q.set("voterId", getVisitorId());
+        allStatsAttempted = true;
         allStatsInFlight = (async () => {
             try {
-                const res = await fetch(apiUrl("/api/theme-stats") + "?" + q.toString(), {
-                    cache: "no-store",
+                /* Public cacheable URL (no voterId!) so browser + Worker cache serve all users. */
+                const res = await fetchWithTimeout(apiUrl("/api/theme-stats") + "?all=1", {
+                    cache: "default",
                 });
+                if (res.status === 429 || res.status >= 500) {
+                    tripStatsBackoff();
+                    return false;
+                }
                 if (!res.ok) return false;
                 const data = await res.json();
                 if (!data || !data.ok || !data.themes || typeof data.themes !== "object") return false;
+                clearStatsBackoff();
+                hydrateUserVotesLocal();
                 for (const k of Object.keys(data.themes)) {
                     const key = normalizeThemeKey(k);
                     if (!key) continue;
-                    statsCache.set(key, normalizeStats(data.themes[k]));
+                    const normalized = normalizeStats(data.themes[k]);
+                    if (userVotesCache.has(key)) normalized.userRating = userVotesCache.get(key);
+                    statsCache.set(key, normalized);
                 }
                 allStatsLoaded = true;
-                persistStatsCacheToSession();
+                persistStatsCacheToStorage();
+                await syncUserVotesOnce();
                 return true;
             } catch (_) {
+                tripStatsBackoff();
                 return false;
             } finally {
                 allStatsInFlight = null;
@@ -323,55 +503,61 @@
         return allStatsInFlight;
     }
 
-    async function fetchStatsChunk(missing) {
-        if (!missing.length || !apiUrl("/api/theme-stats")) return;
+    async function fetchSingleStats(keys) {
+        if (!keys.length || !apiUrl("/api/theme-stats") || isInStatsBackoff()) return;
         const q = new URLSearchParams();
-        q.set("themes", missing.join(","));
-        const c = loadConsent();
-        if (shouldSubmitRatings(c)) q.set("voterId", getVisitorId());
+        if (keys.length === 1) q.set("theme", keys[0]);
+        else q.set("themes", keys.slice(0, STATS_FETCH_CHUNK).join(","));
         try {
-            const res = await fetch(apiUrl("/api/theme-stats") + "?" + q.toString(), {
-                cache: "no-store",
+            const res = await fetchWithTimeout(apiUrl("/api/theme-stats") + "?" + q.toString(), {
+                cache: "default",
             });
+            if (res.status === 429 || res.status >= 500) {
+                tripStatsBackoff();
+                return;
+            }
             if (!res.ok) return;
             const data = await res.json();
             if (!data || !data.ok || !data.themes || typeof data.themes !== "object") return;
-            for (const k of missing) {
-                statsCache.set(k, normalizeStats(data.themes[k]));
+            hydrateUserVotesLocal();
+            for (const k of keys) {
+                const normalized = normalizeStats(data.themes[k]);
+                if (userVotesCache.has(k)) normalized.userRating = userVotesCache.get(k);
+                statsCache.set(k, normalized);
             }
-            persistStatsCacheToSession();
-        } catch (_) {}
+            persistStatsCacheToStorage();
+            await syncUserVotesOnce();
+        } catch (_) {
+            tripStatsBackoff();
+        }
     }
 
     async function fetchStatsMap(themeKeys) {
-        hydrateStatsCacheFromSession();
+        hydrateStatsCacheFromStorage();
         const keys = [...new Set(themeKeys.map(normalizeThemeKey).filter(Boolean))];
         if (!keys.length) return {};
         let missing = keys.filter((k) => !statsCache.has(k));
-        if (missing.length > STATS_FETCH_CHUNK && !allStatsLoaded) {
-            const ok = await fetchAllStats();
-            if (ok) {
-                for (const k of keys) {
+
+        if (missing.length && !isInStatsBackoff()) {
+            if (allStatsLoaded) {
+                for (const k of missing) {
                     if (!statsCache.has(k)) statsCache.set(k, emptyStats());
                 }
-                missing = [];
-            }
-        } else if (allStatsLoaded && missing.length) {
-            for (const k of missing) {
-                if (!statsCache.has(k)) statsCache.set(k, emptyStats());
-            }
-            missing = [];
-        }
-        if (missing.length) {
-            const chunks = [];
-            for (let i = 0; i < missing.length; i += STATS_FETCH_CHUNK) {
-                chunks.push(missing.slice(i, i + STATS_FETCH_CHUNK));
-            }
-            const CONCURRENCY = 4;
-            for (let i = 0; i < chunks.length; i += CONCURRENCY) {
-                await Promise.all(chunks.slice(i, i + CONCURRENCY).map((c) => fetchStatsChunk(c)));
+            } else if (missing.length > 5) {
+                /* Multi-theme / gallery load: at most ONE ?all=1 request, NEVER fan out into 9 chunks on failure! */
+                if (!allStatsAttempted) {
+                    const ok = await fetchAllStats();
+                    if (ok) {
+                        for (const k of keys) {
+                            if (!statsCache.has(k)) statsCache.set(k, emptyStats());
+                        }
+                    }
+                }
+            } else {
+                await fetchSingleStats(missing);
             }
         }
+
         const out = {};
         for (const k of keys) {
             out[k] = statsCache.get(k) || emptyStats();
@@ -412,19 +598,26 @@
         const cur = statsCache.get(themeKey) || emptyStats();
         const next = normalizeStats({ ...cur, [field]: (Number(cur[field]) || 0) + delta });
         statsCache.set(themeKey, next);
-        persistStatsCacheToSession();
+        persistStatsCacheToStorage();
     }
 
     function trackEvent(themeKey, event, source) {
         const key = normalizeThemeKey(themeKey);
-        if (!key) return;
+        if (!key || isLikelyCrawler()) return;
         const consent = loadConsent();
         if (!shouldTrackAnalytics(consent)) return;
         if (event === "page_view") {
+            const day = utcDayStamp();
+            const sk = PV_SESSION_PREFIX + key;
+            const dk = day ? PV_DAY_PREFIX + day + ":" + key : "";
             try {
-                const sk = PV_SESSION_PREFIX + key;
                 if (sessionStorage.getItem(sk)) return;
+                if (dk && localStorage.getItem(dk)) {
+                    sessionStorage.setItem(sk, "1");
+                    return;
+                }
                 sessionStorage.setItem(sk, "1");
+                if (dk) localStorage.setItem(dk, "1");
             } catch (_) {}
             bumpLocalStat(key, "pageViews", 1);
         } else if (event === "zip_download") {
@@ -433,6 +626,7 @@
             bumpLocalStat(key, "directInstalls", 1);
         }
         refreshMetricsHosts(key);
+        if (isInStatsBackoff()) return;
         void postJson("/api/theme-event", {
             theme: key,
             event,
@@ -443,10 +637,10 @@
                 const existing = statsCache.get(key);
                 const merged = normalizeStats({
                     ...res.stats,
-                    userRating: existing ? existing.userRating : null,
+                    userRating: existing ? existing.userRating : userVotesCache.get(key) ?? null,
                 });
                 statsCache.set(key, merged);
-                persistStatsCacheToSession();
+                persistStatsCacheToStorage();
                 refreshMetricsHosts(key);
             }
         });
@@ -606,6 +800,8 @@
         if (!shouldSubmitRatings(consent)) return;
         const reaction =
             rating === 0 ? "down" : rating === 2.5 ? "up" : rating === 5 ? "heart" : "";
+        userVotesCache.set(key, rating);
+        persistUserVotesLocal();
         const body = await postJson("/api/theme-rating", {
             theme: key,
             rating,
@@ -618,6 +814,7 @@
             const cur = statsCache.get(key) || emptyStats();
             statsCache.set(key, { ...cur, userRating: rating });
         }
+        persistStatsCacheToStorage();
         if (hostEl) {
             const metricsEl = hostEl.closest(".y1-theme-metrics");
             if (metricsEl) renderMetricsInto(metricsEl, statsCache.get(key), key);
@@ -625,11 +822,6 @@
         refreshMetricsHosts(key);
         syncCardStatsAttributes(key);
     }
-
-    const PRIVACY_GEAR_SVG =
-        '<svg class="y1-privacy-settings-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' +
-        '<path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7Zm8.94-2.06-.76-.44.12-1.02.12-1.02.88-.5.88-.5-.76-1.32-.76-1.32-.88.5-.88.5-1.02-.12-1.02-.12-.76-.44-.76-.44.12-1.02.12-1.02-.88-.5-.88-.5.76-1.32.76-1.32.88.5.88.5 1.02-.12 1.02-.12.76-.44.76-.44-.12-1.02-.12-1.02.88-.5.88-.5-.76-1.32-.76-1.32-.88.5-.88.5-1.02.12-1.02.12.76.44.76.44-.12 1.02-.12 1.02.88.5.88.5.76 1.32.76 1.32-.88.5-.88.5-1.02.12-1.02.12-.76.44Z"/>' +
-        "</svg>";
 
     function mountPrivacyButton() {
         const btn = document.getElementById("y1-privacy-settings-btn");
@@ -696,7 +888,6 @@
         const applyBannerVisibility = () => {
             const b = document.getElementById("y1-consent-banner");
             if (!b) return;
-            // Never bother users with the first-visit preferences screen
             b.classList.remove("y1-consent--visible");
             b.hidden = true;
             document.body.classList.remove("y1-consent-banner-open");
@@ -798,16 +989,6 @@
     function trackExternalDownload(themeKey, source) {
         trackEvent(themeKey, "page_view", source || "gallery");
         trackEvent(themeKey, "zip_download", source || "gallery");
-    }
-
-    function wrapDownloadSuccess(themeKey, source, fn) {
-        return async function (...args) {
-            const result = await fn.apply(this, args);
-            try {
-                trackZipDownload(themeKey, source);
-            } catch (_) {}
-            return result;
-        };
     }
 
     initConsent();

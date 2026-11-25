@@ -8,11 +8,12 @@
 name = "y1-theme-analytics"
 main = "src/index.js"
 compatibility_date = "2026-05-11"
+workers_dev = true
 
 # REQUIRED: Replace database_id with your real UUID from
 # Cloudflare Dashboard → Storage & Databases → D1 → y1-theme-metrics → Database ID.
 # Deploy fails with code 10181 while this is still 00000000-0000-0000-0000-000000000000.
 [[d1_databases]]
 binding = "DB"
-database_name = "y1-theme-metrics"
+database_name = "y1-themes-analytics"
 database_id = "c2bffa31-ebe4-473e-b1f9-f0e829e7eb6b"

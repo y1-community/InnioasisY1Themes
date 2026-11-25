@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS theme_rating_votes (
 );
 
 CREATE INDEX IF NOT EXISTS idx_theme_rating_votes_theme ON theme_rating_votes (theme_key);
+CREATE INDEX IF NOT EXISTS idx_theme_rating_votes_voter ON theme_rating_votes (voter_id, theme_key, rating);
 
 CREATE TABLE IF NOT EXISTS visitor_preferences (
   voter_id TEXT PRIMARY KEY NOT NULL,

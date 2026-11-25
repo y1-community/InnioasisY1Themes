@@ -4,8 +4,9 @@
 name = "y1-theme-analytics"
 main = "analytics-worker.js"
 compatibility_date = "2026-05-11"
+workers_dev = true
 
 [[d1_databases]]
 binding = "DB"
-database_name = "y1-theme-metrics"
+database_name = "y1-themes-analytics"
 database_id = "c2bffa31-ebe4-473e-b1f9-f0e829e7eb6b"

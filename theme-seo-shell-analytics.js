@@ -1,8 +1,9 @@
 /**
  * Lightweight analytics tracking for per-theme SEO index.html shells.
- * Shares session dedupe keys with theme-analytics.js so one visit = one view,
- * exposes ThemeAnalytics tracking hooks for theme-download.js, and records
- * downloads when visitors open external-download themes.
+ * Shares session + daily dedupe keys with theme-analytics.js so one visit = one view,
+ * skips crawler/bot traffic, uses CORS-simple text/plain POSTs to avoid OPTIONS preflights,
+ * exposes ThemeAnalytics tracking hooks for theme-download.js, and records downloads when
+ * visitors open external-download themes.
  */
 (function (global) {
     "use strict";
@@ -10,8 +11,38 @@
     var CONSENT_KEY = "y1-theme-consent-v2";
     var LEGACY_CONSENT_KEY = "y1-theme-consent-v1";
     var PV_SESSION_PREFIX = "y1-pv-session:";
+    var PV_DAY_PREFIX = "y1-pv-day:";
     var EXT_DL_SESSION_PREFIX = "y1-ext-dl-session:";
     var VISITOR_KEY = "y1-rating-visitor-id";
+    var STATS_BACKOFF_KEY = "y1-theme-stats-backoff-until";
+    var CRAWLER_UA_RE =
+        /googlebot|bingbot|bingpreview|slurp|duckduckbot|baiduspider|yandex|applebot|ahrefsbot|semrushbot|mj12bot|dotbot|petalbot|bytespider|gptbot|oai-searchbot|claudebot|anthropic-ai|ccbot|perplexitybot|amazonbot|facebookexternalhit|twitterbot|linkedinbot|slackbot|discordbot|pinterestbot|uptimerobot|pingdom|statuscake|pagespeed|lighthouse|gtmetrix|scrapy/i;
+
+    function isLikelyCrawler() {
+        try {
+            var nav = global.navigator;
+            if (nav && nav.webdriver) return true;
+            var ua = (nav && nav.userAgent) || "";
+            if (CRAWLER_UA_RE.test(ua)) return true;
+        } catch (e) {}
+        return false;
+    }
+
+    function utcDayStamp() {
+        try {
+            return new Date().toISOString().slice(0, 10);
+        } catch (e) {
+            return "";
+        }
+    }
+
+    function isInBackoff() {
+        try {
+            return Number(localStorage.getItem(STATS_BACKOFF_KEY) || 0) > Date.now();
+        } catch (e) {
+            return false;
+        }
+    }
 
     function readMetaOrigin() {
         var meta = document.querySelector('meta[name="cf-theme-analytics-origin"]');
@@ -88,16 +119,24 @@
     }
 
     function sendEvent(themeKey, event, source) {
+        if (isLikelyCrawler() || isInBackoff()) return;
         var base = readMetaOrigin();
         var key = normalizeThemeKey(themeKey);
         if (!base || !key) return;
         var consent = loadConsent();
         if (consent.analytics === false) return;
         if (event === "page_view") {
+            var day = utcDayStamp();
+            var sk = PV_SESSION_PREFIX + key;
+            var dk = day ? PV_DAY_PREFIX + day + ":" + key : "";
             try {
-                var sk = PV_SESSION_PREFIX + key;
                 if (sessionStorage.getItem(sk)) return;
+                if (dk && localStorage.getItem(dk)) {
+                    sessionStorage.setItem(sk, "1");
+                    return;
+                }
                 sessionStorage.setItem(sk, "1");
+                if (dk) localStorage.setItem(dk, "1");
             } catch (e) {}
         }
         var url = base + "/api/theme-event";
@@ -107,11 +146,10 @@
             source: source || "theme_page",
             voterId: getVisitorId(),
         });
-        /* Use fetch with keepalive instead of cross-origin sendBeacon(Blob, application/json),
-           which browsers reject on CORS wildcard endpoints. */
+        /* CORS-simple text/plain POST avoids OPTIONS preflight requests (-50% Worker invocations). */
         fetch(url, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "text/plain;charset=UTF-8" },
             body: body,
             credentials: "omit",
             keepalive: true,
@@ -166,13 +204,15 @@
     }
 
     function track() {
+        if (isLikelyCrawler()) return;
         var dest = destUrl();
         var key = parseThemeFromDest(dest) || themeFromPath();
         if (!key) return;
         sendEvent(key, "page_view", "theme_page");
 
-        /* Check ./config.json on the static theme page: external download URL themes
-           count visits to their theme page as downloads as well as views. */
+        /* Internal rich SEO shells never use external download URLs; skip extra ./config.json fetch. */
+        if (document.querySelector('main[data-theme-seo-rich="1"]')) return;
+
         fetch("./config.json", { cache: "no-cache" })
             .then(function (res) {
                 return res && res.ok ? res.json() : null;
@@ -191,5 +231,9 @@
             .catch(function () {});
     }
 
-    track();
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", track);
+    } else {
+        track();
+    }
 })(typeof window !== "undefined" ? window : globalThis);
