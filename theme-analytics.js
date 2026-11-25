@@ -247,8 +247,27 @@
         return s.ratingsSubmit !== false;
     }
 
+    const PRIVACY_SYNCED_SIG_KEY = "y1-theme-privacy-synced-sig-v1";
+
+    function consentSig(prefs) {
+        return (
+            (prefs.analytics !== false ? "1" : "0") +
+            "," +
+            (prefs.ratingsSubmit !== false ? "1" : "0") +
+            "," +
+            (prefs.ratingsView !== false ? "1" : "0")
+        );
+    }
+
     function saveConsentLocal(c) {
-        const normalized = normalizeConsentObject({ ...c, decided: true });
+        const prev = loadConsent();
+        const input = c && typeof c === "object" ? c : {};
+        const normalized = normalizeConsentObject({
+            decided: true,
+            analytics: typeof input.analytics === "boolean" ? input.analytics : prev.analytics,
+            ratingsView: typeof input.ratingsView === "boolean" ? input.ratingsView : prev.ratingsView,
+            ratingsSubmit: typeof input.ratingsSubmit === "boolean" ? input.ratingsSubmit : prev.ratingsSubmit,
+        });
         try {
             localStorage.setItem(CONSENT_KEY, JSON.stringify(normalized));
         } catch (_) {}
@@ -256,14 +275,29 @@
     }
 
     async function syncConsentToServer(prefs) {
+        const sig = consentSig(prefs);
+        let lastSig = "";
+        try {
+            lastSig = localStorage.getItem(PRIVACY_SYNCED_SIG_KEY) || "";
+        } catch (_) {}
+        /* Worker treats missing rows as default opt-in ("1,1,1"). Only POST when
+           opting out or changing a previously synced opt-out — stops thousands of
+           redundant POST /api/theme-privacy writes on every page load. */
+        if (sig === lastSig) return;
+        if (sig === "1,1,1" && (!lastSig || lastSig === "1,1,1")) return;
         const vid = getVisitorId();
         if (!vid || !apiUrl("/api/theme-privacy")) return;
-        await postJson("/api/theme-privacy", {
+        const res = await postJson("/api/theme-privacy", {
             voterId: vid,
             analytics: prefs.analytics !== false,
             ratingsSubmit: prefs.ratingsSubmit !== false,
             ratingsView: prefs.ratingsView !== false,
         });
+        if (res && res.ok) {
+            try {
+                localStorage.setItem(PRIVACY_SYNCED_SIG_KEY, sig);
+            } catch (_) {}
+        }
     }
 
     async function saveConsent(c) {
