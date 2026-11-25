@@ -1,0 +1,140 @@
+{
+    "theme_info": {
+        "title": "Pikmin",
+        "author": "LouieIsAMenace",
+        "authorUrl": "",
+        "description": "Download the Pikmin theme for Innioasis Y1 & Y2 by LouieIsAMenace and give your player a new look.",
+        "externalDownloadUrl": "",
+        "submittedAt": "2026-11-24T21:18:12-05:00"
+    },
+    "themeCover": "cover.png",
+    "desktopWallpaper": "desk_bg001.png",
+    "globalWallpaper": "playing.png",
+    "fontFamily": "opensans-condbold.ttf",
+    "itemConfig": {
+        "itemTextColor": "#d2d2d2",
+        "itemSelectedTextColor": "#ffffff",
+        "itemSelectedBackground": "1.png",
+        "itemBackground": "transparent.png",
+        "itemRightArrow": "2.png"
+    },
+    "dialogConfig": {
+        "dialogOptionBackground": "3.png",
+        "dialogOptionTextColor": "#ffffff",
+        "dialogOptionSelectedBackground": "4.png",
+        "dialogOptionSelectedTextColor": "#ffffff",
+        "dialogBackgroundColor": "#FF0000"
+    },
+    "menuConfig": {
+        "menuBackgroundColor": "#000000",
+        "menuItemBackground": "transparent.png",
+        "menuItemTextColor": "#FFFFFF",
+        "menuItemSelectedBackground": "1.png",
+        "menuItemSelectedTextColor": "#000000"
+    },
+    "homePageConfig": {
+        "nowPlaying": "transparent.png",
+        "music": "transparent.png",
+        "video": "transparent.png",
+        "audiobooks": "transparent.png",
+        "photos": "transparent.png",
+        "fm": "transparent.png",
+        "bluetooth": "transparent.png",
+        "settings": "transparent.png",
+        "shuffleQuick": "transparent.png",
+        "selectedColor": "#ffffff",
+        "calculator": "transparent.png",
+        "calendar": "transparent.png",
+        "ebook": "transparent.png",
+        "fileManager": "transparent.png"
+    },
+    "fileConfig": {
+        "folderIcon": "folder.png",
+        "musicIcon": "music_file.png"
+    },
+    "settingConfig": {
+        "settingMask": "transparent.png",
+        "shutdown": "transparent.png",
+        "timedShutdown_off": "transparent.png",
+        "timedShutdown_10": "transparent.png",
+        "timedShutdown_20": "transparent.png",
+        "timedShutdown_30": "transparent.png",
+        "timedShutdown_60": "transparent.png",
+        "timedShutdown_90": "transparent.png",
+        "timedShutdown_120": "transparent.png",
+        "shuffleOn": "shuffle.png",
+        "shuffleOff": "transparent.png",
+        "repeatOff": "transparent.png",
+        "repeatAll": "transparent.png",
+        "repeatOne": "Repeat.png",
+        "equalizer_normal": "transparent.png",
+        "equalizer_classical": "transparent.png",
+        "equalizer_dance": "transparent.png",
+        "equalizer_flat": "transparent.png",
+        "equalizer_folk": "transparent.png",
+        "equalizer_heavymetal": "transparent.png",
+        "equalizer_hiphop": "transparent.png",
+        "equalizer_jazz": "transparent.png",
+        "equalizer_pop": "transparent.png",
+        "equalizer_rock": "transparent.png",
+        "keyLockOn": "transparent.png",
+        "keyLockOff": "transparent.png",
+        "keyToneOn": "transparent.png",
+        "keyToneOff": "transparent.png",
+        "keyVibrationOn": "transparent.png",
+        "keyVibrationOff": "transparent.png",
+        "wallpaper": "transparent.png",
+        "backlight_10": "transparent.png",
+        "backlight_15": "transparent.png",
+        "backlight_30": "transparent.png",
+        "backlight_45": "transparent.png",
+        "backlight_60": "transparent.png",
+        "backlight_120": "transparent.png",
+        "backlight_300": "transparent.png",
+        "backlight_always": "transparent.png",
+        "brightness": "transparent.png",
+        "displayBatteryOn": "transparent.png",
+        "displayBatteryOff": "transparent.png",
+        "dateTime": "transparent.png",
+        "language": "transparent.png",
+        "factoryReset": "transparent.png",
+        "clearCache": "transparent.png",
+        "theme": "transparent.png",
+        "fileExtensionOn": "transparent.png",
+        "fileExtensionOff": "transparent.png",
+        "launcher": "transparent.png"
+    },
+    "statusConfig": {
+        "playing": "PlayingHorn.png",
+        "audiobookPlaying": "Olimar.png",
+        "pause": "PauseRed.png",
+        "fmPlaying": "FM Playing.png",
+        "stop": "ice pikming.png",
+        "blConnected": "BluetoothIcon.png",
+        "blConnecting": "BluetoothIcon.png",
+        "blDisconnected": "pikminidle.png",
+        "headsetWithMic": "blupik.png",
+        "headsetWithoutMic": "yelpik.png",
+        "statusBarColor": "",
+        "battery": [
+            "smallSprout.png",
+            "Sprout.png",
+            "Bulb.png",
+            "Flower.png"
+        ],
+        "batteryCharging": [
+            "statusConfig.batteryCharging.0.png",
+            "statusConfig.batteryCharging.1.png",
+            "statusConfig.batteryCharging.2.png",
+            "statusConfig.batteryCharging.3.png"
+        ]
+    },
+    "playerConfig": {
+        "progressColor": "#8B1E1E",
+        "progressBackgroundColor": "#545454"
+    },
+    "gallery": {
+        "compatibilityMedal": "none"
+    },
+    "desktopMask": "transparent.png"
+}

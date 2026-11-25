@@ -5507,6 +5507,17 @@
             "screenshotPreview": "./PHM/screenshot_preview.jpg"
         },
         {
+            "name": "Pikmin",
+            "folder": "Pikmin",
+            "author": "LouieIsAMenace",
+            "submittedAt": "2026-11-24T21:18:12-05:00",
+            "screenshot": "./Pikmin/cover.jpg",
+            "screenshotPreview": "./Pikmin/screenshot_preview.jpg",
+            "sourceType": "internal",
+            "sortName": "pikmin",
+            "searchText": "pikmin  louieisamenace pikmin"
+        },
+        {
             "name": "pink",
             "folder": "pink",
             "author": "ladybug realness",
@@ -7606,7 +7617,8 @@
             "screenshotPreview": "./test upload/screenshot_preview.jpg",
             "sourceType": "internal",
             "sortName": "test upload",
-            "searchText": "test upload  ryan-specter test upload"
+            "searchText": "test upload  ryan-specter test upload",
+            "description": ""
         },
         {
             "name": "Teto",
