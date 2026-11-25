@@ -40,11 +40,11 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Rebuild software pages from the gallery
-        run: python scripts/build_software_landing_pages.py
-
-      - name: Refresh theme folder titles and descriptions
+      - name: Refresh theme folder SEO pages
         run: python scripts/refresh_theme_folder_seo.py
+
+      - name: Rebuild software pages and themes directory from the gallery
+        run: python scripts/build_software_landing_pages.py
 
       - name: Keep each theme page at its own address
         run: python scripts/repair_theme_shells.py
@@ -74,7 +74,8 @@ jobs:
           set -e
           rm -rf scripts/__pycache__ 2>/dev/null || true
           git add sitemap.xml sitemap-index.xml sitemap-i18n*.xml sitemap-images.xml
-          git add better-y-themes.html koensayr-themes.html solar-themes.html rockbox-themes.html y1-skins.html y2-themes.html install-themes.html other-players.html index.html
+          git add better-y-themes.html koensayr-themes.html solar-themes.html rockbox-themes.html y1-skins.html y2-themes.html install-themes.html other-players.html themes-directory.html index.html
+          git add -- '*/index.html' '*/Variants/*/_share/index.html' 2>/dev/null || true
           git add -u -- '*.html'
           if [ -z "$(git diff --cached --name-only)" ]; then
             echo "No sitemap changes."

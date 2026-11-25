@@ -3395,25 +3395,24 @@
                 kind: 'image'
             });
         });
-        /* Item chrome the theme declares but leaves blank: without these, a
-           theme with empty itemBackground / itemRightArrow has no slot to edit,
-           so focusing one of its menu rows could not offer the item's related
-           assets at all. Only slots the config actually mentions are added. */
+        /* Item chrome: always expose Selected item background, Item background,
+           and Item right arrow so clicking left-side menu text or right-side
+           icons can always focus and suggest them even on minimal configs. */
         [
-            ['itemConfig.itemBackground', 'Item background'],
-            ['itemConfig.itemSelectedBackground', 'Selected item background'],
-            ['itemConfig.itemRightArrow', 'Item right arrow'],
-            ['menuConfig.menuItemBackground', 'Menu item background'],
-            ['menuConfig.menuItemSelectedBackground', 'Selected menu item background'],
-            ['dialogConfig.dialogOptionBackground', 'Dialog option background'],
-            ['dialogConfig.dialogOptionSelectedBackground', 'Selected dialog option background']
+            ['itemConfig.itemSelectedBackground', 'Selected item background', true],
+            ['itemConfig.itemBackground', 'Item background', true],
+            ['itemConfig.itemRightArrow', 'Item right arrow', true],
+            ['menuConfig.menuItemBackground', 'Menu item background', false],
+            ['menuConfig.menuItemSelectedBackground', 'Selected menu item background', false],
+            ['dialogConfig.dialogOptionBackground', 'Dialog option background', false],
+            ['dialogConfig.dialogOptionSelectedBackground', 'Selected dialog option background', false]
         ].forEach(function (optional) {
             if (known[optional[0]]) return;
             var declared = readPath(config || {}, optional[0]);
-            if (typeof declared !== 'string') return;
+            if (!optional[2] && typeof declared !== 'string') return;
             defs.push({
                 path: optional[0],
-                value: String(declared || '').trim(),
+                value: typeof declared === 'string' ? declared.trim() : '',
                 section: assetSection(optional[0].split('.')[0]),
                 label: optional[1],
                 kind: 'image'
@@ -4150,35 +4149,59 @@
             if (!state.assetById[candidate] || out.indexOf(candidate) !== -1) return;
             out.push(candidate);
         }
-        var itemChrome = ['itemConfig.itemBackground', 'itemConfig.itemSelectedBackground', 'itemConfig.itemRightArrow'];
+        var itemChrome = [
+            'itemConfig.itemSelectedBackground',
+            'itemConfig.itemBackground',
+            'itemConfig.itemRightArrow'
+        ];
         var stem = toggleStem(id);
-        if (stem) {
+        if (/^homePageConfig\./.test(id)) {
+            itemChrome.forEach(add);
+            if (stem) {
+                state.assets.forEach(function (asset) {
+                    if (asset.id !== id && toggleStem(asset.id) === stem) add(asset.id);
+                });
+            }
+            add('fontFamily');
+            ['menuConfig.menuItemSelectedBackground', 'menuConfig.menuItemBackground'].forEach(add);
+        } else if (/^(setting|item|file)Config\./.test(id)) {
+            itemChrome.forEach(add);
+            if (stem) {
+                state.assets.forEach(function (asset) {
+                    if (asset.id !== id && toggleStem(asset.id) === stem) add(asset.id);
+                });
+            }
+            add('fontFamily');
+        } else if (/^menuConfig\./.test(id)) {
+            ['menuConfig.menuItemSelectedBackground', 'menuConfig.menuItemBackground'].forEach(add);
+            add('fontFamily');
+        } else if (/^dialogConfig\./.test(id)) {
+            ['dialogConfig.dialogOptionSelectedBackground', 'dialogConfig.dialogOptionBackground'].forEach(add);
+            add('fontFamily');
+        } else if (stem) {
             state.assets.forEach(function (asset) {
                 if (asset.id !== id && toggleStem(asset.id) === stem) add(asset.id);
             });
         }
-        if (/^homePageConfig\./.test(id)) {
-            add('fontFamily');
-            itemChrome.forEach(add);
-            ['menuConfig.menuItemBackground', 'menuConfig.menuItemSelectedBackground'].forEach(add);
-        } else if (/^(setting|item|file)Config\./.test(id)) {
-            add('fontFamily');
-            itemChrome.forEach(add);
-        } else if (/^menuConfig\./.test(id)) {
-            add('fontFamily');
-            ['menuConfig.menuItemBackground', 'menuConfig.menuItemSelectedBackground'].forEach(add);
-        } else if (/^dialogConfig\./.test(id)) {
-            add('fontFamily');
-            ['dialogConfig.dialogOptionBackground', 'dialogConfig.dialogOptionSelectedBackground'].forEach(add);
-        }
         return out;
     }
 
-    function setRelatedAssets(id, explicitIds, title) {
+    function setRelatedAssets(id, explicitIds, title, colorAnchorId) {
         state.relatedAnchor = id || '';
         state.relatedTitle = id && title ? String(title) : '';
-        state.relatedIds = !id ? [] : explicitIds && explicitIds.length ? explicitIds.slice() : relatedIdsFor(id);
-        state.relatedColors = !id ? [] : relatedColorPaths(id);
+        state.relatedIds = !id
+            ? []
+            : explicitIds && explicitIds.length
+              ? explicitIds.filter(function (candidate, idx, arr) {
+                    return (
+                        candidate &&
+                        candidate !== id &&
+                        !!state.assetById[candidate] &&
+                        arr.indexOf(candidate) === idx
+                    );
+                })
+              : relatedIdsFor(id);
+        state.relatedColors = !id ? [] : relatedColorPaths(colorAnchorId || id);
         renderAssets();
     }
 
@@ -4566,17 +4589,16 @@
             state.assetFilter = 'all';
             renderAssets();
         }
-        /* Only a menu row in the preview describes a whole item (icon, selection,
-           background, arrow), so only there does the tray show the related group.
-           Picking the large icon art on the right is a single-asset edit. */
         if (id === 'fontFamily') {
             setRelatedAssets(id, [], 'Text colours');
         } else if (/^statusConfig\./.test(id)) {
             setRelatedAssets(id, statusStripIds(id), 'Status bar icons and the font');
         } else if (options && options.related === false) {
             clearRelatedAssets();
+        } else if (options && Array.isArray(options.relatedIds)) {
+            setRelatedAssets(id, options.relatedIds, options.relatedTitle || '', options.relatedColorAnchor || id);
         } else {
-            setRelatedAssets(id);
+            setRelatedAssets(id, null, (options && options.relatedTitle) || '', (options && options.relatedColorAnchor) || id);
         }
         selectAsset(id);
         focusTrayAsset(id);
@@ -4679,14 +4701,125 @@
         }
         var fallbackPath = previewAssetPathFromEvent(event);
         if (fallbackPath) {
+            var fallbackNode = target.closest('[data-theme-asset-path]');
+            var fallbackInRow = previewEventInMenuRow(event);
+            var fallbackRow = fallbackNode ? fallbackNode.closest('.y1-tp-row') : null;
+            var fallbackIsRowImg = !!(fallbackNode && fallbackNode.tagName === 'IMG' && fallbackRow);
             return {
                 path: fallbackPath,
-                node: target.closest('[data-theme-asset-path]'),
-                inMenuRow: previewEventInMenuRow(event),
+                node: fallbackNode,
+                inMenuRow: fallbackInRow,
+                isRowImage: fallbackIsRowImg,
+                isMenuItemText: !!(fallbackInRow && !fallbackIsRowImg),
+                isRightIcon: !!(
+                    !fallbackInRow &&
+                    fallbackNode &&
+                    fallbackNode.tagName === 'IMG' &&
+                    /^(?:homePageConfig|settingConfig|fileConfig)\./.test(fallbackPath)
+                ),
+                rowIconPath: fallbackRow ? fallbackRow.getAttribute('data-theme-row-icon-path') || '' : '',
                 isScreenLayer: false
             };
         }
         return null;
+    }
+
+    /* Map a live preview hit to its primary tray asset + suggested related assets:
+       - Clicking left menu item text selects Selected item background, with that
+         item's icon asset suggested first (plus item background & right arrow).
+       - Clicking the icon on the right selects the icon asset, with Selected item
+         background suggested first (plus item background & selected item arrow). */
+    function resolvePreviewAction(hit) {
+        if (!hit || !hit.path) return null;
+        var path = hit.path;
+        var isLeftRowText = !!(hit.isMenuItemText || (hit.inMenuRow && !hit.isRowImage));
+        var isRightIcon = !!(
+            hit.isRightIcon ||
+            (!hit.inMenuRow && !hit.isScreenLayer && /^(?:homePageConfig|settingConfig|fileConfig)\./.test(path))
+        );
+
+        if (isLeftRowText) {
+            var primaryBg = state.assetById['itemConfig.itemSelectedBackground']
+                ? 'itemConfig.itemSelectedBackground'
+                : state.assetById['menuConfig.menuItemSelectedBackground']
+                  ? 'menuConfig.menuItemSelectedBackground'
+                  : path;
+            var iconId =
+                hit.rowIconPath && state.assetById[hit.rowIconPath]
+                    ? hit.rowIconPath
+                    : path !== primaryBg && state.assetById[path]
+                      ? path
+                      : '';
+            var rowRelated = [];
+            if (iconId) {
+                rowRelated.push(iconId);
+                var iconStem = toggleStem(iconId);
+                if (iconStem) {
+                    state.assets.forEach(function (asset) {
+                        if (asset.id !== iconId && toggleStem(asset.id) === iconStem) rowRelated.push(asset.id);
+                    });
+                }
+            }
+            rowRelated.push('itemConfig.itemBackground', 'itemConfig.itemRightArrow', 'fontFamily');
+            var iconLabel = iconId ? previewHitLabel(iconId) : '';
+            return {
+                primaryId: primaryBg,
+                canvasHighlightPath: path,
+                relatedIds: rowRelated,
+                relatedTitle: iconLabel ? 'Suggested for “' + iconLabel + '”' : 'Suggested related assets',
+                relatedColorAnchor: iconId || primaryBg,
+                tooltip: iconLabel
+                    ? 'Selected item background (with ' + iconLabel + ') — click to edit'
+                    : 'Selected item background — click to edit'
+            };
+        }
+
+        if (isRightIcon && state.assetById[path]) {
+            var iconRelated = [
+                'itemConfig.itemSelectedBackground',
+                'itemConfig.itemBackground',
+                'itemConfig.itemRightArrow'
+            ];
+            var rightStem = toggleStem(path);
+            if (rightStem) {
+                state.assets.forEach(function (asset) {
+                    if (asset.id !== path && toggleStem(asset.id) === rightStem) iconRelated.push(asset.id);
+                });
+            }
+            iconRelated.push('fontFamily');
+            var rightLabel = previewHitLabel(path);
+            return {
+                primaryId: path,
+                canvasHighlightPath: path,
+                relatedIds: iconRelated,
+                relatedTitle: 'Item background, arrow & related assets',
+                relatedColorAnchor: path,
+                tooltip: rightLabel ? rightLabel + ' — click to edit' : 'Click to edit this icon'
+            };
+        }
+
+        if (path === 'itemConfig.itemRightArrow' && state.assetById[path]) {
+            var arrowRelated = ['itemConfig.itemSelectedBackground', 'itemConfig.itemBackground'];
+            if (hit.rowIconPath && state.assetById[hit.rowIconPath]) arrowRelated.push(hit.rowIconPath);
+            arrowRelated.push('fontFamily');
+            return {
+                primaryId: path,
+                canvasHighlightPath: path,
+                relatedIds: arrowRelated,
+                relatedTitle: 'Selected item background & related assets',
+                relatedColorAnchor: path,
+                tooltip: 'Item right arrow — click to edit'
+            };
+        }
+
+        return {
+            primaryId: path,
+            canvasHighlightPath: path,
+            relatedIds: null,
+            relatedTitle: '',
+            relatedColorAnchor: path,
+            tooltip: previewHitLabel(path) ? previewHitLabel(path) + ' — click to edit' : 'Click to edit this theme asset'
+        };
     }
 
     function activatePreviewHit(event) {
@@ -4705,10 +4838,15 @@
             event.stopPropagation();
             return true;
         }
-        if (!state.assetById[path]) return false;
+        var action = resolvePreviewAction(hit);
+        if (!action || !state.assetById[action.primaryId]) return false;
         event.preventDefault();
         event.stopPropagation();
-        revealAssetInEdit(path, { related: !!hit.inMenuRow });
+        revealAssetInEdit(action.primaryId, {
+            relatedIds: action.relatedIds,
+            relatedTitle: action.relatedTitle,
+            relatedColorAnchor: action.relatedColorAnchor
+        });
         return true;
     }
 
@@ -4716,8 +4854,7 @@
         if (!el.preview) return;
         var hoverRaf = 0;
         var lastHoverEvent = null;
-        var lastHoverPath = '';
-        var lastHoverScreen = false;
+        var lastHoverKey = '';
 
         function clearPreviewHover() {
             if (hoverRaf) {
@@ -4725,8 +4862,7 @@
                 hoverRaf = 0;
             }
             lastHoverEvent = null;
-            lastHoverPath = '';
-            lastHoverScreen = false;
+            lastHoverKey = '';
             clearPreviewAssetLink();
             var canvas = el.preview ? el.preview.querySelector('.y1-tp-canvas') : null;
             if (canvas) canvas.removeAttribute('title');
@@ -4742,21 +4878,36 @@
                 if (!ev || isCapturingThumbs) return;
                 var canvas = el.preview ? el.preview.querySelector('.y1-tp-canvas') : null;
                 var hit = resolvePreviewHit(ev);
-                if (!hit || !hit.path || (!state.assetById[hit.path] && !/^statusConfig\.[A-Za-z]+Color$/.test(hit.path))) {
-                    if (lastHoverPath) clearPreviewHover();
+                if (!hit || !hit.path) {
+                    if (lastHoverKey) clearPreviewHover();
                     return;
                 }
-                if (hit.path !== lastHoverPath || !!hit.isScreenLayer !== lastHoverScreen) {
-                    lastHoverPath = hit.path;
-                    lastHoverScreen = !!hit.isScreenLayer;
-                    if (state.assetById[hit.path]) {
-                        highlightPreviewAsset(hit.path, { skipCanvasOutline: !!hit.isScreenLayer });
-                    } else {
-                        clearPreviewAssetLink();
+                var action = resolvePreviewAction(hit);
+                var primaryId = action ? action.primaryId : hit.path;
+                if (!state.assetById[primaryId] && !/^statusConfig\.[A-Za-z]+Color$/.test(hit.path)) {
+                    if (lastHoverKey) clearPreviewHover();
+                    return;
+                }
+                var hoverKey = primaryId + '|' + hit.path + '|' + (hit.isScreenLayer ? '1' : '0') + '|' + (hit.isMenuItemText ? '1' : '0');
+                if (hoverKey !== lastHoverKey) {
+                    lastHoverKey = hoverKey;
+                    clearPreviewAssetLink();
+                    if (state.assetById[primaryId]) {
+                        if (!hit.isScreenLayer) {
+                            if ((hit.isMenuItemText || hit.isRightIcon) && hit.node && el.preview.contains(hit.node)) {
+                                hit.node.classList.add('is-studio-linked');
+                            } else {
+                                each(previewAssetNodes(action ? action.canvasHighlightPath : primaryId), function (node) {
+                                    node.classList.add('is-studio-linked');
+                                });
+                            }
+                        }
+                        each(el.assetList ? el.assetList.querySelectorAll('[data-asset-id]') : [], function (row) {
+                            if (row.getAttribute('data-asset-id') === primaryId) row.classList.add('is-preview-linked');
+                        });
                     }
                     if (canvas) {
-                        var label = previewHitLabel(hit.path);
-                        canvas.title = label ? label + ' — click to edit' : 'Click to edit this theme asset';
+                        canvas.title = (action && action.tooltip) || 'Click to edit this theme asset';
                     }
                 }
             });

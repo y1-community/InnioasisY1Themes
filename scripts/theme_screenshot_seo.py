@@ -148,7 +148,7 @@ def main() -> int:
             text = page.read_text(encoding="utf-8")
         except (OSError, UnicodeError):
             continue
-        if SHELL_MARK not in text:
+        if SHELL_MARK not in text or 'data-theme-seo-rich="1"' in text:
             continue
         capture = _capture_for(page)
         if capture is None:

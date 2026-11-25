@@ -192,7 +192,7 @@ def generate_localized_shell(
 
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>{escaped_title} by {escaped_author} for Innioasis Y1 and Y2</title>
+  <title>{escaped_title} Theme for Innioasis Y1 &amp; Y2 by {escaped_author}</title>
   <meta name="description" content="{escaped_desc}" />
   <meta name="author" content="{escaped_author}" />
   <meta name="creator" content="Ryan Specter &amp; Innioasis Community" />

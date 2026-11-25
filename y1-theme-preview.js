@@ -718,7 +718,12 @@
             /* Lets a hover or a touch-and-hold move the highlight, the same way
                the up/down keys do on the device. */
             row.setAttribute('data-y1-row', String(idx));
-            if (item.assetPath) row.setAttribute('data-theme-asset-path', item.assetPath);
+            if (item.assetPath) {
+                row.setAttribute('data-theme-asset-path', item.assetPath);
+                row.setAttribute('data-theme-row-icon-path', item.assetPath);
+            } else {
+                row.setAttribute('data-theme-asset-path', 'itemConfig.itemSelectedBackground');
+            }
             row.style.cssText =
                 'position:absolute;left:' +
                 rowX +
@@ -846,7 +851,12 @@
             var row = document.createElement('div');
             row.className = 'y1-tp-row' + (selected ? ' is-selected' : '');
             row.setAttribute('data-y1-row', String(idx));
-            if (item.assetPath) row.setAttribute('data-theme-asset-path', item.assetPath);
+            if (item.assetPath) {
+                row.setAttribute('data-theme-asset-path', item.assetPath);
+                row.setAttribute('data-theme-row-icon-path', item.assetPath);
+            } else {
+                row.setAttribute('data-theme-asset-path', 'itemConfig.itemSelectedBackground');
+            }
             row.style.cssText =
                 'position:absolute;left:0;top:' +
                 idx * itemHeight +
@@ -2137,10 +2147,14 @@
                         if (node.tagName === 'IMG') {
                             var alpha = imageAlphaAtPoint(node, clientX, clientY);
                             if (alpha === 0) continue;
+                            var imgRow = node.closest('.y1-tp-row');
                             return {
                                 path: path,
                                 node: node,
-                                inMenuRow: !!node.closest('.y1-tp-row'),
+                                inMenuRow: !!imgRow,
+                                isRowImage: !!imgRow,
+                                isRightIcon: !imgRow && /^(?:homePageConfig|settingConfig|fileConfig)\./.test(path),
+                                rowIconPath: imgRow ? imgRow.getAttribute('data-theme-row-icon-path') || '' : '',
                                 isScreenLayer: false,
                                 alpha: alpha == null ? 1 : alpha
                             };
@@ -2153,16 +2167,25 @@
                             continue;
                         }
 
+                        var rowEl = node.closest('.y1-tp-row');
                         var inMenu =
-                            !!node.closest('.y1-tp-row') ||
+                            !!rowEl ||
                             (node.tagName !== 'IMG' &&
                                 !node.classList.contains('y1-tp-wallpaper') &&
                                 !node.closest('.y1-tp-status') &&
                                 !/^dialogConfig\./.test(path));
+                        var rowIconPath =
+                            (rowEl && rowEl.getAttribute('data-theme-row-icon-path')) ||
+                            (path !== 'itemConfig.itemSelectedBackground' &&
+                            /^(?:homePageConfig|settingConfig|fileConfig)\./.test(path)
+                                ? path
+                                : '');
                         return {
                             path: path,
                             node: node,
                             inMenuRow: inMenu,
+                            isMenuItemText: inMenu,
+                            rowIconPath: rowIconPath,
                             isScreenLayer: false,
                             alpha: 1
                         };

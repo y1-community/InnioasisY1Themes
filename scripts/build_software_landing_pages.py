@@ -14,8 +14,11 @@ from __future__ import annotations
 import html
 import json
 import re
+import subprocess
 import sys
+from collections import defaultdict
 from pathlib import Path
+from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[1]
 SITE = "https://themes.innioasis.app"
@@ -42,30 +45,187 @@ def load_themes() -> list[dict]:
     return themes if isinstance(themes, list) else []
 
 
-def folder_nav(themes: list[dict]) -> str:
-    links = []
+def tracked_folders() -> set[str]:
+    found: set[str] = set()
+    try:
+        raw = subprocess.check_output(
+            ["git", "ls-files", "-z"],
+            cwd=ROOT,
+            stderr=subprocess.DEVNULL,
+        )
+        for p in raw.decode("utf-8", "surrogateescape").split("\0"):
+            if p.endswith("/index.html") and p.count("/") == 1:
+                found.add(p.split("/", 1)[0])
+    except Exception:
+        pass
+    return found
+
+
+def public_internal_themes(themes: list[dict]) -> list[dict]:
+    tracked = tracked_folders()
+    out: list[dict] = []
     for item in themes:
         if not isinstance(item, dict) or not theme_is_publicly_listed(item):
             continue
         if str(item.get("sourceType") or "internal").lower() == "external":
             continue
         folder = str(item.get("folder") or "").strip().strip("/")
-        name = str(item.get("name") or folder).strip()
         if not folder or "/" in folder or ".." in folder:
             continue
-        if not (ROOT / folder / "index.html").is_file():
+        if folder not in tracked and not (ROOT / folder / "index.html").is_file():
             continue
-        links.append((name.casefold(), f'<a href="{esc(folder)}/">{esc(name)}</a>'))
-    links.sort()
-    body = "\n        ".join(link for _, link in links)
+        out.append(item)
+    out.sort(key=lambda t: str(t.get("name") or t.get("folder") or "").casefold())
+    return out
+
+
+def folder_nav(themes: list[dict]) -> str:
+    links = []
+    for item in public_internal_themes(themes):
+        folder = str(item.get("folder") or "").strip().strip("/")
+        name = str(item.get("name") or folder).strip()
+        href = f"/{quote(folder, safe='')}/"
+        links.append(
+            f'<a href="{href}" title="{esc(name)} theme for Innioasis Y1 &amp; Y2">{esc(name)}</a>'
+        )
+    body = "\n        ".join(links)
     return (
         '<details class="gallery-folder-index">\n'
-        "    <summary>Every theme page</summary>\n"
+        f'    <summary>Every theme page ({len(links)}) — or browse the <a href="/themes-directory.html">A–Z Themes Directory</a></summary>\n'
         '    <nav aria-label="Theme pages">\n'
         f"        {body}\n"
         "    </nav>\n"
         "</details>"
     )
+
+
+def build_themes_directory_page(themes: list[dict]) -> str:
+    items = public_internal_themes(themes)
+    groups: dict[str, list[dict]] = defaultdict(list)
+    for item in items:
+        name = str(item.get("name") or item.get("folder") or "").strip()
+        ch = next((c.upper() for c in name if c.isalnum()), "#")
+        bucket = ch if ("A" <= ch <= "Z") else "#"
+        groups[bucket].append(item)
+
+    ordered_keys = sorted((k for k in groups if k != "#")) + (["#"] if "#" in groups else [])
+    alpha_bar = "".join(f'<a href="#letter-{esc(k)}">{esc(k)}</a>' for k in ordered_keys)
+    sections_html = []
+    ld_items = []
+    pos = 0
+    for key in ordered_keys:
+        lis = []
+        for item in groups[key]:
+            pos += 1
+            folder = str(item.get("folder") or "").strip()
+            name = str(item.get("name") or folder).strip()
+            author = str(item.get("author") or "Innioasis Community").strip()
+            desc = re.sub(r"\s+", " ", str(item.get("description") or "")).strip()
+            if len(desc) > 100:
+                desc = desc[:97].rsplit(" ", 1)[0] + "…"
+            href = f"/{quote(folder, safe='')}/"
+            meta_line = f"by {author}" + (f" — {desc}" if desc else " · Innioasis Y1 & Y2 theme")
+            lis.append(
+                f'        <li><a href="{href}"><strong>{esc(name)}</strong><span>{esc(meta_line)}</span></a></li>'
+            )
+            ld_items.append(
+                {
+                    "@type": "ListItem",
+                    "position": pos,
+                    "name": f"{name} Theme for Innioasis Y1 & Y2",
+                    "url": f"{SITE}{href}",
+                }
+            )
+        sections_html.append(
+            f'    <section class="themes-dir-group" id="letter-{esc(key)}">\n'
+            f'      <h2>{esc(key)}</h2>\n'
+            f'      <ul class="themes-dir-list">\n'
+            + "\n".join(lis)
+            + "\n      </ul>\n"
+            f"    </section>"
+        )
+
+    title = f"All {len(items)} Innioasis Y1 & Y2 Themes — Complete A–Z Directory"
+    description = (
+        f"Browse all {len(items)} free community themes for Innioasis Y1 and Y2 MP3 players from A to Z. "
+        "Preview and download themes for Original Software, Better-Y, Koensayr, and Solar."
+    )
+    url = f"{SITE}/themes-directory.html"
+    ld = json.dumps(
+        {
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            "name": title,
+            "description": description,
+            "url": url,
+            "isPartOf": {"@id": f"{SITE}/#website"},
+            "mainEntity": {
+                "@type": "ItemList",
+                "numberOfItems": len(items),
+                "itemListElement": ld_items,
+            },
+        },
+        ensure_ascii=False,
+        separators=(",", ":"),
+    ).replace("</", "<\\/")
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{esc(title)}</title>
+  <meta name="description" content="{esc(description)}" />
+  <meta name="robots" content="index,follow,max-image-preview:large" />
+  <link rel="canonical" href="{url}" />
+  <link rel="icon" href="/y1_illustration.png" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Innioasis Themes Gallery" />
+  <meta property="og:title" content="{esc(title)}" />
+  <meta property="og:description" content="{esc(description)}" />
+  <meta property="og:url" content="{url}" />
+  <meta property="og:image" content="{SITE}/y1_illustration.png" />
+  <script type="application/ld+json">{ld}</script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="/site-theme.css?v=20261125seo1" />
+  <link rel="stylesheet" href="/site-toolbar.css?v=20261124appeals1" />
+  <link rel="stylesheet" href="/site-pages.css?v=20260622" />
+  <script src="/gallery-chrome.js?v=20261110header"></script>
+  <script src="/site-init.js?v=20261124appeals1"></script>
+</head>
+<body class="site-themes-app site-dock-mode">
+  <div id="nav-root"></div>
+  <div class="gallery-topbar">
+    <a class="gallery-brand" href="/" title="Innioasis Y1 &amp; Y2 Themes gallery">
+      <span class="gallery-brand-icon" aria-hidden="true"><i class="fa-solid fa-palette"></i></span>
+      <span class="gallery-brand-text">Innioasis Y1 &amp; Y2 Themes</span>
+    </a>
+    <div class="gallery-tabs" aria-label="Site sections">
+      <a class="gallery-tab" href="/">Gallery</a>
+      <a class="gallery-tab active" href="/themes-directory.html">Directory</a>
+      <a class="gallery-tab" href="/studio-test/">Studio</a>
+    </div>
+    <form class="topbar-search-wrap" action="/" method="get">
+      <i class="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true"></i>
+      <input class="topbar-search" name="q" type="search" placeholder="Search themes" aria-label="Search themes" />
+    </form>
+  </div>
+  <main class="themes-dir-main">
+    <nav class="theme-seo-breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Innioasis Themes</a><span aria-hidden="true">›</span><span aria-current="page">All Themes Directory</span>
+    </nav>
+    <h1 class="site-display">All Innioasis Y1 &amp; Y2 Themes ({len(items)})</h1>
+    <p class="site-lead">Every free community theme available for the Innioasis Y1 and Y2 — compatible with Original Software, Better-Y, Koensayr, and Solar. Click any theme to preview, customize in Theme Studio, or download.</p>
+    <nav class="themes-dir-alpha" aria-label="Jump to letter">{alpha_bar}</nav>
+{chr(10).join(sections_html)}
+  </main>
+  <div id="footer-root"></div>
+  <div id="support-toolbar-slot"></div>
+  <script src="/nav.js?v=20261124fixes1"></script>
+  <script src="/site-locale.js?v=20261124fixes2" defer></script>
+</body>
+</html>
+"""
 
 
 def ensure_markers(text: str, nav: str) -> str:
@@ -291,11 +451,11 @@ def standalone(filename: str, title: str, description: str, keywords: str, body:
     <link rel="icon" href="y1_illustration.png" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="https://innioasis.app/styles.css?v=20261124fixes1" />
-    <link rel="stylesheet" href="site-theme.css?v=20261124fixes3" />
+    <link rel="stylesheet" href="site-theme.css?v=20261125seo1" />
     <link rel="stylesheet" href="lumen.css?v=20261124fixes3" />
-    <link rel="stylesheet" href="site-toolbar.css?v=20261124fixes1" />
+    <link rel="stylesheet" href="site-toolbar.css?v=20261124appeals1" />
     <link rel="stylesheet" href="site-pages.css?v=20261110seo" />
-    <script src="site-init.js?v=20261124fixes1"></script>
+    <script src="site-init.js?v=20261124appeals1"></script>
     <script type="application/ld+json">{ld}</script>
 </head>
 <body class="site-themes-app site-dock-mode">
@@ -404,9 +564,12 @@ def main() -> int:
         print("index.html is missing", file=sys.stderr)
         return 1
     source = INDEX.read_text(encoding="utf-8")
-    nav = folder_nav(load_themes())
+    all_themes = load_themes()
+    nav = folder_nav(all_themes)
     source = ensure_markers(source, nav)
     INDEX.write_text(source, encoding="utf-8")
+    (ROOT / "themes-directory.html").write_text(build_themes_directory_page(all_themes), encoding="utf-8")
+    print("Wrote themes-directory.html")
     for page in GALLERY_PAGES:
         out = apply_gallery_page(source, page)
         (ROOT / page["filename"]).write_text(out, encoding="utf-8")

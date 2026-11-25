@@ -54,9 +54,9 @@ NOINDEX_RE = re.compile(
 )
 REFRESH_RE = re.compile(r"<meta[^>]+http-equiv=[\"']refresh", re.I)
 LAST_RE = re.compile(r"<loc>([^<]+)</loc>\s*<lastmod>([^<]+)</lastmod>")
-# Theme shells stopped redirecting to theme.html on this day. Older lastmod
-# values would tell Google nothing had changed.
-SHELLS_INDEXABLE_SINCE = "2026-11-10"
+# Theme shells gained rich unique metadata, specs, breadcrumbs, FAQ JSON-LD,
+# and internal cross-links on this day so Google recrawls every theme page.
+SHELLS_INDEXABLE_SINCE = "2026-11-25"
 
 try:  # The policy file is optional; a plain checkout can still build a sitemap.
     sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
@@ -149,17 +149,26 @@ def _blob_prefixes(names: list[str], limit: int = 6000) -> dict[str, str]:
     assert proc.stdin is not None and proc.stdout is not None
     found: dict[str, str] = {}
     for name in names:
-        proc.stdin.write(f"HEAD:{name}\n".encode())
-        proc.stdin.flush()
-        header = proc.stdout.readline()
-        if b" missing" in header:
+        # Check index stage 0 first (sees staged files including case-colliding blobs),
+        # then fall back to HEAD, then disk.
+        data: bytes | None = None
+        for spec in (f":{name}", f"HEAD:{name}"):
+            proc.stdin.write(f"{spec}\n".encode())
+            proc.stdin.flush()
+            header = proc.stdout.readline()
+            if b" missing" in header:
+                continue
+            parts = header.split()
+            if len(parts) >= 3 and parts[2].isdigit():
+                size = int(parts[2])
+                data = proc.stdout.read(size)
+                proc.stdout.read(1)
+                break
+        if data is not None:
+            found[name] = data[:limit].decode("utf-8", "ignore")
+        else:
             disk = REPO_ROOT / name
             found[name] = disk.read_text(encoding="utf-8", errors="ignore")[:limit] if disk.is_file() else ""
-            continue
-        size = int(header.split()[-1])
-        data = proc.stdout.read(size)
-        proc.stdout.read(1)
-        found[name] = data[:limit].decode("utf-8", "ignore")
     proc.stdin.close()
     proc.wait()
     return found
@@ -179,9 +188,13 @@ def _static_entries(known: dict[str, str]) -> tuple[list[tuple[str, str, str, st
         if NOINDEX_RE.search(text) or REFRESH_RE.search(text):
             continue
         loc = f"{SITE}/" if name == "index.html" else f"{SITE}/{name}"
-        priority = "1.0" if name == "index.html" else ("0.9" if name.startswith("index") else "0.7")
-        freq = "daily" if name == "index.html" else "weekly"
-        entry = (loc, _lastmod(known, loc, bumped=False), freq, priority)
+        priority = (
+            "1.0"
+            if name == "index.html"
+            else ("0.9" if (name.startswith("index") or name == "themes-directory.html") else "0.7")
+        )
+        freq = "daily" if name in {"index.html", "themes-directory.html"} else "weekly"
+        entry = (loc, _lastmod(known, loc, bumped=(name == "themes-directory.html")), freq, priority)
         if LOCALE_FILE_RE.match(name):
             localized.append(entry)
         else:
@@ -189,35 +202,118 @@ def _static_entries(known: dict[str, str]) -> tuple[list[tuple[str, str, str, st
     return main, localized
 
 
+def _tracked_repo_paths() -> set[str]:
+    """All git-tracked paths (HEAD + staged index), so sparse worktrees still emit complete sitemaps."""
+    paths: set[str] = set()
+    try:
+        raw = subprocess.check_output(["git", "ls-files", "-z"], cwd=REPO_ROOT, stderr=subprocess.DEVNULL)
+        for p in raw.decode("utf-8", "surrogateescape").split("\0"):
+            if p:
+                paths.add(p)
+    except Exception:
+        pass
+    return paths
+
+
+def _text_is_noindex(text: str) -> bool:
+    if not text:
+        return True
+    return bool(NOINDEX_RE.search(text)) or bool(REFRESH_RE.search(text))
+
+
 def _theme_entries(known: dict[str, str]) -> tuple[list[tuple[str, str, str, str]], list[tuple[str, str, str, str]]]:
     hidden, _ = _listed_folders()
     entries: list[tuple[str, str, str, str]] = []
     localized: list[tuple[str, str, str, str]] = []
-    for folder in sorted(REPO_ROOT.iterdir(), key=lambda item: item.name.casefold()):
-        if not folder.is_dir() or folder.name.startswith((".", "_")) or folder.name in SKIP_DIRS:
+    tracked = _tracked_repo_paths()
+    actual_disk_dirs = {
+        folder.name
+        for folder in REPO_ROOT.iterdir()
+        if folder.is_dir() and not folder.name.startswith((".", "_")) and folder.name not in SKIP_DIRS
+    }
+
+    # Combine top-level directories from both git index and local disk
+    folder_names: set[str] = set(actual_disk_dirs)
+    for p in tracked:
+        if "/" in p:
+            top = p.split("/", 1)[0]
+            if top and not top.startswith((".", "_")) and top not in SKIP_DIRS:
+                folder_names.add(top)
+
+    by_folder_files: dict[str, set[str]] = {}
+    for p in tracked:
+        if "/" not in p:
             continue
-        if folder.name in hidden:
+        top, rest = p.split("/", 1)
+        by_folder_files.setdefault(top, set()).add(rest)
+
+    # First collect all candidate paths (exact-case on disk to prevent macOS case-collision leaks)
+    per_folder_rels: list[tuple[str, set[str]]] = []
+    disk_texts: dict[str, str] = {}
+    need_git_check: list[str] = []
+
+    for folder_name in sorted(folder_names, key=str.casefold):
+        if folder_name in hidden:
             continue
-        index = folder / "index.html"
-        if not index.is_file():
+        rel_set = set(by_folder_files.get(folder_name, set()))
+        on_disk_exact = folder_name in actual_disk_dirs
+        if on_disk_exact:
+            folder = REPO_ROOT / folder_name
+            for child in folder.glob("index*.html"):
+                rel_set.add(child.name)
+            variants_root = folder / "Variants"
+            if variants_root.is_dir():
+                for variant in variants_root.iterdir():
+                    if (variant / "_share" / "index.html").is_file():
+                        rel_set.add(f"Variants/{variant.name}/_share/index.html")
+
+        if "index.html" not in rel_set:
             continue
-        if not _noindex(index):
-            loc = _encode([folder.name])
-            prio = "0.95" if folder.name == "studio-test" else "0.8"
+        per_folder_rels.append((folder_name, rel_set))
+
+        candidates = ["index.html"]
+        for rel in sorted(rel_set):
+            if ("/" not in rel and LOCALE_FILE_RE.match(rel)) or (
+                rel.startswith("Variants/") and rel.endswith("/_share/index.html") and len(rel.split("/")) == 4
+            ):
+                candidates.append(rel)
+
+        for rel in candidates:
+            full_rel = f"{folder_name}/{rel}"
+            if on_disk_exact and (REPO_ROOT / full_rel).is_file():
+                try:
+                    disk_texts[full_rel] = (REPO_ROOT / full_rel).read_text(encoding="utf-8", errors="ignore")[:6000]
+                except OSError:
+                    disk_texts[full_rel] = ""
+            else:
+                need_git_check.append(full_rel)
+
+    git_texts = _blob_prefixes(need_git_check)
+
+    def is_noindex_rel(full_rel: str) -> bool:
+        if full_rel in disk_texts:
+            return _text_is_noindex(disk_texts[full_rel])
+        return _text_is_noindex(git_texts.get(full_rel, ""))
+
+    for folder_name, rel_set in per_folder_rels:
+        if not is_noindex_rel(f"{folder_name}/index.html"):
+            loc = _encode([folder_name])
+            prio = "0.95" if folder_name == "studio-test" else "0.85"
             entries.append((loc, _lastmod(known, loc, bumped=True), "weekly", prio))
-        for translated in sorted(folder.glob("index_*.html")):
-            if not LOCALE_FILE_RE.match(translated.name) or _noindex(translated):
-                continue
-            loc = f"{SITE}/{quote(folder.name, safe='')}/{quote(translated.name, safe='')}"
-            localized.append((loc, _lastmod(known, loc, bumped=True), "weekly", "0.6"))
-        variants_root = folder / "Variants"
-        if variants_root.is_dir():
-            for variant in sorted(variants_root.iterdir(), key=lambda item: item.name.casefold()):
-                share = variant / "_share" / "index.html"
-                if not share.is_file() or _noindex(share):
+
+        for rel in sorted(rel_set):
+            if "/" not in rel and LOCALE_FILE_RE.match(rel):
+                if is_noindex_rel(f"{folder_name}/{rel}"):
                     continue
-                loc = _encode([folder.name, "Variants", variant.name, "_share"])
-                entries.append((loc, _lastmod(known, loc, bumped=True), "weekly", "0.7"))
+                loc = f"{SITE}/{quote(folder_name, safe='')}/{quote(rel, safe='')}"
+                localized.append((loc, _lastmod(known, loc, bumped=False), "weekly", "0.6"))
+            elif rel.startswith("Variants/") and rel.endswith("/_share/index.html"):
+                parts = rel.split("/")
+                if len(parts) == 4:
+                    v_name = parts[1]
+                    if not is_noindex_rel(f"{folder_name}/{rel}"):
+                        loc = _encode([folder_name, "Variants", v_name, "_share"])
+                        entries.append((loc, _lastmod(known, loc, bumped=True), "weekly", "0.75"))
     return entries, localized
 
 
@@ -288,6 +384,7 @@ def build() -> dict[pathlib.Path, str]:
 
 def _image_sitemap() -> str:
     hidden, _ = _listed_folders()
+    tracked = _tracked_repo_paths()
     try:
         catalog = json.loads((REPO_ROOT / "themes.json").read_text(encoding="utf-8")).get("themes", [])
     except (OSError, ValueError):
@@ -307,11 +404,11 @@ def _image_sitemap() -> str:
         if folder in hidden or "/" in folder or folder.startswith("."):
             continue
         directory = REPO_ROOT / folder
-        if not (directory / "index.html").is_file():
+        if f"{folder}/index.html" not in tracked and not (directory / "index.html").is_file():
             continue
-        image = _cover_url(directory, shots.get(folder, ""))
-        capture = directory / "screenshot_preview.jpg"
-        if not image and not capture.is_file():
+        image = _cover_url(directory, shots.get(folder, ""), tracked)
+        has_capture = f"{folder}/screenshot_preview.jpg" in tracked or (directory / "screenshot_preview.jpg").is_file()
+        if not image and not has_capture:
             continue
         title = names[folder].replace("&", "&amp;").replace("<", "&lt;")
         loc = _encode([folder])
@@ -320,20 +417,18 @@ def _image_sitemap() -> str:
             lines += [
                 "    <image:image>",
                 f"    <image:loc>{image}</image:loc>",
-                f"    <image:title>{title}</image:title>",
+                f"    <image:title>{title} Theme for Innioasis Y1 &amp; Y2</image:title>",
                 "    </image:image>",
             ]
-        if capture.is_file():
-            # The rendered screen is what people search for ("Y1 theme home
-            # screen"); the cover is often just a wallpaper crop.
+        if has_capture:
             shot_url = SITE + "/" + "/".join(
                 quote(part, safe="") for part in (folder, "screenshot_preview.jpg")
             )
             lines += [
                 "    <image:image>",
                 f"    <image:loc>{shot_url}</image:loc>",
-                f"    <image:title>{title} home screen</image:title>",
-                f"    <image:caption>{title} on an Innioasis Y1 &amp; Y2 player</image:caption>",
+                f"    <image:title>{title} Theme Home Screen for Innioasis Y1 &amp; Y2</image:title>",
+                f"    <image:caption>{title} theme home screen preview on an Innioasis Y1 &amp; Y2 MP3 player</image:caption>",
                 "    </image:image>",
             ]
         lines.append("  </url>")
@@ -341,16 +436,17 @@ def _image_sitemap() -> str:
     return "\n".join(lines) + "\n"
 
 
-def _cover_url(directory: pathlib.Path, screenshot: str) -> str:
+def _cover_url(directory: pathlib.Path, screenshot: str, tracked: set[str] | None = None) -> str:
     candidates = []
     shot = screenshot.replace("\\", "/").split("?")[0]
     if shot:
         candidates.append(shot.lstrip("./"))
     for name in ("cover.jpg", "cover.png", "cover.webp", "cover-thumb.jpg"):
         candidates.append(f"{directory.name}/{name}")
+    tracked_set = tracked or set()
     for rel in candidates:
         path = REPO_ROOT / rel
-        if path.is_file() and path.suffix.lower() in {".jpg", ".jpeg", ".png", ".gif", ".webp"}:
+        if (rel in tracked_set or path.is_file()) and path.suffix.lower() in {".jpg", ".jpeg", ".png", ".gif", ".webp"}:
             parts = [quote(part, safe="") for part in Path(rel).parts]
             return SITE + "/" + "/".join(parts)
     return ""
