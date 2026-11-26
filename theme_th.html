@@ -89,8 +89,10 @@
               }
               if (allowAnalytics) {
                 var pvKey = "y1-pv-session:" + theme;
-                if (!sessionStorage.getItem(pvKey)) {
+                var dayKey = "y1-pv-day:" + new Date().toISOString().slice(0, 10) + ":" + theme;
+                if (!navigator.webdriver && !sessionStorage.getItem(pvKey) && !localStorage.getItem(dayKey)) {
                   sessionStorage.setItem(pvKey, "1");
+                  localStorage.setItem(dayKey, "1");
                   var vid = localStorage.getItem("y1-rating-visitor-id");
                   if (!vid || vid.length < 12) {
                     vid = "v_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -98,7 +100,7 @@
                   }
                   fetch("https://y1-theme-analytics.itsryanspecter.workers.dev/api/theme-event", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: { "Content-Type": "text/plain;charset=UTF-8" },
                     body: JSON.stringify({ theme: theme, event: "page_view", source: "theme_page", voterId: vid }),
                     credentials: "omit",
                     keepalive: true
@@ -163,7 +165,7 @@
     <script src="author-submission-policy.js?v=20260523"></script>
     <link rel="stylesheet" href="theme-frozen.css?v=20260526">
     <script src="theme-frozen.js?v=20260526"></script>
-    <script src="theme-analytics.js?v=20261123stats4"></script>
+    <script src="theme-analytics.js?v=20261125quota2"></script>
     <script src="themes-i18n.js?v=20261109lazy"></script>
 <meta property="og:site_name" content="Innioasis Themes Gallery">
   <!-- i18n-hreflang-start -->
