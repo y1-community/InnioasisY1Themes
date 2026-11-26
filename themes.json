@@ -2435,7 +2435,8 @@
             "screenshotPreview": "./fallen/screenshot_preview.jpg",
             "sourceType": "internal",
             "sortName": "fallen",
-            "searchText": "fallen  z fallen"
+            "searchText": "fallen  z fallen",
+            "description": ""
         },
         {
             "name": "Fallen - Evanescence",
@@ -2630,6 +2631,17 @@
             "sortName": "fruitiger aqua",
             "searchText": "fruitiger aqua  bee fruitiger_aqua",
             "screenshotPreview": "./fruitiger_aqua/screenshot_preview.jpg"
+        },
+        {
+            "name": "Frutiger Kappi",
+            "folder": "Frutiger Kappi",
+            "author": "Apollo",
+            "submittedAt": "2026-11-26T17:12:06-05:00",
+            "screenshot": "./Frutiger Kappi/cover.jpg",
+            "screenshotPreview": "./Frutiger Kappi/screenshot_preview.jpg",
+            "sourceType": "internal",
+            "sortName": "frutiger kappi",
+            "searchText": "frutiger kappi  apollo frutiger kappi"
         },
         {
             "name": "frutiger aero",
