@@ -2085,6 +2085,109 @@
                     return { path: path, alpha: alpha };
                 }
 
+                var RIGHT_ICON_PATH_RE = /^(?:homePageConfig|settingConfig|fileConfig)\./;
+
+                /* True when an <img> shows nothing at all: not loaded, a 1x1
+                   placeholder, hidden by the art loader, or every pixel 100%
+                   transparent. Unknown (cross-origin) pixels count as visible. */
+                function isImageBlank(img) {
+                    if (!img) return true;
+                    if (!img.getAttribute('src')) return true;
+                    if (!img.complete) return false;
+                    var nw = img.naturalWidth | 0;
+                    var nh = img.naturalHeight | 0;
+                    if (nw <= 1 && nh <= 1) return true;
+                    var grid = getCachedAlphaGrid(img);
+                    if (!grid || grid.tainted || !grid.alpha) return false;
+                    if (grid.blank === undefined) {
+                        var blank = true;
+                        for (var i = 0; i < grid.alpha.length; i++) {
+                            if (grid.alpha[i] !== 0) {
+                                blank = false;
+                                break;
+                            }
+                        }
+                        grid.blank = blank;
+                    }
+                    return grid.blank;
+                }
+
+                function blankRightIconAtPoint(clientX, clientY, cRect) {
+                    var boxes = canvas.querySelectorAll('[data-theme-art-box]');
+                    var scale = canvas.offsetWidth ? cRect.width / canvas.offsetWidth : 1;
+                    for (var b = 0; b < boxes.length; b++) {
+                        var box = boxes[b];
+                        var path = box.getAttribute('data-theme-art-box') || '';
+                        if (!RIGHT_ICON_PATH_RE.test(path)) continue;
+                        if (box.style.display === 'none' || !box.offsetParent) continue;
+                        var img = box.querySelector('img[data-theme-asset-path]');
+                        if (!img || img.style.display === 'none') continue;
+                        if ((img.getAttribute('data-theme-asset-path') || '') !== path) continue;
+                        if (!isImageBlank(img)) continue;
+                        /* A blank image collapses to (near) nothing, so hit-test
+                           the slot the artwork would fill: a square as wide as
+                           the art may grow, centred in its box from the top. */
+                        var boxRect = box.getBoundingClientRect();
+                        var boxW = box.offsetWidth || boxRect.width / scale;
+                        var cap = parseFloat(img.style.maxWidth);
+                        if (!isFinite(cap) || /%$/.test(img.style.maxWidth || '')) cap = boxW;
+                        var side = Math.min(boxW, cap) * scale;
+                        if (!side) continue;
+                        var left = boxRect.left + (boxRect.width - side) / 2;
+                        var top = boxRect.top;
+                        if (box.offsetHeight >= Math.min(boxW, cap)) {
+                            top = boxRect.top + (boxRect.height - side) / 2;
+                        }
+                        if (clientX < left || clientX > left + side || clientY < top || clientY > top + side) {
+                            continue;
+                        }
+                        return {
+                            path: path,
+                            node: box,
+                            inMenuRow: false,
+                            isRowImage: false,
+                            isRightIcon: true,
+                            rowIconPath: '',
+                            isScreenLayer: false,
+                            alpha: 1
+                        };
+                    }
+                    return null;
+                }
+
+                /* The selected row's arrow: hit anywhere inside its box (the
+                   wrapper spans the row height, so it is easy to tap), as long as
+                   the row itself is under the pointer (not scrolled/clipped). */
+                function selectionArrowAtPoint(clientX, clientY, stack) {
+                    var arrows = canvas.querySelectorAll('img[data-theme-asset-path="itemConfig.itemRightArrow"]');
+                    for (var a = 0; a < arrows.length; a++) {
+                        var img = arrows[a];
+                        if (img.style.display === 'none') continue;
+                        var wrap = img.parentNode;
+                        if (!wrap || !wrap.offsetParent || wrap.style.display === 'none') continue;
+                        var row = img.closest('.y1-tp-row');
+                        if (row && stack.indexOf(row) === -1 && stack.indexOf(wrap) === -1) continue;
+                        var r = wrap.getBoundingClientRect();
+                        var ir = img.getBoundingClientRect();
+                        var left = Math.min(r.left, ir.left);
+                        var right = Math.max(r.right, ir.right);
+                        var top = Math.min(r.top, ir.top);
+                        var bottom = Math.max(r.bottom, ir.bottom);
+                        if (right - left < 1 || bottom - top < 1) continue;
+                        if (clientX < left || clientX > right || clientY < top || clientY > bottom) continue;
+                        return {
+                            path: 'itemConfig.itemRightArrow',
+                            node: img,
+                            inMenuRow: !!row,
+                            isRowImage: !!row,
+                            rowIconPath: '',
+                            isScreenLayer: false,
+                            alpha: 1
+                        };
+                    }
+                    return null;
+                }
+
                 /* Layered, alpha-aware hit-testing for Theme Studio:
                    walk every asset under (clientX, clientY) from front to back.
                    Clicking a 100% transparent pixel (alpha === 0) passes right
@@ -2102,10 +2205,28 @@
                         return null;
                     }
 
+                    /* A blank right-hand pane icon (transparent placeholder or an
+                       image with no visible pixels) has nothing to click through
+                       to by mistake, so its whole artwork slot stays clickable
+                       and the author can replace it. Icons with visible pixels
+                       keep the normal alpha pass-through below. */
                     var stack =
                         typeof document.elementsFromPoint === 'function'
                             ? document.elementsFromPoint(clientX, clientY)
                             : [];
+                    /* An open dialog sits above everything, so it keeps its clicks. */
+                    var dialogOnTop = !!sim.dialogVisible;
+                    if (!dialogOnTop) {
+                        var blankRightIcon = blankRightIconAtPoint(clientX, clientY, cRect);
+                        if (blankRightIcon) return blankRightIcon;
+                    }
+
+                    /* The item selection arrow is small, so its whole box is the
+                       target, even over transparent pixels or a blank placeholder
+                       (which the loader hides, so it is never in the stack). */
+                    var arrowHit = dialogOnTop ? null : selectionArrowAtPoint(clientX, clientY, stack);
+                    if (arrowHit) return arrowHit;
+
                     var seen = [];
                     var candidates = [];
 
