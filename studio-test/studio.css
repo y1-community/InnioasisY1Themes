@@ -4712,6 +4712,76 @@ body.studio-app.y1-donate-panel-open #support-toolbar-slot {
     color: #fff;
 }
 
+.studio-firmware-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 28px;
+    padding: 2px 8px 2px 9px;
+    border: 1px solid var(--studio-line);
+    border-radius: 9px;
+    background: color-mix(in oklab, var(--site-bg) 70%, transparent);
+}
+
+.studio-firmware-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--site-muted);
+    font: 600 0.66rem var(--site-font-mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.studio-firmware-label i {
+    color: var(--site-accent);
+    font-size: 0.78rem;
+}
+
+.studio-firmware-select {
+    min-height: 24px;
+    max-width: 200px;
+    padding: 1px 4px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--site-text);
+    font: 600 0.74rem var(--site-font);
+    cursor: pointer;
+}
+
+.studio-firmware-select:hover {
+    border-color: var(--studio-line);
+}
+
+.studio-firmware-select:focus-visible {
+    outline: 2px solid var(--site-accent);
+    outline-offset: 1px;
+}
+
+.studio-firmware-select:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.studio-firmware-state {
+    padding: 1px 6px;
+    border: 1px solid var(--studio-line);
+    border-radius: 999px;
+    color: var(--site-muted);
+    font: 600 0.6rem var(--site-font-mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.studio-firmware-summary {
+    flex-basis: 100%;
+    margin: 0;
+    color: var(--site-muted);
+    font: 500 0.68rem/1.4 var(--site-font);
+    text-align: center;
+}
+
 .studio-preview-checks {
     display: flex;
     flex-wrap: wrap;

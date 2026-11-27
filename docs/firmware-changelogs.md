@@ -3,6 +3,8 @@
 > Reverse-engineered directly from all 11 stock firmware releases archived in [`y1-community/y1-stock-rom`](https://github.com/y1-community/y1-stock-rom) (`com.innioasis.y1` on Y1 and `com.innioasis.y2` / `MyLauncher.apk` on Y2), plus verified against on-device Innioasis Y2 3.2.8 screenshots.
 >
 > This reference is designed to be shared across Innioasis community projects (Themes Gallery, Theme Studio, Innioasis Updater / Updater CE, and firmware archives) so users know exactly what each firmware release adds and which firmware version supports each theme asset.
+>
+> For user-facing copy, each release has its own plain-language note in [`docs/release-notes/`](release-notes/), written to be pasted straight into a GitHub release.
 
 ---
 

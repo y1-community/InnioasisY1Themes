@@ -252,12 +252,96 @@
         return false;
     }
 
+    /* ---------------------------------------------------------------------
+       Firmware level
+       The simulator draws the menu tree of one stock launcher. When the Studio
+       hands over a `firmware` option, studio-test/firmware-catalog.js decides
+       which rows exist; without it (theme page folder simulator) these defaults
+       describe the latest Y1 and Y2 releases.
+       --------------------------------------------------------------------- */
+    var FIRMWARE_DEFAULTS = {
+        y1: {
+            id: '3.1.2',
+            settingsStyle: 'flat',
+            fileManager: false,
+            fm: true,
+            musicSettingsRows: null,
+            home: ['nowPlaying', 'music', 'video', 'audiobooks', 'ebook', 'photos', 'fm', 'bluetooth', 'settings']
+        },
+        y2: {
+            id: '3.2.8',
+            settingsStyle: 'categories',
+            fileManager: true,
+            fm: true,
+            musicSettingsRows: ['song_name_display', 'list_sort', 'artist_view', 'album_view', 'album_art_style'],
+            home: [
+                'nowPlaying',
+                'music',
+                'video',
+                'audiobooks',
+                'ebook',
+                'photos',
+                'fm',
+                'fileManager',
+                'settings'
+            ]
+        }
+    };
+
+    function firmwareCatalogApi() {
+        return typeof window !== 'undefined' && window.Y1FirmwareCatalog ? window.Y1FirmwareCatalog : null;
+    }
+
+    function firmwareFor(opts) {
+        var o = opts || {};
+        var device = o.deviceMode === 'y1' ? 'y1' : 'y2';
+        var fw = o.firmware || null;
+        var requested = '';
+        if (typeof fw === 'string') requested = fw;
+        else if (fw && typeof fw === 'object') requested = fw[device] || '';
+        var cat = firmwareCatalogApi();
+        if (cat && typeof cat.version === 'function') {
+            var version = cat.version(device, requested || (cat.model(device) || {}).latest);
+            if (version) {
+                var rows = typeof cat.musicSettingsRows === 'function'
+                    ? cat.musicSettingsRows(version.musicSettings)
+                    : null;
+                return {
+                    modelId: device,
+                    versionId: version.id,
+                    label: version.label || version.id,
+                    version: version,
+                    settingsStyle: version.settingsStyle || 'flat',
+                    fileManager: version.fileManager !== false,
+                    fm: version.fm !== false,
+                    musicSettingsRows: rows,
+                    home: version.home || [],
+                    catalog: cat
+                };
+            }
+        }
+        var fallback = FIRMWARE_DEFAULTS[device];
+        return {
+            modelId: device,
+            versionId: requested || fallback.id,
+            label: device.toUpperCase() + ' ' + (requested || fallback.id),
+            version: null,
+            settingsStyle: fallback.settingsStyle,
+            fileManager: fallback.fileManager,
+            fm: fallback.fm,
+            musicSettingsRows: fallback.musicSettingsRows,
+            home: fallback.home,
+            catalog: null
+        };
+    }
+
     function buildHomeItems(homeCfg, settingCfg, opts) {
         homeCfg = homeCfg || {};
         settingCfg = settingCfg || {};
         opts = opts || {};
         var mode = String(opts.mode || 'menu').toLowerCase();
         var deviceMode = normalizeDeviceMode(opts.deviceMode, homeCfg, mode);
+        var fw = firmwareFor({ deviceMode: deviceMode, firmware: opts.firmware });
         /* Shuffle Quick was on Home in Y1 1.7.6–2.1.9 and removed in Y1 2.8.2;
            Calculator and Calendar exist in MainActivity behind an unshipped
            flag (isV4 && !isRockBox). Studio lets authors toggle each group
@@ -303,16 +387,16 @@
             .filter(function (key) {
                 if (key === 'shuffleQuick') return showLegacy;
                 if (key === 'calculator' || key === 'calendar') return showUnimplemented;
-                if (key === 'fileManager') return deviceMode === 'y2' || deviceMode === 'both';
+                if (key === 'fileManager') return (deviceMode === 'y2' || deviceMode === 'both') && fw.fileManager;
+                if (key === 'fm') return fw.fm;
+                /* A release that predates an item never draws it, whatever the
+                   theme declares: the reader is looking at that firmware. */
+                if (fw.home && fw.home.length && fw.home.indexOf(key) === -1) return false;
                 if (key === 'bluetooth') {
-                    if (deviceMode === 'y2') return false;
+                    if (deviceMode === 'y2' && fw.settingsStyle === 'categories') return false;
                     return mode === 'full' ? true : isUsableHomeIcon(homePageIconFromCfg(homeCfg, key));
                 }
                 var file = homePageIconFromCfg(homeCfg, key);
-                if (key === 'fm') {
-                    if (mode === 'full') return true;
-                    return isUsableHomeIcon(file);
-                }
                 if (key === 'ebook') {
                     if (mode === 'full') return true;
                     return file !== undefined && isUsableHomeIcon(file);
@@ -742,6 +826,21 @@
         el.style.borderImageRepeat = '';
     }
 
+    /* File Manager rows add Size / Modified Date cells to the right of the
+       name (activity_file_list row layout). One helper keeps the widths in a
+       single place for both the row builder and its hit-testing. */
+    function menuRowColumns(item) {
+        return item && item.columns && item.columns.length ? item.columns : null;
+    }
+
+    function menuRowColumnsWidth(item) {
+        var cols = menuRowColumns(item);
+        if (!cols) return 0;
+        var width = 0;
+        for (var i = 0; i < cols.length; i++) width += i === 0 ? 86 : 124;
+        return width;
+    }
+
     function applyMenuRowSelection(row, item, selected, ctx) {
         if (!row) return;
         row.classList.toggle('is-selected', !!selected);
@@ -788,6 +887,7 @@
 
         var rowTextColor = selected ? ctx.colors.text_selected : ctx.colors.text_primary;
         if (row._y1LabelWrap) row._y1LabelWrap.style.color = rowTextColor;
+        if (row._y1Columns) row._y1Columns.style.color = rowTextColor;
         if (row._y1LabelInner) {
             var lab = item.label != null ? String(item.label) : '';
             var wantMarquee = !!(selected && lab.length > 12 && !item.isFolder && ctx.marqueeOnLongLabel);
@@ -804,6 +904,10 @@
                     row._y1LabelInner.style.animation = '';
                 }
             }
+        }
+        if (item.noArrow) {
+            if (row._y1Arrow) row._y1Arrow.style.display = 'none';
+            return;
         }
         if (row._y1Arrow) {
             row._y1Arrow.style.display = selected ? 'flex' : 'none';
@@ -933,7 +1037,11 @@
                     fi.alt = '';
                     bindPreviewImgFallback(fi, { eager: eager });
                     fi.style.cssText =
-                        'width:22px;height:22px;margin-left:10px;margin-right:8px;object-fit:contain;flex-shrink:0;';
+                        'width:' +
+                        (menuRowColumns(item) ? 24 : 22) +
+                        'px;height:' +
+                        (menuRowColumns(item) ? 24 : 22) +
+                        'px;margin-left:10px;margin-right:8px;object-fit:contain;flex-shrink:0;';
                     fi.setAttribute('data-theme-asset-path', rowIconAssetPath);
                     row.appendChild(fi);
                 } else {
@@ -950,12 +1058,18 @@
             labelWrap.style.cssText =
                 (hasLeadIcon
                     ? 'position:relative;flex:1;'
-                    : 'position:absolute;left:5px;top:0;right:42px;height:' +
+                    : 'position:absolute;left:5px;top:0;right:' +
+                      (menuRowColumns(item) ? menuRowColumnsWidth(item) + 10 : 42) +
+                      'px;height:' +
                       itemHeight +
                       'px;') +
                 'display:flex;align-items:center;color:' +
                 (selected ? colors.text_selected : colors.text_primary) +
-                ';font-weight:bold;font-size:22px;overflow:hidden;white-space:nowrap;';
+                ';font-weight:' +
+                (menuRowColumns(item) ? '600' : 'bold') +
+                ';font-size:' +
+                (menuRowColumns(item) ? '17' : '22') +
+                'px;overflow:hidden;white-space:nowrap;';
             var labelInner = document.createElement('div');
             labelInner.style.cssText =
                 'display:inline-block;overflow:hidden;white-space:nowrap;' +
@@ -968,6 +1082,28 @@
             row._y1LabelInner = labelInner;
             row._y1HasMarquee = false;
             row._y1Arrow = null;
+
+            /* File Manager rows carry Size and Modified Date to the right of the
+               name, the way activity_file_list rows lay them out. */
+            if (menuRowColumns(item)) {
+                var colWrap = document.createElement('div');
+                colWrap.style.cssText =
+                    'position:absolute;right:0;top:0;height:' +
+                    itemHeight +
+                    'px;display:flex;align-items:center;pointer-events:none;';
+                for (var cj = 0; cj < menuRowColumns(item).length; cj++) {
+                    var cell = document.createElement('div');
+                    cell.textContent =
+                        menuRowColumns(item)[cj] == null ? '' : String(menuRowColumns(item)[cj]);
+                    cell.style.cssText =
+                        'width:' +
+                        (cj === 0 ? 86 : 124) +
+                        'px;text-align:right;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+                    colWrap.appendChild(cell);
+                }
+                row.appendChild(colWrap);
+                row._y1Columns = colWrap;
+            }
 
             applyMenuRowSelection(row, item, selected, rowCtx);
             rows.push(row);
@@ -1368,14 +1504,14 @@
         return img;
     }
 
-    function appendBatteryFallback(rightEl, pct, textColor, cfg) {
+    function appendBatteryFallback(rightEl, pct, textColor, cfg, assetPath) {
         var p = Number(pct);
         if (!isFinite(p)) p = 100;
         var wrap = document.createElement('div');
         wrap.style.cssText =
             'display:flex;align-items:center;gap:4px;font-size:16px;color:#ffffff;';
         var box = document.createElement('div');
-        box.setAttribute('data-theme-asset-path', 'statusConfig.battery.3');
+        box.setAttribute('data-theme-asset-path', assetPath || 'statusConfig.battery.3');
         var borderCol = textColor && String(textColor).charAt(0) === '#' ? textColor : '#ffffff';
         box.style.cssText =
             'width:22px;height:11px;border:1px solid ' +
@@ -1425,6 +1561,7 @@
         sim = sim || {};
         opts = opts || {};
         var deviceMode = normalizeDeviceMode(opts.deviceMode, homeCfg, opts.mode || 'full');
+        var fw = firmwareFor({ deviceMode: deviceMode, firmware: opts.firmware });
         var category = opts.category || '';
         var timedShutdownValue = sim.timedShutdownValue || 'off';
         var backlightValue = sim.backlightValue || '10';
@@ -1439,6 +1576,7 @@
         var wheelVolumeEnabled = sim.wheelVolumeEnabled !== false;
         var headphoneGain = sim.headphoneGain || 'standard';
         var speakerEnabled = sim.speakerEnabled !== false;
+        var albumArtStyle = sim.albumArtStyle === 'flat' ? 'flat' : 'perspective';
 
         function capFirst(str) {
             var s = String(str || '');
@@ -1589,12 +1727,46 @@
 
         var base;
         if (category === 'musicSettings') {
-            base = [
-                allEntries.shuffle,
-                allEntries.repeat,
-                allEntries.equalizer,
-                allEntries.timed_shutdown
-            ];
+            /* Y2 Music → Settings. Rows and their existence come from the
+               release: 3.1.7 opened with four, 3.2.0-fm added Album Art Style
+               (music_setting_album_art_style / _flat / _perspective). */
+            var musicRows = fw.musicSettingsRows;
+            if (musicRows === null) {
+                base = [];
+            } else {
+                var musicRowDefs = {
+                    song_name_display: {
+                        id: 'song_name_display',
+                        label: 'Song Name Display',
+                        valueText: sim.songNameDisplay === 'filename' ? 'Filename' : 'Song title'
+                    },
+                    list_sort: {
+                        id: 'list_sort',
+                        label: 'List Sort',
+                        valueText: sim.listSort === 'desc' ? 'Z to A' : 'A to Z'
+                    },
+                    artist_view: {
+                        id: 'artist_view',
+                        label: 'Artist View',
+                        valueText: sim.artistView === 'grid' ? 'Grid' : 'List'
+                    },
+                    album_view: {
+                        id: 'album_view',
+                        label: 'Album View',
+                        valueText: sim.albumView === 'grid' ? 'Grid' : 'List'
+                    },
+                    album_art_style: {
+                        id: 'album_art_style',
+                        label: 'Album Art Style',
+                        valueText: albumArtStyle === 'flat' ? 'Flat' : 'Perspective'
+                    }
+                };
+                base = musicRows
+                    .map(function (id) {
+                        return musicRowDefs[id];
+                    })
+                    .filter(Boolean);
+            }
         } else if (category === 'keysWheel') {
             base = [
                 allEntries.key_lock,
@@ -1619,30 +1791,43 @@
                 deviceMode === 'both'
                     ? [allEntries.language, allEntries.date_time, allEntries.timed_shutdown, allEntries.rockbox, allEntries.shutdown]
                     : [allEntries.language, allEntries.date_time, allEntries.timed_shutdown, allEntries.rockbox];
-        } else if (deviceMode === 'y1') {
-            /* Authentic Y1 3.1.2 flat Settings list (Rockbox always included). */
-            base = [
-                allEntries.shutdown,
-                allEntries.timed_shutdown,
-                allEntries.shuffle,
-                allEntries.repeat,
-                allEntries.equalizer,
-                allEntries.file_extension,
-                allEntries.key_lock,
-                allEntries.key_tone,
-                allEntries.key_vibration,
-                allEntries.wallpaper,
-                allEntries.backlight,
-                allEntries.brightness,
-                allEntries.display_battery,
-                allEntries.date_time,
-                allEntries.theme,
-                allEntries.language,
-                allEntries.rockbox,
-                allEntries.factory_reset,
-                allEntries.clear_cache,
-                allEntries.about
+        } else if (deviceMode === 'y1' || fw.settingsStyle !== 'categories') {
+            /* Flat Settings list. Row membership comes from the release:
+               1.7.6 has no Theme/Rockbox/File extensions/Clear cache, and
+               2.8.2 adds Rockbox. Y2 3.1.7 also shipped a flat list. */
+            var flat = [
+                ['shutdown', allEntries.shutdown],
+                ['timed_shutdown', allEntries.timed_shutdown],
+                ['shuffle', allEntries.shuffle],
+                ['repeat', allEntries.repeat],
+                ['equalizer', allEntries.equalizer],
+                ['file_extension', allEntries.file_extension],
+                ['key_lock', allEntries.key_lock],
+                ['key_tone', allEntries.key_tone],
+                ['key_vibration', allEntries.key_vibration],
+                ['wallpaper', allEntries.wallpaper],
+                ['backlight', allEntries.backlight],
+                ['brightness', allEntries.brightness],
+                ['display_battery', allEntries.display_battery],
+                ['date_time', allEntries.date_time],
+                ['theme', allEntries.theme],
+                ['language', allEntries.language],
+                ['rockbox', allEntries.rockbox],
+                ['factory_reset', allEntries.factory_reset],
+                ['clear_cache', allEntries.clear_cache],
+                ['about', allEntries.about]
             ];
+            var releaseRows = fw.version && fw.version.settingsRows ? fw.version.settingsRows : null;
+            base = flat
+                .filter(function (pair) {
+                    if (releaseRows && releaseRows.indexOf(pair[0]) === -1) return false;
+                    /* The Rockbox row is a Y1 setting; Y2 never ships it. */
+                    if (pair[0] === 'rockbox' && deviceMode !== 'y1') return false;
+                    return true;
+                })
+                .map(function (pair) {
+                    return pair[1];
+                });
         } else {
             /* Authentic Y2 3.2.8 categorized Settings root (used in Y2 and Both modes). */
             base = [
@@ -1673,6 +1858,25 @@
             themeViewId: 'home',
             themeSelectedIndex: 0,
             themeHistory: [],
+            /* Music → Settings values (Y2). Album Art Style is the 3.2.0-fm
+               Perspective/Flat toggle; the rest shipped in 3.1.7. */
+            albumArtStyle: 'perspective',
+            songNameDisplay: 'songTitle',
+            listSort: 'asc',
+            artistView: 'list',
+            albumView: 'list',
+            /* File Manager state (Y2). */
+            fileManagerStorage: 'internal',
+            fileManagerPath: '/',
+            fileManagerSortField: 'name',
+            fileManagerSortOrder: 'asc',
+            fileManagerShowHidden: false,
+            fileManagerShowExtensions: false,
+            /* FM Radio state (Y1 + Y2 3.2.0+). */
+            fmAudioOutput: 'speaker',
+            fmRegion: 'Europe',
+            fmFavoriteFreqs: [985, 1015, 917],
+            fmScanFreqs: [881, 917, 947, 985, 1015, 1048],
             batteryLevel: 3,
             isCharging: false,
             playState: null,
@@ -1705,7 +1909,48 @@
         };
     }
 
-    function genericListForView(viewId, deviceMode) {
+    /* Sample FM frequencies (87.5–108.0 MHz) and File Manager tree. Both are
+       ordered the way the stock apps present them and are only ever used as
+       simulator content, never written into a theme package. */
+    var SCAN_FREQS = [881, 917, 947, 985, 1015, 1048];
+    var FAVORITE_FREQS = [985, 1015, 917];
+
+    var FILE_MANAGER_TREES = {
+        internal: [
+            { id: 'fm_music', label: 'Music', isFolder: true, columns: ['21 items', '2026-11-20 18:04'] },
+            { id: 'fm_movies', label: 'Movies', isFolder: true, columns: ['4 items', '2026-11-18 09:22'] },
+            { id: 'fm_pictures', label: 'Pictures', isFolder: true, columns: ['38 items', '2026-11-14 21:11'] },
+            { id: 'fm_books', label: 'Books', isFolder: true, columns: ['6 items', '2026-10-30 12:40'] },
+            { id: 'fm_themes', label: 'Themes', isFolder: true, columns: ['5 items', '2026-11-26 08:15'] },
+            { id: 'fm_recordings', label: 'Recordings', isFolder: true, columns: ['2 items', '2026-11-09 17:52'] },
+            { id: 'fm_track1', label: 'Jam.flac', isMusic: true, columns: ['34.8 MB', '2026-11-02 13:07'] },
+            { id: 'fm_track2', label: 'Remember the Time.mp3', isMusic: true, columns: ['9.6 MB', '2026-11-02 13:07'] },
+            { id: 'fm_note', label: 'README.txt', columns: ['2 KB', '2026-09-21 10:03'] }
+        ],
+        tf: [
+            { id: 'tf_music', label: 'Music', isFolder: true, columns: ['64 items', '2026-11-24 19:31'] },
+            { id: 'tf_movies', label: 'Movies', isFolder: true, columns: ['11 items', '2026-11-22 15:45'] },
+            { id: 'tf_pictures', label: 'Pictures', isFolder: true, columns: ['12 items', '2026-11-12 11:20'] },
+            { id: 'tf_podcasts', label: 'Podcasts', isFolder: true, columns: ['9 items', '2026-10-02 07:38'] },
+            { id: 'tf_m3u', label: 'roadtrip.m3u', columns: ['1 KB', '2026-11-25 20:12'] },
+            { id: 'tf_img', label: 'IMG_0421.jpg', columns: ['1.2 MB', '2026-11-01 16:09'] }
+        ]
+    };
+
+    function fileManagerEntriesFor(storage) {
+        var tree = FILE_MANAGER_TREES[storage === 'tf' ? 'tf' : 'internal'] || [];
+        return tree.map(function (entry) {
+            return {
+                id: entry.id,
+                label: entry.label,
+                isFolder: !!entry.isFolder,
+                isMusic: !!entry.isMusic,
+                columns: (entry.columns || []).slice()
+            };
+        });
+    }
+
+    function genericListForView(viewId, deviceMode, sim) {
         if (viewId === 'music') {
             var musicItems = ['All songs', 'Playlists', 'Artists', 'Albums', 'Genres', 'Folders', 'Search'];
             if (deviceMode !== 'y1') musicItems.push('Settings');
@@ -1786,15 +2031,49 @@
             ];
         }
         if (viewId === 'fileManager') {
+            /* FileManagerActivity is the storage picker: the launcher's layout
+               lists exactly Internal Storage and TF Card, each with the item
+               arrow, above the click wheel. */
             return [
-                { id: 'fm_music', label: 'Music', isFolder: true },
-                { id: 'fm_videos', label: 'Videos', isFolder: true },
-                { id: 'fm_photos', label: 'Photos', isFolder: true },
-                { id: 'fm_ebooks', label: 'Books', isFolder: true },
-                { id: 'fm_themes', label: 'Themes', isFolder: true },
-                { id: 'fm_track1', label: 'Jam.flac', isMusic: true },
-                { id: 'fm_track2', label: 'Remember the Time.mp3', isMusic: true }
+                { id: 'storage_internal', label: 'Internal Storage', isFolder: true, storage: 'internal' },
+                { id: 'storage_tf', label: 'TF Card', isFolder: true, storage: 'tf' }
             ];
+        }
+        if (viewId === 'fileManagerList') {
+            return fileManagerEntriesFor(sim && sim.fileManagerStorage);
+        }
+        if (viewId === 'fmMenu') {
+            /* Y2 3.2.8 FM strings: Channel list, Favorite channel list,
+               Re-search channel, Record fm, Audio output, Frequency range. */
+            return [
+                { id: 'fm_menu_channels', label: 'Channel list' },
+                { id: 'fm_menu_favorites', label: 'Favorite channel list' },
+                { id: 'fm_menu_rescan', label: 'Re-search channel' },
+                { id: 'fm_menu_record', label: 'Record fm' },
+                { id: 'fm_menu_output', label: 'Audio output' },
+                { id: 'fm_menu_range', label: 'Frequency range' }
+            ];
+        }
+        if (viewId === 'fmChannels' || viewId === 'fmFavorites') {
+            var freqs = viewId === 'fmFavorites' ? FAVORITE_FREQS : SCAN_FREQS;
+            return freqs.map(function (f) {
+                return {
+                    id: 'freq_' + f,
+                    label: (f / 10).toFixed(1) + ' MHz',
+                    fmFreq: f
+                };
+            });
+        }
+        if (viewId === 'fmAudioOutput') {
+            return [
+                { id: 'fm_out_speaker', label: 'Speaker' },
+                { id: 'fm_out_headset', label: 'Headset' }
+            ];
+        }
+        if (viewId === 'fmRange') {
+            return ['America', 'Asia', 'Australia', 'Europe', 'Japan'].map(function (label) {
+                return { id: 'fm_range_' + label.toLowerCase(), label: label };
+            });
         }
         if (viewId === 'bluetooth') {
             return [
@@ -2088,7 +2367,10 @@
                     mode: mode,
                     deviceMode: normalizeDeviceMode(opts.deviceMode, cfg.homePageConfig || {}, mode),
                     showLegacyHome: opts.showLegacyHome === true,
-                    showUnimplementedHome: opts.showUnimplementedHome === true
+                    showUnimplementedHome: opts.showUnimplementedHome === true,
+                    /* Which stock launcher the simulator is reproducing. Shape:
+                       { y1: '3.1.2', y2: '3.2.8' } or a plain version string. */
+                    firmware: opts.firmware || null
                 };
 
                 var colors = buildColors(itemCfg, menuCfg, statusCfg, cfg, catalogFolder);
@@ -3179,7 +3461,7 @@
                                 bi.onerror = function () {
                                     bi.style.display = 'none';
                                     if (pctSpan.parentNode) pctSpan.parentNode.removeChild(pctSpan);
-                                    appendBatteryFallback(right, pct, colors.status_text, cfg);
+                                    appendBatteryFallback(right, pct, colors.status_text, cfg, battPath);
                                 };
                                 bi.src = rawBatt;
                             };
@@ -3188,13 +3470,13 @@
                                 bi.onerror = null;
                                 bi.style.display = 'none';
                                 if (pctSpan.parentNode) pctSpan.parentNode.removeChild(pctSpan);
-                                appendBatteryFallback(right, pct, colors.status_text, cfg);
+                                appendBatteryFallback(right, pct, colors.status_text, cfg, battPath);
                             };
                         }
                         right.appendChild(bi);
                         right.appendChild(pctSpan);
                     } else {
-                        appendBatteryFallback(right, pct, colors.status_text, cfg);
+                        appendBatteryFallback(right, pct, colors.status_text, cfg, battPath);
                     }
                     status.appendChild(right);
                     canvas.appendChild(status);
@@ -3336,10 +3618,10 @@
                         activeMenuList.viewId = sim.themeViewId;
                         layer.appendChild(genBox);
                     } else if (sim.themeViewId === 'fileManager') {
-                        /* Authentic activity_file_manager.xml + item_file_kt.xml:
-                           25dp side margins, 45dp rows with 22dp folderIcon / musicIcon,
-                           22sp bold labels, right arrow, plus bottom tip strip. */
-                        var fmTipH = 26;
+                        /* FileManagerActivity is the storage picker: the launcher
+                           layout lists Internal Storage and TF Card as 45dp rows
+                           with the item arrow, 22sp bold, above the wheel. */
+                        var fmTipH0 = 26;
                         var fmBox = document.createElement('div');
                         fmBox.style.cssText =
                             'position:absolute;left:25px;top:' +
@@ -3347,14 +3629,14 @@
                             'px;width:' +
                             (W - 50) +
                             'px;height:' +
-                            (H - statusH - fmTipH - 10) +
+                            (H - statusH - fmTipH0 - 10) +
                             'px;overflow:hidden;z-index:10;';
                         var fileItems = genericListForView('fileManager', previewOpts.deviceMode);
                         activeMenuList = appendMenuRows(fmBox, {
                             items: fileItems,
                             selectedIndex: sim.themeSelectedIndex,
                             itemHeight: 45,
-                            visibleHeight: H - statusH - fmTipH - 10,
+                            visibleHeight: H - statusH - fmTipH0 - 10,
                             colors: {
                                 text_primary: colors.menu_text_primary,
                                 text_selected: colors.menu_text_selected
@@ -3365,8 +3647,8 @@
                             fullWidth: false,
                             leftPad: 0,
                             rowWidth: W - 50,
-                            folderIconUrl: folderIconUrl,
-                            musicIconUrl: musicIconUrl,
+                            folderIconUrl: '',
+                            musicIconUrl: '',
                             scrollState: scrollState,
                             eager: eagerImages
                         });
@@ -3375,12 +3657,165 @@
                         var fmTip = document.createElement('div');
                         fmTip.style.cssText =
                             'position:absolute;left:0;right:0;bottom:0;height:' +
+                            fmTipH0 +
+                            'px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;font-size:12px;color:' +
+                            colors.menu_text_primary +
+                            ';opacity:0.78;background:rgba(0,0,0,0.28);z-index:12;box-sizing:border-box;';
+                        fmTip.innerHTML = '<span>Storage Devices</span><span>OK open &middot; Back exit</span>';
+                        layer.appendChild(fmTip);
+                    } else if (sim.themeViewId === 'fileManagerList') {
+                        /* activity_file_list: Name / Size / Modified Date header row,
+                           45dp file rows with a 26dp folder or music glyph, and the
+                           bottom info strip that names the open folder. */
+                        var fmTipH = 26;
+                        var fmHead = document.createElement('div');
+                        fmHead.style.cssText =
+                            'position:absolute;left:10px;top:' +
+                            (statusH + 4) +
+                            'px;width:' +
+                            (W - 20) +
+                            'px;display:flex;align-items:center;font-size:18px;font-weight:600;color:' +
+                            colors.menu_text_primary +
+                            ';opacity:0.92;z-index:11;';
+                        fmHead.innerHTML =
+                            '<span style="flex:1">Name</span>' +
+                            '<span style="width:86px;text-align:right">Size</span>' +
+                            '<span style="width:124px;text-align:right">Modified Date</span>';
+                        layer.appendChild(fmHead);
+                        var fmListTop = statusH + 32;
+                        var fmListH = H - fmListTop - fmTipH - 4;
+                        var fmListBox = document.createElement('div');
+                        fmListBox.style.cssText =
+                            'position:absolute;left:10px;top:' +
+                            fmListTop +
+                            'px;width:' +
+                            (W - 20) +
+                            'px;height:' +
+                            fmListH +
+                            'px;overflow:hidden;z-index:10;';
+                        var fmRows = genericListForView('fileManagerList', previewOpts.deviceMode, sim);
+                        activeMenuList = appendMenuRows(fmListBox, {
+                            items: fmRows,
+                            selectedIndex: sim.themeSelectedIndex,
+                            itemHeight: 45,
+                            visibleHeight: fmListH,
+                            colors: {
+                                text_primary: colors.menu_text_primary,
+                                text_selected: colors.menu_text_selected
+                            },
+                            itemBackgroundStyle: itemBackgroundStyle,
+                            itemSelectedBackgroundStyle: itemSelectedBackgroundStyle,
+                            itemRightArrowUrl: itemRightArrowUrl,
+                            fullWidth: false,
+                            leftPad: 0,
+                            rowWidth: W - 20,
+                            folderIconUrl: folderIconUrl,
+                            musicIconUrl: musicIconUrl,
+                            scrollState: scrollState,
+                            eager: eagerImages
+                        });
+                        activeMenuList.viewId = 'fileManagerList';
+                        layer.appendChild(fmListBox);
+                        var fmListTip = document.createElement('div');
+                        fmListTip.style.cssText =
+                            'position:absolute;left:0;right:0;bottom:0;height:' +
                             fmTipH +
                             'px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;font-size:12px;color:' +
                             colors.menu_text_primary +
                             ';opacity:0.78;background:rgba(0,0,0,0.28);z-index:12;box-sizing:border-box;';
-                        fmTip.innerHTML = '<span>/Internal Storage</span><span>Hold Select for options</span>';
-                        layer.appendChild(fmTip);
+                        fmListTip.innerHTML =
+                            '<span>/' +
+                            (sim.fileManagerStorage === 'tf' ? 'TF Card' : 'Internal Storage') +
+                            '</span><span>OK options</span>';
+                        layer.appendChild(fmListTip);
+                    } else if (sim.themeViewId === 'fileManagerSettings') {
+                        /* FileManagerSettingsActivity layout (3.2.8 launcher):
+                           Sorting Method (field + order), Display Options
+                           (hidden files + extensions), Storage Management
+                           (format internal, format TF card, restore defaults). */
+                        var fmSortNames = {
+                            name: 'By Name',
+                            size: 'By Size',
+                            time: 'By Modify Time',
+                            type: 'By File Type'
+                        };
+                        var fmSettingRows = [
+                            { label: 'Sorting Method', value: fmSortNames[sim.fileManagerSortField] || 'By Name' },
+                            { label: 'Sort order', value: sim.fileManagerSortOrder === 'desc' ? 'Desc' : 'Asc' },
+                            { label: 'Show Hidden Files', value: sim.fileManagerShowHidden ? 'On' : 'Off' },
+                            { label: 'Show File Extensions', value: sim.fileManagerShowExtensions ? 'On' : 'Off' },
+                            { label: 'Format Internal Storage', value: '' },
+                            { label: 'Format TF Card', value: '' },
+                            { label: 'Restore Default Settings', value: '' }
+                        ];
+                        var groupTitles = ['Sorting Method', 'Display Options', 'Storage Management'];
+                        var groupStarts = [0, 2, 4];
+                        var fmSetTop = statusH + 6;
+                        var fmSetRowH = 34;
+                        var fmGroupHeadH = 22;
+                        var fmSetY = fmSetTop;
+                        for (var g = 0; g < groupTitles.length; g++) {
+                            var gHead = document.createElement('div');
+                            gHead.textContent = groupTitles[g];
+                            gHead.style.cssText =
+                                'position:absolute;left:26px;top:' +
+                                fmSetY +
+                                'px;font-size:14px;font-weight:700;letter-spacing:0.02em;text-transform:uppercase;color:' +
+                                colors.text_primary +
+                                ';opacity:0.72;z-index:11;';
+                            layer.appendChild(gHead);
+                            fmSetY += fmGroupHeadH;
+                            var gRows = groupStarts[g + 1] != null ? groupStarts[g + 1] : fmSettingRows.length;
+                            for (var rIdx = groupStarts[g]; rIdx < gRows; rIdx++) {
+                                var rowInfo = fmSettingRows[rIdx];
+                                var isSel = rIdx === sim.themeSelectedIndex;
+                                var fRow = document.createElement('div');
+                                fRow.className = 'y1-tp-row' + (isSel ? ' is-selected' : '');
+                                fRow.setAttribute('data-y1-row', String(rIdx));
+                                fRow.setAttribute('data-theme-asset-path', 'itemConfig.itemSelectedBackground');
+                                fRow.style.cssText =
+                                    'position:absolute;left:26px;top:' +
+                                    fmSetY +
+                                    'px;width:' +
+                                    (W - 52) +
+                                    'px;height:' +
+                                    fmSetRowH +
+                                    'px;display:flex;align-items:center;box-sizing:border-box;padding:0 6px;';
+                                var fRowCtx = {
+                                    isSettings: false,
+                                    itemHeight: fmSetRowH,
+                                    colors: {
+                                        text_primary: colors.text_primary,
+                                        text_selected: colors.text_selected
+                                    },
+                                    itemBg: itemBackgroundStyle,
+                                    itemSel: itemSelectedBackgroundStyle,
+                                    arrowUrl: '',
+                                    marqueeOnLongLabel: false,
+                                    eager: eagerImages
+                                };
+                                var fLabel = document.createElement('span');
+                                fLabel.textContent = rowInfo.label;
+                                fLabel.style.cssText =
+                                    'flex:1;font-size:17px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+                                fRow.appendChild(fLabel);
+                                if (rowInfo.value) {
+                                    var fVal = document.createElement('span');
+                                    fVal.textContent = rowInfo.value;
+                                    fVal.style.cssText = 'font-size:16px;font-weight:600;opacity:0.9;';
+                                    fRow.appendChild(fVal);
+                                }
+                                rowInfo._node = fRow;
+                                applyMenuRowSelection(fRow, { noArrow: true }, isSel, fRowCtx);
+                                fLabel.style.color = isSel ? colors.text_selected : colors.text_primary;
+                                if (fRow.children[1]) {
+                                    fRow.children[1].style.color = fLabel.style.color;
+                                }
+                                layer.appendChild(fRow);
+                                fmSetY += fmSetRowH;
+                            }
+                            fmSetY += 8;
+                        }
                     } else if (sim.themeViewId === 'ebook') {
                         /* Authentic activity_book_main.xml: Continue Reading + Local Files,
                            bold 22sp Library header + 1dp #2A2A2A divider + book rows. */
@@ -4128,7 +4563,85 @@
                         }
                         fmRulerWrap.appendChild(ticksRow);
                         fmLayer.appendChild(fmRulerWrap);
+
+                        /* FMMainActivity keeps the tuned channel, the audio route
+                           and the favourite marker under the dial. */
+                        var fmMeta = document.createElement('div');
+                        fmMeta.style.cssText =
+                            'display:flex;align-items:center;justify-content:space-between;width:440px;font-size:12px;color:' +
+                            colors.text_primary +
+                            ';opacity:0.8;';
+                        var fmIsFav =
+                            (sim.fmFavoriteFreqs || []).indexOf(Math.round(freqVal)) !== -1;
+                        fmMeta.innerHTML =
+                            '<span>MENU &middot; Channel list</span><span>' +
+                            (fmIsFav ? '\u2605 Favourite' : '\u2606 Not saved') +
+                            ' &middot; ' +
+                            (sim.fmAudioOutput === 'headset' ? 'Headset' : 'Speaker') +
+                            '</span>';
+                        fmLayer.appendChild(fmMeta);
                         layer.appendChild(fmLayer);
+                    } else if (
+                        sim.themeViewId === 'fmMenu' ||
+                        sim.themeViewId === 'fmChannels' ||
+                        sim.themeViewId === 'fmFavorites' ||
+                        sim.themeViewId === 'fmAudioOutput' ||
+                        sim.themeViewId === 'fmRange'
+                    ) {
+                        /* FM popup lists. The menu items are the 3.2.8 launcher's
+                           FM strings: Channel list, Favorite channel list,
+                           Re-search channel, Record fm, Audio output, Frequency
+                           range. Y1 3.1.2 shows the same five plus Record fm. */
+                        var fmTitleMap = {
+                            fmMenu: 'FM Radio',
+                            fmChannels: 'Channel list',
+                            fmFavorites: 'Favorite channel list',
+                            fmAudioOutput: 'Audio output',
+                            fmRange: 'Frequency range'
+                        };
+                        var fmListItems = genericListForView(sim.themeViewId, previewOpts.deviceMode, sim);
+                        var fmViewTop = statusH + 6;
+                        var fmTitleEl = document.createElement('div');
+                        fmTitleEl.textContent = fmTitleMap[sim.themeViewId] || 'FM Radio';
+                        fmTitleEl.style.cssText =
+                            'position:absolute;left:26px;top:' +
+                            fmViewTop +
+                            'px;font-size:15px;font-weight:700;letter-spacing:0.02em;text-transform:uppercase;color:' +
+                            colors.text_primary +
+                            ';opacity:0.72;z-index:11;';
+                        layer.appendChild(fmTitleEl);
+                        var fmListTop = fmViewTop + 24;
+                        var fmListBox2 = document.createElement('div');
+                        fmListBox2.style.cssText =
+                            'position:absolute;left:26px;top:' +
+                            fmListTop +
+                            'px;width:' +
+                            (W - 52) +
+                            'px;height:' +
+                            (H - fmListTop - 14) +
+                            'px;overflow:hidden;z-index:10;';
+                        activeMenuList = appendMenuRows(fmListBox2, {
+                            items: fmListItems,
+                            selectedIndex: sim.themeSelectedIndex,
+                            itemHeight: 42,
+                            visibleHeight: H - fmListTop - 14,
+                            colors: {
+                                text_primary: colors.menu_text_primary,
+                                text_selected: colors.menu_text_selected
+                            },
+                            itemBackgroundStyle: itemBackgroundStyle,
+                            itemSelectedBackgroundStyle: itemSelectedBackgroundStyle,
+                            itemRightArrowUrl: '',
+                            fullWidth: false,
+                            leftPad: 0,
+                            rowWidth: W - 52,
+                            folderIconUrl: '',
+                            musicIconUrl: '',
+                            scrollState: scrollState,
+                            eager: eagerImages
+                        });
+                        activeMenuList.viewId = sim.themeViewId;
+                        layer.appendChild(fmListBox2);
                     } else if (sim.themeViewId === 'calendar') {
                         /* Authentic activity_calendar.xml (unimplemented stock slot):
                            #F0F5FB backdrop, rounded white month header + 7-col grid. */
@@ -4502,10 +5015,18 @@
                         vid === 'audiobooks' ||
                         vid === 'ebook' ||
                         vid === 'fileManager' ||
+                        vid === 'fileManagerList' ||
+                        vid === 'fmMenu' ||
+                        vid === 'fmChannels' ||
+                        vid === 'fmFavorites' ||
+                        vid === 'fmAudioOutput' ||
+                        vid === 'fmRange' ||
                         vid === 'bluetooth' ||
                         vid === 'settingsLanguage'
                     ) {
-                        scrollClamp(direction, genericListForView(vid, previewOpts.deviceMode).length);
+                        scrollClamp(direction, genericListForView(vid, previewOpts.deviceMode, sim).length);
+                    } else if (vid === 'fileManagerSettings') {
+                        scrollClamp(direction, 7);
                     } else if (isSettingsListView(vid)) {
                         scrollClamp(direction, settingsItemsForView(vid).length);
                     } else if (vid === 'settingsEqualizer') {
@@ -4575,7 +5096,105 @@
 
                 function handleCenterClick() {
                     if (sim.dialogVisible) {
+                        var chosen = (sim.dialogOptions || [])[sim.dialogSelectedIndex] || '';
+                        var dialogContext = sim.dialogContext || '';
                         sim.dialogVisible = false;
+                        sim.dialogContext = '';
+                        if (dialogContext === 'fmOutput') {
+                            sim.fmAudioOutput = chosen === 'Headset' ? 'headset' : 'speaker';
+                            showToast('Audio output: ' + chosen);
+                            paint();
+                            return;
+                        }
+                        if (dialogContext === 'fmRange') {
+                            sim.fmRegion = chosen;
+                            showToast('Frequency range: ' + chosen);
+                            paint();
+                            return;
+                        }
+                        if (dialogContext === 'fmDeleteChannel') {
+                            if (chosen === 'Yes') {
+                                var pending = Number(sim.fmPendingFreq);
+                                sim.fmFavoriteFreqs = (sim.fmFavoriteFreqs || []).filter(function (f) {
+                                    return Number(f) !== pending;
+                                });
+                                showToast('Successfully removed from favorites.');
+                            }
+                            paint();
+                            return;
+                        }
+                        if (dialogContext === 'fmRecord') {
+                            showToast(chosen === 'Save' ? 'Recording saved to /Recordings' : 'Recording discarded');
+                            paint();
+                            return;
+                        }
+                        if (dialogContext === 'fileOptions') {
+                            var pendingEntry = sim.filePendingEntry || null;
+                            if (chosen === 'Settings') {
+                                sim.themeHistory.push('fileManagerList');
+                                sim.themeViewId = 'fileManagerSettings';
+                                sim.themeSelectedIndex = 0;
+                            } else if (chosen === 'Open' && pendingEntry) {
+                                if (pendingEntry.isFolder) {
+                                    showToast('Opening ' + pendingEntry.label);
+                                } else if (pendingEntry.isMusic) {
+                                    sim.playState = 'playing';
+                                    sim.themeHistory.push('fileManagerList');
+                                    sim.themeViewId = 'nowPlaying';
+                                    sim.themeSelectedIndex = 0;
+                                } else {
+                                    showToast('No app for this file');
+                                }
+                            } else if (chosen === 'Copy') {
+                                showToast('Copying 1 item to Internal');
+                            } else if (chosen === 'Cut') {
+                                showToast('Cutting 1 item');
+                            } else if (chosen === 'Delete') {
+                                sim.dialogVisible = true;
+                                sim.dialogContext = 'fileConfirmDelete';
+                                sim.dialogTitle = 'Delete';
+                                sim.dialogMessage = 'This item will be deleted.';
+                                sim.dialogOptions = ['Yes', 'No'];
+                                sim.dialogSelectedIndex = 1;
+                            } else if (chosen === 'Rename') {
+                                showToast('Rename ' + (pendingEntry ? pendingEntry.label : 'item'));
+                            } else if (chosen === 'Properties' && pendingEntry) {
+                                sim.dialogVisible = true;
+                                sim.dialogContext = 'fileProperties';
+                                sim.dialogTitle = 'File Properties';
+                                sim.dialogMessage =
+                                    pendingEntry.label +
+                                    '\nSize: ' +
+                                    ((pendingEntry.columns && pendingEntry.columns[0]) || '-') +
+                                    '\nModified: ' +
+                                    ((pendingEntry.columns && pendingEntry.columns[1]) || '-');
+                                sim.dialogOptions = ['OK'];
+                                sim.dialogSelectedIndex = 0;
+                            }
+                            paint();
+                            return;
+                        }
+                        if (dialogContext === 'fileConfirmDelete') {
+                            showToast(chosen === 'Yes' ? 'Deleted successfully' : 'Cancelled');
+                            paint();
+                            return;
+                        }
+                        if (dialogContext === 'fileConfirmFormat') {
+                            showToast(chosen === 'Yes' ? 'Format Completed!' : 'Cancelled');
+                            paint();
+                            return;
+                        }
+                        if (dialogContext === 'fileRestoreDefaults') {
+                            if (chosen === 'Yes') {
+                                sim.fileManagerSortField = 'name';
+                                sim.fileManagerSortOrder = 'asc';
+                                sim.fileManagerShowHidden = false;
+                                sim.fileManagerShowExtensions = false;
+                                showToast('Settings restored');
+                            }
+                            paint();
+                            return;
+                        }
                         paint();
                         return;
                     }
@@ -4645,7 +5264,64 @@
                         paint();
                         return;
                     }
-                    if (vid === 'music_folders' || vid === 'fileManager') {
+                    if (vid === 'fileManager') {
+                        /* Storage picker → the folder list for that volume. */
+                        var storageItems = genericListForView('fileManager', previewOpts.deviceMode);
+                        var storagePick = storageItems[sim.themeSelectedIndex];
+                        if (storagePick) {
+                            sim.fileManagerStorage = storagePick.storage || 'internal';
+                            sim.themeHistory.push('fileManager');
+                            sim.themeViewId = 'fileManagerList';
+                            sim.themeSelectedIndex = 0;
+                            scrollState.override = 0;
+                        }
+                        paint();
+                        return;
+                    }
+                    if (vid === 'fileManagerList') {
+                        var fmRows = genericListForView('fileManagerList', previewOpts.deviceMode, sim);
+                        var fmEntry = fmRows[sim.themeSelectedIndex] || null;
+                        sim.filePendingEntry = fmEntry;
+                        sim.dialogVisible = true;
+                        sim.dialogContext = 'fileOptions';
+                        sim.dialogTitle = fmEntry ? fmEntry.label : 'File Manager';
+                        sim.dialogMessage = '';
+                        sim.dialogOptions = ['Open', 'Copy', 'Cut', 'Delete', 'Rename', 'Properties', 'Settings', 'Cancel'];
+                        sim.dialogSelectedIndex = 0;
+                        paint();
+                        return;
+                    }
+                    if (vid === 'fileManagerSettings') {
+                        var fmSettingIndex = sim.themeSelectedIndex;
+                        if (fmSettingIndex === 0) {
+                            var fields = ['name', 'size', 'time', 'type'];
+                            var fi = fields.indexOf(sim.fileManagerSortField);
+                            sim.fileManagerSortField = fields[(fi + 1) % fields.length];
+                        } else if (fmSettingIndex === 1) {
+                            sim.fileManagerSortOrder = sim.fileManagerSortOrder === 'desc' ? 'asc' : 'desc';
+                        } else if (fmSettingIndex === 2) {
+                            sim.fileManagerShowHidden = !sim.fileManagerShowHidden;
+                        } else if (fmSettingIndex === 3) {
+                            sim.fileManagerShowExtensions = !sim.fileManagerShowExtensions;
+                        } else if (fmSettingIndex === 4 || fmSettingIndex === 5) {
+                            sim.dialogVisible = true;
+                            sim.dialogContext = 'fileConfirmFormat';
+                            sim.dialogTitle = fmSettingIndex === 4 ? 'Format Internal Storage' : 'Format TF Card';
+                            sim.dialogMessage = 'Are you sure you want to format?';
+                            sim.dialogOptions = ['Yes', 'No'];
+                            sim.dialogSelectedIndex = 1;
+                        } else if (fmSettingIndex === 6) {
+                            sim.dialogVisible = true;
+                            sim.dialogContext = 'fileRestoreDefaults';
+                            sim.dialogTitle = 'Restore Default Settings';
+                            sim.dialogMessage = 'Are you sure you want to restore all settings to their defaults?';
+                            sim.dialogOptions = ['Yes', 'No'];
+                            sim.dialogSelectedIndex = 1;
+                        }
+                        paint();
+                        return;
+                    }
+                    if (vid === 'music_folders') {
                         var fList = genericListForView(vid, previewOpts.deviceMode);
                         var fEntry = fList[sim.themeSelectedIndex];
                         if (fEntry && fEntry.isMusic) {
@@ -4691,11 +5367,73 @@
                         return;
                     }
                     if (vid === 'fm') {
-                        sim.dialogVisible = true;
-                        sim.dialogTitle = 'FM Radio';
-                        sim.dialogMessage = ((Number(sim.fmFreq) || 985) / 10).toFixed(1) + ' MHz';
-                        sim.dialogOptions = ['Auto scan', 'Presets', 'Close'];
-                        sim.dialogSelectedIndex = 0;
+                        /* FMMainActivity's MENU key opens the popup list. The
+                           launcher's own strings: Channel list, Favorite channel
+                           list, Re-search channel, Record fm, Audio output,
+                           Frequency range. */
+                        sim.themeHistory.push('fm');
+                        sim.themeViewId = 'fmMenu';
+                        sim.themeSelectedIndex = 0;
+                        paint();
+                        return;
+                    }
+                    if (vid === 'fmMenu') {
+                        var fmMenuItems = genericListForView('fmMenu', previewOpts.deviceMode, sim);
+                        var fmPick = fmMenuItems[sim.themeSelectedIndex] || {};
+                        if (fmPick.id === 'fm_menu_channels') {
+                            sim.themeHistory.push('fmMenu');
+                            sim.themeViewId = 'fmChannels';
+                            sim.themeSelectedIndex = 0;
+                        } else if (fmPick.id === 'fm_menu_favorites') {
+                            sim.themeHistory.push('fmMenu');
+                            sim.themeViewId = 'fmFavorites';
+                            sim.themeSelectedIndex = 0;
+                        } else if (fmPick.id === 'fm_menu_rescan') {
+                            showToast('Searching... ' + SCAN_FREQS.length + ' channels found');
+                        } else if (fmPick.id === 'fm_menu_record') {
+                            sim.dialogVisible = true;
+                            sim.dialogContext = 'fmRecord';
+                            sim.dialogTitle = 'Record fm';
+                            sim.dialogMessage = 'Save current recording?';
+                            sim.dialogOptions = ['Save', 'Discard'];
+                            sim.dialogSelectedIndex = 0;
+                        } else if (fmPick.id === 'fm_menu_output') {
+                            sim.themeHistory.push('fmMenu');
+                            sim.themeViewId = 'fmAudioOutput';
+                            sim.themeSelectedIndex = sim.fmAudioOutput === 'headset' ? 1 : 0;
+                        } else if (fmPick.id === 'fm_menu_range') {
+                            sim.themeHistory.push('fmMenu');
+                            sim.themeViewId = 'fmRange';
+                            sim.themeSelectedIndex = 0;
+                        }
+                        paint();
+                        return;
+                    }
+                    if (vid === 'fmChannels' || vid === 'fmFavorites') {
+                        var fmPickList = genericListForView(vid, previewOpts.deviceMode, sim);
+                        var tuned = fmPickList[sim.themeSelectedIndex];
+                        if (tuned && tuned.fmFreq) {
+                            sim.fmFreq = tuned.fmFreq;
+                            sim.playState = 'fmPlaying';
+                        }
+                        sim.themeViewId = 'fm';
+                        sim.themeSelectedIndex = 0;
+                        paint();
+                        return;
+                    }
+                    if (vid === 'fmAudioOutput') {
+                        sim.fmAudioOutput = sim.themeSelectedIndex === 1 ? 'headset' : 'speaker';
+                        sim.themeViewId = 'fm';
+                        sim.themeSelectedIndex = 0;
+                        paint();
+                        return;
+                    }
+                    if (vid === 'fmRange') {
+                        var rangeItems = genericListForView('fmRange', previewOpts.deviceMode, sim);
+                        var pickedRange = rangeItems[sim.themeSelectedIndex];
+                        if (pickedRange) sim.fmRegion = pickedRange.label;
+                        sim.themeViewId = 'fm';
+                        sim.themeSelectedIndex = 0;
                         paint();
                         return;
                     }
@@ -4802,6 +5540,18 @@
                             sim.dialogSelectedIndex = 1;
                         } else if (sid === 'clear_cache') {
                             showToast('Clearing cache...');
+                        } else if (sid === 'song_name_display') {
+                            sim.songNameDisplay = sim.songNameDisplay === 'filename' ? 'songTitle' : 'filename';
+                        } else if (sid === 'list_sort') {
+                            sim.listSort = sim.listSort === 'desc' ? 'asc' : 'desc';
+                        } else if (sid === 'artist_view') {
+                            sim.artistView = sim.artistView === 'grid' ? 'list' : 'grid';
+                        } else if (sid === 'album_view') {
+                            sim.albumView = sim.albumView === 'grid' ? 'list' : 'grid';
+                        } else if (sid === 'album_art_style') {
+                            /* Music → Settings → Album Art Style (Y2 3.2.0-fm).
+                               Perspective tilts the cover; Flat keeps it square. */
+                            sim.albumArtStyle = sim.albumArtStyle === 'flat' ? 'perspective' : 'flat';
                         } else {
                             showToast(selEntry.label || 'Settings');
                         }
@@ -5319,11 +6069,40 @@
                         if (nextOpts.showUnimplementedHome !== undefined) {
                             previewOpts.showUnimplementedHome = nextOpts.showUnimplementedHome === true;
                         }
+                        if (nextOpts.firmware !== undefined) {
+                            previewOpts.firmware = nextOpts.firmware;
+                        }
                         homeItems = buildHomeItems(cfg.homePageConfig || {}, settingCfg, previewOpts);
+                        var fwNow = firmwareFor(previewOpts);
                         if (sim.themeViewId === 'home') {
                             sim.themeSelectedIndex = Math.max(0, Math.min(sim.themeSelectedIndex, Math.max(0, homeItems.length - 1)));
-                        } else if (previewOpts.deviceMode === 'y1' && String(sim.themeViewId || '').indexOf('settingsCat_') === 0) {
+                        } else if (
+                            String(sim.themeViewId || '').indexOf('settingsCat_') === 0 &&
+                            (previewOpts.deviceMode === 'y1' || fwNow.settingsStyle !== 'categories')
+                        ) {
                             sim.themeViewId = 'settings';
+                            sim.themeSelectedIndex = 0;
+                        } else if (sim.themeViewId === 'musicSettings' && !fwNow.musicSettingsRows) {
+                            sim.themeViewId = 'music';
+                            sim.themeSelectedIndex = 0;
+                        } else if (
+                            (sim.themeViewId === 'fileManager' ||
+                                sim.themeViewId === 'fileManagerList' ||
+                                sim.themeViewId === 'fileManagerSettings') &&
+                            !fwNow.fileManager
+                        ) {
+                            sim.themeViewId = 'home';
+                            sim.themeSelectedIndex = 0;
+                        } else if (
+                            (sim.themeViewId === 'fm' ||
+                                sim.themeViewId === 'fmMenu' ||
+                                sim.themeViewId === 'fmChannels' ||
+                                sim.themeViewId === 'fmFavorites' ||
+                                sim.themeViewId === 'fmAudioOutput' ||
+                                sim.themeViewId === 'fmRange') &&
+                            !fwNow.fm
+                        ) {
+                            sim.themeViewId = 'home';
                             sim.themeSelectedIndex = 0;
                         }
                         paint();
@@ -5357,6 +6136,19 @@
                             wheelVolumeEnabled: sim.wheelVolumeEnabled,
                             headphoneGain: sim.headphoneGain,
                             speakerEnabled: sim.speakerEnabled,
+                            albumArtStyle: sim.albumArtStyle,
+                            songNameDisplay: sim.songNameDisplay,
+                            listSort: sim.listSort,
+                            artistView: sim.artistView,
+                            albumView: sim.albumView,
+                            fileManagerStorage: sim.fileManagerStorage,
+                            fileManagerSortField: sim.fileManagerSortField,
+                            fileManagerSortOrder: sim.fileManagerSortOrder,
+                            fileManagerShowHidden: sim.fileManagerShowHidden,
+                            fileManagerShowExtensions: sim.fileManagerShowExtensions,
+                            fmAudioOutput: sim.fmAudioOutput,
+                            fmRegion: sim.fmRegion,
+                            fmFavoriteFreqs: (sim.fmFavoriteFreqs || []).slice(),
                             fmFreq: sim.fmFreq,
                             btEnabled: sim.btEnabled
                         };
@@ -5391,6 +6183,20 @@
                         if (snap.speakerEnabled !== undefined) sim.speakerEnabled = snap.speakerEnabled;
                         if (snap.fmFreq !== undefined) sim.fmFreq = snap.fmFreq;
                         if (snap.btEnabled !== undefined) sim.btEnabled = snap.btEnabled;
+                        if (snap.albumArtStyle !== undefined) sim.albumArtStyle = snap.albumArtStyle;
+                        if (snap.songNameDisplay !== undefined) sim.songNameDisplay = snap.songNameDisplay;
+                        if (snap.listSort !== undefined) sim.listSort = snap.listSort;
+                        if (snap.artistView !== undefined) sim.artistView = snap.artistView;
+                        if (snap.albumView !== undefined) sim.albumView = snap.albumView;
+                        if (snap.fileManagerStorage !== undefined) sim.fileManagerStorage = snap.fileManagerStorage;
+                        if (snap.fileManagerSortField !== undefined) sim.fileManagerSortField = snap.fileManagerSortField;
+                        if (snap.fileManagerSortOrder !== undefined) sim.fileManagerSortOrder = snap.fileManagerSortOrder;
+                        if (snap.fileManagerShowHidden !== undefined) sim.fileManagerShowHidden = snap.fileManagerShowHidden;
+                        if (snap.fileManagerShowExtensions !== undefined)
+                            sim.fileManagerShowExtensions = snap.fileManagerShowExtensions;
+                        if (snap.fmAudioOutput !== undefined) sim.fmAudioOutput = snap.fmAudioOutput;
+                        if (snap.fmRegion !== undefined) sim.fmRegion = snap.fmRegion;
+                        if (Array.isArray(snap.fmFavoriteFreqs)) sim.fmFavoriteFreqs = snap.fmFavoriteFreqs.slice();
                         var restoreY = typeof snap.lastMenuScrollY === 'number' ? snap.lastMenuScrollY : null;
                         scrollState.lastViewId = sim.themeViewId;
                         if (restoreY != null) {
@@ -5444,7 +6250,8 @@
                                     mode: previewOpts.mode,
                                     deviceMode: 'both',
                                     showLegacyHome: true,
-                                    showUnimplementedHome: true
+                                    showUnimplementedHome: true,
+                                    firmware: previewOpts.firmware
                                 });
                                 tempHomeOverride = true;
                             }

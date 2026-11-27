@@ -287,6 +287,9 @@
         onboardingSuppress: byId('studio-onboarding-suppress'),
         previewControls: byId('studio-preview-controls'),
         toggleLegacy: byId('studio-toggle-legacy'),
+        firmwareSelect: byId('studio-firmware-select'),
+        firmwareSummary: byId('studio-firmware-summary'),
+        firmwareState: byId('studio-firmware-state'),
         toggleUnimplemented: byId('studio-toggle-unimplemented'),
         identityMismatch: byId('studio-identity-mismatch'),
         mismatchAsNew: byId('studio-mismatch-as-new'),
@@ -383,6 +386,9 @@
         previewDeviceMode: 'both',
         showLegacyHome: true,
         showUnimplementedHome: false,
+        /* Which stock launcher each model's preview reproduces. Defaults to the
+           newest release; the firmware picker changes one model at a time. */
+        firmwareVersions: { y1: '3.1.2', y2: '3.2.8' },
         y2ToastDismissedFolder: '',
         tryDeviceHandle: null,
         tryOnDeviceCount: (function () {
@@ -2668,6 +2674,7 @@
             deviceMode: state.previewDeviceMode || 'both',
             showLegacyHome: state.showLegacyHome !== false,
             showUnimplementedHome: state.showUnimplementedHome === true,
+            firmware: state.firmwareVersions,
             compactControls: true,
             /* The Studio edits artwork, not playback: the four transport
                buttons are enough, and the fifth toggles the options beside the
@@ -4092,8 +4099,26 @@
 
     function applyBlankSlots(config) {
         var changed = fillBlankSlots(config);
+        if (blankUnresolvedFileManager(config)) changed = true;
         if (changed || configUsesPlaceholder(config)) ensurePlaceholderAsset();
         return changed;
+    }
+
+    /* A File Manager line that points at a file this package does not ship is
+       the same gap as a missing line: the launcher would fall back to its own
+       glyph. Point it at the shared placeholder so the slot stays blank and the
+       package never references a file it cannot deliver. */
+    function blankUnresolvedFileManager(config) {
+        if (!config || typeof config !== 'object') return false;
+        var path = 'homePageConfig.fileManager';
+        var missing = state.missingAssetValues && state.missingAssetValues[path];
+        var current = readPath(config, path);
+        if (!missing && !(typeof current === 'string' && current.trim())) return false;
+        if (!missing) return false;
+        writePath(config, path, PLACEHOLDER_FILE);
+        delete state.missingAssetValues[path];
+        delete state.missingAssetPaths[path];
+        return true;
     }
 
     function rebuildAssets(opts) {
@@ -4788,6 +4813,17 @@
         return !!(asset.localMissing || asset.missingFile);
     }
 
+    /* Battery art is one ladder of eight levels, not eight unrelated icons:
+       four discharging steps and the matching charging steps. Grouping them
+       keeps every level in one place instead of scattering them through the
+       status bar glyphs. */
+    var BATTERY_ASSET_RE = /^statusConfig\.battery(?:Charging)?\.\d+$/;
+    var BATTERY_GROUP = 'Battery levels';
+
+    function assetGroupName(asset) {
+        return BATTERY_ASSET_RE.test(asset.path) ? BATTERY_GROUP : asset.section;
+    }
+
     function assetMatchesFilter(asset, filter) {
         if (filter === 'missing') return isMissingAsset(asset);
         if (filter === 'changed') return !!asset.changed;
@@ -4841,19 +4877,34 @@
 
         var groups = Object.create(null);
         visible.forEach(function (asset) {
-            if (!groups[asset.section]) groups[asset.section] = [];
-            groups[asset.section].push(asset);
+            var groupName = assetGroupName(asset);
+            if (!groups[groupName]) groups[groupName] = [];
+            groups[groupName].push(asset);
         });
+        /* The battery ladder sits straight after the rest of the status bar so
+           its levels read as one set rather than being split by the Bluetooth
+           and headset glyphs that sort between them. */
+        var groupNames = Object.keys(groups);
+        if (groupNames.indexOf(BATTERY_GROUP) !== -1) {
+            groupNames.splice(groupNames.indexOf(BATTERY_GROUP), 1);
+            var statusAt = groupNames.indexOf('Status bar');
+            groupNames.splice(statusAt === -1 ? 0 : statusAt + 1, 0, BATTERY_GROUP);
+        }
         /* Even a package with no font still has text colour choices. Keep one
            Font family tray for them rather than burying them in Colours. */
         if (filter === 'all' && fontColors.length && !groups['Font family']) {
             groups['Font family'] = [];
         }
-        Object.keys(groups).forEach(function (sectionName) {
+        groupNames.forEach(function (sectionName) {
             var group = document.createElement('details');
             group.className = 'studio-asset-group';
             var trayKey = 'asset:' + sectionName;
-            group.open = !!state.openTrays[trayKey];
+            /* The battery ladder opens up front: its eight levels are the one
+               set a reader most often steps through. */
+            group.open =
+                state.openTrays[trayKey] === undefined
+                    ? sectionName === BATTERY_GROUP
+                    : !!state.openTrays[trayKey];
             group.addEventListener('toggle', function () {
                 state.openTrays[trayKey] = group.open;
                 if (group.open) {
@@ -4911,6 +4962,27 @@
         }
         if (state.selectedAssetId) highlightPreviewAsset(state.selectedAssetId);
         if (!opts.deferThumbRefresh) scheduleThumbRefresh(30);
+    }
+
+    /* A pick made in the preview (a battery level, a status glyph) has to land
+       on its row in the tray: open the group that holds it and scroll the list
+       only when the row is actually out of view, so a click on an already
+       visible row never moves the tray. */
+    function revealAssetRow(id) {
+        if (!el.assetList || !id) return;
+        var row = el.assetList.querySelector('[data-asset-id="' + id + '"]');
+        if (!row) return;
+        var group = row.closest('details');
+        while (group) {
+            if (!group.open) group.open = true;
+            group = group.parentElement ? group.parentElement.closest('details') : null;
+        }
+        var list = el.assetList;
+        var listRect = list.getBoundingClientRect();
+        var rowRect = row.getBoundingClientRect();
+        var pad = 14;
+        if (rowRect.top >= listRect.top + pad && rowRect.bottom <= listRect.bottom - pad) return;
+        list.scrollTop += rowRect.top - listRect.top - (list.clientHeight - rowRect.height) / 2;
     }
 
     function paintAssetSelection() {
@@ -4997,6 +5069,7 @@
         var statusChanged = options && options.keepStatus ? false : applyStatusStateForAsset(id);
         if (statusChanged) renderStatusEditor();
         paintAssetSelection();
+        revealAssetRow(id);
         if (previewToolbar && !previewToolbar.hidden) showPreviewToolbar(id);
         if (options && options.skipRemount) {
             highlightPreviewAsset(id);
@@ -5682,6 +5755,30 @@
          background, Item background, and Item right arrow suggested nearby.
        - Clicking the right arrow selects Item right arrow, with Item selected
          background, Item background, and that row's icon suggested nearby. */
+    /* The Home and Settings masks sit under the menu list, so their opaque
+       pixels are exactly where a pointer hits a row instead. Offering the mask
+       with the row's own artwork is the only reliable way to reach it: without
+       this, a mask whose coverage is only the menu area could not be selected
+       from the preview at all. */
+    function screenMaskIds() {
+        var api = el.preview ? el.preview._y1TpApi : null;
+        if (!api || typeof api.screenAssets !== 'function') return [];
+        var ids = [];
+        try {
+            ids = api.screenAssets() || [];
+        } catch (e) {
+            return [];
+        }
+        return ids.filter(function (id) {
+            if (!/^(?:desktopMask|settingMask)$/.test(id)) return false;
+            var asset = state.assetById[id];
+            /* A slot the Studio backfilled with the transparent placeholder is
+               not a mask the theme defines, so the suggested assets stay as
+               they were: there is no overlay to offer. */
+            return !!asset && !asset.placeholder && !asset.empty && !isMissingAsset(asset);
+        });
+    }
+
     function resolvePreviewAction(hit) {
         if (!hit || !hit.path) return null;
         var path = hit.path;
@@ -5727,6 +5824,10 @@
                 }
             }
             rowRelated.push(companionBg, 'itemConfig.itemRightArrow', 'fontFamily');
+            var rowMasks = screenMaskIds();
+            rowMasks.forEach(function (maskId) {
+                if (rowRelated.indexOf(maskId) === -1) rowRelated.push(maskId);
+            });
             var iconLabel = iconId ? previewHitLabel(iconId) : '';
             var primaryLabel = previewHitLabel(primaryBg) || 'Item selected background';
             return {
@@ -5737,7 +5838,7 @@
                 relatedColorAnchor: iconId || primaryBg,
                 /* Both halves of the row are offered at once: the selection bar
                    the reader clicked and the artwork drawn beside it. */
-                toolbarIds: [primaryBg].concat(iconId ? [iconId] : []),
+                toolbarIds: [primaryBg].concat(iconId ? [iconId] : []).concat(rowMasks),
                 tooltip: iconLabel
                     ? primaryLabel + ' (with ' + iconLabel + ') — click to edit'
                     : primaryLabel + ' — click to edit'
@@ -5757,6 +5858,10 @@
                 });
             }
             iconRelated.push('fontFamily');
+            var rightMasks = screenMaskIds();
+            rightMasks.forEach(function (maskId) {
+                if (iconRelated.indexOf(maskId) === -1) iconRelated.push(maskId);
+            });
             var rightLabel = previewHitLabel(path);
             return {
                 primaryId: path,
@@ -5764,6 +5869,7 @@
                 relatedIds: iconRelated,
                 relatedTitle: 'Item backgrounds, arrow & related assets',
                 relatedColorAnchor: path,
+                toolbarIds: [path].concat(rightMasks),
                 tooltip: rightLabel ? rightLabel + ' — click to edit' : 'Click to edit this icon'
             };
         }
@@ -10050,6 +10156,18 @@
         return !!String(asset.value || '').trim();
     }
 
+    /* Y2 3.2.8 draws its own File Manager glyph only when the key is absent.
+       A slot that points at transparent.png is a real, packaged decision: the
+       launcher keeps the gap instead. The Studio therefore treats a blank slot
+       as defined, so a theme that intentionally has no File Manager artwork
+       still carries the key and previews what the player will show. */
+    function fileManagerSlotDefined() {
+        var asset = fileManagerAsset();
+        if (!asset) return false;
+        if (asset.empty) return false;
+        return !!String(asset.value || '').trim();
+    }
+
     function platformCopy() {
         if (!state.meta) {
             return {
@@ -10073,6 +10191,14 @@
                 title: 'Y1 / Y2 theme',
                 body: 'This theme includes the file manager icon that Y2 adds to the home screen, so it is listed for both Y1 and Y2.',
                 action: 'Show file manager icon'
+            };
+        }
+        if (fileManagerSlotDefined()) {
+            return {
+                label: 'Y1 / Y2',
+                title: 'File Manager slot kept blank',
+                body: 'This theme points the File Manager slot at the transparent placeholder, so Y2 keeps the gap instead of drawing its own icon. Add artwork if you want an icon there.',
+                action: 'Show file manager slot'
             };
         }
         return {
@@ -10246,7 +10372,8 @@
     function syncY2FileManagerModal() {
         if (!el.y2Modal || el.y2Modal.hidden) return;
         var asset = fileManagerAsset();
-        var ready = themeShipsFileManager() && asset && asset.url;
+        var ready = fileManagerSlotDefined() && asset && asset.url;
+        var blank = ready && !themeShipsFileManager();
         if (el.y2ModalThemeName) {
             el.y2ModalThemeName.textContent = (state.meta && state.meta.name) || state.folder || 'this theme';
         }
@@ -10265,8 +10392,10 @@
         }
         if (el.y2ModalStatus) {
             el.y2ModalStatus.textContent = ready
-                ? 'File Manager icon ready (' + assetFileLabel(asset) + ') — full Y2 support enabled!'
-                : 'Waiting for File Manager icon (166 × 166 PNG)';
+                ? blank
+                    ? 'Slot kept blank (transparent.png) — Y2 shows no File Manager icon here.'
+                    : 'File Manager icon ready (' + assetFileLabel(asset) + ') — full Y2 support enabled!'
+                : 'Waiting for File Manager icon (166 × 166 PNG), or keep the slot blank.';
         }
         if (el.y2ModalSubmit) {
             el.y2ModalSubmit.disabled = !ready;
@@ -10323,8 +10452,12 @@
             });
         }
         if (el.y2ModalTemplate) {
+            /* "Keep Blank" writes the shared transparent placeholder into
+               homePageConfig.fileManager instead of downloading a template: the
+               package then tells Y2 not to draw its own File Manager glyph. */
             el.y2ModalTemplate.addEventListener('click', function () {
-                downloadAsset(FILE_MANAGER_ASSET);
+                blankAsset(FILE_MANAGER_ASSET);
+                syncY2FileManagerModal();
             });
         }
         if (el.y2ModalDropzone) {
@@ -10358,7 +10491,7 @@
         });
         if (el.y2ModalSubmit) {
             el.y2ModalSubmit.addEventListener('click', function () {
-                if (!themeShipsFileManager()) return;
+                if (!fileManagerSlotDefined()) return;
                 closeY2FileManagerModal();
                 var listing = state.identity.listing || matchingGalleryListing() || (state.folder ? state.byFolder[state.folder] : null);
                 if (listing) state.identity.listing = listing;
@@ -10376,7 +10509,104 @@
         }
     }
 
+    /* —— Firmware picker ——————————————————————————————————————————————
+       A package works on every release; the menu tree belongs to the launcher,
+       so the picker changes the simulated firmware, never the theme. */
+    function firmwareModelForPreview() {
+        return state.previewDeviceMode === 'y1' ? 'y1' : 'y2';
+    }
+
+    function firmwareVersionsFor(modelId) {
+        var cat = window.Y1FirmwareCatalog;
+        var model = cat && typeof cat.model === 'function' ? cat.model(modelId) : null;
+        return model && model.versions ? model.versions.slice() : [];
+    }
+
+    function firmwareSelection(modelId) {
+        var versions = firmwareVersionsFor(modelId);
+        if (!versions.length) return null;
+        var wanted = state.firmwareVersions[modelId];
+        for (var i = 0; i < versions.length; i += 1) {
+            if (versions[i].id === wanted) return versions[i];
+        }
+        return versions[versions.length - 1];
+    }
+
+    function compareFirmwareVersions(a, b) {
+        var left = String(a).split('.').map(Number);
+        var right = String(b).split('.').map(Number);
+        for (var i = 0; i < Math.max(left.length, right.length); i += 1) {
+            var x = left[i] || 0;
+            var y = right[i] || 0;
+            if (x !== y) return x > y ? 1 : -1;
+        }
+        return 0;
+    }
+
+    /* Which assets this theme uses that the chosen release does not draw yet:
+       the honest answer to “will my theme look complete on this firmware?”. */
+    function firmwareAssetGaps(version, modelId) {
+        var cat = window.Y1FirmwareCatalog;
+        if (!version || !cat || typeof cat.assetMinimum !== 'function') return [];
+        return (state.assets || []).filter(function (asset) {
+            var min = cat.assetMinimum(modelId, asset.path);
+            if (min === undefined) return false;
+            if (min === null) return true;
+            return compareFirmwareVersions(min, version.id) > 0;
+        });
+    }
+
+    function renderFirmwareControl() {
+        if (!el.firmwareSelect) return;
+        var modelId = firmwareModelForPreview();
+        var versions = firmwareVersionsFor(modelId);
+        var current = firmwareSelection(modelId);
+        var signature = modelId + '|' + (current ? current.id : '') + '|' + versions.length;
+        if (el.firmwareSelect.getAttribute('data-signature') !== signature) {
+            el.firmwareSelect.innerHTML = '';
+            versions
+                .slice()
+                .reverse()
+                .forEach(function (version) {
+                    var option = document.createElement('option');
+                    option.value = version.id;
+                    option.textContent = version.label || version.id;
+                    if (current && version.id === current.id) option.selected = true;
+                    el.firmwareSelect.appendChild(option);
+                });
+            el.firmwareSelect.setAttribute('data-signature', signature);
+        }
+        el.firmwareSelect.disabled = !versions.length;
+        if (el.firmwareState) {
+            var latestId = versions.length ? versions[versions.length - 1].id : '';
+            var atLatest = !!(current && current.id === latestId);
+            el.firmwareState.hidden = !current || atLatest;
+            el.firmwareState.textContent = current && !atLatest ? 'Older launcher' : '';
+        }
+        if (!el.firmwareSummary) return;
+        if (!current) {
+            el.firmwareSummary.textContent =
+                'Firmware catalogue unavailable, so the preview uses the latest known menu tree.';
+            return;
+        }
+        var gaps = firmwareAssetGaps(current, modelId).length;
+        var parts = [current.label || current.id];
+        if (current.date) parts.push('released ' + current.date);
+        if (state.previewDeviceMode === 'both') parts.push('Both previews the Y2 launcher');
+        if (gaps) {
+            parts.push(
+                gaps === 1
+                    ? '1 asset in this theme appears only in a later release'
+                    : gaps + ' assets in this theme appear only in later releases'
+            );
+        } else if (state.assets && state.assets.length) {
+            parts.push('every asset this theme uses is drawn by this release');
+        }
+        el.firmwareSummary.textContent = parts.join(' · ');
+    }
+
     function applyPreviewControlsToSimulator() {
+        renderFirmwareControl();
         each(document.querySelectorAll('[data-preview-device]'), function (btn) {
             var active = btn.getAttribute('data-preview-device') === state.previewDeviceMode;
             btn.classList.toggle('is-active', active);
@@ -10390,13 +10620,23 @@
                 api.setPreviewOptions({
                     deviceMode: state.previewDeviceMode,
                     showLegacyHome: state.showLegacyHome !== false,
-                    showUnimplementedHome: state.showUnimplementedHome === true
+                    showUnimplementedHome: state.showUnimplementedHome === true,
+                    firmware: state.firmwareVersions
                 });
             } catch (e) {}
         }
     }
 
     function setupPreviewControls() {
+        if (el.firmwareSelect) {
+            el.firmwareSelect.addEventListener('change', function () {
+                var modelId = firmwareModelForPreview();
+                var next = el.firmwareSelect.value;
+                if (!next) return;
+                state.firmwareVersions[modelId] = next;
+                applyPreviewControlsToSimulator();
+            });
+        }
         each(document.querySelectorAll('[data-preview-device]'), function (btn) {
             btn.addEventListener('click', function () {
                 var nextMode = btn.getAttribute('data-preview-device') || 'both';
@@ -10447,6 +10687,7 @@
         setupPlatformBadge();
         setupY2FileManagerHelper();
         setupPreviewControls();
+        applyPreviewControlsToSimulator();
         /* Once a theme has a changed asset, attribute or detail, leaving the
            page is always asked about first. The recovery copy is a safety net,
            not a reason to close an edit session without a word. */
