@@ -241,9 +241,14 @@
         return isUsableHomeIcon(homePageIconFromCfg(homeCfg || {}, 'fileManager')) ? 'y2' : 'y1';
     }
 
-    function isY2DefaultTheme(cfg, catalogFolder) {
-        var folder = String(catalogFolder || '').trim().toLowerCase();
+    function isY2DefaultTheme(cfg, catalogFolder, deviceMode) {
+        if (String(deviceMode || '').toLowerCase() === 'y1') return false;
+        var folder = String(catalogFolder || '').trim().replace(/\\/g, '/').toLowerCase();
         if (folder === 'y2_default') return true;
+        /* HoloPebble's Y2 root is the factory built-in light launcher: the one
+           screen where StatusBarFloatView draws dark glyphs. Its Y1 model is a
+           normal custom dark theme and keeps white glyphs. */
+        if (/^holopebble(\/|$)/.test(folder) && folder.indexOf('/models/y1') === -1) return true;
         var title = String((cfg && cfg.theme_info && cfg.theme_info.title) || '').trim().toLowerCase();
         var statusText = String((cfg && cfg.statusConfig && cfg.statusConfig.statusTextColor) || '').trim().toLowerCase();
         if (title === 'y2 default' && statusText && statusText !== '#ffffff' && statusText !== '#fff') {
@@ -415,7 +420,7 @@
         return items;
     }
 
-    function buildColors(itemCfg, menuCfg, statusCfg, cfg, catalogFolder) {
+    function buildColors(itemCfg, menuCfg, statusCfg, cfg, catalogFolder, deviceMode) {
         itemCfg = itemCfg || {};
         menuCfg = menuCfg || {};
         statusCfg = statusCfg || {};
@@ -431,7 +436,7 @@
             menu_text_primary: menuCfg.menuItemTextColor || text_primary,
             menu_text_selected: menuCfg.menuItemSelectedTextColor || text_selected,
             status_bar_bg: statusCfg.statusBarColor || '#0000004e',
-            status_text: statusTextColor(statusCfg, itemCfg, cfg, catalogFolder)
+            status_text: statusTextColor(statusCfg, itemCfg, cfg, catalogFolder, deviceMode)
         };
     }
 
@@ -473,11 +478,11 @@
         return null;
     }
 
-    function statusTextColor(statusCfg, itemCfg, cfg, catalogFolder) {
+    function statusTextColor(statusCfg, itemCfg, cfg, catalogFolder, deviceMode) {
         /* On stock Y1 & Y2 hardware, StatusBarFloatView forces white text/icons
-           for every custom theme; only the built-in factory Y2_Default light
-           theme renders dark ink (#2D2D44 / #000000) in its status bar. */
-        if (isY2DefaultTheme(cfg, catalogFolder)) {
+           for every custom theme; only the built-in factory Y2 light theme
+           (HoloPebble, no theme chosen) renders dark ink in its status bar. */
+        if (isY2DefaultTheme(cfg, catalogFolder, deviceMode)) {
             var declared = statusCfg && typeof statusCfg.statusTextColor === 'string' ? statusCfg.statusTextColor.trim() : '';
             if (declared) return declared;
             return '#2d2d44';
@@ -2373,7 +2378,7 @@
                     firmware: opts.firmware || null
                 };
 
-                var colors = buildColors(itemCfg, menuCfg, statusCfg, cfg, catalogFolder);
+                var colors = buildColors(itemCfg, menuCfg, statusCfg, cfg, catalogFolder, previewOpts.deviceMode);
                 var bgMerged = mergeItemBackgrounds(cfg, buildFileUrl, contentFolder);
                 var itemBackgroundStyle = bgMerged.itemBackgroundStyle;
                 var itemSelectedBackgroundStyle = bgMerged.itemSelectedBackgroundStyle;
@@ -2427,6 +2432,9 @@
                     return buildSettingsItems(cfg, buildFileUrl, contentFolder, sim, {
                         mode: previewOpts.mode,
                         deviceMode: previewOpts.deviceMode,
+                        /* Without the release, Settings kept the first
+                           firmware's rows after a Preview As switch. */
+                        firmware: previewOpts.firmware,
                         category: cat
                     });
                 }
@@ -3301,6 +3309,11 @@
 
                 function paint() {
                     if (cleanedUp) return;
+                    /* Colour roles depend on the current device mode: the factory
+                       Y2 HoloPebble screen uses dark status ink, the Y1 theme
+                       does not. Rebuild them so a Preview As switch repaints the
+                       status bar instead of keeping mount-time colours. */
+                    colors = buildColors(itemCfg, menuCfg, statusCfg, cfg, catalogFolder, previewOpts.deviceMode);
                     if (sim.themeViewId !== scrollState.lastViewId) {
                         scrollState.lastViewId = sim.themeViewId;
                         scrollState.lastY = 0;
@@ -6660,7 +6673,7 @@
         var menuCfg = cfg.menuConfig || {};
         var statusCfg = cfg.statusConfig || {};
         var settingCfg = cfg.settingConfig || {};
-        var colors = buildColors(itemCfg, menuCfg, statusCfg, cfg, catalogFolder);
+        var colors = buildColors(itemCfg, menuCfg, statusCfg, cfg, catalogFolder, opts.deviceMode || 'y2');
         var statusH = statusBarHeightPx(cfg);
         var isSel9Patch = isNinePatchCandidate(
             itemCfg,
