@@ -2851,21 +2851,21 @@
                     return blank;
                 }
 
-                function blankRightIconAtPoint(clientX, clientY, cRect) {
+                /* Right-hand pane artwork is one big target, whatever its
+                   pixels look like. PNG icons normally carry transparent
+                   padding, and a blank/missing icon has no pixels at all, so
+                   pixel-perfect alpha hit-testing would leave most of the slot
+                   unselectable. Home, Settings and Equalizer all reserve a box
+                   for this artwork; anywhere inside it belongs to the icon. */
+                function rightIconSlotAtPoint(clientX, clientY) {
                     var boxes = canvas.querySelectorAll('[data-theme-art-box]');
-                    var scale = canvas.offsetWidth ? cRect.width / canvas.offsetWidth : 1;
                     for (var b = 0; b < boxes.length; b++) {
                         var box = boxes[b];
                         var path = box.getAttribute('data-theme-art-box') || '';
                         if (!RIGHT_ICON_PATH_RE.test(path)) continue;
                         if (box.style.display === 'none' || !box.offsetParent) continue;
                         var img = box.querySelector('img[data-theme-asset-path]');
-                        if (img && img.style.display === 'none') img = null;
                         if (img && (img.getAttribute('data-theme-asset-path') || '') !== path) continue;
-                        /* A blank image collapses to (near) nothing, and a black
-                           one hides its slot entirely, so the whole artwork slot
-                           the preview reserves is the target. */
-                        if (img && !imageIsBlankArtwork(img)) continue;
                         var boxRect = box.getBoundingClientRect();
                         if (boxRect.width < 1 || boxRect.height < 1) continue;
                         if (
@@ -2939,11 +2939,6 @@
                         return null;
                     }
 
-                    /* A blank right-hand pane icon (transparent placeholder or an
-                       image with no visible pixels) has nothing to click through
-                       to by mistake, so its whole artwork slot stays clickable
-                       and the author can replace it. Icons with visible pixels
-                       keep the normal alpha pass-through below. */
                     var stack =
                         typeof document.elementsFromPoint === 'function'
                             ? document.elementsFromPoint(clientX, clientY)
@@ -2951,8 +2946,8 @@
                     /* An open dialog sits above everything, so it keeps its clicks. */
                     var dialogOnTop = !!sim.dialogVisible;
                     if (!dialogOnTop) {
-                        var blankRightIcon = blankRightIconAtPoint(clientX, clientY, cRect);
-                        if (blankRightIcon) return blankRightIcon;
+                        var rightIconSlot = rightIconSlotAtPoint(clientX, clientY);
+                        if (rightIconSlot) return rightIconSlot;
                     }
 
                     /* The item selection arrow is small, so its whole box is the
@@ -4043,7 +4038,7 @@
 
                         var imgBox = document.createElement('div');
                         imgBox.style.cssText =
-                            'position:absolute;top:96px;left:0;right:0;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;';
+                            'position:absolute;top:96px;left:0;right:0;width:100%;min-height:146px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;';
                         var abWrap = document.createElement('div');
                         abWrap.style.cssText =
                             'width:100%;display:none;flex-direction:column;align-items:center;';
