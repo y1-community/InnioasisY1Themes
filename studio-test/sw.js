@@ -3,7 +3,7 @@
    serving it from cache first kept a tab (and this worker's own query-keyed copy)
    on the previous release after a deploy, because a cache hit skipped the network
    entirely. The cache is now only an offline fallback. */
-const CACHE = 'innioasis-studio-v56';
+const CACHE = 'innioasis-studio-v58';
 const SHELL = [
   './',
   './index.html',

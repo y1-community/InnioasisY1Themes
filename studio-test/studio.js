@@ -7085,6 +7085,17 @@
     function matchingGalleryListing() {
         var meta = state.meta;
         if (!meta) return null;
+        /* A variation's config carries that look's own title ("1M Pip-Boy"), so
+           the folder the package came from identifies the listing rather than
+           the title inside it. Without this, an update made from inside a
+           variation looks like a brand-new theme and would be filed as one. */
+        if (state.sourceType === 'gallery' && state.folder) {
+            var folder = String(state.folder);
+            var byFolder = state.gallery.find(function (theme) {
+                return String(theme.folder || '') === folder;
+            });
+            if (byFolder) return byFolder;
+        }
         var title = normalizeTitle(meta.name);
         var author = normalizeAuthor(meta.author);
         if (!title) return null;
@@ -7841,6 +7852,70 @@
         };
     }
 
+    /* The ingest replaces a theme folder outright, so an update that carried a
+       single variation would delete the rest of the listing. Every variation's
+       config and art is therefore read back out of the gallery folder before
+       the submission is packed. */
+    async function readVariationConfig(variant) {
+        var folder = variant ? state.folder + '/Variants/' + variant : state.folder;
+        try {
+            var response = await fetch(galleryFileUrl(folder, 'config.json'), { cache: 'no-store' });
+            if (!response.ok) return null;
+            var data = await response.json();
+            return data && typeof data === 'object' ? data : null;
+        } catch (_err) {
+            return null;
+        }
+    }
+
+    async function collectVariationPackage(variant, config, options) {
+        if (!window.ThemePackaging) throw new Error('The theme packager did not load.');
+        var folder = variant ? state.folder + '/Variants/' + variant : state.folder;
+        var values = collectConfigAssetValues(config);
+        var seen = Object.create(null);
+        var entries = [];
+        var blobs = Object.create(null);
+        for (var i = 0; i < values.length; i += 1) {
+            var value = values[i];
+            var key = String(value || '').toLowerCase();
+            if (!key || seen[key]) continue;
+            seen[key] = true;
+            var blob = null;
+            try {
+                var response = await fetch(galleryFileUrl(folder, value), { cache: 'force-cache' });
+                if (response.ok) blob = await response.blob();
+            } catch (_err) {
+                blob = null;
+            }
+            if (!blob) continue;
+            entries.push({ path: value, download_url: value });
+            blobs[key] = blob;
+        }
+        var manifest = window.ThemePackaging.buildPackManifest(entries, '', '', config);
+        var outputConfig =
+            manifest.mode === 'flat'
+                ? window.ThemePackaging.rewriteConfigForDeviceFlatPack(config, '', manifest.logicalToDevice)
+                : config;
+        var deviceFiles = [];
+        manifest.items.forEach(function (item) {
+            if (String(item.devicePath || '').toLowerCase() === 'config.json') return;
+            var blob =
+                blobs[String(item.logicalPath || '').toLowerCase()] ||
+                blobs[String(item.resolved || '').toLowerCase()] ||
+                blobs[String(item.download_url || '').toLowerCase()];
+            if (!blob) return;
+            deviceFiles.push({ devicePath: item.devicePath, blob: blob });
+        });
+        normalizeConfigForCrossCompat(
+            outputConfig,
+            deviceFiles.map(function (entry) {
+                return entry.devicePath;
+            }),
+            options
+        );
+        return { config: outputConfig, deviceFiles: deviceFiles };
+    }
+
     async function buildThemePackage(reportProgress, folderOverride, options) {
         if (!window.JSZip) throw new Error('The ZIP builder did not load.');
         var report = typeof reportProgress === 'function' ? reportProgress : null;
@@ -7866,15 +7941,70 @@
         /* A submission of a named variation has to land in the listing's
            Variants folder, exactly where upload.html used to put it. */
         var variationSegment = String((options && options.variant) || state.variant || '').trim();
-        if (!(options && options.flat) && variationSegment) {
-            prefix = stem + '/Variants/' + variationSegment + '/';
-        }
+        var wholeTheme =
+            !(options && options.flat) &&
+            !!(options && options.includeAllVariants) &&
+            state.sourceType === 'gallery' &&
+            !!state.folder;
         reportPercent(35, 'Compressing theme…');
         var zip = new window.JSZip();
-        zip.file(prefix + 'config.json', JSON.stringify(outputConfig, null, 2));
-        collected.deviceFiles.forEach(function (item) {
-            zip.file(prefix + item.devicePath, item.blob);
-        });
+        if (wholeTheme) {
+            /* Every look travels with the update: the open one carries the
+               reader's edits, the others are copied as the gallery has them.
+               A variation dropped in this tab is simply left out. */
+            var otherVariants = variantNames().filter(function (name) {
+                return name.toLowerCase() !== variationSegment.toLowerCase();
+            });
+            var rootPayload = { config: outputConfig, deviceFiles: collected.deviceFiles };
+            if (variationSegment) {
+                var baseConfig = await readVariationConfig('');
+                rootPayload = baseConfig
+                    ? await collectVariationPackage('', baseConfig, options)
+                    : { config: null, deviceFiles: [] };
+            }
+            if (rootPayload.config) {
+                zip.file(prefix + 'config.json', JSON.stringify(rootPayload.config, null, 2));
+                rootPayload.deviceFiles.forEach(function (item) {
+                    zip.file(prefix + item.devicePath, item.blob);
+                });
+            }
+            if (variationSegment) {
+                /* The listing's details are what an update is filed under, but
+                   the variation keeps the title it already has. */
+                var activeStored = await readVariationConfig(variationSegment);
+                var storedTitle =
+                    activeStored && activeStored.theme_info && activeStored.theme_info.title
+                        ? String(activeStored.theme_info.title)
+                        : '';
+                if (storedTitle && outputConfig.theme_info) outputConfig.theme_info.title = storedTitle;
+                var activePrefix = prefix + 'Variants/' + variationSegment + '/';
+                zip.file(activePrefix + 'config.json', JSON.stringify(outputConfig, null, 2));
+                collected.deviceFiles.forEach(function (item) {
+                    zip.file(activePrefix + item.devicePath, item.blob);
+                });
+            }
+            for (var packIndex = 0; packIndex < otherVariants.length; packIndex += 1) {
+                var packName = otherVariants[packIndex];
+                reportPercent(
+                    36 + ((packIndex + 1) / (otherVariants.length + 1)) * 24,
+                    'Packing variation ' + packName + '…'
+                );
+                var variantConfig = await readVariationConfig(packName);
+                if (!variantConfig) continue;
+                var variantPayload = await collectVariationPackage(packName, variantConfig, options);
+                var variantPrefix = prefix + 'Variants/' + packName + '/';
+                zip.file(variantPrefix + 'config.json', JSON.stringify(variantPayload.config, null, 2));
+                variantPayload.deviceFiles.forEach(function (item) {
+                    zip.file(variantPrefix + item.devicePath, item.blob);
+                });
+            }
+        } else {
+            if (variationSegment) prefix = stem + '/Variants/' + variationSegment + '/';
+            zip.file(prefix + 'config.json', JSON.stringify(outputConfig, null, 2));
+            collected.deviceFiles.forEach(function (item) {
+                zip.file(prefix + item.devicePath, item.blob);
+            });
+        }
         /* Gallery uploads (never player Save ZIPs) include a browser-rendered
            480x360 Home screen capture so the theme displays accurately right
            away; if rendering fails, the GitHub Action captures it instead. */
@@ -8295,6 +8425,8 @@
         return names;
     }
 
+    var VARIANT_NEW_OPTION = '__new_variation__';
+
     /* Rebuilding a <select> can make the browser emit a change event of its own,
        which would navigate to a variation nobody picked. Edits to the list are
        made under this flag so those events are ignored. */
@@ -8326,9 +8458,13 @@
             option.textContent = name + (state.variantIsNew && name === selected ? ' (new)' : '');
             select.appendChild(option);
         });
+        /* Starting another look belongs with the list of looks rather than
+           beside it. */
+        var newOption = document.createElement('option');
+        newOption.value = VARIANT_NEW_OPTION;
+        newOption.textContent = '\uff0b New variation\u2026';
+        select.appendChild(newOption);
         select.value = selected;
-        var newButton = document.getElementById('studio-variant-new');
-        if (newButton) newButton.disabled = false;
         var removeButton = document.getElementById('studio-variant-remove');
         if (removeButton) {
             removeButton.disabled = !selected;
@@ -8487,13 +8623,12 @@
         if (select) {
             select.addEventListener('change', function () {
                 if (variantSelectRendering) return;
+                if (select.value === VARIANT_NEW_OPTION) {
+                    select.value = state.variant || '';
+                    void createVariation();
+                    return;
+                }
                 switchVariant(select.value);
-            });
-        }
-        var newButton = document.getElementById('studio-variant-new');
-        if (newButton) {
-            newButton.addEventListener('click', function () {
-                void createVariation();
             });
         }
         var removeButton = document.getElementById('studio-variant-remove');
@@ -8785,6 +8920,7 @@
                 : '';
             var file = await buildThemePackage(undefined, packFolder, {
                 includeScreenshotPreview: true,
+                includeAllVariants: true,
                 submissionMeta: {
                     isUpdate: !!state.ownUpdate,
                     clientSubmittedAt: clientSubmittedAt,
@@ -8801,9 +8937,6 @@
             form.set('clientSubmittedAt', clientSubmittedAt);
             if (state.ownUpdate && originalSubmittedAt) {
                 form.set('originalSubmittedAt', originalSubmittedAt);
-            }
-            if (state.removedVariants.length) {
-                form.set('removedVariants', JSON.stringify(state.removedVariants));
             }
             if (updateFolder) form.set('targetFolder', updateFolder);
             form.set('shareFolderHints', JSON.stringify([packFolder]));
@@ -8911,7 +9044,10 @@
     function applyOwnDetails() {
         if (!state.meta) return;
         var meta = state.meta;
-        if (el.submitTitle) el.submitTitle.value = meta.name || '';
+        var listing = state.identity && state.identity.listing;
+        /* An update keeps the listing's own name: a variation's title would
+           otherwise rename the theme it belongs to. */
+        if (el.submitTitle) el.submitTitle.value = (listing && listing.name) || meta.name || '';
         if (el.submitAuthor) el.submitAuthor.value = meta.author || '';
         if (el.submitDesc) el.submitDesc.value = cleanThemeDescription(meta.desc || '');
         if (el.submitAuthorUrl) el.submitAuthorUrl.value = meta.authorUrl || '';
