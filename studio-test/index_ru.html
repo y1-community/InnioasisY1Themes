@@ -255,6 +255,19 @@
                         <p id="studio-byline" translate="no" data-i18n-skip>Reading the package...</p>
                     </div>
                     <div class="studio-stage-meta">
+                        <div class="studio-variant-control" id="studio-variant-control" role="group" aria-label="Вариант темы" hidden>
+                            <label class="studio-variant-label" for="studio-variant-select">
+                                <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
+                                <span>Variation</span>
+                            </label>
+                            <select class="studio-variant-select" id="studio-variant-select" aria-label="Choose which variation of this theme you are editing"></select>
+                            <button class="studio-btn studio-variant-rename" id="studio-variant-rename" type="button" title="Give this variation another name">
+                                <i class="fa-solid fa-pen" aria-hidden="true"></i><span>Rename</span>
+                            </button>
+                            <button class="studio-btn studio-variant-remove" id="studio-variant-remove" type="button" title="Remove this variation from the theme you are editing">
+                                <i class="fa-solid fa-trash-can" aria-hidden="true"></i><span>Remove variation</span>
+                            </button>
+                        </div>
                         <div class="studio-platform">
                             <button class="studio-chip studio-chip--platform" id="studio-platform-chip" type="button" aria-expanded="false" aria-controls="studio-platform-pop" aria-label="Which players this theme is listed for" title="Y1 / Y2">
                                 <i class="fa-solid fa-mobile-screen" aria-hidden="true"></i><span id="studio-platform-label">Y1 / Y2</span><i class="fa-solid fa-circle-info studio-platform-info" aria-hidden="true"></i>
@@ -656,6 +669,72 @@
                 <button class="studio-btn studio-btn--primary" id="studio-y2-fm-submit" type="button" disabled>
                     <i class="fa-solid fa-paper-plane" aria-hidden="true"></i><span>Отправить обновление Y2</span>
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="studio-modal studio-variant-modal" id="studio-variant-remove-modal" hidden>
+        <div class="studio-modal-card studio-variant-card" role="dialog" aria-modal="true" aria-labelledby="studio-variant-remove-title">
+            <div class="studio-onboarding-head">
+                <span class="studio-eyebrow"><i class="fa-solid fa-trash-can" aria-hidden="true"></i> Remove variation</span>
+                <button class="studio-onboarding-x" id="studio-variant-remove-x" type="button" aria-label="Close the remove variation dialog">
+                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                </button>
+            </div>
+            <h2 id="studio-variant-remove-title">Remove &ldquo;<span id="studio-variant-remove-name" translate="no" data-i18n-skip></span>&rdquo;?</h2>
+            <p class="studio-variant-lead">The variation leaves the theme you are editing, and the next save or submission leaves it out. If the gallery already lists it, the removal is applied when that update is merged.</p>
+            <div class="studio-variant-foot">
+                <button class="studio-btn" id="studio-variant-remove-cancel" type="button">Keep it</button>
+                <button class="studio-btn studio-btn--primary" id="studio-variant-remove-confirm" type="button">
+                    <i class="fa-solid fa-trash-can" aria-hidden="true"></i><span>Remove variation</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="studio-modal studio-variant-modal" id="studio-variant-modal" hidden>
+        <div class="studio-modal-card studio-variant-card" role="dialog" aria-modal="true" aria-labelledby="studio-variant-title">
+            <div class="studio-onboarding-head">
+                <span class="studio-eyebrow" id="studio-variant-eyebrow"><i class="fa-solid fa-layer-group" aria-hidden="true"></i> New variation</span>
+                <button class="studio-onboarding-x" id="studio-variant-x" type="button" aria-label="Close the new variation dialog">
+                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                </button>
+            </div>
+            <h2 id="studio-variant-title">Name this variation</h2>
+            <p class="studio-variant-lead" id="studio-variant-lead">A variation is another look for the same listing — Pip-Boy ships seven, Stranger Things several. Your edit starts from the version on screen, and saving or submitting stores it under <code>Variants/&lt;name&gt;/</code>.</p>
+            <label class="studio-variant-field" for="studio-variant-name">
+                <span>Variation name</span>
+                <input id="studio-variant-name" type="text" maxlength="48" autocomplete="off" spellcheck="false" placeholder="e.g. Night" />
+            </label>
+            <div class="studio-variant-foot">
+                <button class="studio-btn" id="studio-variant-cancel" type="button">Отмена</button>
+                <button class="studio-btn studio-btn--primary" id="studio-variant-create" type="button">
+                    <i class="fa-solid fa-plus" aria-hidden="true" id="studio-variant-create-icon"></i><span id="studio-variant-create-label">Create variation</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="studio-modal studio-model-choice" id="studio-model-modal" hidden>
+        <div class="studio-modal-card studio-model-card" role="dialog" aria-modal="true" aria-labelledby="studio-model-title">
+            <div class="studio-onboarding-head">
+                <span class="studio-eyebrow"><i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i> Y1 &amp; Y2 save</span>
+                <button class="studio-onboarding-x" id="studio-model-x" type="button" aria-label="Close the Y1 and Y2 choice">
+                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                </button>
+            </div>
+            <h2 id="studio-model-title">Which player is this copy for?</h2>
+            <p class="studio-model-lead">Both copies use the same theme and the same files. <strong id="studio-model-theme" translate="no" data-i18n-skip>this theme</strong> draws Bluetooth differently on each player &mdash; a Home icon on Y1, a Settings icon on Y2 &mdash; so the ZIP you install gets the artwork your player looks for.</p>
+            <div class="studio-model-methods">
+                <button class="studio-btn studio-btn--primary" id="studio-model-y2" type="button">
+                    <i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i><span>Y2 &middot; Settings Bluetooth icon</span>
+                </button>
+                <button class="studio-btn" id="studio-model-y1" type="button">
+                    <i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i><span>Y1 &middot; Home Bluetooth icon</span>
+                </button>
+            </div>
+            <div class="studio-model-foot">
+                <button class="studio-btn" id="studio-model-cancel" type="button">Отмена</button>
             </div>
         </div>
     </div>
