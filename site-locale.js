@@ -35,7 +35,7 @@
     /* Catalogs are re-fetched under a new URL when their content changes.
        Without this a returning visitor keeps the copy they cached, so a
        language whose catalog was just completed still reads as English. */
-    var CATALOG_VERSION = "20261127studio25";
+    var CATALOG_VERSION = "20261127studio26";
     var STORAGE_LOCALE = "innioasis-locale";
     var STORAGE_REGION = "innioasis-region";
     var STORAGE_COUNTRY = "innioasis-country";
@@ -543,11 +543,12 @@
         "article.lumen-doc-body",
         ".lumen-notice-view"
     ].join(", ");
-    var DYNAMIC_CACHE_KEY = "innioasis-dynamic-translations-v4";
+    var DYNAMIC_CACHE_KEY = "innioasis-dynamic-translations-v5";
     try {
         global.localStorage.removeItem("innioasis-dynamic-translations");
         global.localStorage.removeItem("innioasis-dynamic-translations-v2");
         global.localStorage.removeItem("innioasis-dynamic-translations-v3");
+        global.localStorage.removeItem("innioasis-dynamic-translations-v4");
     } catch (_) {}
     var DYNAMIC_MAX_REQUESTS = 800;
     /* Missing strings share a request. A few batches run together so the
