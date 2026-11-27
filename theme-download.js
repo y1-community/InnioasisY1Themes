@@ -125,7 +125,118 @@
             });
     }
 
-    function download(options) {
+    /* A theme can carry a Y1 Home Bluetooth icon and a Y2 Settings one. The
+       reader's answer decides which artwork the single config slot names, and
+       the helper key never reaches the player. Ask only when the answer would
+       change the ZIP, so ordinary themes keep their one-click download. */
+    var modelStylesReady = false;
+    function injectModelStyles() {
+        if (modelStylesReady) return;
+        modelStylesReady = true;
+        var style = doc.createElement('style');
+        style.textContent =
+            '.tp-model-dialog{border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:0;max-width:min(92vw,440px);width:100%;background:var(--bg-dark,#13141d);color:var(--text-primary,#f5f6fa);box-shadow:0 24px 70px rgba(0,0,0,.55);}' +
+            '.tp-model-dialog::backdrop{background:rgba(6,6,11,.72);backdrop-filter:blur(6px);}' +
+            '.tp-model-body{padding:22px 22px 18px;display:grid;gap:14px;}' +
+            '.tp-model-eyebrow{margin:0;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent,#22d3ee);font-weight:700;}' +
+            '.tp-model-title{margin:0;font-size:1.18rem;line-height:1.3;}' +
+            '.tp-model-copy{margin:0;color:var(--text-secondary,#9aa0b8);font-size:.9rem;line-height:1.5;}' +
+            '.tp-model-options{display:grid;gap:10px;margin-top:2px;}' +
+            '.tp-model-option{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:var(--bg-card,rgba(255,255,255,.04));color:inherit;font:inherit;text-align:left;cursor:pointer;transition:border-color .15s ease,background .15s ease;}' +
+            '.tp-model-option:hover,.tp-model-option:focus-visible{border-color:var(--accent,#22d3ee);background:rgba(34,211,238,.08);outline:none;}' +
+            '.tp-model-option i{font-size:1.05rem;color:var(--accent,#22d3ee);width:20px;text-align:center;}' +
+            '.tp-model-option span{display:grid;gap:2px;}' +
+            '.tp-model-option strong{font-size:.95rem;font-weight:650;}' +
+            '.tp-model-option small{color:var(--text-secondary,#9aa0b8);font-size:.78rem;}' +
+            '.tp-model-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 22px 18px;}' +
+            '.tp-model-note{margin:0;color:var(--text-secondary,#9aa0b8);font-size:.76rem;line-height:1.4;}' +
+            '.tp-model-cancel{border:0;background:none;color:var(--text-secondary,#9aa0b8);font:inherit;font-size:.85rem;cursor:pointer;padding:8px 10px;border-radius:8px;}' +
+            '.tp-model-cancel:hover,.tp-model-cancel:focus-visible{color:var(--text-primary,#f5f6fa);outline:none;background:rgba(255,255,255,.06);}' +
+            '@media (max-width:480px){.tp-model-body{padding:18px 16px 12px}.tp-model-foot{padding:8px 16px 16px;flex-direction:column-reverse;align-items:stretch}.tp-model-option{padding:11px 12px}}';
+        doc.head.appendChild(style);
+    }
+
+    function askModelChoice(choice, themeName) {
+        return new Promise(function (resolve) {
+            if (typeof doc.createElement !== 'function' || typeof global.HTMLDialogElement === 'undefined') {
+                resolve(choice.defaultModel);
+                return;
+            }
+            injectModelStyles();
+            var dialog = doc.createElement('dialog');
+            dialog.className = 'tp-model-dialog';
+            dialog.setAttribute('aria-labelledby', 'tp-model-title');
+
+            var body = doc.createElement('div');
+            body.className = 'tp-model-body';
+            var eyebrow = doc.createElement('p');
+            eyebrow.className = 'tp-model-eyebrow';
+            eyebrow.textContent = 'Download';
+            var title = doc.createElement('h2');
+            title.className = 'tp-model-title';
+            title.id = 'tp-model-title';
+            title.textContent = 'Which player is this for?';
+            var copy = doc.createElement('p');
+            copy.className = 'tp-model-copy';
+            copy.textContent =
+                '“' + themeName + '” ships different Bluetooth artwork for each player. Pick the one you install it on — the ZIP is the same theme either way.';
+            var options = doc.createElement('div');
+            options.className = 'tp-model-options';
+
+            var foot = doc.createElement('div');
+            foot.className = 'tp-model-foot';
+            var note = doc.createElement('p');
+            note.className = 'tp-model-note';
+            note.textContent = 'You can download the other version again any time.';
+            var cancel = doc.createElement('button');
+            cancel.type = 'button';
+            cancel.className = 'tp-model-cancel';
+            cancel.textContent = 'Cancel';
+
+            function choose(model) {
+                close(model);
+            }
+            function close(value) {
+                dialog.remove();
+                resolve(value);
+            }
+            [['y1', 'fa-music', choice.labels.y1, 'Home screen icon'],
+                ['y2', 'fa-sliders', choice.labels.y2, 'Settings list icon']].forEach(function (row) {
+                var button = doc.createElement('button');
+                button.type = 'button';
+                button.className = 'tp-model-option';
+                button.innerHTML =
+                    '<i class="fa-solid ' + row[1] + '" aria-hidden="true"></i><span><strong></strong><small></small></span>';
+                button.querySelector('strong').textContent = row[2];
+                button.querySelector('small').textContent = row[3];
+                button.addEventListener('click', function () { choose(row[0]); });
+                options.appendChild(button);
+            });
+            cancel.addEventListener('click', function () { close(''); });
+            dialog.addEventListener('cancel', function (event) {
+                event.preventDefault();
+                close('');
+            });
+            dialog.addEventListener('click', function (event) {
+                if (event.target === dialog) close('');
+            });
+
+            body.appendChild(eyebrow);
+            body.appendChild(title);
+            body.appendChild(copy);
+            body.appendChild(options);
+            foot.appendChild(note);
+            foot.appendChild(cancel);
+            dialog.appendChild(body);
+            dialog.appendChild(foot);
+            doc.body.appendChild(dialog);
+            dialog.showModal();
+            var preferred = options.querySelectorAll('.tp-model-option')[choice.defaultModel === 'y1' ? 0 : 1];
+            if (preferred) preferred.focus();
+        });
+    }
+
+    async function download(options) {
         var folder = String(options.folder || '').replace(/^\.?\/+/, '').replace(/\/+$/, '');
         var variant = String(options.variant || '').trim();
         var contentFolder = variant ? folder + '/Variants/' + variant : folder;
@@ -147,103 +258,111 @@
         }
 
         ui.set(4, 'Reading config…');
-        return fetch('/' + encodePath(contentFolder) + '/config.json', { cache: 'no-cache' })
-            .then(function (res) {
-                if (!res.ok) throw new Error('config.json could not be loaded');
-                return res.json();
-            })
-            .then(function (cfg) {
-                var entries = filesFromConfig(cfg, contentFolder)
-                    .map(function (rel) {
-                        return { path: rel, download_url: fileUrl(contentFolder, rel) };
-                    })
-                    .filter(function (entry) { return !!entry.download_url; });
-                var manifest = TP.buildPackManifest(entries, contentFolder, folder, cfg);
-                var structured = (manifest.mode || 'flat') === 'structured';
-                var configJson = structured
-                    ? JSON.stringify(cfg, null, 2)
-                    : JSON.stringify(TP.rewriteConfigForDeviceFlatPack(cfg, contentFolder, manifest.logicalToDevice), null, 2);
-
-                var rows = (manifest.items || []).filter(function (item) {
-                    var dev = String(item.devicePath || '').toLowerCase();
-                    return dev && dev !== 'config.json' && !TP.isPreviewOrWebsiteOnlyAsset(dev);
-                });
-                var total = rows.length;
-                var next = 0;
-                var finished = 0;
-                var bytes = 0;
-                var zip = new global.JSZip();
-
-                function take() {
-                    var index = next++;
-                    if (index >= rows.length) return Promise.resolve();
-                    var row = rows[index];
-                    ui.set(8 + Math.round((finished / Math.max(total, 1)) * 72),
-                        'Downloading ' + (index + 1) + '/' + total + ' · ' + formatBytes(bytes));
-                    return fetchBytes(row.download_url).then(function (result) {
-                        finished += 1;
-                        if (result) {
-                            bytes += result.size;
-                            var key = String(row.devicePath || '').replace(/\\/g, '/').replace(/^\/+/, '');
-                            if (key && key.indexOf('..') === -1) zip.file(key, result.data);
-                        }
-                        ui.set(8 + Math.round((finished / Math.max(total, 1)) * 72),
-                            'Downloading ' + finished + '/' + total + ' · ' + formatBytes(bytes));
-                        return take();
-                    });
+        try {
+            var response = await fetch('/' + encodePath(contentFolder) + '/config.json', { cache: 'no-cache' });
+            if (!response.ok) throw new Error('config.json could not be loaded');
+            var cfg = await response.json();
+            var choice = TP.modelChoiceForConfig(cfg);
+            var targetModel = '';
+            if (choice.needsChoice) {
+                ui.set(4, 'Waiting for your player…');
+                targetModel = await askModelChoice(choice, name);
+                if (!targetModel) {
+                    ui.fail();
+                    return false;
                 }
+                ui.set(6, 'Preparing ' + targetModel.toUpperCase() + ' download…');
+            }
 
-                var workers = [];
-                for (var i = 0; i < Math.min(CONCURRENCY, total); i++) workers.push(take());
-                return Promise.all(workers)
-                    .then(function () {
-                        if (!Object.keys(zip.files).length) {
-                            throw new Error('No theme files could be downloaded.');
-                        }
-                        zip.file('config.json', configJson);
-                        ui.set(85, 'Packaging…');
-                        return zip.generateAsync(
-                            {
-                                type: 'blob',
-                                compression: 'DEFLATE',
-                                compressionOptions: { level: 6 }
-                            },
-                            function (meta) {
-                                ui.set(85 + Math.round((meta.percent || 0) * 0.15),
-                                    'Creating ZIP (' + Math.round(meta.percent || 0) + '%)');
-                            }
-                        );
-                    })
-                    .then(function (blob) {
-                        var link = doc.createElement('a');
-                        link.href = URL.createObjectURL(blob);
-                        var safe = name.replace(/[^\w\d\-_ ]/g, '_') || 'theme';
-                        link.download = safe + '.zip';
-                        doc.body.appendChild(link);
-                        link.click();
-                        link.remove();
-                        setTimeout(function () { URL.revokeObjectURL(link.href); }, 60000);
-                        if (global.ThemeAnalytics && typeof global.ThemeAnalytics.trackZipDownload === 'function') {
-                            global.ThemeAnalytics.trackZipDownload(folder, 'theme-page');
-                        }
-                        ui.done();
-                        if (typeof global.openY1DonatePanel === 'function') {
-                            setTimeout(function () {
-                                global.openY1DonatePanel({
-                                    action: 'download',
-                                    themeName: name
-                                });
-                            }, 350);
-                        }
-                        return true;
-                    });
-            })
-            .catch(function (err) {
-                console.error('Theme download failed', err);
-                ui.fail();
-                alert('Failed to download ' + name + ': ' + ((err && err.message) || err));
-                return false;
+            var entries = filesFromConfig(cfg, contentFolder)
+                .map(function (rel) {
+                    return { path: rel, download_url: fileUrl(contentFolder, rel) };
+                })
+                .filter(function (entry) { return !!entry.download_url; });
+            var manifest = TP.buildPackManifest(entries, contentFolder, folder, cfg);
+            var structured = (manifest.mode || 'flat') === 'structured';
+            var finalConfig = structured
+                ? JSON.parse(JSON.stringify(cfg))
+                : TP.rewriteConfigForDeviceFlatPack(cfg, contentFolder, manifest.logicalToDevice);
+            var devicePaths = (manifest.items || []).map(function (item) { return item.devicePath; });
+            TP.normalizeConfigForModel(finalConfig, devicePaths, targetModel);
+            var configJson = JSON.stringify(finalConfig, null, 2);
+
+            var rows = (manifest.items || []).filter(function (item) {
+                var dev = String(item.devicePath || '').toLowerCase();
+                return dev && dev !== 'config.json' && !TP.isPreviewOrWebsiteOnlyAsset(dev);
             });
+            var total = rows.length;
+            var next = 0;
+            var finished = 0;
+            var bytes = 0;
+            var zip = new global.JSZip();
+
+            function take() {
+                var index = next++;
+                if (index >= rows.length) return Promise.resolve();
+                var row = rows[index];
+                ui.set(8 + Math.round((finished / Math.max(total, 1)) * 72),
+                    'Downloading ' + (index + 1) + '/' + total + ' · ' + formatBytes(bytes));
+                return fetchBytes(row.download_url).then(function (result) {
+                    finished += 1;
+                    if (result) {
+                        bytes += result.size;
+                        var key = String(row.devicePath || '').replace(/\\/g, '/').replace(/^\/+/, '');
+                        if (key && key.indexOf('..') === -1) zip.file(key, result.data);
+                    }
+                    ui.set(8 + Math.round((finished / Math.max(total, 1)) * 72),
+                        'Downloading ' + finished + '/' + total + ' · ' + formatBytes(bytes));
+                    return take();
+                });
+            }
+
+            var workers = [];
+            for (var i = 0; i < Math.min(CONCURRENCY, total); i++) workers.push(take());
+            await Promise.all(workers);
+            if (!Object.keys(zip.files).length) {
+                throw new Error('No theme files could be downloaded.');
+            }
+            zip.file('config.json', configJson);
+            ui.set(85, 'Packaging…');
+            var blob = await zip.generateAsync(
+                {
+                    type: 'blob',
+                    compression: 'DEFLATE',
+                    compressionOptions: { level: 6 }
+                },
+                function (meta) {
+                    ui.set(85 + Math.round((meta.percent || 0) * 0.15),
+                        'Creating ZIP (' + Math.round(meta.percent || 0) + '%)');
+                }
+            );
+            var link = doc.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            var safe = name.replace(/[^\w\d\-_ ]/g, '_') || 'theme';
+            link.download = safe + (targetModel ? ' (' + targetModel.toUpperCase() + ')' : '') + '.zip';
+            doc.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(function () { URL.revokeObjectURL(link.href); }, 60000);
+            if (global.ThemeAnalytics && typeof global.ThemeAnalytics.trackZipDownload === 'function') {
+                global.ThemeAnalytics.trackZipDownload(folder, 'theme-page');
+            }
+            ui.done();
+            if (typeof global.openY1DonatePanel === 'function') {
+                setTimeout(function () {
+                    global.openY1DonatePanel({
+                        action: 'download',
+                        themeName: name
+                    });
+                }, 350);
+            }
+            return true;
+        } catch (err) {
+            console.error('Theme download failed', err);
+            ui.fail();
+            alert('Failed to download ' + name + ': ' + ((err && err.message) || err));
+            return false;
+        }
     }
 
     function studioHref(folder, mode, variant) {

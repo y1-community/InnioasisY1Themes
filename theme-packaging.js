@@ -357,6 +357,74 @@
         return clone;
     }
 
+    /* The one slot both launchers read. Y2 draws homePageConfig.bluetooth in
+       Settings; Y1 draws the same key as its Home icon. A theme that wants
+       both looks carries settingConfig.bluetooth for Y2 next to
+       homePageConfig.bluetooth for Y1, and the packager folds the pair back so
+       the device receives stock JSON with one Bluetooth key. */
+    function modelChoiceForConfig(cfg) {
+        const config = cfg && typeof cfg === 'object' ? cfg : {};
+        const home = config.homePageConfig && typeof config.homePageConfig === 'object' ? config.homePageConfig : {};
+        const setting = config.settingConfig && typeof config.settingConfig === 'object' ? config.settingConfig : {};
+        const gallery = config.gallery && typeof config.gallery === 'object' ? config.gallery : {};
+        const models = gallery.modelFolders && typeof gallery.modelFolders === 'object' ? gallery.modelFolders : {};
+        const labels = gallery.modelLabels && typeof gallery.modelLabels === 'object' ? gallery.modelLabels : {};
+        const homeBluetooth = String(home.bluetooth || '');
+        const settingBluetooth = String(setting.bluetooth || '');
+        return {
+            needsChoice:
+                (!!settingBluetooth && settingBluetooth !== homeBluetooth) ||
+                Object.keys(models).length > 0 ||
+                /_y1\.[a-z0-9]+$/i.test(homeBluetooth) ||
+                /_y2\.[a-z0-9]+$/i.test(homeBluetooth),
+            labels: {
+                y1: String(labels.y1 || 'Y1 · Home Bluetooth icon'),
+                y2: String(labels.y2 || 'Y2 · Settings Bluetooth icon')
+            },
+            defaultModel: String(gallery.defaultModel || 'y2').toLowerCase() === 'y1' ? 'y1' : 'y2'
+        };
+    }
+
+    function normalizeConfigForModel(cfg, devicePaths, targetModel) {
+        const model = String(targetModel || '').toLowerCase();
+        if (!cfg || typeof cfg !== 'object' || !model) return cfg;
+        const home = cfg.homePageConfig && typeof cfg.homePageConfig === 'object' ? cfg.homePageConfig : (cfg.homePageConfig = {});
+        const setting = cfg.settingConfig && typeof cfg.settingConfig === 'object' ? cfg.settingConfig : (cfg.settingConfig = {});
+        const files = Object.create(null);
+        (Array.isArray(devicePaths) ? devicePaths : []).forEach((path) => {
+            const rel = String(path || '').replace(/\\/g, '/').replace(/^\.?\//, '').toLowerCase();
+            if (rel) files[rel] = true;
+        });
+        const shipped = (value) => {
+            const rel = String(value || '').replace(/\\/g, '/').replace(/^\.?\//, '').toLowerCase();
+            if (!rel || /transparent\.png$/.test(rel)) return false;
+            return !!files[rel];
+        };
+        const homeBt = String(home.bluetooth || '');
+        let y1Icon = homeBt;
+        if (y1Icon && !/_(?:y1|y2)\.[a-z0-9]+$/i.test(y1Icon)) {
+            const sibling = y1Icon.replace(/(\.[a-z0-9]+)$/i, '_Y1$1');
+            if (shipped(sibling)) y1Icon = sibling;
+        }
+        let y2Icon = String(setting.bluetooth || '');
+        if (y2Icon && !/_(?:y1|y2)\.[a-z0-9]+$/i.test(y2Icon)) {
+            const sibling = y2Icon.replace(/(\.[a-z0-9]+)$/i, '_Y2$1');
+            if (shipped(sibling)) y2Icon = sibling;
+        }
+        if (!y2Icon && y1Icon) {
+            const fromHome = y1Icon.replace(/_y1(\.[a-z0-9]+)$/i, '$1');
+            if (shipped(fromHome)) y2Icon = fromHome;
+        }
+        const chosen = model === 'y1' ? y1Icon : y2Icon || y1Icon;
+        if (chosen) home.bluetooth = chosen;
+        /* The helper key has no reader on either player, so it never ships. */
+        delete setting.bluetooth;
+        if (model === 'y1' && cfg.itemConfig && cfg.itemConfig.itemSelectedBackgroundIs9Patch) {
+            delete cfg.itemConfig.itemSelectedBackgroundIs9Patch;
+        }
+        return cfg;
+    }
+
     /** Google Drive folder shares are poor download targets; use on-site ZIP/install instead. */
     function isDriveGoogleFolderExternalUrl(url) {
         const u = String(url || '').trim();
@@ -377,6 +445,8 @@
         buildStructuredPackManifest,
         buildPackManifest,
         rewriteConfigForDeviceFlatPack,
+        modelChoiceForConfig,
+        normalizeConfigForModel,
         isLikelyAssetPathString,
         isStructuredAssetPath,
         configUsesStructuredAssetPaths,

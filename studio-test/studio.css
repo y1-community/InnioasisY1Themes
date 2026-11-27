@@ -4741,6 +4741,7 @@ body.studio-app.y1-donate-panel-open #support-toolbar-slot {
 .studio-firmware-select {
     min-height: 24px;
     max-width: 340px;
+    color-scheme: dark;
     padding: 1px 4px;
     border: 1px solid transparent;
     border-radius: 6px;
@@ -4757,6 +4758,23 @@ body.studio-app.y1-donate-panel-open #support-toolbar-slot {
 .studio-firmware-select:focus-visible {
     outline: 2px solid var(--site-accent);
     outline-offset: 1px;
+}
+
+/* The popup list is painted by the platform, not by the select, so it needs
+   its own colours: the studio's light text on a white menu was invisible. */
+.studio-firmware-select option,
+.studio-firmware-select optgroup {
+    background: #ffffff;
+    color: #13141d;
+}
+
+.studio-firmware-select optgroup {
+    font-weight: 650;
+}
+
+.studio-firmware-select option:checked {
+    background: #e6efff;
+    color: #13141d;
 }
 
 .studio-firmware-select:disabled {
