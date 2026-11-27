@@ -4567,6 +4567,8 @@ body.studio-app.y1-donate-panel-open #support-toolbar-slot {
 
 .studio-variant-new { min-height: 30px; }
 
+.studio-variant-rename { min-height: 30px; }
+
 .studio-variant-remove { min-height: 30px; }
 
 .studio-variant-remove:hover:not(:disabled) {

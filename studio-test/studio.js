@@ -324,6 +324,9 @@
         /* Variations dropped from this edit, sent with the submission so the
            update lands without them. */
         removedVariants: [],
+        /* The name an existing variation had before it was renamed in this tab;
+           its folder leaves the package once the new name is written. */
+        renamedFrom: '',
         meta: null,
         config: null,
         configBase: null,
@@ -2325,6 +2328,7 @@
         state.variant = requestedVariant;
         state.variantSource = requestedVariant;
         state.variantIsNew = false;
+        state.renamedFrom = '';
         state.galleryBaseUrl = '';
         state.galleryBlobCache = Object.create(null);
         galleryWarmFolder = '';
@@ -8414,6 +8418,8 @@
             if (!clean || clean === '.') return;
             var low = clean.toLowerCase();
             if (state.removedVariants.some(function (removed) { return String(removed).toLowerCase() === low; })) return;
+            /* A renamed variation travels under its new name only. */
+            if (state.renamedFrom && String(state.renamedFrom).toLowerCase() === low) return;
             if (names.some(function (existing) { return existing.toLowerCase() === low; })) return;
             names.push(clean);
         }
@@ -8455,7 +8461,13 @@
         variantNames().forEach(function (name) {
             var option = document.createElement('option');
             option.value = name;
-            option.textContent = name + (state.variantIsNew && name === selected ? ' (new)' : '');
+            var marker =
+                state.variantIsNew && name === selected
+                    ? state.renamedFrom
+                        ? ' (renamed)'
+                        : ' (new)'
+                    : '';
+            option.textContent = name + marker;
             select.appendChild(option);
         });
         /* Starting another look belongs with the list of looks rather than
@@ -8465,6 +8477,11 @@
         newOption.textContent = '\uff0b New variation\u2026';
         select.appendChild(newOption);
         select.value = selected;
+        var renameButton = document.getElementById('studio-variant-rename');
+        if (renameButton) {
+            renameButton.disabled = !selected;
+            renameButton.title = selected ? 'Rename “' + selected + '”' : 'Choose a variation first';
+        }
         var removeButton = document.getElementById('studio-variant-remove');
         if (removeButton) {
             removeButton.disabled = !selected;
@@ -8487,7 +8504,30 @@
         loadGalleryTheme(state.folder, null, clean);
     }
 
-    function promptNewVariation() {
+    /* One dialog names a variation, whether it is a new one or an existing one
+       getting another name; only the copy and the submit label differ. */
+    function promptVariationName(mode, current) {
+        var renaming = mode === 'rename';
+        var eyebrow = document.getElementById('studio-variant-eyebrow');
+        var title = document.getElementById('studio-variant-title');
+        var lead = document.getElementById('studio-variant-lead');
+        var submitLabel = document.getElementById('studio-variant-create-label');
+        var submitIcon = document.getElementById('studio-variant-create-icon');
+        var fieldLabel = document.querySelector('label.studio-variant-field span');
+        if (eyebrow) {
+            eyebrow.innerHTML = renaming
+                ? '<i class="fa-solid fa-pen" aria-hidden="true"></i> Rename variation'
+                : '<i class="fa-solid fa-layer-group" aria-hidden="true"></i> New variation';
+        }
+        if (title) title.textContent = renaming ? 'Rename “' + current + '”' : 'Name this variation';
+        if (lead) {
+            lead.innerHTML = renaming
+                ? 'The new name replaces the old one in the theme you are editing, so saving or submitting writes it under <code>Variants/&lt;new name&gt;/</code> and drops the old folder. The artwork stays as it is on screen.'
+                : 'A variation is another look for the same listing — Pip-Boy ships seven, Stranger Things several. Your edit starts from the version on screen, and saving or submitting stores it under <code>Variants/&lt;name&gt;/</code>.';
+        }
+        if (submitLabel) submitLabel.textContent = renaming ? 'Rename variation' : 'Create variation';
+        if (submitIcon) submitIcon.className = renaming ? 'fa-solid fa-pen' : 'fa-solid fa-plus';
+        if (fieldLabel) fieldLabel.textContent = renaming ? 'New name' : 'Variation name';
         return new Promise(function (resolve) {
             var modal = document.getElementById('studio-variant-modal');
             var input = document.getElementById('studio-variant-name');
@@ -8495,7 +8535,8 @@
                 resolve('');
                 return;
             }
-            input.value = '';
+            input.value = renaming ? current : '';
+            input.select();
             function onKey(event) {
                 if (event.key === 'Escape') {
                     event.preventDefault();
@@ -8529,12 +8570,55 @@
         });
     }
 
+    function promptNewVariation() {
+        return promptVariationName('new', '');
+    }
+
+    /* Renaming keeps the artwork on screen and moves which folder it is read
+       from and written to: the old folder leaves the package, so an update that
+       carries the theme also carries the new name. */
+    async function renameVariation() {
+        var current = state.variant || '';
+        if (state.sourceType !== 'gallery' || !state.folder || !current) {
+            toast('Choose a variation to rename first.');
+            return;
+        }
+        var name = await promptVariationName('rename', current);
+        if (!name || name === current) return;
+        var low = name.toLowerCase();
+        var taken = variantNames().some(function (existing) {
+            return existing.toLowerCase() === low && existing.toLowerCase() !== current.toLowerCase();
+        });
+        if (taken) {
+            toast('“' + name + '” already exists. Pick another name.');
+            return;
+        }
+        if (state.dirty) {
+            try {
+                saveRecoveryNow();
+            } catch (e) {}
+        }
+        if (!state.variantIsNew) {
+            /* The variation is still on disk under its old name until the package
+               is saved or submitted. */
+            state.renamedFrom = current;
+            state.variantSource = current;
+        }
+        state.variant = name;
+        state.variantIsNew = true;
+        state.dirty = true;
+        if (el.unsaved) el.unsaved.hidden = false;
+        renderVariantControls();
+        syncUrl();
+        toast('Renamed “' + current + '” to “' + name + '”. Save or submit the theme to keep it.');
+    }
+
     async function createVariation() {
         if (!state.folder || state.sourceType !== 'gallery') {
             toast('Open a gallery theme to add a variation.');
             return;
         }
-        var name = await promptNewVariation();
+        var name = await promptVariationName('new', '');
         if (!name) return;
         if (name === (state.variant || '')) {
             toast('This theme is already showing that variation.');
@@ -8604,6 +8688,7 @@
             state.variant = source;
             state.variantSource = source;
             state.variantIsNew = false;
+            state.renamedFrom = '';
             renderVariantControls();
             syncUrl();
             toast('Discarded the unsaved variation “' + name + '”.');
@@ -8629,6 +8714,12 @@
                     return;
                 }
                 switchVariant(select.value);
+            });
+        }
+        var renameButton = document.getElementById('studio-variant-rename');
+        if (renameButton) {
+            renameButton.addEventListener('click', function () {
+                void renameVariation();
             });
         }
         var removeButton = document.getElementById('studio-variant-remove');
