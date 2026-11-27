@@ -321,6 +321,9 @@
         /* A variation the reader has named but the gallery does not have yet:
            it lives in this tab until the next save or submission creates it. */
         variantIsNew: false,
+        /* Variations dropped from this edit, sent with the submission so the
+           update lands without them. */
+        removedVariants: [],
         meta: null,
         config: null,
         configBase: null,
@@ -8280,6 +8283,7 @@
             var clean = String(name || '').trim();
             if (!clean || clean === '.') return;
             var low = clean.toLowerCase();
+            if (state.removedVariants.some(function (removed) { return String(removed).toLowerCase() === low; })) return;
             if (names.some(function (existing) { return existing.toLowerCase() === low; })) return;
             names.push(clean);
         }
@@ -8291,9 +8295,18 @@
         return names;
     }
 
+    /* Rebuilding a <select> can make the browser emit a change event of its own,
+       which would navigate to a variation nobody picked. Edits to the list are
+       made under this flag so those events are ignored. */
+    var variantSelectRendering = false;
+
     function renderVariantControls() {
         var select = document.getElementById('studio-variant-select');
         if (!select) return;
+        variantSelectRendering = true;
+        window.setTimeout(function () {
+            variantSelectRendering = false;
+        }, 0);
         var wrap = document.getElementById('studio-variant-control');
         var isGallery = state.sourceType === 'gallery' && !!state.folder;
         if (wrap) wrap.hidden = !isGallery;
@@ -8316,6 +8329,13 @@
         select.value = selected;
         var newButton = document.getElementById('studio-variant-new');
         if (newButton) newButton.disabled = false;
+        var removeButton = document.getElementById('studio-variant-remove');
+        if (removeButton) {
+            removeButton.disabled = !selected;
+            removeButton.title = selected
+                ? 'Remove “' + selected + '” from this theme'
+                : 'Choose a variation first';
+        }
     }
 
     function switchVariant(name) {
@@ -8400,10 +8420,73 @@
         toast('Started variation “' + name + '”. Save it, or submit it with the theme.');
     }
 
+    function promptRemoveVariation(name) {
+        return new Promise(function (resolve) {
+            var modal = document.getElementById('studio-variant-remove-modal');
+            if (!modal) {
+                resolve(false);
+                return;
+            }
+            var nameEl = document.getElementById('studio-variant-remove-name');
+            if (nameEl) nameEl.textContent = name;
+            var confirmButton = document.getElementById('studio-variant-remove-confirm');
+            var cancelButton = document.getElementById('studio-variant-remove-cancel');
+            var closeButton = document.getElementById('studio-variant-remove-x');
+            function onKey(event) {
+                if (event.key === 'Escape') {
+                    event.preventDefault();
+                    finish(false);
+                }
+            }
+            function finish(value) {
+                modal.hidden = true;
+                document.removeEventListener('keydown', onKey);
+                [confirmButton, cancelButton, closeButton].forEach(function (button) {
+                    if (button) button.onclick = null;
+                });
+                resolve(value);
+            }
+            if (confirmButton) confirmButton.onclick = function () { finish(true); };
+            if (cancelButton) cancelButton.onclick = function () { finish(false); };
+            if (closeButton) closeButton.onclick = function () { finish(false); };
+            document.addEventListener('keydown', onKey);
+            modal.hidden = false;
+            if (confirmButton) confirmButton.focus();
+        });
+    }
+
+    async function removeVariation() {
+        var name = state.variant || '';
+        if (state.sourceType !== 'gallery' || !state.folder || !name) {
+            toast('Choose a variation to remove first.');
+            return;
+        }
+        /* A variation that only exists in this tab has nothing to confirm: it
+           simply stops being the look being edited. */
+        if (state.variantIsNew) {
+            var source = state.variantSource || '';
+            state.variant = source;
+            state.variantSource = source;
+            state.variantIsNew = false;
+            renderVariantControls();
+            syncUrl();
+            toast('Discarded the unsaved variation “' + name + '”.');
+            return;
+        }
+        if (!(await promptRemoveVariation(name))) return;
+        var low = name.toLowerCase();
+        if (!state.removedVariants.some(function (removed) { return String(removed).toLowerCase() === low; })) {
+            state.removedVariants.push(name);
+        }
+        toast('“' + name + '” removed from this edit. Save or submit the theme to keep it out.');
+        loadGalleryTheme(state.folder, null, '');
+    }
+
     function setupVariantControls() {
         var select = document.getElementById('studio-variant-select');
         if (select) {
             select.addEventListener('change', function () {
+                if (variantSelectRendering) return;
                 switchVariant(select.value);
             });
         }
@@ -8411,6 +8494,12 @@
         if (newButton) {
             newButton.addEventListener('click', function () {
                 void createVariation();
+            });
+        }
+        var removeButton = document.getElementById('studio-variant-remove');
+        if (removeButton) {
+            removeButton.addEventListener('click', function () {
+                void removeVariation();
             });
         }
         renderVariantControls();
@@ -8712,6 +8801,9 @@
             form.set('clientSubmittedAt', clientSubmittedAt);
             if (state.ownUpdate && originalSubmittedAt) {
                 form.set('originalSubmittedAt', originalSubmittedAt);
+            }
+            if (state.removedVariants.length) {
+                form.set('removedVariants', JSON.stringify(state.removedVariants));
             }
             if (updateFolder) form.set('targetFolder', updateFolder);
             form.set('shareFolderHints', JSON.stringify([packFolder]));

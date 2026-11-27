@@ -4567,6 +4567,21 @@ body.studio-app.y1-donate-panel-open #support-toolbar-slot {
 
 .studio-variant-new { min-height: 30px; }
 
+.studio-variant-remove { min-height: 30px; }
+
+.studio-variant-remove:hover:not(:disabled) {
+    border-color: var(--studio-danger, #b3261e);
+    color: var(--studio-danger, #b3261e);
+}
+
+.studio-variant-remove:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* In the stage head the control shares the row with the player and gallery
+   chips, so it must hug its content rather than push them off. */
+.studio-stage-meta .studio-variant-control {
+    max-width: 100%;
+}
+
 .studio-variant-card { max-width: 460px; }
 
 .studio-variant-lead {
