@@ -103,6 +103,7 @@
     "fileExtensionOff": "file_ext_off.png"
   },
   "statusConfig": {
+    "statusTextColor": "#ffffff",
     "playing": "playing_white.png",
     "audiobookPlaying": "audiobookPlaying_white.png",
     "pause": "pause_white.png",

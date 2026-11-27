@@ -92,6 +92,7 @@
     "fileExtensionOff": "transparent.png"
   },
   "statusConfig": {
+    "statusTextColor": "#ffffff",
     "textColor": "#E2E3ED",
     "playing": "transparent.png",
     "audiobookPlaying": "transparent.png",

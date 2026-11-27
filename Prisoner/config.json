@@ -103,6 +103,7 @@
         "settingMask": "transparent.png"
     },
     "statusConfig": {
+        "statusTextColor": "#ffffff",
         "playing": "@Pris_play.png",
         "audiobookPlaying": "transparent.png",
         "pause": "@Pris_pause.png",

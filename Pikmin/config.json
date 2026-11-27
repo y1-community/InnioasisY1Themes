@@ -105,6 +105,7 @@
         "launcher": "transparent.png"
     },
     "statusConfig": {
+        "statusTextColor": "#ffffff",
         "playing": "PlayingHorn.png",
         "audiobookPlaying": "Olimar.png",
         "pause": "PauseRed.png",

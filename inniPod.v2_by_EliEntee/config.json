@@ -104,6 +104,7 @@
     "wallpaper": "Wallpaper@1x.png"
   },
   "statusConfig": {
+    "statusTextColor": "#ffffff",
     "audiobookPlaying": "audiobookPlaying.png",
     "battery": [
       "inniPod_battery001.png",

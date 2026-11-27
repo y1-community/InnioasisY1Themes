@@ -107,6 +107,7 @@
         "settingMask": "transparent.png"
     },
     "statusConfig": {
+        "statusTextColor": "#ffffff",
         "playing": "gregplay.png",
         "audiobookPlaying": "transparent.png",
         "pause": "gregpause.png",

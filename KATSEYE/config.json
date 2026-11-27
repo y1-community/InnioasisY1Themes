@@ -109,6 +109,7 @@
     "settingMask": "settings_mask.png"
   },
   "statusConfig": {
+    "statusTextColor": "#ffffff",
     "playing": "status_playing.png",
     "audiobookPlaying": "status_audiobook.png",
     "pause": "status_pause.png",

@@ -102,6 +102,7 @@
         "wallpaper": "inniPod_settingswp.png"
     },
     "statusConfig": {
+        "statusTextColor": "#ffffff",
         "audiobookPlaying": "transparent.png",
         "battery": [
             "inniPod_battery001.png",

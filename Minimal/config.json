@@ -36,6 +36,7 @@
     "progressBackgroundColor": "#99ffffff"
   },
   "statusConfig": {
+    "statusTextColor": "#ffffff",
     "statusBarColor": "#00ffffff",
     "battery": [
       "statusBar_battery_01.png",

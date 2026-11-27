@@ -105,6 +105,7 @@
         "launcher": "transparent.png"
     },
     "statusConfig": {
+        "statusTextColor": "#ffffff",
         "playing": "@ThM_play.png",
         "audiobookPlaying": "transparent.png",
         "pause": "@ThM_pause.png",

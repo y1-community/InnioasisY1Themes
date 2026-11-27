@@ -105,6 +105,7 @@
     "launcher": "transparent.png"
   },
   "statusConfig": {
+    "statusTextColor": "#ffffff",
     "playing": "pause.png",
     "audiobookPlaying": "audiobook_playing.png",
     "pause": "playing.png",

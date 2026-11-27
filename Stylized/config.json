@@ -106,6 +106,7 @@
     "unselectedColor": ""
   },
   "statusConfig": {
+    "statusTextColor": "#ffffff",
     "playing": "playing.png",
     "audiobookPlaying": "audiobook_playing.png",
     "pause": "pause.png",

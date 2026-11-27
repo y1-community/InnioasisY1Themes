@@ -99,6 +99,7 @@
         "launcher": "transparent.png"
     },
     "statusConfig": {
+        "statusTextColor": "#ffffff",
         "playing": "all other images/status bar/music playing/Play (recolored).png",
         "audiobookPlaying": "all other images/status bar/audiobook playing/audiobookplaying (recolored).png",
         "pause": "all other images/status bar/paused/Pause (recolored).png",

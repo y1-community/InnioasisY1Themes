@@ -103,6 +103,7 @@
     "launcher": "transparent.png"
   },
   "statusConfig": {
+    "statusTextColor": "#ffffff",
     "playing": "gregplay.png",
     "audiobookPlaying": "audiobook_playing.png",
     "pause": "gregpause.png",

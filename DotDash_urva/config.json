@@ -109,6 +109,7 @@
     "progressBackgroundColor": "#dac5b0"
   },
   "statusConfig": {
+    "statusTextColor": "#ffffff",
     "statusBarColor": "#eed7d1",
     "playing": "transparent.png",
     "audiobookPlaying": "transparent.png",
