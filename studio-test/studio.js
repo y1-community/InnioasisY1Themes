@@ -5851,18 +5851,23 @@
             rowRelated.push(companionBg, 'itemConfig.itemRightArrow', 'fontFamily');
             var iconLabel = iconId ? previewHitLabel(iconId) : '';
             var primaryLabel = previewHitLabel(primaryBg) || 'Item selected background';
+            var companionLabel = previewHitLabel(companionBg) || 'Item background';
+            var hasCompanionBg = !!state.assetById[companionBg];
+            var hoverLabel =
+                hasCompanionBg && companionBg !== primaryBg
+                    ? primaryLabel + ' + ' + companionLabel
+                    : primaryLabel;
             return {
                 primaryId: primaryBg,
                 canvasHighlightPath: path,
                 relatedIds: rowRelated,
                 relatedTitle: iconLabel ? 'Related to “' + iconLabel + '”' : 'Related list item assets',
                 relatedColorAnchor: iconId || primaryBg,
-                /* Both halves of the row are offered at once: the selection bar
-                   the reader clicked and the artwork drawn beside it. */
-                toolbarIds: [primaryBg].concat(iconId ? [iconId] : []),
-                tooltip: iconLabel
-                    ? primaryLabel + ' (with ' + iconLabel + ') — click to edit'
-                    : primaryLabel + ' — click to edit'
+                /* A row owns both backgrounds at once: the bar showing on the
+                   row and the background behind the other rows. Carry both in
+                   the tray and the floating strip, alongside the row's art. */
+                toolbarIds: [primaryBg].concat(hasCompanionBg ? [companionBg] : []).concat(iconId ? [iconId] : []),
+                tooltip: hoverLabel + (iconLabel ? ' (with ' + iconLabel + ')' : '') + ' — click to edit'
             };
         }
 
