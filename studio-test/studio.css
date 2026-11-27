@@ -4392,13 +4392,18 @@ body.studio-app.y1-donate-panel-open #support-toolbar-slot {
         font-size: 1.28rem;
     }
 
-    .studio-app .studio-asset-list { max-height: min(31vh, 250px); }
+    .studio-app .studio-asset-list { max-height: min(28vh, 210px); }
+
+    .studio-app .studio-asset-detail {
+        margin-top: 8px;
+        padding: 9px 11px;
+    }
 
     .studio-app .studio-asset-detail-preview {
         width: 100%;
-        height: 66px;
+        height: 58px;
         aspect-ratio: auto;
-        margin: 6px auto;
+        margin: 5px auto;
     }
 
     .studio-app .studio-asset-detail-actions {
