@@ -325,6 +325,7 @@
         /* The name an existing variation had before it was renamed in this tab;
            its folder leaves the package once the new name is written. */
         renamedFrom: '',
+        themeRenamed: false,
         meta: null,
         config: null,
         configBase: null,
@@ -2327,6 +2328,7 @@
         state.variantSource = requestedVariant;
         state.variantIsNew = false;
         state.renamedFrom = '';
+        state.themeRenamed = false;
         state.galleryBaseUrl = '';
         state.galleryBlobCache = Object.create(null);
         galleryWarmFolder = '';
@@ -8436,8 +8438,12 @@
         select.value = selected;
         var renameButton = document.getElementById('studio-variant-rename');
         if (renameButton) {
-            renameButton.disabled = !selected;
-            renameButton.title = selected ? 'Rename “' + selected + '”' : 'Choose a variation first';
+            var renameLabel = renameButton.querySelector('span');
+            if (renameLabel) renameLabel.textContent = selected ? 'Rename' : 'Rename theme';
+            renameButton.disabled = false;
+            renameButton.title = selected
+                ? 'Rename “' + selected + '”'
+                : 'Rename “' + ((state.meta && state.meta.name) || 'this theme') + '” — the main theme name, not a variation';
         }
         var removeButton = document.getElementById('studio-variant-remove');
         if (removeButton) {
@@ -8462,9 +8468,11 @@
     }
 
     /* One dialog names a variation, whether it is a new one or an existing one
-       getting another name; only the copy and the submit label differ. */
+       getting another name, and also the main theme when the base look is
+       selected; only the copy and the submit label differ. */
     function promptVariationName(mode, current) {
         var renaming = mode === 'rename';
+        var renamingTheme = mode === 'theme';
         var eyebrow = document.getElementById('studio-variant-eyebrow');
         var title = document.getElementById('studio-variant-title');
         var lead = document.getElementById('studio-variant-lead');
@@ -8472,19 +8480,37 @@
         var submitIcon = document.getElementById('studio-variant-create-icon');
         var fieldLabel = document.querySelector('label.studio-variant-field span');
         if (eyebrow) {
-            eyebrow.innerHTML = renaming
-                ? '<i class="fa-solid fa-pen" aria-hidden="true"></i> Rename variation'
-                : '<i class="fa-solid fa-layer-group" aria-hidden="true"></i> New variation';
+            eyebrow.innerHTML = renamingTheme
+                ? '<i class="fa-solid fa-pen" aria-hidden="true"></i> Rename theme'
+                : renaming
+                  ? '<i class="fa-solid fa-pen" aria-hidden="true"></i> Rename variation'
+                  : '<i class="fa-solid fa-layer-group" aria-hidden="true"></i> New variation';
         }
-        if (title) title.textContent = renaming ? 'Rename “' + current + '”' : 'Name this variation';
+        if (title) {
+            title.textContent = renamingTheme
+                ? 'Rename “' + current + '”'
+                : renaming
+                  ? 'Rename “' + current + '”'
+                  : 'Name this variation';
+        }
         if (lead) {
-            lead.innerHTML = renaming
-                ? 'The new name replaces the old one in the theme you are editing, so saving or submitting writes it under <code>Variants/&lt;new name&gt;/</code> and drops the old folder. The artwork stays as it is on screen.'
-                : 'A variation is another look for the same listing — Pip-Boy ships seven, Stranger Things several. Your edit starts from the version on screen, and saving or submitting stores it under <code>Variants/&lt;name&gt;/</code>.';
+            lead.innerHTML = renamingTheme
+                ? 'This is the main theme name, not a variation: it becomes the name of the theme you are editing and of any new theme started from it. A gallery update still needs you to answer whether the listing is yours, so nothing is filed against another author by accident.'
+                : renaming
+                  ? 'The new name replaces the old one in the theme you are editing, so saving or submitting writes it under <code>Variants/&lt;new name&gt;/</code> and drops the old folder. The artwork stays as it is on screen.'
+                  : 'A variation is another look for the same listing — Pip-Boy ships seven, Stranger Things several. Your edit starts from the version on screen, and saving or submitting stores it under <code>Variants/&lt;name&gt;/</code>.';
         }
-        if (submitLabel) submitLabel.textContent = renaming ? 'Rename variation' : 'Create variation';
-        if (submitIcon) submitIcon.className = renaming ? 'fa-solid fa-pen' : 'fa-solid fa-plus';
-        if (fieldLabel) fieldLabel.textContent = renaming ? 'New name' : 'Variation name';
+        if (submitLabel) {
+            submitLabel.textContent = renamingTheme
+                ? 'Rename theme'
+                : renaming
+                  ? 'Rename variation'
+                  : 'Create variation';
+        }
+        if (submitIcon) submitIcon.className = renamingTheme || renaming ? 'fa-solid fa-pen' : 'fa-solid fa-plus';
+        if (fieldLabel) {
+            fieldLabel.textContent = renamingTheme ? 'Theme name' : renaming ? 'New name' : 'Variation name';
+        }
         return new Promise(function (resolve) {
             var modal = document.getElementById('studio-variant-modal');
             var input = document.getElementById('studio-variant-name');
@@ -8492,7 +8518,7 @@
                 resolve('');
                 return;
             }
-            input.value = renaming ? current : '';
+            input.value = renaming || renamingTheme ? current : '';
             input.select();
             function onKey(event) {
                 if (event.key === 'Escape') {
@@ -8536,7 +8562,12 @@
        carries the theme also carries the new name. */
     async function renameVariation() {
         var current = state.variant || '';
-        if (state.sourceType !== 'gallery' || !state.folder || !current) {
+        /* With the base look selected there is no variation to rename, so the
+           button names the theme itself. */
+        if (!current) {
+            return renameTheme();
+        }
+        if (state.sourceType !== 'gallery' || !state.folder) {
             toast('Choose a variation to rename first.');
             return;
         }
@@ -8568,6 +8599,49 @@
         renderVariantControls();
         syncUrl();
         toast('Renamed “' + current + '” to “' + name + '”. Save or submit the theme to keep it.');
+    }
+
+    /* The base look's Rename names the theme itself: the title in this session,
+       the config's ``theme_info.title``, and therefore what a new theme started
+       from here is called. The gallery folder never moves, so an author
+       updating their own listing keeps its URL and can change the main name
+       rather than only a variation's. */
+    async function renameTheme() {
+        if (state.sourceType !== 'gallery' || !state.folder || !state.meta) {
+            toast('Open a theme to rename it.');
+            return;
+        }
+        var current = state.meta.name || state.folder;
+        var name = await promptVariationName('theme', current);
+        if (!name || name === current) return;
+        if (name.length > 60) {
+            toast('Keep the theme name under 60 characters.');
+            return;
+        }
+        state.meta.name = name;
+        var config = state.config;
+        if (config) {
+            if (
+                !config.theme_info ||
+                typeof config.theme_info !== 'object' ||
+                Array.isArray(config.theme_info)
+            ) {
+                config.theme_info = {};
+            }
+            config.theme_info.title = name;
+        }
+        state.themeRenamed = true;
+        state.dirty = true;
+        if (el.unsaved) el.unsaved.hidden = false;
+        if (el.submitTitle) {
+            if (el.submitTitle.value.trim()) el.submitTitle.value = name;
+            setPlaceholder(el.submitTitle, name);
+        }
+        updateChrome();
+        renderVariantControls();
+        syncUrl();
+        updateChecklist();
+        toast('Renamed this theme to “' + name + '”. Save or submit it to keep the new name.');
     }
 
     async function createVariation() {
@@ -9088,9 +9162,14 @@
         if (!state.meta) return;
         var meta = state.meta;
         var listing = state.identity && state.identity.listing;
-        /* An update keeps the listing's own name: a variation's title would
-           otherwise rename the theme it belongs to. */
-        if (el.submitTitle) el.submitTitle.value = (listing && listing.name) || meta.name || '';
+        /* An update keeps the listing's own name, so a variation's title cannot
+           rename the theme it belongs to — unless the submitter renamed the
+           main theme on purpose, which is exactly what should be sent. */
+        if (el.submitTitle) {
+            el.submitTitle.value = state.themeRenamed
+                ? meta.name || ''
+                : (listing && listing.name) || meta.name || '';
+        }
         if (el.submitAuthor) el.submitAuthor.value = meta.author || '';
         if (el.submitDesc) el.submitDesc.value = cleanThemeDescription(meta.desc || '');
         if (el.submitAuthorUrl) el.submitAuthorUrl.value = meta.authorUrl || '';

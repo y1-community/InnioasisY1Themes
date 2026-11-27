@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """Additive legacy OS backfill: missing eBook/Calendar/Calculator/File Manager/Launcher keys.
 
-Missing keys (and transparent.png placeholders) resolve to backfill.png when that file exists
-in the content folder, otherwise transparent.png. Copies repo-root transparent.png into each
-theme root and Variants/<look>/ folder that has config.json when the transparent fallback is
-needed, replacing any existing transparent.png so bad assets from earlier backfills cannot linger.
-Never overwrites a creator-supplied backfill.png.
+Missing keys, empty slots and dangling references all resolve to transparent.png — a fully
+transparent fill, never inserted artwork. Copies repo-root transparent.png into each theme root
+and Variants/<look>/ folder that has config.json when the transparent fallback is needed,
+replacing any existing transparent.png so a file with visible pixels cannot linger.
 """
 
 from __future__ import annotations
@@ -73,9 +72,14 @@ def _write_json_preserve_indent(path: Path, payload: dict[str, Any], original_te
 
 
 def resolve_placeholder_value(content_dir: Path) -> str:
-    """Prefer theme-local backfill.png when present; else transparent.png."""
-    if (content_dir / BACKFILL_FILENAME).is_file():
-        return BACKFILL_VALUE
+    """Every blank slot points at transparent.png.
+
+    Only fully transparent pixels may stand in for missing art: the player must
+    show the theme as it really looks with nothing there, never a stand-in
+    drawing. ``backfill.png`` is deliberately not preferred, even when a theme
+    still carries one, because a file with visible pixels would be artwork this
+    script inserted rather than a blank gap.
+    """
     return TRANSPARENT_VALUE
 
 

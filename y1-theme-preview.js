@@ -2880,8 +2880,6 @@
                             : '';
                         var tile = activeRightPanel.tile;
                         var im = activeRightPanel.img;
-                        var nativeBadge = tile._y1NativeBadge || null;
-                        if (nativeBadge) nativeBadge.style.display = 'none';
                         if (previewIu) {
                             tile.style.display = 'flex';
                             if (sel.assetPath) {
@@ -2905,33 +2903,25 @@
                             im.removeAttribute('data-theme-asset-path');
                             setReusableArtSrc(im, '', '');
                         }
-                        if (cfg && cfg.showNativeIcon === true && sel && (!sel.iconFile || !isUsableHomeIcon(sel.iconFile))) {
-                            if (!nativeBadge) {
-                                nativeBadge = document.createElement('div');
-                                nativeBadge.style.cssText =
-                                    'width:128px;height:128px;border-radius:26px;background:rgba(255,255,255,0.14);border:2px solid rgba(255,255,255,0.28);display:flex;align-items:center;justify-content:center;font-size:48px;color:' +
-                                    colors.text_primary +
-                                    ';pointer-events:none;';
-                                tile._y1NativeBadge = nativeBadge;
-                                tile.appendChild(nativeBadge);
-                            }
-                            var glyphMap = {
-                                nowPlaying: '\u266B',
-                                music: '\uD83C\uDFB5',
-                                video: '\uD83C\uDFAC',
-                                audiobooks: '\uD83C\uDFA7',
-                                ebook: '\uD83D\uDCD6',
-                                photos: '\uD83D\uDDBC',
-                                fm: '\uD83D\uDCFB',
-                                bluetooth: '\uD83D\uDD35',
-                                fileManager: '\uD83D\uDCC2',
-                                settings: '\u2699',
-                                shuffleQuick: '\uD83D\uDD00',
-                                calendar: '\uD83D\uDCC5',
-                                calculator: '\uD83E\uDDEE'
-                            };
-                            nativeBadge.textContent = glyphMap[sel.id] || '\u25A1';
-                            nativeBadge.style.display = 'flex';
+                        /* A blank or missing Home icon stays blank, exactly as the
+                           device draws it: no badge, glyph or stand-in artwork.
+                           The tile keeps data-theme-art-box so the slot is still
+                           clickable in the studio. */
+                        /* The icon slot must keep its size even when the artwork
+                           is a 1x1 transparent fill: a collapsed box would leave
+                           the gap unclickable, so the transparent slot could
+                           never be selected. */
+                        var iconLoaded = im.complete && im.naturalWidth > 0;
+                        var blankIcon =
+                            !previewIu || (iconLoaded && imageIsBlankArtwork(im));
+                        tile.style.height = blankIcon
+                            ? Math.round(HOME_PREVIEW_WIDTH * 0.94) + 'px'
+                            : 'auto';
+                        if (im._y1BlankSizing !== 'bound') {
+                            im._y1BlankSizing = 'bound';
+                            im.addEventListener('load', function () {
+                                updateRightPanelInPlace();
+                            });
                         }
                         return;
                     }

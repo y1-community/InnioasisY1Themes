@@ -1285,6 +1285,27 @@
     filter: none;
 }
 
+/* The quieter of two answers: readable and clearly clickable, but not the
+   button the eye lands on first. Used where the safe answer should lead. */
+.studio-btn--quiet {
+    border-color: var(--studio-line, rgba(255, 255, 255, 0.14));
+    background: transparent;
+    color: var(--studio-muted, rgba(236, 239, 248, 0.72));
+    font-weight: 550;
+}
+
+.studio-btn--quiet:hover {
+    border-color: rgba(255, 255, 255, 0.28);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--site-text);
+    filter: none;
+}
+
+.studio-btn--quiet:focus-visible {
+    outline: 2px solid var(--site-accent);
+    outline-offset: 2px;
+}
+
 .studio-divider {
     height: 1px;
     margin: 20px 0 0;
