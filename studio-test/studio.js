@@ -7949,7 +7949,10 @@
                 var manifest = document.querySelector('link[rel="manifest"]');
                 var swUrl = manifest ? new URL('sw.js', manifest.href).toString() : '/studio-test/sw.js';
                 var swScope = manifest ? new URL('./', manifest.href).pathname : '/studio-test/';
-                navigator.serviceWorker.register(swUrl, { scope: swScope, updateViaCache: 'none' }).catch(function (err) {
+                /* A version in the worker URL is what carries a corrected worker
+                   past an edge-cached copy of sw.js on the previous release. */
+                var swVersion = '45';
+                navigator.serviceWorker.register(swUrl + '?v=' + swVersion, { scope: swScope, updateViaCache: 'none' }).catch(function (err) {
                     console.warn('Studio: service worker unavailable', err);
                 });
             });

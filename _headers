@@ -1,5 +1,11 @@
 # Cloudflare Pages cache rules. Image URLs are stable paths that can be
 # replaced in place, so they are cached for a week but not marked immutable.
+
+# A cached worker script pins the installed worker (and its shell cache) to an
+# older release for hours, so it must be revalidated on every request.
+/studio-test/sw.js
+  Cache-Control: no-cache, must-revalidate
+
 /themes.json
   Cache-Control: public, max-age=300
 
