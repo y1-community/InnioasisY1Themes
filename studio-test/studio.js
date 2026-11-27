@@ -326,6 +326,11 @@
            its folder leaves the package once the new name is written. */
         renamedFrom: '',
         themeRenamed: false,
+        /* Looks drafted in this tab, keyed by lower-case variation name and
+           kept when the reader switches variations: each holds its own config,
+           its replaced files and the folder its artwork is read from. */
+        variantDrafts: Object.create(null),
+        variantDraftsFolder: '',
         meta: null,
         config: null,
         configBase: null,
@@ -637,6 +642,11 @@
             savedAt: Date.now(),
             folder: state.folder,
             mode: state.mode,
+            variant: state.variant || '',
+            variantSource: state.variantSource || '',
+            variantIsNew: !!state.variantIsNew,
+            renamedFrom: state.renamedFrom || '',
+            drafts: variantDraftRecords(),
             config: cloneJson(state.config),
             meta: {
                 name: state.meta.name || '',
@@ -752,6 +762,11 @@
             ['name', 'author', 'authorUrl', 'desc', 'externalDownloadUrl'].forEach(function (field) {
                 if (typeof record.meta[field] === 'string') state.meta[field] = record.meta[field];
             });
+        }
+        /* Every look drafted in this tab travels with the session, so a reload
+           comes back with all of them rather than only the one on screen. */
+        if (record.drafts && typeof record.drafts === 'object') {
+            state.variantDrafts = record.drafts;
         }
         var coverValue = state.config && state.config.themeCover;
         if (coverValue) state.meta.cover = resolveStoredAssetUrl(String(coverValue)) || state.baseCover;
@@ -2023,17 +2038,24 @@
                         var requested = resolveRequestedFolder(requestedFolder);
                         if (requested) {
                             if (bootModeRequest && bootModeRequest.folder) bootModeRequest.folder = requested;
+                            /* A draft is named in the URL under its new name but
+                               reads the folder it was drafted over. */
+                            var requestedDraft =
+                                requestedVariant && record && record.folder === requested && record.drafts
+                                    ? record.drafts[variantDraftKey(requestedVariant)] || null
+                                    : null;
                             loadGalleryTheme(
                                 requested,
-                                !requestedVariant && record && record.folder === requested ? record : null,
-                                requestedVariant
+                                requestedDraft ||
+                                    (!requestedVariant && record && record.folder === requested ? record : null),
+                                requestedDraft ? requestedDraft.variantSource || '' : requestedVariant
                             );
                             return;
                         }
                         /* Nothing in the URL: a tab closed mid-edit comes back to the same
                            theme with its replacements still applied. */
                         if (record && state.byFolder[record.folder]) {
-                            loadGalleryTheme(record.folder, record);
+                            loadGalleryTheme(record.folder, record, record.variantSource || '');
                             return;
                         }
                         /* A plain first visit opens the reference theme instead of a
@@ -2322,6 +2344,11 @@
         if (!folder) return;
         var requestedFolder = folder;
         var requestedVariant = String(variant || '').trim();
+        /* Drafts belong to the theme they were made in. */
+        if (state.variantDraftsFolder !== folder) {
+            state.variantDrafts = Object.create(null);
+            state.variantDraftsFolder = folder;
+        }
         state.sourceType = 'gallery';
         state.folder = folder;
         state.variant = requestedVariant;
@@ -2408,11 +2435,16 @@
                     if (info.externalDownloadUrl) state.meta.externalDownloadUrl = info.externalDownloadUrl;
                     state.baseCover = state.meta.cover;
                     if (restoreRecord) applyRecovery(restoreRecord);
+                    /* The package is read from the look's own folder, which is
+                       the draft's source when the look is still in this tab. */
+                    applyStoredThemeVariant(restoreRecord);
                     rebuildAssets();
                     updateChrome();
                     fillSubmitForm();
                     applyBootMode(requestedFolder);
-                    if (restoreRecord) finishRecovery(restoreRecord);
+                    if (restoreRecord && restoreRecord.variantDraft !== true) finishRecovery(restoreRecord);
+                    syncDraftDirty();
+                    saveVariantSession();
                     updateChecklist();
                     trackStudioGalleryVisit(requestedFolder, state.meta, state.byFolder[requestedFolder]);
                     if (loaded.baseUrl) {
@@ -2717,9 +2749,9 @@
         });
     }
 
-    function galleryFileUrl(contentFolder, relativePath) {
+    function galleryFileUrl(contentFolder, relativePath, skipOverrides) {
         var overrideKey = localKey('', relativePath);
-        if (state.assetOverrides[overrideKey] && state.assetOverrides[overrideKey].url) {
+        if (!skipOverrides && state.assetOverrides[overrideKey] && state.assetOverrides[overrideKey].url) {
             return state.assetOverrides[overrideKey].url;
         }
         var folder = String(contentFolder || '')
@@ -6291,7 +6323,7 @@
         /* Resetting every replacement puts the theme back where it started, so
            the page is clean again unless the listing details were also edited. */
         state.dirty = !!(realOverrideCount() || JSON.stringify(state.config) !== JSON.stringify(state.configBase));
-        if (el.unsaved) el.unsaved.hidden = !(state.dirty || state.formDirty);
+        syncDraftDirty();
         scheduleRecoverySave();
         rebuildAssets({ deferThumbRefresh: true });
         remountPreview('Restoring the original theme…');
@@ -7831,9 +7863,13 @@
         }
     }
 
-    async function collectVariationPackage(variant, config, options) {
+    /* ``sourceVariant`` is the folder the art is read from, which is the look a
+       draft was sketched over; ``overrides`` are that draft's replaced files.
+       Reading bypasses the live replacements, so one look's edits never leak
+       into another look in the same package. */
+    async function collectVariationPackage(sourceVariant, config, options, overrides) {
         if (!window.ThemePackaging) throw new Error('The theme packager did not load.');
-        var folder = variant ? state.folder + '/Variants/' + variant : state.folder;
+        var folder = sourceVariant ? state.folder + '/Variants/' + sourceVariant : state.folder;
         var values = collectConfigAssetValues(config);
         var seen = Object.create(null);
         var entries = [];
@@ -7843,12 +7879,15 @@
             var key = String(value || '').toLowerCase();
             if (!key || seen[key]) continue;
             seen[key] = true;
-            var blob = null;
-            try {
-                var response = await fetch(galleryFileUrl(folder, value), { cache: 'force-cache' });
-                if (response.ok) blob = await response.blob();
-            } catch (_err) {
-                blob = null;
+            var replacement = overrides && overrides[key];
+            var blob = replacement && replacement.blob ? replacement.blob : null;
+            if (!blob) {
+                try {
+                    var response = await fetch(galleryFileUrl(folder, value, true), { cache: 'force-cache' });
+                    if (response.ok) blob = await response.blob();
+                } catch (_err) {
+                    blob = null;
+                }
             }
             if (!blob) continue;
             entries.push({ path: value, download_url: value });
@@ -7920,10 +7959,22 @@
             });
             var rootPayload = { config: outputConfig, deviceFiles: collected.deviceFiles };
             if (variationSegment) {
-                var baseConfig = await readVariationConfig('');
-                rootPayload = baseConfig
-                    ? await collectVariationPackage('', baseConfig, options)
-                    : { config: null, deviceFiles: [] };
+                /* The base look carries its own draft when the reader edited it
+                   before moving to a variation. */
+                var baseDraft = variantDraftFor('');
+                if (baseDraft) {
+                    rootPayload = await collectVariationPackage(
+                        baseDraft.variantSource || '',
+                        cloneJson(baseDraft.config || {}),
+                        options,
+                        draftOverrideBlobs(baseDraft)
+                    );
+                } else {
+                    var baseConfig = await readVariationConfig('');
+                    rootPayload = baseConfig
+                        ? await collectVariationPackage('', baseConfig, options)
+                        : { config: null, deviceFiles: [] };
+                }
             }
             if (rootPayload.config) {
                 zip.file(prefix + 'config.json', JSON.stringify(rootPayload.config, null, 2));
@@ -7952,10 +8003,26 @@
                     36 + ((packIndex + 1) / (otherVariants.length + 1)) * 24,
                     'Packing variation ' + packName + '…'
                 );
+                var variantPrefix = prefix + 'Variants/' + packName + '/';
+                /* A look drafted in this tab travels with its own config and
+                   files, even when its folder does not exist yet. */
+                var variantDraft = variantDraftFor(packName);
+                if (variantDraft) {
+                    var draftPayload = await collectVariationPackage(
+                        variantDraft.variantSource || '',
+                        cloneJson(variantDraft.config || {}),
+                        options,
+                        draftOverrideBlobs(variantDraft)
+                    );
+                    zip.file(variantPrefix + 'config.json', JSON.stringify(draftPayload.config, null, 2));
+                    draftPayload.deviceFiles.forEach(function (item) {
+                        zip.file(variantPrefix + item.devicePath, item.blob);
+                    });
+                    continue;
+                }
                 var variantConfig = await readVariationConfig(packName);
                 if (!variantConfig) continue;
                 var variantPayload = await collectVariationPackage(packName, variantConfig, options);
-                var variantPrefix = prefix + 'Variants/' + packName + '/';
                 zip.file(variantPrefix + 'config.json', JSON.stringify(variantPayload.config, null, 2));
                 variantPayload.deviceFiles.forEach(function (item) {
                     zip.file(variantPrefix + item.devicePath, item.blob);
@@ -8370,15 +8437,185 @@
        ships seven, Stranger Things several). The catalogue's variantFolders is
        the authoritative list; the open theme's own gallery block is a fallback
        for a package that has not been catalogued yet. */
+    /* —— Drafts of looks in this tab ————————————————————————————
+
+       Switching the variation list reloads the package from the gallery, so a
+       look that exists only here — a new variation, a rename, a set of replaced
+       files — would lose its folder and its art. Each look therefore keeps a
+       draft in this tab while the reader moves between them: several can be
+       sketched at once, each returns as it was left, and a whole-theme
+       submission and the recovery snapshot carry all of them. */
+
+    function variantDraftKey(name) {
+        return String(name || '').trim().toLowerCase();
+    }
+
+    function variantDraftFor(name) {
+        return state.variantDrafts[variantDraftKey(name)] || null;
+    }
+
+    function variantDraftRecords() {
+        var map = Object.create(null);
+        Object.keys(state.variantDrafts).forEach(function (key) {
+            var draft = state.variantDrafts[key];
+            if (!draft) return;
+            map[key] = {
+                variantDraft: true,
+                name: draft.name || '',
+                variantSource: draft.variantSource || '',
+                variantIsNew: draft.variantIsNew === true,
+                renamedFrom: draft.renamedFrom || '',
+                savedAt: draft.savedAt || Date.now(),
+                config: cloneJson(draft.config || {}),
+                meta: cloneJson(draft.meta || {}),
+                overrides: (draft.overrides || []).map(function (item) {
+                    return {
+                        key: item.key,
+                        blob: item.blob,
+                        name: item.name || '',
+                        size: item.size || (item.blob && item.blob.size) || 0,
+                        type: item.type || (item.blob && item.blob.type) || ''
+                    };
+                }),
+                selectedAssetId: draft.selectedAssetId || null,
+                assetFilter: draft.assetFilter || 'all',
+                openTrays: cloneJson(draft.openTrays || {}),
+                compactExpanded: draft.compactExpanded === true,
+                dirty: true
+            };
+        });
+        return map;
+    }
+
+    /* Replaced files of a draft, keyed by the same normalised path the packager
+       looks them up by. */
+    function draftOverrideBlobs(draft) {
+        var map = Object.create(null);
+        (draft && Array.isArray(draft.overrides) ? draft.overrides : []).forEach(function (item) {
+            if (!item || !item.key || !item.blob) return;
+            map[String(item.key).toLowerCase()] = { blob: item.blob };
+        });
+        return map;
+    }
+
+    function syncDraftDirty() {
+        if (Object.keys(state.variantDrafts).length) state.dirty = true;
+        if (el.unsaved) el.unsaved.hidden = !(state.dirty || state.formDirty);
+    }
+
+    /* The session record names the look on screen and carries every draft, so a
+       reload comes back to that look with the others still waiting. */
+    function saveVariantSession() {
+        if (!Object.keys(state.variantDrafts).length && !lookDiffersFromPackage()) return;
+        try {
+            saveRecoveryNow();
+        } catch (e) {}
+    }
+
+    function dropVariantDraft(name) {
+        var key = variantDraftKey(name);
+        if (key && state.variantDrafts[key]) delete state.variantDrafts[key];
+        syncDraftDirty();
+    }
+
+    /* Whether the look on screen still differs from the package it came from. */
+    function lookDiffersFromPackage() {
+        if (state.variantIsNew || state.renamedFrom) return true;
+        if (realOverrideCount() > 0) return true;
+        if (!state.config || !state.configBase) return false;
+        return JSON.stringify(state.config) !== JSON.stringify(state.configBase);
+    }
+
+    /* Called before another look is loaded. The base look is only a draft once
+       it differs from the package; an untouched variation is simply dropped. */
+    function stashVariantDraft() {
+        if (state.sourceType !== 'gallery' || !state.folder || !state.config) return;
+        var key = variantDraftKey(state.variant);
+        var differs = lookDiffersFromPackage();
+        if (!key && !differs) {
+            delete state.variantDrafts[''];
+            syncDraftDirty();
+            return;
+        }
+        if (key && !differs && !state.variantIsNew) {
+            delete state.variantDrafts[key];
+            syncDraftDirty();
+            return;
+        }
+        var draft = {
+            variantDraft: true,
+            name: state.variant || '',
+            variantSource: state.variantSource || '',
+            variantIsNew: !!state.variantIsNew,
+            renamedFrom: state.renamedFrom || '',
+            savedAt: Date.now(),
+            config: cloneJson(state.config),
+            meta: {
+                name: state.meta.name || '',
+                author: state.meta.author || '',
+                authorUrl: state.meta.authorUrl || '',
+                desc: state.meta.desc || '',
+                externalDownloadUrl: state.meta.externalDownloadUrl || ''
+            },
+            overrides: [],
+            selectedAssetId: state.selectedAssetId || null,
+            assetFilter: state.assetFilter || 'all',
+            openTrays: cloneJson(state.openTrays || {}),
+            compactExpanded: state.compactExpanded === true,
+            dirty: true
+        };
+        Object.keys(state.assetOverrides || {}).forEach(function (assetKey) {
+            var entry = state.assetOverrides[assetKey];
+            if (!entry || entry.placeholder || !entry.blob) return;
+            draft.overrides.push({
+                key: assetKey,
+                blob: entry.blob,
+                name: entry.name || '',
+                size: entry.size || entry.blob.size || 0,
+                type: entry.type || entry.blob.type || ''
+            });
+        });
+        state.variantDrafts[key] = draft;
+        syncDraftDirty();
+    }
+
+    /* A draft or a recovered session remembers the look it belongs to; the
+       package itself is read from that look's own folder. */
+    function applyStoredThemeVariant(record) {
+        if (!record) return;
+        /* A session keeps the look in ``variant``; a draft keeps its own name in
+           ``name`` because the look on screen is read from its source folder. */
+        var stored =
+            typeof record.variant === 'string'
+                ? record.variant
+                : typeof record.name === 'string'
+                  ? record.name
+                  : null;
+        if (stored === null) return;
+        state.variant = stored;
+        state.variantSource =
+            typeof record.variantSource === 'string' ? record.variantSource : stored;
+        state.variantIsNew = record.variantIsNew === true;
+        state.renamedFrom = typeof record.renamedFrom === 'string' ? record.renamedFrom : '';
+        syncUrl();
+    }
+
     function variantNames() {
         var names = [];
+        function renamedAway(low) {
+            if (state.renamedFrom && String(state.renamedFrom).toLowerCase() === low) return true;
+            return Object.keys(state.variantDrafts).some(function (key) {
+                var draft = state.variantDrafts[key];
+                return !!draft && !!draft.renamedFrom && String(draft.renamedFrom).toLowerCase() === low;
+            });
+        }
         function add(name) {
             var clean = String(name || '').trim();
             if (!clean || clean === '.') return;
             var low = clean.toLowerCase();
             if (state.removedVariants.some(function (removed) { return String(removed).toLowerCase() === low; })) return;
             /* A renamed variation travels under its new name only. */
-            if (state.renamedFrom && String(state.renamedFrom).toLowerCase() === low) return;
+            if (renamedAway(low)) return;
             if (names.some(function (existing) { return existing.toLowerCase() === low; })) return;
             names.push(clean);
         }
@@ -8386,6 +8623,12 @@
         if (entry && Array.isArray(entry.variantFolders)) entry.variantFolders.forEach(add);
         var gallery = state.config && state.config.gallery;
         if (gallery && Array.isArray(gallery.variantFolders)) gallery.variantFolders.forEach(add);
+        /* A look drafted here is listed like any other, whether or not the
+           gallery has its folder yet. */
+        Object.keys(state.variantDrafts).forEach(function (key) {
+            var draft = state.variantDrafts[key];
+            if (draft && draft.name) add(draft.name);
+        });
         if (state.variant && state.variantIsNew) add(state.variant);
         return names;
     }
@@ -8415,16 +8658,25 @@
         select.innerHTML = '';
         var baseOption = document.createElement('option');
         baseOption.value = '';
-        baseOption.textContent = ((state.meta && state.meta.name) || 'Base look') + ' — base';
+        baseOption.textContent =
+            ((state.meta && state.meta.name) || 'Base look') +
+            ' — base' +
+            (state.variantDrafts[''] || (state.dirty && !selected) ? ' (draft)' : '');
         select.appendChild(baseOption);
         variantNames().forEach(function (name) {
             var option = document.createElement('option');
             option.value = name;
-            var marker =
-                state.variantIsNew && name === selected
-                    ? state.renamedFrom
-                        ? ' (renamed)'
-                        : ' (new)'
+            var active = name === selected;
+            var draft = active ? null : variantDraftFor(name);
+            var isNew = active ? !!state.variantIsNew : !!(draft && draft.variantIsNew);
+            var marker = isNew
+                ? active && state.renamedFrom
+                    ? ' (renamed)'
+                    : ' (new)'
+                : draft
+                  ? ' (draft)'
+                  : active && state.dirty
+                    ? ' (draft)'
                     : '';
             option.textContent = name + marker;
             select.appendChild(option);
@@ -8457,12 +8709,17 @@
     function switchVariant(name) {
         var clean = String(name || '').trim();
         if (!state.folder || clean === (state.variant || '')) return;
-        if (state.dirty) {
-            /* Switching looks reloads the package, so hand the current edits to
-               the recovery draft before they leave this tab. */
-            try {
-                saveRecoveryNow();
-            } catch (e) {}
+        /* Switching looks reloads the package from the gallery, so the look on
+           screen is put aside first: it is still there when the reader comes
+           back, along with every other look drafted in this tab. */
+        stashVariantDraft();
+        try {
+            saveRecoveryNow();
+        } catch (e) {}
+        var draft = variantDraftFor(clean);
+        if (draft) {
+            loadGalleryTheme(state.folder, draft, draft.variantSource || '');
+            return;
         }
         loadGalleryTheme(state.folder, null, clean);
     }
@@ -8586,6 +8843,9 @@
                 saveRecoveryNow();
             } catch (e) {}
         }
+        /* A draft of this look follows it to the new name. */
+        var stashedDraft = variantDraftFor(current);
+        if (stashedDraft) delete state.variantDrafts[variantDraftKey(current)];
         if (!state.variantIsNew) {
             /* The variation is still on disk under its old name until the package
                is saved or submitted. */
@@ -8595,6 +8855,10 @@
         state.variant = name;
         state.variantIsNew = true;
         state.dirty = true;
+        if (stashedDraft) {
+            stashedDraft.name = name;
+            state.variantDrafts[variantDraftKey(name)] = stashedDraft;
+        }
         if (el.unsaved) el.unsaved.hidden = false;
         renderVariantControls();
         syncUrl();
@@ -8659,9 +8923,14 @@
             toast('“' + name + '” already exists. Pick another name.');
             return;
         }
+        /* The look this one is sketched over is put aside first, so it comes
+           back untouched when the reader switches to it. */
+        stashVariantDraft();
         /* Keep reading the look on screen (the base theme or the variation it
-           was opened from) until the new variation's own folder exists. */
-        state.variantSource = state.variant || '';
+           was opened from) until the new variation's own folder exists. A look
+           that is itself only a draft has no folder to read, so its own source
+           carries over. */
+        state.variantSource = state.variantIsNew ? state.variantSource || '' : state.variant || '';
         state.variant = name;
         state.variantIsNew = true;
         state.dirty = true;
@@ -8712,20 +8981,23 @@
             toast('Choose a variation to remove first.');
             return;
         }
-        /* A variation that only exists in this tab has nothing to confirm: it
-           simply stops being the look being edited. */
-        if (state.variantIsNew) {
+        /* A variation that only exists in this tab has nothing to confirm: its
+           draft is dropped and the look it was sketched over comes back. */
+        var draft = variantDraftFor(name);
+        if (state.variantIsNew || (draft && draft.variantIsNew)) {
             var source = state.variantSource || '';
-            state.variant = source;
-            state.variantSource = source;
-            state.variantIsNew = false;
-            state.renamedFrom = '';
-            renderVariantControls();
-            syncUrl();
+            dropVariantDraft(name);
+            var sourceDraft = variantDraftFor(source);
+            if (sourceDraft) {
+                loadGalleryTheme(state.folder, sourceDraft, sourceDraft.variantSource || '');
+            } else {
+                loadGalleryTheme(state.folder, null, source);
+            }
             toast('Discarded the unsaved variation “' + name + '”.');
             return;
         }
         if (!(await promptRemoveVariation(name))) return;
+        dropVariantDraft(name);
         var low = name.toLowerCase();
         if (!state.removedVariants.some(function (removed) { return String(removed).toLowerCase() === low; })) {
             state.removedVariants.push(name);
@@ -9449,6 +9721,9 @@
         state.configBase = cloneJson(state.config);
         state.folder = null;
         state.variant = '';
+        /* Drafts belong to the gallery theme they were made in. */
+        state.variantDrafts = Object.create(null);
+        state.variantDraftsFolder = '';
         state.compactExpanded = false;
         bootModeRequest = null;
         state.meta = {
