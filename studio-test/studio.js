@@ -4993,6 +4993,7 @@
        stage's empty margin so the artwork it edits is never covered. */
     var previewToolbar = null;
     var previewToolbarAssetId = '';
+    var previewToolbarAnchor = null;
     var previewToolbarRaf = 0;
 
     function previewToolbarHost() {
@@ -5019,6 +5020,62 @@
         });
     }
 
+    /* Pick the DOM element in the live preview that best represents where the
+       user clicked (or the actual right-pane artwork when an icon asset shares
+       data-theme-asset-path with both a left-hand menu row and a right-hand
+       artwork box). */
+    function resolvePreviewToolbarTarget(id, anchor) {
+        var nodes = id ? previewAssetNodes(id) : [];
+        var chosenNode = null;
+        if (anchor && anchor.node && el.preview && el.preview.contains(anchor.node)) {
+            var ar = anchor.node.getBoundingClientRect();
+            if (ar && ar.width && ar.height) chosenNode = anchor.node;
+        }
+        if (!chosenNode && nodes.length) {
+            var visible = nodes.filter(function (n) {
+                var r = n.getBoundingClientRect();
+                return r && r.width > 0 && r.height > 0;
+            });
+            if (visible.length === 1) {
+                chosenNode = visible[0];
+            } else if (visible.length > 1) {
+                if (anchor && typeof anchor.clientX === 'number' && typeof anchor.clientY === 'number') {
+                    var bestDist = Infinity;
+                    visible.forEach(function (n) {
+                        var r = n.getBoundingClientRect();
+                        var cx = r.left + r.width / 2;
+                        var cy = r.top + r.height / 2;
+                        var dx = cx - anchor.clientX;
+                        var dy = cy - anchor.clientY;
+                        var dist = dx * dx + dy * dy;
+                        if (dist < bestDist) {
+                            bestDist = dist;
+                            chosenNode = n;
+                        }
+                    });
+                }
+                if (!chosenNode) {
+                    /* Prefer the actual artwork node on the right pane over the
+                       left-hand menu row text when an icon shares both slots. */
+                    for (var i = 0; i < visible.length; i++) {
+                        var cand = visible[i];
+                        if (
+                            !cand.closest('.y1-tp-row') &&
+                            (cand.tagName === 'IMG' ||
+                                cand.hasAttribute('data-theme-art-box') ||
+                                !!cand.closest('.y1-tp-right, .y1-tp-art, .y1-tp-art-box'))
+                        ) {
+                            chosenNode = cand;
+                            break;
+                        }
+                    }
+                }
+                if (!chosenNode) chosenNode = visible[0];
+            }
+        }
+        return chosenNode ? chosenNode.getBoundingClientRect() : null;
+    }
+
     /* Place the floating toolbar strictly OUTSIDE the player preview so it
        never imposes on the artwork being edited:
        - If the selected element sits on the left half of the preview, prefer
@@ -5028,8 +5085,8 @@
     function positionPreviewToolbar() {
         var host = previewToolbar;
         if (!host || host.hidden) return;
-        var nodes = previewToolbarAssetId ? previewAssetNodes(previewToolbarAssetId) : [];
-        var elRect = nodes.length ? nodes[0].getBoundingClientRect() : null;
+        var anchor = previewToolbarAnchor;
+        var elRect = resolvePreviewToolbarTarget(previewToolbarAssetId, anchor);
         var deviceEl = el.preview ? el.preview.querySelector('.y1-tp-device') || el.preview : null;
         var devRect = deviceEl ? deviceEl.getBoundingClientRect() : elRect;
         if (!devRect || !devRect.width || !devRect.height) return;
@@ -5042,10 +5099,28 @@
         var maxBottom = window.innerHeight - 8;
         var gap = 12;
 
-        var selCx = elRect ? elRect.left + elRect.width / 2 : devRect.left + devRect.width / 2;
-        var selCy = elRect ? elRect.top + elRect.height / 2 : devRect.top + devRect.height / 2;
+        /* For full-canvas layers (wallpapers/masks) whose rect spans the whole
+           screen, anchor to the user's actual click coordinates when available. */
+        var useClickPoint =
+            anchor &&
+            typeof anchor.clientX === 'number' &&
+            typeof anchor.clientY === 'number' &&
+            (!elRect || elRect.width >= devRect.width * 0.72);
+        var selCx = useClickPoint
+            ? anchor.clientX
+            : elRect
+              ? elRect.left + elRect.width / 2
+              : devRect.left + devRect.width / 2;
+        var selCy = useClickPoint
+            ? anchor.clientY
+            : elRect
+              ? elRect.top + elRect.height / 2
+              : devRect.top + devRect.height / 2;
         var devMidX = devRect.left + devRect.width / 2;
-        var isLeftSide = selCx <= devMidX;
+        var isLeftSide =
+            anchor && anchor.preferRight === true
+                ? false
+                : selCx <= devMidX;
 
         /* Measure compact side dimensions first. */
         host.classList.add('is-side');
@@ -5053,32 +5128,32 @@
         var sideH = host.offsetHeight || 76;
         var leftSpace = devRect.left - gap - minLeft;
         var rightSpace = maxRight - (devRect.right + gap);
-        var canLeft = leftSpace >= sideW;
-        var canRight = rightSpace >= sideW;
+        var canLeft = leftSpace >= sideW - 4;
+        var canRight = rightSpace >= sideW - 4;
 
         var placed = null;
         if (isLeftSide && canLeft) {
             placed = {
                 side: true,
-                left: devRect.left - gap - sideW,
+                left: Math.max(minLeft, devRect.left - gap - sideW),
                 top: Math.max(minTop, Math.min(maxBottom - sideH, selCy - sideH / 2))
             };
         } else if (!isLeftSide && canRight) {
             placed = {
                 side: true,
-                left: devRect.right + gap,
+                left: Math.min(maxRight - sideW, devRect.right + gap),
                 top: Math.max(minTop, Math.min(maxBottom - sideH, selCy - sideH / 2))
             };
         } else if (canLeft) {
             placed = {
                 side: true,
-                left: devRect.left - gap - sideW,
+                left: Math.max(minLeft, devRect.left - gap - sideW),
                 top: Math.max(minTop, Math.min(maxBottom - sideH, selCy - sideH / 2))
             };
         } else if (canRight) {
             placed = {
                 side: true,
-                left: devRect.right + gap,
+                left: Math.min(maxRight - sideW, devRect.right + gap),
                 top: Math.max(minTop, Math.min(maxBottom - sideH, selCy - sideH / 2))
             };
         }
@@ -5165,8 +5240,13 @@
         }
     }
 
-    function showPreviewToolbar(id) {
+    function showPreviewToolbar(id, anchor) {
         if (!id || !state.assetById[id]) return;
+        if (anchor !== undefined) {
+            previewToolbarAnchor = anchor;
+        } else if (id !== previewToolbarAssetId) {
+            previewToolbarAnchor = null;
+        }
         previewToolbarAssetId = id;
         renderPreviewToolbar();
         syncToolbarStripButton(!!(previewToolbar && !previewToolbar.hidden));
@@ -5174,6 +5254,7 @@
 
     function hidePreviewToolbar() {
         previewToolbarAssetId = '';
+        previewToolbarAnchor = null;
         if (previewToolbar) previewToolbar.hidden = true;
         syncToolbarStripButton(false);
     }
@@ -5332,7 +5413,7 @@
         }
         selectAsset(id);
         focusTrayAsset(id);
-        showPreviewToolbar(id);
+        showPreviewToolbar(id, options && options.toolbarAnchor ? options.toolbarAnchor : null);
         return true;
     }
 
@@ -5355,7 +5436,7 @@
         });
     }
 
-    function revealScreenAssets(focusPath) {
+    function revealScreenAssets(focusPath, toolbarAnchor) {
         var ids = screenAssetIds();
         if (!ids.length) return false;
         /* The caller may know which of the two layers the pointer is over:
@@ -5382,7 +5463,7 @@
         setRelatedAssets(ids.length > 1 ? anchor : '', related, 'Background and mask on this screen');
         selectAsset(anchor);
         focusTrayAsset(anchor);
-        showPreviewToolbar(anchor);
+        showPreviewToolbar(anchor, toolbarAnchor || null);
         return true;
     }
 
@@ -5596,8 +5677,14 @@
             revealStatusColors();
             return true;
         }
+        var clickAnchor = {
+            node: hit.node || null,
+            clientX: typeof event.clientX === 'number' ? event.clientX : null,
+            clientY: typeof event.clientY === 'number' ? event.clientY : null,
+            preferRight: !!hit.isRightIcon
+        };
         if (hit.isScreenLayer) {
-            if (!revealScreenAssets(path)) return false;
+            if (!revealScreenAssets(path, clickAnchor)) return false;
             event.preventDefault();
             event.stopPropagation();
             return true;
@@ -5609,7 +5696,8 @@
         revealAssetInEdit(action.primaryId, {
             relatedIds: action.relatedIds,
             relatedTitle: action.relatedTitle,
-            relatedColorAnchor: action.relatedColorAnchor
+            relatedColorAnchor: action.relatedColorAnchor,
+            toolbarAnchor: clickAnchor
         });
         return true;
     }
@@ -8282,7 +8370,7 @@
                 var swScope = manifest ? new URL('./', manifest.href).pathname : '/studio-test/';
                 /* A version in the worker URL is what carries a corrected worker
                    past an edge-cached copy of sw.js on the previous release. */
-                var swVersion = '49';
+                var swVersion = '50';
                 navigator.serviceWorker.register(swUrl + '?v=' + swVersion, { scope: swScope, updateViaCache: 'none' }).catch(function (err) {
                     console.warn('Studio: service worker unavailable', err);
                 });
