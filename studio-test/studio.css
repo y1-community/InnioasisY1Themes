@@ -5128,3 +5128,90 @@ body.studio-app.y1-donate-panel-open #support-toolbar-slot {
 .studio-seo-guide-body ul { margin: 0; padding-left: 17px; display: grid; gap: 5px; }
 .studio-seo-guide-body strong { color: var(--site-text); }
 .studio-seo-guide-body a { color: var(--site-accent); text-decoration: underline; }
+
+/* —— Mode tabs are the studio's primary navigation ————————————————
+   Preview / Edit / Upload sit at the true centre of the command bar on wide
+   screens, and own a full-width, 44px-tall row on phones and iPad mini, where
+   they used to be squeezed beside six icon buttons. Safe-area padding keeps
+   the bar clear of the notch and the home indicator. */
+
+.studio-app .studio-commandbar {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+}
+
+.studio-commandbar .studio-modes {
+    justify-self: center;
+    padding: 3px;
+    border-radius: 14px;
+}
+
+.studio-commandbar .studio-mode {
+    flex: 1 1 0;
+    min-width: 96px;
+    min-height: 38px;
+    padding: 7px 16px;
+    border-radius: 11px;
+    font-size: 0.82rem;
+}
+
+.studio-commandbar .studio-mode i {
+    font-size: 0.8rem;
+}
+
+@media (max-width: 1040px) and (min-width: 761px) {
+    .studio-app .studio-commandbar .studio-modes {
+        width: min(100%, 520px);
+        justify-self: center;
+    }
+
+    .studio-app .studio-commandbar .studio-mode {
+        min-height: 44px;
+    }
+}
+
+@media (max-width: 760px) {
+    body.studio-app .studio-commandbar {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto auto;
+        gap: 6px;
+        padding-top: calc(8px + env(safe-area-inset-top, 0px));
+        padding-right: max(10px, env(safe-area-inset-right, 0px));
+        padding-bottom: 8px;
+        padding-left: max(10px, env(safe-area-inset-left, 0px));
+    }
+
+    body.studio-app .studio-commandbar .studio-modes {
+        grid-row: 1;
+        width: min(100%, 520px);
+        justify-self: center;
+    }
+
+    body.studio-app .studio-commandbar .studio-mode {
+        min-height: 44px;
+        gap: 6px;
+        padding: 8px 6px;
+        font-size: 0.8rem;
+    }
+
+    body.studio-app .studio-command-actions {
+        grid-row: 2;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    body.studio-app .studio-command-actions .studio-btn {
+        width: 44px;
+        min-height: 44px;
+        padding: 0;
+        justify-content: center;
+    }
+
+    body.studio-app .studio-btn--themes span {
+        display: none;
+    }
+
+    body.studio-app .studio-command-actions .studio-btn i {
+        font-size: 0.95rem;
+    }
+}
