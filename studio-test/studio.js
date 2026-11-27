@@ -286,7 +286,27 @@
         onboardingUpload: byId('studio-onboarding-upload'),
         onboardingClose: byId('studio-onboarding-close'),
         onboardingX: byId('studio-onboarding-x'),
-        onboardingSuppress: byId('studio-onboarding-suppress')
+        onboardingSuppress: byId('studio-onboarding-suppress'),
+        previewControls: byId('studio-preview-controls'),
+        toggleLegacy: byId('studio-toggle-legacy'),
+        toggleUnimplemented: byId('studio-toggle-unimplemented'),
+        identityMismatch: byId('studio-identity-mismatch'),
+        mismatchAsNew: byId('studio-mismatch-as-new'),
+        y2Toast: byId('studio-y2-toast'),
+        y2ToastOpen: byId('studio-y2-toast-open'),
+        y2ToastClose: byId('studio-y2-toast-close'),
+        y2Modal: byId('studio-y2-fm-modal'),
+        y2ModalX: byId('studio-y2-fm-x'),
+        y2ModalClose: byId('studio-y2-fm-close'),
+        y2ModalThemeName: byId('studio-y2-fm-theme-name'),
+        y2ModalDropzone: byId('studio-y2-fm-dropzone'),
+        y2ModalPreview: byId('studio-y2-fm-preview'),
+        y2ModalStatus: byId('studio-y2-fm-status'),
+        y2ModalReplace: byId('studio-y2-fm-replace'),
+        y2ModalTheme: byId('studio-y2-fm-theme'),
+        y2ModalPaste: byId('studio-y2-fm-paste'),
+        y2ModalTemplate: byId('studio-y2-fm-template'),
+        y2ModalSubmit: byId('studio-y2-fm-submit')
     };
 
     var state = {
@@ -343,6 +363,10 @@
         colorPreviewTimer: null,
         swapOpen: false,
         compactExpanded: false,
+        previewDeviceMode: 'both',
+        showLegacyHome: true,
+        showUnimplementedHome: false,
+        y2ToastDismissedFolder: '',
         tryDeviceHandle: null,
         tryOnDeviceCount: (function () {
             try {
@@ -1865,6 +1889,24 @@
                 canvas.removeAttribute('data-tip');
             }
         });
+        document.addEventListener('studio-canvas-tip-updated', function (ev) {
+            var canvas = document.querySelector('.y1-tp-canvas');
+            if (!canvas) return;
+            var text = ev && ev.detail && typeof ev.detail.text === 'string' ? ev.detail.text : '';
+            if (!text) {
+                if (current === canvas) hide();
+                return;
+            }
+            if (ev.detail && isFinite(ev.detail.x) && isFinite(ev.detail.y)) {
+                lastPoint = { x: ev.detail.x, y: ev.detail.y };
+            }
+            canvas.removeAttribute('title');
+            canvas.setAttribute('data-tip', text);
+            current = canvas;
+            tipEl.textContent = text;
+            tipEl.hidden = false;
+            place(canvas);
+        });
         document.addEventListener('scroll', hide, true);
         window.addEventListener('blur', hide);
     }
@@ -2331,6 +2373,7 @@
                     if (loaded.baseUrl) {
                         toast('Showing the latest version from GitHub while the live site finishes updating.');
                     }
+                    syncY2FileManagerToast();
                     return mountPreview({ freshView: true });
                 });
             })
@@ -2545,6 +2588,9 @@
             catalogFolder: state.sourceType === 'gallery' ? state.folder : '__studio_local__',
             variantSegment: state.sourceType === 'gallery' ? state.variant || '' : '',
             mode: 'full',
+            deviceMode: state.previewDeviceMode || 'both',
+            showLegacyHome: state.showLegacyHome !== false,
+            showUnimplementedHome: state.showUnimplementedHome === true,
             compactControls: true,
             /* The Studio edits artwork, not playback: the four transport
                buttons are enough, and the fifth toggles the options beside the
@@ -2552,7 +2598,7 @@
             hideWheel: true,
             compactExpanded: false,
             onOptionsToggle: function () {
-                togglePreviewToolbar();
+                return togglePreviewToolbar();
             },
             spec: state.config,
             simState: state.statusState,
@@ -3198,10 +3244,130 @@
         settingMask: 'Settings overlay mask',
         wallpaper: 'Wallpaper',
         shutdown: 'Shutdown icon',
+        launcher: 'Rockbox / Launcher',
+        categoryKeysWheel: 'Settings: Keys & Wheel',
+        categoryAudio: 'Settings: Audio',
+        categoryDisplay: 'Settings: Display',
+        categoryPersonalization: 'Settings: Personalization',
+        categoryFilesStorage: 'Settings: Files & Storage',
+        categorySystem: 'Settings: System',
+        headphoneGainLow: 'Headphone gain (Low)',
+        headphoneGainStandard: 'Headphone gain (Standard)',
+        headphoneGainHigh: 'Headphone gain (High)',
+        headphoneGainMaximum: 'Headphone gain (Maximum)',
+        speakerOn: 'Speaker (On)',
+        speakerOff: 'Speaker (Off)',
+        wheelSensitivityLow: 'Click wheel sensitivity (Low)',
+        wheelSensitivityStandard: 'Click wheel sensitivity (Standard)',
+        wheelSensitivityHigh: 'Click wheel sensitivity (High)',
+        wheelVolumeOn: 'Click wheel volume (On)',
+        wheelVolumeOff: 'Click wheel volume (Off)',
         scrollbarThumb: 'Scrollbar thumb',
         bootLogo: 'Boot logo',
         shutdownLogo: 'Shutdown logo'
     };
+
+    /* Firmware provenance hints grounded in reverse engineering Y1 1.7.6–3.1.2
+       and Y2 3.1.7–3.2.8 stock firmwares (y1-community/y1-stock-rom). */
+    var Y2_OPTIONAL_SETTING_SLOTS = [
+        ['settingConfig.categoryKeysWheel', 'Settings: Keys & Wheel'],
+        ['settingConfig.categoryAudio', 'Settings: Audio'],
+        ['settingConfig.categoryDisplay', 'Settings: Display'],
+        ['settingConfig.categoryPersonalization', 'Settings: Personalization'],
+        ['settingConfig.categoryFilesStorage', 'Settings: Files & Storage'],
+        ['settingConfig.categorySystem', 'Settings: System'],
+        ['settingConfig.headphoneGainLow', 'Headphone gain (Low)'],
+        ['settingConfig.headphoneGainStandard', 'Headphone gain (Standard)'],
+        ['settingConfig.headphoneGainHigh', 'Headphone gain (High)'],
+        ['settingConfig.headphoneGainMaximum', 'Headphone gain (Maximum)'],
+        ['settingConfig.speakerOn', 'Speaker (On)'],
+        ['settingConfig.speakerOff', 'Speaker (Off)'],
+        ['settingConfig.wheelSensitivityLow', 'Click wheel sensitivity (Low)'],
+        ['settingConfig.wheelSensitivityStandard', 'Click wheel sensitivity (Standard)'],
+        ['settingConfig.wheelSensitivityHigh', 'Click wheel sensitivity (High)'],
+        ['settingConfig.wheelVolumeOn', 'Click wheel volume (On)'],
+        ['settingConfig.wheelVolumeOff', 'Click wheel volume (Off)']
+    ];
+
+    function assetFirmwareHint(asset) {
+        if (!asset || !asset.path) return null;
+        var p = String(asset.path);
+        if (p === 'homePageConfig.shuffleQuick') {
+            return {
+                badge: 'Legacy · Y1 ≤2.1.9',
+                tone: 'legacy',
+                note: 'Shown on the Home menu in Y1 1.7.6–2.1.9; removed from the Home menu in Y1 2.8.2 (kept in config.json for backward compatibility).'
+            };
+        }
+        if (p === 'homePageConfig.ebook') {
+            return {
+                badge: 'Y1 2.8.2+ & Y2',
+                tone: 'info',
+                note: 'E-Book was added to the Home menu in Y1 firmware 2.8.2 and is included on all later Y1 and Y2 builds.'
+            };
+        }
+        if (p === 'homePageConfig.calendar' || p === 'homePageConfig.calculator') {
+            return {
+                badge: 'Unimplemented',
+                tone: 'unimplemented',
+                note: 'Present in Y1 2.8.2+ and Y2 firmware config behind an unshipped feature flag; hidden on stock menus unless enabled in custom builds.'
+            };
+        }
+        if (p === 'homePageConfig.fileManager') {
+            return {
+                badge: 'Y2 3.1.7+',
+                tone: 'y2',
+                note: 'Introduced in Innioasis Y2 3.1.7. Required for full Y2 support in the gallery; safely ignored by Y1 players.'
+            };
+        }
+        if (p === 'homePageConfig.bluetooth') {
+            return {
+                badge: 'Y1 Home · Y2 Settings',
+                tone: 'dual',
+                note: 'Dual-use icon: shown on the Home screen on Innioasis Y1, and reused inside Settings → Bluetooth on Innioasis Y2 3.2.0+.'
+            };
+        }
+        if (p === 'settingConfig.launcher') {
+            return {
+                badge: 'Y1 2.8.2+ & Y2',
+                tone: 'info',
+                note: 'Rockbox / Launcher icon shown in Settings on Y1 2.8.2+ and under Settings → System on Y2 3.2.0+.'
+            };
+        }
+        if (p === 'settingConfig.shutdown') {
+            return {
+                badge: 'Y1 1.7.6–3.1.2',
+                tone: 'legacy',
+                note: 'Root Settings row on Y1 builds. Y2 3.2.0+ uses categorized Settings with Timed shutdown under System.'
+            };
+        }
+        if (/^settingConfig\.category/.test(p)) {
+            return {
+                badge: 'Y2 3.2.0+',
+                tone: 'y2',
+                note: 'Category icon for Y2 3.2.0+ categorized Settings. Leave blank to use the stock Y2 icon; ignored by Y1.'
+            };
+        }
+        if (/^settingConfig\.(headphoneGain|speaker|wheelSensitivity|wheelVolume)/.test(p)) {
+            return {
+                badge: 'Y2 3.2.0+',
+                tone: 'y2',
+                note: 'Y2-only Settings icon introduced in Y2 3.2.0+. Leave blank to use the stock Y2 icon; ignored by Y1.'
+            };
+        }
+        if (
+            p === 'itemConfig.itemSelectedBackground' &&
+            ((state.config && state.config.itemConfig && state.config.itemConfig.itemSelectedBackgroundIs9Patch) ||
+                /\.9\.png$/i.test(String(asset.value || '')))
+        ) {
+            return {
+                badge: '9-Patch · Y2',
+                tone: 'y2',
+                note: 'Rendered as an Android 9-patch (.9.png) on Y2 so corners stay sharp at any row width.'
+            };
+        }
+        return null;
+    }
 
     function assetSection(topKey) {
         if (SECTION_LABELS[topKey]) return SECTION_LABELS[topKey];
@@ -3599,21 +3765,26 @@
             known[def.path] = true;
         });
         /* The launcher always draws a File manager row, so its slot has to be
-           editable even in a theme that never shipped art for it. */
+           editable even in a theme that never shipped art for it. Also expose
+           all 17 Y2 3.2.0+ Settings category/hardware slots as optional blank
+           slots (omitted from exported config.json if left blank so Y2 draws
+           its native icons and Y1 ignores them cleanly). */
         [
             ['fileConfig.folderIcon', 'Folder icon'],
             ['fileConfig.musicIcon', 'Music file icon'],
-            ['homePageConfig.fileManager', 'File manager']
-        ].forEach(function (optional) {
-            if (known[optional[0]]) return;
-            defs.push({
-                path: optional[0],
-                value: String(readPath(config || {}, optional[0]) || '').trim(),
-                section: assetSection(optional[0].split('.')[0]),
-                label: optional[1],
-                kind: 'image'
+            ['homePageConfig.fileManager', 'File manager icon']
+        ]
+            .concat(Y2_OPTIONAL_SETTING_SLOTS)
+            .forEach(function (optional) {
+                if (known[optional[0]]) return;
+                defs.push({
+                    path: optional[0],
+                    value: String(readPath(config || {}, optional[0]) || '').trim(),
+                    section: assetSection(optional[0].split('.')[0]),
+                    label: optional[1],
+                    kind: 'image'
+                });
             });
-        });
         /* Item chrome: always expose Item selected background, Item background,
            and Item right arrow so clicking left-side menu text or right-side
            icons can always focus and suggest them even on minimal configs. */
@@ -3909,6 +4080,8 @@
         /* Adding or binning the file manager icon changes which players the
            theme is listed for, so the badge follows the asset list. */
         refreshPlatformChip();
+        syncY2FileManagerModal();
+        if (themeShipsFileManager()) hideY2FileManagerToast();
     }
 
     /* —— Status bar states ——
@@ -3962,9 +4135,25 @@
         return host;
     }
 
+    function isY2DefaultLoaded() {
+        return state.sourceType === 'gallery' && String(state.folder || '').trim().toLowerCase() === 'y2_default';
+    }
+
     function renderStatusEditor() {
         var host = statusEditorHost();
         if (!host) return;
+        var fixedRow = host.querySelector('.studio-status-text--fixed');
+        if (fixedRow) {
+            var strongEl = fixedRow.querySelector('strong');
+            var hintEl = fixedRow.querySelector('.studio-hint');
+            if (isY2DefaultLoaded()) {
+                if (strongEl) strongEl.textContent = 'Dark (Y2 Default)';
+                if (hintEl) hintEl.textContent = 'Built-in Y2 Default privilege: only the factory Y2 Default theme uses dark status bar text on light menus.';
+            } else {
+                if (strongEl) strongEl.textContent = 'White';
+                if (hintEl) hintEl.textContent = 'Fixed: the player draws the status bar text in white on custom themes and ignores other values.';
+            }
+        }
         var chips = host.querySelector('.studio-status-chips');
         if (!chips) return;
         chips.innerHTML = '';
@@ -4341,6 +4530,14 @@
 
         var meta = document.createElement('span');
         meta.className = 'studio-asset-row-meta';
+        var fwHint = assetFirmwareHint(asset);
+        if (fwHint) {
+            var fwBadge = document.createElement('span');
+            fwBadge.className = 'studio-fw-badge is-' + fwHint.tone;
+            fwBadge.textContent = fwHint.badge;
+            fwBadge.title = fwHint.note;
+            meta.appendChild(fwBadge);
+        }
         var badge = document.createElement('span');
         badge.className = 'studio-asset-badge';
         badge.textContent = status.label;
@@ -4822,57 +5019,91 @@
         });
     }
 
-    /* Left of the element when the stage has room, then right, then above or
-       below it. The strip is fixed-position so the stage's own scrolling never
-       drags it across the player. */
+    /* Place the floating toolbar strictly OUTSIDE the player preview so it
+       never imposes on the artwork being edited:
+       - If the selected element sits on the left half of the preview, prefer
+         the free stage margin to the LEFT of the player, then RIGHT, then ABOVE/BELOW.
+       - If on the right half, prefer RIGHT (staying clear of the inspector panel),
+         then LEFT, then ABOVE/BELOW. */
     function positionPreviewToolbar() {
         var host = previewToolbar;
         if (!host || host.hidden) return;
         var nodes = previewToolbarAssetId ? previewAssetNodes(previewToolbarAssetId) : [];
-        var rect = nodes.length
-            ? nodes[0].getBoundingClientRect()
-            : el.preview
-              ? el.preview.getBoundingClientRect()
-              : null;
-        if (!rect) return;
-        var width = host.offsetWidth || 168;
-        var height = host.offsetHeight || 46;
+        var elRect = nodes.length ? nodes[0].getBoundingClientRect() : null;
+        var deviceEl = el.preview ? el.preview.querySelector('.y1-tp-device') || el.preview : null;
+        var devRect = deviceEl ? deviceEl.getBoundingClientRect() : elRect;
+        if (!devRect || !devRect.width || !devRect.height) return;
+        var stageEl = document.querySelector('.studio-stage');
+        var stageRect = stageEl ? stageEl.getBoundingClientRect() : { left: 0, right: window.innerWidth, top: 64, bottom: window.innerHeight };
+        var barEl = document.querySelector('.studio-commandbar');
+        var minTop = Math.max(8, barEl ? Math.ceil(barEl.getBoundingClientRect().bottom) + 6 : 68);
+        var minLeft = Math.max(8, Math.floor(stageRect.left) + 8);
+        var maxRight = Math.min(window.innerWidth - 8, Math.floor(stageRect.right) - 8);
+        var maxBottom = window.innerHeight - 8;
         var gap = 12;
-        var pad = 8;
-        var vw = window.innerWidth;
-        var vh = window.innerHeight;
-        /* Sit beside the element the reader just picked, not at the far edge of
-           the stage: a right-pane icon's options belong under or beside that
-           icon. Each side is a candidate; the nearest one that fits on screen
-           wins, with a nudge so "just below" beats "far left". */
-        var candidates = [
-            { left: rect.left, top: rect.bottom + 10, bias: 0 },
-            { left: rect.left, top: rect.top - height - 10, bias: 0 },
-            { left: rect.right + gap, top: rect.top + rect.height / 2 - height / 2, bias: 18 },
-            { left: rect.left - width - gap, top: rect.top + rect.height / 2 - height / 2, bias: 18 }
-        ];
-        var selCx = rect.left + rect.width / 2;
-        var selCy = rect.top + rect.height / 2;
-        var best = null;
-        for (var ci = 0; ci < candidates.length; ci++) {
-            var c = candidates[ci];
-            if (c.left < pad || c.top < pad) continue;
-            if (c.left + width > vw - pad || c.top + height > vh - pad) continue;
-            var dx = c.left + width / 2 - selCx;
-            var dy = c.top + height / 2 - selCy;
-            var score = Math.sqrt(dx * dx + dy * dy) + c.bias;
-            if (!best || score < best.score) best = { left: c.left, top: c.top, score: score };
+
+        var selCx = elRect ? elRect.left + elRect.width / 2 : devRect.left + devRect.width / 2;
+        var selCy = elRect ? elRect.top + elRect.height / 2 : devRect.top + devRect.height / 2;
+        var devMidX = devRect.left + devRect.width / 2;
+        var isLeftSide = selCx <= devMidX;
+
+        /* Measure compact side dimensions first. */
+        host.classList.add('is-side');
+        var sideW = host.offsetWidth || 184;
+        var sideH = host.offsetHeight || 76;
+        var leftSpace = devRect.left - gap - minLeft;
+        var rightSpace = maxRight - (devRect.right + gap);
+        var canLeft = leftSpace >= sideW;
+        var canRight = rightSpace >= sideW;
+
+        var placed = null;
+        if (isLeftSide && canLeft) {
+            placed = {
+                side: true,
+                left: devRect.left - gap - sideW,
+                top: Math.max(minTop, Math.min(maxBottom - sideH, selCy - sideH / 2))
+            };
+        } else if (!isLeftSide && canRight) {
+            placed = {
+                side: true,
+                left: devRect.right + gap,
+                top: Math.max(minTop, Math.min(maxBottom - sideH, selCy - sideH / 2))
+            };
+        } else if (canLeft) {
+            placed = {
+                side: true,
+                left: devRect.left - gap - sideW,
+                top: Math.max(minTop, Math.min(maxBottom - sideH, selCy - sideH / 2))
+            };
+        } else if (canRight) {
+            placed = {
+                side: true,
+                left: devRect.right + gap,
+                top: Math.max(minTop, Math.min(maxBottom - sideH, selCy - sideH / 2))
+            };
         }
-        var left = best ? best.left : rect.left;
-        var top = best
-            ? best.top
-            : rect.bottom + 10 + height <= vh - pad
-              ? rect.bottom + 10
-              : rect.top - height - 10;
-        top = Math.max(pad, Math.min(vh - height - pad, top));
-        left = Math.max(pad, Math.min(vw - width - pad, left));
-        host.style.left = Math.round(left) + 'px';
-        host.style.top = Math.round(top) + 'px';
+
+        if (!placed) {
+            /* Narrow horizontal space: switch to horizontal strip strictly above or below device. */
+            host.classList.remove('is-side');
+            var barW = host.offsetWidth || 260;
+            var barH = host.offsetHeight || 44;
+            var centerLeft = Math.max(8, Math.min(window.innerWidth - barW - 8, devMidX - barW / 2));
+            var aboveTop = devRect.top - gap - barH;
+            var belowTop = devRect.bottom + gap;
+            if (aboveTop >= minTop) {
+                placed = { side: false, left: centerLeft, top: aboveTop };
+            } else if (belowTop + barH <= maxBottom) {
+                placed = { side: false, left: centerLeft, top: belowTop };
+            } else {
+                placed = { side: false, left: centerLeft, top: Math.max(minTop, Math.min(maxBottom - barH, aboveTop)) };
+            }
+        } else {
+            host.classList.toggle('is-side', !!placed.side);
+        }
+
+        host.style.left = Math.round(placed.left) + 'px';
+        host.style.top = Math.round(placed.top) + 'px';
     }
 
     function renderPreviewToolbar() {
@@ -4925,15 +5156,26 @@
         positionPreviewToolbar();
     }
 
+    function syncToolbarStripButton(isOpen) {
+        var api = el.preview ? el.preview._y1TpApi : null;
+        if (api && typeof api.setOptionsToggleState === 'function') {
+            try {
+                api.setOptionsToggleState(!!isOpen);
+            } catch (e) {}
+        }
+    }
+
     function showPreviewToolbar(id) {
         if (!id || !state.assetById[id]) return;
         previewToolbarAssetId = id;
         renderPreviewToolbar();
+        syncToolbarStripButton(!!(previewToolbar && !previewToolbar.hidden));
     }
 
     function hidePreviewToolbar() {
         previewToolbarAssetId = '';
         if (previewToolbar) previewToolbar.hidden = true;
+        syncToolbarStripButton(false);
     }
 
     function togglePreviewToolbar() {
@@ -5387,11 +5629,15 @@
             lastHoverKey = '';
             clearPreviewAssetLink();
             var canvas = el.preview ? el.preview.querySelector('.y1-tp-canvas') : null;
-            if (canvas) canvas.removeAttribute('title');
+            if (canvas) {
+                canvas.removeAttribute('title');
+                canvas.removeAttribute('data-tip');
+            }
+            document.dispatchEvent(new CustomEvent('studio-canvas-tip-updated', { detail: { text: '' } }));
         }
 
         el.preview.addEventListener('pointermove', function (event) {
-            if (isCapturingThumbs || event.pointerType === 'touch') return;
+            if (isCapturingThumbs || (event.pointerType && event.pointerType !== 'mouse')) return;
             lastHoverEvent = event;
             if (hoverRaf) return;
             hoverRaf = window.requestAnimationFrame(function () {
@@ -5410,6 +5656,12 @@
                     if (lastHoverKey) clearPreviewHover();
                     return;
                 }
+                var tipText = (action && action.tooltip) || 'Click to edit this theme asset';
+                var toolbarNamesIt =
+                    previewToolbar &&
+                    !previewToolbar.hidden &&
+                    previewToolbarAssetId &&
+                    previewToolbarAssetId === primaryId;
                 var hoverKey =
                     primaryId +
                     '|' +
@@ -5438,17 +5690,16 @@
                         });
                     }
                     if (canvas) {
-                        var tipText = (action && action.tooltip) || 'Click to edit this theme asset';
-                        var toolbarNamesIt =
-                            previewToolbar &&
-                            !previewToolbar.hidden &&
-                            previewToolbarAssetId &&
-                            previewToolbarAssetId === primaryId;
-                        canvas.removeAttribute('data-tip');
-                        if (toolbarNamesIt) canvas.removeAttribute('title');
-                        else canvas.title = tipText;
+                        canvas.removeAttribute('title');
+                        if (toolbarNamesIt) canvas.removeAttribute('data-tip');
+                        else canvas.setAttribute('data-tip', tipText);
                     }
                 }
+                document.dispatchEvent(
+                    new CustomEvent('studio-canvas-tip-updated', {
+                        detail: { text: toolbarNamesIt ? '' : tipText, x: ev.clientX, y: ev.clientY }
+                    })
+                );
             });
         });
 
@@ -5586,6 +5837,31 @@
             el.assetTheme.title = state.gallery.length
                 ? 'Swap in the same asset from another gallery theme'
                 : 'The gallery list is unavailable, so there is nothing to swap from';
+        }
+        var fwNoteEl = el.assetDetail.querySelector('.studio-asset-fw-note');
+        if (!fwNoteEl) {
+            fwNoteEl = document.createElement('div');
+            fwNoteEl.className = 'studio-asset-fw-note';
+            fwNoteEl.hidden = true;
+            if (el.assetHint && el.assetHint.parentNode === el.assetDetail) {
+                el.assetDetail.insertBefore(fwNoteEl, el.assetHint);
+            } else {
+                el.assetDetail.appendChild(fwNoteEl);
+            }
+        }
+        var detailFwHint = assetFirmwareHint(asset);
+        if (detailFwHint) {
+            fwNoteEl.innerHTML = '';
+            var pill = document.createElement('span');
+            pill.className = 'studio-fw-badge is-' + detailFwHint.tone;
+            pill.textContent = detailFwHint.badge;
+            var msg = document.createElement('span');
+            msg.textContent = detailFwHint.note;
+            fwNoteEl.appendChild(pill);
+            fwNoteEl.appendChild(msg);
+            fwNoteEl.hidden = false;
+        } else {
+            fwNoteEl.hidden = true;
         }
         var sizeHint = asset.kind === 'font' ? 'Fonts keep their source file.' : 'Ideal size: ' + assetSizeLabel(asset) + '.';
         el.assetHint.textContent =
@@ -6699,6 +6975,36 @@
         if (el.submitBtn) el.submitBtn.classList.toggle('is-blocked', count === 0);
     }
 
+    function isOnlyFileManagerChanged() {
+        if (!state.assets || !state.assets.length) return false;
+        var changed = state.assets.filter(function (asset) {
+            return !!asset.changed;
+        });
+        if (!changed.length) return false;
+        return changed.every(function (asset) {
+            return asset.path === FILE_MANAGER_ASSET && !asset.placeholder && !asset.empty;
+        });
+    }
+
+    function existingListingIdentityChanged() {
+        if (!state.ownUpdate || !state.identity || !state.identity.listing) return false;
+        var listing = state.identity.listing;
+        var title = el.submitTitle ? el.submitTitle.value.trim() : '';
+        var author = el.submitAuthor ? el.submitAuthor.value.trim() : '';
+        if (!title && !author) return false;
+        var origTitle = listing.name || listing.folder || '';
+        var origAuthor = listing.author || '';
+        return (
+            (title && normalizeTitle(title) !== normalizeTitle(origTitle)) ||
+            (author && normalizeAuthor(author) !== normalizeAuthor(origAuthor))
+        );
+    }
+
+    function syncIdentityMismatch() {
+        if (!el.identityMismatch) return;
+        el.identityMismatch.hidden = !existingListingIdentityChanged();
+    }
+
     function syncIdentity() {
         var identity = state.identity;
         var listing = identity.listing;
@@ -6716,16 +7022,19 @@
         if (el.identityOwnStep) el.identityOwnStep.hidden = !listing || identity.answer !== '';
         if (el.identityChangeStep) el.identityChangeStep.hidden = !listing || !own || !!identity.changeDetails;
         if (el.identityResult) el.identityResult.hidden = !listing || !identityDecided();
+        var fmOnly = isOnlyFileManagerChanged();
         var resultTitle = '';
         var resultText = '';
         if (listed) {
-            resultTitle = 'Sending as an update';
-            resultText =
-                'The package goes up as an update to this listing with its own details, and nothing is published until a maintainer has checked the pull request.';
+            resultTitle = fmOnly ? 'Sending Y2 File Manager update' : 'Sending as an update';
+            resultText = fmOnly
+                ? 'Because you only added a File Manager icon for Y2 support (without changing other art or listing text), this update can be auto-merged once checks pass.'
+                : 'The package goes up as an update to this listing with its own details, and nothing is published until a maintainer has checked the pull request.';
         } else if (editing) {
-            resultTitle = 'Editing this listing';
-            resultText =
-                'The fields below hold the listing\u2019s own details, so you can edit them. Sending packs the result as an update, which waits for a maintainer.';
+            resultTitle = fmOnly ? 'Y2 File Manager update (details editable)' : 'Editing this listing';
+            resultText = fmOnly
+                ? 'Your listing details are pre-filled below. Leave the original title and author unchanged so this File Manager-only Y2 update qualifies for automatic merge.'
+                : 'The fields below hold the listing\u2019s own details, so you can edit them. Sending packs the result as an update, which waits for a maintainer.';
         } else if (ownTheme) {
             resultTitle = 'Sending as your own theme';
             resultText =
@@ -6740,6 +7049,7 @@
             var label = el.submitBtn.querySelector('span');
             if (label) label.textContent = submitActionLabel();
         }
+        syncIdentityMismatch();
         syncOriginalityNotice();
         syncOriginalSubmittedField();
         updateChecklist();
@@ -7097,13 +7407,14 @@
     }
 
     function syncConfigMetadata(config, title, author, submissionMeta) {
-        /* Every package leaves with the status bar ink the player actually
-           draws. The Studio does not edit it, and older themes were saved with
-           a colour the device ignores. */
+        /* Every custom theme leaves with white status bar text (the player
+           ignores custom colours), except Y2_Default's factory light privilege. */
         if (!config.statusConfig || typeof config.statusConfig !== 'object' || Array.isArray(config.statusConfig)) {
             config.statusConfig = {};
         }
-        config.statusConfig.statusTextColor = STATUS_TEXT_COLOR;
+        if (!isY2DefaultLoaded()) {
+            config.statusConfig.statusTextColor = STATUS_TEXT_COLOR;
+        }
         if (!config.theme_info || typeof config.theme_info !== 'object' || Array.isArray(config.theme_info)) {
             config.theme_info = {};
         }
@@ -7168,6 +7479,13 @@
         }
         var home = config.homePageConfig;
         if (home.fileManager != null && !shipped(home.fileManager)) delete home.fileManager;
+        /* Drop unshipped/blank optional Y2 setting icons so Y2 draws its native
+           icons instead of blank 1x1 gaps, and Y1 stays cleanly compatible. */
+        var setting = config.settingConfig;
+        Y2_OPTIONAL_SETTING_SLOTS.forEach(function (entry) {
+            var leaf = entry[0].split('.')[1];
+            if (leaf && setting[leaf] != null && !shipped(setting[leaf])) delete setting[leaf];
+        });
         var item = config.itemConfig;
         if (item.itemSelectedBackgroundIs9Patch) {
             var selectedBg = String(item.itemSelectedBackground || '');
@@ -7794,6 +8112,16 @@
             else el.submitAuthor.focus();
             return;
         }
+        if (state.ownUpdate && existingListingIdentityChanged()) {
+            syncIdentityMismatch();
+            if (el.identityMismatch) el.identityMismatch.scrollIntoView({ block: 'nearest' });
+            setSubmitStatus(
+                'Changing the author or title of an existing gallery theme requires manual verification. Submit it as your own new theme instead, or contact us on Discord or itsryanspecter@gmail.com.',
+                false
+            );
+            toast('To change author or title, submit as a new theme or contact Discord / itsryanspecter@gmail.com.');
+            return;
+        }
         if (!state.ownUpdate) {
             /* Someone typing a title and author that already belong to a listing is
                about to file an update, not a new theme. Make them say so on purpose. */
@@ -7913,9 +8241,12 @@
                themselves once the checks pass; updates wait for a maintainer.
                Either way the request is tracked on our own page, and the
                submitter is the only one holding that link. */
+            var fmAutoEligible = state.ownUpdate && isOnlyFileManagerChanged() && !existingListingIdentityChanged();
             setSubmitStatus(
                 (state.ownUpdate
-                    ? 'Received. Your update is in a pull request that waits for a maintainer to merge it.'
+                    ? fmAutoEligible
+                        ? 'Received. Because this update only adds the Y2 File Manager icon, it merges automatically once its checks pass.'
+                        : 'Received. Your update is in a pull request that waits for a maintainer to merge it.'
                     : 'Received. Your theme is in a pull request that merges automatically once its checks pass.') +
                     (prUrl ? ' Keep this tracking link: it is how you check on the request later.' : ''),
                 true,
@@ -7951,7 +8282,7 @@
                 var swScope = manifest ? new URL('./', manifest.href).pathname : '/studio-test/';
                 /* A version in the worker URL is what carries a corrected worker
                    past an edge-cached copy of sw.js on the previous release. */
-                var swVersion = '45';
+                var swVersion = '46';
                 navigator.serviceWorker.register(swUrl + '?v=' + swVersion, { scope: swScope, updateViaCache: 'none' }).catch(function (err) {
                     console.warn('Studio: service worker unavailable', err);
                 });
@@ -8290,6 +8621,7 @@
         state.formDirty = false;
         state.dirty = false;
         state.swapOpen = false;
+        hideY2FileManagerToast();
         resetAssetOverrides();
         rebuildAssets();
         hideEmpty();
@@ -8760,7 +9092,230 @@
             el.platformFocus.addEventListener('click', function (event) {
                 event.preventDefault();
                 event.stopPropagation();
-                focusFileManagerAsset();
+                if (!themeShipsFileManager()) {
+                    closePlatformPop();
+                    openY2FileManagerModal();
+                } else {
+                    focusFileManagerAsset();
+                }
+            });
+        }
+    }
+
+    /* —— Y2 File Manager guided toast & modal ——
+       When a gallery theme lacks homePageConfig.fileManager, invite its author
+       to add the Y2 icon in a focused helper modal supporting every insertion
+       method (file picker, from another theme, paste, drop, blank 166×166 PNG),
+       then jump straight to Submit pre-set as an existing-theme update. */
+    function hideY2FileManagerToast() {
+        if (el.y2Toast) el.y2Toast.hidden = true;
+    }
+
+    function syncY2FileManagerToast() {
+        if (!el.y2Toast) return;
+        var show =
+            state.sourceType === 'gallery' &&
+            !!state.folder &&
+            !themeShipsFileManager() &&
+            state.y2ToastDismissedFolder !== state.folder &&
+            !(el.y2Modal && !el.y2Modal.hidden);
+        el.y2Toast.hidden = !show;
+    }
+
+    function syncY2FileManagerModal() {
+        if (!el.y2Modal || el.y2Modal.hidden) return;
+        var asset = fileManagerAsset();
+        var ready = themeShipsFileManager() && asset && asset.url;
+        if (el.y2ModalThemeName) {
+            el.y2ModalThemeName.textContent = (state.meta && state.meta.name) || state.folder || 'this theme';
+        }
+        if (el.y2ModalDropzone) el.y2ModalDropzone.classList.toggle('is-ready', !!ready);
+        if (el.y2ModalPreview) {
+            el.y2ModalPreview.innerHTML = '';
+            if (ready) {
+                var img = document.createElement('img');
+                img.src = asset.url;
+                img.alt = 'File Manager icon preview';
+                el.y2ModalPreview.appendChild(img);
+            } else {
+                el.y2ModalPreview.innerHTML =
+                    '<i class="fa-regular fa-folder-open" aria-hidden="true"></i><span>No icon yet</span>';
+            }
+        }
+        if (el.y2ModalStatus) {
+            el.y2ModalStatus.textContent = ready
+                ? 'File Manager icon ready (' + assetFileLabel(asset) + ') — full Y2 support enabled!'
+                : 'Waiting for File Manager icon (166 × 166 PNG)';
+        }
+        if (el.y2ModalSubmit) {
+            el.y2ModalSubmit.disabled = !ready;
+        }
+    }
+
+    function openY2FileManagerModal() {
+        if (!el.y2Modal || !state.meta) return;
+        hideY2FileManagerToast();
+        el.y2Modal.hidden = false;
+        syncY2FileManagerModal();
+        window.setTimeout(function () {
+            if (el.y2ModalReplace) el.y2ModalReplace.focus({ preventScroll: true });
+        }, 40);
+    }
+
+    function closeY2FileManagerModal() {
+        if (!el.y2Modal || el.y2Modal.hidden) return;
+        el.y2Modal.hidden = true;
+    }
+
+    function setupY2FileManagerHelper() {
+        if (el.y2ToastOpen) {
+            el.y2ToastOpen.addEventListener('click', function () {
+                openY2FileManagerModal();
+            });
+        }
+        if (el.y2ToastClose) {
+            el.y2ToastClose.addEventListener('click', function () {
+                state.y2ToastDismissedFolder = state.folder || '';
+                hideY2FileManagerToast();
+            });
+        }
+        if (el.y2ModalX) el.y2ModalX.addEventListener('click', closeY2FileManagerModal);
+        if (el.y2ModalClose) el.y2ModalClose.addEventListener('click', closeY2FileManagerModal);
+        if (el.y2Modal) {
+            el.y2Modal.addEventListener('click', function (event) {
+                if (event.target === el.y2Modal) closeY2FileManagerModal();
+            });
+        }
+        if (el.y2ModalReplace) {
+            el.y2ModalReplace.addEventListener('click', function () {
+                openAssetPicker(FILE_MANAGER_ASSET);
+            });
+        }
+        if (el.y2ModalTheme) {
+            el.y2ModalTheme.addEventListener('click', function () {
+                openThemePicker(FILE_MANAGER_ASSET);
+            });
+        }
+        if (el.y2ModalPaste) {
+            el.y2ModalPaste.addEventListener('click', function () {
+                pasteIntoAsset(FILE_MANAGER_ASSET);
+            });
+        }
+        if (el.y2ModalTemplate) {
+            el.y2ModalTemplate.addEventListener('click', function () {
+                downloadAsset(FILE_MANAGER_ASSET);
+            });
+        }
+        if (el.y2ModalDropzone) {
+            el.y2ModalDropzone.addEventListener('dragover', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                el.y2ModalDropzone.classList.add('is-dragover');
+            });
+            el.y2ModalDropzone.addEventListener('dragleave', function () {
+                el.y2ModalDropzone.classList.remove('is-dragover');
+            });
+            el.y2ModalDropzone.addEventListener('drop', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                el.y2ModalDropzone.classList.remove('is-dragover');
+                var file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+                if (file) replaceAssetFromFile(FILE_MANAGER_ASSET, file);
+            });
+        }
+        document.addEventListener('paste', function (event) {
+            if (!el.y2Modal || el.y2Modal.hidden) return;
+            var items = event.clipboardData && event.clipboardData.items ? Array.prototype.slice.call(event.clipboardData.items) : [];
+            var imageItem = items.find(function (item) {
+                return item.kind === 'file' && /^image\//.test(item.type);
+            });
+            if (!imageItem) return;
+            var file = imageItem.getAsFile();
+            if (!file) return;
+            event.preventDefault();
+            replaceAssetFromFile(FILE_MANAGER_ASSET, file);
+        });
+        if (el.y2ModalSubmit) {
+            el.y2ModalSubmit.addEventListener('click', function () {
+                if (!themeShipsFileManager()) return;
+                closeY2FileManagerModal();
+                var listing = state.identity.listing || matchingGalleryListing() || (state.folder ? state.byFolder[state.folder] : null);
+                if (listing) state.identity.listing = listing;
+                state.identity.answer = 'own';
+                state.identity.changeDetails = 'yes';
+                state.ownUpdate = true;
+                applyOwnDetails();
+                syncIdentity();
+                updateUpdateNotice();
+                setMode('submit');
+                window.setTimeout(function () {
+                    if (el.submitBtn) el.submitBtn.focus({ preventScroll: true });
+                }, 120);
+            });
+        }
+    }
+
+    function applyPreviewControlsToSimulator() {
+        each(document.querySelectorAll('[data-preview-device]'), function (btn) {
+            var active = btn.getAttribute('data-preview-device') === state.previewDeviceMode;
+            btn.classList.toggle('is-active', active);
+            btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+        if (el.toggleLegacy) el.toggleLegacy.checked = state.showLegacyHome !== false;
+        if (el.toggleUnimplemented) el.toggleUnimplemented.checked = state.showUnimplementedHome === true;
+        var api = el.preview ? el.preview._y1TpApi : null;
+        if (api && typeof api.setPreviewOptions === 'function') {
+            try {
+                api.setPreviewOptions({
+                    deviceMode: state.previewDeviceMode,
+                    showLegacyHome: state.showLegacyHome !== false,
+                    showUnimplementedHome: state.showUnimplementedHome === true
+                });
+            } catch (e) {}
+        }
+    }
+
+    function setupPreviewControls() {
+        each(document.querySelectorAll('[data-preview-device]'), function (btn) {
+            btn.addEventListener('click', function () {
+                var nextMode = btn.getAttribute('data-preview-device') || 'both';
+                if (nextMode !== 'both' && nextMode !== 'y2' && nextMode !== 'y1') nextMode = 'both';
+                state.previewDeviceMode = nextMode;
+                applyPreviewControlsToSimulator();
+            });
+        });
+        if (el.toggleLegacy) {
+            el.toggleLegacy.checked = state.showLegacyHome !== false;
+            el.toggleLegacy.addEventListener('change', function () {
+                state.showLegacyHome = !!el.toggleLegacy.checked;
+                applyPreviewControlsToSimulator();
+            });
+        }
+        if (el.toggleUnimplemented) {
+            el.toggleUnimplemented.checked = state.showUnimplementedHome === true;
+            el.toggleUnimplemented.addEventListener('change', function () {
+                state.showUnimplementedHome = !!el.toggleUnimplemented.checked;
+                applyPreviewControlsToSimulator();
+            });
+        }
+        if (el.mismatchAsNew) {
+            el.mismatchAsNew.addEventListener('click', function () {
+                var keptTitle = el.submitTitle ? el.submitTitle.value : '';
+                var keptAuthor = el.submitAuthor ? el.submitAuthor.value : '';
+                var keptDesc = el.submitDesc ? el.submitDesc.value : '';
+                var keptUrl = el.submitAuthorUrl ? el.submitAuthorUrl.value : '';
+                state.identity.answer = 'other';
+                state.identity.changeDetails = '';
+                state.ownUpdate = false;
+                syncIdentity();
+                if (el.submitTitle) el.submitTitle.value = keptTitle;
+                if (el.submitAuthor) el.submitAuthor.value = keptAuthor;
+                if (el.submitDesc) el.submitDesc.value = keptDesc;
+                if (el.submitAuthorUrl) el.submitAuthorUrl.value = keptUrl;
+                updateUpdateNotice();
+                syncIdentityMismatch();
+                updateChecklist();
+                toast('Switched to submitting as your own new theme.');
             });
         }
     }
@@ -8769,6 +9324,8 @@
         setupAssetListEvents();
         setupPreviewAssetFocus();
         setupPlatformBadge();
+        setupY2FileManagerHelper();
+        setupPreviewControls();
         /* Once a theme has a changed asset, attribute or detail, leaving the
            page is always asked about first. The recovery copy is a safety net,
            not a reason to close an edit session without a word. */
@@ -8864,6 +9421,7 @@
                 state.formDirty = true;
                 markDirty();
                 updateUpdateNotice();
+                syncIdentityMismatch();
                 syncPolicy();
                 updateChecklist();
             });
@@ -8998,6 +9556,7 @@
             if (event.key === 'Escape') {
                 hideDrop();
                 closeTryOnDeviceModal();
+                closeY2FileManagerModal();
             }
         });
         /* A debounced write can still be pending when the tab goes away; closing

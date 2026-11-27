@@ -35,7 +35,7 @@
     /* Catalogs are re-fetched under a new URL when their content changes.
        Without this a returning visitor keeps the copy they cached, so a
        language whose catalog was just completed still reads as English. */
-    var CATALOG_VERSION = "20261124fixes2";
+    var CATALOG_VERSION = "20261127studio24";
     var STORAGE_LOCALE = "innioasis-locale";
     var STORAGE_REGION = "innioasis-region";
     var STORAGE_COUNTRY = "innioasis-country";
@@ -630,6 +630,7 @@
         "MTKClient", "MediaTek", "Innioasis Y1", "Innioasis Y2", "Innioasis",
         "Innioasis Updater CE", "Innioasis Updater", "Updater Community Edition", "Updater CE",
         "Ryan Specter", "Ryan Specter and Team Slide", "Copyleft - Innioasis and Ryan Specter",
+        "Innioasis Theme Studio", "Theme Studio",
         "Timmkoo", "Mechen H11", "Mechen H1", "Mechen",
         "Rockbox-Y1", "Rockbox-Y2", "Rockbox", "Rock8ox",
         "Better-Y", "Y2Linux", "Y2Player", "Y2Reborn", "Reborn",

@@ -59,6 +59,7 @@ Rules:
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
@@ -888,17 +889,36 @@ METADATA_LISTING_KEYS = frozenset(
     {"name", "author", "authorUrl", "description", "externalDownloadUrl", "sortName", "searchText"}
 )
 
-# Y2 added a file manager icon to the home screen. An author who adds it to their
-# own theme changes no listing details and no other artwork, so that update is the
-# only one safe to merge without a maintainer reading it.
-FILE_MANAGER_ASSET_RE = re.compile(
-    r"(file[ _-]?manager|folder[ _-]?icon|music[ _-]?icon|y2)", re.IGNORECASE
+# Y2 added a file manager icon to the home screen. An update to an existing theme
+# that changes nothing except the file manager artwork (homePageConfig.fileManager,
+# plus harmless Studio timestamps / preview screenshot / white status text
+# normalization) is the ONLY existing-theme update allowed to auto-merge.
+FILE_MANAGER_CONFIG_KEYS = frozenset({"homePageConfig.fileManager"})
+FILE_MANAGER_HARMLESS_CONFIG_KEYS = frozenset(
+    {"theme_info.submittedAt", "theme_info.updatedAt"}
 )
-FILE_MANAGER_CONFIG_KEYS = frozenset(
-    {"homePageConfig.fileManager", "fileConfig.folderIcon", "fileConfig.musicIcon"}
-)
-FILE_MANAGER_TIMESTAMP_KEYS = frozenset({"theme_info.submittedAt", "theme_info.updatedAt"})
 FILE_MANAGER_IMAGE_EXTS = frozenset({".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp"})
+_CLONE_IGNORED_FILENAMES = frozenset({"screenshot_preview.jpg", "transparent.png"})
+
+
+def _git_blob_sha1(data: bytes) -> str:
+    """Compute the exact Git blob SHA-1 hash for raw file bytes."""
+    header = f"blob {len(data)}\0".encode("utf-8")
+    return hashlib.sha1(header + data).hexdigest()
+
+
+def _is_placeholder_filename(name: str) -> bool:
+    leaf = PurePosixPath(str(name or "").replace("\\", "/")).name.lower()
+    return leaf == "transparent.png"
+
+
+def _is_ignored_clone_image(rel_path: str) -> bool:
+    leaf = PurePosixPath(str(rel_path or "").replace("\\", "/")).name.lower()
+    if not leaf or leaf in _CLONE_IGNORED_FILENAMES:
+        return True
+    if ".preview." in leaf:
+        return True
+    return False
 
 
 def _flat_config_values(value: Any, prefix: str = "", out: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -915,64 +935,331 @@ def _flat_config_values(value: Any, prefix: str = "", out: dict[str, Any] | None
     return out
 
 
-def _is_file_manager_only_update(
+def _norm_rel_asset_path(value: Any) -> str:
+    if not isinstance(value, str):
+        return ""
+    s = value.strip().replace("\\", "/")
+    while s.startswith("./") or s.startswith("/"):
+        s = s[2:] if s.startswith("./") else s[1:]
+    return s
+
+
+def _git_folder_blob_hashes(base_sha: str, folder: str) -> dict[str, str]:
+    """Return {relpath_lower: git_blob_sha1} for all files inside base_sha:<folder>."""
+    res = _run("git", "ls-tree", "-r", base_sha, "--", folder, check=False)
+    if res.returncode != 0:
+        return {}
+    prefix = folder.rstrip("/") + "/"
+    out: dict[str, str] = {}
+    for line in res.stdout.splitlines():
+        if "\t" not in line:
+            continue
+        meta, path = line.split("\t", 1)
+        parts = meta.split()
+        if len(parts) < 3 or parts[1] != "blob":
+            continue
+        if not path.startswith(prefix):
+            continue
+        rel = path[len(prefix) :].replace("\\", "/").lower()
+        out[rel] = parts[2]
+    return out
+
+
+def _config_diff_is_file_manager_only(
+    base_cfg: dict[str, Any], pr_cfg: dict[str, Any]
+) -> tuple[bool, str]:
+    """Return (True, new_file_manager_relpath) iff pr_cfg changes strictly homePageConfig.fileManager.
+
+    Harmless Studio normalizations permitted alongside a fileManager change:
+    - theme_info.submittedAt / theme_info.updatedAt
+    - statusConfig.statusTextColor normalized to '#ffffff'
+    - omitting/empty-string equivalence on optional metadata fields
+    - backfilling an absent slot with 'transparent.png' (or removing a redundant 'transparent.png')
+    Listing metadata (title, author, authorUrl, description, externalDownloadUrl) and
+    all other asset/color slots MUST remain unchanged.
+    """
+    base_flat = _flat_config_values(base_cfg)
+    pr_flat = _flat_config_values(pr_cfg)
+    fm_new = _norm_rel_asset_path(pr_flat.get("homePageConfig.fileManager"))
+    if not fm_new or _is_placeholder_filename(fm_new):
+        return False, ""
+    if PurePosixPath(fm_new).suffix.lower() not in FILE_MANAGER_IMAGE_EXTS:
+        return False, ""
+    for key in set(base_flat) | set(pr_flat):
+        bv = base_flat.get(key)
+        pv = pr_flat.get(key)
+        if bv == pv:
+            continue
+        # Treat absent vs empty string as equivalent on optional string fields.
+        if (bv is None or bv == "") and (pv is None or pv == ""):
+            continue
+        if key in FILE_MANAGER_CONFIG_KEYS:
+            continue
+        if key in FILE_MANAGER_HARMLESS_CONFIG_KEYS:
+            continue
+        if (
+            key == "statusConfig.statusTextColor"
+            and isinstance(pv, str)
+            and pv.strip().lower() == "#ffffff"
+        ):
+            continue
+        # Studio fills missing optional slots with transparent.png (or normalizes away blank slots).
+        if (bv is None or bv == "" or _is_placeholder_filename(str(bv))) and (
+            pv is None or pv == "" or _is_placeholder_filename(str(pv))
+        ):
+            continue
+        return False, ""
+    return True, fm_new
+
+
+def _is_direct_file_manager_only_update(
     parsed: list[tuple[str, str]], base_sha: str, pr_ref: str
 ) -> bool:
-    """True when a PR changes only an existing theme's file manager artwork.
-
-    Every path must stay inside one theme folder that already exists on the base
-    branch, nothing may be deleted, and each non-config change must be an image
-    named for the file manager (or the folder/music icons that ship with it).
-    Config edits may touch only the file manager slots and submission timestamps.
-    """
+    """Direct-file PR inside one existing theme folder touching only homePageConfig.fileManager."""
     if not parsed:
         return False
     folders: set[str] = set()
-    config_paths: list[str] = []
-    changed_assets = 0
+    config_path = ""
+    non_config_rel_paths: list[str] = []
     for status, path in parsed:
         if status not in {"M", "A"}:
             return False
         parts = path.split("/")
-        if len(parts) != 2:
+        if len(parts) < 2:
             return False
-        folder, name = parts
+        folder = parts[0]
+        rel = "/".join(parts[1:])
         composite = f"{THEMES_PREFIX}{folder}" if THEMES_PREFIX else folder
-        if not _folder_exists_in_base(base_sha, composite):
+        if not _theme_folder_has_config_on_base(base_sha, composite):
             return False
-        folders.add(folder.lower())
-        if name.lower() == "config.json":
-            config_paths.append(path)
-            continue
-        if not FILE_MANAGER_ASSET_RE.search(name):
-            return False
-        if PurePosixPath(name).suffix.lower() not in FILE_MANAGER_IMAGE_EXTS:
-            return False
-        changed_assets += 1
-    if len(folders) != 1 or not config_paths:
+        folders.add(folder)
+        if rel.lower() == "config.json":
+            config_path = path
+        else:
+            non_config_rel_paths.append(rel)
+    if len(folders) != 1 or not config_path:
         return False
-    touched_slot = False
-    for path in config_paths:
-        try:
-            base_raw = _git_blob_text(f"{base_sha}:{path}")
-            pr_raw = _git_blob_text(f"{pr_ref}:{path}")
-            base_cfg = json.loads(base_raw)
-            pr_cfg = json.loads(pr_raw)
-        except (subprocess.CalledProcessError, json.JSONDecodeError):
+    folder = next(iter(folders))
+    try:
+        base_cfg = json.loads(_git_blob_text(f"{base_sha}:{config_path}"))
+        pr_cfg = json.loads(_git_blob_text(f"{pr_ref}:{config_path}"))
+    except (subprocess.CalledProcessError, json.JSONDecodeError):
+        return False
+    if not isinstance(base_cfg, dict) or not isinstance(pr_cfg, dict):
+        return False
+    ok, fm_rel = _config_diff_is_file_manager_only(base_cfg, pr_cfg)
+    if not ok or not fm_rel:
+        return False
+    fm_low = fm_rel.lower()
+    allowed_non_cfg = {fm_low, "screenshot_preview.jpg", "transparent.png"}
+    saw_fm_file = False
+    for rel in non_config_rel_paths:
+        rel_low = rel.replace("\\", "/").lower()
+        if rel_low not in allowed_non_cfg:
             return False
-        if not isinstance(base_cfg, dict) or not isinstance(pr_cfg, dict):
+        if rel_low == fm_low:
+            saw_fm_file = True
+    # Confirm the referenced fileManager image actually exists in PR head and changed vs base.
+    try:
+        fm_pr_bytes = _git_blob_bytes(f"{pr_ref}:{folder}/{fm_rel}")
+    except subprocess.CalledProcessError:
+        return False
+    if not fm_pr_bytes:
+        return False
+    base_fm_rel = _norm_rel_asset_path(_flat_config_values(base_cfg).get("homePageConfig.fileManager"))
+    if base_fm_rel.lower() == fm_low and not saw_fm_file:
+        return False
+    if saw_fm_file:
+        base_hashes = _git_folder_blob_hashes(base_sha, folder)
+        if base_hashes.get(fm_low) == _git_blob_sha1(fm_pr_bytes) and base_fm_rel.lower() == fm_low:
             return False
-        base_flat = _flat_config_values(base_cfg)
-        pr_flat = _flat_config_values(pr_cfg)
-        allowed = FILE_MANAGER_CONFIG_KEYS | FILE_MANAGER_TIMESTAMP_KEYS
-        for key in set(base_flat) | set(pr_flat):
-            if base_flat.get(key) == pr_flat.get(key):
+    return True
+
+
+def _extract_single_zip_theme_files(blob: bytes, zip_stem: str) -> tuple[str, dict[str, Any], dict[str, bytes]] | None:
+    """Return (dest_folder, config_dict, {relpath: bytes}) if ZIP contains exactly one theme."""
+    try:
+        archive = zipfile.ZipFile(io.BytesIO(blob))
+    except zipfile.BadZipFile:
+        return None
+    with archive:
+        names = [n for n in archive.namelist() if n and not n.endswith("/")]
+        names_t = ztu.filter_zip_names_for_theme_logic(names)
+        bundle = ztu.root_theme_bundle_zip_entries(names_t)
+        if bundle is not None:
+            if len(bundle) != 1:
+                return None
+            try:
+                ib = archive.read(bundle[0])
+            except KeyError:
+                return None
+            return _extract_single_zip_theme_files(ib, PurePosixPath(bundle[0]).stem)
+        theme_keys = ztu.zip_theme_keys(names_t)
+        theme_keys = ztu.collapse_redundant_root_theme_key(names_t, theme_keys, zip_stem)
+        theme_keys = ztu.drop_variant_keys_under_parent_theme(theme_keys)
+        theme_keys = ztu.drop_asset_subfolder_theme_keys(
+            theme_keys, ztu.load_configs_by_theme_key(theme_keys, archive.read)
+        )
+        if len(theme_keys) != 1:
+            return None
+        key = theme_keys[0]
+        dest = ztu.inner_folder_names_for_zip(theme_keys, zip_stem)[0]
+        prefix = "" if key == "." else f"{key}/"
+        files: dict[str, bytes] = {}
+        for name in names_t:
+            if prefix and not name.startswith(prefix):
                 continue
-            if key not in allowed:
-                return False
-            if key in FILE_MANAGER_CONFIG_KEYS:
-                touched_slot = True
-    return touched_slot or changed_assets > 0
+            rel = name[len(prefix) :] if prefix else name
+            if not rel or rel.endswith("/"):
+                continue
+            try:
+                files[rel] = archive.read(name)
+            except KeyError:
+                continue
+        cfg_bytes = files.get("config.json")
+        if not cfg_bytes:
+            return None
+        try:
+            cfg = json.loads(cfg_bytes.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            return None
+        if not isinstance(cfg, dict):
+            return None
+        return dest, cfg, files
+
+
+def _is_zip_file_manager_only_update(
+    parsed: list[tuple[str, str]], base_sha: str, pr_ref: str
+) -> bool:
+    """Root .zip (+ optional .zip.meta.json) PR targeting one existing folder changing ONLY fileManager."""
+    if not parsed or any(status != "A" for status, _ in parsed):
+        return False
+    zips = [p for _, p in parsed if _is_zip_file(p) and "/" not in p]
+    if len(zips) != 1:
+        return False
+    zip_path = zips[0]
+    for _, p in parsed:
+        if p == zip_path:
+            continue
+        if p == f"{zip_path}.meta.json":
+            continue
+        return False
+    try:
+        blob = _git_blob_bytes(f"{pr_ref}:{zip_path}")
+    except subprocess.CalledProcessError:
+        return False
+    zip_errs, _ = _validate_zip_blob(zip_path, blob)
+    if zip_errs:
+        return False
+    extracted = _extract_single_zip_theme_files(blob, PurePosixPath(zip_path).stem)
+    if not extracted:
+        return False
+    dest_folder, pr_cfg, zip_files = extracted
+    # Match exact existing folder on base (case-insensitive via catalog or direct tree).
+    target_folder = ""
+    if _theme_folder_has_config_on_base(base_sha, dest_folder):
+        target_folder = dest_folder
+    else:
+        logical = logical_theme_slug(dest_folder)
+        for root_name in _git_ls_root_filenames(base_sha):
+            if logical_theme_slug(root_name) == logical and _theme_folder_has_config_on_base(
+                base_sha, root_name
+            ):
+                target_folder = root_name
+                break
+    if not target_folder:
+        return False
+    try:
+        base_cfg = json.loads(_git_blob_text(f"{base_sha}:{target_folder}/config.json"))
+    except (subprocess.CalledProcessError, json.JSONDecodeError):
+        return False
+    if not isinstance(base_cfg, dict):
+        return False
+    ok, fm_rel = _config_diff_is_file_manager_only(base_cfg, pr_cfg)
+    if not ok or not fm_rel:
+        return False
+    fm_low = fm_rel.lower()
+    base_hashes = _git_folder_blob_hashes(base_sha, target_folder)
+    if not base_hashes:
+        return False
+    fm_bytes: bytes | None = None
+    ignored_zip_files = {"config.json", "screenshot_preview.jpg", "transparent.png", "index.html"}
+    for rel, data in zip_files.items():
+        rel_low = rel.replace("\\", "/").lower()
+        if rel_low in ignored_zip_files:
+            continue
+        if rel_low == fm_low:
+            fm_bytes = data
+            continue
+        # Every other file in the ZIP must match base_sha byte-for-byte.
+        base_sha1 = base_hashes.get(rel_low)
+        if not base_sha1 or base_sha1 != _git_blob_sha1(data):
+            return False
+    if not fm_bytes:
+        return False
+    base_fm_rel = _norm_rel_asset_path(_flat_config_values(base_cfg).get("homePageConfig.fileManager"))
+    if base_fm_rel.lower() == fm_low and base_hashes.get(fm_low) == _git_blob_sha1(fm_bytes):
+        return False
+    return True
+
+
+def _is_file_manager_only_update(
+    parsed: list[tuple[str, str]], base_sha: str, pr_ref: str
+) -> bool:
+    """True when a PR (direct files OR root Studio ZIP) changes ONLY an existing theme's fileManager icon."""
+    return _is_direct_file_manager_only_update(
+        parsed, base_sha, pr_ref
+    ) or _is_zip_file_manager_only_update(parsed, base_sha, pr_ref)
+
+
+def _load_base_theme_image_blob_sets(base_sha: str) -> dict[str, frozenset[str]]:
+    """Build {folder: frozenset(git_blob_sha1)} for non-placeholder images across all base themes."""
+    res = _run("git", "ls-tree", "-r", base_sha, check=False)
+    if res.returncode != 0:
+        return {}
+    by_folder: dict[str, set[str]] = {}
+    has_config: set[str] = set()
+    for line in res.stdout.splitlines():
+        if "\t" not in line:
+            continue
+        meta, path = line.split("\t", 1)
+        parts = meta.split()
+        if len(parts) < 3 or parts[1] != "blob":
+            continue
+        if "/" not in path:
+            continue
+        folder, rel = path.split("/", 1)
+        if folder.startswith(".") or folder in RESERVED_ROOT_SEGMENTS:
+            continue
+        if rel.lower() == "config.json":
+            has_config.add(folder)
+            continue
+        if rel.lower().startswith("variants/"):
+            continue
+        if _looks_like_image(rel) and not _is_ignored_clone_image(rel):
+            by_folder.setdefault(folder, set()).add(parts[2])
+    return {
+        f: frozenset(hashes)
+        for f, hashes in by_folder.items()
+        if f in has_config and hashes
+    }
+
+
+def _find_unchanged_clone_folder(
+    incoming_image_hashes: set[str],
+    base_theme_image_sets: dict[str, frozenset[str]],
+    *,
+    ignore_logical: str = "",
+) -> str:
+    """Return an existing theme folder name if every incoming image is byte-identical to that theme."""
+    if not incoming_image_hashes or not base_theme_image_sets:
+        return ""
+    for folder, existing_hashes in base_theme_image_sets.items():
+        if ignore_logical and logical_theme_slug(folder) == ignore_logical:
+            continue
+        if incoming_image_hashes <= existing_hashes:
+            return folder
+    return ""
 
 
 def _load_themes_json_themes(rev: str) -> list[Any]:
@@ -1106,6 +1393,7 @@ def main() -> int:
     catalog_identity_rows = _load_catalog_identity_rows(base_sha)
     catalog_title_rows = _load_catalog_title_rows(base_sha)
     pending_logical_slugs = _pending_logical_slugs_from_root_zips(base_sha)
+    base_theme_image_sets = _load_base_theme_image_blob_sets(base_sha)
 
     # Compare PR head against the current base tree directly (2-dot),
     # which avoids stale-branch false positives for changes already on base.
@@ -1311,6 +1599,25 @@ def main() -> int:
         )
         errors.extend(id_errs)
         manual_review_notes.extend(id_manual)
+        if not id_errs and not id_manual:
+            folder_img_hashes: set[str] = set()
+            for rel_img in state["image_files"]:
+                if _is_ignored_clone_image(rel_img):
+                    continue
+                try:
+                    folder_img_hashes.add(_git_blob_sha1(_git_blob_bytes(f"{pr_ref}:{composite}/{rel_img}")))
+                except subprocess.CalledProcessError:
+                    pass
+            clone_of = _find_unchanged_clone_folder(
+                folder_img_hashes,
+                base_theme_image_sets,
+                ignore_logical=logical_theme_slug(composite),
+            )
+            if clone_of:
+                manual_review_notes.append(
+                    f"Added folder {composite}: all image assets are byte-identical to existing "
+                    f"gallery theme {clone_of!r}. Brand-new submissions must include original image changes."
+                )
         logical = logical_theme_slug(composite)
         if logical in seen_pr_logical:
             errors.append(
@@ -1369,6 +1676,25 @@ def main() -> int:
                 )
                 errors.extend(id_errs)
                 manual_review_notes.extend(id_manual)
+                if not id_errs and not id_manual:
+                    single_zip = _extract_single_zip_theme_files(blob, stem)
+                    if single_zip and logical_theme_slug(single_zip[0]) == logical:
+                        zip_img_hashes = {
+                            _git_blob_sha1(data)
+                            for rel_f, data in single_zip[2].items()
+                            if _looks_like_image(rel_f) and not _is_ignored_clone_image(rel_f)
+                        }
+                        clone_of = _find_unchanged_clone_folder(
+                            zip_img_hashes,
+                            base_theme_image_sets,
+                            ignore_logical=logical,
+                        )
+                        if clone_of:
+                            manual_review_notes.append(
+                                f"ZIP {path}: all image assets in {inner['folder']!r} are byte-identical "
+                                f"to existing gallery theme {clone_of!r}. Brand-new submissions must include "
+                                "original image changes."
+                            )
             errors.extend(
                 _zip_title_impersonation_scan(
                     blob,

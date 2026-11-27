@@ -190,24 +190,35 @@ def set_html_language_attrs(markup: str, code: str, direction: str) -> str:
     return markup[: match.start()] + "<html" + attrs + ">" + markup[match.end():]
 
 
-def build_hreflang_block(stem: str, origin: str, target_codes: List[str]) -> str:
+def _canonical_url(origin: str, stem: str, code: str) -> str:
+    if code == "en":
+        if stem == "index":
+            return f"{origin}/"
+        if stem.endswith("/index"):
+            return f"{origin}/{stem[:-len('index')]}"
+        return f"{origin}/{stem}.html"
+    return f"{origin}/{stem}_{code}.html"
+
+
+def build_hreflang_block(stem: str, origin: str, target_codes: List[str], *, include_aliases: bool = True) -> str:
+    en_url = _canonical_url(origin, stem, "en")
     lines = [
         "<!-- i18n-hreflang-start -->",
-        f'  <link rel="alternate" hreflang="x-default" href="{origin}/{stem}.html">',
-        f'  <link rel="alternate" hreflang="en" href="{origin}/{stem}.html">',
+        f'  <link rel="alternate" hreflang="x-default" href="{en_url}">',
+        f'  <link rel="alternate" hreflang="en" href="{en_url}">',
     ]
     for code in target_codes:
         lines.append(f'  <link rel="alternate" hreflang="{code}" href="{origin}/{stem}_{code}.html">')
-        # Add alias hreflangs
-        for alias in LOCALE_ALIASES.get(code, []):
-            lines.append(f'  <link rel="alternate" hreflang="{alias}" href="{origin}/{stem}_{alias}.html">')
+        if include_aliases:
+            for alias in LOCALE_ALIASES.get(code, []):
+                lines.append(f'  <link rel="alternate" hreflang="{alias}" href="{origin}/{stem}_{alias}.html">')
     lines.append("  <!-- i18n-hreflang-end -->")
     return "\n".join(lines)
 
 
-def inject_seo_tags(markup: str, stem: str, code: str, origin: str, target_codes: List[str]) -> str:
+def inject_seo_tags(markup: str, stem: str, code: str, origin: str, target_codes: List[str], *, include_aliases: bool = True) -> str:
     # 1. Canonical and OG URL
-    canonical_url = f"{origin}/{stem}_{code}.html" if code != "en" else f"{origin}/{stem}.html"
+    canonical_url = _canonical_url(origin, stem, code)
     if CANONICAL_RE.search(markup):
         markup = CANONICAL_RE.sub(
             lambda m: m.group(1) + m.group(2) + canonical_url + m.group(2), markup, count=1
@@ -222,7 +233,7 @@ def inject_seo_tags(markup: str, stem: str, code: str, origin: str, target_codes
 
     # 2. Hreflang alternates
     markup = HREFLANG_BLOCK_RE.sub("\n", markup)
-    block = build_hreflang_block(stem, origin, target_codes)
+    block = build_hreflang_block(stem, origin, target_codes, include_aliases=include_aliases)
     if "</head>" in markup:
         markup = markup.replace("</head>", f"  {block}\n</head>", 1)
 
@@ -436,6 +447,7 @@ def main() -> int:
             markup = strip_by_region(markup, region_id, availability)
             markup, replaced = apply_catalog(markup, strings, ())
             markup = set_html_language_attrs(markup, code, direction)
+            markup = inject_seo_tags(markup, stem, code, origin, available_codes, include_aliases=False)
             markup = rewrite_internal_links(markup, code, valid_stems, partner_origin)
 
             with open(os.path.join(ROOT, f"{stem}_{code}.html"), "w", encoding="utf-8", newline="\n") as handle:

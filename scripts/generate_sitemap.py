@@ -298,15 +298,18 @@ def _theme_entries(known: dict[str, str]) -> tuple[list[tuple[str, str, str, str
     for folder_name, rel_set in per_folder_rels:
         if not is_noindex_rel(f"{folder_name}/index.html"):
             loc = _encode([folder_name])
-            prio = "0.95" if folder_name == "studio-test" else "0.85"
-            entries.append((loc, _lastmod(known, loc, bumped=True), "weekly", prio))
+            prio = "1.0" if folder_name == "studio-test" else "0.85"
+            lastmod = _today() if folder_name == "studio-test" else _lastmod(known, loc, bumped=True)
+            entries.append((loc, lastmod, "weekly", prio))
 
         for rel in sorted(rel_set):
             if "/" not in rel and LOCALE_FILE_RE.match(rel):
                 if is_noindex_rel(f"{folder_name}/{rel}"):
                     continue
                 loc = f"{SITE}/{quote(folder_name, safe='')}/{quote(rel, safe='')}"
-                localized.append((loc, _lastmod(known, loc, bumped=False), "weekly", "0.6"))
+                loc_prio = "0.9" if folder_name == "studio-test" else "0.6"
+                loc_lastmod = _today() if folder_name == "studio-test" else _lastmod(known, loc, bumped=False)
+                localized.append((loc, loc_lastmod, "weekly", loc_prio))
             elif rel.startswith("Variants/") and rel.endswith("/_share/index.html"):
                 parts = rel.split("/")
                 if len(parts) == 4:

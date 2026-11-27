@@ -83,10 +83,17 @@
         home: 'Home',
         music: 'Music',
         music_folders: 'Folders',
+        musicSettings: 'Music Settings',
         videos: 'Videos',
         videos_folders: 'Folders',
         audiobooks: 'Audiobooks',
         settings: 'Settings',
+        settingsCat_keysWheel: 'Keys & Wheel',
+        settingsCat_audio: 'Audio',
+        settingsCat_display: 'Display',
+        settingsCat_personalization: 'Personalization',
+        settingsCat_filesStorage: 'Files & Storage',
+        settingsCat_system: 'System',
         settingsEqualizer: 'Equalizer',
         settingsTheme: 'Theme',
         settingsBrightness: 'Brightness',
@@ -96,10 +103,14 @@
         settingsAbout: 'About',
         nowPlaying: 'Now Playing',
         photos: 'Photos',
+        photosViewer: 'Photos',
         fm: 'FM Radio',
         ebook: 'E-Book',
+        ebookReader: 'E-Book',
         bluetooth: 'Bluetooth',
-        fileManager: 'File manager'
+        fileManager: 'File Manager',
+        calendar: 'Calendar',
+        calculator: 'Calculator'
     };
 
     function normalizeConfigAssetPath(rawPath, folderPath) {
@@ -223,70 +234,90 @@
         return !!file && !/(^|\/)transparent\.png$/i.test(file);
     }
 
+    function normalizeDeviceMode(raw, homeCfg, mode) {
+        var dm = String(raw || '').trim().toLowerCase();
+        if (dm === 'y1' || dm === 'y2' || dm === 'both') return dm;
+        if (mode === 'full') return 'both';
+        return isUsableHomeIcon(homePageIconFromCfg(homeCfg || {}, 'fileManager')) ? 'y2' : 'y1';
+    }
+
+    function isY2DefaultTheme(cfg, catalogFolder) {
+        var folder = String(catalogFolder || '').trim().toLowerCase();
+        if (folder === 'y2_default') return true;
+        var title = String((cfg && cfg.theme_info && cfg.theme_info.title) || '').trim().toLowerCase();
+        var statusText = String((cfg && cfg.statusConfig && cfg.statusConfig.statusTextColor) || '').trim().toLowerCase();
+        if (title === 'y2 default' && statusText && statusText !== '#ffffff' && statusText !== '#fff') {
+            return true;
+        }
+        return false;
+    }
+
     function buildHomeItems(homeCfg, settingCfg, opts) {
         homeCfg = homeCfg || {};
         settingCfg = settingCfg || {};
         opts = opts || {};
-        /* Shuffle Quick, Calculator and Calendar are still declared by every
-           shipped config.json, but the 3.x launchers no longer draw their
-           rows. They stay off the simulated home list unless the editor asks
-           for the legacy rows, which is the same split the tray uses. */
-        var legacyKeys = { shuffleQuick: true, calendar: true, calculator: true };
-        var showLegacy = opts.showLegacyHome === true;
+        var mode = String(opts.mode || 'menu').toLowerCase();
+        var deviceMode = normalizeDeviceMode(opts.deviceMode, homeCfg, mode);
+        /* Shuffle Quick was on Home in Y1 1.7.6–2.1.9 and removed in Y1 2.8.2;
+           Calculator and Calendar exist in MainActivity behind an unshipped
+           flag (isV4 && !isRockBox). Studio lets authors toggle each group
+           independently. */
+        var showLegacy = opts.showLegacyHome !== undefined ? opts.showLegacyHome === true : false;
+        var showUnimplemented = opts.showUnimplementedHome === true;
         var labelMap = {
             nowPlaying: 'Now Playing',
             music: 'Music',
             video: 'Videos',
             audiobooks: 'Audiobook',
             ebook: 'E-Book',
+            calculator: 'Calculator',
+            calendar: 'Calendar',
             photos: 'Photos',
             fm: 'FM Radio',
             bluetooth: 'Bluetooth',
-            fileManager: 'File manager',
-            settings: 'Settings'
+            fileManager: 'File Manager',
+            settings: 'Settings',
+            shuffleQuick: 'Shuffle Quick'
         };
-        /* Every launcher from 2.1.9 through 3.2.8 reads the row order straight
-           out of homePageConfig and draws the keys in declaration order—the
-           stock config.json files list exactly the on-device order (Y1 3.1.2:
-           nowPlaying … settings, shuffleQuick, calendar, calculator, ebook;
-           Y2 3.2.8 appends fileManager). So follow the theme's own key order
-           instead of a hardcoded list, then fix up the two conditional rows:
-           FM only exists on tuner builds, and a pairing model keeps Bluetooth
-           on the home list while the Y2 one shows it inside Settings. */
-        var knownOrder = [
+        /* Exact firmware MainActivity.initView() order verified from Y1 1.7.6–3.1.2
+           and Y2 3.1.7–3.2.8 APKs:
+           - Y1: Now Playing, Music, Videos, Audiobook, E-Book, [Calc, Cal], Photos, FM Radio, Bluetooth, Settings, [Shuffle Quick]
+           - Y2: Now Playing, Music, Videos, Audiobook, E-Book, [Calc, Cal], Photos, FM Radio, File Manager, Settings, [Shuffle Quick]
+           - Both: Y2 layout + Bluetooth home item so authors can preview & edit both devices at once. */
+        var ordered = [
             'nowPlaying',
             'music',
             'video',
             'audiobooks',
+            'ebook',
+            'calculator',
+            'calendar',
             'photos',
             'fm',
             'bluetooth',
+            'fileManager',
             'settings',
-            'shuffleQuick',
-            'calendar',
-            'calculator',
-            'ebook',
-            'fileManager'
+            'shuffleQuick'
         ];
-        var configOrder = Object.keys(homeCfg).filter(function (key) {
-            return knownOrder.indexOf(key) !== -1;
-        });
-        var ordered = configOrder.length ? configOrder : knownOrder;
-        var fileManagerUsable = isUsableHomeIcon(homePageIconFromCfg(homeCfg, 'fileManager'));
         var items = ordered
             .filter(function (key) {
-                if (!showLegacy && legacyKeys[key]) return false;
-                if (key === 'fileManager') {
-                    /* Y2 launchers always draw the row, so a theme that never
-                       supplied the art can still fill the gap. */
-                    return true;
+                if (key === 'shuffleQuick') return showLegacy;
+                if (key === 'calculator' || key === 'calendar') return showUnimplemented;
+                if (key === 'fileManager') return deviceMode === 'y2' || deviceMode === 'both';
+                if (key === 'bluetooth') {
+                    if (deviceMode === 'y2') return false;
+                    return mode === 'full' ? true : isUsableHomeIcon(homePageIconFromCfg(homeCfg, key));
                 }
-                if (key === 'bluetooth') return isUsableHomeIcon(homePageIconFromCfg(homeCfg, key));
                 var file = homePageIconFromCfg(homeCfg, key);
-                /* FM is conditional on the tuner build, so a theme's
-                   transparent.png hides that row. */
-                if (key === 'fm') return isUsableHomeIcon(file);
-                return file !== undefined;
+                if (key === 'fm') {
+                    if (mode === 'full') return true;
+                    return isUsableHomeIcon(file);
+                }
+                if (key === 'ebook') {
+                    if (mode === 'full') return true;
+                    return file !== undefined && isUsableHomeIcon(file);
+                }
+                return mode === 'full' ? true : file !== undefined;
             })
             .map(function (key) {
                 var file = homePageIconFromCfg(homeCfg, key);
@@ -297,13 +328,10 @@
                     assetPath: 'homePageConfig.' + key
                 };
             });
-        /* Rockbox is a Settings row on the device (SettingConfig.launcher) and
-           is drawn there by buildSettingsItems, so the home list stays the
-           launcher's own rows. */
         return items;
     }
 
-    function buildColors(itemCfg, menuCfg, statusCfg) {
+    function buildColors(itemCfg, menuCfg, statusCfg, cfg, catalogFolder) {
         itemCfg = itemCfg || {};
         menuCfg = menuCfg || {};
         statusCfg = statusCfg || {};
@@ -319,7 +347,7 @@
             menu_text_primary: menuCfg.menuItemTextColor || text_primary,
             menu_text_selected: menuCfg.menuItemSelectedTextColor || text_selected,
             status_bar_bg: statusCfg.statusBarColor || '#0000004e',
-            status_text: statusTextColor(statusCfg, itemCfg)
+            status_text: statusTextColor(statusCfg, itemCfg, cfg, catalogFolder)
         };
     }
 
@@ -361,12 +389,156 @@
         return null;
     }
 
-    function statusTextColor(statusCfg, itemCfg) {
-        /* The launcher always draws the status bar's text and glyphs in white:
-           it ignores every colour a theme declares for them, unlike the list
-           text below. Draw what the player draws so a theme never looks right
-           in the preview and wrong on the device. */
+    function statusTextColor(statusCfg, itemCfg, cfg, catalogFolder) {
+        /* On stock Y1 & Y2 hardware, StatusBarFloatView forces white text/icons
+           for every custom theme; only the built-in factory Y2_Default light
+           theme renders dark ink (#2D2D44 / #000000) in its status bar. */
+        if (isY2DefaultTheme(cfg, catalogFolder)) {
+            var declared = statusCfg && typeof statusCfg.statusTextColor === 'string' ? statusCfg.statusTextColor.trim() : '';
+            if (declared) return declared;
+            return '#2d2d44';
+        }
         return '#ffffff';
+    }
+
+    /* Authentic Android .9.png Nine-Patch decoder (mirrors LL0/f.a in Y2 3.2.8):
+       reads 1px black stretch guides on top & left edges, strips the 1px guide
+       border, and produces CSS border-image slices + cropped canvas so rounded
+       corners and bevels never distort at any row width. */
+    var ninePatchCache = Object.create(null);
+
+    function parseNinePatchImage(img) {
+        if (!img || !img.naturalWidth || !img.naturalHeight) return null;
+        var w = img.naturalWidth | 0;
+        var h = img.naturalHeight | 0;
+        if (w < 4 || h < 4) return null;
+        try {
+            var probe = document.createElement('canvas');
+            probe.width = w;
+            probe.height = h;
+            var pctx = probe.getContext('2d', { willReadFrequently: true });
+            if (!pctx) return null;
+            pctx.clearRect(0, 0, w, h);
+            pctx.drawImage(img, 0, 0, w, h);
+            var data = pctx.getImageData(0, 0, w, h).data;
+            function isBlack(px, py) {
+                var off = (py * w + px) * 4;
+                return data[off + 3] > 128 && data[off] < 48 && data[off + 1] < 48 && data[off + 2] < 48;
+            }
+            var sx0 = -1;
+            var sx1 = -1;
+            for (var x = 1; x < w - 1; x++) {
+                if (isBlack(x, 0)) {
+                    if (sx0 === -1) sx0 = x - 1;
+                    sx1 = x;
+                }
+            }
+            var sy0 = -1;
+            var sy1 = -1;
+            for (var y = 1; y < h - 1; y++) {
+                if (isBlack(0, y)) {
+                    if (sy0 === -1) sy0 = y - 1;
+                    sy1 = y;
+                }
+            }
+            var iw = w - 2;
+            var ih = h - 2;
+            if (sx0 === -1 || sy0 === -1) return null;
+            var cropped = document.createElement('canvas');
+            cropped.width = iw;
+            cropped.height = ih;
+            var cctx = cropped.getContext('2d');
+            if (!cctx) return null;
+            cctx.drawImage(img, 1, 1, iw, ih, 0, 0, iw, ih);
+            var sliceLeft = Math.max(1, Math.min(iw - 1, sx0));
+            var sliceRight = Math.max(1, Math.min(iw - sliceLeft, iw - sx1));
+            var sliceTop = Math.max(1, Math.min(ih - 1, sy0));
+            var sliceBottom = Math.max(1, Math.min(ih - sliceTop, ih - sy1));
+            return {
+                valid: true,
+                dataUrl: cropped.toDataURL('image/png'),
+                canvas: cropped,
+                iw: iw,
+                ih: ih,
+                sliceLeft: sliceLeft,
+                sliceRight: sliceRight,
+                sliceTop: sliceTop,
+                sliceBottom: sliceBottom
+            };
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function ninePatchCssStyle(np) {
+        if (!np || !np.valid || !np.dataUrl) return null;
+        return {
+            backgroundColor: 'transparent',
+            backgroundImage: 'none',
+            borderStyle: 'solid',
+            borderColor: 'transparent',
+            borderImageSource: 'url("' + np.dataUrl + '")',
+            borderImageSlice:
+                np.sliceTop + ' ' + np.sliceRight + ' ' + np.sliceBottom + ' ' + np.sliceLeft + ' fill',
+            borderImageWidth:
+                np.sliceTop + 'px ' + np.sliceRight + 'px ' + np.sliceBottom + 'px ' + np.sliceLeft + 'px',
+            borderImageRepeat: 'stretch'
+        };
+    }
+
+    function drawNinePatchOnCanvas(ctx, np, dx, dy, dw, dh) {
+        if (!ctx || !np || !np.valid || !np.canvas) return false;
+        var src = np.canvas;
+        var sl = Math.min(np.sliceLeft, Math.floor(dw / 2));
+        var sr = Math.min(np.sliceRight, Math.floor(dw / 2));
+        var st = Math.min(np.sliceTop, Math.floor(dh / 2));
+        var sb = Math.min(np.sliceBottom, Math.floor(dh / 2));
+        var smw = Math.max(1, np.iw - np.sliceLeft - np.sliceRight);
+        var smh = Math.max(1, np.ih - np.sliceTop - np.sliceBottom);
+        var dmw = Math.max(0, dw - sl - sr);
+        var dmh = Math.max(0, dh - st - sb);
+        /* 4 corners */
+        if (sl > 0 && st > 0) ctx.drawImage(src, 0, 0, np.sliceLeft, np.sliceTop, dx, dy, sl, st);
+        if (sr > 0 && st > 0) ctx.drawImage(src, np.iw - np.sliceRight, 0, np.sliceRight, np.sliceTop, dx + dw - sr, dy, sr, st);
+        if (sl > 0 && sb > 0) ctx.drawImage(src, 0, np.ih - np.sliceBottom, np.sliceLeft, np.sliceBottom, dx, dy + dh - sb, sl, sb);
+        if (sr > 0 && sb > 0) ctx.drawImage(src, np.iw - np.sliceRight, np.ih - np.sliceBottom, np.sliceRight, np.sliceBottom, dx + dw - sr, dy + dh - sb, sr, sb);
+        /* 4 edges */
+        if (dmw > 0 && st > 0) ctx.drawImage(src, np.sliceLeft, 0, smw, np.sliceTop, dx + sl, dy, dmw, st);
+        if (dmw > 0 && sb > 0) ctx.drawImage(src, np.sliceLeft, np.ih - np.sliceBottom, smw, np.sliceBottom, dx + sl, dy + dh - sb, dmw, sb);
+        if (sl > 0 && dmh > 0) ctx.drawImage(src, 0, np.sliceTop, np.sliceLeft, smh, dx, dy + st, sl, dmh);
+        if (sr > 0 && dmh > 0) ctx.drawImage(src, np.iw - np.sliceRight, np.sliceTop, np.sliceRight, smh, dx + dw - sr, dy + st, sr, dmh);
+        /* center */
+        if (dmw > 0 && dmh > 0) ctx.drawImage(src, np.sliceLeft, np.sliceTop, smw, smh, dx + sl, dy + st, dmw, dmh);
+        return true;
+    }
+
+    function requestNinePatch(url, onReady) {
+        if (!url) return null;
+        if (Object.prototype.hasOwnProperty.call(ninePatchCache, url)) {
+            return ninePatchCache[url];
+        }
+        ninePatchCache[url] = { pending: true, valid: false };
+        var img = new Image();
+        if (!/^(blob:|data:)/i.test(String(url))) {
+            try {
+                img.crossOrigin = 'anonymous';
+            } catch (e) {}
+        }
+        img.onload = function () {
+            var parsed = parseNinePatchImage(img);
+            ninePatchCache[url] = parsed || { valid: false };
+            if (parsed && typeof onReady === 'function') onReady(parsed);
+        };
+        img.onerror = function () {
+            ninePatchCache[url] = { valid: false };
+        };
+        img.src = url;
+        return null;
+    }
+
+    function isNinePatchCandidate(itemCfg, rawPath) {
+        if (!rawPath || isHexColor8or6(rawPath)) return false;
+        return !!(itemCfg && itemCfg.itemSelectedBackgroundIs9Patch) || /\.9\.png(\?|#|$)/i.test(String(rawPath));
     }
 
     function resolveBackgroundStyle(val, buildFileUrl, contentFolder) {
@@ -562,6 +734,12 @@
         el.style.backgroundSize = '';
         el.style.backgroundRepeat = '';
         el.style.backgroundPosition = '';
+        el.style.borderStyle = '';
+        el.style.borderColor = '';
+        el.style.borderImageSource = '';
+        el.style.borderImageSlice = '';
+        el.style.borderImageWidth = '';
+        el.style.borderImageRepeat = '';
     }
 
     function applyMenuRowSelection(row, item, selected, ctx) {
@@ -672,6 +850,7 @@
         var leftPad = options.leftPad != null ? options.leftPad : 10;
         var rowWidth = options.rowWidth != null ? options.rowWidth : 200;
         var folderIconUrl = options.folderIconUrl || '';
+        var musicIconUrl = options.musicIconUrl || '';
         var marqueeOnLongLabel = options.marqueeOnLongLabel !== false;
         var eager = !!options.eager;
         var scrollState = options.scrollState || { override: null, lastY: 0, animate: true };
@@ -744,27 +923,32 @@
                 itemHeight +
                 'px;display:flex;align-items:center;padding-right:32px;box-sizing:border-box;';
 
-            if (item.isFolder) {
-                if (folderIconUrl) {
+            if (item.isFolder || item.isMusic) {
+                var isMusicRow = !!item.isMusic && !item.isFolder;
+                var rowIconUrl = isMusicRow ? musicIconUrl : folderIconUrl;
+                var rowIconAssetPath = isMusicRow ? 'fileConfig.musicIcon' : 'fileConfig.folderIcon';
+                if (rowIconUrl) {
                     var fi = document.createElement('img');
-                    fi.src = folderIconUrl;
+                    fi.src = rowIconUrl;
                     fi.alt = '';
                     bindPreviewImgFallback(fi, { eager: eager });
                     fi.style.cssText =
-                        'width:24px;height:24px;margin-left:10px;margin-right:8px;object-fit:contain;flex-shrink:0;';
-                    fi.setAttribute('data-theme-asset-path', 'fileConfig.folderIcon');
+                        'width:22px;height:22px;margin-left:10px;margin-right:8px;object-fit:contain;flex-shrink:0;';
+                    fi.setAttribute('data-theme-asset-path', rowIconAssetPath);
                     row.appendChild(fi);
                 } else {
                     var sp = document.createElement('span');
-                    sp.textContent = '\uD83D\uDCC1';
-                    sp.style.cssText = 'margin-left:10px;margin-right:8px;font-size:20px;flex-shrink:0;';
+                    sp.textContent = isMusicRow ? '\u266B' : '\uD83D\uDCC1';
+                    sp.setAttribute('data-theme-asset-path', rowIconAssetPath);
+                    sp.style.cssText = 'margin-left:10px;margin-right:8px;font-size:19px;flex-shrink:0;';
                     row.appendChild(sp);
                 }
             }
 
+            var hasLeadIcon = !!(item.isFolder || item.isMusic);
             var labelWrap = document.createElement('div');
             labelWrap.style.cssText =
-                (item.isFolder
+                (hasLeadIcon
                     ? 'position:relative;flex:1;'
                     : 'position:absolute;left:5px;top:0;right:42px;height:' +
                       itemHeight +
@@ -775,7 +959,7 @@
             var labelInner = document.createElement('div');
             labelInner.style.cssText =
                 'display:inline-block;overflow:hidden;white-space:nowrap;' +
-                (item.isFolder ? 'text-overflow:ellipsis;' : '');
+                (hasLeadIcon ? 'text-overflow:ellipsis;' : '');
             var lab = item.label != null ? String(item.label) : '';
             labelInner.textContent = lab;
             labelWrap.appendChild(labelInner);
@@ -1235,9 +1419,13 @@
         });
     }
 
-    function buildSettingsItems(cfg, buildFileUrl, contentFolder, sim) {
+    function buildSettingsItems(cfg, buildFileUrl, contentFolder, sim, opts) {
         var settingConfig = (cfg && cfg.settingConfig) || {};
+        var homeCfg = (cfg && cfg.homePageConfig) || {};
         sim = sim || {};
+        opts = opts || {};
+        var deviceMode = normalizeDeviceMode(opts.deviceMode, homeCfg, opts.mode || 'full');
+        var category = opts.category || '';
         var timedShutdownValue = sim.timedShutdownValue || 'off';
         var backlightValue = sim.backlightValue || '10';
         var shuffleEnabled = !!sim.shuffleEnabled;
@@ -1247,6 +1435,15 @@
         var keyToneEnabled = sim.keyToneEnabled !== false;
         var keyVibrationEnabled = sim.keyVibrationEnabled !== false;
         var displayBatteryEnabled = sim.displayBatteryEnabled !== false;
+        var wheelSensitivity = sim.wheelSensitivity || 'standard';
+        var wheelVolumeEnabled = sim.wheelVolumeEnabled !== false;
+        var headphoneGain = sim.headphoneGain || 'standard';
+        var speakerEnabled = sim.speakerEnabled !== false;
+
+        function capFirst(str) {
+            var s = String(str || '');
+            return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+        }
 
         function gt(id) {
             switch (id) {
@@ -1268,6 +1465,14 @@
                     return backlightValue === 'always' ? 'Always' : backlightValue + ' sec';
                 case 'display_battery':
                     return displayBatteryEnabled ? 'On' : 'Off';
+                case 'wheel_sensitivity':
+                    return capFirst(wheelSensitivity);
+                case 'wheel_volume':
+                    return wheelVolumeEnabled ? 'On' : 'Off';
+                case 'headphone_gain':
+                    return capFirst(headphoneGain);
+                case 'speaker':
+                    return speakerEnabled ? 'On' : 'Off';
                 case 'about':
                     return 'Version';
                 default:
@@ -1275,26 +1480,10 @@
             }
         }
 
-        var timedShutdownIcon = settingConfig['timedShutdown_' + timedShutdownValue];
-        var backlightIcon = settingConfig['backlight_' + backlightValue];
-        var shuffleIcon = shuffleEnabled ? settingConfig.shuffleOn : settingConfig.shuffleOff;
-        var repeatIcon =
-            repeatMode === 'off'
-                ? settingConfig.repeatOff
-                : repeatMode === 'all'
-                  ? settingConfig.repeatAll
-                  : settingConfig.repeatOne;
-        var fileExtensionIcon = fileExtensionsEnabled
-            ? settingConfig.fileExtensionOn
-            : settingConfig.fileExtensionOff;
-        var keyLockIcon = keyLockEnabled ? settingConfig.keyLockOn : settingConfig.keyLockOff;
-        var keyToneIcon = keyToneEnabled ? settingConfig.keyToneOn : settingConfig.keyToneOff;
-        var keyVibrationIcon = keyVibrationEnabled
-            ? settingConfig.keyVibrationOn
-            : settingConfig.keyVibrationOff;
-        var displayBatteryIcon = displayBatteryEnabled
-            ? settingConfig.displayBatteryOn
-            : settingConfig.displayBatteryOff;
+        var wheelSensKey = 'wheelSensitivity' + capFirst(wheelSensitivity);
+        var wheelVolKey = wheelVolumeEnabled ? 'wheelVolumeOn' : 'wheelVolumeOff';
+        var gainKey = 'headphoneGain' + capFirst(headphoneGain);
+        var speakerKey = speakerEnabled ? 'speakerOn' : 'speakerOff';
         var repeatAssetKey =
             repeatMode === 'off' ? 'repeatOff' : repeatMode === 'all' ? 'repeatAll' : 'repeatOne';
         var shuffleAssetKey = shuffleEnabled ? 'shuffleOn' : 'shuffleOff';
@@ -1304,81 +1493,170 @@
         var keyVibrationAssetKey = keyVibrationEnabled ? 'keyVibrationOn' : 'keyVibrationOff';
         var displayBatteryAssetKey = displayBatteryEnabled ? 'displayBatteryOn' : 'displayBatteryOff';
 
-        var base = [
-            { id: 'shutdown', label: 'Shutdown', iconFile: settingConfig.shutdown, assetPath: 'settingConfig.shutdown' },
-            {
+        var allEntries = {
+            shutdown: { id: 'shutdown', label: 'Shutdown', iconFile: settingConfig.shutdown, assetPath: 'settingConfig.shutdown' },
+            timed_shutdown: {
                 id: 'timed_shutdown',
                 label: 'Timed shutdown',
-                iconFile: timedShutdownIcon,
+                iconFile: settingConfig['timedShutdown_' + timedShutdownValue],
                 assetPath: 'settingConfig.timedShutdown_' + timedShutdownValue,
                 valueText: gt('timed_shutdown')
             },
-            { id: 'shuffle', label: 'Shuffle', iconFile: shuffleIcon, assetPath: 'settingConfig.' + shuffleAssetKey, valueText: gt('shuffle') },
-            { id: 'repeat', label: 'Repeat', iconFile: repeatIcon, assetPath: 'settingConfig.' + repeatAssetKey, valueText: gt('repeat') },
-            { id: 'equalizer', label: 'Equalizer', iconFile: settingConfig.equalizer_normal, assetPath: 'settingConfig.equalizer_normal' },
-            {
+            shuffle: { id: 'shuffle', label: 'Shuffle', iconFile: settingConfig[shuffleAssetKey], assetPath: 'settingConfig.' + shuffleAssetKey, valueText: gt('shuffle') },
+            repeat: { id: 'repeat', label: 'Repeat', iconFile: settingConfig[repeatAssetKey], assetPath: 'settingConfig.' + repeatAssetKey, valueText: gt('repeat') },
+            equalizer: { id: 'equalizer', label: 'Equalizer', iconFile: settingConfig.equalizer_normal, assetPath: 'settingConfig.equalizer_normal' },
+            file_extension: {
                 id: 'file_extension',
                 label: 'File extensions',
-                iconFile: fileExtensionIcon,
+                iconFile: settingConfig[fileExtensionAssetKey],
                 assetPath: 'settingConfig.' + fileExtensionAssetKey,
                 valueText: gt('file_extension')
             },
-            { id: 'key_lock', label: 'Key lock', iconFile: keyLockIcon, assetPath: 'settingConfig.' + keyLockAssetKey, valueText: gt('key_lock') },
-            { id: 'key_tone', label: 'Key tone', iconFile: keyToneIcon, assetPath: 'settingConfig.' + keyToneAssetKey, valueText: gt('key_tone') },
-            {
+            key_lock: {
+                id: 'key_lock',
+                label: deviceMode === 'y1' ? 'Key lock' : 'Screen-off key switch',
+                iconFile: settingConfig[keyLockAssetKey],
+                assetPath: 'settingConfig.' + keyLockAssetKey,
+                valueText: gt('key_lock')
+            },
+            wheel_sensitivity: {
+                id: 'wheel_sensitivity',
+                label: 'Wheel sensitivity',
+                iconFile: settingConfig[wheelSensKey],
+                assetPath: 'settingConfig.' + wheelSensKey,
+                valueText: gt('wheel_sensitivity')
+            },
+            wheel_volume: {
+                id: 'wheel_volume',
+                label: 'Wheel volume',
+                iconFile: settingConfig[wheelVolKey],
+                assetPath: 'settingConfig.' + wheelVolKey,
+                valueText: gt('wheel_volume')
+            },
+            key_tone: { id: 'key_tone', label: 'Key tone', iconFile: settingConfig[keyToneAssetKey], assetPath: 'settingConfig.' + keyToneAssetKey, valueText: gt('key_tone') },
+            key_vibration: {
                 id: 'key_vibration',
                 label: 'Key vibration',
-                iconFile: keyVibrationIcon,
+                iconFile: settingConfig[keyVibrationAssetKey],
                 assetPath: 'settingConfig.' + keyVibrationAssetKey,
                 valueText: gt('key_vibration')
             },
-            { id: 'wallpaper', label: 'Wallpaper', iconFile: settingConfig.wallpaper, assetPath: 'settingConfig.wallpaper' },
-            {
+            headphone_gain: {
+                id: 'headphone_gain',
+                label: 'Headphone gain',
+                iconFile: settingConfig[gainKey],
+                assetPath: 'settingConfig.' + gainKey,
+                valueText: gt('headphone_gain')
+            },
+            speaker: {
+                id: 'speaker',
+                label: 'Speaker',
+                iconFile: settingConfig[speakerKey],
+                assetPath: 'settingConfig.' + speakerKey,
+                valueText: gt('speaker')
+            },
+            wallpaper: { id: 'wallpaper', label: 'Wallpaper', iconFile: settingConfig.wallpaper, assetPath: 'settingConfig.wallpaper' },
+            backlight: {
                 id: 'backlight',
                 label: 'Backlight',
-                iconFile: backlightIcon,
+                iconFile: settingConfig['backlight_' + backlightValue],
                 assetPath: 'settingConfig.backlight_' + backlightValue,
                 valueText: gt('backlight')
             },
-            { id: 'brightness', label: 'Brightness', iconFile: settingConfig.brightness, assetPath: 'settingConfig.brightness' },
-            {
+            brightness: { id: 'brightness', label: 'Brightness', iconFile: settingConfig.brightness, assetPath: 'settingConfig.brightness' },
+            display_battery: {
                 id: 'display_battery',
                 label: 'Display battery',
-                iconFile: displayBatteryIcon,
+                iconFile: settingConfig[displayBatteryAssetKey],
                 assetPath: 'settingConfig.' + displayBatteryAssetKey,
                 valueText: gt('display_battery')
             },
-            { id: 'date_time', label: 'Date & Time', iconFile: settingConfig.dateTime, assetPath: 'settingConfig.dateTime' },
-            { id: 'theme', label: 'Theme', iconFile: settingConfig.theme, assetPath: 'settingConfig.theme' },
-            { id: 'language', label: 'Language', iconFile: settingConfig.language, assetPath: 'settingConfig.language' },
-            { id: 'factory_reset', label: 'Factory reset', iconFile: settingConfig.factoryReset, assetPath: 'settingConfig.factoryReset' },
-            { id: 'clear_cache', label: 'Clear cache', iconFile: settingConfig.clearCache, assetPath: 'settingConfig.clearCache' }
-        ];
-        /* A Y2 launcher keeps Bluetooth in Settings instead of on Home. Themes
-           may ship a dedicated settings icon (settingConfig.bluetooth);
-           otherwise the home-screen Bluetooth art stands in for it. */
-        var homeCfg = (cfg && cfg.homePageConfig) || {};
-        var settingsBluetooth = settingConfig.bluetooth || homeCfg.bluetooth;
-        if (isUsableHomeIcon(homeCfg.fileManager) && isUsableHomeIcon(settingsBluetooth)) {
-            base.push({
+            date_time: { id: 'date_time', label: 'Date & Time', iconFile: settingConfig.dateTime, assetPath: 'settingConfig.dateTime' },
+            theme: { id: 'theme', label: 'Theme', iconFile: settingConfig.theme, assetPath: 'settingConfig.theme' },
+            language: { id: 'language', label: 'Language', iconFile: settingConfig.language, assetPath: 'settingConfig.language' },
+            /* Rockbox / Launcher is ALWAYS shown in Settings (never hidden as legacy/unimplemented). */
+            rockbox: { id: 'rockbox', label: 'Rockbox', iconFile: settingConfig.launcher, assetPath: 'settingConfig.launcher' },
+            factory_reset: { id: 'factory_reset', label: 'Factory reset', iconFile: settingConfig.factoryReset, assetPath: 'settingConfig.factoryReset' },
+            clear_cache: { id: 'clear_cache', label: 'Clear cache', iconFile: settingConfig.clearCache, assetPath: 'settingConfig.clearCache' },
+            bluetooth: {
                 id: 'bluetooth',
                 label: 'Bluetooth',
-                iconFile: settingsBluetooth,
-                assetPath: settingConfig.bluetooth
-                    ? 'settingConfig.bluetooth'
-                    : 'homePageConfig.bluetooth'
-            });
+                iconFile: settingConfig.bluetooth || homeCfg.bluetooth,
+                assetPath: settingConfig.bluetooth ? 'settingConfig.bluetooth' : 'homePageConfig.bluetooth'
+            },
+            about: { id: 'about', label: 'About', iconFile: undefined, valueText: gt('about') }
+        };
+
+        var base;
+        if (category === 'musicSettings') {
+            base = [
+                allEntries.shuffle,
+                allEntries.repeat,
+                allEntries.equalizer,
+                allEntries.timed_shutdown
+            ];
+        } else if (category === 'keysWheel') {
+            base = [
+                allEntries.key_lock,
+                allEntries.wheel_sensitivity,
+                allEntries.wheel_volume,
+                allEntries.key_tone,
+                allEntries.key_vibration
+            ];
+        } else if (category === 'audio') {
+            base =
+                deviceMode === 'both'
+                    ? [allEntries.headphone_gain, allEntries.speaker, allEntries.equalizer, allEntries.shuffle, allEntries.repeat]
+                    : [allEntries.headphone_gain, allEntries.speaker];
+        } else if (category === 'display') {
+            base = [allEntries.brightness, allEntries.backlight, allEntries.display_battery];
+        } else if (category === 'personalization') {
+            base = [allEntries.theme, allEntries.wallpaper];
+        } else if (category === 'filesStorage') {
+            base = [allEntries.file_extension, allEntries.clear_cache];
+        } else if (category === 'system') {
+            base =
+                deviceMode === 'both'
+                    ? [allEntries.language, allEntries.date_time, allEntries.timed_shutdown, allEntries.rockbox, allEntries.shutdown]
+                    : [allEntries.language, allEntries.date_time, allEntries.timed_shutdown, allEntries.rockbox];
+        } else if (deviceMode === 'y1') {
+            /* Authentic Y1 3.1.2 flat Settings list (Rockbox always included). */
+            base = [
+                allEntries.shutdown,
+                allEntries.timed_shutdown,
+                allEntries.shuffle,
+                allEntries.repeat,
+                allEntries.equalizer,
+                allEntries.file_extension,
+                allEntries.key_lock,
+                allEntries.key_tone,
+                allEntries.key_vibration,
+                allEntries.wallpaper,
+                allEntries.backlight,
+                allEntries.brightness,
+                allEntries.display_battery,
+                allEntries.date_time,
+                allEntries.theme,
+                allEntries.language,
+                allEntries.rockbox,
+                allEntries.factory_reset,
+                allEntries.clear_cache,
+                allEntries.about
+            ];
+        } else {
+            /* Authentic Y2 3.2.8 categorized Settings root (used in Y2 and Both modes). */
+            base = [
+                allEntries.bluetooth,
+                { id: 'cat_keysWheel', label: 'Keys & Wheel', iconFile: settingConfig.categoryKeysWheel, assetPath: 'settingConfig.categoryKeysWheel' },
+                { id: 'cat_audio', label: 'Audio', iconFile: settingConfig.categoryAudio, assetPath: 'settingConfig.categoryAudio' },
+                { id: 'cat_display', label: 'Display', iconFile: settingConfig.categoryDisplay, assetPath: 'settingConfig.categoryDisplay' },
+                { id: 'cat_personalization', label: 'Personalization', iconFile: settingConfig.categoryPersonalization, assetPath: 'settingConfig.categoryPersonalization' },
+                { id: 'cat_filesStorage', label: 'Files & Storage', iconFile: settingConfig.categoryFilesStorage, assetPath: 'settingConfig.categoryFilesStorage' },
+                { id: 'cat_system', label: 'System', iconFile: settingConfig.categorySystem, assetPath: 'settingConfig.categorySystem' },
+                allEntries.about,
+                allEntries.factory_reset
+            ];
         }
-        if (settingConfig.launcher && String(settingConfig.launcher).trim()) {
-            base.push({
-                id: 'rockbox',
-                label: 'Rockbox',
-                iconFile: settingConfig.launcher,
-                assetPath: 'settingConfig.launcher',
-                valueText: undefined
-            });
-        }
-        base.push({ id: 'about', label: 'About', iconFile: undefined, valueText: gt('about') });
         return base.map(function (item) {
             return {
                 id: item.id,
@@ -1407,6 +1685,15 @@
             keyToneEnabled: true,
             keyVibrationEnabled: true,
             displayBatteryEnabled: true,
+            wheelSensitivity: 'standard',
+            wheelVolumeEnabled: true,
+            headphoneGain: 'standard',
+            speakerEnabled: true,
+            fmFreq: 985,
+            btEnabled: true,
+            nowPlayingTrackIndex: 0,
+            photoViewerIndex: 0,
+            ebookTitle: 'The Little Prince',
             brightnessLevel: 50,
             dialogVisible: false,
             dialogTitle: '',
@@ -1418,37 +1705,35 @@
         };
     }
 
-    function genericListForView(viewId) {
+    function genericListForView(viewId, deviceMode) {
         if (viewId === 'music') {
-            return ['All songs', 'Playlists', 'Artists', 'Albums', 'Genres', 'Folders', 'Search'].map(
-                function (label) {
-                    return { id: label.toLowerCase().replace(/\s+/g, '_'), label: label };
-                }
-            );
+            var musicItems = ['All songs', 'Playlists', 'Artists', 'Albums', 'Genres', 'Folders', 'Search'];
+            if (deviceMode !== 'y1') musicItems.push('Settings');
+            return musicItems.map(function (label) {
+                return { id: label.toLowerCase().replace(/\s+/g, '_'), label: label };
+            });
         }
         if (viewId === 'music_folders') {
             var folders = [
-                'Bad',
-                'Thriller',
-                'Dangerous',
-                'HIStory',
-                'Invincible',
-                'Off the Wall',
-                'The Wall',
-                'Bloodline',
-                'Unreleased',
-                'Live',
-                'Demos',
-                'Remixes',
-                'Collabs',
-                'Remastered',
-                'Vault'
+                { label: 'Bad', isFolder: true },
+                { label: 'Thriller', isFolder: true },
+                { label: 'Dangerous', isFolder: true },
+                { label: '01 - Jam.flac', isMusic: true },
+                { label: '02 - Remember the Time.mp3', isMusic: true },
+                { label: 'HIStory', isFolder: true },
+                { label: 'Invincible', isFolder: true },
+                { label: 'Off the Wall', isFolder: true },
+                { label: 'Live', isFolder: true },
+                { label: 'Demos', isFolder: true },
+                { label: 'Remixes', isFolder: true },
+                { label: 'Vault', isFolder: true }
             ];
-            return folders.map(function (label) {
+            return folders.map(function (entry) {
                 return {
-                    id: label.toLowerCase().replace(/\s+/g, '_'),
-                    label: label,
-                    isFolder: true
+                    id: entry.label.toLowerCase().replace(/[^a-z0-9]+/g, '_'),
+                    label: entry.label,
+                    isFolder: !!entry.isFolder,
+                    isMusic: !!entry.isMusic
                 };
             });
         }
@@ -1468,12 +1753,7 @@
                 'Live Performances',
                 'Rehearsals',
                 'Awards Shows',
-                'TV Appearances',
-                'Tributes',
-                'Fan Made',
-                'Remastered',
-                'Archives',
-                'Collections'
+                'Archives'
             ];
             return vf.map(function (label) {
                 return {
@@ -1496,30 +1776,33 @@
             });
         }
         if (viewId === 'ebook') {
-            /* Innioasis e-Book module: the library lists every book it found on
-               the card, and Bookmark lists is the last entry. */
             return [
-                'The Little Prince',
-                'Alice in Wonderland',
-                'Frankenstein',
-                'Dracula',
-                'Moby-Dick',
-                'Bookmark lists'
-            ].map(function (label) {
-                return { id: label.toLowerCase().replace(/[^a-z0-9]+/g, '_'), label: label };
-            });
+                { id: 'continue_reading', label: 'Continue Reading', isAction: true },
+                { id: 'local_files', label: 'Local Files', isAction: true },
+                { id: 'book_1', label: 'The Little Prince.epub' },
+                { id: 'book_2', label: 'Alice in Wonderland.epub' },
+                { id: 'book_3', label: 'Frankenstein.txt' },
+                { id: 'book_4', label: 'Moby-Dick.epub' }
+            ];
         }
         if (viewId === 'fileManager') {
-            return ['Internal storage', 'SD card', 'Music', 'Videos', 'Photos', 'Audiobooks', 'E-Book'].map(
-                function (label, i) {
-                    return { id: 'fm_' + i, label: label, isFolder: i > 0 };
-                }
-            );
+            return [
+                { id: 'fm_music', label: 'Music', isFolder: true },
+                { id: 'fm_videos', label: 'Videos', isFolder: true },
+                { id: 'fm_photos', label: 'Photos', isFolder: true },
+                { id: 'fm_ebooks', label: 'Books', isFolder: true },
+                { id: 'fm_themes', label: 'Themes', isFolder: true },
+                { id: 'fm_track1', label: 'Jam.flac', isMusic: true },
+                { id: 'fm_track2', label: 'Remember the Time.mp3', isMusic: true }
+            ];
         }
         if (viewId === 'bluetooth') {
-            return ['Bluetooth', 'Paired devices', 'Search for devices'].map(function (label, i) {
-                return { id: 'bt_' + i, label: label };
-            });
+            return [
+                { id: 'bt_power', label: 'Bluetooth', statusKey: 'power' },
+                { id: 'bt_dev1', label: 'AirPods Pro', status: 'Connected' },
+                { id: 'bt_dev2', label: 'Sony WH-1000XM5', status: 'Paired' },
+                { id: 'bt_scan', label: 'Search for devices', status: '' }
+            ];
         }
         if (viewId === 'settingsLanguage') {
             return ['English', '简体中文', 'Español', 'Français', 'Deutsch', '日本語'].map(function (
@@ -1799,11 +2082,36 @@
                 var statusCfg = (cfg && cfg.statusConfig) || {};
                 var settingCfg = (cfg && cfg.settingConfig) || {};
                 var dialogCfg = (cfg && cfg.dialogConfig) || {};
+                var playerCfg = (cfg && cfg.playerConfig) || {};
 
-                var colors = buildColors(itemCfg, menuCfg, statusCfg);
+                var previewOpts = {
+                    mode: mode,
+                    deviceMode: normalizeDeviceMode(opts.deviceMode, cfg.homePageConfig || {}, mode),
+                    showLegacyHome: opts.showLegacyHome === true,
+                    showUnimplementedHome: opts.showUnimplementedHome === true
+                };
+
+                var colors = buildColors(itemCfg, menuCfg, statusCfg, cfg, catalogFolder);
                 var bgMerged = mergeItemBackgrounds(cfg, buildFileUrl, contentFolder);
                 var itemBackgroundStyle = bgMerged.itemBackgroundStyle;
                 var itemSelectedBackgroundStyle = bgMerged.itemSelectedBackgroundStyle;
+
+                /* Authentic Android .9.png 9-patch decoding for itemSelectedBackground. */
+                var selBgRaw = itemCfg.itemSelectedBackground || menuCfg.menuItemSelectedBackground || '';
+                if (isNinePatchCandidate(itemCfg, selBgRaw)) {
+                    var selBgUrl = buildFileUrl(contentFolder, selBgRaw);
+                    var npInfo = requestNinePatch(selBgUrl, function (parsed) {
+                        var npCss = ninePatchCssStyle(parsed);
+                        if (npCss && !cleanedUp) {
+                            itemSelectedBackgroundStyle = npCss;
+                            paintKeepingScrollQuietly();
+                        }
+                    });
+                    if (npInfo && npInfo.valid) {
+                        var readyCss = ninePatchCssStyle(npInfo);
+                        if (readyCss) itemSelectedBackgroundStyle = readyCss;
+                    }
+                }
 
                 var itemRightArrowUrl = itemCfg.itemRightArrow
                     ? buildFileUrl(contentFolder, itemCfg.itemRightArrow)
@@ -1818,11 +2126,36 @@
                     ? buildFileUrl(contentFolder, settingCfg.settingMask)
                     : '';
 
-                var homeItems = buildHomeItems(cfg.homePageConfig || {}, settingCfg, opts);
+                var homeItems = buildHomeItems(cfg.homePageConfig || {}, settingCfg, previewOpts);
                 var folderIconFile = (cfg.fileConfig && cfg.fileConfig.folderIcon) || '';
                 var folderIconUrl = folderIconFile
                     ? buildFileUrl(contentFolder, folderIconFile)
                     : '';
+                var musicIconFile = (cfg.fileConfig && cfg.fileConfig.musicIcon) || '';
+                var musicIconUrl = musicIconFile
+                    ? buildFileUrl(contentFolder, musicIconFile)
+                    : '';
+
+                function settingsItemsForView(viewId) {
+                    var cat = '';
+                    if (viewId === 'musicSettings') cat = 'musicSettings';
+                    else if (String(viewId || '').indexOf('settingsCat_') === 0) {
+                        cat = String(viewId).slice('settingsCat_'.length);
+                    }
+                    return buildSettingsItems(cfg, buildFileUrl, contentFolder, sim, {
+                        mode: previewOpts.mode,
+                        deviceMode: previewOpts.deviceMode,
+                        category: cat
+                    });
+                }
+
+                function isSettingsListView(viewId) {
+                    return (
+                        viewId === 'settings' ||
+                        viewId === 'musicSettings' ||
+                        String(viewId || '').indexOf('settingsCat_') === 0
+                    );
+                }
 
                 var root = document.createElement('div');
                 root.className = 'y1-tp-root';
@@ -1846,6 +2179,7 @@
 
                 var wheel = null;
                 var wheelCollapse = null;
+                var stripToggle = null;
                 var compactControls = opts.compactControls === true;
                 var compactExpanded = compactControls && opts.compactExpanded === true;
                 /* The Studio has no scroll-wheel simulation: four transport
@@ -1856,7 +2190,7 @@
                 var wheelScrollOpts = { passive: false };
                 if (useFullDevice && compactControls) {
                     dev.classList.add('y1-tp-controls-collapsed');
-                    if (compactExpanded) dev.classList.add('is-expanded');
+                    if (compactExpanded && !hideWheel) dev.classList.add('is-expanded');
                     controlStrip = document.createElement('div');
                     controlStrip.className = 'y1-tp-control-strip';
                     controlStrip.setAttribute('role', 'group');
@@ -1867,9 +2201,10 @@
                         '<button type="button" class="y1-tp-strip-btn y1-tp-strip-btn--wide" data-strip-act="center" aria-label="Select" title="Select">Select</button>' +
                         '<button type="button" class="y1-tp-strip-btn" data-strip-act="menu" aria-label="Back" title="Back">\u21A9</button>' +
                         (hideWheel
-                            ? '<button type="button" class="y1-tp-strip-toggle" data-strip-toggle aria-label="Show editing options" title="Show editing options" aria-expanded="false">\u2699</button>'
+                            ? '<button type="button" class="y1-tp-strip-toggle" data-strip-toggle aria-label="Show or hide selection options" title="Show or hide selection options" aria-expanded="false">\u2699</button>'
                             : '<button type="button" class="y1-tp-strip-toggle" data-strip-toggle aria-label="Show scroll wheel" aria-expanded="false" title="Show scroll wheel">\u2304</button>');
                     dev.appendChild(controlStrip);
+                    stripToggle = controlStrip.querySelector('[data-strip-toggle]');
                 }
                 if (useFullDevice && !hideWheel) {
                     wheel = document.createElement('div');
@@ -1888,44 +2223,53 @@
                         wheel.style.pointerEvents = 'none';
                     }
                 }
-                if (useFullDevice && compactControls && !hideWheel) {
-                    wheelCollapse = document.createElement('button');
-                    wheelCollapse.type = 'button';
-                    wheelCollapse.className = 'y1-tp-wheel-collapse';
-                    wheelCollapse.setAttribute('aria-label', 'Collapse scroll wheel');
-                    wheelCollapse.setAttribute('title', 'Collapse scroll wheel');
-                    wheelCollapse.innerHTML = '<span aria-hidden="true">\u2303</span><span>Hide wheel</span>';
-                    wheelCollapse.hidden = !compactExpanded;
-                    dev.appendChild(wheelCollapse);
-
-                    var stripToggle = controlStrip.querySelector('[data-strip-toggle]');
-                    var setCompactExpanded = function (expanded, moveFocus) {
-                        compactExpanded = expanded === true;
-                        dev.classList.toggle('is-expanded', compactExpanded);
-                        dev.setAttribute('data-compact-mode', compactExpanded ? 'wheel' : 'strip');
-                        controlStrip.hidden = compactExpanded;
-                        controlStrip.setAttribute('aria-hidden', compactExpanded ? 'true' : 'false');
-                        if (wheel) {
-                            wheel.hidden = !compactExpanded;
-                            wheel.setAttribute('aria-hidden', compactExpanded ? 'false' : 'true');
-                        }
-                        stripToggle.setAttribute('aria-expanded', compactExpanded ? 'true' : 'false');
-                        stripToggle.setAttribute('aria-label', compactExpanded ? 'Hide scroll wheel' : 'Show scroll wheel');
-                        stripToggle.setAttribute('title', compactExpanded ? 'Hide scroll wheel' : 'Show scroll wheel');
-                        stripToggle.textContent = compactExpanded ? '\u2303' : '\u2304';
+                if (useFullDevice && compactControls && controlStrip) {
+                    var setCompactExpanded = null;
+                    if (!hideWheel) {
+                        wheelCollapse = document.createElement('button');
+                        wheelCollapse.type = 'button';
+                        wheelCollapse.className = 'y1-tp-wheel-collapse';
+                        wheelCollapse.setAttribute('aria-label', 'Collapse scroll wheel');
+                        wheelCollapse.setAttribute('title', 'Collapse scroll wheel');
+                        wheelCollapse.innerHTML = '<span aria-hidden="true">\u2303</span><span>Hide wheel</span>';
                         wheelCollapse.hidden = !compactExpanded;
-                        if (typeof opts.onCompactChange === 'function') {
-                            try {
-                                opts.onCompactChange(compactExpanded);
-                            } catch (e) {}
-                        }
-                        if (moveFocus) {
-                            try {
-                                (compactExpanded ? wheelCollapse : stripToggle).focus({ preventScroll: true });
-                            } catch (e) {}
-                        }
-                    };
-                    if (!hideWheel || compactExpanded) setCompactExpanded(compactExpanded, false);
+                        dev.appendChild(wheelCollapse);
+
+                        setCompactExpanded = function (expanded, moveFocus) {
+                            compactExpanded = expanded === true;
+                            dev.classList.toggle('is-expanded', compactExpanded);
+                            dev.setAttribute('data-compact-mode', compactExpanded ? 'wheel' : 'strip');
+                            controlStrip.hidden = compactExpanded;
+                            controlStrip.setAttribute('aria-hidden', compactExpanded ? 'true' : 'false');
+                            if (wheel) {
+                                wheel.hidden = !compactExpanded;
+                                wheel.setAttribute('aria-hidden', compactExpanded ? 'false' : 'true');
+                            }
+                            if (stripToggle) {
+                                stripToggle.setAttribute('aria-expanded', compactExpanded ? 'true' : 'false');
+                                stripToggle.setAttribute('aria-label', compactExpanded ? 'Hide scroll wheel' : 'Show scroll wheel');
+                                stripToggle.setAttribute('title', compactExpanded ? 'Hide scroll wheel' : 'Show scroll wheel');
+                                stripToggle.textContent = compactExpanded ? '\u2303' : '\u2304';
+                            }
+                            wheelCollapse.hidden = !compactExpanded;
+                            if (typeof opts.onCompactChange === 'function') {
+                                try {
+                                    opts.onCompactChange(compactExpanded);
+                                } catch (e) {}
+                            }
+                            if (moveFocus) {
+                                try {
+                                    (compactExpanded ? wheelCollapse : stripToggle).focus({ preventScroll: true });
+                                } catch (e) {}
+                            }
+                        };
+                        setCompactExpanded(compactExpanded, false);
+                        wheelCollapse.addEventListener('click', function () {
+                            setCompactExpanded(false, true);
+                        });
+                    } else {
+                        dev.setAttribute('data-compact-mode', 'strip');
+                    }
 
                     var stripActions = { prev: 'ArrowUp', next: 'ArrowDown', center: 'Enter', menu: 'Escape' };
                     controlStrip.addEventListener('keydown', function (event) {
@@ -1936,26 +2280,19 @@
                         var toggle = event.target && event.target.closest && event.target.closest('[data-strip-toggle]');
                         if (toggle) {
                             if (hideWheel) {
-                                var open = stripToggle.getAttribute('aria-expanded') === 'true';
-                                stripToggle.setAttribute('aria-expanded', open ? 'false' : 'true');
-                                stripToggle.classList.toggle('is-active', !open);
-                                if (!open) {
-                                    var wasOpen = typeof opts.onOptionsToggle === 'function';
+                                var stillOpen = false;
+                                if (typeof opts.onOptionsToggle === 'function') {
                                     try {
-                                        var stillOpen = wasOpen ? opts.onOptionsToggle() !== false : true;
-                                        if (!stillOpen) {
-                                            stripToggle.setAttribute('aria-expanded', 'false');
-                                            stripToggle.classList.remove('is-active');
-                                        }
+                                        stillOpen = opts.onOptionsToggle() === true;
                                     } catch (e) {}
-                                } else if (typeof opts.onOptionsClose === 'function') {
-                                    try {
-                                        opts.onOptionsClose();
-                                    } catch (e) {}
+                                }
+                                if (stripToggle) {
+                                    stripToggle.setAttribute('aria-expanded', stillOpen ? 'true' : 'false');
+                                    stripToggle.classList.toggle('is-active', stillOpen);
                                 }
                                 return;
                             }
-                            setCompactExpanded(!compactExpanded, true);
+                            if (setCompactExpanded) setCompactExpanded(!compactExpanded, true);
                             return;
                         }
                         if (!action) return;
@@ -1964,14 +2301,9 @@
                         event.preventDefault();
                         dev.dispatchEvent(new KeyboardEvent('keydown', { key: key, bubbles: true }));
                     });
-                    if (wheelCollapse) {
-                        wheelCollapse.addEventListener('click', function () {
-                            setCompactExpanded(false, true);
-                        });
-                    }
                     if (suppressDeviceInput) {
                         controlStrip.style.pointerEvents = 'none';
-                        wheelCollapse.style.pointerEvents = 'none';
+                        if (wheelCollapse) wheelCollapse.style.pointerEvents = 'none';
                     }
                 }
 
@@ -2511,6 +2843,8 @@
                             : '';
                         var tile = activeRightPanel.tile;
                         var im = activeRightPanel.img;
+                        var nativeBadge = tile._y1NativeBadge || null;
+                        if (nativeBadge) nativeBadge.style.display = 'none';
                         if (previewIu) {
                             tile.style.display = 'flex';
                             if (sel.assetPath) {
@@ -2522,11 +2856,45 @@
                             }
                             im.alt = sel.label || '';
                             setReusableArtSrc(im, previewIu, rawIu);
+                        } else if (sel && sel.assetPath) {
+                            tile.style.display = 'flex';
+                            tile.setAttribute('data-theme-art-box', sel.assetPath);
+                            im.setAttribute('data-theme-asset-path', sel.assetPath);
+                            im.alt = sel.label || '';
+                            setReusableArtSrc(im, '', '');
                         } else {
                             tile.style.display = 'none';
                             tile.removeAttribute('data-theme-art-box');
                             im.removeAttribute('data-theme-asset-path');
                             setReusableArtSrc(im, '', '');
+                        }
+                        if (cfg && cfg.showNativeIcon === true && sel && (!sel.iconFile || !isUsableHomeIcon(sel.iconFile))) {
+                            if (!nativeBadge) {
+                                nativeBadge = document.createElement('div');
+                                nativeBadge.style.cssText =
+                                    'width:128px;height:128px;border-radius:26px;background:rgba(255,255,255,0.14);border:2px solid rgba(255,255,255,0.28);display:flex;align-items:center;justify-content:center;font-size:48px;color:' +
+                                    colors.text_primary +
+                                    ';pointer-events:none;';
+                                tile._y1NativeBadge = nativeBadge;
+                                tile.appendChild(nativeBadge);
+                            }
+                            var glyphMap = {
+                                nowPlaying: '\u266B',
+                                music: '\uD83C\uDFB5',
+                                video: '\uD83C\uDFAC',
+                                audiobooks: '\uD83C\uDFA7',
+                                ebook: '\uD83D\uDCD6',
+                                photos: '\uD83D\uDDBC',
+                                fm: '\uD83D\uDCFB',
+                                bluetooth: '\uD83D\uDD35',
+                                fileManager: '\uD83D\uDCC2',
+                                settings: '\u2699',
+                                shuffleQuick: '\uD83D\uDD00',
+                                calendar: '\uD83D\uDCC5',
+                                calculator: '\uD83E\uDDEE'
+                            };
+                            nativeBadge.textContent = glyphMap[sel.id] || '\u25A1';
+                            nativeBadge.style.display = 'flex';
                         }
                         return;
                     }
@@ -2669,6 +3037,11 @@
 
                     var status = document.createElement('div');
                     status.className = 'y1-tp-status';
+                    var isDarkPlayerView =
+                        sim.themeViewId === 'nowPlaying' ||
+                        sim.themeViewId === 'photosViewer' ||
+                        sim.themeViewId === 'ebookReader';
+                    var activeStatusText = isDarkPlayerView ? '#ffffff' : colors.status_text;
                     status.style.cssText =
                         'position:absolute;left:0;top:0;width:' +
                         W +
@@ -2677,7 +3050,7 @@
                         'px;background-color:' +
                         (colors.status_bar_bg || 'rgba(0,0,0,0.25)') +
                         ';color:' +
-                        colors.status_text +
+                        activeStatusText +
                         ';display:flex;align-items:center;padding-left:14px;padding-right:14px;justify-content:space-between;z-index:20;font-size:20px;font-weight:700;box-sizing:border-box;';
                     var leftTitle = document.createElement('span');
                     leftTitle.textContent = getViewTitle();
@@ -2801,6 +3174,7 @@
 
                     var useSettingMask =
                         sim.themeViewId === 'settings' ||
+                        sim.themeViewId === 'musicSettings' ||
                         sim.themeViewId.indexOf('settings') === 0;
                     var maskUrl =
                         sim.themeViewId === 'home' ? desktopMaskUrl : useSettingMask ? settingMaskUrl : '';
@@ -2861,6 +3235,7 @@
                             leftPad: HOME_ROW_LEFT_PAD,
                             rowWidth: HOME_ROW_WIDTH,
                             folderIconUrl: folderIconUrl,
+                            musicIconUrl: musicIconUrl,
                             scrollState: scrollState,
                             eager: eagerImages
                         });
@@ -2899,10 +3274,7 @@
                         sim.themeViewId === 'music_folders' ||
                         sim.themeViewId === 'videos' ||
                         sim.themeViewId === 'videos_folders' ||
-                        sim.themeViewId === 'audiobooks' ||
-                        sim.themeViewId === 'ebook' ||
-                        sim.themeViewId === 'bluetooth' ||
-                        sim.themeViewId === 'fileManager'
+                        sim.themeViewId === 'audiobooks'
                     ) {
                         var genBox = document.createElement('div');
                         genBox.style.cssText =
@@ -2913,7 +3285,7 @@
                             'px;height:' +
                             (H - statusH) +
                             'px;overflow:hidden;z-index:10;';
-                        var gItems = genericListForView(sim.themeViewId);
+                        var gItems = genericListForView(sim.themeViewId, previewOpts.deviceMode);
                         activeMenuList = appendMenuRows(genBox, {
                             items: gItems,
                             selectedIndex: sim.themeSelectedIndex,
@@ -2930,17 +3302,216 @@
                             leftPad: 0,
                             rowWidth: W,
                             folderIconUrl: folderIconUrl,
+                            musicIconUrl: musicIconUrl,
                             scrollState: scrollState,
                             eager: eagerImages
                         });
                         activeMenuList.viewId = sim.themeViewId;
                         layer.appendChild(genBox);
-                    } else if (sim.themeViewId === 'settings') {
+                    } else if (sim.themeViewId === 'fileManager') {
+                        /* Authentic activity_file_manager.xml + item_file_kt.xml:
+                           25dp side margins, 45dp rows with 22dp folderIcon / musicIcon,
+                           22sp bold labels, right arrow, plus bottom tip strip. */
+                        var fmTipH = 26;
+                        var fmBox = document.createElement('div');
+                        fmBox.style.cssText =
+                            'position:absolute;left:25px;top:' +
+                            (statusH + 6) +
+                            'px;width:' +
+                            (W - 50) +
+                            'px;height:' +
+                            (H - statusH - fmTipH - 10) +
+                            'px;overflow:hidden;z-index:10;';
+                        var fileItems = genericListForView('fileManager', previewOpts.deviceMode);
+                        activeMenuList = appendMenuRows(fmBox, {
+                            items: fileItems,
+                            selectedIndex: sim.themeSelectedIndex,
+                            itemHeight: 45,
+                            visibleHeight: H - statusH - fmTipH - 10,
+                            colors: {
+                                text_primary: colors.menu_text_primary,
+                                text_selected: colors.menu_text_selected
+                            },
+                            itemBackgroundStyle: itemBackgroundStyle,
+                            itemSelectedBackgroundStyle: itemSelectedBackgroundStyle,
+                            itemRightArrowUrl: itemRightArrowUrl,
+                            fullWidth: false,
+                            leftPad: 0,
+                            rowWidth: W - 50,
+                            folderIconUrl: folderIconUrl,
+                            musicIconUrl: musicIconUrl,
+                            scrollState: scrollState,
+                            eager: eagerImages
+                        });
+                        activeMenuList.viewId = 'fileManager';
+                        layer.appendChild(fmBox);
+                        var fmTip = document.createElement('div');
+                        fmTip.style.cssText =
+                            'position:absolute;left:0;right:0;bottom:0;height:' +
+                            fmTipH +
+                            'px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;font-size:12px;color:' +
+                            colors.menu_text_primary +
+                            ';opacity:0.78;background:rgba(0,0,0,0.28);z-index:12;box-sizing:border-box;';
+                        fmTip.innerHTML = '<span>/Internal Storage</span><span>Hold Select for options</span>';
+                        layer.appendChild(fmTip);
+                    } else if (sim.themeViewId === 'ebook') {
+                        /* Authentic activity_book_main.xml: Continue Reading + Local Files,
+                           bold 22sp Library header + 1dp #2A2A2A divider + book rows. */
+                        var bookItems = genericListForView('ebook', previewOpts.deviceMode);
+                        var bookBox = document.createElement('div');
+                        bookBox.style.cssText =
+                            'position:absolute;left:0;top:' +
+                            statusH +
+                            'px;width:' +
+                            W +
+                            'px;height:' +
+                            (H - statusH) +
+                            'px;overflow:hidden;z-index:10;box-sizing:border-box;';
+                        var curY = 2;
+                        for (var bki = 0; bki < bookItems.length; bki++) {
+                            if (bki === 2) {
+                                var libHead = document.createElement('div');
+                                libHead.textContent = 'Library';
+                                libHead.style.cssText =
+                                    'position:absolute;left:12px;top:' +
+                                    (curY + 4) +
+                                    'px;font-size:20px;font-weight:700;color:' +
+                                    colors.menu_text_primary +
+                                    ';line-height:1.2;';
+                                bookBox.appendChild(libHead);
+                                var libDiv = document.createElement('div');
+                                libDiv.style.cssText =
+                                    'position:absolute;left:0;right:0;top:' +
+                                    (curY + 30) +
+                                    'px;height:1px;background:#2A2A2A;';
+                                bookBox.appendChild(libDiv);
+                                curY += 34;
+                            }
+                            var bkSel = bki === sim.themeSelectedIndex;
+                            var bkRow = document.createElement('div');
+                            bkRow.className = 'y1-tp-row' + (bkSel ? ' is-selected' : '');
+                            bkRow.setAttribute('data-y1-row', String(bki));
+                            bkRow.setAttribute(
+                                'data-theme-asset-path',
+                                bkSel ? 'itemConfig.itemSelectedBackground' : 'itemConfig.itemBackground'
+                            );
+                            var bkBg = bkSel ? itemSelectedBackgroundStyle : itemBackgroundStyle || { backgroundColor: 'transparent' };
+                            applyCssProps(bkRow, bkBg);
+                            bkRow.style.cssText +=
+                                'position:absolute;left:0;top:' +
+                                curY +
+                                'px;width:' +
+                                W +
+                                'px;height:42px;display:flex;align-items:center;padding:0 40px 0 14px;box-sizing:border-box;font-size:20px;font-weight:700;color:' +
+                                (bkSel ? colors.menu_text_selected : colors.menu_text_primary) +
+                                ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+                            bkRow.textContent = bookItems[bki].label;
+                            if (bkSel) {
+                                var bkAr = document.createElement('span');
+                                bkAr.style.cssText = 'position:absolute;right:12px;top:0;height:42px;display:flex;align-items:center;';
+                                if (itemRightArrowUrl) {
+                                    var bkaImg = document.createElement('img');
+                                    bkaImg.src = itemRightArrowUrl;
+                                    bkaImg.alt = '';
+                                    bindPreviewImgFallback(bkaImg, { eager: eagerImages });
+                                    bkaImg.style.cssText = 'height:28px;width:auto;object-fit:contain;';
+                                    bkaImg.setAttribute('data-theme-asset-path', 'itemConfig.itemRightArrow');
+                                    bkAr.appendChild(bkaImg);
+                                } else {
+                                    bkAr.textContent = '\u203A';
+                                    bkAr.setAttribute('data-theme-asset-path', 'itemConfig.itemRightArrow');
+                                    bkAr.style.fontSize = '22px';
+                                }
+                                bkRow.appendChild(bkAr);
+                            }
+                            bookBox.appendChild(bkRow);
+                            curY += 42;
+                        }
+                        layer.appendChild(bookBox);
+                    } else if (sim.themeViewId === 'ebookReader') {
+                        /* Authentic activity_book_text.xml reader view. */
+                        var reader = document.createElement('div');
+                        reader.style.cssText =
+                            'position:absolute;left:0;top:' +
+                            statusH +
+                            'px;width:' +
+                            W +
+                            'px;height:' +
+                            (H - statusH) +
+                            'px;padding:16px 22px;box-sizing:border-box;background:rgba(18,18,22,0.88);color:#f0f0f0;z-index:12;display:flex;flex-direction:column;gap:10px;';
+                        var rTitle = document.createElement('div');
+                        rTitle.textContent = sim.ebookTitle || 'The Little Prince';
+                        rTitle.style.cssText = 'font-size:18px;font-weight:700;opacity:0.95;border-bottom:1px solid rgba(255,255,255,0.18);padding-bottom:6px;';
+                        reader.appendChild(rTitle);
+                        var rBody = document.createElement('div');
+                        rBody.style.cssText = 'font-size:15px;line-height:1.58;opacity:0.92;flex:1;overflow:hidden;';
+                        rBody.textContent =
+                            'Once when I was six years old I saw a magnificent picture in a book, called True Stories from Nature, about the primeval forest. It was a picture of a boa constrictor in the act of swallowing an animal. Grown-ups never understand anything by themselves, and it is tiresome for children to be always and forever explaining things to them.';
+                        reader.appendChild(rBody);
+                        var rFoot = document.createElement('div');
+                        rFoot.style.cssText = 'display:flex;justify-content:space-between;font-size:12px;opacity:0.65;';
+                        rFoot.innerHTML = '<span>Chapter 1</span><span>Page 1 / 48</span>';
+                        reader.appendChild(rFoot);
+                        layer.appendChild(reader);
+                    } else if (sim.themeViewId === 'bluetooth') {
+                        /* Authentic item_blutooth.xml: 50dp rows, 30dp start / 50dp end padding,
+                           18sp device name left + 16sp status text right. */
+                        var btItems = genericListForView('bluetooth', previewOpts.deviceMode);
+                        var btBox = document.createElement('div');
+                        btBox.style.cssText =
+                            'position:absolute;left:0;top:' +
+                            statusH +
+                            'px;width:' +
+                            W +
+                            'px;height:' +
+                            (H - statusH) +
+                            'px;overflow:hidden;z-index:10;';
+                        for (var bti = 0; bti < btItems.length; bti++) {
+                            var btItem = btItems[bti];
+                            var btSel = bti === sim.themeSelectedIndex;
+                            var btRow = document.createElement('div');
+                            btRow.className = 'y1-tp-row' + (btSel ? ' is-selected' : '');
+                            btRow.setAttribute('data-y1-row', String(bti));
+                            btRow.setAttribute(
+                                'data-theme-asset-path',
+                                btSel ? 'itemConfig.itemSelectedBackground' : 'itemConfig.itemBackground'
+                            );
+                            applyCssProps(
+                                btRow,
+                                btSel ? itemSelectedBackgroundStyle : itemBackgroundStyle || { backgroundColor: 'transparent' }
+                            );
+                            btRow.style.cssText +=
+                                'position:absolute;left:0;top:' +
+                                bti * 50 +
+                                'px;width:' +
+                                W +
+                                'px;height:50px;display:flex;align-items:center;padding:0 36px 0 28px;box-sizing:border-box;color:' +
+                                (btSel ? colors.menu_text_selected : colors.menu_text_primary) +
+                                ';';
+                            var btName = document.createElement('span');
+                            btName.style.cssText = 'flex:1;font-size:18px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+                            btName.textContent = btItem.label;
+                            btRow.appendChild(btName);
+                            var btStat = document.createElement('span');
+                            btStat.style.cssText = 'font-size:16px;font-weight:600;opacity:0.9;';
+                            btStat.textContent =
+                                btItem.statusKey === 'power'
+                                    ? sim.btEnabled !== false
+                                        ? 'On'
+                                        : 'Off'
+                                    : sim.btEnabled !== false
+                                      ? btItem.status || ''
+                                      : '';
+                            btRow.appendChild(btStat);
+                            btBox.appendChild(btRow);
+                        }
+                        layer.appendChild(btBox);
+                    } else if (isSettingsListView(sim.themeViewId)) {
                         var settingsColors = {
                             text_primary: colors.text_primary,
                             text_selected: itemCfg.itemSelectedTextColor || '#3CFFDE'
                         };
-                        var sItems = buildSettingsItems(cfg, buildFileUrl, contentFolder, sim);
+                        var sItems = settingsItemsForView(sim.themeViewId);
                         var sMenu = document.createElement('div');
                         sMenu.style.cssText =
                             'position:absolute;left:' +
@@ -2963,7 +3534,7 @@
                             scrollState: scrollState,
                             eager: eagerImages
                         });
-                        activeMenuList.viewId = 'settings';
+                        activeMenuList.viewId = sim.themeViewId;
                         layer.appendChild(sMenu);
 
                         var rp = document.createElement('div');
@@ -2988,24 +3559,25 @@
                         var abWrap = document.createElement('div');
                         abWrap.style.cssText =
                             'width:100%;display:none;flex-direction:column;align-items:center;';
+                        var isY1Model = previewOpts.deviceMode === 'y1';
                         var sq = document.createElement('div');
                         sq.style.cssText =
                             'width:140px;height:140px;background:rgba(255,255,255,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;border:2px solid rgba(255,255,255,0.3);';
                         var y1 = document.createElement('div');
                         y1.style.cssText =
                             'color:' + colors.text_primary + ';font-size:48px;font-weight:bold;';
-                        y1.textContent = 'Y1';
+                        y1.textContent = isY1Model ? 'Y1' : 'Y2';
                         sq.appendChild(y1);
                         abWrap.appendChild(sq);
                         var v1 = document.createElement('div');
                         v1.style.cssText =
                             'color:' + colors.text_primary + ';font-size:16px;text-align:center;margin-bottom:10px;';
-                        v1.textContent = 'Version 3.0.2';
+                        v1.textContent = isY1Model ? 'Version 3.1.2' : 'Version 3.2.8';
                         abWrap.appendChild(v1);
                         var v2 = document.createElement('div');
                         v2.style.cssText =
                             'color:' + colors.text_primary + ';font-size:14px;text-align:center;opacity:0.8;';
-                        v2.textContent = 'Innioasis Y1';
+                        v2.textContent = isY1Model ? 'Innioasis Y1' : 'Innioasis Y2';
                         abWrap.appendChild(v2);
                         imgBox.appendChild(abWrap);
 
@@ -3313,33 +3885,59 @@
                         activeMenuList.viewId = 'settingsLanguage';
                         layer.appendChild(lbox);
                     } else if (sim.themeViewId === 'settingsAbout') {
+                        var isY1About = previewOpts.deviceMode === 'y1';
+                        var aboutRows = [
+                            { label: 'Model', val: isY1About ? 'Innioasis Y1' : 'Innioasis Y2' },
+                            { label: 'Firmware', val: isY1About ? '3.1.2' : '3.2.8' },
+                            { label: 'Storage', val: '128 GB' },
+                            { label: 'Available', val: '94.6 GB' }
+                        ];
+                        var aboutList = document.createElement('div');
+                        aboutList.style.cssText =
+                            'position:absolute;left:9px;top:' +
+                            (statusH + 10) +
+                            'px;width:252px;z-index:10;display:flex;flex-direction:column;gap:4px;';
+                        for (var abi = 0; abi < aboutRows.length; abi++) {
+                            var arow = document.createElement('div');
+                            arow.style.cssText =
+                                'height:45px;display:flex;align-items:center;justify-content:space-between;padding:0 10px;box-sizing:border-box;color:' +
+                                colors.text_primary +
+                                ';font-size:18px;font-weight:700;';
+                            arow.innerHTML =
+                                '<span>' +
+                                aboutRows[abi].label +
+                                '</span><span style="font-size:15px;opacity:0.85;">' +
+                                aboutRows[abi].val +
+                                '</span>';
+                            aboutList.appendChild(arow);
+                        }
+                        layer.appendChild(aboutList);
                         var ab = document.createElement('div');
                         ab.style.cssText =
                             'position:absolute;right:22px;top:' +
-                            (statusH + 50) +
+                            (statusH + 40) +
                             'px;width:179px;display:flex;flex-direction:column;align-items:center;z-index:10;';
                         var sq2 = document.createElement('div');
                         sq2.style.cssText =
-                            'width:140px;height:140px;background:rgba(255,255,255,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;border:2px solid rgba(255,255,255,0.3);';
+                            'width:136px;height:136px;background:rgba(255,255,255,0.1);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;border:2px solid rgba(255,255,255,0.3);';
                         var y12 = document.createElement('div');
-                        y12.style.cssText = 'color:#ffffff;font-size:48px;font-weight:bold;';
-                        y12.textContent = 'Y1';
+                        y12.style.cssText = 'color:' + colors.text_primary + ';font-size:48px;font-weight:bold;';
+                        y12.textContent = isY1About ? 'Y1' : 'Y2';
                         sq2.appendChild(y12);
                         ab.appendChild(sq2);
                         var a1 = document.createElement('div');
-                        a1.style.cssText = 'color:#ffffff;font-size:16px;text-align:center;margin-bottom:10px;';
-                        a1.textContent = 'Version 3.0.2';
+                        a1.style.cssText = 'color:' + colors.text_primary + ';font-size:15px;text-align:center;margin-bottom:6px;font-weight:700;';
+                        a1.textContent = isY1About ? 'Version 3.1.2' : 'Version 3.2.8';
                         ab.appendChild(a1);
                         var a2 = document.createElement('div');
-                        a2.style.cssText = 'color:#ffffff;font-size:14px;text-align:center;opacity:0.8;';
-                        a2.textContent = 'Innioasis Y1';
+                        a2.style.cssText = 'color:' + colors.text_primary + ';font-size:13px;text-align:center;opacity:0.8;';
+                        a2.textContent = isY1About ? 'Innioasis Y1' : 'Innioasis Y2';
                         ab.appendChild(a2);
                         layer.appendChild(ab);
                     } else if (sim.themeViewId === 'photos') {
-                        /* PhotosActivity: a full-bleed 4×3 thumbnail grid, one
-                           row of which the wheel scrolls. The selection frame is
-                           the theme's itemSelectedBackground, so the grid is as
-                           themeable as a list row. */
+                        /* Authentic activity_photos.xml + item_photos.xml:
+                           4-column grid of 100×75 rounded cards (5dp radius) with filename captions
+                           and selection highlight; Select opens fullscreen photosViewer. */
                         var photoLayer = document.createElement('div');
                         photoLayer.style.cssText =
                             'position:absolute;left:0;top:' +
@@ -3348,17 +3946,10 @@
                             W +
                             'px;height:' +
                             (H - statusH) +
-                            'px;z-index:10;';
-                        var photoTitle = document.createElement('div');
-                        photoTitle.textContent = previewText('Photos');
-                        photoTitle.style.cssText =
-                            'position:absolute;left:12px;top:6px;font-size:20px;font-weight:bold;color:' +
-                            colors.menu_text_primary +
-                            ';';
-                        photoLayer.appendChild(photoTitle);
+                            'px;z-index:10;overflow:hidden;';
                         var grid = document.createElement('div');
                         grid.style.cssText =
-                            'position:absolute;left:8px;top:34px;right:8px;bottom:6px;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);gap:4px;';
+                            'position:absolute;left:8px;top:6px;right:8px;bottom:6px;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);gap:6px;';
                         var thumbs = [cfg.themeCover, cfg.desktopWallpaper, cfg.globalWallpaper]
                             .filter(function (p) {
                                 return typeof p === 'string' && p;
@@ -3366,38 +3957,84 @@
                             .map(function (p) {
                                 return buildFileUrl(contentFolder, p);
                             });
+                        var photoNames = [
+                            'IMG_0101.jpg', 'IMG_0102.jpg', 'Sunset.png', 'Wallpaper.jpg',
+                            'Cover.png', 'Concert.jpg', 'Studio.png', 'Album.jpg',
+                            'Roadtrip.jpg', 'Sketches.png', 'Notes.jpg', 'City.png'
+                        ];
                         for (var ti = 0; ti < 12; ti++) {
+                            var pSel = ti === sim.themeSelectedIndex;
                             var tile = document.createElement('div');
-                            tile.className = 'y1-tp-photo-tile';
+                            tile.className = 'y1-tp-photo-tile' + (pSel ? ' is-selected' : '');
                             tile.style.cssText =
-                                'position:relative;overflow:hidden;background-color:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;';
+                                'position:relative;display:flex;flex-direction:column;align-items:center;padding:3px;border-radius:6px;box-sizing:border-box;overflow:hidden;';
                             tile.setAttribute('data-y1-row', String(ti));
-                            tile.setAttribute('data-theme-asset-path', 'itemConfig.itemSelectedBackground');
+                            tile.setAttribute(
+                                'data-theme-asset-path',
+                                pSel ? 'itemConfig.itemSelectedBackground' : 'itemConfig.itemBackground'
+                            );
+                            if (pSel) {
+                                applyCssProps(
+                                    tile,
+                                    itemSelectedBackgroundStyle || {
+                                        backgroundColor: 'rgba(255,255,255,0.18)'
+                                    }
+                                );
+                                tile.style.outline = '2px solid ' + colors.text_selected;
+                                tile.style.outlineOffset = '-2px';
+                            }
+                            var card = document.createElement('div');
+                            card.style.cssText =
+                                'width:100%;flex:1;min-height:0;border-radius:5px;overflow:hidden;background:rgba(255,255,255,0.08);box-shadow:0 2px 6px rgba(0,0,0,0.3);';
                             var thumbUrl = thumbs.length ? thumbs[ti % thumbs.length] : '';
                             if (thumbUrl) {
                                 var thi = document.createElement('img');
                                 thi.src = thumbUrl;
                                 thi.alt = '';
                                 bindPreviewImgFallback(thi, { eager: eagerImages });
-                                thi.style.cssText =
-                                    'position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;opacity:0.85;';
-                                tile.appendChild(thi);
+                                thi.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+                                card.appendChild(thi);
                             }
-                            if (ti === sim.themeSelectedIndex) {
-                                applyCssProps(
-                                    tile,
-                                    itemSelectedBackgroundStyle || {
-                                        boxShadow: 'inset 0 0 0 3px ' + colors.text_selected
-                                    }
-                                );
-                            }
+                            tile.appendChild(card);
+                            var cap = document.createElement('div');
+                            cap.textContent = photoNames[ti] || 'Photo ' + (ti + 1);
+                            cap.style.cssText =
+                                'width:100%;margin-top:2px;font-size:12px;font-weight:600;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:' +
+                                (pSel ? colors.menu_text_selected : colors.menu_text_primary) +
+                                ';';
+                            tile.appendChild(cap);
                             grid.appendChild(tile);
                         }
                         photoLayer.appendChild(grid);
                         layer.appendChild(photoLayer);
+                    } else if (sim.themeViewId === 'photosViewer') {
+                        var vThumbs = [cfg.themeCover, cfg.desktopWallpaper, cfg.globalWallpaper]
+                            .filter(function (p) { return typeof p === 'string' && p; })
+                            .map(function (p) { return buildFileUrl(contentFolder, p); });
+                        var vUrl = vThumbs.length ? vThumbs[(sim.photoViewerIndex || 0) % vThumbs.length] : '';
+                        var pv = document.createElement('div');
+                        pv.style.cssText =
+                            'position:absolute;left:0;top:' +
+                            statusH +
+                            'px;width:' +
+                            W +
+                            'px;height:' +
+                            (H - statusH) +
+                            'px;background:#000;display:flex;align-items:center;justify-content:center;z-index:12;';
+                        if (vUrl) {
+                            var pvi = document.createElement('img');
+                            pvi.src = vUrl;
+                            pvi.alt = '';
+                            pvi.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain;';
+                            pv.appendChild(pvi);
+                        }
+                        layer.appendChild(pv);
                     } else if (sim.themeViewId === 'fm') {
-                        /* FMMainActivity: the tuned frequency and its scale on
-                           the left, the preset list on the right. */
+                        /* Authentic activity_fmmain.xml: centered 60sp frequency + 12sp MHz
+                           baseline-aligned, bottom 100dp horizontal tuning scale (87..108 MHz)
+                           with interactive needle shifted by Up/Down. */
+                        var freqVal = Number(sim.fmFreq);
+                        if (!isFinite(freqVal) || freqVal < 875 || freqVal > 1080) freqVal = 985;
                         var fmLayer = document.createElement('div');
                         fmLayer.style.cssText =
                             'position:absolute;left:0;top:' +
@@ -3406,69 +4043,158 @@
                             W +
                             'px;height:' +
                             (H - statusH) +
-                            'px;display:flex;z-index:10;';
-                        var fmLeft = document.createElement('div');
-                        fmLeft.style.cssText =
-                            'position:relative;width:' + Math.round(W * 0.55) + 'px;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;';
-                        var fmFreq = document.createElement('div');
-                        fmFreq.textContent = '98.50';
+                            'px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:24px 0 12px;box-sizing:border-box;z-index:10;';
+                        var fmTop = document.createElement('div');
+                        fmTop.style.cssText = 'display:flex;align-items:baseline;justify-content:center;gap:6px;margin-top:26px;';
+                        var fmFreq = document.createElement('span');
+                        fmFreq.textContent = (freqVal / 10).toFixed(1);
                         fmFreq.style.cssText =
-                            'color:' + colors.text_primary + ';font-size:76px;font-weight:700;line-height:1;letter-spacing:1px;';
-                        fmLeft.appendChild(fmFreq);
-                        var fmUnit = document.createElement('div');
+                            'color:' + colors.text_primary + ';font-size:60px;font-weight:700;line-height:1;letter-spacing:1px;';
+                        fmTop.appendChild(fmFreq);
+                        var fmUnit = document.createElement('span');
                         fmUnit.textContent = 'MHz';
                         fmUnit.style.cssText =
-                            'color:' + colors.menu_text_primary + ';font-size:18px;letter-spacing:2px;opacity:0.85;';
-                        fmLeft.appendChild(fmUnit);
-                        var fmScale = document.createElement('div');
-                        fmScale.style.cssText =
-                            'position:relative;width:86%;height:2px;background-color:' +
-                            colors.menu_text_primary +
-                            ';opacity:0.5;margin-top:14px;';
-                        var fmTick = document.createElement('div');
-                        fmTick.style.cssText =
-                            'position:absolute;left:42%;top:-14px;width:3px;height:30px;background-color:' +
+                            'color:' + colors.text_primary + ';font-size:14px;font-weight:600;opacity:0.88;';
+                        fmTop.appendChild(fmUnit);
+                        fmLayer.appendChild(fmTop);
+
+                        var fmRulerWrap = document.createElement('div');
+                        fmRulerWrap.style.cssText =
+                            'position:relative;width:440px;height:96px;overflow:hidden;border-top:1px solid rgba(255,255,255,0.22);display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:8px;box-sizing:border-box;';
+                        var needle = document.createElement('div');
+                        needle.style.cssText =
+                            'position:absolute;left:50%;top:4px;bottom:24px;width:3px;transform:translateX(-50%);background:' +
                             colors.text_selected +
-                            ';';
-                        fmScale.appendChild(fmTick);
-                        fmLeft.appendChild(fmScale);
-                        fmLayer.appendChild(fmLeft);
-                        var fmRight = document.createElement('div');
-                        fmRight.style.cssText =
-                            'position:relative;width:' + (W - Math.round(W * 0.55)) + 'px;height:100%;overflow:hidden;';
-                        var fmRows = genericListForView('fm');
-                        if (!fmRows.length) {
-                            fmRows = ['98.50 MHz', '101.20 MHz', '104.60 MHz', '89.90 MHz'].map(function (label, i) {
-                                return { id: 'preset_' + i, label: label };
-                            });
+                            ';border-radius:2px;z-index:2;';
+                        fmRulerWrap.appendChild(needle);
+                        var ticksRow = document.createElement('div');
+                        ticksRow.style.cssText =
+                            'position:relative;height:66px;width:100%;display:flex;align-items:flex-end;justify-content:space-between;padding:0 12px;box-sizing:border-box;';
+                        var centerMhz = freqVal / 10;
+                        for (var m = -5; m <= 5; m++) {
+                            var tickFreq = Math.round((centerMhz + m * 0.5) * 10) / 10;
+                            var isWhole = Math.abs(tickFreq - Math.round(tickFreq)) < 0.05;
+                            var tCol = document.createElement('div');
+                            tCol.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:4px;width:34px;';
+                            var bar = document.createElement('div');
+                            bar.style.cssText =
+                                'width:' +
+                                (isWhole ? '2px' : '1px') +
+                                ';height:' +
+                                (isWhole ? '32px' : '18px') +
+                                ';background:' +
+                                colors.text_primary +
+                                ';opacity:' +
+                                (tickFreq < 87.5 || tickFreq > 108 ? '0.18' : isWhole ? '0.85' : '0.45') +
+                                ';';
+                            tCol.appendChild(bar);
+                            var lbl = document.createElement('span');
+                            lbl.style.cssText =
+                                'font-size:11px;font-weight:600;color:' +
+                                colors.text_primary +
+                                ';opacity:' +
+                                (isWhole && tickFreq >= 87.5 && tickFreq <= 108 ? '0.85' : '0') +
+                                ';';
+                            lbl.textContent = isWhole ? String(Math.round(tickFreq)) : '.';
+                            tCol.appendChild(lbl);
+                            ticksRow.appendChild(tCol);
                         }
-                        activeMenuList = appendMenuRows(fmRight, {
-                            items: fmRows,
-                            selectedIndex: sim.themeSelectedIndex,
-                            itemHeight: Math.floor((H - statusH - 12) / 6) || 45,
-                            visibleHeight: H - statusH,
-                            colors: colors,
-                            itemBackgroundStyle: itemBackgroundStyle,
-                            itemSelectedBackgroundStyle: itemSelectedBackgroundStyle,
-                            itemRightArrowUrl: itemRightArrowUrl,
-                            fullWidth: true,
-                            leftPad: 0,
-                            rowWidth: W - Math.round(W * 0.55),
-                            folderIconUrl: folderIconUrl,
-                            scrollState: scrollState,
-                            eager: eagerImages
-                        });
-                        activeMenuList.viewId = 'fm';
-                        fmLayer.appendChild(fmRight);
+                        fmRulerWrap.appendChild(ticksRow);
+                        fmLayer.appendChild(fmRulerWrap);
                         layer.appendChild(fmLayer);
+                    } else if (sim.themeViewId === 'calendar') {
+                        /* Authentic activity_calendar.xml (unimplemented stock slot):
+                           #F0F5FB backdrop, rounded white month header + 7-col grid. */
+                        var calLayer = document.createElement('div');
+                        calLayer.style.cssText =
+                            'position:absolute;left:0;top:' +
+                            statusH +
+                            'px;width:' +
+                            W +
+                            'px;height:' +
+                            (H - statusH) +
+                            'px;background:#F0F5FB;padding:6px;box-sizing:border-box;display:flex;flex-direction:column;gap:6px;z-index:10;color:#1f2937;';
+                        var calHead = document.createElement('div');
+                        calHead.style.cssText =
+                            'height:36px;background:#ffffff;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,0.08);';
+                        calHead.textContent = 'November 2026';
+                        calLayer.appendChild(calHead);
+                        var calCard = document.createElement('div');
+                        calCard.style.cssText =
+                            'flex:1;background:#ffffff;border-radius:14px;padding:8px 10px;display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:1fr;align-items:center;justify-items:center;font-size:14px;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,0.08);';
+                        ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].forEach(function (dName) {
+                            var dh = document.createElement('span');
+                            dh.textContent = dName;
+                            dh.style.cssText = 'color:#64748b;font-size:13px;';
+                            calCard.appendChild(dh);
+                        });
+                        for (var day = 1; day <= 30; day++) {
+                            var dc = document.createElement('span');
+                            dc.textContent = String(day);
+                            if (day === 27) {
+                                dc.style.cssText =
+                                    'width:26px;height:26px;border-radius:50%;background:#2f80ed;color:#fff;display:flex;align-items:center;justify-content:center;';
+                            }
+                            calCard.appendChild(dc);
+                        }
+                        calLayer.appendChild(calCard);
+                        layer.appendChild(calLayer);
+                    } else if (sim.themeViewId === 'calculator') {
+                        /* Authentic activity_calculator.xml (unimplemented stock slot):
+                           #F0F5FB backdrop, rounded white card with 76px display + 4×5 keypad. */
+                        var calcLayer = document.createElement('div');
+                        calcLayer.style.cssText =
+                            'position:absolute;left:0;top:' +
+                            statusH +
+                            'px;width:' +
+                            W +
+                            'px;height:' +
+                            (H - statusH) +
+                            'px;background:#F0F5FB;padding:6px;box-sizing:border-box;z-index:10;';
+                        var calcCard = document.createElement('div');
+                        calcCard.style.cssText =
+                            'width:100%;height:100%;background:#ffffff;border-radius:14px;padding:8px 10px;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);';
+                        var calcDisp = document.createElement('div');
+                        calcDisp.style.cssText =
+                            'height:64px;background:#f4f7fb;border-radius:10px;padding:6px 12px;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;box-sizing:border-box;';
+                        calcDisp.innerHTML =
+                            '<div style="font-size:15px;font-weight:700;color:#868686;">128 + 256</div>' +
+                            '<div style="font-size:22px;font-weight:700;color:#000000;">384</div>';
+                        calcCard.appendChild(calcDisp);
+                        var calcGrid = document.createElement('div');
+                        calcGrid.style.cssText =
+                            'flex:1;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(5,1fr);gap:5px;';
+                        ['C', '\u00F7', '\u00D7', '\u232B', '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '=', '%', '0', '.', '\u00B1'].forEach(function (k, ki) {
+                            var kb = document.createElement('div');
+                            kb.textContent = k;
+                            var isAccent = k === '=';
+                            var isClear = k === 'C';
+                            kb.style.cssText =
+                                'display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:16px;font-weight:700;background:' +
+                                (isAccent ? '#2f80ed' : ki === sim.themeSelectedIndex ? '#dbeafe' : '#f1f5f9') +
+                                ';color:' +
+                                (isAccent ? '#fff' : isClear ? '#8A1D25' : '#111827') +
+                                ';';
+                            calcGrid.appendChild(kb);
+                        });
+                        calcCard.appendChild(calcGrid);
+                        calcLayer.appendChild(calcCard);
+                        layer.appendChild(calcLayer);
                     } else if (sim.themeViewId === 'nowPlaying') {
-                        var mock = MOCK_SONGS_PREVIEW[0] || {};
-                        var pt = String((previewMeta && previewMeta.trackTitle) || '').trim();
-                        var pa = String((previewMeta && previewMeta.trackArtist) || '').trim();
-                        var pal = String((previewMeta && previewMeta.trackAlbum) || '').trim();
+                        /* Authentic activity_music_player.xml: 45dp top offset, 200×240 album art
+                           left, 235dp track info column right, bottom 32dp progress bar with
+                           playerConfig colors. */
+                        var trackIdx = (sim.nowPlayingTrackIndex || 0) % MOCK_SONGS_PREVIEW.length;
+                        var mock = MOCK_SONGS_PREVIEW[trackIdx] || MOCK_SONGS_PREVIEW[0] || {};
+                        var pt = trackIdx === 0 ? String((previewMeta && previewMeta.trackTitle) || '').trim() : '';
+                        var pa = trackIdx === 0 ? String((previewMeta && previewMeta.trackArtist) || '').trim() : '';
+                        var pal = trackIdx === 0 ? String((previewMeta && previewMeta.trackAlbum) || '').trim() : '';
                         var npTitle = pt || mock.title || 'Theme';
                         var npArtist = pa || mock.artist || '';
                         var npAlbum = pal || mock.album || '';
+                        var progCol = playerCfg.progressColor || colors.text_selected || '#3CFFDE';
+                        var progBgCol = playerCfg.progressBackgroundColor || 'rgba(255,255,255,0.28)';
+                        var progTxtCol = playerCfg.progressTextColor || colors.text_primary || '#ffffff';
                         var np = document.createElement('div');
                         np.style.cssText =
                             'position:absolute;left:0;top:' +
@@ -3476,45 +4202,70 @@
                             'px;width:' +
                             W +
                             'px;height:' +
-                            (H - statusH - 60) +
-                            'px;display:flex;overflow:visible;z-index:10;';
-                        var colL = document.createElement('div');
-                        colL.style.cssText =
-                            'position:relative;width:' +
-                            W / 3 +
-                            'px;height:100%;display:flex;flex-direction:column;padding-left:4px;padding-top:12px;';
+                            (H - statusH) +
+                            'px;display:flex;flex-direction:column;justify-content:space-between;z-index:10;box-sizing:border-box;padding:12px 16px 14px;';
+                        var npTop = document.createElement('div');
+                        npTop.style.cssText = 'display:flex;align-items:center;gap:18px;flex:1;min-height:0;';
                         var art = document.createElement('div');
                         art.style.cssText =
-                            'position:relative;width:140%;aspect-ratio:1;transform:perspective(500px) rotateY(25deg) rotateX(2deg);transform-style:preserve-3d;';
-                        var coverPath = cfg.themeCover || '';
+                            'position:relative;width:190px;height:190px;flex:0 0 190px;transform:perspective(500px) rotateY(18deg) rotateX(2deg);border-radius:6px;overflow:hidden;box-shadow:0 12px 28px rgba(0,0,0,0.45);background:rgba(0,0,0,0.28);';
+                        var coverPath = cfg.themeCover || cfg.desktopWallpaper || '';
                         var coverU = coverPath ? buildFileUrl(contentFolder, coverPath) : '';
                         if (coverU) {
                             var ai = document.createElement('img');
                             ai.src = coverU;
                             ai.alt = '';
-                            bindPreviewImgFallback(ai);
-                            ai.style.cssText =
-                                'width:100%;height:100%;object-fit:contain;border-radius:2px;display:block;transform:skewY(-2deg);transform-origin:center;background:rgba(0,0,0,0.2);';
+                            ai.setAttribute('data-theme-asset-path', cfg.themeCover ? 'themeCover' : 'desktopWallpaper');
+                            bindPreviewImgFallback(ai, { eager: eagerImages });
+                            ai.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
                             art.appendChild(ai);
                         }
-                        colL.appendChild(art);
-                        np.appendChild(colL);
+                        npTop.appendChild(art);
                         var colR = document.createElement('div');
-                        colR.style.cssText =
-                            'position:relative;width:' +
-                            ((W * 2) / 3) +
-                            'px;height:100%;padding-left:80px;padding-right:20px;padding-top:30px;display:flex;flex-direction:column;gap:8px;';
+                        colR.style.cssText = 'flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;';
                         var tti = document.createElement('div');
                         tti.style.cssText =
-                            'color:#ffffff;font-weight:700;font-size:28px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;';
+                            'color:' + progTxtCol + ';font-weight:700;font-size:24px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
                         tti.textContent = npTitle;
                         colR.appendChild(tti);
-                        var sub = document.createElement('div');
-                        sub.style.cssText = 'color:rgba(255,255,255,0.85);font-size:18px;';
-                        var line2 = [npArtist, npAlbum].filter(Boolean).join(' \u00b7 ');
-                        sub.textContent = line2 || '\u00a0';
-                        colR.appendChild(sub);
-                        np.appendChild(colR);
+                        var subArtist = document.createElement('div');
+                        subArtist.style.cssText = 'color:' + progTxtCol + ';opacity:0.86;font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+                        subArtist.textContent = npArtist || '\u00a0';
+                        colR.appendChild(subArtist);
+                        var subAlbum = document.createElement('div');
+                        subAlbum.style.cssText = 'color:' + progTxtCol + ';opacity:0.68;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+                        subAlbum.textContent = npAlbum || '\u00a0';
+                        colR.appendChild(subAlbum);
+                        var subIdx = document.createElement('div');
+                        subIdx.style.cssText = 'color:' + progTxtCol + ';opacity:0.62;font-size:13px;margin-top:6px;';
+                        subIdx.textContent = (trackIdx + 1) + ' / ' + MOCK_SONGS_PREVIEW.length;
+                        colR.appendChild(subIdx);
+                        npTop.appendChild(colR);
+                        np.appendChild(npTop);
+
+                        var npBarRow = document.createElement('div');
+                        npBarRow.style.cssText = 'height:32px;display:flex;align-items:center;gap:10px;width:100%;';
+                        var tEl = document.createElement('span');
+                        tEl.textContent = '01:42';
+                        tEl.style.cssText = 'font-size:14px;font-weight:700;color:' + progTxtCol + ';min-width:46px;text-align:left;';
+                        var barTrack = document.createElement('div');
+                        barTrack.style.cssText =
+                            'flex:1;height:8px;border-radius:4px;overflow:hidden;background:' + progBgCol + ';';
+                        var barFill = document.createElement('div');
+                        barFill.style.cssText = 'width:42%;height:100%;border-radius:4px;background:' + progCol + ';';
+                        barTrack.appendChild(barFill);
+                        var durSec = mock.duration || 243;
+                        var durStr =
+                            String(Math.floor(durSec / 60)).padStart(2, '0') +
+                            ':' +
+                            String(durSec % 60).padStart(2, '0');
+                        var tTot = document.createElement('span');
+                        tTot.textContent = durStr;
+                        tTot.style.cssText = 'font-size:14px;font-weight:700;color:' + progTxtCol + ';min-width:46px;text-align:right;';
+                        npBarRow.appendChild(tEl);
+                        npBarRow.appendChild(barTrack);
+                        npBarRow.appendChild(tTot);
+                        np.appendChild(npBarRow);
                         layer.appendChild(np);
                     }
 
@@ -3681,8 +4432,10 @@
                                 'audiobooks',
                                 'settings',
                                 'settingsTheme',
-                                'settingsEqualizer'
-                            ].indexOf(prev) !== -1
+                                'settingsEqualizer',
+                                'musicSettings'
+                            ].indexOf(prev) !== -1 ||
+                            String(prev || '').indexOf('settingsCat_') === 0
                         ) {
                             sim.themeSelectedIndex = 0;
                         }
@@ -3713,27 +4466,51 @@
                     var vid = sim.themeViewId;
                     var prevIdx = sim.themeSelectedIndex;
                     if (vid === 'home') {
-                        /* Clamped, not wrapped: a wheel or a swipe carried past
-                           the first row used to jump to the last one (and back),
-                           which read as the menu zipping about. */
                         scrollClamp(direction, homeLen());
-                    } else if (vid === 'music' || vid === 'videos' || vid === 'audiobooks') {
-                        var g1 = genericListForView(vid);
-                        scrollClamp(direction, g1.length);
-                    } else if (vid === 'music_folders') {
-                        scrollClamp(direction, genericListForView('music_folders').length);
-                    } else if (vid === 'videos_folders') {
-                        scrollClamp(direction, genericListForView('videos_folders').length);
-                    } else if (vid === 'settings') {
-                        scrollClamp(
-                            direction,
-                            buildSettingsItems(cfg, buildFileUrl, contentFolder, sim).length
-                        );
+                    } else if (
+                        vid === 'music' ||
+                        vid === 'music_folders' ||
+                        vid === 'videos' ||
+                        vid === 'videos_folders' ||
+                        vid === 'audiobooks' ||
+                        vid === 'ebook' ||
+                        vid === 'fileManager' ||
+                        vid === 'bluetooth' ||
+                        vid === 'settingsLanguage'
+                    ) {
+                        scrollClamp(direction, genericListForView(vid, previewOpts.deviceMode).length);
+                    } else if (isSettingsListView(vid)) {
+                        scrollClamp(direction, settingsItemsForView(vid).length);
                     } else if (vid === 'settingsEqualizer') {
                         scrollClamp(
                             direction,
                             buildEqualizerItems(settingCfg, buildFileUrl, contentFolder).length
                         );
+                    } else if (vid === 'photos') {
+                        scrollClamp(direction, 12);
+                        paint();
+                        return;
+                    } else if (vid === 'photosViewer') {
+                        var pNext = (sim.photoViewerIndex || 0) + (direction === 'down' ? 1 : -1);
+                        sim.photoViewerIndex = (pNext + 12) % 12;
+                        paint();
+                        return;
+                    } else if (vid === 'fm') {
+                        var fCur = Number(sim.fmFreq) || 985;
+                        fCur += direction === 'down' ? 5 : -5;
+                        sim.fmFreq = Math.max(875, Math.min(1080, fCur));
+                        paint();
+                        return;
+                    } else if (vid === 'nowPlaying') {
+                        var tLen = MOCK_SONGS_PREVIEW.length || 1;
+                        sim.nowPlayingTrackIndex =
+                            ((sim.nowPlayingTrackIndex || 0) + (direction === 'down' ? 1 : -1) + tLen) % tLen;
+                        paint();
+                        return;
+                    } else if (vid === 'calculator') {
+                        scrollClamp(direction, 20);
+                        paint();
+                        return;
                     } else if (vid === 'settingsBrightness') {
                         if (direction === 'down') {
                             sim.brightnessLevel = Math.min(sim.brightnessLevel + 10, 100);
@@ -3752,8 +4529,6 @@
                         return;
                     } else if (vid === 'settingsDateTime') {
                         scrollClamp(direction, 4);
-                    } else if (vid === 'settingsLanguage') {
-                        scrollClamp(direction, genericListForView('settingsLanguage').length);
                     }
                     if (sim.themeSelectedIndex === prevIdx) return;
                     if (!updateSelectionInPlace(false)) {
@@ -3799,12 +4574,18 @@
                             selId === 'fm' ||
                             selId === 'ebook' ||
                             selId === 'bluetooth' ||
-                            selId === 'fileManager'
+                            selId === 'fileManager' ||
+                            selId === 'calendar' ||
+                            selId === 'calculator'
                         ) {
                             sim.themeViewId = selId;
                             sim.themeSelectedIndex = 0;
                         } else if (selId === 'settings') {
                             sim.themeViewId = 'settings';
+                            sim.themeSelectedIndex = 0;
+                        } else if (selId === 'shuffleQuick') {
+                            sim.playState = 'playing';
+                            sim.themeViewId = 'nowPlaying';
                             sim.themeSelectedIndex = 0;
                         } else if (selId === 'rockbox') {
                             showToast('Switch to Rockbox');
@@ -3817,23 +4598,77 @@
                         return;
                     }
                     if (vid === 'music') {
-                        var musicMenuItems = [
-                            'All songs',
-                            'Playlists',
-                            'Artists',
-                            'Albums',
-                            'Genres',
-                            'Folders',
-                            'Search'
-                        ];
-                        var ms = musicMenuItems[sim.themeSelectedIndex];
+                        var mList = genericListForView('music', previewOpts.deviceMode);
+                        var ms = mList[sim.themeSelectedIndex] && mList[sim.themeSelectedIndex].label;
                         if (ms === 'Folders') {
                             sim.themeHistory.push('music');
                             sim.themeViewId = 'music_folders';
                             sim.themeSelectedIndex = 0;
+                        } else if (ms === 'Settings') {
+                            sim.themeHistory.push('music');
+                            sim.themeViewId = 'musicSettings';
+                            sim.themeSelectedIndex = 0;
+                        } else if (ms === 'All songs') {
+                            sim.themeHistory.push('music');
+                            sim.themeViewId = 'nowPlaying';
+                            sim.themeSelectedIndex = 0;
                         } else {
-                            showToast('Not implemented');
+                            showToast(ms || 'Music');
                         }
+                        paint();
+                        return;
+                    }
+                    if (vid === 'music_folders' || vid === 'fileManager') {
+                        var fList = genericListForView(vid, previewOpts.deviceMode);
+                        var fEntry = fList[sim.themeSelectedIndex];
+                        if (fEntry && fEntry.isMusic) {
+                            sim.themeHistory.push(vid);
+                            sim.playState = 'playing';
+                            sim.themeViewId = 'nowPlaying';
+                            sim.themeSelectedIndex = 0;
+                        } else {
+                            showToast((fEntry && fEntry.label) || 'Folder');
+                        }
+                        paint();
+                        return;
+                    }
+                    if (vid === 'ebook') {
+                        var bList = genericListForView('ebook', previewOpts.deviceMode);
+                        var bEntry = bList[sim.themeSelectedIndex];
+                        sim.ebookTitle = (bEntry && bEntry.label && bEntry.label.replace(/\.[^.]+$/, '')) || 'The Little Prince';
+                        sim.themeHistory.push('ebook');
+                        sim.themeViewId = 'ebookReader';
+                        sim.themeSelectedIndex = 0;
+                        paint();
+                        return;
+                    }
+                    if (vid === 'photos') {
+                        sim.photoViewerIndex = sim.themeSelectedIndex;
+                        sim.themeHistory.push('photos');
+                        sim.themeViewId = 'photosViewer';
+                        paint();
+                        return;
+                    }
+                    if (vid === 'bluetooth') {
+                        var btList = genericListForView('bluetooth', previewOpts.deviceMode);
+                        var btEntry = btList[sim.themeSelectedIndex];
+                        if (btEntry && btEntry.id === 'bt_power') {
+                            sim.btEnabled = sim.btEnabled === false;
+                            showToast('Bluetooth ' + (sim.btEnabled ? 'On' : 'Off'));
+                        } else if (btEntry && btEntry.id === 'bt_scan') {
+                            showToast('Scanning for devices...');
+                        } else if (btEntry) {
+                            showToast('Connected: ' + btEntry.label);
+                        }
+                        paint();
+                        return;
+                    }
+                    if (vid === 'fm') {
+                        sim.dialogVisible = true;
+                        sim.dialogTitle = 'FM Radio';
+                        sim.dialogMessage = ((Number(sim.fmFreq) || 985) / 10).toFixed(1) + ' MHz';
+                        sim.dialogOptions = ['Auto scan', 'Presets', 'Close'];
+                        sim.dialogSelectedIndex = 0;
                         paint();
                         return;
                     }
@@ -3844,89 +4679,108 @@
                             sim.themeViewId = 'videos_folders';
                             sim.themeSelectedIndex = 0;
                         } else {
-                            showToast('Not implemented');
+                            showToast(vs || 'Videos');
                         }
                         paint();
                         return;
                     }
-                    if (vid === 'settings') {
-                        var sItemsNow = buildSettingsItems(cfg, buildFileUrl, contentFolder, sim);
+                    if (isSettingsListView(vid)) {
+                        var sItemsNow = settingsItemsForView(vid);
                         var selEntry = sItemsNow[sim.themeSelectedIndex] || {};
-                        var ch = String(selEntry.label || '');
-                        if (ch === 'Theme') {
-                            sim.themeHistory.push('settings');
+                        var sid = String(selEntry.id || '');
+                        if (sid.indexOf('cat_') === 0) {
+                            sim.themeHistory.push(vid);
+                            sim.themeViewId = 'settingsCat_' + sid.slice(4);
+                            sim.themeSelectedIndex = 0;
+                        } else if (sid === 'bluetooth') {
+                            sim.themeHistory.push(vid);
+                            sim.themeViewId = 'bluetooth';
+                            sim.themeSelectedIndex = 0;
+                        } else if (sid === 'theme') {
+                            sim.themeHistory.push(vid);
                             sim.themeViewId = 'settingsTheme';
                             sim.themeSelectedIndex = 0;
-                        } else if (ch === 'Equalizer') {
-                            sim.themeHistory.push('settings');
+                        } else if (sid === 'equalizer') {
+                            sim.themeHistory.push(vid);
                             sim.themeViewId = 'settingsEqualizer';
                             sim.themeSelectedIndex = 0;
-                        } else if (ch === 'Brightness') {
-                            sim.themeHistory.push('settings');
+                        } else if (sid === 'brightness') {
+                            sim.themeHistory.push(vid);
                             sim.themeViewId = 'settingsBrightness';
                             sim.themeSelectedIndex = 0;
-                        } else if (ch === 'Wallpaper') {
-                            sim.themeHistory.push('settings');
+                        } else if (sid === 'wallpaper') {
+                            sim.themeHistory.push(vid);
                             sim.themeViewId = 'settingsWallpaper';
                             sim.themeSelectedIndex = 0;
-                        } else if (ch === 'Date & Time') {
-                            sim.themeHistory.push('settings');
+                        } else if (sid === 'date_time') {
+                            sim.themeHistory.push(vid);
                             sim.themeViewId = 'settingsDateTime';
                             sim.themeSelectedIndex = 0;
-                        } else if (ch === 'Language') {
-                            sim.themeHistory.push('settings');
+                        } else if (sid === 'language') {
+                            sim.themeHistory.push(vid);
                             sim.themeViewId = 'settingsLanguage';
                             sim.themeSelectedIndex = 0;
-                        } else if (ch === 'About') {
-                            sim.themeHistory.push('settings');
+                        } else if (sid === 'about') {
+                            sim.themeHistory.push(vid);
                             sim.themeViewId = 'settingsAbout';
                             sim.themeSelectedIndex = 0;
-                        } else if (ch === 'Rockbox') {
-                            showToast('Rockbox');
-                        } else if (ch === 'Shutdown') {
+                        } else if (sid === 'rockbox') {
+                            showToast('Switch to Rockbox');
+                        } else if (sid === 'shutdown') {
                             sim.dialogVisible = true;
                             sim.dialogTitle = 'Shutdown';
                             sim.dialogMessage = 'Sure to shut down?';
                             sim.dialogOptions = ['Yes', 'No'];
                             sim.dialogSelectedIndex = 1;
-                        } else if (ch === 'Timed shutdown') {
+                        } else if (sid === 'timed_shutdown') {
                             var tsv = ['off', '10', '20', '30', '60', '90', '120'];
                             var ti = tsv.indexOf(sim.timedShutdownValue);
                             sim.timedShutdownValue = tsv[(ti + 1) % tsv.length];
-                        } else if (ch === 'Shuffle') {
+                        } else if (sid === 'shuffle') {
                             sim.shuffleEnabled = !sim.shuffleEnabled;
-                        } else if (ch === 'Repeat') {
+                        } else if (sid === 'repeat') {
                             sim.repeatMode =
                                 sim.repeatMode === 'off' ? 'all' : sim.repeatMode === 'all' ? 'one' : 'off';
-                        } else if (ch === 'File extensions') {
+                        } else if (sid === 'file_extension') {
                             sim.fileExtensionsEnabled = !sim.fileExtensionsEnabled;
-                        } else if (ch === 'Key lock') {
+                        } else if (sid === 'key_lock') {
                             sim.keyLockEnabled = !sim.keyLockEnabled;
-                        } else if (ch === 'Key tone') {
+                        } else if (sid === 'wheel_sensitivity') {
+                            var ws = ['low', 'standard', 'high'];
+                            var wsi = ws.indexOf(sim.wheelSensitivity || 'standard');
+                            sim.wheelSensitivity = ws[(wsi + 1) % ws.length];
+                        } else if (sid === 'wheel_volume') {
+                            sim.wheelVolumeEnabled = sim.wheelVolumeEnabled === false;
+                        } else if (sid === 'headphone_gain') {
+                            var hg = ['low', 'standard', 'high', 'maximum'];
+                            var hgi = hg.indexOf(sim.headphoneGain || 'standard');
+                            sim.headphoneGain = hg[(hgi + 1) % hg.length];
+                        } else if (sid === 'speaker') {
+                            sim.speakerEnabled = sim.speakerEnabled === false;
+                        } else if (sid === 'key_tone') {
                             sim.keyToneEnabled = !sim.keyToneEnabled;
-                        } else if (ch === 'Key vibration') {
+                        } else if (sid === 'key_vibration') {
                             sim.keyVibrationEnabled = !sim.keyVibrationEnabled;
-                        } else if (ch === 'Display battery') {
+                        } else if (sid === 'display_battery') {
                             sim.displayBatteryEnabled = !sim.displayBatteryEnabled;
-                        } else if (ch === 'Backlight') {
+                        } else if (sid === 'backlight') {
                             var bv = ['10', '15', '30', '45', '60', '120', '300', 'always'];
                             var bi = bv.indexOf(sim.backlightValue);
                             sim.backlightValue = bv[(bi + 1) % bv.length];
-                        } else if (ch === 'Factory reset') {
+                        } else if (sid === 'factory_reset') {
                             sim.dialogVisible = true;
                             sim.dialogTitle = 'Factory reset';
                             sim.dialogMessage = 'Sure to reset?';
                             sim.dialogOptions = ['Yes', 'No'];
                             sim.dialogSelectedIndex = 1;
-                        } else if (ch === 'Clear cache') {
+                        } else if (sid === 'clear_cache') {
                             showToast('Clearing cache...');
                         } else {
-                            showToast('Not implemented');
+                            showToast(selEntry.label || 'Settings');
                         }
                         paint();
                         return;
                     }
-                    showToast('Not implemented');
                     paint();
                 }
 
@@ -4327,10 +5181,35 @@
                    the result sit a thumb apart instead of a scroll apart. */
                 function assetContextView(assetPath) {
                     var path = String(assetPath || '');
+                    var isY1 = previewOpts.deviceMode === 'y1';
+                    if (path === 'homePageConfig.bluetooth' && previewOpts.deviceMode === 'y2') return 'settings';
                     if (/^homePageConfig\./.test(path)) return 'home';
                     if (/^settingConfig\.equalizer_/i.test(path)) return 'settingsEqualizer';
+                    if (/^settingConfig\.category/i.test(path)) return 'settings';
+                    if (/^settingConfig\.(wheelSensitivity|wheelVolume|keyLock|keyTone|keyVibration)/i.test(path)) {
+                        return isY1 ? 'settings' : 'settingsCat_keysWheel';
+                    }
+                    if (/^settingConfig\.(headphoneGain|speaker)/i.test(path)) {
+                        return isY1 ? 'settings' : 'settingsCat_audio';
+                    }
+                    if (/^settingConfig\.(brightness|backlight_|displayBattery)/i.test(path)) {
+                        return isY1 ? 'settings' : 'settingsCat_display';
+                    }
+                    if (/^settingConfig\.(theme|wallpaper)$/i.test(path)) {
+                        return isY1 ? 'settings' : 'settingsCat_personalization';
+                    }
+                    if (/^settingConfig\.(fileExtension|clearCache)/i.test(path)) {
+                        return isY1 ? 'settings' : 'settingsCat_filesStorage';
+                    }
+                    if (/^settingConfig\.(language|dateTime|timedShutdown_|launcher|shutdown)/i.test(path)) {
+                        return isY1 ? 'settings' : 'settingsCat_system';
+                    }
+                    if (/^settingConfig\.(shuffle|repeat)/i.test(path)) {
+                        return isY1 ? 'settings' : 'musicSettings';
+                    }
                     if (/^settingConfig\./.test(path)) return 'settings';
-                    if (/^fileConfig\./.test(path)) return 'music_folders';
+                    if (path === 'fileConfig.musicIcon') return 'fileManager';
+                    if (/^fileConfig\./.test(path)) return 'fileManager';
                     if (/^itemConfig\.|^menuConfig\.|^dialogConfig\./.test(path)) return 'settings';
                     if (/^themeCover$/.test(path)) return 'settingsTheme';
                     if (/^statusConfig\./.test(path)) return 'home';
@@ -4378,6 +5257,14 @@
                     if (p === 'settingConfig.keyVibrationOff') { sim.keyVibrationEnabled = false; return; }
                     if (p === 'settingConfig.displayBatteryOn') { sim.displayBatteryEnabled = true; return; }
                     if (p === 'settingConfig.displayBatteryOff') { sim.displayBatteryEnabled = false; return; }
+                    if (p === 'settingConfig.wheelVolumeOn') { sim.wheelVolumeEnabled = true; return; }
+                    if (p === 'settingConfig.wheelVolumeOff') { sim.wheelVolumeEnabled = false; return; }
+                    if (p === 'settingConfig.speakerOn') { sim.speakerEnabled = true; return; }
+                    if (p === 'settingConfig.speakerOff') { sim.speakerEnabled = false; return; }
+                    var ws = /^settingConfig\.wheelSensitivity(Low|Standard|High)$/.exec(p);
+                    if (ws) { sim.wheelSensitivity = ws[1].toLowerCase(); return; }
+                    var hg = /^settingConfig\.headphoneGain(Low|Standard|High|Maximum)$/.exec(p);
+                    if (hg) { sim.headphoneGain = hg[1].toLowerCase(); return; }
                     var td = /^settingConfig\.timedShutdown_(.+)$/.exec(p);
                     if (td) { sim.timedShutdownValue = td[1]; return; }
                     var bl = /^settingConfig\.backlight_(.+)$/.exec(p);
@@ -4385,6 +5272,35 @@
                 }
 
                 container._y1TpApi = {
+                    setOptionsToggleState: function (isOpen) {
+                        if (!stripToggle || !hideWheel) return;
+                        stripToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                        stripToggle.classList.toggle('is-active', !!isOpen);
+                    },
+                    setPreviewOptions: function (nextOpts) {
+                        if (!nextOpts || typeof nextOpts !== 'object') return;
+                        if (nextOpts.deviceMode !== undefined) {
+                            previewOpts.deviceMode = normalizeDeviceMode(
+                                nextOpts.deviceMode,
+                                cfg.homePageConfig || {},
+                                previewOpts.mode
+                            );
+                        }
+                        if (nextOpts.showLegacyHome !== undefined) {
+                            previewOpts.showLegacyHome = nextOpts.showLegacyHome === true;
+                        }
+                        if (nextOpts.showUnimplementedHome !== undefined) {
+                            previewOpts.showUnimplementedHome = nextOpts.showUnimplementedHome === true;
+                        }
+                        homeItems = buildHomeItems(cfg.homePageConfig || {}, settingCfg, previewOpts);
+                        if (sim.themeViewId === 'home') {
+                            sim.themeSelectedIndex = Math.max(0, Math.min(sim.themeSelectedIndex, Math.max(0, homeItems.length - 1)));
+                        } else if (previewOpts.deviceMode === 'y1' && String(sim.themeViewId || '').indexOf('settingsCat_') === 0) {
+                            sim.themeViewId = 'settings';
+                            sim.themeSelectedIndex = 0;
+                        }
+                        paint();
+                    },
                     snapshotState: function () {
                         return {
                             themeViewId: sim.themeViewId,
@@ -4409,7 +5325,13 @@
                             keyLockEnabled: sim.keyLockEnabled,
                             keyToneEnabled: sim.keyToneEnabled,
                             keyVibrationEnabled: sim.keyVibrationEnabled,
-                            displayBatteryEnabled: sim.displayBatteryEnabled
+                            displayBatteryEnabled: sim.displayBatteryEnabled,
+                            wheelSensitivity: sim.wheelSensitivity,
+                            wheelVolumeEnabled: sim.wheelVolumeEnabled,
+                            headphoneGain: sim.headphoneGain,
+                            speakerEnabled: sim.speakerEnabled,
+                            fmFreq: sim.fmFreq,
+                            btEnabled: sim.btEnabled
                         };
                     },
                     restoreState: function (snap) {
@@ -4436,6 +5358,12 @@
                         sim.keyToneEnabled = snap.keyToneEnabled;
                         sim.keyVibrationEnabled = snap.keyVibrationEnabled;
                         sim.displayBatteryEnabled = snap.displayBatteryEnabled;
+                        if (snap.wheelSensitivity !== undefined) sim.wheelSensitivity = snap.wheelSensitivity;
+                        if (snap.wheelVolumeEnabled !== undefined) sim.wheelVolumeEnabled = snap.wheelVolumeEnabled;
+                        if (snap.headphoneGain !== undefined) sim.headphoneGain = snap.headphoneGain;
+                        if (snap.speakerEnabled !== undefined) sim.speakerEnabled = snap.speakerEnabled;
+                        if (snap.fmFreq !== undefined) sim.fmFreq = snap.fmFreq;
+                        if (snap.btEnabled !== undefined) sim.btEnabled = snap.btEnabled;
                         var restoreY = typeof snap.lastMenuScrollY === 'number' ? snap.lastMenuScrollY : null;
                         scrollState.lastViewId = sim.themeViewId;
                         if (restoreY != null) {
@@ -4477,6 +5405,23 @@
                         }
                         var view = assetContextView(assetPath);
                         if (!view) return false;
+                        /* Temporarily include hidden Home items (e.g. Calendar, Calculator,
+                           Shuffle Quick, File Manager in Y1 mode) when capturing thumbnails
+                           or explicitly revealing them from the tray. */
+                        var prevHomeItems = homeItems;
+                        var tempHomeOverride = false;
+                        if (view === 'home') {
+                            var hasInHome = homeItems.some(function (h) { return h && h.assetPath === assetPath; });
+                            if (!hasInHome) {
+                                homeItems = buildHomeItems(cfg.homePageConfig || {}, settingCfg, {
+                                    mode: previewOpts.mode,
+                                    deviceMode: 'both',
+                                    showLegacyHome: true,
+                                    showUnimplementedHome: true
+                                });
+                                tempHomeOverride = true;
+                            }
+                        }
                         sim.dialogVisible = false;
                         sim.themeHistory = [];
                         sim.themeViewId = view;
@@ -4498,14 +5443,13 @@
                                 return true;
                             }
                             try {
-                                var items =
-                                    view === 'settings'
-                                        ? buildSettingsItems(cfg, buildFileUrl, contentFolder, sim)
-                                        : view === 'settingsEqualizer'
-                                          ? buildEqualizerItems(settingCfg, buildFileUrl, contentFolder)
-                                          : view === 'home'
-                                            ? homeItems
-                                            : [];
+                                var items = isSettingsListView(view)
+                                    ? settingsItemsForView(view)
+                                    : view === 'settingsEqualizer'
+                                      ? buildEqualizerItems(settingCfg, buildFileUrl, contentFolder)
+                                      : view === 'home'
+                                        ? homeItems
+                                        : [];
                                 for (var i = 0; i < items.length; i++) {
                                     if (items[i] && items[i].assetPath === assetPath) {
                                         sim.themeSelectedIndex = i;
@@ -4516,6 +5460,7 @@
                             paint();
                             return true;
                         } finally {
+                            if (tempHomeOverride && silent) homeItems = prevHomeItems;
                             scrollState.animate = prevAnim;
                         }
                     },
@@ -4869,8 +5814,12 @@
         var menuCfg = cfg.menuConfig || {};
         var statusCfg = cfg.statusConfig || {};
         var settingCfg = cfg.settingConfig || {};
-        var colors = buildColors(itemCfg, menuCfg, statusCfg);
+        var colors = buildColors(itemCfg, menuCfg, statusCfg, cfg, catalogFolder);
         var statusH = statusBarHeightPx(cfg);
+        var isSel9Patch = isNinePatchCandidate(
+            itemCfg,
+            itemCfg.itemSelectedBackground || menuCfg.menuItemSelectedBackground || ''
+        );
 
         var prevStudioLocale = global.STUDIO_PREVIEW_LOCALE;
         var homeItems = [];
@@ -4968,7 +5917,10 @@
 
                     if (selected) {
                         if (itemSelImg) {
-                            ctx.drawImage(itemSelImg, rowX, rowY, rowW, rowH);
+                            var shotNp = isSel9Patch ? parseNinePatchImage(itemSelImg) : null;
+                            if (!shotNp || !drawNinePatchOnCanvas(ctx, shotNp, rowX, rowY, rowW, rowH)) {
+                                ctx.drawImage(itemSelImg, rowX, rowY, rowW, rowH);
+                            }
                         } else if (itemSelVis && itemSelVis.color) {
                             ctx.fillStyle = itemSelVis.color;
                             ctx.fillRect(rowX, rowY, rowW, rowH);
