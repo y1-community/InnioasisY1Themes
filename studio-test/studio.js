@@ -7949,7 +7949,7 @@
                 var manifest = document.querySelector('link[rel="manifest"]');
                 var swUrl = manifest ? new URL('sw.js', manifest.href).toString() : '/studio-test/sw.js';
                 var swScope = manifest ? new URL('./', manifest.href).pathname : '/studio-test/';
-                navigator.serviceWorker.register(swUrl, { scope: swScope }).catch(function (err) {
+                navigator.serviceWorker.register(swUrl, { scope: swScope, updateViaCache: 'none' }).catch(function (err) {
                     console.warn('Studio: service worker unavailable', err);
                 });
             });

@@ -1,6 +1,9 @@
 /* Theme Studio app-shell worker. Theme packages and preview art stay network-first
-   so an edit never previews a stale player asset. */
-const CACHE = 'innioasis-studio-v44';
+   so an edit never previews a stale player asset. The shell is network-first too:
+   serving it from cache first kept a tab (and this worker's own query-keyed copy)
+   on the previous release after a deploy, because a cache hit skipped the network
+   entirely. The cache is now only an offline fallback. */
+const CACHE = 'innioasis-studio-v45';
 const SHELL = [
   './',
   './index.html',
@@ -48,17 +51,18 @@ self.addEventListener('fetch', (event) => {
   if (!isShell) return;
 
   event.respondWith(
-    caches.match(request).then((cached) => {
-      const network = fetch(request)
-        .then((response) => {
-          if (response.ok) {
-            const copy = response.clone();
-            caches.open(CACHE).then((cache) => cache.put(request, copy)).catch(() => {});
-          }
-          return response;
-        })
-        .catch(() => cached);
-      return cached || network;
-    })
+    fetch(request)
+      .then((response) => {
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE).then((cache) => cache.put(request, copy)).catch(() => {});
+        }
+        return response;
+      })
+      .catch(() =>
+        caches
+          .match(request)
+          .then((cached) => cached || caches.match(request, { ignoreSearch: true }))
+      )
   );
 });
