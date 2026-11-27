@@ -2637,13 +2637,13 @@ body.studio-app {
    banner: a 64px status icon on a 1300px plate read as an empty box. */
 .studio-asset-detail-preview {
     position: relative;
-    width: min(100%, 400px);
+    width: min(100%, 360px);
     aspect-ratio: 4 / 3;
     min-height: 0;
-    max-height: none;
+    max-height: clamp(148px, 27vh, 236px);
     display: grid;
     place-items: center;
-    margin: 10px auto;
+    margin: 7px auto;
     overflow: hidden;
     border: 1px solid var(--studio-line);
     border-radius: 8px;

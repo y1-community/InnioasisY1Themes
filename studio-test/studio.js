@@ -8282,7 +8282,7 @@
                 var swScope = manifest ? new URL('./', manifest.href).pathname : '/studio-test/';
                 /* A version in the worker URL is what carries a corrected worker
                    past an edge-cached copy of sw.js on the previous release. */
-                var swVersion = '46';
+                var swVersion = '47';
                 navigator.serviceWorker.register(swUrl + '?v=' + swVersion, { scope: swScope, updateViaCache: 'none' }).catch(function (err) {
                     console.warn('Studio: service worker unavailable', err);
                 });

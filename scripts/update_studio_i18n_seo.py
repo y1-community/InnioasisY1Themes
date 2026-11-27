@@ -95,6 +95,7 @@ LOCALE_SEO: Dict[str, Dict[str, Any]] = {
         "ui": {
             "Theme Studio": "استوديو السمات",
             "How Theme Studio works": "كيف يعمل استوديو السمات",
+            "Theme screenshots": "لقطات شاشة للسمات",
             "Themes": "السمات",
             "Y2 themes": "سمات Y2",
             "Y1 themes": "سمات Y1",
@@ -1990,6 +1991,14 @@ def main() -> int:
         markup, n_ld = JSONLD_RE.subn(lambda m: m.group(1) + localized_ld + m.group(3), markup, count=1)
         if n_ld != 1:
             errors.append(f"{code}: failed to replace JSON-LD block")
+
+        # 3b. Lock the already-localized top-left Studio brand eyebrow so runtime
+        # dynamic fallback / browser auto-translate can never turn "Theme Studio" into "Themenstudio".
+        markup = markup.replace(
+            '<span class="studio-eyebrow"><i class="fa-solid fa-compact-disc" aria-hidden="true"></i>',
+            '<span class="studio-eyebrow" translate="no" data-i18n-skip><i class="fa-solid fa-compact-disc" aria-hidden="true"></i>',
+            1,
+        )
 
         out_path = os.path.join(ROOT, "studio-test", f"index_{code}.html")
         with open(out_path, "w", encoding="utf-8", newline="\n") as fh:
