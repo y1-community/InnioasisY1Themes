@@ -4800,36 +4800,6 @@ body.studio-app.y1-donate-panel-open #support-toolbar-slot {
     text-align: center;
 }
 
-.studio-preview-checks {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: 6px 12px;
-}
-
-.studio-preview-check {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    color: var(--site-muted);
-    font: 550 0.71rem var(--site-font);
-    cursor: pointer;
-    user-select: none;
-}
-
-.studio-preview-check:hover {
-    color: var(--site-text);
-}
-
-.studio-preview-check input[type="checkbox"] {
-    width: 14px;
-    height: 14px;
-    margin: 0;
-    accent-color: var(--site-accent);
-    cursor: pointer;
-}
-
 @media (max-height: 760px) and (min-width: 941px) {
     .studio-preview-controls {
         padding: 4px 8px;

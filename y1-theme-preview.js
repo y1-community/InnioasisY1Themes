@@ -321,6 +321,9 @@
                     fm: version.fm !== false,
                     musicSettingsRows: rows,
                     home: version.home || [],
+                    /* Keys declared behind the launcher's internal flag: the
+                       release carries the trace, so only it can preview them. */
+                    hiddenHome: version.hiddenHome || [],
                     catalog: cat
                 };
             }
@@ -347,12 +350,14 @@
         var mode = String(opts.mode || 'menu').toLowerCase();
         var deviceMode = normalizeDeviceMode(opts.deviceMode, homeCfg, mode);
         var fw = firmwareFor({ deviceMode: deviceMode, firmware: opts.firmware });
-        /* Shuffle Quick was on Home in Y1 1.7.6–2.1.9 and removed in Y1 2.8.2;
-           Calculator and Calendar exist in MainActivity behind an unshipped
-           flag (isV4 && !isRockBox). Studio lets authors toggle each group
-           independently. */
-        var showLegacy = opts.showLegacyHome !== undefined ? opts.showLegacyHome === true : false;
-        var showUnimplemented = opts.showUnimplementedHome === true;
+        /* The release decides Home membership, not a studio toggle: Shuffle
+           Quick is drawn by Y1 1.7.6–2.1.9 and dropped in 2.8.2, while
+           Calculator and Calendar are declared behind an internal flag only
+           from 2.8.2 onward (`hiddenHome`), so they never appear on a release
+           with no trace of them. */
+        var firmwareHome = fw.home || [];
+        var hiddenHome = fw.hiddenHome || [];
+        var revealAll = opts.showLegacyHome === true || opts.showUnimplementedHome === true;
         var labelMap = {
             nowPlaying: 'Now Playing',
             music: 'Music',
@@ -390,8 +395,16 @@
         ];
         var items = ordered
             .filter(function (key) {
-                if (key === 'shuffleQuick') return showLegacy;
-                if (key === 'calculator' || key === 'calendar') return showUnimplemented;
+                if (key === 'shuffleQuick') {
+                    if (firmwareHome.indexOf(key) === -1) return false;
+                    if (revealAll || mode === 'full') return true;
+                    return isUsableHomeIcon(homePageIconFromCfg(homeCfg, key));
+                }
+                if (key === 'calculator' || key === 'calendar') {
+                    if (hiddenHome.indexOf(key) === -1) return false;
+                    if (revealAll || mode === 'full') return true;
+                    return isUsableHomeIcon(homePageIconFromCfg(homeCfg, key));
+                }
                 if (key === 'fileManager') return (deviceMode === 'y2' || deviceMode === 'both') && fw.fileManager;
                 if (key === 'fm') return fw.fm;
                 /* A release that predates an item never draws it, whatever the

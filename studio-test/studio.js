@@ -286,11 +286,9 @@
         onboardingX: byId('studio-onboarding-x'),
         onboardingSuppress: byId('studio-onboarding-suppress'),
         previewControls: byId('studio-preview-controls'),
-        toggleLegacy: byId('studio-toggle-legacy'),
         firmwareSelect: byId('studio-firmware-select'),
         firmwareSummary: byId('studio-firmware-summary'),
         firmwareState: byId('studio-firmware-state'),
-        toggleUnimplemented: byId('studio-toggle-unimplemented'),
         identityMismatch: byId('studio-identity-mismatch'),
         mismatchAsNew: byId('studio-mismatch-as-new'),
         y2Toast: byId('studio-y2-toast'),
@@ -387,8 +385,6 @@
         /* Which launcher and release the Preview As picker names. "both" is
            the Y2 layout with the Y1 Bluetooth row, the default readers know. */
         previewTargetId: 'both',
-        showLegacyHome: true,
-        showUnimplementedHome: false,
         /* Which stock launcher each model's preview reproduces. Defaults to the
            newest release; the firmware picker changes one model at a time. */
         firmwareVersions: { y1: '3.1.2', y2: '3.2.8' },
@@ -2675,8 +2671,6 @@
             variantSegment: state.sourceType === 'gallery' ? state.variantSource || '' : '',
             mode: 'full',
             deviceMode: state.previewDeviceMode || 'both',
-            showLegacyHome: state.showLegacyHome !== false,
-            showUnimplementedHome: state.showUnimplementedHome === true,
             firmware: state.firmwareVersions,
             compactControls: true,
             /* The Studio edits artwork, not playback: the four transport
@@ -10694,15 +10688,11 @@
             btn.classList.toggle('is-active', active);
             btn.setAttribute('aria-pressed', active ? 'true' : 'false');
         });
-        if (el.toggleLegacy) el.toggleLegacy.checked = state.showLegacyHome !== false;
-        if (el.toggleUnimplemented) el.toggleUnimplemented.checked = state.showUnimplementedHome === true;
         var api = el.preview ? el.preview._y1TpApi : null;
         if (api && typeof api.setPreviewOptions === 'function') {
             try {
                 api.setPreviewOptions({
                     deviceMode: state.previewDeviceMode,
-                    showLegacyHome: state.showLegacyHome !== false,
-                    showUnimplementedHome: state.showUnimplementedHome === true,
                     firmware: state.firmwareVersions
                 });
             } catch (e) {}
@@ -10733,20 +10723,6 @@
                 applyPreviewControlsToSimulator();
             });
         });
-        if (el.toggleLegacy) {
-            el.toggleLegacy.checked = state.showLegacyHome !== false;
-            el.toggleLegacy.addEventListener('change', function () {
-                state.showLegacyHome = !!el.toggleLegacy.checked;
-                applyPreviewControlsToSimulator();
-            });
-        }
-        if (el.toggleUnimplemented) {
-            el.toggleUnimplemented.checked = state.showUnimplementedHome === true;
-            el.toggleUnimplemented.addEventListener('change', function () {
-                state.showUnimplementedHome = !!el.toggleUnimplemented.checked;
-                applyPreviewControlsToSimulator();
-            });
-        }
         if (el.mismatchAsNew) {
             el.mismatchAsNew.addEventListener('click', function () {
                 var keptTitle = el.submitTitle ? el.submitTitle.value : '';

@@ -22,9 +22,9 @@ claim that the firmware lacks the asset.
 | `fm` | 2.1.9 | Yes / Yes | FM on Y2 hardware from 3.2.0-fm. |
 | `bluetooth` | 2.1.9 | Yes / Yes | Y2 3.2.0-fm moves Bluetooth into Settings, reusing the same `homePageConfig.bluetooth` art. |
 | `settings` | 2.1.9 | Yes / Yes | |
-| `shuffleQuick` | 2.1.9 | No / No | Dropped from the Home list in 2.8.2; the key is still parsed for older firmware compatibility. Studio shows it behind the **Legacy (Shuffle Quick)** toggle. |
-| `calendar` | 2.8.2 (hidden) | No / No | Declared and hidden behind an internal flag; never in a stock Home list. Studio shows it behind the **Unimplemented** toggle. |
-| `calculator` | 2.8.2 (hidden) | No / No | As above. |
+| `shuffleQuick` | 2.1.9 | No / No | Dropped from the Home list in 2.8.2; the key is still parsed for older firmware compatibility. The Preview As release decides whether it appears. |
+| `calendar` | 2.8.2 (hidden) | No / No | Declared and hidden behind an internal flag; never in a stock Home list. Only Y1 releases from 2.8.2 carry the trace, so only those previews ever list it. |
+| `calculator` | 2.8.2 (hidden) | No / No | As above; `hiddenHome` in the firmware catalogue gates it. |
 | `ebook` | 2.8.2 (engine), 3.0.7 (user-facing) | Yes / Yes | Reader activities land in 2.8.2; the release that advertises E-Book is 3.0.7. |
 | `fileManager` | 3.1.7 (Y2 only) | No / Yes | Y2 file manager app and Home icon; Y1 has no reader for the key, so a Y1 package drops it. |
 
@@ -64,10 +64,9 @@ would ignore. `Y2_Default`/`HoloPebble`'s factory light copy is the one exceptio
 ## How the studio uses this
 
 - Artwork a player still draws is always listed and editable.
-- **Legacy (Shuffle Quick)** reveals Home items that stopped being drawn
-  (`shuffleQuick`, removed in 2.8.2).
-- **Unimplemented (Calendar, Calculator)** reveals keys that were declared but
-  never shipped in a stock Home list.
+- The selected firmware decides Home membership: `shuffleQuick` appears only
+  on Y1 1.7.6–2.1.9, and Calendar/Calculator only on Y1 releases whose catalogue
+  entry lists them under `hiddenHome` (2.8.2 onward). There are no toggles.
 - **Rockbox** is a Settings row (`settingConfig.launcher`), not a Home item, so it
   is never hidden behind either toggle.
 - A Y1 package removes `homePageConfig.fileManager` when the theme has no icon and
