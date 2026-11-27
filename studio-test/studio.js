@@ -5330,8 +5330,16 @@
         }
     }
 
+    /* The floating strip already sits beside the artwork on a wide layout, so
+       selecting in the preview must not drag the asset tray into view there —
+       the reader can act without leaving the preview. Only the narrow layout,
+       where the strip would cover the player, has to bring the row on screen. */
+    function trayAutoScrollAllowed() {
+        return window.matchMedia('(max-width: 940px)').matches;
+    }
+
     function focusTrayAsset(id, focusOpts) {
-        var scrollToRow = !focusOpts || focusOpts.scroll !== false;
+        var scrollToRow = (!focusOpts || focusOpts.scroll !== false) && trayAutoScrollAllowed();
         window.setTimeout(function () {
             if (!el.assetList) return;
             var row = null;
