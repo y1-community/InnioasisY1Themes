@@ -2507,6 +2507,47 @@
                     return grid.blank;
                 }
 
+                /* Artwork that shows the author nothing is blank in the useful
+                   sense: nothing to see, and no honest alpha edge to click
+                   through. Missing files, fully transparent placeholders and
+                   solid black squares all qualify, so the whole slot becomes the
+                   target for adding that asset. */
+                var blankArtworkCache = Object.create(null);
+                function imageIsBlankArtwork(img) {
+                    if (!img) return true;
+                    if (!img.getAttribute('src')) return true;
+                    if (!img.complete) return false;
+                    var nw = img.naturalWidth | 0;
+                    var nh = img.naturalHeight | 0;
+                    if (nw <= 1 && nh <= 1) return true;
+                    var src = img.currentSrc || img.getAttribute('src') || '';
+                    var key = src + '|' + nw + 'x' + nh;
+                    if (blankArtworkCache[key] !== undefined) return blankArtworkCache[key];
+                    var blank = false;
+                    try {
+                        var c = document.createElement('canvas');
+                        c.width = Math.max(1, Math.min(32, nw));
+                        c.height = Math.max(1, Math.min(32, nh));
+                        var ctx = c.getContext('2d', { willReadFrequently: true });
+                        if (!ctx) return false;
+                        ctx.clearRect(0, 0, c.width, c.height);
+                        ctx.drawImage(img, 0, 0, c.width, c.height);
+                        var data = ctx.getImageData(0, 0, c.width, c.height).data;
+                        blank = true;
+                        for (var i = 0; i < data.length; i += 4) {
+                            if (data[i + 3] < 8) continue;
+                            if (Math.max(data[i], data[i + 1], data[i + 2]) > 28) {
+                                blank = false;
+                                break;
+                            }
+                        }
+                    } catch (eRead) {
+                        blank = false;
+                    }
+                    blankArtworkCache[key] = blank;
+                    return blank;
+                }
+
                 function blankRightIconAtPoint(clientX, clientY, cRect) {
                     var boxes = canvas.querySelectorAll('[data-theme-art-box]');
                     var scale = canvas.offsetWidth ? cRect.width / canvas.offsetWidth : 1;
@@ -2516,24 +2557,20 @@
                         if (!RIGHT_ICON_PATH_RE.test(path)) continue;
                         if (box.style.display === 'none' || !box.offsetParent) continue;
                         var img = box.querySelector('img[data-theme-asset-path]');
-                        if (!img || img.style.display === 'none') continue;
-                        if ((img.getAttribute('data-theme-asset-path') || '') !== path) continue;
-                        if (!isImageBlank(img)) continue;
-                        /* A blank image collapses to (near) nothing, so hit-test
-                           the slot the artwork would fill: a square as wide as
-                           the art may grow, centred in its box from the top. */
+                        if (img && img.style.display === 'none') img = null;
+                        if (img && (img.getAttribute('data-theme-asset-path') || '') !== path) continue;
+                        /* A blank image collapses to (near) nothing, and a black
+                           one hides its slot entirely, so the whole artwork slot
+                           the preview reserves is the target. */
+                        if (img && !imageIsBlankArtwork(img)) continue;
                         var boxRect = box.getBoundingClientRect();
-                        var boxW = box.offsetWidth || boxRect.width / scale;
-                        var cap = parseFloat(img.style.maxWidth);
-                        if (!isFinite(cap) || /%$/.test(img.style.maxWidth || '')) cap = boxW;
-                        var side = Math.min(boxW, cap) * scale;
-                        if (!side) continue;
-                        var left = boxRect.left + (boxRect.width - side) / 2;
-                        var top = boxRect.top;
-                        if (box.offsetHeight >= Math.min(boxW, cap)) {
-                            top = boxRect.top + (boxRect.height - side) / 2;
-                        }
-                        if (clientX < left || clientX > left + side || clientY < top || clientY > top + side) {
+                        if (boxRect.width < 1 || boxRect.height < 1) continue;
+                        if (
+                            clientX < boxRect.left ||
+                            clientX > boxRect.right ||
+                            clientY < boxRect.top ||
+                            clientY > boxRect.bottom
+                        ) {
                             continue;
                         }
                         return {

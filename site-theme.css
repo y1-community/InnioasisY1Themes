@@ -708,13 +708,16 @@ body.site-themes-app .wrap:has(.gallery-home-hero) .gallery-controls {
     border: 1px solid var(--site-border) !important;
     border-radius: var(--site-radius-lg) !important;
     box-shadow: 0 4px 18px var(--lumen-line);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+/* No transform lift on hover: moving a card up by a couple of pixels takes its
+   bottom edge out from under a pointer resting there, which un-hovers the card,
+   drops it back, re-hovers it, and reads as the card bouncing up and down.
+   The emphasis comes from the border and shadow, which never move the target. */
 .theme-card:hover {
     border-color: var(--site-border-hover) !important;
-    box-shadow: 0 10px 28px var(--lumen-line-strong);
-    transform: translateY(-2px);
+    box-shadow: 0 10px 28px var(--lumen-line-strong), 0 0 0 1px var(--site-border-hover) inset;
 }
 
 .theme-card .theme-name {
