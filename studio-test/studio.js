@@ -4992,6 +4992,10 @@
        actions ride a compact strip next to the outlined element, always in the
        stage's empty margin so the artwork it edits is never covered. */
     var previewToolbar = null;
+    /* A left-hand list row can be edited in two places at once (its selection
+       bar and the artwork on the right), so the floating strip carries every
+       asset the click landed between, not just the primary one. */
+    var previewToolbarCompanions = [];
     var previewToolbarAssetId = '';
     var previewToolbarAnchor = null;
     var previewToolbarRaf = 0;
@@ -5190,11 +5194,25 @@
             return;
         }
         host.innerHTML = '';
+        var toolbarIds = [asset.id];
+        previewToolbarCompanions.forEach(function (companionId) {
+            if (companionId && companionId !== asset.id && state.assetById[companionId]) toolbarIds.push(companionId);
+        });
+        host.classList.toggle('has-groups', toolbarIds.length > 1);
         var head = document.createElement('span');
         head.className = 'studio-preview-toolbar-head';
         var name = document.createElement('strong');
-        name.textContent = asset.label;
-        name.title = asset.label + (asset.value ? ' · ' + assetFileLabel(asset) : '');
+        name.textContent =
+            toolbarIds.length > 1
+                ? (previewHitLabel(toolbarIds[0]) || asset.label) + ' + ' + (toolbarIds.length - 1)
+                : asset.label;
+        name.title = toolbarIds
+            .map(function (id) {
+                var a = state.assetById[id];
+                return a ? a.label + (a.value ? ' · ' + assetFileLabel(a) : '') : '';
+            })
+            .filter(Boolean)
+            .join('\n');
         head.appendChild(name);
         var close = document.createElement('button');
         close.type = 'button';
@@ -5207,25 +5225,43 @@
         });
         head.appendChild(close);
 
-        var actions = document.createElement('span');
-        actions.className = 'studio-preview-toolbar-actions';
-        assetActionSpecs(asset).forEach(function (action) {
-            var button = document.createElement('button');
-            button.type = 'button';
-            button.className = 'studio-preview-toolbar-btn';
-            button.setAttribute('data-toolbar-action', action[0]);
-            button.setAttribute('aria-label', action[2]);
-            button.title = action[2];
-            button.innerHTML = '<i class="fa-solid ' + action[1] + '" aria-hidden="true"></i>';
-            if (action[0] === 'paste' && asset.kind !== 'image') button.disabled = true;
-            button.addEventListener('click', function () {
-                runAssetAction(action[0], asset.id);
-                if (action[0] === 'reset' || action[0] === 'blank') hidePreviewToolbar();
+        var groups = document.createElement('span');
+        groups.className = 'studio-preview-toolbar-groups';
+        toolbarIds.forEach(function (toolbarAssetId) {
+            var toolbarAsset = state.assetById[toolbarAssetId];
+            if (!toolbarAsset) return;
+            var group = document.createElement('span');
+            group.className = 'studio-preview-toolbar-group';
+            group.setAttribute('data-toolbar-asset', toolbarAssetId);
+            if (toolbarIds.length > 1) {
+                var groupLabel = document.createElement('span');
+                groupLabel.className = 'studio-preview-toolbar-glabel';
+                groupLabel.textContent = toolbarAsset.label;
+                groupLabel.title = toolbarAsset.label + (toolbarAsset.value ? ' · ' + assetFileLabel(toolbarAsset) : '');
+                group.appendChild(groupLabel);
+            }
+            var actions = document.createElement('span');
+            actions.className = 'studio-preview-toolbar-actions';
+            assetActionSpecs(toolbarAsset).forEach(function (action) {
+                var button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'studio-preview-toolbar-btn';
+                button.setAttribute('data-toolbar-action', action[0]);
+                button.setAttribute('aria-label', action[2]);
+                button.title = action[2];
+                button.innerHTML = '<i class="fa-solid ' + action[1] + '" aria-hidden="true"></i>';
+                if (action[0] === 'paste' && toolbarAsset.kind !== 'image') button.disabled = true;
+                button.addEventListener('click', function () {
+                    runAssetAction(action[0], toolbarAsset.id);
+                    if (action[0] === 'reset' || action[0] === 'blank') hidePreviewToolbar();
+                });
+                actions.appendChild(button);
             });
-            actions.appendChild(button);
+            group.appendChild(actions);
+            groups.appendChild(group);
         });
         host.appendChild(head);
-        host.appendChild(actions);
+        host.appendChild(groups);
         host.hidden = false;
         document.dispatchEvent(new CustomEvent('studio-preview-toolbar-shown'));
         positionPreviewToolbar();
@@ -5240,7 +5276,7 @@
         }
     }
 
-    function showPreviewToolbar(id, anchor) {
+    function showPreviewToolbar(id, anchor, companions) {
         if (!id || !state.assetById[id]) return;
         if (anchor !== undefined) {
             previewToolbarAnchor = anchor;
@@ -5248,6 +5284,11 @@
             previewToolbarAnchor = null;
         }
         previewToolbarAssetId = id;
+        if (companions !== undefined) {
+            previewToolbarCompanions = (Array.isArray(companions) ? companions : []).filter(function (companionId) {
+                return !!companionId && companionId !== id && !!state.assetById[companionId];
+            });
+        }
         renderPreviewToolbar();
         syncToolbarStripButton(!!(previewToolbar && !previewToolbar.hidden));
     }
@@ -5255,6 +5296,7 @@
     function hidePreviewToolbar() {
         previewToolbarAssetId = '';
         previewToolbarAnchor = null;
+        previewToolbarCompanions = [];
         if (previewToolbar) previewToolbar.hidden = true;
         syncToolbarStripButton(false);
     }
@@ -5413,7 +5455,11 @@
         }
         selectAsset(id);
         focusTrayAsset(id);
-        showPreviewToolbar(id, options && options.toolbarAnchor ? options.toolbarAnchor : null);
+        showPreviewToolbar(
+            id,
+            options && options.toolbarAnchor ? options.toolbarAnchor : null,
+            options && options.toolbarIds ? options.toolbarIds : []
+        );
         return true;
     }
 
@@ -5601,6 +5647,9 @@
                 relatedIds: rowRelated,
                 relatedTitle: iconLabel ? 'Related to “' + iconLabel + '”' : 'Related list item assets',
                 relatedColorAnchor: iconId || primaryBg,
+                /* Both halves of the row are offered at once: the selection bar
+                   the reader clicked and the artwork drawn beside it. */
+                toolbarIds: [primaryBg].concat(iconId ? [iconId] : []),
                 tooltip: iconLabel
                     ? primaryLabel + ' (with ' + iconLabel + ') — click to edit'
                     : primaryLabel + ' — click to edit'
@@ -5697,7 +5746,8 @@
             relatedIds: action.relatedIds,
             relatedTitle: action.relatedTitle,
             relatedColorAnchor: action.relatedColorAnchor,
-            toolbarAnchor: clickAnchor
+            toolbarAnchor: clickAnchor,
+            toolbarIds: action.toolbarIds
         });
         return true;
     }
@@ -7541,7 +7591,7 @@
        advertise art this package does not ship:\n         * fileManager is Y2's row — drop it when there is no icon so Y2 draws
            its native one instead of an empty gap (Y1 ignores the key entirely).\n         * the 9-patch flag only means something when the background really is a
            compiled .9.png; a stretched 9-patch shows its 1px border on Y1. */
-    function normalizeConfigForCrossCompat(config, devicePaths) {
+    function normalizeConfigForCrossCompat(config, devicePaths, options) {
         if (!config || typeof config !== 'object') return config;
         ['itemConfig', 'dialogConfig', 'menuConfig', 'homePageConfig', 'fileConfig', 'settingConfig', 'statusConfig'].forEach(
             function (key) {
@@ -7579,7 +7629,61 @@
             var selectedBg = String(item.itemSelectedBackground || '');
             if (!/\.9\.png$/i.test(selectedBg) || !shipped(selectedBg)) delete item.itemSelectedBackgroundIs9Patch;
         }
+        /* Bluetooth is the one slot both launchers read: Y2 points
+           homePageConfig.bluetooth at its Settings row, Y1 draws the same key as
+           a Home icon. A theme that wants both looks therefore ships
+           settingConfig.bluetooth for Y2 next to homePageConfig.bluetooth for Y1
+           (each launcher's Gson ignores the key it does not declare), and the
+           packager folds the pair back into the single slot the target reads. */
+        var targetModel = String((options && options.targetModel) || '').toLowerCase();
+        var settingBt = String(setting.bluetooth || '');
+        if (targetModel) {
+            var homeBt = String(home.bluetooth || '');
+            var y1Icon = homeBt;
+            if (y1Icon && !/_(?:y1|y2)\.[a-z0-9]+$/i.test(y1Icon)) {
+                var y1Sibling = y1Icon.replace(/(\.[a-z0-9]+)$/i, '_Y1$1');
+                if (shipped(y1Sibling)) y1Icon = y1Sibling;
+            }
+            var y2Icon = settingBt;
+            if (y2Icon && !/_(?:y1|y2)\.[a-z0-9]+$/i.test(y2Icon)) {
+                var y2Sibling = y2Icon.replace(/(\.[a-z0-9]+)$/i, '_Y2$1');
+                if (shipped(y2Sibling)) y2Icon = y2Sibling;
+            }
+            if (!y2Icon && y1Icon) {
+                var fromHome = y1Icon.replace(/_y1(\.[a-z0-9]+)$/i, '$1');
+                if (shipped(fromHome)) y2Icon = fromHome;
+            }
+            var chosen = targetModel === 'y1' ? y1Icon : y2Icon || y1Icon;
+            if (chosen) home.bluetooth = chosen;
+            /* The device must receive stock JSON: the key that only exists to
+               carry the other model's artwork has no reader on either player. */
+            delete setting.bluetooth;
+        }
+        if (targetModel === 'y1') delete item.itemSelectedBackgroundIs9Patch;
         return config;
+    }
+
+    /* A .9.png carries 1px black stretch guides. Y2 compiles them into a
+       NinePatchDrawable; Y1 has no nine-patch code and would paint both guides
+       as part of the selection bar, so a Y1 copy ships the same art cropped. */
+    async function stripNinePatchGuides(blob) {
+        if (!blob || (blob.type && !/image\/png/i.test(blob.type))) return blob;
+        try {
+            var bitmap = await createImageBitmap(blob);
+            if (!bitmap || bitmap.width <= 2 || bitmap.height <= 2) return blob;
+            var canvas = document.createElement('canvas');
+            canvas.width = bitmap.width - 2;
+            canvas.height = bitmap.height - 2;
+            var ctx = canvas.getContext('2d');
+            if (!ctx) return blob;
+            ctx.drawImage(bitmap, 1, 1, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
+            var cropped = await new Promise(function (resolve) {
+                canvas.toBlob(resolve, 'image/png');
+            });
+            return cropped || blob;
+        } catch (e) {
+            return blob;
+        }
     }
 
     async function collectThemeDeviceFiles(reportProgress, folderOverride, options) {
@@ -7674,7 +7778,8 @@
             outputConfig,
             deviceFiles.map(function (entry) {
                 return entry.devicePath;
-            })
+            }),
+            options
         );
 
         return {
@@ -7698,6 +7803,13 @@
         var outputConfig = collected.outputConfig;
         var blobs = collected.blobs;
         var packagedDeviceBlobs = collected.packagedDeviceBlobs;
+        if (String((options && options.targetModel) || '').toLowerCase() === 'y1') {
+            for (var nineIndex = 0; nineIndex < collected.deviceFiles.length; nineIndex += 1) {
+                var nineFile = collected.deviceFiles[nineIndex];
+                if (!/\.9\.png$/i.test(String(nineFile.devicePath || ''))) continue;
+                nineFile.blob = await stripNinePatchGuides(nineFile.blob);
+            }
+        }
         /* A saved theme is installed by pointing the player at the folder, so
            its ZIP opens straight onto config.json and the art. The upload path
            keeps the stem folder because the ingest expects a theme package. */
@@ -8104,16 +8216,106 @@
         }
     }
 
+    /* A theme carries two Bluetooth artworks when Y1 draws it on Home and Y2
+       shows it in Settings, and behaves the same way when it ships separate
+       Models/ folders. Only such a theme needs the reader to say which player
+       the copy is for; everything else saves exactly as authored. */
+    function exportModelChoice() {
+        var config = state.config || {};
+        var home = config.homePageConfig && typeof config.homePageConfig === 'object' ? config.homePageConfig : {};
+        var setting = config.settingConfig && typeof config.settingConfig === 'object' ? config.settingConfig : {};
+        var gallery = config.gallery && typeof config.gallery === 'object' ? config.gallery : {};
+        var models = gallery.modelFolders && typeof gallery.modelFolders === 'object' ? gallery.modelFolders : {};
+        var labels = gallery.modelLabels && typeof gallery.modelLabels === 'object' ? gallery.modelLabels : {};
+        var homeBluetooth = String(home.bluetooth || '');
+        var settingBluetooth = String(setting.bluetooth || '');
+        var needsChoice =
+            (!!settingBluetooth && settingBluetooth !== homeBluetooth) ||
+            Object.keys(models).length > 0 ||
+            /_y1\.[a-z0-9]+$/i.test(homeBluetooth) ||
+            /_y2\.[a-z0-9]+$/i.test(homeBluetooth);
+        return {
+            needsChoice: needsChoice,
+            labels: {
+                y1: String(labels.y1 || 'Y1 · Home Bluetooth icon'),
+                y2: String(labels.y2 || 'Y2 · Settings Bluetooth icon')
+            },
+            defaultModel: String(gallery.defaultModel || 'y2').toLowerCase() === 'y1' ? 'y1' : 'y2'
+        };
+    }
+
+    function promptExportModel(choice) {
+        return new Promise(function (resolve) {
+            var modal = document.getElementById('studio-model-modal');
+            var themeName = document.getElementById('studio-model-theme');
+            if (!modal) {
+                resolve(choice.defaultModel);
+                return;
+            }
+            if (themeName) {
+                themeName.textContent =
+                    (el.submitTitle && el.submitTitle.value.trim()) || (state.meta && state.meta.name) || 'this theme';
+            }
+            var y1Button = document.getElementById('studio-model-y1');
+            var y2Button = document.getElementById('studio-model-y2');
+            var cancelButton = document.getElementById('studio-model-cancel');
+            var closeButton = document.getElementById('studio-model-x');
+            function setLabel(button, text) {
+                if (!button) return;
+                var span = button.querySelector('span');
+                if (span) span.textContent = text;
+                else button.textContent = text;
+            }
+            setLabel(y1Button, choice.labels.y1);
+            setLabel(y2Button, choice.labels.y2);
+            function onKey(event) {
+                if (event.key === 'Escape') {
+                    event.preventDefault();
+                    finish('');
+                }
+            }
+            function finish(value) {
+                modal.hidden = true;
+                document.removeEventListener('keydown', onKey);
+                [y1Button, y2Button, cancelButton, closeButton].forEach(function (button) {
+                    if (button) button.onclick = null;
+                });
+                resolve(value);
+            }
+            if (y1Button) y1Button.onclick = function () { finish('y1'); };
+            if (y2Button) y2Button.onclick = function () { finish('y2'); };
+            if (cancelButton) cancelButton.onclick = function () { finish(''); };
+            if (closeButton) closeButton.onclick = function () { finish(''); };
+            document.addEventListener('keydown', onKey);
+            modal.hidden = false;
+            if (y2Button) y2Button.focus();
+        });
+    }
+
     async function saveTheme() {
         if (state.busy) return;
         if (!state.config) {
             toast('Open a theme first.');
             return;
         }
+        var modelChoice = exportModelChoice();
+        var targetModel = '';
+        if (modelChoice.needsChoice) {
+            targetModel = await promptExportModel(modelChoice);
+            if (!targetModel) return;
+        }
         setBusy(true, 'save');
         setSaveProgress(0, 'Preparing theme…');
         try {
-            var file = await buildThemePackage(setSaveProgress, null, { flat: true });
+            var file = await buildThemePackage(setSaveProgress, null, { flat: true, targetModel: targetModel });
+            if (targetModel) {
+                /* Two copies of one theme: the name says which player it fits
+                   so both can sit in the same folder. */
+                var modelLabel = targetModel === 'y1' ? 'Y1' : 'Y2';
+                file = new File([file], file.name.replace(/\.zip$/i, '') + ' (' + modelLabel + ').zip', {
+                    type: 'application/zip'
+                });
+            }
             downloadBlob(file);
             if (
                 state.sourceType === 'gallery' &&

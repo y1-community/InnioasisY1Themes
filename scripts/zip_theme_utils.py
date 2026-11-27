@@ -116,16 +116,28 @@ def collapse_redundant_root_theme_key(
 
 
 def drop_variant_keys_under_parent_theme(theme_keys: list[str]) -> list[str]:
-    """Remove ``Root/Variants/...`` keys when ``Root`` is already a single-segment theme key.
+    """Remove ``Root/Variants/...`` and ``Root/Models/...`` keys when ``Root`` is already a theme key.
 
-    Variant ``config.json`` files live under the main catalog folder; they must not be treated
+    Style variant (``Variants/<look>/``) and device-model (``Models/Y1/``, ``Models/Y2/``)
+    ``config.json`` files live under the main catalog folder; they must not be treated
     as separate top-level extract targets (which would map only the last path segment).
     """
     roots = {k for k in theme_keys if k != "." and "/" not in k}
+    has_dot_root = "." in theme_keys
     out: list[str] = []
     for k in theme_keys:
-        if "/" in k and any(k.startswith(r + "/Variants/") for r in roots):
-            continue
+        if has_dot_root and k != ".":
+            low_k = k.lower()
+            if low_k.startswith("variants/") or low_k.startswith("models/"):
+                continue
+        if "/" in k:
+            low_k = k.lower()
+            if any(
+                low_k.startswith(r.lower() + "/variants/")
+                or low_k.startswith(r.lower() + "/models/")
+                for r in roots
+            ):
+                continue
         out.append(k)
     return out
 
@@ -176,7 +188,7 @@ def _asset_folder_prefixes_from_config(config: dict[str, Any]) -> set[str]:
             continue
         rel = val.lstrip("./")
         parts = PurePosixPath(rel).parts
-        if len(parts) >= 2 and parts[0].lower() != "variants":
+        if len(parts) >= 2 and parts[0].lower() not in {"variants", "models"}:
             prefixes.add(parts[0])
     return prefixes
 

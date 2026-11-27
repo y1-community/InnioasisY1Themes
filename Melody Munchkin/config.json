@@ -3,9 +3,10 @@
         "title": "Melody Munchkin",
         "author": "Innioasis",
         "authorUrl": "https://www.innioasis.com",
-        "description": "Customize your Innioasis Y1 with the Melody Munchkin theme.",
+        "description": "Official built-in Melody Munchkin theme updated from Innioasis Y2 3.2.8 with full Y2 Settings icons, 9-patch selection bar, and automatic Y1 compatibility.",
         "externalDownloadUrl": ""
     },
+    "showNativeIcon": true,
     "themeCover": "cover.png",
     "desktopWallpaper": "desk.png",
     "globalWallpaper": "desk.png",
@@ -16,7 +17,7 @@
         "itemTextColor": "#FFFFFFFF",
         "itemSelectedTextColor": "#FF00F5FF",
         "itemSelectedBackground": "item_selected_no_arrow.9.png",
-        "itemBackground": "transparent.png",
+        "itemBackground": "",
         "itemRightArrow": "right_arrow.png",
         "itemSelectedBackgroundIs9Patch": true
     },
@@ -30,9 +31,9 @@
     },
     "menuConfig": {
         "menuBackgroundColor": "#3F4142",
-        "menuItemBackground": "transparent.png",
+        "menuItemBackground": "",
         "menuItemTextColor": "",
-        "menuItemSelectedBackground": "transparent.png",
+        "menuItemSelectedBackground": "",
         "menuItemSelectedTextColor": ""
     },
     "homePageConfig": {
@@ -42,7 +43,7 @@
         "audiobooks": "Desk-Audiobooks.png",
         "photos": "Desk-Photos.png",
         "fm": "Desk-FM.png",
-        "bluetooth": "Desk-Bluetooth.png",
+        "bluetooth": "Desk-Bluetooth_Y1.png",
         "settings": "Desk-Settings.png",
         "shuffleQuick": "Desk-Shuffle Quick.png",
         "calendar": "calendar.png",
@@ -51,8 +52,8 @@
         "fileManager": "File Manager.png"
     },
     "fileConfig": {
-        "folderIcon": "transparent.png",
-        "musicIcon": "transparent.png"
+        "folderIcon": "",
+        "musicIcon": ""
     },
     "settingConfig": {
         "settingMask": "setting_mask.png",
@@ -104,10 +105,27 @@
         "clearCache": "Clear cache.png",
         "theme": "Change Theme.png",
         "fileExtensionOn": "File Extension-ON.png",
-        "fileExtensionOff": "File Extension-OFF.png"
+        "fileExtensionOff": "File Extension-OFF.png",
+        "wheelSensitivityLow": "icon_setting_wheel_sensitivity_low.png",
+        "wheelSensitivityStandard": "icon_setting_wheel_sensitivity_standard.png",
+        "wheelSensitivityHigh": "icon_setting_wheel_sensitivity_high.png",
+        "wheelVolumeOn": "icon_setting_wheel_volume_on.png",
+        "wheelVolumeOff": "icon_setting_wheel_volume_off.png",
+        "headphoneGainLow": "icon_setting_gain_low.png",
+        "headphoneGainStandard": "icon_setting_gain_standard.png",
+        "headphoneGainHigh": "icon_setting_gain_high.png",
+        "headphoneGainMaximum": "icon_setting_gain_maximum.png",
+        "speakerOn": "icon_setting_speaker_on.png",
+        "speakerOff": "icon_setting_speaker_off.png",
+        "categoryKeysWheel": "icon_setting_category_wheel.png",
+        "categoryAudio": "icon_setting_category_audio.png",
+        "categoryFilesStorage": "icon_setting_category_storage.png",
+        "categorySystem": "icon_setting_category_system.png",
+        "categoryPersonalization": "icon_setting_category_personalization.png",
+        "categoryDisplay": "icon_setting_category_display.png",
+        "bluetooth": "Desk-Bluetooth.png"
     },
     "statusConfig": {
-        "statusTextColor": "#ffffff",
         "playing": "playing.png",
         "audiobookPlaying": "audiobook_playing.png",
         "pause": "pause.png",

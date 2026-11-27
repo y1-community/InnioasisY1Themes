@@ -522,6 +522,55 @@ def _variant_screenshot_previews(folder: str) -> dict[str, str]:
     return out
 
 
+def _discover_model_folder_names(folder: str) -> dict[str, str]:
+    """``Models/Y1`` / ``Models/Y2`` device-model variations present on disk."""
+    models_root = REPO_ROOT / folder / "Models"
+    out: dict[str, str] = {}
+    if not models_root.is_dir():
+        return out
+    for child in sorted(models_root.iterdir(), key=lambda p: str(p.name).casefold()):
+        if not child.is_dir() or child.name.startswith("."):
+            continue
+        key = str(child.name).strip().lower()
+        if key in {"y1", "y2"} and (child / "config.json").is_file():
+            out[key] = f"Models/{child.name}"
+    return out
+
+
+def _model_metadata(folder: str, config: dict[str, Any] | None) -> dict[str, Any]:
+    """Model variations for a theme, declared in ``gallery`` and mirrored from disk.
+
+    An empty folder string means "this model uses the theme root", which is how the
+    factory Y2 default theme keeps one listing while shipping a separate Y1 look.
+    """
+    gallery = config.get("gallery") if isinstance(config, dict) else None
+    declared = gallery.get("modelFolders") if isinstance(gallery, dict) else None
+    folders: dict[str, str] = {}
+    if isinstance(declared, dict):
+        for key in ("y1", "y2"):
+            value = declared.get(key)
+            if isinstance(value, str):
+                folders[key] = value.strip().strip("/")
+    for key, value in _discover_model_folder_names(folder).items():
+        folders.setdefault(key, value)
+    if not folders:
+        return {}
+    out: dict[str, Any] = {"modelFolders": folders}
+    labels = gallery.get("modelLabels") if isinstance(gallery, dict) else None
+    if isinstance(labels, dict):
+        clean_labels = {
+            str(k).strip().lower(): str(v).strip()
+            for k, v in labels.items()
+            if str(k).strip().lower() in {"y1", "y2"} and isinstance(v, str) and v.strip()
+        }
+        if clean_labels:
+            out["modelLabels"] = clean_labels
+    default_model = str(gallery.get("defaultModel") or "").strip().lower() if isinstance(gallery, dict) else ""
+    if default_model in {"y1", "y2"}:
+        out["defaultModel"] = default_model
+    return out
+
+
 def _theme_entry_from_folder(folder: str, config: dict[str, Any] | None) -> dict[str, Any]:
     theme_info = _theme_info_for_folder(folder, config)
     raw_name = str(theme_info.get("title") or "").strip()
@@ -578,6 +627,7 @@ def _theme_entry_from_folder(folder: str, config: dict[str, Any] | None) -> dict
     pack_variants = _discover_pack_variant_folder_names(folder)
     if pack_variants:
         entry["variantFolders"] = pack_variants
+    entry.update(_model_metadata(folder, config if isinstance(config, dict) else None))
 
     return entry
 

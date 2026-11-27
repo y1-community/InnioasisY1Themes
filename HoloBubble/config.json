@@ -3,9 +3,10 @@
         "title": "HoloBubble",
         "author": "Innioasis",
         "authorUrl": "https://www.innioasis.com",
-        "description": "Customize your Innioasis Y1 with the HoloBubble theme.",
+        "description": "Official built-in HoloBubble theme updated from Innioasis Y2 3.2.8, with automatic Y1 Home and Y2 Settings Bluetooth icon compatibility.",
         "externalDownloadUrl": ""
     },
+    "showNativeIcon": true,
     "themeCover": "cover.png",
     "desktopWallpaper": "desk_bg001.png",
     "globalWallpaper": "desk_bg001.png",
@@ -13,7 +14,7 @@
         "itemTextColor": "#ffffff",
         "itemSelectedTextColor": "#ffffff",
         "itemSelectedBackground": "1.png",
-        "itemBackground": "transparent.png",
+        "itemBackground": "",
         "itemRightArrow": "2.png"
     },
     "dialogConfig": {
@@ -25,7 +26,7 @@
     },
     "menuConfig": {
         "menuBackgroundColor": "#000000",
-        "menuItemBackground": "transparent.png",
+        "menuItemBackground": "",
         "menuItemTextColor": "#ffffff",
         "menuItemSelectedBackground": "1.png",
         "menuItemSelectedTextColor": "#ffffff"
@@ -37,7 +38,7 @@
         "audiobooks": "Audiobooks.png",
         "photos": "Photos.png",
         "fm": "FM Radio.png",
-        "bluetooth": "Bluetooth.png",
+        "bluetooth": "Bluetooth_Y1.png",
         "settings": "Settings.png",
         "shuffleQuick": "Shuffle Quick.png",
         "calendar": "calendar.png",
@@ -46,8 +47,8 @@
         "fileManager": "File Manager.png"
     },
     "fileConfig": {
-        "folderIcon": "transparent.png",
-        "musicIcon": "transparent.png"
+        "folderIcon": "",
+        "musicIcon": ""
     },
     "settingConfig": {
         "shutdown": "Shutdown@1x.png",
@@ -99,32 +100,36 @@
         "theme": "Change Theme@1x.png",
         "fileExtensionOn": "file_ext_on.png",
         "fileExtensionOff": "file_ext_off.png",
-        "settingMask": "transparent.png"
+        "wheelSensitivityLow": "icon_setting_wheel_sensitivity_low.png",
+        "wheelSensitivityStandard": "icon_setting_wheel_sensitivity_standard.png",
+        "wheelSensitivityHigh": "icon_setting_wheel_sensitivity_high.png",
+        "wheelVolumeOn": "icon_setting_wheel_volume_on.png",
+        "wheelVolumeOff": "icon_setting_wheel_volume_off.png",
+        "headphoneGainLow": "icon_setting_gain_low.png",
+        "headphoneGainStandard": "icon_setting_gain_standard.png",
+        "headphoneGainHigh": "icon_setting_gain_high.png",
+        "headphoneGainMaximum": "icon_setting_gain_maximum.png",
+        "speakerOn": "icon_setting_speaker_on.png",
+        "speakerOff": "icon_setting_speaker_off.png",
+        "categoryKeysWheel": "icon_setting_category_wheel.png",
+        "categoryAudio": "icon_setting_category_audio.png",
+        "categoryFilesStorage": "icon_setting_category_storage.png",
+        "categorySystem": "icon_setting_category_system.png",
+        "categoryPersonalization": "icon_setting_category_personalization.png",
+        "categoryDisplay": "icon_setting_category_display.png",
+        "bluetooth": "Bluetooth.png"
     },
     "statusConfig": {
-        "statusTextColor": "#ffffff",
-        "playing": "transparent.png",
-        "audiobookPlaying": "transparent.png",
-        "pause": "transparent.png",
-        "fmPlaying": "transparent.png",
-        "stop": "transparent.png",
-        "blConnected": "transparent.png",
-        "blConnecting": "transparent.png",
-        "blDisconnected": "transparent.png",
-        "headsetWithMic": "transparent.png",
-        "headsetWithoutMic": "transparent.png",
-        "statusBarColor": "",
-        "battery": [
-            "transparent.png",
-            "transparent.png",
-            "transparent.png",
-            "transparent.png"
-        ],
-        "batteryCharging": [
-            "transparent.png",
-            "transparent.png",
-            "transparent.png",
-            "transparent.png"
-        ]
+        "playing": "",
+        "audiobookPlaying": "",
+        "pause": "",
+        "fmPlaying": "",
+        "stop": "",
+        "blConnected": "",
+        "blConnecting": "",
+        "blDisconnected": "",
+        "headsetWithMic": "",
+        "headsetWithoutMic": "",
+        "statusBarColor": ""
     }
 }

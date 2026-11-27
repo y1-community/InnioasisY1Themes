@@ -133,7 +133,15 @@ def fill_blank_asset_values(
 ) -> bool:
     """Give every asset slot a file: missing, empty or whitespace values become the
     transparent placeholder so the player keeps the gap instead of drawing its own
-    art. Creator-supplied files are never overwritten."""
+    art. Creator-supplied files are never overwritten.
+
+    Themes that explicitly opt into native device fallback icons via Y2's
+    ``showNativeIcon: true`` keep empty slots intact so the launcher draws its
+    native stock artwork (e.g. battery / status / settings icons) instead of
+    hiding them behind ``transparent.png``.
+    """
+    if theme_config.get("showNativeIcon") is True:
+        return False
     changed = False
     for section, keys_obj in reference.items():
         if not isinstance(keys_obj, dict):

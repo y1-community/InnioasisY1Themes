@@ -1,11 +1,12 @@
 {
     "theme_info": {
-        "title": "Apple 3",
-        "author": "Ange",
+        "title": "Unseen",
+        "author": "Innioasis",
         "authorUrl": "https://www.innioasis.com",
-        "description": "Customize your Innioasis Y1 with the Unseen theme.",
+        "description": "Official built-in minimalist Unseen theme updated from Innioasis Y2 3.2.8 for Innioasis Y1 and Y2.",
         "externalDownloadUrl": ""
     },
+    "showNativeIcon": true,
     "themeCover": "cover.png",
     "desktopWallpaper": "desk.png",
     "globalWallpaper": "desk.png",
@@ -13,7 +14,7 @@
         "itemTextColor": "#ffffff",
         "itemSelectedTextColor": "#ffffff",
         "itemSelectedBackground": "1.png",
-        "itemBackground": "transparent.png",
+        "itemBackground": "",
         "itemRightArrow": "2.png"
     },
     "dialogConfig": {
@@ -25,7 +26,7 @@
     },
     "menuConfig": {
         "menuBackgroundColor": "#000000",
-        "menuItemBackground": "transparent.png",
+        "menuItemBackground": "",
         "menuItemTextColor": "#ffffff",
         "menuItemSelectedBackground": "1.png",
         "menuItemSelectedTextColor": "#ffffff"
@@ -46,8 +47,8 @@
         "fileManager": "transparent.png"
     },
     "fileConfig": {
-        "folderIcon": "transparent.png",
-        "musicIcon": "transparent.png"
+        "folderIcon": "",
+        "musicIcon": ""
     },
     "settingConfig": {
         "shutdown": "transparent.png",
@@ -99,32 +100,35 @@
         "theme": "transparent.png",
         "fileExtensionOn": "transparent.png",
         "fileExtensionOff": "transparent.png",
-        "settingMask": "transparent.png"
+        "wheelSensitivityLow": "transparent.png",
+        "wheelSensitivityStandard": "transparent.png",
+        "wheelSensitivityHigh": "transparent.png",
+        "wheelVolumeOn": "transparent.png",
+        "wheelVolumeOff": "transparent.png",
+        "headphoneGainLow": "transparent.png",
+        "headphoneGainStandard": "transparent.png",
+        "headphoneGainHigh": "transparent.png",
+        "headphoneGainMaximum": "transparent.png",
+        "speakerOn": "transparent.png",
+        "speakerOff": "transparent.png",
+        "categoryKeysWheel": "transparent.png",
+        "categoryAudio": "transparent.png",
+        "categoryFilesStorage": "transparent.png",
+        "categorySystem": "transparent.png",
+        "categoryPersonalization": "transparent.png",
+        "categoryDisplay": "transparent.png"
     },
     "statusConfig": {
-        "statusTextColor": "#ffffff",
-        "playing": "transparent.png",
-        "audiobookPlaying": "transparent.png",
-        "pause": "transparent.png",
-        "fmPlaying": "transparent.png",
-        "stop": "transparent.png",
-        "blConnected": "transparent.png",
-        "blConnecting": "transparent.png",
-        "blDisconnected": "transparent.png",
-        "headsetWithMic": "transparent.png",
-        "headsetWithoutMic": "transparent.png",
-        "statusBarColor": "#FF2A2A2A",
-        "battery": [
-            "transparent.png",
-            "transparent.png",
-            "transparent.png",
-            "transparent.png"
-        ],
-        "batteryCharging": [
-            "transparent.png",
-            "transparent.png",
-            "transparent.png",
-            "transparent.png"
-        ]
+        "playing": "",
+        "audiobookPlaying": "",
+        "pause": "",
+        "fmPlaying": "",
+        "stop": "",
+        "blConnected": "",
+        "blConnecting": "",
+        "blDisconnected": "",
+        "headsetWithMic": "",
+        "headsetWithoutMic": "",
+        "statusBarColor": "#FF2A2A2A"
     }
 }

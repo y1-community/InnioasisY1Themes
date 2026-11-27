@@ -1573,6 +1573,17 @@
             "screenshotPreview": "./CITYSTAR_NO_ICONS/screenshot_preview.jpg"
         },
         {
+            "name": "Classic",
+            "folder": "Classic",
+            "author": "Innioasis",
+            "authorUrl": "https://www.innioasis.com",
+            "description": "Official built-in Classic dark theme from Innioasis Y2 3.2.8 (originally the factory Y1 HoloPebble default), cross-compatible with Innioasis Y1 and Y2.",
+            "screenshot": "./Classic/cover.jpg",
+            "sourceType": "internal",
+            "sortName": "classic",
+            "searchText": "classic official built-in classic dark theme from innioasis y2 3.2.8 (originally the factory y1 holopebble default), cross-compatible with innioasis y1 and y2. innioasis classic"
+        },
+        {
             "name": "clean doggy aesthetic",
             "folder": "clean_doggy_aesthetic",
             "author": "Twixx",
@@ -3327,10 +3338,10 @@
             "folder": "HoloBubble",
             "sourceType": "internal",
             "sortName": "holobubble",
-            "searchText": "holobubble customize your innioasis y1 with the holobubble theme. innioasis holobubble",
+            "searchText": "holobubble official built-in holobubble theme updated from innioasis y2 3.2.8, with automatic y1 home and y2 settings bluetooth icon compatibility. innioasis holobubble",
             "author": "Innioasis",
             "authorUrl": "https://www.innioasis.com",
-            "description": "Customize your Innioasis Y1 with the HoloBubble theme.",
+            "description": "Official built-in HoloBubble theme updated from Innioasis Y2 3.2.8, with automatic Y1 Home and Y2 Settings Bluetooth icon compatibility.",
             "screenshot": "./HoloBubble/cover.jpg",
             "screenshotPreview": "./HoloBubble/screenshot_preview.jpg"
         },
@@ -3338,13 +3349,33 @@
             "name": "HoloFacet",
             "folder": "HoloFacet",
             "author": "Innioasis",
-            "description": "Customize your Innioasis Y1 with the HoloFacet theme.",
+            "description": "Official built-in HoloFacet theme updated from Innioasis Y2 3.2.8, with automatic Y1 Home and Y2 Settings Bluetooth icon compatibility.",
             "screenshot": "./HoloFacet/cover.jpg",
             "sourceType": "internal",
             "sortName": "holofacet",
-            "searchText": "holofacet customize your innioasis y1 with the holofacet theme. innioasis holofacet",
+            "searchText": "holofacet official built-in holofacet theme updated from innioasis y2 3.2.8, with automatic y1 home and y2 settings bluetooth icon compatibility. innioasis holofacet",
             "authorUrl": "https://www.innioasis.com",
             "screenshotPreview": "./HoloFacet/screenshot_preview.jpg"
+        },
+        {
+            "name": "HoloPebble",
+            "folder": "HoloPebble",
+            "author": "Innioasis",
+            "authorUrl": "https://www.innioasis.com",
+            "description": "Official factory default HoloPebble theme — includes both the light Innioasis Y2 3.2.8 default (with dark status bar text) and the classic dark Innioasis Y1 model version.",
+            "screenshot": "./HoloPebble/cover.jpg",
+            "modelFolders": {
+                "y1": "Models/Y1",
+                "y2": ""
+            },
+            "modelLabels": {
+                "y1": "Y1 (Dark)",
+                "y2": "Y2 (Light Default)"
+            },
+            "defaultModel": "y2",
+            "sourceType": "internal",
+            "sortName": "holopebble",
+            "searchText": "holopebble official factory default holopebble theme — includes both the light innioasis y2 3.2.8 default (with dark status bar text) and the classic dark innioasis y1 model version. innioasis holopebble"
         },
         {
             "name": "Homestuck",
@@ -4406,11 +4437,11 @@
             "folder": "Melody Munchkin",
             "author": "Innioasis",
             "authorUrl": "https://www.innioasis.com",
-            "description": "Customize your Innioasis Y1 with the Melody Munchkin theme.",
+            "description": "Official built-in Melody Munchkin theme updated from Innioasis Y2 3.2.8 with full Y2 Settings icons, 9-patch selection bar, and automatic Y1 compatibility.",
             "screenshot": "./Melody Munchkin/cover.jpg",
             "sourceType": "internal",
             "sortName": "melody munchkin",
-            "searchText": "melody munchkin customize your innioasis y1 with the melody munchkin theme. innioasis melody munchkin",
+            "searchText": "melody munchkin official built-in melody munchkin theme updated from innioasis y2 3.2.8 with full y2 settings icons, 9-patch selection bar, and automatic y1 compatibility. innioasis melody munchkin",
             "screenshotPreview": "./Melody Munchkin/screenshot_preview.jpg"
         },
         {
@@ -8351,14 +8382,14 @@
             "searchText": "undertale richie undertale richie undertale richie undertale richie"
         },
         {
-            "name": "Apple 3",
+            "name": "Unseen",
             "folder": "Unseen",
             "sourceType": "internal",
-            "sortName": "apple 3",
-            "searchText": "apple 3 customize your innioasis y1 with the unseen theme. ange unseen",
-            "author": "Ange",
+            "sortName": "unseen",
+            "searchText": "unseen official built-in minimalist unseen theme updated from innioasis y2 3.2.8 for innioasis y1 and y2. innioasis unseen",
+            "author": "Innioasis",
             "authorUrl": "https://www.innioasis.com",
-            "description": "Customize your Innioasis Y1 with the Unseen theme.",
+            "description": "Official built-in minimalist Unseen theme updated from Innioasis Y2 3.2.8 for Innioasis Y1 and Y2.",
             "screenshot": "./Unseen/cover.jpg",
             "screenshotPreview": "./Unseen/screenshot_preview.jpg"
         },
@@ -8713,18 +8744,6 @@
             "description": "This theme is inspired by the X-Files TV series.",
             "screenshot": "./XFiles/cover.jpg",
             "screenshotPreview": "./XFiles/screenshot_preview.jpg"
-        },
-        {
-            "name": "Y2 Default",
-            "folder": "Y2_Default",
-            "author": "Inni",
-            "authorUrl": "https://www.innioasis.com",
-            "description": "Default Theme from Innioasis Y2 - Compatible with Y1, Y2 on Stock firmware and Solar",
-            "screenshot": "./Y2_Default/cover.jpg",
-            "sourceType": "internal",
-            "sortName": "y2 default",
-            "searchText": "y2 default default theme from innioasis y2 - compatible with y1, y2 on stock firmware and solar inni y2_default",
-            "screenshotPreview": "./Y2_Default/screenshot_preview.jpg"
         },
         {
             "name": "Y2 Orange GC",

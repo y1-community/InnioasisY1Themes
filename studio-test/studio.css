@@ -4229,6 +4229,58 @@ body.studio-app.y1-donate-panel-open #support-toolbar-slot {
 
 .studio-preview-toolbar[hidden] { display: none; }
 
+/* Two assets on one row (a list item's selection bar and its artwork) share
+   the strip, each with its own label so neither replace button is a guess. */
+.studio-preview-toolbar.has-groups {
+    max-width: min(560px, calc(100vw - 16px));
+}
+
+.studio-preview-toolbar-groups {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+
+.studio-preview-toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+}
+
+.studio-preview-toolbar-group + .studio-preview-toolbar-group {
+    padding-left: 6px;
+    border-left: 1px solid var(--studio-line);
+}
+
+.studio-preview-toolbar-glabel {
+    max-width: 104px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 0.66rem;
+    font-weight: 600;
+    opacity: 0.72;
+}
+
+.studio-preview-toolbar.is-side .studio-preview-toolbar-groups,
+.studio-preview-toolbar.is-side .studio-preview-toolbar-group {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.studio-preview-toolbar.is-side .studio-preview-toolbar-group + .studio-preview-toolbar-group {
+    padding-left: 0;
+    padding-top: 5px;
+    border-left: 0;
+    border-top: 1px solid var(--studio-line);
+}
+
+.studio-preview-toolbar.is-side .studio-preview-toolbar-glabel {
+    max-width: 160px;
+}
+
 .studio-preview-toolbar-head {
     display: flex;
     align-items: center;
@@ -4464,6 +4516,35 @@ body.studio-app.y1-donate-panel-open #support-toolbar-slot {
     border-top: 1px solid var(--studio-line);
     flex-wrap: wrap;
     justify-content: flex-start;
+}
+
+/* —— Y1 / Y2 copy choice before a save —— */
+.studio-model-card {
+    max-width: 520px;
+}
+
+.studio-model-lead {
+    margin: 0 0 14px;
+    color: var(--site-text-muted);
+    font-size: 0.86rem;
+    line-height: 1.5;
+}
+
+.studio-model-methods {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.studio-model-methods .studio-btn {
+    flex: 1 1 200px;
+    justify-content: flex-start;
+}
+
+.studio-model-foot {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 14px;
 }
 
 /* —— Stage Y1/Y2/Both preview controls —— */
