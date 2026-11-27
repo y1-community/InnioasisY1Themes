@@ -314,6 +314,13 @@
         sourceType: null,
         folder: null,
         variant: '',
+        /* The variation whose files are on screen. A brand-new variation has no
+           folder yet, so it keeps reading the look it was copied from while the
+           new name is what the save or submission writes. */
+        variantSource: '',
+        /* A variation the reader has named but the gallery does not have yet:
+           it lives in this tab until the next save or submission creates it. */
+        variantIsNew: false,
         meta: null,
         config: null,
         configBase: null,
@@ -381,6 +388,33 @@
     var toastTimer = null;
     var saveProgressTimer = null;
     var dragDepth = 0;
+    /* A drag that starts inside the page (preview artwork, a tray thumbnail) is
+       never a theme folder or ZIP. It must not arm the drop target, and a drop
+       of it must not be imported as a theme. */
+    var internalDragActive = false;
+    window.addEventListener(
+        'dragstart',
+        function () {
+            internalDragActive = true;
+        },
+        true
+    );
+    ['dragend', 'drop'].forEach(function (type) {
+        window.addEventListener(
+            type,
+            function () {
+                window.setTimeout(function () {
+                    internalDragActive = false;
+                }, 0);
+            },
+            true
+        );
+    });
+
+    function hasThemeFilePayload(event) {
+        if (internalDragActive) return false;
+        return hasFilePayload(event);
+    }
     var bootModeRequest = null;
     var saveTarget = {
         kind: 'device',
@@ -2166,10 +2200,12 @@
 
     function galleryContentFolder() {
         if (!state.folder) return '';
-        return state.variant ? state.folder + '/Variants/' + state.variant : state.folder;
+        var source = state.variantSource || '';
+        return source ? state.folder + '/Variants/' + source : state.folder;
     }
 
     function syncUrl() {
+        renderVariantControls();
         if (!history.replaceState) return;
         var params = new URLSearchParams(location.search);
         if (state.sourceType === 'gallery' && state.folder) {
@@ -2284,6 +2320,8 @@
         state.sourceType = 'gallery';
         state.folder = folder;
         state.variant = requestedVariant;
+        state.variantSource = requestedVariant;
+        state.variantIsNew = false;
         state.galleryBaseUrl = '';
         state.galleryBlobCache = Object.create(null);
         galleryWarmFolder = '';
@@ -2586,7 +2624,7 @@
 
         var options = {
             catalogFolder: state.sourceType === 'gallery' ? state.folder : '__studio_local__',
-            variantSegment: state.sourceType === 'gallery' ? state.variant || '' : '',
+            variantSegment: state.sourceType === 'gallery' ? state.variantSource || '' : '',
             mode: 'full',
             deviceMode: state.previewDeviceMode || 'both',
             showLegacyHome: state.showLegacyHome !== false,
@@ -7822,6 +7860,12 @@
            its ZIP opens straight onto config.json and the art. The upload path
            keeps the stem folder because the ingest expects a theme package. */
         var prefix = options && options.flat ? '' : stem + '/';
+        /* A submission of a named variation has to land in the listing's
+           Variants folder, exactly where upload.html used to put it. */
+        var variationSegment = String((options && options.variant) || state.variant || '').trim();
+        if (!(options && options.flat) && variationSegment) {
+            prefix = stem + '/Variants/' + variationSegment + '/';
+        }
         reportPercent(35, 'Compressing theme…');
         var zip = new window.JSZip();
         zip.file(prefix + 'config.json', JSON.stringify(outputConfig, null, 2));
@@ -8224,6 +8268,154 @@
         }
     }
 
+    /* —— Variations of one listing ——————————————————————————————
+
+       A listing can hold several named looks under ``Variants/<name>/`` (Pip-Boy
+       ships seven, Stranger Things several). The catalogue's variantFolders is
+       the authoritative list; the open theme's own gallery block is a fallback
+       for a package that has not been catalogued yet. */
+    function variantNames() {
+        var names = [];
+        function add(name) {
+            var clean = String(name || '').trim();
+            if (!clean || clean === '.') return;
+            var low = clean.toLowerCase();
+            if (names.some(function (existing) { return existing.toLowerCase() === low; })) return;
+            names.push(clean);
+        }
+        var entry = state.folder ? state.byFolder[state.folder] : null;
+        if (entry && Array.isArray(entry.variantFolders)) entry.variantFolders.forEach(add);
+        var gallery = state.config && state.config.gallery;
+        if (gallery && Array.isArray(gallery.variantFolders)) gallery.variantFolders.forEach(add);
+        if (state.variant && state.variantIsNew) add(state.variant);
+        return names;
+    }
+
+    function renderVariantControls() {
+        var select = document.getElementById('studio-variant-select');
+        if (!select) return;
+        var wrap = document.getElementById('studio-variant-control');
+        var isGallery = state.sourceType === 'gallery' && !!state.folder;
+        if (wrap) wrap.hidden = !isGallery;
+        if (!isGallery) {
+            select.innerHTML = '';
+            return;
+        }
+        var selected = state.variant || '';
+        select.innerHTML = '';
+        var baseOption = document.createElement('option');
+        baseOption.value = '';
+        baseOption.textContent = ((state.meta && state.meta.name) || 'Base look') + ' — base';
+        select.appendChild(baseOption);
+        variantNames().forEach(function (name) {
+            var option = document.createElement('option');
+            option.value = name;
+            option.textContent = name + (state.variantIsNew && name === selected ? ' (new)' : '');
+            select.appendChild(option);
+        });
+        select.value = selected;
+        var newButton = document.getElementById('studio-variant-new');
+        if (newButton) newButton.disabled = false;
+    }
+
+    function switchVariant(name) {
+        var clean = String(name || '').trim();
+        if (!state.folder || clean === (state.variant || '')) return;
+        if (state.dirty) {
+            /* Switching looks reloads the package, so hand the current edits to
+               the recovery draft before they leave this tab. */
+            try {
+                saveRecoveryNow();
+            } catch (e) {}
+        }
+        loadGalleryTheme(state.folder, null, clean);
+    }
+
+    function promptNewVariation() {
+        return new Promise(function (resolve) {
+            var modal = document.getElementById('studio-variant-modal');
+            var input = document.getElementById('studio-variant-name');
+            if (!modal || !input) {
+                resolve('');
+                return;
+            }
+            input.value = '';
+            function onKey(event) {
+                if (event.key === 'Escape') {
+                    event.preventDefault();
+                    finish('');
+                }
+                if (event.key === 'Enter' && document.activeElement === input) {
+                    event.preventDefault();
+                    finish(input.value);
+                }
+            }
+            function finish(value) {
+                modal.hidden = true;
+                document.removeEventListener('keydown', onKey);
+                var create = document.getElementById('studio-variant-create');
+                var cancel = document.getElementById('studio-variant-cancel');
+                var close = document.getElementById('studio-variant-x');
+                [create, cancel, close].forEach(function (button) {
+                    if (button) button.onclick = null;
+                });
+                resolve(String(value || '').trim());
+            }
+            var createButton = document.getElementById('studio-variant-create');
+            var cancelButton = document.getElementById('studio-variant-cancel');
+            var closeButton = document.getElementById('studio-variant-x');
+            if (createButton) createButton.onclick = function () { finish(input.value); };
+            if (cancelButton) cancelButton.onclick = function () { finish(''); };
+            if (closeButton) closeButton.onclick = function () { finish(''); };
+            document.addEventListener('keydown', onKey);
+            modal.hidden = false;
+            input.focus();
+        });
+    }
+
+    async function createVariation() {
+        if (!state.folder || state.sourceType !== 'gallery') {
+            toast('Open a gallery theme to add a variation.');
+            return;
+        }
+        var name = await promptNewVariation();
+        if (!name) return;
+        if (name === (state.variant || '')) {
+            toast('This theme is already showing that variation.');
+            return;
+        }
+        if (variantNames().some(function (existing) { return existing.toLowerCase() === name.toLowerCase(); })) {
+            toast('“' + name + '” already exists. Pick another name.');
+            return;
+        }
+        /* Keep reading the look on screen (the base theme or the variation it
+           was opened from) until the new variation's own folder exists. */
+        state.variantSource = state.variant || '';
+        state.variant = name;
+        state.variantIsNew = true;
+        state.dirty = true;
+        if (el.unsaved) el.unsaved.hidden = false;
+        renderVariantControls();
+        syncUrl();
+        toast('Started variation “' + name + '”. Save it, or submit it with the theme.');
+    }
+
+    function setupVariantControls() {
+        var select = document.getElementById('studio-variant-select');
+        if (select) {
+            select.addEventListener('change', function () {
+                switchVariant(select.value);
+            });
+        }
+        var newButton = document.getElementById('studio-variant-new');
+        if (newButton) {
+            newButton.addEventListener('click', function () {
+                void createVariation();
+            });
+        }
+        renderVariantControls();
+    }
+
     /* A theme carries two Bluetooth artworks when Y1 draws it on Home and Y2
        shows it in Settings, and behaves the same way when it ships separate
        Models/ folders. Only such a theme needs the reader to say which player
@@ -8321,6 +8513,11 @@
                    so both can sit in the same folder. */
                 var modelLabel = targetModel === 'y1' ? 'Y1' : 'Y2';
                 file = new File([file], file.name.replace(/\.zip$/i, '') + ' (' + modelLabel + ').zip', {
+                    type: 'application/zip'
+                });
+            }
+            if (state.variant) {
+                file = new File([file], file.name.replace(/\.zip$/i, '') + ' (' + state.variant + ').zip', {
                     type: 'application/zip'
                 });
             }
@@ -9087,6 +9284,7 @@
         event.preventDefault();
         dragDepth = 0;
         hideDrop();
+        if (internalDragActive) return;
         closeOnboarding();
         var dt = event.dataTransfer;
         if (!dt) return;
@@ -9834,22 +10032,23 @@
         });
 
         window.addEventListener('dragenter', function (event) {
-            if (!hasFilePayload(event)) return;
+            if (!hasThemeFilePayload(event)) return;
             event.preventDefault();
             dragDepth += 1;
             showDrop();
         });
         window.addEventListener('dragover', function (event) {
-            if (!hasFilePayload(event)) return;
+            if (!hasThemeFilePayload(event)) return;
             event.preventDefault();
             if (event.dataTransfer) event.dataTransfer.dropEffect = 'copy';
         });
         window.addEventListener('dragleave', function (event) {
-            if (!hasFilePayload(event)) return;
+            if (!hasThemeFilePayload(event)) return;
             dragDepth = Math.max(0, dragDepth - 1);
             if (!dragDepth) hideDrop();
         });
         window.addEventListener('drop', onDrop);
+        setupVariantControls();
         window.addEventListener('keydown', function (event) {
             if (event.key === 'Escape') {
                 hideDrop();

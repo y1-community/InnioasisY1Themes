@@ -13,6 +13,10 @@
     --studio-danger: var(--lumen-red, #b3261e);
     --studio-panel-bg: color-mix(in oklab, var(--site-bg-elevated) 74%, var(--site-bg));
     --studio-card: color-mix(in oklab, var(--site-bg-card) 82%, transparent);
+    /* Opaque work surface: any control that sits over artwork or copy uses this
+       instead of a see-through tint, so nothing behind it reads through the
+       gaps and makes a menu look transparent. */
+    --studio-surface: color-mix(in oklab, var(--site-bg-elevated) 90%, var(--site-bg));
     --studio-accent-soft: color-mix(in oklab, var(--site-accent) 15%, transparent);
     --studio-accent-line: color-mix(in oklab, var(--site-accent) 38%, transparent);
     /* Accent ink: the label on an accent-tinted control. The tint stays light
@@ -296,7 +300,7 @@
     padding: 8px;
     border: 1px solid var(--studio-line);
     border-radius: 10px;
-    background: var(--studio-card);
+    background: var(--studio-surface);
 }
 
 .studio-mask-top { display: flex; align-items: center; gap: 8px; min-width: 0; }
@@ -333,7 +337,15 @@
 .studio-mask-badge.is-changed { color: var(--site-accent); }
 .studio-mask-badge.is-missing { color: var(--studio-danger, #e2564f); }
 
-.studio-mask-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.studio-mask-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    padding: 4px;
+    border: 1px solid var(--studio-line);
+    border-radius: 9px;
+    background: var(--studio-surface);
+}
 
 .studio-mask-actions button {
     min-height: 32px;
@@ -2323,7 +2335,7 @@ body.studio-app {
     padding: 6px;
     border: 1px solid var(--studio-accent-line);
     border-radius: 12px;
-    background: color-mix(in oklab, var(--site-accent) 7%, transparent);
+    background: color-mix(in oklab, var(--site-accent) 7%, var(--studio-surface));
 }
 
 .studio-related-head {
@@ -4220,7 +4232,7 @@ body.studio-app.y1-donate-panel-open #support-toolbar-slot {
     padding: 5px 6px 5px 9px;
     border: 1px solid var(--studio-line-strong, rgba(255, 255, 255, 0.16));
     border-radius: 11px;
-    background: color-mix(in oklab, var(--site-bg-elevated) 94%, transparent);
+    background: color-mix(in oklab, var(--site-bg-elevated) 97%, var(--site-bg));
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.34);
     backdrop-filter: blur(16px);
     color: var(--site-text);
@@ -4516,6 +4528,87 @@ body.studio-app.y1-donate-panel-open #support-toolbar-slot {
     border-top: 1px solid var(--studio-line);
     flex-wrap: wrap;
     justify-content: flex-start;
+}
+
+/* —— Variation switcher in the preview controls —— */
+.studio-variant-control {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding: 3px 6px;
+    border: 1px solid var(--studio-line);
+    border-radius: 10px;
+    background: var(--studio-surface);
+}
+
+.studio-variant-control[hidden] { display: none; }
+
+.studio-variant-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--site-muted);
+    font: 600 0.62rem var(--site-font);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.studio-variant-select {
+    max-width: 200px;
+    min-height: 30px;
+    padding: 3px 8px;
+    border: 1px solid var(--studio-line);
+    border-radius: 8px;
+    background: var(--site-bg-elevated);
+    color: var(--site-text);
+    font: 600 0.72rem var(--site-font);
+}
+
+.studio-variant-new { min-height: 30px; }
+
+.studio-variant-card { max-width: 460px; }
+
+.studio-variant-lead {
+    margin: 0 0 12px;
+    color: var(--site-text-muted);
+    font-size: 0.86rem;
+    line-height: 1.5;
+}
+
+.studio-variant-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+
+.studio-variant-field span {
+    color: var(--site-muted);
+    font: 600 0.66rem var(--site-font);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.studio-variant-field input {
+    min-height: 38px;
+    padding: 8px 10px;
+    border: 1px solid var(--studio-line);
+    border-radius: 9px;
+    background: var(--site-bg);
+    color: var(--site-text);
+    font: 600 0.9rem var(--site-font);
+}
+
+.studio-variant-field input:focus-visible {
+    outline: 2px solid var(--site-accent);
+    outline-offset: 1px;
+}
+
+.studio-variant-foot {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
 }
 
 /* —— Y1 / Y2 copy choice before a save —— */
