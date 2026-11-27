@@ -5185,3 +5185,29 @@ body.studio-app.y1-donate-panel-open #support-toolbar-slot {
         font-size: 0.95rem;
     }
 }
+
+/* The stage header holds a long product title beside the variation picker.
+   At laptop widths the picker used to squeeze the title to one word per line;
+   give the copy a basis so the meta row wraps under it instead. */
+.studio-stage-head {
+    flex-wrap: wrap;
+}
+
+.studio-stage-copy {
+    flex: 1 1 320px;
+}
+
+.studio-stage-meta {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+@media (max-width: 1360px) {
+    .studio-stage-head {
+        gap: 12px;
+    }
+
+    .studio-stage-meta {
+        justify-content: flex-start;
+    }
+}
