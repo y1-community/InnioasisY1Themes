@@ -248,9 +248,7 @@
         submitExternalWrap: byId('studio-submit-external-wrap'),
         submitExternalUrl: byId('studio-submit-external-url'),
         submitStatus: byId('studio-submit-status'),
-        originalSubmittedWrap: byId('studio-original-submitted-wrap'),
-        originalSubmitted: byId('studio-original-submitted'),
-        originalSubmittedHint: byId('studio-original-submitted-hint'),
+
         updateNotice: byId('studio-update-notice'),
         updateFolder: byId('studio-update-folder'),
         editAck: byId('studio-edit-ack'),
@@ -7253,7 +7251,6 @@
         }
         syncIdentityMismatch();
         syncOriginalityNotice();
-        syncOriginalSubmittedField();
         updateChecklist();
         syncManageVisibility();
     }
@@ -7558,53 +7555,10 @@
         return raw;
     }
 
-    function syncOriginalSubmittedField() {
-        if (!el.originalSubmittedWrap || !el.originalSubmitted) return;
-        var isUpdate = !!state.ownUpdate;
-        el.originalSubmittedWrap.hidden = !isUpdate;
-        if (!isUpdate) return;
-        var listing = state.identity && state.identity.listing ? state.identity.listing : galleryThemeForManage();
-        var folder = (listing && listing.folder) || state.folder || '';
-        var title = (el.submitTitle && el.submitTitle.value.trim()) || (listing && listing.name) || (state.meta && state.meta.name) || '';
-        var author = (el.submitAuthor && el.submitAuthor.value.trim()) || (listing && listing.author) || (state.meta && state.meta.author) || '';
-        var detected = resolveOriginalSubmittedAt(listing, folder, title, author);
-        var currentManual = el.originalSubmitted.value.trim();
-        if (detected) {
-            var datePart = detected.slice(0, 10);
-            if (/^\d{4}-\d{2}-\d{2}$/.test(datePart) && (!currentManual || el.originalSubmitted.dataset.source !== 'manual')) {
-                el.originalSubmitted.value = datePart;
-                el.originalSubmitted.dataset.exactIso = detected;
-                el.originalSubmitted.dataset.source = 'auto';
-            }
-            if (el.originalSubmittedHint) {
-                el.originalSubmittedHint.textContent =
-                    'Recorded from your original submission (' +
-                    formatClientTimestampDisplay(detected) +
-                    '). This date will be included on your update PR.';
-            }
-        } else {
-            if (el.originalSubmitted.dataset.source !== 'manual') {
-                el.originalSubmitted.value = '';
-                delete el.originalSubmitted.dataset.exactIso;
-            }
-            if (el.originalSubmittedHint) {
-                el.originalSubmittedHint.textContent =
-                    'Enter the date you originally submitted this theme so it’s included on your update PR.';
-            }
-        }
-    }
-
+    /* The original date comes from the listing itself, never from the submitter:
+       uploads never asked for it and older PRs did not record it, so guessing at
+       it in a form only invents a date the theme did not have. */
     function selectedOriginalSubmittedAt(listing, folder, title, author) {
-        if (el.originalSubmitted) {
-            var inputVal = el.originalSubmitted.value.trim();
-            var exactIso = String(el.originalSubmitted.dataset.exactIso || '').trim();
-            if (inputVal && exactIso && exactIso.slice(0, 10) === inputVal) {
-                return exactIso;
-            }
-            if (/^\d{4}-\d{2}-\d{2}$/.test(inputVal)) {
-                return inputVal;
-            }
-        }
         return resolveOriginalSubmittedAt(listing, folder, title, author);
     }
 
@@ -9125,11 +9079,6 @@
         });
         if (el.submitExternal) el.submitExternal.checked = false;
         if (el.submitExternalWrap) el.submitExternalWrap.hidden = true;
-        if (el.originalSubmitted) {
-            el.originalSubmitted.value = '';
-            delete el.originalSubmitted.dataset.exactIso;
-            delete el.originalSubmitted.dataset.source;
-        }
     }
 
     function applyOwnDetails() {
@@ -10248,16 +10197,6 @@
             markDirty();
             if (el.submitExternal.checked) el.submitExternalUrl.focus();
         });
-
-        if (el.originalSubmitted) {
-            el.originalSubmitted.addEventListener('input', function () {
-                el.originalSubmitted.dataset.source = 'manual';
-                var exactIso = String(el.originalSubmitted.dataset.exactIso || '').trim();
-                if (exactIso && exactIso.slice(0, 10) !== el.originalSubmitted.value.trim()) {
-                    delete el.originalSubmitted.dataset.exactIso;
-                }
-            });
-        }
 
         /* —— Identity question ——
            Answering it is what tells the studio which kind of submission this

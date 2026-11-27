@@ -4123,18 +4123,6 @@ body.studio-app.y1-donate-panel-open #support-toolbar-slot {
     grid-column: 1 / -1;
 }
 
-.studio-original-submitted {
-    padding: 10px 12px;
-    border-radius: 10px;
-    border: 1px solid var(--studio-line);
-    background: color-mix(in oklab, var(--site-text) 3%, transparent);
-}
-
-.studio-original-submitted input[type="date"] {
-    width: 100%;
-    color-scheme: light dark;
-}
-
 .studio-note a {
     color: var(--site-accent);
     font-weight: 600;
