@@ -384,6 +384,9 @@
         swapOpen: false,
         compactExpanded: false,
         previewDeviceMode: 'both',
+        /* Which launcher and release the Preview As picker names. "both" is
+           the Y2 layout with the Y1 Bluetooth row, the default readers know. */
+        previewTargetId: 'both',
         showLegacyHome: true,
         showUnimplementedHome: false,
         /* Which stock launcher each model's preview reproduces. Defaults to the
@@ -10529,27 +10532,67 @@
         }
     }
 
-    /* —— Firmware picker ——————————————————————————————————————————————
-       A package works on every release; the menu tree belongs to the launcher,
-       so the picker changes the simulated firmware, never the theme. */
-    function firmwareModelForPreview() {
-        return state.previewDeviceMode === 'y1' ? 'y1' : 'y2';
+    /* —— Preview As ————————————————————————————————————————————————————
+       One picker chooses the model layout and, for stock software, the release
+       whose menu tree the preview draws: a theme works on every firmware, the
+       menus belong to the launcher. */
+    function stockPreviewTargets(device) {
+        var cat = window.Y1FirmwareCatalog;
+        var model = cat && typeof cat.model === 'function' ? cat.model(device) : null;
+        if (!model || !model.versions) return [];
+        return model.versions
+            .slice()
+            .reverse()
+            .map(function (version) {
+                return {
+                    id: device + ':' + version.id,
+                    group: device === 'y1' ? 'Innioasis Y1' : 'Innioasis Y2',
+                    label: version.label || device.toUpperCase() + ' ' + version.id,
+                    device: device,
+                    firmware: version.id,
+                    version: version
+                };
+            });
+    }
+
+    function previewTargets() {
+        var out = [
+            {
+                id: 'both',
+                group: 'Quick',
+                label: 'Both — Y2 layout with the Y1 Bluetooth row',
+                device: 'both',
+                firmware: state.firmwareVersions.y2,
+                version: null
+            }
+        ];
+        out = out.concat(stockPreviewTargets('y2'));
+        out = out.concat(stockPreviewTargets('y1'));
+        /* Better-Y is the stock launcher rebuilt on 3.1.2 (“based on 3.1.2
+           firmware”), so its menus match that release exactly. */
+        out.push({
+            id: 'better-y',
+            group: 'Other launchers',
+            label: 'Better-Y — Y1 3.1.2 menu base',
+            device: 'y1',
+            firmware: '3.1.2',
+            version: null
+        });
+        return out;
+    }
+
+    function activePreviewTarget() {
+        var targets = previewTargets();
+        for (var i = 0; i < targets.length; i += 1) {
+            if (targets[i].id === state.previewTargetId) return targets[i];
+        }
+        return targets[1] || targets[0];
     }
 
     function firmwareVersionsFor(modelId) {
         var cat = window.Y1FirmwareCatalog;
         var model = cat && typeof cat.model === 'function' ? cat.model(modelId) : null;
         return model && model.versions ? model.versions.slice() : [];
-    }
-
-    function firmwareSelection(modelId) {
-        var versions = firmwareVersionsFor(modelId);
-        if (!versions.length) return null;
-        var wanted = state.firmwareVersions[modelId];
-        for (var i = 0; i < versions.length; i += 1) {
-            if (versions[i].id === wanted) return versions[i];
-        }
-        return versions[versions.length - 1];
     }
 
     function compareFirmwareVersions(a, b) {
@@ -10578,52 +10621,71 @@
 
     function renderFirmwareControl() {
         if (!el.firmwareSelect) return;
-        var modelId = firmwareModelForPreview();
-        var versions = firmwareVersionsFor(modelId);
-        var current = firmwareSelection(modelId);
-        var signature = modelId + '|' + (current ? current.id : '') + '|' + versions.length;
+        var targets = previewTargets();
+        var current = activePreviewTarget();
+        var signature =
+            targets
+                .map(function (target) {
+                    return target.id;
+                })
+                .join('|') +
+            '|' +
+            current.id;
         if (el.firmwareSelect.getAttribute('data-signature') !== signature) {
             el.firmwareSelect.innerHTML = '';
-            versions
-                .slice()
-                .reverse()
-                .forEach(function (version) {
-                    var option = document.createElement('option');
-                    option.value = version.id;
-                    option.textContent = version.label || version.id;
-                    if (current && version.id === current.id) option.selected = true;
-                    el.firmwareSelect.appendChild(option);
-                });
+            var groups = [];
+            targets.forEach(function (target) {
+                var group = null;
+                for (var i = 0; i < groups.length; i += 1) {
+                    if (groups[i].label === target.group) group = groups[i];
+                }
+                if (!group) {
+                    group = document.createElement('optgroup');
+                    group.label = target.group;
+                    groups.push(group);
+                    el.firmwareSelect.appendChild(group);
+                }
+                var option = document.createElement('option');
+                option.value = target.id;
+                option.textContent = target.label;
+                if (target.id === current.id) option.selected = true;
+                group.appendChild(option);
+            });
             el.firmwareSelect.setAttribute('data-signature', signature);
         }
-        el.firmwareSelect.disabled = !versions.length;
+        el.firmwareSelect.disabled = !targets.length;
+        var modelId = current.device === 'y1' ? 'y1' : 'y2';
+        var cat = window.Y1FirmwareCatalog;
+        var stock =
+            current.version ||
+            (cat && typeof cat.version === 'function' ? cat.version(modelId, current.firmware) : null);
+        var versions = firmwareVersionsFor(modelId);
+        var latestId = versions.length ? versions[versions.length - 1].id : '';
+        var atLatest = !!(stock && stock.id === latestId);
         if (el.firmwareState) {
-            var latestId = versions.length ? versions[versions.length - 1].id : '';
-            var atLatest = !!(current && current.id === latestId);
-            el.firmwareState.hidden = !current || atLatest;
-            el.firmwareState.textContent = current && !atLatest ? 'Older launcher' : '';
+            var showBadge = !!stock && !atLatest && current.id !== 'both';
+            el.firmwareState.hidden = !showBadge;
+            el.firmwareState.textContent = showBadge ? 'Older launcher' : '';
         }
         if (!el.firmwareSummary) return;
-        if (!current) {
-            el.firmwareSummary.textContent =
-                'Firmware catalogue unavailable, so the preview uses the latest known menu tree.';
-            return;
-        }
-        var gaps = firmwareAssetGaps(current, modelId).length;
-        var parts = [current.label || current.id];
-        if (current.date) parts.push('released ' + current.date);
-        if (state.previewDeviceMode === 'both') parts.push('Both previews the Y2 launcher');
-        if (gaps) {
-            parts.push(
-                gaps === 1
-                    ? '1 asset in this theme appears only in a later release'
-                    : gaps + ' assets in this theme appear only in later releases'
-            );
-        } else if (state.assets && state.assets.length) {
-            parts.push('every asset this theme uses is drawn by this release');
+        var parts = [current.label];
+        if (stock && stock.date) parts.push('released ' + stock.date);
+        if (current.device === 'both') parts.push('Both previews the Y2 launcher');
+        if (stock) {
+            var gaps = firmwareAssetGaps(stock, modelId).length;
+            if (gaps) {
+                parts.push(
+                    gaps === 1
+                        ? '1 asset in this theme appears only in a later release'
+                        : gaps + ' assets in this theme appear only in later releases'
+                );
+            } else if (state.assets && state.assets.length) {
+                parts.push('every asset this theme uses is drawn by this release');
+            }
         }
         el.firmwareSummary.textContent = parts.join(' · ');
     }
+
 
     function applyPreviewControlsToSimulator() {
         renderFirmwareControl();
@@ -10650,10 +10712,16 @@
     function setupPreviewControls() {
         if (el.firmwareSelect) {
             el.firmwareSelect.addEventListener('change', function () {
-                var modelId = firmwareModelForPreview();
-                var next = el.firmwareSelect.value;
-                if (!next) return;
-                state.firmwareVersions[modelId] = next;
+                var targets = previewTargets();
+                var chosen = null;
+                for (var i = 0; i < targets.length; i += 1) {
+                    if (targets[i].id === el.firmwareSelect.value) chosen = targets[i];
+                }
+                if (!chosen) return;
+                state.previewTargetId = chosen.id;
+                state.previewDeviceMode = chosen.device;
+                if (chosen.device === 'y1') state.firmwareVersions.y1 = chosen.firmware;
+                else if (chosen.firmware) state.firmwareVersions.y2 = chosen.firmware;
                 applyPreviewControlsToSimulator();
             });
         }

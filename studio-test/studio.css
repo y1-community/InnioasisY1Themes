@@ -4678,7 +4678,7 @@ body.studio-app.y1-donate-panel-open #support-toolbar-slot {
     border: 1px solid var(--studio-line);
     border-radius: 12px;
     background: color-mix(in oklab, var(--site-bg-elevated) 78%, transparent);
-    max-width: min(100%, 620px);
+    max-width: min(100%, 760px);
 }
 
 .studio-device-modes {
@@ -4740,7 +4740,7 @@ body.studio-app.y1-donate-panel-open #support-toolbar-slot {
 
 .studio-firmware-select {
     min-height: 24px;
-    max-width: 200px;
+    max-width: 340px;
     padding: 1px 4px;
     border: 1px solid transparent;
     border-radius: 6px;
