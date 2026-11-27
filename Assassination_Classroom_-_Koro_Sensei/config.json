@@ -99,8 +99,27 @@
     "theme": "Change Theme@1x.png",
     "fileExtensionOn": "file_ext_on.png",
     "fileExtensionOff": "file_ext_off.png",
-    "settingMask": "setting_mask.png",
-    "launcher": "transparent.png"
+    "settingMask": "transparent.png",
+    "launcher": "transparent.png",
+    "date&Time": "transparent.png",
+    "bluetooth": "transparent.png",
+    "categoryKeysWheel": "transparent.png",
+    "categoryAudio": "transparent.png",
+    "categoryFilesStorage": "transparent.png",
+    "categorySystem": "transparent.png",
+    "categoryPersonalization": "transparent.png",
+    "categoryDisplay": "transparent.png",
+    "speakerOn": "transparent.png",
+    "speakerOff": "transparent.png",
+    "wheelSensitivityLow": "transparent.png",
+    "wheelSensitivityStandard": "transparent.png",
+    "wheelSensitivityHigh": "transparent.png",
+    "wheelVolumeOn": "transparent.png",
+    "wheelVolumeOff": "transparent.png",
+    "headphoneGainLow": "transparent.png",
+    "headphoneGainStandard": "transparent.png",
+    "headphoneGainHigh": "transparent.png",
+    "headphoneGainMaximum": "transparent.png"
   },
   "statusConfig": {
     "statusTextColor": "#ffffff",
@@ -130,5 +149,6 @@
   },
   "gallery": {
     "compatibilityMedal": "none"
-  }
+  },
+  "desktopMask": "transparent.png"
 }

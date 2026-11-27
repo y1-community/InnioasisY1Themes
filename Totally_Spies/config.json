@@ -43,7 +43,7 @@
         "fm": "main menu icons/ts29.png",
         "bluetooth": "main menu icons/ts24.png",
         "settings": "main menu icons/ts59.png",
-        "shuffleQuick": "",
+        "shuffleQuick": "transparent.png",
         "ebook": "main menu icons/ebookicon.png",
         "calculator": "transparent.png",
         "calendar": "transparent.png",
@@ -103,7 +103,26 @@
         "fileExtensionOn": "all other images/settings menu/file ext on off/ts37.png",
         "fileExtensionOff": "all other images/settings menu/file ext on off/ts5.png",
         "settingMask": "backgrounds/mp3li custom background 1.png",
-        "launcher": "transparent.png"
+        "launcher": "transparent.png",
+        "date&Time": "transparent.png",
+        "bluetooth": "transparent.png",
+        "categoryKeysWheel": "transparent.png",
+        "categoryAudio": "transparent.png",
+        "categoryFilesStorage": "transparent.png",
+        "categorySystem": "transparent.png",
+        "categoryPersonalization": "transparent.png",
+        "categoryDisplay": "transparent.png",
+        "speakerOn": "transparent.png",
+        "speakerOff": "transparent.png",
+        "wheelSensitivityLow": "transparent.png",
+        "wheelSensitivityStandard": "transparent.png",
+        "wheelSensitivityHigh": "transparent.png",
+        "wheelVolumeOn": "transparent.png",
+        "wheelVolumeOff": "transparent.png",
+        "headphoneGainLow": "transparent.png",
+        "headphoneGainStandard": "transparent.png",
+        "headphoneGainHigh": "transparent.png",
+        "headphoneGainMaximum": "transparent.png"
     },
     "statusConfig": {
         "statusTextColor": "#ffffff",
@@ -140,5 +159,5 @@
     "authorUrl": "https://www.patreon.com/cw/mp3li",
     "title": "myTotallySpies",
     "description": "Requested Totally Spies theme by mp3li. For other themes, check the Patreon. Before remixing/editing, read the entire license file.",
-    "desktopMask": ""
+    "desktopMask": "transparent.png"
 }

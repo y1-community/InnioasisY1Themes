@@ -103,7 +103,26 @@
         "clearCache": "Clear cache@1x.png",
         "theme": "Change Theme@1x.png",
         "fileExtensionOn": "file_ext_on.png",
-        "fileExtensionOff": "file_ext_off.png"
+        "fileExtensionOff": "file_ext_off.png",
+        "date&Time": "transparent.png",
+        "bluetooth": "transparent.png",
+        "categoryKeysWheel": "transparent.png",
+        "categoryAudio": "transparent.png",
+        "categoryFilesStorage": "transparent.png",
+        "categorySystem": "transparent.png",
+        "categoryPersonalization": "transparent.png",
+        "categoryDisplay": "transparent.png",
+        "speakerOn": "transparent.png",
+        "speakerOff": "transparent.png",
+        "wheelSensitivityLow": "transparent.png",
+        "wheelSensitivityStandard": "transparent.png",
+        "wheelSensitivityHigh": "transparent.png",
+        "wheelVolumeOn": "transparent.png",
+        "wheelVolumeOff": "transparent.png",
+        "headphoneGainLow": "transparent.png",
+        "headphoneGainStandard": "transparent.png",
+        "headphoneGainHigh": "transparent.png",
+        "headphoneGainMaximum": "transparent.png"
     },
     "statusConfig": {
         "playing": "playing.png",
@@ -118,16 +137,16 @@
         "headsetWithoutMic": "headset1.png",
         "statusBarColor": "#3c2d43",
         "battery": [
-            "battery.001.png",
-            "battery.002.png",
-            "battery.003.png",
-            "battery.004.png"
+            "transparent.png",
+            "transparent.png",
+            "transparent.png",
+            "transparent.png"
         ],
         "batteryCharging": [
-            "batterycharge.001.png",
-            "batterycharge.002.png",
-            "batterycharge.003.png",
-            "batterycharge.004.png"
+            "transparent.png",
+            "transparent.png",
+            "transparent.png",
+            "transparent.png"
         ]
     },
     "playerConfig": {

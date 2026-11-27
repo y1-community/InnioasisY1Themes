@@ -12,7 +12,7 @@
   "itemConfig": {
     "itemTextColor": "#ffffff",
     "itemSelectedTextColor": "#ffffff",
-    "itemSelectedBackground": "1.png",
+    "itemSelectedBackground": "transparent.png",
     "itemBackground": "transparent.png",
     "itemRightArrow": "2.png"
   },
@@ -27,7 +27,7 @@
     "menuBackgroundColor": "#000000",
     "menuItemBackground": "transparent.png",
     "menuItemTextColor": "#ffffff",
-    "menuItemSelectedBackground": "1.png",
+    "menuItemSelectedBackground": "transparent.png",
     "menuItemSelectedTextColor": "#ffffff"
   },
   "homePageConfig": {
@@ -39,9 +39,9 @@
     "fm": "FM Radio.png",
     "bluetooth": "Bluetooth.png",
     "settings": "Settings.png",
-    "shuffleQuick": "Shuffle Quick.png",
-    "calendar": "calendar.png",
-    "calculator": "calculator.png",
+    "shuffleQuick": "transparent.png",
+    "calendar": "transparent.png",
+    "calculator": "transparent.png",
     "ebook": "ebook.png",
     "fileManager": "transparent.png"
   },
@@ -52,12 +52,12 @@
   "settingConfig": {
     "shutdown": "Shutdown@1x.png",
     "timedShutdown_off": "Timed shutdown_001@1x.png",
-    "timedShutdown_10": "Timed shutdown_002@1x.png",
-    "timedShutdown_20": "Timed shutdown_003@1x.png",
-    "timedShutdown_30": "Timed shutdown_004@1x.png",
-    "timedShutdown_60": "Timed shutdown_005@1x.png",
-    "timedShutdown_90": "Timed shutdown_006@1x.png",
-    "timedShutdown_120": "Timed shutdown_007@1x.png",
+    "timedShutdown_10": "transparent.png",
+    "timedShutdown_20": "transparent.png",
+    "timedShutdown_30": "transparent.png",
+    "timedShutdown_60": "transparent.png",
+    "timedShutdown_90": "transparent.png",
+    "timedShutdown_120": "transparent.png",
     "shuffleOn": "Shuffle_on@1x.png",
     "shuffleOff": "Shuffle_off@1x.png",
     "repeatOff": "Repeat_off@1x.png",
@@ -99,7 +99,26 @@
     "theme": "Change Theme@1x.png",
     "fileExtensionOn": "file_ext_on.png",
     "fileExtensionOff": "file_ext_off.png",
-    "settingMask": "transparent.png"
+    "settingMask": "transparent.png",
+    "date&Time": "transparent.png",
+    "bluetooth": "transparent.png",
+    "categoryKeysWheel": "transparent.png",
+    "categoryAudio": "transparent.png",
+    "categoryFilesStorage": "transparent.png",
+    "categorySystem": "transparent.png",
+    "categoryPersonalization": "transparent.png",
+    "categoryDisplay": "transparent.png",
+    "speakerOn": "transparent.png",
+    "speakerOff": "transparent.png",
+    "wheelSensitivityLow": "transparent.png",
+    "wheelSensitivityStandard": "transparent.png",
+    "wheelSensitivityHigh": "transparent.png",
+    "wheelVolumeOn": "transparent.png",
+    "wheelVolumeOff": "transparent.png",
+    "headphoneGainLow": "transparent.png",
+    "headphoneGainStandard": "transparent.png",
+    "headphoneGainHigh": "transparent.png",
+    "headphoneGainMaximum": "transparent.png"
   },
   "statusConfig": {
     "statusTextColor": "#ffffff",
@@ -129,5 +148,6 @@
   },
   "gallery": {
     "compatibilityMedal": "none"
-  }
+  },
+  "desktopMask": "transparent.png"
 }

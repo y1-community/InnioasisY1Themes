@@ -9,7 +9,7 @@
     "themeCover": "cover.png",
     "desktopWallpaper": "desk_bg001.png",
     "globalWallpaper": "desk_bg001.png",
-    "desktopMask": "",
+    "desktopMask": "transparent.png",
     "fontFamily": "distressed.ttf",
     "itemConfig": {
         "itemTextColor": "#5d9428",
@@ -44,11 +44,12 @@
         "ebook": "transparent.png",
         "calendar": "transparent.png",
         "calculator": "transparent.png",
-        "fileManager": "transparent.png"
+        "fileManager": "transparent.png",
+        "shuffleQuick": "transparent.png"
     },
     "fileConfig": {
         "folderIcon": "folder.png",
-        "musicIcon": "music_icon.png"
+        "musicIcon": "transparent.png"
     },
     "settingConfig": {
         "shutdown": "Shutdown@1x.png",
@@ -94,13 +95,32 @@
         "displayBatteryOff": "Display battery_off@1x.png",
         "dateTime": "Date & Time@1x.png",
         "language": "Language@1x.png",
-        "launcher": "Launcher.png",
+        "launcher": "transparent.png",
         "factoryReset": "Factory@1x.png",
         "clearCache": "Clear cache@1x.png",
         "theme": "Change Theme@1x.png",
         "fileExtensionOn": "file_ext_on.png",
         "fileExtensionOff": "file_ext_off.png",
-        "settingMask": "transparent.png"
+        "settingMask": "transparent.png",
+        "date&Time": "transparent.png",
+        "bluetooth": "transparent.png",
+        "categoryKeysWheel": "transparent.png",
+        "categoryAudio": "transparent.png",
+        "categoryFilesStorage": "transparent.png",
+        "categorySystem": "transparent.png",
+        "categoryPersonalization": "transparent.png",
+        "categoryDisplay": "transparent.png",
+        "speakerOn": "transparent.png",
+        "speakerOff": "transparent.png",
+        "wheelSensitivityLow": "transparent.png",
+        "wheelSensitivityStandard": "transparent.png",
+        "wheelSensitivityHigh": "transparent.png",
+        "wheelVolumeOn": "transparent.png",
+        "wheelVolumeOff": "transparent.png",
+        "headphoneGainLow": "transparent.png",
+        "headphoneGainStandard": "transparent.png",
+        "headphoneGainHigh": "transparent.png",
+        "headphoneGainMaximum": "transparent.png"
     },
     "statusConfig": {
         "statusTextColor": "#ffffff",

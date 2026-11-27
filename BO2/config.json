@@ -33,23 +33,23 @@
   },
   "homePageConfig": {
     "nowPlaying": "transparent.png",
-    "music": "Music.png",
-    "video": "Videos.png",
-    "audiobooks": "Audiobooks.png",
-    "photos": "Photos.png",
-    "fm": "FM Radio.png",
-    "bluetooth": "Bluetooth.png",
-    "settings": "Settings.png",
-    "shuffleQuick": "Shuffle Quick.png",
+    "music": "transparent.png",
+    "video": "transparent.png",
+    "audiobooks": "transparent.png",
+    "photos": "transparent.png",
+    "fm": "transparent.png",
+    "bluetooth": "transparent.png",
+    "settings": "transparent.png",
+    "shuffleQuick": "transparent.png",
     "selectedColor": "#ffffff",
-    "calculator": "calculator.png",
-    "calendar": "calendar.png",
-    "ebook": "ebook.png",
+    "calculator": "transparent.png",
+    "calendar": "transparent.png",
+    "ebook": "transparent.png",
     "fileManager": "transparent.png"
   },
   "fileConfig": {
-    "folderIcon": "folder.png",
-    "musicIcon": "music_file.png"
+    "folderIcon": "transparent.png",
+    "musicIcon": "transparent.png"
   },
   "settingConfig": {
     "settingMask": "playing.png",
@@ -101,7 +101,26 @@
     "theme": "transparent.png",
     "fileExtensionOn": "transparent.png",
     "fileExtensionOff": "transparent.png",
-    "launcher": "transparent.png"
+    "launcher": "transparent.png",
+    "date&Time": "transparent.png",
+    "bluetooth": "transparent.png",
+    "categoryKeysWheel": "transparent.png",
+    "categoryAudio": "transparent.png",
+    "categoryFilesStorage": "transparent.png",
+    "categorySystem": "transparent.png",
+    "categoryPersonalization": "transparent.png",
+    "categoryDisplay": "transparent.png",
+    "speakerOn": "transparent.png",
+    "speakerOff": "transparent.png",
+    "wheelSensitivityLow": "transparent.png",
+    "wheelSensitivityStandard": "transparent.png",
+    "wheelSensitivityHigh": "transparent.png",
+    "wheelVolumeOn": "transparent.png",
+    "wheelVolumeOff": "transparent.png",
+    "headphoneGainLow": "transparent.png",
+    "headphoneGainStandard": "transparent.png",
+    "headphoneGainHigh": "transparent.png",
+    "headphoneGainMaximum": "transparent.png"
   },
   "statusConfig": {
     "statusTextColor": "#ffffff",
@@ -135,5 +154,6 @@
   },
   "gallery": {
     "compatibilityMedal": "none"
-  }
+  },
+  "desktopMask": "transparent.png"
 }

@@ -40,7 +40,7 @@
     "fm": "FM Radio.png",
     "bluetooth": "Bluetooth.png",
     "settings": "Settings.png",
-    "shuffleQuick": "Shuffle Quick.png",
+    "shuffleQuick": "transparent.png",
     "ebook": "ebook.png",
     "calendar": "transparent.png",
     "calculator": "transparent.png",
@@ -74,12 +74,12 @@
     "equalizer_jazz": "Equalizer_jazz@1x.png",
     "equalizer_pop": "Equalizer_pop@1x.png",
     "equalizer_rock": "Equalizer_rock@1x.png",
-    "keyLockOn": "Key lock_on@1x.png",
+    "keyLockOn": "transparent.png",
     "keyLockOff": "Key lock_off@1x.png",
     "keyToneOn": "Key tone_on@1x.png",
-    "keyToneOff": "Key tone_off@1x.png",
+    "keyToneOff": "transparent.png",
     "keyVibrationOn": "Key vibration_on@1x.png",
-    "keyVibrationOff": "Key vibration_off@1x.png",
+    "keyVibrationOff": "transparent.png",
     "wallpaper": "Wallpaper@1x.png",
     "backlight_10": "Backlight_001@1x.png",
     "backlight_15": "Backlight_003@1x.png",
@@ -100,7 +100,26 @@
     "fileExtensionOn": "file_ext_on.png",
     "fileExtensionOff": "file_ext_off.png",
     "launcher": "transparent.png",
-    "settingMask": "transparent.png"
+    "settingMask": "transparent.png",
+    "date&Time": "transparent.png",
+    "bluetooth": "transparent.png",
+    "categoryKeysWheel": "transparent.png",
+    "categoryAudio": "transparent.png",
+    "categoryFilesStorage": "transparent.png",
+    "categorySystem": "transparent.png",
+    "categoryPersonalization": "transparent.png",
+    "categoryDisplay": "transparent.png",
+    "speakerOn": "transparent.png",
+    "speakerOff": "transparent.png",
+    "wheelSensitivityLow": "transparent.png",
+    "wheelSensitivityStandard": "transparent.png",
+    "wheelSensitivityHigh": "transparent.png",
+    "wheelVolumeOn": "transparent.png",
+    "wheelVolumeOff": "transparent.png",
+    "headphoneGainLow": "transparent.png",
+    "headphoneGainStandard": "transparent.png",
+    "headphoneGainHigh": "transparent.png",
+    "headphoneGainMaximum": "transparent.png"
   },
   "statusConfig": {
     "statusTextColor": "#ffffff",
@@ -130,5 +149,6 @@
   },
   "gallery": {
     "compatibilityMedal": "none"
-  }
+  },
+  "desktopMask": "transparent.png"
 }

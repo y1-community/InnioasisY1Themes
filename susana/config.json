@@ -9,7 +9,7 @@
   "themeCover": "Cover.png",
   "desktopWallpaper": "Background1.png",
   "globalWallpaper": "Background2.png",
-  "desktopMask": "Mask.png",
+  "desktopMask": "transparent.png",
   "fontFamily": "Font.ttf",
   "itemConfig": {
     "itemTextColor": "#ffffff",
@@ -19,7 +19,7 @@
     "itemRightArrow": "RightArrow.png"
   },
   "dialogConfig": {
-    "dialogOptionBackground": "Option.png",
+    "dialogOptionBackground": "transparent.png",
     "dialogOptionTextColor": "#ff7afb",
     "dialogOptionSelectedBackground": "OptionSelect.png",
     "dialogOptionSelectedTextColor": "#9c38ff",
@@ -106,7 +106,26 @@
     "unselectedColor": "#f381e4",
     "selectedColor": "#f682f8",
     "launcher": "transparent.png",
-    "settingMask": "transparent.png"
+    "settingMask": "transparent.png",
+    "date&Time": "transparent.png",
+    "bluetooth": "transparent.png",
+    "categoryKeysWheel": "transparent.png",
+    "categoryAudio": "transparent.png",
+    "categoryFilesStorage": "transparent.png",
+    "categorySystem": "transparent.png",
+    "categoryPersonalization": "transparent.png",
+    "categoryDisplay": "transparent.png",
+    "speakerOn": "transparent.png",
+    "speakerOff": "transparent.png",
+    "wheelSensitivityLow": "transparent.png",
+    "wheelSensitivityStandard": "transparent.png",
+    "wheelSensitivityHigh": "transparent.png",
+    "wheelVolumeOn": "transparent.png",
+    "wheelVolumeOff": "transparent.png",
+    "headphoneGainLow": "transparent.png",
+    "headphoneGainStandard": "transparent.png",
+    "headphoneGainHigh": "transparent.png",
+    "headphoneGainMaximum": "transparent.png"
   },
   "statusConfig": {
     "statusTextColor": "#ffffff",

@@ -6,7 +6,7 @@
     "description": "A theme for the Y1 inspired by Ellie Goulding’s 2014 album, “Halcyon Days”.",
     "externalDownloadUrl": ""
   },
-  "themeCover": "cover.png",
+  "themeCover": "transparent.png",
   "desktopWallpaper": "desktop_wallpaper.png",
   "globalWallpaper": "global_wallpaper.png",
   "desktopMask": "transparent.png",
@@ -16,7 +16,7 @@
     "itemSelectedTextColor": "#ffffff",
     "itemBackground": "0.png",
     "itemSelectedBackground": "1.png",
-    "itemRightArrow": "2.png"
+    "itemRightArrow": "transparent.png"
   },
   "dialogConfig": {
     "dialogOptionBackground": "3.png",
@@ -105,7 +105,26 @@
     "fileExtensionOn": "file_ext_on.png",
     "fileExtensionOff": "file_ext_off.png",
     "unselectedColor": "#ffffff",
-    "selectedColor": "#ffffff"
+    "selectedColor": "#ffffff",
+    "date&Time": "transparent.png",
+    "bluetooth": "transparent.png",
+    "categoryKeysWheel": "transparent.png",
+    "categoryAudio": "transparent.png",
+    "categoryFilesStorage": "transparent.png",
+    "categorySystem": "transparent.png",
+    "categoryPersonalization": "transparent.png",
+    "categoryDisplay": "transparent.png",
+    "speakerOn": "transparent.png",
+    "speakerOff": "transparent.png",
+    "wheelSensitivityLow": "transparent.png",
+    "wheelSensitivityStandard": "transparent.png",
+    "wheelSensitivityHigh": "transparent.png",
+    "wheelVolumeOn": "transparent.png",
+    "wheelVolumeOff": "transparent.png",
+    "headphoneGainLow": "transparent.png",
+    "headphoneGainStandard": "transparent.png",
+    "headphoneGainHigh": "transparent.png",
+    "headphoneGainMaximum": "transparent.png"
   },
   "statusConfig": {
     "statusTextColor": "#ffffff",

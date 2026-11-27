@@ -18,7 +18,7 @@
         "itemRightArrow": "selected.png"
     },
     "dialogConfig": {
-        "dialogOptionBackground": "#unselected_dia.png",
+        "dialogOptionBackground": "transparent.png",
         "dialogOptionTextColor": "#2f0d6e",
         "dialogOptionSelectedBackground": "selected_dia.png",
         "dialogOptionSelectedTextColor": "#2f0d6e",
@@ -44,7 +44,7 @@
         "shuffleQuick": "shuffle_on.png",
         "calendar": "calendar.png",
         "calculator": "calculator.png",
-        "ebook": "ebook.png",
+        "ebook": "transparent.png",
         "selectedColor": "#ffffff",
         "unselectedColor": "#ccffff",
         "fileManager": "transparent.png"
@@ -105,7 +105,26 @@
         "fileExtensionOn": "fileExtension_on.png",
         "fileExtensionOff": "fileExtension_off.png",
         "unselectedColor": "#ccffff",
-        "selectedColor": "#ffffff"
+        "selectedColor": "#ffffff",
+        "date&Time": "transparent.png",
+        "bluetooth": "transparent.png",
+        "categoryKeysWheel": "transparent.png",
+        "categoryAudio": "transparent.png",
+        "categoryFilesStorage": "transparent.png",
+        "categorySystem": "transparent.png",
+        "categoryPersonalization": "transparent.png",
+        "categoryDisplay": "transparent.png",
+        "speakerOn": "transparent.png",
+        "speakerOff": "transparent.png",
+        "wheelSensitivityLow": "transparent.png",
+        "wheelSensitivityStandard": "transparent.png",
+        "wheelSensitivityHigh": "transparent.png",
+        "wheelVolumeOn": "transparent.png",
+        "wheelVolumeOff": "transparent.png",
+        "headphoneGainLow": "transparent.png",
+        "headphoneGainStandard": "transparent.png",
+        "headphoneGainHigh": "transparent.png",
+        "headphoneGainMaximum": "transparent.png"
     },
     "statusConfig": {
         "statusTextColor": "#ffffff",
@@ -136,5 +155,6 @@
     "playerConfig": {
         "progressColor": "#67efe5",
         "progressBackgroundColor": "#170637"
-    }
+    },
+    "desktopMask": "transparent.png"
 }

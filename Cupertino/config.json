@@ -21,7 +21,7 @@
         "itemSelectedBackgroundIs9Patch": true
     },
     "dialogConfig": {
-        "dialogOptionBackground": "@Cup_dialogOptionBackground.png",
+        "dialogOptionBackground": "transparent.png",
         "dialogOptionTextColor": "#000000",
         "dialogOptionSelectedBackground": "@Cup_dialogOptionSelectedBackground.png",
         "dialogOptionSelectedTextColor": "#ffffff",
@@ -50,8 +50,8 @@
         "fileManager": "@Cup_icon.png"
     },
     "fileConfig": {
-        "folderIcon": "folder.png",
-        "musicIcon": "music.png"
+        "folderIcon": "transparent.png",
+        "musicIcon": "transparent.png"
     },
     "settingConfig": {
         "settingMask": "@Cup_setting_mask.png",
@@ -104,7 +104,25 @@
         "clearCache": "icon_setting_clear_cache.png",
         "theme": "icon_setting_theme.png",
         "fileExtensionOn": "icon_setting_file_ext_on.png",
-        "fileExtensionOff": "icon_setting_file_ext_off.png"
+        "fileExtensionOff": "icon_setting_file_ext_off.png",
+        "date&Time": "transparent.png",
+        "categoryKeysWheel": "transparent.png",
+        "categoryAudio": "transparent.png",
+        "categoryFilesStorage": "transparent.png",
+        "categorySystem": "transparent.png",
+        "categoryPersonalization": "transparent.png",
+        "categoryDisplay": "transparent.png",
+        "speakerOn": "transparent.png",
+        "speakerOff": "transparent.png",
+        "wheelSensitivityLow": "transparent.png",
+        "wheelSensitivityStandard": "transparent.png",
+        "wheelSensitivityHigh": "transparent.png",
+        "wheelVolumeOn": "transparent.png",
+        "wheelVolumeOff": "transparent.png",
+        "headphoneGainLow": "transparent.png",
+        "headphoneGainStandard": "transparent.png",
+        "headphoneGainHigh": "transparent.png",
+        "headphoneGainMaximum": "transparent.png"
     },
     "statusConfig": {
         "statusTextColor": "#ffffff",

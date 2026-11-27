@@ -103,7 +103,26 @@
         "fileExtensionOn": "all other images/settings menu/file ext on off/transparent.png",
         "fileExtensionOff": "all other images/settings menu/file ext on off/transparent.png",
         "settingMask": "backgrounds/glacier3 (cropped).png",
-        "launcher": "transparent.png"
+        "launcher": "transparent.png",
+        "date&Time": "transparent.png",
+        "bluetooth": "transparent.png",
+        "categoryKeysWheel": "transparent.png",
+        "categoryAudio": "transparent.png",
+        "categoryFilesStorage": "transparent.png",
+        "categorySystem": "transparent.png",
+        "categoryPersonalization": "transparent.png",
+        "categoryDisplay": "transparent.png",
+        "speakerOn": "transparent.png",
+        "speakerOff": "transparent.png",
+        "wheelSensitivityLow": "transparent.png",
+        "wheelSensitivityStandard": "transparent.png",
+        "wheelSensitivityHigh": "transparent.png",
+        "wheelVolumeOn": "transparent.png",
+        "wheelVolumeOff": "transparent.png",
+        "headphoneGainLow": "transparent.png",
+        "headphoneGainStandard": "transparent.png",
+        "headphoneGainHigh": "transparent.png",
+        "headphoneGainMaximum": "transparent.png"
     },
     "statusConfig": {
         "statusTextColor": "#ffffff",
@@ -140,5 +159,5 @@
     "authorUrl": "https://www.patreon.com/cw/mp3li",
     "title": "myGlacier National Park",
     "description": "A minimal Glacier National Park theme for the Innioasis Y1 MP3 player made by mp3li, featuring Glacier National Park backgrounds and recognizing this land as the homeland of the Blackfeet Nation and the Ktunaxa people, who know these mountains as Miistakis. Part of the Defend the Parks collection. For other themes in this collection, visit mp3li's Patreon.",
-    "desktopMask": ""
+    "desktopMask": "transparent.png"
 }

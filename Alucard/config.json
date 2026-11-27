@@ -10,13 +10,13 @@
   "desktopWallpaper": "Background1.png",
   "globalWallpaper": "Background2.png",
   "fontFamily": "Font.ttf",
-  "desktopMask": "Mask.png",
+  "desktopMask": "transparent.png",
   "itemConfig": {
     "itemTextColor": "#F7E660",
     "itemSelectedTextColor": "#ffffff",
     "itemSelectedBackground": "ItemSelect.png",
     "itemBackground": "transparent.png",
-    "itemRightArrow": "RightArrow.png"
+    "itemRightArrow": "transparent.png"
   },
   "dialogConfig": {
     "dialogOptionBackground": "Option.png",
@@ -101,15 +101,34 @@
     "fileExtensionOn": "file_ext_on.png",
     "fileExtensionOff": "file_ext_off.png",
     "launcher": "transparent.png",
-    "settingMask": "transparent.png"
+    "settingMask": "transparent.png",
+    "date&Time": "transparent.png",
+    "bluetooth": "transparent.png",
+    "categoryKeysWheel": "transparent.png",
+    "categoryAudio": "transparent.png",
+    "categoryFilesStorage": "transparent.png",
+    "categorySystem": "transparent.png",
+    "categoryPersonalization": "transparent.png",
+    "categoryDisplay": "transparent.png",
+    "speakerOn": "transparent.png",
+    "speakerOff": "transparent.png",
+    "wheelSensitivityLow": "transparent.png",
+    "wheelSensitivityStandard": "transparent.png",
+    "wheelSensitivityHigh": "transparent.png",
+    "wheelVolumeOn": "transparent.png",
+    "wheelVolumeOff": "transparent.png",
+    "headphoneGainLow": "transparent.png",
+    "headphoneGainStandard": "transparent.png",
+    "headphoneGainHigh": "transparent.png",
+    "headphoneGainMaximum": "transparent.png"
   },
   "statusConfig": {
     "statusTextColor": "#ffffff",
-    "playing": "Play.png",
+    "playing": "transparent.png",
     "audiobookPlaying": "transparent.png",
-    "pause": "Pause.png",
+    "pause": "transparent.png",
     "fmPlaying": "transparent.png",
-    "stop": "Stop.png",
+    "stop": "transparent.png",
     "blConnected": "transparent.png",
     "blConnecting": "transparent.png",
     "blDisconnected": "transparent.png",
@@ -117,16 +136,16 @@
     "headsetWithoutMic": "transparent.png",
     "statusBarColor": "#00000000",
     "battery": [
-      "Battery1.png",
-      "Battery2.png",
-      "Battery3.png",
-      "Battery4.png"
+      "transparent.png",
+      "transparent.png",
+      "transparent.png",
+      "transparent.png"
     ],
     "batteryCharging": [
-      "BatteryCharge1.png",
-      "BatteryCharge2.png",
-      "BatteryCharge3.png",
-      "BatteryCharge4.png"
+      "transparent.png",
+      "transparent.png",
+      "transparent.png",
+      "transparent.png"
     ]
   },
   "playerConfig": {

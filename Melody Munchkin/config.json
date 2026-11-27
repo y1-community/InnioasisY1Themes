@@ -17,7 +17,7 @@
         "itemTextColor": "#FFFFFFFF",
         "itemSelectedTextColor": "#FF00F5FF",
         "itemSelectedBackground": "item_selected_no_arrow.9.png",
-        "itemBackground": "",
+        "itemBackground": "transparent.png",
         "itemRightArrow": "right_arrow.png",
         "itemSelectedBackgroundIs9Patch": true
     },
@@ -31,9 +31,9 @@
     },
     "menuConfig": {
         "menuBackgroundColor": "#3F4142",
-        "menuItemBackground": "",
+        "menuItemBackground": "transparent.png",
         "menuItemTextColor": "",
-        "menuItemSelectedBackground": "",
+        "menuItemSelectedBackground": "transparent.png",
         "menuItemSelectedTextColor": ""
     },
     "homePageConfig": {
@@ -52,8 +52,8 @@
         "fileManager": "File Manager.png"
     },
     "fileConfig": {
-        "folderIcon": "",
-        "musicIcon": ""
+        "folderIcon": "transparent.png",
+        "musicIcon": "transparent.png"
     },
     "settingConfig": {
         "settingMask": "setting_mask.png",
@@ -123,7 +123,8 @@
         "categorySystem": "icon_setting_category_system.png",
         "categoryPersonalization": "icon_setting_category_personalization.png",
         "categoryDisplay": "icon_setting_category_display.png",
-        "bluetooth": "Desk-Bluetooth.png"
+        "bluetooth": "Desk-Bluetooth.png",
+        "date&Time": "transparent.png"
     },
     "statusConfig": {
         "playing": "playing.png",

@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 import sys
@@ -135,16 +136,20 @@ def fill_blank_asset_values(
     transparent placeholder so the player keeps the gap instead of drawing its own
     art. Creator-supplied files are never overwritten.
 
-    Themes that explicitly opt into native device fallback icons via Y2's
-    ``showNativeIcon: true`` keep empty slots intact so the launcher draws its
-    native stock artwork (e.g. battery / status / settings icons) instead of
-    hiding them behind ``transparent.png``.
+    Empty slots are filled even when Y2's ``showNativeIcon`` is enabled: that flag
+    only decides the fallback for an item with no artwork at all, so a theme that
+    left a slot undefined hands the player its stock icon. A blank file is
+    artwork, so the player keeps the gap and nothing substitutes for the theme's
+    own design.
     """
-    if theme_config.get("showNativeIcon") is True:
-        return False
     changed = False
     for section, keys_obj in reference.items():
         if not isinstance(keys_obj, dict):
+            # A top-level asset slot (wallpaper, mask, cover) rather than a section.
+            current_value = theme_config.get(section)
+            if not isinstance(current_value, str) or not current_value.strip():
+                theme_config[section] = placeholder_value
+                changed = True
             continue
         section_obj = theme_config.get(section)
         if section_obj is None:
@@ -176,12 +181,100 @@ def fill_blank_asset_values(
     return changed
 
 
+_HEX_COLOR_RE = re.compile(r"^#?(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$")
+_THEME_FILE_INDEX_CACHE: dict[str, set[str]] = {}
+
+
+def _theme_file_index(theme_root: Path) -> set[str]:
+    key = str(theme_root.resolve())
+    index = _THEME_FILE_INDEX_CACHE.get(key)
+    if index is None:
+        index = set()
+        for dirpath, _dirnames, filenames in os.walk(theme_root):
+            index.update(name.lower() for name in filenames)
+        _THEME_FILE_INDEX_CACHE[key] = index
+    return index
+
+
+def _asset_value_resolves(value: str, content_dir: Path, theme_root: Path) -> bool:
+    """A slot resolves when it is a colour, a URL, or names a file the theme ships."""
+    text = value.strip().replace("\\", "/")
+    if text.lower().startswith(("http://", "https://", "data:")):
+        return True
+    if _HEX_COLOR_RE.match(text):
+        return True
+    if (content_dir / text).is_file():
+        return True
+    return text.split("/")[-1].lower() in _theme_file_index(theme_root)
+
+
+def fill_dangling_asset_files(
+    theme_config: dict[str, Any],
+    reference: dict[str, Any],
+    *,
+    content_dir: Path,
+    theme_root: Path | None = None,
+    placeholder_value: str = TRANSPARENT_VALUE,
+) -> bool:
+    """Repoint slots that name art the theme does not ship at the placeholder.
+
+    A config that says ``"photos": "Photos.png"`` without shipping that file is
+    just as undefined to the player as an empty slot: the launcher draws its own
+    stock icon in the gap. Colours, URLs and files that do exist are left alone.
+    """
+    root = theme_root or content_dir
+    changed = False
+
+    def visit(container: dict[str, Any], key: str, spec_value: Any) -> None:
+        nonlocal changed
+        current = container.get(key)
+        if isinstance(spec_value, list):
+            if not isinstance(current, list):
+                return
+            for index, item in enumerate(current):
+                if (
+                    isinstance(item, str)
+                    and item.strip()
+                    and not _is_transparent_placeholder_value(item)
+                    and not _asset_value_resolves(item, content_dir, root)
+                ):
+                    current[index] = placeholder_value
+                    changed = True
+            return
+        if (
+            isinstance(current, str)
+            and current.strip()
+            and not _is_transparent_placeholder_value(current)
+            and not _asset_value_resolves(current, content_dir, root)
+        ):
+            container[key] = placeholder_value
+            changed = True
+
+    for section, spec in reference.items():
+        if isinstance(spec, dict):
+            section_obj = theme_config.get(section)
+            if not isinstance(section_obj, dict):
+                continue
+            for key, spec_value in spec.items():
+                visit(section_obj, key, spec_value)
+            continue
+        visit(theme_config, section, spec)
+    return changed
+
+
 def ensure_canonical_transparent_source() -> Path:
     if not TRANSPARENT_CANONICAL.is_file():
         raise SystemExit(
             f"ERROR: Missing canonical {TRANSPARENT_FILENAME} at repo root: {TRANSPARENT_CANONICAL}"
         )
     return TRANSPARENT_CANONICAL
+
+
+def _theme_root_for(content_dir: Path) -> Path:
+    """Theme root for a config folder, so variant art can resolve upward."""
+    if content_dir.parent.name == "Variants":
+        return content_dir.parents[1]
+    return content_dir
 
 
 def iter_config_paths(theme_dir: Path) -> list[Path]:
@@ -225,23 +318,24 @@ def sync_transparent_png(content_dir: Path, source: Path) -> bool:
     return True
 
 
+def _iter_config_strings(node: Any) -> Any:
+    if isinstance(node, str):
+        yield node
+    elif isinstance(node, list):
+        for item in node:
+            yield from _iter_config_strings(item)
+    elif isinstance(node, dict):
+        for item in node.values():
+            yield from _iter_config_strings(item)
+
+
 def content_dir_needs_transparent_asset(content_dir: Path, config: dict[str, Any] | None) -> bool:
-    """True when configs still reference transparent.png or backfill.png is absent."""
+    """True when any asset slot points at transparent.png or backfill.png is absent."""
     if not (content_dir / BACKFILL_FILENAME).is_file():
         return True
     if not config:
         return False
-    ref = _load_reference_config() or {}
-    for section, keys_obj in ref.items():
-        if not isinstance(keys_obj, dict):
-            continue
-        section_obj = config.get(section)
-        if not isinstance(section_obj, dict):
-            continue
-        for key in keys_obj:
-            if _is_transparent_placeholder_value(section_obj.get(key)):
-                return True
-    return False
+    return any(_is_transparent_placeholder_value(value) for value in _iter_config_strings(config))
 
 
 def sync_transparent_in_theme_folder(theme_dir: Path, source: Path) -> int:
@@ -277,6 +371,13 @@ def backfill_config_file(
     asset_reference = _load_asset_reference()
     if asset_reference:
         fill_blank_asset_values(config, asset_reference, placeholder_value=placeholder)
+        fill_dangling_asset_files(
+            config,
+            asset_reference,
+            content_dir=content_dir,
+            theme_root=_theme_root_for(content_dir),
+            placeholder_value=placeholder,
+        )
     after = json.dumps(config, sort_keys=True)
     cfg_changed = before != after
     if cfg_changed:
@@ -330,10 +431,17 @@ def _folder_would_change(theme_dir: Path, ref: dict[str, Any], source: Path) -> 
         if add_legacy_os_keys(clone, ref, placeholder_value=placeholder):
             return True
         asset_reference = _load_asset_reference()
-        if asset_reference and fill_blank_asset_values(
-            clone, asset_reference, placeholder_value=placeholder
-        ):
-            return True
+        if asset_reference:
+            if fill_blank_asset_values(clone, asset_reference, placeholder_value=placeholder):
+                return True
+            if fill_dangling_asset_files(
+                clone,
+                asset_reference,
+                content_dir=cfg_path.parent,
+                theme_root=_theme_root_for(cfg_path.parent),
+                placeholder_value=placeholder,
+            ):
+                return True
         if content_dir_needs_transparent_asset(cfg_path.parent, clone):
             dest = cfg_path.parent / TRANSPARENT_FILENAME
             if not dest.is_file() or dest.read_bytes() != source.read_bytes():

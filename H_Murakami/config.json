@@ -43,7 +43,7 @@
     "settings": "Settings.png",
     "shuffleQuick": "Shuffle.png",
     "unselectedColor": "#ffffff",
-    "ebook": "ebook.png",
+    "ebook": "transparent.png",
     "calendar": "transparent.png",
     "calculator": "transparent.png",
     "fileManager": "transparent.png"
@@ -103,7 +103,26 @@
     "fileExtensionOff": "transparent.png",
     "unselectedColor": "#ffffff",
     "launcher": "transparent.png",
-    "settingMask": "transparent.png"
+    "settingMask": "transparent.png",
+    "date&Time": "transparent.png",
+    "bluetooth": "transparent.png",
+    "categoryKeysWheel": "transparent.png",
+    "categoryAudio": "transparent.png",
+    "categoryFilesStorage": "transparent.png",
+    "categorySystem": "transparent.png",
+    "categoryPersonalization": "transparent.png",
+    "categoryDisplay": "transparent.png",
+    "speakerOn": "transparent.png",
+    "speakerOff": "transparent.png",
+    "wheelSensitivityLow": "transparent.png",
+    "wheelSensitivityStandard": "transparent.png",
+    "wheelSensitivityHigh": "transparent.png",
+    "wheelVolumeOn": "transparent.png",
+    "wheelVolumeOff": "transparent.png",
+    "headphoneGainLow": "transparent.png",
+    "headphoneGainStandard": "transparent.png",
+    "headphoneGainHigh": "transparent.png",
+    "headphoneGainMaximum": "transparent.png"
   },
   "statusConfig": {
     "statusTextColor": "#ffffff",
@@ -137,5 +156,6 @@
   },
   "gallery": {
     "compatibilityMedal": "none"
-  }
+  },
+  "desktopMask": "transparent.png"
 }

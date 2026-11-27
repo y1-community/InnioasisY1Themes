@@ -14,7 +14,7 @@
         "itemTextColor": "#FFFFFFFF",
         "itemSelectedTextColor": "#FF00F5FF",
         "itemSelectedBackground": "item_selected_no_arrow.9.png",
-        "itemBackground": "",
+        "itemBackground": "transparent.png",
         "itemRightArrow": "right_arrow.png",
         "itemSelectedBackgroundIs9Patch": true
     },
@@ -27,7 +27,7 @@
     },
     "menuConfig": {
         "menuBackgroundColor": "",
-        "menuItemBackground": "",
+        "menuItemBackground": "transparent.png",
         "menuItemTextColor": "#FFFFFFFF",
         "menuItemSelectedBackground": "menu_item_selected.png",
         "menuItemSelectedTextColor": "#3B3D78"
@@ -118,7 +118,9 @@
         "categorySystem": "icon_setting_category_system.png",
         "categoryPersonalization": "icon_setting_category_personalization.png",
         "categoryDisplay": "icon_setting_category_display.png",
-        "bluetooth": "icon_setting_bluetooth.png"
+        "bluetooth": "icon_setting_bluetooth.png",
+        "settingMask": "transparent.png",
+        "date&Time": "transparent.png"
     },
     "statusConfig": {
         "playing": "icon_statusbar_play.png",
@@ -144,5 +146,6 @@
             "icon_statusbar_battery_3_c.png",
             "icon_statusbar_battery_4_c.png"
         ]
-    }
+    },
+    "desktopMask": "transparent.png"
 }

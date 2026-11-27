@@ -86,6 +86,7 @@ class LegacyOsBackfillTests(unittest.TestCase):
                 json.dumps({"homePageConfig": {"music": "a.png"}}, indent=4) + "\n",
                 encoding="utf-8",
             )
+            (theme / "a.png").write_bytes(b"creator art")
             source = ensure_canonical_transparent_source()
             changed, copied = backfill_config_file(cfg_path, REF, transparent_source=source)
             self.assertTrue(changed)
@@ -94,6 +95,28 @@ class LegacyOsBackfillTests(unittest.TestCase):
             self.assertEqual(data["homePageConfig"]["music"], "a.png")
             self.assertEqual(data["homePageConfig"]["ebook"], TRANSPARENT_VALUE)
             self.assertEqual(data["settingConfig"]["launcher"], TRANSPARENT_VALUE)
+
+    def test_dangling_reference_becomes_placeholder(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            theme = Path(tmp) / "Theme"
+            theme.mkdir()
+            cfg_path = theme / "config.json"
+            cfg_path.write_text(
+                json.dumps(
+                    {
+                        "homePageConfig": {"fileManager": "File Manager.png"},
+                        "dialogConfig": {"dialogOptionBackground": "#8ecfca"},
+                    },
+                    indent=4,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            source = ensure_canonical_transparent_source()
+            backfill_config_file(cfg_path, REF, transparent_source=source)
+            data = json.loads(cfg_path.read_text(encoding="utf-8"))
+            self.assertEqual(data["homePageConfig"]["fileManager"], TRANSPARENT_VALUE)
+            self.assertEqual(data["dialogConfig"]["dialogOptionBackground"], "#8ecfca")
 
     def test_variant_folder(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

@@ -43,7 +43,7 @@
         "fm": "main menu icons/t35.png",
         "bluetooth": "main menu icons/t4.png",
         "settings": "main menu icons/t19.png",
-        "shuffleQuick": "",
+        "shuffleQuick": "transparent.png",
         "ebook": "main menu icons/ebookicon.png",
         "calculator": "transparent.png",
         "calendar": "transparent.png",
@@ -103,7 +103,26 @@
         "fileExtensionOn": "all other images/settings menu/file ext on off/t43.png",
         "fileExtensionOff": "all other images/settings menu/file ext on off/t46.png",
         "settingMask": "backgrounds/bg1 (cropped).png",
-        "launcher": "transparent.png"
+        "launcher": "transparent.png",
+        "date&Time": "transparent.png",
+        "bluetooth": "transparent.png",
+        "categoryKeysWheel": "transparent.png",
+        "categoryAudio": "transparent.png",
+        "categoryFilesStorage": "transparent.png",
+        "categorySystem": "transparent.png",
+        "categoryPersonalization": "transparent.png",
+        "categoryDisplay": "transparent.png",
+        "speakerOn": "transparent.png",
+        "speakerOff": "transparent.png",
+        "wheelSensitivityLow": "transparent.png",
+        "wheelSensitivityStandard": "transparent.png",
+        "wheelSensitivityHigh": "transparent.png",
+        "wheelVolumeOn": "transparent.png",
+        "wheelVolumeOff": "transparent.png",
+        "headphoneGainLow": "transparent.png",
+        "headphoneGainStandard": "transparent.png",
+        "headphoneGainHigh": "transparent.png",
+        "headphoneGainMaximum": "transparent.png"
     },
     "statusConfig": {
         "statusTextColor": "#ffffff",
@@ -140,5 +159,5 @@
     "authorUrl": "https://www.patreon.com/cw/mp3li",
     "title": "myTinkerbell",
     "description": "Tinkerbell theme for the Innioasis Y1 mp3 player, including Tinkerbell and other Pixie Hollow fairy icons and Pixie Hollow backgrounds. Check the Patreon for the other Y2K Toybox themes.",
-    "desktopMask": ""
+    "desktopMask": "transparent.png"
 }

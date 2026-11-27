@@ -37,7 +37,16 @@
     "ebook": "transparent.png",
     "calendar": "transparent.png",
     "calculator": "transparent.png",
-    "fileManager": "transparent.png"
+    "fileManager": "transparent.png",
+    "nowPlaying": "transparent.png",
+    "music": "transparent.png",
+    "video": "transparent.png",
+    "audiobooks": "transparent.png",
+    "photos": "transparent.png",
+    "fm": "transparent.png",
+    "bluetooth": "transparent.png",
+    "settings": "transparent.png",
+    "shuffleQuick": "transparent.png"
   },
   "fileConfig": {
     "folderIcon": "transparent.png",
@@ -93,7 +102,26 @@
     "clearCache": "transparent.png",
     "theme": "transparent.png",
     "fileExtensionOn": "transparent.png",
-    "fileExtensionOff": "transparent.png"
+    "fileExtensionOff": "transparent.png",
+    "date&Time": "transparent.png",
+    "bluetooth": "transparent.png",
+    "categoryKeysWheel": "transparent.png",
+    "categoryAudio": "transparent.png",
+    "categoryFilesStorage": "transparent.png",
+    "categorySystem": "transparent.png",
+    "categoryPersonalization": "transparent.png",
+    "categoryDisplay": "transparent.png",
+    "speakerOn": "transparent.png",
+    "speakerOff": "transparent.png",
+    "wheelSensitivityLow": "transparent.png",
+    "wheelSensitivityStandard": "transparent.png",
+    "wheelSensitivityHigh": "transparent.png",
+    "wheelVolumeOn": "transparent.png",
+    "wheelVolumeOff": "transparent.png",
+    "headphoneGainLow": "transparent.png",
+    "headphoneGainStandard": "transparent.png",
+    "headphoneGainHigh": "transparent.png",
+    "headphoneGainMaximum": "transparent.png"
   },
   "playerConfig": {
     "playerBackgroundColor": "#181815",
@@ -128,5 +156,6 @@
       "transparent.png",
       "transparent.png"
     ]
-  }
+  },
+  "desktopMask": "transparent.png"
 }

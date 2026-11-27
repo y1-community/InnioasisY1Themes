@@ -10,7 +10,7 @@
     "themeColor": "#ffd789",
     "themeTextColor": "#5a3a2b",
     "desktopWallpaper": "backgrounds/mp3li custom stardew clock icon 1 copy 2.png",
-    "globalWallpaper": "backgrounds/now playing test.png",
+    "globalWallpaper": "transparent.png",
     "fontFamily": "font/stardew-valley-stonks.ttf",
     "itemConfig": {
         "itemTextColor": "#5a3a2b",
@@ -43,7 +43,7 @@
         "fm": "main menu icons/mp3li custom stardewvalley icons 165.png",
         "bluetooth": "main menu icons/Junimo_(green) 1.png",
         "settings": "main menu icons/mp3li stardew UI 4 copy 7.png",
-        "shuffleQuick": "",
+        "shuffleQuick": "transparent.png",
         "ebook": "main menu icons/ebookicon.png",
         "calculator": "transparent.png",
         "calendar": "transparent.png",
@@ -103,7 +103,26 @@
         "fileExtensionOn": "all other images/settings menu/file ext on off/mp3li custom stardewvalley icons 68.png",
         "fileExtensionOff": "all other images/settings menu/file ext on off/mp3li custom stardewvalley icons 152.png",
         "settingMask": "backgrounds/mp3li custom stardew clock icon 1 copy 6.png",
-        "launcher": "transparent.png"
+        "launcher": "transparent.png",
+        "date&Time": "transparent.png",
+        "bluetooth": "transparent.png",
+        "categoryKeysWheel": "transparent.png",
+        "categoryAudio": "transparent.png",
+        "categoryFilesStorage": "transparent.png",
+        "categorySystem": "transparent.png",
+        "categoryPersonalization": "transparent.png",
+        "categoryDisplay": "transparent.png",
+        "speakerOn": "transparent.png",
+        "speakerOff": "transparent.png",
+        "wheelSensitivityLow": "transparent.png",
+        "wheelSensitivityStandard": "transparent.png",
+        "wheelSensitivityHigh": "transparent.png",
+        "wheelVolumeOn": "transparent.png",
+        "wheelVolumeOff": "transparent.png",
+        "headphoneGainLow": "transparent.png",
+        "headphoneGainStandard": "transparent.png",
+        "headphoneGainHigh": "transparent.png",
+        "headphoneGainMaximum": "transparent.png"
     },
     "statusConfig": {
         "statusTextColor": "#ffffff",
@@ -140,5 +159,5 @@
     "authorUrl": "https://www.patreon.com/cw/mp3li",
     "title": "myStardewValley",
     "description": "Stardew Valley theme for the Innioasis Y1 mp3 player made by mp3li. This theme contains original and custom made work by mp3li, including all icons and more. Check the license file for more information. Check the Patreon for more themes by mp3li.",
-    "desktopMask": ""
+    "desktopMask": "transparent.png"
 }

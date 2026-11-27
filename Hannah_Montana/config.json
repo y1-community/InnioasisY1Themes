@@ -43,7 +43,7 @@
         "fm": "main menu icons/hm65.png",
         "bluetooth": "main menu icons/hm59.png",
         "settings": "main menu icons/hm71.png",
-        "shuffleQuick": "",
+        "shuffleQuick": "transparent.png",
         "ebook": "transparent.png",
         "calculator": "transparent.png",
         "calendar": "transparent.png",
@@ -103,7 +103,26 @@
         "fileExtensionOn": "all other images/settings menu/file ext on off/hm36.png",
         "fileExtensionOff": "all other images/settings menu/file ext on off/hm53.png",
         "settingMask": "backgrounds/2BC29058-B4A9-4DFC-BA8D-81C2DD128B11 (cropped).png",
-        "launcher": "transparent.png"
+        "launcher": "transparent.png",
+        "date&Time": "transparent.png",
+        "bluetooth": "transparent.png",
+        "categoryKeysWheel": "transparent.png",
+        "categoryAudio": "transparent.png",
+        "categoryFilesStorage": "transparent.png",
+        "categorySystem": "transparent.png",
+        "categoryPersonalization": "transparent.png",
+        "categoryDisplay": "transparent.png",
+        "speakerOn": "transparent.png",
+        "speakerOff": "transparent.png",
+        "wheelSensitivityLow": "transparent.png",
+        "wheelSensitivityStandard": "transparent.png",
+        "wheelSensitivityHigh": "transparent.png",
+        "wheelVolumeOn": "transparent.png",
+        "wheelVolumeOff": "transparent.png",
+        "headphoneGainLow": "transparent.png",
+        "headphoneGainStandard": "transparent.png",
+        "headphoneGainHigh": "transparent.png",
+        "headphoneGainMaximum": "transparent.png"
     },
     "statusConfig": {
         "statusTextColor": "#ffffff",
@@ -140,5 +159,5 @@
     "authorUrl": "https://www.patreon.com/cw/mp3li",
     "title": "myHannahMontana",
     "description": "Hannah Montana theme for the Innioasis Y1 mp3 player, including Hannah Montana icons and Hannah Montana backgrounds. Check the Patreon for the other Y2K Toybox themes.",
-    "desktopMask": ""
+    "desktopMask": "transparent.png"
 }

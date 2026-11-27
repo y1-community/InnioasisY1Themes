@@ -74,7 +74,7 @@
     "calendar": "homePageConfig_calendar.png",
     "calculator": "homePageConfig_calculator.png",
     "ebook": "homePageConfig_ebook.png",
-    "fileManager": "ADD ICON HERE"
+    "fileManager": "transparent.png"
   },
   "fileConfig": {
     "folderIcon": "transparent.png",
@@ -130,9 +130,29 @@
     "displayBatteryOff": "settingConfig_displayBatteryOff.png",
     "fileExtensionOn": "settingConfig_fileExtensionOn.png",
     "fileExtensionOff": "settingConfig_fileExtensionOff.png",
-    "settingMask": "transparent.png"
+    "settingMask": "transparent.png",
+    "date&Time": "transparent.png",
+    "bluetooth": "transparent.png",
+    "categoryKeysWheel": "transparent.png",
+    "categoryAudio": "transparent.png",
+    "categoryFilesStorage": "transparent.png",
+    "categorySystem": "transparent.png",
+    "categoryPersonalization": "transparent.png",
+    "categoryDisplay": "transparent.png",
+    "speakerOn": "transparent.png",
+    "speakerOff": "transparent.png",
+    "wheelSensitivityLow": "transparent.png",
+    "wheelSensitivityStandard": "transparent.png",
+    "wheelSensitivityHigh": "transparent.png",
+    "wheelVolumeOn": "transparent.png",
+    "wheelVolumeOff": "transparent.png",
+    "headphoneGainLow": "transparent.png",
+    "headphoneGainStandard": "transparent.png",
+    "headphoneGainHigh": "transparent.png",
+    "headphoneGainMaximum": "transparent.png"
   },
   "gallery": {
     "compatibilityMedal": "gold"
-  }
+  },
+  "desktopMask": "transparent.png"
 }

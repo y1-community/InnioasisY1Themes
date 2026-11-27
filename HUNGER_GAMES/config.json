@@ -18,7 +18,7 @@
         "itemRightArrow": "@Pris_itemRightArrow.png"
     },
     "dialogConfig": {
-        "dialogOptionBackground": "@Pris_dialogOptionBackground.png",
+        "dialogOptionBackground": "transparent.png",
         "dialogOptionTextColor": "#f7f7f7",
         "dialogOptionSelectedBackground": "@Pris_dialogOptionSelectedBackground.png",
         "dialogOptionSelectedTextColor": "#ffffff",
@@ -40,7 +40,7 @@
         "fm": "@Pris_FM Radio.png",
         "bluetooth": "@Pris_Bluetooth.png",
         "settings": "@Pris_Settings.png",
-        "shuffleQuick": "Shuffle Quick.png",
+        "shuffleQuick": "transparent.png",
         "ebook": "ebook.png",
         "calendar": "transparent.png",
         "calculator": "transparent.png",
@@ -100,7 +100,26 @@
         "fileExtensionOn": "file_ext_on.png",
         "fileExtensionOff": "file_ext_off.png",
         "launcher": "transparent.png",
-        "settingMask": "transparent.png"
+        "settingMask": "transparent.png",
+        "date&Time": "transparent.png",
+        "bluetooth": "transparent.png",
+        "categoryKeysWheel": "transparent.png",
+        "categoryAudio": "transparent.png",
+        "categoryFilesStorage": "transparent.png",
+        "categorySystem": "transparent.png",
+        "categoryPersonalization": "transparent.png",
+        "categoryDisplay": "transparent.png",
+        "speakerOn": "transparent.png",
+        "speakerOff": "transparent.png",
+        "wheelSensitivityLow": "transparent.png",
+        "wheelSensitivityStandard": "transparent.png",
+        "wheelSensitivityHigh": "transparent.png",
+        "wheelVolumeOn": "transparent.png",
+        "wheelVolumeOff": "transparent.png",
+        "headphoneGainLow": "transparent.png",
+        "headphoneGainStandard": "transparent.png",
+        "headphoneGainHigh": "transparent.png",
+        "headphoneGainMaximum": "transparent.png"
     },
     "statusConfig": {
         "statusTextColor": "#ffffff",
@@ -130,5 +149,6 @@
     },
     "gallery": {
         "compatibilityMedal": "none"
-    }
+    },
+    "desktopMask": "transparent.png"
 }

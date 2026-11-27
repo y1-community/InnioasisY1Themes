@@ -9,7 +9,7 @@
     "themeCover": "cover.png",
     "desktopWallpaper": "desk.png",
     "globalWallpaper": "global.png",
-    "desktopMask": "mask.png",
+    "desktopMask": "transparent.png",
     "fontFamily": "font.ttf",
     "itemConfig": {
         "itemTextColor": "#FFFFFF",
@@ -19,9 +19,9 @@
         "itemRightArrow": "transparent.png"
     },
     "dialogConfig": {
-        "dialogOptionBackground": "dialog_no_selected.png",
+        "dialogOptionBackground": "transparent.png",
         "dialogOptionTextColor": "#FFFFFF",
-        "dialogOptionSelectedBackground": "dialog_selected.png",
+        "dialogOptionSelectedBackground": "transparent.png",
         "dialogOptionSelectedTextColor": "#FFFFFF",
         "dialogBackgroundColor": "#3F4142",
         "dialogTextColor": "#FFFFFF"
@@ -53,7 +53,7 @@
         "musicIcon": "transparent.png"
     },
     "settingConfig": {
-        "settingMask": "setting_mask.png",
+        "settingMask": "transparent.png",
         "shutdown": "Shutdown.png",
         "timedShutdown_off": "Timed shutdoown-0.png",
         "timedShutdown_10": "Timed shutdoown-10.png",
@@ -102,7 +102,26 @@
         "clearCache": "Clear cache.png",
         "theme": "Change Theme.png",
         "fileExtensionOn": "File Extension-ON.png",
-        "fileExtensionOff": "File Extension-OFF.png"
+        "fileExtensionOff": "File Extension-OFF.png",
+        "date&Time": "transparent.png",
+        "bluetooth": "transparent.png",
+        "categoryKeysWheel": "transparent.png",
+        "categoryAudio": "transparent.png",
+        "categoryFilesStorage": "transparent.png",
+        "categorySystem": "transparent.png",
+        "categoryPersonalization": "transparent.png",
+        "categoryDisplay": "transparent.png",
+        "speakerOn": "transparent.png",
+        "speakerOff": "transparent.png",
+        "wheelSensitivityLow": "transparent.png",
+        "wheelSensitivityStandard": "transparent.png",
+        "wheelSensitivityHigh": "transparent.png",
+        "wheelVolumeOn": "transparent.png",
+        "wheelVolumeOff": "transparent.png",
+        "headphoneGainLow": "transparent.png",
+        "headphoneGainStandard": "transparent.png",
+        "headphoneGainHigh": "transparent.png",
+        "headphoneGainMaximum": "transparent.png"
     },
     "statusConfig": {
         "statusTextColor": "#ffffff",
@@ -112,7 +131,7 @@
         "fmPlaying": "fm_playing.png",
         "stop": "stop.png",
         "blConnected": "bl2.png",
-        "blConnecting": "bl3.png",
+        "blConnecting": "transparent.png",
         "blDisconnected": "bl1.png",
         "headsetWithMic": "headset2.png",
         "headsetWithoutMic": "headset1.png",

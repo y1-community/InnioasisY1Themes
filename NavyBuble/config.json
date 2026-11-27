@@ -8,13 +8,13 @@
   },
   "themeCover": "cover.png",
   "desktopWallpaper": "desk_bg001.png",
-  "globalWallpaper": "global_wallpaper.png",
+  "globalWallpaper": "transparent.png",
   "desktopMask": "transparent.png",
   "itemConfig": {
     "itemTextColor": "#dbf4ff",
     "itemSelectedTextColor": "#e0f5ff",
     "itemSelectedBackground": "1.png",
-    "itemBackground": "0.png",
+    "itemBackground": "transparent.png",
     "itemRightArrow": "2.png"
   },
   "dialogConfig": {
@@ -47,8 +47,8 @@
     "fileManager": "transparent.png"
   },
   "fileConfig": {
-    "folderIcon": "folder.png",
-    "musicIcon": "music_file.png"
+    "folderIcon": "transparent.png",
+    "musicIcon": "transparent.png"
   },
   "settingConfig": {
     "shutdown": "Shutdown@1x.png",
@@ -100,32 +100,51 @@
     "theme": "Change Theme@1x.png",
     "fileExtensionOn": "file_ext_on.png",
     "fileExtensionOff": "file_ext_off.png",
-    "settingMask": "setting_mask.png"
+    "settingMask": "transparent.png",
+    "date&Time": "transparent.png",
+    "bluetooth": "transparent.png",
+    "categoryKeysWheel": "transparent.png",
+    "categoryAudio": "transparent.png",
+    "categoryFilesStorage": "transparent.png",
+    "categorySystem": "transparent.png",
+    "categoryPersonalization": "transparent.png",
+    "categoryDisplay": "transparent.png",
+    "speakerOn": "transparent.png",
+    "speakerOff": "transparent.png",
+    "wheelSensitivityLow": "transparent.png",
+    "wheelSensitivityStandard": "transparent.png",
+    "wheelSensitivityHigh": "transparent.png",
+    "wheelVolumeOn": "transparent.png",
+    "wheelVolumeOff": "transparent.png",
+    "headphoneGainLow": "transparent.png",
+    "headphoneGainStandard": "transparent.png",
+    "headphoneGainHigh": "transparent.png",
+    "headphoneGainMaximum": "transparent.png"
   },
   "statusConfig": {
     "statusTextColor": "#ffffff",
-    "playing": "playing.png",
-    "audiobookPlaying": "audiobookPlaying.png",
-    "pause": "pause.png",
-    "fmPlaying": "fmPlaying.png",
-    "stop": "stop.png",
-    "blConnected": "blConnected.png",
-    "blConnecting": "blConnecting.png",
-    "blDisconnected": "blDisconnected.png",
-    "headsetWithMic": "headset2.png",
-    "headsetWithoutMic": "headset1.png",
+    "playing": "transparent.png",
+    "audiobookPlaying": "transparent.png",
+    "pause": "transparent.png",
+    "fmPlaying": "transparent.png",
+    "stop": "transparent.png",
+    "blConnected": "transparent.png",
+    "blConnecting": "transparent.png",
+    "blDisconnected": "transparent.png",
+    "headsetWithMic": "transparent.png",
+    "headsetWithoutMic": "transparent.png",
     "statusBarColor": "#000f3d",
     "battery": [
-      "battery.001.png",
-      "battery.002.png",
-      "battery.003.png",
-      "battery.004.png"
+      "transparent.png",
+      "transparent.png",
+      "transparent.png",
+      "transparent.png"
     ],
     "batteryCharging": [
-      "batterycharge.001.png",
-      "batterycharge.002.png",
-      "batterycharge.003.png",
-      "batterycharge.004.png"
+      "transparent.png",
+      "transparent.png",
+      "transparent.png",
+      "transparent.png"
     ]
   },
   "gallery": {

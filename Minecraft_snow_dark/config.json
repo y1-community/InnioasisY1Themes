@@ -48,7 +48,7 @@
   },
   "fileConfig": {
     "folderIcon": "folder.png",
-    "musicIcon": "music_icon.png"
+    "musicIcon": "transparent.png"
   },
   "settingConfig": {
     "shutdown": "Shutdown@1x.png",
@@ -117,7 +117,9 @@
     "categorySystem": "icon_setting_category_system.png",
     "categoryPersonalization": "icon_setting_category_personalization.png",
     "categoryDisplay": "icon_setting_category_display.png",
-    "settingMask": "transparent.png"
+    "settingMask": "transparent.png",
+    "date&Time": "transparent.png",
+    "bluetooth": "transparent.png"
   },
   "statusConfig": {
     "statusTextColor": "#ffffff",
@@ -147,5 +149,6 @@
   },
   "gallery": {
     "compatibilityMedal": "gold"
-  }
+  },
+  "desktopMask": "transparent.png"
 }
