@@ -1581,7 +1581,8 @@
             "screenshot": "./Classic/cover.jpg",
             "sourceType": "internal",
             "sortName": "classic",
-            "searchText": "classic official built-in classic dark theme from innioasis y2 3.2.8 (originally the factory y1 holopebble default), cross-compatible with innioasis y1 and y2. innioasis classic"
+            "searchText": "classic official built-in classic dark theme from innioasis y2 3.2.8 (originally the factory y1 holopebble default), cross-compatible with innioasis y1 and y2. innioasis classic",
+            "screenshotPreview": "./Classic/screenshot_preview.jpg"
         },
         {
             "name": "clean doggy aesthetic",
@@ -3375,7 +3376,8 @@
             "defaultModel": "y2",
             "sourceType": "internal",
             "sortName": "holopebble",
-            "searchText": "holopebble official factory default holopebble theme — includes both the light innioasis y2 3.2.8 default (with dark status bar text) and the classic dark innioasis y1 model version. innioasis holopebble"
+            "searchText": "holopebble official factory default holopebble theme — includes both the light innioasis y2 3.2.8 default (with dark status bar text) and the classic dark innioasis y1 model version. innioasis holopebble",
+            "screenshotPreview": "./HoloPebble/screenshot_preview.jpg"
         },
         {
             "name": "Homestuck",
