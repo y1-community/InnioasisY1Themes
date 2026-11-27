@@ -4989,15 +4989,18 @@
 
     function previewAssetNodes(path) {
         if (!path || !el.preview) return [];
+        /* Row backgrounds are list chrome: one style shared by every row, not
+           artwork a row owns. Outlining every row that wears it rang the whole
+           menu whenever the reader stepped through it with the arrows, which
+           reads as a stray focus stroke. One representative row is enough to
+           say where the art lands. */
         if (path === 'itemConfig.itemSelectedBackground' || path === 'menuConfig.menuItemSelectedBackground') {
-            var selectedRows = Array.prototype.slice.call(el.preview.querySelectorAll('.y1-tp-row.is-selected'));
-            if (selectedRows.length) return selectedRows;
+            var selectedRow = el.preview.querySelector('.y1-tp-row.is-selected');
+            if (selectedRow) return [selectedRow];
         }
         if (path === 'itemConfig.itemBackground' || path === 'menuConfig.menuItemBackground') {
-            var unselectedRows = Array.prototype.slice.call(
-                el.preview.querySelectorAll('.y1-tp-row:not(.is-selected)')
-            );
-            if (unselectedRows.length) return unselectedRows;
+            var plainRow = el.preview.querySelector('.y1-tp-row:not(.is-selected)');
+            if (plainRow) return [plainRow];
         }
         return Array.prototype.filter.call(
             el.preview.querySelectorAll('[data-theme-asset-path]'),
