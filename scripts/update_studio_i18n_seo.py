@@ -2018,8 +2018,9 @@ def main() -> int:
         expected_canon = f'{ORIGIN}/studio-test/index_{code}.html'
         if f'rel="canonical" href="{expected_canon}"' not in head_html:
             errors.append(f"{code}: missing self-canonical {expected_canon}")
-        if head_html.count('rel="alternate" hreflang=') != 32:
-            errors.append(f"{code}: expected 32 hreflang links, got {head_html.count('rel=\"alternate\" hreflang=')}")
+        hreflang_count = head_html.count('rel="alternate" hreflang=')
+        if hreflang_count != 32:
+            errors.append(f"{code}: expected 32 hreflang links, got {hreflang_count}")
         ld_match = JSONLD_RE.search(markup)
         if not ld_match:
             errors.append(f"{code}: missing JSON-LD after write")
