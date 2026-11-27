@@ -614,8 +614,9 @@ export async function handleUploadPost(request, env) {
     if (themeTitle && themeAuthor) prTitle = `${themeTitle} — ${themeAuthor}`;
     else if (themeTitle) prTitle = themeTitle;
     else if (themeAuthor) prTitle = `Theme submission — ${themeAuthor}`;
-    /* The `[Update]` prefix keeps the auto-merge workflow away from updates for
-       good: only brand-new themes may land without a human. */
+    /* The `[Update]` prefix tells the maintainer this package targets a live
+       listing. The auto-merge workflow still validates it, but only a
+       file-manager-only Y2 enablement may merge without a human. */
     if (isUpdateIntent) prTitle = `[Update] ${prTitle}`;
 
     const prBody = [

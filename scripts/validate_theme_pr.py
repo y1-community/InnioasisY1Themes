@@ -7,6 +7,13 @@ Rules:
   (``name``, ``author``, ``authorUrl``, ``description``, ``externalDownloadUrl``,
   ``sortName``, ``searchText``) and/or one or more existing ``ThemeName/config.json``
   files (see ``THEMES_METADATA_AUTO_MERGE_MAX_FOLDERS``). Mixed add+modify PRs are rejected.
+  Metadata validates but **never auto-merges**: retitling or re-crediting a listing is
+  exactly the change a vandal would make, so a maintainer reads it first.
+- **File-manager-only updates** are the one exception for an existing theme: when a PR
+  touches an existing theme folder and changes nothing but the file manager artwork
+  (``homePageConfig.fileManager`` and/or ``fileConfig.folderIcon`` / ``fileConfig.musicIcon``,
+  plus submission timestamps), validation prints ``THEME_PR_AUTO_MERGE_ALLOWED=1``. That is
+  how an author adds Y2 support to their own theme, and it cannot alter another listing.
 - All changes must be at the repository root (static site + zips live there).
 - Zip uploads must be <name>.zip at repo root (no path segments), except optional
   gallery upload sidecar ``<same-path>.meta.json`` (i.e. ``*.zip.meta.json``) added
@@ -45,7 +52,8 @@ Rules:
     name is available (including when the config still names the other creator).
   - Only **brand-new** theme identities print ``THEME_PR_AUTO_MERGE_ALLOWED=1``. A package
     that touches an existing folder prints ``THEME_PR_AUTO_MERGE_ALLOWED=0`` with a
-    ``THEME_PR_MANUAL_REVIEW`` reason, so updates always wait for a human.
+    ``THEME_PR_MANUAL_REVIEW`` reason, so updates always wait for a human — except the
+    file-manager-only Y2 enablement described at the top of this docstring.
 - Catalog display title (theme_info.title) collisions still block validation (fail).
 """
 
@@ -880,6 +888,92 @@ METADATA_LISTING_KEYS = frozenset(
     {"name", "author", "authorUrl", "description", "externalDownloadUrl", "sortName", "searchText"}
 )
 
+# Y2 added a file manager icon to the home screen. An author who adds it to their
+# own theme changes no listing details and no other artwork, so that update is the
+# only one safe to merge without a maintainer reading it.
+FILE_MANAGER_ASSET_RE = re.compile(
+    r"(file[ _-]?manager|folder[ _-]?icon|music[ _-]?icon|y2)", re.IGNORECASE
+)
+FILE_MANAGER_CONFIG_KEYS = frozenset(
+    {"homePageConfig.fileManager", "fileConfig.folderIcon", "fileConfig.musicIcon"}
+)
+FILE_MANAGER_TIMESTAMP_KEYS = frozenset({"theme_info.submittedAt", "theme_info.updatedAt"})
+FILE_MANAGER_IMAGE_EXTS = frozenset({".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp"})
+
+
+def _flat_config_values(value: Any, prefix: str = "", out: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Flatten a config into dotted leaf paths so two revisions compare key by key."""
+    if out is None:
+        out = {}
+    if isinstance(value, dict):
+        for key, child in value.items():
+            _flat_config_values(child, f"{prefix}.{key}" if prefix else str(key), out)
+    elif isinstance(value, list):
+        out[prefix] = json.dumps(value, sort_keys=True, ensure_ascii=False)
+    else:
+        out[prefix] = value
+    return out
+
+
+def _is_file_manager_only_update(
+    parsed: list[tuple[str, str]], base_sha: str, pr_ref: str
+) -> bool:
+    """True when a PR changes only an existing theme's file manager artwork.
+
+    Every path must stay inside one theme folder that already exists on the base
+    branch, nothing may be deleted, and each non-config change must be an image
+    named for the file manager (or the folder/music icons that ship with it).
+    Config edits may touch only the file manager slots and submission timestamps.
+    """
+    if not parsed:
+        return False
+    folders: set[str] = set()
+    config_paths: list[str] = []
+    changed_assets = 0
+    for status, path in parsed:
+        if status not in {"M", "A"}:
+            return False
+        parts = path.split("/")
+        if len(parts) != 2:
+            return False
+        folder, name = parts
+        composite = f"{THEMES_PREFIX}{folder}" if THEMES_PREFIX else folder
+        if not _folder_exists_in_base(base_sha, composite):
+            return False
+        folders.add(folder.lower())
+        if name.lower() == "config.json":
+            config_paths.append(path)
+            continue
+        if not FILE_MANAGER_ASSET_RE.search(name):
+            return False
+        if PurePosixPath(name).suffix.lower() not in FILE_MANAGER_IMAGE_EXTS:
+            return False
+        changed_assets += 1
+    if len(folders) != 1 or not config_paths:
+        return False
+    touched_slot = False
+    for path in config_paths:
+        try:
+            base_raw = _git_blob_text(f"{base_sha}:{path}")
+            pr_raw = _git_blob_text(f"{pr_ref}:{path}")
+            base_cfg = json.loads(base_raw)
+            pr_cfg = json.loads(pr_raw)
+        except (subprocess.CalledProcessError, json.JSONDecodeError):
+            return False
+        if not isinstance(base_cfg, dict) or not isinstance(pr_cfg, dict):
+            return False
+        base_flat = _flat_config_values(base_cfg)
+        pr_flat = _flat_config_values(pr_cfg)
+        allowed = FILE_MANAGER_CONFIG_KEYS | FILE_MANAGER_TIMESTAMP_KEYS
+        for key in set(base_flat) | set(pr_flat):
+            if base_flat.get(key) == pr_flat.get(key):
+                continue
+            if key not in allowed:
+                return False
+            if key in FILE_MANAGER_CONFIG_KEYS:
+                touched_slot = True
+    return touched_slot or changed_assets > 0
+
 
 def _load_themes_json_themes(rev: str) -> list[Any]:
     try:
@@ -1033,6 +1127,22 @@ def main() -> int:
     if errors:
         return _fail(errors)
 
+    # One narrow exception, checked before the metadata and mixed-diff rules: an
+    # existing theme gaining the file manager icon (Y2 support) is the author's
+    # own maintenance work and touches no listing details.
+    try:
+        fm_only = _is_file_manager_only_update(parsed, base_sha, pr_ref)
+    except Exception as exc:  # never let a detector bug auto-merge anything
+        print(f"THEME_FILE_MANAGER_CHECK_SKIPPED: {exc}")
+        fm_only = False
+    if fm_only:
+        print(
+            "File-manager-only update for an existing theme: the PR adds or refreshes "
+            "the Y2 file manager artwork and changes no other theme asset or listing detail."
+        )
+        print("THEME_PR_AUTO_MERGE_ALLOWED=1")
+        return 0
+
     if parsed and all(s == "M" for s, _ in parsed):
         meta_errs = _validate_metadata_only_pr(
             base_sha, pr_ref, parsed, catalog_title_rows=catalog_title_rows
@@ -1044,7 +1154,13 @@ def main() -> int:
             f"{sum(1 for _, p in parsed if p.endswith('/config.json'))} config.json update(s) "
             f"and themes.json={'yes' if any(p == 'themes.json' for _, p in parsed) else 'no'}."
         )
-        print("THEME_PR_AUTO_MERGE_ALLOWED=1")
+        # Details changes are valid, but they are also the cheapest way to hijack
+        # a listing: a new name or author with unchanged artwork needs a human.
+        print("THEME_PR_AUTO_MERGE_ALLOWED=0")
+        print(
+            "THEME_PR_MANUAL_REVIEW: Gallery details and config metadata never merge "
+            "automatically; a maintainer checks the new name, author and description first."
+        )
         return 0
 
     if any(s != "A" for s, _ in parsed):

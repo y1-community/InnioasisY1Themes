@@ -14,9 +14,9 @@
     <meta name="apple-mobile-web-app-title" content="Theme Studio" />
     <meta name="cf-pages-upload-api-origin" content="https://y1-theme-upload.itsryanspecter.workers.dev" />
     <meta name="cf-theme-analytics-origin" content="https://y1-theme-analytics.itsryanspecter.workers.dev" />
-    <title>Innioasis Theme Studio — Free Y1 &amp; Y2 Theme Maker, Editor &amp; Creator</title>
-    <meta name="description" content="Build, customize, preview, and publish custom themes for Innioasis Y1 and Y2 MP3 players in your browser. Free online Y1 theme maker, Y2 theme creator, and Innioasis theme editor for Original OS, Better-Y, Solar, and Koensayr." />
-    <meta name="keywords" content="Innioasis Theme Studio, Y1 theme maker, Y2 theme maker, Innioasis Y1 theme maker, Innioasis Y2 theme maker, Innioasis theme editor, Innioasis theme creator, Y1 theme editor, Y2 theme editor, Y1 theme creator, Y2 theme creator, Innioasis custom themes, Better-Y theme maker, Solar theme maker, Koensayr theme maker, MP3 player theme maker" />
+    <title>Innioasis Theme Studio — Y1 &amp; Y2 Theme Maker, Theme Editor &amp; Theme Creator</title>
+    <meta name="description" content="The Innioasis Theme Studio is the free browser theme maker, theme editor and theme creator for Innioasis Y1 and Y2 players. Build or edit a custom theme or skin, live-preview it, then download the ZIP or publish it straight to the Innioasis Themes Gallery. Y2-ready, with Original OS, Better-Y, Solar and Koensayr support." />
+    <meta name="keywords" content="Innioasis Theme Studio, Innioasis Y1 theme maker, Innioasis Y2 theme maker, Innioasis Y1 theme editor, Innioasis Y2 theme editor, Innioasis Y1 theme creator, Innioasis Y2 theme creator, Y1 theme maker, Y2 theme maker, Y1 theme editor, Y2 theme editor, Y1 theme studio, Y2 theme studio, Innioasis Y1 skin maker, Innioasis Y2 skin maker, Y1 skin editor, Y2 skin creator, Innioasis custom themes, Innioasis custom skins, Better-Y theme maker, Solar theme maker, Koensayr theme maker, MP3 player theme maker, MP3 player theme editor, theme creator for Innioasis players" />
     <meta name="author" content="Ryan Specter &amp; Innioasis Community" />
     <link rel="canonical" href="https://themes.innioasis.app/studio-test/" />
     <meta property="og:type" content="website" />
@@ -79,6 +79,38 @@
                   "@type": "Answer",
                   "text": "Yes. Innioasis Theme Studio runs completely in your browser on Mac, PC, Chromebook, tablets, and phones with no installation required, and lets you export blank transparent PNG templates at the recommended pixel sizes for your image editor."
                 }
+              },
+              {
+                "@type": "Question",
+                "name": "Is there a theme maker for the Innioasis Y2?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. Innioasis Theme Studio makes and edits themes for both the Innioasis Y1 and the Innioasis Y2, including the file manager icon that Y2 themes add to the home screen. It is the same free browser studio for both players, so one theme package can be listed for Y1, Y2 or both."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How do I edit an existing Innioasis Y1 or Y2 theme (skin)?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Open Innioasis Theme Studio, pick the theme from the gallery or open its ZIP or folder, then click any element in the live player preview: the studio selects that asset in the tray and shows its Replace, Paste, Bin and Reset actions beside the selection. Replacing an image updates the preview immediately, and Save to device writes a ready-to-install ZIP."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Can I publish a theme to the Innioasis Themes Gallery from the browser?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. Innioasis Theme Studio submits a finished theme directly to the Innioasis Themes Gallery, with no GitHub account or pull request needed. Submissions are reviewed, and a gallery theme that has not had at least one image replaced is not accepted as a new theme: use a gallery theme as a template, but make the artwork your own before publishing."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What is the best Innioasis theme maker, editor or studio?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Innioasis Theme Studio at https://themes.innioasis.app/studio-test/ is the most complete option: it is free, runs in the browser, supports both Y1 and Y2, previews the theme in a working player simulator, understands every asset (icons, wallpapers, masks, list chrome, fonts, colours and the status bar), opens existing ZIP or folder themes for editing, and submits to the community gallery directly. Older web tools cover only the Y1 and cannot publish."
+                }
               }
             ]
           }
@@ -106,7 +138,7 @@
     <link rel="stylesheet" href="../site-theme.css?v=20261125seo1" />
     <link rel="stylesheet" href="../site-toolbar.css?v=20261124appeals1" />
     <link rel="stylesheet" href="../y1-theme-preview.css?v=20261119menus1" />
-    <link rel="stylesheet" href="/studio-test/studio.css?v=20261124studio9" />
+    <link rel="stylesheet" href="/studio-test/studio.css?v=20261127studio17" />
 </head>
 
 <body class="site-themes-app site-dock-mode studio-app" data-mode="preview">
@@ -158,12 +190,13 @@
             <section class="studio-stage" aria-labelledby="studio-title">
                 <div class="studio-stage-head">
                     <div class="studio-stage-copy">
+                        <h1 class="studio-page-title">Innioasis Y1 &amp; Y2 Theme Maker, Theme Editor &amp; Theme Studio</h1>
                         <div class="studio-eyebrow studio-breadcrumb">
                             <span id="studio-source-label">Gallery theme</span>
                             <span class="studio-sep" aria-hidden="true">/</span>
                             <span id="studio-source-detail">loading</span>
                         </div>
-                        <h1 id="studio-title" translate="no" data-i18n-skip>Loading theme...</h1>
+                        <h2 id="studio-title" translate="no" data-i18n-skip>Loading theme...</h2>
                         <p id="studio-byline" translate="no" data-i18n-skip>Reading the package...</p>
                     </div>
                     <div class="studio-stage-meta">
@@ -645,13 +678,13 @@
     <div id="support-toolbar-slot"></div>
 
     <script src="../nav.js?v=20261124fixes1"></script>
-    <script src="../y1-theme-preview.js?v=20261126studio13"></script>
+    <script src="../y1-theme-preview.js?v=20261127studio15"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="../theme-packaging.js"></script>
     <script src="../author-submission-policy.js?v=20260523"></script>
     <script src="../studio-drop-handoff.js?v=20261123studio2"></script>
     <script src="../theme-analytics.js?v=20261125quota2"></script>
-    <script src="/studio-test/studio.js?v=20261125studio11"></script>
+    <script src="/studio-test/studio.js?v=20261127studio21"></script>
     <script src="../site-locale.js?v=20261124fixes2" defer></script>
 </body>
 

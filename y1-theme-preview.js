@@ -94,7 +94,12 @@
         settingsDateTime: 'Date & Time',
         settingsLanguage: 'Language',
         settingsAbout: 'About',
-        nowPlaying: 'Now Playing'
+        nowPlaying: 'Now Playing',
+        photos: 'Photos',
+        fm: 'FM Radio',
+        ebook: 'E-Book',
+        bluetooth: 'Bluetooth',
+        fileManager: 'File manager'
     };
 
     function normalizeConfigAssetPath(rawPath, folderPath) {
@@ -218,9 +223,16 @@
         return !!file && !/(^|\/)transparent\.png$/i.test(file);
     }
 
-    function buildHomeItems(homeCfg, settingCfg) {
+    function buildHomeItems(homeCfg, settingCfg, opts) {
         homeCfg = homeCfg || {};
         settingCfg = settingCfg || {};
+        opts = opts || {};
+        /* Shuffle Quick, Calculator and Calendar are still declared by every
+           shipped config.json, but the 3.x launchers no longer draw their
+           rows. They stay off the simulated home list unless the editor asks
+           for the legacy rows, which is the same split the tray uses. */
+        var legacyKeys = { shuffleQuick: true, calendar: true, calculator: true };
+        var showLegacy = opts.showLegacyHome === true;
         var labelMap = {
             nowPlaying: 'Now Playing',
             music: 'Music',
@@ -233,40 +245,47 @@
             fileManager: 'File manager',
             settings: 'Settings'
         };
-        /* MyLauncher 3.2.4 MainActivity order on a stock Y2. Calculator and
-           Calendar are only inserted on the "v4" model, and Shuffle Quick is
-           not in this launcher at all. FM is conditional on the tuner build,
-           so a theme's transparent.png hides that row.
-
-           The two launcher generations differ in one place: a Y1 launcher has
-           a Bluetooth row and no File manager, while a Y2 launcher has File
-           manager and keeps Bluetooth in Settings. A theme "is Y2" when it
-           ships File manager art, which is the same switch the editor uses. */
-        var fileManagerUsable = isUsableHomeIcon(homePageIconFromCfg(homeCfg, 'fileManager'));
-        var ordered = [
+        /* Every launcher from 2.1.9 through 3.2.8 reads the row order straight
+           out of homePageConfig and draws the keys in declaration order—the
+           stock config.json files list exactly the on-device order (Y1 3.1.2:
+           nowPlaying … settings, shuffleQuick, calendar, calculator, ebook;
+           Y2 3.2.8 appends fileManager). So follow the theme's own key order
+           instead of a hardcoded list, then fix up the two conditional rows:
+           FM only exists on tuner builds, and a pairing model keeps Bluetooth
+           on the home list while the Y2 one shows it inside Settings. */
+        var knownOrder = [
             'nowPlaying',
             'music',
             'video',
             'audiobooks',
-            'ebook',
             'photos',
             'fm',
             'bluetooth',
-            'fileManager',
-            'settings'
+            'settings',
+            'shuffleQuick',
+            'calendar',
+            'calculator',
+            'ebook',
+            'fileManager'
         ];
+        var configOrder = Object.keys(homeCfg).filter(function (key) {
+            return knownOrder.indexOf(key) !== -1;
+        });
+        var ordered = configOrder.length ? configOrder : knownOrder;
+        var fileManagerUsable = isUsableHomeIcon(homePageIconFromCfg(homeCfg, 'fileManager'));
         var items = ordered
             .filter(function (key) {
+                if (!showLegacy && legacyKeys[key]) return false;
+                if (key === 'fileManager') {
+                    /* Y2 launchers always draw the row, so a theme that never
+                       supplied the art can still fill the gap. */
+                    return true;
+                }
+                if (key === 'bluetooth') return isUsableHomeIcon(homePageIconFromCfg(homeCfg, key));
                 var file = homePageIconFromCfg(homeCfg, key);
+                /* FM is conditional on the tuner build, so a theme's
+                   transparent.png hides that row. */
                 if (key === 'fm') return isUsableHomeIcon(file);
-                /* Bluetooth only belongs on a Y1 home list: once the theme has
-                   File manager art, the Y2 launcher moved the control into
-                   Settings. */
-                if (key === 'bluetooth') return !fileManagerUsable && isUsableHomeIcon(file);
-                /* File manager is drawn whether or not the theme supplied art:
-                   the row is part of the launcher, and a theme that never drew
-                   it should still be able to fill the gap from the editor. */
-                if (key === 'fileManager') return true;
                 return file !== undefined;
             })
             .map(function (key) {
@@ -343,22 +362,10 @@
     }
 
     function statusTextColor(statusCfg, itemCfg) {
-        var explicit =
-            statusCfg.statusTextColor || statusCfg.statusBarTextColor || statusCfg.textColor || statusCfg.textColorStr;
-        if (explicit) return String(explicit).trim();
-        var bg = cssColorChannels(statusCfg.statusBarColor);
-        if (bg && bg.a >= 0.5) {
-            var luma = (0.299 * bg.r + 0.587 * bg.g + 0.114 * bg.b) / 255;
-            return luma > 0.55 ? '#000000' : '#ffffff';
-        }
-        /* A see-through strip has no colour of its own. The theme's list text
-           already sits on the same art and contrasts with it, so it is the
-           honest default until the author picks a status text colour. */
-        var ink = itemCfg && cssColorChannels(itemCfg.itemTextColor);
-        if (ink) {
-            var inkLuma = (0.299 * ink.r + 0.587 * ink.g + 0.114 * ink.b) / 255;
-            return inkLuma > 0.55 ? '#ffffff' : '#000000';
-        }
+        /* The launcher always draws the status bar's text and glyphs in white:
+           it ignores every colour a theme declares for them, unlike the list
+           text below. Draw what the player draws so a theme never looks right
+           in the preview and wrong on the device. */
         return '#ffffff';
     }
 
@@ -575,7 +582,7 @@
                 var sar = document.createElement('div');
                 /* item_setting.xml: a 30dp arrow with 5dp trailing margin. */
                 sar.style.cssText =
-                    'position:absolute;right:5px;top:0;height:' +
+                    'position:absolute;right:5px;top:0;min-width:24px;height:' +
                     ctx.itemHeight +
                     'px;display:flex;align-items:center;justify-content:center;';
                 if (ctx.arrowUrl) {
@@ -590,6 +597,7 @@
                 } else {
                     var sch = document.createElement('span');
                     sch.textContent = '\u203A';
+                    sch.setAttribute('data-theme-asset-path', 'itemConfig.itemRightArrow');
                     sch.style.cssText =
                         'color:' + selText + ';font-weight:700;font-size:22px;line-height:1;';
                     sar.appendChild(sch);
@@ -624,7 +632,7 @@
         } else if (selected) {
             var ar = document.createElement('div');
             ar.style.cssText =
-                'position:absolute;right:10px;top:0;height:' +
+                'position:absolute;right:10px;top:0;min-width:24px;height:' +
                 ctx.itemHeight +
                 'px;display:flex;align-items:center;justify-content:center;';
             if (ctx.arrowUrl) {
@@ -639,6 +647,7 @@
             } else {
                 var ch = document.createElement('span');
                 ch.textContent = '\u203A';
+                ch.setAttribute('data-theme-asset-path', 'itemConfig.itemRightArrow');
                 ch.style.cssText =
                     'color:' +
                     ctx.colors.text_selected +
@@ -1486,6 +1495,32 @@
                 return { id: label.toLowerCase().replace(/\s+/g, '_'), label: label };
             });
         }
+        if (viewId === 'ebook') {
+            /* Innioasis e-Book module: the library lists every book it found on
+               the card, and Bookmark lists is the last entry. */
+            return [
+                'The Little Prince',
+                'Alice in Wonderland',
+                'Frankenstein',
+                'Dracula',
+                'Moby-Dick',
+                'Bookmark lists'
+            ].map(function (label) {
+                return { id: label.toLowerCase().replace(/[^a-z0-9]+/g, '_'), label: label };
+            });
+        }
+        if (viewId === 'fileManager') {
+            return ['Internal storage', 'SD card', 'Music', 'Videos', 'Photos', 'Audiobooks', 'E-Book'].map(
+                function (label, i) {
+                    return { id: 'fm_' + i, label: label, isFolder: i > 0 };
+                }
+            );
+        }
+        if (viewId === 'bluetooth') {
+            return ['Bluetooth', 'Paired devices', 'Search for devices'].map(function (label, i) {
+                return { id: 'bt_' + i, label: label };
+            });
+        }
         if (viewId === 'settingsLanguage') {
             return ['English', '简体中文', 'Español', 'Français', 'Deutsch', '日本語'].map(function (
                 label,
@@ -1783,7 +1818,7 @@
                     ? buildFileUrl(contentFolder, settingCfg.settingMask)
                     : '';
 
-                var homeItems = buildHomeItems(cfg.homePageConfig || {}, settingCfg);
+                var homeItems = buildHomeItems(cfg.homePageConfig || {}, settingCfg, opts);
                 var folderIconFile = (cfg.fileConfig && cfg.fileConfig.folderIcon) || '';
                 var folderIconUrl = folderIconFile
                     ? buildFileUrl(contentFolder, folderIconFile)
@@ -1813,6 +1848,10 @@
                 var wheelCollapse = null;
                 var compactControls = opts.compactControls === true;
                 var compactExpanded = compactControls && opts.compactExpanded === true;
+                /* The Studio has no scroll-wheel simulation: four transport
+                   buttons are enough, and the fifth toggles the options beside
+                   the selected element instead of expanding a wheel. */
+                var hideWheel = opts.hideWheel === true;
                 var controlStrip = null;
                 var wheelScrollOpts = { passive: false };
                 if (useFullDevice && compactControls) {
@@ -1827,10 +1866,12 @@
                         '<button type="button" class="y1-tp-strip-btn" data-strip-act="next" aria-label="Next" title="Next">\u2193</button>' +
                         '<button type="button" class="y1-tp-strip-btn y1-tp-strip-btn--wide" data-strip-act="center" aria-label="Select" title="Select">Select</button>' +
                         '<button type="button" class="y1-tp-strip-btn" data-strip-act="menu" aria-label="Back" title="Back">\u21A9</button>' +
-                        '<button type="button" class="y1-tp-strip-toggle" data-strip-toggle aria-label="Show scroll wheel" aria-expanded="false" title="Show scroll wheel">\u2304</button>';
+                        (hideWheel
+                            ? '<button type="button" class="y1-tp-strip-toggle" data-strip-toggle aria-label="Show editing options" title="Show editing options" aria-expanded="false">\u2699</button>'
+                            : '<button type="button" class="y1-tp-strip-toggle" data-strip-toggle aria-label="Show scroll wheel" aria-expanded="false" title="Show scroll wheel">\u2304</button>');
                     dev.appendChild(controlStrip);
                 }
-                if (useFullDevice) {
+                if (useFullDevice && !hideWheel) {
                     wheel = document.createElement('div');
                     wheel.className = 'y1-tp-wheel y1-tp-clickwheel';
                     wheel.innerHTML =
@@ -1847,7 +1888,7 @@
                         wheel.style.pointerEvents = 'none';
                     }
                 }
-                if (useFullDevice && compactControls) {
+                if (useFullDevice && compactControls && !hideWheel) {
                     wheelCollapse = document.createElement('button');
                     wheelCollapse.type = 'button';
                     wheelCollapse.className = 'y1-tp-wheel-collapse';
@@ -1884,7 +1925,7 @@
                             } catch (e) {}
                         }
                     };
-                    setCompactExpanded(compactExpanded, false);
+                    if (!hideWheel || compactExpanded) setCompactExpanded(compactExpanded, false);
 
                     var stripActions = { prev: 'ArrowUp', next: 'ArrowDown', center: 'Enter', menu: 'Escape' };
                     controlStrip.addEventListener('keydown', function (event) {
@@ -1894,6 +1935,26 @@
                         var action = event.target && event.target.closest && event.target.closest('[data-strip-act]');
                         var toggle = event.target && event.target.closest && event.target.closest('[data-strip-toggle]');
                         if (toggle) {
+                            if (hideWheel) {
+                                var open = stripToggle.getAttribute('aria-expanded') === 'true';
+                                stripToggle.setAttribute('aria-expanded', open ? 'false' : 'true');
+                                stripToggle.classList.toggle('is-active', !open);
+                                if (!open) {
+                                    var wasOpen = typeof opts.onOptionsToggle === 'function';
+                                    try {
+                                        var stillOpen = wasOpen ? opts.onOptionsToggle() !== false : true;
+                                        if (!stillOpen) {
+                                            stripToggle.setAttribute('aria-expanded', 'false');
+                                            stripToggle.classList.remove('is-active');
+                                        }
+                                    } catch (e) {}
+                                } else if (typeof opts.onOptionsClose === 'function') {
+                                    try {
+                                        opts.onOptionsClose();
+                                    } catch (e) {}
+                                }
+                                return;
+                            }
                             setCompactExpanded(!compactExpanded, true);
                             return;
                         }
@@ -1903,9 +1964,11 @@
                         event.preventDefault();
                         dev.dispatchEvent(new KeyboardEvent('keydown', { key: key, bubbles: true }));
                     });
-                    wheelCollapse.addEventListener('click', function () {
-                        setCompactExpanded(false, true);
-                    });
+                    if (wheelCollapse) {
+                        wheelCollapse.addEventListener('click', function () {
+                            setCompactExpanded(false, true);
+                        });
+                    }
                     if (suppressDeviceInput) {
                         controlStrip.style.pointerEvents = 'none';
                         wheelCollapse.style.pointerEvents = 'none';
@@ -2159,28 +2222,27 @@
                    wrapper spans the row height, so it is easy to tap), as long as
                    the row itself is under the pointer (not scrolled/clipped). */
                 function selectionArrowAtPoint(clientX, clientY, stack) {
-                    var arrows = canvas.querySelectorAll('img[data-theme-asset-path="itemConfig.itemRightArrow"]');
+                    var arrows = canvas.querySelectorAll('[data-theme-asset-path="itemConfig.itemRightArrow"]');
                     for (var a = 0; a < arrows.length; a++) {
-                        var img = arrows[a];
-                        if (img.style.display === 'none') continue;
-                        var wrap = img.parentNode;
+                        var arrowNode = arrows[a];
+                        var wrap = arrowNode.parentNode;
                         if (!wrap || !wrap.offsetParent || wrap.style.display === 'none') continue;
-                        var row = img.closest('.y1-tp-row');
+                        var row = arrowNode.closest('.y1-tp-row');
                         if (row && stack.indexOf(row) === -1 && stack.indexOf(wrap) === -1) continue;
                         var r = wrap.getBoundingClientRect();
-                        var ir = img.getBoundingClientRect();
-                        var left = Math.min(r.left, ir.left);
-                        var right = Math.max(r.right, ir.right);
-                        var top = Math.min(r.top, ir.top);
-                        var bottom = Math.max(r.bottom, ir.bottom);
+                        var ir = arrowNode.getBoundingClientRect();
+                        var left = ir.width >= 1 ? Math.min(r.left, ir.left) : r.left;
+                        var right = ir.width >= 1 ? Math.max(r.right, ir.right) : r.right;
+                        var top = ir.height >= 1 ? Math.min(r.top, ir.top) : r.top;
+                        var bottom = ir.height >= 1 ? Math.max(r.bottom, ir.bottom) : r.bottom;
                         if (right - left < 1 || bottom - top < 1) continue;
                         if (clientX < left || clientX > right || clientY < top || clientY > bottom) continue;
                         return {
                             path: 'itemConfig.itemRightArrow',
-                            node: img,
+                            node: arrowNode,
                             inMenuRow: !!row,
                             isRowImage: !!row,
-                            rowIconPath: '',
+                            rowIconPath: row ? row.getAttribute('data-theme-row-icon-path') || '' : '',
                             isScreenLayer: false,
                             alpha: 1
                         };
@@ -2306,6 +2368,7 @@
                             node: node,
                             inMenuRow: inMenu,
                             isMenuItemText: inMenu,
+                            isSelectedRow: rowEl ? rowEl.classList.contains('is-selected') : true,
                             rowIconPath: rowIconPath,
                             isScreenLayer: false,
                             alpha: 1
@@ -2836,7 +2899,10 @@
                         sim.themeViewId === 'music_folders' ||
                         sim.themeViewId === 'videos' ||
                         sim.themeViewId === 'videos_folders' ||
-                        sim.themeViewId === 'audiobooks'
+                        sim.themeViewId === 'audiobooks' ||
+                        sim.themeViewId === 'ebook' ||
+                        sim.themeViewId === 'bluetooth' ||
+                        sim.themeViewId === 'fileManager'
                     ) {
                         var genBox = document.createElement('div');
                         genBox.style.cssText =
@@ -3134,6 +3200,11 @@
                         for (var wi = 0; wi < wallpapers.length; wi++) {
                             var wsel = wi === sim.themeSelectedIndex;
                             var wr = document.createElement('div');
+                            var wAssetPath = wallpapers[wi].id === 'global' ? 'globalWallpaper' : 'desktopWallpaper';
+                            wr.className = 'y1-tp-row' + (wsel ? ' is-selected' : '');
+                            wr.setAttribute('data-y1-row', String(wi));
+                            wr.setAttribute('data-theme-asset-path', wAssetPath);
+                            wr.setAttribute('data-theme-row-icon-path', wAssetPath);
                             var wbg = wsel ? itemSelectedBackgroundStyle : itemBackgroundStyle;
                             applyCssProps(wr, wbg || { backgroundColor: 'rgba(0,0,0,0.1)' });
                             wr.style.cssText +=
@@ -3159,6 +3230,10 @@
                             var pm = document.createElement('img');
                             pm.src = wf;
                             pm.alt = '';
+                            pm.setAttribute(
+                                'data-theme-asset-path',
+                                wprev.id === 'global' ? 'globalWallpaper' : 'desktopWallpaper'
+                            );
                             bindPreviewImgFallback(pm);
                             pm.style.cssText = 'width:100%;height:100%;object-fit:cover;';
                             prv.appendChild(pm);
@@ -3260,6 +3335,132 @@
                         a2.textContent = 'Innioasis Y1';
                         ab.appendChild(a2);
                         layer.appendChild(ab);
+                    } else if (sim.themeViewId === 'photos') {
+                        /* PhotosActivity: a full-bleed 4×3 thumbnail grid, one
+                           row of which the wheel scrolls. The selection frame is
+                           the theme's itemSelectedBackground, so the grid is as
+                           themeable as a list row. */
+                        var photoLayer = document.createElement('div');
+                        photoLayer.style.cssText =
+                            'position:absolute;left:0;top:' +
+                            statusH +
+                            'px;width:' +
+                            W +
+                            'px;height:' +
+                            (H - statusH) +
+                            'px;z-index:10;';
+                        var photoTitle = document.createElement('div');
+                        photoTitle.textContent = previewText('Photos');
+                        photoTitle.style.cssText =
+                            'position:absolute;left:12px;top:6px;font-size:20px;font-weight:bold;color:' +
+                            colors.menu_text_primary +
+                            ';';
+                        photoLayer.appendChild(photoTitle);
+                        var grid = document.createElement('div');
+                        grid.style.cssText =
+                            'position:absolute;left:8px;top:34px;right:8px;bottom:6px;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);gap:4px;';
+                        var thumbs = [cfg.themeCover, cfg.desktopWallpaper, cfg.globalWallpaper]
+                            .filter(function (p) {
+                                return typeof p === 'string' && p;
+                            })
+                            .map(function (p) {
+                                return buildFileUrl(contentFolder, p);
+                            });
+                        for (var ti = 0; ti < 12; ti++) {
+                            var tile = document.createElement('div');
+                            tile.className = 'y1-tp-photo-tile';
+                            tile.style.cssText =
+                                'position:relative;overflow:hidden;background-color:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;';
+                            tile.setAttribute('data-y1-row', String(ti));
+                            tile.setAttribute('data-theme-asset-path', 'itemConfig.itemSelectedBackground');
+                            var thumbUrl = thumbs.length ? thumbs[ti % thumbs.length] : '';
+                            if (thumbUrl) {
+                                var thi = document.createElement('img');
+                                thi.src = thumbUrl;
+                                thi.alt = '';
+                                bindPreviewImgFallback(thi, { eager: eagerImages });
+                                thi.style.cssText =
+                                    'position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;opacity:0.85;';
+                                tile.appendChild(thi);
+                            }
+                            if (ti === sim.themeSelectedIndex) {
+                                applyCssProps(
+                                    tile,
+                                    itemSelectedBackgroundStyle || {
+                                        boxShadow: 'inset 0 0 0 3px ' + colors.text_selected
+                                    }
+                                );
+                            }
+                            grid.appendChild(tile);
+                        }
+                        photoLayer.appendChild(grid);
+                        layer.appendChild(photoLayer);
+                    } else if (sim.themeViewId === 'fm') {
+                        /* FMMainActivity: the tuned frequency and its scale on
+                           the left, the preset list on the right. */
+                        var fmLayer = document.createElement('div');
+                        fmLayer.style.cssText =
+                            'position:absolute;left:0;top:' +
+                            statusH +
+                            'px;width:' +
+                            W +
+                            'px;height:' +
+                            (H - statusH) +
+                            'px;display:flex;z-index:10;';
+                        var fmLeft = document.createElement('div');
+                        fmLeft.style.cssText =
+                            'position:relative;width:' + Math.round(W * 0.55) + 'px;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;';
+                        var fmFreq = document.createElement('div');
+                        fmFreq.textContent = '98.50';
+                        fmFreq.style.cssText =
+                            'color:' + colors.text_primary + ';font-size:76px;font-weight:700;line-height:1;letter-spacing:1px;';
+                        fmLeft.appendChild(fmFreq);
+                        var fmUnit = document.createElement('div');
+                        fmUnit.textContent = 'MHz';
+                        fmUnit.style.cssText =
+                            'color:' + colors.menu_text_primary + ';font-size:18px;letter-spacing:2px;opacity:0.85;';
+                        fmLeft.appendChild(fmUnit);
+                        var fmScale = document.createElement('div');
+                        fmScale.style.cssText =
+                            'position:relative;width:86%;height:2px;background-color:' +
+                            colors.menu_text_primary +
+                            ';opacity:0.5;margin-top:14px;';
+                        var fmTick = document.createElement('div');
+                        fmTick.style.cssText =
+                            'position:absolute;left:42%;top:-14px;width:3px;height:30px;background-color:' +
+                            colors.text_selected +
+                            ';';
+                        fmScale.appendChild(fmTick);
+                        fmLeft.appendChild(fmScale);
+                        fmLayer.appendChild(fmLeft);
+                        var fmRight = document.createElement('div');
+                        fmRight.style.cssText =
+                            'position:relative;width:' + (W - Math.round(W * 0.55)) + 'px;height:100%;overflow:hidden;';
+                        var fmRows = genericListForView('fm');
+                        if (!fmRows.length) {
+                            fmRows = ['98.50 MHz', '101.20 MHz', '104.60 MHz', '89.90 MHz'].map(function (label, i) {
+                                return { id: 'preset_' + i, label: label };
+                            });
+                        }
+                        activeMenuList = appendMenuRows(fmRight, {
+                            items: fmRows,
+                            selectedIndex: sim.themeSelectedIndex,
+                            itemHeight: Math.floor((H - statusH - 12) / 6) || 45,
+                            visibleHeight: H - statusH,
+                            colors: colors,
+                            itemBackgroundStyle: itemBackgroundStyle,
+                            itemSelectedBackgroundStyle: itemSelectedBackgroundStyle,
+                            itemRightArrowUrl: itemRightArrowUrl,
+                            fullWidth: true,
+                            leftPad: 0,
+                            rowWidth: W - Math.round(W * 0.55),
+                            folderIconUrl: folderIconUrl,
+                            scrollState: scrollState,
+                            eager: eagerImages
+                        });
+                        activeMenuList.viewId = 'fm';
+                        fmLayer.appendChild(fmRight);
+                        layer.appendChild(fmLayer);
                     } else if (sim.themeViewId === 'nowPlaying') {
                         var mock = MOCK_SONGS_PREVIEW[0] || {};
                         var pt = String((previewMeta && previewMeta.trackTitle) || '').trim();
@@ -3592,6 +3793,15 @@
                             sim.themeSelectedIndex = 0;
                         } else if (selId === 'nowPlaying') {
                             sim.themeViewId = 'nowPlaying';
+                            sim.themeSelectedIndex = 0;
+                        } else if (
+                            selId === 'photos' ||
+                            selId === 'fm' ||
+                            selId === 'ebook' ||
+                            selId === 'bluetooth' ||
+                            selId === 'fileManager'
+                        ) {
+                            sim.themeViewId = selId;
                             sim.themeSelectedIndex = 0;
                         } else if (selId === 'settings') {
                             sim.themeViewId = 'settings';
@@ -4094,12 +4304,16 @@
                 if (interactive) {
                     dev.tabIndex = 0;
                     dev.addEventListener('keydown', onKeyDown);
-                    wheel.addEventListener('pointerdown', onWheelButtonPointerDownCap, true);
-                    wheel.addEventListener('wheel', onWheelDelta, wheelScrollOpts);
-                    wheel.addEventListener('pointerdown', onWheelPointerDown);
-                    wheel.addEventListener('pointermove', onWheelPointerMove);
-                    wheel.addEventListener('pointerup', onWheelPointerEnd);
-                    wheel.addEventListener('pointercancel', onWheelPointerEnd);
+                    /* Without a wheel (the Studio hides it) there is nothing to
+                       bind: the control strip dispatches the same key events. */
+                    if (wheel) {
+                        wheel.addEventListener('pointerdown', onWheelButtonPointerDownCap, true);
+                        wheel.addEventListener('wheel', onWheelDelta, wheelScrollOpts);
+                        wheel.addEventListener('pointerdown', onWheelPointerDown);
+                        wheel.addEventListener('pointermove', onWheelPointerMove);
+                        wheel.addEventListener('pointerup', onWheelPointerEnd);
+                        wheel.addEventListener('pointercancel', onWheelPointerEnd);
+                    }
                     canvas.addEventListener('pointermove', onRowHover);
                     canvas.addEventListener('dblclick', onRowDoubleClick);
                     canvas.addEventListener('pointerdown', onRowHoldStart);
@@ -4240,6 +4454,27 @@
                     revealAsset: function (assetPath, revealOpts) {
                         if (!interactive || !assetPath) return false;
                         var silent = !!(revealOpts && revealOpts.silent);
+                        var pathStr = String(assetPath);
+                        if (!silent && !sim.dialogVisible) {
+                            if (
+                                (pathStr === 'itemConfig.itemSelectedBackground' ||
+                                    pathStr === 'itemConfig.itemBackground') &&
+                                canvas.querySelector('.y1-tp-row')
+                            ) {
+                                return true;
+                            }
+                            if (pathStr === 'itemConfig.itemRightArrow') {
+                                var existingArrows = canvas.querySelectorAll(
+                                    '[data-theme-asset-path="itemConfig.itemRightArrow"]'
+                                );
+                                for (var ea = 0; ea < existingArrows.length; ea++) {
+                                    var eaWrap = existingArrows[ea].parentNode;
+                                    if (eaWrap && eaWrap.offsetParent && eaWrap.style.display !== 'none') {
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
                         var view = assetContextView(assetPath);
                         if (!view) return false;
                         sim.dialogVisible = false;
@@ -4342,12 +4577,14 @@
                     if (interactive) {
                         dev.removeEventListener('keydown', onKeyDown);
                         if (wheel) {
-                            wheel.removeEventListener('pointerdown', onWheelButtonPointerDownCap, true);
-                            wheel.removeEventListener('wheel', onWheelDelta, wheelScrollOpts);
-                            wheel.removeEventListener('pointerdown', onWheelPointerDown);
-                            wheel.removeEventListener('pointermove', onWheelPointerMove);
-                            wheel.removeEventListener('pointerup', onWheelPointerEnd);
-                            wheel.removeEventListener('pointercancel', onWheelPointerEnd);
+                            if (wheel) {
+                                wheel.removeEventListener('pointerdown', onWheelButtonPointerDownCap, true);
+                                wheel.removeEventListener('wheel', onWheelDelta, wheelScrollOpts);
+                                wheel.removeEventListener('pointerdown', onWheelPointerDown);
+                                wheel.removeEventListener('pointermove', onWheelPointerMove);
+                                wheel.removeEventListener('pointerup', onWheelPointerEnd);
+                                wheel.removeEventListener('pointercancel', onWheelPointerEnd);
+                            }
                         }
                         canvas.removeEventListener('pointermove', onRowHover);
                         canvas.removeEventListener('dblclick', onRowDoubleClick);

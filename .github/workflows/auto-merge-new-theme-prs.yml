@@ -8,6 +8,12 @@
 # auto-merged: an update to a live listing always waits for a maintainer to approve it.
 # Ingest overwrites that uploader's folder only. It never replaces a folder owned by a
 # different author.
+# Metadata-only PRs (themes.json details or config.json fields) also never auto-merge:
+# re-titling or re-crediting a listing with unchanged artwork is vandalism's easiest form.
+# The one exception is a file-manager-only update: an existing theme whose PR changes
+# nothing but the Y2 file manager artwork (homePageConfig.fileManager, fileConfig
+# folder/music icons, submission timestamps). That is the author adding Y2 support and
+# validate_theme_pr.py prints THEME_PR_AUTO_MERGE_ALLOWED=1 for it.
 # Gallery upload PRs may add a paired *.zip.meta.json next to the same PR's root *.zip.
 #
 # After a successful merge, theme extraction + themes.json sync run on main via
@@ -15,9 +21,9 @@
 # This job does not extract themes itself.
 # Removal PRs (title starts with [Removal]) never run this job: the workflow is skipped so
 # removal requests are always reviewed and merged manually — no automatic submission.
-# Update PRs from the Studio (title starts with [Update]) are skipped the same way: the
-# submitter said the package belongs to an existing listing, so no update may ever merge
-# itself even if the archive's folder name looks new.
+# Update PRs from the Studio (title starts with [Update]) still run this job so the
+# validator can judge them: any real update prints THEME_PR_AUTO_MERGE_ALLOWED=0 for a
+# maintainer, and only a file-manager-only Y2 enablement may merge itself.
 #
 # Concurrency is per PR (cancel in-flight) so rapid pushes do not stack duplicate merge attempts.
 # Git pushes to main are serialized by theme-ingest-and-sync / generate-sitemap / manual sync (theme-publish-main).
@@ -38,7 +44,7 @@ concurrency:
 
 jobs:
   validate-and-merge:
-    if: ${{ github.event.pull_request.draft == false && !startsWith(github.event.pull_request.title, '[Removal]') && !startsWith(github.event.pull_request.title, '[Update]') }}
+    if: ${{ github.event.pull_request.draft == false && !startsWith(github.event.pull_request.title, '[Removal]') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout base repository

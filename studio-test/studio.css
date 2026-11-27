@@ -722,6 +722,18 @@
     text-transform: uppercase;
 }
 
+/* The page's own heading, keyword-complete and quiet, above the theme name it
+   is decorating. The theme name is the h2, so the outline stays correct. */
+.studio-page-title {
+    margin: 0 0 6px;
+    color: var(--site-muted);
+    font-family: var(--site-font-mono);
+    font-size: 0.64rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
 .studio-breadcrumb {
     display: flex;
     align-items: center;
@@ -733,7 +745,7 @@
     opacity: 0.35;
 }
 
-.studio-stage h1 {
+.studio-stage h2 {
     margin: 0;
     font-family: var(--site-font-display);
     font-size: clamp(1.75rem, 2.4vw, 2.35rem);
@@ -1193,6 +1205,11 @@
     line-height: 1.4;
     opacity: 0.82;
 }
+
+/* The slot hint changes from four lines to five when a file is blanked;
+   reserving the taller block keeps the actions and everything below them from
+   shifting under the pointer mid-edit. */
+#studio-asset-hint { min-height: calc(1.4em * 5); }
 
 .studio-action-grid {
     display: grid;
@@ -2015,7 +2032,7 @@ body.studio-app {
     scrollbar-width: thin;
 }
 
-.studio-stage h1 {
+.studio-stage h2 {
     font-size: clamp(1.45rem, 2.2vw, 2rem);
 }
 
@@ -2270,11 +2287,16 @@ body.studio-app {
 .studio-asset-row {
     position: relative;
     display: grid;
-    grid-template-columns: 52px minmax(0, 1fr) auto auto;
+    grid-template-columns: 52px minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    grid-template-areas:
+        'thumb copy meta'
+        'thumb actions actions';
     align-items: center;
-    gap: 8px;
+    column-gap: 9px;
+    row-gap: 5px;
     min-height: 58px;
-    padding: 7px 8px;
+    padding: 7px 9px;
     border-bottom: 1px solid var(--studio-line);
     cursor: pointer;
     outline: none;
@@ -2344,7 +2366,8 @@ body.studio-app {
 
 .studio-related .studio-asset-row {
     min-height: 52px;
-    padding-inline: 6px;
+    padding: 6px 7px;
+    row-gap: 4px;
     border-bottom: 0;
     border-radius: 9px;
 }
@@ -2382,7 +2405,8 @@ body.studio-app {
     transition: box-shadow 0.14s ease, filter 0.14s ease;
 }
 
-.studio-preview [data-theme-asset-path].is-studio-linked {
+.studio-preview [data-theme-asset-path].is-studio-linked,
+.studio-preview .y1-tp-row.is-studio-linked {
     outline: 2px solid var(--site-accent);
     outline-offset: 2px;
     box-shadow: inset 0 0 0 2px var(--site-accent);
@@ -2398,6 +2422,8 @@ body.studio-app {
 }
 
 .studio-asset-thumb {
+    grid-area: thumb;
+    align-self: center;
     position: relative;
     width: 52px;
     height: 39px;
@@ -2445,25 +2471,25 @@ body.studio-app {
     letter-spacing: 0.02em;
 }
 
-.studio-asset-row-copy { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.studio-asset-row-copy { grid-area: copy; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .studio-asset-row-copy strong { overflow: hidden; font-size: 0.78rem; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
 .studio-asset-row-copy > span { overflow: hidden; color: var(--site-muted); font: 500 0.64rem var(--site-font-mono); text-overflow: ellipsis; white-space: nowrap; }
 
-.studio-asset-row-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; min-width: 58px; }
-.studio-asset-row-meta > span:first-child { max-width: 116px; overflow: hidden; color: var(--site-muted); font-size: 0.6rem; text-overflow: ellipsis; white-space: nowrap; }
-.studio-asset-badge { color: var(--site-muted); font: 600 0.56rem var(--site-font-mono); letter-spacing: 0.04em; text-transform: uppercase; }
+.studio-asset-row-meta { grid-area: meta; align-self: start; display: flex; align-items: center; justify-content: flex-end; gap: 4px; padding-top: 2px; }
+.studio-asset-badge { color: var(--site-muted); font: 600 0.56rem var(--site-font-mono); letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; }
 .studio-asset-row.is-changed .studio-asset-badge { color: var(--site-accent); }
 
-.studio-asset-row-actions { display: flex; align-items: center; gap: 3px; }
+.studio-asset-row-actions { grid-area: actions; display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
 .studio-asset-row-action {
-    width: 36px;
-    height: 36px;
+    width: 30px;
+    height: 28px;
     display: grid;
     place-items: center;
     border: 1px solid var(--studio-line);
-    border-radius: 8px;
+    border-radius: 7px;
     background: var(--site-bg);
     color: var(--site-muted);
+    font-size: 0.76rem;
     cursor: pointer;
 }
 .studio-asset-row-action:hover { border-color: var(--site-accent); color: var(--site-accent); }
@@ -2750,11 +2776,18 @@ body.studio-app {
     .studio-commandbar { grid-template-columns: minmax(0, 1fr) auto; }
     .studio-commandbar .studio-modes { grid-column: 1 / -1; grid-row: 2; justify-self: stretch; }
     .studio-commandbar .studio-mode { flex: 1; }
-    .studio-app .studio-main { grid-template-columns: 1fr; }
+    /* 1024-class laptops keep the workbench side by side. Stacking here pushed
+       every tray control, including Bin and Reset, below the fold. */
+    .studio-app .studio-main { grid-template-columns: minmax(0, 1fr) clamp(360px, 42vw, 520px); }
     .studio-app .studio-stage { position: relative; top: auto; max-height: none; overflow: visible; }
-    .studio-app .studio-panel { min-height: 0; border-top: 1px solid var(--studio-line); border-left: 0; }
+    .studio-app .studio-panel { min-height: 0; border-top: 0; border-left: 1px solid var(--studio-line); }
     .studio-app .studio-preview-area { max-height: none; }
     .studio-app .studio-preview .y1-tp-device--full { width: min(100%, 310px); }
+}
+
+@media (max-width: 900px) {
+    .studio-app .studio-main { grid-template-columns: 1fr; }
+    .studio-app .studio-panel { border-top: 1px solid var(--studio-line); border-left: 0; }
 }
 
 @media (max-width: 700px) {
@@ -2778,8 +2811,7 @@ body.studio-app {
     .studio-asset-list { max-height: min(46vh, 360px); }
     .studio-asset-row { grid-template-columns: 48px minmax(0, 1fr) auto; }
     .studio-asset-thumb { width: 48px; height: 36px; }
-    .studio-asset-row-meta { display: none; }
-    .studio-asset-row-action { width: 36px; height: 36px; }
+    .studio-asset-row-action { width: 34px; height: 34px; }
     .studio-asset-detail-actions .studio-btn { flex: 1 1 46%; }
     .studio-mini-btn { min-height: 38px; }
     .studio-action-grid, .studio-pane-actions { grid-template-columns: 1fr; }
@@ -2795,9 +2827,9 @@ body.studio-app {
     .studio-app .studio-preview .y1-tp-device--full { width: min(100%, 250px); }
     .studio-app .studio-preview .y1-tp-device--full .y1-tp-clickwheel { width: 86px; height: 86px; }
     .studio-stage-foot { display: none; }
-    .studio-asset-row { grid-template-columns: 44px minmax(0, 1fr) auto; gap: 6px; padding: 6px; }
+    .studio-asset-row { grid-template-columns: 44px minmax(0, 1fr) auto; column-gap: 7px; row-gap: 5px; padding: 6px 7px; }
     .studio-asset-thumb { width: 44px; height: 33px; }
-    .studio-asset-row-action { width: 32px; height: 32px; }
+    .studio-asset-row-action { width: 30px; height: 28px; }
 }
 
 /* Square and passport foldables: the preview must not become the whole page. */
@@ -2807,6 +2839,7 @@ body.studio-app {
 
 @media (hover: none) {
     .studio-asset-row-actions { opacity: 1; }
+    .studio-asset-row-action { width: 34px; height: 34px; }
     .studio-asset-row:hover { background: transparent; }
     .studio-asset-row.is-selected { background: var(--studio-accent-soft); }
 }
@@ -3086,9 +3119,16 @@ body.studio-app {
     }
 
     body.studio-app .studio-asset-row {
-        grid-template-columns: 36px minmax(0, 1fr) auto;
+        grid-template-columns: 36px minmax(0, 1fr);
+        grid-template-areas:
+            'thumb copy'
+            'actions actions';
         gap: 4px;
         padding: 4px;
+    }
+
+    body.studio-app .studio-asset-row-meta {
+        display: none;
     }
 
     body.studio-app .studio-asset-thumb {
@@ -3188,7 +3228,7 @@ body.studio-app {
 
     body.studio-app .studio-main {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(270px, 330px);
+        grid-template-columns: minmax(0, 1fr) clamp(310px, 38vw, 540px);
         flex: 1 1 auto;
         min-height: 0;
     }
@@ -4164,4 +4204,232 @@ body.studio-app.y1-donate-panel-open #support-toolbar-slot {
         width: 26px;
         min-height: 30px;
     }
+}
+
+/* —— Options beside a preview selection ——————————————————————————————
+   Selecting an element in the player carries the tray row's actions to the
+   outline itself, so editing never needs a scroll trip to the panel. studio.js
+   places the strip in the stage's free margin, clear of the artwork. */
+.studio-preview-toolbar {
+    position: fixed;
+    z-index: 140;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    max-width: min(420px, calc(100vw - 16px));
+    padding: 5px 6px 5px 9px;
+    border: 1px solid var(--studio-line-strong, rgba(255, 255, 255, 0.16));
+    border-radius: 11px;
+    background: color-mix(in oklab, var(--site-bg-elevated) 94%, transparent);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.34);
+    backdrop-filter: blur(16px);
+    color: var(--site-text);
+    font: 600 0.72rem var(--site-font);
+}
+
+.studio-preview-toolbar[hidden] { display: none; }
+
+.studio-preview-toolbar-head {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+    padding-right: 2px;
+}
+
+.studio-preview-toolbar-head strong {
+    max-width: 128px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+}
+
+.studio-preview-toolbar-close {
+    flex: 0 0 auto;
+    width: 22px;
+    height: 22px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--site-muted);
+    font-size: 0.7rem;
+    cursor: pointer;
+}
+
+.studio-preview-toolbar-close:hover {
+    color: var(--site-text);
+    background: color-mix(in oklab, var(--site-text) 10%, transparent);
+}
+
+.studio-preview-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding-left: 6px;
+    border-left: 1px solid var(--studio-line);
+}
+
+.studio-preview-toolbar-btn {
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--studio-line);
+    border-radius: 7px;
+    background: var(--site-bg);
+    color: var(--site-muted);
+    font-size: 0.76rem;
+    cursor: pointer;
+    transition: border-color 0.12s ease, color 0.12s ease;
+}
+
+.studio-preview-toolbar-btn:hover {
+    border-color: var(--site-accent);
+    color: var(--site-accent);
+}
+
+.studio-preview-toolbar-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.studio-preview-toolbar-btn:focus-visible { outline: 2px solid var(--site-accent); outline-offset: 1px; }
+
+/* —— Status bar text is fixed ——
+   The player draws the status strip's text in white whatever a theme asks for,
+   so the Studio states that instead of offering a colour it cannot honour. */
+.studio-status-text--fixed { gap: 8px; }
+
+.studio-status-text--fixed strong {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--site-text);
+    font-weight: 650;
+}
+
+.studio-status-text--fixed strong::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45);
+}
+
+.studio-status-text--fixed .studio-hint {
+    flex: 1 1 100%;
+    margin: 2px 0 0;
+    color: var(--studio-muted, #9aa3b5);
+}
+
+/* —— Originality notice —— */
+.studio-originality {
+    margin: 0 0 14px;
+    padding: 11px 13px 12px;
+    border: 1px solid color-mix(in oklab, #e8a23a 46%, transparent);
+    border-left: 3px solid #e8a23a;
+    border-radius: 10px;
+    background: color-mix(in oklab, #e8a23a 10%, var(--studio-card));
+    color: var(--site-text);
+    font-size: 0.78rem;
+    line-height: 1.5;
+}
+
+.studio-originality[hidden] { display: none; }
+
+.studio-originality strong {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 6px;
+    font-size: 0.84rem;
+    font-weight: 650;
+}
+
+.studio-originality strong i { color: #e8a23a; }
+.studio-originality p { margin: 0 0 6px; }
+.studio-originality p:last-child { margin-bottom: 0; }
+.studio-originality .studio-hint { font-size: 0.74rem; color: var(--studio-muted, #9aa3b5); }
+
+.studio-originality.is-satisfied {
+    border-color: color-mix(in oklab, #3ecf8e 46%, transparent);
+    border-left-color: #3ecf8e;
+    background: color-mix(in oklab, #3ecf8e 9%, var(--studio-card));
+}
+
+.studio-originality.is-satisfied strong i { color: #3ecf8e; }
+
+/* —— Workbench fills the viewport ——
+   On a laptop the page scrolled the whole tray; the panel now scrolls on its
+   own beside a fixed stage, so Bin and the submission actions stay reachable. */
+@media (min-width: 1041px) {
+    .studio-app .studio-main {
+        height: calc(100dvh - 62px);
+        min-height: 0;
+    }
+
+    .studio-app .studio-stage { height: 100%; max-height: none; }
+
+    .studio-app .studio-panel { height: 100%; min-height: 0; }
+
+    .studio-app .studio-panel-scroll {
+        height: 100%;
+        overflow: auto;
+        padding-bottom: 26px;
+        scrollbar-gutter: stable;
+    }
+}
+
+/* 720p and similar laptops: give the rows the height, take it from headings
+   and the preview plate, so the detail actions fit without scrolling. */
+@media (min-width: 941px) and (max-height: 880px) {
+    .studio-app .studio-pane-head .studio-eyebrow,
+    .studio-app .studio-pane-head p { display: none; }
+
+    .studio-app .studio-pane-head h2 {
+        margin: 0 0 6px;
+        font-size: 1.28rem;
+    }
+
+    .studio-app .studio-asset-list { max-height: min(31vh, 250px); }
+
+    .studio-app .studio-asset-detail-preview {
+        width: 100%;
+        height: 66px;
+        aspect-ratio: auto;
+        margin: 6px auto;
+    }
+
+    .studio-app .studio-asset-detail-actions {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .studio-app .studio-asset-detail-actions .studio-btn {
+        min-height: 30px;
+        padding: 4px 6px;
+        font-size: 0.68rem;
+    }
+}
+
+/* Instant hover hint (see initInstantTips in studio.js). */
+.studio-tip {
+    position: fixed;
+    z-index: 260;
+    max-width: min(280px, calc(100vw - 12px));
+    padding: 5px 8px;
+    border: 1px solid var(--studio-line-strong, rgba(255, 255, 255, 0.16));
+    border-radius: 7px;
+    background: var(--site-bg-elevated);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.34);
+    color: var(--site-text);
+    font: 550 0.72rem/1.35 var(--site-font);
+    pointer-events: none;
+}
+
+.studio-tip[hidden] { display: none; }
+
+@media (hover: none) {
+    .studio-tip { display: none !important; }
 }

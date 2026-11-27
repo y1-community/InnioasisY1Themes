@@ -13,6 +13,10 @@
        An empty canvas teaches nobody which slots exist. */
     var DEFAULT_THEME = 'Melody Munchkin';
 
+    /* The players draw the status bar's text in white and ignore the colour a
+       theme declares, so every package the Studio builds ships white. */
+    var STATUS_TEXT_COLOR = '#ffffff';
+
     /* Same-origin first: when the handling functions are deployed next to the
        site, /api/* answers without a second hostname in the way. A page can
        still name a different upload host in its meta tag (the hosted gallery
@@ -1054,20 +1058,49 @@
             }
         }
         var canvasBox = canvas.getBoundingClientRect();
-        var liveBox = live.getBoundingClientRect();
-        if (!canvasBox.width || !canvasBox.height || !liveBox.width || !liveBox.height) return false;
+        if (!canvasBox.width || !canvasBox.height) return false;
         /* The mounted canvas is laid out at its native 480x360 and then scaled
            to fit the stage. Clone it at layout size and fold that stage scale
            into the transform, or the clone's pixel-positioned children clip. */
         var layoutWidth = canvas.offsetWidth || 480;
         var layoutHeight = canvas.offsetHeight || 360;
         var stageScale = canvasBox.width / layoutWidth;
-
-        var rx = Math.max(0, liveBox.left - canvasBox.left);
-        var ry = Math.max(0, liveBox.top - canvasBox.top);
-        var rw = Math.min(canvasBox.width - rx, liveBox.width);
-        var rh = Math.min(canvasBox.height - ry, liveBox.height);
+        var liveBox = live.getBoundingClientRect();
+        var measured = liveBox.width >= 1 && liveBox.height >= 1;
+        var rx;
+        var ry;
+        var rw;
+        var rh;
+        if (measured) {
+            rx = Math.max(0, liveBox.left - canvasBox.left);
+            ry = Math.max(0, liveBox.top - canvasBox.top);
+            rw = Math.min(canvasBox.width - rx, liveBox.width);
+            rh = Math.min(canvasBox.height - ry, liveBox.height);
+        } else {
+            /* A blanked slot points at the 1x1 transparent placeholder, so the
+               device (and this preview) draws nothing where the art used to
+               be: the <img> and its wrapper are 0x0. Frame the plate with the
+               slot's last painted bounds instead of dropping to the raw
+               wallpaper—the author still wants to see that spot in place, just
+               without an icon in it. */
+            var cachedCrop = cropGeometryByPath[asset.path];
+            if (!cachedCrop) return false;
+            rx = cachedCrop.rx * stageScale;
+            ry = cachedCrop.ry * stageScale;
+            rw = cachedCrop.rw * stageScale;
+            rh = cachedCrop.rh * stageScale;
+        }
         if (rw < 1 || rh < 1) return false;
+        if (measured) {
+            /* Stored in canvas layout units so the framing survives a resize or
+               a remount that changes the stage scale. */
+            cropGeometryByPath[asset.path] = {
+                rx: rx / stageScale,
+                ry: ry / stageScale,
+                rw: rw / stageScale,
+                rh: rh / stageScale
+            };
+        }
 
         var isWallpaperAsset =
             asset.path === 'desktopWallpaper' ||
@@ -1249,6 +1282,8 @@
     }
 
     var thumbAwaitedUrls = Object.create(null);
+    /* Last measured slot bounds per asset path, in 480x360 canvas units. */
+    var cropGeometryByPath = Object.create(null);
     var isCapturingThumbs = false;
 
     function paintAssetCropWithReveal(node, asset) {
@@ -1697,7 +1732,175 @@
         }
     }
 
+    /* —— Instant tooltips ——
+       A native title waits about a second and lands where the browser likes,
+       which is no help when the question is "what am I about to edit?". On a
+       mouse only (hover means nothing on touch) the hint appears at once; touch
+       keeps the browser's own behaviour. */
+    var tipEl = null;
+
+    function initInstantTips() {
+        if (tipEl) return;
+        tipEl = document.createElement('div');
+        tipEl.className = 'studio-tip';
+        tipEl.setAttribute('role', 'tooltip');
+        tipEl.hidden = true;
+        document.body.appendChild(tipEl);
+        var current = null;
+        var lastPoint = null;
+
+        function hide() {
+            if (current && current.getAttribute('data-tip-from-title') === '1') {
+                var text = current.getAttribute('data-tip');
+                if (text) current.setAttribute('title', text);
+                current.removeAttribute('data-tip');
+                current.removeAttribute('data-tip-from-title');
+            }
+            current = null;
+            tipEl.hidden = true;
+        }
+
+        function place(target) {
+            if (!target) return;
+            var box = target.getBoundingClientRect();
+            var width = tipEl.offsetWidth;
+            var height = tipEl.offsetHeight;
+            var left;
+            var top;
+            /* The preview paints one title for the whole canvas, so its box is
+               the player, not the element under the pointer. Put that tip at
+               the pointer instead of over the top edge of the device. */
+            var onCanvas = target.classList && target.classList.contains('y1-tp-canvas');
+            if (onCanvas && lastPoint) {
+                left = lastPoint.x + 16;
+                top = lastPoint.y + 18;
+                if (left + width > window.innerWidth - 6) left = lastPoint.x - width - 16;
+                if (top + height > window.innerHeight - 6) top = lastPoint.y - height - 16;
+            } else {
+                left = box.left;
+                top = box.top - height - 7;
+                if (top < 6) top = box.bottom + 7;
+            }
+            left = Math.max(6, Math.min(window.innerWidth - width - 6, left));
+            top = Math.max(6, Math.min(window.innerHeight - height - 6, top));
+            tipEl.style.left = Math.round(left) + 'px';
+            tipEl.style.top = Math.round(top) + 'px';
+        }
+
+        function show(target) {
+            var text = target.getAttribute('title') || target.getAttribute('data-tip');
+            if (!text) return;
+            if (target.hasAttribute('title')) {
+                target.setAttribute('data-tip', text);
+                target.setAttribute('data-tip-from-title', '1');
+                target.removeAttribute('title');
+            }
+            current = target;
+            tipEl.textContent = text;
+            tipEl.hidden = false;
+            place(target);
+        }
+
+        /* A preview hover rewrites the canvas title in place without a new
+           pointerover, so re-read it: otherwise the tip keeps naming the
+           element the pointer left while another one is under it. */
+        function refresh() {
+            if (!current) return;
+            var text = current.getAttribute('title') || current.getAttribute('data-tip') || '';
+            if (!text) {
+                hide();
+                return;
+            }
+            if (current.getAttribute('data-tip') !== text) current.setAttribute('data-tip', text);
+            tipEl.textContent = text;
+            tipEl.hidden = false;
+            place(current);
+        }
+
+        document.addEventListener(
+            'pointerover',
+            function (event) {
+                if (event.pointerType && event.pointerType !== 'mouse') return;
+                var target = event.target;
+                if (!target || target.nodeType !== 1 || !target.closest) return;
+                var host = target.closest('[title], [data-tip]');
+                if (!host || host === current) return;
+                hide();
+                show(host);
+            },
+            true
+        );
+        document.addEventListener(
+            'pointerout',
+            function (event) {
+                if (!current) return;
+                var to = event.relatedTarget;
+                if (to && current.contains(to)) return;
+                hide();
+            },
+            true
+        );
+        document.addEventListener(
+            'pointermove',
+            function (event) {
+                if (event.pointerType && event.pointerType !== 'mouse') return;
+                lastPoint = { x: event.clientX, y: event.clientY };
+                var canvas = document.querySelector('.y1-tp-canvas');
+                var overCanvas = canvas && canvas.contains(event.target);
+                if (!current) {
+                    if (overCanvas) show(canvas);
+                    return;
+                }
+                refresh();
+            },
+            true
+        );
+        /* Selecting an element opens its own toolbar, which names it already:
+           drop the hover tip so one hint, not two, is on screen. */
+        document.addEventListener('studio-preview-toolbar-shown', function () {
+            if (current && current.classList && current.classList.contains('y1-tp-canvas')) hide();
+            var canvas = document.querySelector('.y1-tp-canvas');
+            if (canvas) {
+                canvas.removeAttribute('title');
+                canvas.removeAttribute('data-tip');
+            }
+        });
+        document.addEventListener('scroll', hide, true);
+        window.addEventListener('blur', hide);
+    }
+
+    /* The simulator paints rows, icons and the wallpaper as their images
+       decode, so an outline applied at mount time can land on a node that is
+       replaced a moment later. Watch the preview and re-apply the selection
+       outline whenever new nodes appear, so the edited element stays outlined
+       after a file swap instead of quietly losing focus. */
+    var previewHighlightObserver = null;
+
+    function watchPreviewHighlight() {
+        if (previewHighlightObserver || !el.preview || typeof MutationObserver === 'undefined') return;
+        previewHighlightObserver = new MutationObserver(function (records) {
+            var id = state.selectedAssetId;
+            if (!id) return;
+            var touched = records.some(function (record) {
+                return record.addedNodes && record.addedNodes.length;
+            });
+            if (!touched) return;
+            var nodes = previewAssetNodes(id);
+            if (!nodes.length) return;
+            var missing = nodes.some(function (node) {
+                return !node.classList.contains('is-studio-linked');
+            });
+            if (!missing) return;
+            each(nodes, function (node) {
+                node.classList.add('is-studio-linked');
+            });
+        });
+        previewHighlightObserver.observe(el.preview, { childList: true, subtree: true });
+    }
+
     function boot() {
+        initInstantTips();
+        watchPreviewHighlight();
         bindEvents();
         bindOnboardingEvents();
         setupManage();
@@ -1872,6 +2075,7 @@
         }
         clearSubmitScrollTimer();
         state.mode = mode;
+        if (mode !== 'edit') hidePreviewToolbar();
         closePlatformPop();
         if ((mode === 'edit' || mode === 'submit') && state.sourceType === 'gallery') {
             warmGalleryAssets();
@@ -2342,9 +2546,13 @@
             variantSegment: state.sourceType === 'gallery' ? state.variant || '' : '',
             mode: 'full',
             compactControls: true,
-            compactExpanded: state.compactExpanded === true,
-            onCompactChange: function (expanded) {
-                state.compactExpanded = expanded === true;
+            /* The Studio edits artwork, not playback: the four transport
+               buttons are enough, and the fifth toggles the options beside the
+               selected element instead of expanding a scroll wheel. */
+            hideWheel: true,
+            compactExpanded: false,
+            onOptionsToggle: function () {
+                togglePreviewToolbar();
             },
             spec: state.config,
             simState: state.statusState,
@@ -2362,8 +2570,14 @@
             var focusId = opts.focusAssetId || '';
             if (api) {
                 if (focusId) {
-                    if (prevSnap && shouldPreserveScreenForAsset(focusId, prevSnap)) {
-                        if (typeof api.restoreState === 'function') api.restoreState(prevSnap);
+                    /* Swapping the file under the element being edited must not
+                       also navigate: the reader is looking at that screen. */
+                    var keepScreen =
+                        (opts.preserveScreen === true || shouldPreserveScreenForAsset(focusId, prevSnap)) &&
+                        prevSnap &&
+                        typeof api.restoreState === 'function';
+                    if (keepScreen) {
+                        api.restoreState(prevSnap);
                     } else {
                         var revealed = typeof api.revealAsset === 'function' && api.revealAsset(focusId) !== false;
                         if (!revealed && prevSnap && typeof api.restoreState === 'function') {
@@ -2378,6 +2592,8 @@
             setLoading(false);
             updateChecklist();
             if (state.selectedAssetId) highlightPreviewAsset(state.selectedAssetId);
+            if (previewToolbar && !previewToolbar.hidden) showPreviewToolbar(previewToolbarAssetId);
+            syncOriginalityNotice();
 
             return waitForCanvasMedia(el.preview, 700).then(function () {
                 if (mountSeq !== previewMountSeq) return;
@@ -2395,6 +2611,16 @@
                         highlightPreviewAsset(state.selectedAssetId);
                     }
                     scheduleThumbRefresh(350);
+                }
+                /* Selection belongs to the reader, not to the render: after a
+                   rebuilt list or preview, keep the edited row in view and the
+                   element outlined. */
+                if (focusId && state.assetById[focusId] && state.selectedAssetId === focusId) {
+                    highlightPreviewAsset(focusId);
+                    /* The reader already has this row selected; replacing the file
+                       must not re-centre the tray under them. */
+                    focusTrayAsset(focusId, { scroll: false });
+                    if (previewToolbar && !previewToolbar.hidden) showPreviewToolbar(focusId);
                 }
             });
         });
@@ -2542,7 +2768,7 @@
             ['Menu item text', menu.menuItemTextColor],
             ['Selected menu text', menu.menuItemSelectedTextColor],
             ['Menu', menu.menuBackgroundColor],
-            ['Status text', status.statusTextColor || autoStatusTextColor()],
+            ['Status text', STATUS_TEXT_COLOR],
             ['Status bar', status.statusBarColor]
         ];
         el.palette.innerHTML = '';
@@ -2613,6 +2839,9 @@
             Object.keys(node).forEach(function (key) {
                 var value = node[key];
                 var childPath = path ? path + '.' + key : key;
+                /* The status bar's ink is fixed white on the device, so it is
+                   not one of the editable colours. */
+                if (childPath === 'statusConfig.statusTextColor') return;
                 if (typeof value === 'string') {
                     if (!isColor(value) || seen[childPath]) return;
                     seen[childPath] = true;
@@ -2678,37 +2907,10 @@
     }
 
     function autoStatusTextColor() {
-        var status = (state.config && state.config.statusConfig) || {};
-        var bg = colorChannels(status.statusBarColor);
-        /* A translucent strip takes its brightness from the art behind it. The
-           theme's own text colour already contrasts with that art, so it is
-           the best hint the config gives until someone picks Light or Dark. */
-        if (bg && bg.a >= 0.5) return colorLuma(bg) > 0.55 ? '#000000' : '#ffffff';
-        var item = (state.config && state.config.itemConfig) || {};
-        var ink = colorChannels(item.itemTextColor);
-        if (ink) return colorLuma(ink) > 0.55 ? '#ffffff' : '#000000';
-        return '#ffffff';
-    }
-
-    function statusTextChoice(statusCfg) {
-        var v = String((statusCfg && statusCfg.statusTextColor) || '').trim();
-        if (!v) return 'auto';
-        var channels = colorChannels(v);
-        if (!channels || channels.a < 0.5) return 'auto';
-        return colorLuma(channels) > 0.55 ? 'light' : 'dark';
-    }
-
-    function setStatusTextChoice(choice) {
-        if (!state.config) return;
-        if (choice === 'auto') {
-            deletePath(state.config, 'statusConfig.statusTextColor');
-        } else {
-            writePath(state.config, 'statusConfig.statusTextColor', choice === 'light' ? '#ffffff' : '#000000');
-        }
-        markDirty();
-        renderColorEditor();
-        renderStatusEditor();
-        remountPreview('Updating the status bar…');
+        /* One look, always: the player paints status bar text in white whatever
+           config.json says, so the Studio does not offer a colour the player
+           would ignore. */
+        return STATUS_TEXT_COLOR;
     }
 
     /* Text colours belong with the font: the face and the ink are one choice.
@@ -2732,7 +2934,7 @@
         if (!anchorId) return [];
         if (anchorId === 'fontFamily') return TEXT_COLOR_PATHS.slice();
         if (/^statusConfig\./.test(anchorId)) {
-            return ['statusConfig.statusTextColor', 'statusConfig.statusBarColor'];
+            return ['statusConfig.statusBarColor'];
         }
         if (/^(desktopMask$|settingConfig\.settingMask$)/.test(anchorId)) {
             return [
@@ -2778,16 +2980,7 @@
                 out.push(def);
                 return;
             }
-            /* The status text colour is a new key: show the colour the bar is
-               already drawing so the first edit starts from the right place. */
-            if (path === 'statusConfig.statusTextColor') {
-                out.push({
-                    path: path,
-                    value: autoStatusTextColor(),
-                    label: 'Status bar text',
-                    section: 'Status bar'
-                });
-            } else if (path === 'statusConfig.statusBarColor') {
+            if (path === 'statusConfig.statusBarColor') {
                 out.push({ path: path, value: '', label: 'Status bar background', section: 'Status bar' });
             }
         });
@@ -2938,7 +3131,8 @@
         homePageConfig: 'Home screen',
         mainMenuConfig: 'Main menu',
         subMenuConfig: 'Menus',
-        itemConfig: 'Lists and items',
+        menuConfig: 'Menus',
+        itemConfig: 'List items',
         dialogConfig: 'Dialogs',
         statusConfig: 'Status bar',
         musicConfig: 'Music',
@@ -2947,11 +3141,13 @@
         ebookConfig: 'Ebooks',
         fmConfig: 'FM radio',
         bluetoothConfig: 'Bluetooth',
+        settingConfig: 'Settings',
         settingsConfig: 'Settings',
         bootConfig: 'Boot and shutdown',
         clockConfig: 'Clock',
         calculatorConfig: 'Calculator',
         calendarConfig: 'Calendar',
+        fileConfig: 'Files',
         fileManagerConfig: 'Files',
         fontFamily: 'Font family',
         theme_info: 'Listing metadata',
@@ -2978,7 +3174,30 @@
         selectedBackground: 'Selected background',
         menuBackground: 'Menu background',
         itemBackground: 'Item background',
-        itemSelectedBackground: 'Selected item background',
+        itemSelectedBackground: 'Item selected background',
+        itemRightArrow: 'Item right arrow',
+        menuItemBackground: 'Menu item background',
+        menuItemSelectedBackground: 'Menu item selected background',
+        dialogOptionBackground: 'Dialog option background',
+        dialogOptionSelectedBackground: 'Dialog option selected background',
+        folderIcon: 'Folder icon',
+        musicIcon: 'Music file icon',
+        fileManager: 'File manager icon',
+        battery: 'Battery',
+        batteryCharging: 'Charging battery',
+        playing: 'Playing icon',
+        pause: 'Pause icon',
+        stop: 'Stop icon',
+        fmPlaying: 'Radio playing icon',
+        audiobookPlaying: 'Audiobook playing icon',
+        blConnected: 'Bluetooth connected icon',
+        blConnecting: 'Bluetooth connecting icon',
+        blDisconnected: 'Bluetooth off icon',
+        headsetWithMic: 'Headset with mic icon',
+        headsetWithoutMic: 'Headset without mic icon',
+        settingMask: 'Settings overlay mask',
+        wallpaper: 'Wallpaper',
+        shutdown: 'Shutdown icon',
         scrollbarThumb: 'Scrollbar thumb',
         bootLogo: 'Boot logo',
         shutdownLogo: 'Shutdown logo'
@@ -3395,11 +3614,11 @@
                 kind: 'image'
             });
         });
-        /* Item chrome: always expose Selected item background, Item background,
+        /* Item chrome: always expose Item selected background, Item background,
            and Item right arrow so clicking left-side menu text or right-side
            icons can always focus and suggest them even on minimal configs. */
         [
-            ['itemConfig.itemSelectedBackground', 'Selected item background', true],
+            ['itemConfig.itemSelectedBackground', 'Item selected background', true],
             ['itemConfig.itemBackground', 'Item background', true],
             ['itemConfig.itemRightArrow', 'Item right arrow', true],
             ['menuConfig.menuItemBackground', 'Menu item background', false],
@@ -3666,13 +3885,23 @@
             state.assetById[asset.id] = asset;
             return asset;
         });
+        var itemConfigOrder = {
+            'itemConfig.itemSelectedBackground': 0,
+            'itemConfig.itemBackground': 1,
+            'itemConfig.itemRightArrow': 2
+        };
         state.assets.sort(function (a, b) {
-            return a.section === b.section ? a.label.localeCompare(b.label) : a.section.localeCompare(b.section);
+            if (a.section !== b.section) return a.section.localeCompare(b.section);
+            var ao = Object.prototype.hasOwnProperty.call(itemConfigOrder, a.id) ? itemConfigOrder[a.id] : 99;
+            var bo = Object.prototype.hasOwnProperty.call(itemConfigOrder, b.id) ? itemConfigOrder[b.id] : 99;
+            if (ao !== bo) return ao - bo;
+            return a.label.localeCompare(b.label);
         });
         if (state.selectedAssetId && !state.assetById[state.selectedAssetId]) {
             state.selectedAssetId = state.assets[0] ? state.assets[0].id : null;
         }
         if (!state.selectedAssetId && state.assets[0]) state.selectedAssetId = state.assets[0].id;
+        syncOriginalityNotice();
         renderAssets(opts);
         renderColorEditor();
         renderStatusEditor();
@@ -3720,18 +3949,12 @@
             '<h3>Status bar</h3>' +
             '<p class="studio-hint">Pick a state to show it in the preview and open that file in the tray.</p>' +
             '</div>' +
-            '<div class="studio-status-text" role="group" aria-label="Status bar text colour">' +
+            '<div class="studio-status-text studio-status-text--fixed">' +
             '<span>Status text</span>' +
-            '<button type="button" data-status-text="auto">Auto</button>' +
-            '<button type="button" data-status-text="light">Light</button>' +
-            '<button type="button" data-status-text="dark">Dark</button>' +
+            '<strong>White</strong>' +
+            '<span class="studio-hint">Fixed: the player draws the status bar text in white and ignores other values.</span>' +
             '</div>' +
             '<div class="studio-status-chips" role="group" aria-label="Status bar states"></div>';
-        each(host.querySelectorAll('[data-status-text]'), function (button) {
-            button.addEventListener('click', function () {
-                setStatusTextChoice(button.getAttribute('data-status-text'));
-            });
-        });
         var anchor = el.colorEditor && el.colorEditor.parentNode === pane ? el.colorEditor : pane.querySelector('.studio-pane-actions');
         if (anchor && anchor.parentNode === pane) pane.insertBefore(host, anchor);
         else pane.appendChild(host);
@@ -3742,13 +3965,6 @@
     function renderStatusEditor() {
         var host = statusEditorHost();
         if (!host) return;
-        var statusCfg = (state.config && state.config.statusConfig) || {};
-        var choice = statusTextChoice(statusCfg);
-        each(host.querySelectorAll('[data-status-text]'), function (button) {
-            var active = button.getAttribute('data-status-text') === choice;
-            button.classList.toggle('is-active', active);
-            button.setAttribute('aria-pressed', active ? 'true' : 'false');
-        });
         var chips = host.querySelector('.studio-status-chips');
         if (!chips) return;
         chips.innerHTML = '';
@@ -3774,10 +3990,12 @@
             button.addEventListener('click', function () {
                 /* The strip is the context: icons plus the colours they sit
                    on, listed together in the tray. */
+                ensureAssetTrayOpen(entry.path);
                 setRelatedAssets(entry.path, statusStripIds(entry.path), 'Status bar icons and the font');
                 /* selectAsset applies the state this art stands for and
                    rebuilds the preview. */
                 selectAsset(entry.path, { reveal: true });
+                focusTrayAsset(entry.path);
             });
             chips.appendChild(button);
             shown += 1;
@@ -4053,6 +4271,36 @@
         return fileName(asset.value) || 'Blank';
     }
 
+    /* One list of actions for the tray row, the detail plate and the floating
+       strip beside a selection in the live preview: the three surfaces must
+       never drift apart. */
+    function assetActionSpecs(asset) {
+        var label = asset.label;
+        var specs = [
+            ['import', 'fa-images', 'Replace the file for ' + label],
+            ['theme', 'fa-palette', 'Use ' + label + ' from another gallery theme'],
+            ['save', 'fa-download', (saveTarget.saveAssetLabel || 'Save asset') + ' (' + label + ')'],
+            ['paste', 'fa-paste', 'Paste into ' + label]
+        ];
+        if (asset.kind !== 'font') {
+            specs.push(['blank', 'fa-trash-can', 'Bin ' + label + ' and use a transparent placeholder']);
+        }
+        if (asset.changed) {
+            specs.push(['reset', 'fa-rotate-left', 'Reset ' + label + ' to the theme original']);
+        }
+        return specs;
+    }
+
+    function runAssetAction(kind, id) {
+        if (!id || !state.assetById[id]) return;
+        if (kind === 'import') openAssetPicker(id);
+        else if (kind === 'theme') openThemePicker(id);
+        else if (kind === 'save') downloadAsset(id);
+        else if (kind === 'blank') blankAsset(id);
+        else if (kind === 'reset') resetAsset(id);
+        else pasteIntoAsset(id);
+    }
+
     function createAssetRow(asset) {
         var status = assetStatus(asset);
         var row = document.createElement('div');
@@ -4082,6 +4330,7 @@
         copy.className = 'studio-asset-row-copy';
         var name = document.createElement('strong');
         name.textContent = asset.label;
+        name.title = asset.label;
         var file = document.createElement('span');
         file.textContent = assetFileLabel(asset) + ' · ' + assetSizeLabel(asset);
         file.title = asset.placeholder
@@ -4092,26 +4341,14 @@
 
         var meta = document.createElement('span');
         meta.className = 'studio-asset-row-meta';
-        var section = document.createElement('span');
-        section.textContent = asset.section;
         var badge = document.createElement('span');
         badge.className = 'studio-asset-badge';
         badge.textContent = status.label;
-        meta.appendChild(section);
         meta.appendChild(badge);
 
         var actions = document.createElement('span');
         actions.className = 'studio-asset-row-actions';
-        var rowActions = [
-            ['import', 'fa-images', 'Select file from ' + (saveTarget.device || 'device') + ' for ' + asset.label],
-            ['theme', 'fa-palette', 'Use ' + asset.label + ' from another gallery theme'],
-            ['save', 'fa-download', (saveTarget.saveAssetLabel || 'Save asset') + ' (' + asset.label + ')'],
-            ['paste', 'fa-paste', 'Paste into ' + asset.label]
-        ];
-        if (asset.kind !== 'font') {
-            rowActions.push(['blank', 'fa-trash-can', 'Bin ' + asset.label + ' and use a transparent placeholder']);
-        }
-        rowActions.forEach(function (action) {
+        assetActionSpecs(asset).forEach(function (action) {
             var btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'studio-asset-row-action';
@@ -4306,6 +4543,20 @@
             return assetMatchesFilter(asset, filter);
         });
         var fontColors = filter === 'all' ? typographyColorDefs() : [];
+        /* Re-rendering after an asset change must not move the reader: the row
+           they just edited stays where it was instead of jumping to the top. */
+        var keepScroll = el.assetList.scrollTop;
+        /* Keep the edited row under the pointer, not just the scroll offset: a
+           rebuild can change how tall everything above it is, so restoring
+           scrollTop alone still moves the row away. */
+        var anchorId = state.selectedAssetId;
+        var anchorOffset = null;
+        if (anchorId) {
+            var anchorRow = el.assetList.querySelector('[data-asset-id="' + anchorId + '"]');
+            if (anchorRow) {
+                anchorOffset = anchorRow.getBoundingClientRect().top - el.assetList.getBoundingClientRect().top;
+            }
+        }
         el.assetList.innerHTML = '';
         if (el.assetEmpty) {
             el.assetEmpty.hidden = visible.length > 0 || fontColors.length > 0;
@@ -4370,6 +4621,20 @@
             el.assetList.appendChild(group);
         });
         paintAssetSelection();
+        if (anchorId && anchorOffset != null) {
+            var anchorRowAfter = el.assetList.querySelector('[data-asset-id="' + anchorId + '"]');
+            if (anchorRowAfter) {
+                var drift =
+                    anchorRowAfter.getBoundingClientRect().top -
+                    el.assetList.getBoundingClientRect().top -
+                    anchorOffset;
+                if (drift) el.assetList.scrollTop += drift;
+            } else if (keepScroll) {
+                el.assetList.scrollTop = keepScroll;
+            }
+        } else if (keepScroll) {
+            el.assetList.scrollTop = keepScroll;
+        }
         if (state.selectedAssetId) highlightPreviewAsset(state.selectedAssetId);
         if (!opts.deferThumbRefresh) scheduleThumbRefresh(30);
     }
@@ -4453,10 +4718,12 @@
 
     function selectAsset(id, options) {
         if (!id || !state.assetById[id]) return;
+        var wasSelected = state.selectedAssetId === id;
         state.selectedAssetId = id;
         var statusChanged = options && options.keepStatus ? false : applyStatusStateForAsset(id);
         if (statusChanged) renderStatusEditor();
         paintAssetSelection();
+        if (previewToolbar && !previewToolbar.hidden) showPreviewToolbar(id);
         if (options && options.skipRemount) {
             highlightPreviewAsset(id);
         } else if (statusChanged) {
@@ -4472,13 +4739,26 @@
         } else {
             highlightPreviewAsset(id);
         }
-        if (window.matchMedia('(max-width: 940px)').matches && el.assetDetail) {
+        /* Only a fresh pick brings the card into view on a narrow layout;
+           re-selecting the row being edited (a replace, blank or reset) must
+           leave the page where the reader is. */
+        if (!wasSelected && window.matchMedia('(max-width: 940px)').matches && el.assetDetail) {
             el.assetDetail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
     }
 
     function previewAssetNodes(path) {
         if (!path || !el.preview) return [];
+        if (path === 'itemConfig.itemSelectedBackground' || path === 'menuConfig.menuItemSelectedBackground') {
+            var selectedRows = Array.prototype.slice.call(el.preview.querySelectorAll('.y1-tp-row.is-selected'));
+            if (selectedRows.length) return selectedRows;
+        }
+        if (path === 'itemConfig.itemBackground' || path === 'menuConfig.menuItemBackground') {
+            var unselectedRows = Array.prototype.slice.call(
+                el.preview.querySelectorAll('.y1-tp-row:not(.is-selected)')
+            );
+            if (unselectedRows.length) return unselectedRows;
+        }
         return Array.prototype.filter.call(
             el.preview.querySelectorAll('[data-theme-asset-path]'),
             function (node) {
@@ -4509,38 +4789,246 @@
         });
     }
 
-    function focusTrayAsset(id) {
-        window.setTimeout(function () {
-            var row = null;
-            each(el.assetList ? el.assetList.querySelectorAll('[data-asset-id]') : [], function (candidate) {
-                if (!row && candidate.getAttribute('data-asset-id') === id) row = candidate;
+    /* —— Floating options beside a preview selection ——
+       A click in the live preview outlines an asset and opens the tray, but on
+       a 720p screen the tray's controls can sit below the fold. The same
+       actions ride a compact strip next to the outlined element, always in the
+       stage's empty margin so the artwork it edits is never covered. */
+    var previewToolbar = null;
+    var previewToolbarAssetId = '';
+    var previewToolbarRaf = 0;
+
+    function previewToolbarHost() {
+        if (previewToolbar) return previewToolbar;
+        var stage = document.querySelector('.studio-stage');
+        if (!stage) return null;
+        previewToolbar = document.createElement('div');
+        previewToolbar.className = 'studio-preview-toolbar';
+        previewToolbar.id = 'studio-preview-toolbar';
+        previewToolbar.setAttribute('role', 'toolbar');
+        previewToolbar.setAttribute('aria-label', 'Selected asset options');
+        previewToolbar.hidden = true;
+        stage.appendChild(previewToolbar);
+        window.addEventListener('resize', schedulePreviewToolbarPosition);
+        window.addEventListener('scroll', schedulePreviewToolbarPosition, true);
+        return previewToolbar;
+    }
+
+    function schedulePreviewToolbarPosition() {
+        if (!previewToolbar || previewToolbar.hidden || previewToolbarRaf) return;
+        previewToolbarRaf = window.requestAnimationFrame(function () {
+            previewToolbarRaf = 0;
+            positionPreviewToolbar();
+        });
+    }
+
+    /* Left of the element when the stage has room, then right, then above or
+       below it. The strip is fixed-position so the stage's own scrolling never
+       drags it across the player. */
+    function positionPreviewToolbar() {
+        var host = previewToolbar;
+        if (!host || host.hidden) return;
+        var nodes = previewToolbarAssetId ? previewAssetNodes(previewToolbarAssetId) : [];
+        var rect = nodes.length
+            ? nodes[0].getBoundingClientRect()
+            : el.preview
+              ? el.preview.getBoundingClientRect()
+              : null;
+        if (!rect) return;
+        var width = host.offsetWidth || 168;
+        var height = host.offsetHeight || 46;
+        var gap = 12;
+        var pad = 8;
+        var vw = window.innerWidth;
+        var vh = window.innerHeight;
+        /* Sit beside the element the reader just picked, not at the far edge of
+           the stage: a right-pane icon's options belong under or beside that
+           icon. Each side is a candidate; the nearest one that fits on screen
+           wins, with a nudge so "just below" beats "far left". */
+        var candidates = [
+            { left: rect.left, top: rect.bottom + 10, bias: 0 },
+            { left: rect.left, top: rect.top - height - 10, bias: 0 },
+            { left: rect.right + gap, top: rect.top + rect.height / 2 - height / 2, bias: 18 },
+            { left: rect.left - width - gap, top: rect.top + rect.height / 2 - height / 2, bias: 18 }
+        ];
+        var selCx = rect.left + rect.width / 2;
+        var selCy = rect.top + rect.height / 2;
+        var best = null;
+        for (var ci = 0; ci < candidates.length; ci++) {
+            var c = candidates[ci];
+            if (c.left < pad || c.top < pad) continue;
+            if (c.left + width > vw - pad || c.top + height > vh - pad) continue;
+            var dx = c.left + width / 2 - selCx;
+            var dy = c.top + height / 2 - selCy;
+            var score = Math.sqrt(dx * dx + dy * dy) + c.bias;
+            if (!best || score < best.score) best = { left: c.left, top: c.top, score: score };
+        }
+        var left = best ? best.left : rect.left;
+        var top = best
+            ? best.top
+            : rect.bottom + 10 + height <= vh - pad
+              ? rect.bottom + 10
+              : rect.top - height - 10;
+        top = Math.max(pad, Math.min(vh - height - pad, top));
+        left = Math.max(pad, Math.min(vw - width - pad, left));
+        host.style.left = Math.round(left) + 'px';
+        host.style.top = Math.round(top) + 'px';
+    }
+
+    function renderPreviewToolbar() {
+        var host = previewToolbarHost();
+        var asset = previewToolbarAssetId ? state.assetById[previewToolbarAssetId] : null;
+        if (!host) return;
+        if (!asset || state.mode !== 'edit') {
+            host.hidden = true;
+            return;
+        }
+        host.innerHTML = '';
+        var head = document.createElement('span');
+        head.className = 'studio-preview-toolbar-head';
+        var name = document.createElement('strong');
+        name.textContent = asset.label;
+        name.title = asset.label + (asset.value ? ' · ' + assetFileLabel(asset) : '');
+        head.appendChild(name);
+        var close = document.createElement('button');
+        close.type = 'button';
+        close.className = 'studio-preview-toolbar-close';
+        close.setAttribute('aria-label', 'Hide these options');
+        close.title = 'Hide these options';
+        close.innerHTML = '<i class="fa-solid fa-xmark" aria-hidden="true"></i>';
+        close.addEventListener('click', function () {
+            hidePreviewToolbar();
+        });
+        head.appendChild(close);
+
+        var actions = document.createElement('span');
+        actions.className = 'studio-preview-toolbar-actions';
+        assetActionSpecs(asset).forEach(function (action) {
+            var button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'studio-preview-toolbar-btn';
+            button.setAttribute('data-toolbar-action', action[0]);
+            button.setAttribute('aria-label', action[2]);
+            button.title = action[2];
+            button.innerHTML = '<i class="fa-solid ' + action[1] + '" aria-hidden="true"></i>';
+            if (action[0] === 'paste' && asset.kind !== 'image') button.disabled = true;
+            button.addEventListener('click', function () {
+                runAssetAction(action[0], asset.id);
+                if (action[0] === 'reset' || action[0] === 'blank') hidePreviewToolbar();
             });
+            actions.appendChild(button);
+        });
+        host.appendChild(head);
+        host.appendChild(actions);
+        host.hidden = false;
+        document.dispatchEvent(new CustomEvent('studio-preview-toolbar-shown'));
+        positionPreviewToolbar();
+    }
+
+    function showPreviewToolbar(id) {
+        if (!id || !state.assetById[id]) return;
+        previewToolbarAssetId = id;
+        renderPreviewToolbar();
+    }
+
+    function hidePreviewToolbar() {
+        previewToolbarAssetId = '';
+        if (previewToolbar) previewToolbar.hidden = true;
+    }
+
+    function togglePreviewToolbar() {
+        if (previewToolbar && !previewToolbar.hidden) {
+            hidePreviewToolbar();
+            return false;
+        }
+        if (!state.meta) {
+            toast('Open a theme first.');
+            return false;
+        }
+        if (state.mode !== 'edit') setMode('edit');
+        var id = state.selectedAssetId;
+        if (!id || !state.assetById[id]) {
+            toast('Select an element in the preview first.');
+            return false;
+        }
+        showPreviewToolbar(id);
+        /* The strip sits beside the preview; it must not re-centre the tray
+           while the reader is working in it. */
+        focusTrayAsset(id, { scroll: false });
+        return true;
+    }
+
+    function ensureAssetTrayOpen(id) {
+        var asset = id ? state.assetById[id] : null;
+        if (asset && asset.section) {
+            state.openTrays['asset:' + asset.section] = true;
+        }
+    }
+
+    function focusTrayAsset(id, focusOpts) {
+        var scrollToRow = !focusOpts || focusOpts.scroll !== false;
+        window.setTimeout(function () {
+            if (!el.assetList) return;
+            var row = null;
+            var fallback = null;
+            each(el.assetList.querySelectorAll('[data-asset-id]'), function (candidate) {
+                if (candidate.getAttribute('data-asset-id') !== id) return;
+                if (!fallback) fallback = candidate;
+                if (!row && !candidate.closest('.studio-related')) row = candidate;
+            });
+            row = row || fallback;
             if (!row) return;
             /* A collapsed tray hides its rows, so a jump into one has to open
                it first or the scroll has nothing to land on. */
             var tray = row.closest('details');
-            if (tray && !tray.open) tray.open = true;
-            /* With a related group open, the group is the payload of the tap: pin
-               the item row to the top of the tray so the related rows below it are
-               on screen. Centering the row on a 240px watch pushed them a screen
-               below the fold, which made the tap look like it did nothing. */
-            var related = row.parentElement ? row.parentElement.querySelector('.studio-related') : null;
+            if (tray && !tray.open) {
+                tray.open = true;
+                ensureAssetTrayOpen(id);
+            }
+            var related =
+                row.nextElementSibling && row.nextElementSibling.classList.contains('studio-related')
+                    ? row.nextElementSibling
+                    : row.parentElement
+                      ? row.parentElement.querySelector('.studio-related')
+                      : null;
             var target = related && related.previousElementSibling ? related.previousElementSibling : row;
             try {
-                target.scrollIntoView({ behavior: 'auto', block: related ? 'start' : 'center' });
-                if (related) {
-                    /* On a watch-height tray the row plus the group is taller than the
-                       pane, so pinning the row still leaves the group off screen. Give
-                       the group the top of the pane instead: it is what the tap asked for. */
-                    var first = related.querySelector('[data-asset-id]');
-                    var box = first ? first.getBoundingClientRect() : null;
-                    if (!box || box.top < 0 || box.bottom > window.innerHeight + 1) {
-                        related.scrollIntoView({ behavior: 'auto', block: 'start' });
-                    }
+                /* Scroll only the asset tray container directly so clicking the
+                   live preview never yanks the whole page or hides the Edit bar. */
+                var list = el.assetList;
+                var listRect = list.getBoundingClientRect();
+                var targetRect = target.getBoundingClientRect();
+                /* A row that is partly scrolled into view is still where the
+                   reader left it: only pull the tray when it is fully out. */
+                var alreadyVisible =
+                    scrollToRow === false ||
+                    (listRect.height > 0 &&
+                        targetRect.height > 0 &&
+                        targetRect.bottom > listRect.top + 4 &&
+                        targetRect.top < listRect.bottom - 4);
+                /* Replacing or blanking a file rebuilds the tray and re-runs this
+                   focus pass; when the row has not moved there is nothing to
+                   scroll, and re-centring it would snatch the reader's place. */
+                if (alreadyVisible) {
+                    row.focus({ preventScroll: true });
+                    return;
+                }
+                if (listRect.height > 0 && targetRect.height > 0) {
+                    var offsetTop = list.scrollTop + (targetRect.top - listRect.top);
+                    var nextTop = related
+                        ? offsetTop - 6
+                        : offsetTop - Math.max(6, (list.clientHeight - targetRect.height) / 2);
+                    list.scrollTop = Math.max(0, nextTop);
+                }
+                /* If the user had scrolled the inspector panel down to Colours
+                   or Masks, gently bring the asset tray itself back into view. */
+                var trayBox = list.getBoundingClientRect();
+                if (trayBox.bottom < 80 || trayBox.top > window.innerHeight - 80) {
+                    list.scrollIntoView({ behavior: 'auto', block: 'nearest' });
                 }
                 row.focus({ preventScroll: true });
             } catch (e) {}
-        }, 80);
+        }, 40);
     }
 
     /* A colour is not a file in the asset list, so clicking the status text or
@@ -4567,9 +5055,9 @@
         }
         if (!anchor) return false;
         setMode('edit');
+        ensureAssetTrayOpen(anchor);
         if (!assetMatchesFilter(state.assetById[anchor], state.assetFilter)) {
             state.assetFilter = 'all';
-            renderAssets();
         }
         setRelatedAssets(
             anchor,
@@ -4585,9 +5073,9 @@
         var asset = state.assetById[id];
         if (!asset) return false;
         setMode('edit');
+        ensureAssetTrayOpen(id);
         if (!assetMatchesFilter(asset, state.assetFilter)) {
             state.assetFilter = 'all';
-            renderAssets();
         }
         if (id === 'fontFamily') {
             setRelatedAssets(id, [], 'Text colours');
@@ -4602,6 +5090,7 @@
         }
         selectAsset(id);
         focusTrayAsset(id);
+        showPreviewToolbar(id);
         return true;
     }
 
@@ -4639,6 +5128,7 @@
             }
         }
         setMode('edit');
+        ensureAssetTrayOpen(anchor);
         var filtered = ids.some(function (id) {
             return !assetMatchesFilter(state.assetById[id], state.assetFilter);
         });
@@ -4650,6 +5140,7 @@
         setRelatedAssets(ids.length > 1 ? anchor : '', related, 'Background and mask on this screen');
         selectAsset(anchor);
         focusTrayAsset(anchor);
+        showPreviewToolbar(anchor);
         return true;
     }
 
@@ -4711,6 +5202,7 @@
                 inMenuRow: fallbackInRow,
                 isRowImage: fallbackIsRowImg,
                 isMenuItemText: !!(fallbackInRow && !fallbackIsRowImg),
+                isSelectedRow: !!(fallbackRow && fallbackRow.classList.contains('is-selected')),
                 isRightIcon: !!(
                     !fallbackInRow &&
                     fallbackNode &&
@@ -4725,10 +5217,14 @@
     }
 
     /* Map a live preview hit to its primary tray asset + suggested related assets:
-       - Clicking left menu item text selects Selected item background, with that
-         item's icon asset suggested first (plus item background & right arrow).
-       - Clicking the icon on the right selects the icon asset, with Selected item
-         background suggested first (plus item background & selected item arrow). */
+       - Clicking a selected left menu row selects Item selected background, with
+         that row's icon, Item background, and Item right arrow suggested nearby.
+       - Clicking an unselected left menu row selects Item background, with that
+         row's icon, Item selected background, and Item right arrow suggested nearby.
+       - Clicking the icon on the right selects the icon asset, with Item selected
+         background, Item background, and Item right arrow suggested nearby.
+       - Clicking the right arrow selects Item right arrow, with Item selected
+         background, Item background, and that row's icon suggested nearby. */
     function resolvePreviewAction(hit) {
         if (!hit || !hit.path) return null;
         var path = hit.path;
@@ -4739,11 +5235,24 @@
         );
 
         if (isLeftRowText) {
-            var primaryBg = state.assetById['itemConfig.itemSelectedBackground']
-                ? 'itemConfig.itemSelectedBackground'
-                : state.assetById['menuConfig.menuItemSelectedBackground']
-                  ? 'menuConfig.menuItemSelectedBackground'
-                  : path;
+            var isUnselectedRow = hit.isSelectedRow === false;
+            var primaryBg = isUnselectedRow
+                ? state.assetById['itemConfig.itemBackground']
+                    ? 'itemConfig.itemBackground'
+                    : state.assetById['menuConfig.menuItemBackground']
+                      ? 'menuConfig.menuItemBackground'
+                      : state.assetById['itemConfig.itemSelectedBackground']
+                        ? 'itemConfig.itemSelectedBackground'
+                        : path
+                : state.assetById['itemConfig.itemSelectedBackground']
+                  ? 'itemConfig.itemSelectedBackground'
+                  : state.assetById['menuConfig.menuItemSelectedBackground']
+                    ? 'menuConfig.menuItemSelectedBackground'
+                    : path;
+            var companionBg =
+                primaryBg === 'itemConfig.itemBackground'
+                    ? 'itemConfig.itemSelectedBackground'
+                    : 'itemConfig.itemBackground';
             var iconId =
                 hit.rowIconPath && state.assetById[hit.rowIconPath]
                     ? hit.rowIconPath
@@ -4760,17 +5269,18 @@
                     });
                 }
             }
-            rowRelated.push('itemConfig.itemBackground', 'itemConfig.itemRightArrow', 'fontFamily');
+            rowRelated.push(companionBg, 'itemConfig.itemRightArrow', 'fontFamily');
             var iconLabel = iconId ? previewHitLabel(iconId) : '';
+            var primaryLabel = previewHitLabel(primaryBg) || 'Item selected background';
             return {
                 primaryId: primaryBg,
                 canvasHighlightPath: path,
                 relatedIds: rowRelated,
-                relatedTitle: iconLabel ? 'Suggested for “' + iconLabel + '”' : 'Suggested related assets',
+                relatedTitle: iconLabel ? 'Related to “' + iconLabel + '”' : 'Related list item assets',
                 relatedColorAnchor: iconId || primaryBg,
                 tooltip: iconLabel
-                    ? 'Selected item background (with ' + iconLabel + ') — click to edit'
-                    : 'Selected item background — click to edit'
+                    ? primaryLabel + ' (with ' + iconLabel + ') — click to edit'
+                    : primaryLabel + ' — click to edit'
             };
         }
 
@@ -4792,7 +5302,7 @@
                 primaryId: path,
                 canvasHighlightPath: path,
                 relatedIds: iconRelated,
-                relatedTitle: 'Item background, arrow & related assets',
+                relatedTitle: 'Item backgrounds, arrow & related assets',
                 relatedColorAnchor: path,
                 tooltip: rightLabel ? rightLabel + ' — click to edit' : 'Click to edit this icon'
             };
@@ -4800,14 +5310,26 @@
 
         if (path === 'itemConfig.itemRightArrow' && state.assetById[path]) {
             var arrowRelated = ['itemConfig.itemSelectedBackground', 'itemConfig.itemBackground'];
-            if (hit.rowIconPath && state.assetById[hit.rowIconPath]) arrowRelated.push(hit.rowIconPath);
+            var arrowIconId = hit.rowIconPath && state.assetById[hit.rowIconPath] ? hit.rowIconPath : '';
+            if (arrowIconId) {
+                arrowRelated.push(arrowIconId);
+                var arrowStem = toggleStem(arrowIconId);
+                if (arrowStem) {
+                    state.assets.forEach(function (asset) {
+                        if (asset.id !== arrowIconId && toggleStem(asset.id) === arrowStem) arrowRelated.push(asset.id);
+                    });
+                }
+            }
             arrowRelated.push('fontFamily');
+            var arrowIconLabel = arrowIconId ? previewHitLabel(arrowIconId) : '';
             return {
                 primaryId: path,
                 canvasHighlightPath: path,
                 relatedIds: arrowRelated,
-                relatedTitle: 'Selected item background & related assets',
-                relatedColorAnchor: path,
+                relatedTitle: arrowIconLabel
+                    ? 'Item backgrounds & “' + arrowIconLabel + '”'
+                    : 'Item selected background & related assets',
+                relatedColorAnchor: arrowIconId || path,
                 tooltip: 'Item right arrow — click to edit'
             };
         }
@@ -4888,7 +5410,16 @@
                     if (lastHoverKey) clearPreviewHover();
                     return;
                 }
-                var hoverKey = primaryId + '|' + hit.path + '|' + (hit.isScreenLayer ? '1' : '0') + '|' + (hit.isMenuItemText ? '1' : '0');
+                var hoverKey =
+                    primaryId +
+                    '|' +
+                    hit.path +
+                    '|' +
+                    (hit.isScreenLayer ? '1' : '0') +
+                    '|' +
+                    (hit.isMenuItemText ? '1' : '0') +
+                    '|' +
+                    (hit.isSelectedRow === false ? '0' : '1');
                 if (hoverKey !== lastHoverKey) {
                     lastHoverKey = hoverKey;
                     clearPreviewAssetLink();
@@ -4907,7 +5438,15 @@
                         });
                     }
                     if (canvas) {
-                        canvas.title = (action && action.tooltip) || 'Click to edit this theme asset';
+                        var tipText = (action && action.tooltip) || 'Click to edit this theme asset';
+                        var toolbarNamesIt =
+                            previewToolbar &&
+                            !previewToolbar.hidden &&
+                            previewToolbarAssetId &&
+                            previewToolbarAssetId === primaryId;
+                        canvas.removeAttribute('data-tip');
+                        if (toolbarNamesIt) canvas.removeAttribute('title');
+                        else canvas.title = tipText;
                     }
                 }
             });
@@ -5094,6 +5633,14 @@
         return count;
     }
 
+    /* Only artwork counts as a visible change: a new title and author on an
+       untouched gallery theme is not a new theme. */
+    function imageOverrideCount() {
+        return (state.assets || []).filter(function (asset) {
+            return asset.kind === 'image' && asset.override && !asset.override.placeholder && !!asset.override.blob;
+        }).length;
+    }
+
     function isDirty() {
         return !!(
             state.dirty ||
@@ -5210,7 +5757,7 @@
         markDirty();
         rebuildAssets({ deferThumbRefresh: true });
         selectAsset(asset.id, { skipRemount: true });
-        remountPreview('Applying ' + fileName(targetValue) + '…', { focusAssetId: asset.id });
+        remountPreview('Applying ' + fileName(targetValue) + '…', { focusAssetId: asset.id, preserveScreen: true });
         toast('Replaced ' + asset.label + '. Save when you are ready.');
     }
 
@@ -5242,7 +5789,7 @@
         markDirty();
         rebuildAssets({ deferThumbRefresh: true });
         selectAsset(asset.id, { skipRemount: true });
-        remountPreview('Restoring ' + asset.label + '…', { focusAssetId: asset.id });
+        remountPreview('Restoring ' + asset.label + '…', { focusAssetId: asset.id, preserveScreen: true });
     }
 
     function resetAssetOverrides() {
@@ -5348,7 +5895,7 @@
         markDirty();
         rebuildAssets({ deferThumbRefresh: true });
         selectAsset(asset.id, { skipRemount: true });
-        remountPreview('Blanking ' + asset.label + '…', { focusAssetId: asset.id });
+        remountPreview('Blanking ' + asset.label + '…', { focusAssetId: asset.id, preserveScreen: true });
         toast('Binned ' + asset.label + ': the slot now reads Blank and points at the transparent placeholder.');
     }
 
@@ -5800,13 +6347,7 @@
             if (action && row) {
                 event.preventDefault();
                 event.stopPropagation();
-                var id = row.getAttribute('data-asset-id');
-                var kind = action.getAttribute('data-asset-action');
-                if (kind === 'import') openAssetPicker(id);
-                else if (kind === 'theme') openThemePicker(id);
-                else if (kind === 'save') downloadAsset(id);
-                else if (kind === 'blank') blankAsset(id);
-                else pasteIntoAsset(id);
+                runAssetAction(action.getAttribute('data-asset-action'), row.getAttribute('data-asset-id'));
                 return;
             }
             if (row) {
@@ -5814,10 +6355,7 @@
                 /* A tray click is a direct choice, so it drops the related block;
                    a click inside that block keeps it open. */
                 if (!row.closest('.studio-related') && state.relatedAnchor) {
-                    state.relatedAnchor = '';
-                    state.relatedIds = [];
-                    state.relatedTitle = '';
-                    renderAssets();
+                    clearRelatedAssets();
                 }
                 selectAsset(rowId, { reveal: true });
             }
@@ -5829,10 +6367,7 @@
                 event.preventDefault();
                 var keyId = row.getAttribute('data-asset-id');
                 if (!row.closest('.studio-related') && state.relatedAnchor) {
-                    state.relatedAnchor = '';
-                    state.relatedIds = [];
-                    state.relatedTitle = '';
-                    renderAssets();
+                    clearRelatedAssets();
                 }
                 selectAsset(keyId, { reveal: true });
             }
@@ -6113,6 +6648,57 @@
         return state.ownUpdate ? 'Send update' : 'Send my theme';
     }
 
+    /* —— Originality guard ——
+       A gallery theme makes an honest starting point, but filing it back with
+       nothing but new details is not a submission. The pane says so before the
+       send button is pressed, and submitTheme refuses as well. */
+    function ensureOriginalityNotice() {
+        if (el.originality) return el.originality;
+        var form = el.submitForm;
+        if (!form) return null;
+        var box = document.createElement('div');
+        box.className = 'studio-originality';
+        box.id = 'studio-originality';
+        box.setAttribute('role', 'note');
+        box.hidden = true;
+        box.innerHTML =
+            '<strong><i class="fa-solid fa-lightbulb" aria-hidden="true"></i> You have not made a new theme yet</strong>' +
+            '<p>This is still <span data-originality-name>the gallery theme</span> exactly as it ships. Using a gallery theme as a template is welcome: that is how most themes start. To submit it to the gallery, make it yours first.</p>' +
+            '<p>Replace at least one image: an icon, a wallpaper, a mask, a background or the font, and enough of them that the result reads as a different theme. A new title or author on unchanged artwork is not a new theme, and the gallery cannot accept it.</p>' +
+            '<p class="studio-hint" data-originality-count>No images replaced yet.</p>';
+        if (el.submitBtn && el.submitBtn.parentNode === form) form.insertBefore(box, el.submitBtn);
+        else form.appendChild(box);
+        el.originality = box;
+        return box;
+    }
+
+    function syncOriginalityNotice() {
+        var box = el.originality || null;
+        var relevant = state.sourceType === 'gallery' && !!state.folder && !state.ownUpdate;
+        if (!relevant) {
+            if (box) box.hidden = true;
+            if (el.submitBtn) el.submitBtn.classList.remove('is-blocked');
+            return;
+        }
+        box = ensureOriginalityNotice();
+        if (!box) return;
+        var count = imageOverrideCount();
+        var nameEl = box.querySelector('[data-originality-name]');
+        if (nameEl) {
+            nameEl.textContent = '\u201c' + ((state.meta && state.meta.name) || state.folder) + '\u201d';
+        }
+        var countEl = box.querySelector('[data-originality-count]');
+        if (countEl) {
+            countEl.textContent =
+                count === 0
+                    ? 'No images replaced yet. Pick an element in the preview, then replace its file.'
+                    : count + (count === 1 ? ' image replaced.' : ' images replaced.') + ' Keep going until the theme is recognisably yours.';
+        }
+        box.hidden = false;
+        box.classList.toggle('is-satisfied', count > 0);
+        if (el.submitBtn) el.submitBtn.classList.toggle('is-blocked', count === 0);
+    }
+
     function syncIdentity() {
         var identity = state.identity;
         var listing = identity.listing;
@@ -6154,6 +6740,7 @@
             var label = el.submitBtn.querySelector('span');
             if (label) label.textContent = submitActionLabel();
         }
+        syncOriginalityNotice();
         syncOriginalSubmittedField();
         updateChecklist();
         syncManageVisibility();
@@ -6510,6 +7097,13 @@
     }
 
     function syncConfigMetadata(config, title, author, submissionMeta) {
+        /* Every package leaves with the status bar ink the player actually
+           draws. The Studio does not edit it, and older themes were saved with
+           a colour the device ignores. */
+        if (!config.statusConfig || typeof config.statusConfig !== 'object' || Array.isArray(config.statusConfig)) {
+            config.statusConfig = {};
+        }
+        config.statusConfig.statusTextColor = STATUS_TEXT_COLOR;
         if (!config.theme_info || typeof config.theme_info !== 'object' || Array.isArray(config.theme_info)) {
             config.theme_info = {};
         }
@@ -6538,6 +7132,48 @@
             delete info.submittedAt;
             delete info.updatedAt;
         }
+    }
+
+    /* One package, both players. The Y1 3.1.2 launcher's ThemeConfig / ItemConfig /
+       HomePageConfig / SettingConfig declare a strict subset of the Y2 3.2.8
+       classes (verified against both APKs: Y1 has no showNativeIcon, fontScale,
+       itemSelectedBackgroundIs9Patch, homePageConfig.fileManager, or the 17
+       Y2-only setting icons), so the union is safe. Keep every Y1 key, and never
+       advertise art this package does not ship:\n         * fileManager is Y2's row — drop it when there is no icon so Y2 draws
+           its native one instead of an empty gap (Y1 ignores the key entirely).\n         * the 9-patch flag only means something when the background really is a
+           compiled .9.png; a stretched 9-patch shows its 1px border on Y1. */
+    function normalizeConfigForCrossCompat(config, devicePaths) {
+        if (!config || typeof config !== 'object') return config;
+        ['itemConfig', 'dialogConfig', 'menuConfig', 'homePageConfig', 'fileConfig', 'settingConfig', 'statusConfig'].forEach(
+            function (key) {
+                if (!config[key] || typeof config[key] !== 'object' || Array.isArray(config[key])) config[key] = {};
+            }
+        );
+        var files = Object.create(null);
+        (devicePaths || []).forEach(function (path) {
+            var rel = String(path || '')
+                .replace(/\\/g, '/')
+                .replace(/^\.?\//, '')
+                .toLowerCase();
+            if (rel) files[rel] = true;
+        });
+        function shipped(value) {
+            var rel = String(value || '')
+                .replace(/\\/g, '/')
+                .replace(/^\.?\//, '')
+                .toLowerCase();
+            if (!rel) return false;
+            if (/transparent\.png$/.test(rel)) return false;
+            return !!files[rel];
+        }
+        var home = config.homePageConfig;
+        if (home.fileManager != null && !shipped(home.fileManager)) delete home.fileManager;
+        var item = config.itemConfig;
+        if (item.itemSelectedBackgroundIs9Patch) {
+            var selectedBg = String(item.itemSelectedBackground || '');
+            if (!/\.9\.png$/i.test(selectedBg) || !shipped(selectedBg)) delete item.itemSelectedBackgroundIs9Patch;
+        }
+        return config;
     }
 
     async function collectThemeDeviceFiles(reportProgress, folderOverride, options) {
@@ -6628,6 +7264,12 @@
             deviceFiles.push({ devicePath: item.devicePath, blob: blob });
             packagedDeviceBlobs[String(item.devicePath || '').replace(/\\/g, '/').replace(/^\.\/+/, '').toLowerCase()] = blob;
         });
+        normalizeConfigForCrossCompat(
+            outputConfig,
+            deviceFiles.map(function (entry) {
+                return entry.devicePath;
+            })
+        );
 
         return {
             title: title,
@@ -7169,6 +7811,23 @@
                             '. Use your own title and author, or open that theme to update it.'
                     );
                 }
+                return;
+            }
+            /* A gallery theme with no replaced artwork is a copy, whatever the
+               title says. Only an image counts: colours and details alone are
+               not a new theme. */
+            if (state.sourceType === 'gallery' && state.folder && imageOverrideCount() === 0) {
+                var notice = ensureOriginalityNotice();
+                syncOriginalityNotice();
+                if (notice) {
+                    notice.hidden = false;
+                    notice.scrollIntoView({ block: 'nearest' });
+                }
+                setSubmitStatus(
+                    'You have not made a new theme yet. Replace at least one image asset before sending this to the gallery.',
+                    false
+                );
+                toast('Replace at least one image before submitting a new theme.');
                 return;
             }
         }
