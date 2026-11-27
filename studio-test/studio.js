@@ -5603,6 +5603,15 @@
         if (!assetMatchesFilter(asset, state.assetFilter)) {
             state.assetFilter = 'all';
         }
+        var anchor = options && options.toolbarAnchor ? options.toolbarAnchor : null;
+        var masks = screenMaskIdsAt(anchor);
+        function withMasks(list) {
+            var out = (Array.isArray(list) ? list : []).slice();
+            masks.forEach(function (maskId) {
+                if (maskId !== id && out.indexOf(maskId) === -1) out.push(maskId);
+            });
+            return out;
+        }
         if (id === 'fontFamily') {
             setRelatedAssets(id, [], 'Text colours');
         } else if (/^statusConfig\./.test(id)) {
@@ -5610,17 +5619,18 @@
         } else if (options && options.related === false) {
             clearRelatedAssets();
         } else if (options && Array.isArray(options.relatedIds)) {
-            setRelatedAssets(id, options.relatedIds, options.relatedTitle || '', options.relatedColorAnchor || id);
+            setRelatedAssets(
+                id,
+                withMasks(options.relatedIds),
+                options.relatedTitle || '',
+                options.relatedColorAnchor || id
+            );
         } else {
             setRelatedAssets(id, null, (options && options.relatedTitle) || '', (options && options.relatedColorAnchor) || id);
         }
         selectAsset(id);
         focusTrayAsset(id);
-        showPreviewToolbar(
-            id,
-            options && options.toolbarAnchor ? options.toolbarAnchor : null,
-            options && options.toolbarIds ? options.toolbarIds : []
-        );
+        showPreviewToolbar(id, anchor, withMasks(options && options.toolbarIds ? options.toolbarIds : []));
         return true;
     }
 
@@ -5779,6 +5789,24 @@
         });
     }
 
+    /* A mask only belongs in the suggestions when its pixels actually sit under
+       the click. An icon floating over transparency is not overlaid by
+       anything, so offering the mask there would fight the reader instead of
+       helping: the toolbar stays a one-asset edit in that case. */
+    function screenMaskIdsAt(anchor) {
+        if (!anchor || typeof anchor.clientX !== 'number' || typeof anchor.clientY !== 'number') return [];
+        var api = el.preview ? el.preview._y1TpApi : null;
+        if (!api || typeof api.maskAlphaAt !== 'function') return [];
+        var alpha = null;
+        try {
+            alpha = api.maskAlphaAt(anchor.clientX, anchor.clientY);
+        } catch (e) {
+            return [];
+        }
+        if (!(alpha > 0)) return [];
+        return screenMaskIds();
+    }
+
     function resolvePreviewAction(hit) {
         if (!hit || !hit.path) return null;
         var path = hit.path;
@@ -5824,10 +5852,6 @@
                 }
             }
             rowRelated.push(companionBg, 'itemConfig.itemRightArrow', 'fontFamily');
-            var rowMasks = screenMaskIds();
-            rowMasks.forEach(function (maskId) {
-                if (rowRelated.indexOf(maskId) === -1) rowRelated.push(maskId);
-            });
             var iconLabel = iconId ? previewHitLabel(iconId) : '';
             var primaryLabel = previewHitLabel(primaryBg) || 'Item selected background';
             return {
@@ -5838,7 +5862,7 @@
                 relatedColorAnchor: iconId || primaryBg,
                 /* Both halves of the row are offered at once: the selection bar
                    the reader clicked and the artwork drawn beside it. */
-                toolbarIds: [primaryBg].concat(iconId ? [iconId] : []).concat(rowMasks),
+                toolbarIds: [primaryBg].concat(iconId ? [iconId] : []),
                 tooltip: iconLabel
                     ? primaryLabel + ' (with ' + iconLabel + ') — click to edit'
                     : primaryLabel + ' — click to edit'
@@ -5858,10 +5882,6 @@
                 });
             }
             iconRelated.push('fontFamily');
-            var rightMasks = screenMaskIds();
-            rightMasks.forEach(function (maskId) {
-                if (iconRelated.indexOf(maskId) === -1) iconRelated.push(maskId);
-            });
             var rightLabel = previewHitLabel(path);
             return {
                 primaryId: path,
@@ -5869,7 +5889,7 @@
                 relatedIds: iconRelated,
                 relatedTitle: 'Item backgrounds, arrow & related assets',
                 relatedColorAnchor: path,
-                toolbarIds: [path].concat(rightMasks),
+                toolbarIds: [path],
                 tooltip: rightLabel ? rightLabel + ' — click to edit' : 'Click to edit this icon'
             };
         }

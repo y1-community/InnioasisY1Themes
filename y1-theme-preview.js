@@ -6321,6 +6321,18 @@
                        painting order: wallpaper first, then the mask over it. */
                     maskAtPoint: maskAtPoint,
                     assetAtPoint: assetAtPoint,
+                    /* Coverage of the Home/Settings overlay mask at a point in
+                       the page. The Studio only offers the mask when it is
+                       actually painted under the clicked pixel, so an icon
+                       floating over transparent mask stays a one-asset edit. */
+                    maskAlphaAt: function (clientX, clientY) {
+                        if (typeof clientX !== 'number' || typeof clientY !== 'number') return null;
+                        if (typeof maskAtPoint === 'function') {
+                            var maskHit = maskAtPoint(clientX, clientY);
+                            return maskHit ? maskHit.alpha : null;
+                        }
+                        return null;
+                    },
                     screenAssets: function () {
                         var out = [];
                         var wall = wallpaperAssetPathForView(cfg, sim.themeViewId);
