@@ -4982,6 +4982,20 @@
         list.scrollTop += rowRect.top - listRect.top - (list.clientHeight - rowRect.height) / 2;
     }
 
+    /* Page-level scroll is a touch affordance. A narrow desktop pane also
+       matches the width query, but a mouse click should leave the viewport
+       exactly where the reader was working; only a coarse pointer moves it. */
+    function shouldScrollAssetPanel() {
+        try {
+            return (
+                window.matchMedia('(max-width: 940px)').matches &&
+                window.matchMedia('(pointer: coarse)').matches
+            );
+        } catch (e) {
+            return false;
+        }
+    }
+
     function paintAssetSelection() {
         each(el.assetList ? el.assetList.querySelectorAll('[data-asset-id]') : [], function (row) {
             var active = row.getAttribute('data-asset-id') === state.selectedAssetId;
@@ -5011,7 +5025,7 @@
             if (state.selectedAssetId === id) updateAssetDetail();
             var nodes = previewAssetNodes(id);
             if (!nodes.length) return;
-            if (window.matchMedia('(max-width: 940px)').matches) {
+            if (shouldScrollAssetPanel()) {
                 try {
                     nodes[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
                 } catch (e) {}
@@ -5086,7 +5100,7 @@
         /* Only a fresh pick brings the card into view on a narrow layout;
            re-selecting the row being edited (a replace, blank or reset) must
            leave the page where the reader is. */
-        if (!wasSelected && window.matchMedia('(max-width: 940px)').matches && el.assetDetail) {
+        if (!wasSelected && shouldScrollAssetPanel() && el.assetDetail) {
             el.assetDetail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
     }
