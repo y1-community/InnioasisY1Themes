@@ -190,7 +190,7 @@
                 "name": "How do I update an existing Y1 theme for Innioasis Y2 support?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Open the theme in Innioasis Theme Studio and add a 166x166 File Manager icon using the built-in Y2 File Manager helper (file picker, clipboard paste, drag-and-drop, borrow from another theme, or blank PNG template). When a gallery update changes only the File Manager icon, it can be automatically merged to enable Y2 support."
+                  "text": "Open the theme in Innioasis Theme Studio and add a 166x166 File Manager icon using the built-in Y2 File Manager helper (file picker, clipboard paste, drag-and-drop, borrow from another theme, or blank PNG template)."
                 }
               },
               {
@@ -323,10 +323,11 @@
                                 <i class="fa-solid fa-mobile-screen" aria-hidden="true"></i><span id="studio-platform-label">Y1 / Y2</span><i class="fa-solid fa-circle-info studio-platform-info" aria-hidden="true"></i>
                             </button>
                             <div class="studio-platform-pop" id="studio-platform-pop" role="dialog" aria-labelledby="studio-platform-pop-title" hidden>
-                                <strong id="studio-platform-pop-title">Y1 / Y2 theme</strong>
-                                <p id="studio-platform-pop-body">A theme is listed as a Y1 / Y2 theme only when it includes the file manager icon that Y2 adds to the home screen.</p>
+                                <strong id="studio-platform-pop-title">Y2 compatibility</strong>
+                                <p id="studio-platform-pop-body">Checking the two assets Y2 needs on top of the Y1 theme.</p>
+                                <div class="studio-compat-list" id="studio-platform-list" role="list"></div>
                                 <button class="studio-btn studio-btn--primary" id="studio-platform-focus" type="button">
-                                    <i class="fa-solid fa-crosshairs" aria-hidden="true"></i><span>Show file manager icon</span>
+                                    <i class="fa-solid fa-crosshairs" aria-hidden="true"></i><span>Review assets</span>
                                 </button>
                             </div>
                         </div>
@@ -371,6 +372,14 @@
                         <select class="studio-firmware-select" id="studio-firmware-select" aria-label="Which launcher and release the preview draws"></select>
                         <span class="studio-firmware-state" id="studio-firmware-state" hidden></span>
                     </div>
+                    <label class="studio-solar-bars-control" id="studio-solar-bars-control" hidden>
+                        <span><i class="fa-solid fa-bars-staggered" aria-hidden="true"></i>Now Playing bars</span>
+                        <select id="studio-solar-bars" aria-label="Solar Now Playing information bars">
+                            <option value="default">Translucent</option>
+                            <option value="none">None</option>
+                            <option value="item">Match item rows</option>
+                        </select>
+                    </label>
                     <p class="studio-firmware-summary" id="studio-firmware-summary"></p>
                 </div>
 
@@ -478,6 +487,12 @@
                             <p class="studio-eyebrow">Theme assets</p>
                             <h2>Edit</h2>
                             <p>Replace any file by picking it, pasting an image, or dropping it straight onto a slot.</p>
+                        </div>
+
+                        <div class="studio-edit-intent" id="studio-edit-intent" role="note" hidden>
+                            <i class="fa-solid fa-compass-drafting" aria-hidden="true"></i>
+                            <span id="studio-edit-intent-text"></span>
+                            <button class="studio-mini-btn" id="studio-edit-intent-change" type="button">Change</button>
                         </div>
 
                         <div class="studio-asset-toolbar">
@@ -661,12 +676,12 @@
 
     <div class="studio-y2-toast" id="studio-y2-toast" role="status" aria-live="polite" hidden>
         <div class="studio-y2-toast-copy">
-            <strong>Y2 needs a File Manager icon</strong>
-            <span>Add one so Y2 does not draw its own icon in that gap.</span>
+            <strong>Y2 needs two icons</strong>
+            <span>This theme needs a File Manager icon and a Settings Bluetooth icon for Y2.</span>
         </div>
         <div class="studio-y2-toast-actions">
             <button class="studio-btn studio-btn--primary" id="studio-y2-toast-open" type="button">
-                <i class="fa-solid fa-folder-plus" aria-hidden="true"></i><span>Add icon</span>
+                <i class="fa-solid fa-list-check" aria-hidden="true"></i><span>Review Y2 assets</span>
             </button>
             <button class="studio-y2-toast-close" id="studio-y2-toast-close" type="button" aria-label="Dismiss Y2 tip">
                 <i class="fa-solid fa-xmark" aria-hidden="true"></i>
@@ -683,7 +698,7 @@
                 </button>
             </div>
             <h2 id="studio-y2-fm-title">Add a File Manager icon for Y2</h2>
-            <p class="studio-y2-fm-lead">Innioasis Y2 adds a <strong>File Manager</strong> row to the Home screen. Adding a <code>166 × 166</code> File Manager icon makes <strong id="studio-y2-fm-theme-name" translate="no" data-i18n-skip>this theme</strong> fully Y2-ready — and if that is your only change, your update can be auto-merged to the gallery.</p>
+            <p class="studio-y2-fm-lead">Innioasis Y2 adds a <strong>File Manager</strong> row to the Home screen. Adding a <code>166 × 166</code> File Manager icon makes <strong id="studio-y2-fm-theme-name" translate="no" data-i18n-skip>this theme</strong> fully Y2-ready.</p>
             <div class="studio-y2-fm-dropzone" id="studio-y2-fm-dropzone">
                 <div class="studio-y2-fm-preview" id="studio-y2-fm-preview">
                     <i class="fa-regular fa-folder-open" aria-hidden="true"></i>
@@ -755,6 +770,45 @@
                 <button class="studio-btn studio-btn--primary" id="studio-variant-create" type="button">
                     <i class="fa-solid fa-plus" aria-hidden="true" id="studio-variant-create-icon"></i><span id="studio-variant-create-label">Create variation</span>
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="studio-modal studio-edit-intent-modal" id="studio-edit-intent-modal" hidden>
+        <div class="studio-modal-card studio-edit-intent-card" role="dialog" aria-modal="true" aria-labelledby="studio-edit-intent-title">
+            <div class="studio-onboarding-head">
+                <span class="studio-eyebrow"><i class="fa-solid fa-compass-drafting" aria-hidden="true"></i> Before you edit</span>
+                <button class="studio-onboarding-x" id="studio-edit-intent-x" type="button" aria-label="Close the edit setup question">
+                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                </button>
+            </div>
+            <h2 id="studio-edit-intent-title">How are you using <strong id="studio-edit-intent-name" translate="no" data-i18n-skip>this theme</strong>?</h2>
+            <div class="studio-edit-intent-choices">
+                <button class="studio-edit-intent-choice" id="studio-edit-intent-start" type="button">
+                    <i class="fa-solid fa-seedling" aria-hidden="true"></i>
+                    <strong>Create my own theme</strong>
+                    <span>Make a new theme from this one. Save it to your computer, or add it to the gallery.</span>
+                </button>
+                <button class="studio-edit-intent-choice" id="studio-edit-intent-own" type="button">
+                    <i class="fa-solid fa-user-pen" aria-hidden="true"></i>
+                    <strong>Update my theme</strong>
+                    <span>Make changes to your own theme, title and description. Updates go live after review and approval.</span>
+                </button>
+            </div>
+            <div class="studio-edit-intent-foot">
+                <button class="studio-btn" id="studio-edit-intent-cancel" type="button">Back to preview</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="studio-modal studio-theme-switch-modal" id="studio-theme-switch-modal" hidden>
+        <div class="studio-modal-card studio-theme-switch-card" role="dialog" aria-modal="true" aria-labelledby="studio-theme-switch-title">
+            <p class="studio-eyebrow">Theme Studio</p>
+            <h2 id="studio-theme-switch-title">Switch to <strong id="studio-theme-switch-name" translate="no" data-i18n-skip>this theme</strong>?</h2>
+            <p class="studio-theme-switch-copy">The player is asking to set this theme. Open it here in Theme Studio too? Stay here to keep browsing the simulated theme list without replacing the workbench you have open now.</p>
+            <div class="studio-theme-switch-actions">
+                <button class="studio-btn" id="studio-theme-switch-cancel" type="button">Stay here</button>
+                <button class="studio-btn studio-btn--primary" id="studio-theme-switch-confirm" type="button">Switch theme</button>
             </div>
         </div>
     </div>
@@ -947,14 +1001,14 @@
     <div id="support-toolbar-slot"></div>
 
     <script src="../nav.js?v=20261124fixes1"></script>
-    <script src="../y1-theme-preview.js?v=20261129preview17"></script>
+    <script src="../y1-theme-preview.js?v=20261129preview33"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="../theme-packaging.js"></script>
+    <script src="../theme-packaging.js?v=20261129model2"></script>
     <script src="../author-submission-policy.js?v=20260523"></script>
     <script src="../studio-drop-handoff.js?v=20261123studio2"></script>
     <script src="../theme-analytics.js?v=20261125quota2"></script>
-    <script src="/studio-test/firmware-catalog.js?v=20261129studio64"></script>
-    <script src="/studio-test/studio.js?v=20261129studio64"></script>
+    <script src="/studio-test/firmware-catalog.js?v=20261129studio70"></script>
+    <script src="/studio-test/studio.js?v=20261129studio70"></script>
     <script src="../site-locale.js?v=20261127studio26" defer></script>
 </body>
 

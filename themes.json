@@ -1818,7 +1818,13 @@
             "description": "Y2 theme inspired by the Apple iPod Classic.",
             "screenshot": "./Cupertino/cover.jpg",
             "authorUrl": "https://willysjeepman.neocities.org/y1",
-            "screenshotPreview": "./Cupertino/screenshot_preview.jpg"
+            "screenshotPreview": "./Cupertino/screenshot_preview.jpg",
+            "variantFolders": [
+                "CupertinY"
+            ],
+            "variantScreenshots": {
+                "CupertinY": "./Cupertino/Variants/CupertinY/screenshot_preview.jpg"
+            }
         },
         {
             "name": "Cupertino (Clone)",

@@ -314,10 +314,25 @@
 
     function buildPackManifest(fileEntries, contentFolder, catalogFolder, cfg) {
         const files = withoutWebsiteOnlyCovers(fileEntries, cfg);
+        let manifest;
         if (configUsesStructuredAssetPaths(cfg)) {
-            return buildStructuredPackManifest(files, contentFolder, catalogFolder);
+            manifest = buildStructuredPackManifest(files, contentFolder, catalogFolder);
+        } else {
+            manifest = buildFlattenPackManifest(files, contentFolder, catalogFolder);
         }
-        return buildFlattenPackManifest(files, contentFolder, catalogFolder);
+        /* Structured packs keep config-relative paths, so their config is not
+           rewritten later. Fold the Bluetooth pair here while the manifest's
+           device paths are still available. Flat packs do it in
+           rewriteConfigForDeviceFlatPack, where the paths have been collapsed. */
+        const targetModel = typeof window !== 'undefined' ? String(window.__y1TargetModel || '') : '';
+        if (targetModel && manifest.mode === 'structured') {
+            normalizeConfigForModel(
+                cfg,
+                (manifest.items || []).map((item) => item.devicePath),
+                targetModel
+            );
+        }
+        return manifest;
     }
 
     function rewriteConfigForDeviceFlatPack(cfg, contentFolder, logicalToDevice) {
@@ -354,6 +369,10 @@
             }
         };
         walk2(clone);
+        const targetModel = typeof window !== 'undefined' ? String(window.__y1TargetModel || '') : '';
+        if (targetModel && logicalToDevice && typeof logicalToDevice.values === 'function') {
+            normalizeConfigForModel(clone, Array.from(new Set(logicalToDevice.values())), targetModel);
+        }
         return clone;
     }
 
@@ -415,7 +434,12 @@
             const fromHome = y1Icon.replace(/_y1(\.[a-z0-9]+)$/i, '$1');
             if (shipped(fromHome)) y2Icon = fromHome;
         }
-        const chosen = model === 'y1' ? y1Icon : y2Icon || y1Icon;
+        if (!y1Icon && y2Icon) {
+            const fromSetting = y2Icon.replace(/_y2(\.[a-z0-9]+)$/i, '$1');
+            if (shipped(fromSetting)) y1Icon = fromSetting;
+            else y1Icon = y2Icon;
+        }
+        const chosen = model === 'y1' ? y1Icon || y2Icon : y2Icon || y1Icon;
         if (chosen) home.bluetooth = chosen;
         /* The helper key has no reader on either player, so it never ships. */
         delete setting.bluetooth;
@@ -438,6 +462,201 @@
         return /^https?:\/\//i.test(u) ? u : '';
     }
 
+    /* The gallery and a static theme page both need the same two-option
+       question before they pack a ZIP. The dialog lives here so every
+       download path asks once, with the same wording and the same result. */
+    let modelStylesReady = false;
+    function injectModelStyles() {
+        if (modelStylesReady || typeof document === 'undefined' || !document.head) return;
+        modelStylesReady = true;
+        const style = document.createElement('style');
+        style.textContent =
+            '.tp-model-dialog{border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:0;max-width:min(92vw,440px);width:100%;background:var(--bg-dark,#13141d);color:var(--text-primary,#f5f6fa);box-shadow:0 24px 70px rgba(0,0,0,.55);}' +
+            '.tp-model-dialog::backdrop{background:rgba(6,6,11,.72);backdrop-filter:blur(6px);}' +
+            '.tp-model-body{padding:22px 22px 18px;display:grid;gap:14px;}' +
+            '.tp-model-eyebrow{margin:0;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent,#22d3ee);font-weight:700;}' +
+            '.tp-model-title{margin:0;font-size:1.18rem;line-height:1.3;}' +
+            '.tp-model-copy{margin:0;color:var(--text-secondary,#9aa0b8);font-size:.9rem;line-height:1.5;}' +
+            '.tp-model-options{display:grid;gap:10px;margin-top:2px;}' +
+            '.tp-model-option{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:var(--bg-card,rgba(255,255,255,.04));color:inherit;font:inherit;text-align:left;cursor:pointer;transition:border-color .15s ease,background .15s ease;}' +
+            '.tp-model-option:hover,.tp-model-option:focus-visible{border-color:var(--accent,#22d3ee);background:rgba(34,211,238,.08);outline:none;}' +
+            '.tp-model-option i{font-size:1.05rem;color:var(--accent,#22d3ee);width:20px;text-align:center;}' +
+            '.tp-model-option span{display:grid;gap:2px;}' +
+            '.tp-model-option strong{font-size:.95rem;font-weight:650;}' +
+            '.tp-model-option small{color:var(--text-secondary,#9aa0b8);font-size:.78rem;}' +
+            '.tp-model-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 22px 18px;}' +
+            '.tp-model-note{margin:0;color:var(--text-secondary,#9aa0b8);font-size:.76rem;line-height:1.4;}' +
+            '.tp-model-cancel{border:0;background:none;color:var(--text-secondary,#9aa0b8);font:inherit;font-size:.85rem;cursor:pointer;padding:8px 10px;border-radius:8px;}' +
+            '.tp-model-cancel:hover,.tp-model-cancel:focus-visible{color:var(--text-primary,#f5f6fa);outline:none;background:rgba(255,255,255,.06);}' +
+            '@media (max-width:480px){.tp-model-body{padding:18px 16px 12px}.tp-model-foot{padding:8px 16px 16px;flex-direction:column-reverse;align-items:stretch}.tp-model-option{padding:11px 12px}}';
+        document.head.appendChild(style);
+    }
+
+    function askModelChoice(choice, themeName) {
+        const labels = (choice && choice.labels) || {};
+        const defaultModel = String((choice && choice.defaultModel) || 'y2').toLowerCase() === 'y1' ? 'y1' : 'y2';
+        return new Promise((resolve) => {
+            if (
+                typeof document === 'undefined' ||
+                !document.body ||
+                typeof global.HTMLDialogElement === 'undefined'
+            ) {
+                resolve('');
+                return;
+            }
+            injectModelStyles();
+            const dialog = document.createElement('dialog');
+            dialog.className = 'tp-model-dialog';
+            dialog.setAttribute('aria-labelledby', 'tp-model-title');
+            const body = document.createElement('div');
+            body.className = 'tp-model-body';
+            const eyebrow = document.createElement('p');
+            eyebrow.className = 'tp-model-eyebrow';
+            eyebrow.textContent = 'Download';
+            const title = document.createElement('h2');
+            title.className = 'tp-model-title';
+            title.id = 'tp-model-title';
+            title.textContent = 'Which player is this for?';
+            const copy = document.createElement('p');
+            copy.className = 'tp-model-copy';
+            copy.textContent =
+                '\u201c' + (themeName || 'This theme') + '\u201d ships different Bluetooth artwork for each player. Pick the one you install it on \u2014 the ZIP is the same theme either way.';
+            const options = document.createElement('div');
+            options.className = 'tp-model-options';
+            const foot = document.createElement('div');
+            foot.className = 'tp-model-foot';
+            const note = document.createElement('p');
+            note.className = 'tp-model-note';
+            note.textContent = 'You can download the other version again any time.';
+            const cancel = document.createElement('button');
+            cancel.type = 'button';
+            cancel.className = 'tp-model-cancel';
+            cancel.textContent = 'Cancel';
+            let settled = false;
+            function close(value) {
+                if (settled) return;
+                settled = true;
+                try { if (dialog.open) dialog.close(); } catch (_) {}
+                dialog.remove();
+                resolve(value);
+            }
+            [
+                ['y1', 'fa-music', labels.y1 || 'Y1 \u00b7 Home Bluetooth icon', 'Home screen icon'],
+                ['y2', 'fa-sliders', labels.y2 || 'Y2 \u00b7 Settings Bluetooth icon', 'Settings list icon']
+            ].forEach((row) => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'tp-model-option';
+                button.innerHTML =
+                    '<i class="fa-solid ' + row[1] + '" aria-hidden="true"></i><span><strong></strong><small></small></span>';
+                button.querySelector('strong').textContent = row[2];
+                button.querySelector('small').textContent = row[3];
+                button.addEventListener('click', () => close(row[0]));
+                options.appendChild(button);
+            });
+            cancel.addEventListener('click', () => close(''));
+            dialog.addEventListener('cancel', (event) => {
+                event.preventDefault();
+                close('');
+            });
+            dialog.addEventListener('click', (event) => {
+                if (event.target === dialog) close('');
+            });
+            body.appendChild(eyebrow);
+            body.appendChild(title);
+            body.appendChild(copy);
+            body.appendChild(options);
+            foot.appendChild(note);
+            foot.appendChild(cancel);
+            dialog.appendChild(body);
+            dialog.appendChild(foot);
+            document.body.appendChild(dialog);
+            dialog.showModal();
+            const preferred = options.querySelectorAll('.tp-model-option')[defaultModel === 'y1' ? 0 : 1];
+            if (preferred) preferred.focus();
+        });
+    }
+
+    /* Gallery pages are generated copies of one inline script (87 files at the
+       time of writing), so the model gate is installed here instead of editing
+       every copy. It wraps the two local-download entry points after the inline
+       script has defined them; a theme that does not need a choice goes
+       straight through. */
+    function encodePagePath(path) {
+        return String(path || '')
+            .split('/')
+            .filter(Boolean)
+            .map((segment) => encodeURIComponent(segment))
+            .join('/');
+    }
+
+    function choiceForTheme(theme) {
+        const fallback = {
+            needsChoice: true,
+            labels: {
+                y1: 'Y1 \u00b7 Home Bluetooth icon',
+                y2: 'Y2 \u00b7 Settings Bluetooth icon'
+            },
+            defaultModel: 'y2'
+        };
+        const folder = theme && String(theme.folder || '').replace(/^\/?/, '');
+        if (!folder || typeof fetch !== 'function') return Promise.resolve(fallback);
+        return fetch('/' + encodePagePath(folder) + '/config.json', { cache: 'no-cache' })
+            .then((response) => (response && response.ok ? response.json() : null))
+            .then((cfg) => (cfg ? modelChoiceForConfig(cfg) : fallback))
+            .catch(() => fallback);
+    }
+
+    function installGalleryModelGate() {
+        if (typeof window === 'undefined' || typeof document === 'undefined') return;
+        if (window.__y1ThemeModelGateInstalled) return;
+        if (typeof window.downloadTheme !== 'function' && typeof window.directInstallTheme !== 'function') return;
+        window.__y1ThemeModelGateInstalled = true;
+        ['downloadTheme', 'directInstallTheme'].forEach((name) => {
+            const original = window[name];
+            if (typeof original !== 'function' || original.__y1ModelGateWrapped) return;
+            const wrapped = function (theme) {
+                const receiver = this;
+                const args = arguments;
+                if (window.__y1ThemeModelGateBypass) return original.apply(receiver, args);
+                return choiceForTheme(theme).then((choice) => {
+                    if (!choice || !choice.needsChoice) return original.apply(receiver, args);
+                    return askModelChoice(choice, (theme && (theme.name || theme.folder)) || 'this theme').then((model) => {
+                        if (!model) return false;
+                        window.__y1TargetModel = model;
+                        let result;
+                        try {
+                            result = original.apply(receiver, args);
+                        } catch (error) {
+                            window.__y1TargetModel = '';
+                            throw error;
+                        }
+                        return Promise.resolve(result).then(
+                            (value) => {
+                                window.__y1TargetModel = '';
+                                return value;
+                            },
+                            (error) => {
+                                window.__y1TargetModel = '';
+                                throw error;
+                            }
+                        );
+                    });
+                });
+            };
+            wrapped.__y1ModelGateWrapped = true;
+            window[name] = wrapped;
+        });
+    }
+
+    if (typeof window !== 'undefined' && window.document) {
+        if (window.document.readyState === 'loading') {
+            window.document.addEventListener('DOMContentLoaded', installGalleryModelGate);
+        } else {
+            installGalleryModelGate();
+        }
+    }
+
     global.ThemePackaging = {
         normalizeConfigAssetPath,
         resolvedRepoPath,
@@ -446,6 +665,7 @@
         buildPackManifest,
         rewriteConfigForDeviceFlatPack,
         modelChoiceForConfig,
+        askModelChoice,
         normalizeConfigForModel,
         isLikelyAssetPathString,
         isStructuredAssetPath,

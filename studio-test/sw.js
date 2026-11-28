@@ -3,7 +3,7 @@
    serving it from cache first kept a tab (and this worker's own query-keyed copy)
    on the previous release after a deploy, because a cache hit skipped the network
    entirely. The cache is now only an offline fallback. */
-const CACHE = 'innioasis-studio-v97';
+const CACHE = 'innioasis-studio-v124';
 const SHELL = [
   './',
   './index.html',
@@ -15,6 +15,8 @@ const SHELL = [
   './icons/icon-512.png',
   './icons/apple-touch-icon.png',
   '../assets/native-y1/better-y.png',
+  '../assets/native-y1/solar-file-sync.png',
+  '../assets/native-y1/solar-music-list.png',
   '../assets/native-y1/theme-default-cover.png',
   '../assets/native-y2/theme-default-cover.png',
   '../assets/bundled-themes/y1/theme1.png',

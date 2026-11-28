@@ -26,9 +26,9 @@
     var SETTINGS_MENU_TOP = 45;
     var SETTINGS_MENU_WIDTH = 218;
     var SETTINGS_MENU_HEIGHT = 305;
-    /* item_setting.xml uses @dimen/main_item_height (45dp), not the 40px the
-       old Theme Maker preview assumed. */
-    var SETTINGS_ROW_HEIGHT = 45;
+    /* Y1 item_setting.xml is 40dip. Y2 switches to its 45dp
+       main_item_height, so callers pass that row height explicitly. */
+    var SETTINGS_ROW_HEIGHT = 40;
 
     var SETTINGS_RIGHT_W = 179;
     var SETTINGS_RIGHT_MARGIN = 22;
@@ -72,10 +72,19 @@
         return NATIVE_STUDIO_ASSET_BASE_URL + relative;
     }
 
+    /* Solar's own shortcut icons, not theme slots: HomeMenuConfig gives
+       PC Upload `file_sync` and Podcasts/Get Music `music_list`. */
+    var NATIVE_SOLAR_FILE_SYNC_URL = nativeStudioAssetUrl('assets/native-y1/solar-file-sync.png');
+    var NATIVE_SOLAR_MUSIC_LIST_URL = nativeStudioAssetUrl('assets/native-y1/solar-music-list.png');
+
     var THEME_SELECTOR_DEFAULT_COVER_URLS = {
         y1: nativeStudioAssetUrl('assets/native-y1/theme-default-cover.png'),
         y2: nativeStudioAssetUrl('assets/native-y2/theme-default-cover.png')
     };
+    /* Music.apk's own R.drawable.albumart_mp_unknown, used for a track with no
+       embedded cover. This is deliberately not themeCover: the theme cover is
+       the gallery/theme-switcher artwork, not the player's album art. */
+    var UNKNOWN_ALBUM_ART_URL = nativeStudioAssetUrl('assets/albumart-unknown.png');
     var BUNDLED_THEME_COVER_URLS = {
         y1: {
             theme1: nativeStudioAssetUrl('assets/bundled-themes/y1/theme1.png'),
@@ -148,11 +157,11 @@
 
     /** Matches Theme Maker `constants.tsx` MOCK_SONGS for now-playing preview. */
     var MOCK_SONGS_PREVIEW = [
-        { id: '1', title: 'Jam', artist: 'Michael Jackson', album: 'Dangerous', duration: 243 },
-        { id: '2', title: 'Why you wanna trip on me?', artist: 'Michael Jackson', album: 'Dangerous', duration: 230 },
-        { id: '3', title: 'In the closet', artist: 'Michael Jackson', album: 'Dangerous', duration: 203 },
-        { id: '4', title: 'She drives me wild', artist: 'Michael Jackson', album: 'Dangerous ', duration: 200 },
-        { id: '5', title: 'Remember the time', artist: 'Michael Jackson', album: 'Dangerous', duration: 238 }
+        { id: '1', title: 'Blinding Lights', artist: 'The Weeknd', album: 'After Hours', duration: 200 },
+        { id: '2', title: 'Escapism.', artist: 'RAYE', album: 'My 21st Century Blues', duration: 272 },
+        { id: '3', title: 'Easy On Me', artist: 'Adele', album: '30', duration: 224 },
+        { id: '4', title: 'Wonderwall', artist: 'Oasis', album: '(What\u2019s the Story) Morning Glory?', duration: 258 },
+        { id: '5', title: 'Billie Jean', artist: 'Michael Jackson', album: 'Thriller', duration: 294 }
     ];
 
     var PREVIEW_MENU = {
@@ -202,6 +211,7 @@
         audiobooks: 'Audiobooks',
         settings: 'Settings',
         settingsBetterY: 'better-Y',
+        settingsBetterYPlayer: 'better-Y',
         settingsCat_keysWheel: 'Keys & Wheel',
         settingsCat_audio: 'Audio',
         settingsCat_display: 'Display',
@@ -219,6 +229,10 @@
         photos: 'Photos',
         photosViewer: 'Photos',
         fm: 'FM Radio',
+        radio: 'Radio',
+        wifiTransfer: 'Wi\u2011Fi Transfer',
+        podcasts: 'Podcasts',
+        getMusic: 'Get Music',
         ebook: 'E-Book',
         ebookReader: 'E-Book',
         bluetooth: 'Bluetooth',
@@ -442,6 +456,17 @@
                             : []),
                     home: version.home || [],
                     menuProfile: version.menuProfile || 'stock',
+                    /* The player a build ships, separate from its menu tree:
+                       a launcher can keep Better-Y menus without replacing
+                       activity_music_player. */
+                    playerProfile:
+                        version.playerProfile ||
+                        (version.solar === true
+                            ? 'solar'
+                            : version.menuProfile === 'better-y'
+                              ? 'better-y'
+                              : 'stock'),
+                    solar: version.solar === true,
                     /* Keys declared behind the launcher's internal flag: the
                        release carries the trace, so only it can preview them. */
                     hiddenHome: version.hiddenHome || [],
@@ -463,8 +488,54 @@
             bundledThemes: [],
             home: fallback.home,
             menuProfile: 'stock',
+            playerProfile: 'stock',
+            solar: false,
             catalog: null
         };
+    }
+
+    /* Switching the Preview As target must feel like changing the player under
+       the same activity, not like being sent home. Keep the current screen when
+       the new launcher has it; map the few launcher-specific variants to their
+       nearest equivalent (Better-Y settings ↔ stock settings, Y2 categories →
+       the flat list, an unavailable File Manager/FM screen → Home). Now Playing
+       and every media browser keep their exact view id across launchers. */
+    function equivalentThemeView(viewId, fw) {
+        var id = String(viewId || '');
+        if (!id || !fw) return id;
+        if (id === 'settingsBetterY' || id === 'settingsBetterYPlayer') {
+            return fw.menuProfile === 'better-y' ? id : 'settings';
+        }
+        if (id === 'settings') {
+            /* Settings is always the launcher's root list. Better-Y and
+               Rockbox 0.6 put their better-Y row inside this list; jumping
+               straight to the five better-Y groups skipped the real screen. */
+            return id;
+        }
+        if (id.indexOf('settingsCat_') === 0) {
+            if (fw.settingsStyle === 'categories') return id;
+            return 'settings';
+        }
+        if (id === 'musicSettings' && !fw.musicSettingsRows) return 'music';
+        if (
+            (id === 'fileManager' || id === 'fileManagerList' || id === 'fileManagerSettings') &&
+            !fw.fileManager
+        ) {
+            return 'home';
+        }
+        if (
+            (id === 'fm' ||
+                id === 'fmMenu' ||
+                id === 'fmChannels' ||
+                id === 'fmFavorites' ||
+                id === 'fmAudioOutput' ||
+                id === 'fmRange') &&
+            !fw.fm
+        ) {
+            return 'home';
+        }
+        if (id === 'settingsTheme' && fw.themes === false) return 'settings';
+        return id;
     }
 
     function buildHomeItems(homeCfg, settingCfg, opts) {
@@ -480,29 +551,81 @@
            from 2.8.2 onward (`hiddenHome`), so they never appear on a release
            with no trace of them. */
         var firmwareHome = fw.home || [];
-        var hiddenHome = fw.hiddenHome || [];
         var revealAll = opts.showLegacyHome === true || opts.showUnimplementedHome === true;
         var betterMenu = fw.menuProfile === 'better-y';
+        /* Unified is the full-coverage canvas, not a claim that one release
+           shipped every row. It shows the union of the Home items so every
+           Home asset can be reached; a Y1 or Y2 target stays exact. */
+        var unified = deviceMode === 'both';
+        var stockY1 = deviceMode === 'y1' && !betterMenu;
         var labelMap = {
-            nowPlaying: 'Now Playing',
+            /* Y1 3.1.2 strings keep the stock lower-case "playing" and
+               "radio"; Y2 3.2.8 and Better-Y v1.1.0 use title case. */
+            nowPlaying: stockY1 ? 'Now playing' : 'Now Playing',
             music: 'Music',
             video: 'Videos',
             audiobooks: betterMenu ? 'Audiobooks' : 'Audiobook',
-            ebook: betterMenu ? 'E-books' : 'E-Book',
+            ebook: betterMenu ? 'E-books' : 'E-book',
             calculator: 'Calculator',
             calendar: 'Calendar',
             photos: 'Photos',
-            fm: 'FM Radio',
+            fm: stockY1 ? 'FM radio' : 'FM Radio',
             bluetooth: 'Bluetooth',
             fileManager: 'File Manager',
             settings: 'Settings',
-            shuffleQuick: 'Shuffle Quick'
+            shuffleQuick: 'Shuffle quick'
         };
+        /* Solar does not use MainActivity's list at all. HomeMenuConfig schema
+           9 seeds these eight shortcuts; extra rows are Solar-native art, while
+           the stock keys still resolve through homePageConfig. */
+        if (fw.menuProfile === 'solar') {
+            var solarKeys = (fw.home && fw.home.length
+                ? fw.home
+                : ['nowPlaying', 'music', 'ebook', 'radio', 'settings', 'wifiTransfer', 'podcasts', 'getMusic']
+            ).slice();
+            var solarLabels = {
+                nowPlaying: 'Now Playing',
+                music: 'Music',
+                ebook: 'E-Book',
+                radio: 'Radio',
+                settings: 'Settings',
+                wifiTransfer: 'Wi\u2011Fi Transfer',
+                podcasts: 'Podcasts',
+                getMusic: 'Get Music'
+            };
+            var solarNative = {
+                wifiTransfer: NATIVE_SOLAR_FILE_SYNC_URL,
+                podcasts: NATIVE_SOLAR_MUSIC_LIST_URL,
+                getMusic: NATIVE_SOLAR_MUSIC_LIST_URL
+            };
+            return solarKeys.map(function (key) {
+                var assetKey = key === 'radio' ? 'fm' : key;
+                var file = solarNative[key] ? undefined : homePageIconFromCfg(homeCfg, assetKey);
+                return {
+                    id: key,
+                    label: previewText(solarLabels[key] || key),
+                    iconFile: typeof file === 'string' ? file : undefined,
+                    iconUrl: solarNative[key] || undefined,
+                    assetPath: solarNative[key] ? undefined : 'homePageConfig.' + assetKey
+                };
+            });
+        }
         /* Exact firmware MainActivity.initView() order verified from Y1 1.7.6–3.1.2
            and Y2 3.1.7–3.2.8 APKs:
-           - Y1: Now Playing, Music, Videos, Audiobook, E-Book, [Calc, Cal], Photos, FM Radio, Bluetooth, Settings, [Shuffle Quick]
-           - Y2: Now Playing, Music, Videos, Audiobook, E-Book, [Calc, Cal], Photos, FM Radio, File Manager, Settings, [Shuffle Quick]
+           - Y1: Now Playing, Music, Videos, Audiobook, E-book, [Calc, Cal], Photos, FM Radio, Bluetooth, Settings, [Shuffle Quick]
+           - Y2: Now Playing, Music, Videos, Audiobook, E-book, [Calc, Cal], Photos, FM Radio, File Manager, Settings, [Shuffle Quick]
            - Both: Y2 layout + Bluetooth home item so authors can preview & edit both devices at once. */
+        /* One Bluetooth slot, two screen positions. Y1 draws the Home icon;
+           Y2 draws its Settings row from the same key. A package may carry a
+           separate settingConfig.bluetooth for the Y2 look, but a theme with
+           only one artwork uses it in both places. */
+        var homeBluetooth = homePageIconFromCfg(homeCfg, 'bluetooth');
+        var settingBluetooth = String(settingCfg.bluetooth || '').trim();
+        var bluetoothAssetPath = 'homePageConfig.bluetooth';
+        if (!isUsableHomeIcon(homeBluetooth) && isUsableHomeIcon(settingBluetooth)) {
+            homeBluetooth = settingBluetooth;
+            bluetoothAssetPath = 'settingConfig.bluetooth';
+        }
         var ordered = [
             'nowPlaying',
             'music',
@@ -521,24 +644,41 @@
         var items = ordered
             .filter(function (key) {
                 if (key === 'shuffleQuick') {
-                    if (firmwareHome.indexOf(key) === -1) return false;
+                    if (!unified && firmwareHome.indexOf(key) === -1) return false;
                     if (revealAll || mode === 'full') return true;
                     return isUsableHomeIcon(homePageIconFromCfg(homeCfg, key));
                 }
+                /* Calculator and Calendar are Unified-only coverage rows. No
+                   stock release, Better-Y, Koensayr or Rockbox Home draws them:
+                   their internal hidden flag is off, so a normal theme preview
+                   must not inherit the Studio's full-coverage mode. Only an
+                   explicit asset reveal (or Unified) may surface them. */
                 if (key === 'calculator' || key === 'calendar') {
-                    if (hiddenHome.indexOf(key) === -1) return false;
-                    if (revealAll || mode === 'full') return true;
+                    if (!unified && !revealAll) return false;
+                    if (unified && (revealAll || mode === 'full')) return true;
                     return isUsableHomeIcon(homePageIconFromCfg(homeCfg, key));
                 }
                 if (key === 'fileManager') return (deviceMode === 'y2' || deviceMode === 'both') && fw.fileManager;
                 if (key === 'fm') return fw.fm;
-                /* A release that predates an item never draws it, whatever the
-                   theme declares: the reader is looking at that firmware. */
-                if (fw.home && fw.home.length && fw.home.indexOf(key) === -1) return false;
+                /* Unified is Y2's Home without its Bluetooth row plus the Y1
+                   row, so this check must run before the Y2 membership test. */
                 if (key === 'bluetooth') {
                     if (deviceMode === 'y2' && fw.settingsStyle === 'categories') return false;
-                    return mode === 'full' ? true : isUsableHomeIcon(homePageIconFromCfg(homeCfg, key));
+                    if (
+                        deviceMode === 'y1' &&
+                        fw.home &&
+                        fw.home.length &&
+                        fw.home.indexOf('bluetooth') === -1
+                    ) {
+                        return false;
+                    }
+                    return mode === 'full' ? true : isUsableHomeIcon(homeBluetooth);
                 }
+                /* A release that predates an item never draws it, whatever the
+                   theme declares: the reader is looking at that firmware.
+                   Unified is the exception: it deliberately shows every row. */
+                if (unified) return true;
+                if (fw.home && fw.home.length && fw.home.indexOf(key) === -1) return false;
                 var file = homePageIconFromCfg(homeCfg, key);
                 if (key === 'ebook') {
                     if (mode === 'full') return true;
@@ -547,12 +687,12 @@
                 return mode === 'full' ? true : file !== undefined;
             })
             .map(function (key) {
-                var file = homePageIconFromCfg(homeCfg, key);
+                var file = key === 'bluetooth' ? homeBluetooth : homePageIconFromCfg(homeCfg, key);
                 return {
                     id: key,
                     label: previewText(labelMap[key] || key),
                     iconFile: typeof file === 'string' ? file : undefined,
-                    assetPath: 'homePageConfig.' + key
+                    assetPath: key === 'bluetooth' ? bluetoothAssetPath : 'homePageConfig.' + key
                 };
             });
         return items;
@@ -785,6 +925,40 @@
         return null;
     }
 
+    /* Solar reads the Now Playing info-row treatment from solarConfig first,
+       then playerConfig for older packages. The aliases are the launcher's own:
+       none/off/disabled/false and item/matchitem/match_item. */
+    function nowPlayingInfoBarsMode(cfg) {
+        var blocks = [cfg && cfg.solarConfig, cfg && cfg.playerConfig];
+        for (var i = 0; i < blocks.length; i += 1) {
+            var block = blocks[i];
+            if (!block || !Object.prototype.hasOwnProperty.call(block, 'nowPlayingInfoBars')) continue;
+            var mode = String(block.nowPlayingInfoBars || 'default').trim().toLowerCase();
+            if (mode === 'none' || mode === 'off' || mode === 'disabled' || mode === 'false') return 'none';
+            if (mode === 'item' || mode === 'matchitem' || mode === 'match_item') return 'item';
+            return 'default';
+        }
+        return 'default';
+    }
+
+    function nowPlayingTextColor(cfg, fallback) {
+        var blocks = [cfg && cfg.solarConfig, cfg && cfg.playerConfig];
+        for (var i = 0; i < blocks.length; i += 1) {
+            var block = blocks[i];
+            if (!block) continue;
+            var value = block.nowPlayingTextColour || block.nowPlayingTextColor;
+            if (value) return value;
+        }
+        return fallback;
+    }
+
+    function progressTextColor(cfg, fallback) {
+        var player = (cfg && cfg.playerConfig) || {};
+        var value = player.progressTextColor || player.progressTextColour;
+        if (value) return value;
+        return nowPlayingTextColor(cfg, fallback);
+    }
+
     function mergeItemBackgrounds(spec, buildFileUrl, contentFolder) {
         var itemCfg = (spec && spec.itemConfig) || {};
         var menuCfg = (spec && spec.menuConfig) || {};
@@ -888,9 +1062,11 @@
 
     function maskAssetPathForView(viewId) {
         if (viewId === 'home') return 'desktopMask';
-        if (viewId === 'settings' || String(viewId || '').indexOf('settings') === 0) {
-            return 'settingConfig.settingMask';
-        }
+        /* Only SettingActivity calls ThemeManager.setSettingMask. The
+           About/Theme/Equalizer/... activities inherit BaseActivity's global
+           wallpaper and paint no settingMask, so a settings-prefixed page must
+           not inherit the settings list's overlay. */
+        if (viewId === 'settings') return 'settingConfig.settingMask';
         return '';
     }
 
@@ -1275,7 +1451,7 @@
         var arrowUrl = options.itemRightArrowUrl || '';
         var eager = !!options.eager;
         var scrollState = options.scrollState || { override: null, lastY: 0, animate: true };
-        var itemHeight = SETTINGS_ROW_HEIGHT;
+        var itemHeight = options.itemHeight || SETTINGS_ROW_HEIGHT;
         var scrollY =
             scrollState.override != null
                 ? scrollState.override
@@ -1636,6 +1812,13 @@
         img.alt = '';
         img.style.cssText = 'height:25px;width:25px;object-fit:contain;display:block;';
         img.setAttribute('data-theme-asset-path', 'statusConfig.' + key);
+        var slot = document.createElement('span');
+        slot.className = 'y1-tp-status-slot' + (isBlankStatusFile(file) ? ' is-empty' : '');
+        slot.setAttribute('data-theme-status-slot', key);
+        slot.setAttribute('data-theme-slot-path', 'statusConfig.' + key);
+        slot.setAttribute('data-theme-status-group', statusGroupForKey(key));
+        slot.style.cssText =
+            'position:relative;display:flex;align-items:center;justify-content:center;width:25px;height:25px;flex:0 0 25px;';
         if (preview !== raw) {
             img.onerror = function () {
                 img.onerror = null;
@@ -1643,18 +1826,44 @@
             };
         }
         bindPreviewImgFallback(img, { eager: mode === 'full' });
-        rightEl.appendChild(img);
+        slot.appendChild(img);
+        rightEl.appendChild(slot);
         return img;
     }
 
-    function appendBatteryFallback(rightEl, pct, textColor, cfg, assetPath) {
+    function isBlankStatusFile(file) {
+        if (!file) return true;
+        if (Array.isArray(file)) return file.every(isBlankStatusFile);
+        if (typeof file === 'object') {
+            return Object.keys(file).every(function (key) {
+                return isBlankStatusFile(file[key]);
+            });
+        }
+        return /(^|\/)transparent\.png$/i.test(String(file));
+    }
+
+    function statusGroupForKey(key) {
+        var value = String(key || '');
+        if (/^battery/i.test(value)) return 'battery';
+        if (/^bl/.test(value)) return 'bluetooth';
+        if (/^headset/i.test(value)) return 'headset';
+        return 'playback';
+    }
+
+    function appendBatteryFallback(rightEl, pct, textColor, cfg, assetPath, showPercent) {
         var p = Number(pct);
         if (!isFinite(p)) p = 100;
+        /* Stock's "batteryPercentage" preference hides only the number;
+           the battery icon itself is always drawn. */
+        var withPercent = showPercent !== false;
         var wrap = document.createElement('div');
         wrap.style.cssText =
             'display:flex;align-items:center;gap:4px;font-size:16px;color:#ffffff;';
         var box = document.createElement('div');
         box.setAttribute('data-theme-asset-path', assetPath || 'statusConfig.battery.3');
+        box.setAttribute('data-theme-slot-path', assetPath || 'statusConfig.battery.3');
+        box.setAttribute('data-theme-status-group', 'battery');
+        box.className = 'y1-tp-status-slot-box';
         var borderCol = textColor && String(textColor).charAt(0) === '#' ? textColor : '#ffffff';
         box.style.cssText =
             'width:22px;height:11px;border:1px solid ' +
@@ -1667,10 +1876,12 @@
             'px;height:100%;background:linear-gradient(180deg,#7ef29a,#2db84d);border-radius:1px;';
         box.appendChild(fill);
         wrap.appendChild(box);
-        var sp = document.createElement('span');
-        sp.textContent = p + '%';
-        tagFontHotspot(sp, cfg, 'The battery figure');
-        wrap.appendChild(sp);
+        if (withPercent) {
+            var sp = document.createElement('span');
+            sp.textContent = p + '%';
+            tagFontHotspot(sp, cfg, 'The battery figure');
+            wrap.appendChild(sp);
+        }
         rightEl.appendChild(wrap);
     }
 
@@ -1799,6 +2010,11 @@
             shuffle: { id: 'shuffle', label: 'Shuffle', iconFile: settingConfig[shuffleAssetKey], assetPath: 'settingConfig.' + shuffleAssetKey, valueText: gt('shuffle') },
             repeat: { id: 'repeat', label: 'Repeat', iconFile: settingConfig[repeatAssetKey], assetPath: 'settingConfig.' + repeatAssetKey, valueText: gt('repeat') },
             equalizer: { id: 'equalizer', label: 'Equalizer', iconFile: settingConfig.equalizer_normal, assetPath: 'settingConfig.equalizer_normal' },
+            /* 1.7.6 built these two rows before File extensions/Theme existed;
+               the strings are `setting_sort_order` = Sort by and
+               `setting_sort_logic` = Sort order. */
+            sort_order: { id: 'sort_order', label: 'Sort by', valueText: 'Name' },
+            sort_logic: { id: 'sort_logic', label: 'Sort order', valueText: 'A to Z' },
             file_extension: {
                 id: 'file_extension',
                 label: 'File extensions',
@@ -1815,14 +2031,16 @@
             },
             wheel_sensitivity: {
                 id: 'wheel_sensitivity',
-                label: 'Wheel sensitivity',
+                /* Y2 3.2.8 strings: Click Wheel Sensitivity. Y1 keeps the
+                   shorter Wheel sensitivity. */
+                label: deviceMode === 'y2' ? 'Click Wheel Sensitivity' : 'Wheel sensitivity',
                 iconFile: settingConfig[wheelSensKey],
                 assetPath: 'settingConfig.' + wheelSensKey,
                 valueText: gt('wheel_sensitivity')
             },
             wheel_volume: {
                 id: 'wheel_volume',
-                label: 'Wheel volume',
+                label: deviceMode === 'y2' ? 'Adjust Volume with Click Wheel' : 'Wheel volume',
                 iconFile: settingConfig[wheelVolKey],
                 assetPath: 'settingConfig.' + wheelVolKey,
                 valueText: gt('wheel_volume')
@@ -1860,7 +2078,9 @@
             brightness: { id: 'brightness', label: 'Brightness', iconFile: settingConfig.brightness, assetPath: 'settingConfig.brightness' },
             display_battery: {
                 id: 'display_battery',
-                label: 'Display battery',
+                /* Better-Y and Rockbox 0.6 renamed the shared preference; the
+                   stock string is still Display battery. */
+                label: fw.menuProfile === 'better-y' ? 'Battery percentage' : 'Display battery',
                 iconFile: settingConfig[displayBatteryAssetKey],
                 assetPath: 'settingConfig.' + displayBatteryAssetKey,
                 valueText: gt('display_battery')
@@ -1878,26 +2098,53 @@
             },
             factory_reset: { id: 'factory_reset', label: 'Factory reset', iconFile: settingConfig.factoryReset, assetPath: 'settingConfig.factoryReset' },
             clear_cache: { id: 'clear_cache', label: 'Clear cache', iconFile: settingConfig.clearCache, assetPath: 'settingConfig.clearCache' },
+            /* Rockbox 0.6 appends this literal row after About. */
+            back_to_rockbox: {
+                id: 'back_to_rockbox',
+                label: 'Back to Rockbox',
+                iconFile: settingConfig.launcher,
+                assetPath: 'settingConfig.launcher'
+            },
             bluetooth: {
                 id: 'bluetooth',
                 label: 'Bluetooth',
-                iconFile: settingConfig.bluetooth || homeCfg.bluetooth,
-                assetPath: settingConfig.bluetooth ? 'settingConfig.bluetooth' : 'homePageConfig.bluetooth'
+                iconFile: isUsableHomeIcon(settingConfig.bluetooth)
+                    ? settingConfig.bluetooth
+                    : homeCfg.bluetooth,
+                assetPath: isUsableHomeIcon(settingConfig.bluetooth)
+                    ? 'settingConfig.bluetooth'
+                    : 'homePageConfig.bluetooth'
             },
             about: { id: 'about', label: 'About', iconFile: undefined }
         };
 
         var base;
-        if (category === 'betterY') {
-            /* The better-Y row opens Better-Y's own menu. These are the six
-               groups its help file lays out, in that order. */
+        if (category === 'betterYPlayer') {
+            /* Better-Y → Now Playing: help/en.txt [player] and the captured
+               settings list. The labels and order are the player's own. */
+            base = [
+                { id: 'betterY_log', label: 'Save diagnostic log' },
+                { id: 'betterY_np_preview', label: 'Now playing' },
+                /* Prefs.java defaults all three to 0 LIGHT (white). */
+                { id: 'betterY_icon_tint', label: 'Icon color', valueText: 'Light' },
+                { id: 'betterY_text_tint', label: 'Text color', valueText: 'Light' },
+                { id: 'betterY_lyrics_tint', label: 'Lyrics color', valueText: 'Light' },
+                {
+                    id: 'betterY_tilt',
+                    label: 'Tilt the cover',
+                    valueText: sim.betterYTilt === true ? 'On' : 'Off'
+                }
+            ];
+        } else if (category === 'betterY') {
+            /* Better-Y v1.1.0, the newest published release, lays out five
+               groups in its help asset. Cover Flow only exists in later,
+               unpublished development builds, so it is not a row here. */
             base = [
                 { id: 'betterY_tools', label: 'Tools' },
                 { id: 'betterY_player', label: 'Now Playing' },
                 { id: 'betterY_menu', label: 'Menu' },
                 { id: 'betterY_metadata', label: 'Metadata' },
-                { id: 'betterY_system', label: 'System' },
-                { id: 'betterY_coverflow', label: 'Cover Flow' }
+                { id: 'betterY_system', label: 'System' }
             ];
         } else if (category === 'musicSettings') {
             /* Y2 Music → Settings. Rows and their existence come from the
@@ -1949,10 +2196,10 @@
                 allEntries.key_vibration
             ];
         } else if (category === 'audio') {
-            base =
-                deviceMode === 'both'
-                    ? [allEntries.headphone_gain, allEntries.speaker, allEntries.equalizer, allEntries.shuffle, allEntries.repeat]
-                    : [allEntries.headphone_gain, allEntries.speaker];
+            /* Y2 3.2.8 Audio has exactly Headphone gain and Speaker. Equalizer,
+               Shuffle and Repeat live elsewhere (or nowhere) and are not rows
+               in this category. */
+            base = [allEntries.headphone_gain, allEntries.speaker];
         } else if (category === 'display') {
             base = [allEntries.brightness, allEntries.backlight, allEntries.display_battery];
         } else if (category === 'personalization') {
@@ -1960,10 +2207,31 @@
         } else if (category === 'filesStorage') {
             base = [allEntries.file_extension, allEntries.clear_cache];
         } else if (category === 'system') {
-            base =
-                deviceMode === 'both'
-                    ? [allEntries.language, allEntries.date_time, allEntries.timed_shutdown, allEntries.rockbox, allEntries.shutdown]
-                    : [allEntries.language, allEntries.date_time, allEntries.timed_shutdown, allEntries.rockbox];
+            /* Launcher/Rockbox is a Y1 Settings row. Exact Y2 keeps the stock
+               System list; Unified adds it so the full menu coverage still
+               exposes its icon slot. */
+            base = [allEntries.language, allEntries.date_time, allEntries.timed_shutdown];
+            if (deviceMode === 'both' || deviceMode === 'y1') base.push(allEntries.rockbox);
+            if (deviceMode === 'both') base.push(allEntries.shutdown);
+        } else if (fw.menuProfile === 'solar') {
+            /* Solar's SettingsActivity root (buildSettingsUI), not a stock
+               flat list. Power is conditional on root access at runtime. */
+            base = [
+                { id: 'solar_playback', label: 'Playback' },
+                { id: 'solar_flow', label: 'Flow' },
+                { id: 'solar_device', label: 'Device' },
+                { id: 'solar_connections', label: 'Connections' },
+                { id: 'solar_library', label: 'Library' },
+                { id: 'solar_appearance', label: 'Appearance' },
+                { id: 'solar_media', label: 'Media' },
+                { id: 'solar_reach', label: 'Reach' },
+                { id: 'solar_power', label: 'Power' },
+                { id: 'solar_reset', label: 'Reset' },
+                { id: 'solar_update', label: 'Update' },
+                { id: 'solar_report_issue', label: 'Report Issue' },
+                { id: 'solar_donations', label: 'Donations' },
+                { id: 'solar_about', label: 'About' }
+            ];
         } else if (deviceMode === 'y1' || fw.settingsStyle !== 'categories') {
             /* Flat Settings list. Row membership comes from the release:
                1.7.6 has no Theme/Rockbox/File extensions/Clear cache, and
@@ -1976,6 +2244,8 @@
                 shuffle: allEntries.shuffle,
                 repeat: allEntries.repeat,
                 equalizer: allEntries.equalizer,
+                sort_order: allEntries.sort_order,
+                sort_logic: allEntries.sort_logic,
                 file_extension: allEntries.file_extension,
                 key_lock: allEntries.key_lock,
                 key_tone: allEntries.key_tone,
@@ -1990,7 +2260,8 @@
                 rockbox: allEntries.rockbox,
                 factory_reset: allEntries.factory_reset,
                 clear_cache: allEntries.clear_cache,
-                about: allEntries.about
+                about: allEntries.about,
+                back_to_rockbox: allEntries.back_to_rockbox
             };
             var stockRows = [
                 'shutdown',
@@ -2009,7 +2280,6 @@
                 'date_time',
                 'theme',
                 'language',
-                'rockbox',
                 'factory_reset',
                 'clear_cache',
                 'about'
@@ -2036,10 +2306,12 @@
                 { id: 'cat_display', label: 'Display', iconFile: settingConfig.categoryDisplay, assetPath: 'settingConfig.categoryDisplay' },
                 { id: 'cat_personalization', label: 'Personalization', iconFile: settingConfig.categoryPersonalization, assetPath: 'settingConfig.categoryPersonalization' },
                 { id: 'cat_filesStorage', label: 'Files & Storage', iconFile: settingConfig.categoryFilesStorage, assetPath: 'settingConfig.categoryFilesStorage' },
-                { id: 'cat_system', label: 'System', iconFile: settingConfig.categorySystem, assetPath: 'settingConfig.categorySystem' },
-                allEntries.about,
-                allEntries.factory_reset
+                { id: 'cat_system', label: 'System', iconFile: settingConfig.categorySystem, assetPath: 'settingConfig.categorySystem' }
             ];
+            /* Unified has no single launcher to be faithful to, so expose the
+               Launcher / Rockbox row too; Y1 and Y2 stay release-exact. */
+            if (deviceMode === 'both') base.push(allEntries.rockbox);
+            base.push(allEntries.about, allEntries.factory_reset);
         }
         return base.map(function (item) {
             return {
@@ -2060,6 +2332,9 @@
             /* Music → Settings values (Y2). Album Art Style is the 3.2.0-fm
                Perspective/Flat toggle; the rest shipped in 3.1.7. */
             albumArtStyle: 'perspective',
+            /* Better-Y's own default: cover_tilt = 1, the stock iPod-like
+               tilted look (Cover.java). */
+            betterYTilt: true,
             songNameDisplay: 'songTitle',
             listSort: 'asc',
             artistView: 'list',
@@ -2188,9 +2463,9 @@
     function genericListForView(viewId, deviceMode, sim, menuProfile) {
         var betterMenu = menuProfile === 'better-y';
         if (viewId === 'music') {
-            var musicItems = betterMenu
-                ? ['Cover Flow', 'All songs', 'Playlists', 'Artists', 'Album Artists', 'Albums', 'Genres', 'Folders', 'Search']
-                : ['All songs', 'Playlists', 'Artists', 'Albums', 'Genres', 'Folders', 'Search'];
+            /* Better-Y v1.1.0 does not patch the Music menu: Cover Flow and
+               Album Artists first appear in the unpublished v1.2.0 tree. */
+            var musicItems = ['All songs', 'Playlists', 'Artists', 'Albums', 'Genres', 'Folders', 'Search'];
             if (deviceMode !== 'y1' && !betterMenu) musicItems.push('Settings');
             return musicItems.map(function (label) {
                 return { id: label.toLowerCase().replace(/\s+/g, '_'), label: label };
@@ -2670,6 +2945,81 @@
                     var folderName = String(catalogFolder || '').split('/')[0].trim();
                     var currentTitle =
                         sim.themeCurrentTitle || title || fallbackTitle || folderName || 'Current theme';
+                    var deleted = sim.themeDeletedNames || [];
+                    var renamed = sim.themeRenamedNames || {};
+
+                    /* The Studio supplies the gallery catalogue so the device
+                       ThemeListActivity shows the current theme/variant first and
+                       the five themes that follow it alphabetically. A variant is
+                       its own row here: on the player it is an individual theme
+                       folder under Variants/. */
+                    if (Array.isArray(opts.themeCatalog) && opts.themeCatalog.length) {
+                        var catalogEntries = [];
+                        for (var ti = 0; ti < opts.themeCatalog.length; ti += 1) {
+                            var catalogItem = opts.themeCatalog[ti];
+                            if (!catalogItem || !catalogItem.name) continue;
+                            var catalogFolderName = String(catalogItem.folder || '').split('/')[0].trim();
+                            var catalogVariant = String(catalogItem.variant || '').trim();
+                            var isCurrent =
+                                catalogFolderName === folderName &&
+                                catalogVariant === String(variantSegment || '').trim();
+                            var isDefault = String(catalogItem.name).toLowerCase() === 'holopebble';
+                            catalogEntries.push({
+                                name: isCurrent
+                                    ? currentTitle
+                                    : renamed[catalogItem.name] || catalogItem.name,
+                                coverUrl: isCurrent
+                                    ? cfg.themeCover
+                                        ? buildFileUrl(contentFolder, cfg.themeCover)
+                                        : catalogItem.coverUrl || defaultCovers
+                                    : catalogItem.coverUrl || defaultCovers,
+                                isDefault: isDefault,
+                                isCurrent: isCurrent,
+                                folder: catalogFolderName,
+                                variant: catalogVariant,
+                                previewed: isCurrent
+                            });
+                        }
+                        if (!catalogEntries.some(function (entry) { return entry.isCurrent; })) {
+                            catalogEntries.push({
+                                name: currentTitle,
+                                coverUrl: cfg.themeCover
+                                    ? buildFileUrl(contentFolder, cfg.themeCover)
+                                    : defaultCovers,
+                                isDefault: false,
+                                isCurrent: true,
+                                folder: folderName,
+                                variant: String(variantSegment || '').trim(),
+                                previewed: true
+                            });
+                        }
+                        catalogEntries = catalogEntries.filter(function (entry) {
+                            return deleted.indexOf(entry.name) === -1;
+                        });
+                        catalogEntries.sort(function (a, b) {
+                            return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
+                        });
+                        var catalogCurrent = 0;
+                        for (var cci = 0; cci < catalogEntries.length; cci += 1) {
+                            if (catalogEntries[cci].isCurrent) {
+                                catalogCurrent = cci;
+                                break;
+                            }
+                        }
+                        if (catalogCurrent > 0) {
+                            catalogEntries = catalogEntries.slice(catalogCurrent).concat(
+                                catalogEntries.slice(0, catalogCurrent)
+                            );
+                        }
+                        /* The device page holds six cards; the current theme is
+                           the first, the other five follow it in album order. */
+                        catalogEntries = catalogEntries.slice(0, 6);
+                        catalogEntries.forEach(function (entry, entryIndex) {
+                            entry.isCurrent = entryIndex === 0;
+                        });
+                        return { entries: catalogEntries, currentIndex: 0 };
+                    }
+
                     var entries = [
                         {
                             name: 'HoloPebble',
@@ -2690,8 +3040,6 @@
                         });
                     }
                     var defaultRow = entries.shift();
-                    var deleted = sim.themeDeletedNames || [];
-                    var renamed = sim.themeRenamedNames || {};
                     for (var ri = 0; ri < entries.length; ri += 1) {
                         if (renamed[entries[ri].name]) entries[ri].name = renamed[entries[ri].name];
                     }
@@ -2736,9 +3084,21 @@
                     return { entries: entries, currentIndex: currentIndex };
                 }
 
+                function settingsRowHeightForCurrent() {
+                    /* Stock Y1's item_setting.xml is 40dip; Y2's and Solar's
+                       settings rows use the 45dp y1_menu_item_height.
+                       Better-Y draws its own rows. */
+                    return (currentFirmware.modelId === 'y2' &&
+                        currentFirmware.menuProfile !== 'better-y') ||
+                        currentFirmware.menuProfile === 'solar'
+                        ? 45
+                        : 40;
+                }
+
                 function settingsItemsForView(viewId) {
                     var cat = '';
                     if (viewId === 'musicSettings') cat = 'musicSettings';
+                    else if (viewId === 'settingsBetterYPlayer') cat = 'betterYPlayer';
                     else if (viewId === 'settingsBetterY') cat = 'betterY';
                     else if (String(viewId || '').indexOf('settingsCat_') === 0) {
                         cat = String(viewId).slice('settingsCat_'.length);
@@ -2757,6 +3117,7 @@
                     return (
                         viewId === 'settings' ||
                         viewId === 'settingsBetterY' ||
+                        viewId === 'settingsBetterYPlayer' ||
                         viewId === 'musicSettings' ||
                         String(viewId || '').indexOf('settingsCat_') === 0
                     );
@@ -2775,7 +3136,7 @@
                 scaleWrap.className = 'y1-tp-scale-wrap';
 
                 var canvas = document.createElement('div');
-                canvas.className = 'y1-tp-canvas';
+                canvas.className = 'y1-tp-canvas' + (opts.editableSlots === true ? ' y1-tp-slots-edit' : '');
                 canvas.style.fontFamily = fontStack;
 
                 scaleWrap.appendChild(canvas);
@@ -2918,8 +3279,10 @@
                 function updateScale() {
                     var vw = viewport.clientWidth || 1;
                     var vh = viewport.clientHeight || 1;
-                    /* Cover the viewport (4:3) so the 480×360 stage always fills the preview; letterboxing was leaving black bars. */
-                    var s = Math.max(vw / W, vh / H);
+                    /* Fit the whole 480×360 stage. Cover-cropping hid the
+                       outer pixels whenever a host viewport was not exactly
+                       4:3 (and made the player look sliced, not scaled). */
+                    var s = Math.min(vw / W, vh / H);
                     if (!(s > 0) || !isFinite(s)) s = 1;
                     var sw = W * s;
                     var sh = H * s;
@@ -3255,6 +3618,8 @@
                     if (!dialogOnTop) {
                         var rightIconSlot = rightIconSlotAtPoint(clientX, clientY);
                         if (rightIconSlot) return rightIconSlot;
+                        var statusSlot = statusSlotAtPoint(clientX, clientY);
+                        if (statusSlot) return statusSlot;
                     }
 
                     /* The item selection arrow is small, so its whole box is the
@@ -3302,7 +3667,13 @@
                         }
 
                         if (node.tagName === 'IMG') {
-                            var alpha = imageAlphaAtPoint(node, clientX, clientY);
+                            /* Status icons keep their whole box: alpha
+                               pass-through applies to screen artwork, not the
+                               bar. */
+                            var inStatusBar = !!(node.closest && node.closest('.y1-tp-status'));
+                            var alpha = inStatusBar
+                                ? 1
+                                : imageAlphaAtPoint(node, clientX, clientY);
                             if (alpha === 0) continue;
                             var imgRow = node.closest('.y1-tp-row');
                             return {
@@ -3349,6 +3720,15 @@
                         };
                     }
 
+                    /* Blank status-bar space is still a status-bar target. The
+                       launcher collapses icons that are not currently shown, so
+                       this is the only way to edit a hidden state from the bar
+                       instead of falling through to the mask or wallpaper. */
+                    if (!dialogOnTop) {
+                        var statusSpace = statusBarSpaceAtPoint(clientX, clientY);
+                        if (statusSpace) return statusSpace;
+                    }
+
                     var maskHit = maskAtPoint(clientX, clientY);
                     if (maskHit && (maskHit.alpha == null || maskHit.alpha > 0)) {
                         return {
@@ -3372,6 +3752,87 @@
                     }
 
                     return null;
+                }
+
+                /* Status-bar artwork is never alpha-gated. Icons carry
+                   transparent padding by design and a blank/hidden slot has no
+                   pixels at all, so pixel-perfect pass-through would make the
+                   bar's own slots hard to hit. Anywhere inside a status slot or
+                   a tagged status element belongs to that element. */
+                function statusSlotAtPoint(clientX, clientY) {
+                    var slots = canvas.querySelectorAll('.y1-tp-status [data-theme-slot-path]');
+                    for (var si = 0; si < slots.length; si += 1) {
+                        var slot = slots[si];
+                        var sr = slot.getBoundingClientRect();
+                        if (
+                            sr.width < 1 ||
+                            sr.height < 1 ||
+                            clientX < sr.left ||
+                            clientX > sr.right ||
+                            clientY < sr.top ||
+                            clientY > sr.bottom
+                        ) {
+                            continue;
+                        }
+                        var path = slot.getAttribute('data-theme-slot-path') || '';
+                        if (!path) continue;
+                        return {
+                            path: path,
+                            node: slot,
+                            inMenuRow: false,
+                            isStatusSlot: true,
+                            isStatusBar: true,
+                            statusGroup:
+                                slot.getAttribute('data-theme-status-group') || '',
+                            isScreenLayer: false,
+                            alpha: 1
+                        };
+                    }
+                    return null;
+                }
+
+                function statusFallbackPath() {
+                    var candidates = [];
+                    if (!sim.playState) candidates.push('playing');
+                    if (!sim.headsetState) candidates.push('headsetWithMic');
+                    if (!sim.bluetoothState) candidates.push('blConnected');
+                    candidates.push(
+                        sim && sim.isCharging ? 'batteryCharging.3' : 'battery.3'
+                    );
+                    for (var fi = 0; fi < candidates.length; fi += 1) {
+                        var key = candidates[fi];
+                        var rootKey = key.split('.')[0];
+                        if (statusCfg[key] || statusCfg[rootKey]) {
+                            return rootKey === key ? 'statusConfig.' + key : 'statusConfig.' + key;
+                        }
+                    }
+                    return '';
+                }
+
+                function statusBarSpaceAtPoint(clientX, clientY) {
+                    var bar = canvas.querySelector('.y1-tp-status');
+                    if (!bar) return null;
+                    var br = bar.getBoundingClientRect();
+                    if (
+                        br.width < 1 ||
+                        br.height < 1 ||
+                        clientX < br.left ||
+                        clientX > br.right ||
+                        clientY < br.top ||
+                        clientY > br.bottom
+                    ) {
+                        return null;
+                    }
+                    var path = statusFallbackPath();
+                    if (!path) return null;
+                    return {
+                        path: path,
+                        node: bar,
+                        inMenuRow: false,
+                        isStatusSpace: true,
+                        isScreenLayer: false,
+                        alpha: 1
+                    };
                 }
 
                 /* Per-mount scroll & live-list state so multiple previews or
@@ -3456,6 +3917,8 @@
                     for (var i = 0; i < homeItems.length; i++) {
                         if (homeItems[i] && homeItems[i].iconFile) {
                             pushUrl(buildFileUrl(contentFolder, homeItems[i].iconFile));
+                        } else if (homeItems[i] && homeItems[i].iconUrl) {
+                            pushUrl(homeItems[i].iconUrl);
                         }
                     }
                     if (itemRightArrowUrl) pushUrl(itemRightArrowUrl);
@@ -3477,7 +3940,12 @@
                     if (!activeRightPanel) return;
                     if (activeRightPanel.kind === 'home') {
                         var sel = homeItems[sim.themeSelectedIndex];
-                        var rawIu = sel && sel.iconFile ? buildFileUrl(contentFolder, sel.iconFile) : '';
+                        var rawIu =
+                            sel && sel.iconUrl
+                                ? sel.iconUrl
+                                : sel && sel.iconFile
+                                  ? buildFileUrl(contentFolder, sel.iconFile)
+                                  : '';
                         var previewIu = rawIu
                             ? isPreviewMode
                                 ? previewAssetUrl(rawIu, 'png')
@@ -3745,24 +4213,7 @@
                                     : sim.playState === 'fmPlaying'
                                       ? 'fmPlaying'
                                       : 'audiobookPlaying';
-                        var pf = statusCfg[pk];
-                        if (pf) {
-                            var rawPf = buildFileUrl(contentFolder, pf);
-                            var prevPf = (mode === 'gallery' || mode === 'menu') ? previewAssetUrl(rawPf, 'png') : rawPf;
-                            var pi = document.createElement('img');
-                            pi.src = prevPf;
-                            pi.alt = '';
-                            if (prevPf !== rawPf) {
-                                pi.onerror = function () {
-                                    pi.onerror = null;
-                                    pi.src = rawPf;
-                                };
-                            }
-                            bindPreviewImgFallback(pi, { eager: eagerImages });
-                            pi.style.cssText = 'height:25px;width:25px;object-fit:contain;display:block;';
-                            pi.setAttribute('data-theme-asset-path', 'statusConfig.' + pk);
-                            right.appendChild(pi);
-                        }
+                        appendStatusIcon(right, statusCfg, pk, buildFileUrl, contentFolder, mode);
                     }
                     var battRaw = sim && sim.batteryLevel;
                     var battLvl =
@@ -3771,6 +4222,7 @@
                             : 3;
                     var pct = batteryPercentFromLevel(battLvl);
                     if (!isFinite(pct)) pct = 100;
+                    var showBatteryPercent = sim.displayBatteryEnabled !== false;
                     var battUrl = getBatteryIconUrl(
                         statusCfg,
                         buildFileUrl,
@@ -3800,40 +4252,51 @@
                         bi.alt = '';
                         bi.style.cssText = 'height:15px;width:auto;object-fit:contain;display:block;';
                         if (battPath) bi.setAttribute('data-theme-asset-path', battPath);
-                        var pctSpan = document.createElement('span');
-                        pctSpan.style.fontSize = '16px';
-                        pctSpan.textContent = pct + '%';
-                        tagFontHotspot(pctSpan, cfg, 'The battery figure');
-                        tagStatusTextHotspot(pctSpan, 'The battery figure');
+                        bi.setAttribute('data-theme-slot-path', battPath || 'statusConfig.battery.3');
+                        bi.setAttribute('data-theme-status-group', 'battery');
+                        var battFile =
+                            battConfig && Array.isArray(battConfig)
+                                ? battConfig[normalizedBatteryLevel(battLvl)]
+                                : battConfig && typeof battConfig === 'object'
+                                  ? battConfig[normalizedBatteryLevel(battLvl)]
+                                  : battConfig;
+                        bi.className =
+                            'y1-tp-status-slot-image' +
+                            (isBlankStatusFile(battFile) ? ' is-empty' : '');
+                        var pctSpan = null;
+                        if (showBatteryPercent) {
+                            pctSpan = document.createElement('span');
+                            pctSpan.style.fontSize = '16px';
+                            pctSpan.textContent = pct + '%';
+                            tagFontHotspot(pctSpan, cfg, 'The battery figure');
+                            tagStatusTextHotspot(pctSpan, 'The battery figure');
+                        }
                         if (prevBatt !== rawBatt) {
-                            bi.onerror = function () {
-                                bi.onerror = function () {
-                                    bi.style.display = 'none';
-                                    if (pctSpan.parentNode) pctSpan.parentNode.removeChild(pctSpan);
-                                    appendBatteryFallback(right, pct, colors.status_text, cfg, battPath);
+                                                            bi.onerror = function () {
+                                    bi.onerror = function () {
+                                        bi.style.display = 'none';
+                                        if (pctSpan && pctSpan.parentNode) pctSpan.parentNode.removeChild(pctSpan);
+                                        appendBatteryFallback(right, pct, colors.status_text, cfg, battPath, showBatteryPercent);
+                                    };
+                                    bi.src = rawBatt;
                                 };
-                                bi.src = rawBatt;
-                            };
                         } else {
                             bi.onerror = function () {
                                 bi.onerror = null;
                                 bi.style.display = 'none';
-                                if (pctSpan.parentNode) pctSpan.parentNode.removeChild(pctSpan);
-                                appendBatteryFallback(right, pct, colors.status_text, cfg, battPath);
+                                if (pctSpan && pctSpan.parentNode) pctSpan.parentNode.removeChild(pctSpan);
+                                appendBatteryFallback(right, pct, colors.status_text, cfg, battPath, showBatteryPercent);
                             };
                         }
                         right.appendChild(bi);
-                        right.appendChild(pctSpan);
+                        if (pctSpan) right.appendChild(pctSpan);
                     } else {
-                        appendBatteryFallback(right, pct, colors.status_text, cfg, battPath);
+                        appendBatteryFallback(right, pct, colors.status_text, cfg, battPath, showBatteryPercent);
                     }
                     status.appendChild(right);
                     canvas.appendChild(status);
 
-                    var useSettingMask =
-                        sim.themeViewId === 'settings' ||
-                        sim.themeViewId === 'musicSettings' ||
-                        sim.themeViewId.indexOf('settings') === 0;
+                    var useSettingMask = sim.themeViewId === 'settings';
                     var maskUrl =
                         sim.themeViewId === 'home' ? desktopMaskUrl : useSettingMask ? settingMaskUrl : '';
                     if (maskUrl) {
@@ -4328,20 +4791,28 @@
                             text_selected: itemCfg.itemSelectedTextColor || '#3CFFDE'
                         };
                         var sItems = settingsItemsForView(sim.themeViewId);
+                        /* Better-Y's own menu is a full-width list with the
+                           value at the right edge (its Settings screen has no
+                           right-hand preview pane). Stock Y1 keeps the
+                           218dp list + preview column. */
+                        var betterYFullList =
+                            sim.themeViewId === 'settingsBetterY' ||
+                            sim.themeViewId === 'settingsBetterYPlayer';
                         var sMenu = document.createElement('div');
                         sMenu.style.cssText =
                             'position:absolute;left:' +
-                            SETTINGS_MENU_LEFT +
+                            (betterYFullList ? 0 : SETTINGS_MENU_LEFT) +
                             'px;top:' +
                             SETTINGS_MENU_TOP +
                             'px;width:' +
-                            SETTINGS_MENU_WIDTH +
+                            (betterYFullList ? W : SETTINGS_MENU_WIDTH) +
                             'px;height:' +
-                            SETTINGS_MENU_HEIGHT +
+                            (betterYFullList ? Math.max(0, H - SETTINGS_MENU_TOP) : SETTINGS_MENU_HEIGHT) +
                             'px;overflow:hidden;z-index:10;';
                         activeMenuList = appendSettingsMenuRows(sMenu, {
                             items: sItems,
                             selectedIndex: sim.themeSelectedIndex,
+                            itemHeight: settingsRowHeightForCurrent(),
                             visibleHeight: SETTINGS_MENU_HEIGHT,
                             colors: settingsColors,
                             itemBackgroundStyle: itemBackgroundStyle,
@@ -4361,7 +4832,8 @@
                             SETTINGS_RIGHT_W +
                             'px;height:' +
                             H +
-                            'px;z-index:10;';
+                            'px;z-index:10;' +
+                            (betterYFullList ? 'display:none;' : '');
                         var rt = document.createElement('div');
                         rt.style.cssText =
                             'position:absolute;top:58px;left:0;right:0;text-align:center;font-size:18px;font-weight:bold;color:' +
@@ -4398,16 +4870,18 @@
                         rp.appendChild(stx);
                         layer.appendChild(rp);
 
-                        activeRightPanel = {
-                            kind: 'settings',
-                            titleEl: rt,
-                            imgBox: imgBox,
-                            aboutWrap: abWrap,
-                            aboutPie: aboutPie,
-                            img: simg,
-                            valueEl: stx
-                        };
-                        updateRightPanelInPlace();
+                        if (!betterYFullList) {
+                            activeRightPanel = {
+                                kind: 'settings',
+                                titleEl: rt,
+                                imgBox: imgBox,
+                                aboutWrap: abWrap,
+                                aboutPie: aboutPie,
+                                img: simg,
+                                valueEl: stx
+                            };
+                            updateRightPanelInPlace();
+                        }
                     } else if (sim.themeViewId === 'settingsEqualizer') {
                         var eqColors = {
                             text_primary: colors.text_primary,
@@ -4430,6 +4904,7 @@
                                 return { id: e.id, label: e.label, assetPath: e.assetPath };
                             }),
                             selectedIndex: sim.themeSelectedIndex,
+                            itemHeight: settingsRowHeightForCurrent(),
                             visibleHeight: SETTINGS_MENU_HEIGHT,
                             colors: eqColors,
                             itemBackgroundStyle: itemBackgroundStyle,
@@ -4608,12 +5083,12 @@
                                 cover.setAttribute('data-theme-asset-path', 'themeCover');
                                 card.setAttribute('data-theme-art-box', 'themeCover');
                             }
-                            cover.style.cssText =
-                                'display:block;width:auto;height:auto;max-width:' +
-                                (tentry.isDefault ? 100 : 80) +
-                                'px;max-height:' +
-                                (tentry.isDefault ? 75 : 60) +
-                                'px;object-fit:contain;';
+                            /* item_theme.xml draws the cover into the square
+                               135dp card with centerCrop; it does not letterbox
+                               a 4:3 theme cover inside it. */
+                            cover.style.cssText = tentry.isDefault
+                                ? 'display:block;width:auto;height:auto;max-width:100px;max-height:75px;object-fit:contain;'
+                                : 'display:block;width:100%;height:100%;object-fit:cover;';
                             card.appendChild(cover);
                             ring.appendChild(card);
                             if (sim.themeMultiSelect && !tentry.isDefault) {
@@ -4639,8 +5114,31 @@
                                 (gridCellW - 10) +
                                 'px;height:23px;line-height:23px;text-align:center;font-size:19px;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:' +
                                 themeNameColor +
-                                ';';
+                                ';cursor:pointer;';
                             cell.appendChild(themeName);
+                            (function (index, entry) {
+                                themeName.addEventListener('click', function (ev) {
+                                    ev.preventDefault();
+                                    ev.stopPropagation();
+                                    sim.themeSelectedIndex = index;
+                                    if (entry.isDefault) {
+                                        showToast('The default theme cannot be renamed');
+                                        return;
+                                    }
+                                    /* The current row is the Studio's own theme or
+                                       variant. Let the Studio open its real rename
+                                       dialog; the other rows use the player's
+                                       InputMethodDialog, exactly as on device. */
+                                    if (
+                                        entry.isCurrent &&
+                                        typeof opts.onThemeRenameRequest === 'function'
+                                    ) {
+                                        var handled = opts.onThemeRenameRequest(entry);
+                                        if (handled !== false) return;
+                                    }
+                                    openInputDialog('themeRename', entry.name, entry.name);
+                                });
+                            })(ti, tentry);
                             (function (index) {
                                 cell.addEventListener('click', function (ev) {
                                     ev.preventDefault();
@@ -4865,6 +5363,7 @@
                                 return { id: d.id, label: d.label, valueText: d.value };
                             }),
                             selectedIndex: sim.themeSelectedIndex,
+                            itemHeight: settingsRowHeightForCurrent(),
                             visibleHeight: SETTINGS_MENU_HEIGHT,
                             colors: dtc,
                             itemBackgroundStyle: itemBackgroundStyle,
@@ -5328,78 +5827,348 @@
                         calcLayer.appendChild(calcCard);
                         layer.appendChild(calcLayer);
                     } else if (sim.themeViewId === 'nowPlaying') {
-                        /* Authentic activity_music_player.xml: 45dp top offset, 200×240 album art
-                           left, 235dp track info column right, bottom 32dp progress bar with
-                           playerConfig colors. */
+                        /* activity_music_player.xml (Y1 and Y2, read from
+                           3.1.2/3.2.8): a 45dp top content band, a 235dp info
+                           column pinned 10dp from the right, rows
+                           42/38/38/38dp with 7dp gaps, and a 32dp bottom
+                           progress band. Better-Y's Cover.java squares and
+                           centres the cover, keeps the layout's #1affffff
+                           boxes and reflects the lower half. Y2 3.2.0 adds the
+                           Flat/Perspective Album Art Style. */
                         var trackIdx = (sim.nowPlayingTrackIndex || 0) % MOCK_SONGS_PREVIEW.length;
                         var mock = MOCK_SONGS_PREVIEW[trackIdx] || MOCK_SONGS_PREVIEW[0] || {};
-                        var pt = trackIdx === 0 ? String((previewMeta && previewMeta.trackTitle) || '').trim() : '';
-                        var pa = trackIdx === 0 ? String((previewMeta && previewMeta.trackArtist) || '').trim() : '';
-                        var pal = trackIdx === 0 ? String((previewMeta && previewMeta.trackAlbum) || '').trim() : '';
-                        var npTitle = pt || mock.title || 'Theme';
-                        var npArtist = pa || mock.artist || '';
-                        var npAlbum = pal || mock.album || '';
-                        var progCol = playerCfg.progressColor || colors.text_selected || '#3CFFDE';
-                        var progBgCol = playerCfg.progressBackgroundColor || 'rgba(255,255,255,0.28)';
-                        var progTxtCol = playerCfg.progressTextColor || colors.text_primary || '#ffffff';
+                        /* The player always previews its own sample track:
+                           the theme's title, author and description are not
+                           song metadata and must never leak into Now Playing. */
+                        var npTitle = mock.title || 'Blinding Lights';
+                        var npArtist = mock.artist || '';
+                        var npAlbum = mock.album || '';
+                        /* ProgressBar's own drawable, not the theme's selected-text
+                           colour: a white-menu theme selects in white, which made
+                           the bar disappear on its white player. */
+                        var progCol = playerCfg.progressColor || '#2F80ED';
+                        var progBgCol = playerCfg.progressBackgroundColor || 'rgba(0,0,0,0.16)';
+                        var playerKind =
+                            currentFirmware.playerProfile ||
+                            (currentFirmware.solar === true
+                                ? 'solar'
+                                : currentFirmware.menuProfile === 'better-y'
+                                  ? 'better-y'
+                                  : 'stock');
+                        var betterYPlayer = playerKind === 'better-y';
+                        var solarPlayer = playerKind === 'solar';
+                        var solarBars = solarPlayer ? nowPlayingInfoBarsMode(cfg) : 'default';
+                        /* Unified is the latest Y2 player: only its Home and
+                           Settings coverage is wider, never its layout. */
+                        var y2Player = !solarPlayer && currentFirmware.modelId === 'y2';
+                        var y2FlatArt = y2Player && sim.albumArtStyle === 'flat';
+                        /* player_info_bg / player_info_divider: night (the
+                           themed player) gives #1AFFFFFF rows and transparent
+                           dividers; Y2's default light theme gives transparent
+                           rows and #4D2D2D44 hairlines. */
+                        var y2LightPlayer =
+                            y2Player && isY2DefaultTheme(cfg, contentFolder, previewOpts.deviceMode);
+                        var stockTextCol = y2LightPlayer ? '#2D2D44' : '#FFFFFF';
+                        var progressH = solarPlayer ? 34 : 32;
+                        var infoLeft = solarPlayer ? 245 : W - 10 - 235;
+                        var infoW = 235;
+                        /* activity_music_player.xml places the info column
+                           26dip below the 45dip content band. These are
+                           coordinates inside `np`, so the band offset must
+                           not be added a second time: doing that pushed the
+                           action row under the progress bar. */
+                        var infoTop = solarPlayer ? 0 : 26;
+                        var infoHeight = solarPlayer ? 225 : 0;
+                        var infoPadTop = solarPlayer ? 8 : 0;
+                        var npTextCol = solarPlayer
+                            ? nowPlayingTextColor(cfg, stockTextCol)
+                            : stockTextCol;
+                        var npProgressText = solarPlayer
+                            ? progressTextColor(cfg, stockTextCol)
+                            : npTextCol;
+                        var rowBg;
+                        var rowDivider = '';
+                        if (solarPlayer) {
+                            rowBg = solarBars === 'none' ? 'transparent' : 'rgba(255,255,255,0.102)';
+                        } else if (y2LightPlayer) {
+                            rowBg = 'transparent';
+                            /* Android #4D2D2D44, written in CSS order. */
+                            rowDivider = '#2D2D444D';
+                        } else {
+                            /* Y1 layout's #1affffff and Better-Y's tinted box
+                               at the same 0x1A alpha. */
+                            rowBg = 'rgba(255,255,255,0.102)';
+                        }
+                        var rowBgIsItem = solarPlayer && solarBars === 'item';
+                        if (rowBgIsItem) rowBg = 'transparent';
                         var np = document.createElement('div');
                         np.style.cssText =
-                            'position:absolute;left:0;top:' +
-                            statusH +
-                            'px;width:' +
+                            'position:absolute;left:0;top:45px;width:' +
                             W +
                             'px;height:' +
-                            (H - statusH) +
-                            'px;display:flex;flex-direction:column;justify-content:space-between;z-index:10;box-sizing:border-box;padding:12px 16px 14px;';
-                        var npTop = document.createElement('div');
-                        npTop.style.cssText = 'display:flex;align-items:center;gap:18px;flex:1;min-height:0;';
+                            Math.max(0, H - 45) +
+                            'px;z-index:10;box-sizing:border-box;overflow:hidden;';
+
+                        /* ReflectImageView boxes are declared 200×300 (Y1 and
+                           Better-Y) and 200×310 perspective / 200×250 flat
+                           (Y2). The bitmap is square; Better-Y additionally
+                           fits it to the gap beside the info column
+                           ({@code Cover.inset}) and centres it on the rows
+                           ({@code Cover.topFor}). */
+                        var artW = solarPlayer ? 235 : 200;
+                        var artH = solarPlayer
+                            ? 225
+                            : y2Player
+                              ? y2FlatArt
+                                  ? 250
+                                  : 310
+                              : 300;
+                        var artLeft = solarPlayer ? 5 : y2Player ? (y2FlatArt ? 15 : 10) : 25;
+                        var artTop = solarPlayer ? 0 : y2Player ? (y2FlatArt ? 35 : 10) : 35;
+                        var infoRowsHeight = 42 + 7 + 38 + 7 + 38 + 7 + 38 + 7 + 38;
+                        var coverH = solarPlayer
+                            ? 225
+                            : betterYPlayer
+                              ? Math.max(0, Math.min(artW, W - 245 - 50))
+                              : Math.min(artW, artH);
+                        if (betterYPlayer) {
+                            artTop = infoTop + Math.max(0, (infoRowsHeight - coverH) / 2);
+                        }
+                        var coverW = solarPlayer ? artW : coverH;
+                        var artWrap = document.createElement('div');
+                        var tiltCover = y2Player
+                            ? !y2FlatArt
+                            : betterYPlayer
+                              ? sim.betterYTilt === true
+                              : false;
+                        artWrap.style.cssText =
+                            'position:absolute;left:' +
+                            artLeft +
+                            'px;top:' +
+                            artTop +
+                            'px;width:' +
+                            artW +
+                            'px;height:' +
+                            artH +
+                            'px;z-index:1;' +
+                            (tiltCover
+                                ? 'transform:perspective(560px) rotateY(' +
+                                  (betterYPlayer ? 20 : 18) +
+                                  'deg);transform-origin:left ' +
+                                  (betterYPlayer ? '33%' : 'center') +
+                                  ';'
+                                : '');
                         var art = document.createElement('div');
                         art.style.cssText =
-                            'position:relative;width:190px;height:190px;flex:0 0 190px;transform:perspective(500px) rotateY(18deg) rotateX(2deg);border-radius:6px;overflow:hidden;box-shadow:0 12px 28px rgba(0,0,0,0.45);background:rgba(0,0,0,0.28);';
-                        var coverPath = cfg.themeCover || cfg.desktopWallpaper || '';
-                        var coverU = coverPath ? buildFileUrl(contentFolder, coverPath) : '';
+                            'position:relative;width:' +
+                            coverW +
+                            'px;height:' +
+                            coverH +
+                            'px;border-radius:4px;overflow:hidden;background:rgba(0,0,0,0.28);' +
+                            (tiltCover
+                                ? 'box-shadow:0 10px 24px rgba(0,0,0,0.36);'
+                                : 'box-shadow:0 2px 10px rgba(0,0,0,0.22);');
+                        /* The sample tracks ship no embedded art: the player
+                           shows its own no-artwork placeholder, never the
+                           theme's gallery cover. */
+                        var coverU = UNKNOWN_ALBUM_ART_URL;
                         if (coverU) {
                             var ai = document.createElement('img');
                             ai.src = coverU;
-                            ai.alt = '';
-                            ai.setAttribute('data-theme-asset-path', cfg.themeCover ? 'themeCover' : 'desktopWallpaper');
+                            ai.alt = 'No album artwork';
                             bindPreviewImgFallback(ai, { eager: eagerImages });
-                            ai.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+                            ai.style.cssText =
+                                'width:100%;height:100%;object-fit:' +
+                                (solarPlayer ? 'cover' : 'contain') +
+                                ';display:block;';
                             art.appendChild(ai);
                         }
-                        npTop.appendChild(art);
+                        artWrap.appendChild(art);
+                        /* ReflectImageView's faded mirror sits under every stock
+                           and Better-Y cover. */
+                        if (coverU && !solarPlayer) {
+                            /* ReflectImageView mirrors the lower half of the
+                               square cover under it, fading to nothing. */
+                            var mirrorH = Math.round(coverH / 2);
+                            var mirror = document.createElement('div');
+                            mirror.style.cssText =
+                                'position:absolute;left:0;top:' +
+                                coverH +
+                                'px;width:' +
+                                coverW +
+                                'px;height:' +
+                                mirrorH +
+                                'px;background-image:url("' +
+                                String(coverU).replace(/"/g, '%22') +
+                                '");background-size:100% 100%;transform:scaleY(-1);transform-origin:top center;opacity:0.38;pointer-events:none;-webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,0.9),rgba(0,0,0,0));mask-image:linear-gradient(to bottom,rgba(0,0,0,0.9),rgba(0,0,0,0));';
+                            artWrap.appendChild(mirror);
+                        }
+                        np.appendChild(artWrap);
+
                         var colR = document.createElement('div');
-                        colR.style.cssText = 'flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;';
-                        var tti = document.createElement('div');
-                        tti.style.cssText =
-                            'color:' + progTxtCol + ';font-weight:700;font-size:24px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
-                        tti.textContent = npTitle;
-                        colR.appendChild(tti);
-                        var subArtist = document.createElement('div');
-                        subArtist.style.cssText = 'color:' + progTxtCol + ';opacity:0.86;font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
-                        subArtist.textContent = npArtist || '\u00a0';
-                        colR.appendChild(subArtist);
-                        var subAlbum = document.createElement('div');
-                        subAlbum.style.cssText = 'color:' + progTxtCol + ';opacity:0.68;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
-                        subAlbum.textContent = npAlbum || '\u00a0';
-                        colR.appendChild(subAlbum);
-                        var subIdx = document.createElement('div');
-                        subIdx.style.cssText = 'color:' + progTxtCol + ';opacity:0.62;font-size:13px;margin-top:6px;';
-                        subIdx.textContent = (trackIdx + 1) + ' / ' + MOCK_SONGS_PREVIEW.length;
-                        colR.appendChild(subIdx);
-                        npTop.appendChild(colR);
-                        np.appendChild(npTop);
+                        colR.style.cssText =
+                            'position:absolute;left:' +
+                            infoLeft +
+                            'px;top:' +
+                            infoTop +
+                            'px;width:' +
+                            infoW +
+                            'px;display:flex;flex-direction:column;z-index:2;' +
+                            (solarPlayer
+                                ? 'height:' + infoHeight + 'px;padding-top:' + infoPadTop + 'px;box-sizing:border-box;'
+                                : '');
+                        var npRows = [
+                            { text: npTitle, h: solarPlayer ? 36 : 42, size: 25 },
+                            { text: npArtist || '\u00a0', h: 38, size: 21 },
+                            { text: npAlbum || '\u00a0', h: 38, size: 21 },
+                            { text: trackIdx + 1 + '/' + MOCK_SONGS_PREVIEW.length, h: 38, size: 21 }
+                        ];
+                        npRows.forEach(function (row, rowIndex) {
+                            var rowEl = document.createElement('div');
+                            rowEl.style.cssText =
+                                'position:relative;height:' +
+                                row.h +
+                                'px;margin-top:' +
+                                (rowIndex === 0 ? 0 : solarPlayer ? 8 : 7) +
+                                'px;background:' +
+                                rowBg +
+                                ';padding:0 13px;box-sizing:border-box;display:flex;align-items:center;color:' +
+                                npTextCol +
+                                ';font-size:' +
+                                row.size +
+                                'px;font-weight:700;line-height:1;white-space:nowrap;overflow:hidden;';
+                            /* text-overflow needs a block/inline-block box of
+                               its own; on the flex row it just cut the glyphs. */
+                            var rowText = document.createElement('span');
+                            rowText.textContent = row.text;
+                            rowText.style.cssText =
+                                'display:block;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+                            rowEl.appendChild(rowText);
+                            /* player_info_divider: 1dip at each row's bottom
+                               edge, inset 13dip from both sides. Y2's themed
+                               (night) player resolves it to transparent. */
+                            if (rowDivider) {
+                                var rowHair = document.createElement('span');
+                                rowHair.style.cssText =
+                                    'position:absolute;left:13px;right:13px;bottom:0;height:1px;background:' +
+                                    rowDivider +
+                                    ';pointer-events:none;';
+                                rowEl.appendChild(rowHair);
+                            }
+                            if (rowBgIsItem) applyCssProps(rowEl, itemSelectedBackgroundStyle);
+                            colR.appendChild(rowEl);
+                        });
+
+                        var actionRow = document.createElement('div');
+                        actionRow.style.cssText =
+                            'position:relative;height:' +
+                            (solarPlayer ? 35 : 38) +
+                            'px;margin-top:' +
+                            (solarPlayer ? 8 : 7) +
+                            'px;background:' +
+                            rowBg +
+                            ';padding:' +
+                            (solarPlayer ? '0 10px' : '4px 10px 4px 13px') +
+                            ';box-sizing:border-box;display:flex;align-items:center;gap:10px;color:' +
+                            npTextCol +
+                            ';';
+                        /* Stock Y1/Y2 show the layout's two visible buttons.
+                           Better-Y's Deck adds the music row in its own order:
+                           heart, shuffle, repeat, lyrics, A-B (queue is hidden
+                           at the default top_hold=Queue). */
+                        var npActions = solarPlayer
+                            ? (sim.shuffleEnabled ? [{ id: 'shuffle', label: 'Shuffle' }] : []).concat(
+                                  sim.repeatMode && sim.repeatMode !== 'off'
+                                      ? [{ id: 'repeat', label: 'Repeat' }]
+                                      : []
+                              )
+                            : betterYPlayer
+                              ? [
+                                    { id: 'heart', label: 'Favourite' },
+                                    { id: 'shuffle', label: 'Shuffle' },
+                                    { id: 'repeat', label: 'Repeat' },
+                                    { id: 'lyrics', label: 'Lyrics' },
+                                    { id: 'ab', label: 'A-B repeat' }
+                                ]
+                              : [
+                                    { id: 'shuffle', label: 'Shuffle' },
+                                    { id: 'repeat', label: 'Repeat' }
+                                ];
+                        function npActionSvg(id) {
+                            var paths = {
+                                heart: '<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>',
+                                shuffle: '<path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="m15 15 6 6"/><path d="m4 4 5 5"/>',
+                                repeat: '<path d="m17 1 4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="m7 23-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>',
+                                lyrics: '<rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v5"/>',
+                                ab: '<path d="M4 8h5a4 4 0 0 1 0 8H7"/><path d="m7 5-3 3 3 3"/><path d="M20 16h-5a4 4 0 0 1 0-8h2"/><path d="m17 19 3-3-3-3"/>',
+                                queue: '<path d="M3 6h12M3 12h9M3 18h9"/><path d="m16 14 5 4-5 4z"/>'
+                            };
+                            return (
+                                '<svg viewBox="0 0 24 24" width="' +
+                                (solarPlayer ? 24 : 30) +
+                                '" height="' +
+                                (solarPlayer ? 24 : 30) +
+                                '" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+                                (paths[id] || paths.queue) +
+                                '</svg>'
+                            );
+                        }
+                        npActions.forEach(function (action) {
+                            var actionBtn = document.createElement('button');
+                            actionBtn.type = 'button';
+                            actionBtn.title = action.label;
+                            actionBtn.setAttribute('aria-label', action.label);
+                            actionBtn.innerHTML = npActionSvg(action.id);
+                            actionBtn.style.cssText =
+                                'width:' +
+                                (solarPlayer ? 24 : 30) +
+                                'px;height:' +
+                                (solarPlayer ? 24 : 30) +
+                                'px;display:flex;align-items:center;justify-content:center;padding:0;border:0;background:transparent;color:inherit;cursor:pointer;';
+                            actionBtn.addEventListener('click', function (ev) {
+                                ev.preventDefault();
+                                ev.stopPropagation();
+                                if (action.id === 'shuffle') {
+                                    sim.shuffleEnabled = !sim.shuffleEnabled;
+                                    showToast('Shuffle ' + (sim.shuffleEnabled ? 'on' : 'off'));
+                                } else if (action.id === 'repeat') {
+                                    sim.repeatMode = sim.repeatMode === 'all' ? 'one' : sim.repeatMode === 'one' ? 'off' : 'all';
+                                    showToast('Repeat: ' + sim.repeatMode);
+                                } else if (action.id === 'lyrics') {
+                                    showToast('Lyrics');
+                                } else if (action.id === 'ab') {
+                                    showToast('A-B repeat');
+                                } else if (action.id === 'queue') {
+                                    showToast('Queue');
+                                } else if (action.id === 'heart') {
+                                    actionBtn.style.opacity = actionBtn.style.opacity === '0.35' ? '1' : '0.35';
+                                }
+                            });
+                            actionRow.appendChild(actionBtn);
+                        });
+                        if (rowBgIsItem) applyCssProps(actionRow, itemSelectedBackgroundStyle);
+                        colR.appendChild(actionRow);
+                        np.appendChild(colR);
 
                         var npBarRow = document.createElement('div');
-                        npBarRow.style.cssText = 'height:32px;display:flex;align-items:center;gap:10px;width:100%;';
+                        npBarRow.style.cssText =
+                            'position:absolute;left:0;bottom:0;width:' +
+                            W +
+                            'px;height:' +
+                            progressH +
+                            'px;display:flex;align-items:center;z-index:3;' +
+                            (solarPlayer ? 'padding:0 10px;box-sizing:border-box;' : '');
                         var tEl = document.createElement('span');
                         tEl.textContent = '01:42';
-                        tEl.style.cssText = 'font-size:14px;font-weight:700;color:' + progTxtCol + ';min-width:46px;text-align:left;';
+                        tEl.style.cssText =
+                            'width:77px;text-align:center;font-size:15px;font-weight:700;color:' +
+                            npProgressText +
+                            ';flex:0 0 77px;';
                         var barTrack = document.createElement('div');
                         barTrack.style.cssText =
-                            'flex:1;height:8px;border-radius:4px;overflow:hidden;background:' + progBgCol + ';';
+                            'flex:1;height:8px;overflow:hidden;background:' + progBgCol + ';margin:0 2px;';
                         var barFill = document.createElement('div');
-                        barFill.style.cssText = 'width:42%;height:100%;border-radius:4px;background:' + progCol + ';';
+                        barFill.style.cssText = 'width:42%;height:100%;background:' + progCol + ';';
                         barTrack.appendChild(barFill);
                         var durSec = mock.duration || 243;
                         var durStr =
@@ -5408,7 +6177,10 @@
                             String(durSec % 60).padStart(2, '0');
                         var tTot = document.createElement('span');
                         tTot.textContent = durStr;
-                        tTot.style.cssText = 'font-size:14px;font-weight:700;color:' + progTxtCol + ';min-width:46px;text-align:right;';
+                        tTot.style.cssText =
+                            'width:77px;text-align:center;font-size:15px;font-weight:700;color:' +
+                            npProgressText +
+                            ';flex:0 0 77px;';
                         npBarRow.appendChild(tEl);
                         npBarRow.appendChild(barTrack);
                         npBarRow.appendChild(tTot);
@@ -5796,6 +6568,7 @@
                     sim.dialogOptions = ['Yes', 'No'];
                     sim.dialogSelectedIndex = 1;
                     sim.themePendingName = entry.name;
+                    sim.themePendingEntry = entry;
                     paint();
                 }
 
@@ -6116,12 +6889,39 @@
                         if (dialogContext === 'themeSet') {
                             if (chosen === 'Yes') {
                                 var appliedName = sim.themePendingName || 'theme';
+                                var pendingEntry = sim.themePendingEntry || null;
                                 sim.themePendingName = '';
-                                sim.themeCurrentDeleted = false;
-                                sim.themeCurrentTitle = appliedName;
-                                sim.themeFullPreview = false;
-                                showToast('Theme set to ' + appliedName);
+                                sim.themePendingEntry = null;
+                                var applyTheme = function () {
+                                    sim.themeCurrentDeleted = false;
+                                    sim.themeCurrentTitle = appliedName;
+                                    sim.themeFullPreview = false;
+                                    sim.themeViewId = 'settingsTheme';
+                                    showToast('Theme set to ' + appliedName);
+                                };
+                                /* Setting a theme on the device is also a request
+                                   to load that theme here. The Studio asks before
+                                   replacing the workbench; declining keeps the
+                                   player on this theme list. */
+                                if (
+                                    pendingEntry &&
+                                    pendingEntry.folder &&
+                                    typeof opts.onThemeSwitchRequest === 'function'
+                                ) {
+                                    var switchAnswer = opts.onThemeSwitchRequest(pendingEntry);
+                                    paint();
+                                    if (switchAnswer && typeof switchAnswer.then === 'function') {
+                                        switchAnswer.then(function (accepted) {
+                                            if (accepted) applyTheme();
+                                        });
+                                    } else if (switchAnswer === true) {
+                                        applyTheme();
+                                    }
+                                    return;
+                                }
+                                applyTheme();
                             } else {
+                                sim.themeViewId = 'settingsTheme';
                                 paint();
                             }
                             return;
@@ -6554,6 +7354,19 @@
                             sim.themeHistory.push(vid);
                             sim.themeViewId = 'settingsBetterY';
                             sim.themeSelectedIndex = 0;
+                        } else if (sid === 'betterY_player') {
+                            sim.themeHistory.push(vid);
+                            sim.themeViewId = 'settingsBetterYPlayer';
+                            sim.themeSelectedIndex = 0;
+                        } else if (sid === 'betterY_tilt') {
+                            sim.betterYTilt = sim.betterYTilt !== true;
+                            showToast('Tilt the cover: ' + (sim.betterYTilt ? 'On' : 'Off'));
+                        } else if (sid === 'betterY_np_preview') {
+                            sim.themeHistory.push(vid);
+                            sim.themeViewId = 'nowPlaying';
+                            sim.themeSelectedIndex = 0;
+                        } else if (sid === 'betterY_log') {
+                            showToast('Diagnostic log saved to /better-Y/logs/');
                         } else if (sid.indexOf('betterY_') === 0) {
                             showToast((selEntry.label || 'better-Y') + ' — better-Y');
                         } else if (sid === 'bluetooth') {
@@ -6592,6 +7405,9 @@
                             sim.themeSelectedIndex = 0;
                         } else if (sid === 'rockbox') {
                             showToast('Switch to ' + (selEntry.label || 'Rockbox'));
+                        } else if (sid === 'back_to_rockbox') {
+                            /* SettingActivity finishes and launches org.rockbox. */
+                            showToast('Back to Rockbox');
                         } else if (sid === 'shutdown') {
                             sim.dialogVisible = true;
                             sim.dialogTitle = 'Shutdown';
@@ -7242,44 +8058,19 @@
                         sim.themeCurrentDeleted = false;
                         sim.themeFullPreview = false;
                         var fwNow = currentFirmware;
+                        var mappedView = equivalentThemeView(sim.themeViewId, fwNow);
+                        if (mappedView !== sim.themeViewId) {
+                            sim.themeViewId = mappedView;
+                            sim.themeSelectedIndex = 0;
+                        }
+                        /* Back should stay meaningful after a target change too. */
+                        if (Array.isArray(sim.themeHistory)) {
+                            sim.themeHistory = sim.themeHistory.map(function (id) {
+                                return equivalentThemeView(id, fwNow);
+                            });
+                        }
                         if (sim.themeViewId === 'home') {
                             sim.themeSelectedIndex = Math.max(0, Math.min(sim.themeSelectedIndex, Math.max(0, homeItems.length - 1)));
-                        } else if (
-                            String(sim.themeViewId || '').indexOf('settingsCat_') === 0 &&
-                            (previewOpts.deviceMode === 'y1' || fwNow.settingsStyle !== 'categories')
-                        ) {
-                            sim.themeViewId = 'settings';
-                            sim.themeSelectedIndex = 0;
-                        } else if (
-                            sim.themeViewId === 'settingsBetterY' &&
-                            (!fwNow.version ||
-                                !fwNow.version.settingsRows ||
-                                fwNow.version.settingsRows.indexOf('better_y') === -1)
-                        ) {
-                            sim.themeViewId = 'settings';
-                            sim.themeSelectedIndex = 0;
-                        } else if (sim.themeViewId === 'musicSettings' && !fwNow.musicSettingsRows) {
-                            sim.themeViewId = 'music';
-                            sim.themeSelectedIndex = 0;
-                        } else if (
-                            (sim.themeViewId === 'fileManager' ||
-                                sim.themeViewId === 'fileManagerList' ||
-                                sim.themeViewId === 'fileManagerSettings') &&
-                            !fwNow.fileManager
-                        ) {
-                            sim.themeViewId = 'home';
-                            sim.themeSelectedIndex = 0;
-                        } else if (
-                            (sim.themeViewId === 'fm' ||
-                                sim.themeViewId === 'fmMenu' ||
-                                sim.themeViewId === 'fmChannels' ||
-                                sim.themeViewId === 'fmFavorites' ||
-                                sim.themeViewId === 'fmAudioOutput' ||
-                                sim.themeViewId === 'fmRange') &&
-                            !fwNow.fm
-                        ) {
-                            sim.themeViewId = 'home';
-                            sim.themeSelectedIndex = 0;
                         }
                         paint();
                     },
@@ -7313,6 +8104,7 @@
                             headphoneGain: sim.headphoneGain,
                             speakerEnabled: sim.speakerEnabled,
                             albumArtStyle: sim.albumArtStyle,
+                            betterYTilt: sim.betterYTilt === true,
                             songNameDisplay: sim.songNameDisplay,
                             listSort: sim.listSort,
                             artistView: sim.artistView,
@@ -7360,6 +8152,7 @@
                         if (snap.fmFreq !== undefined) sim.fmFreq = snap.fmFreq;
                         if (snap.btEnabled !== undefined) sim.btEnabled = snap.btEnabled;
                         if (snap.albumArtStyle !== undefined) sim.albumArtStyle = snap.albumArtStyle;
+                        if (snap.betterYTilt !== undefined) sim.betterYTilt = snap.betterYTilt === true;
                         if (snap.songNameDisplay !== undefined) sim.songNameDisplay = snap.songNameDisplay;
                         if (snap.listSort !== undefined) sim.listSort = snap.listSort;
                         if (snap.artistView !== undefined) sim.artistView = snap.artistView;
@@ -7881,7 +8674,12 @@
         var battUrl = getBatteryIconUrl(statusCfg, buildFileUrl, contentFolder, 3, false);
         var arrowUrl = itemCfg.itemRightArrow ? buildFileUrl(contentFolder, itemCfg.itemRightArrow) : '';
         var firstItem = homeItems[0] || null;
-        var heroUrl = firstItem && firstItem.iconFile ? buildFileUrl(contentFolder, firstItem.iconFile) : '';
+        var heroUrl =
+            firstItem && firstItem.iconUrl
+                ? firstItem.iconUrl
+                : firstItem && firstItem.iconFile
+                  ? buildFileUrl(contentFolder, firstItem.iconFile)
+                  : '';
 
         var fontWait = Promise.race([
             waitForFontFamily(fontStack),

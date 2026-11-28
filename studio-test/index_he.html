@@ -273,10 +273,11 @@
                                 <i class="fa-solid fa-mobile-screen" aria-hidden="true"></i><span id="studio-platform-label">Y1 / Y2</span><i class="fa-solid fa-circle-info studio-platform-info" aria-hidden="true"></i>
                             </button>
                             <div class="studio-platform-pop" id="studio-platform-pop" role="dialog" aria-labelledby="studio-platform-pop-title" hidden>
-                                <strong id="studio-platform-pop-title">Y1 / Y2 theme</strong>
-                                <p id="studio-platform-pop-body">A theme is listed as a Y1 / Y2 theme only when it includes the file manager icon that Y2 adds to the home screen.</p>
+                                <strong id="studio-platform-pop-title">Y2 compatibility</strong>
+                                <p id="studio-platform-pop-body">Checking the two assets Y2 needs on top of the Y1 theme.</p>
+                                <div class="studio-compat-list" id="studio-platform-list" role="list"></div>
                                 <button class="studio-btn studio-btn--primary" id="studio-platform-focus" type="button">
-                                    <i class="fa-solid fa-crosshairs" aria-hidden="true"></i><span>Show file manager icon</span>
+                                    <i class="fa-solid fa-crosshairs" aria-hidden="true"></i><span>Review assets</span>
                                 </button>
                             </div>
                         </div>
@@ -611,8 +612,8 @@
 
     <div class="studio-y2-toast" id="studio-y2-toast" role="status" aria-live="polite" hidden>
         <div class="studio-y2-toast-copy">
-            <strong>Y2 needs a File Manager icon</strong>
-            <span>Add one so Y2 does not draw its own icon in that gap.</span>
+            <strong>Y2 needs two icons</strong>
+            <span>Y2 adds a File Manager row and a Settings Bluetooth row. This theme leaves File Manager blank and reuses the Y1 Bluetooth art.</span>
         </div>
         <div class="studio-y2-toast-actions">
             <button class="studio-btn studio-btn--primary" id="studio-y2-toast-open" type="button">
@@ -897,14 +898,14 @@
     <div id="support-toolbar-slot"></div>
 
     <script src="../nav.js?v=20261124fixes1"></script>
-    <script src="../y1-theme-preview.js?v=20261129preview17"></script>
+    <script src="../y1-theme-preview.js?v=20261129preview18"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="../theme-packaging.js"></script>
+    <script src="../theme-packaging.js?v=20261129model2"></script>
     <script src="../author-submission-policy.js?v=20260523"></script>
     <script src="../studio-drop-handoff.js?v=20261123studio2"></script>
     <script src="../theme-analytics.js?v=20261125quota2"></script>
     <script src="/studio-test/firmware-catalog.js?v=20261129studio64"></script>
-    <script src="/studio-test/studio.js?v=20261129studio64"></script>
+    <script src="/studio-test/studio.js?v=20261129studio65"></script>
     <script src="../site-locale.js?v=20261127studio26" defer></script>
 </body>
 

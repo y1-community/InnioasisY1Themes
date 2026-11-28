@@ -1,0 +1,127 @@
+{
+    "theme_info": {
+        "title": "CupertinY",
+        "author": "Neither-Classic2058",
+        "authorUrl": "",
+        "description": "iPod Classic-like theme for use with better-Y."
+    },
+    "themeCover": "cover.png",
+    "desktopWallpaper": "desktop_wallpaper.png",
+    "globalWallpaper": "global_wallpaper.png",
+    "desktopMask": "desktop_mask.png",
+    "fontFamily": "opensans-condbold.ttf",
+    "itemConfig": {
+        "itemTextColor": "#000000",
+        "itemSelectedTextColor": "#ffffff",
+        "itemSelectedBackground": "itemSelectedBackground.png",
+        "itemBackground": "itemBackground.png",
+        "itemRightArrow": "itemRightArrow.png"
+    },
+
+    "dialogConfig": {
+        "dialogOptionBackground": "dialogOptionBackground.png",
+        "dialogOptionTextColor": "#000000",
+        "dialogOptionSelectedBackground": "dialogOptionSelectedBackground.png",
+        "dialogOptionSelectedTextColor": "#ffffff",
+        "dialogBackgroundColor": "#ffffff"
+    },
+    "menuConfig": {
+        "menuBackgroundColor": "#ffffff",
+        "menuItemBackground": "itemBackground.png",
+        "menuItemTextColor": "#000000",
+        "menuItemSelectedBackground": "itemSelectedBackground.png",
+        "menuItemSelectedTextColor": "#ffffff"
+    },
+    "homePageConfig": {
+        "ebook":"icon.png",
+        "nowPlaying": "icon.png",
+        "music": "icon.png",
+        "video": "icon.png",
+        "audiobooks": "icon.png",
+        "photos": "icon.png",
+        "fm": "icon.png",
+        "bluetooth": "icon.png",
+        "settings": "icon.png",
+        "shuffleQuick": "Shuffle Quick.png"
+    },
+    "fileConfig": {
+        "folderIcon": "",
+        "musicIcon": ""
+    },
+    "settingConfig": {
+        "settingMask": "setting_mask.png",
+        "shutdown": "Shutdown.png",
+        "timedShutdown_off": "Timed shutdown_001.png",
+        "timedShutdown_10": "Timed shutdown_002.png",
+        "timedShutdown_20": "Timed shutdown_003.png",
+        "timedShutdown_30": "Timed shutdown_004.png",
+        "timedShutdown_60": "Timed shutdown_005.png",
+        "timedShutdown_90": "Timed shutdown_006.png",
+        "timedShutdown_120": "Timed shutdown_007.png",
+        "shuffleOn": "Shuffle_on.png",
+        "shuffleOff": "Shuffle_off.png",
+        "repeatOff": "Repeat_off.png",
+        "repeatAll": "Repeat_all.png",
+        "repeatOne": "Repeat_one.png",
+        "equalizer_normal": "Equalizer_normal.png",
+        "equalizer_classical": "Equalizer_classical.png",
+        "equalizer_dance": "Equalizer_dance.png",
+        "equalizer_flat": "Equalizer_flat.png",
+        "equalizer_folk": "Equalizer_folk.png",
+        "equalizer_heavymetal": "Equalizer_heavy metal.png",
+        "equalizer_hiphop": "Equalizer_hiphop.png",
+        "equalizer_jazz": "Equalizer_jazz.png",
+        "equalizer_pop": "Equalizer_pop.png",
+        "equalizer_rock": "Equalizer_rock.png",
+        "keyLockOn": "Key lock_on.png",
+        "keyLockOff": "Key lock_off.png",
+        "keyToneOn": "Key tone_on.png",
+        "keyToneOff": "Key tone_off.png",
+        "keyVibrationOn": "Key vibration_on.png",
+        "keyVibrationOff": "Key vibration_off.png",
+        "wallpaper": "Wallpaper.png",
+        "backlight_10": "Backlight_001.png",
+        "backlight_15": "Backlight_003.png",
+        "backlight_30": "Backlight_004.png",
+        "backlight_45": "Backlight_005.png",
+        "backlight_60": "Backlight_006.png",
+        "backlight_120": "Backlight_007.png",
+        "backlight_300": "Backlight_007.png",
+        "backlight_always": "Backlight_002.png",
+        "brightness": "Brightness.png",
+        "displayBatteryOn": "Display battery_on.png",
+        "displayBatteryOff": "Display battery_off.png",
+        "dateTime": "Date & Time.png",
+        "language": "Language.png",
+        "factoryReset": "Factory.png",
+        "clearCache": "Clear cache.png",
+        "theme": "Change Theme.png",
+        "fileExtensionOn": "file_ext_on.png",
+        "fileExtensionOff": "file_ext_off.png"
+    },
+    "statusConfig": {
+        "playing": "play.png",
+        "audiobookPlaying": "",
+        "pause": "pause.png",
+        "fmPlaying": "",
+        "stop": "stop.png",
+        "blConnected": "",
+        "blConnecting": "",
+        "blDisconnected": "",
+        "headsetWithMic": "",
+        "headsetWithoutMic": "",
+        "statusBarColor": "",
+        "battery": [
+           "battery.001.png",
+           "battery.002.png",
+           "battery.003.png",
+           "battery.004.png"
+        ],
+        "batteryCharging": [
+           "batterycharge.001.png",
+           "batterycharge.002.png",
+           "batterycharge.003.png",
+           "batterycharge.004.png"
+        ]
+    }
+}

@@ -20,7 +20,10 @@
     'use strict';
 
     /* Flat Settings rows: the order MainActivity/SettingActivity builds them.
-       `musicish` marks rows that only exist once the music library exists. */
+       Stock 3.1.2 reserves array slot 16 for the Launcher row but leaves it
+       blank on the general flavour, so the shipped screen has 19 visible rows
+       and no Rockbox/Launcher row. Rockbox 0.4/0.5 inherit those same rows;
+       Better-Y and Rockbox 0.6 use their own arrays below. */
     var Y1_FLAT = [
         'shutdown',
         'timed_shutdown',
@@ -38,14 +41,12 @@
         'date_time',
         'theme',
         'language',
-        'rockbox',
         'factory_reset',
         'clear_cache',
         'about'
     ];
 
-    /* 2.1.9 added File extensions but still had no Launcher row; that row
-       arrived with 2.8.2 (and is labelled "Launcher" before Better-Y). */
+    /* 2.1.9 added File extensions and Theme but still had no Launcher row. */
     var Y1_FLAT_219 = [
         'shutdown',
         'timed_shutdown',
@@ -74,6 +75,8 @@
         'shuffle',
         'repeat',
         'equalizer',
+        'sort_order',
+        'sort_logic',
         'key_lock',
         'key_tone',
         'key_vibration',
@@ -98,7 +101,7 @@
 
     var CATEGORY_ROWS = {
         settingsCat_keysWheel: ['key_lock', 'wheel_sensitivity', 'wheel_volume', 'key_tone', 'key_vibration'],
-        settingsCat_audio: ['headphone_gain', 'speaker', 'equalizer'],
+        settingsCat_audio: ['headphone_gain', 'speaker'],
         settingsCat_display: ['brightness', 'backlight', 'display_battery'],
         settingsCat_personalization: ['theme', 'wallpaper'],
         settingsCat_filesStorage: ['file_extension', 'clear_cache'],
@@ -201,25 +204,26 @@
      * launcher. `base` names the stock release the mod is built on, and the
      * rows below are the ones its SettingsActivity actually builds.
      *
-     * Better-Y (based on 3.1.2): inserts `better-Y` at index 0, adds Reboot
-     * under Shutdown, drops Display battery, and renames the launcher row to
-     * Rockbox only when Rockbox is installed. Standalone Better-Y therefore has
-     * no Rockbox row. Its Music menu adds Cover Flow and Album Artists.
+     * Better-Y v1.1.0 (the latest published release), based on 3.1.2:
+     * inserts `better-Y` at index 0, adds Reboot under Shutdown, removes
+     * Shuffle/Repeat and Display battery, and adds a Rockbox row only when
+     * Rockbox is installed. Standalone Better-Y therefore has no Rockbox row.
+     * Its Music menu is still stock 3.1.2: Cover Flow and Album Artists are
+     * only in the unreleased v1.2.0 development tree.
      *
      * Koensayr only patches artist -> album drilling and AVRCP; its menus are
      * stock 3.0.2/3.0.7, so it reuses those rows unchanged.
      *
-     * Rockbox 0.6 ships the Better-Y launcher with the Rockbox row installed;
-     * 0.5/0.4 ship ordinary stock-launcher menus, so they have neither the
-     * Better-Y row nor a Rockbox-labelled launcher row.
+     * Rockbox 0.6 is Better-Y v1.1.0-dev1: it keeps the battery row (renamed
+     * Battery percentage), removes Shuffle/Repeat, and appends the literal
+     * "Back to Rockbox" row. 0.5/0.4 ship ordinary stock-launcher menus, so
+     * they have neither the Better-Y row nor a Rockbox/Launcher row.
      */
     var BETTER_Y_SETTINGS = [
         'better_y',
         'shutdown',
         'reboot',
         'timed_shutdown',
-        'shuffle',
-        'repeat',
         'equalizer',
         'file_extension',
         'key_lock',
@@ -236,18 +240,87 @@
         'about'
     ];
 
-    var ROCKBOX_06_SETTINGS = BETTER_Y_SETTINGS.slice();
-    ROCKBOX_06_SETTINGS.splice(ROCKBOX_06_SETTINGS.indexOf('language') + 1, 0, 'rockbox');
+    /* Rockbox 0.6: the Better-Y launcher with the Rockbox row installed. The
+       binary blanks Shuffle and Repeat, keeps Display battery (renamed Battery
+       percentage), omits the blank Launcher slot, and appends Back to Rockbox.
+       Better-Y's own TopBar module (which removes the battery row) is not in
+       this build. */
+    var ROCKBOX_06_SETTINGS = [
+        'better_y',
+        'shutdown',
+        'timed_shutdown',
+        'equalizer',
+        'file_extension',
+        'key_lock',
+        'key_tone',
+        'key_vibration',
+        'wallpaper',
+        'backlight',
+        'brightness',
+        'display_battery',
+        'date_time',
+        'theme',
+        'language',
+        'factory_reset',
+        'clear_cache',
+        'about',
+        'back_to_rockbox'
+    ];
+
+    /* Solar is a custom launcher on the Y1 3.1.2 base. Its Home is not the
+       stock MainActivity list: schema 9 seeds eight shortcuts, and Settings
+       opens Solar's own root instead of the stock flat list. */
+    var SOLAR_HOME = [
+        'nowPlaying',
+        'music',
+        'ebook',
+        'radio',
+        'settings',
+        'wifiTransfer',
+        'podcasts',
+        'getMusic'
+    ];
+    var SOLAR_SETTINGS = [
+        'solar_playback',
+        'solar_flow',
+        'solar_device',
+        'solar_connections',
+        'solar_library',
+        'solar_appearance',
+        'solar_media',
+        'solar_reach',
+        'solar_power',
+        'solar_reset',
+        'solar_update',
+        'solar_report_issue',
+        'solar_donations',
+        'solar_about'
+    ];
 
     var LAUNCHERS = [
+        {
+            id: 'solar',
+            label: 'Solar — Y1 3.1.2 base (2026-11-26 build)',
+            device: 'y1',
+            base: '3.1.2',
+            date: '2026-11-26',
+            menuProfile: 'solar',
+            settingsStyle: 'solar',
+            playerProfile: 'solar',
+            solar: true,
+            home: SOLAR_HOME,
+            settingsRows: SOLAR_SETTINGS,
+            notes: 'Solar is a custom launcher, not a stock menu reskin. Home schema 9 seeds Now Playing, Music, E-Book, Radio, Settings, Wi-Fi Transfer, Podcasts and Get Music; Settings is Solar\u2019s own Playback/Device/Appearance/... root. Theme packages stay cross-compatible.'
+        },
         {
             id: 'better-y',
             label: 'Better-Y — Y1 3.1.2 menu',
             device: 'y1',
             base: '3.1.2',
             menuProfile: 'better-y',
+            playerProfile: 'better-y',
             settingsRows: BETTER_Y_SETTINGS,
-            notes: 'better-Y row at the top of Settings, Reboot under Shutdown, Cover Flow and Album Artists in Music.'
+            notes: 'Better-Y v1.1.0: better-Y row at the top of Settings, Reboot under Shutdown, Shuffle/Repeat and Display battery removed, five better-Y groups; stock 3.1.2 Music menu.'
         },
         {
             id: 'koensayr-3.0.7',
@@ -255,6 +328,7 @@
             device: 'y1',
             base: '3.0.7',
             menuProfile: 'stock',
+            playerProfile: 'stock',
             settingsRows: Y1_FLAT,
             notes: 'Stock 3.0.7 launcher; Koensayr changes Artist -> Album navigation, not the menu tree.'
         },
@@ -264,40 +338,46 @@
             device: 'y1',
             base: '3.0.2',
             menuProfile: 'stock',
+            playerProfile: 'stock',
             settingsRows: Y1_FLAT,
             notes: 'Stock 3.0.2 launcher; Koensayr changes Artist -> Album navigation, not the menu tree.'
         },
         {
             id: 'rockbox-0.6',
-            label: 'Rockbox 0.6 — Better-Y stock menu',
+            label: 'Rockbox 0.6 — Better-Y v1.1.0-dev1',
             device: 'y1',
             base: '3.1.2',
             menuProfile: 'better-y',
+            /* Rockbox 0.6 is a launcher row on the Better-Y build; the
+               Now Playing activity is still Better-Y's. */
+            playerProfile: 'better-y',
             settingsRows: ROCKBOX_06_SETTINGS,
-            notes: 'Better-Y menu plus the Rockbox launcher row installed by Rockbox 0.6.'
+            notes: 'Better-Y v1.1.0-dev1 (versionName 3.1.2): better-Y row, Back to Rockbox at the end, Shuffle/Repeat removed, battery row retained as Battery percentage. No Reboot row in this build.'
         },
         {
             id: 'rockbox-0.5',
-            label: 'Rockbox 0.5 — stock 3.1.2 menu',
+            label: 'Rockbox 0.5 — Y1 3.0.7 build',
             device: 'y1',
-            base: '3.1.2',
+            base: '3.0.7',
             menuProfile: 'stock',
+            playerProfile: 'stock',
             settingsRows: Y1_FLAT,
-            notes: 'Stock launcher menu; no Better-Y row and no Rockbox-labelled launcher row.'
+            notes: 'Stock 3.0.7 launcher strings and Settings rows; versionName 3.0.7, versionCode 307. No Better-Y row and no Rockbox-labelled Launcher row.'
         },
         {
             id: 'rockbox-0.4',
-            label: 'Rockbox 0.4 — stock 3.1.2 menu',
+            label: 'Rockbox 0.4 — Y1 3.1.2 UI (FR 2.7.2)',
             device: 'y1',
             base: '3.1.2',
             menuProfile: 'stock',
+            playerProfile: 'stock',
             settingsRows: Y1_FLAT,
-            notes: 'Stock launcher menu; no Better-Y row and no Rockbox-labelled launcher row.'
+            notes: 'French build labelled FR_2.7.2 (versionCode 272) but built on the 3.1.2 UI and player layout. No Better-Y row and no Rockbox-labelled Launcher row.'
         }
     ];
 
     var CATALOG = {
-        generated: '2026-11-27',
+        generated: '2026-11-28',
         sourceDocs: ['docs/firmware-changelogs.md', 'docs/firmware-asset-support.md'],
         models: [
             {
@@ -465,7 +545,7 @@
                 name: 'Innioasis Y2',
                 platform: 'Android 4.4.4 (SDK 19)',
                 packageName: 'com.innioasis.y2',
-                latest: '3.2.10',
+                latest: '3.2.8',
                 themeEngineFrom: '3.1.7',
                 versions: [
                     {
@@ -599,7 +679,7 @@
                     },
                     {
                         id: '3.2.8',
-                        label: 'Y2 3.2.8-fm',
+                        label: 'Y2 3.2.8-fm (latest Y2)',
                         versionName: '3.2.9',
                         aboutVersion: 'FM_3.2.8',
                         versionCode: 329,
@@ -620,35 +700,7 @@
                         settingsStyle: 'categories',
                         settingsRows: Y1_FLAT,
                         aboutVersionLabel: 'Version:',
-                        notes: 'app_name "Y2"; Unseen ships a blank fileManager slot; identical 67-key schema to 3.2.0-fm.',
-                        fileManager: true,
-                        fm: true,
-                        musicSettings: '3.2.0'
-                    },
-                    {
-                        id: '3.2.10',
-                        label: 'Y2 3.2.10-fm (latest Y2)',
-                        versionName: '3.2.9',
-                        aboutVersion: 'FM_3.2.8',
-                        versionCode: 329,
-                        date: '2026-11-28',
-                        sha256: '9aae687ff2d71913dd1bb649f644a47365f7fb45fa63452b1db922a60b0dca49',
-                        themes: true,
-                        home: [
-                            'nowPlaying',
-                            'music',
-                            'video',
-                            'audiobooks',
-                            'ebook',
-                            'photos',
-                            'fm',
-                            'fileManager',
-                            'settings'
-                        ],
-                        settingsStyle: 'categories',
-                        settingsRows: Y1_FLAT,
-                        aboutVersionLabel: 'Version:',
-                        notes: 'Vendor 3.2.10 package built 2026-10-23. System files and launcher are byte-identical to 3.2.8, so every menu matches; About still prints FM_3.2.8 because B.h.b hardcodes it. Boot chain rebuilt (kernel 2026-10-23, Mali r-f7c0332).',
+                        notes: 'app_name "Y2"; Unseen ships a blank fileManager slot; identical 67-key schema to 3.2.0-fm. Current package: boot chain rebuilt 2026-10-23; the Android system and launcher are unchanged from 3.2.8, so every menu matches.',
                         fileManager: true,
                         fm: true,
                         musicSettings: '3.2.0'
@@ -725,7 +777,9 @@
         musicSettingsRows: MUSIC_SETTINGS,
         fileManagerSettings: FILE_MANAGER_SETTINGS,
         settingsCategories: Y2_CATEGORIES,
-        categoryRows: CATEGORY_ROWS
+        categoryRows: CATEGORY_ROWS,
+        solarHome: SOLAR_HOME,
+        solarSettings: SOLAR_SETTINGS
     };
 
     function model(id) {
@@ -756,12 +810,12 @@
             versionName: base.versionName,
             aboutVersion: base.aboutVersion || base.versionName,
             versionCode: base.versionCode,
-            date: base.date,
+            date: mod.date || base.date,
             sha256: '',
             themes: base.themes,
-            home: (base.home || []).slice(),
-            hiddenHome: (base.hiddenHome || []).slice(),
-            settingsStyle: base.settingsStyle || 'flat',
+            home: (mod.home || base.home || []).slice(),
+            hiddenHome: (mod.hiddenHome || base.hiddenHome || []).slice(),
+            settingsStyle: mod.settingsStyle || base.settingsStyle || 'flat',
             settingsRows: (mod.settingsRows || base.settingsRows || []).slice(),
             notes: mod.notes,
             bundledThemes: bundledThemes(m.id, base.id),
@@ -769,6 +823,14 @@
             fm: base.fm !== false,
             musicSettings: null,
             menuProfile: mod.menuProfile || 'stock',
+            playerProfile:
+                mod.playerProfile ||
+                (mod.solar === true
+                    ? 'solar'
+                    : mod.menuProfile === 'better-y'
+                      ? 'better-y'
+                      : 'stock'),
+            solar: mod.solar === true,
             launcher: true,
             baseFirmware: base.id
         };

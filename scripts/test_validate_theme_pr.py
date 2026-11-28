@@ -182,6 +182,41 @@ class ValidateThemePrTests(unittest.TestCase):
         self.assertEqual(rc, 0, out)
         self.assertIn("THEME_PR_AUTO_MERGE_ALLOWED=0", out)
 
+    def test_gallery_text_only_pr_never_auto_merges(self) -> None:
+        _git(self.repo, "checkout", "-b", "pr-gallery-text", self.base_sha)
+        catalog = json.loads((self.repo / "themes.json").read_text(encoding="utf-8"))
+        catalog["themes"][0]["description"] = "A refreshed description with no new artwork"
+        (self.repo / "themes.json").write_text(json.dumps(catalog, indent=2), encoding="utf-8")
+        _git(self.repo, "add", "-A")
+        _git(self.repo, "commit", "-m", "listing text only")
+
+        rc, out = self._run_validator("pr-gallery-text")
+        self.assertEqual(rc, 0, out)
+        self.assertIn("THEME_PR_AUTO_MERGE_ALLOWED=0", out)
+        self.assertIn("THEME_PR_MANUAL_REVIEW", out)
+
+    def test_existing_theme_text_only_package_never_auto_merges(self) -> None:
+        _git(self.repo, "checkout", "-b", "pr-text-package", self.base_sha)
+        cfg = json.loads(json.dumps(self.base_cfg))
+        cfg["theme_info"]["description"] = "A new description, with no artwork changes"
+        zbytes = _make_zip_bytes(
+            {
+                "Sample Theme/config.json": json.dumps(cfg, indent=2).encode("utf-8"),
+                "Sample Theme/wall.png": PNG_B,
+                "Sample Theme/icon.png": PNG_A,
+            }
+        )
+        (self.repo / "Sample_Theme.zip").write_bytes(zbytes)
+        (self.repo / "Sample_Theme.zip.meta.json").write_text(
+            json.dumps({"uploaderName": "Alice", "submissionIntent": "update"}), encoding="utf-8"
+        )
+        _git(self.repo, "add", "-A")
+        _git(self.repo, "commit", "-m", "text-only update package")
+
+        rc, out = self._run_validator("pr-text-package")
+        self.assertEqual(rc, 0, out)
+        self.assertIn("THEME_PR_AUTO_MERGE_ALLOWED=0", out)
+
     def test_existing_theme_general_update_never_auto_merges(self) -> None:
         _git(self.repo, "checkout", "-b", "pr-update-art", self.base_sha)
         zbytes = _make_zip_bytes(

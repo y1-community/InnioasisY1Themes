@@ -149,5 +149,11 @@
             "batterycharge.003.png",
             "batterycharge.004.png"
         ]
+    },
+    "gallery": {
+        "defaultVariantLabel": "Y2",
+        "variantFolders": [
+            "CupertinY"
+        ]
     }
 }

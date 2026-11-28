@@ -151,6 +151,7 @@
         platformPop: byId('studio-platform-pop'),
         platformPopTitle: byId('studio-platform-pop-title'),
         platformPopBody: byId('studio-platform-pop-body'),
+        platformCompatList: byId('studio-platform-list'),
         platformFocus: byId('studio-platform-focus'),
         sourceName: byId('studio-source-name'),
         sourceAuthor: byId('studio-source-author'),
@@ -289,6 +290,8 @@
         firmwareSelect: byId('studio-firmware-select'),
         firmwareSummary: byId('studio-firmware-summary'),
         firmwareState: byId('studio-firmware-state'),
+        solarBars: byId('studio-solar-bars'),
+        solarBarsControl: byId('studio-solar-bars-control'),
         identityMismatch: byId('studio-identity-mismatch'),
         mismatchAsNew: byId('studio-mismatch-as-new'),
         y2Toast: byId('studio-y2-toast'),
@@ -374,6 +377,10 @@
         pendingPolicy: null,
         ownUpdate: false,
         identity: { listing: null, answer: '', changeDetails: '' },
+        /* Why this edit session exists. The answer is collected when Edit is
+           opened, so Submit never has to ask the same question again. */
+        editIntent: '',
+        editIntentOpen: false,
         dirty: false,
         hoverAssetId: null,
         assetDragY: 0,
@@ -2213,6 +2220,13 @@
         });
         if (mode === 'edit') {
             scheduleThumbRefresh(60);
+            maybeAskEditIntent();
+        } else if (mode === 'submit') {
+            /* A direct Submit link is still an entry point. Ask the same
+               question here so the inline identity card never has to. */
+            maybeAskEditIntent();
+        } else {
+            syncEditIntent();
         }
         if (mode === 'submit') {
             if (el.panelScroll) el.panelScroll.scrollTop = 0;
@@ -2647,6 +2661,95 @@
         return false;
     }
 
+    function previewThemeCatalog() {
+        var out = [];
+        (state.gallery || []).forEach(function (theme) {
+            if (!theme || !theme.folder) return;
+            out.push({
+                name: theme.name || theme.folder,
+                folder: theme.folder,
+                variant: '',
+                coverUrl: galleryCoverUrl(theme.screenshotPreview || theme.screenshot)
+            });
+            var variants = Array.isArray(theme.variantFolders) ? theme.variantFolders : [];
+            variants.forEach(function (variant) {
+                var name = String(variant || '').trim();
+                if (!name) return;
+                var shot = theme.variantScreenshots && theme.variantScreenshots[name];
+                out.push({
+                    name: name,
+                    folder: theme.folder,
+                    variant: name,
+                    coverUrl: shot
+                        ? galleryCoverUrl(shot)
+                        : galleryFileUrl(theme.folder + '/Variants/' + name, 'cover.jpg')
+                });
+            });
+        });
+        return out;
+    }
+
+    function requestPreviewThemeRename(entry) {
+        if (!entry || !entry.folder || state.sourceType !== 'gallery') return false;
+        if (entry.folder !== state.folder) return false;
+        var action = state.variant ? renameVariation() : renameTheme();
+        if (action && typeof action.then === 'function') {
+            action
+                .then(function () {
+                    if (state.sourceType === 'gallery' && state.folder === entry.folder) {
+                        mountPreview({ preserveScreen: true });
+                    }
+                })
+                .catch(function () {});
+        }
+        return true;
+    }
+
+    function requestPreviewThemeSwitch(entry) {
+        return new Promise(function (resolve) {
+            var modal = document.getElementById('studio-theme-switch-modal');
+            var nameNode = document.getElementById('studio-theme-switch-name');
+            var confirm = document.getElementById('studio-theme-switch-confirm');
+            var cancel = document.getElementById('studio-theme-switch-cancel');
+            if (!modal || !confirm || !cancel) {
+                resolve(false);
+                return;
+            }
+            var settled = false;
+            function finish(accepted) {
+                if (settled) return;
+                settled = true;
+                modal.hidden = true;
+                document.removeEventListener('keydown', onKey);
+                confirm.onclick = null;
+                cancel.onclick = null;
+                resolve(accepted);
+            }
+            function onKey(event) {
+                if (event.key === 'Escape') finish(false);
+            }
+            if (nameNode) {
+                nameNode.textContent = '\u201c' + (entry.name || entry.folder || 'this theme') + '\u201d';
+            }
+            modal.hidden = false;
+            document.addEventListener('keydown', onKey);
+            confirm.onclick = function () {
+                var folder = entry.folder;
+                var variant = entry.variant || '';
+                finish(true);
+                if (!folder) return;
+                if (folder === state.folder && variant === (state.variant || '')) return;
+                loadGalleryTheme(folder, null, variant);
+            };
+            cancel.onclick = function () {
+                finish(false);
+            };
+            window.setTimeout(function () {
+                if (!settled) confirm.focus({ preventScroll: true });
+            }, 30);
+        });
+    }
+
     function mountPreview(opts) {
         opts = opts || {};
         if (!window.Y1ThemePreview || typeof window.Y1ThemePreview.mount !== 'function') {
@@ -2673,6 +2776,9 @@
             deviceMode: state.previewDeviceMode || 'both',
             firmware: state.firmwareVersions,
             compactControls: true,
+            /* Empty and hidden status artwork still needs a target in the
+               editor: the wrapper is 25px even when its bitmap is blank. */
+            editableSlots: true,
             /* The Studio edits artwork, not playback: the four transport
                buttons are enough, and the fifth toggles the options beside the
                selected element instead of expanding a scroll wheel. */
@@ -2688,7 +2794,11 @@
                 trackTitle: state.meta.name || 'Untitled theme',
                 trackArtist: state.meta.author || 'Unknown author',
                 trackAlbum: (state.meta.desc || 'Y1 Theme').slice(0, 96)
-            }
+            },
+            themeCatalog:
+                state.sourceType === 'gallery' && state.gallery.length ? previewThemeCatalog() : [],
+            onThemeRenameRequest: requestPreviewThemeRename,
+            onThemeSwitchRequest: requestPreviewThemeSwitch
         };
 
         return window.Y1ThemePreview.mount(el.preview, options).then(function () {
@@ -3405,14 +3515,21 @@
             return {
                 badge: 'Y1 Home · Y2 Settings',
                 tone: 'dual',
-                note: 'Dual-use icon: shown on the Home screen on Innioasis Y1, and reused inside Settings → Bluetooth on Innioasis Y2 3.2.0+.'
+                note: 'Y1 draws this on Home; Y2 draws it in Settings. Leave the Y2 Settings slot blank to use this artwork on both players.'
+            };
+        }
+        if (p === 'settingConfig.bluetooth') {
+            return {
+                badge: 'Y2 Settings',
+                tone: 'y2',
+                note: 'A website-only companion slot. The player reads only homePageConfig.bluetooth, so a Y2 export writes this artwork into that key and Y1 keeps the Home icon.'
             };
         }
         if (p === 'settingConfig.launcher') {
             return {
-                badge: 'Y1 2.8.2+ & Y2',
+                badge: 'Y1 2.8.2+ · Unified',
                 tone: 'info',
-                note: 'Rockbox / Launcher icon shown in Settings on Y1 2.8.2+ and under Settings → System on Y2 3.2.0+.'
+                note: 'Launcher icon shown in Y1 Settings. Unified keeps the row so this slot is available; exact Y2 menus do not draw it.'
             };
         }
         if (p === 'settingConfig.shutdown') {
@@ -3457,6 +3574,8 @@
     }
 
     function assetLabel(key, path) {
+        if (path === 'homePageConfig.bluetooth') return 'Bluetooth - Y1 Home';
+        if (path === 'settingConfig.bluetooth') return 'Bluetooth - Y2 Settings';
         if (LABELS[key]) return LABELS[key];
         var text = String(key || '')
             .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
@@ -3853,7 +3972,9 @@
         [
             ['fileConfig.folderIcon', 'Folder icon'],
             ['fileConfig.musicIcon', 'Music file icon'],
-            ['homePageConfig.fileManager', 'File manager icon']
+            ['homePageConfig.fileManager', 'File manager icon'],
+            ['homePageConfig.bluetooth', 'Bluetooth - Y1 Home'],
+            ['settingConfig.bluetooth', 'Bluetooth - Y2 Settings']
         ]
             .concat(Y2_OPTIONAL_SETTING_SLOTS)
             .forEach(function (optional) {
@@ -4219,7 +4340,7 @@
         host.innerHTML =
             '<div class="studio-status-head">' +
             '<h3>Status bar</h3>' +
-            '<p class="studio-hint">Pick a state to show it in the preview and open that file in the tray.</p>' +
+            '<p class="studio-hint">Choose what each group shows. Picking a state brings that icon into the preview; the name opens its artwork in the tray.</p>' +
             '</div>' +
             '<div class="studio-status-text studio-status-text--fixed">' +
             '<span>Status text</span>' +
@@ -4256,39 +4377,78 @@
         var chips = host.querySelector('.studio-status-chips');
         if (!chips) return;
         chips.innerHTML = '';
-        var shown = 0;
-        STATUS_STATES.forEach(function (entry) {
-            var asset = state.assetById[entry.path];
-            if (!asset) return;
-            var button = document.createElement('button');
-            button.type = 'button';
-            button.className = 'studio-status-chip';
-            button.setAttribute('data-status-path', entry.path);
-            /* A chip is a state, not just a file: the one whose state the
-               status bar is showing stays lit. */
-            var active = false;
-            if (entry.state) {
-                active = Object.keys(entry.state).every(function (key) {
-                    return state.statusState[key] === entry.state[key];
-                });
-            }
-            button.classList.toggle('is-active', active);
-            button.innerHTML = '<span>' + entry.label + '</span>';
-            if (asset.changed) button.classList.add('is-changed');
-            button.addEventListener('click', function () {
-                /* The strip is the context: icons plus the colours they sit
-                   on, listed together in the tray. */
-                ensureAssetTrayOpen(entry.path);
-                setRelatedAssets(entry.path, statusStripIds(entry.path), 'Status bar icons and the font');
-                /* selectAsset applies the state this art stands for and
-                   rebuilds the preview. */
-                selectAsset(entry.path, { reveal: true });
-                focusTrayAsset(entry.path);
+        chips.className = 'studio-status-overview';
+        chips.setAttribute('role', 'group');
+        chips.setAttribute('aria-label', 'Status bar icon groups and preview states');
+        STATUS_GROUPS.forEach(function (group) {
+            var row = document.createElement('div');
+            row.className = 'studio-status-overview-row';
+            var name = document.createElement('button');
+            name.type = 'button';
+            name.className = 'studio-status-overview-name';
+            name.title = 'Show the ' + group.label.toLowerCase() + ' artwork in the tray';
+            name.innerHTML =
+                '<i class="fa-solid ' + group.icon + '" aria-hidden="true"></i>' +
+                '<span>' + group.label + '</span>';
+            name.addEventListener('click', function () {
+                var path = selectedStatusPathForGroup(group.id);
+                if (path && state.assetById[path]) {
+                    ensureAssetTrayOpen(path);
+                    selectAsset(path, { reveal: true });
+                    focusTrayAsset(path);
+                }
             });
-            chips.appendChild(button);
-            shown += 1;
+            row.appendChild(name);
+
+            var select = document.createElement('select');
+            select.className = 'studio-status-overview-select';
+            select.setAttribute('aria-label', group.label + ' state');
+            group.options.forEach(function (option) {
+                var opt = document.createElement('option');
+                opt.value = option[0];
+                opt.textContent = option[1];
+                select.appendChild(opt);
+            });
+            select.value = statusGroupValue(group.id);
+            select.addEventListener('change', function () {
+                applyStatusGroupValue(group.id, select.value);
+            });
+            row.appendChild(select);
+
+            if (group.visibleKey) {
+                var show = document.createElement('label');
+                show.className = 'studio-status-overview-shown';
+                show.title = 'Preview only: launcher settings decide which icons are drawn.';
+                var check = document.createElement('input');
+                check.type = 'checkbox';
+                check.checked = statusGroupVisible(group.id);
+                check.addEventListener('change', function () {
+                    setStatusGroupVisible(group.id, check.checked);
+                });
+                var word = document.createElement('span');
+                word.textContent = 'Show';
+                show.appendChild(check);
+                show.appendChild(word);
+                row.appendChild(show);
+            } else {
+                var charging = document.createElement('label');
+                charging.className = 'studio-status-overview-shown';
+                charging.title = 'Swap the battery artwork for its charging set.';
+                var chargeCheck = document.createElement('input');
+                chargeCheck.type = 'checkbox';
+                chargeCheck.checked = !!state.statusState.isCharging;
+                chargeCheck.addEventListener('change', function () {
+                    applyStatusGroupValue('battery', statusGroupValue('battery'), chargeCheck.checked);
+                });
+                var chargeWord = document.createElement('span');
+                chargeWord.textContent = 'Charging';
+                charging.appendChild(chargeCheck);
+                charging.appendChild(chargeWord);
+                row.appendChild(charging);
+            }
+            chips.appendChild(row);
         });
-        host.hidden = !shown;
+        host.hidden = false;
     }
 
     /* —— Masks —— */
@@ -4675,6 +4835,12 @@
         return match ? match[1].toLowerCase() : '';
     }
 
+    function bluetoothCounterpartId(id) {
+        if (id === 'homePageConfig.bluetooth') return 'settingConfig.bluetooth';
+        if (id === 'settingConfig.bluetooth') return 'homePageConfig.bluetooth';
+        return '';
+    }
+
     function relatedIdsFor(id) {
         var out = [];
         function add(candidate) {
@@ -4687,6 +4853,13 @@
             'itemConfig.itemBackground',
             'itemConfig.itemRightArrow'
         ];
+        var bluetoothPartner = bluetoothCounterpartId(id);
+        if (bluetoothPartner) {
+            add(bluetoothPartner);
+            itemChrome.forEach(add);
+            add('fontFamily');
+            return out;
+        }
         var stem = toggleStem(id);
         if (/^homePageConfig\./.test(id)) {
             itemChrome.forEach(add);
@@ -5060,6 +5233,281 @@
         return null;
     }
 
+    function batteryLevelFromPath(path) {
+        var match = /^statusConfig\.battery(?:Charging)?\.(\d)$/.exec(String(path || ''));
+        return match ? Number(match[1]) : null;
+    }
+
+    /* Step to the next battery level in the same set (discharging stays
+       discharging, charging stays charging). The toolbar's charging switch
+       changes sets; these arrows walk the four levels without leaving the
+       preview. */
+    function stepBatteryAssetId(path, delta) {
+        var match = /^(statusConfig\.battery(?:Charging)?)\.(\d)$/.exec(String(path || ''));
+        if (!match) return '';
+        var start = Number(match[2]);
+        for (var step = 1; step <= 4; step += 1) {
+            var level = (start + delta * step + 40) % 4;
+            var nextId = match[1] + '.' + level;
+            if (state.assetById[nextId]) return nextId;
+        }
+        return '';
+    }
+
+    /* The four status groups the player can draw. Keeping this list beside the
+       simulator's own state names means the toolbar, the tray detail and the
+       empty-bar click all speak one vocabulary. */
+    var STATUS_GROUPS = [
+        {
+            id: 'playback',
+            label: 'Playback',
+            short: 'Play',
+            icon: 'fa-play',
+            visibleKey: 'playState',
+            defaultValue: 'playing',
+            options: [
+                ['playing', 'Playing'],
+                ['pause', 'Paused'],
+                ['fmPlaying', 'FM playing'],
+                ['audiobookPlaying', 'Audiobook'],
+                ['stop', 'Stopped']
+            ]
+        },
+        {
+            id: 'bluetooth',
+            label: 'Bluetooth',
+            short: 'BT',
+            icon: 'fa-bluetooth-b',
+            visibleKey: 'bluetoothState',
+            defaultValue: 'connected',
+            options: [
+                ['connected', 'Connected'],
+                ['connecting', 'Connecting'],
+                ['disconnected', 'Disconnected']
+            ]
+        },
+        {
+            id: 'headset',
+            label: 'Headset',
+            short: 'Headset',
+            icon: 'fa-headphones',
+            visibleKey: 'headsetState',
+            defaultValue: 'withMic',
+            options: [
+                ['withMic', 'With microphone'],
+                ['withoutMic', 'Without microphone']
+            ]
+        },
+        {
+            id: 'battery',
+            label: 'Battery',
+            short: 'Battery',
+            icon: 'fa-battery-three-quarters',
+            visibleKey: '',
+            defaultValue: '3',
+            options: [
+                ['3', '100%'],
+                ['2', '75%'],
+                ['1', '50%'],
+                ['0', '25%']
+            ]
+        }
+    ];
+
+    function statusGroupDef(id) {
+        for (var i = 0; i < STATUS_GROUPS.length; i += 1) {
+            if (STATUS_GROUPS[i].id === id) return STATUS_GROUPS[i];
+        }
+        return null;
+    }
+
+    function statusGroupForPath(path) {
+        var id = String(path || '');
+        if (/^statusConfig\.(?:playing|pause|stop|fmPlaying|audiobookPlaying)$/.test(id)) return 'playback';
+        if (/^statusConfig\.bl/.test(id)) return 'bluetooth';
+        if (/^statusConfig\.headset/.test(id)) return 'headset';
+        if (/^statusConfig\.battery/.test(id)) return 'battery';
+        return '';
+    }
+
+    function statusGroupValue(groupId) {
+        var def = statusGroupDef(groupId);
+        if (!def) return '';
+        var status = state.statusState || {};
+        if (groupId === 'battery') return String(status.batteryLevel == null ? 3 : status.batteryLevel);
+        if (groupId === 'playback') return status.playState || def.defaultValue;
+        if (groupId === 'bluetooth') return status.bluetoothState || def.defaultValue;
+        if (groupId === 'headset') return status.headsetState || def.defaultValue;
+        return def.defaultValue;
+    }
+
+    function statusGroupVisible(groupId) {
+        var def = statusGroupDef(groupId);
+        if (!def || !def.visibleKey) return true;
+        var value = state.statusState ? state.statusState[def.visibleKey] : null;
+        return value !== null && value !== undefined && value !== '';
+    }
+
+    function statusPathForGroupValue(groupId, value, charging) {
+        if (groupId === 'playback') return 'statusConfig.' + value;
+        if (groupId === 'bluetooth') {
+            return 'statusConfig.' + (value === 'connected' ? 'blConnected' : value === 'connecting' ? 'blConnecting' : 'blDisconnected');
+        }
+        if (groupId === 'headset') return 'statusConfig.' + (value === 'withoutMic' ? 'headsetWithoutMic' : 'headsetWithMic');
+        if (groupId === 'battery') {
+            var level = Math.max(0, Math.min(3, Number(value) || 0));
+            return 'statusConfig.' + (charging ? 'batteryCharging.' : 'battery.') + level;
+        }
+        return '';
+    }
+
+    function selectedStatusPathForGroup(groupId) {
+        var def = statusGroupDef(groupId);
+        if (!def) return '';
+        return statusPathForGroupValue(groupId, statusGroupValue(groupId), !!state.statusState.isCharging);
+    }
+
+    function refreshAfterStatusChange(path, label) {
+        renderStatusEditor();
+        mountPreview({ focusAssetId: path, preserveScreen: true })
+            .then(function () {
+                if (previewToolbar && !previewToolbar.hidden) showPreviewToolbar(previewToolbarAssetId);
+            })
+            .catch(function () {});
+        if (label) toast(label);
+    }
+
+    function applyStatusGroupValue(groupId, value, charging) {
+        var def = statusGroupDef(groupId);
+        if (!def) return;
+        var path = statusPathForGroupValue(groupId, value, charging === undefined ? !!state.statusState.isCharging : !!charging);
+        if (path && state.assetById[path]) {
+            selectAsset(path);
+            return;
+        }
+        if (groupId === 'battery') {
+            state.statusState.batteryLevel = Math.max(0, Math.min(3, Number(value) || 0));
+            if (charging !== undefined) state.statusState.isCharging = !!charging;
+        } else {
+            state.statusState[def.visibleKey] = value;
+        }
+        refreshAfterStatusChange(path, def.label + ' state updated.');
+    }
+
+    function setStatusGroupVisible(groupId, visible) {
+        var def = statusGroupDef(groupId);
+        if (!def || !def.visibleKey) return;
+        if (visible) {
+            var path = selectedStatusPathForGroup(groupId);
+            if (path && state.assetById[path]) selectAsset(path);
+            else {
+                state.statusState[def.visibleKey] = def.defaultValue;
+                refreshAfterStatusChange(path, def.label + ' shown.');
+            }
+            return;
+        }
+        state.statusState[def.visibleKey] = null;
+        refreshAfterStatusChange(previewToolbarAssetId || state.selectedAssetId, def.label + ' hidden in this preview.');
+    }
+
+    function statusShortLabel(groupId) {
+        var def = statusGroupDef(groupId);
+        return def ? def.short : groupId;
+    }
+
+    /* One control block, used in both the floating toolbox and the tray detail.
+       The tabs make the three collapsed status groups reachable even when their
+       icons are not currently drawn in the player. */
+    function buildStatusGroupControls(asset, variant) {
+        var groupId = statusGroupForPath(asset && asset.id);
+        if (!groupId) return null;
+        var def = statusGroupDef(groupId);
+        var host = document.createElement('div');
+        host.className = 'studio-status-controls' + (variant ? ' is-' + variant : '');
+
+        var tabs = document.createElement('div');
+        tabs.className = 'studio-status-tabs';
+        tabs.setAttribute('role', 'group');
+        tabs.setAttribute('aria-label', 'Status icon groups');
+        STATUS_GROUPS.forEach(function (group) {
+            var tab = document.createElement('button');
+            tab.type = 'button';
+            tab.className = 'studio-status-tab' + (group.id === groupId ? ' is-active' : '') + (statusGroupVisible(group.id) ? '' : ' is-off');
+            tab.setAttribute('aria-pressed', group.id === groupId ? 'true' : 'false');
+            tab.title = group.label + (statusGroupVisible(group.id) ? ' · shown in preview' : ' · hidden in preview');
+            tab.innerHTML =
+                '<i class="fa-solid ' + group.icon + '" aria-hidden="true"></i>' +
+                '<span>' + group.short + '</span>';
+            tab.addEventListener('click', function () {
+                var path = selectedStatusPathForGroup(group.id);
+                if (path && state.assetById[path]) selectAsset(path);
+                else {
+                    state.statusState[group.visibleKey] = group.defaultValue;
+                    refreshAfterStatusChange(path);
+                }
+            });
+            tabs.appendChild(tab);
+        });
+        host.appendChild(tabs);
+
+        var row = document.createElement('div');
+        row.className = 'studio-status-state-row';
+        var label = document.createElement('span');
+        label.textContent = 'State';
+        label.className = 'studio-status-state-label';
+        var select = document.createElement('select');
+        select.className = 'studio-status-state-select';
+        select.setAttribute('aria-label', def.label + ' state');
+        var current = statusGroupValue(groupId);
+        def.options.forEach(function (option) {
+            var opt = document.createElement('option');
+            opt.value = option[0];
+            opt.textContent = option[1];
+            select.appendChild(opt);
+        });
+        select.value = current;
+        select.addEventListener('change', function () {
+            applyStatusGroupValue(groupId, select.value);
+        });
+        row.appendChild(label);
+        row.appendChild(select);
+
+        if (def.visibleKey) {
+            var shown = document.createElement('label');
+            shown.className = 'studio-status-shown';
+            shown.title = 'Preview only: launcher settings own which status icons are visible.';
+            var check = document.createElement('input');
+            check.type = 'checkbox';
+            check.checked = statusGroupVisible(groupId);
+            check.setAttribute('aria-label', 'Show ' + def.label.toLowerCase() + ' icon in preview');
+            check.addEventListener('change', function () {
+                setStatusGroupVisible(groupId, check.checked);
+            });
+            var word = document.createElement('span');
+            word.textContent = 'Shown';
+            shown.appendChild(check);
+            shown.appendChild(word);
+            row.appendChild(shown);
+        } else {
+            var chargingLabel = document.createElement('label');
+            chargingLabel.className = 'studio-status-shown';
+            chargingLabel.title = 'Battery icons swap to the theme\u2019s charging artwork while this is on.';
+            var charging = document.createElement('input');
+            charging.type = 'checkbox';
+            charging.checked = !!state.statusState.isCharging;
+            charging.addEventListener('change', function () {
+                applyStatusGroupValue('battery', statusGroupValue('battery'), charging.checked);
+            });
+            var chargingWord = document.createElement('span');
+            chargingWord.textContent = 'Charging';
+            chargingLabel.appendChild(charging);
+            chargingLabel.appendChild(chargingWord);
+            row.appendChild(chargingLabel);
+        }
+        host.appendChild(row);
+        return host;
+    }
+
     function applyStatusStateForAsset(path) {
         var patch = statusStatePatchFor(path);
         if (!patch) return false;
@@ -5365,11 +5813,25 @@
         host.classList.toggle('has-groups', toolbarIds.length > 1);
         var head = document.createElement('span');
         head.className = 'studio-preview-toolbar-head';
+        var blank = asset.placeholder || asset.empty || !String(asset.value || '').trim();
+        var thumb = document.createElement('span');
+        thumb.className = 'studio-preview-toolbar-thumb' + (blank ? ' is-blank' : '');
+        if (!blank && asset.url && asset.kind === 'image' && !asset.missingFile) {
+            var thumbImg = document.createElement('img');
+            thumbImg.alt = '';
+            thumbImg.src = asset.url;
+            thumb.appendChild(thumbImg);
+        } else {
+            thumb.innerHTML =
+                '<i class="fa-solid ' +
+                (blank ? 'fa-plus' : asset.kind === 'font' ? 'fa-font' : 'fa-image') +
+                '" aria-hidden="true"></i>';
+        }
+        head.appendChild(thumb);
+        var copy = document.createElement('span');
+        copy.className = 'studio-preview-toolbar-copy';
         var name = document.createElement('strong');
-        name.textContent =
-            toolbarIds.length > 1
-                ? (previewHitLabel(toolbarIds[0]) || asset.label) + ' + ' + (toolbarIds.length - 1)
-                : asset.label;
+        name.textContent = previewHitLabel(toolbarIds[0]) || asset.label;
         name.title = toolbarIds
             .map(function (id) {
                 var a = state.assetById[id];
@@ -5377,7 +5839,12 @@
             })
             .filter(Boolean)
             .join('\n');
-        head.appendChild(name);
+        var meta = document.createElement('span');
+        meta.className = 'studio-preview-toolbar-meta';
+        meta.textContent = (blank ? 'Blank slot' : assetFileLabel(asset)) + (toolbarIds.length > 1 ? ' · +' + (toolbarIds.length - 1) : '');
+        copy.appendChild(name);
+        copy.appendChild(meta);
+        head.appendChild(copy);
         var close = document.createElement('button');
         close.type = 'button';
         close.className = 'studio-preview-toolbar-close';
@@ -5389,43 +5856,87 @@
         });
         head.appendChild(close);
 
-        var groups = document.createElement('span');
-        groups.className = 'studio-preview-toolbar-groups';
-        toolbarIds.forEach(function (toolbarAssetId) {
-            var toolbarAsset = state.assetById[toolbarAssetId];
-            if (!toolbarAsset) return;
-            var group = document.createElement('span');
-            group.className = 'studio-preview-toolbar-group';
-            group.setAttribute('data-toolbar-asset', toolbarAssetId);
-            if (toolbarIds.length > 1) {
-                var groupLabel = document.createElement('span');
-                groupLabel.className = 'studio-preview-toolbar-glabel';
-                groupLabel.textContent = toolbarAsset.label;
-                groupLabel.title = toolbarAsset.label + (toolbarAsset.value ? ' · ' + assetFileLabel(toolbarAsset) : '');
-                group.appendChild(groupLabel);
-            }
-            var actions = document.createElement('span');
-            actions.className = 'studio-preview-toolbar-actions';
-            assetActionSpecs(toolbarAsset).forEach(function (action) {
-                var button = document.createElement('button');
-                button.type = 'button';
-                button.className = 'studio-preview-toolbar-btn';
-                button.setAttribute('data-toolbar-action', action[0]);
-                button.setAttribute('aria-label', action[2]);
-                button.title = action[2];
-                button.innerHTML = '<i class="fa-solid ' + action[1] + '" aria-hidden="true"></i>';
-                if (action[0] === 'paste' && toolbarAsset.kind !== 'image') button.disabled = true;
-                button.addEventListener('click', function () {
-                    runAssetAction(action[0], toolbarAsset.id);
-                    if (action[0] === 'reset' || action[0] === 'blank') hidePreviewToolbar();
-                });
-                actions.appendChild(button);
-            });
-            group.appendChild(actions);
-            groups.appendChild(group);
-        });
         host.appendChild(head);
-        host.appendChild(groups);
+
+        if (toolbarIds.length > 1) {
+            var related = document.createElement('div');
+            related.className = 'studio-preview-toolbar-related';
+            var relatedLabel = document.createElement('span');
+            relatedLabel.textContent = 'Also';
+            relatedLabel.className = 'studio-preview-toolbar-related-label';
+            related.appendChild(relatedLabel);
+            toolbarIds.slice(1).forEach(function (relatedId) {
+                var relatedAsset = state.assetById[relatedId];
+                if (!relatedAsset) return;
+                var chip = document.createElement('button');
+                chip.type = 'button';
+                chip.className = 'studio-preview-toolbar-chip';
+                chip.textContent = relatedAsset.label;
+                chip.title = 'Edit ' + relatedAsset.label + ' instead';
+                chip.addEventListener('click', function () {
+                    selectAsset(relatedAsset.id, { reveal: true });
+                });
+                related.appendChild(chip);
+            });
+            host.appendChild(related);
+        }
+
+        var statusControls = buildStatusGroupControls(asset, 'toolbar');
+        if (statusControls) host.appendChild(statusControls);
+
+        var actions = document.createElement('div');
+        actions.className = 'studio-preview-toolbar-actions';
+        var importLabel = asset.kind === 'font' ? 'Replace font' : blank ? 'Add image' : 'Replace image';
+        var primary = document.createElement('button');
+        primary.type = 'button';
+        primary.className = 'studio-preview-toolbar-primary';
+        primary.setAttribute('data-toolbar-action', 'import');
+        primary.title = 'Replace the file for ' + asset.label;
+        primary.innerHTML =
+            '<i class="fa-solid ' +
+            (blank ? 'fa-plus' : 'fa-images') +
+            '" aria-hidden="true"></i><span>' +
+            importLabel +
+            '</span>';
+        primary.addEventListener('click', function () {
+            runAssetAction('import', asset.id);
+        });
+        actions.appendChild(primary);
+
+        var secondary = document.createElement('div');
+        secondary.className = 'studio-preview-toolbar-secondary';
+        var shortLabels = { theme: 'Theme', save: 'Save', paste: 'Paste', blank: 'Blank', reset: 'Reset' };
+        assetActionSpecs(asset).forEach(function (action) {
+            if (action[0] === 'import') return;
+            var button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'studio-preview-toolbar-btn';
+            button.setAttribute('data-toolbar-action', action[0]);
+            button.setAttribute('aria-label', action[2]);
+            button.title = action[2];
+            button.innerHTML =
+                '<i class="fa-solid ' +
+                action[1] +
+                '" aria-hidden="true"></i><span>' +
+                (shortLabels[action[0]] || action[0]) +
+                '</span>';
+            if (action[0] === 'paste' && asset.kind !== 'image') button.disabled = true;
+            button.addEventListener('click', function () {
+                runAssetAction(action[0], asset.id);
+                if (action[0] === 'reset' || action[0] === 'blank') hidePreviewToolbar();
+            });
+            secondary.appendChild(button);
+        });
+        if (secondary.children.length) actions.appendChild(secondary);
+        host.appendChild(actions);
+
+        if (blank) {
+            var note = document.createElement('p');
+            note.className = 'studio-preview-toolbar-note';
+            note.textContent =
+                'Blank slot. Add art, or use a status group above to bring an icon back into the preview.';
+            host.appendChild(note);
+        }
         host.hidden = false;
         document.dispatchEvent(new CustomEvent('studio-preview-toolbar-shown'));
         positionPreviewToolbar();
@@ -5853,8 +6364,12 @@
                       ? path
                       : '';
             var rowRelated = [];
+            var rowBluetoothPartner = bluetoothCounterpartId(iconId);
             if (iconId) {
                 rowRelated.push(iconId);
+                if (rowBluetoothPartner && state.assetById[rowBluetoothPartner]) {
+                    rowRelated.push(rowBluetoothPartner);
+                }
                 var iconStem = toggleStem(iconId);
                 if (iconStem) {
                     state.assets.forEach(function (asset) {
@@ -5880,7 +6395,10 @@
                 /* A row owns both backgrounds at once: the bar showing on the
                    row and the background behind the other rows. Carry both in
                    the tray and the floating strip, alongside the row's art. */
-                toolbarIds: [primaryBg].concat(hasCompanionBg ? [companionBg] : []).concat(iconId ? [iconId] : []),
+                toolbarIds: [primaryBg]
+                    .concat(hasCompanionBg ? [companionBg] : [])
+                    .concat(iconId ? [iconId] : [])
+                    .concat(rowBluetoothPartner && state.assetById[rowBluetoothPartner] ? [rowBluetoothPartner] : []),
                 tooltip: hoverLabel + (iconLabel ? ' (with ' + iconLabel + ')' : '') + ' — click to edit'
             };
         }
@@ -5891,6 +6409,10 @@
                 'itemConfig.itemBackground',
                 'itemConfig.itemRightArrow'
             ];
+            var rightBluetoothPartner = bluetoothCounterpartId(path);
+            if (rightBluetoothPartner && state.assetById[rightBluetoothPartner]) {
+                iconRelated.push(rightBluetoothPartner);
+            }
             var rightStem = toggleStem(path);
             if (rightStem) {
                 state.assets.forEach(function (asset) {
@@ -5903,9 +6425,13 @@
                 primaryId: path,
                 canvasHighlightPath: path,
                 relatedIds: iconRelated,
-                relatedTitle: 'Item backgrounds, arrow & related assets',
+                relatedTitle: rightBluetoothPartner
+                    ? 'Bluetooth — Y1 Home & Y2 Settings'
+                    : 'Item backgrounds, arrow & related assets',
                 relatedColorAnchor: path,
-                toolbarIds: [path],
+                toolbarIds: [path].concat(
+                    rightBluetoothPartner && state.assetById[rightBluetoothPartner] ? [rightBluetoothPartner] : []
+                ),
                 tooltip: rightLabel ? rightLabel + ' — click to edit' : 'Click to edit this icon'
             };
         }
@@ -6176,8 +6702,23 @@
             icon.setAttribute('aria-hidden', 'true');
             el.assetPreview.appendChild(icon);
         }
+        var oldStatusControls = el.assetDetail.querySelector('.studio-asset-status-controls');
+        if (oldStatusControls) oldStatusControls.remove();
+        var statusControls = buildStatusGroupControls(asset, 'detail');
+        if (statusControls) {
+            statusControls.classList.add('studio-asset-status-controls');
+            el.assetDetail.insertBefore(statusControls, el.assetDetail.querySelector('.studio-asset-detail-actions'));
+        }
         el.assetReset.disabled = !asset.changed;
         el.assetReplace.disabled = false;
+        var blankReplace = asset.placeholder || asset.empty || !String(asset.value || '').trim();
+        if (el.assetReplace) {
+            el.assetReplace.innerHTML =
+                '<i class="fa-solid ' +
+                (blankReplace ? 'fa-plus' : 'fa-images') +
+                '" aria-hidden="true"></i>' +
+                (asset.kind === 'font' ? 'Replace font' : blankReplace ? 'Add image' : 'Replace file');
+        }
         el.assetPaste.disabled = asset.kind !== 'image';
         if (el.assetSave) {
             el.assetSave.disabled = false;
@@ -7292,6 +7833,179 @@
         state.ownUpdate = false;
     }
 
+    /* —— Edit intent ——
+       A gallery package can be the submitter's own listing or the starting
+       point for a new one, and only they know which. Ask on the way into Edit,
+       where the answer changes the hints and the rename copy, rather than
+       stopping them at the end on Submit. */
+    function galleryListingForIntent() {
+        if (state.sourceType !== 'gallery' || !state.folder) return null;
+        return state.byFolder[state.folder] || matchingGalleryListing();
+    }
+
+    function themeIsInnioasisOwned() {
+        var listing = galleryListingForIntent();
+        return !!(listing && /^innioasis$/i.test(String(listing.author || '').trim()));
+    }
+
+    /* The localized Studio pages carry their own translated copy of the main
+       markup. Build the small edit-intent controls there too, so every locale
+       gets the same question and the same contextual hint without duplicating
+       the block in thirty HTML files. */
+    function ensureEditIntentElements() {
+        if (!document.getElementById('studio-edit-intent')) {
+            var pane = document.getElementById('pane-edit');
+            if (pane) {
+                var note = document.createElement('div');
+                note.className = 'studio-edit-intent';
+                note.id = 'studio-edit-intent';
+                note.setAttribute('role', 'note');
+                note.hidden = true;
+                note.innerHTML =
+                    '<i class="fa-solid fa-compass-drafting" aria-hidden="true"></i>' +
+                    '<span id="studio-edit-intent-text"></span>' +
+                    '<button class="studio-mini-btn" id="studio-edit-intent-change" type="button">Change</button>';
+                var head = pane.querySelector('.studio-pane-head');
+                if (head && head.nextSibling) pane.insertBefore(note, head.nextSibling);
+                else if (head) pane.appendChild(note);
+                else pane.insertBefore(note, pane.firstChild);
+            }
+        }
+        if (!document.getElementById('studio-edit-intent-modal')) {
+            var modal = document.createElement('div');
+            modal.className = 'studio-modal studio-edit-intent-modal';
+            modal.id = 'studio-edit-intent-modal';
+            modal.hidden = true;
+            modal.innerHTML =
+                '<div class="studio-modal-card studio-edit-intent-card" role="dialog" aria-modal="true" aria-labelledby="studio-edit-intent-title">' +
+                '  <div class="studio-onboarding-head">' +
+                '    <span class="studio-eyebrow"><i class="fa-solid fa-compass-drafting" aria-hidden="true"></i> Before you edit</span>' +
+                '    <button class="studio-onboarding-x" id="studio-edit-intent-x" type="button" aria-label="Close the edit setup question"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>' +
+                '  </div>' +
+                '  <h2 id="studio-edit-intent-title">How are you using <strong id="studio-edit-intent-name" translate="no" data-i18n-skip>this theme</strong>?</h2>' +
+                '  <div class="studio-edit-intent-choices">' +
+                '    <button class="studio-edit-intent-choice" id="studio-edit-intent-start" type="button"><i class="fa-solid fa-seedling" aria-hidden="true"></i><strong>Create my own theme</strong><span>Make a new theme from this one. Save it to your computer, or add it to the gallery.</span></button>' +
+                '    <button class="studio-edit-intent-choice" id="studio-edit-intent-own" type="button"><i class="fa-solid fa-user-pen" aria-hidden="true"></i><strong>Update my theme</strong><span>Make changes to your own theme, title and description. Updates go live after review and approval.</span></button>' +
+                '  </div>' +
+                '  <div class="studio-edit-intent-foot"><button class="studio-btn" id="studio-edit-intent-cancel" type="button">Back to preview</button></div>' +
+                '</div>';
+            document.body.appendChild(modal);
+        }
+    }
+
+    function closeEditIntentModal(returnToPreview) {
+        var modal = document.getElementById('studio-edit-intent-modal');
+        if (!modal || modal.hidden) return;
+        modal.hidden = true;
+        state.editIntentOpen = false;
+        if (returnToPreview && (state.mode === 'edit' || state.mode === 'submit')) setMode('preview');
+    }
+
+    function openEditIntentModal() {
+        ensureEditIntentElements();
+        var modal = document.getElementById('studio-edit-intent-modal');
+        if (!modal || !state.meta) return;
+        var listing = galleryListingForIntent();
+        var name = document.getElementById('studio-edit-intent-name');
+        if (name) name.textContent = '\u201c' + ((listing && listing.name) || state.meta.name || state.folder || 'this theme') + '\u201d';
+        var official = themeIsInnioasisOwned();
+        var own = document.getElementById('studio-edit-intent-own');
+        if (own) {
+            /* An official Innioasis listing is never the visitor's to update.
+               A local or unlisted package can still be their own new theme. */
+            own.hidden = official;
+            own.disabled = official;
+            var ownCopy = own.querySelector('span');
+            if (ownCopy) {
+                ownCopy.textContent = listing
+                    ? 'Make changes to your own theme, title and description. Updates go live after review and approval.'
+                    : 'Publish this as your own theme under the title and author you enter.';
+            }
+        }
+        modal.hidden = false;
+        state.editIntentOpen = true;
+        window.setTimeout(function () {
+            var focus = official || !listing ? document.getElementById('studio-edit-intent-start') : own;
+            if (focus) focus.focus({ preventScroll: true });
+        }, 40);
+    }
+
+    function syncEditIntent() {
+        ensureEditIntentElements();
+        var note = document.getElementById('studio-edit-intent');
+        var text = document.getElementById('studio-edit-intent-text');
+        if (!note || !text) return;
+        var intent = state.editIntent;
+        note.hidden = !intent;
+        note.setAttribute('data-intent', intent || 'unset');
+        if (intent === 'own') {
+            var listing = galleryListingForIntent();
+            text.textContent = listing
+                ? 'Editing your theme. Submitting updates the existing listing after review and approval.'
+                : 'Editing your theme. Publishing creates a new gallery listing.';
+        } else if (intent === 'innioasis') {
+            text.textContent = 'Official theme. Your changes become a new theme.';
+        } else if (intent === 'starting') {
+            text.textContent = 'Making your own theme from this one. The original stays as it is.';
+        } else if (intent === 'local') {
+            text.textContent = 'Local package. Publishing creates a new theme.';
+        } else {
+            text.textContent = '';
+        }
+    }
+
+    function chooseEditIntent(kind) {
+        if (kind !== 'own' && kind !== 'starting' && kind !== 'innioasis') return;
+        if (kind === 'own' && themeIsInnioasisOwned()) kind = 'starting';
+        var listing = galleryListingForIntent();
+        state.editIntent = kind;
+        state.editIntentOpen = false;
+        if (kind === 'own') {
+            state.identity.answer = 'own';
+            state.identity.changeDetails = listing ? 'no' : '';
+            state.ownUpdate = !!listing;
+            if (listing) applyOwnDetails();
+            else clearSubmitFields();
+        } else {
+            state.identity.answer = 'other';
+            state.identity.changeDetails = '';
+            state.ownUpdate = false;
+            clearSubmitFields();
+        }
+        closeEditIntentModal(false);
+        syncIdentity();
+        updateUpdateNotice();
+        syncEditIntent();
+        markDirty();
+        if (kind === 'starting') toast('Your changes will become a new theme.');
+        else if (kind === 'own') toast('Editing your theme. Updates go to review.');
+        else toast('Your changes will become a new theme.');
+    }
+
+    function maybeAskEditIntent() {
+        if (!state.meta || (state.mode !== 'edit' && state.mode !== 'submit')) {
+            syncEditIntent();
+            return;
+        }
+        if (state.editIntent) {
+            syncEditIntent();
+            return;
+        }
+        if (state.editIntentOpen) return;
+        if (themeIsInnioasisOwned()) {
+            state.editIntent = 'innioasis';
+            state.identity.answer = 'other';
+            state.identity.changeDetails = '';
+            state.ownUpdate = false;
+            clearSubmitFields();
+            syncIdentity();
+            updateUpdateNotice();
+            syncEditIntent();
+            return;
+        }
+        openEditIntentModal();
+    }
+
     function identityDecided() {
         var identity = state.identity;
         if (!identity.listing) return true;
@@ -7319,8 +8033,7 @@
         box.innerHTML =
             '<strong><i class="fa-solid fa-lightbulb" aria-hidden="true"></i> You have not made a new theme yet</strong>' +
             '<p>This is still <span data-originality-name>the gallery theme</span> exactly as it ships. Using a gallery theme as a template is welcome: that is how most themes start. To submit it to the gallery, make it yours first.</p>' +
-            '<p>Replace at least one image: an icon, a wallpaper, a mask, a background or the font, and enough of them that the result reads as a different theme. A new title or author on unchanged artwork is not a new theme, and the gallery cannot accept it.</p>' +
-            '<p class="studio-hint" data-originality-count>No images replaced yet.</p>';
+            '<p>A new theme needs its own artwork. Change the icons, wallpaper, masks, backgrounds or font until the result reads as a different theme; a new title or author on the same artwork is not a new theme.</p>';
         if (el.submitBtn && el.submitBtn.parentNode === form) form.insertBefore(box, el.submitBtn);
         else form.appendChild(box);
         el.originality = box;
@@ -7341,13 +8054,6 @@
         var nameEl = box.querySelector('[data-originality-name]');
         if (nameEl) {
             nameEl.textContent = '\u201c' + ((state.meta && state.meta.name) || state.folder) + '\u201d';
-        }
-        var countEl = box.querySelector('[data-originality-count]');
-        if (countEl) {
-            countEl.textContent =
-                count === 0
-                    ? 'No images replaced yet. Pick an element in the preview, then replace its file.'
-                    : count + (count === 1 ? ' image replaced.' : ' images replaced.') + ' Keep going until the theme is recognisably yours.';
         }
         box.hidden = false;
         box.classList.toggle('is-satisfied', count > 0);
@@ -7393,7 +8099,7 @@
         var ownTheme = identity.answer === 'other';
         /* Confirming authorship hands the top of the pane to the listing tools,
            so the question card steps aside for Manage \u2039theme\u203a. */
-        if (el.identity) el.identity.hidden = !listing || own;
+        if (el.identity) el.identity.hidden = !!state.editIntent || !listing || own;
         if (listing) {
             if (el.identityName) el.identityName.textContent = '\u201c' + (listing.name || listing.folder) + '\u201d';
             if (el.identityAuthor) el.identityAuthor.textContent = listing.author ? ' by ' + listing.author : '';
@@ -7405,25 +8111,25 @@
         var resultTitle = '';
         var resultText = '';
         if (listed) {
-            resultTitle = fmOnly ? 'Sending Y2 File Manager update' : 'Sending as an update';
+            resultTitle = fmOnly ? 'Y2 File Manager update' : 'Sending as an update';
             resultText = fmOnly
-                ? 'Because you only added a File Manager icon for Y2 support (without changing other art or listing text), this update can be auto-merged once checks pass.'
+                ? 'This adds the Y2 File Manager icon to your existing listing.'
                 : 'The package goes up as an update to this listing with its own details, and nothing is published until a maintainer has checked the pull request.';
         } else if (editing) {
             resultTitle = fmOnly ? 'Y2 File Manager update (details editable)' : 'Editing this listing';
             resultText = fmOnly
-                ? 'Your listing details are pre-filled below. Leave the original title and author unchanged so this File Manager-only Y2 update qualifies for automatic merge.'
+                ? 'Your listing details are pre-filled below. Leave the original title and author unchanged.'
                 : 'The fields below hold the listing\u2019s own details, so you can edit them. Sending packs the result as an update, which waits for a maintainer.';
         } else if (ownTheme) {
             resultTitle = 'Sending as your own theme';
             resultText =
-                'Give it your own title and author. The original details stay as placeholder text and disappear as you type, and the theme goes up as a new submission that can be merged automatically once the checks pass.';
+                'Give it your own title and author. The original details stay as placeholder text and disappear as you type, and the theme goes up as a new submission.';
         }
         if (el.identityResultTitle) el.identityResultTitle.textContent = resultTitle;
         if (el.identityResultText) el.identityResultText.textContent = resultText;
         /* The details fields only appear once the question has sent the
            submitter down a path that edits them. */
-        if (el.submitDetails) el.submitDetails.hidden = !!listing && !editing && !ownTheme;
+        if (el.submitDetails) el.submitDetails.hidden = state.editIntent ? false : !!listing && !editing && !ownTheme;
         if (el.submitBtn && !state.busy) {
             var label = el.submitBtn.querySelector('span');
             if (label) label.textContent = submitActionLabel();
@@ -7850,7 +8556,11 @@
                 var fromHome = y1Icon.replace(/_y1(\.[a-z0-9]+)$/i, '$1');
                 if (shipped(fromHome)) y2Icon = fromHome;
             }
-            var chosen = targetModel === 'y1' ? y1Icon : y2Icon || y1Icon;
+            if (!y1Icon && y2Icon) {
+                var fromSetting = y2Icon.replace(/_y2(\.[a-z0-9]+)$/i, '$1');
+                y1Icon = shipped(fromSetting) ? fromSetting : y2Icon;
+            }
+            var chosen = targetModel === 'y1' ? y1Icon || y2Icon : y2Icon || y1Icon;
             if (chosen) home.bluetooth = chosen;
             /* The device must receive stock JSON: the key that only exists to
                carry the other model's artwork has no reader on either player. */
@@ -8893,8 +9603,14 @@
                   : 'Name this variation';
         }
         if (lead) {
+            var renameContext =
+                state.editIntent === 'own'
+                    ? ' This is your listing, so the new name is used when you submit the update.'
+                    : state.editIntent === 'starting' || state.editIntent === 'innioasis'
+                      ? ' This renames the new theme you are building; the original listing keeps its name.'
+                      : ' Choose whose theme this is on the Edit tab if you want the submission path to follow the new name.';
             lead.innerHTML = renamingTheme
-                ? 'This is the main theme name, not a variation: it becomes the name of the theme you are editing and of any new theme started from it. A gallery update still needs you to answer whether the listing is yours, so nothing is filed against another author by accident.'
+                ? 'This is the main theme name, not a variation: it becomes the name of the theme you are editing and of any new theme started from it.' + renameContext
                 : renaming
                   ? 'The new name replaces the old one in the theme you are editing, so saving or submitting writes it under <code>Variants/&lt;new name&gt;/</code> and drops the old folder. The artwork stays as it is on screen.'
                   : 'A variation is another look for the same listing — Pip-Boy ships seven, Stranger Things several. Your edit starts from the version on screen, and saving or submitting stores it under <code>Variants/&lt;name&gt;/</code>.';
@@ -9330,16 +10046,21 @@
         if (!state.identity.listing) {
             var lateListing = matchingGalleryListing();
             if (lateListing) {
+                /* A catalog that arrived after the package opened can turn a
+                   plain file into a listing update. Ask again, because the
+                   earlier answer was made without knowing that. */
+                state.editIntent = '';
+                syncEditIntent();
                 resetIdentity(lateListing);
                 syncIdentity();
                 updateUpdateNotice();
                 updateChecklist();
+                maybeAskEditIntent();
                 toast(
                     'This package matches the gallery listing \u201c' +
                         (lateListing.name || lateListing.folder) +
-                        '\u201d. Answer the question in the panel before sending.'
+                        '\u201d. Choose whose theme it is before sending.'
                 );
-                if (el.identity) el.identity.scrollIntoView({ block: 'nearest' });
                 return;
             }
         }
@@ -9407,10 +10128,10 @@
                     notice.scrollIntoView({ block: 'nearest' });
                 }
                 setSubmitStatus(
-                    'You have not made a new theme yet. Replace at least one image asset before sending this to the gallery.',
+                    'This is still the gallery theme’s artwork. Make the theme your own before sending it to the gallery.',
                     false
                 );
-                toast('Replace at least one image before submitting a new theme.');
+                toast('Make this theme your own before sending it as new.');
                 return;
             }
         }
@@ -9497,13 +10218,10 @@
                themselves once the checks pass; updates wait for a maintainer.
                Either way the request is tracked on our own page, and the
                submitter is the only one holding that link. */
-            var fmAutoEligible = state.ownUpdate && isOnlyFileManagerChanged() && !existingListingIdentityChanged();
             setSubmitStatus(
                 (state.ownUpdate
-                    ? fmAutoEligible
-                        ? 'Received. Because this update only adds the Y2 File Manager icon, it merges automatically once its checks pass.'
-                        : 'Received. Your update is in a pull request that waits for a maintainer to merge it.'
-                    : 'Received. Your theme is in a pull request that merges automatically once its checks pass.') +
+                    ? 'Received. Your update is in a pull request.'
+                    : 'Received. Your theme is in a pull request.') +
                     (prUrl ? ' Keep this tracking link: it is how you check on the request later.' : ''),
                 true,
                 prUrl,
@@ -9602,6 +10320,8 @@
            say whether it is that listing's update before it can be sent, so the
            identity question is recomputed for every theme that opens. */
         resetIdentity(matchingGalleryListing());
+        state.editIntent = '';
+        syncEditIntent();
         /* The open theme's details are only ever suggestions: they show as
            placeholder text and vanish the moment someone types, so a new upload
            cannot inherit another listing's title, author or description. They
@@ -9629,8 +10349,10 @@
                 syncIdentity();
                 updateUpdateNotice();
                 updateChecklist();
+                if (state.mode === 'edit' || state.mode === 'submit') maybeAskEditIntent();
             });
         }
+        if (state.mode === 'edit' || state.mode === 'submit') maybeAskEditIntent();
     }
 
     function setCheck(name, ok, detail) {
@@ -10185,11 +10907,20 @@
         return state.assetById ? state.assetById[FILE_MANAGER_ASSET] : null;
     }
 
-    function themeShipsFileManager() {
-        var asset = fileManagerAsset();
+    function assetByPath(path) {
+        return state.assetById ? state.assetById[path] || null : null;
+    }
+
+    function assetHasArt(path) {
+        var asset = assetByPath(path);
         if (!asset) return false;
-        if (asset.placeholder || asset.empty) return false;
-        return !!String(asset.value || '').trim();
+        if (asset.placeholder || asset.empty || asset.missing || asset.missingFile) return false;
+        var value = String(asset.value || '').trim();
+        return !!value && !isPlaceholderValue(value);
+    }
+
+    function themeShipsFileManager() {
+        return assetHasArt(FILE_MANAGER_ASSET);
     }
 
     /* Y2 3.2.8 draws its own File Manager glyph only when the key is absent.
@@ -10204,44 +10935,124 @@
         return !!String(asset.value || '').trim();
     }
 
+    /* Unseen is the one documented case where a transparent File Manager slot
+       is intentional: every core Home icon is blank, so Y2 is meant to show a
+       fully blank grid. A lone transparent File Manager slot beside real Home
+       artwork is not Y2-ready, even though the key is present. */
+    function blankHomeSetIntentional() {
+        var keys = ['nowPlaying', 'music', 'video', 'audiobooks', 'photos', 'settings', 'ebook'];
+        var declared = 0;
+        var painted = 0;
+        keys.forEach(function (key) {
+            var path = 'homePageConfig.' + key;
+            var asset = assetByPath(path);
+            if (!asset || asset.empty) return;
+            declared += 1;
+            if (assetHasArt(path)) painted += 1;
+        });
+        return declared > 0 && painted === 0;
+    }
+
+    function y2FileManagerStatus() {
+        if (themeShipsFileManager()) return 'ready';
+        if (!fileManagerSlotDefined()) return 'missing';
+        return blankHomeSetIntentional() ? 'intentional' : 'blank';
+    }
+
+    function y2BluetoothStatus() {
+        var home = assetByPath('homePageConfig.bluetooth');
+        var setting = assetByPath('settingConfig.bluetooth');
+        var homeHasArt = assetHasArt('homePageConfig.bluetooth');
+        var settingHasArt = assetHasArt('settingConfig.bluetooth');
+        var sameArt =
+            homeHasArt &&
+            settingHasArt &&
+            String(home.value || '').trim() === String(setting.value || '').trim();
+        if (settingHasArt && (!homeHasArt || !sameArt)) return 'y2';
+        if (homeHasArt) return 'fallback';
+        return 'missing';
+    }
+
     function platformCopy() {
         if (!state.meta) {
             return {
                 label: 'Y1 / Y2',
-                title: 'Y1 / Y2 theme',
-                body: 'A theme is listed as a Y1 / Y2 theme only when it includes the file manager icon that Y2 adds to the home screen. Open a theme to check it.',
-                action: ''
+                title: 'Y2 compatibility',
+                body: 'Open a theme to check the two assets Y2 needs on top of Y1.',
+                action: '',
+                rows: []
             };
         }
         if (!state.config) {
             return {
                 label: 'Y1 / Y2',
-                title: 'Y1 / Y2 theme',
-                body: 'Reading this theme to see whether it includes the Y2 file manager icon.',
-                action: ''
+                title: 'Y2 compatibility',
+                body: 'Reading this theme to check its File Manager and Bluetooth assets.',
+                action: '',
+                rows: []
             };
         }
-        if (themeShipsFileManager()) {
-            return {
-                label: 'Y1 / Y2',
-                title: 'Y1 / Y2 theme',
-                body: 'This theme includes the file manager icon that Y2 adds to the home screen, so it is listed for both Y1 and Y2.',
-                action: 'Show file manager icon'
-            };
-        }
-        if (fileManagerSlotDefined()) {
-            return {
-                label: 'Y1 / Y2',
-                title: 'File Manager slot kept blank',
-                body: 'This theme points the File Manager slot at the transparent placeholder, so Y2 keeps the gap instead of drawing its own icon. Add artwork if you want an icon there.',
-                action: 'Show file manager slot'
-            };
-        }
+
+        var fm = y2FileManagerStatus();
+        var bt = y2BluetoothStatus();
+        var blocking = fm === 'blank' || fm === 'missing';
+        var fmReady = fm === 'ready' || fm === 'intentional';
+        var rows = [
+            {
+                key: 'fileManager',
+                label: 'Y2 File Manager',
+                state: fmReady ? 'ready' : fm === 'missing' ? 'missing' : 'warning',
+                detail:
+                    fm === 'ready'
+                        ? 'A File Manager icon for Y2 is included.'
+                        : fm === 'intentional'
+                          ? 'All Home icons are blank on purpose on this theme.'
+                          : 'This theme has no File Manager icon yet. Add one made for Y2.'
+            },
+            {
+                key: 'bluetooth',
+                label: 'Y2 Settings Bluetooth',
+                state: bt === 'y2' ? 'ready' : 'warning',
+                detail:
+                    bt === 'y2'
+                        ? 'A Settings Bluetooth icon made for Y2 is included.'
+                        : bt === 'fallback'
+                          ? 'This theme needs an icon for the Y2 Settings menu. The Y1 Home icon is being used for now.'
+                          : 'This theme needs an icon for the Y2 Settings menu.'
+            }
+        ];
+        var needsTwo = blocking && bt !== 'y2';
+        var title = needsTwo
+            ? 'Y2 needs two icons'
+            : blocking
+              ? 'Y2 needs a File Manager icon'
+              : bt !== 'y2'
+                ? 'Y2 needs a Settings Bluetooth icon'
+                : 'Y2-ready theme';
+        var body = needsTwo
+            ? 'This theme needs two icons for Y2: one for File Manager and one for the Settings menu.'
+            : blocking
+              ? 'This theme needs a File Manager icon for Y2. Add one made for Y2.'
+              : bt === 'y2'
+                ? 'This theme has both Y2 icons: File Manager and Settings Bluetooth.'
+                : 'This theme needs an icon for the Settings Bluetooth row on Y2. The Y1 Home icon is being used until you add one.';
+        var actionKey = blocking ? 'fileManager' : bt !== 'y2' ? 'bluetooth' : 'fileManager';
+        var action = blocking
+            ? 'Add File Manager icon'
+            : bt !== 'y2'
+              ? 'Add Settings Bluetooth icon'
+              : 'Review File Manager icon';
+        /* Two independent gaps need two doors: the primary button fixes the
+           File Manager slot, and the second targets the Settings icon. */
+        var secondaryAction = blocking && bt !== 'y2' ? 'Add Settings Bluetooth icon' : '';
         return {
-            label: 'Y1',
-            title: 'Y1 theme',
-            body: 'This theme has no file manager icon, so it is listed for Y1 only. Add that icon to have the theme listed as a Y1 / Y2 theme.',
-            action: 'Add file manager icon'
+            label: fmReady ? 'Y1 / Y2' : 'Y1',
+            title: title,
+            body: body,
+            action: action,
+            actionKey: actionKey,
+            secondaryAction: secondaryAction,
+            rows: rows
         };
     }
 
@@ -10249,10 +11060,50 @@
         var copy = platformCopy();
         if (el.platformPopTitle) el.platformPopTitle.textContent = copy.title;
         if (el.platformPopBody) el.platformPopBody.textContent = copy.body;
+        if (el.platformCompatList) {
+            el.platformCompatList.innerHTML = '';
+            (copy.rows || []).forEach(function (row) {
+                var item = document.createElement('div');
+                item.className = 'studio-compat-row is-' + (row.state || 'neutral');
+                item.setAttribute('role', 'listitem');
+                var dot = document.createElement('span');
+                dot.className = 'studio-compat-dot';
+                dot.setAttribute('aria-hidden', 'true');
+                var text = document.createElement('div');
+                text.className = 'studio-compat-copy';
+                var name = document.createElement('strong');
+                name.textContent = row.label;
+                var detail = document.createElement('p');
+                detail.textContent = row.detail;
+                text.appendChild(name);
+                text.appendChild(detail);
+                item.appendChild(dot);
+                item.appendChild(text);
+                el.platformCompatList.appendChild(item);
+            });
+        }
         if (el.platformFocus) {
             var label = el.platformFocus.querySelector('span');
             if (label && copy.action) label.textContent = copy.action;
             el.platformFocus.hidden = !copy.action;
+            var secondary = document.getElementById('studio-platform-bluetooth');
+            if (!secondary) {
+                secondary = document.createElement('button');
+                secondary.className = 'studio-btn';
+                secondary.id = 'studio-platform-bluetooth';
+                secondary.type = 'button';
+                secondary.innerHTML =
+                    '<i class="fa-solid fa-bluetooth" aria-hidden="true"></i><span>Add Settings Bluetooth icon</span>';
+                secondary.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    focusBluetoothAsset();
+                });
+                el.platformFocus.parentNode.insertBefore(secondary, el.platformFocus.nextSibling);
+            }
+            var secondaryLabel = secondary.querySelector('span');
+            if (secondaryLabel && copy.secondaryAction) secondaryLabel.textContent = copy.secondaryAction;
+            secondary.hidden = !copy.secondaryAction;
         }
     }
 
@@ -10272,6 +11123,42 @@
         el.platformPop.hidden = true;
         if (el.platformChip) el.platformChip.setAttribute('aria-expanded', 'false');
         el.platformPop.__pinned = false;
+        syncY2FileManagerToast();
+    }
+
+    function openPlatformAudit() {
+        if (!el.platformChip || !el.platformPop) return;
+        refreshPlatformPopover();
+        el.platformPop.hidden = false;
+        el.platformPop.__pinned = true;
+        /* The toast is a shortcut into this panel. Once the panel is open it
+           would sit over the second action, so let the panel take the stage. */
+        hideY2FileManagerToast();
+        el.platformChip.setAttribute('aria-expanded', 'true');
+        el.platformChip.focus({ preventScroll: true });
+    }
+
+    function focusBluetoothAsset() {
+        if (!state.meta) {
+            toast('Open a theme first.');
+            return;
+        }
+        var settingId = 'settingConfig.bluetooth';
+        var homeId = 'homePageConfig.bluetooth';
+        /* Prefer the Y2 slot, even when it is empty: the point of this door is
+           to add a Settings-specific icon, not to edit the Y1 Home artwork. */
+        var id = state.assetById[settingId] ? settingId : homeId;
+        if (!state.assetById[id]) {
+            toast('This theme does not declare a Bluetooth asset slot.');
+            return;
+        }
+        closePlatformPop();
+        revealAssetInEdit(id, {
+            relatedTitle: 'Bluetooth — Y1 Home & Y2 Settings',
+            toolbarIds: [id, id === settingId ? homeId : settingId].filter(function (path) {
+                return !!state.assetById[path];
+            })
+        });
     }
 
     function focusFileManagerAsset() {
@@ -10322,6 +11209,8 @@
             el.platformPop.hidden = false;
             el.platformChip.setAttribute('aria-expanded', 'true');
             if (pin) el.platformPop.__pinned = true;
+            /* The shortcut toast would cover the panel's second action. */
+            hideY2FileManagerToast();
         }
 
         function hide(force) {
@@ -10375,7 +11264,12 @@
             el.platformFocus.addEventListener('click', function (event) {
                 event.preventDefault();
                 event.stopPropagation();
-                if (!themeShipsFileManager()) {
+                var copy = platformCopy();
+                if (copy.actionKey === 'bluetooth') {
+                    focusBluetoothAsset();
+                    return;
+                }
+                if (y2FileManagerStatus() === 'blank' || y2FileManagerStatus() === 'missing') {
                     closePlatformPop();
                     openY2FileManagerModal();
                 } else {
@@ -10396,12 +11290,41 @@
 
     function syncY2FileManagerToast() {
         if (!el.y2Toast) return;
+        var fm = y2FileManagerStatus();
+        var bt = y2BluetoothStatus();
+        /* An all-blank Home is a deliberate design, not a broken File Manager
+           slot; leave it to the compatibility panel rather than nagging. */
+        var fmNeeds = fm !== 'ready' && fm !== 'intentional';
+        var btNeeds = bt !== 'y2' && fm !== 'intentional';
         var show =
             state.sourceType === 'gallery' &&
             !!state.folder &&
-            !themeShipsFileManager() &&
+            (fmNeeds || btNeeds) &&
             state.y2ToastDismissedFolder !== state.folder &&
-            !(el.y2Modal && !el.y2Modal.hidden);
+            !(el.y2Modal && !el.y2Modal.hidden) &&
+            (!el.platformPop || el.platformPop.hidden);
+        if (show) {
+            var title = fmNeeds && btNeeds
+                ? 'Y2 needs two icons'
+                : fmNeeds
+                  ? 'Y2 needs a File Manager icon'
+                  : 'Y2 Settings needs its own Bluetooth icon';
+            var body = fmNeeds && btNeeds
+                ? 'This theme needs a File Manager icon and a Settings Bluetooth icon for Y2.'
+                : fmNeeds
+                  ? 'This theme needs a File Manager icon for Y2.'
+                  : 'This theme needs an icon for the Settings Bluetooth row on Y2. The Y1 Home icon is being used for now.';
+            var titleEl = el.y2Toast.querySelector('.studio-y2-toast-copy strong');
+            var bodyEl = el.y2Toast.querySelector('.studio-y2-toast-copy span');
+            if (titleEl) titleEl.textContent = title;
+            if (bodyEl) bodyEl.textContent = body;
+            if (el.y2ToastOpen) {
+                var label = el.y2ToastOpen.querySelector('span');
+                if (label) label.textContent = 'Review Y2 assets';
+                var icon = el.y2ToastOpen.querySelector('i');
+                if (icon) icon.className = 'fa-solid fa-list-check';
+            }
+        }
         el.y2Toast.hidden = !show;
     }
 
@@ -10429,9 +11352,9 @@
         if (el.y2ModalStatus) {
             el.y2ModalStatus.textContent = ready
                 ? blank
-                    ? 'Slot kept blank (transparent.png) — Y2 shows no File Manager icon here.'
-                    : 'File Manager icon ready (' + assetFileLabel(asset) + ') — full Y2 support enabled!'
-                : 'Waiting for File Manager icon (166 × 166 PNG), or keep the slot blank.';
+                    ? 'No File Manager icon is shown here. Add one made for Y2, or keep it blank.'
+                    : 'File Manager icon ready for Y2 (' + assetFileLabel(asset) + ').'
+                : 'Choose a File Manager icon made for Y2, or keep it blank.';
         }
         if (el.y2ModalSubmit) {
             el.y2ModalSubmit.disabled = !ready;
@@ -10455,8 +11378,13 @@
 
     function setupY2FileManagerHelper() {
         if (el.y2ToastOpen) {
-            el.y2ToastOpen.addEventListener('click', function () {
-                openY2FileManagerModal();
+            el.y2ToastOpen.addEventListener('click', function (event) {
+                /* Otherwise the same click reaches the document handler that
+                   dismisses a pinned platform popover. */
+                event.preventDefault();
+                event.stopPropagation();
+                hideY2FileManagerToast();
+                openPlatformAudit();
             });
         }
         if (el.y2ToastClose) {
@@ -10597,6 +11525,7 @@
                     firmware: mod.id,
                     baseFirmware: mod.base,
                     launcher: true,
+                    solar: mod.solar === true,
                     version: null
                 };
             })
@@ -10691,6 +11620,14 @@
             el.firmwareState.hidden = !showBadge;
             el.firmwareState.textContent = showBadge ? 'Older launcher' : '';
         }
+        var isSolar = !!(stock && stock.solar === true);
+        if (el.solarBarsControl) el.solarBarsControl.hidden = !isSolar;
+        if (el.solarBars && isSolar) {
+            var solarMode = nowPlayingBarsFromConfig();
+            el.solarBars.value = solarMode;
+            el.solarBarsControl.title =
+                'Solar theme option: title, artist, album, track count and action rows in Now Playing. Preview-only for stock and Better-Y, whose launchers do not read this key.';
+        }
         if (!el.firmwareSummary) return;
         var parts = [current.label];
         if (stock && stock.date) parts.push('released ' + stock.date);
@@ -10709,6 +11646,44 @@
             }
         }
         el.firmwareSummary.textContent = parts.join(' · ');
+    }
+
+    function nowPlayingBarsFromConfig() {
+        var cfg = state.config || {};
+        var blocks = [cfg.solarConfig, cfg.playerConfig];
+        for (var i = 0; i < blocks.length; i += 1) {
+            var block = blocks[i];
+            if (!block || !Object.prototype.hasOwnProperty.call(block, 'nowPlayingInfoBars')) continue;
+            var mode = String(block.nowPlayingInfoBars || 'default').trim().toLowerCase();
+            if (mode === 'none' || mode === 'off' || mode === 'disabled' || mode === 'false') return 'none';
+            if (mode === 'item' || mode === 'matchitem' || mode === 'match_item') return 'item';
+            return 'default';
+        }
+        return 'default';
+    }
+
+    /* Solar is the one launcher that reads this theme key. Writing it here
+       keeps the setting in the package, unlike the preview-only status
+       visibility switches which mirror launcher preferences. */
+    function setNowPlayingBarsMode(mode) {
+        if (mode !== 'default' && mode !== 'none' && mode !== 'item') mode = 'default';
+        writePath(state.config, 'solarConfig.nowPlayingInfoBars', mode);
+        markDirty();
+        renderFirmwareControl();
+        var stuck = 'Now Playing bars: ' + (mode === 'none' ? 'none' : mode === 'item' ? 'matching item rows' : 'translucent') + '.';
+        toast(stuck);
+        var api = el.preview ? el.preview._y1TpApi : null;
+        var view = api && typeof api.currentView === 'function' ? api.currentView() : '';
+        mountPreview({ preserveScreen: true })
+            .then(function () {
+                if (view && view !== 'home') {
+                    var next = el.preview ? el.preview._y1TpApi : null;
+                    if (next && typeof next.showView === 'function') {
+                        try { next.showView(view); } catch (e) {}
+                    }
+                }
+            })
+            .catch(function () {});
     }
 
 
@@ -10744,6 +11719,11 @@
                 if (chosen.device === 'y1') state.firmwareVersions.y1 = chosen.firmware;
                 else if (chosen.firmware) state.firmwareVersions.y2 = chosen.firmware;
                 applyPreviewControlsToSimulator();
+            });
+        }
+        if (el.solarBars) {
+            el.solarBars.addEventListener('change', function () {
+                setNowPlayingBarsMode(el.solarBars.value);
             });
         }
         each(document.querySelectorAll('[data-preview-device]'), function (btn) {
@@ -10790,6 +11770,7 @@
     }
 
     function bindEvents() {
+        ensureEditIntentElements();
         setupAssetListEvents();
         setupPreviewAssetFocus();
         setupPlatformBadge();
@@ -10902,6 +11883,42 @@
             state.formDirty = true;
             markDirty();
             if (el.submitExternal.checked) el.submitExternalUrl.focus();
+        });
+
+        /* —— Edit intent ——
+           The main path asks on the way into Edit. These controls keep that
+           answer visible and reversible without returning to Submit. */
+        var editIntentChange = document.getElementById('studio-edit-intent-change');
+        if (editIntentChange) {
+            editIntentChange.addEventListener('click', function () {
+                openEditIntentModal();
+            });
+        }
+        var editIntentOwn = document.getElementById('studio-edit-intent-own');
+        if (editIntentOwn) {
+            editIntentOwn.addEventListener('click', function () {
+                chooseEditIntent('own');
+            });
+        }
+        var editIntentStart = document.getElementById('studio-edit-intent-start');
+        if (editIntentStart) {
+            editIntentStart.addEventListener('click', function () {
+                chooseEditIntent('starting');
+            });
+        }
+        ['studio-edit-intent-x', 'studio-edit-intent-cancel'].forEach(function (id) {
+            var button = document.getElementById(id);
+            if (button) button.addEventListener('click', function () { closeEditIntentModal(true); });
+        });
+        var editIntentModal = document.getElementById('studio-edit-intent-modal');
+        if (editIntentModal) {
+            editIntentModal.addEventListener('click', function (event) {
+                if (event.target === editIntentModal) closeEditIntentModal(true);
+            });
+        }
+        document.addEventListener('keydown', function (event) {
+            if (event.key !== 'Escape' || !state.editIntentOpen) return;
+            closeEditIntentModal(true);
         });
 
         /* —— Identity question ——
@@ -11032,11 +12049,13 @@
         if (el.recoveryDismiss) el.recoveryDismiss.addEventListener('click', hideRecoveryBanner);
     }
 
-    /* —— Managing a listing: update, text fixes, removal ——
+    /* —— Managing a listing: update and removal ——
 
-       These three used to be separate pages (upload.html, report-theme.html).
+       These two used to be separate pages (upload.html, report-theme.html).
        They live in the Studio now because the Studio already knows which theme
-       is open, who is editing it and what its current details are. */
+       is open, who is editing it and what its current details are. Listing
+       text is edited in the same form as the rest of the theme, so there is
+       no second text box pretending to be a separate tool. */
 
     function manageSection() {
         return document.getElementById('studio-manage');
@@ -11081,18 +12100,6 @@
         return payload;
     }
 
-    async function postManageJson(path, body) {
-        var response = await uploadRequest(path, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
-        var payload = await response.json().catch(function () {
-            return {};
-        });
-        if (!response.ok) throw new Error(payload.error || payload.message || 'The request failed (' + response.status + ').');
-        return payload;
-    }
 
     function galleryThemeForManage() {
         if (!state.folder) return null;
@@ -11115,8 +12122,8 @@
         var hint = section.querySelector('[data-manage-hint]');
         if (hint) {
             hint.textContent = listing.sourceType === 'external'
-                ? 'This entry points at a download on the author’s own page, so only the listing text can be changed here.'
-                : 'Updates, text fixes and takedowns all go to a maintainer as a pull request.';
+                ? 'This entry points at a download on the author’s own page. Ask us to correct or remove the listing.'
+                : 'Updates and takedowns go to a maintainer as a pull request.';
         }
         var updateBtn = section.querySelector('[data-manage-update]');
         if (updateBtn) updateBtn.hidden = listing.sourceType === 'external';
@@ -11130,9 +12137,8 @@
             clearSubmitScrollTimer();
             section.scrollIntoView({ block: 'start', behavior: 'smooth' });
         }
-        var which = panel === 'remove' || panel === 'details' ? panel : '';
+        var which = panel === 'remove' ? panel : '';
         section.querySelector('[data-manage-remove-form]').hidden = which !== 'remove';
-        section.querySelector('[data-manage-details-form]').hidden = which !== 'details';
         if (which === 'remove') {
             var confirmName = section.querySelector('#studio-remove-confirm-name');
             if (confirmName) confirmName.focus();
@@ -11156,33 +12162,12 @@
             '  <p class="studio-hint" data-manage-hint></p>',
             '</div>',
             '<div class="studio-manage-actions">',
-            '  <button class="studio-btn studio-btn--primary" type="button" data-manage-update><i class="fa-solid fa-upload" aria-hidden="true"></i>Send an update</button>',
-            '  <button class="studio-btn" type="button" data-manage-details><i class="fa-solid fa-pen" aria-hidden="true"></i>Fix the listing text</button>',
+            '  <button class="studio-btn studio-btn--primary" type="button" data-manage-update><i class="fa-solid fa-pen" aria-hidden="true"></i>Edit this theme</button>',
             '  <button class="studio-btn" type="button" data-manage-remove><i class="fa-solid fa-xmark" aria-hidden="true"></i>Request removal</button>',
             '</div>',
             '<button class="studio-mini-btn" type="button" data-manage-reset>',
             '  <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Change answer',
             '</button>',
-
-            '<form class="studio-manage-form" data-manage-details-form hidden>',
-            '  <div class="studio-field">',
-            '    <label for="studio-details-title">Title</label>',
-            '    <input id="studio-details-title" type="text" maxlength="120" translate="no" data-i18n-skip />',
-            '  </div>',
-            '  <div class="studio-field">',
-            '    <label for="studio-details-desc">Description</label>',
-            '    <textarea id="studio-details-desc" rows="3" maxlength="600" translate="no" data-i18n-skip></textarea>',
-            '  </div>',
-            '  <div class="studio-field">',
-            '    <label for="studio-details-author-url">Author link</label>',
-            '    <input id="studio-details-author-url" type="url" placeholder="https://" translate="no" data-i18n-skip />',
-            '  </div>',
-            '  <p class="studio-hint">Write both in English. The gallery translates them for every visitor.</p>',
-            '  <div class="studio-manage-buttons">',
-            '    <button class="studio-btn studio-btn--primary" type="submit">Send the new text</button>',
-            '    <button class="studio-btn" type="button" data-manage-cancel>Cancel</button>',
-            '  </div>',
-            '</form>',
 
             '<form class="studio-manage-form" data-manage-remove-form hidden>',
             '  <div class="studio-field">',
@@ -11238,11 +12223,9 @@
         else if (anchor && anchor.parentNode === pane) pane.insertBefore(section, anchor);
         else pane.insertBefore(section, pane.firstChild);
 
-        var detailsForm = section.querySelector('[data-manage-details-form]');
         var removeForm = section.querySelector('[data-manage-remove-form]');
 
         function closeForms() {
-            detailsForm.hidden = true;
             removeForm.hidden = true;
         }
 
@@ -11257,22 +12240,10 @@
             setManageStatus('The update keeps this listing’s folder, so it replaces the theme in place once a maintainer merges it.', true);
         });
 
-        section.querySelector('[data-manage-details]').addEventListener('click', function () {
-            var listing = galleryThemeForManage() || {};
-            section.querySelector('#studio-details-title').value = listing.name || '';
-            section.querySelector('#studio-details-desc').value = listing.description || '';
-            section.querySelector('#studio-details-author-url').value = listing.authorUrl || '';
-            removeForm.hidden = true;
-            detailsForm.hidden = false;
-            section.querySelector('#studio-details-title').focus();
-            setManageStatus('');
-        });
-
         section.querySelector('[data-manage-remove]').addEventListener('click', function () {
             var listing = galleryThemeForManage() || {};
             section.querySelector('#studio-remove-confirm-name').value = '';
             section.querySelector('#studio-remove-confirm-author').value = '';
-            detailsForm.hidden = true;
             removeForm.hidden = false;
             section.querySelector('#studio-remove-notes').placeholder = 'The listed title is “' + (listing.name || state.folder) + '”.';
             section.querySelector('#studio-remove-confirm-name').focus();
@@ -11298,52 +12269,6 @@
                 markDirty();
             });
         }
-
-        detailsForm.addEventListener('submit', async function (event) {
-            event.preventDefault();
-            var folder = state.folder;
-            if (!folder) return;
-            var title = section.querySelector('#studio-details-title').value.trim();
-            var description = cleanThemeDescription(section.querySelector('#studio-details-desc').value.trim());
-            var authorUrl = section.querySelector('#studio-details-author-url').value.trim();
-            if (!title) {
-                setManageStatus('A listing needs a title.', false);
-                return;
-            }
-            setManageStatus('Sending the new text…', true);
-            try {
-                var listingForMeta = galleryThemeForManage() || {};
-                var metaClientSubmittedAt = clientIsoTimestamp(new Date());
-                var metaOriginalSubmittedAt = resolveOriginalSubmittedAt(
-                    listingForMeta,
-                    folder,
-                    title,
-                    listingForMeta.author || ''
-                );
-                var payload = await postManageJson('/api/theme-metadata', {
-                    clientSubmittedAt: metaClientSubmittedAt,
-                    originalSubmittedAt: metaOriginalSubmittedAt || undefined,
-                    requestedBy: listingForMeta.author || '',
-                    items: [
-                        {
-                            folder: folder,
-                            themeInfo: { title: title, description: description, authorUrl: authorUrl },
-                            listing: { name: title, description: description, authorUrl: authorUrl }
-                        }
-                    ]
-                });
-                var metaPr = payload && payload.prUrl ? String(payload.prUrl) : '';
-                var metaTrack = trackingUrlFor(metaPr, folder);
-                setManageStatus('Sent. A maintainer merges listing text changes, so they go live once the pull request is merged.', true, metaPr, folder);
-                announceSupportNote('listing', {
-                    themeName: title,
-                    linkUrl: metaTrack || metaPr,
-                    linkLabel: metaTrack ? 'Track this request' : 'View pull request'
-                });
-            } catch (err) {
-                setManageStatus((err && err.message) || 'The change did not go through.', false);
-            }
-        });
 
         removeForm.addEventListener('submit', async function (event) {
             event.preventDefault();
