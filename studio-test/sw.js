@@ -3,7 +3,7 @@
    serving it from cache first kept a tab (and this worker's own query-keyed copy)
    on the previous release after a deploy, because a cache hit skipped the network
    entirely. The cache is now only an offline fallback. */
-const CACHE = 'innioasis-studio-v82';
+const CACHE = 'innioasis-studio-v94';
 const SHELL = [
   './',
   './index.html',
@@ -13,7 +13,55 @@ const SHELL = [
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png',
-  './icons/apple-touch-icon.png'
+  './icons/apple-touch-icon.png',
+  '../assets/native-y1/better-y.png',
+  '../assets/native-y1/theme-default-cover.png',
+  '../assets/native-y2/theme-default-cover.png',
+  '../assets/bundled-themes/y1/theme1.png',
+  '../assets/bundled-themes/y1/theme2.png',
+  '../assets/bundled-themes/y1/theme3.png',
+  '../assets/bundled-themes/y1/theme4.png',
+  '../assets/bundled-themes/y2/theme1.png',
+  '../assets/bundled-themes/y2/theme2.png',
+  '../assets/bundled-themes/y2/theme3.png',
+  '../assets/bundled-themes/y2/theme4.png',
+  '../assets/bundled-themes/y2/theme5.png',
+  '../assets/native-y1/theme-selected.png',
+  '../assets/native-y1/theme-multiselect.png',
+  '../assets/native-y2/theme-selected-light.png',
+  '../assets/native-y2/theme-selected-dark.png',
+  '../assets/native-y2/theme-multiselect-light.png',
+  '../assets/native-y2/theme-multiselect-dark.png',
+  '../assets/native-y1/theme-options/delete.png',
+  '../assets/native-y1/theme-options/delete-selected.png',
+  '../assets/native-y1/theme-options/multi-select.png',
+  '../assets/native-y1/theme-options/multi-select-selected.png',
+  '../assets/native-y1/theme-options/all-select.png',
+  '../assets/native-y1/theme-options/all-select-selected.png',
+  '../assets/native-y1/theme-options/rename.png',
+  '../assets/native-y1/theme-options/rename-selected.png',
+  '../assets/native-y1/theme-options/as-theme.png',
+  '../assets/native-y1/theme-options/as-theme-selected.png',
+  '../assets/native-y2/theme-options/delete.png',
+  '../assets/native-y2/theme-options/delete-selected.png',
+  '../assets/native-y2/theme-options/multi-select.png',
+  '../assets/native-y2/theme-options/multi-select-selected.png',
+  '../assets/native-y2/theme-options/all-select.png',
+  '../assets/native-y2/theme-options/all-select-selected.png',
+  '../assets/native-y2/theme-options/rename.png',
+  '../assets/native-y2/theme-options/rename-selected.png',
+  '../assets/native-y2/theme-options/as-theme.png',
+  '../assets/native-y2/theme-options/as-theme-selected.png',
+  '../assets/native-y2/theme-options/delete-dark.png',
+  '../assets/native-y2/theme-options/delete-selected-dark.png',
+  '../assets/native-y2/theme-options/multi-select-dark.png',
+  '../assets/native-y2/theme-options/multi-select-selected-dark.png',
+  '../assets/native-y2/theme-options/all-select-dark.png',
+  '../assets/native-y2/theme-options/all-select-selected-dark.png',
+  '../assets/native-y2/theme-options/rename-dark.png',
+  '../assets/native-y2/theme-options/rename-selected-dark.png',
+  '../assets/native-y2/theme-options/as-theme-dark.png',
+  '../assets/native-y2/theme-options/as-theme-selected-dark.png'
 ];
 
 self.addEventListener('install', (event) => {

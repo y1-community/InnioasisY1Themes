@@ -44,6 +44,30 @@
         'about'
     ];
 
+    /* 2.1.9 added File extensions but still had no Launcher row; that row
+       arrived with 2.8.2 (and is labelled "Launcher" before Better-Y). */
+    var Y1_FLAT_219 = [
+        'shutdown',
+        'timed_shutdown',
+        'shuffle',
+        'repeat',
+        'equalizer',
+        'file_extension',
+        'key_lock',
+        'key_tone',
+        'key_vibration',
+        'wallpaper',
+        'backlight',
+        'brightness',
+        'display_battery',
+        'date_time',
+        'theme',
+        'language',
+        'factory_reset',
+        'clear_cache',
+        'about'
+    ];
+
     var Y1_FLAT_176 = [
         'shutdown',
         'timed_shutdown',
@@ -89,6 +113,76 @@
         '3.2.0': ['song_name_display', 'list_sort', 'artist_view', 'album_view', 'album_art_style']
     };
 
+    /* Themes installed by the launcher on first boot -----------------------
+     * ThemeManager copies each APK asset theme into /storage/sdcard0/Themes
+     * under a human-readable folder name, then ThemeListActivity sorts those
+     * folders by name and inserts the factory HoloPebble row at index 0.
+     *
+     * Y1 3.1.2 ThemeManager.checkThemeDirExist copies theme1-4 as HoloBubble,
+     * Unseen, Melody Munchkin and HoloFacet. Y2 3.2.8's K0.f does the same and
+     * adds theme5 as Classic. Y1 builds before 3.0.7 have only theme1-3; the
+     * fourth (HoloFacet) arrived in 3.0.7. Y2's theme engine starts at 3.1.7
+     * with all five. Names below are the folder names the launcher creates,
+     * which are the names ThemeListActivity renders (it does not read a
+     * title from config.json). `cover` is the asset theme number.
+     */
+    var BUNDLED_THEME_SETS = {
+        y1: {
+            beforeHoloFacet: [
+                { name: 'HoloBubble', cover: 'theme1' },
+                { name: 'Unseen', cover: 'theme2' },
+                { name: 'Melody Munchkin', cover: 'theme3' }
+            ],
+            withHoloFacet: [
+                { name: 'HoloBubble', cover: 'theme1' },
+                { name: 'Unseen', cover: 'theme2' },
+                { name: 'Melody Munchkin', cover: 'theme3' },
+                { name: 'HoloFacet', cover: 'theme4' }
+            ]
+        },
+        y2: [
+            { name: 'HoloBubble', cover: 'theme1' },
+            { name: 'Unseen', cover: 'theme2' },
+            { name: 'Melody Munchkin', cover: 'theme3' },
+            { name: 'HoloFacet', cover: 'theme4' },
+            { name: 'Classic', cover: 'theme5' }
+        ]
+    };
+
+    function themeVersionAtLeast(versionId, minimum) {
+        var left = String(versionId || '').split('.').map(Number);
+        var right = String(minimum || '').split('.').map(Number);
+        for (var i = 0; i < Math.max(left.length, right.length); i += 1) {
+            var a = left[i] || 0;
+            var b = right[i] || 0;
+            if (a !== b) return a > b;
+        }
+        return true;
+    }
+
+    function bundledThemes(modelId, versionId) {
+        var model = String(modelId || '').toLowerCase();
+        var set = [];
+        if (model === 'y1') {
+            if (!versionId || !themeVersionAtLeast(versionId, '2.1.9')) return [];
+            set = (
+                themeVersionAtLeast(versionId, '3.0.7')
+                    ? BUNDLED_THEME_SETS.y1.withHoloFacet
+                    : BUNDLED_THEME_SETS.y1.beforeHoloFacet
+            ).slice();
+        } else if (model === 'y2') {
+            if (!versionId || !themeVersionAtLeast(versionId, '3.1.7')) return [];
+            set = BUNDLED_THEME_SETS.y2.slice();
+        }
+        return set
+            .map(function (theme) {
+                return { name: theme.name, cover: theme.cover };
+            })
+            .sort(function (a, b) {
+                return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
+            });
+    }
+
     /* File Manager settings screen (Y2). Rows read from the 3.2.8 launcher
        layout for FileManagerSettingsActivity: Sorting Method (method + order),
        Display Options (hidden files + extensions), Storage Management
@@ -99,6 +193,106 @@
         {
             group: 'Storage Management',
             rows: ['fm_format_internal', 'fm_format_tf', 'fm_restore_defaults']
+        }
+    ];
+
+    /* Launcher mods ---------------------------------------------------------
+     * These are not stock releases, but the menu tree still belongs to a real
+     * launcher. `base` names the stock release the mod is built on, and the
+     * rows below are the ones its SettingsActivity actually builds.
+     *
+     * Better-Y (based on 3.1.2): inserts `better-Y` at index 0, adds Reboot
+     * under Shutdown, drops Display battery, and renames the launcher row to
+     * Rockbox only when Rockbox is installed. Standalone Better-Y therefore has
+     * no Rockbox row. Its Music menu adds Cover Flow and Album Artists.
+     *
+     * Koensayr only patches artist -> album drilling and AVRCP; its menus are
+     * stock 3.0.2/3.0.7, so it reuses those rows unchanged.
+     *
+     * Rockbox 0.6 ships the Better-Y launcher with the Rockbox row installed;
+     * 0.5/0.4 ship ordinary stock-launcher menus, so they have neither the
+     * Better-Y row nor a Rockbox-labelled launcher row.
+     */
+    var BETTER_Y_SETTINGS = [
+        'better_y',
+        'shutdown',
+        'reboot',
+        'timed_shutdown',
+        'shuffle',
+        'repeat',
+        'equalizer',
+        'file_extension',
+        'key_lock',
+        'key_tone',
+        'key_vibration',
+        'wallpaper',
+        'backlight',
+        'brightness',
+        'date_time',
+        'theme',
+        'language',
+        'factory_reset',
+        'clear_cache',
+        'about'
+    ];
+
+    var ROCKBOX_06_SETTINGS = BETTER_Y_SETTINGS.slice();
+    ROCKBOX_06_SETTINGS.splice(ROCKBOX_06_SETTINGS.indexOf('language') + 1, 0, 'rockbox');
+
+    var LAUNCHERS = [
+        {
+            id: 'better-y',
+            label: 'Better-Y — Y1 3.1.2 menu',
+            device: 'y1',
+            base: '3.1.2',
+            menuProfile: 'better-y',
+            settingsRows: BETTER_Y_SETTINGS,
+            notes: 'better-Y row at the top of Settings, Reboot under Shutdown, Cover Flow and Album Artists in Music.'
+        },
+        {
+            id: 'koensayr-3.0.7',
+            label: 'Koensayr — Y1 3.0.7 menus',
+            device: 'y1',
+            base: '3.0.7',
+            menuProfile: 'stock',
+            settingsRows: Y1_FLAT,
+            notes: 'Stock 3.0.7 launcher; Koensayr changes Artist -> Album navigation, not the menu tree.'
+        },
+        {
+            id: 'koensayr-3.0.2',
+            label: 'Koensayr — Y1 3.0.2 menus',
+            device: 'y1',
+            base: '3.0.2',
+            menuProfile: 'stock',
+            settingsRows: Y1_FLAT,
+            notes: 'Stock 3.0.2 launcher; Koensayr changes Artist -> Album navigation, not the menu tree.'
+        },
+        {
+            id: 'rockbox-0.6',
+            label: 'Rockbox 0.6 — Better-Y stock menu',
+            device: 'y1',
+            base: '3.1.2',
+            menuProfile: 'better-y',
+            settingsRows: ROCKBOX_06_SETTINGS,
+            notes: 'Better-Y menu plus the Rockbox launcher row installed by Rockbox 0.6.'
+        },
+        {
+            id: 'rockbox-0.5',
+            label: 'Rockbox 0.5 — stock 3.1.2 menu',
+            device: 'y1',
+            base: '3.1.2',
+            menuProfile: 'stock',
+            settingsRows: Y1_FLAT,
+            notes: 'Stock launcher menu; no Better-Y row and no Rockbox-labelled launcher row.'
+        },
+        {
+            id: 'rockbox-0.4',
+            label: 'Rockbox 0.4 — stock 3.1.2 menu',
+            device: 'y1',
+            base: '3.1.2',
+            menuProfile: 'stock',
+            settingsRows: Y1_FLAT,
+            notes: 'Stock launcher menu; no Better-Y row and no Rockbox-labelled launcher row.'
         }
     ];
 
@@ -150,7 +344,7 @@
                             'shuffleQuick'
                         ],
                         settingsStyle: 'flat',
-                        settingsRows: Y1_FLAT,
+                        settingsRows: Y1_FLAT_219,
                         notes: 'Theme engine, Videos, 3 bundled themes, M3U-free music library.',
                         fileManager: false,
                         fm: true,
@@ -276,8 +470,9 @@
                 versions: [
                     {
                         id: '3.1.7',
-                        label: 'Y2 3.1.7 (launch)',
+                        label: 'Unified — Y2 3.1.7 profile',
                         versionName: '3.1.7',
+                        aboutVersion: '3.1.7',
                         versionCode: 317,
                         date: '2026-06-01',
                         sha256: 'ad39091e24cb0542',
@@ -315,7 +510,8 @@
                             'clear_cache',
                             'about'
                         ],
-                        notes: 'Light HoloPebble default, File Manager app, 9-patch, fontScale, M3U — but no FM on Home yet.',
+                        notes: 'Light HoloPebble default, File Manager app, 9-patch, fontScale, M3U. Previewed as a Unified profile because the simulator mixes elements across the Y1/Y2 launchers.',
+                        unified: true,
                         fileManager: true,
                         fm: false,
                         musicSettings: '3.1.7'
@@ -324,6 +520,7 @@
                         id: '3.2.0',
                         label: 'Y2 3.2.0-fm',
                         versionName: '3.2.0',
+                        aboutVersion: 'FM_3.2.0',
                         versionCode: 320,
                         date: '2026-08-13',
                         sha256: '088b0d728d2eb422',
@@ -348,8 +545,9 @@
                     },
                     {
                         id: '3.2.1',
-                        label: 'Y2 3.2.1',
+                        label: 'Unified — Y2 3.2.1 profile',
                         versionName: '3.2.1',
+                        aboutVersion: 'FM_3.2.1',
                         versionCode: 321,
                         date: '2026-08-14',
                         sha256: '1b3d81b98f629436',
@@ -367,7 +565,8 @@
                         ],
                         settingsStyle: 'categories',
                         settingsRows: Y1_FLAT,
-                        notes: 'Stability release; identical schema to 3.2.0-fm.',
+                        notes: 'Stability release; identical schema to 3.2.0-fm. Previewed as a Unified profile because the simulator mixes elements across the Y1/Y2 launchers.',
+                        unified: true,
                         fileManager: true,
                         fm: true,
                         musicSettings: '3.2.0'
@@ -376,6 +575,7 @@
                         id: '3.2.4',
                         label: 'Y2 3.2.4-fm (retail)',
                         versionName: '3.2.3',
+                        aboutVersion: 'FM_3.2.4',
                         versionCode: 323,
                         date: '2026-08-19',
                         sha256: 'ff19eaa288d3a13a',
@@ -393,6 +593,7 @@
                         ],
                         settingsStyle: 'categories',
                         settingsRows: Y1_FLAT,
+                        aboutVersionLabel: 'Version:',
                         notes: 'Retail shipping ROM; About screen shortened to "Version:".',
                         fileManager: true,
                         fm: true,
@@ -402,6 +603,7 @@
                         id: '3.2.8',
                         label: 'Y2 3.2.8-fm (latest Y2)',
                         versionName: '3.2.9',
+                        aboutVersion: 'FM_3.2.8',
                         versionCode: 329,
                         date: '2026-11-27',
                         sha256: '9aae687ff2d71913dd1bb649f644a47365f7fb45fa63452b1db922a60b0dca49',
@@ -419,6 +621,7 @@
                         ],
                         settingsStyle: 'categories',
                         settingsRows: Y1_FLAT,
+                        aboutVersionLabel: 'Version:',
                         notes: 'app_name "Y2"; Unseen ships a blank fileManager slot; identical 67-key schema to 3.2.0-fm.',
                         fileManager: true,
                         fm: true,
@@ -492,6 +695,7 @@
             }
         },
 
+        launchers: LAUNCHERS,
         musicSettingsRows: MUSIC_SETTINGS,
         fileManagerSettings: FILE_MANAGER_SETTINGS,
         settingsCategories: Y2_CATEGORIES,
@@ -506,12 +710,55 @@
         return null;
     }
 
+    function launcher(id) {
+        var wanted = String(id || '');
+        for (var i = 0; i < LAUNCHERS.length; i++) {
+            if (LAUNCHERS[i].id === wanted) return LAUNCHERS[i];
+        }
+        return null;
+    }
+
+    function launcherVersion(mod, m) {
+        var base = null;
+        for (var i = 0; i < m.versions.length; i++) {
+            if (m.versions[i].id === mod.base) base = m.versions[i];
+        }
+        base = base || m.versions[m.versions.length - 1];
+        return {
+            id: mod.id,
+            label: mod.label,
+            versionName: base.versionName,
+            aboutVersion: base.aboutVersion || base.versionName,
+            versionCode: base.versionCode,
+            date: base.date,
+            sha256: '',
+            themes: base.themes,
+            home: (base.home || []).slice(),
+            hiddenHome: (base.hiddenHome || []).slice(),
+            settingsStyle: base.settingsStyle || 'flat',
+            settingsRows: (mod.settingsRows || base.settingsRows || []).slice(),
+            notes: mod.notes,
+            unified: base.unified === true,
+            bundledThemes: bundledThemes(m.id, base.id),
+            fileManager: base.fileManager === true,
+            fm: base.fm !== false,
+            musicSettings: null,
+            menuProfile: mod.menuProfile || 'stock',
+            launcher: true,
+            baseFirmware: base.id
+        };
+    }
+
     function version(modelId, versionId) {
         var m = model(modelId);
         if (!m) return null;
         var wanted = String(versionId || '');
         for (var i = 0; i < m.versions.length; i++) {
             if (m.versions[i].id === wanted) return m.versions[i];
+        }
+        if (m.id === 'y1') {
+            var mod = launcher(wanted);
+            if (mod && mod.device === m.id) return launcherVersion(mod, m);
         }
         for (var j = 0; j < m.versions.length; j++) {
             if (m.versions[j].id === m.latest) return m.versions[j];
@@ -544,8 +791,10 @@
     }
 
     CATALOG.model = model;
+    CATALOG.launcher = launcher;
     CATALOG.version = version;
     CATALOG.musicSettingsRows = musicSettingsRows;
+    CATALOG.bundledThemes = bundledThemes;
     CATALOG.assetMinimum = assetMinimum;
     CATALOG.firmwareLevelIndex = firmwareLevelIndex;
 

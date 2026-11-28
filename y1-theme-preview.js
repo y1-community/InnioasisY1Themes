@@ -33,6 +33,119 @@
     var SETTINGS_RIGHT_W = 179;
     var SETTINGS_RIGHT_MARGIN = 22;
 
+    /* better-Y's plus_logo is drawn by the launcher itself, not read from
+       settingConfig. SettingActivity hardcodes it on the better-Y row and
+       MenuStyle.betterY falls back to it when the theme has no better-y.*
+       file, so the preview must not look for it inside the theme. */
+    var NATIVE_BETTER_Y_LOGO_URL = (function () {
+        if (typeof document === 'undefined') return 'assets/native-y1/better-y.png';
+        var script = document.currentScript;
+        if (script && script.src) {
+            try {
+                return new URL('assets/native-y1/better-y.png', script.src).href;
+            } catch (e) {}
+        }
+        return '/assets/native-y1/better-y.png';
+    })();
+
+    /* Launcher-owned art used by ThemeListActivity. The default row never
+       draws the theme's own cover: ThemeListActivity switches it to
+       R.drawable.icon_theme_default_cover2, whose Y1 and Y2 versions are
+       different HoloPebble illustrations. The installed themes' icons are
+       the cover.png files copied out of assets/themeN. */
+    var NATIVE_STUDIO_ASSET_BASE_URL = (function () {
+        if (typeof document === 'undefined') return 'assets/';
+        var script = document.currentScript;
+        if (script && script.src) {
+            try {
+                return new URL('assets/', script.src).href;
+            } catch (e) {}
+        }
+        return '/assets/';
+    })();
+
+    function nativeStudioAssetUrl(relativePath) {
+        var relative = String(relativePath || '')
+            .replace(/^\.\//, '')
+            .replace(/^\/+/, '');
+        if (relative.indexOf('assets/') === 0) relative = relative.slice('assets/'.length);
+        return NATIVE_STUDIO_ASSET_BASE_URL + relative;
+    }
+
+    var THEME_SELECTOR_DEFAULT_COVER_URLS = {
+        y1: nativeStudioAssetUrl('assets/native-y1/theme-default-cover.png'),
+        y2: nativeStudioAssetUrl('assets/native-y2/theme-default-cover.png')
+    };
+    var BUNDLED_THEME_COVER_URLS = {
+        y1: {
+            theme1: nativeStudioAssetUrl('assets/bundled-themes/y1/theme1.png'),
+            theme2: nativeStudioAssetUrl('assets/bundled-themes/y1/theme2.png'),
+            theme3: nativeStudioAssetUrl('assets/bundled-themes/y1/theme3.png'),
+            theme4: nativeStudioAssetUrl('assets/bundled-themes/y1/theme4.png')
+        },
+        y2: {
+            theme1: nativeStudioAssetUrl('assets/bundled-themes/y2/theme1.png'),
+            theme2: nativeStudioAssetUrl('assets/bundled-themes/y2/theme2.png'),
+            theme3: nativeStudioAssetUrl('assets/bundled-themes/y2/theme3.png'),
+            theme4: nativeStudioAssetUrl('assets/bundled-themes/y2/theme4.png'),
+            theme5: nativeStudioAssetUrl('assets/bundled-themes/y2/theme5.png')
+        }
+    };
+
+    /* AboutActivity reads StatFs live. Y1's formatCapacity() labels a
+       128 GB unit 128G; Y2 prints the real internal-storage total with one
+       decimal. These two mock volumes match the stock screenshots. */
+    var ABOUT_VOLUMES = {
+        y1: { total: 128, used: 33.4, available: 94.6 },
+        y2: { total: 116.5, used: 1.3, available: 115.1 }
+    };
+
+    function aboutVolume(fw) {
+        return ABOUT_VOLUMES[fw && fw.modelId === 'y1' ? 'y1' : 'y2'];
+    }
+
+    function aboutPieBackground(fw) {
+        var volume = aboutVolume(fw);
+        var angle = (volume.available / volume.total) * 360;
+        return (
+            'conic-gradient(from 90deg, #FFCC23 0deg ' +
+            (360 - angle).toFixed(1) +
+            'deg, #3CFFDE ' +
+            (360 - angle).toFixed(1) +
+            'deg 360deg)'
+        );
+    }
+
+    function aboutVersionName(fw) {
+        var version = fw && fw.version;
+        return String((version && version.aboutVersion) || (version && version.versionName) || (fw && fw.versionId) || '');
+    }
+
+    function aboutVersionLabel(fw) {
+        var version = fw && fw.version;
+        return String((version && version.aboutVersionLabel) || 'System Version:');
+    }
+
+    function aboutInfoText(fw) {
+        var volume = aboutVolume(fw);
+        var isY1 = fw && fw.modelId === 'y1';
+        var available = isY1 ? volume.available.toFixed(1) + 'G' : volume.available.toFixed(1) + 'GB';
+        var used = volume.used.toFixed(1) + (isY1 ? 'G' : 'GB');
+        var total = isY1 ? volume.total + 'G' : volume.total.toFixed(1) + 'GB';
+        return (
+            'Total: ' +
+            total +
+            '\nUsed: ' +
+            used +
+            '\nAvailable: ' +
+            available +
+            '\n' +
+            aboutVersionLabel(fw) +
+            ' ' +
+            aboutVersionName(fw)
+        );
+    }
+
     /** Matches Theme Maker `constants.tsx` MOCK_SONGS for now-playing preview. */
     var MOCK_SONGS_PREVIEW = [
         { id: '1', title: 'Jam', artist: 'Michael Jackson', album: 'Dangerous', duration: 243 },
@@ -88,6 +201,7 @@
         videos_folders: 'Folders',
         audiobooks: 'Audiobooks',
         settings: 'Settings',
+        settingsBetterY: 'better-Y',
         settingsCat_keysWheel: 'Keys & Wheel',
         settingsCat_audio: 'Audio',
         settingsCat_display: 'Display',
@@ -319,8 +433,16 @@
                     settingsStyle: version.settingsStyle || 'flat',
                     fileManager: version.fileManager !== false,
                     fm: version.fm !== false,
+                    themes: version.themes !== false,
                     musicSettingsRows: rows,
+                    bundledThemes:
+                        version.bundledThemes ||
+                        (cat && typeof cat.bundledThemes === 'function'
+                            ? cat.bundledThemes(device, version.baseFirmware || version.id)
+                            : []),
+                    unified: version.unified === true,
                     home: version.home || [],
+                    menuProfile: version.menuProfile || 'stock',
                     /* Keys declared behind the launcher's internal flag: the
                        release carries the trace, so only it can preview them. */
                     hiddenHome: version.hiddenHome || [],
@@ -337,8 +459,12 @@
             settingsStyle: fallback.settingsStyle,
             fileManager: fallback.fileManager,
             fm: fallback.fm,
+            themes: true,
             musicSettingsRows: fallback.musicSettingsRows,
+            bundledThemes: [],
+            unified: false,
             home: fallback.home,
+            menuProfile: 'stock',
             catalog: null
         };
     }
@@ -358,12 +484,13 @@
         var firmwareHome = fw.home || [];
         var hiddenHome = fw.hiddenHome || [];
         var revealAll = opts.showLegacyHome === true || opts.showUnimplementedHome === true;
+        var betterMenu = fw.menuProfile === 'better-y';
         var labelMap = {
             nowPlaying: 'Now Playing',
             music: 'Music',
             video: 'Videos',
-            audiobooks: 'Audiobook',
-            ebook: 'E-Book',
+            audiobooks: betterMenu ? 'Audiobooks' : 'Audiobook',
+            ebook: betterMenu ? 'E-books' : 'E-Book',
             calculator: 'Calculator',
             calendar: 'Calendar',
             photos: 'Photos',
@@ -1650,7 +1777,20 @@
         var displayBatteryAssetKey = displayBatteryEnabled ? 'displayBatteryOn' : 'displayBatteryOff';
 
         var allEntries = {
+            /* Better-Y's own row is the first thing in its Settings list. The
+               firmwares that do not carry Better-Y never see it. */
+            better_y: {
+                id: 'better_y',
+                label: 'better-Y',
+                iconUrl: NATIVE_BETTER_Y_LOGO_URL
+            },
             shutdown: { id: 'shutdown', label: 'Shutdown', iconFile: settingConfig.shutdown, assetPath: 'settingConfig.shutdown' },
+            reboot: {
+                id: 'reboot',
+                label: 'Reboot',
+                iconFile: settingConfig.shutdown,
+                assetPath: 'settingConfig.shutdown'
+            },
             timed_shutdown: {
                 id: 'timed_shutdown',
                 label: 'Timed shutdown',
@@ -1730,8 +1870,14 @@
             date_time: { id: 'date_time', label: 'Date & Time', iconFile: settingConfig.dateTime, assetPath: 'settingConfig.dateTime' },
             theme: { id: 'theme', label: 'Theme', iconFile: settingConfig.theme, assetPath: 'settingConfig.theme' },
             language: { id: 'language', label: 'Language', iconFile: settingConfig.language, assetPath: 'settingConfig.language' },
-            /* Rockbox / Launcher is ALWAYS shown in Settings (never hidden as legacy/unimplemented). */
-            rockbox: { id: 'rockbox', label: 'Rockbox', iconFile: settingConfig.launcher, assetPath: 'settingConfig.launcher' },
+            /* Stock calls this row Launcher. Only the Rockbox 0.6 stock side
+               has Rockbox installed, and only there does it read Rockbox. */
+            rockbox: {
+                id: 'rockbox',
+                label: fw.version && fw.version.id === 'rockbox-0.6' ? 'Rockbox' : 'Launcher',
+                iconFile: settingConfig.launcher,
+                assetPath: 'settingConfig.launcher'
+            },
             factory_reset: { id: 'factory_reset', label: 'Factory reset', iconFile: settingConfig.factoryReset, assetPath: 'settingConfig.factoryReset' },
             clear_cache: { id: 'clear_cache', label: 'Clear cache', iconFile: settingConfig.clearCache, assetPath: 'settingConfig.clearCache' },
             bluetooth: {
@@ -1740,11 +1886,22 @@
                 iconFile: settingConfig.bluetooth || homeCfg.bluetooth,
                 assetPath: settingConfig.bluetooth ? 'settingConfig.bluetooth' : 'homePageConfig.bluetooth'
             },
-            about: { id: 'about', label: 'About', iconFile: undefined, valueText: gt('about') }
+            about: { id: 'about', label: 'About', iconFile: undefined }
         };
 
         var base;
-        if (category === 'musicSettings') {
+        if (category === 'betterY') {
+            /* The better-Y row opens Better-Y's own menu. These are the six
+               groups its help file lays out, in that order. */
+            base = [
+                { id: 'betterY_tools', label: 'Tools' },
+                { id: 'betterY_player', label: 'Now Playing' },
+                { id: 'betterY_menu', label: 'Menu' },
+                { id: 'betterY_metadata', label: 'Metadata' },
+                { id: 'betterY_system', label: 'System' },
+                { id: 'betterY_coverflow', label: 'Cover Flow' }
+            ];
+        } else if (category === 'musicSettings') {
             /* Y2 Music → Settings. Rows and their existence come from the
                release: 3.1.7 opened with four, 3.2.0-fm added Album Art Style
                (music_setting_album_art_style / _flat / _perspective). */
@@ -1813,38 +1970,64 @@
             /* Flat Settings list. Row membership comes from the release:
                1.7.6 has no Theme/Rockbox/File extensions/Clear cache, and
                2.8.2 adds Rockbox. Y2 3.1.7 also shipped a flat list. */
-            var flat = [
-                ['shutdown', allEntries.shutdown],
-                ['timed_shutdown', allEntries.timed_shutdown],
-                ['shuffle', allEntries.shuffle],
-                ['repeat', allEntries.repeat],
-                ['equalizer', allEntries.equalizer],
-                ['file_extension', allEntries.file_extension],
-                ['key_lock', allEntries.key_lock],
-                ['key_tone', allEntries.key_tone],
-                ['key_vibration', allEntries.key_vibration],
-                ['wallpaper', allEntries.wallpaper],
-                ['backlight', allEntries.backlight],
-                ['brightness', allEntries.brightness],
-                ['display_battery', allEntries.display_battery],
-                ['date_time', allEntries.date_time],
-                ['theme', allEntries.theme],
-                ['language', allEntries.language],
-                ['rockbox', allEntries.rockbox],
-                ['factory_reset', allEntries.factory_reset],
-                ['clear_cache', allEntries.clear_cache],
-                ['about', allEntries.about]
+            var flat = {
+                better_y: allEntries.better_y,
+                shutdown: allEntries.shutdown,
+                reboot: allEntries.reboot,
+                timed_shutdown: allEntries.timed_shutdown,
+                shuffle: allEntries.shuffle,
+                repeat: allEntries.repeat,
+                equalizer: allEntries.equalizer,
+                file_extension: allEntries.file_extension,
+                key_lock: allEntries.key_lock,
+                key_tone: allEntries.key_tone,
+                key_vibration: allEntries.key_vibration,
+                wallpaper: allEntries.wallpaper,
+                backlight: allEntries.backlight,
+                brightness: allEntries.brightness,
+                display_battery: allEntries.display_battery,
+                date_time: allEntries.date_time,
+                theme: allEntries.theme,
+                language: allEntries.language,
+                rockbox: allEntries.rockbox,
+                factory_reset: allEntries.factory_reset,
+                clear_cache: allEntries.clear_cache,
+                about: allEntries.about
+            };
+            var stockRows = [
+                'shutdown',
+                'timed_shutdown',
+                'shuffle',
+                'repeat',
+                'equalizer',
+                'file_extension',
+                'key_lock',
+                'key_tone',
+                'key_vibration',
+                'wallpaper',
+                'backlight',
+                'brightness',
+                'display_battery',
+                'date_time',
+                'theme',
+                'language',
+                'rockbox',
+                'factory_reset',
+                'clear_cache',
+                'about'
             ];
             var releaseRows = fw.version && fw.version.settingsRows ? fw.version.settingsRows : null;
-            base = flat
-                .filter(function (pair) {
-                    if (releaseRows && releaseRows.indexOf(pair[0]) === -1) return false;
+            /* Use the release's own order: Better-Y moves better-Y to the top
+               and Reboot directly under Shutdown, so filtering a fixed list
+               would quietly put them back in stock order. */
+            base = (releaseRows || stockRows)
+                .filter(function (id) {
                     /* The Rockbox row is a Y1 setting; Y2 never ships it. */
-                    if (pair[0] === 'rockbox' && deviceMode !== 'y1') return false;
-                    return true;
+                    if (id === 'rockbox' && deviceMode !== 'y1') return false;
+                    return !!flat[id];
                 })
-                .map(function (pair) {
-                    return pair[1];
+                .map(function (id) {
+                    return flat[id];
                 });
         } else {
             /* Authentic Y2 3.2.8 categorized Settings root (used in Y2 and Both modes). */
@@ -1865,7 +2048,7 @@
                 id: item.id,
                 label: item.label,
                 valueText: item.valueText,
-                iconUrl: item.iconFile ? buildFileUrl(contentFolder, item.iconFile) : '',
+                iconUrl: item.iconUrl || (item.iconFile ? buildFileUrl(contentFolder, item.iconFile) : ''),
                 assetPath: item.assetPath
             };
         });
@@ -1922,6 +2105,29 @@
             dialogMessage: '',
             dialogOptions: [],
             dialogSelectedIndex: 0,
+            /* ThemeListActivity is a 3-column grid. The launcher opens it on
+               row 0; the Studio starts on the previewed theme instead, while
+               keeping the same grid geometry and scrolling. */
+            themeSelectorInitialized: false,
+            themeGridScrollTop: 0,
+            /* ThemeOptionsDialog (long-press bar) and its multi-select state. */
+            themeOptionsVisible: false,
+            themeOptionsIndex: 0,
+            themeOptionsTargetIndex: 0,
+            themeMultiSelect: false,
+            themeMultiSelected: [],
+            themeFullPreview: false,
+            themeDeletedNames: [],
+            themeRenamedNames: {},
+            themeCurrentTitle: '',
+            themeCurrentDeleted: false,
+            /* InputMethodDialog (A-Z strip) used by Rename. */
+            inputDialogVisible: false,
+            inputValue: '',
+            inputCharIndex: 0,
+            inputContext: '',
+            inputTargetId: '',
+            inputOriginalValue: '',
             toastMessage: '',
             toastVisible: false
         };
@@ -1955,6 +2161,19 @@
         ]
     };
 
+    function renameFileManagerEntry(entryId, nextLabel) {
+        var stores = [FILE_MANAGER_TREES.internal || [], FILE_MANAGER_TREES.tf || []];
+        for (var s = 0; s < stores.length; s += 1) {
+            for (var i = 0; i < stores[s].length; i += 1) {
+                if (stores[s][i].id === entryId) {
+                    stores[s][i].label = nextLabel;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     function fileManagerEntriesFor(storage) {
         var tree = FILE_MANAGER_TREES[storage === 'tf' ? 'tf' : 'internal'] || [];
         return tree.map(function (entry) {
@@ -1968,10 +2187,13 @@
         });
     }
 
-    function genericListForView(viewId, deviceMode, sim) {
+    function genericListForView(viewId, deviceMode, sim, menuProfile) {
+        var betterMenu = menuProfile === 'better-y';
         if (viewId === 'music') {
-            var musicItems = ['All songs', 'Playlists', 'Artists', 'Albums', 'Genres', 'Folders', 'Search'];
-            if (deviceMode !== 'y1') musicItems.push('Settings');
+            var musicItems = betterMenu
+                ? ['Cover Flow', 'All songs', 'Playlists', 'Artists', 'Album Artists', 'Albums', 'Genres', 'Folders', 'Search']
+                : ['All songs', 'Playlists', 'Artists', 'Albums', 'Genres', 'Folders', 'Search'];
+            if (deviceMode !== 'y1' && !betterMenu) musicItems.push('Settings');
             return musicItems.map(function (label) {
                 return { id: label.toLowerCase().replace(/\s+/g, '_'), label: label };
             });
@@ -2001,7 +2223,10 @@
             });
         }
         if (viewId === 'videos') {
-            return ['All video', 'Playlist', 'Folders', 'Search'].map(function (label) {
+            var videoItems = betterMenu
+                ? ['All videos', 'Playlists', 'Folders', 'Search']
+                : ['All video', 'Playlist', 'Folders', 'Search'];
+            return videoItems.map(function (label) {
                 return { id: label.toLowerCase().replace(/\s+/g, '_'), label: label };
             });
         }
@@ -2027,14 +2252,10 @@
             });
         }
         if (viewId === 'audiobooks') {
-            return [
-                'All audiobooks',
-                'Artists',
-                'Albums',
-                'Folders',
-                'Bookmark lists',
-                'Settings'
-            ].map(function (label) {
+            var bookItems = betterMenu
+                ? ['All audiobooks', 'Artists', 'Albums', 'Folders', 'Bookmarks']
+                : ['All audiobooks', 'Artists', 'Albums', 'Folders', 'Bookmark lists', 'Settings'];
+            return bookItems.map(function (label) {
                 return { id: label.toLowerCase().replace(/\s+/g, '_'), label: label };
             });
         }
@@ -2427,6 +2648,7 @@
                     : '';
 
                 var homeItems = buildHomeItems(cfg.homePageConfig || {}, settingCfg, previewOpts);
+                var currentFirmware = firmwareFor(previewOpts);
                 var folderIconFile = (cfg.fileConfig && cfg.fileConfig.folderIcon) || '';
                 var folderIconUrl = folderIconFile
                     ? buildFileUrl(contentFolder, folderIconFile)
@@ -2436,9 +2658,90 @@
                     ? buildFileUrl(contentFolder, musicIconFile)
                     : '';
 
+                /* ThemeListActivity reads /storage/sdcard0/Themes, sorts the
+                   theme folders by name and prepends the default row. The
+                   Studio adds the theme being previewed when it is not one of
+                   those bundled folders, so the selector always shows what the
+                   simulator is currently drawing. */
+                function themeSelectorEntries() {
+                    var model = currentFirmware.modelId === 'y1' ? 'y1' : 'y2';
+                    var defaultCovers = THEME_SELECTOR_DEFAULT_COVER_URLS[model];
+                    var bundledCovers = BUNDLED_THEME_COVER_URLS[model] || {};
+                    var title = String((cfg.theme_info && cfg.theme_info.title) || '').trim();
+                    var fallbackTitle = String((previewMeta && previewMeta.trackTitle) || '').trim();
+                    var folderName = String(catalogFolder || '').split('/')[0].trim();
+                    var currentTitle =
+                        sim.themeCurrentTitle || title || fallbackTitle || folderName || 'Current theme';
+                    var entries = [
+                        {
+                            name: 'HoloPebble',
+                            coverUrl: defaultCovers,
+                            isDefault: true,
+                            isCurrent: false
+                        }
+                    ];
+                    var bundled = currentFirmware.bundledThemes || [];
+                    for (var bi = 0; bi < bundled.length; bi += 1) {
+                        var item = bundled[bi];
+                        entries.push({
+                            name: item.name,
+                            coverUrl: bundledCovers[item.cover] || defaultCovers,
+                            isDefault: false,
+                            isCurrent: false,
+                            bundled: true
+                        });
+                    }
+                    var defaultRow = entries.shift();
+                    var deleted = sim.themeDeletedNames || [];
+                    var renamed = sim.themeRenamedNames || {};
+                    for (var ri = 0; ri < entries.length; ri += 1) {
+                        if (renamed[entries[ri].name]) entries[ri].name = renamed[entries[ri].name];
+                    }
+                    entries = entries.filter(function (entry) {
+                        return deleted.indexOf(entry.name) === -1;
+                    });
+                    var wanted = currentTitle.toLowerCase();
+                    if (String(defaultRow.name).toLowerCase() === wanted) {
+                        defaultRow.isCurrent = true;
+                        wanted = '';
+                    }
+                    for (var ei = 0; ei < entries.length; ei += 1) {
+                        if (String(entries[ei].name).toLowerCase() === wanted) {
+                            entries[ei].isCurrent = true;
+                            wanted = '';
+                            break;
+                        }
+                    }
+                    if (wanted && currentFirmware.themes && !sim.themeCurrentDeleted) {
+                        var currentCover = cfg.themeCover
+                            ? buildFileUrl(contentFolder, cfg.themeCover)
+                            : defaultCovers;
+                        entries.push({
+                            name: currentTitle,
+                            coverUrl: currentCover,
+                            isDefault: false,
+                            isCurrent: true,
+                            previewed: true
+                        });
+                    }
+                    entries.sort(function (a, b) {
+                        return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
+                    });
+                    entries.unshift(defaultRow);
+                    var currentIndex = 0;
+                    for (var ci = 0; ci < entries.length; ci += 1) {
+                        if (entries[ci].isCurrent) {
+                            currentIndex = ci;
+                            break;
+                        }
+                    }
+                    return { entries: entries, currentIndex: currentIndex };
+                }
+
                 function settingsItemsForView(viewId) {
                     var cat = '';
                     if (viewId === 'musicSettings') cat = 'musicSettings';
+                    else if (viewId === 'settingsBetterY') cat = 'betterY';
                     else if (String(viewId || '').indexOf('settingsCat_') === 0) {
                         cat = String(viewId).slice('settingsCat_'.length);
                     }
@@ -2455,6 +2758,7 @@
                 function isSettingsListView(viewId) {
                     return (
                         viewId === 'settings' ||
+                        viewId === 'settingsBetterY' ||
                         viewId === 'musicSettings' ||
                         String(viewId || '').indexOf('settingsCat_') === 0
                     );
@@ -2631,6 +2935,11 @@
                 else updateScale();
 
                 function getViewTitle() {
+                    if (sim.themeFullPreview && sim.themeViewId === 'settingsTheme') {
+                        var fullEntries = themeSelectorEntries().entries;
+                        var fullEntry = fullEntries[sim.themeSelectedIndex];
+                        if (fullEntry) return fullEntry.name;
+                    }
                     return previewText(VIEW_TITLES[sim.themeViewId] || 'Home');
                 }
 
@@ -3227,13 +3536,34 @@
                         var sItem = (activeMenuList && activeMenuList.items && activeMenuList.items[sim.themeSelectedIndex]) || {};
                         var isAbout = sItem.id === 'about';
                         activeRightPanel.titleEl.textContent = sItem.label || '';
+                        if (isAbout) {
+                            /* refreshRight() hides rightImage and lays bzt_view
+                               over it. info_state_tv is one TextView: all four
+                               lines, centred, at 16sp. */
+                            activeRightPanel.imgBox.removeAttribute('data-theme-art-box');
+                            activeRightPanel.aboutWrap.style.display = 'flex';
+                            var aboutPieSize = currentFirmware && currentFirmware.modelId === 'y1' ? 130 : 155;
+                            activeRightPanel.aboutPie.style.width = aboutPieSize + 'px';
+                            activeRightPanel.aboutPie.style.height = aboutPieSize + 'px';
+                            activeRightPanel.valueEl.style.top = 96 + aboutPieSize + 'px';
+                            activeRightPanel.aboutPie.style.background = aboutPieBackground(currentFirmware);
+                            activeRightPanel.img.style.display = 'none';
+                            activeRightPanel.img.removeAttribute('data-theme-asset-path');
+                            setReusableArtSrc(activeRightPanel.img, '', '');
+                            activeRightPanel.valueEl.style.display = 'block';
+                            activeRightPanel.valueEl.style.whiteSpace = 'pre';
+                            activeRightPanel.valueEl.textContent = aboutInfoText(currentFirmware);
+                            return;
+                        }
+                        activeRightPanel.aboutWrap.style.display = 'none';
+                        activeRightPanel.valueEl.style.top = '236px';
+                        activeRightPanel.valueEl.style.whiteSpace = 'nowrap';
                         if (sItem.assetPath) {
                             activeRightPanel.imgBox.setAttribute('data-theme-art-box', sItem.assetPath);
                         } else {
                             activeRightPanel.imgBox.removeAttribute('data-theme-art-box');
                         }
-                        activeRightPanel.aboutWrap.style.display = isAbout ? 'flex' : 'none';
-                        if (!isAbout && sItem.iconUrl) {
+                        if (sItem.iconUrl) {
                             activeRightPanel.img.style.display = 'block';
                             activeRightPanel.img.alt = sItem.label || '';
                             if (sItem.assetPath) {
@@ -3247,7 +3577,7 @@
                             activeRightPanel.img.removeAttribute('data-theme-asset-path');
                             setReusableArtSrc(activeRightPanel.img, '', '');
                         }
-                        if (sItem.valueText && !isAbout) {
+                        if (sItem.valueText) {
                             activeRightPanel.valueEl.style.display = 'block';
                             activeRightPanel.valueEl.textContent = String(sItem.valueText);
                         } else {
@@ -3615,7 +3945,12 @@
                             'px;height:' +
                             (H - statusH) +
                             'px;overflow:hidden;z-index:10;';
-                        var gItems = genericListForView(sim.themeViewId, previewOpts.deviceMode);
+                        var gItems = genericListForView(
+                            sim.themeViewId,
+                            previewOpts.deviceMode,
+                            sim,
+                            currentFirmware.menuProfile
+                        );
                         activeMenuList = appendMenuRows(genBox, {
                             items: gItems,
                             selectedIndex: sim.themeSelectedIndex,
@@ -4039,29 +4374,17 @@
                         var imgBox = document.createElement('div');
                         imgBox.style.cssText =
                             'position:absolute;top:96px;left:0;right:0;width:100%;min-height:146px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;';
+                        /* activity_setting.xml: the About row swaps rightImage
+                           for bzt_view (a 130dip AboutView pie) and fills
+                           info_state_tv with Total / Used / Available /
+                           System Version. There is no model card here. */
                         var abWrap = document.createElement('div');
                         abWrap.style.cssText =
-                            'width:100%;display:none;flex-direction:column;align-items:center;';
-                        var isY1Model = previewOpts.deviceMode === 'y1';
-                        var sq = document.createElement('div');
-                        sq.style.cssText =
-                            'width:140px;height:140px;background:rgba(255,255,255,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;border:2px solid rgba(255,255,255,0.3);';
-                        var y1 = document.createElement('div');
-                        y1.style.cssText =
-                            'color:' + colors.text_primary + ';font-size:48px;font-weight:bold;';
-                        y1.textContent = isY1Model ? 'Y1' : 'Y2';
-                        sq.appendChild(y1);
-                        abWrap.appendChild(sq);
-                        var v1 = document.createElement('div');
-                        v1.style.cssText =
-                            'color:' + colors.text_primary + ';font-size:16px;text-align:center;margin-bottom:10px;';
-                        v1.textContent = isY1Model ? 'Version 3.1.2' : 'Version 3.2.8';
-                        abWrap.appendChild(v1);
-                        var v2 = document.createElement('div');
-                        v2.style.cssText =
-                            'color:' + colors.text_primary + ';font-size:14px;text-align:center;opacity:0.8;';
-                        v2.textContent = isY1Model ? 'Innioasis Y1' : 'Innioasis Y2';
-                        abWrap.appendChild(v2);
+                            'width:100%;display:none;justify-content:center;align-items:flex-start;';
+                        var aboutPie = document.createElement('div');
+                        aboutPie.style.cssText =
+                            'width:130px;height:130px;border-radius:50%;flex:none;';
+                        abWrap.appendChild(aboutPie);
                         imgBox.appendChild(abWrap);
 
                         var simg = document.createElement('img');
@@ -4073,9 +4396,7 @@
 
                         var stx = document.createElement('div');
                         stx.style.cssText =
-                            'position:absolute;top:242px;left:0;right:0;font-size:16px;color:' +
-                            colors.text_primary +
-                            ';text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 5px;display:none;';
+                            'position:absolute;top:236px;left:0;right:0;font-size:16px;color:#fff;text-align:center;white-space:nowrap;line-height:1.25;overflow:hidden;text-overflow:ellipsis;padding:0 5px;display:none;';
                         rp.appendChild(stx);
                         layer.appendChild(rp);
 
@@ -4084,6 +4405,7 @@
                             titleEl: rt,
                             imgBox: imgBox,
                             aboutWrap: abWrap,
+                            aboutPie: aboutPie,
                             img: simg,
                             valueEl: stx
                         };
@@ -4158,43 +4480,260 @@
                         };
                         updateRightPanelInPlace();
                     } else if (sim.themeViewId === 'settingsTheme') {
-                        var themeUrl = cfg.themeCover
-                            ? buildFileUrl(contentFolder, cfg.themeCover)
-                            : '';
-                        var tp = document.createElement('div');
-                        tp.style.cssText =
+                        /* ThemeListActivity, read from both launchers:
+                           activity_theme_list.xml + item_theme.xml. The
+                           RecyclerView is a 3-column grid; each item is a
+                           140dp selected-ring CardView around a 135dp cover
+                           card, with a 19sp folder name underneath. Y1's
+                           selected ring is #FF36C6FF. Y2 uses its
+                           theme_selected_ring (#FF0084FF light default,
+                           #FF00FFF5 night/custom) and the card/text colours
+                           from the same qualified resource set. The default
+                           row uses the launcher's
+                           icon_theme_default_cover2, not the theme cover. */
+                        var selector = themeSelectorEntries();
+                        var selectorEntries = selector.entries;
+                        var modelId = currentFirmware.modelId === 'y1' ? 'y1' : 'y2';
+                        var lightCard =
+                            modelId === 'y2' &&
+                            isY2DefaultTheme(cfg, catalogFolder, previewOpts.deviceMode);
+                        var ringColor =
+                            modelId === 'y1' ? '#36C6FF' : lightCard ? '#0084FF' : '#00FFF5';
+                        var themeCardBg = modelId === 'y1' ? '#000000' : lightCard ? '#FFFFFF' : '#000000';
+                        var themeNameColor =
+                            modelId === 'y1'
+                                ? 'rgba(255,255,255,0.8)'
+                                : lightCard
+                                  ? '#2D2D44'
+                                  : '#FFFFFF';
+                        var gridTop = statusH;
+                        var gridViewportH = H - statusH;
+                        var gridCellW = W / 3;
+                        var gridRowH = 167;
+                        var gridCard = 140;
+                        var gridInner = 135;
+                        if (!sim.themeSelectorInitialized) {
+                            sim.themeSelectedIndex = selector.currentIndex;
+                            sim.themeGridScrollTop = 0;
+                            sim.themeSelectorInitialized = true;
+                        }
+                        sim.themeSelectedIndex = Math.max(
+                            0,
+                            Math.min(sim.themeSelectedIndex | 0, selectorEntries.length - 1)
+                        );
+                        var selectedRow = Math.floor(sim.themeSelectedIndex / 3);
+                        var selectedTop = selectedRow * gridRowH;
+                        var selectedBottom = selectedTop + gridRowH;
+                        if (selectedTop < sim.themeGridScrollTop) {
+                            sim.themeGridScrollTop = selectedTop;
+                        } else if (selectedBottom > sim.themeGridScrollTop + gridViewportH) {
+                            sim.themeGridScrollTop = selectedBottom - gridViewportH;
+                        }
+                        sim.themeGridScrollTop = Math.max(
+                            0,
+                            Math.min(
+                                sim.themeGridScrollTop,
+                                Math.max(0, Math.ceil(selectorEntries.length / 3) * gridRowH - gridViewportH)
+                            )
+                        );
+                        var grid = document.createElement('div');
+                        grid.setAttribute('data-theme-grid', 'theme-list');
+                        grid.style.cssText =
                             'position:absolute;left:0;top:' +
-                            statusH +
+                            gridTop +
                             'px;width:' +
                             W +
                             'px;height:' +
-                            (H - statusH) +
-                            'px;display:flex;align-items:center;justify-content:center;z-index:10;';
-                        if (themeUrl) {
-                            var box = document.createElement('div');
-                            box.setAttribute('data-theme-art-box', 'themeCover');
-                            box.style.cssText =
-                                'width:' +
-                                Math.floor(W * 0.7) +
+                            gridViewportH +
+                            'px;overflow:hidden;z-index:10;';
+                        var gridInnerEl = document.createElement('div');
+                        gridInnerEl.style.cssText =
+                            'position:absolute;left:0;top:' +
+                            -sim.themeGridScrollTop +
+                            'px;width:' +
+                            W +
+                            'px;height:' +
+                            Math.max(gridViewportH, Math.ceil(selectorEntries.length / 3) * gridRowH) +
+                            'px;';
+                        for (var ti = 0; ti < selectorEntries.length; ti += 1) {
+                            var tentry = selectorEntries[ti];
+                            var tcol = ti % 3;
+                            var trow = Math.floor(ti / 3);
+                            var multiChecked =
+                                !!sim.themeMultiSelect &&
+                                (sim.themeMultiSelected || []).indexOf(ti) !== -1;
+                            var selected = ti === sim.themeSelectedIndex;
+                            var cell = document.createElement('div');
+                            cell.setAttribute('data-y1-row', String(ti));
+                            cell.setAttribute('data-theme-selector-index', String(ti));
+                            if (tentry.isCurrent) cell.setAttribute('data-theme-current', 'true');
+                            cell.style.cssText =
+                                'position:absolute;left:' +
+                                tcol * gridCellW +
+                                'px;top:' +
+                                trow * gridRowH +
+                                'px;width:' +
+                                gridCellW +
                                 'px;height:' +
-                                Math.floor(H * 0.65) +
-                                'px;display:flex;align-items:center;justify-content:center;border-radius:12px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.35);background:rgba(0,0,0,0.35);';
-                            var tim = document.createElement('img');
-                            tim.src = themeUrl;
-                            tim.alt = 'Theme';
-                            tim.setAttribute('data-theme-asset-path', 'themeCover');
-                            bindPreviewImgFallback(tim);
-                            tim.style.cssText =
-                                'width:100%;height:100%;object-fit:contain;background:rgba(255,255,255,0.04);';
-                            box.appendChild(tim);
-                            tp.appendChild(box);
-                        } else {
-                            var nt = document.createElement('div');
-                            nt.style.cssText = 'color:' + colors.text_primary + ';opacity:0.8;font-size:18px;';
-                            nt.textContent = 'No theme cover';
-                            tp.appendChild(nt);
+                                gridRowH +
+                                'px;box-sizing:border-box;cursor:pointer;';
+                            var ring = document.createElement('div');
+                            ring.style.cssText =
+                                'position:absolute;left:' +
+                                (gridCellW - gridCard) / 2 +
+                                'px;top:2px;width:' +
+                                gridCard +
+                                'px;height:' +
+                                gridCard +
+                                'px;border-radius:0;background:' +
+                                (selected ? ringColor : 'transparent') +
+                                ';box-sizing:border-box;';
+                            var card = document.createElement('div');
+                            card.style.cssText =
+                                'position:absolute;left:' +
+                                (gridCard - gridInner) / 2 +
+                                'px;top:' +
+                                (gridCard - gridInner) / 2 +
+                                'px;width:' +
+                                gridInner +
+                                'px;height:' +
+                                gridInner +
+                                'px;border-radius:5px;background:' +
+                                themeCardBg +
+                                ';overflow:hidden;display:flex;align-items:center;justify-content:center;' +
+                                (modelId === 'y1' ? 'box-shadow:0 3px 6px rgba(0,0,0,0.35);' : '');
+                            var cover = document.createElement('img');
+                            cover.alt = '';
+                            cover.src = tentry.coverUrl;
+                            bindPreviewImgFallback(cover, { eager: eagerImages });
+                            if (!tentry.isDefault && (tentry.isCurrent || tentry.previewed)) {
+                                cover.setAttribute('data-theme-asset-path', 'themeCover');
+                                card.setAttribute('data-theme-art-box', 'themeCover');
+                            }
+                            cover.style.cssText =
+                                'display:block;width:auto;height:auto;max-width:' +
+                                (tentry.isDefault ? 100 : 80) +
+                                'px;max-height:' +
+                                (tentry.isDefault ? 75 : 60) +
+                                'px;object-fit:contain;';
+                            card.appendChild(cover);
+                            ring.appendChild(card);
+                            if (sim.themeMultiSelect && !tentry.isDefault) {
+                                var check = document.createElement('img');
+                                check.alt = '';
+                                check.src = nativeStudioAssetUrl(
+                                    'assets/native-' +
+                                        modelId +
+                                        '/' +
+                                        (multiChecked ? 'theme-selected' : 'theme-multiselect') +
+                                        (modelId === 'y2' ? (lightCard ? '-light' : '-dark') : '') +
+                                        '.png'
+                                );
+                                check.style.cssText =
+                                    'position:absolute;right:10px;bottom:10px;width:26px;height:26px;object-fit:contain;';
+                                ring.appendChild(check);
+                            }
+                            cell.appendChild(ring);
+                            var themeName = document.createElement('div');
+                            themeName.textContent = tentry.name;
+                            themeName.style.cssText =
+                                'position:absolute;left:8px;top:142px;width:' +
+                                (gridCellW - 10) +
+                                'px;height:23px;line-height:23px;text-align:center;font-size:19px;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:' +
+                                themeNameColor +
+                                ';';
+                            cell.appendChild(themeName);
+                            (function (index) {
+                                cell.addEventListener('click', function (ev) {
+                                    ev.preventDefault();
+                                    ev.stopPropagation();
+                                    if (sim.themeMultiSelect) {
+                                        sim.themeSelectedIndex = index;
+                                        paint();
+                                        return;
+                                    }
+                                    sim.themeSelectedIndex = index;
+                                    paint();
+                                });
+                            })(ti);
+                            gridInnerEl.appendChild(cell);
                         }
-                        layer.appendChild(tp);
+                        grid.appendChild(gridInnerEl);
+                        layer.appendChild(grid);
+                        if (sim.themeFullPreview) {
+                            var fullEntry = selectorEntries[sim.themeSelectedIndex] || selectorEntries[0];
+                            var fullTop = modelId === 'y2' ? statusH : 0;
+                            var fullViewTop = modelId === 'y1' ? statusH : 0;
+                            var fullViewH = H - fullViewTop;
+                            var fullFooterH = 65;
+                            var fullView = document.createElement('div');
+                            fullView.setAttribute('data-theme-full-preview', 'true');
+                            fullView.style.cssText =
+                                'position:absolute;left:0;width:' +
+                                W +
+                                'px;height:' +
+                                fullViewH +
+                                'px;background:' +
+                                (lightCard ? '#FFFFFF' : '#000000') +
+                                ';z-index:30;box-sizing:border-box;top:' +
+                                fullViewTop +
+                                'px;';
+                            if (fullEntry) {
+                                var fullImg = document.createElement('img');
+                                fullImg.alt = fullEntry.name;
+                                fullImg.src = fullEntry.coverUrl;
+                                if (!fullEntry.isDefault && (fullEntry.isCurrent || fullEntry.previewed)) {
+                                    fullImg.setAttribute('data-theme-art-box', 'themeCover');
+                                    fullImg.setAttribute('data-theme-asset-path', 'themeCover');
+                                }
+                                bindPreviewImgFallback(fullImg, { eager: eagerImages });
+                                fullImg.style.cssText =
+                                    'position:absolute;left:0;top:' +
+                                    fullTop +
+                                    'px;width:' +
+                                    W +
+                                    'px;height:' +
+                                    Math.max(0, fullViewH - fullTop - fullFooterH) +
+                                    'px;object-fit:contain;display:block;';
+                                fullView.appendChild(fullImg);
+                            }
+                            var fullFooter = document.createElement('div');
+                            fullFooter.style.cssText =
+                                'position:absolute;left:0;bottom:0;width:' +
+                                W +
+                                'px;height:' +
+                                fullFooterH +
+                                'px;padding-bottom:5px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:1px;';
+                            var fullIcon = document.createElement('img');
+                            fullIcon.alt = '';
+                            fullIcon.src = nativeStudioAssetUrl(
+                                'assets/native-' +
+                                    modelId +
+                                    '/theme-options/as-theme-selected' +
+                                    (modelId === 'y2' && !lightCard ? '-dark' : '') +
+                                    '.png'
+                            );
+                            fullIcon.style.cssText = 'display:block;width:32px;height:32px;object-fit:contain;';
+                            var fullLabel = document.createElement('div');
+                            fullLabel.textContent = 'As Theme';
+                            fullLabel.style.cssText =
+                                'font-size:15px;line-height:1.1;color:' +
+                                (modelId === 'y1'
+                                    ? 'rgba(0,255,245,0.8)'
+                                    : lightCard
+                                      ? '#0084FF'
+                                      : '#00FFF5') +
+                                ';';
+                            fullFooter.appendChild(fullIcon);
+                            fullFooter.appendChild(fullLabel);
+                            fullView.appendChild(fullFooter);
+                            layer.appendChild(fullView);
+                        }
+                        activeMenuList = {
+                            viewId: 'settingsTheme',
+                            items: selectorEntries,
+                            selectedIndex: sim.themeSelectedIndex
+                        };
                     } else if (sim.themeViewId === 'settingsBrightness') {
                         var brLev = Number(sim && sim.brightnessLevel);
                         if (!isFinite(brLev)) brLev = 50;
@@ -4368,55 +4907,104 @@
                         activeMenuList.viewId = 'settingsLanguage';
                         layer.appendChild(lbox);
                     } else if (sim.themeViewId === 'settingsAbout') {
-                        var isY1About = previewOpts.deviceMode === 'y1';
-                        var aboutRows = [
-                            { label: 'Model', val: isY1About ? 'Innioasis Y1' : 'Innioasis Y2' },
-                            { label: 'Firmware', val: isY1About ? '3.1.2' : '3.2.8' },
-                            { label: 'Storage', val: '128 GB' },
-                            { label: 'Available', val: '94.6 GB' }
-                        ];
-                        var aboutList = document.createElement('div');
-                        aboutList.style.cssText =
-                            'position:absolute;left:9px;top:' +
-                            (statusH + 10) +
-                            'px;width:252px;z-index:10;display:flex;flex-direction:column;gap:4px;';
-                        for (var abi = 0; abi < aboutRows.length; abi++) {
-                            var arow = document.createElement('div');
-                            arow.style.cssText =
-                                'height:45px;display:flex;align-items:center;justify-content:space-between;padding:0 10px;box-sizing:border-box;color:' +
-                                colors.text_primary +
-                                ';font-size:18px;font-weight:700;';
-                            arow.innerHTML =
-                                '<span>' +
-                                aboutRows[abi].label +
-                                '</span><span style="font-size:15px;opacity:0.85;">' +
-                                aboutRows[abi].val +
-                                '</span>';
-                            aboutList.appendChild(arow);
+                        /* Two layouts, both read from the shipped APK:
+                           Y1 1.7.6–3.1.2 activity_about.xml is a 140dip
+                           AboutView above two chained TextViews; Y2 3.1.7+
+                           is the right-aligned 140dip pie with one 16sp
+                           TextView, plus Internal storage / SD card rows. */
+                        var isY1About = currentFirmware.modelId === 'y1';
+                        var aboutOutline =
+                            currentFirmware.menuProfile === 'better-y'
+                                ? 'text-shadow:0 0 2px #000,0 0 2px #000;'
+                                : '';
+                        if (isY1About) {
+                            var y1Pie = document.createElement('div');
+                            y1Pie.style.cssText =
+                                'position:absolute;left:' +
+                                (W - 140) / 2 +
+                                'px;top:' +
+                                (statusH + 60) +
+                                'px;width:140px;height:140px;border-radius:50%;z-index:10;background:' +
+                                aboutPieBackground(currentFirmware) +
+                                ';';
+                            layer.appendChild(y1Pie);
+                            var y1Info = document.createElement('div');
+                            y1Info.style.cssText =
+                                'position:absolute;left:0;top:' +
+                                (statusH + 210) +
+                                'px;width:' +
+                                W +
+                                'px;display:flex;justify-content:center;align-items:flex-start;gap:10px;z-index:10;box-sizing:border-box;color:#fff;font-size:14px;line-height:1.3;text-align:left;' +
+                                aboutOutline;
+                            var y1Volume = aboutVolume(currentFirmware);
+                            var y1Left = document.createElement('div');
+                            y1Left.style.cssText = 'white-space:pre;';
+                            y1Left.textContent =
+                                'Total: ' +
+                                y1Volume.total +
+                                'G\nAvailable: ' +
+                                y1Volume.available.toFixed(1) +
+                                'G';
+                            var y1Right = document.createElement('div');
+                            y1Right.style.cssText = 'white-space:pre;';
+                            y1Right.textContent =
+                                'Used: ' +
+                                y1Volume.used.toFixed(1) +
+                                'G\n' +
+                                aboutVersionLabel(currentFirmware) +
+                                ' ' +
+                                aboutVersionName(currentFirmware);
+                            y1Info.appendChild(y1Left);
+                            y1Info.appendChild(y1Right);
+                            layer.appendChild(y1Info);
+                        } else {
+                            var y2Rows = ['Internal Storage', 'TF Card'];
+                            /* AboutActivity opens on the TF Card row in the
+                               retail build; the arrow belongs to the selected
+                               ItemLinearLayout only. */
+                            var y2Selected = 1;
+                            for (var abi = 0; abi < y2Rows.length; abi++) {
+                                var y2Row = document.createElement('div');
+                                y2Row.style.cssText =
+                                    'position:absolute;left:0;top:' +
+                                    (statusH + abi * 45) +
+                                    'px;width:260px;height:45px;display:flex;align-items:center;padding-left:16px;box-sizing:border-box;font-size:22px;font-weight:700;z-index:10;';
+                                applyCssProps(
+                                    y2Row,
+                                    abi === y2Selected ? itemSelectedBackgroundStyle : itemBackgroundStyle
+                                );
+                                y2Row.style.color =
+                                    abi === y2Selected ? itemCfg.itemSelectedTextColor || '#fff' : colors.text_primary;
+                                y2Row.textContent = y2Rows[abi];
+                                if (abi === y2Selected) {
+                                    var y2Arrow = document.createElement('span');
+                                    y2Arrow.style.cssText =
+                                        'position:absolute;right:8px;top:0;height:45px;line-height:45px;font-size:28px;font-weight:400;color:#fff;opacity:0.9;';
+                                    y2Arrow.textContent = '\u203a';
+                                    y2Row.appendChild(y2Arrow);
+                                }
+                                layer.appendChild(y2Row);
+                            }
+                            var y2Pie = document.createElement('div');
+                            y2Pie.style.cssText =
+                                'position:absolute;left:' +
+                                (W - 37 - 140) +
+                                'px;top:' +
+                                (statusH + 60) +
+                                'px;width:140px;height:140px;border-radius:50%;z-index:10;background:' +
+                                aboutPieBackground(currentFirmware) +
+                                ';';
+                            layer.appendChild(y2Pie);
+                            var y2Info = document.createElement('div');
+                            y2Info.style.cssText =
+                                'position:absolute;left:' +
+                                (W - 37 - 140) +
+                                'px;top:' +
+                                (statusH + 220) +
+                                'px;width:140px;color:#fff;font-size:16px;line-height:1.3;text-align:center;white-space:pre;z-index:10;';
+                            y2Info.textContent = aboutInfoText(currentFirmware);
+                            layer.appendChild(y2Info);
                         }
-                        layer.appendChild(aboutList);
-                        var ab = document.createElement('div');
-                        ab.style.cssText =
-                            'position:absolute;right:22px;top:' +
-                            (statusH + 40) +
-                            'px;width:179px;display:flex;flex-direction:column;align-items:center;z-index:10;';
-                        var sq2 = document.createElement('div');
-                        sq2.style.cssText =
-                            'width:136px;height:136px;background:rgba(255,255,255,0.1);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;border:2px solid rgba(255,255,255,0.3);';
-                        var y12 = document.createElement('div');
-                        y12.style.cssText = 'color:' + colors.text_primary + ';font-size:48px;font-weight:bold;';
-                        y12.textContent = isY1About ? 'Y1' : 'Y2';
-                        sq2.appendChild(y12);
-                        ab.appendChild(sq2);
-                        var a1 = document.createElement('div');
-                        a1.style.cssText = 'color:' + colors.text_primary + ';font-size:15px;text-align:center;margin-bottom:6px;font-weight:700;';
-                        a1.textContent = isY1About ? 'Version 3.1.2' : 'Version 3.2.8';
-                        ab.appendChild(a1);
-                        var a2 = document.createElement('div');
-                        a2.style.cssText = 'color:' + colors.text_primary + ';font-size:13px;text-align:center;opacity:0.8;';
-                        a2.textContent = isY1About ? 'Innioasis Y1' : 'Innioasis Y2';
-                        ab.appendChild(a2);
-                        layer.appendChild(ab);
                     } else if (sim.themeViewId === 'photos') {
                         /* Authentic activity_photos.xml + item_photos.xml:
                            4-column grid of 100×75 rounded cards (5dp radius) with filename captions
@@ -4852,7 +5440,7 @@
                         var dm = document.createElement('div');
                         dm.style.cssText = 'font-size:16px;line-height:1.4;';
                         dm.textContent = sim.dialogMessage || '';
-                        panel.appendChild(dm);
+                        if (sim.dialogMessage) panel.appendChild(dm);
                         var optsRow = document.createElement('div');
                         optsRow.style.cssText =
                             'display:flex;justify-content:space-evenly;gap:12px;flex-wrap:wrap;width:100%;';
@@ -4915,10 +5503,163 @@
                         canvas.appendChild(dlg);
                     }
 
+                    if (sim.themeOptionsVisible) {
+                        /* ThemeOptionsDialog: a full-width 70dp bar with five
+                           equal cells, read from dialog_photos.xml and
+                           item_photos_submenu.xml. Y1 paints #FF0A214B with
+                           white labels and #FF3CFFDE for the accent; Y2 uses
+                            its light or night bar, with 30dp/14sp or
+                            26dp/12sp items respectively. The selected cell
+                            also swaps to the native *_selected icon. */
+                        var menuModel = currentFirmware.modelId === 'y1' ? 'y1' : 'y2';
+                        var menuOptions = themeOptionsItems();
+                        var menuLight = menuModel === 'y2' && lightCard;
+                        var menuIconSuffix = menuLight ? '' : menuModel === 'y2' ? '-dark' : '';
+                        var menuBar = document.createElement('div');
+                        menuBar.setAttribute('data-theme-options', 'true');
+                        menuBar.style.cssText =
+                            'position:absolute;left:0;bottom:0;width:' +
+                            W +
+                            'px;height:70px;background:' +
+                            (menuLight ? '#FFFFFF' : '#0A214B') +
+                            ';display:flex;align-items:stretch;z-index:46;box-sizing:border-box;';
+                        var menuSelectedColor = menuLight ? '#0084FF' : '#3CFFDE';
+                        var menuTextColor = menuLight ? '#2D2D44' : '#FFFFFF';
+                        for (var mo = 0; mo < menuOptions.length; mo += 1) {
+                            (function (optionIndex) {
+                                var option = menuOptions[optionIndex];
+                                var optionSelected = optionIndex === (sim.themeOptionsIndex | 0);
+                                var item = document.createElement('div');
+                                item.setAttribute('data-theme-option-index', String(optionIndex));
+                                item.style.cssText =
+                                    'flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;box-sizing:border-box;';
+                                var icon = document.createElement('img');
+                                icon.alt = '';
+                                icon.src = nativeStudioAssetUrl(
+                                    'assets/native-' +
+                                        menuModel +
+                                        '/theme-options/' +
+                                        option.icon +
+                                        (optionSelected ? '-selected' : '') +
+                                        menuIconSuffix +
+                                        '.png'
+                                );
+                                icon.style.cssText =
+                                    'display:block;height:' +
+                                    (menuLight ? 30 : menuModel === 'y2' ? 26 : 24) +
+                                    'px;width:auto;max-width:90%;object-fit:contain;';
+                                var label = document.createElement('div');
+                                label.textContent = option.label;
+                                label.style.cssText =
+                                    'max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:' +
+                                    (menuLight ? 14 : 12) +
+                                    'px;line-height:1.1;color:' +
+                                    (optionSelected ? menuSelectedColor : menuTextColor) +
+                                    ';';
+                                item.appendChild(icon);
+                                item.appendChild(label);
+                                item.addEventListener('click', function (ev) {
+                                    ev.preventDefault();
+                                    ev.stopPropagation();
+                                    sim.themeOptionsIndex = optionIndex;
+                                    paint();
+                                });
+                                menuBar.appendChild(item);
+                            })(mo);
+                        }
+                        layer.appendChild(menuBar);
+                    }
+
+                    if (sim.inputDialogVisible) {
+                        /* InputMethodDialog: a 400px-wide floating Dialog pinned
+                           40px above the bottom. dialog_input_method.xml puts a
+                           110x37dp EditText at 9dp then a horizontal A-Z
+                           RecyclerView; item_input_method.xml is a 21x32dp
+                           letter cell. Menu closes the dialog, Enter types the
+                           highlighted letter, Right inserts a space and Left
+                           deletes one character. */
+                        var inputFont =
+                            '700 24px ' + fontStack + ', Arial, sans-serif';
+                        var keyboardModelId = currentFirmware.modelId === 'y1' ? 'y1' : 'y2';
+                        var keyboardLight =
+                            keyboardModelId === 'y2' &&
+                            isY2DefaultTheme(cfg, catalogFolder, previewOpts.deviceMode);
+                        var alphabet =
+                            String(global.STUDIO_PREVIEW_LOCALE || '').toLowerCase() === 'ru'
+                                ? 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'.split('')
+                                : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+                        var dialogBg = keyboardLight ? 'rgba(255,255,255,0.80)' : '#192E4B';
+                        var keyText = keyboardLight ? '#000000' : '#FFFFFF';
+                        var kb = document.createElement('div');
+                        kb.setAttribute('data-input-method', 'true');
+                        kb.style.cssText =
+                            'position:absolute;left:40px;top:' +
+                            (H - 40 - 55) +
+                            'px;width:400px;height:55px;border-radius:8px;background:' +
+                            dialogBg +
+                            ';box-sizing:border-box;z-index:60;color:' +
+                            keyText +
+                            ';overflow:hidden;';
+                        var edit = document.createElement('div');
+                        edit.style.cssText =
+                            'position:absolute;left:9px;top:9px;width:110px;height:37px;background:#FFFFFF;border-radius:5px;box-sizing:border-box;padding:0 7px;display:flex;align-items:center;font:' +
+                            inputFont +
+                            ';color:#000000;white-space:nowrap;overflow:hidden;';
+                        var shownInput = String(sim.inputValue || '');
+                        if (shownInput.length > 6) {
+                            shownInput = '...' + shownInput.slice(-4);
+                        }
+                        edit.textContent = shownInput;
+                        kb.appendChild(edit);
+                        var letters = document.createElement('div');
+                        letters.style.cssText =
+                            'position:absolute;left:128px;top:0;right:9px;height:55px;display:flex;align-items:center;overflow:hidden;';
+                        var charW = 21;
+                        var charGap = 6;
+                        var visibleChars = Math.floor((400 - 128 - 9 + charGap) / (charW + charGap));
+                        var firstChar = Math.max(
+                            0,
+                            Math.min(
+                                (sim.inputCharIndex | 0) - Math.floor(visibleChars / 2),
+                                Math.max(0, alphabet.length - visibleChars)
+                            )
+                        );
+                        for (var ci = firstChar; ci < Math.min(alphabet.length, firstChar + visibleChars); ci += 1) {
+                            (function (charIndex) {
+                                var charEl = document.createElement('div');
+                                charEl.textContent = alphabet[charIndex];
+                                charEl.setAttribute('data-input-char', String(charIndex));
+                                var charSelected = charIndex === (sim.inputCharIndex | 0);
+                                charEl.style.cssText =
+                                    'flex:0 0 ' +
+                                    charW +
+                                    'px;width:' +
+                                    charW +
+                                    'px;height:32px;margin:0 3px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:20px;color:' +
+                                    keyText +
+                                    ';background:' +
+                                    (charSelected ? '#00A4FF' : 'transparent') +
+                                    ';font-weight:' +
+                                    (charSelected ? '700' : '400') +
+                                    ';cursor:pointer;box-sizing:border-box;';
+                                charEl.addEventListener('click', function (ev) {
+                                    ev.preventDefault();
+                                    ev.stopPropagation();
+                                    sim.inputCharIndex = charIndex;
+                                    sim.inputValue = String(sim.inputValue || '') + alphabet[charIndex].toLowerCase();
+                                    paint();
+                                });
+                                letters.appendChild(charEl);
+                            })(ci);
+                        }
+                        kb.appendChild(letters);
+                        layer.appendChild(kb);
+                    }
+
                     if (sim.toastVisible && sim.toastMessage) {
                         var toast = document.createElement('div');
                         toast.style.cssText =
-                            'position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:50;background:rgba(0,0,0,0.82);color:#fff;padding:8px 14px;border-radius:8px;font-size:14px;font-weight:600;max-width:80%;text-align:center;';
+                            'position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:70;background:rgba(0,0,0,0.82);color:#fff;padding:8px 14px;border-radius:8px;font-size:14px;font-weight:600;max-width:80%;text-align:center;';
                         toast.textContent = sim.toastMessage;
                         canvas.appendChild(toast);
                     }
@@ -4975,9 +5716,188 @@
                     }, 1600);
                 }
 
+                function openInputDialog(context, targetId, initialValue) {
+                    sim.inputDialogVisible = true;
+                    sim.inputContext = String(context || '');
+                    sim.inputTargetId = String(targetId || '');
+                    sim.inputValue = String(initialValue || '');
+                    sim.inputOriginalValue = String(initialValue || '');
+                    sim.inputCharIndex = 0;
+                    paint();
+                }
+
+                function commitInputDialog() {
+                    var context = sim.inputContext;
+                    var targetId = sim.inputTargetId;
+                    var value = String(sim.inputValue || '').trim();
+                    var original = String(sim.inputOriginalValue || '').trim();
+                    sim.inputDialogVisible = false;
+                    sim.inputContext = '';
+                    sim.inputTargetId = '';
+                    sim.inputOriginalValue = '';
+                    if (context === 'fileRename') {
+                        if (!value) {
+                            showToast('Filename cannot be empty');
+                            return;
+                        }
+                        if (value !== original) {
+                            renameFileManagerEntry(targetId, value);
+                            showToast('Renamed to ' + value);
+                            return;
+                        }
+                    }
+                    if (context === 'themeRename') {
+                        if (!value) {
+                            showToast('Filename cannot be empty');
+                            return;
+                        }
+                        if (value !== original) {
+                            var themeEntries = themeSelectorEntries().entries;
+                            var duplicate = themeEntries.some(function (entry) {
+                                return entry.name.toLowerCase() === value.toLowerCase();
+                            });
+                            if (duplicate) {
+                                showToast('Filename cannot be duplicate');
+                                return;
+                            }
+                            sim.dialogVisible = true;
+                            sim.dialogContext = 'themeRenameConfirm';
+                            sim.dialogTitle = 'Sure to rename?';
+                            sim.dialogMessage = '';
+                            sim.dialogOptions = ['Yes', 'No'];
+                            sim.dialogSelectedIndex = 1;
+                            sim.themePendingRename = { from: original, to: value };
+                            paint();
+                            return;
+                        }
+                    }
+                    paint();
+                }
+
+                function themeOptionsItems() {
+                    return [
+                        { label: 'Delete', icon: 'delete' },
+                        { label: 'MultiSelect', icon: 'multi-select' },
+                        { label: 'All Select', icon: 'all-select' },
+                        { label: 'Rename', icon: 'rename' },
+                        { label: 'As Theme', icon: 'as-theme' }
+                    ];
+                }
+
+                function closeThemeOptions() {
+                    sim.themeOptionsVisible = false;
+                    sim.themeOptionsIndex = 0;
+                }
+
+                function openThemeSetDialog(entry) {
+                    if (!entry) return;
+                    sim.dialogVisible = true;
+                    sim.dialogContext = 'themeSet';
+                    sim.dialogTitle = 'Set Theme';
+                    sim.dialogMessage = 'Are you sure you set ' + entry.name + ' as the theme?';
+                    sim.dialogOptions = ['Yes', 'No'];
+                    sim.dialogSelectedIndex = 1;
+                    sim.themePendingName = entry.name;
+                    paint();
+                }
+
+                function themeOptionsAction(index) {
+                    var selector = themeSelectorEntries();
+                    var entries = selector.entries;
+                    var targetIndex = sim.themeOptionsTargetIndex | 0;
+                    var target = entries[targetIndex] || entries[0];
+                    closeThemeOptions();
+                    if (!target) {
+                        paint();
+                        return;
+                    }
+                    if (index === 0) {
+                        if (target.isDefault) {
+                            showToast('The default theme cannot be deleted');
+                            return;
+                        }
+                        var names = [target.name];
+                        if (sim.themeMultiSelect) {
+                            names = (sim.themeMultiSelected || [])
+                                .map(function (selectedIndex) {
+                                    return entries[selectedIndex] && entries[selectedIndex].name;
+                                })
+                                .filter(Boolean);
+                        }
+                        names = names.filter(function (name) {
+                            return name && name !== 'HoloPebble';
+                        });
+                        if (!names.length) {
+                            showToast('The default theme cannot be deleted');
+                            return;
+                        }
+                        sim.dialogVisible = true;
+                        sim.dialogContext = 'themeDelete';
+                        sim.dialogTitle =
+                            names.indexOf(sim.themeCurrentTitle) !== -1
+                                ? 'Caution: The theme you are deleting includes the currently active one. Confirm deletion?'
+                                : 'Sure to delete？';
+                        sim.dialogMessage = '';
+                        sim.dialogOptions = ['Yes', 'No'];
+                        sim.dialogSelectedIndex = 1;
+                        sim.themePendingDeleteNames = names.slice();
+                        paint();
+                        return;
+                    }
+                    if (index === 1) {
+                        sim.themeMultiSelect = true;
+                        sim.themeMultiSelected = target.isDefault ? [] : [targetIndex];
+                        paint();
+                        return;
+                    }
+                    if (index === 2) {
+                        sim.themeMultiSelect = true;
+                        sim.themeMultiSelected = entries
+                            .map(function (entry, entryIndex) {
+                                return entry.isDefault ? -1 : entryIndex;
+                            })
+                            .filter(function (entryIndex) {
+                                return entryIndex >= 0;
+                            });
+                        paint();
+                        return;
+                    }
+                    if (index === 3) {
+                        if (target.isDefault) {
+                            showToast('The default theme cannot be renamed');
+                            return;
+                        }
+                        openInputDialog('themeRename', target.name, target.name);
+                        return;
+                    }
+                    if (index === 4) {
+                        openThemeSetDialog(target);
+                    }
+                }
+
                 function goBack() {
+                    if (sim.inputDialogVisible) {
+                        commitInputDialog();
+                        return;
+                    }
+                    if (sim.themeOptionsVisible) {
+                        closeThemeOptions();
+                        paint();
+                        return;
+                    }
+                    if (sim.themeMultiSelect) {
+                        sim.themeMultiSelect = false;
+                        sim.themeMultiSelected = [];
+                        paint();
+                        return;
+                    }
                     if (sim.dialogVisible) {
                         sim.dialogVisible = false;
+                        paint();
+                        return;
+                    }
+                    if (sim.themeFullPreview && sim.themeViewId === 'settingsTheme') {
+                        sim.themeFullPreview = false;
                         paint();
                         return;
                     }
@@ -4985,6 +5905,7 @@
                         var prev = sim.themeHistory[sim.themeHistory.length - 1];
                         sim.themeHistory.pop();
                         sim.themeViewId = prev;
+                        if (prev === 'settingsTheme') sim.themeSelectorInitialized = false;
                         if (
                             [
                                 'home',
@@ -4992,6 +5913,7 @@
                                 'videos',
                                 'audiobooks',
                                 'settings',
+                                'settingsBetterY',
                                 'settingsTheme',
                                 'settingsEqualizer',
                                 'musicSettings'
@@ -5016,6 +5938,25 @@
 
                 function handleScroll(direction) {
                     suppressHoverUntil = Date.now() + 360;
+                    if (sim.inputDialogVisible) {
+                        var alphabetLength =
+                            String(global.STUDIO_PREVIEW_LOCALE || '').toLowerCase() === 'ru'
+                                ? 33
+                                : 26;
+                        var inputDelta = direction === 'down' ? 1 : -1;
+                        sim.inputCharIndex =
+                            ((sim.inputCharIndex | 0) + inputDelta + alphabetLength * 10) % alphabetLength;
+                        paint();
+                        return;
+                    }
+                    if (sim.themeOptionsVisible) {
+                        var optionLen = themeOptionsItems().length;
+                        var optionDelta = direction === 'down' ? 1 : -1;
+                        sim.themeOptionsIndex =
+                            ((sim.themeOptionsIndex | 0) + optionDelta + optionLen * 10) % optionLen;
+                        paint();
+                        return;
+                    }
                     if (sim.dialogVisible && (sim.dialogOptions || []).length) {
                         var len = sim.dialogOptions.length;
                         var delta = direction === 'down' ? 1 : -1;
@@ -5045,9 +5986,20 @@
                         vid === 'bluetooth' ||
                         vid === 'settingsLanguage'
                     ) {
-                        scrollClamp(direction, genericListForView(vid, previewOpts.deviceMode, sim).length);
+                        scrollClamp(
+                            direction,
+                            genericListForView(
+                                vid,
+                                previewOpts.deviceMode,
+                                sim,
+                                currentFirmware.menuProfile
+                            ).length
+                        );
                     } else if (vid === 'fileManagerSettings') {
                         scrollClamp(direction, 7);
+                    } else if (vid === 'settingsTheme') {
+                        if (sim.themeFullPreview) return;
+                        scrollClamp(direction, themeSelectorEntries().entries.length);
                     } else if (isSettingsListView(vid)) {
                         scrollClamp(direction, settingsItemsForView(vid).length);
                     } else if (vid === 'settingsEqualizer') {
@@ -5116,6 +6068,20 @@
                 }
 
                 function handleCenterClick() {
+                    if (sim.inputDialogVisible) {
+                        var inputAlphabet =
+                            String(global.STUDIO_PREVIEW_LOCALE || '').toLowerCase() === 'ru'
+                                ? 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'.split('')
+                                : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+                        var inputChar = inputAlphabet[sim.inputCharIndex | 0] || 'A';
+                        sim.inputValue = String(sim.inputValue || '') + inputChar.toLowerCase();
+                        paint();
+                        return;
+                    }
+                    if (sim.themeOptionsVisible) {
+                        themeOptionsAction(sim.themeOptionsIndex | 0);
+                        return;
+                    }
                     if (sim.dialogVisible) {
                         var chosen = (sim.dialogOptions || [])[sim.dialogSelectedIndex] || '';
                         var dialogContext = sim.dialogContext || '';
@@ -5149,6 +6115,75 @@
                             paint();
                             return;
                         }
+                        if (dialogContext === 'themeSet') {
+                            if (chosen === 'Yes') {
+                                var appliedName = sim.themePendingName || 'theme';
+                                sim.themePendingName = '';
+                                sim.themeCurrentDeleted = false;
+                                sim.themeCurrentTitle = appliedName;
+                                sim.themeFullPreview = false;
+                                showToast('Theme set to ' + appliedName);
+                            } else {
+                                paint();
+                            }
+                            return;
+                        }
+                        if (dialogContext === 'themeDelete') {
+                            if (chosen === 'Yes') {
+                                var deleteNames = sim.themePendingDeleteNames || [];
+                                var currentThemeBeforeDelete = themeSelectorEntries().entries.filter(
+                                    function (entry) {
+                                        return entry.isCurrent;
+                                    }
+                                )[0];
+                                if (
+                                    currentThemeBeforeDelete &&
+                                    deleteNames.indexOf(currentThemeBeforeDelete.name) !== -1
+                                ) {
+                                    sim.themeCurrentDeleted = true;
+                                    sim.themeCurrentTitle = '';
+                                }
+                                var alreadyDeleted = sim.themeDeletedNames || [];
+                                for (var dn = 0; dn < deleteNames.length; dn += 1) {
+                                    if (alreadyDeleted.indexOf(deleteNames[dn]) === -1) {
+                                        alreadyDeleted.push(deleteNames[dn]);
+                                    }
+                                }
+                                sim.themeDeletedNames = alreadyDeleted;
+                                sim.themePendingDeleteNames = [];
+                                sim.themeMultiSelect = false;
+                                sim.themeMultiSelected = [];
+                                var remaining = themeSelectorEntries().entries;
+                                sim.themeSelectedIndex = Math.min(
+                                    sim.themeSelectedIndex,
+                                    Math.max(0, remaining.length - 1)
+                                );
+                                showToast('Deleted successfully');
+                            } else {
+                                paint();
+                            }
+                            return;
+                        }
+                        if (dialogContext === 'themeRenameConfirm') {
+                            if (chosen === 'Yes') {
+                                var rename = sim.themePendingRename || null;
+                                if (rename && rename.from && rename.to) {
+                                    var currentBefore = themeSelectorEntries().entries.filter(function (entry) {
+                                        return entry.isCurrent;
+                                    })[0];
+                                    sim.themeRenamedNames[rename.from] = rename.to;
+                                    if (currentBefore && currentBefore.name === rename.from) {
+                                        sim.themeCurrentTitle = rename.to;
+                                    }
+                                }
+                                sim.themePendingRename = null;
+                                paint();
+                            } else {
+                                sim.themePendingRename = null;
+                                paint();
+                            }
+                            return;
+                        }
                         if (dialogContext === 'fileOptions') {
                             var pendingEntry = sim.filePendingEntry || null;
                             if (chosen === 'Settings') {
@@ -5178,7 +6213,12 @@
                                 sim.dialogOptions = ['Yes', 'No'];
                                 sim.dialogSelectedIndex = 1;
                             } else if (chosen === 'Rename') {
-                                showToast('Rename ' + (pendingEntry ? pendingEntry.label : 'item'));
+                                openInputDialog(
+                                    'fileRename',
+                                    pendingEntry ? pendingEntry.id : '',
+                                    pendingEntry ? pendingEntry.label : ''
+                                );
+                                return;
                             } else if (chosen === 'Properties' && pendingEntry) {
                                 sim.dialogVisible = true;
                                 sim.dialogContext = 'fileProperties';
@@ -5265,7 +6305,12 @@
                         return;
                     }
                     if (vid === 'music') {
-                        var mList = genericListForView('music', previewOpts.deviceMode);
+                        var mList = genericListForView(
+                            'music',
+                            previewOpts.deviceMode,
+                            sim,
+                            currentFirmware.menuProfile
+                        );
                         var ms = mList[sim.themeSelectedIndex] && mList[sim.themeSelectedIndex].label;
                         if (ms === 'Folders') {
                             sim.themeHistory.push('music');
@@ -5459,7 +6504,13 @@
                         return;
                     }
                     if (vid === 'videos') {
-                        var vs = ['All video', 'Playlist', 'Folders', 'Search'][sim.themeSelectedIndex];
+                        var videoList = genericListForView(
+                            'videos',
+                            previewOpts.deviceMode,
+                            sim,
+                            currentFirmware.menuProfile
+                        );
+                        var vs = (videoList[sim.themeSelectedIndex] || {}).label;
                         if (vs === 'Folders') {
                             sim.themeHistory.push('videos');
                             sim.themeViewId = 'videos_folders';
@@ -5467,6 +6518,29 @@
                         } else {
                             showToast(vs || 'Videos');
                         }
+                        paint();
+                        return;
+                    }
+                    if (vid === 'settingsTheme') {
+                        var themeEntries = themeSelectorEntries().entries;
+                        if (sim.themeMultiSelect) {
+                            var multiNow = sim.themeMultiSelected || [];
+                            var at = multiNow.indexOf(sim.themeSelectedIndex);
+                            if (at === -1) multiNow.push(sim.themeSelectedIndex);
+                            else multiNow.splice(at, 1);
+                            sim.themeMultiSelected = multiNow;
+                            if (sim.themeSelectedIndex < themeEntries.length - 1) {
+                                sim.themeSelectedIndex += 1;
+                            }
+                            paint();
+                            return;
+                        }
+                        var chosenTheme = themeEntries[sim.themeSelectedIndex] || themeEntries[0];
+                        if (sim.themeFullPreview) {
+                            openThemeSetDialog(chosenTheme);
+                            return;
+                        }
+                        sim.themeFullPreview = true;
                         paint();
                         return;
                     }
@@ -5478,6 +6552,12 @@
                             sim.themeHistory.push(vid);
                             sim.themeViewId = 'settingsCat_' + sid.slice(4);
                             sim.themeSelectedIndex = 0;
+                        } else if (sid === 'better_y') {
+                            sim.themeHistory.push(vid);
+                            sim.themeViewId = 'settingsBetterY';
+                            sim.themeSelectedIndex = 0;
+                        } else if (sid.indexOf('betterY_') === 0) {
+                            showToast((selEntry.label || 'better-Y') + ' — better-Y');
                         } else if (sid === 'bluetooth') {
                             sim.themeHistory.push(vid);
                             sim.themeViewId = 'bluetooth';
@@ -5486,6 +6566,8 @@
                             sim.themeHistory.push(vid);
                             sim.themeViewId = 'settingsTheme';
                             sim.themeSelectedIndex = 0;
+                            sim.themeSelectorInitialized = false;
+                            sim.themeFullPreview = false;
                         } else if (sid === 'equalizer') {
                             sim.themeHistory.push(vid);
                             sim.themeViewId = 'settingsEqualizer';
@@ -5511,11 +6593,17 @@
                             sim.themeViewId = 'settingsAbout';
                             sim.themeSelectedIndex = 0;
                         } else if (sid === 'rockbox') {
-                            showToast('Switch to Rockbox');
+                            showToast('Switch to ' + (selEntry.label || 'Rockbox'));
                         } else if (sid === 'shutdown') {
                             sim.dialogVisible = true;
                             sim.dialogTitle = 'Shutdown';
                             sim.dialogMessage = 'Sure to shut down?';
+                            sim.dialogOptions = ['Yes', 'No'];
+                            sim.dialogSelectedIndex = 1;
+                        } else if (sid === 'reboot') {
+                            sim.dialogVisible = true;
+                            sim.dialogTitle = 'Reboot';
+                            sim.dialogMessage = 'Sure to reboot?';
                             sim.dialogOptions = ['Yes', 'No'];
                             sim.dialogSelectedIndex = 1;
                         } else if (sid === 'timed_shutdown') {
@@ -5585,6 +6673,29 @@
                 function onKeyDown(ev) {
                     if (!interactive) return;
                     var k = ev.key;
+                    if (sim.inputDialogVisible) {
+                        ev.preventDefault();
+                        if (k === 'Escape') {
+                            commitInputDialog();
+                        } else if (k === 'Backspace') {
+                            sim.inputValue = String(sim.inputValue || '').slice(0, -1);
+                            paint();
+                        } else if (k === 'Enter') {
+                            var inputAlphabet =
+                                String(global.STUDIO_PREVIEW_LOCALE || '').toLowerCase() === 'ru'
+                                    ? 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'.split('')
+                                    : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+                            var inputChar = inputAlphabet[sim.inputCharIndex | 0] || 'A';
+                            sim.inputValue = String(sim.inputValue || '') + inputChar.toLowerCase();
+                            paint();
+                        } else if (k === 'ArrowUp' || k === 'ArrowDown') {
+                            handleScroll(k === 'ArrowDown' ? 'down' : 'up');
+                        } else if (/^[a-zA-Z]$/.test(k)) {
+                            sim.inputValue = String(sim.inputValue || '') + k.toLowerCase();
+                            paint();
+                        }
+                        return;
+                    }
                     if (k === 'ArrowUp') {
                         ev.preventDefault();
                         handleScroll('up');
@@ -5781,6 +6892,10 @@
                 function focusRowIndex(index) {
                     if (!interactive) return false;
                     if (!(index >= 0)) return false;
+                    /* ThemeListActivity's grid has pointer selection and a
+                       long-press menu; hovering must not repaint the grid for
+                       every adjacent cover the way a settings list does. */
+                    if (sim.themeViewId === 'settingsTheme') return false;
                     if (sim.dialogVisible) return false;
                     if (index === sim.themeSelectedIndex) return false;
                     sim.themeSelectedIndex = index;
@@ -5870,6 +6985,15 @@
                         timer: global.setTimeout(function () {
                             if (!rowHold || rowHold.index !== index) return;
                             rowHold.timer = null;
+                            if (sim.themeViewId === 'settingsTheme') {
+                                sim.themeSelectedIndex = index;
+                                sim.themeOptionsTargetIndex = index;
+                                sim.themeOptionsVisible = true;
+                                sim.themeOptionsIndex = 0;
+                                rowHold = null;
+                                paint();
+                                return;
+                            }
                             /* Held still: open the artwork behind this row in
                                the Studio's asset list. Painting first means the
                                row was rebuilt, so ask for it again. */
@@ -5934,6 +7058,14 @@
                    so the Studio can show what the dialog art looks like. */
                 function activateRow(index) {
                     if (!interactive || !(index >= 0) || sim.dialogVisible) return false;
+                    if (sim.themeViewId === 'settingsTheme' && sim.themeMultiSelect) {
+                        sim.themeSelectedIndex = index;
+                        var multiAt = (sim.themeMultiSelected || []).indexOf(index);
+                        if (multiAt === -1) sim.themeMultiSelected.push(index);
+                        else sim.themeMultiSelected.splice(multiAt, 1);
+                        paint();
+                        return true;
+                    }
                     if (index !== sim.themeSelectedIndex) {
                         sim.themeSelectedIndex = index;
                         if (!updateSelectionInPlace(true)) {
@@ -5953,9 +7085,22 @@
                     handleCenterClick();
                 }
 
+                function onThemeContextMenu(ev) {
+                    if (!interactive || sim.themeViewId !== 'settingsTheme' || sim.themeFullPreview) return;
+                    var index = rowIndexFromEvent(ev);
+                    if (!(index >= 0) || sim.dialogVisible) return;
+                    ev.preventDefault();
+                    sim.themeSelectedIndex = index;
+                    sim.themeOptionsTargetIndex = index;
+                    sim.themeOptionsVisible = true;
+                    sim.themeOptionsIndex = 0;
+                    paint();
+                }
+
                 if (interactive) {
                     dev.tabIndex = 0;
                     dev.addEventListener('keydown', onKeyDown);
+                    dev.addEventListener('contextmenu', onThemeContextMenu);
                     /* Without a wheel (the Studio hides it) there is nothing to
                        bind: the control strip dispatches the same key events. */
                     if (wheel) {
@@ -6093,13 +7238,25 @@
                         if (nextOpts.firmware !== undefined) {
                             previewOpts.firmware = nextOpts.firmware;
                         }
+                        currentFirmware = firmwareFor(previewOpts);
                         homeItems = buildHomeItems(cfg.homePageConfig || {}, settingCfg, previewOpts);
-                        var fwNow = firmwareFor(previewOpts);
+                        sim.themeSelectorInitialized = false;
+                        sim.themeCurrentDeleted = false;
+                        sim.themeFullPreview = false;
+                        var fwNow = currentFirmware;
                         if (sim.themeViewId === 'home') {
                             sim.themeSelectedIndex = Math.max(0, Math.min(sim.themeSelectedIndex, Math.max(0, homeItems.length - 1)));
                         } else if (
                             String(sim.themeViewId || '').indexOf('settingsCat_') === 0 &&
                             (previewOpts.deviceMode === 'y1' || fwNow.settingsStyle !== 'categories')
+                        ) {
+                            sim.themeViewId = 'settings';
+                            sim.themeSelectedIndex = 0;
+                        } else if (
+                            sim.themeViewId === 'settingsBetterY' &&
+                            (!fwNow.version ||
+                                !fwNow.version.settingsRows ||
+                                fwNow.version.settingsRows.indexOf('better_y') === -1)
                         ) {
                             sim.themeViewId = 'settings';
                             sim.themeSelectedIndex = 0;
@@ -6326,6 +7483,11 @@
                         sim.themeHistory = [];
                         sim.themeViewId = String(viewId);
                         sim.themeSelectedIndex = 0;
+                        sim.themeSelectorInitialized = false;
+                        sim.themeFullPreview = false;
+                        sim.themeOptionsVisible = false;
+                        sim.themeMultiSelect = false;
+                        sim.themeMultiSelected = [];
                         var prevAnim = scrollState.animate;
                         if (silent) scrollState.animate = false;
                         try {

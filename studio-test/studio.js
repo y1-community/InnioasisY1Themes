@@ -10567,16 +10567,26 @@
         ];
         out = out.concat(stockPreviewTargets('y2'));
         out = out.concat(stockPreviewTargets('y1'));
-        /* Better-Y is the stock launcher rebuilt on 3.1.2 (“based on 3.1.2
-           firmware”), so its menus match that release exactly. */
-        out.push({
-            id: 'better-y',
-            group: 'Other launchers',
-            label: 'Better-Y — Y1 3.1.2 menu base',
-            device: 'y1',
-            firmware: '3.1.2',
-            version: null
-        });
+        /* Launcher mods are separate targets: their menu tree comes from their
+           own build (Better-Y on 3.1.2, Koensayr on 3.0.x, Rockbox on the
+           stock or Better-Y launcher it installs), not from the release
+           number alone. */
+        var cat = window.Y1FirmwareCatalog;
+        var launchers = cat && cat.launchers ? cat.launchers : [];
+        out = out.concat(
+            launchers.map(function (mod) {
+                return {
+                    id: mod.id,
+                    group: 'Other launchers',
+                    label: mod.label,
+                    device: mod.device,
+                    firmware: mod.id,
+                    baseFirmware: mod.base,
+                    launcher: true,
+                    version: null
+                };
+            })
+        );
         return out;
     }
 
@@ -10661,6 +10671,7 @@
         var versions = firmwareVersionsFor(modelId);
         var latestId = versions.length ? versions[versions.length - 1].id : '';
         var atLatest = !!(stock && stock.id === latestId);
+        if (stock && stock.launcher) atLatest = true;
         if (el.firmwareState) {
             var showBadge = !!stock && !atLatest && current.id !== 'both';
             el.firmwareState.hidden = !showBadge;
@@ -10671,14 +10682,18 @@
         if (stock && stock.date) parts.push('released ' + stock.date);
         if (current.device === 'both') parts.push('Both previews the Y2 launcher');
         if (stock) {
-            var gaps = firmwareAssetGaps(stock, modelId).length;
+            if (stock.unified) {
+                parts.push('Unified profile — mixes elements from multiple launchers');
+            }
+            var comparison = stock.launcher ? cat.version(modelId, stock.baseFirmware) : stock;
+            var gaps = firmwareAssetGaps(comparison, modelId).length;
             if (gaps) {
                 parts.push(
                     gaps === 1
                         ? '1 asset in this theme appears only in a later release'
                         : gaps + ' assets in this theme appear only in later releases'
                 );
-            } else if (state.assets && state.assets.length) {
+            } else if (!stock.unified && state.assets && state.assets.length) {
                 parts.push('every asset this theme uses is drawn by this release');
             }
         }
@@ -10724,7 +10739,20 @@
             btn.addEventListener('click', function () {
                 var nextMode = btn.getAttribute('data-preview-device') || 'both';
                 if (nextMode !== 'both' && nextMode !== 'y2' && nextMode !== 'y1') nextMode = 'both';
+                var previous = activePreviewTarget();
                 state.previewDeviceMode = nextMode;
+                if (nextMode === 'both') {
+                    state.previewTargetId = 'both';
+                } else {
+                    /* Leaving a launcher target returns that device to its
+                       stock release, not to a menu the launcher does not have. */
+                    var firmware =
+                        previous.device === nextMode && previous.baseFirmware
+                            ? previous.baseFirmware
+                            : state.firmwareVersions[nextMode];
+                    state.previewTargetId = nextMode + ':' + firmware;
+                    state.firmwareVersions[nextMode] = firmware;
+                }
                 applyPreviewControlsToSimulator();
             });
         });
