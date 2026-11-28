@@ -10559,7 +10559,7 @@
             {
                 id: 'both',
                 group: 'Quick',
-                label: 'Both — Y2 layout with the Y1 Bluetooth row',
+                label: 'Unified — Y2 layout with the Y1 Bluetooth row',
                 device: 'both',
                 firmware: state.firmwareVersions.y2,
                 version: null
@@ -10680,11 +10680,8 @@
         if (!el.firmwareSummary) return;
         var parts = [current.label];
         if (stock && stock.date) parts.push('released ' + stock.date);
-        if (current.device === 'both') parts.push('Both previews the Y2 launcher');
+        if (current.device === 'both') parts.push('Y2 layout with the Y1 Bluetooth row');
         if (stock) {
-            if (stock.unified) {
-                parts.push('Unified profile — mixes elements from multiple launchers');
-            }
             var comparison = stock.launcher ? cat.version(modelId, stock.baseFirmware) : stock;
             var gaps = firmwareAssetGaps(comparison, modelId).length;
             if (gaps) {
@@ -10693,7 +10690,7 @@
                         ? '1 asset in this theme appears only in a later release'
                         : gaps + ' assets in this theme appear only in later releases'
                 );
-            } else if (!stock.unified && state.assets && state.assets.length) {
+            } else if (state.assets && state.assets.length) {
                 parts.push('every asset this theme uses is drawn by this release');
             }
         }

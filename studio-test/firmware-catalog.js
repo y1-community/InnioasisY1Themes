@@ -470,7 +470,7 @@
                 versions: [
                     {
                         id: '3.1.7',
-                        label: 'Unified — Y2 3.1.7 profile',
+                        label: 'Y2 3.1.7 (launch)',
                         versionName: '3.1.7',
                         aboutVersion: '3.1.7',
                         versionCode: 317,
@@ -510,8 +510,7 @@
                             'clear_cache',
                             'about'
                         ],
-                        notes: 'Light HoloPebble default, File Manager app, 9-patch, fontScale, M3U. Previewed as a Unified profile because the simulator mixes elements across the Y1/Y2 launchers.',
-                        unified: true,
+                        notes: 'Light HoloPebble default, File Manager app, 9-patch, fontScale, M3U.',
                         fileManager: true,
                         fm: false,
                         musicSettings: '3.1.7'
@@ -545,7 +544,7 @@
                     },
                     {
                         id: '3.2.1',
-                        label: 'Unified — Y2 3.2.1 profile',
+                        label: 'Y2 3.2.1',
                         versionName: '3.2.1',
                         aboutVersion: 'FM_3.2.1',
                         versionCode: 321,
@@ -565,8 +564,7 @@
                         ],
                         settingsStyle: 'categories',
                         settingsRows: Y1_FLAT,
-                        notes: 'Stability release; identical schema to 3.2.0-fm. Previewed as a Unified profile because the simulator mixes elements across the Y1/Y2 launchers.',
-                        unified: true,
+                        notes: 'Stability release; identical schema to 3.2.0-fm.',
                         fileManager: true,
                         fm: true,
                         musicSettings: '3.2.0'
@@ -738,7 +736,6 @@
             settingsStyle: base.settingsStyle || 'flat',
             settingsRows: (mod.settingsRows || base.settingsRows || []).slice(),
             notes: mod.notes,
-            unified: base.unified === true,
             bundledThemes: bundledThemes(m.id, base.id),
             fileManager: base.fileManager === true,
             fm: base.fm !== false,

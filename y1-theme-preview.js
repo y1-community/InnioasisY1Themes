@@ -440,7 +440,6 @@
                         (cat && typeof cat.bundledThemes === 'function'
                             ? cat.bundledThemes(device, version.baseFirmware || version.id)
                             : []),
-                    unified: version.unified === true,
                     home: version.home || [],
                     menuProfile: version.menuProfile || 'stock',
                     /* Keys declared behind the launcher's internal flag: the
@@ -462,7 +461,6 @@
             themes: true,
             musicSettingsRows: fallback.musicSettingsRows,
             bundledThemes: [],
-            unified: false,
             home: fallback.home,
             menuProfile: 'stock',
             catalog: null
