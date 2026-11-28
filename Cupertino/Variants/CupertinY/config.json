@@ -17,9 +17,8 @@
         "itemBackground": "itemBackground.png",
         "itemRightArrow": "itemRightArrow.png"
     },
-
     "dialogConfig": {
-        "dialogOptionBackground": "dialogOptionBackground.png",
+        "dialogOptionBackground": "transparent.png",
         "dialogOptionTextColor": "#000000",
         "dialogOptionSelectedBackground": "dialogOptionSelectedBackground.png",
         "dialogOptionSelectedTextColor": "#ffffff",
@@ -33,7 +32,7 @@
         "menuItemSelectedTextColor": "#ffffff"
     },
     "homePageConfig": {
-        "ebook":"icon.png",
+        "ebook": "icon.png",
         "nowPlaying": "icon.png",
         "music": "icon.png",
         "video": "icon.png",
@@ -42,11 +41,14 @@
         "fm": "icon.png",
         "bluetooth": "icon.png",
         "settings": "icon.png",
-        "shuffleQuick": "Shuffle Quick.png"
+        "shuffleQuick": "transparent.png",
+        "calendar": "transparent.png",
+        "calculator": "transparent.png",
+        "fileManager": "transparent.png"
     },
     "fileConfig": {
-        "folderIcon": "",
-        "musicIcon": ""
+        "folderIcon": "transparent.png",
+        "musicIcon": "transparent.png"
     },
     "settingConfig": {
         "settingMask": "setting_mask.png",
@@ -97,31 +99,51 @@
         "clearCache": "Clear cache.png",
         "theme": "Change Theme.png",
         "fileExtensionOn": "file_ext_on.png",
-        "fileExtensionOff": "file_ext_off.png"
+        "fileExtensionOff": "file_ext_off.png",
+        "launcher": "transparent.png",
+        "date&Time": "transparent.png",
+        "bluetooth": "transparent.png",
+        "categoryKeysWheel": "transparent.png",
+        "categoryAudio": "transparent.png",
+        "categoryFilesStorage": "transparent.png",
+        "categorySystem": "transparent.png",
+        "categoryPersonalization": "transparent.png",
+        "categoryDisplay": "transparent.png",
+        "speakerOn": "transparent.png",
+        "speakerOff": "transparent.png",
+        "wheelSensitivityLow": "transparent.png",
+        "wheelSensitivityStandard": "transparent.png",
+        "wheelSensitivityHigh": "transparent.png",
+        "wheelVolumeOn": "transparent.png",
+        "wheelVolumeOff": "transparent.png",
+        "headphoneGainLow": "transparent.png",
+        "headphoneGainStandard": "transparent.png",
+        "headphoneGainHigh": "transparent.png",
+        "headphoneGainMaximum": "transparent.png"
     },
     "statusConfig": {
         "playing": "play.png",
-        "audiobookPlaying": "",
+        "audiobookPlaying": "transparent.png",
         "pause": "pause.png",
-        "fmPlaying": "",
+        "fmPlaying": "transparent.png",
         "stop": "stop.png",
-        "blConnected": "",
-        "blConnecting": "",
-        "blDisconnected": "",
-        "headsetWithMic": "",
-        "headsetWithoutMic": "",
+        "blConnected": "transparent.png",
+        "blConnecting": "transparent.png",
+        "blDisconnected": "transparent.png",
+        "headsetWithMic": "transparent.png",
+        "headsetWithoutMic": "transparent.png",
         "statusBarColor": "",
         "battery": [
-           "battery.001.png",
-           "battery.002.png",
-           "battery.003.png",
-           "battery.004.png"
+            "battery.001.png",
+            "battery.002.png",
+            "battery.003.png",
+            "battery.004.png"
         ],
         "batteryCharging": [
-           "batterycharge.001.png",
-           "batterycharge.002.png",
-           "batterycharge.003.png",
-           "batterycharge.004.png"
+            "batterycharge.001.png",
+            "batterycharge.002.png",
+            "batterycharge.003.png",
+            "batterycharge.004.png"
         ]
     }
 }
